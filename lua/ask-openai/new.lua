@@ -54,19 +54,17 @@ function get_vim_command_suggestion(passed_context)
     if response and response.status == 200 then
         local result = vim.json.decode(response.body)
         local completion = result.choices[1].message.content
-        --
-        -- FYI for testing use this: until I can maybe not need luaeval() wrapping this
-        -- -- only issue w/ notify is until you stop editing cmd line it doesn't fully show up (very dim)
-        -- vim.schedule(function()
+
         log_response(passed_context, model, completion)
-        -- vim.notify(completion)
-        -- end)
-        --
+
         return completion
     else
+        -- FYI in luaeval, cannot have some side effects (modify buffer) so notify won't work directly but it can be scheduled to work
         -- vim.schedule(function()
+        --     -- FYI shows dimmed until done editing command line
         --     vim.notify("Request failed: " .. response.status .. " " .. response.body)
         -- end)
+
         -- FYI `:messages` will show this, if need to be obvious use notify
         print("Request failed:", response.status, response.body)
         return "Request failed, see :messages"
