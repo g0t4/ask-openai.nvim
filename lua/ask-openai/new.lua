@@ -56,7 +56,6 @@ function get_vim_command_suggestion(passed_context)
         local completion = result.choices[1].message.content
 
         log_response(passed_context, model, completion)
-
         return completion
     else
         -- FYI in luaeval, cannot have some side effects (modify buffer) so notify won't work directly but it can be scheduled to work
