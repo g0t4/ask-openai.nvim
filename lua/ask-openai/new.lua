@@ -72,7 +72,7 @@ function get_vim_command_suggestion(passed_context)
 end
 
 function log_response(context, model, response)
-    local log_path = vim.fn.expand("~/.ask.openai.nvim.log")
+    local log_path = vim.fn.expand(require("ask-openai.config").user_opts.log_path)
     local file = io.open(log_path, "a")
     if file then
         file:write("Context: " .. context .. "\n")

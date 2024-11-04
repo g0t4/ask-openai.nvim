@@ -2,7 +2,7 @@ local M = {}
 
 local default_opts = {
     model = "gpt-4o",
-    log_path = "~/.ask.openai.log"
+    log_path = "~/.ask.openai.nvim.log",
 }
 
 function M.set_user_opts(opts)
