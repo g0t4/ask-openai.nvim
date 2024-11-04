@@ -31,6 +31,8 @@ function M.setup(opts)
         function! AskOpenAI()
             " just a wrapper so the CLI shows "AskOpenAI" instead of "luaeval('ask_openai()')"
             return luaeval('ask_openai()')
+            " also, FYI, luaeval and the nature of a cmap modifying cmdline means there really is no way to present errors short of putting them into the command line, which is fine and how I do it in my CLI equivalents of this
+            "   only issue w/ putting into cmdline is no UNDO AFAIK for going back to what you had typed... unlike how I can do that in fish shell and just ctrl+z to undo the error message, but error messages are gonna be pretty rare so NBD for now
         endfunction
     ]]
 
