@@ -29,6 +29,8 @@ function M.setup(opts)
 
     vim.cmd [[
         function! AskOpenAI()
+            " kinda stinks that this is the only way to get cmap to work...
+            " can't I use vim.fn.getcmdline()/setcmdline() with a diff type of mapping or like exit cmd mode for a second and not need to evaluate an expression? hmmm expression is probably easier actually.
             return luaeval('ask_openai()')
         endfunction
     ]]
