@@ -10,6 +10,9 @@ function M.setup(opts)
     function trim_null_characters(input)
         -- Replace null characters (\x00) with an empty string
         -- was getting ^@ at end of command output w/ system call (below)
+        if input == nil then
+            return ""
+        end
         return input:gsub("%z", "")
     end
 
