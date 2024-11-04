@@ -8,10 +8,6 @@ function M.setup(opts)
     -- TODO port to lua
     -- TODO remove python dependency too
     vim.cmd([[
-        " nvim observation: nested languages in lua are highlighted nicely!
-        "   lua observation: multiline strings rock for embedding other languages
-
-        " TODO review prompt and see if I should specify this is neovim vs classic... in fact I should update this wrapper to differentiate and pass that
 
         function! TrimNullCharacters(input)
             " Replace null characters (\x00) with an empty string
