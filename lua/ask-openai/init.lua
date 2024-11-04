@@ -28,12 +28,11 @@ function M.setup(opts)
         function! AskOpenAI()
             return luaeval('ask_openai()')
         endfunction
-
-        cmap <C-b> <C-\>eAskOpenAI()<CR>
     ]]
 
-    -- Map <C-b> in command-line mode to call ask_openai
-    -- vim.api.nvim_set_keymap('c', '<C-b>', '<C-\\>eAskOpenAI()<CR>', { noremap = true, silent = true })
+    -- [e]valuate expression AskOpenAI() in command-line mode
+    -- DO NOT SET silent=true, messes up putting result into cmdline
+    vim.api.nvim_set_keymap('c', '<C-b>', '<C-\\>eAskOpenAI()<CR>', { noremap = true, })
 end
 
 return M
