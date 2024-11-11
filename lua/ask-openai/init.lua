@@ -39,6 +39,17 @@ function M.setup(opts)
     -- [e]valuate expression AskOpenAI() in command-line mode
     -- DO NOT SET silent=true, messes up putting result into cmdline
     vim.api.nvim_set_keymap('c', '<C-b>', '<C-\\>eAskOpenAI()<CR>', { noremap = true, })
+
+    setup_on_the_fly_hints()
+end
+
+function setup_on_the_fly_hints()
+    if not require("ask-openai.config").user_opts.on_the_fly_hints then
+        return
+        -- TODO make runtime TOGGLE
+    end
+
+
 end
 
 return M
