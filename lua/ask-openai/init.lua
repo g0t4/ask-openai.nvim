@@ -62,21 +62,8 @@ function setup_on_the_fly_hints()
         --
 
         local key = vim.fn.keytrans(key_before_mapping)
-        -- put text into buffer:
-
-        -- check if buffer open, else create it:
-        local bufnr = vim.fn.bufnr("ask-openai-messages")
-        if bufnr == -1 then
-            -- print("creating new buffer")
-            vim.cmd [[botright new]]
-            -- vim.cmd [[wincmd p]]
-            vim.api.nvim_buf_set_name(0, "ask-openai-messages")
-        else
-            -- print("buffer already open")
-            -- vim.cmd [[botright sbuffer ask-openai-messages]]
-        end
-
-        -- vim.api.nvim_buf_set_lines(0, 0, -1, true, { last_keys })
+	
+	-- ! TODO log messages to a file and have it open in a split window, so much to log I need a file
 
         -- last_keys = last_keys .. "\n" .. key
         last_keys = key .. "\n" .. last_keys
