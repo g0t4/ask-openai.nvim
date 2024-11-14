@@ -1,9 +1,10 @@
 local curl = require('plenary.curl')
+local config = require("ask-openai.config")
 
-local M = {} -- TODO use module pattern
+local M = {}
 
 local function log_response(context, model, response)
-    local log_path = vim.fn.expand(require("ask-openai.config").user_opts.log_path)
+    local log_path = config.get_log_path_absolute()
     local file = io.open(log_path, "a")
     if file then
         file:write("Context: " .. context .. "\n")

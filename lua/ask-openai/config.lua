@@ -7,6 +7,10 @@ local default_opts = {
     -- todo config normal mode and/or cmdline mode hints
 }
 
+function M.get_log_path_absolute()
+    return vim.fn.expand(M.user_opts.log_path)
+end
+
 function M.set_user_opts(opts)
     M.user_opts = vim.tbl_deep_extend("force", default_opts, opts or {})
 end
