@@ -15,20 +15,6 @@ local function log_response(context, model, response)
     end
 end
 
-function GetOpenAIKey()
-    local handle = io.popen('security find-generic-password -s openai -a ask -w')
-    if handle then
-        local api_key = handle:read("*a"):gsub("%s+", "") -- remove any extra whitespace
-        handle:close()
-        return api_key
-    else
-        print("Failed to retrieve API key from Keychain.")
-        return nil
-    end
-end
-
-M.GetOpenAIKey = GetOpenAIKey
-
 function GetCommandSuggestion(passed_context)
     local system_message = [[
         You are a vim expert. The user (that you are talking to) has vim open in command mode.
@@ -41,7 +27,8 @@ function GetCommandSuggestion(passed_context)
         For example, if the user asks how to delete a line in normal mode, you could answer `:normal dd`.
     ]]
 
-    local api_key = GetOpenAIKey()
+    local key = require("ask-openai.key")
+    local api_key = key.GetOpenAIKey()
     if not api_key then
         return "API key not set, please check keychain" -- shows in cmdline is fine
     end
