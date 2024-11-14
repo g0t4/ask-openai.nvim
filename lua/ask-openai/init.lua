@@ -78,13 +78,7 @@ function follow_ask_logs()
         local timer = vim.loop.new_timer()
 
         timer:start(0, 2000, vim.schedule_wrap(function()
-            -- Check if the log file buffer is loaded
-            for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-                if vim.api.nvim_buf_is_loaded(buf) and vim.api.nvim_buf_get_name(buf) == log_path then
-                    -- Reload the buffer if the file changed outside Vim
-                    vim.api.nvim_command("checktime " .. buf)
-                end
-            end
+            refresh_log_view()
         end))
     end
 
@@ -95,7 +89,30 @@ function follow_ask_logs()
     })
 end
 
-follow_ask_logs()
+-- follow_ask_logs()
+
+function refresh_log_view()
+    -- Check if the log file buffer is loaded
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_loaded(buf) and vim.api.nvim_buf_get_name(buf) == log_path then
+            -- Reload the buffer if the file changed outside Vim
+            vim.api.nvim_command("checktime " .. buf)
+        end
+    end
+end
+
+local log_debounce_timer
+
+function log_debounced_action()
+    -- if series of keystrokes pressed, wait until series is done  and then trigger log refresh
+    if log_debounce_timer then
+        log_debounce_timer:stop() -- Stop the previous timer if it's still running
+    end
+
+    log_debounce_timer = vim.defer_fn(function()
+        refresh_log_view()
+    end, 300) -- ms
+end
 
 function setup_on_the_fly_hints()
     if not require("ask-openai.config").user_opts.on_the_fly_hints then
@@ -116,6 +133,7 @@ function setup_on_the_fly_hints()
         -- log_message("mode " .. mode .. ", key: " .. key)
         -- TODO will need to optionally filter on some key maps, i.e. neoscroll uses a series of `gk`/`gj` to scroll page up/down, but can see ctrl+d/u etc right before that and ignore it
 
+        log_debounced_action()
 
         -- last_keys = last_keys .. "\n" .. key
         last_keys = key .. "\n" .. last_keys
