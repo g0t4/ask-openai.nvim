@@ -1,6 +1,10 @@
-local log_path = vim.fn.fnamemodify("ask.log", ":p")
+local log_path = vim.fn.fnamemodify("ask.log", ":p") -- PRN move to config if longterm use
 
-function AskClearLogs()
+local M = {}
+
+function M.ask_clear_logs()
+    -- make available to bind or call from cmdline in nvim
+
     local log_file = io.open(log_path, "w")
 
     if log_file then
@@ -9,8 +13,6 @@ function AskClearLogs()
         vim.api.nvim_err_writeln("Failed to open log file: " .. log_path)
     end
 end
-
-AskClearLogs()
 
 local function log_message(message)
     local log_file = io.open(log_path, "a")
@@ -53,9 +55,8 @@ local function signal_refresh_log_view()
     refresh_timer = vim.defer_fn(refresh_log_view, 300) -- ms
 end
 
-local M = {}
-
 function M.setup_hints()
+    M.ask_clear_logs()
 
     -- PRN make this local?
     if not require("ask-openai.config").user_opts.on_the_fly_hints then
