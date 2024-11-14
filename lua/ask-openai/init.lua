@@ -100,7 +100,7 @@ local function setup_hints()
 end
 
 function M.setup(opts)
-    require("ask-openai.new") -- source new funcs TODO how do I want this to work?
+    require("ask-openai.cmd-suggest")
 
     require("ask-openai.config").set_user_opts(opts)
 
@@ -122,7 +122,7 @@ function M.setup(opts)
         local stdin_text = ' env: nvim (neovim) command mode (return a valid command w/o the leading : ) \n question: ' ..
             cmdline
 
-        local result = get_vim_command_suggestion(stdin_text)
+        local result = GetCommandSuggestion(stdin_text)
 
         return trim_null_characters(result)
     end

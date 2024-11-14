@@ -15,7 +15,7 @@ local function log_response(context, model, response)
     end
 end
 
-function get_api_key_from_keychain()
+function GetOpenAIKey()
     local handle = io.popen('security find-generic-password -s openai -a ask -w')
     if handle then
         local api_key = handle:read("*a"):gsub("%s+", "") -- remove any extra whitespace
@@ -27,7 +27,9 @@ function get_api_key_from_keychain()
     end
 end
 
-function get_vim_command_suggestion(passed_context)
+M.GetOpenAIKey = GetOpenAIKey
+
+function GetCommandSuggestion(passed_context)
     local system_message = [[
         You are a vim expert. The user (that you are talking to) has vim open in command mode.
         They have typed part of a command that they need help with.
@@ -39,7 +41,7 @@ function get_vim_command_suggestion(passed_context)
         For example, if the user asks how to delete a line in normal mode, you could answer `:normal dd`.
     ]]
 
-    local api_key = get_api_key_from_keychain()
+    local api_key = GetOpenAIKey()
     if not api_key then
         return "API key not set, please check keychain" -- shows in cmdline is fine
     end
@@ -82,3 +84,7 @@ function get_vim_command_suggestion(passed_context)
         return "Request failed, see :messages"
     end
 end
+
+M.GetCommandSuggestion = GetCommandSuggestion
+
+return M
