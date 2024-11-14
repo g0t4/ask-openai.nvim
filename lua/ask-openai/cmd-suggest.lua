@@ -72,8 +72,6 @@ function GetCommandSuggestion(passed_context)
     end
 end
 
-M.GetCommandSuggestion = GetCommandSuggestion
-
 function M.setup_cmd_suggestions()
 
     local function trim_null_characters(input)
