@@ -56,7 +56,7 @@ local function log_debounced_action()
     end, 300) -- ms
 end
 
-function SetupOnTheFlyHints()
+local function setup_hints()
     -- PRN make this local?
     if not require("ask-openai.config").user_opts.on_the_fly_hints then
         return
@@ -160,7 +160,7 @@ function M.setup(opts)
     -- DO NOT SET silent=true, messes up putting result into cmdline
     vim.api.nvim_set_keymap('c', '<C-b>', '<C-\\>eAskOpenAI()<CR>', { noremap = true, })
 
-    SetupOnTheFlyHints()
+    setup_hints()
 end
 
 return M
