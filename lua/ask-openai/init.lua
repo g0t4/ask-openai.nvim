@@ -97,6 +97,12 @@ function refresh_log_view()
         if vim.api.nvim_buf_is_loaded(buf) and vim.api.nvim_buf_get_name(buf) == log_path then
             -- Reload the buffer if the file changed outside Vim
             vim.api.nvim_command("checktime " .. buf)
+            -- scroll the log buffer to the bottom:
+            --  w/o indirect keystrokes that muddle logs
+            local win_id = vim.fn.bufwinid(buf)
+            local line_count = vim.api.nvim_buf_line_count(buf)
+            -- log_message("win_id: " .. win_id .. ", line_count: " .. line_count)
+            vim.api.nvim_win_set_cursor(win_id, { line_count, 0 })
         end
     end
 end
