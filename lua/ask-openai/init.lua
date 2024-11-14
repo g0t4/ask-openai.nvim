@@ -89,36 +89,13 @@ local function setup_hints()
 
         signal_refresh_log_view()
 
-        -- last_keys = last_keys .. "\n" .. key
         last_keys = key .. "\n" .. last_keys
 
-        -- for Ctrl keys:
-        -- print(key)
-        -- print(type(key))
-        -- FYI if don't pass 1, true) then it reports false matches sometimes
-        --   lua print(string.find("<Esc>","^C-")) => 1 0
-        --   lua print(string.find("<Esc>","^C-",1,false)) => 1 0
-        --   lua print(string.find("<Esc>","^C-",1,true)) => nil
-        --
-        -- so, 1 0 is invalid b/c 0 < 1 plus lua is 1-indexed so 0 alone isn't valid anyways
-        --  IIRC 1 1 sometimes returned too in bogus match
-        --  :lua print(string.find("<Esc>","<C-")) => 1 1
-        --  TLDR => pass pattern=true to avoid headache, don't try string match?
-        --
-        local match = string.find(key, "<C-", 1, true)
-        -- print(key .. " pressed, before: " .. key_before_mapping .. ", after: " .. key_after_mapping)
-        if match then
-            -- vim.notify(key .. " pressed\nbefore: " .. key_before_mapping .. "\nafter: " .. key_after_mapping)
-            return
-        end
+        -- local match = string.find(key, "<C-", 1, true)
 
         -- TODO when to clear last_keys? maybe after get suggestion?
         -- ! FYI I am not sure I wanna ask on every keypress, just means might have some delayed suggestions?
         --   MAYBE it would be better to just create more hints ihn hardtime? and be done with it?
-
-        -- TODO so we have key_after/before_mapping, plus there is keytrans?
-        --   what do I use or does it even matter, just ask openai with after? and one per line?
-        --
     end)
 end
 
