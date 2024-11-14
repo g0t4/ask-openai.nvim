@@ -109,12 +109,6 @@ function setup_on_the_fly_hints()
     vim.on_key(function(key_after_mapping, key_before_mapping)
         local mode = vim.fn.mode()
 
-        -- what modes to exit on? TODO tracmode with key? is this the mode before or after the key press?
-        -- if k == "" or mode == "c" or mode == "R" then
-        --     return
-        -- end
-        --
-
         local key = vim.fn.keytrans(key_before_mapping)
 
         log_message("mode " ..
