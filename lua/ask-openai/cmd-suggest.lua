@@ -28,7 +28,7 @@ local function get_cmd_suggestion(passed_context)
     ]]
 
     local key = require("ask-openai.key")
-    local api_key = key.GetOpenAIKey()
+    local api_key = key.get_openai_key()
     if not api_key then
         return "API key not set, please check keychain" -- shows in cmdline is fine
     end

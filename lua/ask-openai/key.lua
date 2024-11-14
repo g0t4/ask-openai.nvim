@@ -1,6 +1,6 @@
 local M = {}
 
-function GetOpenAIKey()
+function M.get_openai_key()
     local handle = io.popen('security find-generic-password -s openai -a ask -w')
     if handle then
         local api_key = handle:read("*a"):gsub("%s+", "") -- remove any extra whitespace
@@ -13,7 +13,5 @@ function GetOpenAIKey()
 end
 
 -- TODO get copilot key and use it?
-
-M.GetOpenAIKey = GetOpenAIKey
 
 return M
