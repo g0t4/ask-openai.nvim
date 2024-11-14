@@ -84,6 +84,7 @@ end
 function M.setup_cmd_suggestions()
     function AskOpenAILua()
         -- leave name slightly different so no confusion about vimscript func vs lua func
+
         local cmdline = vim.fn.getcmdline()
 
         local stdin_text = ' env: nvim (neovim) command mode (return a valid command w/o the leading : ) \n question: ' ..
