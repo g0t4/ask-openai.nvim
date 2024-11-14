@@ -1,0 +1,23 @@
+here are some on_key events I logged in nvim, I am looking for advice about commands I should try to simplify keystrokes, when I am doing something the hard way 
+
+key==keytrans(before), after/before are args passed to on_key by nvim, after/before "mapping" per the docs
+
+only make suggestions based on the keys below, nothing else.
+
+can you suggest any improvements (note there may not be any to make):
+
+23:43:55 - mode n, key: d, before: d, after: d
+23:43:55 - mode n, key: w, before: w, after: w
+23:43:55 - mode n, key: i, before: i, after: i
+23:43:55 - mode i, key: , before: , after: ??h
+23:43:56 - mode i, key: f, before: f, after: f
+23:43:56 - mode i, key: o, before: o, after: o
+23:43:56 - mode i, key: o, before: o, after: o
+23:43:56 - mode i, key: t, before: t, after: t
+23:43:56 - mode i, key: h, before: h, after: h
+23:43:57 - mode i, key: e, before: e, after: e
+23:43:57 - mode i, key: b, before: b, after: b
+23:43:57 - mode i, key: a, before: a, after: a
+23:43:57 - mode i, key: r, before: r, after: r
+
+
