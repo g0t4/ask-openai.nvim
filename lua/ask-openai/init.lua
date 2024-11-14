@@ -1,7 +1,6 @@
 local M = {}
 
 local log_path = vim.fn.fnamemodify("ask.log", ":p")
-print(log_path)
 
 function AskClearLogs()
     local log_file = io.open(log_path, "w")
