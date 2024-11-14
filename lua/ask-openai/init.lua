@@ -43,7 +43,8 @@ function M.setup(opts)
     setup_on_the_fly_hints()
 end
 
-local log_path = "ask.log"
+local log_path = vim.fn.fnamemodify("ask.log", ":p")
+print(log_path)
 
 local function clear_log()
     local log_file = io.open(log_path, "w")
@@ -61,7 +62,8 @@ local function log_message(message)
     local log_file = io.open(log_path, "a")
 
     if log_file then
-        log_file:write(os.date("%Y-%m-%d %H:%M:%S") .. " - " .. message .. "\n")
+        log_file:write(os.date("%H:%M:%S") .. " - " .. message .. "\n")
+        -- log_file:write(message .. "\n")
         log_file:close()
     else
         vim.api.nvim_err_writeln("Failed to open log file: " .. log_path)
@@ -71,6 +73,29 @@ end
 -- Usage example
 log_message("This is a log message")
 
+function follow_ask_logs()
+    local function start_log_autoread()
+        local timer = vim.loop.new_timer()
+
+        timer:start(0, 2000, vim.schedule_wrap(function()
+            -- Check if the log file buffer is loaded
+            for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+                if vim.api.nvim_buf_is_loaded(buf) and vim.api.nvim_buf_get_name(buf) == log_path then
+                    -- Reload the buffer if the file changed outside Vim
+                    vim.api.nvim_command("checktime " .. buf)
+                end
+            end
+        end))
+    end
+
+    -- Call this function when opening the log file
+    vim.api.nvim_create_autocmd("BufEnter", {
+        pattern = log_path,
+        callback = start_log_autoread,
+    })
+end
+
+follow_ask_logs()
 
 function setup_on_the_fly_hints()
     if not require("ask-openai.config").user_opts.on_the_fly_hints then
@@ -92,7 +117,11 @@ function setup_on_the_fly_hints()
 
         local key = vim.fn.keytrans(key_before_mapping)
 
-        log_message("key: " .. key .. ", mode: " .. mode)
+        log_message("mode " ..
+            mode .. ", key: " .. key .. ", before: " .. key_before_mapping .. ", after: " .. key_after_mapping)
+        -- log_message("mode " .. mode .. ", key: " .. key)
+        -- TODO will need to optionally filter on some key maps, i.e. neoscroll uses a series of `gk`/`gj` to scroll page up/down, but can see ctrl+d/u etc right before that and ignore it
+
 
         -- last_keys = last_keys .. "\n" .. key
         last_keys = key .. "\n" .. last_keys
