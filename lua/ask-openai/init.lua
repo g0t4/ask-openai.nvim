@@ -7,7 +7,7 @@ function M.setup(opts)
 
     -- TODO modify this to use github copilot subscription/api using chat model and see how it performs vs openai gpt4o (FYI windows terminal chat w/ copilot was clearly inferior vs gpt4o but ... win term chat might have been using gpt3.5 or smth else, just FYI"
 
-    function trim_null_characters(input)
+    local function trim_null_characters(input)
         -- Replace null characters (\x00) with an empty string
         -- was getting ^@ at end of command output w/ system call (below)
         if input == nil then
@@ -16,7 +16,8 @@ function M.setup(opts)
         return input:gsub("%z", "")
     end
 
-    function ask_openai()
+    function AskOpenAILua()
+        -- leave name slightly different so no confusion about vimscript func vs lua func
         local cmdline = vim.fn.getcmdline()
 
         local stdin_text = ' env: nvim (neovim) command mode (return a valid command w/o the leading : ) \n question: ' ..
@@ -29,8 +30,8 @@ function M.setup(opts)
 
     vim.cmd [[
         function! AskOpenAI()
-            " just a wrapper so the CLI shows "AskOpenAI" instead of "luaeval('ask_openai()')"
-            return luaeval('ask_openai()')
+            " just a wrapper so the CLI shows "AskOpenAI" instead of "luaeval('AskOpenAILua()')"
+            return luaeval('AskOpenAILua()')
             " also, FYI, luaeval and the nature of a cmap modifying cmdline means there really is no way to present errors short of putting them into the command line, which is fine and how I do it in my CLI equivalents of this
             "   only issue w/ putting into cmdline is no UNDO AFAIK for going back to what you had typed... unlike how I can do that in fish shell and just ctrl+z to undo the error message, but error messages are gonna be pretty rare so NBD for now
         endfunction
@@ -40,13 +41,13 @@ function M.setup(opts)
     -- DO NOT SET silent=true, messes up putting result into cmdline
     vim.api.nvim_set_keymap('c', '<C-b>', '<C-\\>eAskOpenAI()<CR>', { noremap = true, })
 
-    setup_on_the_fly_hints()
+    SetupOnTheFlyHints()
 end
 
 local log_path = vim.fn.fnamemodify("ask.log", ":p")
 print(log_path)
 
-local function clear_log()
+function AskClearLogs()
     local log_file = io.open(log_path, "w")
 
     if log_file then
@@ -56,7 +57,7 @@ local function clear_log()
     end
 end
 
-clear_log()
+AskClearLogs()
 
 local function log_message(message)
     local log_file = io.open(log_path, "a")
@@ -70,25 +71,7 @@ local function log_message(message)
     end
 end
 
-function follow_ask_logs()
-    local function start_log_autoread()
-        local timer = vim.loop.new_timer()
-
-        timer:start(0, 2000, vim.schedule_wrap(function()
-            refresh_log_view()
-        end))
-    end
-
-    -- Call this function when opening the log file
-    vim.api.nvim_create_autocmd("BufEnter", {
-        pattern = log_path,
-        callback = start_log_autoread,
-    })
-end
-
--- follow_ask_logs()
-
-function refresh_log_view()
+local function refresh_log_view()
     -- Check if the log file buffer is loaded
     for _, buf in ipairs(vim.api.nvim_list_bufs()) do
         if vim.api.nvim_buf_is_loaded(buf) and vim.api.nvim_buf_get_name(buf) == log_path then
@@ -106,7 +89,7 @@ end
 
 local log_debounce_timer
 
-function log_debounced_action()
+local function log_debounced_action()
     -- if series of keystrokes pressed, wait until series is done  and then trigger log refresh
     if log_debounce_timer then
         log_debounce_timer:stop() -- Stop the previous timer if it's still running
@@ -117,7 +100,8 @@ function log_debounced_action()
     end, 300) -- ms
 end
 
-function setup_on_the_fly_hints()
+function SetupOnTheFlyHints()
+    -- PRN make this local?
     if not require("ask-openai.config").user_opts.on_the_fly_hints then
         return
         -- TODO make runtime TOGGLE
