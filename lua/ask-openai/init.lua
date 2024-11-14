@@ -70,9 +70,6 @@ local function log_message(message)
     end
 end
 
--- Usage example
-log_message("This is a log message")
-
 function follow_ask_logs()
     local function start_log_autoread()
         local timer = vim.loop.new_timer()
