@@ -1,19 +1,6 @@
 local curl = require('plenary.curl')
-local config = require("ask-openai.config")
 
 local M = {}
-
-local function log_response(context, model, response)
-    local file = io.open(config.get_log_path_absolute(), "a")
-    if file then
-        file:write("Context: " .. context .. "\n")
-        file:write("Model: " .. model .. "\n")
-        file:write("Response: " .. response .. "\n\n")
-        file:close()
-    else
-        print("Failed to write to log file.")
-    end
-end
 
 local function get_cmd_suggestion(passed_context)
     local system_message = [[
@@ -55,10 +42,7 @@ local function get_cmd_suggestion(passed_context)
 
     if response and response.status == 200 then
         local result = vim.json.decode(response.body)
-        local completion = result.choices[1].message.content
-
-        log_response(passed_context, model, completion)
-        return completion
+        return result.choices[1].message.content
     else
         -- FYI in luaeval, cannot have some side effects (modify buffer) so notify won't work directly but it can be scheduled to work
         -- vim.schedule(function()
