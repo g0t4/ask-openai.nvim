@@ -78,6 +78,8 @@ local function setup_hints()
         -- FYI:
         --   hardtime blocks arrows and so if I type <Up> it shows up in the next keystroke:
         --     mode n, key: <Up><Up><Up>a, before: ?ku?ku?kua, after: a
+        --     add this to prompt, or, map to a single key per on_key and then concat into one giant string so it doesn't matter?
+        --     in some cases, I might want to ignore if (keytrans is empty) and other cases replace keytrans?
 
         log_message("mode " ..
             mode .. ", key: " .. key .. ", before: " .. key_before_mapping .. ", after: " .. key_after_mapping)
