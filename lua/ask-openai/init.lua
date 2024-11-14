@@ -43,17 +43,15 @@ local function refresh_log_view()
     end
 end
 
-local ask_refresh_log_view
+local refresh_timer
 
-local function log_debounced_action()
+local function signal_refresh_log_view()
     -- if series of keystrokes pressed, wait until series is done  and then trigger log refresh
-    if ask_refresh_log_view then
-        ask_refresh_log_view:stop() -- Stop the previous timer if it's still running
+    if refresh_timer then
+        refresh_timer:stop() -- Stop the previous timer if it's still running
     end
 
-    ask_refresh_log_view = vim.defer_fn(function()
-        refresh_log_view()
-    end, 300) -- ms
+    refresh_timer = vim.defer_fn(refresh_log_view, 300) -- ms
 end
 
 local function setup_hints()
@@ -88,7 +86,7 @@ local function setup_hints()
         --  actually in ctrl+d/u case => keytrans doesn't return g/j, just before mapping shows it, so I can filter that
         --  if key_after is empty then filter it out, was not a typed key (i.e. ctrl+d/u)
 
-        log_debounced_action()
+        signal_refresh_log_view()
 
         -- last_keys = last_keys .. "\n" .. key
         last_keys = key .. "\n" .. last_keys
