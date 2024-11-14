@@ -2,6 +2,19 @@ local curl = require('plenary.curl')
 
 local M = {} -- TODO use module pattern
 
+function log_response(context, model, response)
+    local log_path = vim.fn.expand(require("ask-openai.config").user_opts.log_path)
+    local file = io.open(log_path, "a")
+    if file then
+        file:write("Context: " .. context .. "\n")
+        file:write("Model: " .. model .. "\n")
+        file:write("Response: " .. response .. "\n\n")
+        file:close()
+    else
+        print("Failed to write to log file.")
+    end
+end
+
 function get_api_key_from_keychain()
     local handle = io.popen('security find-generic-password -s openai -a ask -w')
     if handle then
@@ -67,18 +80,5 @@ function get_vim_command_suggestion(passed_context)
         -- FYI `:messages` will show this, if need to be obvious use notify
         print("Request failed:", response.status, response.body)
         return "Request failed, see :messages"
-    end
-end
-
-function log_response(context, model, response)
-    local log_path = vim.fn.expand(require("ask-openai.config").user_opts.log_path)
-    local file = io.open(log_path, "a")
-    if file then
-        file:write("Context: " .. context .. "\n")
-        file:write("Model: " .. model .. "\n")
-        file:write("Response: " .. response .. "\n\n")
-        file:close()
-    else
-        print("Failed to write to log file.")
     end
 end
