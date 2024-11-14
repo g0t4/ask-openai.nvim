@@ -15,7 +15,7 @@ local function log_response(context, model, response)
     end
 end
 
-function GetCommandSuggestion(passed_context)
+local function get_cmd_suggestion(passed_context)
     local system_message = [[
         You are a vim expert. The user (that you are talking to) has vim open in command mode.
         They have typed part of a command that they need help with.
@@ -90,7 +90,7 @@ function M.setup_cmd_suggestions()
         local stdin_text = ' env: nvim (neovim) command mode (return a valid command w/o the leading : ) \n question: ' ..
             cmdline
 
-        local result = GetCommandSuggestion(stdin_text)
+        local result = get_cmd_suggestion(stdin_text)
 
         return trim_null_characters(result)
     end
