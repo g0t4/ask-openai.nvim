@@ -125,6 +125,12 @@ function setup_on_the_fly_hints()
 
     vim.on_key(function(key_after_mapping, key_before_mapping)
         local mode = vim.fn.mode()
+        -- ignore if keystroke is in buffer for log view
+        if vim.api.nvim_get_current_buf() == vim.fn.bufnr(log_path) then
+            -- otherwise, things like g`" to restore cursor will repeatedly be logged and trigger log refresh in an infinite loop
+            return
+        end
+
 
         local key = vim.fn.keytrans(key_before_mapping)
 
