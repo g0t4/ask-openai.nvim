@@ -4,8 +4,7 @@ local config = require("ask-openai.config")
 local M = {}
 
 local function log_response(context, model, response)
-    local log_path = config.get_log_path_absolute()
-    local file = io.open(log_path, "a")
+    local file = io.open(config.get_log_path_absolute(), "a")
     if file then
         file:write("Context: " .. context .. "\n")
         file:write("Model: " .. model .. "\n")
