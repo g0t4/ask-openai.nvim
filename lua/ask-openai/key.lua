@@ -12,6 +12,8 @@ function GetOpenAIKey()
     end
 end
 
+-- TODO get copilot key and use it?
+
 M.GetOpenAIKey = GetOpenAIKey
 
 return M
