@@ -72,17 +72,16 @@ function GetCommandSuggestion(passed_context)
     end
 end
 
-function M.setup_cmd_suggestions()
-
-    local function trim_null_characters(input)
-        -- Replace null characters (\x00) with an empty string
-        -- was getting ^@ at end of command output w/ system call (below)
-        if input == nil then
-            return ""
-        end
-        return input:gsub("%z", "")
+local function trim_null_characters(input)
+    -- Replace null characters (\x00) with an empty string
+    -- was getting ^@ at end of command output w/ system call (below)
+    if input == nil then
+        return ""
     end
+    return input:gsub("%z", "")
+end
 
+function M.setup_cmd_suggestions()
     function AskOpenAILua()
         -- leave name slightly different so no confusion about vimscript func vs lua func
         local cmdline = vim.fn.getcmdline()
