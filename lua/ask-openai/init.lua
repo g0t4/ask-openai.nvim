@@ -74,8 +74,10 @@ local function setup_hints()
             return
         end
 
-
         local key = vim.fn.keytrans(key_before_mapping)
+        -- FYI:
+        --   hardtime blocks arrows and so if I type <Up> it shows up in the next keystroke:
+        --     mode n, key: <Up><Up><Up>a, before: ?ku?ku?kua, after: a
 
         log_message("mode " ..
             mode .. ", key: " .. key .. ", before: " .. key_before_mapping .. ", after: " .. key_after_mapping)
