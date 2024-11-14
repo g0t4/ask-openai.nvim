@@ -144,6 +144,8 @@ function setup_on_the_fly_hints()
             mode .. ", key: " .. key .. ", before: " .. key_before_mapping .. ", after: " .. key_after_mapping)
         -- log_message("mode " .. mode .. ", key: " .. key)
         -- TODO will need to optionally filter on some key maps, i.e. neoscroll uses a series of `gk`/`gj` to scroll page up/down, but can see ctrl+d/u etc right before that and ignore it
+        --  actually in ctrl+d/u case => keytrans doesn't return g/j, just before mapping shows it, so I can filter that
+        --  if key_after is empty then filter it out, was not a typed key (i.e. ctrl+d/u)
 
         log_debounced_action()
 
