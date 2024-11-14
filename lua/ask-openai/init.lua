@@ -19,8 +19,8 @@ local function log_message(message)
     local log_file = io.open(log_path, "a")
 
     if log_file then
+        -- time is useful to group keystrokes
         log_file:write(os.date("%H:%M:%S") .. " - " .. message .. "\n")
-        -- log_file:write(message .. "\n")
         log_file:close()
     else
         vim.api.nvim_err_writeln("Failed to open log file: " .. log_path)
@@ -36,9 +36,11 @@ local function refresh_log_view()
             -- scroll the log buffer to the bottom:
             --  w/o indirect keystrokes that muddle logs
             local win_id = vim.fn.bufwinid(buf)
-            local line_count = vim.api.nvim_buf_line_count(buf)
-            -- log_message("win_id: " .. win_id .. ", line_count: " .. line_count)
-            vim.api.nvim_win_set_cursor(win_id, { line_count, 0 })
+            if win_id ~= -1 and win_id ~= nil then
+                local line_count = vim.api.nvim_buf_line_count(buf)
+                -- log_message("win_id: " .. win_id .. ", line_count: " .. line_count)
+                vim.api.nvim_win_set_cursor(win_id, { line_count, 0 })
+            end
         end
     end
 end
