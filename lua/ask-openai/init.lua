@@ -43,15 +43,15 @@ local function refresh_log_view()
     end
 end
 
-local log_debounce_timer
+local ask_refresh_log_view
 
 local function log_debounced_action()
     -- if series of keystrokes pressed, wait until series is done  and then trigger log refresh
-    if log_debounce_timer then
-        log_debounce_timer:stop() -- Stop the previous timer if it's still running
+    if ask_refresh_log_view then
+        ask_refresh_log_view:stop() -- Stop the previous timer if it's still running
     end
 
-    log_debounce_timer = vim.defer_fn(function()
+    ask_refresh_log_view = vim.defer_fn(function()
         refresh_log_view()
     end, 300) -- ms
 end
