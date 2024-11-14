@@ -40,8 +40,37 @@ function M.setup(opts)
     -- DO NOT SET silent=true, messes up putting result into cmdline
     vim.api.nvim_set_keymap('c', '<C-b>', '<C-\\>eAskOpenAI()<CR>', { noremap = true, })
 
-    -- setup_on_the_fly_hints()
+    setup_on_the_fly_hints()
 end
+
+local log_path = "ask.log"
+
+local function clear_log()
+    local log_file = io.open(log_path, "w")
+
+    if log_file then
+        log_file:close()
+    else
+        vim.api.nvim_err_writeln("Failed to open log file: " .. log_path)
+    end
+end
+
+clear_log()
+
+local function log_message(message)
+    local log_file = io.open(log_path, "a")
+
+    if log_file then
+        log_file:write(os.date("%Y-%m-%d %H:%M:%S") .. " - " .. message .. "\n")
+        log_file:close()
+    else
+        vim.api.nvim_err_writeln("Failed to open log file: " .. log_path)
+    end
+end
+
+-- Usage example
+log_message("This is a log message")
+
 
 function setup_on_the_fly_hints()
     if not require("ask-openai.config").user_opts.on_the_fly_hints then
@@ -62,8 +91,8 @@ function setup_on_the_fly_hints()
         --
 
         local key = vim.fn.keytrans(key_before_mapping)
-	
-	-- ! TODO log messages to a file and have it open in a split window, so much to log I need a file
+
+        log_message("key: " .. key .. ", mode: " .. mode)
 
         -- last_keys = last_keys .. "\n" .. key
         last_keys = key .. "\n" .. last_keys
