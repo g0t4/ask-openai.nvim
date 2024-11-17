@@ -2,18 +2,6 @@ local curl = require('plenary.curl')
 
 local M = {} -- TODO use module pattern
 
-function get_api_key_from_keychain()
-    local handle = io.popen('security find-generic-password -s openai -a ask -w')
-    if handle then
-        local api_key = handle:read("*a"):gsub("%s+", "") -- remove any extra whitespace
-        handle:close()
-        return api_key
-    else
-        print("Failed to retrieve API key from Keychain.")
-        return nil
-    end
-end
-
 function get_vim_command_suggestion(passed_context)
     local system_message = [[
         You are a vim expert. The user (that you are talking to) has vim open in command mode.

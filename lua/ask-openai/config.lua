@@ -2,6 +2,7 @@ local M = {}
 
 local default_opts = {
     model = "gpt-4o",
+    -- TODO other options
 }
 
 function M.set_user_opts(opts)
