@@ -26,6 +26,7 @@ end
 
 --- @type Provider
 return {
+    is_auto_configured = is_auto_configured,
     get_bearer_token = get_bearer_token,
     get_chat_completions_url = get_chat_completions_url,
 }

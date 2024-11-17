@@ -133,8 +133,15 @@ local function get_chat_completions_url()
     -- FYI will be smth like: "api": "https://api.individual.githubcopilot.com"
 end
 
+local function is_auto_configured()
+    -- criteria? would like to just lookup token here but I have errors that need to be handled then
+    -- TODO also get bearer token? (change from error to nil?)
+    return get_oauth_token() ~= nil
+end
+
 --- @type Provider
 return {
+    is_auto_configured = is_auto_configured,
     get_chat_completions_url = get_chat_completions_url,
     get_bearer_token = get_bearer_token,
 }
