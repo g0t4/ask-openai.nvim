@@ -11,16 +11,16 @@ local M = {}
 
 ---@return "linux" | "darwin" | "windows"
 local function get_os_name()
-  local os_name = vim.uv.os_uname().sysname
-  if os_name == "Linux" then
-    return "linux"
-  elseif os_name == "Darwin" then
-    return "darwin"
-  elseif os_name == "Windows_NT" then
-    return "windows"
-  else
-    error("Unsupported operating system: " .. os_name)
-  end
+    local os_name = vim.uv.os_uname().sysname
+    if os_name == "Linux" then
+        return "linux"
+    elseif os_name == "Darwin" then
+        return "darwin"
+    elseif os_name == "Windows_NT" then
+        return "windows"
+    else
+        error("Unsupported operating system: " .. os_name)
+    end
 end
 
 ---@class OAuthToken
@@ -71,17 +71,56 @@ end
 ---@param str string
 ---@param opts? {suffix?: string, prefix?: string}
 local function trim(str, opts)
-  if not opts then return str end
-  local res = str
-  if opts.suffix then
-    res = str:sub(#str - #opts.suffix + 1) == opts.suffix and str:sub(1, #str - #opts.suffix) or str
-  end
-  if opts.prefix then res = str:sub(1, #opts.prefix) == opts.prefix and str:sub(#opts.prefix + 1) or str end
-  return res
+    if not opts then return str end
+    local res = str
+    if opts.suffix then
+        res = str:sub(#str - #opts.suffix + 1) == opts.suffix and str:sub(1, #str - #opts.suffix) or str
+    end
+    if opts.prefix then res = str:sub(1, #opts.prefix) == opts.prefix and str:sub(#opts.prefix + 1) or str end
+    return res
 end
 
 M.chat_auth_url = "https://api.github.com/copilot_internal/v2/token"
 M.chat_completion_url = function(base_url) return trim(base_url, { prefix = "/" }) .. "/chat/completions" end
 
+
+M.refresh_token = function()
+    if
+        not M.state
+        or not M.state.github_token
+        or (M.state.github_token.expires_at and M.state.github_token.expires_at < math.floor(os.time()))
+    then
+        local response = curl.get(M.chat_auth_url, {
+            headers = {
+                ["Authorization"] = "token " .. M.state.oauth_token,
+                ["Accept"] = "application/json",
+            },
+            timeout = 30000,  -- TODO configurable?
+            proxy = nil,      -- TODO configurable?
+            insecure = false, -- TODO configurable?
+        })
+
+        if response.status == 200 then
+            M.state.github_token = vim.json.decode(response.body)
+            -- no need to save to disk, vscode extension retrieves it repeatedly, so on startup is fine, it will expire at some point anyways!
+        else
+            error("Failed to get success response: " .. vim.inspect(response))
+        end
+    end
+end
+
+---@private
+---@class AvanteCopilotState
+---@field oauth_token string
+---@field github_token CopilotToken?
+M.state = nil
+
+M.setup = function()
+    M.state = {
+        oauth_token = M.get_oauth_token(),
+    }
+    M.refresh_token()
+    -- vim.schedule(function() M.refresh_token() end)
+end
 
 return M

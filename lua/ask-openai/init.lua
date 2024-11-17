@@ -5,7 +5,7 @@ function M.setup(opts)
 
     require("ask-openai.config").set_user_opts(opts)
 
-    print("oauth token", require("ask-openai.copilot").get_oauth_token())
+    require("ask-openai.copilot").setup()
 
     -- TODO modify this to use github copilot subscription/api using chat model and see how it performs vs openai gpt4o (FYI windows terminal chat w/ copilot was clearly inferior vs gpt4o but ... win term chat might have been using gpt3.5 or smth else, just FYI"
 
