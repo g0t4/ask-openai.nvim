@@ -93,18 +93,6 @@ local function get_oauth_token()
         .oauth_token
 end
 
----@param str string
----@param opts? {suffix?: string, prefix?: string}
-local function trim(str, opts)
-    if not opts then return str end
-    local res = str
-    if opts.suffix then
-        res = str:sub(#str - #opts.suffix + 1) == opts.suffix and str:sub(1, #str - #opts.suffix) or str
-    end
-    if opts.prefix then res = str:sub(1, #opts.prefix) == opts.prefix and str:sub(#opts.prefix + 1) or str end
-    return res
-end
-
 local chat_auth_url = "https://api.github.com/copilot_internal/v2/token"
 local function ensure_token_refreshed()
     -- consider caching in file if any issues with rate limiting on requests?
