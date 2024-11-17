@@ -23,7 +23,6 @@ end
 
 function M.setup(opts)
     require("ask-openai.config").set_user_opts(opts)
-    require("ask-openai.suggest")
 
     -- [e]valuate vimscript expression luaeval("...") which runs nested lua code
     -- DO NOT SET silent=true, messes up putting result into cmdline, also I wanna see print messages, IIUC that would be affected
