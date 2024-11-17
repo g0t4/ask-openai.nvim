@@ -81,7 +81,7 @@ local function trim(str, opts)
 end
 
 M.chat_auth_url = "https://api.github.com/copilot_internal/v2/token"
-M.refresh_token = function()
+M.ensure_token_refreshed = function()
     -- consider caching in file if any issues with rate limiting on requests?
     -- b/c the token is cached on the server too so I can't imagine it's a big deal to not cache it locally too
     -- until the token expires, it returns the same one when queried and as I said, vscode github.copilot extension frequently queries it
@@ -137,23 +137,15 @@ end
 M.token = nil
 
 M.get_bearer_token = function()
+    M.ensure_token_refreshed()
     return M.token.token
 end
 
-M.get_chat_completions_url = function(base_url)
-    -- TODO is this a good first place to do this instead of on setup?
-    M.refresh_token() -- won't do it unless it is needed (i.e. expired)
-
+M.get_chat_completions_url = function()
+    M.ensure_token_refreshed()
     -- FYI will be smth like: "api": "https://api.individual.githubcopilot.com"
     return M.token.endpoints.api .. "/chat/completions"
     -- FYI test with:     :Dump require("ask-openai.copilot").chat_completion_url()
-end
-
-M.setup = function()
-    -- FYI test this with:
-    -- :lua print(vim.inspect(require("ask-openai.copilot").token))
-    M.refresh_token()
-    -- vim.schedule(function() M.refresh_token() end)
 end
 
 return M
