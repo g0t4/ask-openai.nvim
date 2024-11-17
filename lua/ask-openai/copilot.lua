@@ -40,6 +40,10 @@ M.get_oauth_token = function()
         config_dir = vim.fn.expand("~/AppData/Local")
     end
 
+    -- actually copilot.vim uses both hosts.json and apps.json, whichever it finds first, in language-server.js (compiled/obfuscated, search for "hosts" and "apps" (include "" too) and you'll find the usage of either
+    -- ALSO IIRC this is in language-server.js bundled with vscode github.copilot extension:
+    --     GI="apps",fte="hosts",ute=class ute{constructor(t,r){this.ctx=t;this.persistenceManager=r}async getAuthRecord(t){if(t)return a
+    --   THAT SAID, I haven't seen vscode extension host use that language-server.js, it seems to use dist/extension.js alone, so not sure why the other is even there! code --inspect-extensions and you'll see what it loads
     --- hosts.json (copilot.lua), apps.json (copilot.vim)
     ---@type Path[]
     local paths = vim.iter({ "hosts.json", "apps.json" }):fold({}, function(acc, path)
