@@ -6,7 +6,7 @@ function M.setup(opts)
 
     -- TODO modify this to use github copilot subscription/api using chat model and see how it performs vs openai gpt4o (FYI windows terminal chat w/ copilot was clearly inferior vs gpt4o but ... win term chat might have been using gpt3.5 or smth else, just FYI"
 
-    function trim_null_characters(input)
+    local function trim_null_characters(input)
         -- Replace null characters (\x00) with an empty string
         -- was getting ^@ at end of command output w/ system call (below)
         if input == nil then
@@ -23,7 +23,6 @@ function M.setup(opts)
             cmdline
 
         local result = get_vim_command_suggestion(stdin_text)
-
         return trim_null_characters(result)
     end
 
