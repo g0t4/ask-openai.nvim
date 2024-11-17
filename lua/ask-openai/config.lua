@@ -7,13 +7,15 @@
 local default_options = {
 
     --- gpt-4o, gpt-4o-mini, etc
-    model = "gpt-4o",
+    -- model = "gpt-4o",
+    model = "llama3.2-vision:11b",
+    -- FYI curl localhost:11434/v1/models (ollama)
 
     --- TODO auto? (do this on first run, not on setup/startup)
     --- copilot, keychain
     -- provider = "keychain",
     -- provider = "copilot",
-    provider = "auto",
+    provider = "keyless",
 
     --- @class CopilotOptions
     --- @field timeout number
@@ -34,7 +36,7 @@ local default_options = {
     },
 
     verbose = true,
-
+    api_url = nil, -- leave nil for defaults (does not apply to copilot provider)
     -- FYI look at :messages after first ask to make sure it's using expected provider
 }
 
@@ -71,6 +73,9 @@ local function _get_provider()
     elseif options.provider == "keychain" then
         print_verbose("AskOpenAI: Using Keychain")
         return require("ask-openai.providers.keychain")
+    elseif options.provider == "keyless" then
+        print_verbose("AskOpenAI: Using Keyless")
+        return require("ask-openai.providers.keyless")
     elseif options.provider == "auto" then
         local copilot = require("ask-openai.providers.copilot")
         if copilot.is_auto_configured() then
