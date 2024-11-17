@@ -47,7 +47,7 @@ local function get_os_name()
     end
 end
 
----@return string
+---@return string|nil, string|nil
 local function get_oauth_token()
     local xdg_config = vim.fn.expand("$XDG_CONFIG_HOME")
     local os_name = get_os_name()
@@ -72,7 +72,7 @@ local function get_oauth_token()
         return acc
     end)
     if #paths == 0 then
-        error("You must setup copilot with either copilot.lua or copilot.vim", 2)
+        return nil, "You must setup copilot with either copilot.lua or copilot.vim first"
     end
 
     local yason = paths[1]
