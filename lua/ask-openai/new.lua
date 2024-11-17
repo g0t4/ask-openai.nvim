@@ -32,10 +32,9 @@ function get_vim_command_suggestion(passed_context)
     -- end
     -- local chat_url = "https://api.openai.com/v1/chat/completions"
 
-    local api_key = require("ask-openai.copilot").token.token
-    local chat_url = require("ask-openai.copilot").chat_completion_url()
-    print(chat_url)
-    print(api_key)
+    local copilot = require("ask-openai.copilot")
+    local bearer_token = copilot.get_bearer_token()
+    local chat_url = copilot.get_chat_completions_url()
 
     local model = require("ask-openai.config").user_opts.model
 
@@ -43,10 +42,10 @@ function get_vim_command_suggestion(passed_context)
         url = chat_url,
         headers = {
             ["Content-Type"] = "application/json",
-            ["Authorization"] = "Bearer " .. api_key,
+            ["Authorization"] = "Bearer " .. bearer_token,
             ["Copilot-Integration-Id"] = "vscode-chat",
             ["Editor-Version"] = ("Neovim/%s.%s.%s"):format(vim.version().major, vim.version().minor, vim.version()
-            .patch),
+                .patch),
             -- FYI watch messages for failures (i.e. when I didn't have Editor-Version set it choked)
         },
         body = vim.json.encode({

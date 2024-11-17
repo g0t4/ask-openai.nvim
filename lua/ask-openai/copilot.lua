@@ -136,7 +136,11 @@ end
 ---@field xcode_chat boolean
 M.token = nil
 
-M.chat_completion_url = function(base_url)
+M.get_bearer_token = function()
+    return M.token.token
+end
+
+M.get_chat_completions_url = function(base_url)
     -- TODO is this a good first place to do this instead of on setup?
     M.refresh_token() -- won't do it unless it is needed (i.e. expired)
 
