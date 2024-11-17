@@ -25,7 +25,8 @@ local function get_bearer_token()
 end
 
 local function is_auto_configured()
-    return get_api_key_from_keychain() ~= nil
+    local api_key = get_api_key_from_keychain()
+    return api_key ~= nil and api_key ~= ""
 end
 
 --- @type Provider
