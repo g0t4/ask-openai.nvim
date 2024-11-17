@@ -11,7 +11,8 @@ local default_opts = {
 
     --- TODO auto? (do this on first run, not on setup/startup)
     --- copilot, keychain
-    provider = "keychain",
+    -- provider = "keychain",
+    provider = "copilot",
     -- FYI look at :messages after first ask to make sure it's using expected provider
 }
 

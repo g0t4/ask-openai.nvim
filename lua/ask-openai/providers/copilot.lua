@@ -7,8 +7,32 @@
 local curl = require("plenary.curl")
 local Path = require("plenary.path")
 
---- @type Provider
-local M = {}
+---FYI type annotations work nicely with coc (completions) and hover docs (Shift+K)
+--- token from copilot_internal/v2/token
+---@private
+---@class AskOpenAICopilotToken
+---@field annotations_enabled boolean
+---@field chat_enabled boolean
+---@field chat_jetbrains_enabled boolean
+---@field code_quote_enabled boolean
+---@field codesearch boolean
+---@field copilotignore_enabled boolean
+---@field endpoints {api: string, ["origin-tracker"]: string, proxy: string, telemetry: string}
+---@field expires_at integer
+---@field individual boolean
+---@field nes_enabled boolean
+---@field prompt_8k boolean
+---@field public_suggestions string
+---@field refresh_in integer
+---@field sku string
+---@field snippy_load_test_enabled boolean
+---@field telemetry string
+---@field token string
+---@field tracking_id string
+---@field vsc_electron_fetcher boolean
+---@field xcode boolean
+---@field xcode_chat boolean
+local token = nil
 
 ---@return "linux" | "darwin" | "windows"
 local function get_os_name()
@@ -81,17 +105,17 @@ local function trim(str, opts)
     return res
 end
 
-M.chat_auth_url = "https://api.github.com/copilot_internal/v2/token"
-M.ensure_token_refreshed = function()
+local chat_auth_url = "https://api.github.com/copilot_internal/v2/token"
+local function ensure_token_refreshed()
     -- consider caching in file if any issues with rate limiting on requests?
     -- b/c the token is cached on the server too so I can't imagine it's a big deal to not cache it locally too
     -- until the token expires, it returns the same one when queried and as I said, vscode github.copilot extension frequently queries it
 
     if
-        not M.token
-        or (M.token.expires_at and M.token.expires_at < math.floor(os.time()))
+        not token
+        or (token.expires_at and token.expires_at < math.floor(os.time()))
     then
-        local response = curl.get(M.chat_auth_url, {
+        local response = curl.get(chat_auth_url, {
             headers = {
                 ["Authorization"] = "token " .. get_oauth_token(),
                 ["Accept"] = "application/json",
@@ -102,7 +126,7 @@ M.ensure_token_refreshed = function()
         })
 
         if response.status == 200 then
-            M.token = vim.json.decode(response.body)
+            token = vim.json.decode(response.body)
             -- no need to save to disk, vscode extension retrieves it repeatedly, so on startup is fine, it will expire at some point anyways!
         else
             error("Failed to get success response: " .. vim.inspect(response))
@@ -110,42 +134,19 @@ M.ensure_token_refreshed = function()
     end
 end
 
----FYI type annotations work nicely with coc (completions) and hover docs (Shift+K)
---- token from copilot_internal/v2/token
----@private
----@class AskOpenAICopilotToken
----@field annotations_enabled boolean
----@field chat_enabled boolean
----@field chat_jetbrains_enabled boolean
----@field code_quote_enabled boolean
----@field codesearch boolean
----@field copilotignore_enabled boolean
----@field endpoints {api: string, ["origin-tracker"]: string, proxy: string, telemetry: string}
----@field expires_at integer
----@field individual boolean
----@field nes_enabled boolean
----@field prompt_8k boolean
----@field public_suggestions string
----@field refresh_in integer
----@field sku string
----@field snippy_load_test_enabled boolean
----@field telemetry string
----@field token string
----@field tracking_id string
----@field vsc_electron_fetcher boolean
----@field xcode boolean
----@field xcode_chat boolean
-M.token = nil
-
-M.get_bearer_token = function()
-    M.ensure_token_refreshed()
-    return M.token.token
+local function get_bearer_token()
+    ensure_token_refreshed()
+    return token.token
 end
 
-M.get_chat_completions_url = function()
-    M.ensure_token_refreshed()
+local function get_chat_completions_url()
+    ensure_token_refreshed()
     -- FYI will be smth like: "api": "https://api.individual.githubcopilot.com"
-    return M.token.endpoints.api .. "/chat/completions"
+    return token.endpoints.api .. "/chat/completions"
 end
 
-return { M.get_chat_completions_url, M.get_bearer_token }
+--- @type Provider
+return {
+    get_chat_completions_url = get_chat_completions_url,
+    get_bearer_token = get_bearer_token,
+}
