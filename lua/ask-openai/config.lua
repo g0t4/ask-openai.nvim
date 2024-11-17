@@ -11,7 +11,6 @@ local default_options = {
     -- model = "llama3.2-vision:11b",
     -- FYI curl localhost:11434/v1/models (ollama)
 
-    --- TODO auto? (do this on first run, not on setup/startup)
     --- copilot, keychain
     -- provider = "auto",
     -- provider = "keychain",
