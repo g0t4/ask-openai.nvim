@@ -48,6 +48,7 @@ function get_vim_command_suggestion(passed_context)
         return result.choices[1].message.content
     else
         print("Request failed:", response.status, response.body)
-        return 'messages " request failed, run this to see why'
+        " prepend : to make it extra obvious (b/c cmdline already has a : so this doubles it up, still works just fine)
+        return ':messages " request failed, run this to see why'
     end
 end
