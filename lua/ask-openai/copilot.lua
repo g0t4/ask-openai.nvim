@@ -28,7 +28,7 @@ end
 ---@field oauth_token string
 ---
 ---@return string
-M.get_oauth_token = function()
+local function get_oauth_token()
     local xdg_config = vim.fn.expand("$XDG_CONFIG_HOME")
     local os_name = get_os_name()
     ---@type string
@@ -96,7 +96,7 @@ M.refresh_token = function()
     then
         local response = curl.get(M.chat_auth_url, {
             headers = {
-                ["Authorization"] = "token " .. M.state.oauth_token,
+                ["Authorization"] = "token " .. get_oauth_token(),
                 ["Accept"] = "application/json",
             },
             timeout = 30000,  -- TODO configurable?
@@ -105,7 +105,9 @@ M.refresh_token = function()
         })
 
         if response.status == 200 then
-            M.state.github_token = vim.json.decode(response.body)
+            M.state = {
+                github_token = vim.json.decode(response.body),
+            }
             -- no need to save to disk, vscode extension retrieves it repeatedly, so on startup is fine, it will expire at some point anyways!
         else
             error("Failed to get success response: " .. vim.inspect(response))
@@ -114,15 +116,13 @@ M.refresh_token = function()
 end
 
 ---@private
----@class AvanteCopilotState
----@field oauth_token string
+---@class AskOpenAICopilotState
 ---@field github_token CopilotToken?
 M.state = nil
 
 M.setup = function()
-    M.state = {
-        oauth_token = M.get_oauth_token(),
-    }
+    -- FYI test this with:
+    -- :lua print(vim.inspect(require("ask-openai.copilot").state))
     M.refresh_token()
     -- vim.schedule(function() M.refresh_token() end)
 end
