@@ -1,3 +1,5 @@
+--- @module ask-openai.providers.keychain
+--- @type Provider
 local M = {}
 
 M.get_api_key_from_keychain = function()

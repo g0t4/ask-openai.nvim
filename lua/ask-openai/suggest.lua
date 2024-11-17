@@ -14,7 +14,8 @@ function get_vim_command_suggestion(passed_context)
         For example, if the user asks how to delete a line in normal mode, you could answer `:normal dd`.
     ]]
 
-    local copilot = require("ask-openai.providers.copilot")
+    local config = require("ask-openai.config")
+    local copilot = config.get_provider()
     local bearer_token = copilot.get_bearer_token()
     local chat_url = copilot.get_chat_completions_url()
 
