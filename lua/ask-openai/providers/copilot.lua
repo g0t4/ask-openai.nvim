@@ -97,27 +97,26 @@ local function ensure_token_refreshed()
     -- consider caching in file if any issues with rate limiting on requests?
     -- b/c the token is cached on the server too so I can't imagine it's a big deal to not cache it locally too
     -- until the token expires, it returns the same one when queried and as I said, vscode github.copilot extension frequently queries it
+    if token and token.expires_at
+        and math.floor(os.time()) < token.expires_at then
+        return
+    end
 
-    if
-        not token
-        or (token.expires_at and token.expires_at < math.floor(os.time()))
-    then
-        local response = curl.get(chat_auth_url, {
-            headers = {
-                ["Authorization"] = "token " .. get_oauth_token(),
-                ["Accept"] = "application/json",
-            },
-            timeout = 30000,  -- TODO configurable?
-            proxy = nil,      -- TODO configurable?
-            insecure = false, -- TODO configurable?
-        })
+    local response = curl.get(chat_auth_url, {
+        headers = {
+            ["Authorization"] = "token " .. get_oauth_token(),
+            ["Accept"] = "application/json",
+        },
+        timeout = 30000,      -- TODO configurable?
+        proxy = nil,          -- TODO configurable?
+        insecure = false,     -- TODO configurable?
+    })
 
-        if response.status == 200 then
-            token = vim.json.decode(response.body)
-            -- no need to save to disk, vscode extension retrieves it repeatedly, so on startup is fine, it will expire at some point anyways!
-        else
-            error("Failed to get success response: " .. vim.inspect(response))
-        end
+    if response.status == 200 then
+        token = vim.json.decode(response.body)
+        -- no need to save to disk, vscode extension retrieves it repeatedly, so on startup is fine, it will expire at some point anyways!
+    else
+        error("Failed to get success response: " .. vim.inspect(response))
     end
 end
 
