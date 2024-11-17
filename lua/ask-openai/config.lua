@@ -57,6 +57,7 @@ local function _get_provider()
     elseif M.user_opts.provider == "auto" then
         local copilot = require("ask-openai.providers.copilot")
         if copilot.is_auto_configured() then
+            -- FYI I like showing this on first ask, it shows in cmdline until response (cmdline) and only first time, it helps people confirm which is used too!
             print("AskOpenAI: Auto Using Copilot")
             return copilot
         end
