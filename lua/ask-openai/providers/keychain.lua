@@ -20,11 +20,14 @@ local function get_chat_completions_url()
     return "https://api.openai.com/v1/chat/completions"
 end
 
+local api_key_cached = nil
 local function get_bearer_token()
-    -- TODO cache after first run, how long does it take to read each time? honestly it seems faster than using gh copilot w/o caching
-    local api_key = get_api_key_from_keychain()
-    if api_key then
-        return api_key
+    if api_key_cached == nil then
+        api_key_cached = get_api_key_from_keychain()
+    end
+
+    if api_key_cached then
+        return api_key_cached
     else
         error("Failed to retrieve API key from Keychain.")
     end
