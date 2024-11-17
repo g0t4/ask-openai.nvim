@@ -145,7 +145,7 @@ M.get_chat_completions_url = function()
     M.ensure_token_refreshed()
     -- FYI will be smth like: "api": "https://api.individual.githubcopilot.com"
     return M.token.endpoints.api .. "/chat/completions"
-    -- FYI test with:     :Dump require("ask-openai.copilot").chat_completion_url()
+    -- FYI test with:     :Dump require("ask-openai.providers.copilot").get_chat_completions_url()
 end
 
 return M

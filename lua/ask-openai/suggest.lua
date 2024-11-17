@@ -20,7 +20,7 @@ function get_vim_command_suggestion(passed_context)
     -- end
     -- local chat_url = "https://api.openai.com/v1/chat/completions"
 
-    local copilot = require("ask-openai.copilot")
+    local copilot = require("ask-openai.providers.copilot")
     local bearer_token = copilot.get_bearer_token()
     local chat_url = copilot.get_chat_completions_url()
 
