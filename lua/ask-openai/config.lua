@@ -27,10 +27,8 @@ end
 --- @field get_chat_completions_url fun(): string
 --- @field get_bearer_token fun(): string
 
---- @return Provider
-function M.get_provider()
-    -- TODO cache lookup so no penality on every request, esp for auto
 
+local function _get_provider()
     if M.user_opts.provider == "copilot" then
         return require("ask-openai.providers.copilot")
     elseif M.user_opts.provider == "keychain" then
@@ -48,6 +46,12 @@ function M.get_provider()
     else
         error("AskOpenAI: Invalid provider")
     end
+end
+
+--- @return Provider
+function M.get_provider()
+    -- TODO cache lookup so no penality on every request, esp for auto
+    return _get_provider()
 end
 
 return M
