@@ -57,15 +57,12 @@ function get_vim_command_suggestion(passed_context)
             max_tokens = 200,
             n = 1
         }),
-        synchronous = true -- might be fun to try to make this stream! not a huge value though for streaming a short cmdline but would teach me lua async 
+        synchronous = true -- might be fun to try to make this stream! not a huge value though for streaming a short cmdline but would teach me lua async
     })
 
     if response and response.status == 200 then
         local result = vim.json.decode(response.body)
-        local completion = result.choices[1].message.content
-
-        log_response(passed_context, model, completion)
-        return completion
+        return result.choices[1].message.content
     else
         -- FYI in luaeval, cannot have some side effects (modify buffer) so notify won't work directly but it can be scheduled to work
         -- vim.schedule(function()
@@ -76,18 +73,5 @@ function get_vim_command_suggestion(passed_context)
         -- FYI `:messages` will show this, if need to be obvious use notify
         print("Request failed:", response.status, response.body)
         return "Request failed, see :messages"
-    end
-end
-
-function log_response(context, model, response)
-    local log_path = vim.fn.expand(require("ask-openai.config").user_opts.log_path)
-    local file = io.open(log_path, "a")
-    if file then
-        file:write("Context: " .. context .. "\n")
-        file:write("Model: " .. model .. "\n")
-        file:write("Response: " .. response .. "\n\n")
-        file:close()
-    else
-        print("Failed to write to log file.")
     end
 end
