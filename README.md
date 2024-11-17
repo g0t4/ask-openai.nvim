@@ -38,14 +38,15 @@ Using lazy.nvim:
 {
     "g0t4/ask-openai.nvim",
     opts = {
-        provider = "auto",
-        verbose = true,
+        provider = "copilot", -- or, "auto", "keychain" (see config.lua for details)
+        -- verbose = true,
     },
     config = function()
         -- this sets up the keybinding for <Ctrl-b>:
         require("ask-openai").setup()
     end,
     dependencies = {
+        -- FYI you do not need github/copilot.vim to load before ask-openai, just need to authenticate (one time) w/ copilot.vim/lua before using the copilot provider here
         "nvim-lua/plenary.nvim",
     },
 }
