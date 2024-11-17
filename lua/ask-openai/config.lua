@@ -12,7 +12,8 @@ local default_opts = {
     --- TODO auto? (do this on first run, not on setup/startup)
     --- copilot, keychain
     -- provider = "keychain",
-    provider = "copilot",
+    -- provider = "copilot",
+    provider = "auto",
     -- FYI look at :messages after first ask to make sure it's using expected provider
 }
 
@@ -37,10 +38,12 @@ local function _get_provider()
     elseif M.user_opts.provider == "auto" then
         local copilot = require("ask-openai.providers.copilot")
         if copilot.is_auto_configured() then
+            print("AskOpenAI: Auto Using Copilot")
             return copilot
         end
         local keychain = require("ask-openai.providers.keychain")
         if keychain.is_auto_configured() then
+            print("AskOpenAI: Auto Using Keychain")
             return keychain
         end
         error("AskOpenAI: No auto provider available")
