@@ -1,7 +1,11 @@
 --- @return string|nil - nil if not set in keychain, else the keychain value
+local config = require("ask-openai.config")
+
 local function get_api_key_from_keychain()
-    -- TODO configurable keychain service/account name?
-    local handle = io.popen('security find-generic-password -s openai -a ask -w')
+    local service = config.user_opts.keychain.service
+    local account = config.user_opts.keychain.account
+
+    local handle = io.popen('security find-generic-password -s ' .. service .. ' -a ' .. account .. ' -w')
     if handle then
         local api_key = handle:read("*a"):gsub("%s+", "") -- remove any extra whitespace
         handle:close()
@@ -16,9 +20,8 @@ local function get_chat_completions_url()
     return "https://api.openai.com/v1/chat/completions"
 end
 
--- M.get_bearer_token = function()
 local function get_bearer_token()
-    -- return get_api_key_from_keychain()
+    -- TODO cache after first run
     local api_key = get_api_key_from_keychain()
     if api_key then
         return api_key

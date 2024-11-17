@@ -26,6 +26,12 @@ local default_opts = {
         insecure = false,
     },
 
+    keychain = {
+        service = "openai",
+        account = "ask",
+    },
+
+
 
     -- FYI look at :messages after first ask to make sure it's using expected provider
 }
