@@ -26,18 +26,28 @@ function get_vim_command_suggestion(passed_context)
         For example, if the user asks how to delete a line in normal mode, you could answer `:normal dd`.
     ]]
 
-    local api_key = get_api_key_from_keychain()
-    if not api_key then
-        return "API key not set, please check keychain" -- shows in cmdline is fine
-    end
+    -- local api_key = get_api_key_from_keychain()
+    -- if not api_key then
+    --     return "API key not set, please check keychain" -- shows in cmdline is fine
+    -- end
+    -- local chat_url = "https://api.openai.com/v1/chat/completions"
+
+    local api_key = require("ask-openai.copilot").token.token
+    local chat_url = require("ask-openai.copilot").chat_completion_url()
+    print(chat_url)
+    print(api_key)
 
     local model = require("ask-openai.config").user_opts.model
 
     local response = curl.post({
-        url = "https://api.openai.com/v1/chat/completions",
+        url = chat_url,
         headers = {
             ["Content-Type"] = "application/json",
-            ["Authorization"] = "Bearer " .. api_key
+            ["Authorization"] = "Bearer " .. api_key,
+            ["Copilot-Integration-Id"] = "vscode-chat",
+            ["Editor-Version"] = ("Neovim/%s.%s.%s"):format(vim.version().major, vim.version().minor, vim.version()
+            .patch),
+            -- FYI watch messages for failures (i.e. when I didn't have Editor-Version set it choked)
         },
         body = vim.json.encode({
             model = model,
