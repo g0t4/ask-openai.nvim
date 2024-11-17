@@ -93,13 +93,14 @@ local function get_oauth_token()
 end
 
 local chat_auth_url = "https://api.github.com/copilot_internal/v2/token"
+---@return AskOpenAICopilotToken
 local function ensure_token_refreshed()
     -- consider caching in file if any issues with rate limiting on requests?
     -- b/c the token is cached on the server too so I can't imagine it's a big deal to not cache it locally too
     -- until the token expires, it returns the same one when queried and as I said, vscode github.copilot extension frequently queries it
     if token and token.expires_at
         and math.floor(os.time()) < token.expires_at then
-        return
+        return token
     end
 
     local response = curl.get(chat_auth_url, {
@@ -107,28 +108,29 @@ local function ensure_token_refreshed()
             ["Authorization"] = "token " .. get_oauth_token(),
             ["Accept"] = "application/json",
         },
-        timeout = 30000,      -- TODO configurable?
-        proxy = nil,          -- TODO configurable?
-        insecure = false,     -- TODO configurable?
+        timeout = 30000,  -- TODO configurable?
+        proxy = nil,      -- TODO configurable?
+        insecure = false, -- TODO configurable?
     })
 
     if response.status == 200 then
         token = vim.json.decode(response.body)
+        return token
         -- no need to save to disk, vscode extension retrieves it repeatedly, so on startup is fine, it will expire at some point anyways!
     else
         error("Failed to get success response: " .. vim.inspect(response))
     end
 end
 
+---@return string
 local function get_bearer_token()
-    ensure_token_refreshed()
-    return token.token
+    return ensure_token_refreshed().token
 end
 
+---@return string
 local function get_chat_completions_url()
-    ensure_token_refreshed()
+    return ensure_token_refreshed().endpoints.api .. "/chat/completions"
     -- FYI will be smth like: "api": "https://api.individual.githubcopilot.com"
-    return token.endpoints.api .. "/chat/completions"
 end
 
 --- @type Provider
