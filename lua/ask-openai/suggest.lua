@@ -1,8 +1,7 @@
 local curl = require('plenary.curl')
 
-local M = {} -- TODO use module pattern
-
-function get_vim_command_suggestion(passed_context)
+--- @return string
+local function get_vim_command_suggestion(passed_context)
     local system_message = [[
         You are a vim expert. The user (that you are talking to) has vim open in command mode.
         They have typed part of a command that they need help with.
@@ -50,5 +49,10 @@ function get_vim_command_suggestion(passed_context)
         print("Request failed:", response.status, response.body)
         -- prepend : to make it extra obvious (b/c cmdline already has a : so this doubles it up, still works just fine)
         return ':messages " request failed, run this to see why'
+        -- PRN string|nil nil|string ? so we let the error message be "throw higher up stack" (not essential)
     end
 end
+
+return {
+    get_vim_command_suggestion = get_vim_command_suggestion
+}
