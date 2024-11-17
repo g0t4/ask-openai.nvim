@@ -3,7 +3,6 @@
 --  => https://github.com/zbirenbaum/copilot.lua/blob/master/lua/copilot/auth.lua config file
 --  => https://github.com/zed-industries/zed/blob/ad43bbbf5eda59eba65309735472e0be58b4f7dd/crates/copilot/src/copilot_chat.rs#L272 for authorization
 
--- TODO How do I specify plenary as a dep?
 local curl = require("plenary.curl")
 local Path = require("plenary.path")
 
