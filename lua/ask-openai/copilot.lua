@@ -81,9 +81,6 @@ local function trim(str, opts)
 end
 
 M.chat_auth_url = "https://api.github.com/copilot_internal/v2/token"
-M.chat_completion_url = function(base_url) return trim(base_url, { prefix = "/" }) .. "/chat/completions" end
-
-
 M.refresh_token = function()
     -- consider caching in file if any issues with rate limiting on requests?
     -- b/c the token is cached on the server too so I can't imagine it's a big deal to not cache it locally too
@@ -138,6 +135,16 @@ end
 ---@field xcode boolean
 ---@field xcode_chat boolean
 M.token = nil
+
+M.chat_completion_url = function(base_url)
+    -- TODO is this a good first place to do this instead of on setup?
+    M.refresh_token() -- won't do it unless it is needed (i.e. expired)
+
+    -- FYI will be smth like: "api": "https://api.individual.githubcopilot.com"
+    return M.token.endpoints.api .. "/chat/completions"
+    -- FYI test with:     :Dump require("ask-openai.copilot").chat_completion_url()
+end
+
 M.setup = function()
     -- FYI test this with:
     -- :lua print(vim.inspect(require("ask-openai.copilot").token))
