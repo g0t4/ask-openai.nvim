@@ -1,5 +1,3 @@
-local M = {}
-
 local function trim_null_characters(input)
     -- Replace null characters (\x00) with an empty string
     -- was getting ^@ at end of command output w/ system call (below)
@@ -9,7 +7,7 @@ local function trim_null_characters(input)
     return input:gsub("%z", "")
 end
 
-M.ask_openai = function()
+local function ask_openai()
     local cmdline = vim.fn.getcmdline()
     print("asking...") -- overwrites showing luaeval("...") in cmdline
 
@@ -21,7 +19,7 @@ M.ask_openai = function()
     return trim_null_characters(result)
 end
 
-function M.setup(opts)
+local function setup(opts)
     -- MAYBE remove setup and let it be implicit? that said I like only wirting up the key if someone calls this
     require("ask-openai.config").set_user_opts(opts) -- MAYBE I can move this out to elsewhere, isn't there a config method for this?
 
@@ -32,4 +30,7 @@ function M.setup(opts)
         { noremap = true, })
 end
 
-return M
+return {
+    setup = setup,
+    ask_openai = ask_openai,
+}
