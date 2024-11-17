@@ -28,6 +28,7 @@ end
 --- @field get_bearer_token fun(): string
 
 
+--- @return Provider
 local function _get_provider()
     if M.user_opts.provider == "copilot" then
         return require("ask-openai.providers.copilot")
@@ -48,10 +49,15 @@ local function _get_provider()
     end
 end
 
+--- @type Provider
+local provider = nil
+
 --- @return Provider
 function M.get_provider()
-    -- TODO cache lookup so no penality on every request, esp for auto
-    return _get_provider()
+    if provider == nil then
+        provider = _get_provider()
+    end
+    return provider
 end
 
 return M
