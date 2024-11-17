@@ -38,6 +38,10 @@ Using lazy.nvim:
 {
     "g0t4/ask-openai.nvim",
     opts = {
+        -- providers are used to access OpenAI's API
+        -- "copilot" uses GitHub Copilot's API w/ your existing account
+        -- "keychain" (macOS only) looks up the API Token with security command (keychains)
+        -- WIP - password less (i.e. ollama)
         provider = "copilot", -- or, "auto", "keychain" (see config.lua for details)
         -- verbose = true,
     },
@@ -56,3 +60,5 @@ Using lazy.nvim:
 
 - add help docs (scaffold off of lua type annotations?)
 - add `checkhealth` support
+- TODO ADD ollama and other opeani complient (no auth token needed) provider
+- TODO MAKE keychain provider configuable on URL, actually just make URL configurable regardless of provider?
