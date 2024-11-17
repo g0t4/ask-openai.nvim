@@ -14,8 +14,18 @@ New to using neovim? Need to learn the ropes a bit better? Use this as a crutch 
 :shut it down, now...  I don't care if I lose my work, I'm done with this POS<Ctrl-b>
 :qa
 
+:what is the current filetype?<Ctrl-b>
+:echo &filetype
+
+:how do I wrap text
+:help textwidth
+
 :what key in normal mode copies 2 lines<Ctrl-b>
 :normal yy
+
+:test
+:echo "hello world"
+
 ```
 
 Let me know if there are other ways you'd like to ask for help, beyond the command line. And no, I'm not talking about vscode.
