@@ -14,12 +14,6 @@ function get_vim_command_suggestion(passed_context)
         For example, if the user asks how to delete a line in normal mode, you could answer `:normal dd`.
     ]]
 
-    -- local api_key = get_api_key_from_keychain()
-    -- if not api_key then
-    --     return "API key not set, please check keychain" -- shows in cmdline is fine
-    -- end
-    -- local chat_url = "https://api.openai.com/v1/chat/completions"
-
     local copilot = require("ask-openai.providers.copilot")
     local bearer_token = copilot.get_bearer_token()
     local chat_url = copilot.get_chat_completions_url()
