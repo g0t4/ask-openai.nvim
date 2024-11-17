@@ -85,6 +85,10 @@ M.chat_completion_url = function(base_url) return trim(base_url, { prefix = "/" 
 
 
 M.refresh_token = function()
+    -- consider caching in file if any issues with rate limiting on requests?
+    -- b/c the token is cached on the server too so I can't imagine it's a big deal to not cache it locally too
+    -- until the token expires, it returns the same one when queried and as I said, vscode github.copilot extension frequently queries it
+
     if
         not M.state
         or not M.state.github_token
