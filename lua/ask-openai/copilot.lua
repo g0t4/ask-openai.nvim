@@ -90,9 +90,8 @@ M.refresh_token = function()
     -- until the token expires, it returns the same one when queried and as I said, vscode github.copilot extension frequently queries it
 
     if
-        not M.state
-        or not M.state.github_token
-        or (M.state.github_token.expires_at and M.state.github_token.expires_at < math.floor(os.time()))
+        not M.token
+        or (M.token.expires_at and M.token.expires_at < math.floor(os.time()))
     then
         local response = curl.get(M.chat_auth_url, {
             headers = {
@@ -105,9 +104,7 @@ M.refresh_token = function()
         })
 
         if response.status == 200 then
-            M.state = {
-                github_token = vim.json.decode(response.body),
-            }
+            M.token = vim.json.decode(response.body)
             -- no need to save to disk, vscode extension retrieves it repeatedly, so on startup is fine, it will expire at some point anyways!
         else
             error("Failed to get success response: " .. vim.inspect(response))
@@ -115,11 +112,8 @@ M.refresh_token = function()
     end
 end
 
----@private
----@class AskOpenAICopilotState
----@field github_token CopilotToken?
-M.state = nil
-
+---FYI type annotations work nicely with coc (completions) and hover docs (Shift+K)
+--- token from copilot_internal/v2/token
 ---@private
 ---@class AskOpenAICopilotToken
 ---@field annotations_enabled boolean
@@ -143,14 +137,10 @@ M.state = nil
 ---@field vsc_electron_fetcher boolean
 ---@field xcode boolean
 ---@field xcode_chat boolean
-M.state.github_token = nil
-M.get_copilot_token = function()
-    -- TODO what to call this?
-    return M.state.github_token
-end
+M.token = nil
 M.setup = function()
     -- FYI test this with:
-    -- :lua print(vim.inspect(require("ask-openai.copilot").state))
+    -- :lua print(vim.inspect(require("ask-openai.copilot").token))
     M.refresh_token()
     -- vim.schedule(function() M.refresh_token() end)
 end
