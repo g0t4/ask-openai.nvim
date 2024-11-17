@@ -17,6 +17,7 @@ function M.setup(opts)
 
     function ask_openai()
         local cmdline = vim.fn.getcmdline()
+        print("asking...") -- overwrites AskOpenAI() in cmdline (I kinda like showing AskOpenAI() though so people know what is bound to that key?
 
         local stdin_text = ' env: nvim (neovim) command mode (return a valid command w/o the leading : ) \n question: ' ..
             cmdline
@@ -29,6 +30,7 @@ function M.setup(opts)
     vim.cmd [[
         function! AskOpenAI()
             " just a wrapper so the CLI shows "AskOpenAI" instead of "luaeval('ask_openai()')"
+            "    wait... I can use print() in lua to show a diff message after this! it will show last line printed
             return luaeval('ask_openai()')
             " also, FYI, luaeval and the nature of a cmap modifying cmdline means there really is no way to present errors short of putting them into the command line, which is fine and how I do it in my CLI equivalents of this
             "   only issue w/ putting into cmdline is no UNDO AFAIK for going back to what you had typed... unlike how I can do that in fish shell and just ctrl+z to undo the error message, but error messages are gonna be pretty rare so NBD for now
