@@ -9,7 +9,7 @@ local Path = require("plenary.path")
 ---FYI type annotations work nicely with coc (completions) and hover docs (Shift+K)
 --- token from copilot_internal/v2/token
 ---@private
----@class AskOpenAICopilotToken
+---@class AskOpenAICopilotInternalConfig
 ---@field annotations_enabled boolean
 ---@field chat_enabled boolean
 ---@field chat_jetbrains_enabled boolean
@@ -31,7 +31,7 @@ local Path = require("plenary.path")
 ---@field vsc_electron_fetcher boolean
 ---@field xcode boolean
 ---@field xcode_chat boolean
-local token = nil
+local internal_config = nil
 
 ---@return "linux" | "darwin" | "windows"
 local function get_os_name()
@@ -92,17 +92,17 @@ local function get_oauth_token()
         .oauth_token
 end
 
-local chat_auth_url = "https://api.github.com/copilot_internal/v2/token"
----@return AskOpenAICopilotToken
-local function ensure_token_refreshed()
+---@return AskOpenAICopilotInternalConfig
+local function get_copilot_internal_config()
     -- consider caching in file if any issues with rate limiting on requests?
     -- b/c the token is cached on the server too so I can't imagine it's a big deal to not cache it locally too
     -- until the token expires, it returns the same one when queried and as I said, vscode github.copilot extension frequently queries it
-    if token and token.expires_at
-        and math.floor(os.time()) < token.expires_at then
-        return token
+    if internal_config and internal_config.expires_at
+        and math.floor(os.time()) < internal_config.expires_at then
+        return internal_config
     end
 
+    local chat_auth_url = "https://api.github.com/copilot_internal/v2/token"
     local response = curl.get(chat_auth_url, {
         headers = {
             ["Authorization"] = "token " .. get_oauth_token(),
@@ -114,8 +114,8 @@ local function ensure_token_refreshed()
     })
 
     if response.status == 200 then
-        token = vim.json.decode(response.body)
-        return token
+        internal_config = vim.json.decode(response.body)
+        return internal_config
         -- no need to save to disk, vscode extension retrieves it repeatedly, so on startup is fine, it will expire at some point anyways!
     else
         error("Failed to get success response: " .. vim.inspect(response))
@@ -124,12 +124,12 @@ end
 
 ---@return string
 local function get_bearer_token()
-    return ensure_token_refreshed().token
+    return get_copilot_internal_config().token
 end
 
 ---@return string
 local function get_chat_completions_url()
-    return ensure_token_refreshed().endpoints.api .. "/chat/completions"
+    return get_copilot_internal_config().endpoints.api .. "/chat/completions"
     -- FYI will be smth like: "api": "https://api.individual.githubcopilot.com"
 end
 
