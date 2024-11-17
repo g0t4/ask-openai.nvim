@@ -9,9 +9,7 @@ M.get_api_key_from_keychain = function()
         handle:close()
         return api_key
     else
-        -- TODO try error here?
-        print("Failed to retrieve API key from Keychain.")
-        return nil
+        error("Failed to retrieve API key from Keychain.")
     end
 end
 
