@@ -1,4 +1,10 @@
+local function is_auto_configured()
+    -- TODO discoverable function for auto provider
+    return false
+end
+
 local function get_api_key_from_keychain()
+    -- TODO configurable keychain service/account name?
     local handle = io.popen('security find-generic-password -s openai -a ask -w')
     if handle then
         local api_key = handle:read("*a"):gsub("%s+", "") -- remove any extra whitespace

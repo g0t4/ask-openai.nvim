@@ -95,31 +95,30 @@ end
 
 ---@return AskOpenAICopilotInternalConfig
 local function get_copilot_internal_config()
-    -- consider caching in file if any issues with rate limiting on requests?
-    -- b/c the token is cached on the server too so I can't imagine it's a big deal to not cache it locally too
+    -- no need to save to disk, vscode extension retrieves it repeatedly, so on startup is fine, it will expire soon enough anyways!
     -- until the token expires, it returns the same one when queried and as I said, vscode github.copilot extension frequently queries it
+
     if internal_config and internal_config.expires_at
         and math.floor(os.time()) < internal_config.expires_at then
         return internal_config
     end
 
-    local chat_auth_url = "https://api.github.com/copilot_internal/v2/token"
-    local response = curl.get(chat_auth_url, {
-        headers = {
-            ["Authorization"] = "token " .. get_oauth_token(),
-            ["Accept"] = "application/json",
-        },
-        timeout = 30000,  -- TODO configurable?
-        proxy = nil,      -- TODO configurable?
-        insecure = false, -- TODO configurable?
-    })
+    local response = curl.get(
+        "https://api.github.com/copilot_internal/v2/token",
+        {
+            headers = {
+                ["Authorization"] = "token " .. get_oauth_token(),
+                ["Accept"] = "application/json",
+            },
+            timeout = 30000,  -- TODO configurable?
+            proxy = nil,      -- TODO configurable?
+            insecure = false, -- TODO configurable?
+        })
 
     if response.status == 200 then
-        internal_config = vim.json.decode(response.body)
-        return internal_config
-        -- no need to save to disk, vscode extension retrieves it repeatedly, so on startup is fine, it will expire at some point anyways!
+        return vim.json.decode(response.body)
     else
-        error("Failed to get success response: " .. vim.inspect(response))
+        error("Failed request copilot_internal/v2/token, response: " .. vim.inspect(response))
     end
 end
 
