@@ -95,7 +95,7 @@ local function get_oauth_token()
         .oauth_token
 end
 
----@return AskOpenAICopilotInternalConfig
+---@return AskOpenAICopilotInternalConfig|nil, string|nil
 local function get_copilot_internal_config()
     -- no need to save to disk, vscode extension retrieves it repeatedly, so on startup is fine, it will expire soon enough anyways!
     -- until the token expires, it returns the same one when queried and as I said, vscode github.copilot extension frequently queries it
@@ -105,11 +105,16 @@ local function get_copilot_internal_config()
         return internal_config
     end
 
+    local oauth_token, error_message = get_oauth_token()
+    if oauth_token == nil then
+        return nil, error_message
+    end
+
     local response = curl.get(
         "https://api.github.com/copilot_internal/v2/token",
         {
             headers = {
-                ["Authorization"] = "token " .. get_oauth_token(),
+                ["Authorization"] = "token " .. oauth_token,
                 ["Accept"] = "application/json",
             },
             timeout = 30000,  -- TODO configurable?
@@ -119,25 +124,31 @@ local function get_copilot_internal_config()
 
     if response.status == 200 then
         return vim.json.decode(response.body)
-    else
-        error("Failed request copilot_internal/v2/token, response: " .. vim.inspect(response))
     end
+    return nil, "Failed request copilot_internal/v2/token, response: " .. vim.inspect(response)
+end
+
+local function get_or_error_copilot_internal_config()
+    local config, error_message = get_copilot_internal_config()
+    if config == nil then
+        error(error_message)
+    end
+    return config
 end
 
 ---@return string
 local function get_bearer_token()
-    return get_copilot_internal_config().token
+    return get_or_error_copilot_internal_config().token
 end
 
 ---@return string
 local function get_chat_completions_url()
-    return get_copilot_internal_config().endpoints.api .. "/chat/completions"
     -- FYI will be smth like: "api": "https://api.individual.githubcopilot.com"
+    return get_or_error_copilot_internal_config().endpoints.api .. "/chat/completions"
 end
 
 local function is_auto_configured()
-    -- criteria? would like to just lookup token here but I have errors that need to be handled then
-    -- TODO also get bearer token? (change from error to nil?)
+    -- if needed, can also get bearer token now and skip if request fails, just change it to return nil and error message and then in other consumer update it
     return get_oauth_token() ~= nil
 end
 
