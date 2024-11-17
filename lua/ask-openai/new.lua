@@ -57,7 +57,7 @@ function get_vim_command_suggestion(passed_context)
             max_tokens = 200,
             n = 1
         }),
-        synchronous = true
+        synchronous = true -- might be fun to try to make this stream! not a huge value though for streaming a short cmdline but would teach me lua async 
     })
 
     if response and response.status == 200 then
