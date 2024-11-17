@@ -1,8 +1,3 @@
-local function is_auto_configured()
-    -- TODO discoverable function for auto provider
-    return false
-end
-
 local function get_api_key_from_keychain()
     -- TODO configurable keychain service/account name?
     local handle = io.popen('security find-generic-password -s openai -a ask -w')
@@ -10,9 +5,8 @@ local function get_api_key_from_keychain()
         local api_key = handle:read("*a"):gsub("%s+", "") -- remove any extra whitespace
         handle:close()
         return api_key
-    else
-        error("Failed to retrieve API key from Keychain.")
     end
+    return nil
 end
 
 local function get_chat_completions_url()
@@ -21,7 +15,17 @@ end
 
 -- M.get_bearer_token = function()
 local function get_bearer_token()
-    return get_api_key_from_keychain()
+    -- return get_api_key_from_keychain()
+    local api_key = get_api_key_from_keychain
+    if api_key then
+        return api_key
+    else
+        error("Failed to retrieve API key from Keychain.")
+    end
+end
+
+local function is_auto_configured()
+    return get_api_key_from_keychain() ~= nil
 end
 
 --- @type Provider
