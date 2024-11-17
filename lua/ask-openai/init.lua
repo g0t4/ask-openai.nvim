@@ -29,6 +29,7 @@ function M.setup(opts)
 
     -- [e]valuate expression luaeval("ask_openai()") in command-line mode
     -- DO NOT SET silent=true, messes up putting result into cmdline, also I wanna see print messages, IIUC that would be affected
+    -- FYI `<C-\>e` is critical in the following, don't remove the `e` and `\\` is to escape the `\` in lua
     vim.api.nvim_set_keymap('c', '<C-b>', '<C-\\>eluaeval("ask_openai()")<CR>', { noremap = true, })
 end
 
