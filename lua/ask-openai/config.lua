@@ -23,15 +23,28 @@ function M.set_user_opts(opts)
 end
 
 --- @class Provider
+--- @field is_auto_configured fun(): boolean
 --- @field get_chat_completions_url fun(): string
 --- @field get_bearer_token fun(): string
 
 --- @return Provider
 function M.get_provider()
+    -- TODO cache lookup so no penality on every request, esp for auto
+
     if M.user_opts.provider == "copilot" then
         return require("ask-openai.providers.copilot")
     elseif M.user_opts.provider == "keychain" then
         return require("ask-openai.providers.keychain")
+    elseif M.user_opts.provider == "auto" then
+        local copilot = require("ask-openai.providers.copilot")
+        if copilot.is_auto_configured() then
+            return copilot
+        end
+        local keychain = require("ask-openai.providers.keychain")
+        if keychain.is_auto_configured() then
+            return keychain
+        end
+        error("AskOpenAI: No auto provider available")
     else
         error("AskOpenAI: Invalid provider")
     end
