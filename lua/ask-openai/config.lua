@@ -13,6 +13,7 @@ local default_options = {
 
     --- TODO auto? (do this on first run, not on setup/startup)
     --- copilot, keychain
+    -- provider = "auto",
     -- provider = "keychain",
     provider = "copilot",
     -- provider = "keyless",
