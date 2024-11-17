@@ -19,9 +19,10 @@ local function ask_openai()
     return trim_null_characters(result)
 end
 
-local function setup(opts)
+--- @param options AskOpenAIOptions
+local function setup(options)
     -- MAYBE remove setup and let it be implicit? that said I like only wirting up the key if someone calls this
-    require("ask-openai.config").set_user_opts(opts) -- MAYBE I can move this out to elsewhere, isn't there a config method for this?
+    require("ask-openai.config").set_user_options(options) -- MAYBE I can move this out to elsewhere, isn't there a config method for this?
 
     -- [e]valuate vimscript expression luaeval("...") which runs nested lua code
     -- DO NOT SET silent=true, messes up putting result into cmdline, also I wanna see print messages, IIUC that would be affected

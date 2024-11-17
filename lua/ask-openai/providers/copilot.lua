@@ -120,9 +120,9 @@ local function get_copilot_internal_config()
                 ["Authorization"] = "token " .. oauth_token,
                 ["Accept"] = "application/json",
             },
-            timeout = config.user_opts.copilot.timeout,
-            proxy = config.user_opts.copilot.proxy,
-            insecure = config.user_opts.copilot.insecure,
+            timeout = config.get_options().copilot.timeout,
+            proxy = config.get_options().copilot.proxy,
+            insecure = config.get_options().copilot.insecure,
         })
 
     if response.status == 200 then

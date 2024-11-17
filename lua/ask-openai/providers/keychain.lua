@@ -2,8 +2,8 @@
 local config = require("ask-openai.config")
 
 local function get_api_key_from_keychain()
-    local service = config.user_opts.keychain.service
-    local account = config.user_opts.keychain.account
+    local service = config.get_options().keychain.service
+    local account = config.get_options().keychain.account
 
     local handle = io.popen('security find-generic-password -s ' .. service .. ' -a ' .. account .. ' -w')
     if handle then

@@ -18,7 +18,7 @@ local function get_vim_command_suggestion(passed_context)
     local bearer_token = copilot.get_bearer_token()
     local chat_url = copilot.get_chat_completions_url()
 
-    local model = require("ask-openai.config").user_opts.model
+    local model = config.get_options().model
 
     local response = curl.post({
         url = chat_url,
