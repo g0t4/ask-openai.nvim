@@ -147,9 +147,11 @@ local function get_chat_completions_url()
     return get_or_error_copilot_internal_config().endpoints.api .. "/chat/completions"
 end
 
+---@return boolean - if get unexpired bearer token
 local function is_auto_configured()
-    -- if needed, can also get bearer token now and skip if request fails, just change it to return nil and error message and then in other consumer update it
-    return get_oauth_token() ~= nil
+    -- test by renaming the ~/.config/github-copilot/hosts|apps.json file
+    local config, _ = get_copilot_internal_config()
+    return config ~= nil
 end
 
 --- @type Provider
