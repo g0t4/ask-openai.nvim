@@ -47,14 +47,7 @@ function get_vim_command_suggestion(passed_context)
         local result = vim.json.decode(response.body)
         return result.choices[1].message.content
     else
-        -- FYI in luaeval, cannot have some side effects (modify buffer) so notify won't work directly but it can be scheduled to work
-        -- vim.schedule(function()
-        --     -- FYI shows dimmed until done editing command line
-        --     vim.notify("Request failed: " .. response.status .. " " .. response.body)
-        -- end)
-
-        -- FYI `:messages` will show this, if need to be obvious use notify
         print("Request failed:", response.status, response.body)
-        return "Request failed, see :messages"
+        return 'messages " request failed, run this to see why'
     end
 end

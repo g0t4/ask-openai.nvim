@@ -31,7 +31,7 @@ local default_opts = {
         account = "ask",
     },
 
-    verbose = false,
+    verbose = true,
 
     -- FYI look at :messages after first ask to make sure it's using expected provider
 }
