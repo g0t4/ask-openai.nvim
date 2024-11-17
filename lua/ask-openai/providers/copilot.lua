@@ -71,7 +71,9 @@ local function get_oauth_token()
         if yason:exists() then table.insert(acc, yason) end
         return acc
     end)
-    if #paths == 0 then error("You must setup copilot with either copilot.lua or copilot.vim", 2) end
+    if #paths == 0 then
+        error("You must setup copilot with either copilot.lua or copilot.vim", 2)
+    end
 
     local yason = paths[1]
 
