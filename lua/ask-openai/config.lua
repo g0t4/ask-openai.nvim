@@ -7,15 +7,15 @@
 local default_options = {
 
     --- gpt-4o, gpt-4o-mini, etc
-    -- model = "gpt-4o",
-    model = "llama3.2-vision:11b",
+    model = "gpt-4o",
+    -- model = "llama3.2-vision:11b",
     -- FYI curl localhost:11434/v1/models (ollama)
 
     --- TODO auto? (do this on first run, not on setup/startup)
     --- copilot, keychain
     -- provider = "keychain",
-    -- provider = "copilot",
-    provider = "keyless",
+    provider = "copilot",
+    -- provider = "keyless",
 
     --- @class CopilotOptions
     --- @field timeout number
