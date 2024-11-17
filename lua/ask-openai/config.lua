@@ -51,8 +51,10 @@ end
 --- @return Provider
 local function _get_provider()
     if M.user_opts.provider == "copilot" then
+        print("AskOpenAI: Using Copilot")
         return require("ask-openai.providers.copilot")
     elseif M.user_opts.provider == "keychain" then
+        print("AskOpenAI: Using Keychain")
         return require("ask-openai.providers.keychain")
     elseif M.user_opts.provider == "auto" then
         local copilot = require("ask-openai.providers.copilot")
