@@ -21,7 +21,7 @@ local function get_chat_completions_url()
 end
 
 local function get_bearer_token()
-    -- TODO cache after first run
+    -- TODO cache after first run, how long does it take to read each time? honestly it seems faster than using gh copilot w/o caching
     local api_key = get_api_key_from_keychain()
     if api_key then
         return api_key
