@@ -4,6 +4,7 @@ local M = {}
 --- @class AskOpenAIOptions
 --- @field model string
 --- @field provider string
+--- @field copilot CopilotOptions
 local default_opts = {
 
     --- gpt-4o, gpt-4o-mini, etc
@@ -14,6 +15,18 @@ local default_opts = {
     -- provider = "keychain",
     -- provider = "copilot",
     provider = "auto",
+
+    --- @class CopilotOptions
+    --- @field timeout number
+    --- @field proxy string|nil
+    --- @field insecure boolean
+    copilot = {
+        timeout = 30000,
+        proxy = nil,
+        insecure = false,
+    },
+
+
     -- FYI look at :messages after first ask to make sure it's using expected provider
 }
 
