@@ -22,7 +22,6 @@ function M.set_user_opts(opts)
 end
 
 --- @class Provider
---- @field get_api_key_from_keychain fun(): string
 --- @field get_chat_completions_url fun(): string
 --- @field get_bearer_token fun(): string
 

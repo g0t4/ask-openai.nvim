@@ -7,6 +7,7 @@
 local curl = require("plenary.curl")
 local Path = require("plenary.path")
 
+--- @type Provider
 local M = {}
 
 ---@return "linux" | "darwin" | "windows"
@@ -147,4 +148,4 @@ M.get_chat_completions_url = function()
     return M.token.endpoints.api .. "/chat/completions"
 end
 
-return M
+return { M.get_chat_completions_url, M.get_bearer_token }
