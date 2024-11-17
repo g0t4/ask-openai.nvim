@@ -31,7 +31,7 @@ local default_opts = {
         account = "ask",
     },
 
-
+    verbose = false,
 
     -- FYI look at :messages after first ask to make sure it's using expected provider
 }
@@ -47,25 +47,31 @@ end
 --- @field get_chat_completions_url fun(): string
 --- @field get_bearer_token fun(): string
 
+function M.print_verbose(msg)
+    if not M.user_opts.verbose then
+        return
+    end
+    print(msg)
+end
 
 --- @return Provider
 local function _get_provider()
     if M.user_opts.provider == "copilot" then
-        print("AskOpenAI: Using Copilot")
+        M.print_verbose("AskOpenAI: Using Copilot")
         return require("ask-openai.providers.copilot")
     elseif M.user_opts.provider == "keychain" then
-        print("AskOpenAI: Using Keychain")
+        M.print_verbose("AskOpenAI: Using Keychain")
         return require("ask-openai.providers.keychain")
     elseif M.user_opts.provider == "auto" then
         local copilot = require("ask-openai.providers.copilot")
         if copilot.is_auto_configured() then
             -- FYI I like showing this on first ask, it shows in cmdline until response (cmdline) and only first time, it helps people confirm which is used too!
-            print("AskOpenAI: Auto Using Copilot")
+            M.print_verbose("AskOpenAI: Auto Using Copilot")
             return copilot
         end
         local keychain = require("ask-openai.providers.keychain")
         if keychain.is_auto_configured() then
-            print("AskOpenAI: Auto Using Keychain")
+            M.print_verbose("AskOpenAI: Auto Using Keychain")
             return keychain
         end
         error("AskOpenAI: No auto provider available")
