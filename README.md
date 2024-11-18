@@ -37,6 +37,10 @@ Using lazy.nvim:
 ```lua
 {
     "g0t4/ask-openai.nvim",
+    -- TODO lazy on cmdline enter?
+
+    -- for options, include one of the following (not both):
+    -- 1. set opts
     opts = {
         -- providers are used to access OpenAI's API
         -- "copilot" uses GitHub Copilot's API w/ your existing account
@@ -45,10 +49,15 @@ Using lazy.nvim:
         provider = "copilot", -- or, "auto", "keychain" (see config.lua for details)
         -- verbose = true,
     },
+    -- 2. call setup yourself and pass opts
     config = function()
         -- this sets up the keybinding for <Ctrl-b>:
-        require("ask-openai").setup()
+        require("ask-openai").setup {
+            -- same options as above, i.e.:
+            provider = "copilot",
+        }
     end,
+
     dependencies = {
         -- FYI you do not need github/copilot.vim to load before ask-openai, just need to authenticate (one time) w/ copilot.vim/lua before using the copilot provider here
         "nvim-lua/plenary.nvim",
@@ -58,7 +67,7 @@ Using lazy.nvim:
 
 ## TODOs
 
-- add help docs (scaffold off of lua type annotations?)
-- add `checkhealth` support
-- TODO ADD ollama and other opeani complient (no auth token needed) provider
-- TODO MAKE keychain provider configuable on URL, actually just make URL configurable regardless of provider?
+-   add help docs (scaffold off of lua type annotations?)
+-   add `checkhealth` support
+-   TODO ADD ollama and other opeani complient (no auth token needed) provider
+-   TODO MAKE keychain provider configuable on URL, actually just make URL configurable regardless of provider?
