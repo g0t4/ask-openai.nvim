@@ -117,7 +117,7 @@ opts = {
 ```lua
 opts = {
     provider = function()
-        -- pass whatever logic you want to provide the key, that is the point of inverting this dependency
+        -- use any logic you want, this is just an example:
         return require("ask-openai.config")
             .get_key_from_stdout("security find-generic-password -s groq -a ask -w" )
     end,
