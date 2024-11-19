@@ -55,7 +55,6 @@ local function get_options()
 end
 
 --- @class Provider
---- @field get_chat_completions_url fun(): string -- TODO make get_default_completions_url?
 --- @field get_bearer_token fun(): string
 
 local function print_verbose(msg, ...)
@@ -83,8 +82,6 @@ local function _get_provider()
 end
 
 --- @type Provider
--- TODO rename to cached_provider
--- TODO same with other locals ie options, avoid name collisions as I have had a few times now
 local cached_provider = nil
 
 --- @return Provider
