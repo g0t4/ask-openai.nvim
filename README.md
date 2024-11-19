@@ -33,6 +33,8 @@ Let me know if there are other ways you'd like to ask for help, beyond the comma
 
 ## Installation
 
+This works with any plugin manager. The plugin repo name `g0t4/ask-openai.nvim` is all you need to use this.
+
 ### Using lazy.nvim:
 
 ```lua
