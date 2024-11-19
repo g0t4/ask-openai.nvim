@@ -153,15 +153,17 @@ opts = {
 
 ## Troubleshooting
 
+Enable verbose logging:
+
 ```lua
 opts = {
-    # enable verbose logging
     verbose = true,
 }
 ```
 
+Then, make a request, then check messages for verbose logs:
+
 ```vim
-" make request<C-b>, then check messages for verbose logs
 :messages
 
 " still having issues? use checkhealth
