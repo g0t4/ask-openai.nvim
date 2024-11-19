@@ -9,24 +9,24 @@ New to using neovim? Need to learn the ropes a bit better? Use this as a crutch 
 ## Examples
 
 ```vim
-:save all files<Ctrl-b>
+:save all files<C-b>
 " turns into:
 :wall
 
-:shut it down...  screw my work, I'm done with this POS<Ctrl-b>
+:shut it down...  screw my work, I'm done with this POS<C-b>
 " turns into:
-:qa
+:qa!
 
-:what is the current filetype?<Ctrl-b>
+:what is the current filetype?<C-b>
 :echo &filetype
 
-:how do I wrap text
-:help textwidth
+:how do I wrap text<C-b>
+:set wrap
 
-:what key in normal mode copies 2 lines<Ctrl-b>
-:normal yy
+:what key in normal mode copies 2 lines<C-b>
+:normal 2yy
 
-:test
+:test<C-b>
 :echo "hello world"
 
 ```
