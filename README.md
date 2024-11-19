@@ -82,7 +82,7 @@ Let me know if there are other ways you'd like to ask for help, beyond the comma
 
 ### Using ollama
 
-**_WARNING_** ollama support is early, and I may change how it works, especially if people hve issues configuring it
+> ⚠️ - ollama support is early, and I may change how it works, especially if people hve issues configuring it
 
 ```lua
 {
