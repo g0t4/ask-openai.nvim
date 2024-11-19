@@ -95,9 +95,6 @@ local function get_oauth_token()
         .oauth_token
 end
 
-
-local config = require("ask-openai.config")
-
 ---@return AskOpenAICopilotInternalConfig|nil, string|nil
 local function get_copilot_internal_config()
     -- no need to save to disk, vscode extension retrieves it repeatedly, so on startup is fine, it will expire soon enough anyways!
@@ -113,6 +110,7 @@ local function get_copilot_internal_config()
         return nil, error_message
     end
 
+    local config = require("ask-openai.config")
     local response = curl.get(
         "https://api.github.com/copilot_internal/v2/token",
         {
