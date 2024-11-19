@@ -12,6 +12,7 @@ New to using neovim? Need to learn the ropes a bit better? Use this as a crutch 
 :wall
 
 :shut it down...  screw my work, I'm done with this POS<Ctrl-b>
+" turns into:
 :qa
 
 :what is the current filetype?<Ctrl-b>
