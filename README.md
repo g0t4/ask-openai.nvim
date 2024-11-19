@@ -77,6 +77,7 @@ Let me know if there are other ways you'd like to ask for help, beyond the comma
     -- "copilot" uses GitHub Copilot's API w/ your existing account
     -- "keychain" (macOS only) looks up the API Token with security command
     -- "keyless" - api key doesn't matter, i.e. ollama (by default assumes ollama's API endpoint)
+    --   "ollama" is an alias for "keyless"
     -- "auto" will use the first available provider
 
     verbose = true, -- print verbose messages, i.e. which provider is used on first ask
@@ -89,7 +90,7 @@ Let me know if there are other ways you'd like to ask for help, beyond the comma
 
 ```lua
 {
-    provider = "keyless",
+    provider = "keyless", -- or "ollama"
     model = "llama3.2-vision:11b", -- ollama list
 
     -- optional, if not default host:port

@@ -49,6 +49,10 @@ local options = default_options
 ---@return AskOpenAIOptions
 local function set_user_options(user_options)
     options = vim.tbl_deep_extend("force", default_options, user_options or {})
+    if options.provider == "ollama" then
+        -- b/c people will do it anyways
+        options.provider = "keyless"
+    end
 end
 
 ---@return AskOpenAIOptions
@@ -76,8 +80,8 @@ local function _get_provider()
     elseif options.provider == "keychain" then
         print_verbose("AskOpenAI: Using Keychain")
         return require("ask-openai.providers.keychain")
-    elseif options.provider == "keyless" or options.provider == "ollama" then
-        print_verbose("AskOpenAI: Using Keyless: " .. options.provider)
+    elseif options.provider == "keyless" then
+        print_verbose("AskOpenAI: Using Keyless")
         return require("ask-openai.providers.keyless")
     elseif options.provider == "auto" then
         local copilot = require("ask-openai.providers.copilot")
