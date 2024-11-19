@@ -53,9 +53,9 @@ Let me know if there are other ways you'd like to ask for help, beyond the comma
     end,
 
     dependencies = {
-        -- FYI you do not need github/copilot.vim to load before ask-openai, just need to authenticate (one time) w/ copilot.vim/lua before using the copilot provider here
         "nvim-lua/plenary.nvim",
     },
+    -- ⚠️  does not need github/copilot.vim to load before ask-openai, just need to authenticate (one time) w/ copilot.vim/lua before using the copilot provider here
 }
 ```
 
@@ -85,7 +85,7 @@ Let me know if there are other ways you'd like to ask for help, beyond the comma
 
 ### Using ollama
 
-> ⚠️ - ollama support is early, and I may change how it works, especially if people hve issues configuring it
+> ⚠️ ollama support is early, and I may change how it works, especially if people hve issues configuring it
 
 ```lua
 {
