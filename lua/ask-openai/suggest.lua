@@ -14,8 +14,8 @@ local function get_vim_command_suggestion(passed_context)
     ]]
 
     local config = require("ask-openai.config")
-    local copilot = config.get_provider()
-    local bearer_token = copilot.get_bearer_token()
+    local provider = config.get_provider()
+    local bearer_token = provider.get_bearer_token()
     if bearer_token == nil then
         -- TODO add checkhealth "endpoint" to verify bearer_token is not empty
         -- FYI :Dump require("ask-openai.config").get_provider().get_bearer_token()
