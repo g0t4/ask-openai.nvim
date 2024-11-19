@@ -85,18 +85,6 @@ opts = {
 }
 ```
 
-### Customizing the keymap
-
-```lua
-opts = {
-    keymaps = {
-        cmdline_ask = "<C-b>", -- default
-        -- or:
-        cmdline_ask = false, -- disable it, see init.lua how it's set
-    },
-}
-```
-
 ### Using ollama
 
 > ⚠️ ollama support is early, and I may change how it works, especially if people have issues
@@ -145,6 +133,18 @@ opts = {
 ```bash
 # FYI, test env var from keychain
 export OPENAI_API_KEY=$(security find-generic-password -s openai -a ask -w )
+```
+
+### Customizing the keymap
+
+```lua
+opts = {
+    keymaps = {
+        cmdline_ask = "<C-b>", -- default
+        -- or:
+        cmdline_ask = false, -- disable it, see init.lua how it's set
+    },
+}
 ```
 
 ## TODOs
