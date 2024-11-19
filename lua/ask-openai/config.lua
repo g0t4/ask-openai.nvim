@@ -33,9 +33,11 @@ local default_options = {
     use_api_ollama = false, -- prefer this for local models unless not supported
     -- FYI rationale for use_* is to get completion without users needing to require a lookup or list of endpoints to complete
 
+    -- request parameters:
     model = "gpt-4o",
-
     max_tokens = 200,
+    -- PRN temperature
+    -- in future, if add other ask helpers then I can move these into a nested table like copilot options
 }
 
 local options = default_options

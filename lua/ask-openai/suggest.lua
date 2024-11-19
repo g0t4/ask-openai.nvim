@@ -39,7 +39,7 @@ local function get_vim_command_suggestion(passed_context)
                 { role = "system", content = system_message },
                 { role = "user",   content = passed_context }
             },
-            max_tokens = config.get_options().max_tokens, 
+            max_tokens = config.get_options().max_tokens,
             n = 1,
             stream = false, -- FYI must set this for ollama, doesn't hurt to do for all
         }),
