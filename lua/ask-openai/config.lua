@@ -76,8 +76,8 @@ local function _get_provider()
     elseif options.provider == "keychain" then
         print_verbose("AskOpenAI: Using Keychain")
         return require("ask-openai.providers.keychain")
-    elseif options.provider == "keyless" then
-        print_verbose("AskOpenAI: Using Keyless")
+    elseif options.provider == "keyless" or options.provider == "ollama" then
+        print_verbose("AskOpenAI: Using Keyless: " .. options.provider)
         return require("ask-openai.providers.keyless")
     elseif options.provider == "auto" then
         local copilot = require("ask-openai.providers.copilot")
