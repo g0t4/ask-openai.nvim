@@ -53,11 +53,11 @@ end
 --- @field get_chat_completions_url fun(): string -- TODO make get_default_completions_url?
 --- @field get_bearer_token fun(): string
 
-local function print_verbose(msg)
+local function print_verbose(msg, ...)
     if not options.verbose then
         return
     end
-    print(msg)
+    print(msg, ...)
 end
 
 --- @return Provider

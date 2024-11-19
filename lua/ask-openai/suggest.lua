@@ -26,7 +26,9 @@ local function get_vim_command_suggestion(passed_context)
     end
 
     local chat_url = config.get_chat_completions_url()
+    config.print_verbose("chat_url", chat_url)
     local model = config.get_options().model
+    config.print_verbose("model", model)
 
     local response = curl.post({
         url = chat_url,
