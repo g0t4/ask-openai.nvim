@@ -78,7 +78,7 @@ use {
 > 📌 **Tip:** check [config.lua](lua/ask-openai/config.lua) for all options
 
 ```lua
-{
+opts = {
     -- modify keymap
     keymaps = {
         -- disable:
@@ -106,7 +106,7 @@ use {
 > ⚠️ ollama support is early, and I may change how it works, especially if people hve issues configuring it
 
 ```lua
-{
+opts = {
     provider = "keyless", -- or "ollama"
     model = "llama3.2-vision:11b", -- ollama list
 
@@ -120,7 +120,7 @@ use {
 This shows how to override api_url, or keychain service/account name, or both. Also, groq is insanely fast and FREE right now!
 
 ```lua
-{
+opts = {
     provider = "keychain",
 
     model = "llama-3.2-90b-text-preview",
@@ -132,6 +132,21 @@ This shows how to override api_url, or keychain service/account name, or both. A
         account = "ask",
     },
 }
+```
+
+### BYOK - Environment Variables
+
+```lua
+opts = {
+    provider = function()
+        return os.getenv("OPENAI_API_KEY")
+    end,
+}
+```
+
+```bash
+# FYI, test env var from keychain
+export OPENAI_API_KEY=$(security find-generic-password -s openai -a ask -w )
 ```
 
 ## TODOs
