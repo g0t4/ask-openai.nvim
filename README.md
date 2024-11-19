@@ -20,6 +20,9 @@ New to using neovim? Need to learn the ropes a bit better? Use this as a crutch 
 :shut it down... screw my work, I'm done with this POS<C-b>
 :qa!
 
+:insert a UUID<C-b>
+:r!uuidgen
+
 :what is the current filetype?<C-b>
 :echo &filetype
 
