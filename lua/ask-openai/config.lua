@@ -125,8 +125,7 @@ local function get_key_from_stdout(cmd_string)
 end
 
 local function get_validated_bearer_token()
-    local _provider = get_provider()
-    local bearer_token = _provider.get_bearer_token()
+    local bearer_token = get_provider().get_bearer_token()
 
     -- VALIDATION => could push into provider, but especially w/ func provider it's good to do generic validation/tracing across all providers
     if bearer_token == nil then
