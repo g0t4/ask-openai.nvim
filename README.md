@@ -1,5 +1,7 @@
 # ask-openai.nvim
 
+https://github.com/user-attachments/assets/aa03e773-dcef-4e8d-9c94-e341f4f3f7fc
+
 Ask OpenAI for help in vim's command line!
 
 New to using neovim? Need to learn the ropes a bit better? Use this as a crutch so you don't run away screaming and instead take the time to learn your way around. Use OpenAI's gpt-4o (et al) to recall that pesky command that evades recollection.
