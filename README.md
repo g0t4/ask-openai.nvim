@@ -155,4 +155,3 @@ opts = {
 ## TODOs
 
 -   ad help docs (scaffold off of lua type annotations?)
--   add `checkhealth` support

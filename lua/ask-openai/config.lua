@@ -132,11 +132,9 @@ end
 local function get_validated_bearer_token()
     local bearer_token = get_provider().get_bearer_token()
 
-    -- TODO can I reuse check() for this too?
+    -- TODO can I reuse check() for these same checks? or just remove these and rely on checkhealth alone?
     -- VALIDATION => could push into provider, but especially w/ func provider it's good to do generic validation/tracing across all providers
     if bearer_token == nil then
-        -- TODO add checkhealth "endpoint" to verify bearer_token is not empty
-        -- FYI :Dump require("ask-openai.config").get_provider().get_bearer_token()
         return 'Ask failed, bearer_token is nil'
     elseif bearer_token == "" then
         -- don't fail, just add to tracing
