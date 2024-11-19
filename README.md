@@ -11,7 +11,7 @@ New to using neovim? Need to learn the ropes a bit better? Use this as a crutch 
 " turns into:
 :wall
 
-:shut it down, now...  I don't care if I lose my work, I'm done with this POS<Ctrl-b>
+:shut it down...  screw my work, I'm done with this POS<Ctrl-b>
 :qa
 
 :what is the current filetype?<Ctrl-b>
