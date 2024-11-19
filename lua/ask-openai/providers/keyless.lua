@@ -16,8 +16,6 @@ local function get_chat_completions_url()
     return "localhost:11434/api/chat"
 end
 
-
-
 return {
     is_auto_configured = function()
         -- not participate in auto-configuration
