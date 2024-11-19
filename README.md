@@ -178,4 +178,5 @@ And help:
 
 ```vim
 :help ask-openai<Tab>
+" Lazy plugin manager turns this README.md into helptags. If your using a different plugin manager, you might not see these help docs.
 ```
