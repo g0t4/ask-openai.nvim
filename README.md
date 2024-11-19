@@ -90,9 +90,7 @@ opts = {
     provider = "copilot"
     -- "copilot" uses GitHub Copilot's API w/ your existing account
     -- "keyless" - api key doesn't matter, i.e. ollama (by default assumes ollama's API endpoint)
-    --   "ollama" is an alias for "keyless"
     -- function() ... end - see BYOK below
-    -- "auto" will use the first available provider
 
     verbose = true, -- print verbose messages, i.e. which provider is used on first ask
 }
@@ -100,12 +98,12 @@ opts = {
 
 ### Using ollama
 
-> ⚠️ ollama support is early, and I may change how it works, especially if people hve issues configuring it
+> ⚠️ ollama support is early, and I may change how it works, especially if people have issues
 
 ```lua
 opts = {
-    provider = "keyless", -- or "ollama"
-    model = "llama3.2-vision:11b", -- ollama list
+    provider = "keyless",
+    model = "llama3.2-vision:11b",
 
     -- optional, if not default host:port
     api_url = "http://localhost:11434/api/chat", -- include endpoint /api/chat b/c keyless can be any openai compatible endpoint

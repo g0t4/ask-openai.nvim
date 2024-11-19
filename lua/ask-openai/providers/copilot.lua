@@ -151,7 +151,8 @@ local function get_chat_completions_url()
 end
 
 ---@return boolean - if get unexpired bearer token
-local function is_auto_configured()
+local function is_healthy()
+    -- TODO keep around to use for checkhealth
     -- test by renaming the ~/.config/github-copilot/hosts|apps.json file
     local config, _ = get_copilot_internal_config()
     return config ~= nil
@@ -159,7 +160,7 @@ end
 
 --- @type Provider
 return {
-    is_auto_configured = is_auto_configured,
+    is_healthy = is_healthy,
     get_chat_completions_url = get_chat_completions_url,
     get_bearer_token = get_bearer_token,
 }

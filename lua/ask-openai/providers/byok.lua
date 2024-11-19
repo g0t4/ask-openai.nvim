@@ -14,11 +14,6 @@ local function create_provider_for_func(get_bearer_token)
     end
 
     return {
-        is_auto_configured = function()
-            -- not participate in auto-configuration
-            -- TODO use interface for this or get rid of "auto"
-            return false
-        end,
         get_chat_completions_url = get_chat_completions_url,
         get_bearer_token = get_bearer_token,
     }

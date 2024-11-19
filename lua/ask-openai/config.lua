@@ -3,19 +3,17 @@
 --- @field model string
 --- @field provider string
 --- @field copilot CopilotOptions
+--- @field verbose boolean
+--- @field api_url string|nil
 local default_options = {
 
     keymaps = {
         cmdline_ask = "<C-b>",
     },
-    --- gpt-4o, gpt-4o-mini, etc
-    model = "gpt-4o",
-    -- model = "llama3.2-vision:11b",
-    -- FYI curl localhost:11434/v1/models (ollama)
 
-    -- provider = "auto",
     provider = "copilot",
     -- provider = "keyless",
+    -- provider = function() ... end,
 
     --- @class CopilotOptions
     --- @field timeout number
@@ -29,7 +27,7 @@ local default_options = {
 
     verbose = true,
     api_url = nil, -- leave nil for defaults (does not apply to copilot provider)
-    -- FYI look at :messages after first ask to make sure it's using expected provider
+    model = "gpt-4o",
 }
 
 local options = default_options
@@ -38,10 +36,6 @@ local options = default_options
 ---@return AskOpenAIOptions
 local function set_user_options(user_options)
     options = vim.tbl_deep_extend("force", default_options, user_options or {})
-    if options.provider == "ollama" then
-        -- b/c people will do it anyways
-        options.provider = "keyless"
-    end
 end
 
 ---@return AskOpenAIOptions
@@ -50,8 +44,7 @@ local function get_options()
 end
 
 --- @class Provider
---- @field is_auto_configured fun(): boolean
---- @field get_chat_completions_url fun(): string
+--- @field get_chat_completions_url fun(): string -- TODO make get_default_completions_url?
 --- @field get_bearer_token fun(): string
 
 local function print_verbose(msg)
@@ -72,15 +65,6 @@ local function _get_provider()
     elseif type(options.provider) == "function" then
         print_verbose("AskOpenAI: Using BYOK function")
         return require("ask-openai.providers.byok")(options.provider)
-    elseif options.provider == "auto" then
-        -- TODO remove auto too 
-        local copilot = require("ask-openai.providers.copilot")
-        if copilot.is_auto_configured() then
-            -- FYI I like showing this on first ask, it shows in cmdline until response (cmdline) and only first time, it helps people confirm which is used too!
-            print_verbose("AskOpenAI: Auto Using Copilot")
-            return copilot
-        end
-        error("AskOpenAI: No auto provider available")
     else
         error("AskOpenAI: Invalid provider")
     end

@@ -2,6 +2,7 @@ local config = require("ask-openai.config")
 
 ---@return string
 local function get_bearer_token()
+    -- TODO address keyless s/b empty but I check not empty in consumer
     return "foo" -- doesn't matter, i.e. ollama, LMStudio, etc
 end
 
@@ -12,14 +13,10 @@ local function get_chat_completions_url()
     end
 
     -- https://github.com/ollama/ollama/blob/main/docs/api.md
-    return "localhost:11434/api/chat"
+    return "http://localhost:11434/api/chat"
 end
 
 return {
-    is_auto_configured = function()
-        -- not participate in auto-configuration
-        return false
-    end,
     get_chat_completions_url = get_chat_completions_url,
     get_bearer_token = get_bearer_token,
 }

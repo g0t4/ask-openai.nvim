@@ -47,7 +47,7 @@ local function get_vim_command_suggestion(passed_context)
             },
             max_tokens = 200,
             n = 1,
-            stream = false, -- TODO must set this for ollama, doesn't hurt to do for all
+            stream = false, -- FYI must set this for ollama, doesn't hurt to do for all
         }),
         synchronous = true  -- might be fun to try to make this stream! not a huge value though for streaming a short cmdline but would teach me lua async
     })
@@ -56,9 +56,8 @@ local function get_vim_command_suggestion(passed_context)
         -- vim.fn.writefile({ response.body }, "/tmp/ask-openai-response.json", "a")
         local result = vim.json.decode(response.body)
         if result.message then
-            -- ollama
-            -- TODO better config for this, I should have an ollama provider actually, and have that detected here
-            -- TODO add a parse method on provider? or add a provider to parse response?  provider isn't really API backend type ... its supposed to be password source so another provider might make sense
+            -- PRN check if choices is present first? then message?
+            -- ollama only returns a single choice (currently)
             return result.message.content
         end
         -- assume openai
