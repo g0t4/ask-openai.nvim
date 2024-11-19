@@ -12,10 +12,12 @@ local function get_vim_command_suggestion(passed_context)
         If the user mentions another vim mode (i.e., normal, insert, etc.), then if possible return a command to switch to that mode and execute whatever they asked about.
         For example, if the user asks how to delete a line in normal mode, you could answer `:normal dd`.
     ]]
+    -- FYI local llama3.2-vision:11b works but it feels like it's more wrong than it should be... perhaps the prompt could be improved overall? mabye some examples?
+    -- AVOID custom model prompts for now... should be generic
+    -- PRN allow users to override the prompt?
 
     local config = require("ask-openai.config")
     local bearer_token = config.get_bearer_token()
-
     local chat_url = config.get_chat_completions_url()
     config.print_verbose("chat_url", chat_url)
     local model = config.get_options().model
