@@ -116,7 +116,23 @@ local function get_provider()
     return provider
 end
 
+local function get_key_from_stdout(cmd_string)
+    local handle = io.popen(cmd_string)
+    if not handle then
+        return nil
+    end
+
+    -- remove any extra whitespace
+    local api_key = handle:read("*a"):gsub("%s+", "")
+
+    handle:close()
+
+    -- ok if empty/nil, will be checked
+    return api_key
+end
+
 return {
+    get_key_from_stdout = get_key_from_stdout,
     set_user_options = set_user_options,
     get_options = get_options,
     print_verbose = print_verbose,
