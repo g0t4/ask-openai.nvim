@@ -81,7 +81,7 @@ Let me know if there are other ways you'd like to ask for help, beyond the comma
     -- "keychain" (macOS only) looks up the API Token with security command
     --    security add-generic-password -a ask -s openai -w
     --      then, type the password in the prompt
-    --      FYI account/service name can be changed, see [config.lua](lua/ask-openai/config.lua)
+    --      FYI account/service name can be changed, see config.lua
     -- "keyless" - api key doesn't matter, i.e. ollama (by default assumes ollama's API endpoint)
     --   "ollama" is an alias for "keyless"
     -- "auto" will use the first available provider
