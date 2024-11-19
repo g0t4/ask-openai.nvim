@@ -44,20 +44,6 @@ local function set_user_options(user_options)
     options = vim.tbl_deep_extend("force", default_options, user_options or {})
 end
 
-local function get_api_url_override()
-    if options.api_url then
-        return options.api_url
-    elseif options.use_api_groq then
-        return "https://api.groq.com/openai/v1/chat/completions"
-    elseif options.use_api_openai then
-        return "https://api.openai.com/v1/chat/completions"
-    elseif options.use_api_ollama then
-        return "http://localhost:11434/api/chat"
-    else
-        return nil
-    end
-end
-
 ---@return AskOpenAIOptions
 local function get_options()
     return options
@@ -101,6 +87,25 @@ local function get_provider()
     return provider
 end
 
+local function get_chat_completions_url()
+    local _provider = get_provider()
+    if _provider.get_chat_completions_url then
+        return _provider.get_chat_completions_url()
+    end
+
+    if options.api_url then
+        return options.api_url
+    elseif options.use_api_groq then
+        return "https://api.groq.com/openai/v1/chat/completions"
+    elseif options.use_api_openai then
+        return "https://api.openai.com/v1/chat/completions"
+    elseif options.use_api_ollama then
+        return "http://localhost:11434/api/chat"
+    else
+        return nil
+    end
+end
+
 local function get_key_from_stdout(cmd_string)
     local handle = io.popen(cmd_string)
     if not handle then
@@ -116,11 +121,14 @@ local function get_key_from_stdout(cmd_string)
     return api_key
 end
 
+-- FYI one drawback of exports at end is that refactor rename requires two renames
+-- FYI another drawback is F12 to nav is twice
+-- FYI another drawback is order matters whereas with `function M.foo()` it doesn't matter
 return {
     get_key_from_stdout = get_key_from_stdout,
     set_user_options = set_user_options,
     get_options = get_options,
     print_verbose = print_verbose,
     get_provider = get_provider,
-    get_api_url_override = get_api_url_override,
+    get_chat_completions_url = get_chat_completions_url,
 }

@@ -25,11 +25,7 @@ local function get_vim_command_suggestion(passed_context)
         return 'Ask failed, bearer_token is empty'
     end
 
-    local chat_url = copilot.get_chat_completions_url()
-    local override_url = config.get_api_url_override()
-    if override_url then
-        chat_url = override_url
-    end
+    local chat_url = config.get_chat_completions_url()
     local model = config.get_options().model
 
     local response = curl.post({
