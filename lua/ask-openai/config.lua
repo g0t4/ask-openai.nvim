@@ -67,14 +67,15 @@ end
 
 --- @return Provider
 local function _get_provider()
+    -- FYI prints below only show on first run b/c provider is cached by get_provider() so NBD to add that extra info which is useful to know config is correct w/o toggling verbose on and getting a wall of logs
     if options.provider == "copilot" then
-        print_verbose("AskOpenAI: Using Copilot")
+        print("AskOpenAI: Using Copilot")
         return require("ask-openai.providers.copilot")
     elseif options.provider == "keyless" then
-        print_verbose("AskOpenAI: Using Keyless")
+        print("AskOpenAI: Using Keyless")
         return require("ask-openai.providers.keyless")
     elseif type(options.provider) == "function" then
-        print_verbose("AskOpenAI: Using BYOK function")
+        print("AskOpenAI: Using BYOK function")
         return require("ask-openai.providers.byok")(options.provider)
     else
         error("AskOpenAI: Invalid provider")
