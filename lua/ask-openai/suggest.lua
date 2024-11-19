@@ -26,8 +26,11 @@ local function get_vim_command_suggestion(passed_context)
     end
 
     local chat_url = copilot.get_chat_completions_url()
+    local override_url = config.get_api_url_override()
+    if override_url then
+        chat_url = override_url
+    end
     local model = config.get_options().model
-    -- TODO api_url override s/b applied here
 
     local response = curl.post({
         url = chat_url,

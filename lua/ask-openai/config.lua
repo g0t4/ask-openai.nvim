@@ -26,7 +26,13 @@ local default_options = {
     },
 
     verbose = true,
-    api_url = nil, -- leave nil for defaults (does not apply to copilot provider)
+    --- must be set to full endpoint URL, e.g. https://api.openai.com/v1/chat/completions
+    api_url = nil,
+    use_api_groq = false,
+    use_api_openai = false,
+    use_api_ollama = false, -- prefer this for local models unless not supported
+    -- FYI rationale for use_* is to get completion without users needing to require a lookup or list of endpoints to complete
+
     model = "gpt-4o",
 }
 
@@ -36,6 +42,20 @@ local options = default_options
 ---@return AskOpenAIOptions
 local function set_user_options(user_options)
     options = vim.tbl_deep_extend("force", default_options, user_options or {})
+end
+
+local function get_api_url_override()
+    if options.api_url then
+        return options.api_url
+    elseif options.use_api_groq then
+        return "https://api.groq.com/openai/v1/chat/completions"
+    elseif options.use_api_openai then
+        return "https://api.openai.com/v1/chat/completions"
+    elseif options.use_api_ollama then
+        return "http://localhost:11434/api/chat"
+    else
+        return nil
+    end
 end
 
 ---@return AskOpenAIOptions
@@ -102,4 +122,5 @@ return {
     get_options = get_options,
     print_verbose = print_verbose,
     get_provider = get_provider,
+    get_api_url_override = get_api_url_override,
 }
