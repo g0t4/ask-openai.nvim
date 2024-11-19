@@ -151,7 +151,7 @@ opts = {
 }
 ```
 
-### Troubleshooting
+## Troubleshooting
 
 ```lua
 opts = {
