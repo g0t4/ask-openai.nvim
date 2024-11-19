@@ -29,6 +29,9 @@ New to using neovim? Need to learn the ropes a bit better? Use this as a crutch 
 :what key in normal mode copies 2 lines<C-b>
 :normal 2yy
 
+:what clear search highlights<C-b>
+:nohlsearch
+
 :test<C-b>
 :echo "hello world"
 
