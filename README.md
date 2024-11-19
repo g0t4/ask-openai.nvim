@@ -34,6 +34,7 @@ New to using neovim? Need to learn the ropes a bit better? Use this as a crutch 
 
 :test<C-b>
 :echo "hello world"
+" don't forget, there's often more than one way to do something
 
 ```
 
