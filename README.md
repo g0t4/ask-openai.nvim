@@ -60,6 +60,8 @@ Let me know if there are other ways you'd like to ask for help, beyond the comma
 
 ## Options
 
+> 📌 **Tip:** Make sure to check the `config.lua` file in the repo.
+
 ```lua
 {
     -- modify keymap
