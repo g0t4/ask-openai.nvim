@@ -76,7 +76,9 @@ use {
 
 > 📌 **Tip:** check [config.lua](lua/ask-openai/config.lua) for all options
 
-### Using GitHub Copilot
+### Using GitHub Copilot (default)
+
+If you pass an empty opts table `{ }` then copilot will be used.
 
 ```lua
 opts = {
