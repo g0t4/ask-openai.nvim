@@ -54,6 +54,7 @@ This works with any plugin manager. The plugin repo name `g0t4/ask-openai.nvim` 
     dependencies = { "nvim-lua/plenary.nvim" },
 
     event = { "CmdlineEnter" }, -- optional, for startup speed
+    -- FYI most of the initial performance hit doesn't happen until the first use
 }
 ```
 
@@ -66,9 +67,7 @@ use {
         require("ask-openai").setup { } -- empty == default options
     end,
     requires = { "nvim-lua/plenary.nvim" },
-
     event = { "CmdlineEnter" }, -- optional
-    -- FYI most of the initial performance hit doesn't happen until the first use
 }
 ```
 
