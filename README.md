@@ -104,9 +104,9 @@ Let me know if there are other ways you'd like to ask for help, beyond the comma
 }
 ```
 
-### Using Keychain w/ diff API endpoint
+### Using groq (or another OpenAI compatible endpoint)
 
-This shows how to override api_url, or keychain service/account name, or both.
+This shows how to override api_url, or keychain service/account name, or both. Also, groq is insanely fast and FREE right now!
 
 ```lua
 {
