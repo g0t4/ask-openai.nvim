@@ -41,17 +41,17 @@ local default_options = {
     -- in future, if add other ask helpers then I can move these into a nested table like copilot options
 }
 
-local options = default_options
+local cached_options = default_options
 
 ---@param user_options AskOpenAIOptions
 ---@return AskOpenAIOptions
 local function set_user_options(user_options)
-    options = vim.tbl_deep_extend("force", default_options, user_options or {})
+    cached_options = vim.tbl_deep_extend("force", default_options, user_options or {})
 end
 
 ---@return AskOpenAIOptions
 local function get_options()
-    return options
+    return cached_options
 end
 
 --- @class Provider
@@ -59,7 +59,7 @@ end
 --- @field get_bearer_token fun(): string
 
 local function print_verbose(msg, ...)
-    if not options.verbose then
+    if not cached_options.verbose then
         return
     end
     print(msg, ...)
@@ -68,15 +68,15 @@ end
 --- @return Provider
 local function _get_provider()
     -- FYI prints below only show on first run b/c provider is cached by get_provider() so NBD to add that extra info which is useful to know config is correct w/o toggling verbose on and getting a wall of logs
-    if options.provider == "copilot" then
+    if cached_options.provider == "copilot" then
         print("AskOpenAI: Using Copilot")
         return require("ask-openai.providers.copilot")
-    elseif options.provider == "keyless" then
+    elseif cached_options.provider == "keyless" then
         print("AskOpenAI: Using Keyless")
         return require("ask-openai.providers.keyless")
-    elseif type(options.provider) == "function" then
+    elseif type(cached_options.provider) == "function" then
         print("AskOpenAI: Using BYOK function")
-        return require("ask-openai.providers.byok")(options.provider)
+        return require("ask-openai.providers.byok")(cached_options.provider)
     else
         error("AskOpenAI: Invalid provider")
     end
@@ -101,13 +101,13 @@ local function get_chat_completions_url()
         return _provider.get_chat_completions_url()
     end
 
-    if options.api_url then
-        return options.api_url
-    elseif options.use_api_groq then
+    if cached_options.api_url then
+        return cached_options.api_url
+    elseif cached_options.use_api_groq then
         return "https://api.groq.com/openai/v1/chat/completions"
-    elseif options.use_api_ollama then
+    elseif cached_options.use_api_ollama then
         return "http://localhost:11434/api/chat"
-    elseif options.use_api_openai then
+    elseif cached_options.use_api_openai then
         return "https://api.openai.com/v1/chat/completions"
     else
         -- default to openai
