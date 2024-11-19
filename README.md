@@ -73,7 +73,7 @@ Let me know if there are other ways you'd like to ask for help, beyond the comma
         -- disable:
         cmdline_ask = false,
         -- change:
-        cmdline_ask = "<leader>a",
+        cmdline_ask = "<leader>a", -- default: <C-b>
     },
 
     provider = "copilot"
