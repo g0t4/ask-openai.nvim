@@ -47,8 +47,8 @@ local options = default_options
 
 ---@param options AskOpenAIOptions
 ---@return AskOpenAIOptions
-local function set_user_options(options)
-    options = vim.tbl_deep_extend("force", default_options, options or {})
+local function set_user_options(user_options)
+    options = vim.tbl_deep_extend("force", default_options, user_options or {})
 end
 
 ---@return AskOpenAIOptions
