@@ -17,7 +17,7 @@ local function get_vim_command_suggestion(passed_context)
     -- PRN allow users to override the prompt?
 
     local config = require("ask-openai.config")
-    local bearer_token = config.get_bearer_token()
+    local bearer_token = config.get_validated_bearer_token()
     local chat_url = config.get_chat_completions_url()
     config.print_verbose("chat_url", chat_url)
     local model = config.get_options().model

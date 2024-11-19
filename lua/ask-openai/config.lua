@@ -124,7 +124,7 @@ local function get_key_from_stdout(cmd_string)
     return api_key
 end
 
-local function get_bearer_token()
+local function get_validated_bearer_token()
     local _provider = get_provider()
     local bearer_token = _provider.get_bearer_token()
 
@@ -151,5 +151,5 @@ return {
     print_verbose = print_verbose,
     get_provider = get_provider,
     get_chat_completions_url = get_chat_completions_url,
-    get_bearer_token = get_bearer_token,
+    get_validated_bearer_token = get_validated_bearer_token,
 }
