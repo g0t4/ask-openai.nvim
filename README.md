@@ -152,13 +152,8 @@ export OPENAI_API_KEY=$(security find-generic-password -s openai -a ask -w )
 ```lua
 opts = {
     provider = function()
-        local handle = io.popen('security find-generic-password -s openai -a ask -w')
-        if not handle then
-            return nil
-        end
-        local api_key = handle:read("*a"):gsub("%s+", "") -- remove any extra whitespace
-        handle:close()
-        return api_key -- ok if empty/nil, will be checked
+        return require("ask-openai.config")
+            .get_key_from_stdout("security find-generic-password -s openai -a ask -w")
     end,
 }
 ```
