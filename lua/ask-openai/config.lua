@@ -56,6 +56,8 @@ end
 
 --- @class Provider
 --- @field get_bearer_token fun(): string
+--- @field check fun() # optional
+--- @field get_chat_completions_url fun(): string # optional
 
 local function print_verbose(msg, ...)
     if not cached_options.verbose then
@@ -130,6 +132,7 @@ end
 local function get_validated_bearer_token()
     local bearer_token = get_provider().get_bearer_token()
 
+    -- TODO can I reuse check() for this too?
     -- VALIDATION => could push into provider, but especially w/ func provider it's good to do generic validation/tracing across all providers
     if bearer_token == nil then
         -- TODO add checkhealth "endpoint" to verify bearer_token is not empty
@@ -143,6 +146,41 @@ local function get_validated_bearer_token()
     return bearer_token
 end
 
+local function check()
+    local _provider = get_provider()
+    if _provider.check then
+        _provider.check()
+    end
+
+    local bearer_token = _provider.get_bearer_token()
+    if bearer_token == nil then
+        vim.health.error("bearer_token is nil")
+    elseif bearer_token == "" then
+        vim.health.error("bearer_token is empty")
+    else
+        vim.health.ok("bearer_token retrieved")
+        if get_options().verbose then
+            -- TODO extract mask function and test it, try to submit to plenary? or does plenary have one?
+            local len = string.len(bearer_token)
+            local num = math.min(5, math.floor(len * 0.07)) -- first and last 7%, max of 5 chars
+            if num < 1 then
+                vim.health.info("bearer_token too short to show start/end")
+            else
+                local masked = string.sub(bearer_token, 1, num)
+                    .. "*****"
+                    .. string.sub(bearer_token, -num)
+                vim.health.info("bearer_token: " .. masked)
+            end
+        end
+    end
+
+    local options = {
+        chat_url = get_chat_completions_url(),
+        provider_type = get_options().provider,
+        model = get_options().model,
+    }
+    vim.health.info(vim.inspect(options))
+end
 -- FYI one drawback of exports at end is that refactor rename requires two renames
 -- FYI another drawback is F12 to nav is twice
 -- FYI another drawback is order matters whereas with `function M.foo()` it doesn't matter
@@ -154,4 +192,5 @@ return {
     get_provider = get_provider,
     get_chat_completions_url = get_chat_completions_url,
     get_validated_bearer_token = get_validated_bearer_token,
+    check = check
 }

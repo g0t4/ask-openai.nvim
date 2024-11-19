@@ -148,17 +148,26 @@ local function get_chat_completions_url()
     return get_or_error_copilot_internal_config().endpoints.api .. "/chat/completions"
 end
 
----@return boolean - if get unexpired bearer token
-local function is_healthy()
-    -- TODO keep around to use for checkhealth
+local function check()
     -- test by renaming the ~/.config/github-copilot/hosts|apps.json file
     local config, _ = get_copilot_internal_config()
-    return config ~= nil
+    if config == nil then
+        vim.health.error("Copilot provider is missing copilot_internal/v2/token config")
+        return
+    end
+
+    if require("ask-openai.config").get_options().verbose then
+        -- if verbose then show copilot_internal/v2/token response
+        local masked = vim.deepcopy(config)
+        masked.token = "***" -- mask all of token
+        -- PRN mask the tracking_id too?
+        vim.health.info("copilot_internal/v2/token response: " .. vim.inspect(masked))
+    end
 end
 
 --- @type Provider
 return {
-    is_healthy = is_healthy,
     get_chat_completions_url = get_chat_completions_url,
     get_bearer_token = get_bearer_token,
+    check = check,
 }
