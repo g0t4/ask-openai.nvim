@@ -6,6 +6,9 @@
 --- @field keychain KeychainOptions
 local default_options = {
 
+    keymaps = {
+        cmdline_ask = "<C-b>",
+    },
     --- gpt-4o, gpt-4o-mini, etc
     model = "gpt-4o",
     -- model = "llama3.2-vision:11b",
