@@ -13,8 +13,11 @@ New to using neovim? Need to learn the ropes a bit better? Use this as a crutch 
 " turns into:
 :wall
 
-:shut it down...  screw my work, I'm done with this POS<C-b>
+:run ls command and copy output into buffer<C-b>
 " turns into:
+:r !ls
+
+:shut it down... screw my work, I'm done with this POS<C-b>
 :qa!
 
 :what is the current filetype?<C-b>
