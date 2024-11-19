@@ -17,6 +17,10 @@ local function get_api_key_from_keychain()
 end
 
 local function get_chat_completions_url()
+    if config.get_options().api_url then
+        return config.get_options().api_url
+    end
+
     return "https://api.openai.com/v1/chat/completions"
 end
 

@@ -104,6 +104,25 @@ Let me know if there are other ways you'd like to ask for help, beyond the comma
 }
 ```
 
+### Using Keychain w/ diff API endpoint
+
+This shows how to override api_url, or keychain service/account name, or both.
+
+```lua
+{
+    provider = "keychain",
+
+    model = "llama-3.1-70b-versatile",
+    api_url = "https://api.groq.com/openai/v1/chat/completions",
+
+    -- optional:
+    keychain = {
+        service = "groq",
+        account = "ask",
+    },
+}
+```
+
 ## TODOs
 
 -   ad help docs (scaffold off of lua type annotations?)
