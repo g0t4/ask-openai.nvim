@@ -77,6 +77,8 @@ local function _get_provider()
 end
 
 --- @type Provider
+-- TODO rename to cached_provider
+-- TODO same with other locals ie options, avoid name collisions as I have had a few times now
 local provider = nil
 
 --- @return Provider
@@ -122,6 +124,23 @@ local function get_key_from_stdout(cmd_string)
     return api_key
 end
 
+local function get_bearer_token()
+    local _provider = get_provider()
+    local bearer_token = _provider.get_bearer_token()
+
+    -- VALIDATION => could push into provider, but especially w/ func provider it's good to do generic validation/tracing across all providers
+    if bearer_token == nil then
+        -- TODO add checkhealth "endpoint" to verify bearer_token is not empty
+        -- FYI :Dump require("ask-openai.config").get_provider().get_bearer_token()
+        return 'Ask failed, bearer_token is nil'
+    elseif bearer_token == "" then
+        -- don't fail, just add to tracing
+        print_verbose("FYI bearer_token is empty")
+    end
+
+    return bearer_token
+end
+
 -- FYI one drawback of exports at end is that refactor rename requires two renames
 -- FYI another drawback is F12 to nav is twice
 -- FYI another drawback is order matters whereas with `function M.foo()` it doesn't matter
@@ -132,4 +151,5 @@ return {
     print_verbose = print_verbose,
     get_provider = get_provider,
     get_chat_completions_url = get_chat_completions_url,
+    get_bearer_token = get_bearer_token,
 }
