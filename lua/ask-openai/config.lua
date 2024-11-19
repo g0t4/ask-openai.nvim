@@ -83,7 +83,11 @@ local function _get_provider()
     elseif options.provider == "keyless" then
         print_verbose("AskOpenAI: Using Keyless")
         return require("ask-openai.providers.keyless")
+    elseif type(options.provider) == "function" then
+        print_verbose("AskOpenAI: Using BYOK function")
+        return require("ask-openai.providers.byok")(options.provider)
     elseif options.provider == "auto" then
+        -- ? remove auto? API key should be copilot OR provided by user, me thinks... easiest way to keep out needless complexity and avoid frustrating users, just provide examples of how to provide it with various funcs (env var, security cmd, etc)
         local copilot = require("ask-openai.providers.copilot")
         if copilot.is_auto_configured() then
             -- FYI I like showing this on first ask, it shows in cmdline until response (cmdline) and only first time, it helps people confirm which is used too!

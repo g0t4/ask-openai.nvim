@@ -16,9 +16,18 @@ local function get_vim_command_suggestion(passed_context)
     local config = require("ask-openai.config")
     local copilot = config.get_provider()
     local bearer_token = copilot.get_bearer_token()
-    local chat_url = copilot.get_chat_completions_url()
+    if bearer_token == nil then
+        -- TODO add checkhealth "endpoint" to verify bearer_token is not empty
+        -- FYI :Dump require("ask-openai.config").get_provider().get_bearer_token()
+        return 'Ask failed, bearer_token is nil'
+    end
+    if bearer_token == "" then
+        return 'Ask failed, bearer_token is empty'
+    end
 
+    local chat_url = copilot.get_chat_completions_url()
     local model = config.get_options().model
+    -- TODO api_url override s/b applied here
 
     local response = curl.post({
         url = chat_url,
