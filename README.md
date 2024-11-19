@@ -89,7 +89,6 @@ opts = {
 
     provider = "copilot"
     -- "copilot" uses GitHub Copilot's API w/ your existing account
-    -- "keychain" (macOS only) looks up the API Token with security command
     -- "keyless" - api key doesn't matter, i.e. ollama (by default assumes ollama's API endpoint)
     --   "ollama" is an alias for "keyless"
     -- function() ... end - see BYOK below
@@ -113,23 +112,26 @@ opts = {
 }
 ```
 
-### Using groq (or another OpenAI compatible endpoint)
+### Using groq + macOS Keychain
 
-This shows how to override api_url, or keychain service/account name, or both. Also, groq is insanely fast and FREE right now!
+> 💨 groq is insanely fast and FREE right now!
 
 ```lua
 opts = {
-    provider = "keychain",
+    provider = function()
+        return require("ask-openai.config")
+            .get_key_from_stdout("security find-generic-password -s groq -a ask -w" )
+    end,
 
     model = "llama-3.2-90b-text-preview",
     api_url = "https://api.groq.com/openai/v1/chat/completions",
-
-    -- optional:
-    keychain = {
-        service = "groq",
-        account = "ask",
-    },
 }
+```
+
+```bash
+# FYI, to set keychain password
+security add-generic-password -a ask -s groq -w
+# provide password when prompted
 ```
 
 ### BYOK - Environment Variables
@@ -145,23 +147,6 @@ opts = {
 ```bash
 # FYI, test env var from keychain
 export OPENAI_API_KEY=$(security find-generic-password -s openai -a ask -w )
-```
-
-### BYOK - macOS Keychain
-
-```lua
-opts = {
-    provider = function()
-        return require("ask-openai.config")
-            .get_key_from_stdout("security find-generic-password -s openai -a ask -w")
-    end,
-}
-```
-
-```bash
-# FYI, to set keychain password
-security add-generic-password -a ask -s openai -w
-# provide password when prompted
 ```
 
 ## TODOs

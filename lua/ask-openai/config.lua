@@ -3,7 +3,6 @@
 --- @field model string
 --- @field provider string
 --- @field copilot CopilotOptions
---- @field keychain KeychainOptions
 local default_options = {
 
     keymaps = {
@@ -14,9 +13,7 @@ local default_options = {
     -- model = "llama3.2-vision:11b",
     -- FYI curl localhost:11434/v1/models (ollama)
 
-    --- copilot, keychain
     -- provider = "auto",
-    -- provider = "keychain",
     provider = "copilot",
     -- provider = "keyless",
 
@@ -28,14 +25,6 @@ local default_options = {
         timeout = 30000,
         proxy = nil,
         insecure = false,
-    },
-
-    --- @class KeychainOptions
-    --- @field service string - service name
-    --- @field account string - account name
-    keychain = {
-        service = "openai",
-        account = "ask",
     },
 
     verbose = true,
@@ -77,9 +66,6 @@ local function _get_provider()
     if options.provider == "copilot" then
         print_verbose("AskOpenAI: Using Copilot")
         return require("ask-openai.providers.copilot")
-    elseif options.provider == "keychain" then
-        print_verbose("AskOpenAI: Using Keychain")
-        return require("ask-openai.providers.keychain")
     elseif options.provider == "keyless" then
         print_verbose("AskOpenAI: Using Keyless")
         return require("ask-openai.providers.keyless")
@@ -87,17 +73,12 @@ local function _get_provider()
         print_verbose("AskOpenAI: Using BYOK function")
         return require("ask-openai.providers.byok")(options.provider)
     elseif options.provider == "auto" then
-        -- ? remove auto? API key should be copilot OR provided by user, me thinks... easiest way to keep out needless complexity and avoid frustrating users, just provide examples of how to provide it with various funcs (env var, security cmd, etc)
+        -- TODO remove auto too 
         local copilot = require("ask-openai.providers.copilot")
         if copilot.is_auto_configured() then
             -- FYI I like showing this on first ask, it shows in cmdline until response (cmdline) and only first time, it helps people confirm which is used too!
             print_verbose("AskOpenAI: Auto Using Copilot")
             return copilot
-        end
-        local keychain = require("ask-openai.providers.keychain")
-        if keychain.is_auto_configured() then
-            print_verbose("AskOpenAI: Auto Using Keychain")
-            return keychain
         end
         error("AskOpenAI: No auto provider available")
     else
