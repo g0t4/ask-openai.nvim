@@ -29,8 +29,8 @@ local function get_vim_command_suggestion(passed_context)
             ["Content-Type"] = "application/json",
             ["Authorization"] = "Bearer " .. bearer_token,
             ["Copilot-Integration-Id"] = "vscode-chat",
-            ["Editor-Version"] = ("Neovim/%s.%s.%s"):format(vim.version().major, vim.version().minor, vim.version()
-                .patch),
+            ["Editor-Version"] = ("Neovim/%s.%s.%s")
+                :format(vim.version().major, vim.version().minor, vim.version().patch),
             -- FYI watch messages for failures (i.e. when I didn't have Editor-Version set it choked)
         },
         body = vim.json.encode({
