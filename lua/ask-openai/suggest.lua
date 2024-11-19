@@ -22,7 +22,8 @@ local function get_vim_command_suggestion(passed_context)
         return 'Ask failed, bearer_token is nil'
     end
     if bearer_token == "" then
-        return 'Ask failed, bearer_token is empty'
+        -- don't fail, just log it, print_verbose is only for troubleshooting
+        config.print_verbose("FYI bearer_token is empty")
     end
 
     local chat_url = config.get_chat_completions_url()
