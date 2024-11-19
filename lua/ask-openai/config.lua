@@ -85,14 +85,14 @@ end
 --- @type Provider
 -- TODO rename to cached_provider
 -- TODO same with other locals ie options, avoid name collisions as I have had a few times now
-local provider = nil
+local cached_provider = nil
 
 --- @return Provider
 local function get_provider()
-    if provider == nil then
-        provider = _get_provider()
+    if cached_provider == nil then
+        cached_provider = _get_provider()
     end
-    return provider
+    return cached_provider
 end
 
 local function get_chat_completions_url()
