@@ -79,20 +79,21 @@ use {
 
 ```lua
 opts = {
-    -- modify keymap
+    -- key defaults:
+    provider = "copilot",
+    verbose = false,
+}
+```
+
+### Customizing the keymap
+
+```lua
+opts = {
     keymaps = {
-        -- disable:
-        cmdline_ask = false,
-        -- change:
-        cmdline_ask = "<leader>a", -- default: <C-b>
+        cmdline_ask = "<C-b>", -- default
+        -- or:
+        cmdline_ask = false, -- disable it, see init.lua how it's set
     },
-
-    provider = "copilot"
-    -- "copilot" uses GitHub Copilot's API w/ your existing account
-    -- "keyless" - api key doesn't matter, i.e. ollama (by default assumes ollama's API endpoint)
-    -- function() ... end - see BYOK below
-
-    verbose = true, -- print verbose messages, i.e. which provider is used on first ask
 }
 ```
 
