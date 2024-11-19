@@ -38,7 +38,10 @@ Let me know if there are other ways you'd like to ask for help, beyond the comma
 ```lua
 {
     "g0t4/ask-openai.nvim",
-    -- TODO lazy on cmdline enter?
+
+    event = { "CmdlineEnter" }, -- optional, load on cmdline enter for startup speed
+    -- FYI most of the initial performance hit doesn't happen until the first use
+
 
     -- include one of the following:
     -- 1. set opts
