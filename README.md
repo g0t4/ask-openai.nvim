@@ -90,11 +90,9 @@ opts = {
     provider = "copilot"
     -- "copilot" uses GitHub Copilot's API w/ your existing account
     -- "keychain" (macOS only) looks up the API Token with security command
-    --    security add-generic-password -a ask -s openai -w
-    --      then, type the password in the prompt
-    --      FYI account/service name can be changed, see config.lua
     -- "keyless" - api key doesn't matter, i.e. ollama (by default assumes ollama's API endpoint)
     --   "ollama" is an alias for "keyless"
+    -- function() ... end - see BYOK below
     -- "auto" will use the first available provider
 
     verbose = true, -- print verbose messages, i.e. which provider is used on first ask
@@ -147,6 +145,28 @@ opts = {
 ```bash
 # FYI, test env var from keychain
 export OPENAI_API_KEY=$(security find-generic-password -s openai -a ask -w )
+```
+
+### BYOK - macOS Keychain
+
+```lua
+opts = {
+    provider = function()
+        local handle = io.popen('security find-generic-password -s openai -a ask -w')
+        if not handle then
+            return nil
+        end
+        local api_key = handle:read("*a"):gsub("%s+", "") -- remove any extra whitespace
+        handle:close()
+        return api_key -- ok if empty/nil, will be checked
+    end,
+}
+```
+
+```bash
+# FYI, to set keychain password
+security add-generic-password -a ask -s openai -w
+# provide password when prompted
 ```
 
 ## TODOs

@@ -9,9 +9,8 @@ local function get_api_key_from_keychain()
     if handle then
         local api_key = handle:read("*a"):gsub("%s+", "") -- remove any extra whitespace
         handle:close()
-        if api_key ~= "" then
-            return api_key
-        end
+
+        return api_key -- return empty is fine, is checked by consumer
     end
     return nil
 end
