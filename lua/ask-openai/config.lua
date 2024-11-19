@@ -34,6 +34,8 @@ local default_options = {
     -- FYI rationale for use_* is to get completion without users needing to require a lookup or list of endpoints to complete
 
     model = "gpt-4o",
+
+    max_tokens = 200,
 }
 
 local options = default_options
