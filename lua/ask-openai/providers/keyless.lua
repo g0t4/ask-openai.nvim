@@ -12,7 +12,6 @@ local function get_chat_completions_url()
     end
 
     -- https://github.com/ollama/ollama/blob/main/docs/api.md
-    -- TODO test this
     return "localhost:11434/api/chat"
 end
 
