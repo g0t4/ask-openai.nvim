@@ -52,11 +52,8 @@ This works with any plugin manager. The plugin repo name `g0t4/ask-openai.nvim` 
     end,
 
     dependencies = { "nvim-lua/plenary.nvim" },
-    -- must authenticate once with copilot.vim/lua before using the above copilot provider
-    -- does not directly depend on github/copilot.vim
 
     event = { "CmdlineEnter" }, -- optional, for startup speed
-    -- FYI most of the initial performance hit doesn't happen until the first use
 }
 ```
 
@@ -66,10 +63,12 @@ This works with any plugin manager. The plugin repo name `g0t4/ask-openai.nvim` 
 use {
     "g0t4/ask-openai.nvim",
     config = function()
-        require("ask-openai").setup { }
+        require("ask-openai").setup { } -- empty == default options
     end,
     requires = { "nvim-lua/plenary.nvim" },
+
     event = { "CmdlineEnter" }, -- optional
+    -- FYI most of the initial performance hit doesn't happen until the first use
 }
 ```
 
@@ -77,12 +76,16 @@ use {
 
 > 📌 **Tip:** check [config.lua](lua/ask-openai/config.lua) for all options
 
+### Using GitHub Copilot
+
 ```lua
 opts = {
-    -- key defaults:
-    provider = "copilot",
-    verbose = false,
+    provider = "copilot", -- default
+    verbose = false, -- default, for troubleshooting
 }
+
+-- must authenticate once with copilot.vim/lua before ask-openai will work
+-- does not directly depend on github/copilot.vim plugin
 ```
 
 ### Using ollama
@@ -93,7 +96,8 @@ opts = {
 opts = {
     provider = "keyless",
     model = "llama3.2-vision:11b",
-    use_api_ollama = true,
+    use_api_ollama = true, -- use ollama default, OR:
+    -- api_url = "http://localhost:11434/api/chat" -- override default for ollama
 }
 ```
 
