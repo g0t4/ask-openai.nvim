@@ -25,7 +25,8 @@ local default_options = {
         insecure = false,
     },
 
-    verbose = true,
+    verbose = false, -- troubleshooting
+
     --- must be set to full endpoint URL, e.g. https://api.openai.com/v1/chat/completions
     api_url = nil,
     use_api_groq = false,
