@@ -114,7 +114,7 @@ This shows how to override api_url, or keychain service/account name, or both. A
 {
     provider = "keychain",
 
-    model = "llama-3.1-70b-versatile",
+    model = "llama-3.2-90b-text-preview",
     api_url = "https://api.groq.com/openai/v1/chat/completions",
 
     -- optional:
