@@ -60,7 +60,7 @@ Let me know if there are other ways you'd like to ask for help, beyond the comma
 
 ## Options
 
-> 📌 **Tip:** Make sure to check the [config.lua](lua/ask-openai/config.lua) file for all options
+> 📌 **Tip:** check [config.lua](lua/ask-openai/config.lua) for all options
 
 ```lua
 {
