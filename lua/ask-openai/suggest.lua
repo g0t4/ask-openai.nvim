@@ -20,8 +20,7 @@ local function get_vim_command_suggestion(passed_context)
         -- TODO add checkhealth "endpoint" to verify bearer_token is not empty
         -- FYI :Dump require("ask-openai.config").get_provider().get_bearer_token()
         return 'Ask failed, bearer_token is nil'
-    end
-    if bearer_token == "" then
+    elseif bearer_token == "" then
         -- don't fail, just log it, print_verbose is only for troubleshooting
         config.print_verbose("FYI bearer_token is empty")
     end

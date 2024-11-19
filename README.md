@@ -117,12 +117,13 @@ opts = {
 ```lua
 opts = {
     provider = function()
+        -- pass whatever logic you want to provide the key, that is the point of inverting this dependency
         return require("ask-openai.config")
             .get_key_from_stdout("security find-generic-password -s groq -a ask -w" )
     end,
 
     model = "llama-3.2-90b-text-preview",
-    api_url = "https://api.groq.com/openai/v1/chat/completions",
+    use_api_groq = true,
 }
 ```
 
