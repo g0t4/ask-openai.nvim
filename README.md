@@ -82,7 +82,6 @@ If you pass an empty opts table `{ }` then copilot will be used.
 ```lua
 opts = {
     provider = "copilot", -- default
-    verbose = false, -- default, for troubleshooting
 }
 
 -- must authenticate once with copilot.vim/lua before ask-openai will work
@@ -150,6 +149,24 @@ opts = {
         cmdline_ask = false, -- disable it, see init.lua how it's set
     },
 }
+```
+
+### Troubleshooting
+
+```lua
+opts = {
+    # enable verbose logging
+    verbose = true,
+}
+```
+
+```vim
+" make request<C-b>, then check messages for verbose logs
+:messages
+
+" still having issues? use checkhealth
+:checkhealth ask-openai
+" FYI verbose mode adds extra health check info
 ```
 
 ## TODOs
