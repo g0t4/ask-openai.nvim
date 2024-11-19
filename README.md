@@ -43,9 +43,6 @@ This works with any plugin manager. The plugin repo name `g0t4/ask-openai.nvim` 
 {
     "g0t4/ask-openai.nvim",
 
-    event = { "CmdlineEnter" }, -- optional, load on cmdline enter for startup speed
-    -- FYI most of the initial performance hit doesn't happen until the first use
-
     -- include one of the following:
     -- 1. set opts, empty = defaults
     opts = { },
@@ -54,10 +51,12 @@ This works with any plugin manager. The plugin repo name `g0t4/ask-openai.nvim` 
         require("ask-openai").setup { }
     end,
 
-    dependencies = {
-        "nvim-lua/plenary.nvim",
-    },
-    -- ⚠️  does not need github/copilot.vim to load before ask-openai, just need to authenticate (one time) w/ copilot.vim/lua before using the copilot provider here
+    dependencies = { "nvim-lua/plenary.nvim" },
+    -- must authenticate once with copilot.vim/lua before using the above copilot provider
+    -- does not directly depend on github/copilot.vim
+
+    event = { "CmdlineEnter" }, -- optional, for startup speed
+    -- FYI most of the initial performance hit doesn't happen until the first use
 }
 ```
 
@@ -70,6 +69,7 @@ use {
         require("ask-openai").setup { }
     end,
     requires = { "nvim-lua/plenary.nvim" },
+    event = { "CmdlineEnter" }, -- optional
 }
 ```
 
