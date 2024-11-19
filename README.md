@@ -174,6 +174,8 @@ Don't forget health checks:
 " FYI verbose mode adds extra health check info
 ```
 
-## TODOs
+And help:
 
--   ad help docs (scaffold off of lua type annotations?)
+```vim
+:help ask-openai<Tab>
+```
