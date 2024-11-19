@@ -32,29 +32,22 @@ Let me know if there are other ways you'd like to ask for help, beyond the comma
 
 ## Installation
 
-Using lazy.nvim:
+### Using lazy.nvim:
 
 ```lua
 {
     "g0t4/ask-openai.nvim",
     -- TODO lazy on cmdline enter?
 
-    -- for options, include one of the following (not both):
+    -- include one of the following:
     -- 1. set opts
     opts = {
-        -- providers are used to access OpenAI's API
-        -- "copilot" uses GitHub Copilot's API w/ your existing account
-        -- "keychain" (macOS only) looks up the API Token with security command (keychains)
-        -- WIP - password less (i.e. ollama)
-        provider = "copilot", -- or, "auto", "keychain" (see config.lua for details)
-        -- verbose = true,
+        -- see Options section below
     },
-    -- 2. call setup yourself and pass opts
+    -- 2. call setup
     config = function()
-        -- this sets up the keybinding for <Ctrl-b>:
         require("ask-openai").setup {
-            -- same options as above, i.e.:
-            provider = "copilot",
+            -- see Options section below
         }
     end,
 
@@ -65,9 +58,41 @@ Using lazy.nvim:
 }
 ```
 
+## Options
+
+```lua
+{
+    -- modify keymap
+    keymaps = {
+        -- disable:
+        cmdline_ask = false,
+        -- change:
+        cmdline_ask = "<leader>a",
+    },
+
+    provider = "copilot"
+    -- "copilot" uses GitHub Copilot's API w/ your existing account
+    -- "keychain" (macOS only) looks up the API Token with security command
+    -- "keyless" - api key doesn't matter, i.e. ollama (by default assumes ollama's API endpoint)
+    -- "auto" will use the first available provider
+
+    verbose = true, -- print verbose messages, i.e. which provider is used on first ask
+}
+```
+
+### Using ollama
+
+```lua
+{
+    provider = "keyless",
+    model = "llama3.2-vision:11b", -- ollama list
+
+    -- optional, if not default host:port
+    api_url = "http://localhost:11434/api/chat", -- include endpoint /api/chat b/c keyless can be any openai compatible endpoint
+}
+```
+
 ## TODOs
 
--   add help docs (scaffold off of lua type annotations?)
+-   ad help docs (scaffold off of lua type annotations?)
 -   add `checkhealth` support
--   TODO ADD ollama and other opeani complient (no auth token needed) provider
--   TODO MAKE keychain provider configuable on URL, actually just make URL configurable regardless of provider?
