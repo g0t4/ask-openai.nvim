@@ -165,8 +165,11 @@ Then, make a request, then check messages for verbose logs:
 
 ```vim
 :messages
+```
 
-" still having issues? use checkhealth
+Don't forget health checks:
+
+```vim
 :checkhealth ask-openai
 " FYI verbose mode adds extra health check info
 ```
