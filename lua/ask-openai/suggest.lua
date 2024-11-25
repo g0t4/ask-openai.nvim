@@ -51,6 +51,7 @@ local function get_vim_command_suggestion(passed_context)
         local result = vim.json.decode(response.body)
         if result.message then
             -- PRN check if choices is present first? then message?
+            -- DERP use /v1/chat/completions (careful of fail messages on inavlid model, but yes this works so I dont need special request/response for ollama)
             -- ollama only returns a single choice (currently)
             return result.message.content
         end

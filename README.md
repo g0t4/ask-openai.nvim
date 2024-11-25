@@ -190,3 +190,6 @@ And help:
 :help ask-openai<Tab>
 " Lazy plugin manager turns this README.md into helptags. If your using a different plugin manager, you might not see these help docs.
 ```
+
+## TODOs
+- ollama has /v1/chat/completions too (see my single.py in fish ask openai), use that instead of that custom thing I did
