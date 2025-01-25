@@ -13,7 +13,7 @@ function M.ask_for_prediction()
         -- "echo foo && sleep 2 && echo bar",
     }
 
-    local handle, pid = uv.spawn(command, {
+    M.handle, M.pid = uv.spawn(command, {
         args = args,
         stdio = { nil, stdout, stderr },
     }, function(code, signal)
@@ -21,7 +21,7 @@ function M.ask_for_prediction()
         stdout:close()
         stderr:close()
     end)
-    print("handle", handle, pid)
+    print("handle", M.handle, M.pid)
 
     uv.read_start(stdout, function(err, data)
         assert(not err, err)
@@ -40,6 +40,11 @@ end
 
 function M.reject()
     -- print("Rejecting prediction...")
+    if M.handle and not M.handle:is_closing() then
+        print("Terminating process...")
+        M.handle:kill("sigterm") -- Send SIGTERM to the process
+        M.handle:close()         -- Close the handle
+    end
 end
 
 function M.accept_all()
