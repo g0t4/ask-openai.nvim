@@ -1,17 +1,11 @@
 local uv = vim.uv
 local M = {}
 
-M.disable_cursor_move_detect = false
-
+local once = false
 function M.ask_for_prediction()
-    if M.disable_cursor_move_detect then
-        -- hack to stop triggering new prediction just cuz cursor moves automatically... there has to be a way to set this on the cursor move method?!
-        M.disable_cursor_move_detect = false
-        return
-    end
-
+    print("Asking for prediction...")
+    -- do return end
     M.reject() -- always cancel last prediction before starting a new one :)
-    -- print("Asking for prediction...")
 
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
@@ -43,12 +37,21 @@ function M.ask_for_prediction()
                 local after = line:sub(original_col + 1)
                 local first_data_line_only = data:match("^(.-)\n")
                 local new_line_with_data_at_cursor = before .. first_data_line_only .. after
+                -- vim.o.eventignore = "all"
+                print("after set eventignore")
                 -- CRAP what if data has new lines :)... no problem to insert it... lets just insert contents of first row for testing
-                vim.api.nvim_buf_set_lines(0, original_row - 1, original_row, false, { new_line_with_data_at_cursor })
+                once = true
+                vim.cmd("noautocmd lua vim.api.nvim_buf_set_lines(0, 0, -1, false, {'Line 1', 'Line 2'})")
+                -- vim.cmd("noautocmd lua vim.api.nvim_buf_set_lines(0," .. tostring(original_row - 1) .. ", " ..
+                --     tostring(original_row) .. ", false, { '" .. new_line_with_data_at_cursor .. "' })")
+
+                print("after insert")
                 -- TODO disable events CursorMovedI temporarily instead of hack bool M.disable_cursor_move_detect
-                M.disable_cursor_move_detect = true
-                -- move cursor now to end of first_data_line_only (not the whole line)
-                vim.api.nvim_win_set_cursor(0, { original_row, original_col + #first_data_line_only })
+                -- vim.api.nvim_win_set_cursor(0, { original_row, original_col + #first_data_line_only })
+                print("after insert/move")
+                -- is cursor move synchronous? or do I need to use a callback?
+                -- vim.o.eventignore = ""
+                print('after clear eventignore')
             end)
         end
     end)
@@ -71,6 +74,8 @@ function M.reject()
         --   or before it terminates, if another chunk arrives... I should track a request_id (guid) and use that to ignore if data still arrives after I request termination
         --   and before it terminates I start another request... which I want for responsiveness
         --
+        M.handle = nil
+        M.pid = nil
     end
 end
 
