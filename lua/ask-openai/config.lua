@@ -45,6 +45,7 @@ local default_options = {
             -- TODO migrate here from top level (also consider other scenarios where I might want to configure different backend/mode/etc)
         },
         predictions = {
+            -- TODO parse predicitons config (turn current config module into a function => do this later though when I get better idea of how to structure different scenarios)
             -- TODO likely are good reasons to consider multiple prediction scenarios too (not just one backend/model/etc)
             -- when it makes sense, configure diff model for predictions
             -- tmp == not a stable config architecture
