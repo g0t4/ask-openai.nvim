@@ -46,10 +46,13 @@ function M.ask_for_prediction()
                 -- CRAP what if data has new lines :)... no problem to insert it... lets just insert contents of first row for testing
                 once = true
                 -- can I do this antoher way like paste in just the new text... this seems abusive to have to delete the whole goddamn line to add text to it
-                vim.api.nvim_buf_set_lines(0, original_row - 1, original_row, false, { new_line_with_data_at_cursor })
+                SET EXTMARK YOU GODDAMN IDIOT WES... that is what you will do in reality...  insert text happens on acceptance (not on previeww)... not sure why I wanted this to work BUT I got async insert text to work just to test async... so now MOVE ON TO streaming preview and not this crap wes this isn't what you need'
+                    LOOK AT SUPERMAVEN's IMPL for ideas too if you get stuck '
+                     https://github.com/supermaven-inc/supermaven-nvim/blob/main/lua/supermaven-nvim/completion_preview.lua#L87
+                -- vim.api.nvim_buf_set_lines(0, original_row - 1, original_row, false, { new_line_with_data_at_cursor })
                 print("after insert")
                 -- TODO disable events CursorMovedI temporarily instead of hack bool M.disable_cursor_move_detect
-                vim.api.nvim_win_set_cursor(0, { original_row, original_col + #first_data_line_only })
+                -- vim.api.nvim_win_set_cursor(0, { original_row, original_col + #first_data_line_only })
                 print("after insert/move")
                 -- is cursor move synchronous? or do I need to use a callback?
                 vim.o.eventignore = ""
