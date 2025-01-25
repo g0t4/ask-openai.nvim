@@ -3,8 +3,7 @@
 
   "workspace.library": [
     "/opt/homebrew/Cellar/neovim/0.10.3/share/nvim/runtime/lua",
-    "/opt/homebrew/Cellar/neovim/0.10.3/share/nvim/runtime/lua/vim/lsp",
-    "~/.luarocks/share/lua/5.4",
-    "/opt/homebrew/share/lua/5.4/rx.lua"
+    "/opt/homebrew/Cellar/neovim/0.10.3/share/nvim/runtime/lua/vim/lsp"
+    // FYI not using luarocks for dependencies, not currently, instead use package manager to install the respective repo into RTP
   ]
 }
