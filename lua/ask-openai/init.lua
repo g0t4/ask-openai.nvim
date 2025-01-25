@@ -35,6 +35,47 @@ local function setup(options)
     -- DO NOT SET silent=true, messes up putting result into cmdline, also I wanna see print messages, IIUC that would be affected
     -- FYI `<C-\>e` is critical in the following, don't remove the `e` and `\\` is to escape the `\` in lua
     vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai\').ask_openai()")<CR>', { noremap = true, })
+
+    local predictions = config.get_options().tmp.predictions
+    if not predictions.keymaps then
+        config.print_verbose("predictions.keymaps is disabled, skipping")
+        return
+    end
+
+    local handlers = require("ask-openai.prediction.handlers")
+
+    if predictions.keymaps.accept_all then
+        vim.api.nvim_set_keymap('i', predictions.keymaps.accept_all, "",
+            { noremap = true, callback = handlers.accept_all })
+    end
+
+    if predictions.keymaps.accept_line then
+        vim.api.nvim_set_keymap('i', predictions.keymaps.accept_line, "",
+            { noremap = true, callback = handlers.accept_line })
+    end
+
+    if predictions.keymaps.accept_word then
+        vim.api.nvim_set_keymap('i', predictions.keymaps.accept_word, "",
+            { noremap = true, callback = handlers.accept_word })
+    end
+
+
+    -- SETUP triggers for predictions
+    -- TODO consider moving this code into prediction
+    local augroup = "ask-openai.prediction"
+    vim.api.nvim_create_augroup(augroup, { clear = true })
+    vim.api.nvim_create_autocmd("InsertLeave", {
+        group = augroup,
+        pattern = "*",
+        callback = handlers.reject
+    })
+    vim.api.nvim_create_autocmd("CursorMovedI", {
+        group = augroup,
+        pattern = "*", -- todo filter?
+        callback = handlers.ask_for_prediction
+    })
+
+    -- IIUC I should use moving cursor to reject currrent completion (or close it) and of course trigger a new one
 end
 
 return {

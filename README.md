@@ -63,7 +63,9 @@ This works with any plugin manager. The plugin repo name `g0t4/ask-openai.nvim` 
 
     dependencies = { "nvim-lua/plenary.nvim" },
 
-    event = { "CmdlineEnter" }, -- optional, for startup speed
+    event = { "CmdlineEnter", "InsertEnter" }, -- optional, for startup speed
+    -- "CmdlineEnter" is for command line suggestions
+    -- "InsertEnter" is for predictions
     -- FYI most of the initial performance hit doesn't happen until the first use
 }
 ```
