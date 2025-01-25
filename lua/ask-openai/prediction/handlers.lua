@@ -1,7 +1,15 @@
 local uv = vim.uv
 local M = {}
 
+M.disable_cursor_move_detect = false
+
 function M.ask_for_prediction()
+    if M.disable_cursor_move_detect then
+        -- hack to stop triggering new prediction just cuz cursor moves automatically... there has to be a way to set this on the cursor move method?!
+        M.disable_cursor_move_detect = false
+        return
+    end
+
     M.reject() -- always cancel last prediction before starting a new one :)
     -- print("Asking for prediction...")
 
@@ -28,6 +36,20 @@ function M.ask_for_prediction()
         assert(not err, err)
         if data then
             print("STDOUT:", data)
+            vim.schedule(function()
+                local original_row, original_col = unpack(vim.api.nvim_win_get_cursor(0))
+                local line = vim.api.nvim_buf_get_lines(0, original_row - 1, original_row, false)[1]
+                local before = line:sub(1, original_col)
+                local after = line:sub(original_col + 1)
+                local first_data_line_only = data:match("^(.-)\n")
+                local new_line_with_data_at_cursor = before .. first_data_line_only .. after
+                -- CRAP what if data has new lines :)... no problem to insert it... lets just insert contents of first row for testing
+                vim.api.nvim_buf_set_lines(0, original_row - 1, original_row, false, { new_line_with_data_at_cursor })
+                -- TODO disable events CursorMovedI temporarily instead of hack bool M.disable_cursor_move_detect
+                M.disable_cursor_move_detect = true
+                -- move cursor now to end of first_data_line_only (not the whole line)
+                vim.api.nvim_win_set_cursor(0, { original_row, original_col + #first_data_line_only })
+            end)
         end
     end)
 
