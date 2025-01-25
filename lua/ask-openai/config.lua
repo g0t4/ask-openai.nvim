@@ -41,7 +41,11 @@ local default_options = {
     -- in future, if add other ask helpers then I can move these into a nested table like copilot options
 
     tmp = {
+        commandline = {
+            -- TODO migrate here from top level (also consider other scenarios where I might want to configure different backend/mode/etc)
+        },
         predictions = {
+            -- TODO likely are good reasons to consider multiple prediction scenarios too (not just one backend/model/etc)
             -- when it makes sense, configure diff model for predictions
             -- tmp == not a stable config architecture
 
