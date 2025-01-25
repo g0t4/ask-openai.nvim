@@ -37,21 +37,24 @@ function M.ask_for_prediction()
                 local after = line:sub(original_col + 1)
                 local first_data_line_only = data:match("^(.-)\n")
                 local new_line_with_data_at_cursor = before .. first_data_line_only .. after
-                -- vim.o.eventignore = "all"
+                -- !!! RIGHT OUT OF THE GATE, on first CursorMovedI it goes into a death sprial of print 1 => reject => trigger => print 1 ... ... when I hit escape then it stops the death spiral (also fucking strange)...
+                --    it seems like no matter what I do, inserting a new line triggers CursorMovedI AFTER I clear eventignore below... right after it every time... as if maybe its not done and so I need some other way to wait for the UI to update fully and block on that? yuck
+                --    but then why does my hack work with a boolean to just skip the next CursorMovedI event... I did that in llm.nvim too and it worked fine every time...
+                vim.o.eventignore = "all" -- want CursorMovedI... I can put my hack boolean back instead of this crap.. and it will likley be fine... yuck...
+                -- FTR :noautocmd just sets eventignore for you... also IIUC there are events you cannot suppress with eventignore, right? like TextChangedI ... that worries me
                 print("after set eventignore")
                 -- CRAP what if data has new lines :)... no problem to insert it... lets just insert contents of first row for testing
                 once = true
-                vim.cmd("noautocmd lua vim.api.nvim_buf_set_lines(0, 0, -1, false, {'Line 1', 'Line 2'})")
-                -- vim.cmd("noautocmd lua vim.api.nvim_buf_set_lines(0," .. tostring(original_row - 1) .. ", " ..
-                --     tostring(original_row) .. ", false, { '" .. new_line_with_data_at_cursor .. "' })")
-
+                -- can I do this antoher way like paste in just the new text... this seems abusive to have to delete the whole goddamn line to add text to it
+                vim.api.nvim_buf_set_lines(0, original_row - 1, original_row, false, { new_line_with_data_at_cursor })
                 print("after insert")
                 -- TODO disable events CursorMovedI temporarily instead of hack bool M.disable_cursor_move_detect
-                -- vim.api.nvim_win_set_cursor(0, { original_row, original_col + #first_data_line_only })
+                vim.api.nvim_win_set_cursor(0, { original_row, original_col + #first_data_line_only })
                 print("after insert/move")
                 -- is cursor move synchronous? or do I need to use a callback?
-                -- vim.o.eventignore = ""
+                vim.o.eventignore = ""
                 print('after clear eventignore')
+                -- EVERY TIME, RIGHT HERE (after clearing event ignore... then I get a new trigger from CursorMovedI... if I comment out inserting the line above it doesn't obviously do it then... so weird')
             end)
         end
     end)
