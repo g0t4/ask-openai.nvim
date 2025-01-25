@@ -2,6 +2,7 @@ local uv = vim.uv
 local M = {}
 
 function M.ask_for_prediction()
+    M.reject() -- always cancel last prediction before starting a new one :)
     -- print("Asking for prediction...")
 
     local stdout = uv.new_pipe(false)
@@ -44,6 +45,10 @@ function M.reject()
         print("Terminating process...")
         M.handle:kill("sigterm") -- Send SIGTERM to the process
         M.handle:close()         -- Close the handle
+        -- TODO what if kill fails? how do I mark this prediction as discard it?
+        --   or before it terminates, if another chunk arrives... I should track a request_id (guid) and use that to ignore if data still arrives after I request termination
+        --   and before it terminates I start another request... which I want for responsiveness
+        --
     end
 end
 
