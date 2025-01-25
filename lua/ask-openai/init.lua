@@ -67,7 +67,7 @@ local function setup(options)
     vim.api.nvim_create_autocmd("InsertLeave", {
         group = augroup,
         pattern = "*",
-        callback = handlers.reject
+        callback = handlers.stop_current_prediction
     })
     vim.api.nvim_create_autocmd("CursorMovedI", {
         group = augroup,
