@@ -39,6 +39,32 @@ local default_options = {
     max_tokens = 200,
     -- PRN temperature
     -- in future, if add other ask helpers then I can move these into a nested table like copilot options
+
+    tmp = {
+        predictions = {
+            -- when it makes sense, configure diff model for predictions
+            -- tmp == not a stable config architecture
+
+            keymaps = {
+                accept_all = "<Tab>",
+                accept_line = "<C-right>",
+                accept_word = "<M-right>",
+            },
+
+            provider = "keyless", -- TODO set to ? by default
+
+            verbose = true,       -- TODO default to false
+
+            api_url = nil,
+            use_api_ollama = false,
+            use_api_groq = false,
+            use_api_openai = false,
+
+            model = "qwen2.5-coder:3b",
+            max_tokens = 40,
+        }
+    }
+
 }
 
 local cached_options = default_options
