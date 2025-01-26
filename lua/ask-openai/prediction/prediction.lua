@@ -49,6 +49,18 @@ function Prediction:mark_as_abandoned()
     self.abandoned = true
 end
 
+function Prediction:generation_finished()
+    self.generated = true -- TODO status field
+end
+
+function Prediction:generation_failed()
+    self.generation_failed = true
+    -- LEAVE GENERATION visible so I can see it to troubleshoot (cursor move / exit insert mode will clear it)
+    --
+    -- user can trigger a new prediction
+    -- basically behaves just like finishing a prediction
+end
+
 -- Predictions Notes:
 -- - could request multiple predictions per buffer too, different parts -- i.e. to support a jump to edit feature (pie in sky)...
 --  - can do this even as edits happen elsewhere... anchor the completion to part of the buffer that hasn't been modified
