@@ -74,9 +74,9 @@ function M.ask_for_prediction()
     options.on_exit = function(job, code, signal)
         info("on_exit code:", vim.inspect(code), "Signal:", signal)
         if code ~= 0 then
-            this_prediction:generation_failed()
+            this_prediction:mark_generation_failed()
         else
-            this_prediction:generation_finished()
+            this_prediction:mark_generation_finished()
         end
     end
 
@@ -84,49 +84,72 @@ function M.ask_for_prediction()
         -- TODO add some tests of this parsing? can run outside of nvim too
         -- SSE = Server-Sent Event
         -- split on lines first (each SSE can have 0+ "event" - one per line)
-        for line in data:gmatch("[^\r\n]+") do
-            if line:match("^data:%s*%[DONE%]$") then
+
+        local chunk = "" -- combine all chunks into one string and check for done
+        local done = false
+        for ss_event in data:gmatch("[^\r\n]+") do
+            if ss_event:match("^data:%s*%[DONE%]$") then
                 -- done, courtesy last event... mostly ignore b/c finish_reason already comes on the prior SSE
-                return ""
+                return "", true
             end
 
-            --  strip leading "data: "
-            if line:sub(1, 6) == "data: " then
-                local json_str = line:sub(7)
-                local success, parsed = pcall(vim.json.decode, json_str)
-                if success and parsed.choices and parsed.choices[1] and parsed.choices[1].delta and parsed.choices[1].delta.content then
-                    local choice = parsed.choices[1]
-                    local content = choice.delta.content
-                    if choice.finish_reason == "stop" then
-                        return content, true
-                    elseif choice.finish_reason ~= vim.NIL then
-                        info("WARN - unexpected finish_reason: ", choice.finish_reason, " do you need to handle this too?")
+            --  strip leading "data: " (if present)
+            local event_json = ss_event
+            if ss_event:sub(1, 5) == "data: " then
+                -- ollama /api/generate doesn't prefix each SSE with 'data: '
+                event_json = ss_event:sub(7)
+            end
+            local success, parsed = pcall(vim.json.decode, event_json)
+
+            -- *** /v1/chat/completions (ollama and otherwise), SSE response parsing:
+            -- if success and parsed.choices and parsed.choices[1] and parsed.choices[1].delta and parsed.choices[1].delta.content then
+            --     local choice = parsed.choices[1]
+            --     local content = choice.delta.content
+            --     if choice.finish_reason == "stop" then
+            --         return content, true
+            --     elseif choice.finish_reason ~= vim.NIL then
+            --         info("WARN - unexpected /v1/chat/completions finish_reason: ", choice.finish_reason, " do you need to handle this too?")
+            --         -- ok for now to continue too
+            --     end
+            --     return content, false
+
+            -- *** ollama format for /api/generate, examples:
+            --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.1915236Z","response":"\n","done":false}
+            --  done example:
+            --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.2800621Z","response":"","done":true,"done_reason":"stop","total_duration":131193100,"load_duration":16550700,"prompt_eval_count":19,"prompt_eval_duration":5000000,"eval_count":12,"eval_duration":106000000}
+            if success and parsed and parsed.response then
+                if parsed.done then
+                    local done_reason = parsed.done_reason
+                    done = true
+                    if done_reason ~= "stop" then
+                        info("WARN - unexpected /api/generate done_reason: ", done_reason, " do you need to handle this too?")
                         -- ok for now to continue too
                     end
-                    return content, false
-                else
-                    info("SSE json parse failed for: ", json_str)
                 end
+                chunk = chunk .. parsed.response
             else
-                info("Ignoring SSE event: ", line)
+                info("SSE json parse failed for ss_event: ", ss_event)
             end
         end
-        return nil
+        return chunk, done
     end
 
     options.on_stdout = function(err, data, job)
         info("on_stdout data: ", data, "err: ", err)
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         if err then
-            this_prediction:generation_failed()
+            this_prediction:mark_generation_failed()
             return
         end
 
         if data then
             vim.schedule(function()
-                local chunk = process_sse(data)
+                local chunk, done = process_sse(data)
                 if chunk and chunk ~= "" then
                     this_prediction:add_chunk_to_prediction(chunk)
+                end
+                if done then
+                    this_prediction:mark_generation_finished()
                 end
             end)
         end
@@ -135,7 +158,8 @@ function M.ask_for_prediction()
     options.on_stderr = function(err, data, job)
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         -- just log for now is fine
-        info("on_stderr data: ", data, "err: ", err)
+        -- DO NOT USE "data:" b/c that is what each streaming chunk is prefixed with and so confuses the F out of me when I see that and think oh its fine... nope
+        info("on_stderr chunk: ", data, "err: ", err)
         if err then
             -- TODO stop abort?
         end
