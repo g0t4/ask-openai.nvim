@@ -46,17 +46,17 @@ local function setup(options)
 
     if predictions.keymaps.accept_all then
         vim.api.nvim_set_keymap('i', predictions.keymaps.accept_all, "",
-            { noremap = true, callback = handlers.accept_all })
+            { noremap = true, callback = handlers.accept_all_invoked })
     end
 
     if predictions.keymaps.accept_line then
         vim.api.nvim_set_keymap('i', predictions.keymaps.accept_line, "",
-            { noremap = true, callback = handlers.accept_line })
+            { noremap = true, callback = handlers.accept_line_invoked })
     end
 
     if predictions.keymaps.accept_word then
         vim.api.nvim_set_keymap('i', predictions.keymaps.accept_word, "",
-            { noremap = true, callback = handlers.accept_word })
+            { noremap = true, callback = handlers.accept_word_invoked })
     end
 
 
@@ -64,15 +64,15 @@ local function setup(options)
     -- TODO consider moving this code into prediction
     local augroup = "ask-openai.prediction"
     vim.api.nvim_create_augroup(augroup, { clear = true })
-    vim.api.nvim_create_autocmd("InsertLeave", {
+    vim.api.nvim_create_autocmd("InsertLeavePre", {
         group = augroup,
         pattern = "*",
-        callback = handlers.stop_current_prediction
+        callback = handlers.leaving_insert_mode
     })
     vim.api.nvim_create_autocmd("CursorMovedI", {
         group = augroup,
         pattern = "*", -- todo filter?
-        callback = handlers.ask_for_prediction
+        callback = handlers.cursor_moved_in_insert_mode
     })
 
     -- IIUC I should use moving cursor to reject currrent completion (or close it) and of course trigger a new one

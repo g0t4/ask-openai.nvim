@@ -88,15 +88,24 @@ function M.stop_current_prediction()
     end
 end
 
-function M.accept_all()
+-- separate the top level handlers -> keep these thin so I can distinguish the request from the work (above)
+function M.cursor_moved_in_insert_mode()
+    M.ask_for_prediction()
+end
+
+function M.leaving_insert_mode()
+    M.stop_current_prediction()
+end
+
+function M.accept_all_invoked()
     info("Accepting all predictions...")
 end
 
-function M.accept_line()
+function M.accept_line_invoked()
     info("Accepting line prediction...")
 end
 
-function M.accept_word()
+function M.accept_word_invoked()
     info("Accepting word prediction...")
 end
 
