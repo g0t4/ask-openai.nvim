@@ -26,12 +26,16 @@ function M.ask_for_prediction()
 
     local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
     local original_row = original_row_1based - 1 -- 0-based now
-    local first_row = original_row - 10
+    local first_row = original_row - 30
     local last_row = original_row + 10
-    -- todo do I need to bounds check for last line?
-    local context_before = vim.api.nvim_buf_get_lines(0, first_row, original_row, true)[1] -- 0based indexing
-    -- TODO current row prior to cursor needed
-    local context_after = vim.api.nvim_buf_get_lines(0, original_row, last_row, true)[1] -- 0based indexing
+    local IGNORE_BOUNDARIES = false
+    local current_line = vim.api.nvim_buf_get_lines(0, original_row, original_row + 1, IGNORE_BOUNDARIES)[1] -- 0based indexing
+    local current_before_cursor = current_line:sub(1, original_col + 1) -- TODO include current cursor slot as before or after?
+    local current_after_cursor = current_line:sub(original_col + 2)
+    local context_before = vim.api.nvim_buf_get_lines(0, first_row, original_row, IGNORE_BOUNDARIES) -- 0based indexing
+    local context_before_text = table.concat(context_before, "\n") .. current_before_cursor
+    local context_after = vim.api.nvim_buf_get_lines(0, original_row, last_row, IGNORE_BOUNDARIES) -- 0based indexing
+    local context_after_text = current_after_cursor .. table.concat(context_after, "\n")
 
     -- TODO limit # chars to configurable amount of context
     -- TODO read from config file tmp.predictions
@@ -43,7 +47,7 @@ function M.ask_for_prediction()
         suffix = "<|fim_suffix|>",
     }
 
-    local prompt = fim.prefix .. context_before .. fim.suffix .. context_after .. fim.middle
+    local prompt = fim.prefix .. context_before_text .. fim.suffix .. context_after_text .. fim.middle
 
     local body = {
         -- TODO make configurable model
