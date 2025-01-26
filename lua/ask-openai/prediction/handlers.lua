@@ -48,6 +48,7 @@ function M.ask_for_prediction()
     end
 
     local function process_sse(data)
+        -- TODO add some tests of this parsing? can run outside of nvim too
         -- SSE = Server-Sent Event
         -- split on lines first (each SSE can have 0+ "event" - one per line)
         for line in data:gmatch("[^\r\n]+") do
@@ -55,7 +56,9 @@ function M.ask_for_prediction()
             if line:sub(1, 6) == "data: " then
                 local json_str = line:sub(7)
                 local success, parsed = pcall(vim.json.decode, json_str)
-                if success and parsed.choices and parsed.choices[1] and parsed.choices[1].delta and parsed.choices[1].delta.content then
+                if json_str == "" then
+                    return ""
+                elseif success and parsed.choices and parsed.choices[1] and parsed.choices[1].delta and parsed.choices[1].delta.content then
                     return parsed.choices[1].delta.content
                 else
                     info("SSE json parse failed for: ", json_str)
@@ -78,7 +81,7 @@ function M.ask_for_prediction()
         if data then
             vim.schedule(function()
                 local chunk = process_sse(data)
-                if chunk then
+                if chunk and chunk ~= "" then
                     this_prediction:add_chunk_to_prediction(chunk)
                 end
             end)
