@@ -17,6 +17,17 @@ function M.ask_for_prediction()
     info("Asking for prediction...")
     M.stop_current_prediction()
 
+    -- TODO use plenary.job/curl (has builtin support for streaming!)
+    --  job:
+    --      docs: https://github.com/nvim-lua/plenary.nvim?tab=readme-ov-file#plenaryjob
+    --      code: https://github.com/nvim-lua/plenary.nvim/blob/master/lua/plenary/job.lua
+    --  curl:
+    --      docs: https://github.com/nvim-lua/plenary.nvim?tab=readme-ov-file#plenarycurl
+    --      code: https://github.com/nvim-lua/plenary.nvim/blob/master/lua/plenary/curl.lua
+    --  async:
+    --      docs: https://github.com/nvim-lua/plenary.nvim/blob/master/README.md#plenaryasync
+    --      generalized async support - base of job/curl features
+
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
     local command = "fish"
