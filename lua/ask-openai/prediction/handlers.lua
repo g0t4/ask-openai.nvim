@@ -65,10 +65,10 @@ function M.ask_for_prediction()
                     local choice = parsed.choices[1]
                     local content = choice.delta.content
                     if choice.finish_reason == "stop" then
-                        -- support other finish_reasons?
                         return content, true
                     elseif choice.finish_reason ~= vim.NIL then
                         info("WARN - unexpected finish_reason: ", choice.finish_reason, " do you need to handle this too?")
+                        -- ok for now to continue too
                     end
                     return content, false
                 else
