@@ -9,9 +9,14 @@ M.current_prediction = nil -- set on module for now, just so I can inspect it ea
 --    tail -f /Users/wesdemos/.local/share/nvim/ask/ask-predictions.log
 M.logger = require("ask-openai.prediction.logger"):new("ask-predictions.log")
 local function info(...)
-    -- TODO use top level config or a new setting to turn on/off
     M.logger:log(...)
 end
+if not require("ask-openai.config").get_options().verbose then
+    info = function(...)
+        -- no-op
+    end
+end
+
 -- info("foo", nil, "bar") -- use to validate nil args don't interupt the rest of log args getting included -- nuke this is fine, just leaving as a reminder I had trouble with logging nil values
 
 function M.ask_for_prediction()

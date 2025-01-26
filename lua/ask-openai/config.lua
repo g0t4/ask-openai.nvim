@@ -75,7 +75,6 @@ local default_options = {
 local cached_options = default_options
 
 ---@param user_options AskOpenAIOptions
----@return AskOpenAIOptions
 local function set_user_options(user_options)
     cached_options = vim.tbl_deep_extend("force", default_options, user_options or {})
 end
@@ -97,7 +96,6 @@ local function print_verbose(msg, ...)
     print(msg, ...)
 end
 
---- @return Provider
 local function _get_provider()
     -- FYI prints below only show on first run b/c provider is cached by get_provider() so NBD to add that extra info which is useful to know config is correct w/o toggling verbose on and getting a wall of logs
     if cached_options.provider == "copilot" then
