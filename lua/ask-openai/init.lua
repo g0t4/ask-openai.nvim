@@ -59,9 +59,7 @@ local function setup(options)
             { noremap = true, callback = handlers.accept_word_invoked })
     end
 
-
     -- SETUP triggers for predictions
-    -- TODO consider moving this code into prediction
     local augroup = "ask-openai.prediction"
     vim.api.nvim_create_augroup(augroup, { clear = true })
     vim.api.nvim_create_autocmd("InsertLeavePre", {
@@ -75,7 +73,9 @@ local function setup(options)
         callback = handlers.cursor_moved_in_insert_mode
     })
 
-    -- IIUC I should use moving cursor to reject currrent completion (or close it) and of course trigger a new one
+    -- SETUP hlgroup
+    -- TODO make this configurable
+    vim.api.nvim_set_hl(0, "AskPrediction", { italic = true, fg = "#dddddd" })
 end
 
 return {
