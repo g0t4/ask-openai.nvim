@@ -46,14 +46,10 @@ function M.ask_for_prediction()
     local prompt = fim.prefix .. context_before .. fim.suffix .. context_after .. fim.middle
 
     local body = {
+        -- TODO make configurable model
         model = "qwen2.5-coder:3b",
-        messages = {
-            {
-                role = "user",
-                -- crap can I do this with /chat/completions... or do I need to use a raw set of messages and no formattting of chat history
-                content = prompt
-            }
-        },
+        prompt = prompt,
+        raw = true, -- FIM request this format... for openai endpoints then I might need to find out how I would format the messages to get FIM responses... for now I am using ollama only so lets do this way hardcoded
         stream = true
     }
 
@@ -65,7 +61,8 @@ function M.ask_for_prediction()
         args = {
             "-fsSL",
             "-X", "POST",
-            "http://build21.lan:11434/v1/chat/completions",
+            -- "http://build21.lan:11434/v1/chat/completions",
+            "http://build21.lan:11434/api/generate",
             "-H", "Content-Type: application/json",
             "-d", body_serialized
         }
