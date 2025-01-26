@@ -47,6 +47,26 @@ function M.ask_for_prediction()
         end
     end
 
+    local function process_sse(data)
+        -- SSE = Server-Sent Event
+        -- split on lines first (each SSE can have 0+ "event" - one per line)
+        for line in data:gmatch("[^\r\n]+") do
+            --  strip leading "data: "
+            if line:sub(1, 6) == "data: " then
+                local json_str = line:sub(7)
+                local success, parsed = pcall(vim.json.decode, json_str)
+                if success and parsed.choices and parsed.choices[1] and parsed.choices[1].delta and parsed.choices[1].delta.content then
+                    return parsed.choices[1].delta.content
+                else
+                    info("SSE json parse failed for: ", json_str)
+                end
+            else
+                info("Ignoring SSE event: ", line)
+            end
+        end
+        return nil
+    end
+
     options.on_stdout = function(err, data, job)
         info("on_stdout data: ", data, "err: ", err)
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
@@ -57,8 +77,10 @@ function M.ask_for_prediction()
 
         if data then
             vim.schedule(function()
-                local joined_lines = data:gsub("\n", "") -- for now strip new lines ... do not do this with SSE parsing
-                this_prediction:add_chunk_to_prediction(joined_lines)
+                local chunk = process_sse(data)
+                if chunk then
+                    this_prediction:add_chunk_to_prediction(chunk)
+                end
             end)
         end
     end
