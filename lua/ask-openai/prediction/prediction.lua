@@ -1,6 +1,7 @@
 local Prediction = {}
 local uv = vim.uv
 
+local hlgroup = "AskPrediction"
 
 function Prediction:new()
     local prediction = {}
@@ -29,14 +30,44 @@ function Prediction:redraw_extmarks()
     -- clear from 0 to -1 => entire buffer
 
     local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
-    local original_row = original_row_1based - 1                                     -- 0-based now
+    local original_row = original_row_1based - 1 -- 0-based now
+
+    if self.prediction == nil then
+        -- TODO get logger in here too
+        print("unexpected... prediction is nil?")
+        return
+    end
+
+    local function split_lines_to_table(text)
+        local lines = {}
+        for line in text:gmatch("[^\r\n]+") do
+            table.insert(lines, line)
+        end
+        return lines
+    end
+
+    local lines = split_lines_to_table(self.prediction)
+    if #lines == 0 then
+        return
+    end
+
+    local first_line = { { table.remove(lines, 1), hlgroup } } -- can add hlgroup too
+
+    local virt_lines = {} -- FYI is a 3D array,  array of (lines like first_line format above)
+    -- local virt_lines_example = { { { "line1 ..." } }, { { "line2 ..." } } }
+    -- each line has an array of strings to add to the line and each string can have its own hlgroup (that is why)
+    for i, line in ipairs(lines) do
+        -- FYI can add hlgroup as second item { line, hlgroup }
+        table.insert(virt_lines, { { line, hlgroup } })
+    end
 
     vim.api.nvim_buf_set_extmark(self.buffer, self.namespace_id, original_row, original_col,
         -- FYI, row,col are 0 based! ARGH FML
         {
-            virt_text = { { self.prediction } },
+            virt_text = first_line,
+            virt_lines = virt_lines,
             -- inline? for my testing? if I am at end of line it won't matter
-            virt_text_pos = "overlay",
+            virt_text_pos = "inline",
         })
 end
 
