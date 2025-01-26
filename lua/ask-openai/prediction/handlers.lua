@@ -89,12 +89,13 @@ function M.ask_for_prediction()
         -- SSE = Server-Sent Event
         -- split on lines first (each SSE can have 0+ "event" - one per line)
 
-        local chunk = "" -- combine all chunks into one string and check for done
+        -- FYI use nil to indicate nothing in the SSE... vs empty line which is a valid thingy right?
+        local chunk = nil -- combine all chunks into one string and check for done
         local done = false
         for ss_event in data:gmatch("[^\r\n]+") do
             if ss_event:match("^data:%s*%[DONE%]$") then
                 -- done, courtesy last event... mostly ignore b/c finish_reason already comes on the prior SSE
-                return "", true
+                return chunk, true
             end
 
             --  strip leading "data: " (if present)
@@ -130,7 +131,7 @@ function M.ask_for_prediction()
                         -- ok for now to continue too
                     end
                 end
-                chunk = chunk .. parsed.response
+                chunk = (chunk or "") .. parsed.response
             else
                 info("SSE json parse failed for ss_event: ", ss_event)
             end
@@ -148,11 +149,11 @@ function M.ask_for_prediction()
 
         if data then
             vim.schedule(function()
-                local chunk, done = process_sse(data)
-                if chunk and chunk ~= "" then
+                local chunk, generation_done = process_sse(data)
+                if chunk then
                     this_prediction:add_chunk_to_prediction(chunk)
                 end
-                if done then
+                if generation_done then
                     this_prediction:mark_generation_finished()
                 end
             end)
