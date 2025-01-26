@@ -18,7 +18,6 @@ if not require("ask-openai.config").get_options().verbose then
 end
 
 -- info("foo", nil, "bar") -- use to validate nil args don't interupt the rest of log args getting included -- nuke this is fine, just leaving as a reminder I had trouble with logging nil values
-
 function M.ask_for_prediction()
     info("Asking for prediction...")
     M.stop_current_prediction()
@@ -26,12 +25,12 @@ function M.ask_for_prediction()
     local Job = require("plenary.job")
 
     local options = {
-        command = "fish",
+        command = "curl",
         args = {
-            "-c",
-            -- SIMULATE STREAMING response:
-            "for i in (seq 1 10); echo $i; sleep 0.5; end"
-            -- "echo foo && sleep 2 && echo bar",
+            "-X", "POST",
+            "http://localhost:11434/api/chat/completions",
+            "-H", "Content-Type: application/json",
+            "-d", '{"model": "llama2", "messages": [{"role": "user", "content": "Hello, how are you?"}], "stream": true}'
         }
     }
     -- closure captures this id for any callbacks to use to ignore past predictions
