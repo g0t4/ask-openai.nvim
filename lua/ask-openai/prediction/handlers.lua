@@ -27,10 +27,11 @@ function M.ask_for_prediction()
     local options = {
         command = "curl",
         args = {
+            "-fsSL",
             "-X", "POST",
-            "http://localhost:11434/api/chat/completions",
+            "http://build21.lan:11434/v1/chat/completions",
             "-H", "Content-Type: application/json",
-            "-d", '{"model": "llama2", "messages": [{"role": "user", "content": "Hello, how are you?"}], "stream": true}'
+            "-d", '{"model": "qwen2.5-coder:3b", "messages": [{"role": "user", "content": "Hello, how are you?"}], "stream": true}'
         }
     }
     -- closure captures this id for any callbacks to use to ignore past predictions
