@@ -212,4 +212,10 @@ function M.accept_word_invoked()
     info("Accepting word prediction...")
 end
 
+function M.vim_is_quitting()
+    -- just in case, though leaving insert mode should already do this
+    info("Vim is quitting, stopping current prediction...")
+    M.stop_current_prediction()
+end
+
 return M

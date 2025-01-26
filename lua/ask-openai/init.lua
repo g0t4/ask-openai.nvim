@@ -72,6 +72,11 @@ local function setup(options)
         pattern = "*", -- todo filter?
         callback = handlers.cursor_moved_in_insert_mode
     })
+    vim.api.nvim_create_autocmd("VimLeavePre", {
+        group = augroup,
+        pattern = "*",
+        callback = handlers.vim_is_quitting
+    })
 
     -- SETUP hlgroup
     -- TODO make this configurable
