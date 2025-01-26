@@ -43,8 +43,8 @@ function M.ask_for_prediction()
     local this_prediction = Prediction:new()
     M.current_prediction = this_prediction
 
-    options.on_exit = function(code, signal)
-        info("on_exit code:", code, "Signal:", signal)
+    options.on_exit = function(job, code, signal)
+        info("on_exit code:", vim.inspect(code), "Signal:", signal)
         if code ~= 0 then
             this_prediction:generation_failed()
         else
@@ -52,7 +52,8 @@ function M.ask_for_prediction()
         end
     end
 
-    options.on_stdout = function(err, data)
+    options.on_stdout = function(err, data, job)
+        -- on_stdout signature: https://github.com/nvim-lua/plenary.nvim/blob/3707cdb1e43f5cea73afb6037e6494e7ce847a66/lua/plenary/job.lua#L18
         info("on_stdout data: ", data, "err: ", err)
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         if err then
@@ -68,7 +69,9 @@ function M.ask_for_prediction()
         end
     end
 
-    options.on_stderr = function(err, data)
+    options.on_stderr = function(err, data, job)
+        -- https://github.com/nvim-lua/plenary.nvim/blob/3707cdb1e43f5cea73afb6037e6494e7ce847a66/lua/plenary/job.lua#L19
+
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         -- just log for now is fine
         info("on_stderr data: ", data, "err: ", err)
