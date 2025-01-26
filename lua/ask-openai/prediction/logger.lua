@@ -1,6 +1,11 @@
 local Logger = {}
 Logger.__index = Logger
 
+-- purposes:
+-- - only open file once per process
+-- - only check for directory existence once
+-- - reduce overhead for callers (after first hit)
+-- - PRN further reduce overhead for callers (i.e. queue writing / schedule later)
 function Logger:new(filename)
     local self = setmetatable({}, Logger)
     self.filename = filename
@@ -32,9 +37,9 @@ function Logger:log(...)
     local entry = string.format("[%s] %s\n", timestamp, ...)
 
     -- PRN can use vim.defer_fn if overhead is interferring with predictions... don't  care to do that now though...
-    self:ensure_file_is_open()
-    self.file:write(entry)
-    self.file:flush()
+    self:ensure_file_is_open() -- ~11ms first time only (when ask dir already exists, so worse case is higher if it has to make the dir), 0 thereafter
+    self.file:write(entry)     -- 0.01ms => 0.00ms
+    self.file:flush()          -- 0.69ms (max in my tests) => down to 0.02ms (most of time)
 end
 
 return Logger
