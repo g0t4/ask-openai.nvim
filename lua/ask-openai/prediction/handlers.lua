@@ -43,7 +43,6 @@ function M.ask_for_prediction()
     end
 
     options.on_stdout = function(err, data, job)
-        -- on_stdout signature: https://github.com/nvim-lua/plenary.nvim/blob/3707cdb1e43f5cea73afb6037e6494e7ce847a66/lua/plenary/job.lua#L18
         info("on_stdout data: ", data, "err: ", err)
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         if err then
@@ -60,17 +59,11 @@ function M.ask_for_prediction()
     end
 
     options.on_stderr = function(err, data, job)
-        -- https://github.com/nvim-lua/plenary.nvim/blob/3707cdb1e43f5cea73afb6037e6494e7ce847a66/lua/plenary/job.lua#L19
-
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         -- just log for now is fine
         info("on_stderr data: ", data, "err: ", err)
         if err then
-            -- TODO? not sure I need to mark any failures here
-            -- return
-        end
-        if data then
-            -- TODO consider reactions needed in the future
+            -- TODO stop abort?
         end
     end
 
