@@ -192,6 +192,8 @@ function M.stop_current_prediction()
     M.request = nil
     if request then
         info("Terminating prediction request")
+        -- TODO make sure curl request STOPS... rigfht now it seems to keep going (per the ollama server's output says all are 200)
+        --   BUT, it could be that ollama logs are not showing the disconnect... b/c I can see they all finish really fast which would not happen with dozens of requests as I type... (when I don't have debounced completions yet)
         request:shutdown()
     end
 end
