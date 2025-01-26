@@ -52,14 +52,25 @@ function M.ask_for_prediction()
         -- SSE = Server-Sent Event
         -- split on lines first (each SSE can have 0+ "event" - one per line)
         for line in data:gmatch("[^\r\n]+") do
+            if line:match("^data:%s*%[DONE%]$") then
+                -- done, courtesy last event... mostly ignore b/c finish_reason already comes on the prior SSE
+                return ""
+            end
+
             --  strip leading "data: "
             if line:sub(1, 6) == "data: " then
                 local json_str = line:sub(7)
                 local success, parsed = pcall(vim.json.decode, json_str)
-                if json_str == "" then
-                    return ""
-                elseif success and parsed.choices and parsed.choices[1] and parsed.choices[1].delta and parsed.choices[1].delta.content then
-                    return parsed.choices[1].delta.content
+                if success and parsed.choices and parsed.choices[1] and parsed.choices[1].delta and parsed.choices[1].delta.content then
+                    local choice = parsed.choices[1]
+                    local content = choice.delta.content
+                    if choice.finish_reason == "stop" then
+                        -- support other finish_reasons?
+                        return content, true
+                    elseif choice.finish_reason ~= vim.NIL then
+                        info("WARN - unexpected finish_reason: ", choice.finish_reason, " do you need to handle this too?")
+                    end
+                    return content, false
                 else
                     info("SSE json parse failed for: ", json_str)
                 end
