@@ -24,6 +24,42 @@ function M.ask_for_prediction()
 
     local Job = require("plenary.job")
 
+    local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
+    local original_row = original_row_1based - 1 -- 0-based now
+    local first_row = original_row - 10
+    local last_row = original_row + 10
+    -- todo do I need to bounds check for last line?
+    local context_before = vim.api.nvim_buf_get_lines(0, first_row, original_row, true)[1] -- 0based indexing
+    -- TODO current row prior to cursor needed
+    local context_after = vim.api.nvim_buf_get_lines(0, original_row, last_row, true)[1] -- 0based indexing
+
+    -- TODO limit # chars to configurable amount of context
+    -- TODO read from config file tmp.predictions
+    local tokens_to_clear = "<|endoftext|>" -- TODO USE THIS?
+    local fim = {
+        enabled = true,
+        prefix = "<|fim_prefix|>",
+        middle = "<|fim_middle|>",
+        suffix = "<|fim_suffix|>",
+    }
+
+    local prompt = fim.prefix .. context_before .. fim.suffix .. context_after .. fim.middle
+
+    local body = {
+        model = "qwen2.5-coder:3b",
+        messages = {
+            {
+                role = "user",
+                -- crap can I do this with /chat/completions... or do I need to use a raw set of messages and no formattting of chat history
+                content = prompt
+            }
+        },
+        stream = true
+    }
+
+    local body_serialized = vim.json.encode(body)
+    info("body", body_serialized)
+
     local options = {
         command = "curl",
         args = {
@@ -31,7 +67,7 @@ function M.ask_for_prediction()
             "-X", "POST",
             "http://build21.lan:11434/v1/chat/completions",
             "-H", "Content-Type: application/json",
-            "-d", '{"model": "qwen2.5-coder:3b", "messages": [{"role": "user", "content": "Write tower of hanoi in lua"}], "stream": true}'
+            "-d", body_serialized
         }
     }
     -- closure captures this id for any callbacks to use to ignore past predictions
