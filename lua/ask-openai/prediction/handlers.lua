@@ -243,7 +243,13 @@ function M.stop_current_prediction()
         info("Terminating prediction request")
         -- TODO make sure curl request STOPS... rigfht now it seems to keep going (per the ollama server's output says all are 200)
         --   BUT, it could be that ollama logs are not showing the disconnect... b/c I can see they all finish really fast which would not happen with dozens of requests as I type... (when I don't have debounced completions yet)
-        request:shutdown()
+
+        -- TODO feels like there is a scenario in which, shutdown isn't stopping the completions...
+        --   but when I manually test one at a time and kill it looks to stop server side (immediateely get 200 if in middle of generating).. btw 499 happens when I pkill curl when its loading a model...'
+        --   FIRST, REPRO the scenario where you have server still processing old completions and then figure out what to do...
+        --   IT MIGHT BE an issue in my code when I move my cursor and its in the middle of generating
+        request:shutdown() -- FYI can pass SIGNAL if need be as only arg
+        -- https://github.com/nvim-lua/plenary.nvim/blob/master/lua/plenary/job.lua#L215
     end
 end
 
