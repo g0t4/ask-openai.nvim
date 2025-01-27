@@ -1,6 +1,8 @@
 local Logger = {}
 Logger.__index = Logger
 
+local module_loaded_at = vim.loop.hrtime()
+
 -- purposes:
 -- - only open file once per process
 -- - only check for directory existence once
@@ -45,8 +47,10 @@ local function build_entry(...)
         -- make sure everything is a string so it can be concatenated
         arg[i] = tostring(value)
     end
-    local timestamp = os.date("%Y-%m-%d %H:%M:%S")
-    return string.format("[%s] %s\n", timestamp, table.concat(arg, " "))
+    -- local timestamp = os.date("%Y-%m-%d %H:%M:%S.%f")
+    -- local timestamp = vim.loop.hrtime() / 1e9 -- PRN track since start of process?
+    local elapsed = (vim.loop.hrtime() - module_loaded_at) / 1e9
+    return string.format("[%.3f]sec %s\n", elapsed, table.concat(arg, " "))
 end
 
 function Logger:log(...)

@@ -50,12 +50,20 @@ function M.ask_for_prediction()
     local prompt = fim.prefix .. context_before_text .. fim.suffix .. context_after_text .. fim.middle
 
     local body = {
-        -- TODO make configurable model
-        model = "qwen2.5-coder:3b",
+        -- !!! TODO try /v1/completions legacy OpenAI completions endpoint, also has raw prompt (and IIRC ollama supports this as well)
+        --   =>  would make it easier to swap out backends
+        --
+        model = "qwen2.5-coder:14b",
         prompt = prompt,
         raw = true, -- FIM request this format... for openai endpoints then I might need to find out how I would format the messages to get FIM responses... for now I am using ollama only so lets do this way hardcoded
-        stream = true
+        stream = true,
+        num_predict = 40, -- max_token for OpenAI /chat/completions
+        -- TODO roll up the request building into separate classes, and response parsing too.. so its /api/generate or /chat/completions specific w/o needing consumer to think much about it
     }
+
+    -- STREAM feels batched... is it plenary.job? or smth else?
+    --   if I run curl call myself the chunks are streamed back one at a time as expected...
+    --   but, the log output from my logger... the timestamps show the time generated but all log entries have the same timestamp...
 
     local body_serialized = vim.json.encode(body)
     info("body", body_serialized)
@@ -65,7 +73,7 @@ function M.ask_for_prediction()
         args = {
             "-fsSL",
             "-X", "POST",
-            -- "http://build21.lan:11434/v1/chat/completions",
+            -- "http://build21.lan:11434/v1/chat/completions", -- TODO is it possible to use /chat/completions for FIM?
             "http://build21.lan:11434/api/generate",
             "-H", "Content-Type: application/json",
             "-d", body_serialized
