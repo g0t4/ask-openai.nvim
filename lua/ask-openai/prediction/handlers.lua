@@ -1,7 +1,7 @@
 local uv = vim.uv
 local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
-
+local start_time = vim.uv.hrtime()
 -- FYI would need current prediction PER buffer in the future if want multiple buffers to have predictions at same time (not sure I want this feature)
 M.current_prediction = nil -- set on module for now, just so I can inspect it easily
 
@@ -64,6 +64,7 @@ function M.ask_for_prediction()
     -- STREAM feels batched... is it plenary.job? or smth else?
     --   if I run curl call myself the chunks are streamed back one at a time as expected...
     --   but, the log output from my logger... the timestamps show the time generated but all log entries have the same timestamp...
+    --  IT COULD BE CURL TOO? could it buffer output if it detects some condition?
 
     local body_serialized = vim.json.encode(body)
     info("body", body_serialized)
@@ -72,19 +73,36 @@ function M.ask_for_prediction()
         command = "curl",
         args = {
             "-fsSL",
+            "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
             -- "http://build21.lan:11434/v1/chat/completions", -- TODO is it possible to use /chat/completions for FIM?
             "http://build21.lan:11434/api/generate",
             "-H", "Content-Type: application/json",
             "-d", body_serialized
-        }
+        },
     }
     -- closure captures this id for any callbacks to use to ignore past predictions
     local this_prediction = Prediction:new()
     M.current_prediction = this_prediction
 
-    options.on_exit = function(job, code, signal)
+    -- FYI if any issues with plenary.job, it was super easy to use uv.spawn, w/ new_pipe(s):
+    --    git show 21d1e11  -- this commit is when I changed to plenary
+    -- local stdout = uv.new_pipe(false)
+    -- local stderr = uv.new_pipe(false)
+    -- Plenary adds some features that aren't there that might cause issues..
+    --   or might help, i.e. it looks like it combines chunks / splits on new lines? I need to re-read the code but I thought I saw that:
+    --      https://github.com/nvim-lua/plenary.nvim/blob/master/lua/plenary/job.lua#L285 on_output
+    --   this might be useful, but if it causes issues then go back to uv.spawn...
+    --   also, AFAIK with SSE events, the protocol has each event as a separate chunk (not split up across chunks) so I don't think I have a need for what on_output does..
+    --   also if plenary.job adds overhead then remove it too...
+    --   TODO read entirety of plenary.job and see if I really want to use it (measure timing if needed)...
+    --     also check out plenary.curl which might have added features for my use case that will help over plenary.job alone (plenary.curl is built on plenary.job)
+
+    -- options.on_exit = function(code, signal) -- uv.spawn
+    options.on_exit = function(job, code, signal) -- plenary.job
+        print("done - time since proc started: " .. tostring((vim.uv.hrtime() - start_time) / 1e9))
         info("on_exit code:", vim.inspect(code), "Signal:", signal)
+        do return end
         if code ~= 0 then
             this_prediction:mark_generation_failed()
         else
@@ -147,14 +165,23 @@ function M.ask_for_prediction()
         return chunk, done
     end
 
-    options.on_stdout = function(err, data, job)
+    -- options.on_stdout = function(err, data) -- uv.spawn
+    options.on_stdout = function(err, data, job) -- plenary.job
+        print("on_stdout: " .. tostring((vim.uv.hrtime() - start_time) / 1e9))
+        -- why is my callback invoked basically after the entire process runs (or in huge batches?)
+        --   its called after 5ish seconds and all  at once in smaller completions
+        --   longer completions will chunk every 2-5 seconds it seems
+        --     so it is async but it's not streaming every chunk
+        --   when I run equivalent curl request, it streams as expected so its not ollama
+        -- TODO do I need to return a status code to job runner?
         info("on_stdout data: ", data, "err: ", err)
+        do return end
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         if err then
             this_prediction:mark_generation_failed()
             return
         end
-
+        do return end
         if data then
             vim.schedule(function()
                 local chunk, generation_done = process_sse(data)
@@ -168,7 +195,10 @@ function M.ask_for_prediction()
         end
     end
 
-    options.on_stderr = function(err, data, job)
+
+    -- options.on_stderr = function(err, data) -- uv.spa
+    options.on_stderr = function(err, data, job) -- plenary.job
+        do return end
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         -- just log for now is fine
         -- DO NOT USE "data:" b/c that is what each streaming chunk is prefixed with and so confuses the F out of me when I see that and think oh its fine... nope
@@ -180,6 +210,7 @@ function M.ask_for_prediction()
 
     M.request = Job:new(options)
     M.request:start()
+    -- uv.spawn instead + start_read into the callbacks above and an on_exit handler here too (see signatures above in comments for uv.spawn alternative)
 end
 
 function M.stop_current_prediction()
