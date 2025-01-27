@@ -60,6 +60,7 @@ function M.ask_for_prediction()
         --
         -- model = "qwen2.5-coder:7b", --0.5b, 1b, 3b*, 7b, 14b*, 32b
         model = "codellama:7b-code-q4_K_M", -- FYI only -code models have PSM in template? or is that a mistake in some of the -instruct models... I thought instruct had infill?
+        -- btw => codellama:-code uses: <PRE> -- calculator\nlocal M = {}\n\nfunction M.add(a, b)\n    return a + b\nend1 <SUF>1\n\n\n\nreturn M <MID>
 
         -- *** prompt differs per endpoint:
         -- -- ollama's /api/generate, also IIAC everyone else's /v1/completions:
