@@ -3,6 +3,15 @@ Logger.__index = Logger
 
 local module_loaded_at = vim.loop.hrtime()
 
+local predictions_logger = nil
+function Logger.predictions()
+    if predictions_logger then
+        return predictions_logger
+    end
+    predictions_logger = Logger:new("ask-predictions.log")
+    return predictions_logger
+end
+
 -- purposes:
 -- - only open file once per process
 -- - only check for directory existence once

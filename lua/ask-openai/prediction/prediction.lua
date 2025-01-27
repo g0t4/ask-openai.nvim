@@ -1,6 +1,16 @@
 local Prediction = {}
 local uv = vim.uv
 
+Prediction.logger = require("ask-openai.prediction.logger").predictions()
+local function info(...)
+    Prediction.logger:log(...)
+end
+if not require("ask-openai.config").get_options().verbose then
+    info = function(...)
+        -- no-op
+    end
+end
+
 local hlgroup = "AskPrediction"
 
 function Prediction:new()
@@ -17,12 +27,21 @@ function Prediction:new()
     prediction.prediction = ""
     prediction.extmarks = {}
     prediction.abandoned = false -- PRN could be a prediction state? IF NEEDED
+    prediction.disable_cursor_moved = false
     return setmetatable(prediction, { __index = Prediction })
 end
 
 function Prediction:add_chunk_to_prediction(chunk)
     self.prediction = self.prediction .. chunk
     self:redraw_extmarks()
+end
+
+local function split_lines_to_table(text)
+    local lines = {}
+    for line in text:gmatch("[^\r\n]+") do
+        table.insert(lines, line)
+    end
+    return lines
 end
 
 function Prediction:redraw_extmarks()
@@ -36,14 +55,6 @@ function Prediction:redraw_extmarks()
         -- TODO get logger in here too
         print("unexpected... prediction is nil?")
         return
-    end
-
-    local function split_lines_to_table(text)
-        local lines = {}
-        for line in text:gmatch("[^\r\n]+") do
-            table.insert(lines, line)
-        end
-        return lines
     end
 
     local lines = split_lines_to_table(self.prediction)
@@ -90,6 +101,32 @@ function Prediction:mark_generation_failed()
     --
     -- user can trigger a new prediction
     -- basically behaves just like finishing a prediction
+end
+
+function Prediction:accept_first_line()
+    local lines = split_lines_to_table(self.prediction)
+    if #lines == 0 then
+        return
+    end
+
+    local first_line = table.remove(lines, 1) -- mostly just change this to accept 1+ words/lines
+
+    -- insert first line into document
+    local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
+    local original_row = original_row_1based - 1 -- 0-based now
+
+    self.disable_cursor_moved = true
+    -- TODO fix issue with cursor moving! FUUUU... could I exit to normal mode and come back to insert when done?
+    --  does eventignore happen to work here, probably not
+    -- IIUC I can insert however many lines I want...
+    -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
+    vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, { first_line })
+    -- TODO FUTURE.. if model generates a diff... could I diff and line it up and show changes too like zed! would be for multiple line accept
+    -- FYI cursor moves with insert...
+    -- TODO with accept line, should cursor also wrap to next line? I think it has to to be able to tab through it all
+
+    self.prediction = table.concat(lines, "\n") -- strip that first line then from the prediction (and update it)
+    self:redraw_extmarks()
 end
 
 -- Predictions Notes:

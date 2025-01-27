@@ -7,7 +7,7 @@ M.current_prediction = nil -- set on module for now, just so I can inspect it ea
 
 -- FYI useful to observe what is happening under hood, run in pane below nvim (don't need to esc and look at :messages)
 --    tail -f /Users/wesdemos/.local/share/nvim/ask/ask-predictions.log
-M.logger = require("ask-openai.prediction.logger"):new("ask-predictions.log")
+M.logger = require("ask-openai.prediction.logger").predictions()
 local function info(...)
     M.logger:log(...)
 end
@@ -249,6 +249,12 @@ end
 
 -- separate the top level handlers -> keep these thin so I can distinguish the request from the work (above)
 function M.cursor_moved_in_insert_mode()
+    if M.current_prediction ~= nil and M.current_prediction.disable_cursor_moved == true then
+        info("Disabled CursorMovedI, skipping...")
+        M.current_prediction.disable_cursor_moved = false -- re-enable it, just skip one time... yes it sucks
+        -- basically this is called after accepting/inserting the new content (AFAICT only one time too)
+        return
+    end
     M.ask_for_prediction()
 end
 
@@ -262,6 +268,10 @@ end
 
 function M.accept_line_invoked()
     info("Accepting line prediction...")
+    if not M.current_prediction then
+        return
+    end
+    M.current_prediction:accept_first_line()
 end
 
 function M.accept_word_invoked()
