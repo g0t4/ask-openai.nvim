@@ -53,7 +53,7 @@ function M.ask_for_prediction()
         -- !!! TODO try /v1/completions legacy OpenAI completions endpoint, also has raw prompt (and IIRC ollama supports this as well)
         --   =>  would make it easier to swap out backends
         --
-        model = "qwen2.5-coder:14b",
+        model = "qwen2.5-coder:7b", --0.5b, 1b, 3b*, 7b, 14b*, 32b
         prompt = prompt,
         raw = true, -- FIM request this format... for openai endpoints then I might need to find out how I would format the messages to get FIM responses... for now I am using ollama only so lets do this way hardcoded
         stream = true,
