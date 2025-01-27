@@ -157,25 +157,42 @@ function Prediction:accept_first_word()
         return
     end
 
-    -- local first_word = table.remove(lines, 1) -- mostly just change this to accept 1+ words/lines
+    local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
+    info("word_end:", word_end)
+    if word_end == nil then
+        info("no words in first line, accepting entire line")
+        self:accept_first_line()
+        return
+    end
 
-    -- -- insert first word into document
-    -- local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
-    -- local original_row = original_row_1based - 1 -- 0-based now
+    local first_word = lines[1]:sub(1, word_end) or ""
+    info(string.format("first_word: '%s'", first_word))
+    if first_word == lines[1] then
+        -- rest of word, then use accept line
+        info("next word is last word for line, take it all")
+        self:accept_first_line()
+        return
+    end
+    -- strip first_word:
+    lines[1] = lines[1]:sub(word_end + 1) or "" -- shouldn't need `or ""`
 
-    -- self.disable_cursor_moved = true
-    -- -- TODO fix issue with cursor moving! FUUUU... could I exit to normal mode and come back to insert when done?
-    -- --  does eventignore happen to work here, probably not
-    -- -- IIUC I can insert however many lines I want...
-    -- -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
-    -- vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, { first_word, "" })
-    -- -- TODO FUTURE.. if model generates a diff... could I diff and line it up and show changes too like zed! would be for multiple line accept
-    -- -- FYI cursor moves with insert...
-    -- -- TODO with accept line, should cursor also wrap to next line? I think it has to to be able to tab through it all
-    -- vim.api.nvim_win_set_cursor(0, { original_row_1based + 1, 0 }) -- (1,0)-based (row,col)
+    -- insert first word into document
+    local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
+    local original_row = original_row_1based - 1 -- 0-based now
 
-    -- self.prediction = table.concat(lines, "\n") -- strip that first line then from the prediction (and update it)
-    -- self:redraw_extmarks()
+    self.disable_cursor_moved = true
+    -- TODO fix issue with cursor moving! FUUUU... could I exit to normal mode and come back to insert when done?
+    --  does eventignore happen to work here, probably not
+    -- IIUC I can insert however many lines I want...
+    -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
+    vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, { first_word })
+    -- TODO FUTURE.. if model generates a diff... could I diff and line it up and show changes too like zed! would be for multiple line accept
+    -- FYI cursor moves with insert...
+    -- TODO with accept line, should cursor also wrap to next line? I think it has to to be able to tab through it all
+    vim.api.nvim_win_set_cursor(0, { original_row_1based, original_col + #first_word }) -- (1,0)-based (row,col)
+
+    self.prediction = table.concat(lines, "\n") -- strip that first line then from the prediction (and update it)
+    self:redraw_extmarks()
 end
 
 function Prediction:accept_all()
