@@ -58,15 +58,18 @@ function M.ask_for_prediction()
         --    ollama supports it: https://github.com/ollama/ollama/blob/main/docs/openai.md#v1completions
         --    for FIM, you won't likely use /chat/completions (two different tasks and models are trained on FIM alone, not w/ chat messages in prompt)
         --
-        -- model = "qwen2.5-coder:7b", --0.5b, 1b, 3b*, 7b, 14b*, 32b
-        model = "codellama:7b-code-q4_K_M", -- FYI only -code models have PSM in template? or is that a mistake in some of the -instruct models... I thought instruct had infill?
+        model = "qwen2.5-coder:7b", --0.5b, 1b, 3b*, 7b, 14b*, 32b
+
+        -- model = "codellama:7b-code-q4_K_M", -- FYI only -code models have PSM in template? or is that a mistake in some of the -instruct models... I thought instruct had infill?
         -- btw => codellama:-code uses: <PRE> -- calculator\nlocal M = {}\n\nfunction M.add(a, b)\n    return a + b\nend1 <SUF>1\n\n\n\nreturn M <MID>
+        --      Admittedly it is nice to switch models and have the template handle the FIM token differences...
 
         -- *** prompt differs per endpoint:
         -- -- ollama's /api/generate, also IIAC everyone else's /v1/completions:
         -- prompt = raw_prompt
         --
         -- ollama's /v1/completions + Templates (I honestly hate this... you should've had a raw flag in your /v1/completions implementation... why fuck over all users?)
+        --     btw ollama discusses templating for FIM here: https://github.com/ollama/ollama/blob/main/docs/template.md#example-fill-in-middle
         prompt = context_before_text, -- ollama's /v1/completions + qwen2.5-coder's template (and their guidance on FIM)
         suffix = context_after_text,
         -- I AM TEMPTED TO JUST USE /api/generate so I don't get f'ed over by the template in ollama... but let me wait for that to happen first
