@@ -51,7 +51,7 @@ function M.ask_for_prediction()
     --    this is not FIM, rather it is like AR... give it <|repo_name|> and then multiple files delimited with <|file_sep|> and name and then contents... then last file is only partially complete (it generates the rest of it)
     -- The more I think about it, the less often I think I use the idea of FIM... I really am just completing (often w/o a care for what comes next)... should I be trying non-FIM too? (like repo level completions?)
     -- PSM inference format:
-    local prompt = fim.prefix .. context_before_text .. fim.suffix .. context_after_text .. fim.middle
+    -- local raw_prompt = fim.prefix .. context_before_text .. fim.suffix .. context_after_text .. fim.middle
 
     local body = {
         -- !!! TODO migrate to /v1/completions "legacy" OpenAI completions endpoint (also has RAW prompt)
@@ -59,11 +59,22 @@ function M.ask_for_prediction()
         --    for FIM, you won't likely use /chat/completions (two different tasks and models are trained on FIM alone, not w/ chat messages in prompt)
         --
         model = "qwen2.5-coder:7b", --0.5b, 1b, 3b*, 7b, 14b*, 32b
-        prompt = prompt,
+
+        -- *** prompt differs per endpoint:
+        -- -- ollama's /api/generate, also IIAC everyone else's /v1/completions:
+        -- prompt = raw_prompt
+        --
+        -- ollama's /v1/completions + Templates (I honestly hate this... you should've had a raw flag in your /v1/completions implementation... why fuck over all users?)
+        prompt = context_before_text, -- ollama's /v1/completions + qwen2.5-coder's template (and their guidance on FIM)
+        suffix = context_after_text,
+
         raw = true, -- FIM request this format... for openai endpoints then I might need to find out how I would format the messages to get FIM responses... for now I am using ollama only so lets do this way hardcoded
+        -- TODO is raw supported by /v1/completions? does ollama alter my prompt?
         stream = true,
-        num_predict = 40, -- max_token for OpenAI /chat/completions
+        -- num_predict = 40, -- max tokens for ollama's /api/generate
+        max_tokens = 40,
         -- TODO roll up the request building into separate classes, and response parsing too.. so its /api/generate or /chat/completions specific w/o needing consumer to think much about it
+        -- TODO temperature, top_p,
     }
 
     local body_serialized = vim.json.encode(body)
@@ -75,8 +86,8 @@ function M.ask_for_prediction()
             "-fsSL",
             "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
-            -- "http://build21.lan:11434/v1/completions" -- TODO switch to this as ollama supports it too and then it works with all sorts of backends
-            "http://build21.lan:11434/api/generate",
+            "http://build21.lan:11434/v1/completions",
+            -- "http://build21.lan:11434/api/generate",
             "-H", "Content-Type: application/json",
             "-d", body_serialized
         },
@@ -130,38 +141,39 @@ function M.ask_for_prediction()
 
             --  strip leading "data: " (if present)
             local event_json = ss_event
-            if ss_event:sub(1, 5) == "data: " then
+            if ss_event:sub(1, 6) == "data: " then
                 -- ollama /api/generate doesn't prefix each SSE with 'data: '
                 event_json = ss_event:sub(7)
             end
             local success, parsed = pcall(vim.json.decode, event_json)
 
-            -- *** /v1/chat/completions (ollama and otherwise), SSE response parsing:
-            -- if success and parsed.choices and parsed.choices[1] and parsed.choices[1].delta and parsed.choices[1].delta.content then
-            --     local choice = parsed.choices[1]
-            --     local content = choice.delta.content
-            --     if choice.finish_reason == "stop" then
-            --         return content, true
-            --     elseif choice.finish_reason ~= vim.NIL then
-            --         info("WARN - unexpected /v1/chat/completions finish_reason: ", choice.finish_reason, " do you need to handle this too?")
-            --         -- ok for now to continue too
-            --     end
-            --     return content, false
-
-            -- *** ollama format for /api/generate, examples:
-            --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.1915236Z","response":"\n","done":false}
-            --  done example:
-            --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.2800621Z","response":"","done":true,"done_reason":"stop","total_duration":131193100,"load_duration":16550700,"prompt_eval_count":19,"prompt_eval_duration":5000000,"eval_count":12,"eval_duration":106000000}
-            if success and parsed and parsed.response then
-                if parsed.done then
-                    local done_reason = parsed.done_reason
+            -- *** /v1/completions
+            if success and parsed.choices and parsed.choices[1] and parsed.choices[1].text then
+                local choice = parsed.choices[1]
+                local text = choice.text
+                if choice.finish_reason == "stop" then -- TODO "length"?
                     done = true
-                    if done_reason ~= "stop" then
-                        info("WARN - unexpected /api/generate done_reason: ", done_reason, " do you need to handle this too?")
-                        -- ok for now to continue too
-                    end
+                elseif choice.finish_reason ~= vim.NIL then
+                    info("WARN - unexpected /v1/completions finish_reason: ", choice.finish_reason, " do you need to handle this too?")
+                    -- ok for now to continue too
+                    done = true
                 end
-                chunk = (chunk or "") .. parsed.response
+                chunk = (chunk or "") .. text
+
+                -- -- *** ollama format for /api/generate, examples:
+                -- --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.1915236Z","response":"\n","done":false}
+                -- --  done example:
+                -- --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.2800621Z","response":"","done":true,"done_reason":"stop","total_duration":131193100,"load_duration":16550700,"prompt_eval_count":19,"prompt_eval_duration":5000000,"eval_count":12,"eval_duration":106000000}
+                -- if success and parsed and parsed.response then
+                --     if parsed.done then
+                --         local done_reason = parsed.done_reason
+                --         done = true
+                --         if done_reason ~= "stop" then
+                --             info("WARN - unexpected /api/generate done_reason: ", done_reason, " do you need to handle this too?")
+                --             -- ok for now to continue too
+                --         end
+                --     end
+                --     chunk = (chunk or "") .. parsed.response
             else
                 info("SSE json parse failed for ss_event: ", ss_event)
             end
