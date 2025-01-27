@@ -143,5 +143,64 @@ end
 -- - could request multiple predictions per buffer too, different parts -- i.e. to support a jump to edit feature (pie in sky)...
 --  - can do this even as edits happen elsewhere... anchor the completion to part of the buffer that hasn't been modified
 
+function Prediction:accept_first_word()
+    if not self.generated then
+        -- IT WORKS GREAT! though I always waited for first line to be done... its gonna be an issue mid line :)
+        --    IN FACT IT IS BEAUTIFUL!! accept while its writing!! YESSSS
+        -- what if someone tries to do this while completion is still generating?
+        info("WARNING - accepting completion while still generating, might not be an issue... will see")
+        -- IIAC only one thing can run at a time so it might be ok?
+    end
+
+    local lines = split_lines_to_table(self.prediction)
+    if #lines == 0 then
+        return
+    end
+
+    -- local first_word = table.remove(lines, 1) -- mostly just change this to accept 1+ words/lines
+
+    -- -- insert first word into document
+    -- local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
+    -- local original_row = original_row_1based - 1 -- 0-based now
+
+    -- self.disable_cursor_moved = true
+    -- -- TODO fix issue with cursor moving! FUUUU... could I exit to normal mode and come back to insert when done?
+    -- --  does eventignore happen to work here, probably not
+    -- -- IIUC I can insert however many lines I want...
+    -- -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
+    -- vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, { first_word, "" })
+    -- -- TODO FUTURE.. if model generates a diff... could I diff and line it up and show changes too like zed! would be for multiple line accept
+    -- -- FYI cursor moves with insert...
+    -- -- TODO with accept line, should cursor also wrap to next line? I think it has to to be able to tab through it all
+    -- vim.api.nvim_win_set_cursor(0, { original_row_1based + 1, 0 }) -- (1,0)-based (row,col)
+
+    -- self.prediction = table.concat(lines, "\n") -- strip that first line then from the prediction (and update it)
+    -- self:redraw_extmarks()
+end
+
+function Prediction:accept_all()
+    local lines = split_lines_to_table(self.prediction)
+    if #lines == 0 then
+        return
+    end
+
+    -- insert all lines into document
+    local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
+    local original_row = original_row_1based - 1 -- 0-based now
+
+    self.disable_cursor_moved = true
+    -- TODO fix issue with cursor moving! FUUUU... could I exit to normal mode and come back to insert when done?
+    --  does eventignore happen to work here, probably not
+    -- IIUC I can insert however many lines I want...
+    -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
+    vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, lines)
+    -- TODO FUTURE.. if model generates a diff... could I diff and line it up and show changes too like zed! would be for multiple line accept
+    -- FYI cursor moves with insert...
+    -- TODO with accept line, should cursor also wrap to next line? I think it has to to be able to tab through it all
+    vim.api.nvim_win_set_cursor(0, { original_row_1based + #lines, 0 }) -- (1,0)-based (row,col)
+
+    self.prediction = "" -- strip all lines from the prediction (and update it)
+    self:redraw_extmarks()
+end
 
 return Prediction

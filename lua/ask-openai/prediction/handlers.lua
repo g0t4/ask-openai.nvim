@@ -271,6 +271,10 @@ end
 
 function M.accept_all_invoked()
     info("Accepting all predictions...")
+    if not M.current_prediction then
+        return
+    end
+    M.current_prediction:accept_all()
 end
 
 function M.accept_line_invoked()
@@ -283,6 +287,10 @@ end
 
 function M.accept_word_invoked()
     info("Accepting word prediction...")
+    if not M.current_prediction then
+        return
+    end
+    M.current_prediction:accept_first_word()
 end
 
 function M.vim_is_quitting()
