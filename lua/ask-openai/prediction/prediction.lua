@@ -184,23 +184,17 @@ function Prediction:accept_all()
         return
     end
 
-    -- insert all lines into document
     local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
     local original_row = original_row_1based - 1 -- 0-based now
 
     self.disable_cursor_moved = true
-    -- TODO fix issue with cursor moving! FUUUU... could I exit to normal mode and come back to insert when done?
-    --  does eventignore happen to work here, probably not
-    -- IIUC I can insert however many lines I want...
-    -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
     vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, lines)
-    -- TODO FUTURE.. if model generates a diff... could I diff and line it up and show changes too like zed! would be for multiple line accept
-    -- FYI cursor moves with insert...
-    -- TODO with accept line, should cursor also wrap to next line? I think it has to to be able to tab through it all
     vim.api.nvim_win_set_cursor(0, { original_row_1based + #lines, 0 }) -- (1,0)-based (row,col)
 
     self.prediction = "" -- strip all lines from the prediction (and update it)
     self:redraw_extmarks()
+    -- TODO mark fully accepted?
+    -- SIGNAL TO handlers to generate next prediction? or not?
 end
 
 return Prediction
