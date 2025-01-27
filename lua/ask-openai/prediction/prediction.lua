@@ -2,6 +2,7 @@ local Prediction = {}
 local uv = vim.uv
 
 Prediction.logger = require("ask-openai.prediction.logger").predictions()
+-- TODO move info/noop to logger too... just want a clean way to call it like info in here.. not keep on logger:info but fine if I have to
 local function info(...)
     Prediction.logger:log(...)
 end
@@ -120,10 +121,11 @@ function Prediction:accept_first_line()
     --  does eventignore happen to work here, probably not
     -- IIUC I can insert however many lines I want...
     -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
-    vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, { first_line })
+    vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, { first_line, "" })
     -- TODO FUTURE.. if model generates a diff... could I diff and line it up and show changes too like zed! would be for multiple line accept
     -- FYI cursor moves with insert...
     -- TODO with accept line, should cursor also wrap to next line? I think it has to to be able to tab through it all
+    vim.api.nvim_win_set_cursor(0, { original_row_1based + 1, 0 }) -- (1,0)-based (row,col)
 
     self.prediction = table.concat(lines, "\n") -- strip that first line then from the prediction (and update it)
     self:redraw_extmarks()
