@@ -47,6 +47,10 @@ function M.ask_for_prediction()
         suffix = "<|fim_suffix|>",
     }
 
+    -- TODO try repo level code completion: https://github.com/QwenLM/Qwen2.5-coder?tab=readme-ov-file#4-repository-level-code-completion
+    --    this is not FIM, rather it is like AR... give it <|repo_name|> and then multiple files delimited with <|file_sep|> and name and then contents... then last file is only partially complete (it generates the rest of it)
+    -- The more I think about it, the less often I think I use the idea of FIM... I really am just completing (often w/o a care for what comes next)... should I be trying non-FIM too? (like repo level completions?)
+    -- PSM inference format:
     local prompt = fim.prefix .. context_before_text .. fim.suffix .. context_after_text .. fim.middle
 
     local body = {
