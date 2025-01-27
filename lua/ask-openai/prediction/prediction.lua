@@ -106,6 +106,8 @@ end
 
 function Prediction:accept_first_line()
     if not self.generated then
+        -- IT WORKS GREAT! though I always waited for first line to be done... its gonna be an issue mid line :)
+        --    IN FACT IT IS BEAUTIFUL!! accept while its writing!! YESSSS
         -- what if someone tries to do this while completion is still generating?
         info("WARNING - accepting completion while still generating, might not be an issue... will see")
         -- IIAC only one thing can run at a time so it might be ok?
