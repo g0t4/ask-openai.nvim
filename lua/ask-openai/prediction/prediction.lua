@@ -105,6 +105,12 @@ function Prediction:mark_generation_failed()
 end
 
 function Prediction:accept_first_line()
+    if not self.generated then
+        -- what if someone tries to do this while completion is still generating?
+        info("WARNING - accepting completion while still generating, might not be an issue... will see")
+        -- IIAC only one thing can run at a time so it might be ok?
+    end
+
     local lines = split_lines_to_table(self.prediction)
     if #lines == 0 then
         return
