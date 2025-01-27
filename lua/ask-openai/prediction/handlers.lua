@@ -248,6 +248,7 @@ function M.stop_current_prediction()
         --   but when I manually test one at a time and kill it looks to stop server side (immediateely get 200 if in middle of generating).. btw 499 happens when I pkill curl when its loading a model...'
         --   FIRST, REPRO the scenario where you have server still processing old completions and then figure out what to do...
         --   IT MIGHT BE an issue in my code when I move my cursor and its in the middle of generating
+        --     COULDN'T REPRO CURRENTLY... so move on for now
         request:shutdown() -- FYI can pass SIGNAL if need be as only arg
         -- https://github.com/nvim-lua/plenary.nvim/blob/master/lua/plenary/job.lua#L215
     end
