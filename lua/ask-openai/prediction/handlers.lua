@@ -102,7 +102,6 @@ function M.ask_for_prediction()
     options.on_exit = function(job, code, signal) -- plenary.job
         print("done - time since proc started: " .. tostring((vim.uv.hrtime() - start_time) / 1e9))
         info("on_exit code:", vim.inspect(code), "Signal:", signal)
-        do return end
         if code ~= 0 then
             this_prediction:mark_generation_failed()
         else
@@ -175,13 +174,11 @@ function M.ask_for_prediction()
         --   when I run equivalent curl request, it streams as expected so its not ollama
         -- TODO do I need to return a status code to job runner?
         info("on_stdout data: ", data, "err: ", err)
-        do return end
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         if err then
             this_prediction:mark_generation_failed()
             return
         end
-        do return end
         if data then
             vim.schedule(function()
                 local chunk, generation_done = process_sse(data)
@@ -198,7 +195,6 @@ function M.ask_for_prediction()
 
     -- options.on_stderr = function(err, data) -- uv.spa
     options.on_stderr = function(err, data, job) -- plenary.job
-        do return end
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         -- just log for now is fine
         -- DO NOT USE "data:" b/c that is what each streaming chunk is prefixed with and so confuses the F out of me when I see that and think oh its fine... nope
