@@ -1,7 +1,7 @@
-local uv = vim.uv
 local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
-local start_time = vim.uv.hrtime()
+local Job = require("plenary.job")
+
 -- FYI would need current prediction PER buffer in the future if want multiple buffers to have predictions at same time (not sure I want this feature)
 M.current_prediction = nil -- set on module for now, just so I can inspect it easily
 
@@ -17,12 +17,12 @@ if not require("ask-openai.config").get_options().verbose then
     end
 end
 
+-- TODO add unit test of info log method so I don't waste another hour on its quirks:
 -- info("foo", nil, "bar") -- use to validate nil args don't interupt the rest of log args getting included -- nuke this is fine, just leaving as a reminder I had trouble with logging nil values
+
 function M.ask_for_prediction()
-    info("Asking for prediction...")
     M.stop_current_prediction()
 
-    local Job = require("plenary.job")
 
     local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
     local original_row = original_row_1based - 1 -- 0-based now
@@ -61,13 +61,8 @@ function M.ask_for_prediction()
         -- TODO roll up the request building into separate classes, and response parsing too.. so its /api/generate or /chat/completions specific w/o needing consumer to think much about it
     }
 
-    -- STREAM feels batched... is it plenary.job? or smth else?
-    --   if I run curl call myself the chunks are streamed back one at a time as expected...
-    --   but, the log output from my logger... the timestamps show the time generated but all log entries have the same timestamp...
-    --  IT COULD BE CURL TOO? could it buffer output if it detects some condition?
-
     local body_serialized = vim.json.encode(body)
-    info("body", body_serialized)
+    -- info("body", body_serialized)
 
     local options = {
         command = "curl",
@@ -80,7 +75,13 @@ function M.ask_for_prediction()
             "-H", "Content-Type: application/json",
             "-d", body_serialized
         },
+        -- TODO do I need to set stream job option? (plenary.curl uses this to decide if it wires up on_stdout... but I don't think its needed w/ plenary.job alone?) unsure... works w/o it so far
+        -- stream = true
     }
+
+    -- log the curl call, super useful for testing independently in terminal
+    info("curl", table.concat(options.args, " "))
+
     -- closure captures this id for any callbacks to use to ignore past predictions
     local this_prediction = Prediction:new()
     M.current_prediction = this_prediction
@@ -100,7 +101,6 @@ function M.ask_for_prediction()
 
     -- options.on_exit = function(code, signal) -- uv.spawn
     options.on_exit = function(job, code, signal) -- plenary.job
-        print("done - time since proc started: " .. tostring((vim.uv.hrtime() - start_time) / 1e9))
         info("on_exit code:", vim.inspect(code), "Signal:", signal)
         if code ~= 0 then
             this_prediction:mark_generation_failed()
@@ -166,13 +166,6 @@ function M.ask_for_prediction()
 
     -- options.on_stdout = function(err, data) -- uv.spawn
     options.on_stdout = function(err, data, job) -- plenary.job
-        print("on_stdout: " .. tostring((vim.uv.hrtime() - start_time) / 1e9))
-        -- why is my callback invoked basically after the entire process runs (or in huge batches?)
-        --   its called after 5ish seconds and all  at once in smaller completions
-        --   longer completions will chunk every 2-5 seconds it seems
-        --     so it is async but it's not streaming every chunk
-        --   when I run equivalent curl request, it streams as expected so its not ollama
-        -- TODO do I need to return a status code to job runner?
         info("on_stdout data: ", data, "err: ", err)
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         if err then
@@ -192,7 +185,6 @@ function M.ask_for_prediction()
         end
     end
 
-
     -- options.on_stderr = function(err, data) -- uv.spa
     options.on_stderr = function(err, data, job) -- plenary.job
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
@@ -206,7 +198,6 @@ function M.ask_for_prediction()
 
     M.request = Job:new(options)
     M.request:start()
-    -- uv.spawn instead + start_read into the callbacks above and an on_exit handler here too (see signatures above in comments for uv.spawn alternative)
 end
 
 function M.stop_current_prediction()
