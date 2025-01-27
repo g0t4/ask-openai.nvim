@@ -67,9 +67,10 @@ function M.ask_for_prediction()
         -- ollama's /v1/completions + Templates (I honestly hate this... you should've had a raw flag in your /v1/completions implementation... why fuck over all users?)
         prompt = context_before_text, -- ollama's /v1/completions + qwen2.5-coder's template (and their guidance on FIM)
         suffix = context_after_text,
+        -- I AM TEMPTED TO JUST USE /api/generate so I don't get f'ed over by the template in ollama... but let me wait for that to happen first
+        -- TODO add logic to switch the request/response parsing based on backend and vs not
+        raw = true, -- ollama's /api/generate allows to bypass templates... unfortunately, ollama doesn't have this param for its /v1/completions endpoint
 
-        raw = true, -- FIM request this format... for openai endpoints then I might need to find out how I would format the messages to get FIM responses... for now I am using ollama only so lets do this way hardcoded
-        -- TODO is raw supported by /v1/completions? does ollama alter my prompt?
         stream = true,
         -- num_predict = 40, -- max tokens for ollama's /api/generate
         max_tokens = 40,
