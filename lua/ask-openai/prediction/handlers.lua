@@ -50,8 +50,9 @@ function M.ask_for_prediction()
     local prompt = fim.prefix .. context_before_text .. fim.suffix .. context_after_text .. fim.middle
 
     local body = {
-        -- !!! TODO try /v1/completions legacy OpenAI completions endpoint, also has raw prompt (and IIRC ollama supports this as well)
-        --   =>  would make it easier to swap out backends
+        -- !!! TODO migrate to /v1/completions "legacy" OpenAI completions endpoint (also has RAW prompt)
+        --    ollama supports it: https://github.com/ollama/ollama/blob/main/docs/openai.md#v1completions
+        --    for FIM, you won't likely use /chat/completions (two different tasks and models are trained on FIM alone, not w/ chat messages in prompt)
         --
         model = "qwen2.5-coder:7b", --0.5b, 1b, 3b*, 7b, 14b*, 32b
         prompt = prompt,
@@ -70,7 +71,7 @@ function M.ask_for_prediction()
             "-fsSL",
             "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
-            -- "http://build21.lan:11434/v1/chat/completions", -- TODO is it possible to use /chat/completions for FIM?
+            -- "http://build21.lan:11434/v1/completions" -- TODO switch to this as ollama supports it too and then it works with all sorts of backends
             "http://build21.lan:11434/api/generate",
             "-H", "Content-Type: application/json",
             "-d", body_serialized
