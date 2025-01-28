@@ -256,6 +256,9 @@ function M.stop_current_prediction()
     end
 end
 
+-- todo help/readonly buffers?
+local ignore_filetypes = { "TelescopePrompt", "NvimTree" }
+
 -- separate the top level handlers -> keep these thin so I can distinguish the request from the work (above)
 function M.cursor_moved_in_insert_mode()
     if M.current_prediction ~= nil and M.current_prediction.disable_cursor_moved == true then
@@ -264,6 +267,11 @@ function M.cursor_moved_in_insert_mode()
         -- basically this is called after accepting/inserting the new content (AFAICT only one time too)
         return
     end
+
+    if ignore_filetypes[vim.bo.filetype] or vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
+        return
+    end
+
     M.ask_for_prediction()
 end
 
