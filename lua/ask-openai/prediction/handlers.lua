@@ -28,8 +28,10 @@ function M.ask_for_prediction()
     local original_row = original_row_1based - 1 -- 0-based now
     -- 100 did not work well here.. with 7b model too 30+ seconds to generate a response! 10 lines works very fast (faster than supermaven) and gives decent responses
     --   PRN race using FIM vs AR (complete) and show first completed suggestion and allow toggle to next?
-    local first_row = original_row - 10 -- lets try to take entire document if avail! (in future clip at some key boundary... unsure how that would work best w/ how models are trained on FIM
-    local last_row = original_row + 10 -- limit how much we consider past this point? or take it all too?
+    -- ... Zed uses 32 (max 64 totallines, 32 before/after by default) => shifted if near top/bottom of doc too
+    -- PRN consider (when available) to get the lines back to a meaningful branch in the syntax tree of the code you are editing? does that help?
+    local first_row = original_row - 32 -- lets try to take entire document if avail! (in future clip at some key boundary... unsure how that would work best w/ how models are trained on FIM
+    local last_row = original_row + 32 -- limit how much we consider past this point? or take it all too?
     local IGNORE_BOUNDARIES = false
     local current_line = vim.api.nvim_buf_get_lines(0, original_row, original_row + 1, IGNORE_BOUNDARIES)[1] -- 0based indexing
     local current_before_cursor = current_line:sub(1, original_col + 1) -- TODO include current cursor slot as before or after?
