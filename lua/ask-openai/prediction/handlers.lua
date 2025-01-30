@@ -240,6 +240,8 @@ function M.stop_current_prediction()
     end
     M.current_prediction = nil
     this_prediction:mark_as_abandoned() -- TODO maybe move clear_extmarks into here?
+    -- TODO must kill curl and see if that terminates the requests... right now I am back to waiting on dozes of prev requests to complete after they are supposed to be terminated... shutdown is not working...
+    --    TODO get PID and kill it... OR go back to spawn on my own and use that instead of pleanry.job... my spawn impl worked just fine to cancel
 
     vim.schedule(function()
         -- TODO is this where I want the schedule call? seems like a natural concern for the code here that interacts with a prediction process and results in streaming fashion
