@@ -261,6 +261,8 @@ local ignore_filetypes = { "TelescopePrompt", "NvimTree" }
 
 -- separate the top level handlers -> keep these thin so I can distinguish the request from the work (above)
 function M.cursor_moved_in_insert_mode()
+    -- TODO DEBOUNCE TYPING => only after say 3 keys then start debouncing so further typing isn't jarring
+
     if M.current_prediction ~= nil and M.current_prediction.disable_cursor_moved == true then
         info("Disabled CursorMovedI, skipping...")
         M.current_prediction.disable_cursor_moved = false -- re-enable it, just skip one time... yes it sucks
@@ -277,6 +279,13 @@ end
 
 function M.leaving_insert_mode()
     M.stop_current_prediction()
+end
+
+function M.entering_insert_mode()
+    print("function M.entering_insert_mode()")
+
+    -- TODO anything specific to entering insert mode?
+    M.cursor_moved_in_insert_mode()
 end
 
 function M.accept_all_invoked()

@@ -67,7 +67,13 @@ local function setup(options)
         pattern = "*",
         callback = handlers.leaving_insert_mode
     })
+    vim.api.nvim_create_autocmd("InsertEnter", {
+        group = augroup,
+        pattern = "*",
+        callback = handlers.entering_insert_mode
+    })
     vim.api.nvim_create_autocmd("CursorMovedI", {
+        -- TODO TextChangedI intead of cursor moved?
         group = augroup,
         pattern = "*", -- todo filter?
         callback = handlers.cursor_moved_in_insert_mode
