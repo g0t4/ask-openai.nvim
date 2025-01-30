@@ -261,7 +261,7 @@ local ignore_filetypes = { "TelescopePrompt", "NvimTree" }
 
 -- separate the top level handlers -> keep these thin so I can distinguish the request from the work (above)
 function M.cursor_moved_in_insert_mode()
-    -- TODO DEBOUNCE TYPING => only after say 3 keys then start debouncing so further typing isn't jarring
+    -- TODO DEBOUNCE TYPING USING RXLUA like I did with mouse thingy => only after say 3 keys then start debouncing so further typing isn't jarring
 
     if M.current_prediction ~= nil and M.current_prediction.disable_cursor_moved == true then
         info("Disabled CursorMovedI, skipping...")
