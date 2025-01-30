@@ -1,6 +1,27 @@
 Use ollama serve output when model is loaded to find these:
 Or, repo: https://github.com/QwenLM/Qwen2.5-Coder
 
+## deepseek-r1
+
+```log
+llm_load_print_meta: general.name     = DeepSeek R1 Distill Qwen 14B
+llm_load_print_meta: BOS token        = 151646 '<｜begin▁of▁sentence｜>'
+llm_load_print_meta: EOS token        = 151643 '<｜end▁of▁sentence｜>'
+llm_load_print_meta: EOT token        = 151643 '<｜end▁of▁sentence｜>'
+llm_load_print_meta: PAD token        = 151643 '<｜end▁of▁sentence｜>'
+llm_load_print_meta: LF token         = 148848 'ÄĬ'
+llm_load_print_meta: FIM PRE token    = 151659 '<|fim_prefix|>'
+llm_load_print_meta: FIM SUF token    = 151661 '<|fim_suffix|>'
+llm_load_print_meta: FIM MID token    = 151660 '<|fim_middle|>'
+llm_load_print_meta: FIM PAD token    = 151662 '<|fim_pad|>'
+llm_load_print_meta: FIM REP token    = 151663 '<|repo_name|>'
+llm_load_print_meta: FIM SEP token    = 151664 '<|file_sep|>'
+llm_load_print_meta: EOG token        = 151643 '<｜end▁of▁sentence｜>'
+llm_load_print_meta: EOG token        = 151662 '<|fim_pad|>'
+llm_load_print_meta: EOG token        = 151663 '<|repo_name|>'
+llm_load_print_meta: EOG token        = 151664 '<|file_sep|>'
+```
+
 ## qwen2.5-coder
 
 - File level code completion:
