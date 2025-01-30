@@ -55,6 +55,12 @@ function M.ask_for_prediction()
     -- PSM inference format:
     -- local raw_prompt = fim.prefix .. context_before_text .. fim.suffix .. context_after_text .. fim.middle
 
+    -- TODOs
+    --   include outline/symbols for current doc
+    --   include recent edits? (other files too) and maybe the symbol edited (i.e. func)
+    --   include filename (thus language)
+    --   include preamble request of what to do? <|im_start|> section?
+
     local body = {
         -- !!! TODO migrate to /v1/completions "legacy" OpenAI completions endpoint (also has RAW prompt)
         --    ollama supports it: https://github.com/ollama/ollama/blob/main/docs/openai.md#v1completions
