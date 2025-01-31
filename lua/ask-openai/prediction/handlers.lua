@@ -1,3 +1,4 @@
+local uv = vim.uv
 local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
 local Job = require("plenary.job")
@@ -116,7 +117,7 @@ function M.ask_for_prediction()
     }
 
     -- log the curl call, super useful for testing independently in terminal
-    info("curl", table.concat(options.args, " "))
+    -- info("curl", table.concat(options.args, " "))
 
     -- closure captures this id for any callbacks to use to ignore past predictions
     local this_prediction = Prediction:new()
@@ -124,8 +125,8 @@ function M.ask_for_prediction()
 
     -- FYI if any issues with plenary.job, it was super easy to use uv.spawn, w/ new_pipe(s):
     --    git show 21d1e11  -- this commit is when I changed to plenary
-    -- local stdout = uv.new_pipe(false)
-    -- local stderr = uv.new_pipe(false)
+    local stdout = uv.new_pipe(false)
+    local stderr = uv.new_pipe(false)
     -- Plenary adds some features that aren't there that might cause issues..
     --   or might help, i.e. it looks like it combines chunks / splits on new lines? I need to re-read the code but I thought I saw that:
     --      https://github.com/nvim-lua/plenary.nvim/blob/master/lua/plenary/job.lua#L285 on_output
@@ -135,15 +136,28 @@ function M.ask_for_prediction()
     --   TODO read entirety of plenary.job and see if I really want to use it (measure timing if needed)...
     --     also check out plenary.curl which might have added features for my use case that will help over plenary.job alone (plenary.curl is built on plenary.job)
 
-    -- options.on_exit = function(code, signal) -- uv.spawn
-    options.on_exit = function(job, code, signal) -- plenary.job
-        info("on_exit code:", vim.inspect(code), "Signal:", signal)
-        if code ~= 0 then
-            this_prediction:mark_generation_failed()
-        else
-            this_prediction:mark_generation_finished()
-        end
+    options.on_exit = function(code, signal) -- uv.spawn
+        info("spawn - exit code:", code, "Signal:", signal)
+        stdout:close()
+        stderr:close()
     end
+
+    -- M.handle, M.pid = uv.spawn("fish", {
+    -- args = { "-c", "echo foo;" },
+    M.handle, M.pid = uv.spawn(options.command, {
+        args = options.args,
+        stdio = { nil, stdout, stderr },
+    }, options.on_exit)
+
+
+    -- options.on_exit = function(job, code, signal) -- plenary.job
+    --     info("on_exit code:", vim.inspect(code), "Signal:", signal)
+    --     if code ~= 0 then
+    --         this_prediction:mark_generation_failed()
+    --     else
+    --         this_prediction:mark_generation_finished()
+    --     end
+    -- end
 
     local function process_sse(data)
         -- TODO add some tests of this parsing? can run outside of nvim too
@@ -205,8 +219,8 @@ function M.ask_for_prediction()
         return chunk, done
     end
 
-    -- options.on_stdout = function(err, data) -- uv.spawn
-    options.on_stdout = function(err, data, job) -- plenary.job
+    options.on_stdout = function(err, data) -- uv.spawn
+        -- options.on_stdout = function(err, data, job) -- plenary.job
         info("on_stdout data: ", data, "err: ", err)
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         if err then
@@ -225,9 +239,10 @@ function M.ask_for_prediction()
             end)
         end
     end
+    uv.read_start(stdout, options.on_stdout) -- must call AFTER spawn
 
-    -- options.on_stderr = function(err, data) -- uv.spa
-    options.on_stderr = function(err, data, job) -- plenary.job
+    options.on_stderr = function(err, data) -- uv.spa
+        -- options.on_stderr = function(err, data, job) -- plenary.job
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         -- just log for now is fine
         -- DO NOT USE "data:" b/c that is what each streaming chunk is prefixed with and so confuses the F out of me when I see that and think oh its fine... nope
@@ -236,9 +251,10 @@ function M.ask_for_prediction()
             -- TODO stop abort?
         end
     end
+    uv.read_start(stderr, options.on_stderr) -- must call AFTER spawn
 
-    M.request = Job:new(options)
-    M.request:start()
+    -- M.request = Job:new(options)
+    -- M.request:start()
 end
 
 function M.stop_current_prediction()
@@ -247,30 +263,27 @@ function M.stop_current_prediction()
         return
     end
     M.current_prediction = nil
-    this_prediction:mark_as_abandoned() -- TODO maybe move clear_extmarks into here?
-    -- TODO must kill curl and see if that terminates the requests... right now I am back to waiting on dozes of prev requests to complete after they are supposed to be terminated... shutdown is not working...
-    --    TODO get PID and kill it... OR go back to spawn on my own and use that instead of pleanry.job... my spawn impl worked just fine to cancel
+    this_prediction:mark_as_abandoned()
 
     vim.schedule(function()
-        -- TODO is this where I want the schedule call? seems like a natural concern for the code here that interacts with a prediction process and results in streaming fashion
         this_prediction:clear_extmarks()
     end)
 
-    -- FYI feels like this should be associated with Prediction (maybe not) => if I combine this with Prediction I'd just need one M.prediction global
-    local request = M.request
-    M.request = nil
-    if request then
-        info("Terminating prediction request")
-        -- TODO make sure curl request STOPS... rigfht now it seems to keep going (per the ollama server's output says all are 200)
-        --   BUT, it could be that ollama logs are not showing the disconnect... b/c I can see they all finish really fast which would not happen with dozens of requests as I type... (when I don't have debounced completions yet)
+    local handle = M.handle
+    local pid = M.pid
+    M.handle = nil
+    -- M.request = nil -- plenary.job
+    M.pid = nil
+    if handle ~= nil and not handle:is_closing() then
+        info("Terminating process, pid: ", M.pid)
 
-        -- TODO feels like there is a scenario in which, shutdown isn't stopping the completions...
-        --   but when I manually test one at a time and kill it looks to stop server side (immediateely get 200 if in middle of generating).. btw 499 happens when I pkill curl when its loading a model...'
-        --   FIRST, REPRO the scenario where you have server still processing old completions and then figure out what to do...
-        --   IT MIGHT BE an issue in my code when I move my cursor and its in the middle of generating
-        --     COULDN'T REPRO CURRENTLY... so move on for now
-        request:shutdown() -- FYI can pass SIGNAL if need be as only arg
-        -- https://github.com/nvim-lua/plenary.nvim/blob/master/lua/plenary/job.lua#L215
+        handle:kill("sigterm")
+        handle:close()
+        -- FYI ollama should log => "aborting completion request due to client closing the connection"
+
+        -- FYI I can kill the plenary job myself too using its handle/pid
+        -- request:shutdown() -- FYI request:handle():kill("sigterm") or similar should work w/ plenary.job
+        --  -- :shutdown() doesn't terminate curl calls, they all complete after ollama serially serves them!
     end
 end
 
