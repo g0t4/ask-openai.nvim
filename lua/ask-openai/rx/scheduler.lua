@@ -48,15 +48,4 @@ function VimUvTimeoutScheduler:schedule(action, delay_ms, ...)
     return rx.Subscription.create(on_observer_unsubscribe)
 end
 
-function VimUvTimeoutScheduler:stop()
-    -- FYI don't need this if I build all event registrations as Subscriptions (chain reaction will stop everything back to event source)
-    -- ? should I allow my observable code to cancel directly?
-    -- ? should it just cancel via canceling the observable for events (i.e. debounced mouse events?)
-    -- ? IOTW encapsulate the impl of the timer entirely so nobody can touch it except through the rx.Subscription returned from schedule?
-    if self.timer then
-        self.timer:stop()
-        self.timer = nil
-    end
-end
-
 return VimUvTimeoutScheduler
