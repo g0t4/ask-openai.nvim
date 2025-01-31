@@ -12,6 +12,8 @@ local M = {}
 function M.keystrokesObservable(delay_ms)
     delay_ms = delay_ms or 250
 
+    -- TODO MOVE THIS OUT... I don't need this anymore (just let consumers handle both parts...)
+
     local scheduler = TimeoutScheduler.create()
     -- todo turn into "type" and use self.keypresses so I can make outer methods to trigger the subject
     local keypresses = rx.Subject.create()

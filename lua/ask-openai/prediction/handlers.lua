@@ -339,6 +339,7 @@ function M.cursor_moved_in_insert_mode()
         return
     end
 
+    -- TODO keypresses.onNext()
     M.ask_for_prediction()
 end
 
