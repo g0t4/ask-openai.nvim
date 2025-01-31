@@ -337,7 +337,7 @@ local sub = debounced:subscribe(function()
         -- TODO move into observable? filter?
         if vim.fn.mode() ~= "i" then return end
 
-        -- M.ask_for_prediction()
+        M.ask_for_prediction()
     end)
 end)
 --TODO on exit... sub:unsubscribe()... not needed... not sure if I ever need it to be disabled...
