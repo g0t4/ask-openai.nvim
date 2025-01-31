@@ -31,8 +31,26 @@ function M.ask_for_prediction()
     --   PRN race using FIM vs AR (complete) and show first completed suggestion and allow toggle to next?
     -- ... Zed uses 32 (max 64 totallines, 32 before/after by default) => shifted if near top/bottom of doc too
     -- PRN consider (when available) to get the lines back to a meaningful branch in the syntax tree of the code you are editing? does that help?
-    local first_row = original_row - 32 -- lets try to take entire document if avail! (in future clip at some key boundary... unsure how that would work best w/ how models are trained on FIM
-    local last_row = original_row + 32 -- limit how much we consider past this point? or take it all too?
+    local first_row = original_row - 10 -- lets try to take entire document if avail! (in future clip at some key boundary... unsure how that would work best w/ how models are trained on FIM
+    local last_row = original_row + 10 -- limit how much we consider past this point? or take it all too?
+
+    -- adjust range so that we maximize context? is this good or not?
+    -- FYI I am not sure I like this here... more lines after doesn't likely help much, more lines before may help
+
+    local num_rows_total = vim.api.nvim_buf_line_count(0)
+    if first_row < 0 then
+        info("at start or close: ", first_row)
+        last_row = last_row - first_row
+        first_row = 0
+    elseif last_row >= num_rows_total then
+        info("at end or close: ", last_row)
+        local past = last_row - num_rows_total + 1
+        last_row = num_rows_total - 1
+        first_row = first_row - past
+        -- todo do I have to ensure > 0 ? for first_row
+    end
+    info("first_row", first_row, "last_row", last_row)
+
     local IGNORE_BOUNDARIES = false
     local current_line = vim.api.nvim_buf_get_lines(0, original_row, original_row + 1, IGNORE_BOUNDARIES)[1] -- 0based indexing
     local current_before_cursor = current_line:sub(1, original_col + 1) -- TODO include current cursor slot as before or after?
