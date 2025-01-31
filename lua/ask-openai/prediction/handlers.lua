@@ -108,8 +108,8 @@ function M.ask_for_prediction()
             "-fsSL",
             "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
-            "http://build21.lan:11434/v1/completions",
-            -- "http://build21.lan:11434/api/generate",
+            "http://ollama:11434/v1/completions",
+            -- "http://ollama:11434/api/generate",
             "-H", "Content-Type: application/json",
             "-d", body_serialized
         },

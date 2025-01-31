@@ -1,42 +1,62 @@
 local rx = require 'rx'
-local HammerspoonTimeoutScheduler = {}
-HammerspoonTimeoutScheduler.__index = HammerspoonTimeoutScheduler
-HammerspoonTimeoutScheduler.__tostring = 'TimeoutScheduler'
+local uv = vim.uv
+local VimUvTimeoutScheduler = {}
+VimUvTimeoutScheduler.__index = VimUvTimeoutScheduler
+VimUvTimeoutScheduler.__tostring = 'TimeoutScheduler'
 
--- FYI the rxlua TimeoutScheduler is based on an outdated version of `luv`
--- and I need it to use hammerspoon's event loop...
--- THUS, wrap hs.timer.doAfter to make a new TimeoutScheduler
+-- Based on:
+--   https://github.com/bjornbytes/RxLua/tree/master/doc#timeoutscheduler
+--   https://github.com/bjornbytes/RxLua/blob/master/src/schedulers/timeoutscheduler.lua
+--     rxlua TimeoutScheduler is based on an outdated version of `luv`
 
-function HammerspoonTimeoutScheduler.create()
-    return setmetatable({}, HammerspoonTimeoutScheduler)
+function VimUvTimeoutScheduler.create()
+    return setmetatable({}, VimUvTimeoutScheduler)
 end
 
 --- Schedules an action to run at a future point in time.
 -- @arg {function} action
 -- @arg {number=0} delay, in milliseconds.
--- @returns {rx.Subscription}
-function HammerspoonTimeoutScheduler:schedule(action, delay, ...)
+-- @returns {rx.Subscription} => IIUC is used to cancel the timer (i.e. if a source produces a new event before timer fires)
+function VimUvTimeoutScheduler:schedule(action, delay_ms, ...)
     local packed_args = { ... }
-    -- LUV timer example:
-    --   https://github.com/luvit/luv/blob/master/examples/timers.lua
 
-    -- FYI https://www.hammerspoon.org/docs/hs.timer.html#doAfter
-    self.timer = hs.timer.doAfter(delay / 1000, function()
-        action(table.unpack(packed_args))
+    -- luv docs:
+    --   uv_timer_start: https://github.com/luvit/luv/blob/master/deps/libuv/src/timer.c#L68
+    --   uv.timer_start docs: https://github.com/luvit/luv/blob/master/docs.md#L771
+    --      mentions milliseconds for both timeout and repeat
+    --   setTimeout/setInterval/clearTimeout examples:
+    --      https://github.com/luvit/luv/blob/master/examples/timers.lua
+
+    self.timer = uv.new_timer()
+
+    -- FYI TEST WITH:
+    --     :Dump require("ask-openai.rx.scheduler").create():schedule(function() print "fuuuuu" end, 3000)
+    --
+    -- 3rd arg is repeat, and thus 0ms (not an interval)
+    uv.timer_start(self.timer, delay_ms, 0, function()
+        action(unpack(packed_args)) -- lua 5.1 is unpack (not table.unpack yet) => nvim is 5.1
     end)
 
-    return rx.Subscription.create(function()
-        -- unsubscribe function (when observer unsubscribes)
+    -- subscription allows observer to unsubscribe
+    --  => subscription:unsubscribe
+    function on_observer_unsubscribe()
+        -- FYI TEST WITH:
+        --     :Dump require("ask-openai.rx.scheduler").create():schedule(function() print "fuuuuu" end, 3000):unsubscribe()
         self.timer:stop()
-    end)
+    end
+
+    return rx.Subscription.create(on_observer_unsubscribe)
 end
 
-function HammerspoonTimeoutScheduler:stop()
+function VimUvTimeoutScheduler:stop()
+    -- FYI don't need this if I build all event registrations as Subscriptions (chain reaction will stop everything back to event source)
+    -- ? should I allow my observable code to cancel directly?
+    -- ? should it just cancel via canceling the observable for events (i.e. debounced mouse events?)
+    -- ? IOTW encapsulate the impl of the timer entirely so nobody can touch it except through the rx.Subscription returned from schedule?
     if self.timer then
         self.timer:stop()
         self.timer = nil
     end
 end
 
-return HammerspoonTimeoutScheduler
-
+return VimUvTimeoutScheduler
