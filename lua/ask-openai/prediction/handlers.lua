@@ -288,7 +288,11 @@ function M.stop_current_prediction()
 end
 
 -- todo help/readonly buffers?
-local ignore_filetypes = { "TelescopePrompt", "NvimTree" }
+local ignore_filetypes = {
+    "TelescopePrompt",
+    "NvimTree",
+    "DressingInput", -- pickers from nui (IIRC) => in nvim tree add a file => the file name box is one of these
+}
 
 -- separate the top level handlers -> keep these thin so I can distinguish the request from the work (above)
 function M.cursor_moved_in_insert_mode()
