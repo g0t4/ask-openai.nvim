@@ -58,6 +58,8 @@ function M.ask_for_prediction()
     local current_after_cursor = current_line:sub(original_col + 2)
     local context_before = vim.api.nvim_buf_get_lines(0, first_row, original_row, IGNORE_BOUNDARIES) -- 0based indexing
     local context_before_text = table.concat(context_before, "\n") .. current_before_cursor
+    -- give some instructions in a comment (TODO use comment string to do this)
+    context_before_text = context_before_text .. "-- this is lua code"
     local context_after = vim.api.nvim_buf_get_lines(0, original_row, last_row, IGNORE_BOUNDARIES) -- 0based indexing
     local context_after_text = current_after_cursor .. table.concat(context_after, "\n")
 
