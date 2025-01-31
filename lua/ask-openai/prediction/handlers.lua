@@ -311,14 +311,16 @@ local ignore_filetypes = {
     -- "prompt", -- Generic prompt filetype
     -- "fugitive", "gitcommit", "NeogitStatus", -- Git status/rebase windows
     -- "starter", -- Some dashboard plugins use this
+}
 
-    -- also consider hiding in these:
+local ignore_buftypes = {
+    "nofile", -- rename refactor popup window uses this w/o a filetype, also Dressing rename in nvimtree uses nofile
+
+    -- maybes:
     -- vim.bo.buftype == "terminal" -- Ignore terminal windows
-    -- vim.bo.buftype == "nofile" -- Scratch buffers
     -- vim.bo.buftype == "prompt" -- UI input prompts
     -- vim.bo.buftype == "quickfix" -- Quickfix and location list
     -- vim.bo.readonly -- Read-only buffers (optional)
-
 }
 
 -- separate the top level handlers -> keep these thin so I can distinguish the request from the work (above)
@@ -332,7 +334,8 @@ function M.cursor_moved_in_insert_mode()
         return
     end
 
-    if ignore_filetypes[vim.bo.filetype] or vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
+    if vim.tbl_contains(ignore_buftypes, vim.bo.buftype)
+        or vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
         return
     end
 
