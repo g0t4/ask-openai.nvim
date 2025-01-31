@@ -62,6 +62,7 @@ function M.ask_for_prediction()
     local current_buffer_file_name = vim.api.nvim_buf_get_name(0)
 
     -- use comment string to add a comment with the filename (just basename for now, can get full path too w/o :t)
+    -- TODO troubleshoot if there is no commentstring set? how about warn and not set comment header
     local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":t")
     local comment_header = string.format(vim.o.commentstring, "this from the file named: '" .. filename .. "'\n")
     context_before_text = comment_header .. context_before_text
