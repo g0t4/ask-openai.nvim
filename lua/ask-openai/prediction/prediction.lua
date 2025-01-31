@@ -207,7 +207,11 @@ function Prediction:accept_all()
 
     self.disable_cursor_moved = true
     vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, lines)
-    vim.api.nvim_win_set_cursor(0, { original_row_1based + #lines, 0 }) -- (1,0)-based (row,col)
+
+    -- cursor should stop at end of inserted text
+    local last_col = #lines[#lines] --
+    local last_row = original_row_1based + #lines - 1
+    vim.api.nvim_win_set_cursor(0, { last_row, last_col }) -- (1,0)-based (row,col)
 
     self.prediction = "" -- strip all lines from the prediction (and update it)
     self:redraw_extmarks()
