@@ -39,6 +39,7 @@ function M.ask_for_prediction()
 
     local num_rows_total = vim.api.nvim_buf_line_count(0)
     if first_row < 0 then
+        -- TODO write tests of this if I keep it
         info("at start or close: ", first_row)
         last_row = last_row - first_row
         first_row = 0
@@ -69,6 +70,8 @@ function M.ask_for_prediction()
         middle = "<|fim_middle|>",
         suffix = "<|fim_suffix|>",
     }
+
+    -- TODO strip comments? or maybe strip comments marked a certain way? or not marked that way?
 
     -- TODO provide guidance before fim_prefix... can I just <|im_start|> blah <|im_end|>? (see qwen2.5-coder template for how it might work)
     -- TODO setup separate request/response handlers to work with both /api/generate AND /v1/completions => use config to select which one
