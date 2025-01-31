@@ -51,6 +51,10 @@ function M.ask_for_prediction()
         suffix = "<|fim_suffix|>",
     }
 
+    -- TODO provide guidance before fim_prefix... can I just <|im_start|> blah <|im_end|>? (see qwen2.5-coder template for how it might work)
+    -- TODO setup separate request/response handlers to work with both /api/generate AND /v1/completions => use config to select which one
+    --    TEST w/o deepseek-r1 using api/generate with FIM manual prompt ... which should work ... vs v1/completions for deepseek-r1:7b should fail to FIM or not well
+
     -- TODO try repo level code completion: https://github.com/QwenLM/Qwen2.5-coder?tab=readme-ov-file#4-repository-level-code-completion
     --    this is not FIM, rather it is like AR... give it <|repo_name|> and then multiple files delimited with <|file_sep|> and name and then contents... then last file is only partially complete (it generates the rest of it)
     -- The more I think about it, the less often I think I use the idea of FIM... I really am just completing (often w/o a care for what comes next)... should I be trying non-FIM too? (like repo level completions?)
@@ -168,6 +172,10 @@ function M.ask_for_prediction()
                 local choice = parsed.choices[1]
                 local text = choice.text
                 if choice.finish_reason == "stop" then -- TODO "length"?
+                    done = true
+                elseif choice.finish_reason == "length" then
+                    -- got this reason when testing
+                    -- max len?
                     done = true
                 elseif choice.finish_reason ~= vim.NIL then
                     info("WARN - unexpected /v1/completions finish_reason: ", choice.finish_reason, " do you need to handle this too?")
