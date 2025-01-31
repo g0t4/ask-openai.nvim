@@ -275,7 +275,7 @@ function M.stop_current_prediction()
     -- M.request = nil -- plenary.job
     M.pid = nil
     if handle ~= nil and not handle:is_closing() then
-        info("Terminating process, pid: ", M.pid)
+        info("Terminating process, pid: ", pid)
 
         handle:kill("sigterm")
         handle:close()
