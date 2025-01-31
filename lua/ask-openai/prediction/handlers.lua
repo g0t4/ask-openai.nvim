@@ -67,6 +67,7 @@ function M.ask_for_prediction()
     local comment_header = string.format(vim.o.commentstring, "this from the file named: '" .. filename .. "'\n")
     context_before_text = comment_header .. context_before_text
     -- TODO! go back to raw format and try this BEFORE fim_prefix tag
+    --   in fact, I just got weird behavior where the model added an ending comment to offset the filename comment_header one... and then it started to explain the changes! yikez... we don't wanna go that way... so maybe try im_start/end before ?
     info("comment_header: ", comment_header)
 
     -- TODO get tree of doc code and extract key symbols?
