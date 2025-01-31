@@ -66,8 +66,10 @@ function M.ask_for_prediction()
     local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":t")
     local comment_header = string.format(vim.o.commentstring, "this from the file named: '" .. filename .. "'\n")
     context_before_text = comment_header .. context_before_text
+    -- TODO! go back to raw format and try this BEFORE fim_prefix tag
     info("comment_header: ", comment_header)
 
+    -- TODO get tree of doc code and extract key symbols?
 
     local context_after = vim.api.nvim_buf_get_lines(0, original_row, last_row, IGNORE_BOUNDARIES) -- 0based indexing
     local context_after_text = current_after_cursor .. table.concat(context_after, "\n")
