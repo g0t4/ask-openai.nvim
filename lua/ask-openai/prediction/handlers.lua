@@ -64,6 +64,7 @@ function M.ask_for_prediction()
     -- use comment string to add a comment with the filename (just basename for now, can get full path too w/o :t)
     -- TODO troubleshoot if there is no commentstring set? how about warn and not set comment header
     local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":t")
+    -- TODO! get filename relative to current workspace root (i.e. so can see folder names that are important too => i.e. arch/rocm.fish conveys archlinux + rocm (AMD gpu)
     local comment_header = string.format(vim.o.commentstring, "this from the file named: '" .. filename .. "'\n")
     context_before_text = comment_header .. context_before_text
     -- TODO! go back to raw format and try this BEFORE fim_prefix tag
