@@ -328,15 +328,16 @@ local rx = require("rx")
 local TimeoutScheduler = require("ask-openai.rx.scheduler")
 local scheduler = TimeoutScheduler.create()
 local keypresses = rx.Subject.create()
-local debounced = keypresses:debounce(1000, scheduler)
+local debounced = keypresses:debounce(250, scheduler)
 local sub = debounced:subscribe(function()
     vim.schedule(function()
+        info("CursorMovedI debounced")
 
         -- YES! now this is how I can stop predictions, i can exit insert mode and stop altogether
         -- TODO move into observable? filter?
         if vim.fn.mode() ~= "i" then return end
 
-        M.ask_for_prediction()
+        -- M.ask_for_prediction()
     end)
 end)
 --TODO on exit... sub:unsubscribe()... not needed... not sure if I ever need it to be disabled...
