@@ -63,8 +63,7 @@ This works with any plugin manager. The plugin repo name `g0t4/ask-openai.nvim` 
 
     dependencies = {
         "nvim-lua/plenary.nvim"
-        -- predictions (WIP) depends on rxlua now (not sure if this is what I want yet)
-        -- TODO rxlua from lazy package manager settings in dotfiles repo (also need the path fix... yuck... maybe try luarocks instead?
+        -- predictions (WIP) depends on rxlua now, if I keep it, then copy over dotfiles config (including package.path fix)
     },
 
     event = { "CmdlineEnter", "InsertEnter" }, -- optional, for startup speed
