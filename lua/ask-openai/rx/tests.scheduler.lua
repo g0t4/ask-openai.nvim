@@ -3,6 +3,6 @@
 describe("test", function()
     it("tests", function()
         assert.is.equals(2, 1 + 1)
-        assert.is_true(true)
+        assert.is_true(false)
     end)
 end)
