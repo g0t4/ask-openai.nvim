@@ -72,16 +72,17 @@ local function setup(options)
         pattern = "*",
         callback = handlers.entering_insert_mode
     })
-    vim.api.nvim_create_autocmd("CursorMovedI", {
-        -- TODO TextChangedI intead of cursor moved?
-        group = augroup,
-        pattern = "*", -- todo filter?
-        callback = handlers.cursor_moved_in_insert_mode
-    })
-    vim.api.nvim_create_autocmd("VimLeavePre", {
+    -- vim.api.nvim_create_autocmd("CursorMovedI", {
+    --     -- TODO TextChangedI intead of cursor moved?
+    --     group = augroup,
+    --     pattern = "*", -- todo filter?
+    --     callback = handlers.cursor_moved_in_insert_mode
+    -- })
+    vim.api.nvim_create_autocmd("TextChangedI", {
+        -- do I like this better? is this gonna mess up when I insert text still?
         group = augroup,
         pattern = "*",
-        callback = handlers.vim_is_quitting
+        callback = handlers.cursor_moved_in_insert_mode,
     })
 
     -- SETUP hlgroup
