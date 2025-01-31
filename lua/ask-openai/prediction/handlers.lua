@@ -323,6 +323,26 @@ local ignore_buftypes = {
     -- vim.bo.readonly -- Read-only buffers (optional)
 }
 
+--
+local rx = require("rx")
+local TimeoutScheduler = require("ask-openai.rx.scheduler")
+local scheduler = TimeoutScheduler.create()
+local keypresses = rx.Subject.create()
+local debounced = keypresses:debounce(1000, scheduler)
+local sub = debounced:subscribe(function()
+    vim.schedule(function()
+
+        -- YES! now this is how I can stop predictions, i can exit insert mode and stop altogether
+        -- TODO move into observable? filter?
+        if vim.fn.mode() ~= "i" then return end
+
+        M.ask_for_prediction()
+    end)
+end)
+--TODO on exit... sub:unsubscribe()... not needed... not sure if I ever need it to be disabled...
+--
+--PRN this should be per buffer at some point... could add buffer to onNext({buffer=1}) ... and use groupby/debounce to handle all of that yummyness in the event stream
+
 -- separate the top level handlers -> keep these thin so I can distinguish the request from the work (above)
 function M.cursor_moved_in_insert_mode()
     -- TODO DEBOUNCE TYPING USING RXLUA like I did with mouse thingy => only after say 3 keys then start debouncing so further typing isn't jarring
@@ -339,8 +359,8 @@ function M.cursor_moved_in_insert_mode()
         return
     end
 
-    -- TODO keypresses.onNext()
-    M.ask_for_prediction()
+    -- M.ask_for_prediction() -- move this to observer
+    keypresses:onNext({}) -- TODO any data to pass?
 end
 
 function M.leaving_insert_mode()
