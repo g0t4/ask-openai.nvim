@@ -59,7 +59,15 @@ function M.ask_for_prediction()
     local context_before = vim.api.nvim_buf_get_lines(0, first_row, original_row, IGNORE_BOUNDARIES) -- 0based indexing
     local context_before_text = table.concat(context_before, "\n") .. current_before_cursor
     -- give some instructions in a comment (TODO use comment string to do this)
-    context_before_text = context_before_text .. "-- this is lua code"
+    local current_buffer_file_name = vim.api.nvim_buf_get_name(0)
+
+    -- use comment string to add a comment with the filename (just basename for now, can get full path too w/o :t)
+    local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":t")
+    local comment_header = string.format(vim.o.commentstring, "this from the file named: '" .. filename .. "'\n")
+    context_before_text = comment_header .. context_before_text
+    info("comment_header: ", comment_header)
+
+
     local context_after = vim.api.nvim_buf_get_lines(0, original_row, last_row, IGNORE_BOUNDARIES) -- 0based indexing
     local context_after_text = current_after_cursor .. table.concat(context_after, "\n")
 
