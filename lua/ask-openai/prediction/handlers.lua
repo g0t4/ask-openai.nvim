@@ -292,6 +292,32 @@ local ignore_filetypes = {
     "TelescopePrompt",
     "NvimTree",
     "DressingInput", -- pickers from nui (IIRC) => in nvim tree add a file => the file name box is one of these
+    -- TODO make sure only check this on enter buffer first time? not on every event (cursormoved,etc)
+
+    -- TODO consider these exclusions too (per chatgpt)
+    -- "spectre_panel", -- Find and replace UI (nvim-spectre)
+    -- "noice", -- Noice.nvim popups
+    -- "lazy", -- Lazy.nvim plugin manager UI (these are all readonly IIAC so I could ignore on readonly?)
+    -- "mason", -- Mason.nvim UI
+    -- "lspinfo", -- LSP info window
+    -- "toggleterm", -- Terminal UI
+    -- "dap-repl", -- Debugging REPL
+    -- "dapui_watches", "dapui_stacks", "dapui_scopes", "dapui_breakpoints", -- DAP UI components
+    -- "alpha", -- Dashboard (alpha.nvim)
+    -- "help", -- Help buffers
+    -- "man", -- Man pages
+    -- "qf", -- Quickfix list
+    -- "prompt", -- Generic prompt filetype
+    -- "fugitive", "gitcommit", "NeogitStatus", -- Git status/rebase windows
+    -- "starter", -- Some dashboard plugins use this
+
+    -- also consider hiding in these:
+    -- vim.bo.buftype == "terminal" -- Ignore terminal windows
+    -- vim.bo.buftype == "nofile" -- Scratch buffers
+    -- vim.bo.buftype == "prompt" -- UI input prompts
+    -- vim.bo.buftype == "quickfix" -- Quickfix and location list
+    -- vim.bo.readonly -- Read-only buffers (optional)
+
 }
 
 -- separate the top level handlers -> keep these thin so I can distinguish the request from the work (above)
