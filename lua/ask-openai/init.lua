@@ -132,4 +132,9 @@ end
 return {
     setup = setup,
     ask_openai = ask_openai,
+    predictions = {
+        enable = EnableAskOpenAIPredictions,
+        disable = DisableAskOpenAIPredictions,
+        is_enabled = IsAskOpenAIPredictionsEnabled
+    }
 }
