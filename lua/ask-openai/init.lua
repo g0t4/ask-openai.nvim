@@ -36,6 +36,10 @@ local function register_prediction_triggers()
             { noremap = true, callback = handlers.accept_word_invoked })
     end
 
+    -- IDEA => reject_line (skip current line, "drop" it... and then take a subsequent line)... or is it better to trigger a new completion?
+    --    a few times I've had undesired initial lines (esp blank initial lines when I don't want them...)
+    --    and one time a comment I didn't want ... before code line I wanted
+
     -- event subscriptions
     vim.api.nvim_create_augroup(augroup, { clear = true })
     vim.api.nvim_create_autocmd("InsertLeavePre", {
