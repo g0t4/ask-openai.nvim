@@ -101,6 +101,11 @@ local function setup(options)
         pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_word)
     end
 
+    function IsAskOpenAIPredictionsEnabled()
+        -- todo organize top level funcs on a module instead
+        return is_enabled
+    end
+
     function EnableAskOpenAIPredictions()
         if is_enabled then
             return
