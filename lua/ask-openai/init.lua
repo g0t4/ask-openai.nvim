@@ -90,13 +90,13 @@ local function setup(options)
     end
 
     function remove_prediction_triggers()
-        -- remove the augroup for event triggers
-        vim.api.nvim_del_augroup_by_name(augroup)
+        -- FYI pcall blocks error propagation (returns status code, though in this case I don't care about that)
+        pcall(vim.api.nvim_del_augroup_by_name, augroup) -- most del methods will throw if doesn't exist... so just ignore that
 
         -- remove keymaps
-        vim.api.nvim_del_keymap('i', predictions.keymaps.accept_all)
-        vim.api.nvim_del_keymap('i', predictions.keymaps.accept_line)
-        vim.api.nvim_del_keymap('i', predictions.keymaps.accept_word)
+        pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_all)
+        pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_line)
+        pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_word)
     end
 
     function EnableAskOpenAIPredictions()
