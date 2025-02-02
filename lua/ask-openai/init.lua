@@ -45,8 +45,9 @@ local function setup(options)
     local handlers = require("ask-openai.prediction.handlers")
 
     local augroup = "ask-openai.prediction"
+    local is_enabled = True
 
-    function register_prediction_triggers()
+    local function register_prediction_triggers()
         -- keymaps
         if predictions.keymaps.accept_all then
             vim.api.nvim_set_keymap('i', predictions.keymaps.accept_all, "",
@@ -89,7 +90,7 @@ local function setup(options)
         })
     end
 
-    function remove_prediction_triggers()
+    local function remove_prediction_triggers()
         -- FYI pcall blocks error propagation (returns status code, though in this case I don't care about that)
         pcall(vim.api.nvim_del_augroup_by_name, augroup) -- most del methods will throw if doesn't exist... so just ignore that
 
@@ -100,11 +101,19 @@ local function setup(options)
     end
 
     function EnableAskOpenAIPredictions()
+        if is_enabled then
+            return
+        end
         register_prediction_triggers()
+        is_enabled = true
     end
 
     function DisableAskOpenAIPredictions()
+        if not is_enabled then
+            return
+        end
         remove_prediction_triggers()
+        is_enabled = false
     end
 
     EnableAskOpenAIPredictions()
