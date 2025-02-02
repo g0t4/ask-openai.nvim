@@ -53,6 +53,8 @@ function M.ask_for_prediction()
     end
     info("first_row", first_row, "last_row", last_row)
 
+    -- TODO! pass clipboard too! doesn't even have to be used verbatim... can just bias context!
+
     local IGNORE_BOUNDARIES = false
     local current_line = vim.api.nvim_buf_get_lines(0, original_row, original_row + 1, IGNORE_BOUNDARIES)[1] -- 0based indexing
     local current_before_cursor = current_line:sub(1, original_col + 1) -- TODO include current cursor slot as before or after?
