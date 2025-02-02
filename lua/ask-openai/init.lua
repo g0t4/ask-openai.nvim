@@ -44,22 +44,25 @@ local function setup(options)
 
     local handlers = require("ask-openai.prediction.handlers")
 
-    if predictions.keymaps.accept_all then
-        vim.api.nvim_set_keymap('i', predictions.keymaps.accept_all, "",
-            { noremap = true, callback = handlers.accept_all_invoked })
-    end
-
-    if predictions.keymaps.accept_line then
-        vim.api.nvim_set_keymap('i', predictions.keymaps.accept_line, "",
-            { noremap = true, callback = handlers.accept_line_invoked })
-    end
-
-    if predictions.keymaps.accept_word then
-        vim.api.nvim_set_keymap('i', predictions.keymaps.accept_word, "",
-            { noremap = true, callback = handlers.accept_word_invoked })
-    end
 
     function setup_prediction_triggers()
+        -- keymaps
+        if predictions.keymaps.accept_all then
+            vim.api.nvim_set_keymap('i', predictions.keymaps.accept_all, "",
+                { noremap = true, callback = handlers.accept_all_invoked })
+        end
+
+        if predictions.keymaps.accept_line then
+            vim.api.nvim_set_keymap('i', predictions.keymaps.accept_line, "",
+                { noremap = true, callback = handlers.accept_line_invoked })
+        end
+
+        if predictions.keymaps.accept_word then
+            vim.api.nvim_set_keymap('i', predictions.keymaps.accept_word, "",
+                { noremap = true, callback = handlers.accept_word_invoked })
+        end
+
+        -- event subscriptions
         local augroup = "ask-openai.prediction"
         vim.api.nvim_create_augroup(augroup, { clear = true })
         vim.api.nvim_create_autocmd("InsertLeavePre", {
