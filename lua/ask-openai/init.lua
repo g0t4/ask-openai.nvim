@@ -44,13 +44,7 @@ local function setup(options)
 
     local handlers = require("ask-openai.prediction.handlers")
 
-    function EnableAskOpenAIPredictions()
-        register_prediction_triggers()
-    end
-
-    function DisableAskOpenAIPredictions()
-        remove_prediction_triggers()
-    end
+    local augroup = "ask-openai.prediction"
 
     function register_prediction_triggers()
         -- keymaps
@@ -70,7 +64,6 @@ local function setup(options)
         end
 
         -- event subscriptions
-        local augroup = "ask-openai.prediction"
         vim.api.nvim_create_augroup(augroup, { clear = true })
         vim.api.nvim_create_autocmd("InsertLeavePre", {
             group = augroup,
@@ -96,15 +89,25 @@ local function setup(options)
         })
     end
 
-    EnableAskOpenAIPredictions()
-
-    local function remove_prediction_triggers()
-        -- remove the augroup
-                local augroup = "ask-openai.prediction"
+    function remove_prediction_triggers()
+        -- remove the augroup for event triggers
         vim.api.nvim_del_augroup_by_name(augroup)
-        -- this is the one that triggers them:
 
+        -- remove keymaps
+        vim.api.nvim_del_keymap('i', predictions.keymaps.accept_all)
+        vim.api.nvim_del_keymap('i', predictions.keymaps.accept_line)
+        vim.api.nvim_del_keymap('i', predictions.keymaps.accept_word)
     end
+
+    function EnableAskOpenAIPredictions()
+        register_prediction_triggers()
+    end
+
+    function DisableAskOpenAIPredictions()
+        remove_prediction_triggers()
+    end
+
+    EnableAskOpenAIPredictions()
 
     -- SETUP hlgroup
     -- TODO make this configurable
