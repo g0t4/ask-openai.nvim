@@ -3,6 +3,12 @@ local _module = {}
 local config = require("ask-openai.config")
 
 local is_predictions_enabled = false
+
+function _module.is_predictions_enabled()
+    -- todo organize top level funcs on a module instead
+    return is_predictions_enabled
+end
+
 local augroup = "ask-openai.prediction"
 
 local function register_prediction_triggers()
@@ -79,12 +85,7 @@ function _module.remove_prediction_triggers()
     pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_word)
 end
 
-function _module.IsAskOpenAIPredictionsEnabled()
-    -- todo organize top level funcs on a module instead
-    return is_predictions_enabled
-end
-
-function _module.EnableAskOpenAIPredictions()
+function _module.enable_predictions()
     if is_predictions_enabled then
         return
     end
@@ -92,7 +93,7 @@ function _module.EnableAskOpenAIPredictions()
     is_predictions_enabled = true
 end
 
-function _module.DisableAskOpenAIPredictions()
+function _module.disable_predictions()
     if not is_predictions_enabled then
         return
     end
@@ -109,7 +110,7 @@ local function trim_null_characters(input)
     return input:gsub("%z", "")
 end
 
-local function ask_openai()
+function _module.ask_openai()
     local cmdline = vim.fn.getcmdline()
     print("asking...") -- overwrites showing luaeval("...") in cmdline
 
@@ -122,7 +123,7 @@ local function ask_openai()
 end
 
 --- @param options AskOpenAIOptions
-local function setup(options)
+function _module.setup(options)
     -- MAYBE remove setup and let it be implicit? that said I like only wirting up the key if someone calls this
     config.set_user_options(options) -- MAYBE I can move this out to elsewhere, isn't there a config method for this?
 
@@ -137,15 +138,7 @@ local function setup(options)
     -- FYI `<C-\>e` is critical in the following, don't remove the `e` and `\\` is to escape the `\` in lua
     vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai\').ask_openai()")<CR>', { noremap = true, })
 
-    _module.EnableAskOpenAIPredictions()
+    _module.enable_predictions()
 end
 
-return {
-    setup = setup,
-    ask_openai = ask_openai,
-    predictions = {
-        enable = _module.EnableAskOpenAIPredictions,
-        disable = _module.DisableAskOpenAIPredictions,
-        is_enabled = _module.IsAskOpenAIPredictionsEnabled
-    }
-}
+return _module
