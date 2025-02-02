@@ -1,3 +1,5 @@
+local _module = {}
+
 local function trim_null_characters(input)
     -- Replace null characters (\x00) with an empty string
     -- was getting ^@ at end of command output w/ system call (below)
@@ -90,7 +92,7 @@ local function setup(options)
         })
     end
 
-    local function remove_prediction_triggers()
+    function _module.remove_prediction_triggers()
         -- FYI pcall blocks error propagation (returns status code, though in this case I don't care about that)
         -- remove event triggers
         pcall(vim.api.nvim_del_augroup_by_name, augroup) -- most del methods will throw if doesn't exist... so just ignore that
@@ -101,12 +103,12 @@ local function setup(options)
         pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_word)
     end
 
-    function IsAskOpenAIPredictionsEnabled()
+    function _module.IsAskOpenAIPredictionsEnabled()
         -- todo organize top level funcs on a module instead
         return is_enabled
     end
 
-    function EnableAskOpenAIPredictions()
+    function _module.EnableAskOpenAIPredictions()
         if is_enabled then
             return
         end
@@ -114,15 +116,15 @@ local function setup(options)
         is_enabled = true
     end
 
-    function DisableAskOpenAIPredictions()
+    function _module.DisableAskOpenAIPredictions()
         if not is_enabled then
             return
         end
-        remove_prediction_triggers()
+        _module.remove_prediction_triggers()
         is_enabled = false
     end
 
-    EnableAskOpenAIPredictions()
+    _module.EnableAskOpenAIPredictions()
 
     -- SETUP hlgroup
     -- TODO make this configurable
@@ -133,8 +135,8 @@ return {
     setup = setup,
     ask_openai = ask_openai,
     predictions = {
-        enable = EnableAskOpenAIPredictions,
-        disable = DisableAskOpenAIPredictions,
-        is_enabled = IsAskOpenAIPredictionsEnabled
+        enable = _module.EnableAskOpenAIPredictions,
+        disable = _module.DisableAskOpenAIPredictions,
+        is_enabled = _module.IsAskOpenAIPredictionsEnabled
     }
 }
