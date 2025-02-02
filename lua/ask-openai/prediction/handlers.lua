@@ -31,7 +31,7 @@ function M.ask_for_prediction()
     --   PRN race using FIM vs AR (complete) and show first completed suggestion and allow toggle to next?
     -- ... Zed uses 32 (max 64 totallines, 32 before/after by default) => shifted if near top/bottom of doc too
     -- PRN consider (when available) to get the lines back to a meaningful branch in the syntax tree of the code you are editing? does that help?
-    local allow_lines = 20;
+    local allow_lines = 80
     local first_row = original_row - allow_lines -- lets try to take entire document if avail! (in future clip at some key boundary... unsure how that would work best w/ how models are trained on FIM
     local last_row = original_row + allow_lines -- limit how much we consider past this point? or take it all too?
 

@@ -44,8 +44,15 @@ local function setup(options)
 
     local handlers = require("ask-openai.prediction.handlers")
 
+    function EnableAskOpenAIPredictions()
+        register_prediction_triggers()
+    end
 
-    function setup_prediction_triggers()
+    function DisableAskOpenAIPredictions()
+        remove_prediction_triggers()
+    end
+
+    function register_prediction_triggers()
         -- keymaps
         if predictions.keymaps.accept_all then
             vim.api.nvim_set_keymap('i', predictions.keymaps.accept_all, "",
@@ -89,7 +96,15 @@ local function setup(options)
         })
     end
 
-    setup_prediction_triggers()
+    EnableAskOpenAIPredictions()
+
+    local function remove_prediction_triggers()
+        -- remove the augroup
+                local augroup = "ask-openai.prediction"
+        vim.api.nvim_del_augroup_by_name(augroup)
+        -- this is the one that triggers them:
+
+    end
 
     -- SETUP hlgroup
     -- TODO make this configurable
