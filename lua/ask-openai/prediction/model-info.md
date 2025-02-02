@@ -94,6 +94,16 @@ example:
 ```sh
 curl -X POST http://ollama:11434/api/generate \
     -d '{"raw":true,"num_predict":40,"model":"qwen2.5-coder:14b","stream":true,"prompt":"<|fim_prefix|>    <|fim_suffix|>    \n\n    it(\"some test\", function()\n        bounter = 100\n        assert.equals(\"bello Brian\", bello(\"Brian\"))\n    end)\n\n    it(\"some other test\", function()\n        assert.equals(0, bounter)\n    end)<|fim_middle|>"}'
+
+
+curl -X POST http://ollama:11434/api/generate \
+    -d '{
+   "raw":true,
+   "num_predict":40,
+   "model":"qwen2.5-coder:1.5b",
+   "stream":true,
+   "prompt":"<|fim_prefix|>    <|fim_suffix|>    \n\n    it(\"some test\", function()\n        bounter = 100\n        assert.equals(\"bello Brian\", bello(\"Brian\"))\n    end)\n\n    it(\"some other test\", function()\n        assert.equals(0, bounter)\n    end)<|fim_middle|>"
+}'
 ```
 
 BOS token = 151643 '<|endoftext|>'
