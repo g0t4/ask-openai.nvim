@@ -59,31 +59,34 @@ local function setup(options)
             { noremap = true, callback = handlers.accept_word_invoked })
     end
 
-    -- SETUP triggers for predictions
-    local augroup = "ask-openai.prediction"
-    vim.api.nvim_create_augroup(augroup, { clear = true })
-    vim.api.nvim_create_autocmd("InsertLeavePre", {
-        group = augroup,
-        pattern = "*",
-        callback = handlers.leaving_insert_mode
-    })
-    vim.api.nvim_create_autocmd("InsertEnter", {
-        group = augroup,
-        pattern = "*",
-        callback = handlers.entering_insert_mode
-    })
-    -- vim.api.nvim_create_autocmd("CursorMovedI", {
-    --     -- TODO TextChangedI intead of cursor moved?
-    --     group = augroup,
-    --     pattern = "*", -- todo filter?
-    --     callback = handlers.cursor_moved_in_insert_mode
-    -- })
-    vim.api.nvim_create_autocmd("TextChangedI", {
-        -- do I like this better? is this gonna mess up when I insert text still?
-        group = augroup,
-        pattern = "*",
-        callback = handlers.cursor_moved_in_insert_mode,
-    })
+    function setup_prediction_triggers()
+        local augroup = "ask-openai.prediction"
+        vim.api.nvim_create_augroup(augroup, { clear = true })
+        vim.api.nvim_create_autocmd("InsertLeavePre", {
+            group = augroup,
+            pattern = "*",
+            callback = handlers.leaving_insert_mode
+        })
+        vim.api.nvim_create_autocmd("InsertEnter", {
+            group = augroup,
+            pattern = "*",
+            callback = handlers.entering_insert_mode
+        })
+        -- vim.api.nvim_create_autocmd("CursorMovedI", {
+        --     -- TODO TextChangedI intead of cursor moved?
+        --     group = augroup,
+        --     pattern = "*", -- todo filter?
+        --     callback = handlers.cursor_moved_in_insert_mode
+        -- })
+        vim.api.nvim_create_autocmd("TextChangedI", {
+            -- do I like this better? is this gonna mess up when I insert text still?
+            group = augroup,
+            pattern = "*",
+            callback = handlers.cursor_moved_in_insert_mode,
+        })
+    end
+
+    setup_prediction_triggers()
 
     -- SETUP hlgroup
     -- TODO make this configurable
