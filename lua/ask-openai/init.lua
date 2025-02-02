@@ -92,6 +92,7 @@ local function setup(options)
 
     local function remove_prediction_triggers()
         -- FYI pcall blocks error propagation (returns status code, though in this case I don't care about that)
+        -- remove event triggers
         pcall(vim.api.nvim_del_augroup_by_name, augroup) -- most del methods will throw if doesn't exist... so just ignore that
 
         -- remove keymaps
