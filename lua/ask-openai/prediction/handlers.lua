@@ -261,7 +261,7 @@ function M.ask_for_prediction()
 
     options.on_stdout = function(err, data) -- uv.spawn
         -- options.on_stdout = function(err, data, job) -- plenary.job
-        info("on_stdout data: ", data)
+        -- info("on_stdout data: ", data)
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         if err then
             info("on_stdout error: ", err)
@@ -287,7 +287,7 @@ function M.ask_for_prediction()
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         -- just log for now is fine
         -- DO NOT USE "data:" b/c that is what each streaming chunk is prefixed with and so confuses the F out of me when I see that and think oh its fine... nope
-        info("on_stderr chunk: ", data)
+        -- info("on_stderr chunk: ", data)
         if err then
             info("on_stderr error: ", err)
             -- TODO stop abort?
