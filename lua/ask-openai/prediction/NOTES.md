@@ -29,6 +29,10 @@
     - Comments have to be valid (not just willy nilly text) =>  esp happens w/ new files that have maybe one comment at the top, it thinks its time to write a guide doc with text and code
 - Comments work well (as is expected)
 
+### Tool use?
+
+- How about allow the model to request more data (i.e. read a file for a given symbol?)... what could that look like? Qwen has tool use BTW
+
 ### Rewrite the Middle
 
 - Not just FIM, also RIM!
