@@ -5,6 +5,12 @@
 
 ## TODOs
 
+- Stop generating further prediction tokens... but also don't exit to normal mode
+    - OR, maybe keep prediction even in normal mode! and allow accepting it?
+        - Esc is a potent way to stop it... that feels right at home...
+        - would avoid yet another keybinding!
+        - would have to remove code to trigger on insertenter and insertleave
+
 ### Context to send
 
 - I suspect I can select context based on the code tree instead of just # lines before/after and might get better suggestsion that way when not sending entire file
