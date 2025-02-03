@@ -5,6 +5,11 @@
 
 ## TODOs
 
+- Look into model params
+    - in some cases context is truncated... I wonder if this is when I felt like part of prompt was ignored... see ollama logs
+        level=WARN source=runner.go:129 msg="truncating input prompt" limit=2048 prompt=2694 keep=4 new=2048
+    - creativity? vs strictness?
+    - review API docs for ollama for what can be passed (also look at llama.cpp and openai's /v1/completions)
 - Stop generating further prediction tokens... but also don't exit to normal mode
     - OR, maybe keep prediction even in normal mode! and allow accepting it?
         - Esc is a potent way to stop it... that feels right at home...
