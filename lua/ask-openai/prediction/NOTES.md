@@ -22,6 +22,13 @@
 - pass file name as a file separator token?
     - create some test code examples that are ambiguous without file name (similar languages) and see how it does w/ and w/o the name
 
+### Prompting?
+
+- Things to guide it:
+    - No markdown if not a markdown file
+    - Comments have to be valid (not just willy nilly text) =>  esp happens w/ new files that have maybe one comment at the top, it thinks its time to write a guide doc with text and code
+- Comments work well (as is expected)
+
 ### Rewrite the Middle
 
 - Not just FIM, also RIM!
