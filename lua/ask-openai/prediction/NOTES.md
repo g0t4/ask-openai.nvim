@@ -8,6 +8,11 @@
 - Look into model params
     - in some cases context is truncated... I wonder if this is when I felt like part of prompt was ignored... see ollama logs
         level=WARN source=runner.go:129 msg="truncating input prompt" limit=2048 prompt=2694 keep=4 new=2048
+        OH DEAR GOD IT truncates the first part of the prompt... which has <|fim_prefix|> lol and the file name... no wonder I get shit recommendations randomly
+            looks like its some cache bullshit context
+        WTF why is this not marked as a WARNING at least in the logs:
+            *** llama_new_context_with_model: n_ctx_per_seq (2048) < n_ctx_train (32768) -- the full capacity of the model will not be utilized
+
     - creativity? vs strictness?
     - review API docs for ollama for what can be passed (also look at llama.cpp and openai's /v1/completions)
 - Stop generating further prediction tokens... but also don't exit to normal mode
