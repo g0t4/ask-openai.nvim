@@ -110,7 +110,8 @@ function M.ask_for_prediction()
         --    ollama supports it: https://github.com/ollama/ollama/blob/main/docs/openai.md#v1completions
         --    for FIM, you won't likely use /chat/completions (two different tasks and models are trained on FIM alone, not w/ chat messages in prompt)
         --
-        model = "qwen2.5-coder:3b-instruct-q8_0",
+        model = "qwen2.5-coder:7b-instruct-q8_0",
+        -- model = "qwen2.5-coder:3b-instruct-q8_0", -- trouble paying attention to suffix... and same with prefix... on zedraw functions
         -- model = "qwen2.5-coder:7b", --0.5b, 1b, 3b*, 7b, 14b*, 32b
         -- model = "qwen2.5-coder:7b-instruct-q8_0",
         -- model = "qwen2.5-coder:14b-instruct-q8_0", -- works well if I can make sure nothing else is using up GPU space
