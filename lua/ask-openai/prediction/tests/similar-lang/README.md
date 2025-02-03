@@ -6,6 +6,8 @@ Several cursor spots with suggestions would then need to know the language to re
 - in speak func, to print a message,  i.e. "hi"
 - at top to add #include (for std::cout when used in speak)
 
+- Ya know there are subtle differences that would be VERY rare to avoid... I don't know that the language is needed, at least not to DISAMBIGUATE two possible languages, maybe when a file is brand new it could help or maybe if a model is generating a ton of markdown, it might be a good reminder... lets wait and see
+
 That way I can test different approaches to including the language information:
 - Filename
 - Language specific comment (comment might also give some away!)
