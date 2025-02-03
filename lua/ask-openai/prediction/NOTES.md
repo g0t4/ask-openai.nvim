@@ -56,6 +56,8 @@
 
 ## model testing
 
+- benchmarks to establish realistics expectations for tokens/sec etc..
+    - https://github.com/XiongjieDai/GPU-Benchmarks-on-LLM-Inference
 - qwen2.5-coder
     - 7b-base-Q8_0 didn't seem to work as well or generated less code?
         - I probably want the instruct models
