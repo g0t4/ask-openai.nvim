@@ -49,16 +49,15 @@ function M.ask_for_prediction()
     local context_before = vim.api.nvim_buf_get_lines(0, first_row, original_row, IGNORE_BOUNDARIES) -- 0based indexing
     local context_before_text = table.concat(context_before, "\n") .. current_before_cursor
     -- give some instructions in a comment (TODO use comment string to do this)
-    local current_buffer_file_name = vim.api.nvim_buf_get_name(0)
 
-    -- use comment string to add a comment with the filename (just basename for now, can get full path too w/o :t)
-    -- TODO troubleshoot if there is no commentstring set? how about warn and not set comment header
     local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":t")
-    -- TODO! get filename relative to current workspace root (i.e. so can see folder names that are important too => i.e. arch/rocm.fish conveys archlinux + rocm (AMD gpu)
-    local comment_header = string.format(vim.o.commentstring, "the following code is from a file named: '" .. filename .. "'") .. "\n\n"
-    context_before_text = comment_header .. context_before_text
-    -- TODO! go back to raw format and try this BEFORE fim_prefix tag
-    log:trace("comment_header: ", comment_header)
+    if vim.o.commentstring ~= nil then
+        local comment_header = string.format(vim.o.commentstring, "the following code is from a file named: '" .. filename .. "'") .. "\n\n"
+        context_before_text = comment_header .. context_before_text
+        log:trace("comment_header: ", comment_header)
+    else
+        -- log:warn
+    end
 
     local context_after = vim.api.nvim_buf_get_lines(0, original_row, last_row, IGNORE_BOUNDARIES) -- 0based indexing
     local context_after_text = current_after_cursor .. table.concat(context_after, "\n") -- IIAC \n is the line separator?
