@@ -66,7 +66,7 @@ function M.ask_for_prediction()
     -- TODO troubleshoot if there is no commentstring set? how about warn and not set comment header
     local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":t")
     -- TODO! get filename relative to current workspace root (i.e. so can see folder names that are important too => i.e. arch/rocm.fish conveys archlinux + rocm (AMD gpu)
-    local comment_header = string.format(vim.o.commentstring, "FYI I am from a file named: '" .. filename .. "'") + "\n\n"
+    local comment_header = string.format(vim.o.commentstring, "the following code is from a file named: '" .. filename .. "'") .. "\n\n"
     context_before_text = comment_header .. context_before_text
     -- TODO! go back to raw format and try this BEFORE fim_prefix tag
     --   in fact, I just got weird behavior where the model added an ending comment to offset the filename comment_header one... and then it started to explain the changes! yikez... we don't wanna go that way... so maybe try im_start/end before ?
@@ -121,12 +121,11 @@ function M.ask_for_prediction()
         --   shorter responses and did seem to try to connect to start of suffix, maybe? just a little bit of initial testing
         --   more intelligent?... clearly could tell when similiar file started to lean toward java (and so it somewhat ignored *.cpp filename but that wasn't necessarily wrong as there were missing things (; syntax errors if c++)
         --
-        model = "codellama:7b-code-q8_0", -- `code` and `python` have FIM, `instruct` does not
+        -- model = "codellama:7b-code-q8_0", -- `code` and `python` have FIM, `instruct` does not
+        --       wow... ok this model is dumb.. nevermind I put "cpp" in the comment at the top... it only generates java... frustrating...
         --       keeps generating <EOT> in output ... is the template wrong?... at the spot where it would be EOT... in fact it stops at that time too... OR its possible llama has the wrong token marked for EOT and isn't excluding it when it should be
         --       so far, aggresively short completions
-        -- model = "codellama:7b-code-q4_K_M",
         -- btw => codellama:-code uses: <PRE> -- calculator\nlocal M = {}\n\nfunction M.add(a, b)\n    return a + b\nend1 <SUF>1\n\n\n\nreturn M <MID>
-        --      Admittedly it is nice to switch models and have the template handle the FIM token differences...
 
         -- *** prompt differs per endpoint:
         -- -- ollama's /api/generate, also IIAC everyone else's /v1/completions:
