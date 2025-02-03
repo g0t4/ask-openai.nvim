@@ -58,25 +58,19 @@ function M.ask_for_prediction()
     local comment_header = string.format(vim.o.commentstring, "the following code is from a file named: '" .. filename .. "'") .. "\n\n"
     context_before_text = comment_header .. context_before_text
     -- TODO! go back to raw format and try this BEFORE fim_prefix tag
-    --   in fact, I just got weird behavior where the model added an ending comment to offset the filename comment_header one... and then it started to explain the changes! yikez... we don't wanna go that way... so maybe try im_start/end before ?
     log:trace("comment_header: ", comment_header)
-
-    -- TODO get tree of doc code and extract key symbols?
 
     local context_after = vim.api.nvim_buf_get_lines(0, original_row, last_row, IGNORE_BOUNDARIES) -- 0based indexing
     local context_after_text = current_after_cursor .. table.concat(context_after, "\n") -- IIAC \n is the line separator?
 
-    -- TODO limit # chars to configurable amount of context
-    -- TODO read from config file tmp.predictions
-    local tokens_to_clear = "<|endoftext|>" -- TODO USE THIS?
+    -- FYI only needed for raw prompts:
+    local tokens_to_clear = "<|endoftext|>"
     local fim = {
         enabled = true,
         prefix = "<|fim_prefix|>",
         middle = "<|fim_middle|>",
         suffix = "<|fim_suffix|>",
     }
-
-    -- TODO strip comments? or maybe strip comments marked a certain way? or not marked that way?
 
     -- TODO provide guidance before fim_prefix... can I just <|im_start|> blah <|im_end|>? (see qwen2.5-coder template for how it might work)
     -- TODO setup separate request/response handlers to work with both /api/generate AND /v1/completions => use config to select which one
@@ -88,14 +82,8 @@ function M.ask_for_prediction()
     -- PSM inference format:
     -- local raw_prompt = fim.prefix .. context_before_text .. fim.suffix .. context_after_text .. fim.middle
 
-    -- TODOs
-    --   include outline/symbols for current doc
-    --   include recent edits? (other files too) and maybe the symbol edited (i.e. func)
-    --   include filename (thus language)
-    --   include preamble request of what to do? <|im_start|> section?
-
     local body = {
-        -- !!! TODO migrate to /v1/completions "legacy" OpenAI completions endpoint (also has RAW prompt)
+        --    TODO try llama.cpp's /infill endpoint => any better feature wise / perf wise? is it better at templating the FIM (builds own prompt, IIUC only works with qwen2.5-coder currently)
         --    ollama supports it: https://github.com/ollama/ollama/blob/main/docs/openai.md#v1completions
         --    for FIM, you won't likely use /chat/completions (two different tasks and models are trained on FIM alone, not w/ chat messages in prompt)
         --
@@ -124,21 +112,18 @@ function M.ask_for_prediction()
         --
         -- ollama's /v1/completions + Templates (I honestly hate this... you should've had a raw flag in your /v1/completions implementation... why fuck over all users?)
         --     btw ollama discusses templating for FIM here: https://github.com/ollama/ollama/blob/main/docs/template.md#example-fill-in-middle
-        prompt = context_before_text, -- ollama's /v1/completions + qwen2.5-coder's template (and their guidance on FIM)
+        prompt = context_before_text,
         suffix = context_after_text,
-        -- I AM TEMPTED TO JUST USE /api/generate so I don't get f'ed over by the template in ollama... but let me wait for that to happen first
-        -- TODO add logic to switch the request/response parsing based on backend and vs not
         raw = true, -- ollama's /api/generate allows to bypass templates... unfortunately, ollama doesn't have this param for its /v1/completions endpoint
 
         stream = true,
-        -- num_predict = 40, -- max tokens for ollama's /api/generate
+        -- num_predict = 40, -- /api/generate
         max_tokens = 200,
         -- TODO roll up the request building into separate classes, and response parsing too.. so its /api/generate or /chat/completions specific w/o needing consumer to think much about it
         -- TODO temperature, top_p,
     }
 
     local body_serialized = vim.json.encode(body)
-    -- log:trace("body", body_serialized)
 
     local options = {
         command = "curl",
@@ -146,34 +131,20 @@ function M.ask_for_prediction()
             "-fsSL",
             "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
-            "http://ollama:11434/v1/completions",
+            "http://localhost:11434/v1/completions",
             -- "http://ollama:11434/api/generate",
             "-H", "Content-Type: application/json",
             "-d", body_serialized
         },
-        -- TODO do I need to set stream job option? (plenary.curl uses this to decide if it wires up on_stdout... but I don't think its needed w/ plenary.job alone?) unsure... works w/o it so far
-        -- stream = true
     }
 
-    -- log the curl call, super useful for testing independently in terminal
     -- log:trace("curl", table.concat(options.args, " "))
 
-    -- closure captures this id for any callbacks to use to ignore past predictions
     local this_prediction = Prediction:new()
     M.current_prediction = this_prediction
 
-    -- FYI if any issues with plenary.job, it was super easy to use uv.spawn, w/ new_pipe(s):
-    --    git show 21d1e11  -- this commit is when I changed to plenary
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
-    -- Plenary adds some features that aren't there that might cause issues..
-    --   or might help, i.e. it looks like it combines chunks / splits on new lines? I need to re-read the code but I thought I saw that:
-    --      https://github.com/nvim-lua/plenary.nvim/blob/master/lua/plenary/job.lua#L285 on_output
-    --   this might be useful, but if it causes issues then go back to uv.spawn...
-    --   also, AFAIK with SSE events, the protocol has each event as a separate chunk (not split up across chunks) so I don't think I have a need for what on_output does..
-    --   also if plenary.job adds overhead then remove it too...
-    --   TODO read entirety of plenary.job and see if I really want to use it (measure timing if needed)...
-    --     also check out plenary.curl which might have added features for my use case that will help over plenary.job alone (plenary.curl is built on plenary.job)
 
     options.on_exit = function(code, signal) -- uv.spawn
         if code ~= 0 then
@@ -190,7 +161,7 @@ function M.ask_for_prediction()
 
 
     local function process_sse(data)
-        -- TODO add some tests of this parsing? can run outside of nvim too
+        -- TODO tests of parsing?
         -- SSE = Server-Sent Event
         -- split on lines first (each SSE can have 0+ "event" - one per line)
 
@@ -215,11 +186,9 @@ function M.ask_for_prediction()
             if success and parsed.choices and parsed.choices[1] and parsed.choices[1].text then
                 local choice = parsed.choices[1]
                 local text = choice.text
-                if choice.finish_reason == "stop" then -- TODO "length"?
+                if choice.finish_reason == "stop" then
                     done = true
                 elseif choice.finish_reason == "length" then
-                    -- got this reason when testing
-                    -- max len?
                     done = true
                 elseif choice.finish_reason ~= vim.NIL then
                     log:warn("WARN - unexpected /v1/completions finish_reason: ", choice.finish_reason, " do you need to handle this too?")
@@ -250,7 +219,7 @@ function M.ask_for_prediction()
     end
 
     options.on_stdout = function(err, data)
-        -- log:trace("on_stdout chunk: ", data) -- TODO add "trace" level to logging... better yet just uncomment this when you need to see it
+        -- log:trace("on_stdout chunk: ", data)
         if err then
             log:warn("on_stdout error: ", err)
             this_prediction:mark_generation_failed()
@@ -331,19 +300,18 @@ local sub = debounced:subscribe(function()
     vim.schedule(function()
         log:trace("CursorMovedI debounced")
 
-        -- YES! now this is how I can stop predictions, i can exit insert mode and stop altogether
-        -- TODO move into observable? filter?
-        if vim.fn.mode() ~= "i" then return end
+        if vim.fn.mode() ~= "i" then
+            return
+        end
 
         M.ask_for_prediction()
     end)
 end)
---PRN this should be per buffer at some point... could add buffer to onNext({buffer=1}) ... and use groupby/debounce to handle all of that yummyness in the event stream
 
 function M.cursor_moved_in_insert_mode()
     if M.current_prediction ~= nil and M.current_prediction.disable_cursor_moved == true then
         log:trace("Disabled CursorMovedI, skipping...")
-        M.current_prediction.disable_cursor_moved = false -- re-enable it, just skip one time... yes it sucks
+        M.current_prediction.disable_cursor_moved = false -- just skip one time
         -- basically this is called after accepting/inserting the new content (AFAICT only one time too)
         return
     end
@@ -362,8 +330,6 @@ end
 
 function M.entering_insert_mode()
     log:trace("function M.entering_insert_mode()")
-
-    -- TODO anything specific to entering insert mode?
     M.cursor_moved_in_insert_mode()
 end
 
@@ -392,8 +358,8 @@ function M.accept_word_invoked()
 end
 
 function M.vim_is_quitting()
-    -- just in case, though leaving insert mode should already do this
-    log:trace("Vim is quitting, stopping current prediction...")
+    -- PRN detect rogue curl processes still running?
+    log:trace("Vim is quitting, stopping current prediction (ensures curl is terminated)...")
     M.stop_current_prediction()
 end
 

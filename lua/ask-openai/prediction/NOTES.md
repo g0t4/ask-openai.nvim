@@ -16,6 +16,22 @@
         - would avoid yet another keybinding!
         - would have to remove code to trigger on insertenter and insertleave
 
+- include outline/symbols for current doc
+    - include symbols "in-scope" of cursor position!
+- include recent edits? (other files too) and maybe the symbol edited (i.e. func)
+    - filter other file edits based on type? or just give all?
+        - i.e. if I edit markdown files, will I really need that if I switch to lua (i.e. this notes file)
+    - perhaps add a diff keymap that expands the context if I don't get what I want with a default context
+- include preamble request of what to do? <|im_start|> section?
+
+- TODO strip comments? or maybe strip comments marked a certain way? or not marked that way?
+### Observations todo
+- generated an ending comment to offset the filename comment_header... and then it started to explain the changes in markdown prefix/suffix
+    - maybe try im_start/end before
+    - OR, <|file_sep|> instead?
+
+
+
 ### Context to send
 
 - I suspect I can select context based on the code tree instead of just # lines before/after and might get better suggestsion that way when not sending entire file
