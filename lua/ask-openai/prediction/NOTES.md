@@ -27,8 +27,12 @@
 - Not just FIM, also RIM!
     - idea => mark a section inside the FIM that can be rewritten, basically whatever is replaced in that section will become the prediction and I can diff it with that same section to show it then
     - use vim.diff?
-- As far as formatting...
+- As far as formatting/prompting...
     - can I get away w/o fine tuning or training a model on the new "<|rewrite_start|>" and "<|rewrite_end|>" and just use them with a good prompt somewhere?
+    - I fixed that prompt for Zed with local models and it started working really well... why not try using that one for what I wanna do here...
+    - Also wish I could get a model to generate diffs of changes but not sure that will work well, more testing is needed
+        - someone should train some models on generating diffs instead of regurgitate entire chunk of text...
+            - or smth more like fast edit model in Zed w/ Claude Sonnet, can this be used in local models?
 - Examples
     - Like Zed's predictions
     - And, supermaven has this for:
