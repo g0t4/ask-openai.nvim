@@ -1,16 +1,7 @@
 local Prediction = {}
 local uv = vim.uv
 
-Prediction.logger = require("ask-openai.prediction.logger").predictions()
--- TODO move info/noop to logger too... just want a clean way to call it like info in here.. not keep on logger:info but fine if I have to
-local function info(...)
-    Prediction.logger:log(...)
-end
-if not require("ask-openai.config").get_options().verbose then
-    info = function(...)
-        -- no-op
-    end
-end
+local log = require("ask-openai.prediction.logger").predictions()
 
 local hlgroup = "AskPrediction"
 
@@ -53,7 +44,6 @@ function Prediction:redraw_extmarks()
     local original_row = original_row_1based - 1 -- 0-based now
 
     if self.prediction == nil then
-        -- TODO get logger in here too
         print("unexpected... prediction is nil?")
         return
     end
@@ -109,7 +99,7 @@ function Prediction:accept_first_line()
         -- IT WORKS GREAT! though I always waited for first line to be done... its gonna be an issue mid line :)
         --    IN FACT IT IS BEAUTIFUL!! accept while its writing!! YESSSS
         -- what if someone tries to do this while completion is still generating?
-        info("WARNING - accepting completion while still generating, might not be an issue... will see")
+        log:warn("WARNING - accepting completion while still generating, might not be an issue... will see")
         -- IIAC only one thing can run at a time so it might be ok?
     end
 
@@ -148,7 +138,7 @@ function Prediction:accept_first_word()
         -- IT WORKS GREAT! though I always waited for first line to be done... its gonna be an issue mid line :)
         --    IN FACT IT IS BEAUTIFUL!! accept while its writing!! YESSSS
         -- what if someone tries to do this while completion is still generating?
-        info("WARNING - accepting completion while still generating, might not be an issue... will see")
+        log:warn("WARNING - accepting completion while still generating, might not be an issue... will see")
         -- IIAC only one thing can run at a time so it might be ok?
     end
 
@@ -158,19 +148,19 @@ function Prediction:accept_first_word()
     end
 
     local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
-    info("word_end:", word_end)
+    -- log:trace("word_end:", word_end)
     if word_end == nil then
-        info("no words in first line, accepting entire line")
+        -- log:trace("no words in first line, accepting entire line")
         self:accept_first_line()
         return
     end
 
     local first_word = lines[1]:sub(1, word_end) or ""
-    info(string.format("first_word: '%s'", first_word))
+    -- log:trace(string.format("first_word: '%s'", first_word))
     if first_word == lines[1] then
         -- BTW can get blank line (with ' ' or ' \n' ... go right after a function definition and add a new line, or two... and if your cursor stays above the new lines, right below func signature, it will often suggest a blank line there - qwen2.5-coder:7b does anyways)
         -- rest of word, then use accept line
-        info("next word is last word for line, take it all")
+        -- log:trace("next word is last word for line, take it all")
         self:accept_first_line()
         return
     end

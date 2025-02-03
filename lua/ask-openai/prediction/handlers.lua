@@ -8,18 +8,7 @@ M.current_prediction = nil -- set on module for now, just so I can inspect it ea
 
 -- FYI useful to observe what is happening under hood, run in pane below nvim (don't need to esc and look at :messages)
 --    tail -f /Users/wesdemos/.local/share/nvim/ask/ask-predictions.log
-M.logger = require("ask-openai.prediction.logger").predictions()
-local function info(...)
-    M.logger:log(...)
-end
-if not require("ask-openai.config").get_options().verbose then
-    info = function(...)
-        -- no-op
-    end
-end
-
--- TODO add unit test of info log method so I don't waste another hour on its quirks:
--- info("foo", nil, "bar") -- use to validate nil args don't interupt the rest of log args getting included -- nuke this is fine, just leaving as a reminder I had trouble with logging nil values
+local log = require("ask-openai.prediction.logger").predictions()
 
 function M.ask_for_prediction()
     M.stop_current_prediction()
@@ -49,7 +38,7 @@ function M.ask_for_prediction()
         first_row = first_row - past
         -- todo do I have to ensure > 0 ? for first_row
     end
-    -- info("first_row", first_row, "last_row", last_row)
+    -- log:trace("first_row", first_row, "last_row", last_row)
 
     -- TODO! pass clipboard too! doesn't even have to be used verbatim... can just bias context!
 
@@ -70,7 +59,7 @@ function M.ask_for_prediction()
     context_before_text = comment_header .. context_before_text
     -- TODO! go back to raw format and try this BEFORE fim_prefix tag
     --   in fact, I just got weird behavior where the model added an ending comment to offset the filename comment_header one... and then it started to explain the changes! yikez... we don't wanna go that way... so maybe try im_start/end before ?
-    info("comment_header: ", comment_header)
+    log:trace("comment_header: ", comment_header)
 
     -- TODO get tree of doc code and extract key symbols?
 
@@ -149,7 +138,7 @@ function M.ask_for_prediction()
     }
 
     local body_serialized = vim.json.encode(body)
-    -- info("body", body_serialized)
+    -- log:trace("body", body_serialized)
 
     local options = {
         command = "curl",
@@ -167,7 +156,7 @@ function M.ask_for_prediction()
     }
 
     -- log the curl call, super useful for testing independently in terminal
-    -- info("curl", table.concat(options.args, " "))
+    -- log:trace("curl", table.concat(options.args, " "))
 
     -- closure captures this id for any callbacks to use to ignore past predictions
     local this_prediction = Prediction:new()
@@ -187,27 +176,18 @@ function M.ask_for_prediction()
     --     also check out plenary.curl which might have added features for my use case that will help over plenary.job alone (plenary.curl is built on plenary.job)
 
     options.on_exit = function(code, signal) -- uv.spawn
-        info("spawn - exit code:", code, "Signal:", signal)
+        if code ~= 0 then
+            log:error("spawn - non-zero exit code:", code, "Signal:", signal)
+        end
         stdout:close()
         stderr:close()
     end
 
-    -- M.handle, M.pid = uv.spawn("fish", {
-    -- args = { "-c", "echo foo;" },
     M.handle, M.pid = uv.spawn(options.command, {
         args = options.args,
         stdio = { nil, stdout, stderr },
     }, options.on_exit)
 
-
-    -- options.on_exit = function(job, code, signal) -- plenary.job
-    --     info("on_exit code:", vim.inspect(code), "Signal:", signal)
-    --     if code ~= 0 then
-    --         this_prediction:mark_generation_failed()
-    --     else
-    --         this_prediction:mark_generation_finished()
-    --     end
-    -- end
 
     local function process_sse(data)
         -- TODO add some tests of this parsing? can run outside of nvim too
@@ -242,7 +222,7 @@ function M.ask_for_prediction()
                     -- max len?
                     done = true
                 elseif choice.finish_reason ~= vim.NIL then
-                    info("WARN - unexpected /v1/completions finish_reason: ", choice.finish_reason, " do you need to handle this too?")
+                    log:warn("WARN - unexpected /v1/completions finish_reason: ", choice.finish_reason, " do you need to handle this too?")
                     -- ok for now to continue too
                     done = true
                 end
@@ -257,24 +237,22 @@ function M.ask_for_prediction()
                 --         local done_reason = parsed.done_reason
                 --         done = true
                 --         if done_reason ~= "stop" then
-                --             info("WARN - unexpected /api/generate done_reason: ", done_reason, " do you need to handle this too?")
+                --             log:warn("WARN - unexpected /api/generate done_reason: ", done_reason, " do you need to handle this too?")
                 --             -- ok for now to continue too
                 --         end
                 --     end
                 --     chunk = (chunk or "") .. parsed.response
             else
-                info("SSE json parse failed for ss_event: ", ss_event)
+                log:warn("SSE json parse failed for ss_event: ", ss_event)
             end
         end
         return chunk, done
     end
 
-    options.on_stdout = function(err, data) -- uv.spawn
-        -- options.on_stdout = function(err, data, job) -- plenary.job
-        -- info("on_stdout data: ", data) -- TODO add "trace" level to logging... better yet just uncomment this when you need to see it
-        -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
+    options.on_stdout = function(err, data)
+        -- log:trace("on_stdout chunk: ", data) -- TODO add "trace" level to logging... better yet just uncomment this when you need to see it
         if err then
-            info("on_stdout error: ", err)
+            log:warn("on_stdout error: ", err)
             this_prediction:mark_generation_failed()
             return
         end
@@ -290,23 +268,15 @@ function M.ask_for_prediction()
             end)
         end
     end
-    uv.read_start(stdout, options.on_stdout) -- must call AFTER spawn
+    uv.read_start(stdout, options.on_stdout)
 
-    options.on_stderr = function(err, data) -- uv.spa
-        -- options.on_stderr = function(err, data, job) -- plenary.job
-        -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
-        -- just log for now is fine
-        -- DO NOT USE "data:" b/c that is what each streaming chunk is prefixed with and so confuses the F out of me when I see that and think oh its fine... nope
-        -- info("on_stderr chunk: ", data)
+    options.on_stderr = function(err, data)
+        log:warn("on_stderr chunk: ", data)
         if err then
-            info("on_stderr error: ", err)
-            -- TODO stop abort?
+            log:warn("on_stderr error: ", err)
         end
     end
-    uv.read_start(stderr, options.on_stderr) -- must call AFTER spawn
-
-    -- M.request = Job:new(options)
-    -- M.request:start()
+    uv.read_start(stderr, options.on_stderr)
 end
 
 function M.stop_current_prediction()
@@ -324,57 +294,28 @@ function M.stop_current_prediction()
     local handle = M.handle
     local pid = M.pid
     M.handle = nil
-    -- M.request = nil -- plenary.job
     M.pid = nil
     if handle ~= nil and not handle:is_closing() then
-        info("Terminating process, pid: ", pid)
+        log:trace("Terminating process, pid: ", pid)
 
         handle:kill("sigterm")
         handle:close()
-        -- FYI ollama should log => "aborting completion request due to client closing the connection"
-
-        -- FYI I can kill the plenary job myself too using its handle/pid
-        -- request:shutdown() -- FYI request:handle():kill("sigterm") or similar should work w/ plenary.job
-        --  -- :shutdown() doesn't terminate curl calls, they all complete after ollama serially serves them!
+        -- FYI ollama should show that connection closed/aborted
     end
 end
 
--- todo help/readonly buffers?
 local ignore_filetypes = {
     "TelescopePrompt",
     "NvimTree",
     "DressingInput", -- pickers from nui (IIRC) => in nvim tree add a file => the file name box is one of these
     -- TODO make sure only check this on enter buffer first time? not on every event (cursormoved,etc)
-
-    -- TODO consider these exclusions too (per chatgpt)
-    -- "spectre_panel", -- Find and replace UI (nvim-spectre)
-    -- "noice", -- Noice.nvim popups
-    -- "lazy", -- Lazy.nvim plugin manager UI (these are all readonly IIAC so I could ignore on readonly?)
-    -- "mason", -- Mason.nvim UI
-    -- "lspinfo", -- LSP info window
-    -- "toggleterm", -- Terminal UI
-    -- "dap-repl", -- Debugging REPL
-    -- "dapui_watches", "dapui_stacks", "dapui_scopes", "dapui_breakpoints", -- DAP UI components
-    -- "alpha", -- Dashboard (alpha.nvim)
-    -- "help", -- Help buffers
-    -- "man", -- Man pages
-    -- "qf", -- Quickfix list
-    -- "prompt", -- Generic prompt filetype
-    -- "fugitive", "gitcommit", "NeogitStatus", -- Git status/rebase windows
-    -- "starter", -- Some dashboard plugins use this
 }
 
 local ignore_buftypes = {
     "nofile", -- rename refactor popup window uses this w/o a filetype, also Dressing rename in nvimtree uses nofile
-
-    -- maybes:
-    -- vim.bo.buftype == "terminal" -- Ignore terminal windows
-    -- vim.bo.buftype == "prompt" -- UI input prompts
-    -- vim.bo.buftype == "quickfix" -- Quickfix and location list
-    -- vim.bo.readonly -- Read-only buffers (optional)
+    "terminal",
 }
 
---
 local rx = require("rx")
 local TimeoutScheduler = require("ask-openai.rx.scheduler")
 local scheduler = TimeoutScheduler.create()
@@ -388,7 +329,7 @@ end)
 local debounced = keypresses:debounce(250, scheduler)
 local sub = debounced:subscribe(function()
     vim.schedule(function()
-        info("CursorMovedI debounced")
+        log:trace("CursorMovedI debounced")
 
         -- YES! now this is how I can stop predictions, i can exit insert mode and stop altogether
         -- TODO move into observable? filter?
@@ -397,16 +338,11 @@ local sub = debounced:subscribe(function()
         M.ask_for_prediction()
     end)
 end)
---TODO on exit... sub:unsubscribe()... not needed... not sure if I ever need it to be disabled...
---
 --PRN this should be per buffer at some point... could add buffer to onNext({buffer=1}) ... and use groupby/debounce to handle all of that yummyness in the event stream
 
--- separate the top level handlers -> keep these thin so I can distinguish the request from the work (above)
 function M.cursor_moved_in_insert_mode()
-    -- TODO DEBOUNCE TYPING USING RXLUA like I did with mouse thingy => only after say 3 keys then start debouncing so further typing isn't jarring
-
     if M.current_prediction ~= nil and M.current_prediction.disable_cursor_moved == true then
-        info("Disabled CursorMovedI, skipping...")
+        log:trace("Disabled CursorMovedI, skipping...")
         M.current_prediction.disable_cursor_moved = false -- re-enable it, just skip one time... yes it sucks
         -- basically this is called after accepting/inserting the new content (AFAICT only one time too)
         return
@@ -417,8 +353,7 @@ function M.cursor_moved_in_insert_mode()
         return
     end
 
-    -- M.ask_for_prediction() -- move this to observer
-    keypresses:onNext({}) -- TODO any data to pass?
+    keypresses:onNext({})
 end
 
 function M.leaving_insert_mode()
@@ -426,14 +361,14 @@ function M.leaving_insert_mode()
 end
 
 function M.entering_insert_mode()
-    print("function M.entering_insert_mode()")
+    log:trace("function M.entering_insert_mode()")
 
     -- TODO anything specific to entering insert mode?
     M.cursor_moved_in_insert_mode()
 end
 
 function M.accept_all_invoked()
-    info("Accepting all predictions...")
+    log:trace("Accepting all predictions...")
     if not M.current_prediction then
         return
     end
@@ -441,7 +376,7 @@ function M.accept_all_invoked()
 end
 
 function M.accept_line_invoked()
-    info("Accepting line prediction...")
+    log:trace("Accepting line prediction...")
     if not M.current_prediction then
         return
     end
@@ -449,7 +384,7 @@ function M.accept_line_invoked()
 end
 
 function M.accept_word_invoked()
-    info("Accepting word prediction...")
+    log:trace("Accepting word prediction...")
     if not M.current_prediction then
         return
     end
@@ -458,7 +393,7 @@ end
 
 function M.vim_is_quitting()
     -- just in case, though leaving insert mode should already do this
-    info("Vim is quitting, stopping current prediction...")
+    log:trace("Vim is quitting, stopping current prediction...")
     M.stop_current_prediction()
 end
 
