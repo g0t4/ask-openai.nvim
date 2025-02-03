@@ -66,7 +66,7 @@ function M.ask_for_prediction()
     -- TODO troubleshoot if there is no commentstring set? how about warn and not set comment header
     local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":t")
     -- TODO! get filename relative to current workspace root (i.e. so can see folder names that are important too => i.e. arch/rocm.fish conveys archlinux + rocm (AMD gpu)
-    local comment_header = string.format(vim.o.commentstring, "this from the file named: '" .. filename .. "'\n")
+    local comment_header = string.format(vim.o.commentstring, "FYI I am from a file named: '" .. filename .. "'") + "\n\n"
     context_before_text = comment_header .. context_before_text
     -- TODO! go back to raw format and try this BEFORE fim_prefix tag
     --   in fact, I just got weird behavior where the model added an ending comment to offset the filename comment_header one... and then it started to explain the changes! yikez... we don't wanna go that way... so maybe try im_start/end before ?
@@ -75,7 +75,7 @@ function M.ask_for_prediction()
     -- TODO get tree of doc code and extract key symbols?
 
     local context_after = vim.api.nvim_buf_get_lines(0, original_row, last_row, IGNORE_BOUNDARIES) -- 0based indexing
-    local context_after_text = current_after_cursor .. table.concat(context_after, "\n")
+    local context_after_text = current_after_cursor .. table.concat(context_after, "\n") -- IIAC \n is the line separator?
 
     -- TODO limit # chars to configurable amount of context
     -- TODO read from config file tmp.predictions
