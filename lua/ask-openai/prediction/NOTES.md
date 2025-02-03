@@ -47,4 +47,8 @@
 - run formatter before showing prediction and see if the formatter succeeds then use that instead of the prediction?
 
 
+## model testing
 
+- qwen2.5-coder
+    - 7b-base-Q8_0 didn't seem to work as well or generated less code?
+        - I probably want the instruct models
