@@ -114,12 +114,6 @@ function M.ask_for_prediction()
         model = "qwen2.5-coder:7b-instruct-q8_0",
         -- model = "qwen2.5-coder:14b-instruct-q8_0", -- works well if I can make sure nothing else is using up GPU space
         -- TODO try deepseek-coder-v2 (MOE 16b model)
-        -- FYI I have no idea what the fuck this is... looks like an example of some bullshit that someone (maybe ollama team?) added to some library to confuse users, i.e. who would use template params for FIM on a language AI? They should've just done raw flag or something instead...
-        --   but nope, they added this:
-        --     https://github.com/ollama/ollama/blob/master/examples/lua/curl-template.lua
-        --       and then added it to their docs: https://github.com/ollama/ollama#example-fill-in-middle
-        --     why the fuck is template params even a thing for a language model? that's not even how templates work in C++ or Java, i.e. a templated class has parameters defined at compile time and then can't change when you use it later (just FYI)
-        --       also note: ollama added an issue about this on their Github repo
         --
         -- model = "codellama:7b-code-q4_K_M", -- FYI only -code models have PSM in template? or is that a mistake in some of the -instruct models... I thought instruct had infill?
         -- btw => codellama:-code uses: <PRE> -- calculator\nlocal M = {}\n\nfunction M.add(a, b)\n    return a + b\nend1 <SUF>1\n\n\n\nreturn M <MID>
