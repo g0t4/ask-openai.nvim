@@ -261,7 +261,7 @@ function M.ask_for_prediction()
 
     options.on_stdout = function(err, data) -- uv.spawn
         -- options.on_stdout = function(err, data, job) -- plenary.job
-        -- info("on_stdout data: ", data)
+        -- info("on_stdout data: ", data) -- TODO add "trace" level to logging... better yet just uncomment this when you need to see it
         -- FYI, with plenary.job, on_stdout/on_stderr are both called one last time (with nil data) after :shutdown is called... NBD just a reminder
         if err then
             info("on_stdout error: ", err)
