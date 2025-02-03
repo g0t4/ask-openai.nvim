@@ -41,17 +41,15 @@ function M.ask_for_prediction()
     local num_rows_total = vim.api.nvim_buf_line_count(0)
     if first_row < 0 then
         -- TODO write tests of this if I keep it
-        info("at start or close: ", first_row)
         last_row = last_row - first_row
         first_row = 0
     elseif last_row >= num_rows_total then
-        info("at end or close: ", last_row)
         local past = last_row - num_rows_total + 1
         last_row = num_rows_total - 1
         first_row = first_row - past
         -- todo do I have to ensure > 0 ? for first_row
     end
-    info("first_row", first_row, "last_row", last_row)
+    -- info("first_row", first_row, "last_row", last_row)
 
     -- TODO! pass clipboard too! doesn't even have to be used verbatim... can just bias context!
 
