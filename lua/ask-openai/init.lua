@@ -42,6 +42,7 @@ local function register_prediction_triggers()
 
     -- TODO!!! ASAP I wanna have completions that can change code, not just append to it... some sort of diff like transform... like Predictions in Zed, supermaven's altering the line in several spots... just super cool and useful
     --    esp helpful when I wanna repeat some code and the difference will be in middle/end of line... I wanna just type that diff part of end of line and have it suggest to replace the repeated code ahead of it and after it!
+    -- TODO => also I wanna complete within the current line (and keep end of the line in tact)... just gotta keep that last part
 
     -- event subscriptions
     vim.api.nvim_create_augroup(augroup, { clear = true })
