@@ -117,10 +117,14 @@ function M.ask_for_prediction()
         -- *** deepseek-coder-v2 (MOE 16b model)
         --   FYI prompt has template w/ PSM!
         --       ollama show --template deepseek-coder-v2:16b-lite-instruct-q8_0
-        model = "deepseek-coder-v2:16b-lite-instruct-q8_0", -- *** 34 tokens/sec! almost fits in GPU (4GB to cpu,14 GPU)... very fast for this size... must be MOE activation?
+        -- model = "deepseek-coder-v2:16b-lite-instruct-q8_0", -- *** 34 tokens/sec! almost fits in GPU (4GB to cpu,14 GPU)... very fast for this size... must be MOE activation?
+        --   shorter responses and did seem to try to connect to start of suffix, maybe? just a little bit of initial testing
         --   more intelligent?... clearly could tell when similiar file started to lean toward java (and so it somewhat ignored *.cpp filename but that wasn't necessarily wrong as there were missing things (; syntax errors if c++)
         --
-        -- model = "codellama:7b-code-q4_K_M", -- FYI only -code models have PSM in template? or is that a mistake in some of the -instruct models... I thought instruct had infill?
+        model = "codellama:7b-code-q8_0", -- `code` and `python` have FIM, `instruct` does not
+        --       keeps generating <EOT> in output ... is the template wrong?... at the spot where it would be EOT... in fact it stops at that time too... OR its possible llama has the wrong token marked for EOT and isn't excluding it when it should be
+        --       so far, aggresively short completions
+        -- model = "codellama:7b-code-q4_K_M",
         -- btw => codellama:-code uses: <PRE> -- calculator\nlocal M = {}\n\nfunction M.add(a, b)\n    return a + b\nend1 <SUF>1\n\n\n\nreturn M <MID>
         --      Admittedly it is nice to switch models and have the template handle the FIM token differences...
 
