@@ -1,28 +1,16 @@
 #include <iostream>
-#include <string.h>
 using namespace std;
-// demo of union in cpp
-// define a union
 union Data {
     int i;
     float f;
     char str[20];
 };
 int main() {
+    // show how union works
     Data data;
     data.i = 10;
     cout << "data.i : " << data.i << endl;
-    cout << " data.f : " << data.f << endl;
-    // the value of i above will be overwritten by f below
-    data.f = 220.5;
-    cout << " data.i : " << data.i << endl;
-    cout << " data.f : " << data.f << endl;
-    strcpy(data.str, "C Programming");
-    cout << " data.str : " << data.str << endl;
-    cout << " data.i : " << data.i << endl;
-    cout << " data.f : " << data.f << endl;
-
-
+    cout << "d
 
     return 0;
 }
