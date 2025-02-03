@@ -111,9 +111,14 @@ function M.ask_for_prediction()
         --    for FIM, you won't likely use /chat/completions (two different tasks and models are trained on FIM alone, not w/ chat messages in prompt)
         --
         -- model = "qwen2.5-coder:7b", --0.5b, 1b, 3b*, 7b, 14b*, 32b
-        model = "qwen2.5-coder:7b-instruct-q8_0",
+        -- model = "qwen2.5-coder:7b-instruct-q8_0",
         -- model = "qwen2.5-coder:14b-instruct-q8_0", -- works well if I can make sure nothing else is using up GPU space
-        -- TODO try deepseek-coder-v2 (MOE 16b model)
+        --
+        -- *** deepseek-coder-v2 (MOE 16b model)
+        --   FYI prompt has template w/ PSM!
+        --       ollama show --template deepseek-coder-v2:16b-lite-instruct-q8_0
+        model = "deepseek-coder-v2:16b-lite-instruct-q8_0", -- *** 34 tokens/sec! almost fits in GPU (4GB to cpu,14 GPU)... very fast for this size... must be MOE activation?
+        --   more intelligent?... clearly could tell when similiar file started to lean toward java (and so it somewhat ignored *.cpp filename but that wasn't necessarily wrong as there were missing things (; syntax errors if c++)
         --
         -- model = "codellama:7b-code-q4_K_M", -- FYI only -code models have PSM in template? or is that a mistake in some of the -instruct models... I thought instruct had infill?
         -- btw => codellama:-code uses: <PRE> -- calculator\nlocal M = {}\n\nfunction M.add(a, b)\n    return a + b\nend1 <SUF>1\n\n\n\nreturn M <MID>
