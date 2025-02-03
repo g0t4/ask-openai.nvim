@@ -133,7 +133,7 @@ function M.ask_for_prediction()
 
         stream = true,
         -- num_predict = 40, -- max tokens for ollama's /api/generate
-        max_tokens = 40,
+        max_tokens = 200,
         -- TODO roll up the request building into separate classes, and response parsing too.. so its /api/generate or /chat/completions specific w/o needing consumer to think much about it
         -- TODO temperature, top_p,
     }
