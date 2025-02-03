@@ -12,6 +12,9 @@
     - include symbols too to complete other funcs
         - language specific? as to what to pass that is valid in a given language (IOTW only symbols visible within a given scope)
 - recent edits (esp symbols, i.e. of a function edited in another file)
+
+    - ************* TODO NEXT PRIORITY => I have plenty of context to provide a ton more of details... and quality will skyrocket... ******************
+
 - clipboard contents (nice to have) and probably a waste of space? maybe some sort of detection if its code and if so then include it?
 - It might be nice to allow the model to request additional context... i.e. not send clipboard all the time, just when it may be relevant
 - let user indicate expand context (i.e. re-request but with bigger context -- like the next scope above, all of its code)
