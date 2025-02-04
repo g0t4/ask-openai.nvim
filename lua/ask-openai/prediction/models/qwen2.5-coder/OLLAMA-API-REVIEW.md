@@ -52,6 +52,19 @@ Behind the scenes ollama spins up a `llama-server` instance per model, when requ
                               ag vnd.ollama.image.params $HOME/.ollama/models/manifests/registry.ollama.ai/library
                                   YUP!!! none of the qwen2.5-coder models have a params file but...
                               llama3.2 does, so does deepseek-r1, deepseek-coder-v2
+                               deepseek-r1/7b params
+                                  cat /Users/wesdemos/.ollama/models/manifests/registry.ollama.ai/library/deepseek-r1/7b | jq
+                                      "sha256:f4d24e9138dd4603380add165d2b0d970bef471fac194b436ebd50e6147c6588"
+                                      cat $HOME/.ollama/models/blobs/sha256-f4d24e9138dd4603380add165d2b0d970bef471fac194b436ebd50e6147c6588 | jq
+                                            {
+                                              "stop": [
+                                                "<｜begin▁of▁sentence｜>",
+                                                "<｜end▁of▁sentence｜>",
+                                                "<｜User｜>",
+                                                "<｜Assistant｜>"
+                                              ]
+                                            }
+
 
 
            modelOptions() used to setup runner options
@@ -66,6 +79,29 @@ Behind the scenes ollama spins up a `llama-server` instance per model, when requ
               - defaults [`NumCtx = 4`](https://github.com/ollama/ollama/blob/main/server/sched.go#L82)
               - basically maps to [`LlmRequest`](https://github.com/ollama/ollama/blob/main/server/sched.go#L24)
                   - notably, with `opts` (api.Options)
+
+           TODO => concerning... does this code say if `Raw` then don't tokenize the prompt?
+               https://github.com/ollama/ollama/blob/main/server/routes.go#L324
+
+           Completion used to get completion
+               [here](https://github.com/ollama/ollama/blob/main/server/routes.go#L295) is the call in GenerateHandler
+                  (points to interface) on llama "server"
+               [IMPL](https://github.com/ollama/ollama/blob/main/llm/server.go#L684)
+                   THIS is the money shot!
+                   all options mapped immediately
+                   here I can see args passed to llama-server (its equivalent in ollama)
+                   client closes connection => [abort](https://github.com/ollama/ollama/blob/main/llm/server.go#L733)
+                   num_predict must be <= 10 * num_ctx
+                   calls `/completion` on llama-server (from llama.cpp)
+                       https://github.com/ggerganov/llama.cpp/blob/fd08255d0dea6625596c0367ee0a11d195f36762/examples/server/public_legacy/completion.js#L15
+                       https://github.com/ggerganov/llama.cpp/blob/master/examples/server/README.md?plain=1#L1035
+                       FYI llama-server now has `/infill` too
+                           https://github.com/ggerganov/llama.cpp/blob/master/examples/server/README.md?plain=1#L638
+                               I could use this directly (bypass ollama) but I am not sure I am convinced of its prompt style..
+                               it uses <|file_sep and <|repo_name w/ hardcoded values so that might not be what I want
+
+
+
 
 
 
