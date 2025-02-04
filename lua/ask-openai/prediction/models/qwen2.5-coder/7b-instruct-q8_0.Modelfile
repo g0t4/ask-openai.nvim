@@ -1,0 +1,5 @@
+FROM qwen2.5-coder:7b-instruct-q8_0
+
+# https://github.com/ollama/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values
+
+PARAMETER num_ctx 8192
