@@ -5,6 +5,40 @@ FROM qwen2.5-coder:7b-instruct-q8_0
 # https://github.com/ollama/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values
 
 PARAMETER num_ctx 8192
+# IIUC, ollama defaults num_ctx to 2048
+#    https://github.com/ollama/ollama/blob/main/docs/modelfile.md#L150
+#    DefaultOptions.NumCtx: https://github.com/ollama/ollama/blob/main/api/types.go#L612
+# THEN llama.cpp accepts --parallel arg
+#    WHERE is this defaulting to 4?
+#    THEN,
+#       cparams.n_seq_max         = params.n_parallel;
+#           https://github.com/ollama/ollama/blob/main/llama/llama.cpp/common/common.cpp#L1044
+#       const uint32_t n_ctx_per_seq = cparams.n_ctx / cparams.n_seq_max;
+#           https://github.com/ollama/ollama/blob/main/llama/llama.cpp/src/llama.cpp#L12367
+#
+#         LITERALLY RIGHT BEFORE PRINTING THE values I am using in the logs of ollama (llama-server):
+#
+#         LLAMA_LOG_INFO("%s: n_seq_max     = %u\n",   __func__, cparams.n_seq_max);
+#         LLAMA_LOG_INFO("%s: n_ctx         = %u\n",   __func__, cparams.n_ctx);
+#         LLAMA_LOG_INFO("%s: n_ctx_per_seq = %u\n",   __func__, n_ctx_per_seq);
+#         LLAMA_LOG_INFO("%s: n_batch       = %u\n",   __func__, cparams.n_batch);
+#         LLAMA_LOG_INFO("%s: n_ubatch      = %u\n",   __func__, cparams.n_ubatch);
+#         LLAMA_LOG_INFO("%s: flash_attn    = %d\n",   __func__, cparams.flash_attn);
+#         LLAMA_LOG_INFO("%s: freq_base     = %.1f\n", __func__, cparams.rope_freq_base);
+#         LLAMA_LOG_INFO("%s: freq_scale    = %g\n",   __func__, cparams.rope_freq_scale);
+#
+#
+#    IMPORTANT... ollama truncates the request prompt IIUC
+#         https://github.com/ollama/ollama/blob/main/llama/runner/runner.go#L129 =>
+#             slog.Warn("truncating input prompt", "limit", s.cache.numCtx, "prompt", len(inputs), "keep", params.numKeep, "new", len(newInputs))
+#         the output above about n_* is from llama-server though so don't confuse the two...
+#           in fact maybe I don't need to see that part other than to validate what ollama is using
+#
+
+
+#
+# setting num_ctx affects n_ctx_per_seq, IIUC n_ctx_per_seq defaults to 2048? unless num_ctx is set?
+
 # TODO test modelfile => add?
 # PARAMETER seed X  # reproducible testing
 #

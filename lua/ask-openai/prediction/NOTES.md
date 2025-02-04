@@ -11,6 +11,9 @@
         - i.e. num_ctx
     - TODO also need to set PARALLEL env var... can that be done via /api/generate and a parameter?
         - IF NOT, just use ENV VAR
+        - FYI OLLAMA_NUM_PARALLEL maps to llama-server's --parallel 1  # arg
+        - OH WOW, parallel 1 takes LESS MEMORY! for caching, etc... I bet I can fit a bigger model in GPU memory now!
+            - TODO verify if that is the case
     - PRN add token size estimation (or actually check embedding and adjust prompt?)... is that heavy (per request, what is overhead ms?)...
         - if not, stick to estimation based on # chars or otherwise
         - see llm-ls for how it handles this as it had choices IIRC
