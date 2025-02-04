@@ -5,6 +5,16 @@
 
 ## TODOs
 
+- WIP (avoid truncating prompt)
+    - TODO => if I have to build custom Modelfiles per model... I'd rather just go back to /api/generate and not deal with the custom models nonsense
+        - TODO try that and see if that truly allows me to customize all parameters I care about
+        - i.e. num_ctx
+    - TODO also need to set PARALLEL env var... can that be done via /api/generate and a parameter?
+        - IF NOT, just use ENV VAR
+    - PRN add token size estimation (or actually check embedding and adjust prompt?)... is that heavy (per request, what is overhead ms?)...
+        - if not, stick to estimation based on # chars or otherwise
+        - see llm-ls for how it handles this as it had choices IIRC
+
 
     - creativity? vs strictness?
     - review API docs for ollama for what can be passed (also look at llama.cpp and openai's /v1/completions)

@@ -86,7 +86,9 @@ function M.ask_for_prediction()
         --    ollama supports it: https://github.com/ollama/ollama/blob/main/docs/openai.md#v1completions
         --    for FIM, you won't likely use /chat/completions (two different tasks and models are trained on FIM alone, not w/ chat messages in prompt)
         --
-        model = "qwen2.5-coder:7b-instruct-q8_0",
+        model = "fim_qwen:7b-instruct-q8_0", -- qwen2.5-coder, see Modelfile
+        --
+        -- model = "qwen2.5-coder:7b-instruct-q8_0",
         -- model = "qwen2.5-coder:3b-instruct-q8_0", -- trouble paying attention to suffix... and same with prefix... on zedraw functions
         -- model = "qwen2.5-coder:7b", --0.5b, 1b, 3b*, 7b, 14b*, 32b
         -- model = "qwen2.5-coder:7b-instruct-q8_0",
@@ -120,6 +122,13 @@ function M.ask_for_prediction()
         max_tokens = 200,
         -- TODO roll up the request building into separate classes, and response parsing too.. so its /api/generate or /chat/completions specific w/o needing consumer to think much about it
         -- TODO temperature, top_p,
+
+        -- options = {
+        --     /api/generate only
+        --        https://github.com/ollama/ollama/blob/main/docs/api.md#generate-request-with-options
+        --     --    OLLAMA_NUM_PARALLEL=1 -- TODO can this be passed in /api/generate?
+        --     num_ctx = 8192, -- /api/generate only
+        -- }
     }
 
     local body_serialized = vim.json.encode(body)

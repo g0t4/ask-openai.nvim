@@ -1,5 +1,28 @@
 FROM qwen2.5-coder:7b-instruct-q8_0
 
+# *** could just use /api/generate endpoint and bypass almost all of this Modelfile
+
 # https://github.com/ollama/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values
 
 PARAMETER num_ctx 8192
+# TODO test modelfile => add?
+# PARAMETER seed X  # reproducible testing
+#
+# TODO that one model that added <EOT> ... can add # PARAMETER stop "<EOT>" # IIUC these are unioned so you can have more than one (and thus IIAC the others that are alread bundled will be kept? or do I need to add those b/c they are replaced and only the ones in this Modelfile are used?
+#
+# TODO
+# PARAMETER top_k 40
+# PARAMETER top_p 0.9
+# PARAMETER min_p 0.05
+# PARAMETER temperature 0.7
+# PARAMETER num_predict X # also pass with request... so this is just the default
+# PARAMETER min_p 0.05 #
+#
+# PARAMETER repeat_last_n
+# PARAMETER repeat_penalty
+#
+# PARAMETER mirostat
+# PARAMETER mirostat_eta
+# PARAMETER mirostat_tau
+#
+# TEMPLATE ...  # use this to format the prompt to my liking..
