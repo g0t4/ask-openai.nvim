@@ -16,11 +16,61 @@ Behind the scenes ollama spins up a `llama-server` instance per model, when requ
 
 - [GenerateHandler](https://github.com/ollama/ollama/blob/main/server/routes.go#L111)
     - Both endpoints use `GenerateHandler`
+
         - calls `scheduleRunner` to start a runner (if not already)
+
+           uses [`GetModel`](https://github.com/ollama/ollama/blob/main/server/images.go#L230) to lookup model info (i.e. template, options)
+              wow ollama is using a docker manifest for models...
+                  "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+                  cat ~/.ollama/models/manifests/registry.ollama.ai/library/qwen2.5-coder/7b | jq
+                      manifest is tied to each tag, just like docker images, cool!
+                      OCI Artifact Spec IIAC is what this is technically using?
+                  and a `config`, i.e. 7b's:
+                      cat "/Users/wesdemos/.ollama/models/blobs/sha256-d9bb33f2786931fea42f50936a2424818aa2f14500638af2f01861eb2c8fb446" | jq
+                      not very much in here, just some metadata that is useful to know which model it is (not the params AFAICT)
+                      decoded: https://github.com/ollama/ollama/blob/main/server/images.go#L245
+                  and `layers`, interesting
+                      "application/vnd.ollama.image.[model|system|template|license]"
+                      not actual layers
+                      one has system prompt
+                          cat $HOME/.ollama/models/blobs/sha256-66b9ea09bd5b7099cbb4fc820f31b575c0366fa439b08245566692c6784e281e
+                      one is a template
+                          cat $HOME/.ollama/models/blobs/sha256-e94a8ecb9327ded799604a2e478659bc759230fe316c50d686358f932f52776c
+                      one is a license
+                          cat ~/.ollama/models/blobs/sha256-832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e
+                      one is of course the data
+                          sha256-60e05f2100071479f596b964f89f510f057ce397ea22f2833a0cfe029bfc2463
+                      OTHER LAYER TYPES TOO:
+                          https://github.com/ollama/ollama/blob/main/server/images.go#L262
+                      OH CRAP OK... here is where model params come from!
+                          https://github.com/ollama/ollama/blob/main/server/images.go#L297
+                          decodes options from  "application/vnd.ollama.image.params":
+                          SO, IIUC in case of qwen2.5-coder, it doesn't have any parameters file so it must just use defaults?
+                              OK just found my custom model (via Modelfile) and it has params file!
+                                  "application/vnd.ollama.image.params"
+                          SEARCH for models w/ params:
+                              ag vnd.ollama.image.params $HOME/.ollama/models/manifests/registry.ollama.ai/library
+                                  YUP!!! none of the qwen2.5-coder models have a params file but...
+                              llama3.2 does, so does deepseek-r1, deepseek-coder-v2
+
+
            modelOptions() used to setup runner options
               https://github.com/ollama/ollama/blob/main/server/routes.go#L66
               starts with DefaultOptions() just like interface below for `generate` requests
                  that means the same defaults are used by `legacy` too
+              then, it uses the model's "options" (IIUC defaults)
+                  [`FromMap(model.Options)`](https://github.com/ollama/ollama/blob/main/api/types.go#L496)
+              finally, uses request options as last step, using SAME CODE in `FromMap`
+                  `FromMap(requestOpts)`
+           [GetRunner](https://github.com/ollama/ollama/blob/main/server/sched.go#L81) is called w/ options and model
+              - defaults [`NumCtx = 4`](https://github.com/ollama/ollama/blob/main/server/sched.go#L82)
+              - basically maps to [`LlmRequest`](https://github.com/ollama/ollama/blob/main/server/sched.go#L24)
+                  - notably, with `opts` (api.Options)
+
+
+
+
+
 
            FYI can pass empty request (prompt = "") to load a runner only
            Pass KeepAlive = nil => unload
