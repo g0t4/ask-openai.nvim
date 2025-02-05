@@ -41,7 +41,6 @@ function M.build_request(prefix, suffix)
             "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
             "http://ollama:11434/v1/completions", -- TODO pass in api base_url (via config)
-            -- "http://ollama:11434/api/generate",
             "-H", "Content-Type: application/json",
             "-d", body_for(prefix, suffix)
         },
@@ -67,6 +66,7 @@ function M.process_sse(data)
         local event_json = ss_event
         if ss_event:sub(1, 6) == "data: " then
             -- ollama /api/generate doesn't prefix each SSE with 'data: '
+            -- IIRC /v1/completions doesn't do this
             event_json = ss_event:sub(7)
         end
         local success, parsed = pcall(vim.json.decode, event_json)

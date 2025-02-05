@@ -15,13 +15,28 @@ local function body_for(prefix, suffix)
         suffix = "<|fim_suffix|>",
     }
 
-    -- PRN TEST w/o deepseek-r1 using api/generate with FIM manual prompt ... which should work ... vs v1/completions for deepseek-r1:7b should fail to FIM or not well
+    -- PRN TEST w/o deepseek-r1 using api/generate with FIM manual prompt
+    --   IIRC template is wrong but it does support FIM?
 
-    -- TODO provide guidance before fim_prefix... can I just <|im_start|> blah <|im_end|>? (see qwen2.5-coder template for how it might work)
+    -- TODO provide guidance before fim_prefix...
+    --   can I just <|im_start|> blah <|im_end|>?
+    --   see qwen2.5-coder template for how it might work
 
-    -- TODO try repo level code completion: https://github.com/QwenLM/Qwen2.5-coder?tab=readme-ov-file#4-repository-level-code-completion
-    --    this is not FIM, rather it is like AR... give it <|repo_name|> and then multiple files delimited with <|file_sep|> and name and then contents... then last file is only partially complete (it generates the rest of it)
-    -- The more I think about it, the less often I think I use the idea of FIM... I really am just completing (often w/o a care for what comes next)... should I be trying non-FIM too? (like repo level completions?)
+    -- TODO try repo level code completion:
+    --   https://github.com/QwenLM/Qwen2.5-coder?tab=readme-ov-file#4-repository-level-code-completion
+    --   this is not FIM, rather it is like AR:
+    --     give it <|repo_name|>
+    --     then multiple files
+    --       delimited with <|file_sep|> and name
+    --     then contents...
+    --     then last file is only partially complete
+    --       this is what the model is supposed to generate (in its entirely IIRC)
+    --       OR, can I make this last file a FIM?
+    --         so it just generates middle of last file
+    --
+    -- The more I think about it, the less often I think I use the idea of FIM...
+    --   I often am just completing (often w/o a care for what comes next)...
+    --   should I be trying non-FIM too? (like repo level completions?)
 
     -- PSM inference format:
     local raw_prompt = fim.prefix .. prefix .. fim.suffix .. suffix .. fim.middle
@@ -40,8 +55,11 @@ local function body_for(prefix, suffix)
 
         options = {
             -- https://github.com/ollama/ollama/blob/main/docs/api.md#generate-request-with-options
+            -- options only for /api/generate
+            --   /v1/completions ignores them even though it uses same GenerateHandler!
+
             -- TODO can I pass OLLAMA_NUM_PARALLEL=1 via request?
-            num_ctx = 8192, -- /api/generate only
+            num_ctx = 8192,
         }
     }
 
