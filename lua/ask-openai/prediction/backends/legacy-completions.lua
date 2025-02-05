@@ -1,7 +1,7 @@
 local M = {}
 local log = require("ask-openai.prediction.logger").predictions()
 
-function M.build_request_body(prefix, suffix)
+local function body_for(prefix, suffix)
     local body = {
         --
         model = "fim_qwen:7b-instruct-q8_0", -- qwen2.5-coder, see Modelfile
@@ -62,7 +62,7 @@ function M.build_request(prefix, suffix)
             "http://ollama:11434/v1/completions",
             -- "http://ollama:11434/api/generate",
             "-H", "Content-Type: application/json",
-            "-d", M.build_request_body(prefix, suffix)
+            "-d", body_for(prefix, suffix)
         },
     }
     return options
