@@ -1,4 +1,4 @@
-
+-- TODO extract /api/generate notes from /v1/completions backend
 
 -- TODO extract interface from /v1/completions builder and reuse that here...
 --    can I define an interface in lua?

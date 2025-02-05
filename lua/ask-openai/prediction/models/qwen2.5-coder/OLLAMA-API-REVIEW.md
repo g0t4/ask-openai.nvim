@@ -8,11 +8,6 @@ Endpoints of note:
 
 Behind the scenes ollama spins up a `llama-server` instance per model, when requested
 
-## TODOs
-
-- Try `OLLAMA_FLASH_ATTENTION` if its compatible w/ qwen
-    - plus, quantizing the KV cache `OLLAMA_KV_CACHE_TYPE` => however Qwen2 has high GQA so maybe this is not wise
-
 ## TODO - Capture recommended ollama command to set model parameters for completion
 - OLLAMA_NUM_PARALLEL=1
 - OLLAMA_HOST
@@ -34,12 +29,6 @@ Behind the scenes ollama spins up a `llama-server` instance per model, when requ
 - Runner recomendations:
     - model: qwen2.5-Coder:7b-instruct_q8_0
     - num_gpu/NumGPU: 1000  (set higher than model layers to make sure as many as possible are in gpu)
-    - flash attention:
-        - OLLAMA_FLASH_ATTENTION=1
-        - only via env var currently
-        - only works with GPUs IIUC, not CPU... check logs to see if not supported warning
-        - TODO test w/ and w/o
-        - `kvCacheType` for quantizing this but IIUC not wise with Qwen2 models
     - batch size:
         - physical:
             - NumBatch:
@@ -267,5 +256,54 @@ llama-server \
 
 
 
+## Flash Attention Testing
 
+- TODO test on mbp21 too (tonight) and see if it works well with Metal backend
+- TODO does this work better with nvidia only?
+    - this was with an AMD GPU btw (which does well overall but not with FA, not yet)
+
+Notes:
+- OLLAMA_FLASH_ATTENTION=1 (only via env var currently, IIUC)
+- only works with GPUs IIUC, not CPU... check logs to see if not supported warning
+- `kvCacheType` for quantizing this but IIUC not wise with Qwen2 models
+    - plus, quantizing the KV cache `OLLAMA_KV_CACHE_TYPE` => however Qwen2 has high GQA so maybe this is not wise
+
+- FYI used `llama-bench` with qwen2.5-coder models
+    - w/ `-fa=1` was worse performance in every case tested:
+    - `-p 512 -n 128` defaults => worse
+    - `-p 4096 -n 4096` => worse
+
+```sh
+./build/bin/llama-bench -p 4096 -n 4096 -fa 0,1 \
+    -m models/qwen2.5-coder-3b-instruct-q4_k_m.gguf,models/qwen2.5-coder-3b-instruct-q8_0.gguf,models/qwen2.5-coder-7b-instruct-q4_k_m.gguf \
+    -m models/qwen2.5-coder-7b-instruct-q8_0.gguf \
+    -m models/qwen2.5-coder-14b-instruct-q4_k_m.gguf \
+    -m models/qwen2.5-coder-32b-instruct-q4_k_m.gguf \
+    -m models/qwen2.5-coder-0.5b-instruct-q8_0.gguf  \
+    -m models/qwen2.5-coder-0.5b-instruct-q4_k_m.gguf  \
+    -m models/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf  \
+    -m models/qwen2.5-coder-1.5b-instruct-q8_0.gguf
+# FYI 32b model failed to load, must be corrupt
+```
+```log
+  Device 0: AMD Radeon RX 6900 XT, gfx1030 (0x1030), VMM: no, Wave Size: 32
+| model                          |       size |     params | backend    | ngl | fa |          test |                  t/s |
+| ------------------------------ | ---------: | ---------: | ---------- | --: | -: | ------------: | -------------------: |
+| qwen2 3B Q4_K - Medium         |   1.95 GiB |     3.40 B | ROCm       |  99 |  0 |        pp4096 |       2016.93 ± 5.44 |
+| qwen2 3B Q4_K - Medium         |   1.95 GiB |     3.40 B | ROCm       |  99 |  0 |        tg4096 |         97.20 ± 0.00 |
+| qwen2 3B Q4_K - Medium         |   1.95 GiB |     3.40 B | ROCm       |  99 |  1 |        pp4096 |       1195.44 ± 0.69 |
+| qwen2 3B Q4_K - Medium         |   1.95 GiB |     3.40 B | ROCm       |  99 |  1 |        tg4096 |         62.44 ± 0.04 |
+| qwen2 3B Q8_0                  |   3.36 GiB |     3.40 B | ROCm       |  99 |  0 |        pp4096 |       2376.33 ± 3.15 |
+| qwen2 3B Q8_0                  |   3.36 GiB |     3.40 B | ROCm       |  99 |  0 |        tg4096 |         77.07 ± 0.01 |
+| qwen2 3B Q8_0                  |   3.36 GiB |     3.40 B | ROCm       |  99 |  1 |        pp4096 |       1343.55 ± 2.00 |
+| qwen2 3B Q8_0                  |   3.36 GiB |     3.40 B | ROCm       |  99 |  1 |        tg4096 |         53.52 ± 0.01 |
+| qwen2 7B Q4_K - Medium         |   4.36 GiB |     7.62 B | ROCm       |  99 |  0 |        pp4096 |       1127.95 ± 5.19 |
+| qwen2 7B Q4_K - Medium         |   4.36 GiB |     7.62 B | ROCm       |  99 |  0 |        tg4096 |         65.15 ± 0.08 |
+| qwen2 7B Q4_K - Medium         |   4.36 GiB |     7.62 B | ROCm       |  99 |  1 |        pp4096 |        788.59 ± 0.59 |
+| qwen2 7B Q4_K - Medium         |   4.36 GiB |     7.62 B | ROCm       |  99 |  1 |        tg4096 |         52.50 ± 0.05 |
+| qwen2 7B Q8_0                  |   7.54 GiB |     7.62 B | ROCm       |  99 |  0 |        pp4096 |       1381.53 ± 3.80 |
+| qwen2 7B Q8_0                  |   7.54 GiB |     7.62 B | ROCm       |  99 |  0 |        tg4096 |         47.63 ± 0.01 |
+| qwen2 7B Q8_0                  |   7.54 GiB |     7.62 B | ROCm       |  99 |  1 |        pp4096 |        932.38 ± 4.21 |
+| qwen2 7B Q8_0                  |   7.54 GiB |     7.62 B | ROCm       |  99 |  1 |        tg4096 |         40.35 ± 0.01 |
+```
 
