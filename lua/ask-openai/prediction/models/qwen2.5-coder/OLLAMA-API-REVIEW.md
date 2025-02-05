@@ -12,20 +12,67 @@ Behind the scenes ollama spins up a `llama-server` instance per model, when requ
 
 - Try `OLLAMA_FLASH_ATTENTION` if its compatible w/ qwen
     - plus, quantizing the KV cache `OLLAMA_KV_CACHE_TYPE` => however Qwen2 has high GQA so maybe this is not wise
-- Capture recommended ollama command to set model parameters for completion
-    - like `llama.nvim` does but for my use case
-    - OLLAMA_NUM_PARALLEL=1
-    - OLLAMA_HOST
+
+## TODO - Capture recommended ollama command to set model parameters for completion
+- OLLAMA_NUM_PARALLEL=1
+- OLLAMA_HOST
 - Model params
     - where to configure:
         - model itself has a `params` layer with json file of parameter names/values
             - usually few, if any, have any set though
         - via env vars
+            - [available env vars](https://github.com/ollama/ollama/blob/main/envconfig/config.go#L236)
             - via `/api/generate`
             - or, Modelfile (if using `/v1/completions` and IIAC `/v1/chat/completions`
         - via API requests
             - `num_ctx` (defaults to 2048) => and in my testing, many models don't override it
         - via CLI args (i.e. ollama run has set param command)
+        - indirectly via runner
+            - moreso to validate correct config with above methods
+            - runner's args: https://github.com/ollama/ollama/blob/main/llama/runner/runner.go#L891
+                - equivalent to `llama-server` for ollama's purposes
+- Runner recomendations:
+    - model: qwen2.5-Coder:7b-instruct_q8_0
+    - num_gpu/NumGPU: 1000  (set higher than model layers to make sure as many as possible are in gpu)
+    - flash attention:
+        - OLLAMA_FLASH_ATTENTION=1
+        - only via env var currently
+        - only works with GPUs IIUC, not CPU... check logs to see if not supported warning
+        - TODO test w/ and w/o
+        - `kvCacheType` for quantizing this but IIUC not wise with Qwen2 models
+    - batch size:
+        - physical:
+            - NumBatch:
+            - TODO double check this is physical and not logical
+            - `-ub 1024` for llama-server
+        - logical:
+
+            - `-b 1024` for llama-server
+    - b:
+    - NumCtx/num_ctx: defaults 2048
+
+    - cache-reuse:
+    - CHECK log output for what params are used to start runner, to confirm correct config:
+        level=INFO source=server.go:376 msg="starting llama server" cmd="/usr/lib/ollama/runners/rocm_avx/ollama_llama_server runner --model /home/wes/.ollama/models/blobs/sha256-24b532e5276503b147d0eea0e47cb1d2bcce7c9034edd657b624261862ca54a1 --ctx-size 2048 --batch-size 512 --n-gpu-layers 29 --threads 8 --parallel 1 --port 36747"
+    - TODO try these args:
+        - `UseMMap`
+            - and/or `UseMLock`
+        - `verbose` runner arg
+        - `NumThread` ?
+        - `MainGPU`
+    - BTW runner sets args [here](https://github.com/ollama/ollama/blob/main/llama/runner/runner.go#L836)
+- Request recommendations:
+    - NumPredict: ?
+    - Seed: ?
+    - Temperature: ?
+
+
+```bash
+llama-server \
+    -hf ggml-org/Qwen2.5-Coder-7B-Q8_0-GGUF \
+    --port 8012 -ngl 99 -fa -ub 1024 -b 1024 \
+    --ctx-size 0 --cache-reuse 256
+```
 
 
 

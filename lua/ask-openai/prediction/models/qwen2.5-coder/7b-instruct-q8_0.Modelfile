@@ -4,7 +4,11 @@ FROM qwen2.5-coder:7b-instruct-q8_0
 
 # https://github.com/ollama/ollama/blob/main/docs/modelfile.md#valid-parameters-and-values
 
-PARAMETER num_ctx 8192
+# PARAMETER num_ctx 8192
+PARAMETER num_ctx 32768
+# max s/b n_ctx_train
+# TODO doesn't qwen2.5 support 128k with RoPE?
+
 # IIUC, ollama defaults num_ctx to 2048
 #    https://github.com/ollama/ollama/blob/main/docs/modelfile.md#L150
 #    DefaultOptions.NumCtx: https://github.com/ollama/ollama/blob/main/api/types.go#L612
