@@ -56,7 +56,8 @@ function M.ask_for_prediction()
     end
 
     local context_after = vim.api.nvim_buf_get_lines(0, original_row, last_row, IGNORE_BOUNDARIES) -- 0based indexing
-    local context_after_text = current_after_cursor .. table.concat(context_after, "\n") -- IIAC \n is the line separator?
+    -- TODO => confirm \n is the line separator:
+    local context_after_text = current_after_cursor .. table.concat(context_after, "\n")
 
     -- PSM format:
     local prefix = context_before_text
@@ -72,7 +73,7 @@ function M.ask_for_prediction()
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
 
-    options.on_exit = function(code, signal) -- uv.spawn
+    options.on_exit = function(code, signal)
         if code ~= 0 then
             log:error("spawn - non-zero exit code:", code, "Signal:", signal)
         end
