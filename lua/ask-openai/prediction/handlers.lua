@@ -16,18 +16,15 @@ function M.ask_for_prediction()
     M.stop_current_prediction()
 
 
+    -- PRN consider (when available) to get the lines back to a meaningful branch in the syntax tree
+    --   I am not convinced that more lines after is as important
+    --   I imagine geting all of the "local" scope might be useful
+
     local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
     local original_row = original_row_1based - 1 -- 0-based now
-    -- 100 did not work well here.. with 7b model too 30+ seconds to generate a response! 10 lines works very fast (faster than supermaven) and gives decent responses
-    --   PRN race using FIM vs AR (complete) and show first completed suggestion and allow toggle to next?
-    -- ... Zed uses 32 (max 64 totallines, 32 before/after by default) => shifted if near top/bottom of doc too
-    -- PRN consider (when available) to get the lines back to a meaningful branch in the syntax tree of the code you are editing? does that help?
     local allow_lines = 80
-    local first_row = original_row - allow_lines -- lets try to take entire document if avail! (in future clip at some key boundary... unsure how that would work best w/ how models are trained on FIM
-    local last_row = original_row + allow_lines -- limit how much we consider past this point? or take it all too?
-
-    -- adjust range so that we maximize context? is this good or not?
-    -- FYI I am not sure I like this here... more lines after doesn't likely help much, more lines before may help
+    local first_row = original_row - allow_lines
+    local last_row = original_row + allow_lines
 
     local num_rows_total = vim.api.nvim_buf_line_count(0)
     if first_row < 0 then
