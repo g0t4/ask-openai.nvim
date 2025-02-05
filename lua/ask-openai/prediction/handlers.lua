@@ -28,7 +28,6 @@ function M.ask_for_prediction()
 
     local num_rows_total = vim.api.nvim_buf_line_count(0)
     if first_row < 0 then
-        -- TODO write tests of this if I keep it
         last_row = last_row - first_row
         first_row = 0
     elseif last_row >= num_rows_total then
@@ -39,15 +38,13 @@ function M.ask_for_prediction()
     end
     -- log:trace("first_row", first_row, "last_row", last_row)
 
-    -- TODO! pass clipboard too! doesn't even have to be used verbatim... can just bias context!
-
     local IGNORE_BOUNDARIES = false
     local current_line = vim.api.nvim_buf_get_lines(0, original_row, original_row + 1, IGNORE_BOUNDARIES)[1] -- 0based indexing
-    local current_before_cursor = current_line:sub(1, original_col + 1) -- TODO include current cursor slot as before or after?
+    -- TODO include current cursor slot as before or after?
+    local current_before_cursor = current_line:sub(1, original_col + 1)
     local current_after_cursor = current_line:sub(original_col + 2)
     local context_before = vim.api.nvim_buf_get_lines(0, first_row, original_row, IGNORE_BOUNDARIES) -- 0based indexing
     local context_before_text = table.concat(context_before, "\n") .. current_before_cursor
-    -- give some instructions in a comment (TODO use comment string to do this)
 
     local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":t")
     if vim.o.commentstring ~= nil then
@@ -55,7 +52,7 @@ function M.ask_for_prediction()
         context_before_text = comment_header .. context_before_text
         log:trace("comment_header: ", comment_header)
     else
-        -- log:warn
+        log:warn("vim.o.commentstring is nil, not including file name in comment header")
     end
 
     local context_after = vim.api.nvim_buf_get_lines(0, original_row, last_row, IGNORE_BOUNDARIES) -- 0based indexing
