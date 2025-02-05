@@ -59,7 +59,7 @@ function M.build_request(prefix, suffix)
             "-fsSL",
             "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
-            "http://ollama:11434/v1/completions",
+            "http://ollama:11434/v1/completions",  -- TODO pass in api base_url (via config)
             -- "http://ollama:11434/api/generate",
             "-H", "Content-Type: application/json",
             "-d", body_for(prefix, suffix)
