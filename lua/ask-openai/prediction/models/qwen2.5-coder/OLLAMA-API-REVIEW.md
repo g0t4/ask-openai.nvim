@@ -211,7 +211,7 @@ llama-server \
 
 - `format` of the response (structured outputs?)
 - `keep_alive` - after request, how long to keep model in memory
-    - TODO try this instead of 30 minute override I set
+    - TODO try this instead of OLLAMA_KEEP_ALIVE=30m
 - `images`
 - `options` - dict -  model parameters (i.e. num_ctx)
     - [general](https://github.com/ollama/ollama/blob/main/api/types.go#L209)
