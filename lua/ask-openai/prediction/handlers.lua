@@ -2,8 +2,8 @@ local uv = vim.uv
 local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
 
-local backend = require("ask-openai.prediction.backends.legacy-completions")
--- local backend = require("ask-openai.prediction.backends.api-generate")
+-- local backend = require("ask-openai.prediction.backends.legacy-completions")
+local backend = require("ask-openai.prediction.backends.api-generate")
 
 -- FYI would need current prediction PER buffer in the future if want multiple buffers to have predictions at same time (not sure I want this feature)
 M.current_prediction = nil -- set on module for now, just so I can inspect it easily

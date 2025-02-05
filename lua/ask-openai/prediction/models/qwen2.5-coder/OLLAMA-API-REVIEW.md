@@ -9,6 +9,10 @@ Endpoints of note:
 Behind the scenes ollama spins up a `llama-server` instance per model, when requested
 
 ## TODO - Capture recommended ollama command to set model parameters for completion
+- TODO add detection of inefficient server config?
+    - do an `ollama ps` via API and warn in nvim if model not loaded in GPU (or as exptected)
+    - also vim.notify if truncation occurs?
+        - or might occur b/c of n_ctx sizing? (see logs)
 - OLLAMA_NUM_PARALLEL=1
 - OLLAMA_HOST
 - Model params
