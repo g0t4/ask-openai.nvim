@@ -1,6 +1,73 @@
 local M = {}
 local log = require("ask-openai.prediction.logger").predictions()
 
+function M.build_request_body(prefix, suffix)
+    local body = {
+        --
+        model = "fim_qwen:7b-instruct-q8_0", -- qwen2.5-coder, see Modelfile
+        --
+        -- model = "qwen2.5-coder:7b-instruct-q8_0",
+        -- model = "qwen2.5-coder:3b-instruct-q8_0", -- trouble paying attention to suffix... and same with prefix... on zedraw functions
+        -- model = "qwen2.5-coder:7b", --0.5b, 1b, 3b*, 7b, 14b*, 32b
+        -- model = "qwen2.5-coder:7b-instruct-q8_0",
+        -- model = "qwen2.5-coder:14b-instruct-q8_0", -- works well if I can make sure nothing else is using up GPU space
+        --
+        -- *** deepseek-coder-v2 (MOE 16b model)
+        --   FYI prompt has template w/ PSM!
+        --       ollama show --template deepseek-coder-v2:16b-lite-instruct-q8_0
+        -- model = "deepseek-coder-v2:16b-lite-instruct-q8_0", -- *** 34 tokens/sec! almost fits in GPU (4GB to cpu,14 GPU)... very fast for this size... must be MOE activation?
+        --   shorter responses and did seem to try to connect to start of suffix, maybe? just a little bit of initial testing
+        --   more intelligent?... clearly could tell when similiar file started to lean toward java (and so it somewhat ignored *.cpp filename but that wasn't necessarily wrong as there were missing things (; syntax errors if c++)
+        --
+        -- model = "codellama:7b-code-q8_0", -- `code` and `python` have FIM, `instruct` does not
+        --       wow... ok this model is dumb.. nevermind I put "cpp" in the comment at the top... it only generates java... frustrating...
+        --       keeps generating <EOT> in output ... is the template wrong?... at the spot where it would be EOT... in fact it stops at that time too... OR its possible llama has the wrong token marked for EOT and isn't excluding it when it should be
+        --       so far, aggresively short completions
+        -- btw => codellama:-code uses: <PRE> -- calculator\nlocal M = {}\n\nfunction M.add(a, b)\n    return a + b\nend1 <SUF>1\n\n\n\nreturn M <MID>
+
+        -- *** prompt differs per endpoint:
+        -- -- ollama's /api/generate, also IIAC everyone else's /v1/completions:
+        -- prompt = raw_prompt
+        --
+        -- ollama's /v1/completions + Templates (I honestly hate this... you should've had a raw flag in your /v1/completions implementation... why fuck over all users?)
+        --     btw ollama discusses templating for FIM here: https://github.com/ollama/ollama/blob/main/docs/template.md#example-fill-in-middle
+        prompt = prefix,
+        suffix = suffix,
+        -- TODO verify do not need raw for v1/completions
+        raw = true, -- ollama's /api/generate allows to bypass templates... unfortunately, ollama doesn't have this param for its /v1/completions endpoint
+
+        stream = true,
+        -- num_predict = 40, -- /api/generate
+        max_tokens = 200,
+        -- TODO temperature, top_p,
+
+        -- options = {
+        --     /api/generate only
+        --        https://github.com/ollama/ollama/blob/main/docs/api.md#generate-request-with-options
+        --     --    OLLAMA_NUM_PARALLEL=1 -- TODO can this be passed in /api/generate?
+        --     num_ctx = 8192, -- /api/generate only
+        -- }
+    }
+
+    return vim.json.encode(body)
+end
+
+function M.build_request(prefix, suffix)
+    local options = {
+        command = "curl",
+        args = {
+            "-fsSL",
+            "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
+            "-X", "POST",
+            "http://ollama:11434/v1/completions",
+            -- "http://ollama:11434/api/generate",
+            "-H", "Content-Type: application/json",
+            "-d", M.build_request_body(prefix, suffix)
+        },
+    }
+    return options
+end
+
 function M.process_sse(data)
     -- TODO tests of parsing?
     -- SSE = Server-Sent Event
