@@ -3,50 +3,31 @@ local log = require("ask-openai.prediction.logger").predictions()
 
 local function body_for(prefix, suffix)
     local body = {
-        --
+
         model = "fim_qwen:7b-instruct-q8_0", -- qwen2.5-coder, see Modelfile
-        --
-        -- model = "qwen2.5-coder:7b-instruct-q8_0",
-        -- model = "qwen2.5-coder:3b-instruct-q8_0", -- trouble paying attention to suffix... and same with prefix... on zedraw functions
-        -- model = "qwen2.5-coder:7b", --0.5b, 1b, 3b*, 7b, 14b*, 32b
-        -- model = "qwen2.5-coder:7b-instruct-q8_0",
-        -- model = "qwen2.5-coder:14b-instruct-q8_0", -- works well if I can make sure nothing else is using up GPU space
-        --
+
         -- *** deepseek-coder-v2 (MOE 16b model)
-        --   FYI prompt has template w/ PSM!
-        --       ollama show --template deepseek-coder-v2:16b-lite-instruct-q8_0
-        -- model = "deepseek-coder-v2:16b-lite-instruct-q8_0", -- *** 34 tokens/sec! almost fits in GPU (4GB to cpu,14 GPU)... very fast for this size... must be MOE activation?
-        --   shorter responses and did seem to try to connect to start of suffix, maybe? just a little bit of initial testing
-        --   more intelligent?... clearly could tell when similiar file started to lean toward java (and so it somewhat ignored *.cpp filename but that wasn't necessarily wrong as there were missing things (; syntax errors if c++)
-        --
+        -- TODO retry w/ truncate fixes (ensure logs show not truncating)
+        -- model = "deepseek-coder-v2:16b-lite-instruct-q8_0",
+        --   prompt has template w/ PSM!
+        --      ollama show --template deepseek-coder-v2:16b-lite-instruct-q8_0
+
+        -- *** codellama
+        -- TODO retry w/ truncate fixes (ensure logs show not truncating)
         -- model = "codellama:7b-code-q8_0", -- `code` and `python` have FIM, `instruct` does not
-        --       wow... ok this model is dumb.. nevermind I put "cpp" in the comment at the top... it only generates java... frustrating...
-        --       keeps generating <EOT> in output ... is the template wrong?... at the spot where it would be EOT... in fact it stops at that time too... OR its possible llama has the wrong token marked for EOT and isn't excluding it when it should be
-        --       so far, aggresively short completions
+        -- keeps generating <EOT> in output ... is the template wrong?
+        --    - PRN add to stop parameter?
         -- btw => codellama:-code uses: <PRE> -- calculator\nlocal M = {}\n\nfunction M.add(a, b)\n    return a + b\nend1 <SUF>1\n\n\n\nreturn M <MID>
 
-        -- *** prompt differs per endpoint:
-        -- -- ollama's /api/generate, also IIAC everyone else's /v1/completions:
-        -- prompt = raw_prompt
-        --
-        -- ollama's /v1/completions + Templates (I honestly hate this... you should've had a raw flag in your /v1/completions implementation... why fuck over all users?)
-        --     btw ollama discusses templating for FIM here: https://github.com/ollama/ollama/blob/main/docs/template.md#example-fill-in-middle
+        -- /v1/completions uses Template (no raw override)
+        -- - https://github.com/ollama/ollama/blob/main/docs/template.md#example-fill-in-middle
         prompt = prefix,
         suffix = suffix,
-        -- TODO verify do not need raw for v1/completions
-        raw = true, -- ollama's /api/generate allows to bypass templates... unfortunately, ollama doesn't have this param for its /v1/completions endpoint
 
         stream = true,
-        -- num_predict = 40, -- /api/generate
         max_tokens = 200,
-        -- TODO temperature, top_p,
 
-        -- options = {
-        --     /api/generate only
-        --        https://github.com/ollama/ollama/blob/main/docs/api.md#generate-request-with-options
-        --     --    OLLAMA_NUM_PARALLEL=1 -- TODO can this be passed in /api/generate?
-        --     num_ctx = 8192, -- /api/generate only
-        -- }
+        -- TODO temperature, top_p, etc => (see notes for more)
     }
 
     return vim.json.encode(body)
@@ -59,7 +40,7 @@ function M.build_request(prefix, suffix)
             "-fsSL",
             "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
-            "http://ollama:11434/v1/completions",  -- TODO pass in api base_url (via config)
+            "http://ollama:11434/v1/completions", -- TODO pass in api base_url (via config)
             -- "http://ollama:11434/api/generate",
             "-H", "Content-Type: application/json",
             "-d", body_for(prefix, suffix)
@@ -90,7 +71,6 @@ function M.process_sse(data)
         end
         local success, parsed = pcall(vim.json.decode, event_json)
 
-        -- *** /v1/completions
         if success and parsed.choices and parsed.choices[1] and parsed.choices[1].text then
             local choice = parsed.choices[1]
             local text = choice.text
@@ -104,21 +84,6 @@ function M.process_sse(data)
                 done = true
             end
             chunk = (chunk or "") .. text
-
-            -- -- *** ollama format for /api/generate, examples:
-            -- --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.1915236Z","response":"\n","done":false}
-            -- --  done example:
-            -- --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.2800621Z","response":"","done":true,"done_reason":"stop","total_duration":131193100,"load_duration":16550700,"prompt_eval_count":19,"prompt_eval_duration":5000000,"eval_count":12,"eval_duration":106000000}
-            -- if success and parsed and parsed.response then
-            --     if parsed.done then
-            --         local done_reason = parsed.done_reason
-            --         done = true
-            --         if done_reason ~= "stop" then
-            --             log:warn("WARN - unexpected /api/generate done_reason: ", done_reason, " do you need to handle this too?")
-            --             -- ok for now to continue too
-            --         end
-            --     end
-            --     chunk = (chunk or "") .. parsed.response
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
