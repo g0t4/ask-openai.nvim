@@ -8,6 +8,26 @@ Endpoints of note:
 
 Behind the scenes ollama spins up a `llama-server` instance per model, when requested
 
+## TODOs
+
+- Try `OLLAMA_FLASH_ATTENTION` if its compatible w/ qwen
+    - plus, quantizing the KV cache `OLLAMA_KV_CACHE_TYPE` => however Qwen2 has high GQA so maybe this is not wise
+- Capture recommended ollama command to set model parameters for completion
+    - like `llama.nvim` does but for my use case
+    - OLLAMA_NUM_PARALLEL=1
+    - OLLAMA_HOST
+- Model params
+    - where to configure:
+        - model itself has a `params` layer with json file of parameter names/values
+            - usually few, if any, have any set though
+        - via env vars
+            - via `/api/generate`
+            - or, Modelfile (if using `/v1/completions` and IIAC `/v1/chat/completions`
+        - via API requests
+            - `num_ctx` (defaults to 2048) => and in my testing, many models don't override it
+        - via CLI args (i.e. ollama run has set param command)
+
+
 
 ## Entrypoints
 
@@ -79,39 +99,43 @@ Behind the scenes ollama spins up a `llama-server` instance per model, when requ
               - defaults [`NumCtx = 4`](https://github.com/ollama/ollama/blob/main/server/sched.go#L82)
               - basically maps to [`LlmRequest`](https://github.com/ollama/ollama/blob/main/server/sched.go#L24)
                   - notably, with `opts` (api.Options)
-
+                  - FYI here is runner after making first request
+                      /usr/lib/ollama/runners/rocm_avx/ollama_llama_server runner \
+                          --model /home/wes/.ollama/models/blobs/sha256-24b532e5276503b147d0eea0e47cb1d2bcce7c9034edd657b624261862ca54a1 \
+                          --ctx-size 2048 --batch-size 512 --n-gpu-layers 29 --threads 8 --parallel 1 --port 43607
+                          # FYI this looks to be `cmd/runner`'s exe (run `go build`):
+                              ./cmd/runner/runner --help # shows same args
            TODO => concerning... does this code say if `Raw` then don't tokenize the prompt?
                https://github.com/ollama/ollama/blob/main/server/routes.go#L324
 
-           Completion used to get completion
+           Completion() used to get completion
                [here](https://github.com/ollama/ollama/blob/main/server/routes.go#L295) is the call in GenerateHandler
                   (points to interface) on llama "server"
                [IMPL](https://github.com/ollama/ollama/blob/main/llm/server.go#L684)
-                   THIS is the money shot!
-                   all options mapped immediately
-                   here I can see args passed to llama-server (its equivalent in ollama)
+                   this Completion( func is in the `llama serve` process
+                      and it calls out to `runner`'s `completion` func
+                         here is the [HTTP request to /completion](https://github.com/ollama/ollama/blob/main/llm/server.go#L763)
                    client closes connection => [abort](https://github.com/ollama/ollama/blob/main/llm/server.go#L733)
                    num_predict must be <= 10 * num_ctx
-                   calls `/completion` on llama-server (from llama.cpp)
-                       https://github.com/ggerganov/llama.cpp/blob/fd08255d0dea6625596c0367ee0a11d195f36762/examples/server/public_legacy/completion.js#L15
-                       https://github.com/ggerganov/llama.cpp/blob/master/examples/server/README.md?plain=1#L1035
-                       FYI llama-server now has `/infill` too
-                           https://github.com/ggerganov/llama.cpp/blob/master/examples/server/README.md?plain=1#L638
-                               I could use this directly (bypass ollama) but I am not sure I am convinced of its prompt style..
-                               it uses <|file_sep and <|repo_name w/ hardcoded values so that might not be what I want
                    lolz... hardcodes token repeat limit to 30
                        says "modify as needed"
                        https://github.com/ollama/ollama/blob/main/llm/server.go#L821
-                   if hits lenght limit (num_predict) =>
+                   if hits length limit (num_predict) =>
                        sets `stop` = [`length`](https://github.com/ollama/ollama/blob/main/llm/server.go#L837)
-
-
-
-
-
-
-
-
+               Runner side:
+                   `/completion` maps to llama/runner/runner.go:
+                       [`completion`](https://github.com/ollama/ollama/blob/main/llama/runner/runner.go#L604) /completion endpoint
+                       IIAC this is similar to whatever in llama-server would've been used
+                       `runner` has similar args
+                           and its readme suggests that is the purpose too:
+                              /cmd/runner, see README.md
+                   SO, this doesn't direclty use `llama-server`... instead it has its own `runner` that is per model instance
+                       "ollama serve" => "server"
+                       runners => one per model (a backend server if you will)...
+                          AFAICT serve uses http to contact runner...
+                             confirmed by the fact that there are multiple ollama processes
+                             `ollama serve`
+                                 \_ ollama_llama_server runner --model ...
 
 
            FYI can pass empty request (prompt = "") to load a runner only
