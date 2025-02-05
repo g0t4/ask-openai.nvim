@@ -99,6 +99,12 @@ Behind the scenes ollama spins up a `llama-server` instance per model, when requ
                            https://github.com/ggerganov/llama.cpp/blob/master/examples/server/README.md?plain=1#L638
                                I could use this directly (bypass ollama) but I am not sure I am convinced of its prompt style..
                                it uses <|file_sep and <|repo_name w/ hardcoded values so that might not be what I want
+                   lolz... hardcodes token repeat limit to 30
+                       says "modify as needed"
+                       https://github.com/ollama/ollama/blob/main/llm/server.go#L821
+                   if hits lenght limit (num_predict) =>
+                       sets `stop` = [`length`](https://github.com/ollama/ollama/blob/main/llm/server.go#L837)
+
 
 
 
