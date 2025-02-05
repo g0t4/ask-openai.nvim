@@ -1,7 +1,9 @@
 local uv = vim.uv
 local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
-local legacy_completions = require("ask-openai.prediction.backends.legacy-completions")
+
+local backend = require("ask-openai.prediction.backends.legacy-completions")
+-- local backend = require("ask-openai.prediction.backends.api-generate")
 
 -- FYI would need current prediction PER buffer in the future if want multiple buffers to have predictions at same time (not sure I want this feature)
 M.current_prediction = nil -- set on module for now, just so I can inspect it easily
@@ -66,7 +68,7 @@ function M.ask_for_prediction()
     local prefix = context_before_text
     local suffix = context_after_text
     -- "middle" is what is generated
-    local options = legacy_completions.build_request(prefix, suffix)
+    local options = backend.build_request(prefix, suffix)
 
     -- log:trace("curl", table.concat(options.args, " "))
 
@@ -98,7 +100,7 @@ function M.ask_for_prediction()
         end
         if data then
             vim.schedule(function()
-                local chunk, generation_done = legacy_completions.process_sse(data)
+                local chunk, generation_done = backend.process_sse(data)
                 if chunk then
                     this_prediction:add_chunk_to_prediction(chunk)
                 end

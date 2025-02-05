@@ -1,13 +1,9 @@
 local M = {}
 local log = require("ask-openai.prediction.logger").predictions()
 
--- TODO extract /api/generate notes from /v1/completions backend
-
--- TODO extract interface from /v1/completions builder and reuse that here...
---    can I define an interface in lua?
+-- TODO can I define an interface in lua?
 --    then use a backend variable in handlers.lua... w/ completion regardless of backend
 --       local backend = require("../backends/x")
-
 
 -- FYI only needed for raw prompts:
 local tokens_to_clear = "<|endoftext|>"
