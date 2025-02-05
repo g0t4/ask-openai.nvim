@@ -1,7 +1,7 @@
 local uv = vim.uv
 local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
-local Job = require("plenary.job")
+local legacy_completions = require("ask-openai.prediction.backends.legacy-completions")
 
 -- FYI would need current prediction PER buffer in the future if want multiple buffers to have predictions at same time (not sure I want this feature)
 M.current_prediction = nil -- set on module for now, just so I can inspect it easily
@@ -176,7 +176,7 @@ function M.ask_for_prediction()
         end
         if data then
             vim.schedule(function()
-                local chunk, generation_done = process_sse(data)
+                local chunk, generation_done = legacy_completions.process_sse(data)
                 if chunk then
                     this_prediction:add_chunk_to_prediction(chunk)
                 end
