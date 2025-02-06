@@ -115,23 +115,13 @@ function Prediction:accept_first_line()
     local original_row = original_row_1based - 1 -- 0-based now
 
     self.disable_cursor_moved = true
-    -- TODO fix issue with cursor moving! FUUUU... could I exit to normal mode and come back to insert when done?
-    --  does eventignore happen to work here, probably not
-    -- IIUC I can insert however many lines I want...
     -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
     vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, { first_line, "" })
-    -- TODO FUTURE.. if model generates a diff... could I diff and line it up and show changes too like zed! would be for multiple line accept
-    -- FYI cursor moves with insert...
-    -- TODO with accept line, should cursor also wrap to next line? I think it has to to be able to tab through it all
     vim.api.nvim_win_set_cursor(0, { original_row_1based + 1, 0 }) -- (1,0)-based (row,col)
 
     self.prediction = table.concat(lines, "\n") -- strip that first line then from the prediction (and update it)
     self:redraw_extmarks()
 end
-
--- Predictions Notes:
--- - could request multiple predictions per buffer too, different parts -- i.e. to support a jump to edit feature (pie in sky)...
---  - can do this even as edits happen elsewhere... anchor the completion to part of the buffer that hasn't been modified
 
 function Prediction:accept_first_word()
     if not self.generated then
@@ -148,7 +138,6 @@ function Prediction:accept_first_word()
     end
 
     local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
-    -- log:trace("word_end:", word_end)
     if word_end == nil then
         -- log:trace("no words in first line, accepting entire line")
         self:accept_first_line()
@@ -156,7 +145,6 @@ function Prediction:accept_first_word()
     end
 
     local first_word = lines[1]:sub(1, word_end) or ""
-    -- log:trace(string.format("first_word: '%s'", first_word))
     if first_word == lines[1] then
         -- BTW can get blank line (with ' ' or ' \n' ... go right after a function definition and add a new line, or two... and if your cursor stays above the new lines, right below func signature, it will often suggest a blank line there - qwen2.5-coder:7b does anyways)
         -- rest of word, then use accept line
@@ -172,14 +160,8 @@ function Prediction:accept_first_word()
     local original_row = original_row_1based - 1 -- 0-based now
 
     self.disable_cursor_moved = true
-    -- TODO fix issue with cursor moving! FUUUU... could I exit to normal mode and come back to insert when done?
-    --  does eventignore happen to work here, probably not
-    -- IIUC I can insert however many lines I want...
     -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
     vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, { first_word })
-    -- TODO FUTURE.. if model generates a diff... could I diff and line it up and show changes too like zed! would be for multiple line accept
-    -- FYI cursor moves with insert...
-    -- TODO with accept line, should cursor also wrap to next line? I think it has to to be able to tab through it all
     vim.api.nvim_win_set_cursor(0, { original_row_1based, original_col + #first_word }) -- (1,0)-based (row,col)
 
     self.prediction = table.concat(lines, "\n") -- strip that first line then from the prediction (and update it)

@@ -186,6 +186,7 @@ function M.cursor_moved_in_insert_mode()
 
     if vim.tbl_contains(ignore_buftypes, vim.bo.buftype)
         or vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
+
         return
     end
 
