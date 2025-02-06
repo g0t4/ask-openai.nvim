@@ -42,7 +42,7 @@ function M.get_line_range(current_row, allow_lines, total_lines_in_doc)
 end
 
 function M.ask_for_prediction()
-    M.stop_current_prediction()
+    M.cancel_current_prediction()
 
     local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
     local original_row = original_row_1based - 1 -- 0-based now
@@ -134,7 +134,7 @@ function M.ask_for_prediction()
     uv.read_start(stderr, options.on_stderr)
 end
 
-function M.stop_current_prediction()
+function M.cancel_current_prediction()
     local this_prediction = M.current_prediction
     if not this_prediction then
         return
@@ -178,7 +178,7 @@ local keypresses = rx.Subject.create()
 local subkp = keypresses:subscribe(function()
     -- immediately clear/hide prediction, else slides as you type
     vim.schedule(function()
-        M.stop_current_prediction()
+        M.cancel_current_prediction()
     end)
 end)
 local debounced = keypresses:debounce(250, scheduler)
@@ -211,12 +211,25 @@ function M.cursor_moved_in_insert_mode()
 end
 
 function M.leaving_insert_mode()
-    M.stop_current_prediction()
+    M.cancel_current_prediction()
 end
 
 function M.entering_insert_mode()
     log:trace("function M.entering_insert_mode()")
     M.cursor_moved_in_insert_mode()
+end
+
+function M.pause_suggestion()
+    if not M.current_prediction then
+        return
+    end
+end
+
+function M.resume_suggestion()
+    if not M.current_prediction then
+        return
+    end
+    -- PRN keep going?
 end
 
 function M.accept_all_invoked()
@@ -246,7 +259,7 @@ end
 function M.vim_is_quitting()
     -- PRN detect rogue curl processes still running?
     log:trace("Vim is quitting, stopping current prediction (ensures curl is terminated)...")
-    M.stop_current_prediction()
+    M.cancel_current_prediction()
 end
 
 return M
