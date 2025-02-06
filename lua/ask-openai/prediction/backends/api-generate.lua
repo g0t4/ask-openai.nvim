@@ -80,7 +80,11 @@ local function body_for(prefix, suffix, recent_edits)
         }
     }
 
-    return vim.json.encode(body)
+    local body_json = vim.json.encode(body)
+
+    log:trace("body", body_json)
+
+    return body_json
 end
 
 

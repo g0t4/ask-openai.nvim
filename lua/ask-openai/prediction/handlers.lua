@@ -32,7 +32,8 @@ function M.ask_for_prediction()
         first_row = first_row - past
         -- todo do I have to ensure > 0 ? for first_row
     end
-    -- log:trace("first_row", first_row, "last_row", last_row)
+    log:trace("first_row", first_row, "last_row", last_row, "current_row", original_col)
+
 
     local IGNORE_BOUNDARIES = false
     local current_line = vim.api.nvim_buf_get_lines(0, original_row, original_row + 1, IGNORE_BOUNDARIES)[1] -- 0based indexing
