@@ -24,6 +24,11 @@ function Prediction:new()
 end
 
 function Prediction:add_chunk_to_prediction(chunk)
+    if self.paused then
+        self.buffered_chunks = self.buffered_chunks .. chunk
+        return
+    end
+
     self.prediction = self.prediction .. chunk
     self:redraw_extmarks()
 end
@@ -76,6 +81,26 @@ end
 function Prediction:clear_extmarks()
     -- clear from 0 to -1 => entire buffer
     vim.api.nvim_buf_clear_namespace(self.buffer, self.namespace_id, 0, -1)
+end
+
+function Prediction:pause_new_chunks()
+    --
+    -- pause means stop showing new chunks
+    --    make sure to accept what is shown (if accepted after pause)
+    --    which means new chunks (after paused) need to be:
+    --      buffered
+    --      or discarded
+    --
+    self.paused = true
+end
+
+function Prediction:resume_new_chunks()
+    self.paused = false
+    self.prediction = self.prediction .. self.buffered_chunks
+    -- add the buffered chunks to the prediction so far (and clear out the buffer)
+    self.buffered_chunks = ""
+    -- TODO vim.schedule? not in background AFAIK, so.. no
+    self:redraw_extmarks()
 end
 
 function Prediction:mark_as_abandoned()

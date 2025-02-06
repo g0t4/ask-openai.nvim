@@ -36,6 +36,15 @@ local function register_prediction_triggers()
             { noremap = true, callback = handlers.accept_word_invoked })
     end
 
+    -- pause_stream
+    if predictions.keymaps.pause_stream then
+        vim.api.nvim_set_keymap('i', predictions.keymaps.pause_stream, "", {
+            noremap = true,
+            callback = handlers.pause_stream_invoked,
+        })
+    end
+
+
     -- IDEA => reject_line (skip current line, "drop" it... and then take a subsequent line)... or is it better to trigger a new completion?
     --    a few times I've had undesired initial lines (esp blank initial lines when I don't want them...)
     --    and one time a comment I didn't want ... before code line I wanted
@@ -91,6 +100,8 @@ function _module.remove_prediction_triggers()
     pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_all)
     pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_line)
     pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_word)
+    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.pause_stream)
+    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.resume_stream)
 end
 
 function _module.enable_predictions()

@@ -54,6 +54,8 @@ local default_options = {
                 accept_all = "<Tab>",
                 accept_line = "<C-right>",
                 accept_word = "<M-right>",
+                pause_stream = "<M-down>",
+                resume_stream = "<M-up>",
             },
 
             provider = "keyless", -- TODO set to ? by default

@@ -219,17 +219,18 @@ function M.entering_insert_mode()
     M.cursor_moved_in_insert_mode()
 end
 
-function M.pause_suggestion()
+function M.pause_stream_invoked()
     if not M.current_prediction then
         return
     end
+    M.current_prediction:pause_new_chunks()
 end
 
-function M.resume_suggestion()
+function M.resume_stream_invoked()
     if not M.current_prediction then
         return
     end
-    -- PRN keep going?
+    M.current_prediction:resume_new_chunks()
 end
 
 function M.accept_all_invoked()
