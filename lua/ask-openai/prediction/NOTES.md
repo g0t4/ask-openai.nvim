@@ -52,6 +52,12 @@
 
 ### Context to send
 
+
+- Send symbols/api of all require'd modules (lang specific)
+    - so, any lua objects I have imported
+    - maybe even give type / signatures of all in-scope variables?!
+        - now that would be where the LS comes in!
+    - probably overkill
 - Select based on syntax tree? vim.treesitter
     - vim.treesitter.get_node_text(vim.treesitter.get_node(),0) -- text of current node
     - perhaps try to take N lines before/after and only if that's not enough, then use syntax tree (if avail)

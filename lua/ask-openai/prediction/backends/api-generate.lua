@@ -5,7 +5,7 @@ local log = require("ask-openai.prediction.logger").predictions()
 --    then use a backend variable in handlers.lua... w/ completion regardless of backend
 --       local backend = require("../backends/x")
 
-local function body_for(prefix, suffix)
+local function body_for(prefix, suffix, recent_edits)
     -- FYI only needed for raw prompts:
     local tokens_to_clear = "<|endoftext|>"
     local fim = {
@@ -41,6 +41,18 @@ local function body_for(prefix, suffix)
     -- PSM inference format:
     local raw_prompt = fim.prefix .. prefix .. fim.suffix .. suffix .. fim.middle
 
+
+    local recent_changes = "Here are some recent lines that were edited by the user: "
+    -- TODO need edits for other files too?
+
+    for _, change in pairs(recent_edits) do
+        local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
+        -- todo include line/col or not?
+        recent_changes = recent_changes .. "\n" .. str
+    end
+
+    raw_prompt = recent_changes .. "\n\n" .. raw_prompt
+
     local body = {
 
         model = "qwen2.5-coder:7b-instruct-q8_0",
@@ -67,7 +79,7 @@ local function body_for(prefix, suffix)
 end
 
 
-function M.build_request(prefix, suffix)
+function M.build_request(prefix, suffix, recent_edits)
     local options = {
         command = "curl",
         args = {
@@ -76,7 +88,7 @@ function M.build_request(prefix, suffix)
             "-X", "POST",
             "http://ollama:11434/api/generate", -- TODO pass in api base_url (via config)
             "-H", "Content-Type: application/json",
-            "-d", body_for(prefix, suffix)
+            "-d", body_for(prefix, suffix, recent_edits)
         },
     }
     return options

@@ -1,6 +1,7 @@
 local uv = vim.uv
 local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
+local changes = require("ask-openai.prediction.edits.changes")
 
 -- local backend = require("ask-openai.prediction.backends.legacy-completions")
 local backend = require("ask-openai.prediction.backends.api-generate")
@@ -54,11 +55,13 @@ function M.ask_for_prediction()
     -- TODO => confirm \n is the line separator:
     local context_after_text = current_after_cursor .. table.concat(context_after, "\n")
 
+    local recent_edits = changes.get_change_list_with_lines()
+
     -- PSM format:
     local prefix = context_before_text
     local suffix = context_after_text
     -- "middle" is what is generated
-    local options = backend.build_request(prefix, suffix)
+    local options = backend.build_request(prefix, suffix, recent_edits)
 
     -- log:trace("curl", table.concat(options.args, " "))
 
