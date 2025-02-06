@@ -48,13 +48,23 @@
 
 ### Context to send
 
-- I suspect I can select context based on the code tree instead of just # lines before/after and might get better suggestsion that way when not sending entire file
-    - i.e. pass entire scope of cursor location and stop at the "symbol" boundary...
-    - include symbols too to complete other funcs
-        - language specific? as to what to pass that is valid in a given language (IOTW only symbols visible within a given scope)
+- Select based on syntax tree? vim.treesitter
+    - vim.treesitter.get_node_text(vim.treesitter.get_node(),0) -- text of current node
+    - perhaps try to take N lines before/after and only if that's not enough, then use syntax tree (if avail)
+        - perhaps N lines of "current" tree context! (don't have to make before/after symmetric)
+            - though, FIM training was symmetric (1/3 of doc)... not sure that means anything
+    - lua:
+        - nearest function body (above current point)
+            - or, detect top level function body (if enough room in context)
+        - or, if in top level `chunk` then grab lines based on entire nodes before/after
+    - then, include symbols that are "in scope" at cursor position (but outside of lines that are sent)
+        - maybe even mention symbols before/after in current file
+        - also, workspace symbols that are in-scope?
+- Only send prior lines and ask for AR completion, instead of FIM?
+    - add special keymap for this?
+    - if I like this as an alternative, I could have a mode to toggle FIM/AR
+    - quite often this is all you need, esp if writing a function body with nothing after it but the rest of the file
 - recent edits (esp symbols, i.e. of a function edited in another file)
-
-    - ************* TODO NEXT PRIORITY => I have plenty of context to provide a ton more of details... and quality will skyrocket... ******************
 
 - clipboard contents (nice to have) and probably a waste of space? maybe some sort of detection if its code and if so then include it?
 - It might be nice to allow the model to request additional context... i.e. not send clipboard all the time, just when it may be relevant

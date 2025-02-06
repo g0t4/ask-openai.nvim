@@ -15,11 +15,6 @@ local log = require("ask-openai.prediction.logger").predictions()
 function M.ask_for_prediction()
     M.stop_current_prediction()
 
-
-    -- PRN consider (when available) to get the lines back to a meaningful branch in the syntax tree
-    --   I am not convinced that more lines after is as important
-    --   I imagine geting all of the "local" scope might be useful
-
     local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
     local original_row = original_row_1based - 1 -- 0-based now
     local allow_lines = 80
@@ -186,7 +181,6 @@ function M.cursor_moved_in_insert_mode()
 
     if vim.tbl_contains(ignore_buftypes, vim.bo.buftype)
         or vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
-
         return
     end
 
