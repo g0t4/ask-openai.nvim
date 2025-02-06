@@ -50,7 +50,8 @@
 - generated an ending comment to offset the filename comment_header... and then it started to explain the changes in markdown prefix/suffix
     - maybe try im_start/end before
     - OR, <|file_sep|> instead?
-
+- scrolling paste cursor position moves cursor and fubars the prediction, maybe not end of world but...
+    - might also be nice to scroll around before accepting it!
 
 
 ### Context to send
