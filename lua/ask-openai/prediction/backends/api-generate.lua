@@ -6,13 +6,18 @@ local log = require("ask-openai.prediction.logger").predictions()
 --       local backend = require("../backends/x")
 
 local function body_for(prefix, suffix, recent_edits)
-    -- FYI only needed for raw prompts:
-    local tokens_to_clear = "<|endoftext|>"
-    local fim = {
-        enabled = true,
-        prefix = "<|fim_prefix|>",
-        middle = "<|fim_middle|>",
-        suffix = "<|fim_suffix|>",
+    local sentinel_tokens = {
+        fim_prefix = "<|fim_prefix|>",
+        fim_middle = "<|fim_middle|>",
+        fim_suffix = "<|fim_suffix|>",
+        fim_pad = "<|fim_pad|>",
+        repo_name = "<|repo_name|>",
+        file_sep = "<|file_sep|>",
+        im_start = "<|im_start|>",
+        im_end = "<|im_end|>",
+
+        -- todo others?
+        -- endoftext = "<|endoftext|>"
     }
 
     -- PRN TEST w/o deepseek-r1 using api/generate with FIM manual prompt
@@ -39,7 +44,7 @@ local function body_for(prefix, suffix, recent_edits)
     --   should I be trying non-FIM too? (like repo level completions?)
 
     -- PSM inference format:
-    local raw_prompt = fim.prefix .. prefix .. fim.suffix .. suffix .. fim.middle
+    local raw_prompt = sentinel_tokens.fim_prefix .. prefix .. sentinel_tokens.fim_suffix .. suffix .. sentinel_tokens.fim_middle
 
     -- Edit history totally messed up FIM... how can I include this while preserving the FIM request...
     --   i.e. in calc.lua... it just chatted to me and that's an easy FIM task
