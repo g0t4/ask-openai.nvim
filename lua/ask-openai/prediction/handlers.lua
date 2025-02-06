@@ -21,13 +21,17 @@ function M.get_line_range(current_row, allow_lines, total_lines_in_doc)
     local first_row = current_row - allow_lines
     local last_row = current_row + allow_lines
     if first_row < 0 then
+        -- first row cannot < 0
         local extra_rows = -first_row
         last_row = last_row + extra_rows
         first_row = 0
-    elseif last_row >= total_lines_in_doc then
-        local extra_rows_past_end = last_row - total_lines_in_doc
+    end
+    if last_row > total_lines_in_doc then
+        -- last row cannot be  > num_rows_total
+        local extra_rows = last_row - total_lines_in_doc
         last_row = total_lines_in_doc
-        first_row = first_row - extra_rows_past_end
+        first_row = first_row - extra_rows
+        first_row = math.max(0, first_row)
         -- todo do I have to ensure > 0 ? for first_row
     end
     return first_row, last_row

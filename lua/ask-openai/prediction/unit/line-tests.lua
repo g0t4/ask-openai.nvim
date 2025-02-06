@@ -43,4 +43,23 @@ describe("get_line_range", function()
         assert.equals(80, first_row)
         assert.equals(100, last_row)
     end)
+
+    it("total rows is less than allowed lines in both directions, takes all lines", function()
+        local current_row = 4
+        local allow_lines = 10
+        local total_rows = 8
+        local first_row, last_row = handlers.get_line_range(current_row, allow_lines, total_rows)
+        assert.equals(0, first_row)
+        assert.equals(8, last_row)
+    end)
+
+    it("current_row + allow_lines == total_rows", function()
+        -- arguably redundant, boundary condition
+        local current_row = 90
+        local allow_lines = 10
+        local total_rows = 100
+        local first_row, last_row = handlers.get_line_range(current_row, allow_lines, total_rows)
+        assert.equals(80, first_row)
+        assert.equals(100, last_row)
+    end)
 end)
