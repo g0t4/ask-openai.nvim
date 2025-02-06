@@ -18,6 +18,8 @@ function Prediction:new()
     -- ?? keep \n to differentiate lines ? or map to some sort of object model (lines at least... and maybe tokenize the lines)
     prediction.prediction = ""
     prediction.extmarks = {}
+    prediction.paused = false
+    prediction.buffered_chunks = ""
     prediction.abandoned = false -- PRN could be a prediction state? IF NEEDED
     prediction.disable_cursor_moved = false
     return setmetatable(prediction, { __index = Prediction })
