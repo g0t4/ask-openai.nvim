@@ -55,7 +55,8 @@ function M.ask_for_prediction()
     -- TODO => confirm \n is the line separator:
     local context_after_text = current_after_cursor .. table.concat(context_after, "\n")
 
-    local recent_edits = changes.get_change_list_with_lines()
+    -- local recent_edits = changes.get_change_list_with_lines()
+    local recent_edits = {}
 
     -- PSM format:
     local prefix = context_before_text
