@@ -44,6 +44,7 @@ local function body_for(prefix, suffix, recent_edits)
     --   should I be trying non-FIM too? (like repo level completions?)
 
     -- PSM inference format:
+    -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
     local raw_prompt = sentinel_tokens.fim_prefix .. prefix .. sentinel_tokens.fim_suffix .. suffix .. sentinel_tokens.fim_middle
 
     -- Edit history totally messed up FIM... how can I include this while preserving the FIM request...
