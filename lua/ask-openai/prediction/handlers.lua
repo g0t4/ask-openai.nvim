@@ -13,25 +13,32 @@ M.current_prediction = nil -- set on module for now, just so I can inspect it ea
 --    tail -f /Users/wesdemos/.local/share/nvim/ask/ask-predictions.log
 local log = require("ask-openai.prediction.logger").predictions()
 
+
+function M.get_line_range(current_row, allow_lines, total_lines_in_doc)
+    local first_row = current_row - allow_lines
+    local last_row = current_row + allow_lines
+    if first_row < 0 then
+        local extra_rows = -first_row
+        last_row = last_row + extra_rows
+        first_row = 0
+    elseif last_row >= total_lines_in_doc then
+        local extra_rows_past_end = last_row - total_lines_in_doc + 1
+        last_row = total_lines_in_doc - 1
+        first_row = first_row - extra_rows_past_end
+        -- todo do I have to ensure > 0 ? for first_row
+    end
+    return first_row, last_row
+end
+
 function M.ask_for_prediction()
     M.stop_current_prediction()
 
     local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
     local original_row = original_row_1based - 1 -- 0-based now
-    local allow_lines = 80
-    local first_row = original_row - allow_lines
-    local last_row = original_row + allow_lines
 
+    local allow_lines = 80
     local num_rows_total = vim.api.nvim_buf_line_count(0)
-    if first_row < 0 then
-        last_row = last_row - first_row
-        first_row = 0
-    elseif last_row >= num_rows_total then
-        local past = last_row - num_rows_total + 1
-        last_row = num_rows_total - 1
-        first_row = first_row - past
-        -- todo do I have to ensure > 0 ? for first_row
-    end
+    local first_row, last_row = M.get_line_range(original_row, allow_lines, num_rows_total)
     log:trace("first_row", first_row, "last_row", last_row, "current_row", original_col)
 
 
