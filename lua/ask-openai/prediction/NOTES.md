@@ -44,6 +44,9 @@
 
 - TODO strip comments? or maybe strip comments marked a certain way? or not marked that way?
 ### Observations todo
+
+- Comments are essential in complicated scenarios, even a simple single word can make the model do it all right!
+
 - generated an ending comment to offset the filename comment_header... and then it started to explain the changes in markdown prefix/suffix
     - maybe try im_start/end before
     - OR, <|file_sep|> instead?
