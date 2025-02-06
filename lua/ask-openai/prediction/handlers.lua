@@ -170,19 +170,15 @@ local ignore_buftypes = {
     "nofile", -- rename refactor popup window uses this w/o a filetype, also Dressing rename in nvimtree uses nofile
     "terminal",
 }
-
-local rx = require("rx")
-local TimeoutScheduler = require("ask-openai.rx.scheduler")
-local scheduler = TimeoutScheduler.create()
-local keypresses = rx.Subject.create()
-local subkp = keypresses:subscribe(function()
+local keys = require("ask-openai.prediction.keys")
+local keypresses, debounced = keys.create_keypresses_observables()
+local keypresses_subscription = keypresses:subscribe(function()
     -- immediately clear/hide prediction, else slides as you type
     vim.schedule(function()
         M.cancel_current_prediction()
     end)
 end)
-local debounced = keypresses:debounce(250, scheduler)
-local sub = debounced:subscribe(function()
+local debounced_subscription = debounced:subscribe(function()
     vim.schedule(function()
         log:trace("CursorMovedI debounced")
 
