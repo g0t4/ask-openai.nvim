@@ -26,6 +26,10 @@
         - Esc is a potent way to stop it... that feels right at home...
         - would avoid yet another keybinding!
         - would have to remove code to trigger on insertenter and insertleave
+- ollama - make sure model loads even if first request is canceled...
+    - currently, if model is not loaded, the first request has to go through for the model to fully load
+    - if first request is canceled (i.e. b/c I am typing)... the serve repeatedly spasms runner starts and terminates runner
+    - can server not terminate runner on request cancel?! just let it run anyways?
 
 - include outline/symbols for current doc
     - include symbols "in-scope" of cursor position!
@@ -72,14 +76,14 @@
         - would want a way to get high level overview of edits like :changes and not save every char typed
         - clearly, :changes doesn't track every typed char, it seems to be PER LINE?
             - ok use events and when a line changes add that, and if that same line changes next then consolidate that with all edits to that line until new line edited
-
-    - undo mechanism must have some data too (IIAC same as changes mechanism?)
     - changes are per file...
         - how would I track across files, use open files/buffers?
     - `:undolist`? too?
+        - FYI `undofile` option to save/restore undo history across restarts (normally off)
     - maybe verbatim just dump :changes and :undolist into the prompt?
-
-
+    - `treesitter`:
+        - `:h LanguageTree:register_cbs()`
+            - `on_changedtree`
 
 - clipboard contents (nice to have) and probably a waste of space? maybe some sort of detection if its code and if so then include it?
 - It might be nice to allow the model to request additional context... i.e. not send clipboard all the time, just when it may be relevant
