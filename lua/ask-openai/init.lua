@@ -36,11 +36,17 @@ local function register_prediction_triggers()
             { noremap = true, callback = handlers.accept_word_invoked })
     end
 
-    -- pause_stream
     if predictions.keymaps.pause_stream then
         vim.api.nvim_set_keymap('i', predictions.keymaps.pause_stream, "", {
             noremap = true,
             callback = handlers.pause_stream_invoked,
+        })
+    end
+
+    if predictions.keymaps.resume_stream then
+        vim.api.nvim_set_keymap('i', predictions.keymaps.resume_stream, "", {
+            noremap = true,
+            callback = handlers.resume_stream_invoked,
         })
     end
 
