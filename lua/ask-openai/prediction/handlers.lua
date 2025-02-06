@@ -15,6 +15,9 @@ local log = require("ask-openai.prediction.logger").predictions()
 
 
 function M.get_line_range(current_row, allow_lines, total_lines_in_doc)
+    -- FYI do not adjust for 0/1 based, assume all of these are in same 1/0 base
+    --   only adjust when using nvim's line funcs
+
     local first_row = current_row - allow_lines
     local last_row = current_row + allow_lines
     if first_row < 0 then
@@ -22,8 +25,8 @@ function M.get_line_range(current_row, allow_lines, total_lines_in_doc)
         last_row = last_row + extra_rows
         first_row = 0
     elseif last_row >= total_lines_in_doc then
-        local extra_rows_past_end = last_row - total_lines_in_doc + 1
-        last_row = total_lines_in_doc - 1
+        local extra_rows_past_end = last_row - total_lines_in_doc
+        last_row = total_lines_in_doc
         first_row = first_row - extra_rows_past_end
         -- todo do I have to ensure > 0 ? for first_row
     end
