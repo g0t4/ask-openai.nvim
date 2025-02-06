@@ -34,6 +34,9 @@
         - i.e. if I edit markdown files, will I really need that if I switch to lua (i.e. this notes file)
     - perhaps add a diff keymap that expands the context if I don't get what I want with a default context
 - include preamble request of what to do? <|im_start|> section?
+- Test other backends:
+    - llama-server
+    - vllm - https://docs.vllm.ai/en/latest/getting_started/installation/gpu/index.html?device=rocm
 
 - TODO strip comments? or maybe strip comments marked a certain way? or not marked that way?
 ### Observations todo
