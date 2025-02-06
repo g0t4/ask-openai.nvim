@@ -1,4 +1,7 @@
 local M = {}
+-- TODO temp import for testing inspect tools, remove this later
+MyInspect = require("ask-openai.prediction.edits.inspect")
+
 
 function M.get_change_list_with_lines()
     local bufnr = vim.api.nvim_get_current_buf()
