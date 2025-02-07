@@ -52,6 +52,7 @@ function M.ask_for_prediction()
 
     local allow_lines = 80
     local num_rows_total = vim.api.nvim_buf_line_count(CURRENT_BUFFER)
+    -- TODO test for 0based vs 1based indexing in get_line_range (I know you can get a number past end of document but that works out given get_lines is END-EXCLUSIVE
     local first_row, last_row = M.get_line_range(original_row, allow_lines, num_rows_total)
     log:trace("first_row", first_row, "last_row", last_row, "original_row", original_row)
 
@@ -78,7 +79,7 @@ function M.ask_for_prediction()
     end
 
     -- TODO edge cases for new line at end of current line? is that a concern
-    local lines_after_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row, last_row, IGNORE_BOUNDARIES) -- 0based END-EXCLUSIVE
+    local lines_after_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row + 1, last_row, IGNORE_BOUNDARIES) -- 0based END-EXCLUSIVE
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local document_suffix = current_after_cursor .. table.concat(lines_after_current, "\n")
 
