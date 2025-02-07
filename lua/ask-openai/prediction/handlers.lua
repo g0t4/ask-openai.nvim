@@ -52,10 +52,12 @@ function M.ask_for_prediction()
     local first_row, last_row = M.get_line_range(original_row, allow_lines, num_rows_total)
     log:trace("first_row", first_row, "last_row", last_row, "original_row", original_row)
 
-
     local IGNORE_BOUNDARIES = false
-    local current_line = vim.api.nvim_buf_get_lines(0, original_row, original_row + 1, IGNORE_BOUNDARIES)[1] -- 0based indexing
+
+    local current_line = vim.api.nvim_buf_get_lines(0, original_row, original_row + 1, IGNORE_BOUNDARIES)[1]
+    -- get_lines is END-EXCLUSIVE, 0-based
     log:trace("current_line", current_line)
+
     -- TODO include current cursor slot as before or after?
     local current_before_cursor = current_line:sub(1, original_col + 1)
     local current_after_cursor = current_line:sub(original_col + 2)
