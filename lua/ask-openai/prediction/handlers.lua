@@ -58,11 +58,12 @@ function M.ask_for_prediction()
     -- get_lines is END-EXCLUSIVE, 0-based
     log:trace("current_line", current_line)
 
-    -- TODO include current cursor slot as before or after?
-    local current_before_cursor = current_line:sub(1, original_col + 1)
+    local current_before_thru_cursor = current_line:sub(1, original_col + 1) -- sub is END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
+    -- TODO revisit what it means for there to be characters after the cursor... are we just generating for this one line then?
+    --    mostly revieww how the completion is displayed
     local current_after_cursor = current_line:sub(original_col + 2)
     local context_before = vim.api.nvim_buf_get_lines(0, first_row, original_row, IGNORE_BOUNDARIES) -- 0based indexing
-    local context_before_text = table.concat(context_before, "\n") .. current_before_cursor
+    local context_before_text = table.concat(context_before, "\n") .. current_before_thru_cursor
 
     local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":t")
     if vim.o.commentstring ~= nil then
