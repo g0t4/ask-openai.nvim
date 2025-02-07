@@ -67,7 +67,7 @@ function M.ask_for_prediction()
     local current_after_cursor = current_line:sub(original_col + 2)
 
     local lines_before_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, first_row, original_row, IGNORE_BOUNDARIES) -- 0based, END-EXCLUSIVE
-    local document_prefix = table.concat(lines_before_current, "\n") .. current_before_thru_cursor
+    local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_before_thru_cursor
 
     local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
     if vim.o.commentstring ~= nil then
