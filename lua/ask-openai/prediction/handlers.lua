@@ -69,6 +69,11 @@ function M.ask_for_prediction()
     local lines_before_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, first_row, original_row, IGNORE_BOUNDARIES) -- 0based, END-EXCLUSIVE
     local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_before_thru_cursor
 
+    -- TODO edge cases for new line at end of current line? is that a concern
+    local lines_after_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row + 1, last_row, IGNORE_BOUNDARIES) -- 0based END-EXCLUSIVE
+    -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
+    local document_suffix = current_after_cursor .. "\n" .. table.concat(lines_after_current, "\n")
+
     local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
     if vim.o.commentstring ~= nil then
         local comment_header = string.format(vim.o.commentstring, "the following code is from a file named: '" .. filename .. "'") .. "\n\n"
@@ -77,11 +82,6 @@ function M.ask_for_prediction()
     else
         log:warn("vim.o.commentstring is nil, not including file name in comment header")
     end
-
-    -- TODO edge cases for new line at end of current line? is that a concern
-    local lines_after_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row + 1, last_row, IGNORE_BOUNDARIES) -- 0based END-EXCLUSIVE
-    -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
-    local document_suffix = current_after_cursor .. "\n" .. table.concat(lines_after_current, "\n")
 
     -- local recent_edits = changes.get_change_list_with_lines()
     local recent_edits = {}
