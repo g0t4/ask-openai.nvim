@@ -77,6 +77,7 @@ function M.ask_for_prediction()
         log:warn("vim.o.commentstring is nil, not including file name in comment header")
     end
 
+    -- TODO edge cases for new line at end of current line? is that a concern
     local lines_after_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row, last_row, IGNORE_BOUNDARIES) -- 0based END-EXCLUSIVE
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local document_suffix = current_after_cursor .. table.concat(lines_after_current, "\n")
