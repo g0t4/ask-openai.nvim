@@ -65,10 +65,12 @@ local function build_entry(level, ...)
     --   #arg => stops at first nil
     --   use select("#", ...) as it doesn't suffer from this issue'
     --   also, can do:    for k,v in ipairs(arg)
+    -- FYI using `arg` resulted in parameters from previous calls (w/ more params) to be logged in subsequent logs... IIAC b/c arg was a global somehow?
+    local args_strings = {} -- new set of args to write into, don't try to use special `arg` variable
     for i = 1, select("#", ...) do
         local value = select(i, ...)
         -- make sure everything is a string so it can be concatenated
-        arg[i] = tostring(value)
+        args_strings[i] = tostring(value)
     end
     local elapsed = (vim.loop.hrtime() - module_loaded_at) / 1e9 -- added for us/ns level timing of messages since os.time/date() doesn't go beyond sec (IIRC)
 
@@ -77,7 +79,7 @@ local function build_entry(level, ...)
         "[%.3f]sec [%s] %s\n",
         elapsed,
         log_level_string(level),
-        table.concat(arg, " ")
+        table.concat(args_strings, " ")
     )
 end
 
