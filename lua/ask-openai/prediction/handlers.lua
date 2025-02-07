@@ -41,20 +41,22 @@ function M.get_line_range(current_row, allow_lines, total_lines_in_doc)
     return first_row, last_row
 end
 
+local IGNORE_BOUNDARIES = false
+local CURRENT_BUFFER = 0
+
 function M.ask_for_prediction()
     M.cancel_current_prediction()
 
-    local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
+    local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(CURRENT_BUFFER)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
     local original_row = original_row_1based - 1 -- 0-based now
 
     local allow_lines = 80
-    local num_rows_total = vim.api.nvim_buf_line_count(0)
+    local num_rows_total = vim.api.nvim_buf_line_count(CURRENT_BUFFER)
     local first_row, last_row = M.get_line_range(original_row, allow_lines, num_rows_total)
     log:trace("first_row", first_row, "last_row", last_row, "original_row", original_row)
 
-    local IGNORE_BOUNDARIES = false
 
-    local current_line = vim.api.nvim_buf_get_lines(0, original_row, original_row + 1, IGNORE_BOUNDARIES)[1]
+    local current_line = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row, original_row + 1, IGNORE_BOUNDARIES)[1]
     -- get_lines is END-EXCLUSIVE, 0-based
     log:trace("current_line", current_line)
 
@@ -62,19 +64,20 @@ function M.ask_for_prediction()
     -- TODO revisit what it means for there to be characters after the cursor... are we just generating for this one line then?
     --    mostly revieww how the completion is displayed
     local current_after_cursor = current_line:sub(original_col + 2)
-    local context_before = vim.api.nvim_buf_get_lines(0, first_row, original_row, IGNORE_BOUNDARIES) -- 0based indexing
-    local context_before_text = table.concat(context_before, "\n") .. current_before_thru_cursor
 
-    local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":t")
+    local lines_before_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, first_row, original_row, IGNORE_BOUNDARIES) -- 0based, END-EXCLUSIVE
+    local document_prefix = table.concat(lines_before_current, "\n") .. current_before_thru_cursor
+
+    local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
     if vim.o.commentstring ~= nil then
         local comment_header = string.format(vim.o.commentstring, "the following code is from a file named: '" .. filename .. "'") .. "\n\n"
-        context_before_text = comment_header .. context_before_text
+        document_prefix = comment_header .. document_prefix
         log:trace("comment_header: ", comment_header)
     else
         log:warn("vim.o.commentstring is nil, not including file name in comment header")
     end
 
-    local context_after = vim.api.nvim_buf_get_lines(0, original_row, last_row, IGNORE_BOUNDARIES) -- 0based indexing
+    local context_after = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row, last_row, IGNORE_BOUNDARIES) -- 0based indexing
     -- TODO => confirm \n is the line separator:
     local context_after_text = current_after_cursor .. table.concat(context_after, "\n")
 
@@ -82,7 +85,7 @@ function M.ask_for_prediction()
     local recent_edits = {}
 
     -- PSM format:
-    local prefix = context_before_text
+    local prefix = document_prefix
     local suffix = context_after_text
     -- "middle" is what is generated
     local options = backend.build_request(prefix, suffix, recent_edits)
