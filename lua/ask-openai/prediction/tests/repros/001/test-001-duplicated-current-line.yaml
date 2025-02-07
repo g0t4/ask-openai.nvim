@@ -1,0 +1,13 @@
+services:
+  # postgres database container for reviewing usaspending database (first the subset database)
+  subset:
+    image: postgres:latest
+    ports:
+      - "54321:5432"
+    envi
+    volumes:
+      - .:/download
+      - subset:/data
+
+volumes:
+  subset:

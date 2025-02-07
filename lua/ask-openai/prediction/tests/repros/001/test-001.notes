@@ -1,0 +1,14 @@
+## describe example
+
+position cursor on line 7 (0-based => #6)
+   at column 8 (on the "i" in "envi")
+in normal mode:
+   type "A" for append at end of line
+let completion start and then review logs
+current line was duplicated
+  s/b in prefix before <|fim_suffix|>
+  was also prepended to suffix => right after <|fim_suffix|>
+lead to repeating most of the file as the suggestion
+  also has issue of not EOT'ing appropriately, that will be separate test cases
+
+
