@@ -79,6 +79,7 @@ function M.ask_for_prediction()
     if log.is_verbose_enabled() and entire_document ~= document_prefix .. document_suffix then
         -- trace mode, check if matches (otherwise may be incomplete or not in expected format)
         log:error("document mismatch: prefix+suffix != entire document")
+        log:trace("diff\n", vim.diff(entire_document, document_prefix .. document_suffix))
     end
 
 
