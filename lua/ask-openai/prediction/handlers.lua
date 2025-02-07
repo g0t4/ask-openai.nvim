@@ -77,16 +77,16 @@ function M.ask_for_prediction()
         log:warn("vim.o.commentstring is nil, not including file name in comment header")
     end
 
-    local context_after = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row, last_row, IGNORE_BOUNDARIES) -- 0based indexing
-    -- TODO => confirm \n is the line separator:
-    local context_after_text = current_after_cursor .. table.concat(context_after, "\n")
+    local lines_after_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row, last_row, IGNORE_BOUNDARIES) -- 0based END-EXCLUSIVE
+    -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
+    local document_suffix = current_after_cursor .. table.concat(lines_after_current, "\n")
 
     -- local recent_edits = changes.get_change_list_with_lines()
     local recent_edits = {}
 
     -- PSM format:
     local prefix = document_prefix
-    local suffix = context_after_text
+    local suffix = document_suffix
     -- "middle" is what is generated
     local options = backend.build_request(prefix, suffix, recent_edits)
 
