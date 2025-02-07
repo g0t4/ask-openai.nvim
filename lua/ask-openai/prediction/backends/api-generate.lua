@@ -44,6 +44,11 @@ local function body_for(prefix, suffix, recent_edits)
     --   should I be trying non-FIM too? (like repo level completions?)
 
     -- PSM inference format:
+    log:trace("prefix", "'" .. prefix .. "'")
+    log:trace("suffix", "'" .. suffix .. "'")
+
+
+
     -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
     local raw_prompt = sentinel_tokens.fim_prefix .. prefix .. sentinel_tokens.fim_suffix .. suffix .. sentinel_tokens.fim_middle
 
