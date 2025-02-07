@@ -74,6 +74,15 @@ function M.ask_for_prediction()
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local document_suffix = current_after_cursor .. "\n" .. table.concat(lines_after_current, "\n")
 
+    -- if in trace mode... combine document prefix and suffix and check if matches entire document:
+    local entire_document = table.concat(vim.api.nvim_buf_get_lines(CURRENT_BUFFER, first_row, last_row, IGNORE_BOUNDARIES), "\n")
+    if log.is_verbose_enabled() and entire_document ~= document_prefix .. document_suffix then
+        -- trace mode, check if matches (otherwise may be incomplete or not in expected format)
+        log:error("document mismatch: prefix+suffix != entire document")
+    end
+
+
+
     local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
     if vim.o.commentstring ~= nil then
         local comment_header = string.format(vim.o.commentstring, "the following code is from a file named: '" .. filename .. "'") .. "\n\n"

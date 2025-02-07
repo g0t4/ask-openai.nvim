@@ -104,6 +104,10 @@ end
 
 local verbose = require("ask-openai.config").get_options().verbose
 
+function Logger.is_verbose_enabled()
+    return verbose or false
+end
+
 function Logger:log(level, ...)
     if not verbose and level < 2 then
         return
