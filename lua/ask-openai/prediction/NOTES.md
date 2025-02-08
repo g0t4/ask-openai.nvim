@@ -105,6 +105,10 @@
 - pass file name as a file separator token?
     - create some test code examples that are ambiguous without file name (similar languages) and see how it does w/ and w/o the name
 
+### Post processing
+
+- If repeating start of suffix is inevitable, can I add some sort of detection of that repeat and exclude the duplicated lines that overlap at the end of the suggestion? Only do this if you can't find a different way to mititage the occurences b/c this would be a bit of work to show/hide the suggestion as it arrives (chunk by chunk)  could cause spasming display if there is temporarily some overlap and then another chunk breaks the overlap and maybe later again adds more... hard to say this is the best way? Maybe once full completion arrives you can do this check and then hide the duplicate part, but let it all stream back as-is?
+
 ### Prompting?
 
 - Things to guide it:
