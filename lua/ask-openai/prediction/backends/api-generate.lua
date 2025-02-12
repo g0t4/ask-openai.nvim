@@ -51,6 +51,12 @@ local function body_for(prefix, suffix, recent_edits)
             fim_suffix = " <SUF>",
             fim_middle = " <MID>",
         }
+
+        -- codellama uses <EOT> that seems to not be set as param in modelfile (at least for FIM?)
+        --   without this change you will see <EOT> in code at end of completions
+        -- ollama show codellama:7b-code-q8_0 --parameters # => no stop param
+        body.options.stop = { "<EOT>" }
+
         -- FYI also ollama warns about:
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
     elseif not string.find(body.model, "qwen2.5-coder") then
@@ -105,13 +111,6 @@ local function body_for(prefix, suffix, recent_edits)
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
     body.prompt = raw_prompt
-    -- if codellama then set stop to include <EOT>
-    if string.find(body.model, "codellama") then
-        -- codellama uses <EOT> that seems to not be set as param in modelfile (at least for FIM?)
-        --   without this change you will see <EOT> in code at end of completions
-        -- ollama show codellama:7b-code-q8_0 --parameters # => no stop param
-        body.options.stop = { "<EOT>" }
-    end
 
 
 
