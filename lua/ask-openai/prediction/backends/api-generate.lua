@@ -29,15 +29,10 @@ local function body_for(prefix, suffix, recent_edits)
     }
 
     local sentinel_tokens = {
-        -- codellama template:
-        --    {{- if .Suffix }}<PRE> {{ .Prompt }} <SUF>{{ .Suffix }} <MID>
-        fim_prefix = "<PRE> ",
-        fim_suffix = " <SUF>",
-        fim_middle = " <MID>",
 
-        -- fim_prefix = "<|fim_prefix|>",
-        -- fim_middle = "<|fim_middle|>",
-        -- fim_suffix = "<|fim_suffix|>",
+        fim_prefix = "<|fim_prefix|>",
+        fim_middle = "<|fim_middle|>",
+        fim_suffix = "<|fim_suffix|>",
         -- fim_pad = "<|fim_pad|>",
         repo_name = "<|repo_name|>",
         file_sep = "<|file_sep|>",
@@ -47,6 +42,20 @@ local function body_for(prefix, suffix, recent_edits)
         -- todo others?
         -- endoftext = "<|endoftext|>"
     }
+
+
+    if string.find(body.model, "codellama") then
+        -- codellama template:
+        --    {{- if .Suffix }}<PRE> {{ .Prompt }} <SUF>{{ .Suffix }} <MID>
+        sentinel_tokens = {
+            fim_prefix = "<PRE> ",
+            fim_suffix = " <SUF>",
+            fim_middle = " <MID>",
+        }
+        -- FYI also ollama warns about:
+        --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
+    end
+
 
     -- PRN TEST w/o deepseek-r1 using api/generate with FIM manual prompt
     --   IIRC template is wrong but it does support FIM?
