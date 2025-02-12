@@ -88,14 +88,22 @@ local function body_for(prefix, suffix, recent_edits)
             -- options only for /api/generate
             --   /v1/completions ignores them even though it uses same GenerateHandler!
 
-            -- codellama has <EOT> that seems to not be set as param in modelfile (at least for FIM?)
-            -- ollama show codellama:7b-code-q8_0 --parameters # => no stop param
-            stop = { "<EOT>" },
 
             -- TODO can I pass OLLAMA_NUM_PARALLEL=1 via request?
             num_ctx = 8192,
         }
     }
+
+    -- if codellama then set stop to include <EOT>
+    if string.find(body.model, "codellama") then
+        -- codellama uses <EOT> that seems to not be set as param in modelfile (at least for FIM?)
+        --   without this change you will see <EOT> in code at end of completions
+        -- ollama show codellama:7b-code-q8_0 --parameters # => no stop param
+        body.options.stop = { "<EOT>" }
+    end
+
+
+
 
     local body_json = vim.json.encode(body)
 
