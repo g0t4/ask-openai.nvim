@@ -29,7 +29,7 @@ local function body_for(prefix, suffix, recent_edits)
     }
 
     local sentinel_tokens = {
-
+        -- qwen2.5-coder:
         fim_prefix = "<|fim_prefix|>",
         fim_middle = "<|fim_middle|>",
         fim_suffix = "<|fim_suffix|>",
@@ -38,7 +38,6 @@ local function body_for(prefix, suffix, recent_edits)
         file_sep = "<|file_sep|>",
         im_start = "<|im_start|>",
         im_end = "<|im_end|>",
-
         -- todo others?
         -- endoftext = "<|endoftext|>"
     }
