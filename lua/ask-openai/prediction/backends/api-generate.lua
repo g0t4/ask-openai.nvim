@@ -6,6 +6,28 @@ local log = require("ask-openai.prediction.logger").predictions()
 --       local backend = require("../backends/x")
 
 local function body_for(prefix, suffix, recent_edits)
+    local body = {
+
+        model = "codellama:7b-code-q8_0",
+
+        raw = true, -- bypass templates (only /api/generate, not /v1/completions)
+
+        stream = true,
+        num_predict = 200, -- aka max_tokens
+
+        -- TODO temperature, top_p,
+
+        options = {
+            -- https://github.com/ollama/ollama/blob/main/docs/api.md#generate-request-with-options
+            -- options only for /api/generate
+            --   /v1/completions ignores them even though it uses same GenerateHandler!
+
+
+            -- TODO can I pass OLLAMA_NUM_PARALLEL=1 via request?
+            num_ctx = 8192,
+        }
+    }
+
     local sentinel_tokens = {
         -- codellama template:
         --    {{- if .Suffix }}<PRE> {{ .Prompt }} <SUF>{{ .Suffix }} <MID>
@@ -70,30 +92,7 @@ local function body_for(prefix, suffix, recent_edits)
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    local body = {
-
-        model = "codellama:7b-code-q8_0",
-
-
-        prompt = raw_prompt,
-        raw = true, -- bypass templates (only /api/generate, not /v1/completions)
-
-        stream = true,
-        num_predict = 200, -- aka max_tokens
-
-        -- TODO temperature, top_p,
-
-        options = {
-            -- https://github.com/ollama/ollama/blob/main/docs/api.md#generate-request-with-options
-            -- options only for /api/generate
-            --   /v1/completions ignores them even though it uses same GenerateHandler!
-
-
-            -- TODO can I pass OLLAMA_NUM_PARALLEL=1 via request?
-            num_ctx = 8192,
-        }
-    }
-
+    body.prompt = raw_prompt
     -- if codellama then set stop to include <EOT>
     if string.find(body.model, "codellama") then
         -- codellama uses <EOT> that seems to not be set as param in modelfile (at least for FIM?)
