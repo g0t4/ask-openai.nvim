@@ -54,7 +54,7 @@ local function body_for(prefix, suffix, recent_edits)
         }
         -- FYI also ollama warns about:
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
-    else if not string.find(body.model, "qwen2.5-coder") then
+    elseif not string.find(body.model, "qwen2.5-coder") then
         -- warn that FIM tokens need to be set
         log:error("PLEASE REVIEW FIM SENTINEL TOKENS FOR THE NEW MODEL! right now you are using sentinel_tokens for qwen2.5-coder")
         return
