@@ -7,10 +7,16 @@ local log = require("ask-openai.prediction.logger").predictions()
 
 local function body_for(prefix, suffix, recent_edits)
     local sentinel_tokens = {
-        fim_prefix = "<|fim_prefix|>",
-        fim_middle = "<|fim_middle|>",
-        fim_suffix = "<|fim_suffix|>",
-        fim_pad = "<|fim_pad|>",
+        -- codellama template:
+        --    {{- if .Suffix }}<PRE> {{ .Prompt }} <SUF>{{ .Suffix }} <MID>
+        fim_prefix = "<PRE> ",
+        fim_suffix = " <SUF>",
+        fim_middle = " <MID>",
+
+        -- fim_prefix = "<|fim_prefix|>",
+        -- fim_middle = "<|fim_middle|>",
+        -- fim_suffix = "<|fim_suffix|>",
+        -- fim_pad = "<|fim_pad|>",
         repo_name = "<|repo_name|>",
         file_sep = "<|file_sep|>",
         im_start = "<|im_start|>",
@@ -66,7 +72,8 @@ local function body_for(prefix, suffix, recent_edits)
 
     local body = {
 
-        model = "qwen2.5-coder:7b-instruct-q8_0",
+        model = "codellama:7b-code-q8_0",
+
 
         prompt = raw_prompt,
         raw = true, -- bypass templates (only /api/generate, not /v1/completions)
@@ -80,6 +87,10 @@ local function body_for(prefix, suffix, recent_edits)
             -- https://github.com/ollama/ollama/blob/main/docs/api.md#generate-request-with-options
             -- options only for /api/generate
             --   /v1/completions ignores them even though it uses same GenerateHandler!
+
+            -- codellama has <EOT> that seems to not be set as param in modelfile (at least for FIM?)
+            -- ollama show codellama:7b-code-q8_0 --parameters # => no stop param
+            stop = { "<EOT>" },
 
             -- TODO can I pass OLLAMA_NUM_PARALLEL=1 via request?
             num_ctx = 8192,
