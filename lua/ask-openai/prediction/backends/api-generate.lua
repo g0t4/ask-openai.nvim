@@ -5,7 +5,7 @@ local log = require("ask-openai.prediction.logger").predictions()
 --    then use a backend variable in handlers.lua... w/ completion regardless of backend
 --       local backend = require("../backends/x")
 
-local function body_for(prefix, suffix, recent_edits)
+local function body_for(prefix, suffix, _recent_edits)
     local body = {
 
         model = "codellama:7b-code-q8_0",

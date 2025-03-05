@@ -1,10 +1,18 @@
 {
-  "diagnostics.globals": ["vim", "describe", "it", "assert"],
+    "diagnostics": {
+        "globals": [ "vim", "describe", "it", "assert" ],
+        "disable": [
+            "lowercase-global",
+            "need-check-nil",
+        ],
+        "unusedLocalExclude": [ "_*" ],
+    },
 
-  "workspace.library": [
-    "/opt/homebrew/Cellar/neovim/0.10.3/share/nvim/runtime/lua",
-    "/opt/homebrew/Cellar/neovim/0.10.3/share/nvim/runtime/lua/vim/lsp",
-    "~/.local/share/nvim/lazy/rxlua"
-    // FYI not using luarocks for dependencies, not currently, instead use package manager to install the respective repo into RTP
-  ]
+
+    "workspace.library": [
+        "/opt/homebrew/Cellar/neovim/0.10.3/share/nvim/runtime/lua",
+        "/opt/homebrew/Cellar/neovim/0.10.3/share/nvim/runtime/lua/vim/lsp",
+        "~/.local/share/nvim/lazy/rxlua"
+        // FYI not using luarocks for dependencies, not currently, instead use package manager to install the respective repo into RTP
+    ]
 }
