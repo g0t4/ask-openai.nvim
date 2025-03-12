@@ -7,23 +7,32 @@ _G.PLAIN_FIND = true
 
 local function body_for(prefix, suffix, _recent_edits)
     local body = {
+        -- vllm /v1/completions:
+        -- https://docs.vllm.ai/en/stable/serving/openai_compatible_server.html#completions-api
+        --
+        -- vllm FIM discussions:
+        --   https://github.com/vllm-project/vllm/pull/11713
 
-        -- FYI set of possible models for demoing impact of fine tune
-        model = "qwen2.5-coder:7b-base-q8_0", -- shorter responses, more "EOF" focused
-        -- model = "qwen2.5-coder:7b-instruct-q8_0", -- longer, long winded, often seemingly ignores EOF
-        -- model = "codellama:7b-code-q8_0", -- shorter too
-        -- model = "codellama:7b-instruct-q8_0", -- longer too
-        -- model = "codellama:7b-python-q8_0", -- doesn't do well with FIM (spits out FIM tokens text as if not recognized)... also not sure it supports FIM based on reading docs only code/instruct are mentioned for FIM support)
-        -- model = "llama3.1:8b-text-q8_0", -- weird, generated some "code"/text in this file that wasn't terrible!... verbose
-        -- https://github.com/meta-llama/codellama/blob/main/llama/generation.py#L496
-        -- model = "llama3.1:8b-instruct-q8_0", --
-
+        -- prefer base models for codegen, more "EOF" focused/less verbose
+        -- list of qwen2.5-coder models:
+        --   https://huggingface.co/collections/Qwen/qwen25-coder-66eaa22e6f99801bf65b0c2f
+        --
+        model = "Qwen/Qwen2.5-Coder-7B",
+        -- model = "Qwen/Qwen2.5-Coder-7B-Instruct", -- more verbose completions b/c this is chat finetuned model
+        -- model = "Qwen/Qwen2.5-Coder-3B",
+        -- model = "Qwen/Qwen2.5-Coder-1.5B",
+        -- model = "Qwen/Qwen2.5-Coder-0.5B",
+        --
+        -- quantized variants:
+        -- model = "Qwen/Qwen2.5-Coder-32B-Instruct-AWQ", -- ~20GB (4GBx5)
+        -- model = "Qwen/Qwen2.5-Coder-32B-Instruct-GPTQ-Int8", -- won't fit for me
+        -- model = "Qwen/Qwen2.5-Coder-32B-Instruct-GPTQ-Int4", -- SHOULD WORK!
 
 
         -- AFAICT, vllm doesn't support prompt(prefix)/suffix params, instead must be fully raw always
         --   their docs explicitly state that they don't support "suffix"
         --   so I'd have to build prompt just like I am doing w/ ollama's /api/generate
-        raw = true, -- bypass templates (only /api/generate, not /v1/completions)
+        -- raw = true, -- bypass templates (only /api/generate, not /v1/completions)
 
         stream = true,
         num_predict = 200, -- aka max_tokens
@@ -31,13 +40,9 @@ local function body_for(prefix, suffix, _recent_edits)
         -- TODO temperature, top_p,
 
         options = {
-            -- https://github.com/ollama/ollama/blob/main/docs/api.md#generate-request-with-options
-            -- options only for /api/generate
-            --   /v1/completions ignores them even though it uses same GenerateHandler!
-
-
-            -- TODO can I pass OLLAMA_NUM_PARALLEL=1 via request?
-            num_ctx = 8192,
+            -- stop_token_ids: Optional[list[int]] = Field(default_factory=list)  -- vllm
+            -- any params for parallelization like I had w/ ollama/
+            --   num_ctx = 8192, -- ollama
         }
     }
 
