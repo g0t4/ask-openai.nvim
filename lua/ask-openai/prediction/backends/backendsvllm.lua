@@ -148,7 +148,7 @@ function M.build_request(prefix, suffix, recent_edits)
             "-fsSL",
             "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
-            "http://ollama:11434/api/generate", -- TODO pass in api base_url (via config)
+            "http://ollama:8000/v1/completions", -- TODO pass in api base_url (via config)
             "-H", "Content-Type: application/json",
             "-d", body_for(prefix, suffix, recent_edits)
         },
@@ -159,6 +159,8 @@ end
 function M.process_sse(data)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
+
+    -- TODO probably need to bring over legacy-completions.lua AS it might be closer to openai compat responses from vllm...
 
     -- FYI use nil to indicate nothing in the SSE... vs empty line which is a valid thingy right?
     local chunk = nil -- combine all chunks into one string and check for done
