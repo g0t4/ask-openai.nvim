@@ -183,16 +183,48 @@ function M.process_sse(data)
         --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.1915236Z","response":"\n","done":false}
         --  done example:
         --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.2800621Z","response":"","done":true,"done_reason":"stop","total_duration":131193100,"load_duration":16550700,"prompt_eval_count":19,"prompt_eval_duration":5000000,"eval_count":12,"eval_duration":106000000}
-        if success and parsed and parsed.response then
-            if parsed.done then
-                local done_reason = parsed.done_reason
+
+        -- *** vllm /v1/completions responses:
+        --  middle completion:
+        --   {"id":"cmpl-eec6b2c11daf423282bbc9b64acc8144","object":"text_completion","created":1741824039,"model":"Qwen/Qwen2.5-Coder-3B","choices":[{"index":0,"text":"ob","logprobs":null,"finish_reason":null,"stop_reason":null}],"usage":null}
+        --
+        --  final completion:
+        --   {"id":"cmpl-06be557c45c24e458ea2e36d436faf60","object":"text_completion","created":1741823318,"model":"Qwen/Qwen2.5-Coder-3B","choices":[{"index":0,"text":" and","logprobs":null,"finish_reason":"length","stop_reason":null}],"usage":null}
+        --    pretty print with vim:
+        --    :Dump(vim.json.decode('{"id":"cmpl-06be557c45c24e458ea2e36d436faf60","object":"text_completion","created":1741823318,"model":"Qwen/Qwen2.5-Coder-3B","choices":[{"index":0,"text":" and","logprobs":null,"finish_reason":"length","stop_reason":null}],"usage":null}')
+        -- {
+        --   choices = { {
+        --       finish_reason = "length",
+        --       index = 0,
+        --       logprobs = vim.NIL,
+        --       stop_reason = vim.NIL,
+        --       text = " and"
+        --     } },
+        --   created = 1741823318,
+        --   id = "cmpl-06be557c45c24e458ea2e36d436faf60",
+        --   model = "Qwen/Qwen2.5-Coder-3B",
+        --   object = "text_completion",
+        --   usage = vim.NIL
+        -- }
+
+        -- log:info("success:", success)
+        -- log:info("choices:", vim.inspect(parsed))
+        -- log:info("choices:", vim.inspect(parsed.choices))
+        if success and parsed and parsed.choices and parsed.choices[1] then
+            first_choice = parsed.choices[1]
+            finish_reason = first_choice.finish_reason
+            if finish_reason ~= nil then
+                log:info("finsh_reason: ", finish_reason)
                 done = true
-                if done_reason ~= "stop" then
-                    log:warn("WARN - unexpected /api/generate done_reason: ", done_reason, " do you need to handle this too?")
-                    -- ok for now to continue too
+                if finish_reason ~= "stop" and finish_reason ~= "length" then
+                    log:warn("WARN - unexpected finish_reason: ", finish_reason, " do you need to handle this too?")
                 end
             end
-            chunk = (chunk or "") .. parsed.response
+            if first_choice.text == nil then
+                log:warn("WARN - unexpected, no choice in completion, do you need to add special logic to handle this?")
+            else
+                chunk = (chunk or "") .. first_choice.text
+            end
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
