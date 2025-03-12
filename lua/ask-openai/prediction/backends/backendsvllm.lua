@@ -20,6 +20,9 @@ local function body_for(prefix, suffix, _recent_edits)
 
 
 
+        -- AFAICT, vllm doesn't support prompt(prefix)/suffix params, instead must be fully raw always
+        --   their docs explicitly state that they don't support "suffix"
+        --   so I'd have to build prompt just like I am doing w/ ollama's /api/generate
         raw = true, -- bypass templates (only /api/generate, not /v1/completions)
 
         stream = true,
