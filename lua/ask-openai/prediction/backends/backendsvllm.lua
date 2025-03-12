@@ -17,9 +17,9 @@ local function body_for(prefix, suffix, _recent_edits)
         -- list of qwen2.5-coder models:
         --   https://huggingface.co/collections/Qwen/qwen25-coder-66eaa22e6f99801bf65b0c2f
         --
-        model = "Qwen/Qwen2.5-Coder-7B",
+        -- model = "Qwen/Qwen2.5-Coder-7B",
         -- model = "Qwen/Qwen2.5-Coder-7B-Instruct", -- more verbose completions b/c this is chat finetuned model
-        -- model = "Qwen/Qwen2.5-Coder-3B",
+        model = "Qwen/Qwen2.5-Coder-3B",
         -- model = "Qwen/Qwen2.5-Coder-1.5B",
         -- model = "Qwen/Qwen2.5-Coder-0.5B",
         --
@@ -77,7 +77,7 @@ local function body_for(prefix, suffix, _recent_edits)
 
         -- FYI also ollama warns about:
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
-    elseif not string.find(body.model, "qwen2.5-coder", nil, _G.PLAIN_FIND) then
+    elseif not string.find(body.model, "Qwen2.5-Coder", nil, _G.PLAIN_FIND) then
         -- warn that FIM tokens need to be set
         log:error("PLEASE REVIEW FIM SENTINEL TOKENS FOR THE NEW MODEL! right now you are using sentinel_tokens for qwen2.5-coder")
         return
