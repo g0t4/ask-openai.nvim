@@ -215,7 +215,7 @@ function M.process_sse(data)
         if success and parsed and parsed.choices and parsed.choices[1] then
             first_choice = parsed.choices[1]
             finish_reason = first_choice.finish_reason
-            if finish_reason ~= nil then
+            if finish_reason ~= nil and finish_reason ~= vim.NIL then
                 log:info("finsh_reason: ", finish_reason)
                 done = true
                 if finish_reason ~= "stop" and finish_reason ~= "length" then
