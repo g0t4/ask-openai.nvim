@@ -19,7 +19,7 @@ local function body_for(prefix, suffix, _recent_edits)
         --
         -- model = "Qwen/Qwen2.5-Coder-7B",
         -- model = "Qwen/Qwen2.5-Coder-7B-Instruct", -- more verbose completions b/c this is chat finetuned model
-        model = "Qwen/Qwen2.5-Coder-3B",
+        model = "Qwen/Qwen2.5-Coder-7B",
         -- model = "Qwen/Qwen2.5-Coder-1.5B",
         -- model = "Qwen/Qwen2.5-Coder-0.5B",
         --
@@ -39,11 +39,13 @@ local function body_for(prefix, suffix, _recent_edits)
 
         -- TODO temperature, top_p,
 
-        options = {
-            -- stop_token_ids: Optional[list[int]] = Field(default_factory=list)  -- vllm
-            -- any params for parallelization like I had w/ ollama/
-            --   num_ctx = 8192, -- ollama
-        }
+        max_tokens = 200,
+
+        -- options = {
+        --     -- stop_token_ids: Optional[list[int]] = Field(default_factory=list)  -- vllm
+        --     -- any params for parallelization like I had w/ ollama/
+        --     --   num_ctx = 8192, -- ollama
+        -- }
     }
 
     local sentinel_tokens = {
