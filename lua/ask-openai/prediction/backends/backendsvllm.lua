@@ -34,12 +34,12 @@ local function body_for(prefix, suffix, _recent_edits)
         --   so I'd have to build prompt just like I am doing w/ ollama's /api/generate
         -- raw = true, -- bypass templates (only /api/generate, not /v1/completions)
 
-        stream = true,
-        num_predict = 200, -- aka max_tokens
 
-        -- TODO temperature, top_p,
+        stream = true,
 
         max_tokens = 200,
+
+        -- TODO temperature, top_p,
 
         -- options = {
         --     -- stop_token_ids: Optional[list[int]] = Field(default_factory=list)  -- vllm
