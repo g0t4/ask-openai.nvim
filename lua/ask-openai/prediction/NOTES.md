@@ -5,6 +5,7 @@
 
 ## TODOs
 
+- Provide symbols from coc completions to model as inputs too?
 - WIP (avoid truncating prompt)
     - TODO => if I have to build custom Modelfiles per model... I'd rather just go back to /api/generate and not deal with the custom models nonsense
         - TODO try that and see if that truly allows me to customize all parameters I care about
