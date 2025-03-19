@@ -85,6 +85,9 @@ local function body_for(prefix, suffix, _recent_edits)
         return
     end
 
+    -- for now only using body for above logic to check model params
+    body.model = nil -- for now don't pass it so I can swap serve on backend and not need to update here
+
 
     -- PRN TEST w/o deepseek-r1 using api/generate with FIM manual prompt
     --   IIRC template is wrong but it does support FIM?
