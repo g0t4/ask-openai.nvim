@@ -9,8 +9,8 @@ local function body_for(prefix, suffix, _recent_edits)
     local body = {
 
         -- FYI set of possible models for demoing impact of fine tune
-        model = "qwen2.5-coder:7b-base-q8_0", -- shorter responses, more "EOF" focused
-        -- model = "qwen2.5-coder:7b-instruct-q8_0", -- longer, long winded, often seemingly ignores EOF
+        -- model = "qwen2.5-coder:7b-base-q8_0", -- shorter responses, more "EOF" focused
+        model = "qwen2.5-coder:7b-instruct-q8_0", -- longer, long winded, often seemingly ignores EOF
         -- model = "codellama:7b-code-q8_0", -- shorter too
         -- model = "codellama:7b-instruct-q8_0", -- longer too
         -- model = "codellama:7b-python-q8_0", -- doesn't do well with FIM (spits out FIM tokens text as if not recognized)... also not sure it supports FIM based on reading docs only code/instruct are mentioned for FIM support)
