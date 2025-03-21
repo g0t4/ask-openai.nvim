@@ -4,7 +4,7 @@ local Prediction = require("ask-openai.prediction.prediction")
 local changes = require("ask-openai.prediction.edits.changes") -- manually imported to be in scope for testing is all, nuke this later
 
 -- local backend = require("ask-openai.prediction.backends.legacy-completions")
-local backend = require("ask-openai.prediction.backends.api-generate")
+local backend = require("ask-openai.prediction.backends.ollama")
 -- local backend = require("ask-openai.prediction.backends.backendsvllm")
 
 -- FYI would need current prediction PER buffer in the future if want multiple buffers to have predictions at same time (not sure I want this feature)
