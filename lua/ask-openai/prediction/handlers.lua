@@ -78,7 +78,7 @@ function M.ask_for_prediction()
     if log.is_verbose_enabled() then
         -- if in trace mode... combine document prefix and suffix and check if matches entire document:
         local entire_document = table.concat(vim.api.nvim_buf_get_lines(CURRENT_BUFFER, first_row, last_row, IGNORE_BOUNDARIES), "\n")
-        local combined = document_prefix .. "\n" .. document_suffix
+        local combined = document_prefix .. document_suffix
         if entire_document ~= combined then
             -- trace mode, check if matches (otherwise may be incomplete or not in expected format)
             log:error("document mismatch: prefix+suffix != entire document")
