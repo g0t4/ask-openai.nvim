@@ -10,7 +10,7 @@ local function get_visual_selection()
     lines[#lines] = string.sub(lines[#lines], 1, end_col)
     lines[1] = string.sub(lines[1], start_col)
 
-    return vim.fn.join(lines, "\n")
+    return vim.fn.join(lines, "\n"), start_line, start_col, end_line, end_col
 end
 
 
@@ -63,7 +63,11 @@ local function ask_and_send_to_ollama(opts)
     local user_prompt = opts.args
     local file_name = vim.fn.expand("%:t")
 
-    local completion = M.send_to_ollama(user_prompt, code, file_name)
+    local completion, start_line, start_col, end_line, end_col = M.send_to_ollama(user_prompt, code, file_name)
+    if not completion then
+        return
+    end
+
     vim.fn.setreg("a", completion) -- backup in reg a
 
     -- PRN how about replace text directly?
