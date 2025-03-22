@@ -19,7 +19,8 @@ local function ask_and_send_to_ollama()
   local file_type = vim.bo.filetype
 
   -- Create a system prompt that tells the LLM it is not Markdown and includes the file type
-  local system_prompt = "You are an AI assistant. Do not assume the input is in Markdown format. The current file type is: " .. file_type .. "."
+  local system_prompt = "You are a coding ninja... perform whatever magic you can with the provided code. The file type is "
+    .. file_type .. ". Do exactly as requested. Do not explain anything unless the user asks for that"
 
   local body = {
     messages = {
