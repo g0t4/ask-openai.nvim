@@ -57,19 +57,7 @@ function M.send_to_ollama(user_prompt, code, file_name)
     end
 end
 
-local function ask_and_send_to_ollama(opts)
-    local code = get_visual_selection()
-    if not code then
-        print("No visual selection found.")
-        return
-    end
-
-    local user_prompt = opts.args
-    local file_name = vim.fn.expand("%:t")
-
-    local response = M.send_to_ollama(user_prompt, code, file_name)
-    vim.fn.setreg("a", response)
-
+local function ensure_new_lines_around(code, response)
     -- ensure preserve blank line at start of selection (if present)
     local selected_lines = vim.split(code, "\n")
     local response_lines = vim.split(response, "\n")
@@ -97,6 +85,24 @@ local function ask_and_send_to_ollama(opts)
         -- yup, add it verbatim so whitespace can still be there in that last line
         response = response .. "\n" .. selected_last_line .. "\n"
     end
+
+    return response
+end
+
+local function ask_and_send_to_ollama(opts)
+    local code = get_visual_selection()
+    if not code then
+        print("No visual selection found.")
+        return
+    end
+
+    local user_prompt = opts.args
+    local file_name = vim.fn.expand("%:t")
+
+    local response = M.send_to_ollama(user_prompt, code, file_name)
+    vim.fn.setreg("a", response) -- set before to troubleshot if later fails
+
+    response = ensure_new_lines_around(code, response)
     vim.fn.setreg("a", response)
 
     -- Replace the selection with the new text
