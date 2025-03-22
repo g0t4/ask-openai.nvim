@@ -16,23 +16,23 @@ local function ask_and_send_to_ollama()
   local user_prompt = vim.fn.input("Prompt: ")
 
   local data = {
-    prompt = user_prompt .. "\n\nCode:\n" .. code,
+    messages = { { role = "user", content = user_prompt .. "\n\nCode:\n" .. code } },
     model = "qwen2.5-coder:7b-instruct-q8_0",
     stream = false,
-    -- TODO STREAM THE RESPONSE!?
     temperature = 0.2
   }
 
   local json = vim.fn.json_encode(data)
   local response = vim.fn.system({
-    "curl", "-s", "-X", "POST", "http://ollama:11434/api/generate",
+    "curl", "-s", "-X", "POST", "http://ollama:11434/v1/chat/completions",
     "-H", "Content-Type: application/json",
     "-d", json
   })
 
   local parsed = vim.fn.json_decode(response)
-  if parsed and parsed.response then
-    vim.fn.setreg("+", parsed.response)
+  if parsed and parsed.choices and #parsed.choices > 0 then
+    local completion = parsed.choices[1].message.content
+    vim.fn.setreg("+", completion)
     print("Completion copied to clipboard!")
   else
     print("Failed to get response from Ollama.")
