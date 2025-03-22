@@ -58,6 +58,11 @@ function M.send_to_ollama(user_prompt, code, file_name)
 end
 
 local function ensure_new_lines_around(code, response)
+    -- this is a curtesy b/c its easy to select paragraphs with {} but it includes line before and after
+    --    I can also pay attention to my selections
+
+    -- TODO write tests of this going forward, don't manually test further
+
     -- ensure preserve blank line at start of selection (if present)
     local selected_lines = vim.split(code, "\n")
     local response_lines = vim.split(response, "\n")
