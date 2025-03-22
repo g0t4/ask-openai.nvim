@@ -52,8 +52,7 @@ function M.send_to_ollama(user_prompt, code, file_name)
         -- print(completion)
         return completion
     else
-        print("Failed to get completion from Ollama API.")
-        print(response)
+        error("Failed to get completion from Ollama API: " .. tostring(response))
     end
 end
 
@@ -71,7 +70,7 @@ local function ensure_new_lines_around(code, response)
     if selected_first_line:match("^%s*$")
         and not response_first_line:match("^%s*$")
     then
-        print("Adding first line of code to completion")
+        -- print("Adding first line of code to completion")
         -- yup, add it verbatim so whitespace can still be there in that first line
         response = selected_first_line .. "\n" .. response
         -- resplit
@@ -84,9 +83,9 @@ local function ensure_new_lines_around(code, response)
     if selected_last_line:match("^%s*$")
         and not response_last_line:match("^%s*$")
     then
-        print("Adding trailing new line to completion")
-        print("selected_last_line: '" .. selected_last_line .. "'")
-        print("response_last_line: '" .. response_last_line .. "'")
+        -- print("Adding trailing new line to completion")
+        -- print("selected_last_line: '" .. selected_last_line .. "'")
+        -- print("response_last_line: '" .. response_last_line .. "'")
         -- yup, add it verbatim so whitespace can still be there in that last line
         response = response .. "\n" .. selected_last_line .. "\n"
     end
@@ -99,7 +98,7 @@ end
 local function ask_and_send_to_ollama(opts)
     local code = get_visual_selection()
     if not code then
-        print("No visual selection found.")
+        error("No visual selection found.")
         return
     end
 
