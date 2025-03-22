@@ -67,19 +67,29 @@ local function ask_and_send_to_ollama(opts)
         return
     end
 
-    vim.fn.setreg("a", completion) -- backup in reg a
+    -- Backup in register a
+    vim.fn.setreg("a", completion)
 
-    -- check for new line before start_line, and after end_line... just detect that here
+    -- Check for newline before and after the selection
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    local has_newline_before = start_line > 1 and lines[start_line - 2]:match("^%s*$")
+    local has_newline_after = end_line < #lines and lines[end_line]:match("^%s*$")
 
-    -- PRN how about replace text directly?
+    -- Replace the selection with the new text
     vim.cmd('normal! gv"ap')
 
-    -- ensure new line before/after (if there was) is still present, else add it
+    -- Re-check lines after paste
+    local new_lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 
+    -- Ensure newline before
+    if has_newline_before and (start_line == 1 or not new_lines[start_line - 2]:match("^%s*$")) then
+        vim.api.nvim_buf_set_lines(0, start_line - 1, start_line - 1, false, {""})
+    end
 
-    -- PRN fix new line issues, how can I gauge that sometimes it winds up removing new lines before/after?
-    --    might be a thing to fix by looking at new lines originally
-    --    and if there were new before/after ensure there's at least one new before and/or after AFTER replaced?
+    -- Ensure newline after
+    if has_newline_after and (end_line >= #new_lines or not new_lines[end_line]:match("^%s*$")) then
+        vim.api.nvim_buf_set_lines(0, end_line + 1, end_line + 1, false, {""})
+    end
 end
 
 function M.setup()
