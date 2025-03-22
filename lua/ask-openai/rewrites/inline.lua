@@ -13,7 +13,7 @@ end
 
 local function ask_and_send_to_ollama()
   local code = get_visual_selection()
-  local user_prompt = vim.fn.input("Describe how to transform the code: ")
+  local user_prompt = vim.fn.input("Prompt: ")
 
   local data = {
     prompt = user_prompt .. "\n\nCode:\n" .. code,
