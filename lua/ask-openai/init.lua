@@ -166,4 +166,6 @@ function _module.setup(options)
     _module.enable_predictions()
 end
 
+require("ask-openai.rewrites.inline")
+
 return _module
