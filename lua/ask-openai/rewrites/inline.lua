@@ -91,6 +91,8 @@ local function ensure_new_lines_around(code, response)
         response = response .. "\n" .. selected_last_line .. "\n"
     end
 
+    -- FYI could also look into running formatter on returned code in a way that can be undone by user if undesired but that fixes issues w/ indentation otherwise?
+
     return response
 end
 
