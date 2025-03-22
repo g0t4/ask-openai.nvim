@@ -46,10 +46,10 @@ function M.send_to_ollama(user_prompt, code, file_name)
     if parsed and parsed.choices and #parsed.choices > 0 then
         local completion = parsed.choices[1].message.content
         if completion:sub(1, 3) == "```" and completion:sub(-3) == "```" then
+            -- PRN maybe I should just ask for ``` around answer, would that increase likelihood of success anyways?
             completion = completion:sub(4, -4)
         end
-        print(completion)
-        -- TODO maybe I should just ask for ``` around answer, would that increase likelihood of success anyways?
+        -- print(completion)
         return completion
     else
         print("Failed to get completion from Ollama API.")
