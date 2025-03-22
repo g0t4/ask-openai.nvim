@@ -49,4 +49,6 @@ local function ask_and_send_to_ollama()
   end
 end
 
-vim.api.nvim_create_user_command("OllamaTransform", ask_and_send_to_ollama, {range=true})
+vim.api.nvim_create_user_command("AskRewrite", ask_and_send_to_ollama, {range=true})
+vim.api.nvim_set_keymap('v', '<Leader>rw', ':<C-u>AskRewrite<CR>', { noremap = true })
+
