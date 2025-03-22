@@ -59,11 +59,45 @@ end
 
 local function ask_and_send_to_ollama(opts)
     local code = get_visual_selection()
+    if not code then
+        print("No visual selection found.")
+        return
+    end
+
     local user_prompt = opts.args
     local file_name = vim.fn.expand("%:t")
 
-    local completion = M.send_to_ollama(user_prompt, code, file_name)
-    vim.fn.setreg("a", completion)
+    local response = M.send_to_ollama(user_prompt, code, file_name)
+    vim.fn.setreg("a", response)
+
+    -- ensure preserve blank line at start of selection (if present)
+    local selected_lines = vim.split(code, "\n")
+    local response_lines = vim.split(response, "\n")
+    local selected_first_line = selected_lines[1]
+    local response_first_line = response_lines[1]
+    if selected_first_line:match("^%s*$")
+        and not response_first_line:match("^%s*$")
+    then
+        print("Adding first line of code to completion")
+        -- yup, add it verbatim so whitespace can still be there in that first line
+        response = selected_first_line .. "\n" .. response
+        -- resplit
+        response_lines = vim.split(response, "\n")
+    end
+
+    -- ensure trailing new line is retained (if present)
+    local selected_last_line = selected_lines[#selected_lines]
+    local response_last_line = response_lines[#response_lines]
+    if selected_last_line:match("^%s*$")
+        and not response_last_line:match("^%s*$")
+    then
+        print("Adding trailing new line to completion")
+        print("selected_last_line: '" .. selected_last_line .. "'")
+        print("response_last_line: '" .. response_last_line .. "'")
+        -- yup, add it verbatim so whitespace can still be there in that last line
+        response = response .. "\n" .. selected_last_line .. "\n"
+    end
+    vim.fn.setreg("a", response)
 
     -- Replace the selection with the new text
     vim.cmd('normal! gv"ap')
