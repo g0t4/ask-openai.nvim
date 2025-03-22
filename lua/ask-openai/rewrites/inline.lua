@@ -1,3 +1,5 @@
+local M = {}
+
 local function get_visual_selection()
     local _, start_line, start_col, _ = unpack(vim.fn.getpos("'<"))
     local _, end_line, end_col, _ = unpack(vim.fn.getpos("'>"))
@@ -12,13 +14,13 @@ local function get_visual_selection()
 end
 
 
-local function send_to_ollama(user_prompt, code, file_name)
+function M.send_to_ollama(user_prompt, code, file_name)
     local system_prompt = "You are a neovim AI plugin that rewrites code. "
-        .. "No explanations, no markdown blocks. "
+        .. "No explanations, no markdown blocks. No ``` nor ` surrounding your answer. "
         .. "Avoid pointless comments."
 
-    local user_message = user_prompt .. "\n\n"
-        .. "Here is the selected code from " .. file_name
+    local user_message = user_prompt
+        .. ". Here is my code from " .. file_name
         .. ":\n\n" .. code
 
     local body = {
@@ -42,7 +44,7 @@ local function send_to_ollama(user_prompt, code, file_name)
 
     if parsed and parsed.choices and #parsed.choices > 0 then
         local completion = parsed.choices[1].message.content
-        vim.fn.setreg("+", completion)
+        return completion
     else
         print("Failed to get completion from Ollama API.")
         print(response)
@@ -54,8 +56,16 @@ local function ask_and_send_to_ollama()
     local user_prompt = vim.fn.input("Prompt: ")
     local file_name = vim.fn.expand("%:t")
 
-    send_to_ollama(user_prompt, code, file_name)
+    local response = M.send_to_ollama(user_prompt, code, file_name)
+    vim.fn.setreg("a", response) -- backup in reg a
+
+    vim.cmd('normal! gv"ap')
+    -- todo need to replace selection with response
 end
 
-vim.api.nvim_create_user_command("AskRewrite", ask_and_send_to_ollama, { range = true })
-vim.api.nvim_set_keymap('v', '<Leader>rw', ':<C-u>AskRewrite<CR>', { noremap = true })
+function M.setup()
+    vim.api.nvim_create_user_command("AskRewrite", ask_and_send_to_ollama, { range = true })
+    vim.api.nvim_set_keymap('v', '<Leader>rw', ':<C-u>AskRewrite<CR>', { noremap = true })
+end
+
+return M
