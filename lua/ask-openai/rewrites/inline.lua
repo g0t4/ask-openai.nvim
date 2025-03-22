@@ -70,6 +70,9 @@ local function ask_and_send_to_ollama(opts)
 
     vim.fn.setreg("a", completion) -- backup in reg a
 
+    -- check for new line before start_line
+
+
     -- PRN how about replace text directly?
     vim.cmd('normal! gv"ap')
 
