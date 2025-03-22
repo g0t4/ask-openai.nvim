@@ -58,7 +58,6 @@ function M.send_to_ollama(user_prompt, code, file_name)
 end
 
 local function ask_and_send_to_ollama(opts)
-    -- print("opts: ", vim.inspect(opts))
     local code = get_visual_selection()
     local user_prompt = opts.args
     local file_name = vim.fn.expand("%:t")
@@ -70,11 +69,13 @@ local function ask_and_send_to_ollama(opts)
 
     vim.fn.setreg("a", completion) -- backup in reg a
 
-    -- check for new line before start_line
-
+    -- check for new line before start_line, and after end_line... just detect that here
 
     -- PRN how about replace text directly?
     vim.cmd('normal! gv"ap')
+
+    -- ensure new line before/after (if there was) is still present, else add it
+
 
     -- PRN fix new line issues, how can I gauge that sometimes it winds up removing new lines before/after?
     --    might be a thing to fix by looking at new lines originally
