@@ -44,6 +44,8 @@ function M.send_to_ollama(user_prompt, code, file_name)
 
     if parsed and parsed.choices and #parsed.choices > 0 then
         local completion = parsed.choices[1].message.content
+        -- PRN parse out leading/trailing ```?
+        -- maybe I should just ask for ``` around answer, would that increase likelihood of success anyways?
         return completion
     else
         print("Failed to get completion from Ollama API.")
