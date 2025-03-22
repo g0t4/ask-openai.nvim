@@ -65,10 +65,10 @@ local function ask_and_send_to_ollama()
     local completion = M.send_to_ollama(user_prompt, code, file_name)
     vim.fn.setreg("a", completion) -- backup in reg a
 
-    -- TODO how about replace text directly?
+    -- PRN how about replace text directly?
     vim.cmd('normal! gv"ap')
 
-    -- TODO fix new line issues, how can I gauge that sometimes it winds up removing new lines before/after?
+    -- PRN fix new line issues, how can I gauge that sometimes it winds up removing new lines before/after?
     --    might be a thing to fix by looking at new lines originally
     --    and if there were new before/after ensure there's at least one new before and/or after AFTER replaced?
 end
