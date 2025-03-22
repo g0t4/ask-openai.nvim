@@ -11,11 +11,8 @@ local function get_visual_selection()
     return vim.fn.join(lines, "\n")
 end
 
-local function ask_and_send_to_ollama()
-    local code = get_visual_selection()
-    local user_prompt = vim.fn.input("Prompt: ")
-    local file_name = vim.fn.expand("%:t")
 
+local function send_to_ollama(user_prompt, code, file_name)
     local system_prompt = "You are a neovim AI plugin that rewrites code. "
         .. "No explanations, no markdown blocks. "
         .. "Avoid pointless comments."
@@ -50,6 +47,14 @@ local function ask_and_send_to_ollama()
         print("Failed to get completion from Ollama API.")
         print(response)
     end
+end
+
+local function ask_and_send_to_ollama()
+    local code = get_visual_selection()
+    local user_prompt = vim.fn.input("Prompt: ")
+    local file_name = vim.fn.expand("%:t")
+
+    send_to_ollama(user_prompt, code, file_name)
 end
 
 vim.api.nvim_create_user_command("AskRewrite", ask_and_send_to_ollama, { range = true })
