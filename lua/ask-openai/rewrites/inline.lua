@@ -15,8 +15,17 @@ local function ask_and_send_to_ollama()
   local code = get_visual_selection()
   local user_prompt = vim.fn.input("Prompt: ")
 
+  -- Get the current file type
+  local file_type = vim.bo.filetype
+
+  -- Create a system prompt that tells the LLM it is not Markdown and includes the file type
+  local system_prompt = "You are an AI assistant. Do not assume the input is in Markdown format. The current file type is: " .. file_type .. "."
+
   local data = {
-    messages = { { role = "user", content = user_prompt .. "\n\nCode:\n" .. code } },
+    messages = {
+      { role = "system", content = system_prompt },
+      { role = "user", content = user_prompt .. "\n\nCode:\n" .. code }
+    },
     model = "qwen2.5-coder:7b-instruct-q8_0",
     stream = false,
     temperature = 0.2
