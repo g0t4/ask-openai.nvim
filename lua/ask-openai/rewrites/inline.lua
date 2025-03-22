@@ -21,7 +21,7 @@ local function ask_and_send_to_ollama()
   -- Create a system prompt that tells the LLM it is not Markdown and includes the file type
   local system_prompt = "You are an AI assistant. Do not assume the input is in Markdown format. The current file type is: " .. file_type .. "."
 
-  local data = {
+  local body = {
     messages = {
       { role = "system", content = system_prompt },
       { role = "user", content = user_prompt .. "\n\nCode:\n" .. code }
@@ -31,7 +31,7 @@ local function ask_and_send_to_ollama()
     temperature = 0.2
   }
 
-  local json = vim.fn.json_encode(data)
+  local json = vim.fn.json_encode(body)
   local response = vim.fn.system({
     "curl", "-s", "-X", "POST", "http://ollama:11434/v1/chat/completions",
     "-H", "Content-Type: application/json",
