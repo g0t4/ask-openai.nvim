@@ -62,8 +62,8 @@ local function ask_and_send_to_ollama()
     local user_prompt = vim.fn.input("Prompt: ")
     local file_name = vim.fn.expand("%:t")
 
-    local response = M.send_to_ollama(user_prompt, code, file_name)
-    vim.fn.setreg("a", response) -- backup in reg a
+    local completion = M.send_to_ollama(user_prompt, code, file_name)
+    vim.fn.setreg("a", completion) -- backup in reg a
 
     vim.cmd('normal! gv"ap')
 end
