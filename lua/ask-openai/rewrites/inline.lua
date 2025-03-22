@@ -15,7 +15,7 @@ local function ask_and_send_to_ollama()
   local code = get_visual_selection()
   local user_prompt = vim.fn.input("Describe how to transform the code: ")
 
-  local body = {
+  local data = {
     prompt = user_prompt .. "\n\nCode:\n" .. code,
     model = "qwen2.5-coder:7b-instruct-q8_0",
     stream = false,
@@ -23,7 +23,7 @@ local function ask_and_send_to_ollama()
     temperature = 0.2
   }
 
-  local json = vim.fn.json_encode(body)
+  local json = vim.fn.json_encode(data)
   local response = vim.fn.system({
     "curl", "-s", "-X", "POST", "http://ollama:11434/api/generate",
     "-H", "Content-Type: application/json",
@@ -40,4 +40,3 @@ local function ask_and_send_to_ollama()
 end
 
 vim.api.nvim_create_user_command("OllamaTransform", ask_and_send_to_ollama, {range=true})
-
