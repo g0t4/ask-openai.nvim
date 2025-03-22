@@ -58,22 +58,27 @@ function M.send_to_ollama(user_prompt, code, file_name)
 end
 
 local function ask_and_send_to_ollama(opts)
-    local code = get_visual_selection()
+    local code, start_line, start_col, end_line, end_col = get_visual_selection()
     local user_prompt = opts.args
     local file_name = vim.fn.expand("%:t")
+    print("start_line: " .. start_line)
+    print("start_col: " .. start_col)
+    print("end_line: " .. end_line)
+    print("end_col: " .. end_col)
 
-    local completion, start_line, start_col, end_line, end_col = M.send_to_ollama(user_prompt, code, file_name)
-    if not completion then
-        return
-    end
-
-    -- Backup in register a
+    local completion = M.send_to_ollama(user_prompt, code, file_name)
     vim.fn.setreg("a", completion)
 
     -- Check for newline before and after the selection
     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-    local has_newline_before = start_line > 1 and lines[start_line - 2]:match("^%s*$")
-    local has_newline_after = end_line < #lines and lines[end_line]:match("^%s*$")
+    local line_before = start_line - 1
+    print("line before: '", lines[line_before], "'")
+    print("line after: '", lines[end_line + 1], "'")
+
+    local has_newline_before = start_line > 1 and (lines[line_before]:match("^%s*$") ~= nil)
+    local has_newline_after = end_line < #lines and (lines[end_line + 1]:match("^%s*$") ~= nil)
+    print("has_newline_before: " .. tostring(has_newline_before))
+    print("has_newline_after: " .. tostring(has_newline_after))
 
     -- Replace the selection with the new text
     vim.cmd('normal! gv"ap')
@@ -82,14 +87,15 @@ local function ask_and_send_to_ollama(opts)
     local new_lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
 
     -- Ensure newline before
-    if has_newline_before and (start_line == 1 or not new_lines[start_line - 2]:match("^%s*$")) then
-        vim.api.nvim_buf_set_lines(0, start_line - 1, start_line - 1, false, {""})
+    if has_newline_before and not new_lines[line_before]:match("^%s*$") then
+        -- vim.api.nvim_buf_set_lines(0, line_before, line_before, false, { "" })
     end
 
+    -- FUX have to look at # lines inserted vs selected ARGH
     -- Ensure newline after
-    if has_newline_after and (end_line >= #new_lines or not new_lines[end_line]:match("^%s*$")) then
-        vim.api.nvim_buf_set_lines(0, end_line + 1, end_line + 1, false, {""})
-    end
+    -- if has_newline_after and (end_line >= #new_lines or not new_lines[end_line + 1]:match("^%s*$")) then
+    --     vim.api.nvim_buf_set_lines(0, end_line + 1, end_line + 1, false, { "" })
+    -- end
 end
 
 function M.setup()
