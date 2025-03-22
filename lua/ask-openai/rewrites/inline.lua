@@ -16,6 +16,7 @@ end
 
 function M.send_to_ollama(user_prompt, code, file_name)
     local system_prompt = "You are a neovim AI plugin that rewrites code. "
+        .. "Preserve indentation."
         .. "No explanations, no markdown blocks. No ``` nor ` surrounding your answer. "
         .. "Avoid pointless comments."
 
@@ -44,8 +45,11 @@ function M.send_to_ollama(user_prompt, code, file_name)
 
     if parsed and parsed.choices and #parsed.choices > 0 then
         local completion = parsed.choices[1].message.content
-        -- PRN parse out leading/trailing ```?
-        -- maybe I should just ask for ``` around answer, would that increase likelihood of success anyways?
+        if completion:sub(1, 3) == "```" and completion:sub(-3) == "```" then
+            completion = completion:sub(4, -4)
+        end
+        print(completion)
+        -- TODO maybe I should just ask for ``` around answer, would that increase likelihood of success anyways?
         return completion
     else
         print("Failed to get completion from Ollama API.")
@@ -62,7 +66,6 @@ local function ask_and_send_to_ollama()
     vim.fn.setreg("a", response) -- backup in reg a
 
     vim.cmd('normal! gv"ap')
-    -- todo need to replace selection with response
 end
 
 function M.setup()
