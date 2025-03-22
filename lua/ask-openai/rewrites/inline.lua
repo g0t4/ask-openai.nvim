@@ -57,9 +57,10 @@ function M.send_to_ollama(user_prompt, code, file_name)
     end
 end
 
-local function ask_and_send_to_ollama()
+local function ask_and_send_to_ollama(opts)
+    -- print("opts: ", vim.inspect(opts))
     local code = get_visual_selection()
-    local user_prompt = vim.fn.input("Prompt: ")
+    local user_prompt = opts.args
     local file_name = vim.fn.expand("%:t")
 
     local completion = M.send_to_ollama(user_prompt, code, file_name)
@@ -74,8 +75,8 @@ local function ask_and_send_to_ollama()
 end
 
 function M.setup()
-    vim.api.nvim_create_user_command("AskRewrite", ask_and_send_to_ollama, { range = true })
-    vim.api.nvim_set_keymap('v', '<Leader>rw', ':<C-u>AskRewrite<CR>', { noremap = true })
+    vim.api.nvim_create_user_command("AskRewrite", ask_and_send_to_ollama, { range = true, nargs = 1 })
+    vim.api.nvim_set_keymap('v', '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
 end
 
 return M
