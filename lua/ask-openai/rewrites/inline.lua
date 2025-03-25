@@ -15,11 +15,19 @@ end
 
 
 function M.strip_md_from_completion(completion)
-    if completion:sub(1, 3) == "```" and completion:sub(-3) == "```" then
-        -- PRN maybe I should just ask for ``` around answer, would that increase likelihood of success anyways?
-        completion = completion:sub(4, -4)
+    local lines = vim.split(completion, "\n")
+
+    local isFirstLineStartOfCodeBlock = lines[1]:match("^```(%S*)$")
+    local isLastLineEndOfCodeBlock = lines[#lines]:match("^```")
+    -- PRN warn if both indicators not true?
+
+    if isLastLineEndOfCodeBlock then
+        table.remove(lines, #lines)
     end
-    return completion
+    if isFirstLineStartOfCodeBlock then
+        table.remove(lines, 1)
+    end
+    return table.concat(lines, "\n")
 end
 
 function M.send_to_ollama(user_prompt, code, file_name)
