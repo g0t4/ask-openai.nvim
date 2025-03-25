@@ -14,6 +14,14 @@ local function get_visual_selection()
 end
 
 
+function M.strip_md_from_completion(completion)
+    if completion:sub(1, 3) == "```" and completion:sub(-3) == "```" then
+        -- PRN maybe I should just ask for ``` around answer, would that increase likelihood of success anyways?
+        completion = completion:sub(4, -4)
+    end
+    return completion
+end
+
 function M.send_to_ollama(user_prompt, code, file_name)
     local system_prompt = "You are a neovim AI plugin that rewrites code. "
         .. "Preserve indentation."
@@ -44,13 +52,7 @@ function M.send_to_ollama(user_prompt, code, file_name)
     local parsed = vim.fn.json_decode(response)
 
     if parsed and parsed.choices and #parsed.choices > 0 then
-        local completion = parsed.choices[1].message.content
-        if completion:sub(1, 3) == "```" and completion:sub(-3) == "```" then
-            -- PRN maybe I should just ask for ``` around answer, would that increase likelihood of success anyways?
-            completion = completion:sub(4, -4)
-        end
-        -- print(completion)
-        return completion
+        return M.strip_md_from_completion(parsed.choices[1].message.content)
     else
         error("Failed to get completion from Ollama API: " .. tostring(response))
     end
