@@ -5,6 +5,10 @@
 
 ## TODOs
 
+- Provide recent edits to current code 100% will improve suggestions when making changes
+    i.e. if I start rewriting code, I want it to know what it looked like a moment ago...
+    I have found rewriting alone causes friction but if I comment out the old code (i.e. below) and start to rewrite it above it then it uses that as a reference for the new code
+    so, if it had recent edits I think this would be implicit
 - Provide symbols from coc completions to model as inputs too?
     - Have an option to toggle sending symbols! let the user decide!
 - WIP (avoid truncating prompt)
