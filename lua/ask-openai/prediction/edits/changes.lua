@@ -25,10 +25,13 @@ end
 
 function M.print_changes()
     local changes = M.get_change_list_with_lines()
+    local lines_to_print = {}
 
     for _, change in pairs(changes) do
-        print(string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line))
+        table.insert(lines_to_print, string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line))
     end
+
+    print(table.concat(lines_to_print, "\n"))
 end
 
 return M
