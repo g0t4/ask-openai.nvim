@@ -80,14 +80,10 @@ function M.show_response(response)
 
     if M.bufnr == nil then
         M.bufnr = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_buf_set_name(M.bufnr, name)
     end
-    -- PRN else logic to make sure still useable buffer?
 
-    vim.api.nvim_buf_set_name(M.bufnr, name)
     vim.api.nvim_buf_set_lines(M.bufnr, 0, -1, false, { response })
-    vim.api.nvim_set_option_value('filetype', 'markdown', { buf = M.bufnr })
-    vim.api.nvim_set_option_value('wrap', true, { buf = M.bufnr }) -- remove when I get ftplugin to trigger first time window opens
-    -- TODO why is ftplugin not working on first time I open the window?
 
     local _winid = vim.api.nvim_open_win(M.bufnr, true, {
         relative = 'editor',
@@ -98,6 +94,8 @@ function M.show_response(response)
         style = 'minimal',
         border = 'single'
     })
+    -- set FileType after creating window, otherwise the default wrap option (vim.o.wrap) will override any ftplugin mods to wrap (and the same for other window-local options like wrap)
+    vim.api.nvim_set_option_value('filetype', 'markdown', { buf = M.bufnr })
 end
 
 function M.setup()
