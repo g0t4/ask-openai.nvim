@@ -130,8 +130,8 @@ local function ask_question(opts)
 end
 
 function M.abort_if_still_responding()
-    -- TODO bind a key for this? ... add it when I feel like I need it
-    if not M.handle then
+    -- TODO bind closing the window to do this? not likely to matter much if it finishes in background
+    if M.handle == nil then
         return
     end
 
