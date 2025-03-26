@@ -41,13 +41,50 @@ function M.send_question(user_prompt, code, file_name)
         "-d", json
     })
 
-    local parsed = vim.fn.json_decode(response)
+    local stdout = uv.new_pipe(false)
+    local stderr = uv.new_pipe(false)
 
-    if parsed and parsed.choices and #parsed.choices > 0 then
-        return parsed.choices[1].message.content
-    else
-        error("Failed to get completion from Ollama API: " .. tostring(response))
+    options.on_exit = function(code, signal)
+        if code ~= 0 then
+            log:error("spawn - non-zero exit code:", code, "Signal:", signal)
+        end
+        stdout:close()
+        stderr:close()
     end
+
+    M.handle, M.pid = uv.spawn(options.command, {
+        args = options.args,
+        stdio = { nil, stdout, stderr },
+    }, options.on_exit)
+
+    options.on_stdout = function(err, data)
+        -- log:trace("on_stdout chunk: ", data)
+        if err then
+            log:warn("on_stdout error: ", err)
+            this_prediction:mark_generation_failed()
+            return
+        end
+        if data then
+            vim.schedule(function()
+                local chunk, generation_done = backend.process_sse(data)
+                if chunk then
+                    this_prediction:add_chunk_to_prediction(chunk)
+                end
+                if generation_done then
+                    this_prediction:mark_generation_finished()
+                end
+            end)
+        end
+    end
+    uv.read_start(stdout, options.on_stdout)
+
+    options.on_stderr = function(err, data)
+        log:warn("on_stderr chunk: ", data)
+        if err then
+            log:warn("on_stderr error: ", err)
+        end
+    end
+    uv.read_start(stderr, options.on_stderr)
 end
 
 local function ask_question_about(opts)
@@ -68,6 +105,32 @@ local function ask_question(opts)
     local user_prompt = opts.args
     local response = M.send_question(user_prompt)
     M.show_response(response)
+end
+
+function M.cancel_current_prediction()
+    -- TODO!
+    local this_prediction = M.current_prediction
+    if not this_prediction then
+        return
+    end
+    M.current_prediction = nil
+    this_prediction:mark_as_abandoned()
+
+    vim.schedule(function()
+        this_prediction:clear_extmarks()
+    end)
+
+    local handle = M.handle
+    local pid = M.pid
+    M.handle = nil
+    M.pid = nil
+    if handle ~= nil and not handle:is_closing() then
+        log:trace("Terminating process, pid: ", pid)
+
+        handle:kill("sigterm")
+        handle:close()
+        -- FYI ollama should show that connection closed/aborted
+    end
 end
 
 function M.show_response(response)
