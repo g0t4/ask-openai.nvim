@@ -1,5 +1,8 @@
 local uv = vim.uv
 local M = {}
+local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
+
+local backend = require("ask-openai.questions.backends.chat_completions")
 
 local function get_visual_selection()
     local _, start_line, start_col, _ = unpack(vim.fn.getpos("'<"))
@@ -74,18 +77,18 @@ function M.send_question(user_prompt, code, file_name)
         -- log:trace("on_stdout chunk: ", data)
         if err then
             log:warn("on_stdout error: ", err)
-            this_prediction:mark_generation_failed()
             return
         end
         if data then
             vim.schedule(function()
                 local chunk, generation_done = backend.process_sse(data)
                 if chunk then
-                    this_prediction:add_chunk_to_prediction(chunk)
+                    -- add chunk to buffer
                 end
-                if generation_done then
-                    this_prediction:mark_generation_finished()
-                end
+                -- TODO anything on done?
+                -- if generation_done then
+                --     this_prediction:mark_generation_finished()
+                -- end
             end)
         end
     end
@@ -160,17 +163,8 @@ function M.show_response(response)
 
     local screen_lines = vim.api.nvim_get_option_value('lines', {})
     local screen_columns = vim.api.nvim_get_option_value('columns', {})
-    -- TODO revisit sizing window, could I set the size after the buffer is loaded and somehow allow it to resize bigger if it would fit into a max size?
-    local min_height = 0.5 * screen_lines
-    local min_width = 0.5 * screen_columns
-    local max_height = 0.9 * screen_lines
-    local max_width = 0.9 * screen_columns
-    -- print("min_height", min_height)
-    -- print("max_height", max_height)
-    -- print("#lines", #lines)
-    -- print("screen_lines", screen_lines)
-    local win_height = math.floor(math.min(max_height, math.max(min_height, #lines))) -- TODO need to estimate wrapping text
-    local win_width = min_width
+    local win_height = math.ceil(0.5 * screen_lines)
+    local win_width = math.ceil(0.5 * screen_columns)
     local top_is_at_row = screen_lines / 2 - win_height / 2
     local left_is_at_col = screen_columns / 2 - win_width / 2
     local _winid = vim.api.nvim_open_win(M.bufnr, true, {
