@@ -147,15 +147,22 @@ function M.abort_if_still_responding()
     end
 end
 
+function M.abort_and_close()
+    M.abort_if_still_responding()
+    vim.cmd(":q", { buffer = M.bufnr })
+end
+
 function M.open_response_window()
     local name = 'Question Response'
-
-    -- TODO bind closing the popup window to stopping the response?
-    -- TODO bind Esc to stop the generation, i.e. if out of control long but still wanna keep it open to review it
 
     if M.bufnr == nil then
         M.bufnr = vim.api.nvim_create_buf(false, true)
         vim.api.nvim_buf_set_name(M.bufnr, name)
+
+        -- stop generation, if still wanna look at it w/o closing the window
+        vim.keymap.set("n", "<Esc>", M.abort_if_still_responding, { buffer = M.bufnr, nowait = true })
+        vim.keymap.set("n", "<F8>", M.abort_and_close, { buffer = M.bufnr }) -- I already use this globally to close a window (:q) ... so just add stop to it
+        -- OR, should I let it keep completing in background and then I can come back when its done? for async?
     end
 
     vim.api.nvim_buf_set_lines(M.bufnr, 0, -1, false, {}) -- clear the buffer, is there an easier way?
