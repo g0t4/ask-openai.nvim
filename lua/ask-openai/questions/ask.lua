@@ -123,18 +123,11 @@ local function ask_question(opts)
     M.send_question(user_prompt)
 end
 
-function M.cancel_current_prediction()
-    -- TODO!
-    local this_prediction = M.current_prediction
-    if not this_prediction then
+function M.abort_answering_question()
+    -- TODO! bind a key for this?
+    if not M.handle then
         return
     end
-    M.current_prediction = nil
-    this_prediction:mark_as_abandoned()
-
-    vim.schedule(function()
-        this_prediction:clear_extmarks()
-    end)
 
     local handle = M.handle
     local pid = M.pid
