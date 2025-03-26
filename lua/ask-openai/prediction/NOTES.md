@@ -12,6 +12,10 @@
 - Find a way to rewrite the rest of the current line...
     how about just hide remainder of line and show new line ending?
 - Provide symbols from coc completions to model as inputs too?
+    smth like:
+    `:echo CocAction('documentSymbols')`
+    `:echo CocAction('documentSymbols')->filter({_, s -> CocAction('getCursor')[0] >= s.range.start.line && CocAction('getCursor')[0] <= s.range.end.line })`
+       fix getCursor, it doesn't exist
     - Have an option to toggle sending symbols! let the user decide!
 - WIP (avoid truncating prompt)
     - TODO => if I have to build custom Modelfiles per model... I'd rather just go back to /api/generate and not deal with the custom models nonsense
