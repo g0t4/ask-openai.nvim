@@ -164,9 +164,9 @@ function _module.setup(options)
     vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai\').ask_openai()")<CR>', { noremap = true, })
 
     _module.enable_predictions()
-end
 
-require("ask-openai.rewrites.inline").setup()
-require("ask-openai.questions.ask").setup()
+    require("ask-openai.rewrites.inline").setup()
+    require("ask-openai.questions.ask").setup()
+end
 
 return _module

@@ -151,6 +151,7 @@ function M.open_response_window()
     local name = 'Question Response'
 
     -- TODO bind closing the popup window to stopping the response?
+    -- TODO bind Esc to stop the generation, i.e. if out of control long but still wanna keep it open to review it
 
     if M.bufnr == nil then
         M.bufnr = vim.api.nvim_create_buf(false, true)
