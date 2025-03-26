@@ -152,7 +152,6 @@ function M.open_response_window()
     local name = 'Question Response'
 
     -- TODO bind closing the popup window to stopping the response?
-    -- TODO add a command to show the response again after its closed if I wanna see it again
 
     if M.bufnr == nil then
         M.bufnr = vim.api.nvim_create_buf(false, true)
