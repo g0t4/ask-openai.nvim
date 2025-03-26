@@ -72,7 +72,6 @@ function M.send_question(user_prompt, code, file_name)
         M.pid = nil
     end
 
-    -- PRN if last request still responding, abort it?
     M.abort_if_still_responding()
 
     M.handle, M.pid = uv.spawn(options.command, {
