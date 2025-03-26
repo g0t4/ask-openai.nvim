@@ -66,19 +66,23 @@ end
 local function ask_question(opts)
     local user_prompt = opts.args
     local response = M.send_question(user_prompt)
-    -- TODO request markdown as response format... and highlight that as markdown in a buffer
+    M.show_response(response)
+end
 
-    -- Create a popup window
+function M.show_response(response)
+    -- TODO request markdown as response format... and highlight that as markdown in a buffer
     local win_width = 80
     local win_height = 10
-    local row = vim.api.nvim_get_option('lines') / 2 - win_height / 2
-    local col = vim.api.nvim_get_option('columns') / 2 - win_width / 2
+    local row = vim.api.nvim_get_option_value('lines', {}) / 2 - win_height / 2
+    local col = vim.api.nvim_get_option_value('columns', {}) / 2 - win_width / 2
 
     local bufnr = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_name(bufnr, 'Question Response')
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { response })
 
-    local winid = vim.api.nvim_open_win(bufnr, true, {
+    vim.bo.wrap = true
+
+    local _winid = vim.api.nvim_open_win(bufnr, true, {
         relative = 'editor',
         width = win_width,
         height = win_height,
@@ -88,6 +92,7 @@ local function ask_question(opts)
         border = 'single'
     })
 end
+
 function M.setup()
     -- once again, pass question in command line for now... b/c then I can use cmd history to ask again or modify question easily
     --  if I move to a float window, I'll want to add history there then which I can handle later when this falls apart
