@@ -34,7 +34,7 @@ function M.send_to_ollama(user_prompt, code, file_name)
     local system_prompt = "You are a neovim AI plugin that rewrites code. "
         .. "Preserve indentation."
         .. "No explanations, no markdown blocks. No ``` nor ` surrounding your answer. "
-        .. "Avoid pointless comments."
+        .. "Avoid pointless comments. Do not remove existing code/comments unless the user asks you to."
 
     local user_message = user_prompt
         .. ". Here is my code from " .. file_name
