@@ -167,5 +167,6 @@ function _module.setup(options)
 end
 
 require("ask-openai.rewrites.inline").setup()
+require("ask-openai.questions.ask").setup()
 
 return _module

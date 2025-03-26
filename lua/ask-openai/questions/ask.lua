@@ -13,32 +13,15 @@ local function get_visual_selection()
     return vim.fn.join(lines, "\n"), start_line, start_col, end_line, end_col
 end
 
-
-function M.strip_md_from_completion(completion)
-    local lines = vim.split(completion, "\n")
-
-    local isFirstLineStartOfCodeBlock = lines[1]:match("^```(%S*)$")
-    local isLastLineEndOfCodeBlock = lines[#lines]:match("^```")
-    -- PRN warn if both indicators not true?
-
-    if isLastLineEndOfCodeBlock then
-        table.remove(lines, #lines)
-    end
-    if isFirstLineStartOfCodeBlock then
-        table.remove(lines, 1)
-    end
-    return table.concat(lines, "\n")
-end
-
-function M.send_to_ollama(user_prompt, code, file_name)
-    local system_prompt = "You are a neovim AI plugin that rewrites code. "
-        .. "Preserve indentation."
-        .. "No explanations, no markdown blocks. No ``` nor ` surrounding your answer. "
-        .. "Avoid pointless comments. Do not remove existing code/comments unless the user asks you to."
+function M.send_question(user_prompt, code, file_name)
+    local system_prompt = "You are a neovim AI plugin that answers questions."
 
     local user_message = user_prompt
-        .. ". Here is my code from " .. file_name
-        .. ":\n\n" .. code
+    if code then
+        user_message = user_message
+            .. ". Here is the relevant code from" .. file_name
+            .. ":\n\n" .. code
+    end
 
     local body = {
         messages = {
@@ -46,7 +29,7 @@ function M.send_to_ollama(user_prompt, code, file_name)
             { role = "user",   content = user_message },
         },
         model = "qwen2.5-coder:7b-instruct-q8_0",
-        stream = false,
+        stream = false, -- TODO stream response back is a MUST!, but will likely require a popup window
         temperature = 0.2
     }
 
@@ -60,52 +43,13 @@ function M.send_to_ollama(user_prompt, code, file_name)
     local parsed = vim.fn.json_decode(response)
 
     if parsed and parsed.choices and #parsed.choices > 0 then
-        return M.strip_md_from_completion(parsed.choices[1].message.content)
+        return parsed.choices[1].message.content
     else
         error("Failed to get completion from Ollama API: " .. tostring(response))
     end
 end
 
-local function ensure_new_lines_around(code, response)
-    -- this is a curtesy b/c its easy to select paragraphs with {} but it includes line before and after
-    --    I can also pay attention to my selections
-
-    -- TODO write tests of this going forward, don't manually test further
-
-    -- ensure preserve blank line at start of selection (if present)
-    local selected_lines = vim.split(code, "\n")
-    local response_lines = vim.split(response, "\n")
-    local selected_first_line = selected_lines[1]
-    local response_first_line = response_lines[1]
-    if selected_first_line:match("^%s*$")
-        and not response_first_line:match("^%s*$")
-    then
-        -- print("Adding first line of code to completion")
-        -- yup, add it verbatim so whitespace can still be there in that first line
-        response = selected_first_line .. "\n" .. response
-        -- resplit
-        response_lines = vim.split(response, "\n")
-    end
-
-    -- ensure trailing new line is retained (if present)
-    local selected_last_line = selected_lines[#selected_lines]
-    local response_last_line = response_lines[#response_lines]
-    if selected_last_line:match("^%s*$")
-        and not response_last_line:match("^%s*$")
-    then
-        -- print("Adding trailing new line to completion")
-        -- print("selected_last_line: '" .. selected_last_line .. "'")
-        -- print("response_last_line: '" .. response_last_line .. "'")
-        -- yup, add it verbatim so whitespace can still be there in that last line
-        response = response .. "\n" .. selected_last_line .. "\n"
-    end
-
-    -- FYI could also look into running formatter on returned code in a way that can be undone by user if undesired but that fixes issues w/ indentation otherwise?
-
-    return response
-end
-
-local function ask_and_send_to_ollama(opts)
+local function ask_question_about(opts)
     local code = get_visual_selection()
     if not code then
         error("No visual selection found.")
@@ -115,19 +59,23 @@ local function ask_and_send_to_ollama(opts)
     local user_prompt = opts.args
     local file_name = vim.fn.expand("%:t")
 
-    local response = M.send_to_ollama(user_prompt, code, file_name)
-    vim.fn.setreg("a", response) -- set before to troubleshot if later fails
+    local response = M.send_question(user_prompt, code, file_name)
+    print(response)
+end
 
-    response = ensure_new_lines_around(code, response)
-    vim.fn.setreg("a", response)
-
-    -- Replace the selection with the new text
-    vim.cmd('normal! gv"ap')
+local function ask_question(opts)
+    local user_prompt = opts.args
+    local response = M.send_question(user_prompt)
+    print(response)
 end
 
 function M.setup()
-    vim.api.nvim_create_user_command("AskRewrite", ask_and_send_to_ollama, { range = true, nargs = 1 })
-    vim.api.nvim_set_keymap('v', '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
+    -- once again, pass question in command line for now... b/c then I can use cmd history to ask again or modify question easily
+    --  if I move to a float window, I'll want to add history there then which I can handle later when this falls apart
+    vim.api.nvim_create_user_command("AskQuestion", ask_question, { range = true, nargs = 1 })
+    vim.api.nvim_create_user_command("AskQuestionAbout", ask_question_about, { range = true, nargs = 1 })
+    vim.api.nvim_set_keymap('v', '<Leader>aq', ':<C-u>AskQuestionAbout ', { noremap = true })
+    vim.api.nvim_set_keymap('n', '<Leader>aq', ':AskQuestion ', { noremap = true })
 end
 
 return M
