@@ -82,18 +82,27 @@ function M.show_response(response)
     local lines = vim.split(response, "\n")
     vim.api.nvim_buf_set_lines(M.bufnr, 0, -1, false, lines)
 
-    local lines = vim.api.nvim_get_option_value('lines', {})
-    local columns = vim.api.nvim_get_option_value('columns', {})
-    local win_width = 80
-    local win_height = 10
-    local row = lines / 2 - win_height / 2
-    local col = columns / 2 - win_width / 2
+    local screen_lines = vim.api.nvim_get_option_value('lines', {})
+    local screen_columns = vim.api.nvim_get_option_value('columns', {})
+    -- TODO revisit sizing window, could I set the size after the buffer is loaded and somehow allow it to resize bigger if it would fit into a max size?
+    local min_height = 0.5 * screen_lines
+    local min_width = 0.5 * screen_columns
+    local max_height = 0.9 * screen_lines
+    local max_width = 0.9 * screen_columns
+    -- print("min_height", min_height)
+    -- print("max_height", max_height)
+    -- print("#lines", #lines)
+    -- print("screen_lines", screen_lines)
+    local win_height = math.floor(math.min(max_height, math.max(min_height, #lines))) -- TODO need to estimate wrapping text
+    local win_width = min_width
+    local top_is_at_row = screen_lines / 2 - win_height / 2
+    local left_is_at_col = screen_columns / 2 - win_width / 2
     local _winid = vim.api.nvim_open_win(M.bufnr, true, {
         relative = 'editor',
         width = win_width,
         height = win_height,
-        row = row,
-        col = col,
+        row = top_is_at_row,
+        col = left_is_at_col,
         style = 'minimal',
         border = 'single'
     })
