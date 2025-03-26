@@ -148,7 +148,6 @@ function M.abort_if_still_responding()
 end
 
 function M.open_response_window()
-    -- TODO request markdown as response format... and highlight that as markdown in a buffer
     local name = 'Question Response'
 
     -- TODO bind closing the popup window to stopping the response?
