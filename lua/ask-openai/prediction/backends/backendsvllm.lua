@@ -217,8 +217,8 @@ function M.process_sse(data)
         -- log:info("choices:", vim.inspect(parsed))
         -- log:info("choices:", vim.inspect(parsed.choices))
         if success and parsed and parsed.choices and parsed.choices[1] then
-            first_choice = parsed.choices[1]
-            finish_reason = first_choice.finish_reason
+            local first_choice = parsed.choices[1]
+            local finish_reason = first_choice.finish_reason
             if finish_reason ~= nil and finish_reason ~= vim.NIL then
                 log:info("finsh_reason: ", finish_reason)
                 done = true
