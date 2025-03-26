@@ -50,6 +50,12 @@ local function register_prediction_triggers()
         })
     end
 
+    function dump_recent_changes()
+        local changes = require("ask-openai.prediction.edits.changes")
+        changes.print_changes()
+    end
+
+    vim.keymap.set("n", "<leader>~", dump_recent_changes)
 
     -- IDEA => reject_line (skip current line, "drop" it... and then take a subsequent line)... or is it better to trigger a new completion?
     --    a few times I've had undesired initial lines (esp blank initial lines when I don't want them...)
