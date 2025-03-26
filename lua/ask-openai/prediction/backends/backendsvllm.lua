@@ -123,6 +123,7 @@ local function body_for(prefix, suffix, _recent_edits)
 
     -- Edit history totally messed up FIM... how can I include this while preserving the FIM request...
     --   i.e. in calc.lua... it just chatted to me and that's an easy FIM task
+    -- *** I was using instruct model, need to repeat test of recent edits with BASE models
     --
     -- local recent_changes = "Here are some recent lines that were edited by the user: "
     -- -- PRN need edits for other files too
