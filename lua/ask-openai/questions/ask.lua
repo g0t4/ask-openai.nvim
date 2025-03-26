@@ -195,6 +195,7 @@ function M.setup()
     vim.api.nvim_create_user_command("AskQuestionAbout", ask_question_about, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('v', '<Leader>aq', ':<C-u>AskQuestionAbout ', { noremap = true })
     vim.api.nvim_set_keymap('n', '<Leader>aq', ':AskQuestion ', { noremap = true })
+    vim.keymap.set('n', '<leader>ao', M.open_response_window, { noremap = true })
 end
 
 return M
