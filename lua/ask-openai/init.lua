@@ -57,6 +57,8 @@ local function register_prediction_triggers()
 
     -- create command to dump
     vim.api.nvim_create_user_command("AskDumpEdits", dump_recent_changes, {})
+    -- FYI why don't I reserve ~ for debug keymap(s) and move it around to w/e I need it for currently?
+    --   ~ not intended as a permanent keymap here
     vim.keymap.set("n", "<leader>~", "<cmd>AskDumpEdits<CR>", {})
 
 
