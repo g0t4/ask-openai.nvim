@@ -66,7 +66,14 @@ function M.send_question(user_prompt, code, file_name)
         end
         stdout:close()
         stderr:close()
+
+        -- clear out refs
+        M.handle = nil
+        M.pid = nil
     end
+
+    -- PRN if last request still responding, abort it?
+    M.abort_if_still_responding()
 
     M.handle, M.pid = uv.spawn(options.command, {
         args = options.args,
@@ -85,7 +92,7 @@ function M.send_question(user_prompt, code, file_name)
                 if chunk then
                     M.add_to_response_window(chunk)
                 end
-                -- TODO anything on done?
+                -- PRN anything on done?
                 -- if generation_done then
                 --     this_prediction:mark_generation_finished()
                 -- end
@@ -123,7 +130,7 @@ local function ask_question(opts)
     M.send_question(user_prompt)
 end
 
-function M.abort_answering_question()
+function M.abort_if_still_responding()
     -- TODO bind a key for this? ... add it when I feel like I need it
     if not M.handle then
         return
