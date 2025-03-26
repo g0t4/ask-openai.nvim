@@ -130,7 +130,6 @@ local function ask_question(opts)
 end
 
 function M.abort_if_still_responding()
-    -- TODO bind closing the window to do this? not likely to matter much if it finishes in background
     if M.handle == nil then
         return
     end
@@ -196,6 +195,7 @@ function M.setup()
     vim.api.nvim_set_keymap('v', '<Leader>aq', ':<C-u>AskQuestionAbout ', { noremap = true })
     vim.api.nvim_set_keymap('n', '<Leader>aq', ':AskQuestion ', { noremap = true })
     vim.keymap.set('n', '<leader>ao', M.open_response_window, { noremap = true })
+    vim.keymap.set('n', '<leader>aa', M.abort_if_still_responding, { noremap = true })
 end
 
 return M
