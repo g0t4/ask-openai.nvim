@@ -1,4 +1,4 @@
-local rewrites = require("ask-openai.rewrites.inline")
+local rewrites = require("lua.ask-openai.rewrites.inline")
 local assert = require("luassert")
 
 describe("test strip markdown from completion responses", function()
