@@ -83,7 +83,7 @@ function M.send_question(user_prompt, code, file_name)
             vim.schedule(function()
                 local chunk, generation_done = backend.process_sse(data)
                 if chunk then
-                    -- add chunk to buffer
+                    M.add_to_response_window(chunk)
                 end
                 -- TODO anything on done?
                 -- if generation_done then
@@ -113,14 +113,14 @@ local function ask_question_about(opts)
     local user_prompt = opts.args
     local file_name = vim.fn.expand("%:t")
 
-    local response = M.send_question(user_prompt, code, file_name)
-    print(response)
+    M.open_response_window()
+    M.send_question(user_prompt, code, file_name)
 end
 
 local function ask_question(opts)
     local user_prompt = opts.args
-    local response = M.send_question(user_prompt)
-    M.show_response(response)
+    M.open_response_window()
+    M.send_question(user_prompt)
 end
 
 function M.cancel_current_prediction()
@@ -149,7 +149,7 @@ function M.cancel_current_prediction()
     end
 end
 
-function M.show_response(response)
+function M.open_response_window()
     -- TODO request markdown as response format... and highlight that as markdown in a buffer
     local name = 'Question Response'
 
@@ -158,8 +158,7 @@ function M.show_response(response)
         vim.api.nvim_buf_set_name(M.bufnr, name)
     end
 
-    local lines = vim.split(response, "\n")
-    vim.api.nvim_buf_set_lines(M.bufnr, 0, -1, false, lines)
+    vim.api.nvim_buf_set_lines(M.bufnr, 0, -1, false, {}) -- clear the buffer, is there an easier way?
 
     local screen_lines = vim.api.nvim_get_option_value('lines', {})
     local screen_columns = vim.api.nvim_get_option_value('columns', {})
@@ -178,6 +177,13 @@ function M.show_response(response)
     })
     -- set FileType after creating window, otherwise the default wrap option (vim.o.wrap) will override any ftplugin mods to wrap (and the same for other window-local options like wrap)
     vim.api.nvim_set_option_value('filetype', 'markdown', { buf = M.bufnr })
+end
+
+function M.add_to_response_window(text)
+    local count_of_lines = vim.api.nvim_buf_line_count(M.bufnr)
+    local last_line = vim.api.nvim_buf_get_lines(M.bufnr, count_of_lines - 1, count_of_lines, false)[1]
+    local replace_lines = vim.split(last_line .. text, "\n")
+    vim.api.nvim_buf_set_lines(M.bufnr, count_of_lines - 1, count_of_lines, false, replace_lines)
 end
 
 function M.setup()
