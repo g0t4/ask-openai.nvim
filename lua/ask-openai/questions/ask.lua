@@ -66,6 +66,7 @@ end
 local function ask_question(opts)
     local user_prompt = opts.args
     local response = M.send_question(user_prompt)
+    -- TODO request markdown as response format... and highlight that as markdown in a buffer
     print(response)
 end
 
