@@ -82,10 +82,12 @@ function M.show_response(response)
     local lines = vim.split(response, "\n")
     vim.api.nvim_buf_set_lines(M.bufnr, 0, -1, false, lines)
 
+    local lines = vim.api.nvim_get_option_value('lines', {})
+    local columns = vim.api.nvim_get_option_value('columns', {})
     local win_width = 80
     local win_height = 10
-    local row = vim.api.nvim_get_option_value('lines', {}) / 2 - win_height / 2
-    local col = vim.api.nvim_get_option_value('columns', {}) / 2 - win_width / 2
+    local row = lines / 2 - win_height / 2
+    local col = columns / 2 - win_width / 2
     local _winid = vim.api.nvim_open_win(M.bufnr, true, {
         relative = 'editor',
         width = win_width,
