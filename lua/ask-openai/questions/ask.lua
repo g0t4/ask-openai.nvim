@@ -15,6 +15,7 @@ end
 
 function M.send_question(user_prompt, code, file_name)
     local system_prompt = "You are a neovim AI plugin that answers questions."
+        .. " Please respond with markdown formatted text"
 
     local user_message = user_prompt
     if code then
@@ -75,14 +76,20 @@ function M.show_response(response)
     local win_height = 10
     local row = vim.api.nvim_get_option_value('lines', {}) / 2 - win_height / 2
     local col = vim.api.nvim_get_option_value('columns', {}) / 2 - win_width / 2
+    local name = 'Question Response'
 
-    local bufnr = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_name(bufnr, 'Question Response')
-    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { response })
+    if M.bufnr == nil then
+        M.bufnr = vim.api.nvim_create_buf(false, true)
+    end
+    -- PRN else logic to make sure still useable buffer?
 
-    vim.bo.wrap = true
+    vim.api.nvim_buf_set_name(M.bufnr, name)
+    vim.api.nvim_buf_set_lines(M.bufnr, 0, -1, false, { response })
+    vim.api.nvim_set_option_value('filetype', 'markdown', { buf = M.bufnr })
+    vim.api.nvim_set_option_value('wrap', true, { buf = M.bufnr }) -- remove when I get ftplugin to trigger first time window opens
+    -- TODO why is ftplugin not working on first time I open the window?
 
-    local _winid = vim.api.nvim_open_win(bufnr, true, {
+    local _winid = vim.api.nvim_open_win(M.bufnr, true, {
         relative = 'editor',
         width = win_width,
         height = win_height,
