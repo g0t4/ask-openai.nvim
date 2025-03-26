@@ -1,3 +1,4 @@
+local uv = vim.uv
 local M = {}
 
 local function get_visual_selection()
@@ -30,16 +31,28 @@ function M.send_question(user_prompt, code, file_name)
             { role = "user",   content = user_message },
         },
         model = "qwen2.5-coder:7b-instruct-q8_0",
-        stream = false, -- TODO stream response back is a MUST!, but will likely require a popup window
-        temperature = 0.2
+        stream = true,
+        temperature = 0.2, -- TODO what temp?
+        -- PRN limit num_predict?
+        options = {
+            -- TODO! do I need num_ctx, I can't recall why I set this for predictions?
+            num_ctx = 8192,
+        }
     }
 
     local json = vim.fn.json_encode(body)
-    local response = vim.fn.system({
-        "curl", "-s", "-X", "POST", "http://ollama:11434/v1/chat/completions",
-        "-H", "Content-Type: application/json",
-        "-d", json
-    })
+
+    local options = {
+        command = "curl",
+        args = {
+            "-fsSL",
+            "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
+            "-X", "POST",
+            "http://ollama:11434/v1/chat/completions", -- TODO pass in api base_url (via config)
+            "-H", "Content-Type: application/json",
+            "-d", json
+        },
+    }
 
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
