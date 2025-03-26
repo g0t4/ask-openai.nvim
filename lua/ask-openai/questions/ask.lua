@@ -83,7 +83,8 @@ function M.show_response(response)
         vim.api.nvim_buf_set_name(M.bufnr, name)
     end
 
-    vim.api.nvim_buf_set_lines(M.bufnr, 0, -1, false, { response })
+    local lines = vim.split(response, "\n")
+    vim.api.nvim_buf_set_lines(M.bufnr, 0, -1, false, lines)
 
     local _winid = vim.api.nvim_open_win(M.bufnr, true, {
         relative = 'editor',
