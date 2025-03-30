@@ -106,8 +106,8 @@ local function ensure_new_lines_around(code, response)
 end
 
 local function ask_and_send_to_ollama(opts)
-    local code = get_visual_selection()
-    if not code then
+    local original_text = get_visual_selection()
+    if not original_text then
         error("No visual selection found.")
         return
     end
@@ -115,11 +115,11 @@ local function ask_and_send_to_ollama(opts)
     local user_prompt = opts.args
     local file_name = vim.fn.expand("%:t")
 
-    local response = M.send_to_ollama(user_prompt, code, file_name)
-    vim.fn.setreg("a", response) -- set before to troubleshot if later fails
+    local rewritten_text = M.send_to_ollama(user_prompt, original_text, file_name)
+    vim.fn.setreg("a", rewritten_text) -- set before to troubleshot if later fails
 
-    response = ensure_new_lines_around(code, response)
-    vim.fn.setreg("a", response)
+    rewritten_text = ensure_new_lines_around(original_text, rewritten_text)
+    vim.fn.setreg("a", rewritten_text)
 
     -- Replace the selection with the new text
     vim.cmd('normal! gv"ap')
