@@ -78,19 +78,19 @@ function M.handle_stream_chunk(chunk)
     vim.schedule(function()
         -- Clear previous extmark
         vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
-        
+
         -- Split into lines for extmark display
         local lines = split_lines_to_table(current_polished)
         if #lines == 0 then return end
-        
+
         local first_line = { { table.remove(lines, 1), "AskRewrite" } }
-        
+
         -- Format remaining lines for virt_lines
         local virt_lines = {}
         for _, line in ipairs(lines) do
             table.insert(virt_lines, { { line, "AskRewrite" } })
         end
-        
+
         -- Set extmark at the beginning of the selection
         M.extmark_id = vim.api.nvim_buf_set_extmark(
             0, -- Current buffer
@@ -135,7 +135,7 @@ end
 
 function M.accept_rewrite()
     vim.schedule(function()
-        -- Get the current polished text 
+        -- Get the current polished text
         local current_md_stripped = M.strip_md_from_completion(M.current_text)
         local current_polished = ensure_new_lines_around(M.original_text, current_md_stripped)
         local lines = split_lines_to_table(current_polished)
@@ -149,14 +149,14 @@ function M.accept_rewrite()
             M.end_col, -- End column
             lines
         )
-        
+
         -- Clear the extmark
         vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
-        
+
         -- Reset the module state
         M.current_text = ""
         M.extmark_id = nil
-        
+
         -- Log acceptance
         log:info("Rewrite accepted and inserted into buffer", vim.log.levels.INFO)
     end)
@@ -166,11 +166,11 @@ function M.cancel_rewrite()
     vim.schedule(function()
         -- Clear the extmark
         vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
-        
+
         -- Reset the module state
         M.current_text = ""
         M.extmark_id = nil
-        
+
         -- Log cancellation
         log:info("Rewrite cancelled", vim.log.levels.INFO)
     end)
@@ -189,7 +189,7 @@ function M.abort_if_still_responding()
         handle:kill("sigterm")
         handle:close()
     end
-    
+
     -- Clear any extmarks
     vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
 end
@@ -245,7 +245,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         -- Clear out refs
         M.handle = nil
         M.pid = nil
-        
+
         -- Log completion
         log:info("Rewrite generation complete", vim.log.levels.INFO)
     end
@@ -305,7 +305,8 @@ local function ask_and_stream_from_ollama(opts)
     log:info(string.format(
         "Original text: %s\nstart_line: %d\nstart_col: %d\nend_line: %d\nend_col: %d",
         original_text, start_line, start_col, end_line, end_col
-    ), vim.log.levels.INFO)
+    ))
+
 
     M.stream_from_ollama(user_prompt, original_text, file_name)
 end
@@ -318,11 +319,11 @@ function M.setup()
     -- Add a command to abort the stream if needed
     vim.api.nvim_create_user_command("AskRewriteAbort", M.abort_if_still_responding, {})
     vim.api.nvim_set_keymap('n', '<Leader>ra', ':AskRewriteAbort<CR>', { noremap = true })
-    
+
     -- Add commands and keymaps for accepting or cancelling the rewrite
     vim.api.nvim_create_user_command("AskRewriteAccept", M.accept_rewrite, {})
     vim.api.nvim_set_keymap('n', '<Leader>ry', ':AskRewriteAccept<CR>', { noremap = true })
-    
+
     vim.api.nvim_create_user_command("AskRewriteCancel", M.cancel_rewrite, {})
     vim.api.nvim_set_keymap('n', '<Leader>rn', ':AskRewriteCancel<CR>', { noremap = true })
 end
