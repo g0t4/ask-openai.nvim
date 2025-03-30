@@ -3,6 +3,9 @@ local M = {}
 local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
 local backend = require("ask-openai.questions.backends.chat_completions")
 
+-- Set up a highlight group for the extmarks
+vim.api.nvim_command("highlight default AskRewrite guifg=#00ff00 ctermfg=green")
+
 local function get_visual_selection()
     local _, start_line, start_col, _ = unpack(vim.fn.getpos("'<"))
     local _, end_line, end_col, _ = unpack(vim.fn.getpos("'>"))
@@ -36,6 +39,8 @@ M.end_line = nil
 M.end_col = nil
 M.original_text = nil
 M.current_text = ""
+M.namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
+M.extmark_id = nil
 
 function M.strip_md_from_completion(completion)
     local lines = vim.split(completion, "\n")
@@ -52,37 +57,53 @@ function M.strip_md_from_completion(completion)
     return table.concat(lines, "\n")
 end
 
+local function split_lines_to_table(text)
+    local lines = {}
+    for line in text:gmatch("[^\r\n]+") do
+        table.insert(lines, line)
+    end
+    return lines
+end
+
 function M.handle_stream_chunk(chunk)
     if not chunk then return end
 
-
-    -- Accumulate chunks (good can use this for new lines around, in real time!
+    -- Accumulate chunks
     M.current_text = M.current_text .. chunk
 
     local current_md_stripped = M.strip_md_from_completion(M.current_text)
     local current_polished = ensure_new_lines_around(M.original_text, current_md_stripped)
 
-    -- Update the document with the current accumulated text
+    -- Update the extmark with the current accumulated text
     vim.schedule(function()
-        -- Replace the selection with the current text
-        vim.api.nvim_buf_set_text(
+        -- Clear previous extmark
+        vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
+        
+        -- Split into lines for extmark display
+        local lines = split_lines_to_table(current_polished)
+        if #lines == 0 then return end
+        
+        local first_line = { { table.remove(lines, 1), "AskRewrite" } }
+        
+        -- Format remaining lines for virt_lines
+        local virt_lines = {}
+        for _, line in ipairs(lines) do
+            table.insert(virt_lines, { { line, "AskRewrite" } })
+        end
+        
+        -- Set extmark at the beginning of the selection
+        M.extmark_id = vim.api.nvim_buf_set_extmark(
             0, -- Current buffer
+            M.namespace_id,
             M.start_line - 1, -- Zero-indexed
             M.start_col - 1, -- Zero-indexed
-            M.end_line - 1, -- Zero-indexed
-            M.end_col, -- End column
-            vim.split(current_polished, "\n")
+            {
+                virt_text = first_line,
+                virt_lines = virt_lines,
+                virt_text_pos = "overlay",
+                hl_mode = "combine"
+            }
         )
-
-        -- this is where extmark is gonna probably be easier b/c can just clear it and keep constant row/columns
-        -- Update end line/col based on new text
-        local new_lines = vim.split(current_polished, "\n")
-        M.end_line = M.start_line + #new_lines - 1
-        if #new_lines > 1 then
-            M.end_col = #new_lines[#new_lines]
-        else
-            M.end_col = M.start_col - 1 + #current_polished
-        end
     end)
 end
 
@@ -112,6 +133,49 @@ function ensure_new_lines_around(code, response)
     return response
 end
 
+function M.accept_rewrite()
+    vim.schedule(function()
+        -- Get the current polished text 
+        local current_md_stripped = M.strip_md_from_completion(M.current_text)
+        local current_polished = ensure_new_lines_around(M.original_text, current_md_stripped)
+        local lines = split_lines_to_table(current_polished)
+        
+        -- Replace the selected text with the generated content
+        vim.api.nvim_buf_set_text(
+            0, -- Current buffer
+            M.start_line - 1, -- Zero-indexed
+            M.start_col - 1, -- Zero-indexed
+            M.end_line - 1, -- Zero-indexed
+            M.end_col, -- End column
+            lines
+        )
+        
+        -- Clear the extmark
+        vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
+        
+        -- Reset the module state
+        M.current_text = ""
+        M.extmark_id = nil
+        
+        -- Log acceptance
+        log:info("Rewrite accepted and inserted into buffer", vim.log.levels.INFO)
+    end)
+end
+
+function M.cancel_rewrite()
+    vim.schedule(function()
+        -- Clear the extmark
+        vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
+        
+        -- Reset the module state
+        M.current_text = ""
+        M.extmark_id = nil
+        
+        -- Log cancellation
+        log:info("Rewrite cancelled", vim.log.levels.INFO)
+    end)
+end
+
 function M.abort_if_still_responding()
     if M.handle == nil then
         return
@@ -125,6 +189,9 @@ function M.abort_if_still_responding()
         handle:kill("sigterm")
         handle:close()
     end
+    
+    -- Clear any extmarks
+    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
 end
 
 function M.stream_from_ollama(user_prompt, code, file_name)
@@ -178,6 +245,9 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         -- Clear out refs
         M.handle = nil
         M.pid = nil
+        
+        -- Log completion
+        log:info("Rewrite generation complete", vim.log.levels.INFO)
     end
 
     M.abort_if_still_responding()
@@ -241,13 +311,20 @@ local function ask_and_stream_from_ollama(opts)
 end
 
 function M.setup()
-    -- TODO remove v1 AskRewrite and rename this when done
+    -- Create commands and keymaps for the rewrite functionality
     vim.api.nvim_create_user_command("AskRewrite2", ask_and_stream_from_ollama, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('v', '<Leader>r2', ':<C-u>AskRewrite2 ', { noremap = true })
 
     -- Add a command to abort the stream if needed
     vim.api.nvim_create_user_command("AskRewriteAbort", M.abort_if_still_responding, {})
     vim.api.nvim_set_keymap('n', '<Leader>ra', ':AskRewriteAbort<CR>', { noremap = true })
+    
+    -- Add commands and keymaps for accepting or cancelling the rewrite
+    vim.api.nvim_create_user_command("AskRewriteAccept", M.accept_rewrite, {})
+    vim.api.nvim_set_keymap('n', '<Leader>ry', ':AskRewriteAccept<CR>', { noremap = true })
+    
+    vim.api.nvim_create_user_command("AskRewriteCancel", M.cancel_rewrite, {})
+    vim.api.nvim_set_keymap('n', '<Leader>rn', ':AskRewriteCancel<CR>', { noremap = true })
 end
 
 return M
