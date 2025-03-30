@@ -19,7 +19,9 @@ function Selection:is_empty()
     return self.original_text == nil or self.original_text == ""
 end
 
-function Selection:to_str()
+function Selection:to_str(include_0based_too)
+    include_0based_too = include_0based_too or false
+
     return
         "Selection: 1-based start(line=" .. self.start_line_1based
         .. ",col=" .. self.start_col_1based
