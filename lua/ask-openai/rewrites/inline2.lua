@@ -32,10 +32,10 @@ local function get_visual_selection()
     -- Example usage:
     move(3, 'A', 'C', 'B')
 
-    -- TODO tests for visual line mode:
+    -- TESTs for visual line mode:
     -- - empty line selected (not across to next line) -- has end_line = start_line
     -- - empty line selected by shift+V j    -- has end_line > start_line
-    -- - TODO write down more test cases (of selections), esp if any edge cases that you have problems with
+    -- FYI these tests are working in my initial testing
 
     if #lines == 0 then return "" end
 
