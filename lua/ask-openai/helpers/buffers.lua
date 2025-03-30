@@ -29,12 +29,26 @@ end
 function M.get_visual_selection()
     -- FYI getpos returns a byte index, getcharpos() returns a char index (prefer it)
     --   getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
-    local _, start_line, start_col, _ = unpack(vim.fn.getcharpos("'<"))
-    local _, end_line, end_col, _ = unpack(vim.fn.getcharpos("'>"))
-    local selected_lines = vim.fn.getline(start_line, end_line)
+    local _, start_line_1based, start_col_1based, _ = unpack(vim.fn.getcharpos("'<"))
+    -- start_line/start_col are 1-based (from register value)
+    local _, end_line_1based, end_col_1based_exclusive, _ = unpack(vim.fn.getcharpos("'>"))
+    -- end_line/end_col are 1-based, end_col is end-exclusive (end_col is location of cursor when text was selected)
+    --
+    -- key modes (at least) to consider:
+    --   normal mode
+    --   visual linewise, charwise and blockwise
+    --   select mode
+    --
+    -- FYI :h selection (vim.o.selection) => visual/select modes:
+    --   right now selection value=inclusive in my config
+    --   inclusive=yes/no is last char of selection included
+    --   "past line"=yes/no
+    --   tackle this (if its even an issue) when I encounter a problem with it
 
-    log:info("GETCHARPOS start(line=" .. start_line .. ",col=" .. start_col
-        .. ") end(line=" .. end_line .. ",col=" .. end_col .. ")")
+    local selected_lines = vim.fn.getline(start_line_1based, end_line_1based)
+
+    log:info("GETCHARPOS start(line=" .. start_line_1based .. ",col=" .. start_col_1based
+        .. ") end(line=" .. end_line_1based .. ",col=" .. end_col_1based_exclusive .. ")")
 
     -- TESTs for visual line mode:
     -- - empty line selected (not across to next line) -- has end_line = start_line
@@ -45,12 +59,12 @@ function M.get_visual_selection()
 
     -- TODO add testing and review accuracy of selecting a subset of the start and end line separately
     -- Truncate the last line to the specified end column
-    selected_lines[#selected_lines] = string.sub(selected_lines[#selected_lines], 1, end_col)
+    selected_lines[#selected_lines] = string.sub(selected_lines[#selected_lines], 1, end_col_1based_exclusive)
     -- TODO end column calc is off by one
     -- Truncate the first line thru the specified start column
-    selected_lines[1] = string.sub(selected_lines[1], start_col)
+    selected_lines[1] = string.sub(selected_lines[1], start_col_1based)
 
-    return Selection:new(selected_lines, start_line, start_col, end_line, end_col)
+    return Selection:new(selected_lines, start_line_1based, start_col_1based, end_line_1based, end_col_1based_exclusive)
 end
 
 return M
