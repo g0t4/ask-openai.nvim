@@ -35,6 +35,11 @@ function Prediction:add_chunk_to_prediction(chunk)
     self:redraw_extmarks()
 end
 
+function Prediction:any_chunks()
+    return self.prediction and self.prediction ~= ""
+        or self.buffered_chunks and self.buffered_chunks ~= ""
+end
+
 local function split_lines_to_table(text)
     local lines = {}
     for line in text:gmatch("[^\r\n]+") do

@@ -155,6 +155,7 @@ function M.process_sse(data)
     -- FYI use nil to indicate nothing in the SSE... vs empty line which is a valid thingy right?
     local chunk = nil -- combine all chunks into one string and check for done
     local done = false
+    local done_reason = nil
     for ss_event in data:gmatch("[^\r\n]+") do
         if ss_event:match("^data:%s*%[DONE%]$") then
             -- done, courtesy last event... mostly ignore b/c finish_reason already comes on the prior SSE
@@ -175,7 +176,7 @@ function M.process_sse(data)
         --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.2800621Z","response":"","done":true,"done_reason":"stop","total_duration":131193100,"load_duration":16550700,"prompt_eval_count":19,"prompt_eval_duration":5000000,"eval_count":12,"eval_duration":106000000}
         if success and parsed and parsed.response then
             if parsed.done then
-                local done_reason = parsed.done_reason
+                done_reason = parsed.done_reason
                 done = true
                 if done_reason ~= "stop" then
                     log:warn("WARN - unexpected /api/generate done_reason: ", done_reason, " do you need to handle this too?")
@@ -187,7 +188,7 @@ function M.process_sse(data)
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
     end
-    return chunk, done
+    return chunk, done, done_reason
 end
 
 return M

@@ -116,6 +116,7 @@ function M.ask_for_prediction()
     local stderr = uv.new_pipe(false)
 
     options.on_exit = function(code, signal)
+        log:trace(string.format("spawn - exit code: %d  signal:%s", code, signal))
         if code ~= 0 then
             log:error("spawn - non-zero exit code:", code, "Signal:", signal)
         end
@@ -129,7 +130,7 @@ function M.ask_for_prediction()
     }, options.on_exit)
 
     options.on_stdout = function(err, data)
-        -- log:trace("on_stdout chunk: ", data)
+        log:trace("on_stdout chunk: ", data)
         if err then
             log:warn("on_stdout error: ", err)
             this_prediction:mark_generation_failed()
@@ -137,11 +138,14 @@ function M.ask_for_prediction()
         end
         if data then
             vim.schedule(function()
-                local chunk, generation_done = backend.process_sse(data)
+                local chunk, generation_done, done_reason = backend.process_sse(data)
                 if chunk then
                     this_prediction:add_chunk_to_prediction(chunk)
                 end
                 if generation_done then
+                    if not this_prediction:any_chunks() then
+                        log:trace("DONE, empty prediction, done reason: '" .. (done_reason or "") .. "'")
+                    end
                     this_prediction:mark_generation_finished()
                 end
             end)
