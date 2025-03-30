@@ -66,8 +66,8 @@ function M.handle_stream_chunk(chunk)
         M.extmark_id = vim.api.nvim_buf_set_extmark(
             0, -- Current buffer
             M.namespace_id,
-            M.selection.start_line - 1, -- Zero-indexed
-            M.selection.start_col - 1, -- Zero-indexed
+            M.selection.start_line_1based - 1, -- Zero-indexed
+            M.selection.start_col_1based - 1, -- Zero-indexed
             {
                 virt_text = first_line,
                 virt_lines = virt_lines,
@@ -111,10 +111,10 @@ function M.accept_rewrite()
         local current_polished = ensure_new_lines_around(M.selection.original_text, current_md_stripped)
         local lines = split_lines_to_table(current_polished)
 
-        local use_start_line = M.selection.start_line - 1
-        local use_end_line = M.selection.end_line - 1
-        local use_start_col = M.selection.start_col - 1
-        local use_end_col = M.selection.end_col - 1
+        local use_start_line = M.selection.start_line_1based - 1
+        local use_end_line = M.selection.end_line_1based - 1
+        local use_start_col = M.selection.start_col_1based
+        local use_end_col = M.selection.end_col_1based
 
         log:info("using positions:\n  start_line: " .. use_start_line .. "\n  end_line: " .. use_end_line
             .. "\n  start_col: " .. use_start_col .. "\n  end_col: " .. use_end_col)
@@ -271,6 +271,8 @@ local function ask_and_stream_from_ollama(opts)
     -- TODO add a feedback like mechanism to take notes about the response (i.e. if I like it or not)
     -- PRN capture relevant symbols (i.e. look at variables in scope of the selection and fetch symbols from CoC or just whole file?)
     --    and/or past edits might be sufficient quite often
+
+    -- TODO end column calc is off by one
 
     local selection = buffers.get_visual_selection()
     if selection:is_empty() then

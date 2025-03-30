@@ -2,13 +2,13 @@ local log = require("ask-openai.prediction.logger").predictions() -- TODO rename
 local M = {}
 
 local Selection = {}
-function Selection:new(selected_lines, start_line, start_col, end_line, end_col)
+function Selection:new(selected_lines, start_line_1based, start_col_1based, end_line_1based, end_col_1based)
     local obj = {
         original_text = vim.fn.join(selected_lines, "\n"),
-        start_line = start_line,
-        start_col = start_col,
-        end_line = end_line,
-        end_col = end_col,
+        start_line_1based = start_line_1based,
+        start_col_1based = start_col_1based,
+        end_line_1based = end_line_1based,
+        end_col_1based = end_col_1based,
     }
     setmetatable(obj, self)
     self.__index = self
@@ -21,10 +21,10 @@ end
 
 function Selection:to_str()
     return
-        "Selection: start(line=" .. self.start_line
-        .. ",col=" .. self.start_col
-        .. ") end(line=" .. self.end_line
-        .. ",col=" .. self.end_col
+        "Selection: start(line=" .. self.start_line_1based
+        .. ",col=" .. self.start_col_1based
+        .. ") end(line=" .. self.end_line_1based
+        .. ",col=" .. self.end_col_1based
         .. ")"
 end
 
