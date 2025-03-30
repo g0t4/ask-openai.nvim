@@ -67,9 +67,10 @@ function M.ask_for_prediction()
     local current_line_before = current_line:sub(1, before_is_thru_col) -- sub is END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
     log:trace("current_line_before (1 => " .. before_is_thru_col .. "): '" .. current_line_before .. "'")
 
-    -- TODO revisit what it means for there to be characters after the cursor... are we just generating for this one line then?
-    --    completions are working for text after cursor, I think part of the issue is bad predictions b/c off by one on cursor column position (before/after content)
-    --    mostly review how the completion is displayed
+    -- PRN revisit prediction when cursor has existing text "after" it
+    -- - test case: remove text from a finished line of code (i.e. delete a param in a function call)
+    --   => enter insert mode and qwen2.5-coder (BASE) does a stellar job completing that (respects EOS much better than instruct finetunes)
+    -- - prediction can visually replace existing code (easiest and most logical given the existing text can be rewritten too).. inherently a diff based situation (assume model can rewrite remainder of line?)
 
     local after_starts_at_char_under_cursor = original_col + 1 -- FYI original_col is 0 based, thus +1
     local current_line_after = current_line:sub(after_starts_at_char_under_cursor)
