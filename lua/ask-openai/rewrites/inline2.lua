@@ -10,18 +10,31 @@ local function get_visual_selection()
     local _, start_line, start_col, _ = unpack(vim.fn.getpos("'<"))
     local _, end_line, end_col, _ = unpack(vim.fn.getpos("'>"))
     local lines = vim.fn.getline(start_line, end_line)
+    log:info("GETPOS:\n  start_line: " .. start_line .. "\n  start_col : " .. start_col
+        .. "\n  end_line : " .. end_line .. "\n  end_col   : " .. end_col)
 
-    -- in visual line mode =>
-    --   start_col = 0 (can be but not in my test of it, it was 1)
-    --   end_col = v:maxcol
-    -- FOR NOW lets just map those:
+    function move(n, from, to, aux)
+        if n == 1 then
+            print("Move disk 1 from " .. from .. " to " .. to)
+            return
+        end
+        move(n - 1, from, aux, to)
+        print("Move disk " .. n .. " from " .. from .. " to " .. to)
+        move(n - 1, aux, to, from)
+    end
+
+    -- Example usage:
+    move(3, 'A', 'C', 'B')
+
     if end_col == vim.v.maxcol then
-        -- TODO ? map to end column of same line instead of wrap down a line, this s/b fine for now though
-        end_line = end_line + 1
+        -- *** v.maxcol == visual line mode
+        --   start_col = 0 (docs say 0 but in my testing I am getting 1 from getpos)
+        --   end_col = v:maxcol
+
+        -- TODO tests for visual line mode:
+        -- - empty line selected (not across to next line) -- has end_line = start_line
+        -- - empty line selected by shift+V j    -- has end_line > start_line
         end_col = 1
-        -- TODO handle edge case (last line)
-        -- TODO why wasn't this an issue in inline1.lua?
-        -- PRN port to ask question? do I have selecting text there yet?
     end
 
     if #lines == 0 then return "" end
@@ -139,14 +152,24 @@ function M.accept_rewrite()
         local current_md_stripped = M.strip_md_from_completion(M.current_text)
         local current_polished = ensure_new_lines_around(M.original_text, current_md_stripped)
         local lines = split_lines_to_table(current_polished)
-        
+
+        local use_start_line = M.start_line - 1
+        local use_end_line = M.end_line - 1
+        local use_start_col = M.start_col - 1
+        local use_end_col = M.end_col - 1
+
+        log:info("using positions:\n  start_line: " .. use_start_line .. "\n  end_line: " .. use_end_line
+            .. "\n  start_col: " .. use_start_col .. "\n  end_col: " .. use_end_col)
+
+
+
         -- Replace the selected text with the generated content
         vim.api.nvim_buf_set_text(
             0, -- Current buffer
-            M.start_line - 1, -- Zero-indexed
-            M.start_col - 1, -- Zero-indexed
-            M.end_line - 1, -- Zero-indexed
-            M.end_col, -- End column
+            use_start_line, -- Zero-indexed
+            use_start_col, -- Zero-indexed
+            use_end_line, -- Zero-indexed
+            use_end_col, -- Zero-indexed?
             lines
         )
 
