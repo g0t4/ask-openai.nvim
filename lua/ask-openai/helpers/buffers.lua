@@ -2,14 +2,13 @@ local log = require("ask-openai.prediction.logger").predictions() -- TODO rename
 local M = {}
 
 function M.get_visual_selection()
-    --TODO! port getcharpos to other uses
     -- FYI getpos returns a byte index, getcharpos() returns a char index (prefer it)
     --   getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
     local _, start_line, start_col, _ = unpack(vim.fn.getcharpos("'<"))
     local _, end_line, end_col, _ = unpack(vim.fn.getcharpos("'>"))
     local lines = vim.fn.getline(start_line, end_line)
 
-    log:info("GETCHARPOS - start(line=" .. start_line .. ",col=" .. start_col
+    log:info("GETCHARPOS start(line=" .. start_line .. ",col=" .. start_col
         .. ") end(line=" .. end_line .. ",col=" .. end_col .. ")")
 
     -- TESTs for visual line mode:
