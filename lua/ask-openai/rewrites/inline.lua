@@ -126,8 +126,8 @@ function M.accept_rewrite()
             0, -- Current buffer
             use_start_line, -- Zero-indexed
             use_start_col, -- Zero-indexed
-            use_end_line, -- Zero-indexed
-            use_end_col, -- Zero-indexed?
+            use_end_line, -- Zero-indexed, end-inclusive line/row
+            use_end_col, -- Zero-indexed, end-exclusive column
             lines
         )
 
