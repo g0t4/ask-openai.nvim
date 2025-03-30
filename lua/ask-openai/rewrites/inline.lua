@@ -307,10 +307,12 @@ function M.setup()
     vim.api.nvim_create_user_command("AskRewriteCancel", M.cancel_rewrite, {})
     vim.api.nvim_set_keymap('n', '<Leader>rn', ':AskRewriteCancel<CR>', { noremap = true })
 
-    vim.keymap.set('n', '<leader>ads', function() buffers.dump_last_seletion() end, { noremap = true })
     vim.api.nvim_create_user_command("AskDumpLastSelection", buffers.dump_last_seletion, {})
+    vim.api.nvim_set_keymap('n', '<Leader>ads', ':AskDumpLastSelection<CR>', { noremap = true })
     vim.api.nvim_set_keymap('v', '<Leader>ads', ':<C-u>AskDumpLastSelection<CR>', { noremap = true })
     -- FYI see notes in M.get_visual_selection about you don't want a lua func handler that calls dump
+    -- also prints don't popup if they originated in a lua handler, whereas they do with a vim command
+    --   thus w/ a cmd I get to see the vim.inspect(selection) with a pprint json like view of fields
 end
 
 return M
