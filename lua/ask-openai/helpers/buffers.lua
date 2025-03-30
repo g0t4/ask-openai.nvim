@@ -9,8 +9,8 @@ function M.get_visual_selection()
     local _, end_line, end_col, _ = unpack(vim.fn.getcharpos("'>"))
     local lines = vim.fn.getline(start_line, end_line)
 
-    log:info("GETCHARPOS:\n  start_line: " .. start_line .. "\n  start_col : " .. start_col
-        .. "\n  end_line : " .. end_line .. "\n  end_col   : " .. end_col)
+    log:info("GETCHARPOS - start_line=" .. start_line .. " start_col=" .. start_col
+        .. " end_line=" .. end_line .. " end_col=" .. end_col)
 
     -- TESTs for visual line mode:
     -- - empty line selected (not across to next line) -- has end_line = start_line
