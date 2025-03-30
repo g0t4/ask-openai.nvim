@@ -8,6 +8,18 @@ local function get_visual_selection()
     local _, end_line, end_col, _ = unpack(vim.fn.getpos("'>"))
     local lines = vim.fn.getline(start_line, end_line)
 
+    -- in visual line mode =>
+    --   start_col = 0 (can be but not in my test of it, it was 1)
+    --   end_col = v:maxcol
+    -- FOR NOW lets just map those:
+    if end_col == vim.v.maxcol then
+        -- TODO ? map to end column of same line instead of wrap down a line, this s/b fine for now though
+        end_line = end_line + 1
+        end_col = 1
+        -- TODO handle edge case (last line)
+        -- TODO why wasn't this an issue in inline1.lua?
+    end
+
     if #lines == 0 then return "" end
 
     lines[#lines] = string.sub(lines[#lines], 1, end_col)
