@@ -21,11 +21,11 @@ end
 
 function Selection:to_str()
     return
-        "Selection: start(line=" .. self.start_line_1based
+        "Selection: 1-based start(line=" .. self.start_line_1based
         .. ",col=" .. self.start_col_1based
         .. ") end(line=" .. self.end_line_1based
         .. ",col=" .. self.end_col_1based
-        .. ")"
+        .. ") (" .. self.original_text .. ")"
 end
 
 function Selection:log_info()
@@ -63,8 +63,6 @@ function M.get_visual_selection()
     -- getline is 1-based, end-inclusive (optional)
     local selected_lines = vim.fn.getline(start_line_1based, end_line_1based)
 
-    log:trace("GETCHARPOS start(line=" .. start_line_1based .. ",col=" .. start_col_1based
-        .. ") end(line=" .. end_line_1based .. ",col=" .. end_col_1based .. ")")
 
 
     if #selected_lines == 0 then return "" end
@@ -77,7 +75,9 @@ function M.get_visual_selection()
     local first_line = selected_lines[1]
     selected_lines[1] = string.sub(first_line, start_col_1based)
 
-    return Selection:new(selected_lines, start_line_1based, start_col_1based, end_line_1based, end_col_1based)
+    local selection = Selection:new(selected_lines, start_line_1based, start_col_1based, end_line_1based, end_col_1based)
+    selection:log_info()
+    return selection
 end
 
 function M.dump_last_seletion()
