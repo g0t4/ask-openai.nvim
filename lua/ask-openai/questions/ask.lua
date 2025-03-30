@@ -1,21 +1,8 @@
+local buffers = require("ask-openai.helpers.buffers")
+local backend = require("ask-openai.questions.backends.chat_completions")
+local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
 local uv = vim.uv
 local M = {}
-local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
-
-local backend = require("ask-openai.questions.backends.chat_completions")
-
-local function get_visual_selection()
-    local _, start_line, start_col, _ = unpack(vim.fn.getpos("'<"))
-    local _, end_line, end_col, _ = unpack(vim.fn.getpos("'>"))
-    local lines = vim.fn.getline(start_line, end_line)
-
-    if #lines == 0 then return "" end
-
-    lines[#lines] = string.sub(lines[#lines], 1, end_col)
-    lines[1] = string.sub(lines[1], start_col)
-
-    return vim.fn.join(lines, "\n"), start_line, start_col, end_line, end_col
-end
 
 function M.send_question(user_prompt, code, file_name)
     local system_prompt = "You are a neovim AI plugin that answers questions."
@@ -111,7 +98,7 @@ function M.send_question(user_prompt, code, file_name)
 end
 
 local function ask_question_about(opts)
-    local code = get_visual_selection()
+    local code = buffers.get_visual_selection()
     if not code then
         error("No visual selection found.")
         return

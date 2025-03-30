@@ -1,33 +1,11 @@
+local buffers = require("ask-openai.helpers.buffers")
+local backend = require("ask-openai.questions.backends.chat_completions")
+local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
 local uv = vim.uv
 local M = {}
-local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
-local backend = require("ask-openai.questions.backends.chat_completions")
 
 -- Set up a highlight group for the extmarks
 vim.api.nvim_command("highlight default AskRewrite guifg=#00ff00 ctermfg=green")
-
-local function get_visual_selection()
-    --TODO! port getcharpos to other uses
-    -- FYI getpos returns a byte index, getcharpos() returns a char index (prefer it)
-    --   getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
-    local _, start_line, start_col, _ = unpack(vim.fn.getcharpos("'<"))
-    local _, end_line, end_col, _ = unpack(vim.fn.getcharpos("'>"))
-    local lines = vim.fn.getline(start_line, end_line)
-    log:info("GETCHARPOS:\n  start_line: " .. start_line .. "\n  start_col : " .. start_col
-        .. "\n  end_line : " .. end_line .. "\n  end_col   : " .. end_col)
-
-    -- TESTs for visual line mode:
-    -- - empty line selected (not across to next line) -- has end_line = start_line
-    -- - empty line selected by shift+V j    -- has end_line > start_line
-    -- FYI these tests are working in my initial testing
-
-    if #lines == 0 then return "" end
-
-    lines[#lines] = string.sub(lines[#lines], 1, end_col)
-    lines[1] = string.sub(lines[1], start_col)
-
-    return vim.fn.join(lines, "\n"), start_line, start_col, end_line, end_col
-end
 
 -- Initialize selection position variables at module level
 M.start_line = nil
@@ -293,7 +271,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 end
 
 local function ask_and_stream_from_ollama(opts)
-    local original_text, start_line, start_col, end_line, end_col = get_visual_selection()
+    local original_text, start_line, start_col, end_line, end_col = buffers.get_visual_selection()
     if not original_text then
         error("No visual selection found.")
         return
