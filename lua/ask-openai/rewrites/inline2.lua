@@ -55,14 +55,12 @@ end
 function M.handle_stream_chunk(chunk)
     if not chunk then return end
 
-    -- Strip markdown if needed
-    -- local cleaned_chunk = M.strip_md_from_completion(chunk)
 
     -- Accumulate chunks (good can use this for new lines around, in real time!
     M.current_text = M.current_text .. chunk
 
-    -- Process newlines and ensure proper formatting
-    local formatted_text = ensure_new_lines_around(M.original_text, M.current_text)
+    local current_md_stripped = M.strip_md_from_completion(M.current_text)
+    local current_polished = ensure_new_lines_around(M.original_text, current_md_stripped)
 
     -- Update the document with the current accumulated text
     vim.schedule(function()
@@ -73,17 +71,17 @@ function M.handle_stream_chunk(chunk)
             M.start_col - 1, -- Zero-indexed
             M.end_line - 1, -- Zero-indexed
             M.end_col, -- End column
-            vim.split(formatted_text, "\n")
+            vim.split(current_polished, "\n")
         )
 
         -- this is where extmark is gonna probably be easier b/c can just clear it and keep constant row/columns
         -- Update end line/col based on new text
-        local new_lines = vim.split(formatted_text, "\n")
+        local new_lines = vim.split(current_polished, "\n")
         M.end_line = M.start_line + #new_lines - 1
         if #new_lines > 1 then
             M.end_col = #new_lines[#new_lines]
         else
-            M.end_col = M.start_col - 1 + #formatted_text
+            M.end_col = M.start_col - 1 + #current_polished
         end
     end)
 end
