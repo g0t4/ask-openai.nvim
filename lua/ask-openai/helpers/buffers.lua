@@ -63,7 +63,7 @@ function M.get_visual_selection()
     -- getline is 1-based, end-inclusive (optional)
     local selected_lines = vim.fn.getline(start_line_1based, end_line_1based)
 
-    log:info("GETCHARPOS start(line=" .. start_line_1based .. ",col=" .. start_col_1based
+    log:trace("GETCHARPOS start(line=" .. start_line_1based .. ",col=" .. start_col_1based
         .. ") end(line=" .. end_line_1based .. ",col=" .. end_col_1based .. ")")
 
 
