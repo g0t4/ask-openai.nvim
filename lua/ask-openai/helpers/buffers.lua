@@ -39,9 +39,10 @@ function M.get_visual_selection()
     -- start_line/start_col are 1-based (from register value)
     local _, end_line_1based, end_col_1based, _ = unpack(vim.fn.getcharpos("'>"))
     -- end_line/end_col are 1-based, end_col appears to be the cursor position at the end of a selection
-    -- another possible issue... if selection was made in visual linewise mode, the end col seems to be inclusive?!
-    --   in visual mode keymap for `<leader>ads` if selecting a subset of line it is still reeporting end as end of line?!
-    --      and then if I exit visual mode (back to normal) then ads reports correct end_col based on subset selected
+    --
+    -- FYI, in visual mode, it will return the previous selection while making a new selection, so make sure it "selects"? <CR>?
+    --   for now I am adding <Esc> as first part of keymaps which will "commit" it as last selection
+    --   if I hate this I can handle smth else for in visual mode.. FML this sucks bird-flu, chicken ass nuggets
     --
     -- key modes (at least) to consider:
     --   normal mode
@@ -62,8 +63,6 @@ function M.get_visual_selection()
 
     -- getline is 1-based, end-inclusive (optional)
     local selected_lines = vim.fn.getline(start_line_1based, end_line_1based)
-
-
 
     if #selected_lines == 0 then return "" end
 
