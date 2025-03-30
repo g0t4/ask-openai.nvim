@@ -99,8 +99,7 @@ end
 
 local function ask_question_about(opts)
     local selection = buffers.get_visual_selection()
-    if not selection.original_text then
-        -- TODO add empty check to selection class
+    if selection:is_empty() then
         error("No visual selection found.")
         return
     end
