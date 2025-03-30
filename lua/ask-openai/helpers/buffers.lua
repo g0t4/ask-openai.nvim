@@ -24,6 +24,7 @@ function M.get_visual_selection()
     -- Truncate the first line thru the specified start column
     selected_lines[1] = string.sub(selected_lines[1], start_col)
 
+    -- return a table instead of 5 results
     return vim.fn.join(selected_lines, "\n"), start_line, start_col, end_line, end_col
 end
 
