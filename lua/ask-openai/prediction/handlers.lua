@@ -55,25 +55,33 @@ function M.ask_for_prediction()
     local num_rows_total = vim.api.nvim_buf_line_count(CURRENT_BUFFER)
     -- TODO test for 0based vs 1based indexing in get_line_range (I know you can get a number past end of document but that works out given get_lines is END-EXCLUSIVE
     local first_row, last_row = M.get_line_range(original_row, allow_lines, num_rows_total)
-    log:trace("first_row", first_row, "last_row", last_row, "original_row", original_row)
+    log:trace("first_row", first_row, "last_row", last_row, "original_row", original_row, "original_col", original_col)
 
 
     local current_line = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row, original_row + 1, IGNORE_BOUNDARIES)[1]
     -- get_lines is END-EXCLUSIVE, 0-based
     log:trace("current_line", current_line)
 
-    local current_before_thru_cursor = current_line:sub(1, original_col + 1) -- sub is END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
+    local before_is_thru_col = original_col -- original_col is 0-based, but don't +1 b/c that would include the char under the cursor which goes after any typed/inserted chars
+    -- test edge case: enter insert mode 'i' => type/paste char(s) => observe char under cursor position shifts right
+    local current_line_before = current_line:sub(1, before_is_thru_col) -- sub is END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
+    log:trace("current_line_before (1 => " .. before_is_thru_col .. "): '" .. current_line_before .. "'")
+
     -- TODO revisit what it means for there to be characters after the cursor... are we just generating for this one line then?
-    --    mostly revieww how the completion is displayed
-    local current_after_cursor = current_line:sub(original_col + 2)
+    --    completions are working for text after cursor, I think part of the issue is bad predictions b/c off by one on cursor column position (before/after content)
+    --    mostly review how the completion is displayed
+
+    local after_starts_at_char_under_cursor = original_col + 1 -- FYI original_col is 0 based, thus +1
+    local current_line_after = current_line:sub(after_starts_at_char_under_cursor)
+    log:trace("current_line_after (" .. after_starts_at_char_under_cursor .. " => end): '" .. current_line_after .. "'")
 
     local lines_before_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, first_row, original_row, IGNORE_BOUNDARIES) -- 0based, END-EXCLUSIVE
-    local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_before_thru_cursor
+    local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_line_before
 
     -- TODO edge cases for new line at end of current line? is that a concern
     local lines_after_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row + 1, last_row, IGNORE_BOUNDARIES) -- 0based END-EXCLUSIVE
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
-    local document_suffix = current_after_cursor .. "\n" .. table.concat(lines_after_current, "\n")
+    local document_suffix = current_line_after .. "\n" .. table.concat(lines_after_current, "\n")
 
     if log.is_verbose_enabled() then
         -- if in trace mode... combine document prefix and suffix and check if matches entire document:
