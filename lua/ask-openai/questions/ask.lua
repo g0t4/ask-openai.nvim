@@ -24,7 +24,7 @@ function M.send_question(user_prompt, code, file_name)
     local user_message = user_prompt
     if code then
         user_message = user_message
-            .. ". Here is the relevant code from" .. file_name
+            .. ". Here is my code from " .. file_name
             .. ":\n\n" .. code
     end
 

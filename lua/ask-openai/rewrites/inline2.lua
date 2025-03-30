@@ -1,6 +1,7 @@
 local uv = vim.uv
 local M = {}
-local backend -- Imported at module level to avoid circular references
+local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
+local backend = require("ask-openai.questions.backends.chat_completions")
 
 local function get_visual_selection()
     local _, start_line, start_col, _ = unpack(vim.fn.getpos("'<"))
@@ -44,7 +45,7 @@ function M.handle_stream_chunk(chunk)
     -- Strip markdown if needed
     -- local cleaned_chunk = M.strip_md_from_completion(chunk)
 
-    -- Accumulate chunks
+    -- Accumulate chunks (good can use this for new lines around, in real time!
     M.current_text = M.current_text .. chunk
 
     -- Process newlines and ensure proper formatting
@@ -62,6 +63,7 @@ function M.handle_stream_chunk(chunk)
             vim.split(formatted_text, "\n")
         )
 
+        -- this is where extmark is gonna probably be easier b/c can just clear it and keep constant row/columns
         -- Update end line/col based on new text
         local new_lines = vim.split(formatted_text, "\n")
         M.end_line = M.start_line + #new_lines - 1
@@ -131,7 +133,11 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         },
         model = "qwen2.5-coder:7b-instruct-q8_0",
         stream = true,
-        temperature = 0.2
+        temperature = 0.2,
+        -- TODO do I need num_ctx (can't recall why I set it - check predicitons code)
+        -- options = {
+        --     num_ctx = 8192
+        -- }
     }
 
     local json = vim.fn.json_encode(body)
@@ -153,7 +159,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
     options.on_exit = function(code, signal)
         if code ~= 0 then
-            vim.notify("Error in curl command: " .. tostring(code) .. " Signal: " .. tostring(signal), vim.log.levels.ERROR)
+            log:error("Error in curl command: " .. tostring(code) .. " Signal: " .. tostring(signal), vim.log.levels.ERROR)
         end
         stdout:close()
         stderr:close()
@@ -172,7 +178,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
     options.on_stdout = function(err, data)
         if err then
-            vim.notify("Error reading stdout: " .. tostring(err), vim.log.levels.WARN)
+            log:error("Error reading stdout: " .. tostring(err), vim.log.levels.WARN)
             return
         end
         if data then
@@ -183,7 +189,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
                 end
                 if generation_done then
                     -- Optionally do something when generation is complete
-                    vim.notify("Rewrite complete", vim.log.levels.INFO)
+                    log:info("Rewrite complete", vim.log.levels.INFO)
                 end
             end)
         end
@@ -192,7 +198,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
     options.on_stderr = function(err, data)
         if err or (data and #data > 0) then
-            vim.notify("Error from curl: " .. tostring(data or err), vim.log.levels.WARN)
+            log:error("Error from curl: " .. tostring(data or err), vim.log.levels.WARN)
         end
     end
     uv.read_start(stderr, options.on_stderr)
@@ -215,15 +221,16 @@ local function ask_and_stream_from_ollama(opts)
     M.end_col = end_col
     M.original_text = original_text
     M.current_text = ""
+    log:info(string.format(
+        "Original text: %s\nstart_line: %d\nstart_col: %d\nend_line: %d\nend_col: %d",
+        original_text, start_line, start_col, end_line, end_col
+    ), vim.log.levels.INFO)
 
-    -- Stream the response
     M.stream_from_ollama(user_prompt, original_text, file_name)
 end
 
 function M.setup()
-    -- Import backend module now to avoid circular dependencies
-    backend = require("ask-openai.questions.backends.chat_completions")
-
+    -- TODO remove v1 AskRewrite and rename this when done
     vim.api.nvim_create_user_command("AskRewrite2", ask_and_stream_from_ollama, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('v', '<Leader>r2', ':<C-u>AskRewrite2 ', { noremap = true })
 
