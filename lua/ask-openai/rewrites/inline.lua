@@ -271,6 +271,11 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 end
 
 local function ask_and_stream_from_ollama(opts)
+
+    -- TODO add an arg or separate command that includes surrounding context (and marks what is selected for rewrite => kinda like Zed does)
+    -- TODO add a mechanism to capture requests so I can look into prompt updates/fine-tuning/DPO/etc or just test cases
+    -- TODO add a feedback like mechanism to take notes about the response (i.e. if I like it or not)
+
     local selection = buffers.get_visual_selection()
     if not selection.original_text then
         error("No visual selection found.")
