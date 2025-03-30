@@ -40,6 +40,10 @@ function Logger:ensure_file_is_open()
         if not self.file then
             error("Failed to open log file: " .. path)
         end
+
+        -- write header/blank lines so anyone tailing the file sees a separator
+        local header = "\n\n\n============================= NEW NVIM INSTANCE ===========================================\n\n\n"
+        self.file:write(header)
     end
 end
 
