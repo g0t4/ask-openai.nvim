@@ -1,4 +1,6 @@
+local uv = vim.uv
 local M = {}
+local backend -- Imported at module level to avoid circular references
 
 local function get_visual_selection()
     local _, start_line, start_col, _ = unpack(vim.fn.getpos("'<"))
@@ -13,14 +15,20 @@ local function get_visual_selection()
     return vim.fn.join(lines, "\n"), start_line, start_col, end_line, end_col
 end
 
+-- Initialize selection position variables at module level
+M.start_line = nil
+M.start_col = nil
+M.end_line = nil
+M.end_col = nil
+M.original_text = nil
+M.current_text = ""
 
 function M.strip_md_from_completion(completion)
     local lines = vim.split(completion, "\n")
 
     local isFirstLineStartOfCodeBlock = lines[1]:match("^```(%S*)$")
     local isLastLineEndOfCodeBlock = lines[#lines]:match("^```")
-    -- PRN warn if both indicators not true?
-
+    
     if isLastLineEndOfCodeBlock then
         table.remove(lines, #lines)
     end
@@ -30,7 +38,82 @@ function M.strip_md_from_completion(completion)
     return table.concat(lines, "\n")
 end
 
-function M.send_to_ollama(user_prompt, code, file_name)
+function M.handle_stream_chunk(chunk)
+    if not chunk then return end
+    
+    -- Strip markdown if needed
+    local cleaned_chunk = M.strip_md_from_completion(chunk)
+    
+    -- Accumulate chunks
+    M.current_text = M.current_text .. cleaned_chunk
+    
+    -- Process newlines and ensure proper formatting
+    local formatted_text = ensure_new_lines_around(M.original_text, M.current_text)
+    
+    -- Update the document with the current accumulated text
+    vim.schedule(function()
+        -- Replace the selection with the current text
+        vim.api.nvim_buf_set_text(
+            0,  -- Current buffer
+            M.start_line - 1,  -- Zero-indexed
+            M.start_col - 1,  -- Zero-indexed
+            M.end_line - 1,   -- Zero-indexed
+            M.end_col,        -- End column
+            vim.split(formatted_text, "\n")
+        )
+        
+        -- Update end line/col based on new text
+        local new_lines = vim.split(formatted_text, "\n")
+        M.end_line = M.start_line + #new_lines - 1
+        if #new_lines > 1 then
+            M.end_col = #new_lines[#new_lines]
+        else
+            M.end_col = M.start_col - 1 + #formatted_text
+        end
+    end)
+end
+
+local function ensure_new_lines_around(code, response)
+    -- Ensure preserve blank line at start of selection (if present)
+    local selected_lines = vim.split(code, "\n")
+    local response_lines = vim.split(response, "\n")
+    local selected_first_line = selected_lines[1]
+    local response_first_line = response_lines[1]
+    if selected_first_line:match("^%s*$")
+        and not response_first_line:match("^%s*$")
+    then
+        response = selected_first_line .. "\n" .. response
+        response_lines = vim.split(response, "\n")
+    end
+
+    -- Ensure trailing new line is retained (if present)
+    local selected_last_line = selected_lines[#selected_lines]
+    local response_last_line = response_lines[#response_lines]
+    if selected_last_line:match("^%s*$")
+        and not response_last_line:match("^%s*$")
+    then
+        response = response .. "\n" .. selected_last_line .. "\n"
+    end
+
+    return response
+end
+
+function M.abort_if_still_responding()
+    if M.handle == nil then
+        return
+    end
+
+    local handle = M.handle
+    local pid = M.pid
+    M.handle = nil
+    M.pid = nil
+    if handle ~= nil and not handle:is_closing() then
+        handle:kill("sigterm")
+        handle:close()
+    end
+end
+
+function M.stream_from_ollama(user_prompt, code, file_name)
     local system_prompt = "You are a neovim AI plugin that rewrites code. "
         .. "Preserve indentation."
         .. "No explanations, no markdown blocks. No ``` nor ` surrounding your answer. "
@@ -46,67 +129,76 @@ function M.send_to_ollama(user_prompt, code, file_name)
             { role = "user",   content = user_message },
         },
         model = "qwen2.5-coder:7b-instruct-q8_0",
-        stream = false,
+        stream = true,
         temperature = 0.2
     }
 
     local json = vim.fn.json_encode(body)
-    local response = vim.fn.system({
-        "curl", "-s", "-X", "POST", "http://ollama:11434/v1/chat/completions",
-        "-H", "Content-Type: application/json",
-        "-d", json
-    })
+    
+    local options = {
+        command = "curl",
+        args = {
+            "-fsSL",
+            "--no-buffer", -- Prevent curl from buffering output
+            "-X", "POST",
+            "http://ollama:11434/v1/chat/completions",
+            "-H", "Content-Type: application/json",
+            "-d", json
+        },
+    }
 
-    local parsed = vim.fn.json_decode(response)
+    local stdout = uv.new_pipe(false)
+    local stderr = uv.new_pipe(false)
 
-    if parsed and parsed.choices and #parsed.choices > 0 then
-        return M.strip_md_from_completion(parsed.choices[1].message.content)
-    else
-        error("Failed to get completion from Ollama API: " .. tostring(response))
+    options.on_exit = function(code, signal)
+        if code ~= 0 then
+            vim.notify("Error in curl command: " .. tostring(code) .. " Signal: " .. tostring(signal), vim.log.levels.ERROR)
+        end
+        stdout:close()
+        stderr:close()
+
+        -- Clear out refs
+        M.handle = nil
+        M.pid = nil
     end
+
+    M.abort_if_still_responding()
+
+    M.handle, M.pid = uv.spawn(options.command, {
+        args = options.args,
+        stdio = { nil, stdout, stderr },
+    }, options.on_exit)
+
+    options.on_stdout = function(err, data)
+        if err then
+            vim.notify("Error reading stdout: " .. tostring(err), vim.log.levels.WARN)
+            return
+        end
+        if data then
+            vim.schedule(function()
+                local chunk, generation_done = backend.process_sse(data)
+                if chunk then
+                    M.handle_stream_chunk(chunk)
+                end
+                if generation_done then
+                    -- Optionally do something when generation is complete
+                    vim.notify("Rewrite complete", vim.log.levels.INFO)
+                end
+            end)
+        end
+    end
+    uv.read_start(stdout, options.on_stdout)
+
+    options.on_stderr = function(err, data)
+        if err or (data and #data > 0) then
+            vim.notify("Error from curl: " .. tostring(data or err), vim.log.levels.WARN)
+        end
+    end
+    uv.read_start(stderr, options.on_stderr)
 end
 
-local function ensure_new_lines_around(code, response)
-    -- this is a curtesy b/c its easy to select paragraphs with {} but it includes line before and after
-    --    I can also pay attention to my selections
-
-    -- TODO write tests of this going forward, don't manually test further
-
-    -- ensure preserve blank line at start of selection (if present)
-    local selected_lines = vim.split(code, "\n")
-    local response_lines = vim.split(response, "\n")
-    local selected_first_line = selected_lines[1]
-    local response_first_line = response_lines[1]
-    if selected_first_line:match("^%s*$")
-        and not response_first_line:match("^%s*$")
-    then
-        -- print("Adding first line of code to completion")
-        -- yup, add it verbatim so whitespace can still be there in that first line
-        response = selected_first_line .. "\n" .. response
-        -- resplit
-        response_lines = vim.split(response, "\n")
-    end
-
-    -- ensure trailing new line is retained (if present)
-    local selected_last_line = selected_lines[#selected_lines]
-    local response_last_line = response_lines[#response_lines]
-    if selected_last_line:match("^%s*$")
-        and not response_last_line:match("^%s*$")
-    then
-        -- print("Adding trailing new line to completion")
-        -- print("selected_last_line: '" .. selected_last_line .. "'")
-        -- print("response_last_line: '" .. response_last_line .. "'")
-        -- yup, add it verbatim so whitespace can still be there in that last line
-        response = response .. "\n" .. selected_last_line .. "\n"
-    end
-
-    -- FYI could also look into running formatter on returned code in a way that can be undone by user if undesired but that fixes issues w/ indentation otherwise?
-
-    return response
-end
-
-local function ask_and_send_to_ollama(opts)
-    local original_text = get_visual_selection()
+local function ask_and_stream_from_ollama(opts)
+    local original_text, start_line, start_col, end_line, end_col = get_visual_selection()
     if not original_text then
         error("No visual selection found.")
         return
@@ -115,20 +207,28 @@ local function ask_and_send_to_ollama(opts)
     local user_prompt = opts.args
     local file_name = vim.fn.expand("%:t")
 
-    local rewritten_text = M.send_to_ollama(user_prompt, original_text, file_name)
-    vim.fn.setreg("a", rewritten_text) -- set before to troubleshot if later fails
+    -- Store selection details for later use
+    M.start_line = start_line
+    M.start_col = start_col
+    M.end_line = end_line
+    M.end_col = end_col
+    M.original_text = original_text
+    M.current_text = ""
 
-    rewritten_text = ensure_new_lines_around(original_text, rewritten_text)
-    vim.fn.setreg("a", rewritten_text)
-
-    -- Replace the selection with the new text
-    vim.cmd('normal! gv"ap')
+    -- Stream the response
+    M.stream_from_ollama(user_prompt, original_text, file_name)
 end
 
 function M.setup()
-    -- TODO port over once I get this v2 working
-    vim.api.nvim_create_user_command("AskRewrite2", ask_and_send_to_ollama, { range = true, nargs = 1 })
+    -- Import backend module now to avoid circular dependencies
+    backend = require("ask-openai.questions.backends.chat_completions")
+    
+    vim.api.nvim_create_user_command("AskRewrite2", ask_and_stream_from_ollama, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('v', '<Leader>r2', ':<C-u>AskRewrite2 ', { noremap = true })
+    
+    -- Add a command to abort the stream if needed
+    vim.api.nvim_create_user_command("AskRewriteAbort", M.abort_if_still_responding, {})
+    vim.api.nvim_set_keymap('n', '<Leader>ra', ':AskRewriteAbort<CR>', { noremap = true })
 end
 
 return M
