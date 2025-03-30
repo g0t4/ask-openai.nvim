@@ -121,7 +121,7 @@ function M.accept_rewrite()
 
 
 
-        -- Replace the selected text with the generated content
+        -- Relpace the selected text with the generated content
         vim.api.nvim_buf_set_text(
             0, -- Current buffer
             use_start_line, -- Zero-indexed
