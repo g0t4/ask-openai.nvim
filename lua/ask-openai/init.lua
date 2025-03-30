@@ -176,7 +176,7 @@ function _module.setup(options)
 
     _module.enable_predictions()
 
-    require("ask-openai.rewrites.inline2").setup()
+    require("ask-openai.rewrites.inline").setup()
     require("ask-openai.questions.ask").setup()
 end
 
