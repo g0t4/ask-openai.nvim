@@ -112,8 +112,8 @@ function M.accept_rewrite()
 
         local use_start_line = M.selection.start_line_1based - 1
         local use_end_line = M.selection.end_line_1based - 1
-        local use_start_col = M.selection.start_col_1based
-        local use_end_col = M.selection.end_col_1based
+        local use_start_col = M.selection.start_col_1based - 1
+        local use_end_col = M.selection.end_col_1based - 1
 
         log:info("using positions:\n  start_line: " .. use_start_line .. "\n  end_line: " .. use_end_line
             .. "\n  start_col: " .. use_start_col .. "\n  end_col: " .. use_end_col)
