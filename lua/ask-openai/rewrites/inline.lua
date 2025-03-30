@@ -115,9 +115,11 @@ function M.accept_rewrite()
         local use_start_col_0based = M.selection.start_col_1based - 1
         local use_end_col_0based = M.selection.end_col_1based - 1
 
-        log:info("using positions:\n  start_line: " .. use_start_line_0based .. "\n  end_line: " .. use_end_line_0based
-            .. "\n  start_col: " .. use_start_col_0based .. "\n  end_col: " .. use_end_col_0based)
-
+        log:info("nvim_buf_set_text: 0-based start(line=" .. use_start_line_0based
+            .. ",col=" .. use_start_col_0based
+            .. ") end(line=" .. use_end_line_0based
+            .. ",col=" .. use_end_col_0based
+            .. ")")
 
         -- Relpace the selected text with the generated content
         vim.api.nvim_buf_set_text(
