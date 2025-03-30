@@ -8,11 +8,7 @@ local M = {}
 vim.api.nvim_command("highlight default AskRewrite guifg=#00ff00 ctermfg=green")
 
 -- Initialize selection position variables at module level
-M.start_line = nil
-M.start_col = nil
-M.end_line = nil
-M.end_col = nil
-M.original_text = nil
+M.selection = nil
 M.current_text = ""
 M.namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
 M.extmark_id = nil
@@ -47,7 +43,7 @@ function M.handle_stream_chunk(chunk)
     M.current_text = M.current_text .. chunk
 
     local current_md_stripped = M.strip_md_from_completion(M.current_text)
-    local current_polished = ensure_new_lines_around(M.original_text, current_md_stripped)
+    local current_polished = ensure_new_lines_around(M.selection.original_text, current_md_stripped)
 
     -- Update the extmark with the current accumulated text
     vim.schedule(function()
@@ -70,8 +66,8 @@ function M.handle_stream_chunk(chunk)
         M.extmark_id = vim.api.nvim_buf_set_extmark(
             0, -- Current buffer
             M.namespace_id,
-            M.start_line - 1, -- Zero-indexed
-            M.start_col - 1, -- Zero-indexed
+            M.selection.start_line - 1, -- Zero-indexed
+            M.selection.start_col - 1, -- Zero-indexed
             {
                 virt_text = first_line,
                 virt_lines = virt_lines,
@@ -112,13 +108,13 @@ function M.accept_rewrite()
     vim.schedule(function()
         -- Get the current polished text
         local current_md_stripped = M.strip_md_from_completion(M.current_text)
-        local current_polished = ensure_new_lines_around(M.original_text, current_md_stripped)
+        local current_polished = ensure_new_lines_around(M.selection.original_text, current_md_stripped)
         local lines = split_lines_to_table(current_polished)
 
-        local use_start_line = M.start_line - 1
-        local use_end_line = M.end_line - 1
-        local use_start_col = M.start_col - 1
-        local use_end_col = M.end_col - 1
+        local use_start_line = M.selection.start_line - 1
+        local use_end_line = M.selection.end_line - 1
+        local use_start_col = M.selection.start_col - 1
+        local use_end_col = M.selection.end_col - 1
 
         log:info("using positions:\n  start_line: " .. use_start_line .. "\n  end_line: " .. use_end_line
             .. "\n  start_col: " .. use_start_col .. "\n  end_col: " .. use_end_col)
@@ -287,16 +283,9 @@ local function ask_and_stream_from_ollama(opts)
     local file_name = vim.fn.expand("%:t")
 
     -- Store selection details for later use
-    M.start_line = selection.start_line
-    M.start_col = selection.start_col
-    M.end_line = selection.end_line
-    M.end_col = selection.end_col
-    M.original_text = selection.original_text
+    M.selection = selection
     M.current_text = ""
-    log:info(string.format(
-        "Original text: %s\nstart_line: %d\nstart_col: %d\nend_line: %d\nend_col: %d",
-        selection.original_text, selection.start_line, selection.start_col, selection.end_line, selection.end_col
-    ))
+    selection:log_info()
 
 
     M.stream_from_ollama(user_prompt, selection.original_text, file_name)

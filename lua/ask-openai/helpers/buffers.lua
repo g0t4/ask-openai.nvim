@@ -19,6 +19,13 @@ function Selection:is_empty()
     return self.original_text == nil or self.original_text == ""
 end
 
+function Selection:log_info()
+    log:info(string.format(
+        "Original text: %s\nstart_line: %d\nstart_col: %d\nend_line: %d\nend_col: %d",
+        self.original_text, self.start_line, self.start_col, self.end_line, self.end_col
+    ))
+end
+
 function M.get_visual_selection()
     -- FYI getpos returns a byte index, getcharpos() returns a char index (prefer it)
     --   getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
