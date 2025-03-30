@@ -7,10 +7,13 @@ local backend = require("ask-openai.questions.backends.chat_completions")
 vim.api.nvim_command("highlight default AskRewrite guifg=#00ff00 ctermfg=green")
 
 local function get_visual_selection()
-    local _, start_line, start_col, _ = unpack(vim.fn.getpos("'<"))
-    local _, end_line, end_col, _ = unpack(vim.fn.getpos("'>"))
+    --TODO! port getcharpos to other uses
+    -- FYI getpos returns a byte offset for the col, not necessarily a char offset, so use getcharpos() instead
+    --   getcharpos seems like it might be able to fix the  v:maxcol issue w/ visual line mode too
+    local _, start_line, start_col, _ = unpack(vim.fn.getcharpos("'<"))
+    local _, end_line, end_col, _ = unpack(vim.fn.getcharpos("'>"))
     local lines = vim.fn.getline(start_line, end_line)
-    log:info("GETPOS:\n  start_line: " .. start_line .. "\n  start_col : " .. start_col
+    log:info("GETCHARPOS:\n  start_line: " .. start_line .. "\n  start_col : " .. start_col
         .. "\n  end_line : " .. end_line .. "\n  end_col   : " .. end_col)
 
     function move(n, from, to, aux)
@@ -23,19 +26,16 @@ local function get_visual_selection()
         move(n - 1, aux, to, from)
     end
 
+
+
+
     -- Example usage:
     move(3, 'A', 'C', 'B')
 
-    if end_col == vim.v.maxcol then
-        -- *** v.maxcol == visual line mode
-        --   start_col = 0 (docs say 0 but in my testing I am getting 1 from getpos)
-        --   end_col = v:maxcol
-
-        -- TODO tests for visual line mode:
-        -- - empty line selected (not across to next line) -- has end_line = start_line
-        -- - empty line selected by shift+V j    -- has end_line > start_line
-        end_col = 1
-    end
+    -- TODO tests for visual line mode:
+    -- - empty line selected (not across to next line) -- has end_line = start_line
+    -- - empty line selected by shift+V j    -- has end_line > start_line
+    -- - TODO write down more test cases (of selections), esp if any edge cases that you have problems with
 
     if #lines == 0 then return "" end
 
