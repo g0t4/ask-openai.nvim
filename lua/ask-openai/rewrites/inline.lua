@@ -120,7 +120,6 @@ function M.accept_rewrite()
             .. "\n  start_col: " .. use_start_col .. "\n  end_col: " .. use_end_col)
 
 
-
         -- Relpace the selected text with the generated content
         vim.api.nvim_buf_set_text(
             0, -- Current buffer
@@ -287,7 +286,6 @@ local function ask_and_stream_from_ollama(opts)
     M.current_text = ""
     selection:log_info()
 
-
     M.stream_from_ollama(user_prompt, selection.original_text, file_name)
 end
 
@@ -306,6 +304,9 @@ function M.setup()
 
     vim.api.nvim_create_user_command("AskRewriteCancel", M.cancel_rewrite, {})
     vim.api.nvim_set_keymap('n', '<Leader>rn', ':AskRewriteCancel<CR>', { noremap = true })
+
+    vim.keymap.set('n', '<leader>ads', function() buffers.dump_last_seletion() end, { noremap = true })
+    vim.keymap.set('v', '<leader>ads', function() buffers.dump_last_seletion() end, { noremap = true })
 end
 
 return M

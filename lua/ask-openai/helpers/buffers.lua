@@ -19,11 +19,17 @@ function Selection:is_empty()
     return self.original_text == nil or self.original_text == ""
 end
 
+function Selection:to_str()
+    return
+        "Selection: start(line=" .. self.start_line
+        .. ",col=" .. self.start_col
+        .. ") end(line=" .. self.end_line
+        .. ",col=" .. self.end_col
+        .. ")"
+end
+
 function Selection:log_info()
-    log:info(string.format(
-        "Original text: %s\nstart_line: %d\nstart_col: %d\nend_line: %d\nend_col: %d",
-        self.original_text, self.start_line, self.start_col, self.end_line, self.end_col
-    ))
+    log:info(self:to_str())
 end
 
 function M.get_visual_selection()
@@ -66,6 +72,11 @@ function M.get_visual_selection()
     selected_lines[1] = string.sub(selected_lines[1], start_col_1based)
 
     return Selection:new(selected_lines, start_line_1based, start_col_1based, end_line_1based, end_col_1based_exclusive)
+end
+
+function M.dump_last_seletion()
+    local selection = M.get_visual_selection()
+    print(vim.inspect(selection))
 end
 
 return M
