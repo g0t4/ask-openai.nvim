@@ -16,22 +16,6 @@ local function get_visual_selection()
     log:info("GETCHARPOS:\n  start_line: " .. start_line .. "\n  start_col : " .. start_col
         .. "\n  end_line : " .. end_line .. "\n  end_col   : " .. end_col)
 
-    function move(n, from, to, aux)
-        if n == 1 then
-            print("Move disk 1 from " .. from .. " to " .. to)
-            return
-        end
-        move(n - 1, from, aux, to)
-        print("Move disk " .. n .. " from " .. from .. " to " .. to)
-        move(n - 1, aux, to, from)
-    end
-
-
-
-
-    -- Example usage:
-    move(3, 'A', 'C', 'B')
-
     -- TESTs for visual line mode:
     -- - empty line selected (not across to next line) -- has end_line = start_line
     -- - empty line selected by shift+V j    -- has end_line > start_line
