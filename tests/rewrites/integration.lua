@@ -1,5 +1,7 @@
-local rewrites = require("lua.ask-openai.rewrites.inline1")
+local rewrites = require("lua.ask-openai.rewrites.inline2")
 local assert = require("luassert")
+
+-- TODO PORT TO WORK WITH inline2
 
 -- TODO find a test framework that doesn't have a dependency on my entire F'ing neovim config OR fix the paths for the tests to run
 --   right now it breaks on my werkspace plugin needing nvim-tree ... which I don't give a F about in these tests
