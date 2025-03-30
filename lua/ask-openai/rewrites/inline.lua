@@ -121,6 +121,9 @@ function M.accept_rewrite()
             .. ",col=" .. use_end_col_0based
             .. ")")
 
+        -- Dump selection in 0based for debugging too
+        M.selection:log_info(true)
+
         -- Relpace the selected text with the generated content
         vim.api.nvim_buf_set_text(
             0, -- Current buffer

@@ -37,8 +37,8 @@ function Selection:to_str(as_0based)
         .. ") (" .. self.original_text .. ")"
 end
 
-function Selection:log_info()
-    log:info(self:to_str())
+function Selection:log_info(as_0based)
+    log:info(self:to_str(as_0based))
 end
 
 function M.get_visual_selection()
