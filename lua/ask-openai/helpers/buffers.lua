@@ -18,7 +18,10 @@ function M.get_visual_selection()
 
     if #selected_lines == 0 then return "" end
 
+    -- TODO add testing and review accuracy of selecting a subset of the start and end line separately
+    -- Truncate the last line to the specified end column
     selected_lines[#selected_lines] = string.sub(selected_lines[#selected_lines], 1, end_col)
+    -- Truncate the first line thru the specified start column
     selected_lines[1] = string.sub(selected_lines[1], start_col)
 
     return vim.fn.join(selected_lines, "\n"), start_line, start_col, end_line, end_col
