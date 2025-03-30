@@ -110,22 +110,22 @@ function M.accept_rewrite()
         local current_polished = ensure_new_lines_around(M.selection.original_text, current_md_stripped)
         local lines = split_lines_to_table(current_polished)
 
-        local use_start_line = M.selection.start_line_1based - 1
-        local use_end_line = M.selection.end_line_1based - 1
-        local use_start_col = M.selection.start_col_1based - 1
-        local use_end_col = M.selection.end_col_1based - 1
+        local use_start_line_0based = M.selection.start_line_1based - 1
+        local use_end_line_0based = M.selection.end_line_1based - 1
+        local use_start_col_0based = M.selection.start_col_1based - 1
+        local use_end_col_0based = M.selection.end_col_1based - 1
 
-        log:info("using positions:\n  start_line: " .. use_start_line .. "\n  end_line: " .. use_end_line
-            .. "\n  start_col: " .. use_start_col .. "\n  end_col: " .. use_end_col)
+        log:info("using positions:\n  start_line: " .. use_start_line_0based .. "\n  end_line: " .. use_end_line_0based
+            .. "\n  start_col: " .. use_start_col_0based .. "\n  end_col: " .. use_end_col_0based)
 
 
         -- Relpace the selected text with the generated content
         vim.api.nvim_buf_set_text(
             0, -- Current buffer
-            use_start_line, -- Zero-indexed
-            use_start_col, -- Zero-indexed
-            use_end_line, -- Zero-indexed, end-inclusive line/row
-            use_end_col, -- Zero-indexed, end-exclusive column
+            use_start_line_0based, -- Zero-indexed
+            use_start_col_0based, -- Zero-indexed
+            use_end_line_0based, -- Zero-indexed, end-inclusive line/row
+            use_end_col_0based, -- Zero-indexed, end-exclusive column
             lines
         )
 
