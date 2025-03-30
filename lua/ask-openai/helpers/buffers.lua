@@ -1,6 +1,24 @@
 local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
 local M = {}
 
+local Selection = {}
+function Selection:new(selected_lines, start_line, start_col, end_line, end_col)
+    local obj = {
+        original_text = vim.fn.join(selected_lines, "\n"),
+        start_line = start_line,
+        start_col = start_col,
+        end_line = end_line,
+        end_col = end_col,
+    }
+    setmetatable(obj, self)
+    self.__index = self
+    return obj
+end
+
+function Selection:is_empty()
+    return self.original_text == nil or self.original_text == ""
+end
+
 function M.get_visual_selection()
     -- FYI getpos returns a byte index, getcharpos() returns a char index (prefer it)
     --   getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
@@ -25,25 +43,7 @@ function M.get_visual_selection()
     -- Truncate the first line thru the specified start column
     selected_lines[1] = string.sub(selected_lines[1], start_col)
 
-    local Selection = {}
-    function Selection:new(original_text, start_line, start_col, end_line, end_col)
-        local obj = {
-            original_text = vim.fn.join(selected_lines, "\n"),
-            start_line = start_line,
-            start_col = start_col,
-            end_line = end_line,
-            end_col = end_col,
-        }
-        setmetatable(obj, self)
-        self.__index = self
-        return obj
-    end
-
-    function Selection:is_empty()
-        return self.start_line == self.end_line and self.start_col == self.end_col
-    end
-
-    return Selection
+    return Selection:new(selected_lines, start_line, start_col, end_line, end_col)
 end
 
 return M
