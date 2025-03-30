@@ -10,6 +10,7 @@ function M.process_sse(data)
 
     local chunk = nil -- combine all chunks into one string and check for done
     local done = false
+    local finish_reason = nil
     for ss_event in data:gmatch("[^\r\n]+") do
         if ss_event:match("^data:%s*%[DONE%]$") then
             -- done, courtesy last event... mostly ignore b/c finish_reason already comes on the prior SSE
@@ -45,7 +46,7 @@ function M.process_sse(data)
         -- {"id":"chatcmpl-209","object":"chat.completion.chunk","created":1743021818,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop"}]}
         if success and parsed and parsed.choices and parsed.choices[1] then
             local choice = parsed.choices[1]
-            local finish_reason = choice.finish_reason
+            finish_reason = choice.finish_reason
             if finish_reason ~= nil and finish_reason ~= vim.NIL then
                 done = true
                 if finish_reason ~= "stop" and finish_reason ~= "length" then
@@ -60,7 +61,8 @@ function M.process_sse(data)
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
     end
-    return chunk, done
+    -- TODO test passing back finish_reason (i.e. for an empty response though that shouldn't happen when asking a question)
+    return chunk, done, finish_reason
 end
 
 return M

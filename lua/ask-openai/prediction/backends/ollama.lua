@@ -188,6 +188,7 @@ function M.process_sse(data)
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
     end
+    -- TODO test passing back finish_reason (i.e. for an empty prediction log entry)
     return chunk, done, done_reason
 end
 

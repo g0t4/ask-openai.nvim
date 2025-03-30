@@ -171,6 +171,7 @@ function M.process_sse(data)
     -- FYI use nil to indicate nothing in the SSE... vs empty line which is a valid thingy right?
     local chunk = nil -- combine all chunks into one string and check for done
     local done = false
+    local finish_reason = nil
     for ss_event in data:gmatch("[^\r\n]+") do
         if ss_event:match("^data:%s*%[DONE%]$") then
             -- done, courtesy last event... mostly ignore b/c finish_reason already comes on the prior SSE
@@ -218,7 +219,7 @@ function M.process_sse(data)
         -- log:info("choices:", vim.inspect(parsed.choices))
         if success and parsed and parsed.choices and parsed.choices[1] then
             local first_choice = parsed.choices[1]
-            local finish_reason = first_choice.finish_reason
+            finish_reason = first_choice.finish_reason
             if finish_reason ~= nil and finish_reason ~= vim.NIL then
                 log:info("finsh_reason: ", finish_reason)
                 done = true
@@ -235,7 +236,8 @@ function M.process_sse(data)
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
     end
-    return chunk, done
+    -- TODO test passing back finish_reason (i.e. for an empty prediction log entry)
+    return chunk, done, finish_reason
 end
 
 return M

@@ -87,12 +87,13 @@ function M.send_question(user_prompt, code, file_name)
         end
         if data then
             vim.schedule(function()
-                local chunk, generation_done = backend.process_sse(data)
+                local chunk, generation_done, done_reason = backend.process_sse(data)
                 if chunk then
                     M.add_to_response_window(chunk)
                 end
                 -- PRN anything on done?
                 -- if generation_done then
+                --     PRN add for empty response checking like with predictions (need to capture all chunks to determine this and its gonna be basically impossible to have the response be valid and empty, so not a priority)
                 --     this_prediction:mark_generation_finished()
                 -- end
             end)
