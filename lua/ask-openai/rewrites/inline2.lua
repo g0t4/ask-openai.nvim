@@ -40,16 +40,16 @@ end
 
 function M.handle_stream_chunk(chunk)
     if not chunk then return end
-    
+
     -- Strip markdown if needed
-    local cleaned_chunk = M.strip_md_from_completion(chunk)
-    
+    -- local cleaned_chunk = M.strip_md_from_completion(chunk)
+
     -- Accumulate chunks
-    M.current_text = M.current_text .. cleaned_chunk
-    
+    M.current_text = M.current_text .. chunk
+
     -- Process newlines and ensure proper formatting
     local formatted_text = ensure_new_lines_around(M.original_text, M.current_text)
-    
+
     -- Update the document with the current accumulated text
     vim.schedule(function()
         -- Replace the selection with the current text
@@ -73,7 +73,8 @@ function M.handle_stream_chunk(chunk)
     end)
 end
 
-local function ensure_new_lines_around(code, response)
+-- TODO move above and make local again
+function ensure_new_lines_around(code, response)
     -- Ensure preserve blank line at start of selection (if present)
     local selected_lines = vim.split(code, "\n")
     local response_lines = vim.split(response, "\n")
