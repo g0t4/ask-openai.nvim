@@ -9,7 +9,7 @@ vim.api.nvim_command("highlight default AskRewrite guifg=#00ff00 ctermfg=green")
 
 -- Initialize selection position variables at module level
 M.selection = nil
-M.current_text = ""
+M.accumulated_chunks = ""
 M.namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
 M.extmark_id = nil
 
@@ -39,10 +39,9 @@ end
 function M.handle_stream_chunk(chunk)
     if not chunk then return end
 
-    -- Accumulate chunks
-    M.current_text = M.current_text .. chunk
+    M.accumulated_chunks = M.accumulated_chunks .. chunk
 
-    local current_md_stripped = M.strip_md_from_completion(M.current_text)
+    local current_md_stripped = M.strip_md_from_completion(M.accumulated_chunks)
     local current_polished = ensure_new_lines_around(M.selection.original_text, current_md_stripped)
 
     -- Update the extmark with the current accumulated text
@@ -107,7 +106,7 @@ end
 function M.accept_rewrite()
     vim.schedule(function()
         -- Get the current polished text
-        local current_md_stripped = M.strip_md_from_completion(M.current_text)
+        local current_md_stripped = M.strip_md_from_completion(M.accumulated_chunks)
         local current_polished = ensure_new_lines_around(M.selection.original_text, current_md_stripped)
         local lines = split_lines_to_table(current_polished)
 
@@ -134,7 +133,7 @@ function M.accept_rewrite()
         vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
 
         -- Reset the module state
-        M.current_text = ""
+        M.accumulated_chunks = ""
         M.extmark_id = nil
 
         -- Log acceptance
@@ -148,7 +147,7 @@ function M.cancel_rewrite()
         vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
 
         -- Reset the module state
-        M.current_text = ""
+        M.accumulated_chunks = ""
         M.extmark_id = nil
 
         -- Log cancellation
@@ -285,7 +284,7 @@ local function ask_and_stream_from_ollama(opts)
 
     -- Store selection details for later use
     M.selection = selection
-    M.current_text = ""
+    M.accumulated_chunks = ""
     selection:log_info()
 
     M.stream_from_ollama(user_prompt, selection.original_text, file_name)
