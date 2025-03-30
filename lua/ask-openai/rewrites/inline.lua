@@ -298,8 +298,8 @@ end
 
 function M.setup()
     -- Create commands and keymaps for the rewrite functionality
-    vim.api.nvim_create_user_command("AskRewrite2", ask_and_stream_from_ollama, { range = true, nargs = 1 })
-    vim.api.nvim_set_keymap('v', '<Leader>r2', ':<C-u>AskRewrite2 ', { noremap = true })
+    vim.api.nvim_create_user_command("AskRewrite", ask_and_stream_from_ollama, { range = true, nargs = 1 })
+    vim.api.nvim_set_keymap('v', '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
 
     -- Add a command to abort the stream if needed
     vim.api.nvim_create_user_command("AskRewriteAbort", M.abort_if_still_responding, {})
