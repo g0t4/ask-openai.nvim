@@ -18,6 +18,7 @@ local function get_visual_selection()
         end_col = 1
         -- TODO handle edge case (last line)
         -- TODO why wasn't this an issue in inline1.lua?
+        -- PRN port to ask question? do I have selecting text there yet?
     end
 
     if #lines == 0 then return "" end
