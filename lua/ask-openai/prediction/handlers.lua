@@ -72,7 +72,10 @@ function M.ask_for_prediction()
     --   => enter insert mode and qwen2.5-coder (BASE) does a stellar job completing that (respects EOS much better than instruct finetunes)
     -- - prediction can visually replace existing code (easiest and most logical given the existing text can be rewritten too).. inherently a diff based situation (assume model can rewrite remainder of line?)
     -- - actually, what appears to work is when it can just insert new text at the cursor
-    -- - TODO what happens when it wants to insert more text after the existing text too or instead?
+    -- - PRN what happens when it wants to insert more text after the existing text too or instead?
+    --   - Actually, wait, this is the domain of a rewrite (not solely a prediction)
+    --   - Prediction should only fill the domain of inserting text after/before existing text
+    --   - If I want help w/ a line I can wipe the end to get all of it redone (that is not ideal for cases when the cue is midway or toward end but that is gonna have to wait for as AskImplicitRewrite :) that compliments AskExplicitRewrite
 
     local after_starts_at_char_under_cursor = original_col + 1 -- FYI original_col is 0 based, thus +1
     local current_line_after_split = current_line:sub(after_starts_at_char_under_cursor)
