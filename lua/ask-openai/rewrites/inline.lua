@@ -8,7 +8,7 @@ vim.api.nvim_command("highlight default AskRewrite guifg=#00ff00 ctermfg=green")
 
 local function get_visual_selection()
     --TODO! port getcharpos to other uses
-    -- FYI getpos returns a byte index, not necessarily a char index, so use getcharpos()
+    -- FYI getpos returns a byte index, getcharpos() returns a char index (prefer it)
     --   getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
     local _, start_line, start_col, _ = unpack(vim.fn.getcharpos("'<"))
     local _, end_line, end_col, _ = unpack(vim.fn.getcharpos("'>"))
