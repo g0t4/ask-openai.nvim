@@ -40,9 +40,11 @@ function M.get_visual_selection()
     local _, end_line_1based, end_col_1based, _ = unpack(vim.fn.getcharpos("'>"))
     -- end_line/end_col are 1-based, end_col appears to be the cursor position at the end of a selection
     --
-    -- FYI, in visual mode, it will return the previous selection while making a new selection, so make sure it "selects"? <CR>?
-    --   for now I am adding <Esc> as first part of keymaps which will "commit" it as last selection
-    --   if I hate this I can handle smth else for in visual mode.. FML this sucks bird-flu, chicken ass nuggets
+    -- FYI, while in visual modes (char/line) the current selection is NOT the last selection
+    --   if this lua func is called from a keymap using a lua handler, the WIP selection won't be available yet
+    --   but, if this func is called indirectly via a vim command, the selection is "committed" as last selection
+    --   executing a command logically seems like finalizing the selection, so that makes sense
+    --   also, I get the rationale that calling a func is useful b/c that func could help move the cursor to select desired text and so you won't want to "commit" it yet
     --
     -- key modes (at least) to consider:
     --   normal mode

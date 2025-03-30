@@ -308,13 +308,9 @@ function M.setup()
     vim.api.nvim_set_keymap('n', '<Leader>rn', ':AskRewriteCancel<CR>', { noremap = true })
 
     vim.keymap.set('n', '<leader>ads', function() buffers.dump_last_seletion() end, { noremap = true })
-    vim.keymap.set('v', '<leader>ads', function()
-        -- exit visual mode to "commit" selection
-        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>', true, false, true), 'n', true)
-        vim.defer_fn(function()
-            buffers.dump_last_seletion()
-        end, 0)
-    end, { noremap = true })
+    vim.api.nvim_create_user_command("AskDumpLastSelection", buffers.dump_last_seletion, {})
+    vim.api.nvim_set_keymap('v', '<Leader>ads', ':<C-u>AskDumpLastSelection<CR>', { noremap = true })
+    -- FYI see notes in M.get_visual_selection about you don't want a lua func handler that calls dump
 end
 
 return M
