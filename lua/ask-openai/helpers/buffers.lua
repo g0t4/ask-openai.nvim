@@ -33,6 +33,7 @@ function M.get_visual_selection()
     -- start_line/start_col are 1-based (from register value)
     local _, end_line_1based, end_col_1based_exclusive, _ = unpack(vim.fn.getcharpos("'>"))
     -- end_line/end_col are 1-based, end_col is end-exclusive (end_col is location of cursor when text was selected)
+    -- another possible issue... if selection was made in visual linewise mode, the end col seems to be inclusive?!
     --
     -- key modes (at least) to consider:
     --   normal mode
