@@ -126,8 +126,9 @@ local function ask_and_send_to_ollama(opts)
 end
 
 function M.setup()
-    vim.api.nvim_create_user_command("AskRewrite", ask_and_send_to_ollama, { range = true, nargs = 1 })
-    vim.api.nvim_set_keymap('v', '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
+    -- TODO port over once I get this v2 working
+    vim.api.nvim_create_user_command("AskRewrite2", ask_and_send_to_ollama, { range = true, nargs = 1 })
+    vim.api.nvim_set_keymap('v', '<Leader>r2', ':<C-u>AskRewrite2 ', { noremap = true })
 end
 
 return M

@@ -1,4 +1,4 @@
-local rewrites = require("lua.ask-openai.rewrites.inline")
+local rewrites = require("lua.ask-openai.rewrites.inline1")
 local assert = require("luassert")
 
 -- TODO find a test framework that doesn't have a dependency on my entire F'ing neovim config OR fix the paths for the tests to run
