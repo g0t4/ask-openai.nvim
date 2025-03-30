@@ -64,25 +64,27 @@ function M.ask_for_prediction()
 
     local before_is_thru_col = original_col -- original_col is 0-based, but don't +1 b/c that would include the char under the cursor which goes after any typed/inserted chars
     -- test edge case: enter insert mode 'i' => type/paste char(s) => observe char under cursor position shifts right
-    local current_line_before = current_line:sub(1, before_is_thru_col) -- sub is END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
-    log:trace("current_line_before (1 => " .. before_is_thru_col .. "): '" .. current_line_before .. "'")
+    local current_line_before_split = current_line:sub(1, before_is_thru_col) -- sub is END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
+    log:trace("current_line_before (1 => " .. before_is_thru_col .. "): '" .. current_line_before_split .. "'")
 
     -- PRN revisit prediction when cursor has existing text "after" it
     -- - test case: remove text from a finished line of code (i.e. delete a param in a function call)
     --   => enter insert mode and qwen2.5-coder (BASE) does a stellar job completing that (respects EOS much better than instruct finetunes)
     -- - prediction can visually replace existing code (easiest and most logical given the existing text can be rewritten too).. inherently a diff based situation (assume model can rewrite remainder of line?)
+    -- - actually, what appears to work is when it can just insert new text at the cursor
+    -- - TODO what happens when it wants to insert more text after the existing text too or instead?
 
     local after_starts_at_char_under_cursor = original_col + 1 -- FYI original_col is 0 based, thus +1
-    local current_line_after = current_line:sub(after_starts_at_char_under_cursor)
-    log:trace("current_line_after (" .. after_starts_at_char_under_cursor .. " => end): '" .. current_line_after .. "'")
+    local current_line_after_split = current_line:sub(after_starts_at_char_under_cursor)
+    log:trace("current_line_after (" .. after_starts_at_char_under_cursor .. " => end): '" .. current_line_after_split .. "'")
 
     local lines_before_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, first_row, original_row, IGNORE_BOUNDARIES) -- 0based, END-EXCLUSIVE
-    local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_line_before
+    local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_line_before_split
 
     -- TODO edge cases for new line at end of current line? is that a concern
     local lines_after_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row + 1, last_row, IGNORE_BOUNDARIES) -- 0based END-EXCLUSIVE
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
-    local document_suffix = current_line_after .. "\n" .. table.concat(lines_after_current, "\n")
+    local document_suffix = current_line_after_split .. "\n" .. table.concat(lines_after_current, "\n")
 
     if log.is_verbose_enabled() then
         -- if in trace mode... combine document prefix and suffix and check if matches entire document:
