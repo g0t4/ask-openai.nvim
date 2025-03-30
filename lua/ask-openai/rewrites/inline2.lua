@@ -28,7 +28,7 @@ function M.strip_md_from_completion(completion)
 
     local isFirstLineStartOfCodeBlock = lines[1]:match("^```(%S*)$")
     local isLastLineEndOfCodeBlock = lines[#lines]:match("^```")
-    
+
     if isLastLineEndOfCodeBlock then
         table.remove(lines, #lines)
     end
@@ -54,14 +54,14 @@ function M.handle_stream_chunk(chunk)
     vim.schedule(function()
         -- Replace the selection with the current text
         vim.api.nvim_buf_set_text(
-            0,  -- Current buffer
-            M.start_line - 1,  -- Zero-indexed
-            M.start_col - 1,  -- Zero-indexed
-            M.end_line - 1,   -- Zero-indexed
-            M.end_col,        -- End column
+            0, -- Current buffer
+            M.start_line - 1, -- Zero-indexed
+            M.start_col - 1, -- Zero-indexed
+            M.end_line - 1, -- Zero-indexed
+            M.end_col, -- End column
             vim.split(formatted_text, "\n")
         )
-        
+
         -- Update end line/col based on new text
         local new_lines = vim.split(formatted_text, "\n")
         M.end_line = M.start_line + #new_lines - 1
@@ -135,7 +135,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     }
 
     local json = vim.fn.json_encode(body)
-    
+
     local options = {
         command = "curl",
         args = {
@@ -223,10 +223,10 @@ end
 function M.setup()
     -- Import backend module now to avoid circular dependencies
     backend = require("ask-openai.questions.backends.chat_completions")
-    
+
     vim.api.nvim_create_user_command("AskRewrite2", ask_and_stream_from_ollama, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('v', '<Leader>r2', ':<C-u>AskRewrite2 ', { noremap = true })
-    
+
     -- Add a command to abort the stream if needed
     vim.api.nvim_create_user_command("AskRewriteAbort", M.abort_if_still_responding, {})
     vim.api.nvim_set_keymap('n', '<Leader>ra', ':AskRewriteAbort<CR>', { noremap = true })
