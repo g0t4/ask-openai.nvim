@@ -5,7 +5,8 @@ local uv = vim.uv
 local M = {}
 
 -- Set up a highlight group for the extmarks
-vim.api.nvim_command("highlight default AskRewrite guifg=#00ff00 ctermfg=green")
+local hlgroup = "AskRewrite"
+vim.api.nvim_command("highlight default " .. hlgroup .. " guifg=#00ff00 ctermfg=green")
 
 -- Initialize selection position variables at module level
 M.selection = nil
@@ -53,12 +54,12 @@ function M.handle_stream_chunk(chunk)
         local lines = split_lines_to_table(current_polished)
         if #lines == 0 then return end
 
-        local first_line = { { table.remove(lines, 1), "AskRewrite" } }
+        local first_line = { { table.remove(lines, 1), hlgroup } }
 
         -- Format remaining lines for virt_lines
         local virt_lines = {}
         for _, line in ipairs(lines) do
-            table.insert(virt_lines, { { line, "AskRewrite" } })
+            table.insert(virt_lines, { { line, hlgroup } })
         end
 
         -- Set extmark at the beginning of the selection
