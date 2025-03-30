@@ -271,8 +271,8 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 end
 
 local function ask_and_stream_from_ollama(opts)
-    local original_text, start_line, start_col, end_line, end_col = buffers.get_visual_selection()
-    if not original_text then
+    local selection = buffers.get_visual_selection()
+    if not selection.original_text then
         error("No visual selection found.")
         return
     end
@@ -281,19 +281,19 @@ local function ask_and_stream_from_ollama(opts)
     local file_name = vim.fn.expand("%:t")
 
     -- Store selection details for later use
-    M.start_line = start_line
-    M.start_col = start_col
-    M.end_line = end_line
-    M.end_col = end_col
-    M.original_text = original_text
+    M.start_line = selection.start_line
+    M.start_col = selection.start_col
+    M.end_line = selection.end_line
+    M.end_col = selection.end_col
+    M.original_text = selection.original_text
     M.current_text = ""
     log:info(string.format(
         "Original text: %s\nstart_line: %d\nstart_col: %d\nend_line: %d\nend_col: %d",
-        original_text, start_line, start_col, end_line, end_col
+        selection.original_text, selection.start_line, selection.start_col, selection.end_line, selection.end_col
     ))
 
 
-    M.stream_from_ollama(user_prompt, original_text, file_name)
+    M.stream_from_ollama(user_prompt, selection.original_text, file_name)
 end
 
 function M.setup()

@@ -98,8 +98,9 @@ function M.send_question(user_prompt, code, file_name)
 end
 
 local function ask_question_about(opts)
-    local code = buffers.get_visual_selection()
-    if not code then
+    local selection = buffers.get_visual_selection()
+    if not selection.original_text then
+        -- TODO add empty check to selection class
         error("No visual selection found.")
         return
     end
@@ -108,7 +109,7 @@ local function ask_question_about(opts)
     local file_name = vim.fn.expand("%:t")
 
     M.open_response_window()
-    M.send_question(user_prompt, code, file_name)
+    M.send_question(user_prompt, selection.original_text, file_name)
 end
 
 local function ask_question(opts)
