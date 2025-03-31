@@ -34,6 +34,38 @@ local function split_text_into_lines(text)
     return vim.split(text, "\n")
 end
 
+-- TODO move above and make local again
+function ensure_new_lines_around(code, response_lines)
+    -- * Ensure preserve blank line at start of selection (if present)
+    local selected_lines = split_text_into_lines(code)
+    local selected_first_line = selected_lines[1]
+    local response_first_line = response_lines[1]
+
+    local selection_starts_with_newline = selected_first_line:match("^%s*$")
+    local response_starts_with_newline =
+        response_first_line == nil or response_first_line:match("^%s*$")
+
+    if selection_starts_with_newline and not response_starts_with_newline
+    then
+        table.insert(response_lines, 1, selected_first_line) -- add back the blank line at start
+    end
+
+    -- * Ensure trailing new line is retained (if present)
+    local selected_last_line = selected_lines[#selected_lines]
+    local response_last_line = response_lines[#response_lines]
+    local selection_ends_with_newline = selected_last_line:match("^%s*$")
+    local response_ends_with_newline =
+        response_last_line == nil or response_last_line:match("^%s*$")
+
+    if selection_ends_with_newline and not response_ends_with_newline then
+        -- response = response .. "\n" .. selected_last_line .. "\n"
+        -- TODO do I need a new line appeneded too?
+        table.insert(response_lines, selected_last_line)
+    end
+
+    return response_lines
+end
+
 function M.handle_stream_chunk(chunk)
     if not chunk then return end
 
@@ -71,38 +103,6 @@ function M.handle_stream_chunk(chunk)
             }
         )
     end)
-end
-
--- TODO move above and make local again
-function ensure_new_lines_around(code, response_lines)
-    -- * Ensure preserve blank line at start of selection (if present)
-    local selected_lines = split_text_into_lines(code)
-    local selected_first_line = selected_lines[1]
-    local response_first_line = response_lines[1]
-
-    local selection_starts_with_newline = selected_first_line:match("^%s*$")
-    local response_starts_with_newline =
-        response_first_line == nil or response_first_line:match("^%s*$")
-
-    if selection_starts_with_newline and not response_starts_with_newline
-    then
-        table.insert(response_lines, 1, selected_first_line) -- add back the blank line at start
-    end
-
-    -- * Ensure trailing new line is retained (if present)
-    local selected_last_line = selected_lines[#selected_lines]
-    local response_last_line = response_lines[#response_lines]
-    local selection_ends_with_newline = selected_last_line:match("^%s*$")
-    local response_ends_with_newline =
-        response_last_line == nil or response_last_line:match("^%s*$")
-
-    if selection_ends_with_newline and not response_ends_with_newline then
-        -- response = response .. "\n" .. selected_last_line .. "\n"
-        -- TODO do I need a new line appeneded too?
-        table.insert(response_lines, selected_last_line)
-    end
-
-    return response_lines
 end
 
 function M.accept_rewrite()
