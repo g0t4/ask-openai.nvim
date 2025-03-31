@@ -29,12 +29,9 @@ function M.strip_md_from_completion(completion)
     return table.concat(lines, "\n")
 end
 
-local function split_lines_to_table(text)
-    local lines = {}
-    for line in text:gmatch("[^\r\n]+") do
-        table.insert(lines, line)
-    end
-    return lines
+local function split_text_into_lines(text)
+    -- preserve empty lines too
+    return vim.split(text, "\n")
 end
 
 function M.handle_stream_chunk(chunk)
@@ -51,7 +48,7 @@ function M.handle_stream_chunk(chunk)
         vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
 
         -- Split into lines for extmark display
-        local lines = split_lines_to_table(current_polished)
+        local lines = split_text_into_lines(current_polished)
         if #lines == 0 then return end
 
         local first_line = { { table.remove(lines, 1), hlgroup } }
@@ -109,7 +106,7 @@ function M.accept_rewrite()
         -- Get the current polished text
         local current_md_stripped = M.strip_md_from_completion(M.accumulated_chunks)
         local current_polished = ensure_new_lines_around(M.selection.original_text, current_md_stripped)
-        local lines = split_lines_to_table(current_polished)
+        local lines = split_text_into_lines(current_polished)
 
         local use_start_line_0based = M.selection.start_line_1based - 1
         local use_end_line_0based = M.selection.end_line_1based - 1
