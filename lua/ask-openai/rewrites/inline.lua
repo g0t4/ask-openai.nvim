@@ -6,7 +6,7 @@ local M = {}
 
 -- Set up a highlight group for the extmarks
 local hlgroup = "AskRewrite"
-vim.api.nvim_command("highlight default " .. hlgroup .. " guifg=#00ff00 ctermfg=green")
+vim.api.nvim_command("highlight default " .. hlgroup .. " guifg=#ccffcc ctermfg=green")
 
 -- Initialize selection position variables at module level
 M.selection = nil
