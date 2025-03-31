@@ -14,9 +14,7 @@ M.accumulated_chunks = ""
 M.namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
 M.extmark_id = nil
 
-function M.strip_md_from_completion(completion)
-    local lines = vim.split(completion, "\n")
-
+function M.strip_md_from_completion(lines)
     local isFirstLineStartOfCodeBlock = lines[1]:match("^```(%S*)$")
     local isLastLineEndOfCodeBlock = lines[#lines]:match("^```")
 
@@ -26,7 +24,8 @@ function M.strip_md_from_completion(completion)
     if isFirstLineStartOfCodeBlock then
         table.remove(lines, 1)
     end
-    return table.concat(lines, "\n")
+
+    return lines
 end
 
 local function split_text_into_lines(text)
@@ -39,16 +38,14 @@ function M.handle_stream_chunk(chunk)
 
     M.accumulated_chunks = M.accumulated_chunks .. chunk
 
-    local current_md_stripped = M.strip_md_from_completion(M.accumulated_chunks)
-    local current_polished = ensure_new_lines_around(M.selection.original_text, current_md_stripped)
+    local lines = split_text_into_lines(M.accumulated_chunks)
+    lines = M.strip_md_from_completion(lines)
+    lines = ensure_new_lines_around(M.selection.original_text, lines)
 
-    -- Update the extmark with the current accumulated text
     vim.schedule(function()
         -- Clear previous extmark
         vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
 
-        -- Split into lines for extmark display
-        local lines = split_text_into_lines(current_polished)
         if #lines == 0 then return end
 
         local first_line = { { table.remove(lines, 1), hlgroup } }
@@ -76,44 +73,50 @@ function M.handle_stream_chunk(chunk)
 end
 
 -- TODO move above and make local again
-function ensure_new_lines_around(code, response)
-    -- Ensure preserve blank line at start of selection (if present)
-    local selected_lines = vim.split(code, "\n")
-    local response_lines = vim.split(response, "\n")
+function ensure_new_lines_around(code, response_lines)
+    -- * Ensure preserve blank line at start of selection (if present)
+    local selected_lines = split_text_into_lines(code)
     local selected_first_line = selected_lines[1]
     local response_first_line = response_lines[1]
-    if selected_first_line:match("^%s*$")
-        and not response_first_line:match("^%s*$")
+
+    local selection_starts_with_newline = selected_first_line:match("^%s*$")
+    local response_starts_with_newline =
+        response_first_line == nil or response_first_line:match("^%s*$")
+
+    if selection_starts_with_newline and not response_starts_with_newline
     then
-        response = selected_first_line .. "\n" .. response
-        response_lines = vim.split(response, "\n")
+        table.insert(response_lines, 1, selected_first_line) -- add back the blank line at start
     end
 
-    -- Ensure trailing new line is retained (if present)
+    -- * Ensure trailing new line is retained (if present)
     local selected_last_line = selected_lines[#selected_lines]
     local response_last_line = response_lines[#response_lines]
-    if selected_last_line:match("^%s*$")
-        and not response_last_line:match("^%s*$")
-    then
-        response = response .. "\n" .. selected_last_line .. "\n"
+    local selection_ends_with_newline = selected_last_line:match("^%s*$")
+    local response_ends_with_newline =
+        response_last_line == nil or response_last_line:match("^%s*$")
+
+    if selection_ends_with_newline and not response_ends_with_newline then
+        -- response = response .. "\n" .. selected_last_line .. "\n"
+        -- TODO do I need a new line appeneded too?
+        table.insert(response_lines, selected_last_line)
     end
 
-    return response
+    return response_lines
 end
 
 function M.accept_rewrite()
     vim.schedule(function()
-        -- Get the current polished text
-        local current_md_stripped = M.strip_md_from_completion(M.accumulated_chunks)
-        local current_polished = ensure_new_lines_around(M.selection.original_text, current_md_stripped)
-        local lines = split_text_into_lines(current_polished)
+        local lines = split_text_into_lines(M.accumulated_chunks)
+        lines = M.strip_md_from_completion(lines)
+        lines = ensure_new_lines_around(M.selection.original_text, lines)
 
         local use_start_line_0based = M.selection.start_line_1based - 1
         local use_end_line_0based = M.selection.end_line_1based - 1
         local use_start_col_0based = M.selection.start_col_1based - 1
         local use_end_col_0based = M.selection.end_col_1based - 1
 
-        log:info("nvim_buf_set_text: 0-based start(line=" .. use_start_line_0based
+        log:info("nvim_buf_set_text: 0-based "
+            .. "start(line=" .. use_start_line_0based
             .. ",col=" .. use_start_col_0based
             .. ") end(line=" .. use_end_line_0based
             .. ",col=" .. use_end_col_0based
@@ -140,7 +143,7 @@ function M.accept_rewrite()
         M.extmark_id = nil
 
         -- Log acceptance
-        log:info("Rewrite accepted and inserted into buffer", vim.log.levels.INFO)
+        log:info("Rewrite accepted and inserted into buffer")
     end)
 end
 
@@ -154,7 +157,7 @@ function M.cancel_rewrite()
         M.extmark_id = nil
 
         -- Log cancellation
-        log:info("Rewrite cancelled", vim.log.levels.INFO)
+        log:info("Rewrite cancelled")
     end)
 end
 
@@ -219,7 +222,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
     options.on_exit = function(code, signal)
         if code ~= 0 then
-            log:error("Error in curl command: " .. tostring(code) .. " Signal: " .. tostring(signal), vim.log.levels.ERROR)
+            log:error("Error in curl command: " .. tostring(code) .. " Signal: " .. tostring(signal))
         end
         stdout:close()
         stderr:close()
@@ -229,7 +232,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         M.pid = nil
 
         -- Log completion
-        log:info("Rewrite generation complete", vim.log.levels.INFO)
+        log:info("Rewrite generation complete")
     end
 
     M.abort_if_still_responding()
@@ -241,7 +244,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
     options.on_stdout = function(err, data)
         if err then
-            log:error("Error reading stdout: " .. tostring(err), vim.log.levels.WARN)
+            log:error("Error reading stdout: " .. tostring(err))
             return
         end
         if data then
@@ -252,7 +255,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
                 end
                 if generation_done then
                     -- Optionally do something when generation is complete
-                    log:info("Rewrite complete", vim.log.levels.INFO)
+                    log:info("Rewrite complete")
                 end
             end)
         end
@@ -261,7 +264,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
     options.on_stderr = function(err, data)
         if err or (data and #data > 0) then
-            log:error("Error from curl: " .. tostring(data or err), vim.log.levels.WARN)
+            log:error("Error from curl: " .. tostring(data or err))
         end
     end
     uv.read_start(stderr, options.on_stderr)
