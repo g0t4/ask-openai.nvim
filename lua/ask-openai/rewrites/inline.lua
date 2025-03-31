@@ -34,8 +34,7 @@ local function split_text_into_lines(text)
     return vim.split(text, "\n")
 end
 
--- TODO move above and make local again
-function ensure_new_lines_around(code, response_lines)
+local function ensure_new_lines_around(code, response_lines)
     -- * Ensure preserve blank line at start of selection (if present)
     local selected_lines = split_text_into_lines(code)
     local selected_first_line = selected_lines[1]
