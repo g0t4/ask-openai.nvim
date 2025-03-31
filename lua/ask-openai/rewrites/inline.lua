@@ -7,6 +7,7 @@ local M = {}
 -- Set up a highlight group for the extmarks
 local hlgroup = "AskRewrite"
 vim.api.nvim_command("highlight default " .. hlgroup .. " guifg=#ccffcc ctermfg=green")
+-- FYI I like having a slightly different color vs predictions completions
 
 -- Initialize selection position variables at module level
 M.selection = nil
