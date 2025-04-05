@@ -2,6 +2,7 @@ local M = {}
 local log = require("ask-openai.prediction.logger").predictions()
 
 local function body_for(prefix, suffix)
+
     local body = {
 
         model = "fim_qwen:7b-instruct-q8_0", -- qwen2.5-coder, see Modelfile
