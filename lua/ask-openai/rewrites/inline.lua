@@ -185,6 +185,10 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         .. "No explanations, no markdown blocks. No ``` nor ` surrounding your answer. "
         .. "Avoid pointless comments. Do not remove existing code/comments unless the user asks you to."
 
+    -- TODO it would be nice to have a toggle option to include a project specific prompt (i.e. with hammerspoon APIs, or in nvim config have lua/neovim APIS, etc)
+    --    actually one could be language specific (detect in nvim => neovim + lua, in vimscript =>  vim APIs, in a hammerspoon file => Lua + Hammerspoon APIs)
+    --    also allow smth custom per project in its root dir.. here TBH could list what prompts are included by default vs on demand (prompt sets)
+
     local user_message = user_prompt
         .. ". Here is my code from " .. file_name
         .. ":\n\n" .. code
