@@ -314,7 +314,7 @@ function M.setup()
     vim.api.nvim_set_keymap('n', '<Leader>ry', ':AskRewriteAccept<CR>', { noremap = true })
 
     vim.api.nvim_create_user_command("AskRewriteCancel", M.cancel_rewrite, {})
-    vim.api.nvim_set_keymap('n', '<Leader>rn', ':AskRewriteCancel<CR>', { noremap = true })
+    vim.api.nvim_set_keymap('n', '<Leader>rc', ':AskRewriteCancel<CR>', { noremap = true })
 
     -- dump helpers while building this tooling - [a]sk [d]ump last [s]election
     vim.api.nvim_create_user_command("AskDumpLastSelection", buffers.dump_last_seletion, {})
