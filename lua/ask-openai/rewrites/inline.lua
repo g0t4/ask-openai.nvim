@@ -198,7 +198,8 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             { role = "system", content = system_prompt },
             { role = "user",   content = user_message },
         },
-        model = "qwen2.5-coder:14b-instruct-q8_0", -- actually lets see how base does for rewrites?
+        -- model = "qwen2.5-coder:14b-instruct-q8_0",
+        model = "gemma3:12b-it-q8_0",
         stream = true,
         temperature = 0.2,
         -- TODO do I need num_ctx (can't recall why I set it - check predicitons code)

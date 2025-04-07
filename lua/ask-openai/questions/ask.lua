@@ -20,7 +20,8 @@ function M.send_question(user_prompt, code, file_name)
             { role = "system", content = system_prompt },
             { role = "user",   content = user_message },
         },
-        model = "qwen2.5-coder:14b-instruct-q8_0", -- btw -base- does terrible here :)
+        -- model = "qwen2.5-coder:14b-instruct-q8_0", -- btw -base- does terrible here :)
+        model = "gemma3:12b-it-q8_0", -- btw -base- does terrible here :)
         stream = true,
         temperature = 0.2, -- TODO what temp?
         -- PRN limit num_predict?
