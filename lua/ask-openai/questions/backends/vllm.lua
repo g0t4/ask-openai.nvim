@@ -4,37 +4,23 @@ _G.PLAIN_FIND = true
 
 local function body_for(prefix, suffix, _recent_edits)
     local body = {
+        -- TODO! generalize backend for chat completions (rewrites, asks, etc)
+        --   TODO maybe even absorb ollama chat completions?
+
         -- vllm /v1/completions:
         -- https://docs.vllm.ai/en/stable/serving/openai_compatible_server.html#completions-api
-        --
-        -- vllm FIM discussions:
-        --   https://github.com/vllm-project/vllm/pull/11713
 
         -- agentica-org models
         -- fine tune of deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B
         model = "agentica-org/DeepCoder-1.5B-Preview", -- reminder as vllm serve dictates the model
         -- https://huggingface.co/mradermacher/DeepCoder-1.5B-Preview-GGUF - quantizeds
 
-        -- prefer base models for codegen, more "EOF" focused/less verbose
-        -- list of qwen2.5-coder models:
-        --   https://huggingface.co/collections/Qwen/qwen25-coder-66eaa22e6f99801bf65b0c2f
-        -- model = "Qwen/Qwen2.5-Coder-7B",
-        -- model = "Qwen/Qwen2.5-Coder-7B-Instruct", -- more verbose completions b/c this is chat finetuned model
-        -- model = "Qwen/Qwen2.5-Coder-7B", *** favorite
-        -- model = "Qwen/Qwen2.5-Coder-1.5B",
-        -- model = "Qwen/Qwen2.5-Coder-0.5B",
+        -- model = "Qwen/Qwen2.5-Coder-7B-Instruct",
         --
         -- quantized variants:
         -- model = "Qwen/Qwen2.5-Coder-32B-Instruct-AWQ", -- ~20GB (4GBx5)
         -- model = "Qwen/Qwen2.5-Coder-32B-Instruct-GPTQ-Int8", -- won't fit for me
         -- model = "Qwen/Qwen2.5-Coder-32B-Instruct-GPTQ-Int4", -- SHOULD WORK!
-
-
-        -- AFAICT, vllm doesn't support prompt(prefix)/suffix params, instead must be fully raw always
-        --   their docs explicitly state that they don't support "suffix"
-        --   so I'd have to build prompt just like I am doing w/ ollama's /api/generate
-        -- raw = true, -- bypass templates (only /api/generate, not /v1/completions)
-
 
         stream = true,
 
@@ -242,4 +228,3 @@ function M.process_sse(data)
 end
 
 return M
-
