@@ -50,26 +50,8 @@ local function body_for(prefix, suffix, _recent_edits)
         -- endoftext = "<|endoftext|>"
     }
 
-
-    -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
-    local raw_prompt = sentinel_tokens.fim_prefix .. prefix .. sentinel_tokens.fim_suffix .. suffix .. sentinel_tokens.fim_middle
-
-    -- Edit history totally messed up FIM... how can I include this while preserving the FIM request...
-    --   i.e. in calc.lua... it just chatted to me and that's an easy FIM task
-    -- *** I was using instruct model, need to repeat test of recent edits with BASE models
-    --
-    -- local recent_changes = "Here are some recent lines that were edited by the user: "
-    -- -- PRN need edits for other files too
-    -- for _, change in pairs(recent_edits) do
-    --     local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
-    --     -- todo include line/col or not?
-    --     recent_changes = recent_changes .. "\n" .. str
-    -- end
-    -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
-
-    body.prompt = raw_prompt
-
-
+    -- TODO MESSAGES
+    -- body.messages = ?
 
 
     local body_json = vim.json.encode(body)
