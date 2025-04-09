@@ -1,9 +1,6 @@
 local M = {}
 local log = require("ask-openai.prediction.logger").predictions()
 _G.PLAIN_FIND = true
--- TODO can I define an interface in lua?
---    then use a backend variable in handlers.lua... w/ completion regardless of backend
---       local backend = require("../backends/x")
 
 local function body_for(prefix, suffix, _recent_edits)
     local body = {

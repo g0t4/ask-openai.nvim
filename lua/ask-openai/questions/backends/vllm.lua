@@ -1,15 +1,6 @@
-
-        -- agentica-org models
-        -- fine tune of deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B
-        model = "agentica-org/DeepCoder-1.5B-Preview", -- reminder as vllm serve dictates the model
-        -- https://huggingface.co/mradermacher/DeepCoder-1.5B-Preview-GGUF - quantizeds
-        --
 local M = {}
 local log = require("ask-openai.prediction.logger").predictions()
 _G.PLAIN_FIND = true
--- TODO can I define an interface in lua?
---    then use a backend variable in handlers.lua... w/ completion regardless of backend
---       local backend = require("../backends/x")
 
 local function body_for(prefix, suffix, _recent_edits)
     local body = {
@@ -18,6 +9,11 @@ local function body_for(prefix, suffix, _recent_edits)
         --
         -- vllm FIM discussions:
         --   https://github.com/vllm-project/vllm/pull/11713
+
+        -- agentica-org models
+        -- fine tune of deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B
+        model = "agentica-org/DeepCoder-1.5B-Preview", -- reminder as vllm serve dictates the model
+        -- https://huggingface.co/mradermacher/DeepCoder-1.5B-Preview-GGUF - quantizeds
 
         -- prefer base models for codegen, more "EOF" focused/less verbose
         -- list of qwen2.5-coder models:
