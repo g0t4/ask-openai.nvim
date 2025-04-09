@@ -24,7 +24,7 @@ local function body_for(prefix, suffix, _recent_edits)
 
         stream = true,
 
-        max_tokens = 200,
+        max_tokens = 400,
 
         -- TODO temperature, top_p,
 
@@ -35,6 +35,7 @@ local function body_for(prefix, suffix, _recent_edits)
         -- }
     }
 
+    -- TODO do any of these work in chat completions API? IIRC <|im_end|> might, I saw it with tool use instructions, IIRC
     local sentinel_tokens = {
         -- qwen2.5-coder:
         fim_prefix = "<|fim_prefix|>",
@@ -48,61 +49,6 @@ local function body_for(prefix, suffix, _recent_edits)
         -- todo others?
         -- endoftext = "<|endoftext|>"
     }
-
-
-    if string.find(body.model, "codellama") then
-        -- codellama template:
-        --    {{- if .Suffix }}<PRE> {{ .Prompt }} <SUF>{{ .Suffix }} <MID>
-        sentinel_tokens = {
-            fim_prefix = "<PRE> ",
-            fim_suffix = " <SUF>",
-            fim_middle = " <MID>",
-        }
-
-        -- codellama uses <EOT> that seems to not be set as param in modelfile (at least for FIM?)
-        --   without this change you will see <EOT> in code at end of completions
-        -- ollama show codellama:7b-code-q8_0 --parameters # => no stop param
-        body.options.stop = { "<EOT>" }
-
-        -- FYI also ollama warns about:
-        --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
-    elseif not string.find(body.model, "Qwen2.5-Coder", nil, _G.PLAIN_FIND) then
-        -- warn that FIM tokens need to be set
-        log:error("PLEASE REVIEW FIM SENTINEL TOKENS FOR THE NEW MODEL! right now you are using sentinel_tokens for qwen2.5-coder")
-        return
-    end
-
-    -- for now only using body for above logic to check model params
-    body.model = nil -- for now don't pass it so I can swap serve on backend and not need to update here
-
-
-    -- PRN TEST w/o deepseek-r1 using api/generate with FIM manual prompt
-    --   IIRC template is wrong but it does support FIM?
-
-    -- TODO provide guidance before fim_prefix...
-    --   can I just <|im_start|> blah <|im_end|>?
-    --   see qwen2.5-coder template for how it might work
-
-    -- TODO try repo level code completion:
-    --   https://github.com/QwenLM/Qwen2.5-coder?tab=readme-ov-file#4-repository-level-code-completion
-    --   this is not FIM, rather it is like AR:
-    --     give it <|repo_name|>
-    --     then multiple files
-    --       delimited with <|file_sep|> and name
-    --     then contents...
-    --     then last file is only partially complete
-    --       this is what the model is supposed to generate (in its entirely IIRC)
-    --       OR, can I make this last file a FIM?
-    --         so it just generates middle of last file
-    --
-    -- The more I think about it, the less often I think I use the idea of FIM...
-    --   I often am just completing (often w/o a care for what comes next)...
-    --   should I be trying non-FIM too? (like repo level completions?)
-
-    -- PSM inference format:
-    log:trace("prefix", "'" .. prefix .. "'")
-    log:trace("suffix", "'" .. suffix .. "'")
-
 
 
     -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
