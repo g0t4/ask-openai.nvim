@@ -1,7 +1,7 @@
 local uv = vim.uv
 local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
-local changes = require("ask-openai.prediction.context.changelists") -- manually imported to be in scope for testing is all, nuke this later
+local changes = require("ask-openai.prediction.context.changelists")
 
 -- local backend = require("ask-openai.prediction.backends.legacy-completions")
 local backend = require("ask-openai.prediction.backends.ollama")

@@ -10,3 +10,10 @@
 --    i.e. advanced predictions that take longer but consider more context like coc, recent edtis, clipboard history, etc
 
 -- TODO find out how to programatically access the list of completions shown by coc in the menu and pass to the model
+
+local M = {}
+
+function M.setup()
+end
+
+return M
