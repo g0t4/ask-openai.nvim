@@ -1,7 +1,6 @@
 local buffers = require("ask-openai.helpers.buffers")
 local backend = require("ask-openai.backends.oai_chat_completions")
 local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
-local uv = vim.uv
 local M = {}
 
 -- Set up a highlight group for the extmarks
@@ -201,7 +200,6 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         },
         -- model = "qwen2.5-coder:14b-instruct-q8_0",
         model = "gemma3:12b-it-q8_0",
-        stream = true,
         temperature = 0.2,
         -- TODO do I need num_ctx (can't recall why I set it - check predicitons code)
         -- options = {
@@ -209,71 +207,13 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         -- }
     }
 
+    body.stream = true
+
     local json = vim.fn.json_encode(body)
+    -- local base_url = "http://build21:8000"
+    local base_url = "http://ollama:11434"
 
-    local options = {
-        command = "curl",
-        args = {
-            "-fsSL",
-            "--no-buffer", -- Prevent curl from buffering output
-            "-X", "POST",
-            "http://ollama:11434/v1/chat/completions",
-            "-H", "Content-Type: application/json",
-            "-d", json
-        },
-    }
-
-    local stdout = uv.new_pipe(false)
-    local stderr = uv.new_pipe(false)
-
-    options.on_exit = function(code, signal)
-        if code ~= 0 then
-            log:error("Error in curl command: " .. tostring(code) .. " Signal: " .. tostring(signal))
-        end
-        stdout:close()
-        stderr:close()
-
-        -- Clear out refs
-        M.handle = nil
-        M.pid = nil
-
-        -- Log completion
-        log:info("Rewrite generation complete")
-    end
-
-    M.abort_if_still_responding()
-
-    M.handle, M.pid = uv.spawn(options.command, {
-        args = options.args,
-        stdio = { nil, stdout, stderr },
-    }, options.on_exit)
-
-    options.on_stdout = function(err, data)
-        if err then
-            log:error("Error reading stdout: " .. tostring(err))
-            return
-        end
-        if data then
-            vim.schedule(function()
-                local chunk, generation_done = backend.sse_to_chunk(data)
-                if chunk then
-                    M.process_chunk(chunk)
-                end
-                if generation_done then
-                    -- Optionally do something when generation is complete
-                    log:info("Rewrite complete")
-                end
-            end)
-        end
-    end
-    uv.read_start(stdout, options.on_stdout)
-
-    options.on_stderr = function(err, data)
-        if err or (data and #data > 0) then
-            log:error("Error from curl: " .. tostring(data or err))
-        end
-    end
-    uv.read_start(stderr, options.on_stderr)
+    M.last_request = backend.curl_for(json, base_url, M)
 end
 
 local function ask_and_stream_from_ollama(opts)
