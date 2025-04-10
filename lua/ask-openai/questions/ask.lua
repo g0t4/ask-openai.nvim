@@ -5,7 +5,7 @@ local F = {}
 
 function F.send_question(user_prompt, code, file_name)
     local system_prompt = "You are a neovim AI plugin that answers questions."
-        .. " Please respond with markdown formatted text"
+        .. " Please respond with markdown formatted text, that will be presented in a floating window."
 
     local user_message = user_prompt
     if code then
