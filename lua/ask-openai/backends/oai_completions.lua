@@ -32,6 +32,8 @@ function M.curl_for(body, base_url, frontend)
     return curl.reusable_curl_seam(body, url, frontend, M.choice_text)
 end
 
+M.terminate = curl.terminate
+
 -- *** output shape
 --   FYI largely the same as for /v1/chat/completions, except the generated text
 --  created, id, model, object, system_fingerprint, usage

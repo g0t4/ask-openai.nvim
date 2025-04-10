@@ -40,6 +40,8 @@ function M.curl_for(body, base_url, frontend)
     return curl.reusable_curl_seam(body, url, frontend, M.choice_text)
 end
 
+M.terminate = curl.terminate
+
 -- *** output shape
 --   FYI largely the same as for /v1/completions, except the message/delta under choices
 --
