@@ -49,12 +49,13 @@ function F.send_question(user_prompt, code, file_name)
         }
     }
 
-    local body = agentica_params
+    -- local body = agentica_params
+    local body = ollama_qwen_params
     body.stream = true
 
     local json = vim.fn.json_encode(body)
-    -- "http://ollama:11434/v1/chat/completions", -- TODO pass in api base_url (via config)
-    local base_url = "http://build21:8000"
+    -- local base_url = "http://build21:8000"
+    local base_url = "http://ollama:11434"
 
     F.last_request = middleend.curl_for(json, base_url, F)
 end
