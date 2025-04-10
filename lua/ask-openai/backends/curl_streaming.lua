@@ -49,6 +49,9 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
     options.on_exit = function(code, signal)
         if code ~= 0 then
             log:error("spawn - non-zero exit code:", code, "Signal:", signal)
+
+            -- todo what logic do I want to NOT call request_failed here?
+            frontend.request_failed(code)
         end
         stdout:close()
         stderr:close()
@@ -91,11 +94,17 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
     uv.read_start(stdout, options.on_stdout)
 
     options.on_stderr = function(err, data)
-        log:warn("on_stderr chunk: ", data)
-        if err then
-            log:warn("on_stderr error: ", err)
+        if data ~= nil and data ~= "" then
+            -- legit errors, i.e. from curl, will show as text in data
+            log:warn("on_stderr data: ", data)
+            print("on_stderr data: ", data)
+            frontend.on_stderr_data(data)
         end
-        -- TODO frontend.handle_error()?
+        if err then
+            log:warn("on_stderr ", err)
+            -- lets print for now too and see how many false positives we get
+            print("on_stderr: ", err)
+        end
     end
     uv.read_start(stderr, options.on_stderr)
 

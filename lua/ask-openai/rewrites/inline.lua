@@ -225,6 +225,27 @@ local function ask_and_stream_from_ollama(opts)
     M.stream_from_ollama(user_prompt, selection.original_text, file_name)
 end
 
+function M.request_failed()
+    -- FYI test by point at wrong server/port
+    --
+    -- this is for AFTER the request completes and curl exits
+    vim.schedule(function()
+        -- or in this case should I show a notification?
+        -- lets see how often and if its annoying written as code to the buffer
+        M.process_chunk("\nerror: request failed")
+    end)
+end
+
+function M.on_stderr_data(text)
+    -- FYI test by point at wrong server/port
+    -- TODO match api changes in ask
+    vim.schedule(function()
+        -- or in this case should I show a notification?
+        -- lets see how often and if its annoying written as code to the buffer
+        M.process_chunk("\n" .. text)
+    end)
+end
+
 function M.abort_last_request()
     if not M.last_request then
         -- PRN still clear extmarks just in case?

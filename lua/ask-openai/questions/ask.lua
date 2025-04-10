@@ -67,6 +67,39 @@ function M.abort_and_close()
     vim.cmd(":q", { buffer = M.bufnr })
 end
 
+-- WIP - callback when non-zero exit code (at end)
+--  i.e. if the server times out or the port is not responding:
+--  I am going to need to check exit code and if its negative, then show smth...
+--  IIRC aborting request triggers a non-zero exit code so need to handle that too to not give false positive warnings
+--   worse case once a request is terminated then do not allow showing any other errors or messages from it... that would make sense
+--     so have the on exit handler in backend check request status before reporting back!
+--
+--  TODO should I print std_err messages? along the way? thats only way to show the message to the user
+--
+--  TODO should I detect some failures like Failed to connect in on_stderr? and print/pass the message back in that case?
+--
+--  TODO synchronize frontend API with rewrite too
+--
+-- i.e.
+-- [4.603]sec [WARN] on_stderr chunk:  curl: (7) Failed to connect to build21 port 8000 after 7 ms: Couldn't connect to server
+-- [4.609]sec [ERROR] spawn - non-zero exit code: 7 Signal: 0
+--
+function M.request_failed()
+    -- this is for AFTER the request completes and curl exits
+    vim.schedule(function()
+        M.process_chunk("\nerror: request failed")
+    end)
+end
+
+function M.on_stderr_data(text)
+    -- TODO rename to take away the stderr part but for now this is fine
+    --  first I need to understand what is returned across even successfulrequests (if anything)
+    --  then I can decide what this is doing
+    vim.schedule(function()
+        M.process_chunk(text)
+    end)
+end
+
 function M.open_response_window()
     local name = 'Question Response'
 
