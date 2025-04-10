@@ -15,21 +15,43 @@ function M.send_question(user_prompt, code, file_name)
             .. ":\n\n" .. code
     end
 
-    local body = {
+    -- TODO USE model specific params passed and use for body (merge)
+    --    make this a step before calling this method or a separate aspect so it can be reused in rewrites and other usage (i.e. agent tool eventually)
+    -- i.e. agentica's https://huggingface.co/agentica-org/DeepCoder-14B-Preview#usage-recommendations
+    local agentica_params = {
+        -- TODO for agentic... and all reasoning models, I need to split apart the <think> chunk when its done and display spearately, right?
+        messages = {
+            -- TODO if agentica recommends no system prompt.. would it make more sense to just use legacy completions for that use case oai_completions?
+            { role = "user", content = system_prompt .. "\n" .. user_message },
+        },
+        -- Avoid adding a system prompt; all instructions should be contained within the user prompt.
+        model = "agentica-org/DeepCoder-1.5B-Preview",
+        -- TODO 14B-Preview quantized variant
+        temperature = 0.6,
+        top_p = 0.95,
+        -- max_tokens set to at least 64000
+        max_tokens = 64000,
+        -- TODO can I just not set max_tokens too?
+    }
+
+    local ollama_qwen_params = {
         messages = {
             { role = "system", content = system_prompt },
             { role = "user",   content = user_message },
         },
+
         -- model = "qwen2.5-coder:14b-instruct-q8_0", -- btw -base- does terrible here :)
         model = "gemma3:12b-it-q8_0", -- btw -base- does terrible here :)
-        stream = true,
-        temperature = 0.2, -- TODO what temp?
+        -- temperature = 0.2, -- TODO what temp?
         -- PRN limit num_predict?
         options = {
             -- TODO! do I need num_ctx, I can't recall why I set this for predictions?
             num_ctx = 8192,
         }
     }
+
+    local body = agentica_params
+    body.stream = true
 
     local json = vim.fn.json_encode(body)
 
@@ -39,7 +61,8 @@ function M.send_question(user_prompt, code, file_name)
             "-fsSL",
             "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
-            "http://ollama:11434/v1/chat/completions", -- TODO pass in api base_url (via config)
+            -- "http://ollama:11434/v1/chat/completions", -- TODO pass in api base_url (via config)
+            "http://build21:8000/v1/chat/completions", -- vllm test
             "-H", "Content-Type: application/json",
             "-d", json
         },
