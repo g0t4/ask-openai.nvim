@@ -1,5 +1,5 @@
 local buffers = require("ask-openai.helpers.buffers")
-local backend = require("ask-openai.questions.backends.chat_completions")
+local backend = require("ask-openai.backends.oai_chat_completions")
 local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
 local uv = vim.uv
 local M = {}
