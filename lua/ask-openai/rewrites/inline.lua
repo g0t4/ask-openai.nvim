@@ -1,6 +1,7 @@
 local buffers = require("ask-openai.helpers.buffers")
 local backend = require("ask-openai.backends.oai_chat_completions")
 local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
+local agentica = require("ask-openai.backends.models.agentica")
 local M = {}
 
 -- Set up a highlight group for the extmarks
@@ -206,6 +207,8 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         --     num_ctx = 8192
         -- }
     }
+
+    local body = agentica.build_chat_body(system_prompt, user_message)
 
     -- local base_url = "http://build21:8000"
     local base_url = "http://ollama:11434"

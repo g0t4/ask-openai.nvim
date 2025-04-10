@@ -11,6 +11,7 @@ M.DeepCoder = {
     end,
 
     build_chat_body = function(system_prompt, user_message)
+        -- TODO parameterize ollama vs vllm b/c the model names will differ
         return {
             messages = {
                 -- TODO if agentica recommends no system prompt.. would it make more sense to just use legacy completions for that use case oai_completions?

@@ -1,6 +1,8 @@
 local buffers = require("ask-openai.helpers.buffers")
 local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
 local backend = require("ask-openai.backends.oai_chat_completions")
+local agentica = require("ask-openai.backends.models.agentica")
+
 local M = {}
 
 function M.send_question(user_prompt, code, file_name)
@@ -30,11 +32,11 @@ function M.send_question(user_prompt, code, file_name)
         }
     }
 
-    -- local body = agentica_params
-    local body = ollama_qwen_params
+    local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
+    -- local body = ollama_qwen_params
 
-    -- local base_url = "http://build21:8000"
-    local base_url = "http://ollama:11434"
+    local base_url = "http://build21:8000"
+    -- local base_url = "http://ollama:11434"
 
     M.last_request = backend.curl_for(body, base_url, M)
 end
