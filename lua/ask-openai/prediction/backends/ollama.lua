@@ -103,6 +103,7 @@ local function body_for(prefix, suffix, _recent_edits)
     for _, change in pairs(recent_edits) do
         local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
         -- todo include line/col or not?
+        -- todo include file?
         recent_changes = recent_changes .. "\n" .. str
     end
     raw_prompt = recent_changes .. "\n\n" .. raw_prompt
