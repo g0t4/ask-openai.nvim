@@ -17,7 +17,7 @@ function M.send_question(user_prompt, code, file_name)
             .. ":\n\n" .. code
     end
 
-    local ollama_qwen_params = {
+    local qwen_chat_completions = {
         messages = {
             { role = "system", content = system_prompt },
             { role = "user",   content = user_message },
@@ -33,11 +33,22 @@ function M.send_question(user_prompt, code, file_name)
         }
     }
 
-    -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
-    local body = ollama_qwen_params
+    local qwen_completions = {
+        model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
+        prompt = system_prompt .. "\n" .. user_message,
+        -- todo temp etc
+    }
 
-    -- local base_url = "http://build21:8000"
+    -- /v1/chat/completions
+    -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
+    -- local body = qwen_chat_completions
+
+    -- /v1/completions
+    local body = qwen_completions
+
+    -- vllm or ollama:
     local base_url = "http://ollama:11434"
+    -- local base_url = "http://build21:8000"
 
     M.last_request = backend.curl_for(body, base_url, M)
 end

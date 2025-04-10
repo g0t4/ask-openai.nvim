@@ -38,7 +38,7 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
             "--no-buffer", -- w/o this curl batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
             url,
-            "-H", "Content-Type: application/json",
+            "-H", "'Content-Type: application/json'",
             "-d", json
         },
     }
@@ -73,7 +73,7 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
     }, options.on_exit)
 
     options.on_stdout = function(err, data)
-        -- log:trace("on_stdout chunk: ", data)
+        log:trace("on_stdout chunk: ", data)
         if err then
             log:warn("on_stdout error: ", err)
             return
