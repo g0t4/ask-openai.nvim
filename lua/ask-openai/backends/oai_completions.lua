@@ -14,12 +14,12 @@ local function body_for(prefix, suffix, _recent_edits)
 
 
     local body = {
-        -- TODO! generalize backend for chat completions (rewrites, asks, etc) - and/or - 'legacy' /completions... each should probably have its own backend
-        --   TODO maybe even absorb ollama chat completions?
-
-        -- TODO which to use /completions or /chat/completions
+        -- FYI this is for vllm/openai/ollama "legacy" /completions endpoint
         -- /completions https://docs.vllm.ai/en/stable/serving/openai_compatible_server.html#completions-api
-        -- /chat/completions: https://docs.vllm.ai/en/stable/serving/openai_compatible_server.html#chat-api
+        -- TODO! rewrite the following file fully to use /v1/completions (test w/ vllm)
+        --   FYI! this was a backend impl from predictions for vllm so I might have to change alot here
+        --     at first I planned to just make this a vllm backend for instruct models but I wanna generalize to the backend endpoint instead
+
 
         -- agentica-org models
         -- fine tune of deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B

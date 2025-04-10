@@ -1,8 +1,9 @@
 local M = {}
 local log = require("ask-openai.prediction.logger").predictions()
 
--- TODO move body formatter here? and other methods like with prediction backends?
--- TODO! use for code rewriting to be streaming too => move this to a diff folder for chat/completions backends, not just questions backend
+-- docs:
+-- /chat/completions: https://docs.vllm.ai/en/stable/serving/openai_compatible_server.html#chat-api
+--  TODO TEST THIS WITH VLLM's /chat/completions
 
 function M.process_sse(data)
     -- SSE = Server-Sent Event
