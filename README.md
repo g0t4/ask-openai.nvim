@@ -112,7 +112,7 @@ opts = {
     provider = "keyless",
     model = "llama3.2-vision:11b",
     use_api_ollama = true, -- use ollama default, OR:
-    -- api_url = "http://localhost:11434/api/chat" -- override default for ollama
+    -- api_url = "http://localhost:11434/v1/chat/completions" -- override default for ollama
 }
 ```
 
@@ -196,5 +196,3 @@ And help:
 " Lazy plugin manager turns this README.md into helptags. If your using a different plugin manager, you might not see these help docs.
 ```
 
-## TODOs
-- ollama has /v1/chat/completions too (see my single.py in fish ask openai), use that instead of that custom thing I did

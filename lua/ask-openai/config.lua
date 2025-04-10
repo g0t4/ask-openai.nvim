@@ -136,7 +136,7 @@ local function get_chat_completions_url()
     elseif cached_options.use_api_groq then
         return "https://api.groq.com/openai/v1/chat/completions"
     elseif cached_options.use_api_ollama then
-        return "http://localhost:11434/api/chat"
+        return "http://localhost:11434/v1/chat/completions"
     elseif cached_options.use_api_openai then
         return "https://api.openai.com/v1/chat/completions"
     else
