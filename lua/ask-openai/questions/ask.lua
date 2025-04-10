@@ -17,7 +17,7 @@ function M.send_question(user_prompt, code, file_name)
             .. ":\n\n" .. code
     end
 
-    local qwen_chat_completions = {
+    local qwen_chat_body = {
         messages = {
             { role = "system", content = system_prompt },
             { role = "user",   content = user_message },
@@ -33,7 +33,7 @@ function M.send_question(user_prompt, code, file_name)
         }
     }
 
-    local qwen_completions = {
+    local qwen_legacy_body = {
         model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
         prompt = system_prompt .. "\n" .. user_message,
         -- todo temp etc
@@ -44,7 +44,7 @@ function M.send_question(user_prompt, code, file_name)
     -- local body = qwen_chat_completions
 
     -- /v1/completions
-    local body = qwen_completions
+    local body = qwen_legacy_body
 
     -- vllm or ollama:
     local base_url = "http://ollama:11434"

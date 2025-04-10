@@ -177,13 +177,13 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         .. ":\n\n" .. code
 
     -- TODO extract out this ollama stuff into qwen/gemma...
-    local body = {
+    local qwen_chat_body = {
         messages = {
             { role = "system", content = system_prompt },
             { role = "user",   content = user_message },
         },
-        -- model = "qwen2.5-coder:14b-instruct-q8_0",
-        model = "gemma3:12b-it-q8_0",
+        model = "qwen2.5-coder:7b-instruct-q8_0",
+        -- model = "gemma3:12b-it-q8_0",
         temperature = 0.2,
         -- TODO do I need num_ctx (can't recall why I set it - check predicitons code)
         -- options = {
@@ -191,10 +191,21 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         -- }
     }
 
-    local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
+    local qwen_legacy_body = {
+        model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
+        prompt = system_prompt .. "\n" .. user_message,
+        temperature = 0.2,
+    }
 
-    local base_url = "http://build21:8000"
-    -- local base_url = "http://ollama:11434"
+    -- /v1/chat/completions
+    -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
+    -- local body = qwen_chat_body
+
+    -- /v1/completions
+    local body = qwen_legacy_body
+
+    -- local base_url = "http://build21:8000"
+    local base_url = "http://ollama:11434"
 
     M.last_request = backend.curl_for(body, base_url, M)
 end
