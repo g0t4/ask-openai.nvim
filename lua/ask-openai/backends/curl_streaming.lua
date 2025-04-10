@@ -38,11 +38,11 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
             "--no-buffer", -- w/o this curl batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
             url,
-            "-H", "'Content-Type: application/json'",
+            "-H", "Content-Type: application/json",
             "-d", json
         },
     }
-    log:warn("curl: ", table.concat(options.args, " "))
+    -- log:warn("curl args: ", table.concat(options.args, " "))
 
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
