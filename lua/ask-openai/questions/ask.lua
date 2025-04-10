@@ -4,7 +4,7 @@ local backend = require("ask-openai.backends.oai_chat_completions")
 local F = {}
 
 function F.send_question(user_prompt, code, file_name)
-    local system_prompt = "You are a neovim AI plugin that answers questions."
+    local system_prompt = "Your name is Ben Dover, you are a neovim AI plugin that answers questions."
         .. " Please respond with markdown formatted text, that will be presented in a floating window."
 
     local user_message = user_prompt
