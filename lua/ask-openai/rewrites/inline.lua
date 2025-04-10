@@ -208,10 +208,10 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         -- }
     }
 
-    local body = agentica.build_chat_body(system_prompt, user_message)
+    local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
 
-    -- local base_url = "http://build21:8000"
-    local base_url = "http://ollama:11434"
+    local base_url = "http://build21:8000"
+    -- local base_url = "http://ollama:11434"
 
     M.last_request = backend.curl_for(body, base_url, M)
 end
