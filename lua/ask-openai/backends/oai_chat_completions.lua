@@ -7,8 +7,9 @@ local log = require("ask-openai.prediction.logger").predictions()
 -- FYI this is intended for use w/ instruct models
 --  TODO! determine if this can be generalized...
 --  TODO TEST THIS WITH VLLM's /chat/completions
---  TODO TEST W/ ollama too (IIRC I wrote this to work with ollama initially)
 --  TODO test with OpenAI too
+-- TESTED WITH:
+--  ollama
 
 function M.process_sse(data)
     -- SSE = Server-Sent Event
