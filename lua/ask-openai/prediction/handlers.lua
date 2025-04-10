@@ -112,8 +112,8 @@ function M.ask_for_prediction()
     --     log:warn("vim.o.commentstring is nil, not including file name in comment header")
     -- end
 
-    -- local recent_edits = changes.get_change_list_with_lines()
-    local recent_edits = {}
+    local recent_edits = changes.get_change_list_with_lines()
+    -- local recent_edits = {}
 
     -- PSM format:
     local prefix = document_prefix
