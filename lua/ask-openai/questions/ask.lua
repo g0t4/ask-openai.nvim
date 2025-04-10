@@ -118,7 +118,7 @@ function F.open_response_window()
     vim.api.nvim_set_option_value('filetype', 'markdown', { buf = F.bufnr })
 end
 
-function F.add_to_response_window(text)
+function F.process_chunk(text)
     local count_of_lines = vim.api.nvim_buf_line_count(F.bufnr)
     local last_line = vim.api.nvim_buf_get_lines(F.bufnr, count_of_lines - 1, count_of_lines, false)[1]
     local replace_lines = vim.split(last_line .. text, "\n")

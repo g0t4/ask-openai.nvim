@@ -78,7 +78,7 @@ function M.curl_for(json, base_url, frontend)
             vim.schedule(function()
                 local chunk, generation_done, done_reason = backend.process_sse(data)
                 if chunk then
-                    frontend.add_to_response_window(chunk)
+                    frontend.process_chunk(chunk)
                 end
                 -- PRN anything on done?
                 -- if generation_done then
