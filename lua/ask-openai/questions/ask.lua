@@ -29,6 +29,7 @@ function M.send_question(user_prompt, code, file_name)
         -- PRN limit num_predict?
 
         -- FYI - ollama, be careful w/ `num_ctx`, can't set it with OpenAI compat endpoints (whereas can pass with /api/generate)
+        --   SEE NOTES about how to set this with env vars / Modelfile instead that can work with openai endpoints (don't have to use /api/generate to fix this issue)
         --   review start logs for n_ctx and during completion it warns if truncated prompt:
         --     level=WARN source=runner.go:131 msg="truncating input prompt" limit=8192 prompt=10552 keep=4 new=8192
     }
