@@ -25,7 +25,9 @@ function M.terminate(request)
 end
 
 function M.reusable_curl_seam(body, url, frontend, choice_text)
-    local request = {}
+    local request = {
+        body = body
+    }
 
     body.stream = true
     local json = vim.fn.json_encode(body)
