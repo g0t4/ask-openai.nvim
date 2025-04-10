@@ -98,15 +98,15 @@ local function body_for(prefix, suffix, _recent_edits)
     -- Edit history totally messed up FIM... how can I include this while preserving the FIM request...
     --   i.e. in calc.lua... it just chatted to me and that's an easy FIM task
     --
-    local recent_changes = "Here are some recent lines that were edited by the user: "
-    -- -- PRN need edits for other files too
-    for _, change in pairs(recent_edits) do
-        local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
-        -- todo include line/col or not?
-        -- todo include file?
-        recent_changes = recent_changes .. "\n" .. str
-    end
-    raw_prompt = recent_changes .. "\n\n" .. raw_prompt
+    -- local recent_changes = "Here are some recent lines that were edited by the user: "
+    -- -- -- PRN need edits for other files too
+    -- for _, change in pairs(recent_edits) do
+    --     local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
+    --     -- todo include line/col or not?
+    --     -- todo include file?
+    --     recent_changes = recent_changes .. "\n" .. str
+    -- end
+    -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
     body.prompt = raw_prompt
 
