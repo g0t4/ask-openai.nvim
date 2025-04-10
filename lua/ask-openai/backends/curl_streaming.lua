@@ -24,7 +24,7 @@ function M.terminate(request)
     end
 end
 
-function M.reusable_curl_seam(body, url, frontend, sse_to_chunk)
+function M.reusable_curl_seam(body, url, frontend, choice_text)
     local request = {}
 
     body.stream = true
@@ -59,7 +59,7 @@ function M.reusable_curl_seam(body, url, frontend, sse_to_chunk)
         request.pid = nil
     end
 
-    -- TODO fix... by having the frontend do this, it is not the backends job to track which requests to abort
+    -- TODO! fix... by having the frontend do this, it is not the backends job to track which requests to abort
     --   this was when I only envisioned one request at a time but now with agents I could run them in parallel and why not with parallel capacity just sitting there on my GPUs
     M.terminate()
 
@@ -76,7 +76,7 @@ function M.reusable_curl_seam(body, url, frontend, sse_to_chunk)
         end
         if data then
             vim.schedule(function()
-                local chunk, generation_done, done_reason = sse_to_chunk(data)
+                local chunk, generation_done, done_reason = M.sse_to_chunk(data, choice_text)
                 if chunk then
                     frontend.process_chunk(chunk)
                 end
@@ -102,4 +102,47 @@ function M.reusable_curl_seam(body, url, frontend, sse_to_chunk)
     return request
 end
 
+--- @param data string
+--- @return string|nil text, boolean|nil is_done, string|nil finish_reason
+function M.sse_to_chunk(data, choice_text)
+    -- SSE = Server-Sent Event
+    -- split on lines first (each SSE can have 0+ "event" - one per line)
 
+    local chunk = nil -- combine all chunks into one string and check for done
+    local done = false
+    local finish_reason = nil
+    for ss_event in data:gmatch("[^\r\n]+") do
+        if ss_event:match("^data:%s*%[DONE%]$") then
+            -- done, courtesy last event... mostly ignore b/c finish_reason already comes on the prior SSE
+            return chunk, true
+        end
+
+        --  strip leading "data: " (if present)
+        local event_json = ss_event
+        if ss_event:sub(1, 6) == "data: " then
+            event_json = ss_event:sub(7)
+        end
+        local success, parsed = pcall(vim.json.decode, event_json)
+
+        if success and parsed and parsed.choices and parsed.choices[1] then
+            local first_choice = parsed.choices[1]
+            finish_reason = first_choice.finish_reason
+            if finish_reason ~= nil and finish_reason ~= vim.NIL then
+                done = true
+                if finish_reason ~= "stop" and finish_reason ~= "length" then
+                    log:warn("WARN - unexpected finish_reason: ", finish_reason, " do you need to handle this too?")
+                end
+            end
+            chunk = (chunk or "") .. choice_text(first_choice)
+        else
+            log:warn("SSE json parse failed for ss_event: ", ss_event)
+        end
+    end
+    return chunk, done, finish_reason
+end
+
+-- PRN does vllm have both finish_reason and stop_reason?
+--   wait to handle it until actually needed
+--   probably coalesce finish_reason|stop_reason to keep it transparent
+
+return M

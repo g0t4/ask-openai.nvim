@@ -37,7 +37,7 @@ local curl = require("ask-openai.backends.curl_streaming")
 
 function M.curl_for(body, base_url, frontend)
     local url = base_url .. "/v1/chat/completions"
-    return curl.reusable_curl_seam(body, url, frontend, M.sse_to_chunk)
+    return curl.reusable_curl_seam(body, url, frontend, M.choice_text)
 end
 
 -- *** output shape
@@ -100,45 +100,6 @@ function M.choice_text(choice)
         return ""
     end
     return choice.delta.content
-end
-
---- @param data string
---- @return string|nil text, boolean|nil is_done, string|nil finish_reason
-function M.sse_to_chunk(data)
-    -- SSE = Server-Sent Event
-    -- split on lines first (each SSE can have 0+ "event" - one per line)
-
-    local chunk = nil -- combine all chunks into one string and check for done
-    local done = false
-    local finish_reason = nil
-    for ss_event in data:gmatch("[^\r\n]+") do
-        if ss_event:match("^data:%s*%[DONE%]$") then
-            -- done, courtesy last event... mostly ignore b/c finish_reason already comes on the prior SSE
-            return chunk, true
-        end
-
-        --  strip leading "data: " (if present)
-        local event_json = ss_event
-        if ss_event:sub(1, 6) == "data: " then
-            event_json = ss_event:sub(7)
-        end
-        local success, parsed = pcall(vim.json.decode, event_json)
-
-        if success and parsed and parsed.choices and parsed.choices[1] then
-            local first_choice = parsed.choices[1]
-            finish_reason = first_choice.finish_reason
-            if finish_reason ~= nil and finish_reason ~= vim.NIL then
-                done = true
-                if finish_reason ~= "stop" and finish_reason ~= "length" then
-                    log:warn("WARN - unexpected finish_reason: ", finish_reason, " do you need to handle this too?")
-                end
-            end
-            chunk = (chunk or "") .. M.choice_text(first_choice)
-        else
-            log:warn("SSE json parse failed for ss_event: ", ss_event)
-        end
-    end
-    return chunk, done, finish_reason
 end
 
 return M
