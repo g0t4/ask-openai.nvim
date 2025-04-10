@@ -1,9 +1,9 @@
 local buffers = require("ask-openai.helpers.buffers")
 local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
 local backend = require("ask-openai.backends.oai_chat_completions")
-local F = {}
+local M = {}
 
-function F.send_question(user_prompt, code, file_name)
+function M.send_question(user_prompt, code, file_name)
     local system_prompt = "Your name is Ben Dover, you are a neovim AI plugin that answers questions."
         .. " Please respond with markdown formatted text, that will be presented in a floating window."
 
@@ -57,7 +57,7 @@ function F.send_question(user_prompt, code, file_name)
     -- local base_url = "http://build21:8000"
     local base_url = "http://ollama:11434"
 
-    F.last_request = backend.curl_for(json, base_url, F)
+    M.last_request = backend.curl_for(json, base_url, M)
 end
 
 local function ask_question_about(opts)
@@ -70,35 +70,35 @@ local function ask_question_about(opts)
     local user_prompt = opts.args
     local file_name = vim.fn.expand("%:t")
 
-    F.open_response_window()
-    F.send_question(user_prompt, selection.original_text, file_name)
+    M.open_response_window()
+    M.send_question(user_prompt, selection.original_text, file_name)
 end
 
 local function ask_question(opts)
     local user_prompt = opts.args
-    F.open_response_window()
-    F.send_question(user_prompt)
+    M.open_response_window()
+    M.send_question(user_prompt)
 end
 
-function F.abort_and_close()
-    F.abort_last_request()
-    vim.cmd(":q", { buffer = F.bufnr })
+function M.abort_and_close()
+    M.abort_last_request()
+    vim.cmd(":q", { buffer = M.bufnr })
 end
 
-function F.open_response_window()
+function M.open_response_window()
     local name = 'Question Response'
 
-    if F.bufnr == nil then
-        F.bufnr = vim.api.nvim_create_buf(false, true)
-        vim.api.nvim_buf_set_name(F.bufnr, name)
+    if M.bufnr == nil then
+        M.bufnr = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_buf_set_name(M.bufnr, name)
 
         -- stop generation, if still wanna look at it w/o closing the window
-        vim.keymap.set("n", "<Esc>", F.abort_last_request, { buffer = F.bufnr, nowait = true })
-        vim.keymap.set("n", "<F8>", F.abort_and_close, { buffer = F.bufnr }) -- I already use this globally to close a window (:q) ... so just add stop to it
+        vim.keymap.set("n", "<Esc>", M.abort_last_request, { buffer = M.bufnr, nowait = true })
+        vim.keymap.set("n", "<F8>", M.abort_and_close, { buffer = M.bufnr }) -- I already use this globally to close a window (:q) ... so just add stop to it
         -- OR, should I let it keep completing in background and then I can come back when its done? for async?
     end
 
-    vim.api.nvim_buf_set_lines(F.bufnr, 0, -1, false, {}) -- clear the buffer, is there an easier way?
+    vim.api.nvim_buf_set_lines(M.bufnr, 0, -1, false, {}) -- clear the buffer, is there an easier way?
 
     local screen_lines = vim.api.nvim_get_option_value('lines', {})
     local screen_columns = vim.api.nvim_get_option_value('columns', {})
@@ -106,7 +106,7 @@ function F.open_response_window()
     local win_width = math.ceil(0.5 * screen_columns)
     local top_is_at_row = screen_lines / 2 - win_height / 2
     local left_is_at_col = screen_columns / 2 - win_width / 2
-    local _winid = vim.api.nvim_open_win(F.bufnr, true, {
+    local _winid = vim.api.nvim_open_win(M.bufnr, true, {
         relative = 'editor',
         width = win_width,
         height = win_height,
@@ -116,29 +116,29 @@ function F.open_response_window()
         border = 'single'
     })
     -- set FileType after creating window, otherwise the default wrap option (vim.o.wrap) will override any ftplugin mods to wrap (and the same for other window-local options like wrap)
-    vim.api.nvim_set_option_value('filetype', 'markdown', { buf = F.bufnr })
+    vim.api.nvim_set_option_value('filetype', 'markdown', { buf = M.bufnr })
 end
 
-function F.process_chunk(text)
-    local count_of_lines = vim.api.nvim_buf_line_count(F.bufnr)
-    local last_line = vim.api.nvim_buf_get_lines(F.bufnr, count_of_lines - 1, count_of_lines, false)[1]
+function M.process_chunk(text)
+    local count_of_lines = vim.api.nvim_buf_line_count(M.bufnr)
+    local last_line = vim.api.nvim_buf_get_lines(M.bufnr, count_of_lines - 1, count_of_lines, false)[1]
     local replace_lines = vim.split(last_line .. text, "\n")
-    vim.api.nvim_buf_set_lines(F.bufnr, count_of_lines - 1, count_of_lines, false, replace_lines)
+    vim.api.nvim_buf_set_lines(M.bufnr, count_of_lines - 1, count_of_lines, false, replace_lines)
 end
 
-function F.abort_last_request()
-    backend.terminate(F.last_request)
+function M.abort_last_request()
+    backend.terminate(M.last_request)
 end
 
-function F.setup()
+function M.setup()
     -- once again, pass question in command line for now... b/c then I can use cmd history to ask again or modify question easily
     --  if I move to a float window, I'll want to add history there then which I can handle later when this falls apart
     vim.api.nvim_create_user_command("AskQuestion", ask_question, { range = true, nargs = 1 })
     vim.api.nvim_create_user_command("AskQuestionAbout", ask_question_about, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('v', '<Leader>aq', ':<C-u>AskQuestionAbout ', { noremap = true })
     vim.api.nvim_set_keymap('n', '<Leader>aq', ':AskQuestion ', { noremap = true })
-    vim.keymap.set('n', '<leader>ao', F.open_response_window, { noremap = true })
-    vim.keymap.set('n', '<leader>aa', F.abort_last_request, { noremap = true })
+    vim.keymap.set('n', '<leader>ao', M.open_response_window, { noremap = true })
+    vim.keymap.set('n', '<leader>aa', M.abort_last_request, { noremap = true })
 end
 
-return F
+return M
