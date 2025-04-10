@@ -3,12 +3,23 @@ local log = require("ask-openai.prediction.logger").predictions()
 _G.PLAIN_FIND = true
 
 local function body_for(prefix, suffix, _recent_edits)
+
+    -- IDEA - pass param sets in to make model specific alterations
+    local agentica_params = {
+        -- https://huggingface.co/agentica-org/DeepCoder-14B-Preview#usage-recommendations
+
+
+    }
+
+
+
     local body = {
-        -- TODO! generalize backend for chat completions (rewrites, asks, etc)
+        -- TODO! generalize backend for chat completions (rewrites, asks, etc) - and/or - 'legacy' /completions... each should probably have its own backend
         --   TODO maybe even absorb ollama chat completions?
 
-        -- vllm /v1/completions:
-        -- https://docs.vllm.ai/en/stable/serving/openai_compatible_server.html#completions-api
+        -- TODO which to use /completions or /chat/completions
+        -- /completions https://docs.vllm.ai/en/stable/serving/openai_compatible_server.html#completions-api
+        -- /chat/completions: https://docs.vllm.ai/en/stable/serving/openai_compatible_server.html#chat-api
 
         -- agentica-org models
         -- fine tune of deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B
