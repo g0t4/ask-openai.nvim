@@ -109,6 +109,10 @@ function M.process_chunk(text)
 end
 
 function M.abort_last_request()
+    if not M.last_request then
+        return -- no request to abort
+    end
+
     backend.terminate(M.last_request)
 end
 

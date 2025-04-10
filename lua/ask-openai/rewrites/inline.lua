@@ -243,6 +243,14 @@ local function ask_and_stream_from_ollama(opts)
     M.stream_from_ollama(user_prompt, selection.original_text, file_name)
 end
 
+function M.abort_last_request()
+    if not M.last_request then
+        return -- no request to abort
+    end
+
+    backend.terminate(M.last_request)
+end
+
 function M.setup()
     -- Create commands and keymaps for the rewrite functionality
     vim.api.nvim_create_user_command("AskRewrite", ask_and_stream_from_ollama, { range = true, nargs = 1 })
