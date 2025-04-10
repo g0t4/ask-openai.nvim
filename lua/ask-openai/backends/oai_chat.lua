@@ -93,8 +93,17 @@ end
 -- }
 -- {"id":"chatcmpl-209","object":"chat.completion.chunk","created":1743021818,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop"}]}
 
+-- * differs vs /v1/completions endpoint
+function M.choice_text(choice)
+    if choice.delta == nil or choice.delta.content == nil then
+        log:warn("WARN - unexpected, no delta.content in completion choice, do you need to add special logic to handle this?")
+        return ""
+    end
+    return choice.delta.content
+end
+
 --- @param data string
---- @return string text|nil, boolean|nil is_done, string|nil finish_reason
+--- @return string|nil text, boolean|nil is_done, string|nil finish_reason
 function M.sse_to_chunk(data)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
@@ -124,14 +133,7 @@ function M.sse_to_chunk(data)
                     log:warn("WARN - unexpected finish_reason: ", finish_reason, " do you need to handle this too?")
                 end
             end
-
-            -- * differs vs /v1/completions endpoint
-            if first_choice.delta == nil or first_choice.delta.content == nil then
-                log:warn("WARN - unexpected, no delta.content in completion choice, do you need to add special logic to handle this?")
-            else
-                chunk = (chunk or "") .. first_choice.delta.content
-            end
-
+            chunk = (chunk or "") .. M.choice_text(first_choice)
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end

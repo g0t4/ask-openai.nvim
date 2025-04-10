@@ -66,8 +66,17 @@ end
 -- TODO does vllm have both finish_reason and stop_reason?
 
 
+-- * differs vs /v1/chat/completions endpoint
+function M.choice_text(choice)
+    if choice.text == nil then
+        log:warn("WARN - unexpected, no choice in completion, do you need to add special logic to handle this?")
+        return ""
+    end
+    return choice.text
+end
+
 --- @param data string
---- @return string text|nil, boolean|nil is_done, string|nil finish_reason
+--- @return string|nil text, boolean|nil is_done, string|nil finish_reason
 function M.sse_to_chunk(data)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
@@ -97,14 +106,7 @@ function M.sse_to_chunk(data)
                     log:warn("WARN - unexpected finish_reason: ", finish_reason, " do you need to handle this too?")
                 end
             end
-
-            -- * differs vs /v1/chat/completions endpoint
-            if first_choice.text == nil then
-                log:warn("WARN - unexpected, no choice in completion, do you need to add special logic to handle this?")
-            else
-                chunk = (chunk or "") .. first_choice.text
-            end
-
+            chunk = (chunk or "") .. M.choice_text(first_choice)
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
