@@ -139,7 +139,7 @@ function M.sse_to_chunk(data, choice_text)
             if finish_reason ~= nil and finish_reason ~= vim.NIL then
                 done = true
                 if finish_reason ~= "stop" and finish_reason ~= "length" then
-                    log:warn("WARN - unexpected finish_reason: ", finish_reason, " do you need to handle this too?")
+                    log:warn("[WARN] unexpected finish_reason: '", finish_reason, "'")
                 end
             end
             chunk = (chunk or "") .. choice_text(first_choice)

@@ -23,8 +23,8 @@ function M.send_question(user_prompt, code, file_name)
             { role = "user",   content = user_message },
         },
 
-        -- model = "qwen2.5-coder:14b-instruct-q8_0", -- btw -base- does terrible here :)
-        model = "gemma3:12b-it-q8_0", -- btw -base- does terrible here :)
+        model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
+        -- model = "gemma3:12b-it-q8_0", -- btw -base- does terrible here :)
         -- temperature = 0.2, -- TODO what temp?
         -- PRN limit num_predict?
         options = {
@@ -33,11 +33,11 @@ function M.send_question(user_prompt, code, file_name)
         }
     }
 
-    local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
-    -- local body = ollama_qwen_params
+    -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
+    local body = ollama_qwen_params
 
-    local base_url = "http://build21:8000"
-    -- local base_url = "http://ollama:11434"
+    -- local base_url = "http://build21:8000"
+    local base_url = "http://ollama:11434"
 
     M.last_request = backend.curl_for(body, base_url, M)
 end
