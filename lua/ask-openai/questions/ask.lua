@@ -29,8 +29,8 @@ function M.send_question(user_prompt, code, file_name)
         -- PRN limit num_predict?
 
         -- FYI - ollama, be careful w/ `num_ctx`, can't set it with OpenAI compat endpoints (whereas can pass with /api/generate)
-        --   review start logs for n_ctx and during completion it warns if truncated prompt
-        --      does it return that warning to curl call?
+        --   review start logs for n_ctx and during completion it warns if truncated prompt:
+        --     level=WARN source=runner.go:131 msg="truncating input prompt" limit=8192 prompt=10552 keep=4 new=8192
     }
 
     local qwen_legacy_body = {
