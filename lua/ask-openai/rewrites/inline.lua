@@ -204,6 +204,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     -- /v1/completions
     local body = qwen_legacy_body
 
+    -- vllm or ollama:
     -- local base_url = "http://build21:8000"
     local base_url = "http://ollama:11434"
 
