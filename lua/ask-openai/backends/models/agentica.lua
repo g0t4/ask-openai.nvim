@@ -4,7 +4,13 @@ local M = {}
 --    make this a step before calling this method or a separate aspect so it can be reused in rewrites and other usage (i.e. agent tool eventually)
 -- i.e. agentica's https://huggingface.co/agentica-org/DeepCoder-14B-Preview#usage-recommendations
 M.DeepCoder = {
-    builder = function(system_prompt, user_message)
+
+    build_completions_body = function(system_prompt, user_message)
+        return {
+        }
+    end,
+
+    build_chat_body = function(system_prompt, user_message)
         return {
             messages = {
                 -- TODO if agentica recommends no system prompt.. would it make more sense to just use legacy completions for that use case oai_completions?
@@ -20,6 +26,7 @@ M.DeepCoder = {
             -- TODO can I just not set max_tokens too?
         }
     end
+
 }
 
 return M
