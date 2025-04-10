@@ -40,39 +40,62 @@ function M.curl_for(body, base_url, frontend)
     return curl.reusable_curl_seam(body, url, frontend, M.sse_to_chunk)
 end
 
-function M.sse_to_chunk(data)
-    -- *** output shape
-    --   FYI largely the same as for /v1/completions, except the message/delta under choices
-    --
-    --  created, id, model, object, system_fingerprint, usage
-    --  choices:
-    --    finish_reason:
-    --    index:
-    --    logprobs:
-    --
-    --    # stream only:
-    --    # https://platform.openai.com/docs/api-reference/chat-streaming
-    --    delta:
-    --      content: string
-    --      role: string
-    --      refusal: string
-    --      tool_calls: (formerly function_calls) ** vllm/ollama may use function_calls
-    --        function:
-    --          arguments:
-    --          name:
-    --        id:
-    --        type:
-    --        FYI means single tool calls dont span deltas? though IIAC still can do multiple across deltas
-    --
-    --    # sync only:
-    --    message:
-    --      refusal: string
-    --      content: string
-    --      role: string
-    --      annotations: [objects]
-    --      audio:
-    --      tool_calls: (same as in delta)
+-- *** output shape
+--   FYI largely the same as for /v1/completions, except the message/delta under choices
+--
+--  created, id, model, object, system_fingerprint, usage
+--  choices:
+--    finish_reason:
+--    index:
+--    logprobs:
+--
+--    # stream only:
+--    # https://platform.openai.com/docs/api-reference/chat-streaming
+--    delta:
+--      content: string
+--      role: string
+--      refusal: string
+--      tool_calls: (formerly function_calls) ** vllm/ollama may use function_calls
+--        function:
+--          arguments:
+--          name:
+--        id:
+--        type:
+--        FYI means single tool calls dont span deltas? though IIAC still can do multiple across deltas
+--
+--    # sync only:
+--    message:
+--      refusal: string
+--      content: string
+--      role: string
+--      annotations: [objects]
+--      audio:
+--      tool_calls: (same as in delta)
 
+-- *** ollama /v1/chat/completions
+-- {"id":"chatcmpl-209","object":"chat.completion.chunk","created":1743021818,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"."},"finish_reason":null}]}
+-- {
+--   "id": "chatcmpl-209",
+--   "object": "chat.completion.chunk",
+--   "created": 1743021818,
+--   "model": "qwen2.5-coder:7b-instruct-q8_0",
+--   "system_fingerprint": "fp_ollama",
+--   "choices": [
+--     {
+--       "index": 0,
+--       "delta": {
+--         "role": "assistant",
+--         "content": "."
+--       },
+--       "finish_reason": null
+--     }
+--   ]
+-- }
+-- {"id":"chatcmpl-209","object":"chat.completion.chunk","created":1743021818,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop"}]}
+
+--- @param data string
+--- @return string text|nil, boolean|nil is_done, string|nil finish_reason
+function M.sse_to_chunk(data)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
@@ -91,27 +114,6 @@ function M.sse_to_chunk(data)
             event_json = ss_event:sub(7)
         end
         local success, parsed = pcall(vim.json.decode, event_json)
-
-        -- *** ollama /v1/chat/completions
-        -- {"id":"chatcmpl-209","object":"chat.completion.chunk","created":1743021818,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"."},"finish_reason":null}]}
-        -- {
-        --   "id": "chatcmpl-209",
-        --   "object": "chat.completion.chunk",
-        --   "created": 1743021818,
-        --   "model": "qwen2.5-coder:7b-instruct-q8_0",
-        --   "system_fingerprint": "fp_ollama",
-        --   "choices": [
-        --     {
-        --       "index": 0,
-        --       "delta": {
-        --         "role": "assistant",
-        --         "content": "."
-        --       },
-        --       "finish_reason": null
-        --     }
-        --   ]
-        -- }
-        -- {"id":"chatcmpl-209","object":"chat.completion.chunk","created":1743021818,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop"}]}
 
         if success and parsed and parsed.choices and parsed.choices[1] then
             local first_choice = parsed.choices[1]

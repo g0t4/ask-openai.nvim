@@ -32,20 +32,46 @@ function M.curl_for(body, base_url, frontend)
     return curl.reusable_curl_seam(body, url, frontend, M.sse_to_chunk)
 end
 
-function M.sse_to_chunk(data)
-    -- *** output shape
-    --   FYI largely the same as for /v1/chat/completions, except the generated text
-    --  created, id, model, object, system_fingerprint, usage
-    --  choices
-    --    finish_reason: string  # vllm seems to use stop_reason (see below)
-    --    index: integer
-    --    logprobs: obj/null
-    --    text: string    (*** this is the only difference vs chat)
+-- *** output shape
+--   FYI largely the same as for /v1/chat/completions, except the generated text
+--  created, id, model, object, system_fingerprint, usage
+--  choices
+--    finish_reason: string  # vllm seems to use stop_reason (see below)
+--    index: integer
+--    logprobs: obj/null
+--    text: string    (*** this is the only difference vs chat)
 
+-- *** vllm /v1/completions responses:
+--  middle completion:
+--   {"id":"cmpl-eec6b2c11daf423282bbc9b64acc8144","object":"text_completion","created":1741824039,"model":"Qwen/Qwen2.5-Coder-3B","choices":[{"index":0,"text":"ob","logprobs":null,"finish_reason":null,"stop_reason":null}],"usage":null}
+--
+--  final completion:
+--   {"id":"cmpl-06be557c45c24e458ea2e36d436faf60","object":"text_completion","created":1741823318,"model":"Qwen/Qwen2.5-Coder-3B","choices":[{"index":0,"text":" and","logprobs":null,"finish_reason":"length","stop_reason":null}],"usage":null}
+--    pretty print with vim:
+--    :Dump(vim.json.decode('{"id":"cmpl-06be557c45c24e458ea2e36d436faf60","object":"text_completion","created":1741823318,"model":"Qwen/Qwen2.5-Coder-3B","choices":[{"index":0,"text":" and","logprobs":null,"finish_reason":"length","stop_reason":null}],"usage":null}')
+-- {
+--   choices = { {
+--       finish_reason = "length",
+--       index = 0,
+--       logprobs = vim.NIL,
+--       stop_reason = vim.NIL,
+--       text = " and"
+--     } },
+--   created = 1741823318,
+--   id = "cmpl-06be557c45c24e458ea2e36d436faf60",
+--   model = "Qwen/Qwen2.5-Coder-3B",
+--   object = "text_completion",
+--   usage = vim.NIL
+-- }
+-- TODO does vllm have both finish_reason and stop_reason?
+
+
+--- @param data string
+--- @return string text|nil, boolean|nil is_done, string|nil finish_reason
+function M.sse_to_chunk(data)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
-    -- FYI use nil to indicate nothing in the SSE... vs empty line which is a valid thingy right?
     local chunk = nil -- combine all chunks into one string and check for done
     local done = false
     local finish_reason = nil
@@ -61,30 +87,6 @@ function M.sse_to_chunk(data)
             event_json = ss_event:sub(7)
         end
         local success, parsed = pcall(vim.json.decode, event_json)
-
-        -- *** vllm /v1/completions responses:
-        --  middle completion:
-        --   {"id":"cmpl-eec6b2c11daf423282bbc9b64acc8144","object":"text_completion","created":1741824039,"model":"Qwen/Qwen2.5-Coder-3B","choices":[{"index":0,"text":"ob","logprobs":null,"finish_reason":null,"stop_reason":null}],"usage":null}
-        --
-        --  final completion:
-        --   {"id":"cmpl-06be557c45c24e458ea2e36d436faf60","object":"text_completion","created":1741823318,"model":"Qwen/Qwen2.5-Coder-3B","choices":[{"index":0,"text":" and","logprobs":null,"finish_reason":"length","stop_reason":null}],"usage":null}
-        --    pretty print with vim:
-        --    :Dump(vim.json.decode('{"id":"cmpl-06be557c45c24e458ea2e36d436faf60","object":"text_completion","created":1741823318,"model":"Qwen/Qwen2.5-Coder-3B","choices":[{"index":0,"text":" and","logprobs":null,"finish_reason":"length","stop_reason":null}],"usage":null}')
-        -- {
-        --   choices = { {
-        --       finish_reason = "length",
-        --       index = 0,
-        --       logprobs = vim.NIL,
-        --       stop_reason = vim.NIL,
-        --       text = " and"
-        --     } },
-        --   created = 1741823318,
-        --   id = "cmpl-06be557c45c24e458ea2e36d436faf60",
-        --   model = "Qwen/Qwen2.5-Coder-3B",
-        --   object = "text_completion",
-        --   usage = vim.NIL
-        -- }
-        -- TODO does vllm have both finish_reason and stop_reason?
 
         if success and parsed and parsed.choices and parsed.choices[1] then
             local first_choice = parsed.choices[1]
