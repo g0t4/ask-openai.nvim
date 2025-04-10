@@ -159,20 +159,27 @@
 - run formatter on accept (of just what was added and only if code "compiles")
 - run formatter before showing prediction and see if the formatter succeeds then use that instead of the prediction?
 
-
 ## model testing
 
 - benchmarks to establish realistics expectations for tokens/sec etc..
     - https://github.com/XiongjieDai/GPU-Benchmarks-on-LLM-Inference
 - qwen2.5-coder
     - 7b-base-Q8_0 didn't seem to work as well or generated less code?
-        - I probably want the instruct models
 
-## SOLVED:
+## truncate context warning
 
 - Truncated context due to num_ctx being too small... using a Modelfile to adjust
     - warning that hints at this "misconfiguration" ... if you want parallelism then n_ctx_train (total possible context) is sliced up into smaller chunks, but I don't want that (not yet)
         llama_new_context_with_model: n_ctx_per_seq (2048) < n_ctx_train (32768) -- the full capacity of the model will not be utilized
     - warning that tells you it happened for a given prompt
         level=WARN source=runner.go:129 msg="truncating input prompt" limit=2048 prompt=2694 keep=4 new=2048
+    - Considerations:
+        - can set num_ctx and parallelism when starting ollama serve
+            - `OLLAMA_CONTEXT_LENGTH=8192` => `n_ctx`
+            - `OLLAMA_NUM_PARALLEL=1` => `n_seq_max`
+            - `n_ctx_per_seq` = `n_ctx / n_seq_max`
+            - n_ctx_train (max context the model supports)
+      or, can make a new Modelfile and alter model's defaults
+- how does RoPE scaling factor (for positional embeddings using tuned theta) into n_ctx?
+   - ollama has n_ctx_train = 32K (is this actually the size or is it 128K?)
 
