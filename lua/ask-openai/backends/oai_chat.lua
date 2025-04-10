@@ -92,7 +92,7 @@ function M.sse_to_chunk(data)
         end
         local success, parsed = pcall(vim.json.decode, event_json)
 
-        -- *** examples /v1/chat/completions
+        -- *** ollama /v1/chat/completions
         -- {"id":"chatcmpl-209","object":"chat.completion.chunk","created":1743021818,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"."},"finish_reason":null}]}
         -- {
         --   "id": "chatcmpl-209",
@@ -112,6 +112,7 @@ function M.sse_to_chunk(data)
         --   ]
         -- }
         -- {"id":"chatcmpl-209","object":"chat.completion.chunk","created":1743021818,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop"}]}
+
         if success and parsed and parsed.choices and parsed.choices[1] then
             local first_choice = parsed.choices[1]
             finish_reason = first_choice.finish_reason
@@ -121,15 +122,18 @@ function M.sse_to_chunk(data)
                     log:warn("WARN - unexpected finish_reason: ", finish_reason, " do you need to handle this too?")
                 end
             end
+
+            -- * differs vs /v1/completions endpoint
             if first_choice.delta == nil or first_choice.delta.content == nil then
                 log:warn("WARN - unexpected, no delta.content in completion choice, do you need to add special logic to handle this?")
+            else
+                chunk = (chunk or "") .. first_choice.delta.content
             end
-            chunk = (chunk or "") .. first_choice.delta.content
+
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
     end
-    -- TODO test passing back finish_reason (i.e. for an empty response though that shouldn't happen when asking a question)
     return chunk, done, finish_reason
 end
 

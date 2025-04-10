@@ -37,7 +37,7 @@ function M.sse_to_chunk(data)
     --   FYI largely the same as for /v1/chat/completions, except the generated text
     --  created, id, model, object, system_fingerprint, usage
     --  choices
-    --    finish_reason: string
+    --    finish_reason: string  # vllm seems to use stop_reason (see below)
     --    index: integer
     --    logprobs: obj/null
     --    text: string    (*** this is the only difference vs chat)
@@ -84,6 +84,7 @@ function M.sse_to_chunk(data)
         --   object = "text_completion",
         --   usage = vim.NIL
         -- }
+        -- TODO does vllm have both finish_reason and stop_reason?
 
         if success and parsed and parsed.choices and parsed.choices[1] then
             local first_choice = parsed.choices[1]
@@ -94,16 +95,18 @@ function M.sse_to_chunk(data)
                     log:warn("WARN - unexpected finish_reason: ", finish_reason, " do you need to handle this too?")
                 end
             end
+
+            -- * differs vs /v1/chat/completions endpoint
             if first_choice.text == nil then
                 log:warn("WARN - unexpected, no choice in completion, do you need to add special logic to handle this?")
             else
                 chunk = (chunk or "") .. first_choice.text
             end
+
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
     end
-    -- TODO test passing back finish_reason (i.e. for an empty prediction log entry)
     return chunk, done, finish_reason
 end
 
