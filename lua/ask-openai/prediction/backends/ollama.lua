@@ -1,5 +1,8 @@
 local M = {}
 local log = require("ask-openai.prediction.logger").predictions()
+local qwen = require("ask-openai.backends.models.qwen")
+local meta = require("ask-openai.backends.models.meta")
+
 _G.PLAIN_FIND = true
 -- TODO can I define an interface in lua?
 --    then use a backend variable in handlers.lua... w/ completion regardless of backend
@@ -41,29 +44,10 @@ local function body_for(prefix, suffix, _recent_edits)
         }
     }
 
-    local sentinel_tokens = {
-        -- qwen2.5-coder:
-        fim_prefix = "<|fim_prefix|>",
-        fim_middle = "<|fim_middle|>",
-        fim_suffix = "<|fim_suffix|>",
-        -- fim_pad = "<|fim_pad|>",
-        repo_name = "<|repo_name|>",
-        file_sep = "<|file_sep|>",
-        im_start = "<|im_start|>",
-        im_end = "<|im_end|>",
-        -- todo others?
-        -- endoftext = "<|endoftext|>"
-    }
-
+    local sentinel_tokens = qwen.qwen25coder.sentinel_tokens
 
     if string.find(body.model, "codellama") then
-        -- codellama template:
-        --    {{- if .Suffix }}<PRE> {{ .Prompt }} <SUF>{{ .Suffix }} <MID>
-        sentinel_tokens = {
-            fim_prefix = "<PRE> ",
-            fim_suffix = " <SUF>",
-            fim_middle = " <MID>",
-        }
+        sentinel_tokens = meta.codellama.sentinel_tokens
 
         -- codellama uses <EOT> that seems to not be set as param in modelfile (at least for FIM?)
         --   without this change you will see <EOT> in code at end of completions
