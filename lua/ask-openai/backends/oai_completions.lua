@@ -1,3 +1,13 @@
+-- aka "legacy" completions endpoint
+-- no chat history concept
+--   good for single turn requests
+--   can easily be used for back and forth if you are summarizing previous messages into the next prompt
+-- raw prompt typically is reason to use this
+--   i.e. FIM
+--       TODO port my FIM to use this too, great way to test it and ensure its flexible
+-- can get confusing if not "raw" and the backend applies templates that are shipped w/ the model...
+--   you can use that just make sure you understand it and appropriately build the request body
+
 local M = {}
 local log = require("ask-openai.prediction.logger").predictions()
 _G.PLAIN_FIND = true
@@ -16,7 +26,7 @@ local function body_for(prefix, suffix, _recent_edits)
     local body = {
         -- FYI this is for vllm/openai/ollama "legacy" /completions endpoint
         -- /completions https://docs.vllm.ai/en/stable/serving/openai_compatible_server.html#completions-api
-        -- TODO! rewrite the following file fully to use /v1/completions (test w/ vllm)
+        -- TODO! rewrite the following file fully to use /v1/completions
         --   FYI! this was a backend impl from predictions for vllm so I might have to change alot here
         --     at first I planned to just make this a vllm backend for instruct models but I wanna generalize to the backend endpoint instead
 
