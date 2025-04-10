@@ -101,18 +101,18 @@ function M.sse_to_chunk(data)
         -- }
         -- {"id":"chatcmpl-209","object":"chat.completion.chunk","created":1743021818,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop"}]}
         if success and parsed and parsed.choices and parsed.choices[1] then
-            local choice = parsed.choices[1]
-            finish_reason = choice.finish_reason
+            local first_choice = parsed.choices[1]
+            finish_reason = first_choice.finish_reason
             if finish_reason ~= nil and finish_reason ~= vim.NIL then
                 done = true
                 if finish_reason ~= "stop" and finish_reason ~= "length" then
                     log:warn("WARN - unexpected /v1/chat/completions finish_reason: ", finish_reason, " do you need to handle this too?")
                 end
             end
-            if choice.delta == nil or choice.delta.content == nil then
+            if first_choice.delta == nil or first_choice.delta.content == nil then
                 log:warn("WARN - unexpected, no delta.content in completion choice, do you need to add special logic to handle this?")
             end
-            chunk = (chunk or "") .. choice.delta.content
+            chunk = (chunk or "") .. first_choice.delta.content
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end

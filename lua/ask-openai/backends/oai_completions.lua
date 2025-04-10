@@ -58,15 +58,9 @@ function M.sse_to_chunk(data)
         --  strip leading "data: " (if present)
         local event_json = ss_event
         if ss_event:sub(1, 6) == "data: " then
-            -- ollama /api/generate doesn't prefix each SSE with 'data: '
             event_json = ss_event:sub(7)
         end
         local success, parsed = pcall(vim.json.decode, event_json)
-
-        -- *** examples /api/generate:
-        --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.1915236Z","response":"\n","done":false}
-        --  done example:
-        --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.2800621Z","response":"","done":true,"done_reason":"stop","total_duration":131193100,"load_duration":16550700,"prompt_eval_count":19,"prompt_eval_duration":5000000,"eval_count":12,"eval_duration":106000000}
 
         -- *** vllm /v1/completions responses:
         --  middle completion:
@@ -91,9 +85,6 @@ function M.sse_to_chunk(data)
         --   usage = vim.NIL
         -- }
 
-        -- log:info("success:", success)
-        -- log:info("choices:", vim.inspect(parsed))
-        -- log:info("choices:", vim.inspect(parsed.choices))
         if success and parsed and parsed.choices and parsed.choices[1] then
             local first_choice = parsed.choices[1]
             finish_reason = first_choice.finish_reason
