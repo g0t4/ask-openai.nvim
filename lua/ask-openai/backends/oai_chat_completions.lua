@@ -3,7 +3,12 @@ local log = require("ask-openai.prediction.logger").predictions()
 
 -- docs:
 -- /chat/completions: https://docs.vllm.ai/en/stable/serving/openai_compatible_server.html#chat-api
+
+-- FYI this is intended for use w/ instruct models
+--  TODO! determine if this can be generalized...
 --  TODO TEST THIS WITH VLLM's /chat/completions
+--  TODO TEST W/ ollama too (IIRC I wrote this to work with ollama initially)
+--  TODO test with OpenAI too
 
 function M.process_sse(data)
     -- SSE = Server-Sent Event
