@@ -34,6 +34,12 @@ function M.terminate(request)
 end
 
 function M.curl_for(body, base_url, frontend)
+    local url_path = "/v1/completions"
+    local url = base_url .. url_path
+    return reusable_curl_seam(body, url, frontend)
+end
+
+function reusable_curl_seam(body, url, frontend)
     local request = {}
 
     body.stream = true
@@ -46,7 +52,7 @@ function M.curl_for(body, base_url, frontend)
             "-fsSL",
             "--no-buffer", -- w/o this curl batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
-            base_url .. "/v1/chat/completions",
+            url,
             "-H", "Content-Type: application/json",
             "-d", json
         },
