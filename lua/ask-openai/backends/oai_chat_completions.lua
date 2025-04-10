@@ -11,7 +11,7 @@ local log = require("ask-openai.prediction.logger").predictions()
 -- TESTED WITH:
 --  ollama
 
-function M.process_sse(data)
+function M.sse_to_chunk(data)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 

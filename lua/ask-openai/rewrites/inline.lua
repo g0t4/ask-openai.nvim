@@ -255,7 +255,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         end
         if data then
             vim.schedule(function()
-                local chunk, generation_done = backend.process_sse(data)
+                local chunk, generation_done = backend.sse_to_chunk(data)
                 if chunk then
                     M.handle_stream_chunk(chunk)
                 end

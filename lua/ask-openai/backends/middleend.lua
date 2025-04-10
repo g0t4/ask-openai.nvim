@@ -76,7 +76,7 @@ function M.curl_for(json, base_url, frontend)
         end
         if data then
             vim.schedule(function()
-                local chunk, generation_done, done_reason = backend.process_sse(data)
+                local chunk, generation_done, done_reason = backend.sse_to_chunk(data)
                 if chunk then
                     frontend.process_chunk(chunk)
                 end
