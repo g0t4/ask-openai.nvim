@@ -42,13 +42,14 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
             "-d", json
         },
     }
+    log:warn("curl: ", table.concat(options.args, " "))
 
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
 
     options.on_exit = function(code, signal)
-        if code ~= 0 then
-            log:error("spawn - non-zero exit code:", code, "Signal:", signal)
+        if code ~= nil and code ~= 0 then
+            log:error("spawn - non-zero exit code: '" .. code .. "' Signal: '" .. signal .. "'")
 
             -- todo what logic do I want to NOT call request_failed here?
             frontend.request_failed(code)
