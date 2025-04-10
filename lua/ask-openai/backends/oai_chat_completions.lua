@@ -70,6 +70,8 @@ function M.curl_for(body, base_url, frontend)
         request.pid = nil
     end
 
+    -- TODO fix... by having the frontend do this, it is not the backends job to track which requests to abort
+    --   this was when I only envisioned one request at a time but now with agents I could run them in parallel and why not with parallel capacity just sitting there on my GPUs
     M.terminate()
 
     request.handle, request.pid = uv.spawn(options.command, {
