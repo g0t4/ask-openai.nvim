@@ -41,6 +41,26 @@ function M.curl_for(body, base_url, frontend)
 end
 
 function M.sse_to_chunk(data)
+    -- *** output shape
+    --   FYI largely the same as for /v1/completions, except the generated text
+    --  created, id, model, object, system_fingerprint, usage
+    --  choices:
+    --    finish_reason:
+    --    index:
+    --    logprobs:
+    --    message:   (*** legacy /completions has this as just a text string)
+    --      content: string
+    --      refusal: string
+    --      role: string
+    --      annotations: [objects]
+    --      audio:
+    --      tool_calls: (formerly function_calls) ** vllm/ollama may use function_calls
+    --        function:
+    --          arguments:
+    --          name:
+    --        id:
+    --        type:
+
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 

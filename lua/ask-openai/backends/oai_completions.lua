@@ -33,6 +33,15 @@ function M.curl_for(body, base_url, frontend)
 end
 
 function M.sse_to_chunk(data)
+    -- *** output shape
+    --   FYI largely the same as for /v1/chat/completions, except the generated text
+    --  created, id, model, object, system_fingerprint, usage
+    --  choices
+    --    finish_reason: string
+    --    index: integer
+    --    logprobs: obj/null
+    --    text: string    (*** this is the only difference vs chat)
+
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
