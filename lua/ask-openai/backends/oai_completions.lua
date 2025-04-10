@@ -11,6 +11,20 @@ local log = require("ask-openai.prediction.logger").predictions()
 -- can get confusing if not "raw" and the backend applies templates that are shipped w/ the model...
 --   you can use that just make sure you understand it and appropriately build the request body
 
+-- *** input parameters supported /v1/chat/completions
+-- FYI parameters should mostly be set by end users of this backend abstraction
+--   obviously "stream: true" is universal here
+--   backend can enforce required params and validate optional params, if needed
+--
+-- prompt (entire message)
+-- model
+-- max_tokens
+-- suffix (IIRC not avail with vllm, ollama uses for FIM except if raw=true, )
+-- stop
+-- stream
+-- seed, temperature, top_p, n, frequency_penalty, presence_penalty
+--
+
 local M = {}
 _G.PLAIN_FIND = true
 function M.curl_for(body, base_url, frontend)
