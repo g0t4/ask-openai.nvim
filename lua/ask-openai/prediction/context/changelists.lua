@@ -34,8 +34,7 @@ function M.print_changes()
 end
 
 function M.setup()
-    -- *** troubleshooting cmds
-    vim.api.nvim_create_user_command("AskDumpEdits", changes.print_changes, {})
+    vim.api.nvim_create_user_command("AskDumpEdits", M.print_changes, {})
 end
 
 return M
