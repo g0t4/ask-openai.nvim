@@ -27,10 +27,10 @@ function M.send_question(user_prompt, code, file_name)
         -- model = "gemma3:12b-it-q8_0", -- btw -base- does terrible here :)
         -- temperature = 0.2, -- TODO what temp?
         -- PRN limit num_predict?
-        options = {
-            -- TODO! do I need num_ctx, I can't recall why I set this for predictions?
-            num_ctx = 8192,
-        }
+
+        -- FYI - ollama, be careful w/ `num_ctx`, can't set it with OpenAI compat endpoints (whereas can pass with /api/generate)
+        --   review start logs for n_ctx and during completion it warns if truncated prompt
+        --      does it return that warning to curl call?
     }
 
     local qwen_legacy_body = {
