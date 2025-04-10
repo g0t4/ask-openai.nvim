@@ -42,24 +42,36 @@ end
 
 function M.sse_to_chunk(data)
     -- *** output shape
-    --   FYI largely the same as for /v1/completions, except the generated text
+    --   FYI largely the same as for /v1/completions, except the message/delta under choices
+    --
     --  created, id, model, object, system_fingerprint, usage
     --  choices:
     --    finish_reason:
     --    index:
     --    logprobs:
-    --    message:   (*** legacy /completions has this as just a text string)
+    --
+    --    # stream only:
+    --    # https://platform.openai.com/docs/api-reference/chat-streaming
+    --    delta:
     --      content: string
-    --      refusal: string
     --      role: string
-    --      annotations: [objects]
-    --      audio:
+    --      refusal: string
     --      tool_calls: (formerly function_calls) ** vllm/ollama may use function_calls
     --        function:
     --          arguments:
     --          name:
     --        id:
     --        type:
+    --        FYI means single tool calls dont span deltas? though IIAC still can do multiple across deltas
+    --
+    --    # sync only:
+    --    message:
+    --      refusal: string
+    --      content: string
+    --      role: string
+    --      annotations: [objects]
+    --      audio:
+    --      tool_calls: (same as in delta)
 
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
@@ -106,7 +118,7 @@ function M.sse_to_chunk(data)
             if finish_reason ~= nil and finish_reason ~= vim.NIL then
                 done = true
                 if finish_reason ~= "stop" and finish_reason ~= "length" then
-                    log:warn("WARN - unexpected /v1/chat/completions finish_reason: ", finish_reason, " do you need to handle this too?")
+                    log:warn("WARN - unexpected finish_reason: ", finish_reason, " do you need to handle this too?")
                 end
             end
             if first_choice.delta == nil or first_choice.delta.content == nil then

@@ -89,7 +89,6 @@ function M.sse_to_chunk(data)
             local first_choice = parsed.choices[1]
             finish_reason = first_choice.finish_reason
             if finish_reason ~= nil and finish_reason ~= vim.NIL then
-                log:info("finsh_reason: ", finish_reason)
                 done = true
                 if finish_reason ~= "stop" and finish_reason ~= "length" then
                     log:warn("WARN - unexpected finish_reason: ", finish_reason, " do you need to handle this too?")
