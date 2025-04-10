@@ -65,7 +65,7 @@ local function ensure_new_lines_around(code, response_lines)
     return response_lines
 end
 
-function M.handle_stream_chunk(chunk)
+function M.process_chunk(chunk)
     if not chunk then return end
 
     M.accumulated_chunks = M.accumulated_chunks .. chunk
@@ -257,7 +257,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             vim.schedule(function()
                 local chunk, generation_done = backend.sse_to_chunk(data)
                 if chunk then
-                    M.handle_stream_chunk(chunk)
+                    M.process_chunk(chunk)
                 end
                 if generation_done then
                     -- Optionally do something when generation is complete
