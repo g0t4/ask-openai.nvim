@@ -35,8 +35,11 @@ function M.terminate(request)
     end
 end
 
-function M.curl_for(json, base_url, frontend)
+function M.curl_for(body, base_url, frontend)
     local request = {}
+
+    body.stream = true
+    local json = vim.fn.json_encode(body)
 
     -- TODO look for "curl" and "--no-buffer" to find all spots to merge together into this final backend
     local options = {

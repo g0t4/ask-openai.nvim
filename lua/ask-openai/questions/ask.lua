@@ -51,13 +51,11 @@ function M.send_question(user_prompt, code, file_name)
 
     -- local body = agentica_params
     local body = ollama_qwen_params
-    body.stream = true
 
-    local json = vim.fn.json_encode(body)
     -- local base_url = "http://build21:8000"
     local base_url = "http://ollama:11434"
 
-    M.last_request = backend.curl_for(json, base_url, M)
+    M.last_request = backend.curl_for(body, base_url, M)
 end
 
 local function ask_question_about(opts)

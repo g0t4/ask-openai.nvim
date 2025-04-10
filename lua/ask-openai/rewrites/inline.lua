@@ -207,13 +207,10 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         -- }
     }
 
-    body.stream = true
-
-    local json = vim.fn.json_encode(body)
     -- local base_url = "http://build21:8000"
     local base_url = "http://ollama:11434"
 
-    M.last_request = backend.curl_for(json, base_url, M)
+    M.last_request = backend.curl_for(body, base_url, M)
 end
 
 local function ask_and_stream_from_ollama(opts)
