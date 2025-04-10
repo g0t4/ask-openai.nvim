@@ -1,6 +1,6 @@
 local buffers = require("ask-openai.helpers.buffers")
 local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
-local middleend = require("ask-openai.backends.middleend")
+local backend = require("ask-openai.backends.oai_chat_completions")
 local F = {}
 
 function F.send_question(user_prompt, code, file_name)
@@ -57,7 +57,7 @@ function F.send_question(user_prompt, code, file_name)
     -- local base_url = "http://build21:8000"
     local base_url = "http://ollama:11434"
 
-    F.last_request = middleend.curl_for(json, base_url, F)
+    F.last_request = backend.curl_for(json, base_url, F)
 end
 
 local function ask_question_about(opts)
@@ -127,7 +127,7 @@ function F.process_chunk(text)
 end
 
 function F.abort_last_request()
-    middleend.terminate(F.last_request)
+    backend.terminate(F.last_request)
 end
 
 function F.setup()
