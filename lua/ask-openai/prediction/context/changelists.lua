@@ -1,6 +1,6 @@
 local M = {}
 -- TODO temp import for testing inspect tools, remove this later
-MyInspect = require("ask-openai.prediction.edits.inspect")
+MyInspect = require("ask-openai.prediction.context.inspect")
 
 
 function M.get_change_list_with_lines()

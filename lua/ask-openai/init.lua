@@ -51,7 +51,7 @@ local function register_prediction_triggers()
     end
 
     function dump_recent_changes()
-        local changes = require("ask-openai.prediction.edits.changes")
+        local changes = require("ask-openai.prediction.context.changelists")
         changes.print_changes()
     end
 
