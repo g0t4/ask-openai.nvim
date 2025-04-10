@@ -1,10 +1,9 @@
 local buffers = require("ask-openai.helpers.buffers")
-local backend = require("ask-openai.backends.oai_chat_completions")
 local log = require("ask-openai.prediction.logger").predictions() -- TODO rename to just ask-openai logger in general
-local uv = vim.uv
-local M = {}
+local middleend = require("ask-openai.backends.middleend")
+local F = {}
 
-function M.send_question(user_prompt, code, file_name)
+function F.send_question(user_prompt, code, file_name)
     local system_prompt = "You are a neovim AI plugin that answers questions."
         .. " Please respond with markdown formatted text"
 
@@ -54,71 +53,10 @@ function M.send_question(user_prompt, code, file_name)
     body.stream = true
 
     local json = vim.fn.json_encode(body)
+    -- "http://ollama:11434/v1/chat/completions", -- TODO pass in api base_url (via config)
+    local base_url = "http://build21:8000"
 
-    local options = {
-        command = "curl",
-        args = {
-            "-fsSL",
-            "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
-            "-X", "POST",
-            -- "http://ollama:11434/v1/chat/completions", -- TODO pass in api base_url (via config)
-            "http://build21:8000/v1/chat/completions", -- vllm test
-            "-H", "Content-Type: application/json",
-            "-d", json
-        },
-    }
-
-    local stdout = uv.new_pipe(false)
-    local stderr = uv.new_pipe(false)
-
-    options.on_exit = function(code, signal)
-        if code ~= 0 then
-            log:error("spawn - non-zero exit code:", code, "Signal:", signal)
-        end
-        stdout:close()
-        stderr:close()
-
-        -- clear out refs
-        M.handle = nil
-        M.pid = nil
-    end
-
-    M.abort_if_still_responding()
-
-    M.handle, M.pid = uv.spawn(options.command, {
-        args = options.args,
-        stdio = { nil, stdout, stderr },
-    }, options.on_exit)
-
-    options.on_stdout = function(err, data)
-        -- log:trace("on_stdout chunk: ", data)
-        if err then
-            log:warn("on_stdout error: ", err)
-            return
-        end
-        if data then
-            vim.schedule(function()
-                local chunk, generation_done, done_reason = backend.process_sse(data)
-                if chunk then
-                    M.add_to_response_window(chunk)
-                end
-                -- PRN anything on done?
-                -- if generation_done then
-                --     PRN add for empty response checking like with predictions (need to capture all chunks to determine this and its gonna be basically impossible to have the response be valid and empty, so not a priority)
-                --     this_prediction:mark_generation_finished()
-                -- end
-            end)
-        end
-    end
-    uv.read_start(stdout, options.on_stdout)
-
-    options.on_stderr = function(err, data)
-        log:warn("on_stderr chunk: ", data)
-        if err then
-            log:warn("on_stderr error: ", err)
-        end
-    end
-    uv.read_start(stderr, options.on_stderr)
+    F.last_request = middleend.curl_for(json, base_url, F)
 end
 
 local function ask_question_about(opts)
@@ -131,53 +69,35 @@ local function ask_question_about(opts)
     local user_prompt = opts.args
     local file_name = vim.fn.expand("%:t")
 
-    M.open_response_window()
-    M.send_question(user_prompt, selection.original_text, file_name)
+    F.open_response_window()
+    F.send_question(user_prompt, selection.original_text, file_name)
 end
 
 local function ask_question(opts)
     local user_prompt = opts.args
-    M.open_response_window()
-    M.send_question(user_prompt)
+    F.open_response_window()
+    F.send_question(user_prompt)
 end
 
-function M.abort_if_still_responding()
-    if M.handle == nil then
-        return
-    end
-
-    local handle = M.handle
-    local pid = M.pid
-    M.handle = nil
-    M.pid = nil
-    if handle ~= nil and not handle:is_closing() then
-        log:trace("Terminating process, pid: ", pid)
-
-        handle:kill("sigterm")
-        handle:close()
-        -- FYI ollama should show that connection closed/aborted
-    end
+function F.abort_and_close()
+    F.abort_last_request()
+    vim.cmd(":q", { buffer = F.bufnr })
 end
 
-function M.abort_and_close()
-    M.abort_if_still_responding()
-    vim.cmd(":q", { buffer = M.bufnr })
-end
-
-function M.open_response_window()
+function F.open_response_window()
     local name = 'Question Response'
 
-    if M.bufnr == nil then
-        M.bufnr = vim.api.nvim_create_buf(false, true)
-        vim.api.nvim_buf_set_name(M.bufnr, name)
+    if F.bufnr == nil then
+        F.bufnr = vim.api.nvim_create_buf(false, true)
+        vim.api.nvim_buf_set_name(F.bufnr, name)
 
         -- stop generation, if still wanna look at it w/o closing the window
-        vim.keymap.set("n", "<Esc>", M.abort_if_still_responding, { buffer = M.bufnr, nowait = true })
-        vim.keymap.set("n", "<F8>", M.abort_and_close, { buffer = M.bufnr }) -- I already use this globally to close a window (:q) ... so just add stop to it
+        vim.keymap.set("n", "<Esc>", F.abort_last_request, { buffer = F.bufnr, nowait = true })
+        vim.keymap.set("n", "<F8>", F.abort_and_close, { buffer = F.bufnr }) -- I already use this globally to close a window (:q) ... so just add stop to it
         -- OR, should I let it keep completing in background and then I can come back when its done? for async?
     end
 
-    vim.api.nvim_buf_set_lines(M.bufnr, 0, -1, false, {}) -- clear the buffer, is there an easier way?
+    vim.api.nvim_buf_set_lines(F.bufnr, 0, -1, false, {}) -- clear the buffer, is there an easier way?
 
     local screen_lines = vim.api.nvim_get_option_value('lines', {})
     local screen_columns = vim.api.nvim_get_option_value('columns', {})
@@ -185,7 +105,7 @@ function M.open_response_window()
     local win_width = math.ceil(0.5 * screen_columns)
     local top_is_at_row = screen_lines / 2 - win_height / 2
     local left_is_at_col = screen_columns / 2 - win_width / 2
-    local _winid = vim.api.nvim_open_win(M.bufnr, true, {
+    local _winid = vim.api.nvim_open_win(F.bufnr, true, {
         relative = 'editor',
         width = win_width,
         height = win_height,
@@ -195,25 +115,29 @@ function M.open_response_window()
         border = 'single'
     })
     -- set FileType after creating window, otherwise the default wrap option (vim.o.wrap) will override any ftplugin mods to wrap (and the same for other window-local options like wrap)
-    vim.api.nvim_set_option_value('filetype', 'markdown', { buf = M.bufnr })
+    vim.api.nvim_set_option_value('filetype', 'markdown', { buf = F.bufnr })
 end
 
-function M.add_to_response_window(text)
-    local count_of_lines = vim.api.nvim_buf_line_count(M.bufnr)
-    local last_line = vim.api.nvim_buf_get_lines(M.bufnr, count_of_lines - 1, count_of_lines, false)[1]
+function F.add_to_response_window(text)
+    local count_of_lines = vim.api.nvim_buf_line_count(F.bufnr)
+    local last_line = vim.api.nvim_buf_get_lines(F.bufnr, count_of_lines - 1, count_of_lines, false)[1]
     local replace_lines = vim.split(last_line .. text, "\n")
-    vim.api.nvim_buf_set_lines(M.bufnr, count_of_lines - 1, count_of_lines, false, replace_lines)
+    vim.api.nvim_buf_set_lines(F.bufnr, count_of_lines - 1, count_of_lines, false, replace_lines)
 end
 
-function M.setup()
+function F.abort_last_request()
+    middleend.terminate(F.last_request)
+end
+
+function F.setup()
     -- once again, pass question in command line for now... b/c then I can use cmd history to ask again or modify question easily
     --  if I move to a float window, I'll want to add history there then which I can handle later when this falls apart
     vim.api.nvim_create_user_command("AskQuestion", ask_question, { range = true, nargs = 1 })
     vim.api.nvim_create_user_command("AskQuestionAbout", ask_question_about, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('v', '<Leader>aq', ':<C-u>AskQuestionAbout ', { noremap = true })
     vim.api.nvim_set_keymap('n', '<Leader>aq', ':AskQuestion ', { noremap = true })
-    vim.keymap.set('n', '<leader>ao', M.open_response_window, { noremap = true })
-    vim.keymap.set('n', '<leader>aa', M.abort_if_still_responding, { noremap = true })
+    vim.keymap.set('n', '<leader>ao', F.open_response_window, { noremap = true })
+    vim.keymap.set('n', '<leader>aa', F.abort_last_request, { noremap = true })
 end
 
-return M
+return F
