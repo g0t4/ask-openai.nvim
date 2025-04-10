@@ -162,24 +162,6 @@ function M.cancel_rewrite()
     end)
 end
 
-function M.abort_if_still_responding()
-    if M.handle == nil then
-        return
-    end
-
-    local handle = M.handle
-    local pid = M.pid
-    M.handle = nil
-    M.pid = nil
-    if handle ~= nil and not handle:is_closing() then
-        handle:kill("sigterm")
-        handle:close()
-    end
-
-    -- Clear any extmarks
-    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
-end
-
 function M.stream_from_ollama(user_prompt, code, file_name)
     local system_prompt = "You are a neovim AI plugin that rewrites code. "
         .. "Preserve indentation."
@@ -245,10 +227,14 @@ end
 
 function M.abort_last_request()
     if not M.last_request then
+        -- PRN still clear extmarks just in case?
         return -- no request to abort
     end
 
     backend.terminate(M.last_request)
+
+    -- Clear any extmarks
+    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
 end
 
 function M.setup()
@@ -257,7 +243,7 @@ function M.setup()
     vim.api.nvim_set_keymap('v', '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
 
     -- Add a command to abort the stream if needed
-    vim.api.nvim_create_user_command("AskRewriteAbort", M.abort_if_still_responding, {})
+    vim.api.nvim_create_user_command("AskRewriteAbort", M.abort_last_request, {})
     vim.api.nvim_set_keymap('n', '<Leader>ra', ':AskRewriteAbort<CR>', { noremap = true })
 
     -- Add commands and keymaps for accepting or cancelling the rewrite
