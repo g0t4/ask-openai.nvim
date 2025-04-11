@@ -76,10 +76,7 @@ local function body_for(prefix, suffix, current_context)
 end
 
 function M.get_prompt_fim(prefix, suffix, sentinel_tokens)
-    -- PRN TEST w/o deepseek-r1 using api/generate with FIM manual prompt
-    --   IIRC template is wrong but it does support FIM?
-
-    -- TODO provide guidance before fim_prefix...
+    -- TODO is it possible to provide guidance using tokens beyond FIM file/repo level?
     --   can I just <|im_start|> blah <|im_end|>?
     --   see qwen2.5-coder template for how it might work
 
@@ -87,7 +84,12 @@ function M.get_prompt_fim(prefix, suffix, sentinel_tokens)
     log:trace("prefix", "'" .. prefix .. "'")
     log:trace("suffix", "'" .. suffix .. "'")
 
+    -- File-level FIM template:
+    -- <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_mid}<|endoftext|>
+    --    https://arxiv.org/pdf/2409.12187
+
     -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
+
     local prompt = sentinel_tokens.fim_prefix .. prefix
         .. sentinel_tokens.fim_suffix .. suffix
         .. sentinel_tokens.fim_middle
