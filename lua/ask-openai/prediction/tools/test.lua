@@ -99,7 +99,7 @@ function start_mcp_server(on_message)
     uv.read_start(stderr, on_stderr)
 
     local function send(msg)
-        local str = vim.json.encode(msg) .. "\n"
+        local str = vim.json.encode(msg)
         print("MCP send:", str)
         stdin:write(str .. "\n")
     end
@@ -132,9 +132,9 @@ end
 M.list_tools_test = function()
     local request_list_tools = {
         jsonrpc = "2.0",
-        id = "1",
+        id = 1,
         method = "tools/list",
-        params = {},
+        -- params = {},
     }
     mcp.send(request_list_tools)
 end
@@ -145,3 +145,9 @@ return M
 -- NOTES
 -- manually formatted message reference:
 -- mcp.send('{ "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {} }')
+-- mcp.send('{ "jsonrpc": "2.0", "id": 1, "method": "tools/list" }')
+--
+-- FYI practice sending messages:
+--   node /Users/wesdemos/repos/github/g0t4/mcp-server-commands/build/index.js --verbose
+--   run yourself, just don't forget the new line at the end of a message
+--   also seems like jsonrpc must be set
