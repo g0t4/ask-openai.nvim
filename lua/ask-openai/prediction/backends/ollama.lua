@@ -86,11 +86,12 @@ function M.get_prompt_fim(prefix, suffix, sentinel_tokens)
     log:trace("prefix", "'" .. prefix .. "'")
     log:trace("suffix", "'" .. suffix .. "'")
 
-    -- File-level FIM template:
+    -- *** File-level FIM template:
     --
     --   <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_mid}<|endoftext|>
     --
     --   from Tech Report: https://arxiv.org/pdf/2409.12187
+    --   official example: https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-fim.py
 
     -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
 
@@ -120,8 +121,9 @@ function M.get_prompt_repo_level_without_repo_meta(prefix, suffix, sentinel_toke
 end
 
 function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
-    -- Repo-level + File-level FIM template:
+    -- *** Repo-level + File-level FIM template:
     --   this is from the Qwen2.5-Coder Tech Paper: https://arxiv.org/pdf/2409.12186
+    --   official example: https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel-fim.py
     --
     -- <|repo_name|>{repo_name}
     -- <|file_sep|>{file_path1}
@@ -130,9 +132,6 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     -- {file_content2}
     -- <|file_sep|>{file_path3}
     -- <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_fim}<|endoftext|>
-    -- TODO do I use new line after repo_name/file_pathX... or like StarCoder and only do it between <file_sep>path \n code
-    --
-    -- FYI, IIUC this is the method that was used for training
     --
     -- *** StarCoder paper
     --   Qwen2.5Coder's Tech Report used this (at least for FIM)
@@ -142,10 +141,12 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     --    *** test below scenarios standalone too (practice format, see what mistakes you make, understand when useful)
     --
     --   <repo_name>reponame<file_sep>filepath0\ncode0<file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid<file_sep> ...<|endoftext|>
-    --      TODO! try no new line after reponame
-    --      TODO! NO NEWLINE after codeX and before <file_sep>!!
+    --      StarCoder2 doesn't include new line after reponame/filepathX, basically only between filepath\ncode...
+    --      also means when no filepaths included then there are no new lines at all
+    --      BUT, qwen examlpes show new lines:
+    --        https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel-fim.py
     --
-    --      TODO give full path to file (relative to repo root?)
+    --   TODO give full path to file (relative to repo root?)
     --
     --   <file_sep>code1<file_sep>code2 ... <|endoftext|>.
     --     50% of time repo metadata not included (no repo name, no file paths)..
@@ -183,10 +184,11 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     --    OR is it just when there is very little / no code at all?
     --    TODO should I not be including comments if they go over a threshold?! argh I love notes in code
 
-    -- Repo-level FIM (IIUC complete the last file entirely):
-    --   the official repo shows a repo-level example w/o File-level FIM
-    --   https://github.com/QwenLM/Qwen2.5-coder?tab=readme-ov-file#4-repository-level-code-completion
-    --   this use case seems rare to me, though good to distinguish the difference and understand what the model was trained to do
+    -- *** Repo-level "Completions"?
+    --   no FIM for the last file... just file level completion (remainder of file)... like having no suffix
+    --   this is from the Qwen2.5-Coder Tech Paper: https://arxiv.org/pdf/2409.12186
+    --   official example: https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel.py
+    --   example is also in readme: https://github.com/QwenLM/Qwen2.5-coder?tab=readme-ov-file#4-repository-level-code-completion
     --
     -- <|repo_name|>{repo_name}
     -- <|file_sep|>{file_path1}
@@ -200,6 +202,7 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     --    is this a reliable way... if this works then does it mean there are other mods I can make that should reliably work too?
     --    i.e. to provide context another way?
     --
+    --  FYI I don't think I have a need for this at all (unless someone is completing at end of a file!) even then why wouldn't PSM work w/o the suffix?
 
     -- Observations:
     -- - so far, repo+file-level FIM doesn't work well... 90% of predictions are "stop"/empty immediately
