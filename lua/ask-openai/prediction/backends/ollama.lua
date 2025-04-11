@@ -8,7 +8,7 @@ _G.PLAIN_FIND = true
 --    then use a backend variable in handlers.lua... w/ completion regardless of backend
 --       local backend = require("../backends/x")
 
-local function body_for(prefix, suffix, _recent_edits)
+local function body_for(prefix, suffix, current_context)
     local body = {
 
         -- FYI set of possible models for demoing impact of fine tune
@@ -97,10 +97,10 @@ local function body_for(prefix, suffix, _recent_edits)
 
     -- Edit history totally messed up FIM... how can I include this while preserving the FIM request...
     --   i.e. in calc.lua... it just chatted to me and that's an easy FIM task
-    --
+
     -- local recent_changes = "Here are some recent lines that were edited by the user: "
-    -- -- -- PRN need edits for other files too
-    -- for _, change in pairs(recent_edits) do
+    -- -- PRN need edits for other files too
+    -- for _, change in pairs(current_context.edits) do
     --     local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
     --     -- todo include line/col or not?
     --     -- todo include file?
@@ -121,7 +121,7 @@ local function body_for(prefix, suffix, _recent_edits)
 end
 
 
-function M.build_request(prefix, suffix, recent_edits)
+function M.build_request(prefix, suffix, current_context)
     local options = {
         command = "curl",
         args = {
@@ -130,7 +130,7 @@ function M.build_request(prefix, suffix, recent_edits)
             "-X", "POST",
             "http://ollama:11434/api/generate", -- TODO pass in api base_url (via config)
             "-H", "Content-Type: application/json",
-            "-d", body_for(prefix, suffix, recent_edits)
+            "-d", body_for(prefix, suffix, current_context),
         },
     }
     return options

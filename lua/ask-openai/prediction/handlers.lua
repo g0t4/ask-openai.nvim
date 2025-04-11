@@ -113,13 +113,12 @@ function M.ask_for_prediction()
     -- end
 
     local current_context = context.current_context()
-    local recent_edits = current_context.edits
 
     -- PSM format:
     local prefix = document_prefix
     local suffix = document_suffix
     -- "middle" is what is generated
-    local options = backend.build_request(prefix, suffix, recent_edits)
+    local options = backend.build_request(prefix, suffix, current_context)
 
     -- log:trace("curl", table.concat(options.args, " "))
 
