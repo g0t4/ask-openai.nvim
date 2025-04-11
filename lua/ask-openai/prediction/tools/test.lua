@@ -98,10 +98,9 @@ function start_mcp_server(on_message)
 
     uv.read_start(stderr, on_stderr)
 
-    local function send(str)
-        -- local str = vim.json.encode(msg) .. "\n"
+    local function send(msg)
+        local str = vim.json.encode(msg) .. "\n"
         print("MCP send:", str)
-        -- { "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {} }
         stdin:write(str .. "\n")
     end
 
@@ -131,16 +130,18 @@ M.setup = function()
 end
 
 M.list_tools_test = function()
-    print('test')
-    -- local request_list_tools = {
-    --     jsonrpc = "2.0",
-    --     id = "1",
-    --     method = "tools/list",
-    --     params = {},
-    -- }
-    -- mcp.send(request_list_tools)
-    -- { "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {} }
-    mcp.send('{ "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {} }')
+    local request_list_tools = {
+        jsonrpc = "2.0",
+        id = "1",
+        method = "tools/list",
+        params = {},
+    }
+    mcp.send(request_list_tools)
 end
 
 return M
+
+
+-- NOTES
+-- manually formatted message reference:
+-- mcp.send('{ "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {} }')
