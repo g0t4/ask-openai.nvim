@@ -109,6 +109,8 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     --     FYI still validating I can do this and have last be FIM/PSM style?
     --     or does model have to gen just the end of the entire file? like a regular completion?
 
+    local repo_name = vim.fn.getcwd():match("([^/]+)$")
+
     return M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_context)
 end
 
