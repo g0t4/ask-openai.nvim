@@ -135,18 +135,12 @@ local mcp = start_mcp_server(function(msg)
 end)
 
 M.setup = function()
-    M.list_tools_test(function(msg)
-        print("list_tools_test:", vim.inspect(msg))
-    end)
-    M.list_tools_test(function(msg)
-        print("list_tools_test2:", vim.inspect(msg))
-    end)
-    M.list_tools_test(function(msg)
-        print("list_tools_test3:", vim.inspect(msg))
+    M.tools_list(function(msg)
+        print("tools/list:", vim.inspect(msg))
     end)
 end
 
-M.list_tools_test = function(callback)
+M.tools_list = function(callback)
     local this_id = tostring(M.counter) -- rather have them be strings, so we don't have array index issues
     M.counter = M.counter + 1
     if callback then
