@@ -140,15 +140,25 @@ local mcp = start_mcp_server(function(msg)
     -- print("MCP message:", vim.inspect(msg))
 end)
 
+M.tools_available = {
+}
+
 M.setup = function()
     M.tools_list(function(msg)
-        print("tools/list:", vim.inspect(msg))
+        -- print("tools/list:", vim.inspect(msg))
+        for _, tool in ipairs(msg.result.tools) do
+            M.tools_available[tool.name] = tool
+        end
     end)
 
     -- TODO need to wire up AI response w/ tool_calls into the tools... for now test manually
     M.tools_call("run_command", { command = "ls -al" }, function(msg)
         print("tools/call:", vim.inspect(msg))
     end)
+
+    vim.api.nvim_create_user_command("McpListTools", function()
+        print(vim.inspect(M.tools_available))
+    end, { nargs = 0 })
 end
 
 M.tools_list = function(callback)

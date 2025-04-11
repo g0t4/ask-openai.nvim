@@ -1,0 +1,46 @@
+{
+  "tools": [
+    {
+      "name": "run_command",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "Command with args"
+          },
+          "cwd": {
+            "type": "string",
+            "description": "Current working directory, leave empty in most cases"
+          }
+        },
+        "required": [
+          "command"
+        ]
+      }
+    },
+    {
+      "name": "run_script",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "interpreter": {
+            "type": "string",
+            "description": "Command with arguments. Script will be piped to stdin. Examples: bash, fish, zsh, python, or: bash --norc"
+          },
+          "script": {
+            "type": "string",
+            "description": "Script to run"
+          },
+          "cwd": {
+            "type": "string",
+            "description": "Current working directory"
+          }
+        },
+        "required": [
+          "script"
+        ]
+      }
+    }
+  ]
+}
