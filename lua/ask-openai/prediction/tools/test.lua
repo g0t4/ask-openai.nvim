@@ -143,9 +143,15 @@ return M
 
 
 -- NOTES
--- manually formatted message reference:
--- mcp.send('{ "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {} }')
--- mcp.send('{ "jsonrpc": "2.0", "id": 1, "method": "tools/list" }')
+--
+-- *** working examples (manual testing)
+--
+--   tools/list
+--     { "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {} }
+--     { "jsonrpc": "2.0", "id": 1, "method": "tools/list" }
+--
+--     won't work if jsonrpc is missing, or params is serialized to an array []
+--     don't send params if empty, set it nil before serializing
 --
 -- FYI practice sending messages:
 --   node /Users/wesdemos/repos/github/g0t4/mcp-server-commands/build/index.js --verbose
