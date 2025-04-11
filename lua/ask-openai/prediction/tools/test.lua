@@ -97,7 +97,6 @@ function start_mcp_server(on_message)
     function on_stderr(err, data)
         if err then
             print("MCP stderr error:", err)
-            return
         end
         print("MCP stderr:", data)
     end
