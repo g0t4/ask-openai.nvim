@@ -19,7 +19,10 @@ local uv = vim.loop
 --     requests: https://modelcontextprotocol.io/specification/2025-03-26/basic#requests
 --     responses: https://modelcontextprotocol.io/specification/2025-03-26/basic#responses
 --   schema: https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/schema/2025-03-26/schema.json
---
+
+
+-- TODO support an array of servers
+--   TODO keep servers running after listing? or list and shutdown until used?
 -- requests:
 -- {
 --   jsonrpc: "2.0";
