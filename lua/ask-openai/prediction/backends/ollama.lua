@@ -99,7 +99,6 @@ local function body_for(prefix, suffix, current_context)
     --   i.e. in calc.lua... it just chatted to me and that's an easy FIM task
 
     -- local recent_changes = "Here are some recent lines that were edited by the user: "
-    -- -- PRN need edits for other files too
     -- for _, change in pairs(current_context.edits) do
     --     local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
     --     -- todo include line/col or not?
@@ -108,10 +107,10 @@ local function body_for(prefix, suffix, current_context)
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
+    -- TODO use file/repo delimiter to split out context vs FIM file
+    raw_prompt = current_context.yanks .. "\n\n## Here is the code file for completions" .. raw_prompt
+
     body.prompt = raw_prompt
-
-
-
 
     local body_json = vim.json.encode(body)
 

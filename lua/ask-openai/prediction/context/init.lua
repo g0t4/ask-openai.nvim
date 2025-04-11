@@ -6,8 +6,10 @@ local cocs = require("ask-openai.prediction.context.cocs")
 local M = {}
 
 function M.current_context()
+    -- TODO classify this ctx object and use it as type hint in consumer code
     local ctx = {
-        yanks = yanks.get(),
+        -- TODO have each context type build its own prompt and pass that back here
+        yanks = yanks.get_prompt(),
         edits = {}, -- TODO
     }
     return ctx
