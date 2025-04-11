@@ -158,10 +158,11 @@ function _module.setup(options)
     -- FYI `<C-\>e` is critical in the following, don't remove the `e` and `\\` is to escape the `\` in lua
     vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai\').ask_openai()")<CR>', { noremap = true, })
 
-    _module.enable_predictions()
+    -- _module.enable_predictions()
 
     require("ask-openai.rewrites.inline").setup()
     require("ask-openai.questions.ask").setup()
+    require("ask-openai.prediction.tools.test").setup()
 end
 
 return _module

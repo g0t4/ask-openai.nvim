@@ -22,6 +22,7 @@ function M.terminate(request)
         handle:close()
         -- FYI ollama should show that connection closed/aborted
     end
+    -- TODO! see :h uv.spawn() for using uv.shutdown/uv.close? and fallback to kill, or does it matter?
 end
 
 function M.reusable_curl_seam(body, url, frontend, choice_text)
