@@ -1,5 +1,11 @@
 local uv = vim.loop
 
+local M = {}
+
+M.counter = 1
+M.callbacks = {}
+
+
 -- MCP docs:
 --   spec: https://modelcontextprotocol.io/specification/2025-03-26
 --   message formats: https://modelcontextprotocol.io/specification/2025-03-26/basic#messages
@@ -98,7 +104,13 @@ function start_mcp_server(on_message)
 
     uv.read_start(stderr, on_stderr)
 
-    local function send(msg)
+    local function send(msg, callback)
+        local this_id = tostring(M.counter) -- rather have them be strings, so we don't have array index issues
+        msg.id = this_id
+        M.counter = M.counter + 1
+        if callback then
+            M.callbacks[this_id] = callback
+        end
         local str = vim.json.encode(msg)
         -- print("MCP send:", str)
         stdin:write(str .. "\n")
@@ -119,11 +131,6 @@ function start_mcp_server(on_message)
     }
 end
 
-local M = {}
-
-M.counter = 1
-M.callbacks = {}
-
 local mcp = start_mcp_server(function(msg)
     if msg.id then
         local callback = M.callbacks[msg.id]
@@ -141,18 +148,11 @@ M.setup = function()
 end
 
 M.tools_list = function(callback)
-    local this_id = tostring(M.counter) -- rather have them be strings, so we don't have array index issues
-    M.counter = M.counter + 1
-    if callback then
-        M.callbacks[this_id] = callback
-    end
     local request_list_tools = {
         jsonrpc = "2.0",
-        id = this_id,
         method = "tools/list",
-        -- params = {}, -- levea off if empty
     }
-    mcp.send(request_list_tools)
+    mcp.send(request_list_tools, callback)
 end
 
 return M
