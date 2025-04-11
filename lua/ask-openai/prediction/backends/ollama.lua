@@ -63,6 +63,18 @@ local function body_for(prefix, suffix, current_context)
     end
 
 
+    -- body.prompt = M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_context)
+    -- body.prompt = M.get_prompt_fim(prefix, suffix, sentinel_tokens)
+    body.prompt = M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
+
+    local body_json = vim.json.encode(body)
+
+    log:trace("body", body_json)
+
+    return body_json
+end
+
+function M.get_prompt_fim(prefix, suffix, sentinel_tokens)
     -- PRN TEST w/o deepseek-r1 using api/generate with FIM manual prompt
     --   IIRC template is wrong but it does support FIM?
 
@@ -70,30 +82,38 @@ local function body_for(prefix, suffix, current_context)
     --   can I just <|im_start|> blah <|im_end|>?
     --   see qwen2.5-coder template for how it might work
 
-    -- TODO try repo level code completion:
-    --   https://github.com/QwenLM/Qwen2.5-coder?tab=readme-ov-file#4-repository-level-code-completion
-    --   this is not FIM, rather it is like AR:
-    --     give it <|repo_name|>
-    --     then multiple files
-    --       delimited with <|file_sep|> and name
-    --     then contents...
-    --     then last file is only partially complete
-    --       this is what the model is supposed to generate (in its entirely IIRC)
-    --       OR, can I make this last file a FIM?
-    --         so it just generates middle of last file
-    --
-    -- The more I think about it, the less often I think I use the idea of FIM...
-    --   I often am just completing (often w/o a care for what comes next)...
-    --   should I be trying non-FIM too? (like repo level completions?)
-
     -- PSM inference format:
     log:trace("prefix", "'" .. prefix .. "'")
     log:trace("suffix", "'" .. suffix .. "'")
 
-
-
     -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
-    local raw_prompt = sentinel_tokens.fim_prefix .. prefix .. sentinel_tokens.fim_suffix .. suffix .. sentinel_tokens.fim_middle
+    local prompt = sentinel_tokens.fim_prefix .. prefix
+        .. sentinel_tokens.fim_suffix .. suffix
+        .. sentinel_tokens.fim_middle
+
+    return prompt
+end
+
+function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
+    -- https://github.com/QwenLM/Qwen2.5-coder?tab=readme-ov-file#4-repository-level-code-completion
+    -- Example:
+    --     <|repo_name|>{repo_name}
+    --     <|file_sep|>{file_path1}
+    --     {file_content1}
+    --     ...
+    --     <|file_sep|>{file_pathN}
+    --     {file_contentN}
+    --     <|file_sep|>{file_fim}
+    --     {file_contentFIM}
+    --
+    --     FYI still validating I can do this and have last be FIM/PSM style?
+    --     or does model have to gen just the end of the entire file? like a regular completion?
+
+    return M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_context)
+end
+
+function M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_context)
+    local raw_prompt = M.get_prompt_fim(prefix, suffix, sentinel_tokens)
 
     -- Edit history totally messed up FIM... how can I include this while preserving the FIM request...
     --   i.e. in calc.lua... it just chatted to me and that's an easy FIM task
@@ -109,16 +129,8 @@ local function body_for(prefix, suffix, current_context)
 
     -- TODO use file/repo delimiter to split out context vs FIM file
     raw_prompt = current_context.yanks .. "\n\n## Here is the code file for completions" .. raw_prompt
-
-    body.prompt = raw_prompt
-
-    local body_json = vim.json.encode(body)
-
-    log:trace("body", body_json)
-
-    return body_json
+    return raw_prompt
 end
-
 
 function M.build_request(prefix, suffix, current_context)
     local options = {
