@@ -110,6 +110,9 @@ function M.get_prompt_repo_level_without_repo_meta(prefix, suffix, sentinel_toke
     --     50% of time repo metadata not included (no repo name, no file paths)..
     --
     -- Can I confirm if this syntax was used in Qwen training? Qwen paper makes ref to StartCoder2 for repo-level FIM but it only metnions the metadata variant w/ repo_name and file_paths
+    -- TODO STEP1 - test with just the FIM file
+    -- TODO STEP2 - test with other real files
+    -- TODO STEP3 - test with context as files (yanks, edits, etc)
 
     -- TODO pass current_context as files?
     local prompt = M.get_prompt_fim(prefix, suffix, sentinel_tokens)
@@ -145,8 +148,6 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     --     50% of time repo metadata not included (no repo name, no file paths)..
     --     TODO! try w/o repo name AND file paths
     --
-    --      woa... this version has no new line after reponame! that could be part of my issue
-    --      TODO how about I test File-level FIM w/o using other files and just see how my FIM works with boilerplate ahead of it more or less
     --   StarCoder2 paper also used these sentinels:
     --      see Table 5
     --        <issue_[start|comment|closed]>
