@@ -130,6 +130,7 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     -- {file_content2}
     -- <|file_sep|>{file_path3}
     -- <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_fim}<|endoftext|>
+    -- TODO do I use new line after repo_name/file_pathX... or like StarCoder and only do it between <file_sep>path \n code
     --
     -- FYI, IIUC this is the method that was used for training
     --
@@ -142,6 +143,8 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     --
     --   <repo_name>reponame<file_sep>filepath0\ncode0<file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid<file_sep> ...<|endoftext|>
     --      TODO! try no new line after reponame
+    --      TODO! NO NEWLINE after codeX and before <file_sep>!!
+    --
     --      TODO give full path to file (relative to repo root?)
     --
     --   <file_sep>code1<file_sep>code2 ... <|endoftext|>.
