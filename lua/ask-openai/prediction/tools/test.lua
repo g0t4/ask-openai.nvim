@@ -1,18 +1,5 @@
 local uv = vim.loop
 
-
--- TODO do a test of fetch too... maybe even cooler!
--- --         "fetch": {
---         "command": "uvx",
---         "args": [
---             "--directory",
---             "/Users/wesdemos/repos/github/g0t4/mcp-servers/src/fetch",
---             "mcp-server-fetch",
---             "--ignore-robots-txt"
---         ]
---     },
-
-
 -- MCP docs:
 --   spec: https://modelcontextprotocol.io/specification/2025-03-26
 --   message formats: https://modelcontextprotocol.io/specification/2025-03-26/basic#messages
@@ -32,6 +19,27 @@ local uv = vim.loop
 --     [key: string]: unknown;
 --   };
 -- }
+
+local servers = {
+    {
+        name = "mcp-server-fetch",
+        command = "uvx",
+        args = {
+            "--directory",
+            "/Users/wesdemos/repos/github/g0t4/mcp-servers/src/fetch",
+            "mcp-server-fetch",
+            "--ignore-robots-txt",
+        },
+    },
+    {
+        name = "mcp-server-commands",
+        command = "npx",
+        args = {
+            "/Users/wesdemos/repos/github/g0t4/mcp-server-commands/build/index.js",
+            "--verbose",
+        },
+    },
+}
 
 
 function start_mcp_server(on_message)
