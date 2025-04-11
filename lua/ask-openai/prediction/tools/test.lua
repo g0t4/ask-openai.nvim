@@ -67,7 +67,7 @@ function start_mcp_server(on_message)
     }, on_exit)
 
     function on_stdout(err, data)
-        print("MCP stdout:", data)
+        -- print("MCP stdout:", data)
         assert(not err, err)
         -- receive messages
 
@@ -100,7 +100,7 @@ function start_mcp_server(on_message)
 
     local function send(msg)
         local str = vim.json.encode(msg)
-        print("MCP send:", str)
+        -- print("MCP send:", str)
         stdin:write(str .. "\n")
     end
 
@@ -119,22 +119,36 @@ function start_mcp_server(on_message)
     }
 end
 
-local mcp = start_mcp_server(function(msg)
-    print("MCP message:", vim.inspect(msg))
-end)
-
 local M = {}
 
+M.counter = 1
+M.callbacks = {}
+
+local mcp = start_mcp_server(function(msg)
+    if msg.id then
+        local callback = M.callbacks[msg.id]
+        if callback then
+            callback(msg)
+        end
+    end
+    -- print("MCP message:", vim.inspect(msg))
+end)
+
 M.setup = function()
-    M.list_tools_test()
+    M.list_tools_test(function(msg)
+        print("list_tools_test:", vim.inspect(msg))
+    end)
 end
 
-M.list_tools_test = function()
+M.list_tools_test = function(callback)
+    if callback then
+        M.callbacks[M.counter] = callback
+    end
     local request_list_tools = {
         jsonrpc = "2.0",
-        id = 1,
+        id = M.counter,
         method = "tools/list",
-        -- params = {},
+        -- params = {}, -- levea off if empty
     }
     mcp.send(request_list_tools)
 end
