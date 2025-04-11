@@ -108,6 +108,9 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     --     {file_contentFIM}
     --
     --     FYI still validating I can do this and have last be FIM/PSM style?
+    --       doesn't seem to work well at all... 90% of predictions are "stop"/empty immediately
+    --       IIAC I need to use a chat/copmletions style instruct endpoint if I want to provide context...
+    --          OR I need to make the context fit into the prefix of the PSM FIM request
     --     or does model have to gen just the end of the entire file? like a regular completion?
 
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
