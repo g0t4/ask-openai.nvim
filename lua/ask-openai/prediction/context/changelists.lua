@@ -3,6 +3,7 @@ require("ask-openai.prediction.context.inspect")
 local M = {}
 
 function M.get_change_list_with_lines()
+    -- TODO enumerate all buffers
     local bufnr = vim.api.nvim_get_current_buf()
     local result = vim.fn.getchangelist(bufnr) -- Retrieve change list
     local changelist = result[1] -- first is change list

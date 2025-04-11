@@ -119,12 +119,13 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
         context_file_prompt = context_file_prompt .. "\n" .. current_context.yanks .. "\n\n"
     end
 
-    local fim_file_contents = M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_context)
+    local fim_file_contents = M.get_prompt_fim(prefix, suffix, sentinel_tokens)
     local current_file_name = vim.fn.expand('%'):match("([^/]+)$")
     local fim_file = sentinel_tokens.file_sep .. current_file_name .. "\n"
         .. fim_file_contents .. "\n"
 
-    return repo_prompt .. context_file_prompt .. fim_file
+    -- return repo_prompt .. context_file_prompt .. fim_file
+    return repo_prompt .. fim_file
 end
 
 function M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_context)
@@ -142,7 +143,6 @@ function M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    -- TODO use file/repo delimiter to split out context vs FIM file
     raw_prompt = current_context.yanks .. "\n\n## Here is the code file for completions" .. raw_prompt
     return raw_prompt
 end
