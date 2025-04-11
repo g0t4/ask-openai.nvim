@@ -115,9 +115,35 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     --
     -- FYI, IIUC this is the method that was used for training
     --
-    -- btw method for scaling file-level to repo-level is derived from this paper
+    -- *** StarCoder paper
+    --   Qwen2.5Coder's Tech Report used this (at least for FIM)
     --   https://arxiv.org/pdf/2402.19173
-    --   Tech Report mentions this as a source for more details/impl
+    --   StarCoder paper
+    --
+    --   <repo_name>reponame<file_sep>filepath0\ncode0<file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid<file_sep> ...<|endoftext|>
+    --      TODO ... try no new line after reponame woa... this version has no new line after reponame! that could be part of my issue
+    --      TODO how about I test File-level FIM w/o using other files and just see how my FIM works with boilerplate ahead of it more or less
+    --   - TODO wait they trained with other tags that I might be able to use! did qwen use these too?!
+    --      see Table 5
+    --        <issue_[start|comment|closed]>
+    --        <pr>,<pr_[status|is_merged|base|file|base_code|diff|diff_hunk|comment|event_id|review|review_state|in_reply_to_review_id|in_reply_to_comment_id|diff_hunk_comment_line]>
+    --        <jupyter_[start|text|code|output|script]>,<empty_output>
+    --        <code_to_intermediate>, <intermediate_to_code>
+    --
+    --  TODO! try starcoder2 (and variants?)
+    --     https://ollama.com/library/starcoder2/tags
+    --  TODO design with full file contents only?
+    --  - if it was trained on full files from repo (except last one), then IIAC model will do best with full files
+    --  - TODO what if I fed in relevant files (i.e. require'd/chain)? can have toggle to flip this if it gets to be too many tokens
+    --      TEST how this performs for cross file FIM
+    --  - TODO redesign context in terms of a full file...
+    --      i.e. name a simple `notes.md` file?
+    --      `outline.md` could house current coc completions in a way to make it look like just an outline?
+    --        how about feed all global symbols in? in addition to those in current context?
+    --      a clipboard file name? for yanks clipboard-1
+    --
+    --  - TODO how many tokens are some of my current repos/subsets (i.e. my nvim config, hammerspoon, ask-openai plugin... ) how slow is it to give it all linked files at least if not all?!
+    --
 
 
     -- Repo-level FIM (IIUC complete the last file entirely):
