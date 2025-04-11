@@ -66,6 +66,7 @@ local function body_for(prefix, suffix, current_context)
     -- body.prompt = M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_context)
     -- body.prompt = M.get_prompt_fim(prefix, suffix, sentinel_tokens)
     body.prompt = M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
+    log:trace('body.prompt', body.prompt)
 
     local body_json = vim.json.encode(body)
 
@@ -110,8 +111,20 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     --     or does model have to gen just the end of the entire file? like a regular completion?
 
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
+    local repo_prompt = sentinel_tokens.repo_name .. repo_name .. "\n"
+    local context_file_prompt = sentinel_tokens.file_sep .. "nvim-context-tracking-notes.md\n"
+        .. "The following notes are gathered automatically, they capture recent user activities that may help in completing FIM requests\n"
+    if current_context.yanks ~= "" then
+        -- TODO? format the prompt entirely here so it can differ vs plain FIM context?
+        context_file_prompt = context_file_prompt .. "\n" .. current_context.yanks .. "\n\n"
+    end
 
-    return M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_context)
+    local fim_file_contents = M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_context)
+    local current_file_name = vim.fn.expand('%'):match("([^/]+)$")
+    local fim_file = sentinel_tokens.file_sep .. current_file_name .. "\n"
+        .. fim_file_contents .. "\n"
+
+    return repo_prompt .. context_file_prompt .. fim_file
 end
 
 function M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_context)
