@@ -138,15 +138,23 @@ M.setup = function()
     M.list_tools_test(function(msg)
         print("list_tools_test:", vim.inspect(msg))
     end)
+    M.list_tools_test(function(msg)
+        print("list_tools_test2:", vim.inspect(msg))
+    end)
+    M.list_tools_test(function(msg)
+        print("list_tools_test3:", vim.inspect(msg))
+    end)
 end
 
 M.list_tools_test = function(callback)
+    local this_id = tostring(M.counter) -- rather have them be strings, so we don't have array index issues
+    M.counter = M.counter + 1
     if callback then
-        M.callbacks[M.counter] = callback
+        M.callbacks[this_id] = callback
     end
     local request_list_tools = {
         jsonrpc = "2.0",
-        id = M.counter,
+        id = this_id,
         method = "tools/list",
         -- params = {}, -- levea off if empty
     }
@@ -161,7 +169,7 @@ return M
 -- *** working examples (manual testing)
 --
 --   tools/list
---     { "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {} }
+--     { "jsonrpc": "2.0", "id": 4, "method": "tools/list", "params": {} }
 --     { "jsonrpc": "2.0", "id": 1, "method": "tools/list" }
 --
 --     won't work if jsonrpc is missing, or params is serialized to an array []
