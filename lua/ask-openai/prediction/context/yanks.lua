@@ -17,7 +17,20 @@ end
 
 M.yanks = {}
 function M.on_yank()
+    local prune_after = 10
+    if #M.yanks >= prune_after then
+        table.remove(M.yanks, 1)
+    end
     table.insert(M.yanks, vim.v.event.regcontents)
+end
+
+function M.get()
+    -- todo any limits?
+    return M.yanks
+end
+
+function M.clear()
+    M.yanks = {}
 end
 
 function M.setup()

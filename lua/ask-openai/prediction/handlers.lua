@@ -1,7 +1,7 @@
 local uv = vim.uv
 local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
-local changes = require("ask-openai.prediction.context.changelists")
+local context = require("ask-openai.prediction.context.init")
 
 -- local backend = require("ask-openai.prediction.backends.legacy-completions")
 local backend = require("ask-openai.prediction.backends.ollama")
@@ -112,8 +112,8 @@ function M.ask_for_prediction()
     --     log:warn("vim.o.commentstring is nil, not including file name in comment header")
     -- end
 
-    local recent_edits = changes.get_change_list_with_lines()
-    -- local recent_edits = {}
+    local current_context = context.current_context()
+    local recent_edits = current_context.edits
 
     -- PSM format:
     local prefix = document_prefix
