@@ -3,6 +3,10 @@
 
 local M = {}
 
+function M.print_yanks()
+    return M.get_prompt()
+end
+
 function M.dump_yank_event()
     print("yanked: " .. vim.inspect(vim.v.event))
     -- yanked: {
@@ -35,6 +39,7 @@ function M.get_prompt()
         return ""
     end
 
+    -- TODO evaluate how to build this part of prompt
     local prompt_text = "## Recent yanks across all files in the project:\n"
     for _, yank in ipairs(M.yanks) do
         prompt_text = prompt_text .. table.concat(yank, '\n') .. '\n\n'
@@ -56,7 +61,7 @@ function M.setup()
         group = 'ContextYank',
         desc = 'Prediction context yanks'
     })
-
+    vim.api.nvim_create_user_command("AskDumpYanks", M.print_yanks, {})
 end
 
 return M
