@@ -79,14 +79,18 @@ function M.get_prompt_fim(prefix, suffix, sentinel_tokens)
     -- TODO is it possible to provide guidance using tokens beyond FIM file/repo level?
     --   can I just <|im_start|> blah <|im_end|>?
     --   see qwen2.5-coder template for how it might work
+    --   i.e. the basic ability to "chat" with the model:
+    --     https://github.com/QwenLM/Qwen2.5-Coder#1-basic-usage
 
     -- PSM inference format:
     log:trace("prefix", "'" .. prefix .. "'")
     log:trace("suffix", "'" .. suffix .. "'")
 
     -- File-level FIM template:
-    -- <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_mid}<|endoftext|>
-    --    https://arxiv.org/pdf/2409.12187
+    --
+    --   <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_mid}<|endoftext|>
+    --
+    --   from Tech Report: https://arxiv.org/pdf/2409.12187
 
     -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
 
@@ -98,22 +102,50 @@ function M.get_prompt_fim(prefix, suffix, sentinel_tokens)
 end
 
 function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
-    -- https://github.com/QwenLM/Qwen2.5-coder?tab=readme-ov-file#4-repository-level-code-completion
-    -- Example:
-    --     <|repo_name|>{repo_name}
-    --     <|file_sep|>{file_path1}
-    --     {file_content1}
-    --     ...
-    --     <|file_sep|>{file_pathN}
-    --     {file_contentN}
-    --     <|file_sep|>{file_fim}
-    --     {file_contentFIM}
+    -- Repo-level + File-level FIM template:
+    --   this is from the Qwen2.5-Coder Tech Paper: https://arxiv.org/pdf/2409.12186
     --
-    --     FYI still validating I can do this and have last be FIM/PSM style?
-    --       doesn't seem to work well at all... 90% of predictions are "stop"/empty immediately
-    --       IIAC I need to use a chat/copmletions style instruct endpoint if I want to provide context...
-    --          OR I need to make the context fit into the prefix of the PSM FIM request
-    --     or does model have to gen just the end of the entire file? like a regular completion?
+    -- <|repo_name|>{repo_name}
+    -- <|file_sep|>{file_path1}
+    -- {file_content1}
+    -- <|file_sep|>{file_path2}
+    -- {file_content2}
+    -- <|file_sep|>{file_path3}
+    -- <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_fim}<|endoftext|>
+    --
+    -- FYI, IIUC this is the method that was used for training
+    --
+    -- btw method for scaling file-level to repo-level is derived from this paper
+    --   https://arxiv.org/pdf/2402.19173
+    --   Tech Report mentions this as a source for more details/impl
+
+
+    -- Repo-level FIM (IIUC complete the last file entirely):
+    --   the official repo shows a repo-level example w/o File-level FIM
+    --   https://github.com/QwenLM/Qwen2.5-coder?tab=readme-ov-file#4-repository-level-code-completion
+    --   this use case seems rare to me, though good to distinguish the difference and understand what the model was trained to do
+    -- <|repo_name|>{repo_name}
+    -- <|file_sep|>{file_path1}
+    -- {file_content1}
+    -- <|file_sep|>{file_path2}
+    -- {file_content2}
+    -- <|file_sep|>{file_path3}
+    -- {file_content3_prefix}
+    --
+    -- *** TLDR think of not having a suffix... so you only have Prefix and Middle... and I guess no need to include the FIM tokens?!
+    --    is this a reliable way... if this works then does it mean there are other mods I can make that should reliably work too?
+    --    i.e. to provide context another way?
+    --
+
+    -- Observations:
+    -- - so far, repo+file-level FIM doesn't work well... 90% of predictions are "stop"/empty immediately
+    --    I observed this with llama.vim plugin too!
+    --    I definitely notice a diff b/w my file-level fim ONLY prompt (works very well) and this combo
+    --       that said, when I developed my file-level FIM... even small mistakes led to problems / crap completions
+    --       so lets make sure this is well understood and tested before I conclude anything
+    --
+    -- - I should do some testing in isolation to see how specific prompts behave before I coclude much about wheter or not repo+file level FIM is useful
+    --
 
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
     local repo_prompt = sentinel_tokens.repo_name .. repo_name .. "\n"
