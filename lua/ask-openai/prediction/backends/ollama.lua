@@ -101,6 +101,17 @@ function M.get_prompt_fim(prefix, suffix, sentinel_tokens)
     return prompt
 end
 
+function M.get_prompt_repo_level_without_repo_meta()
+    -- TODO test this w/ StarCoder too! setup separate sentinels for StarCoder2
+    -- IOTW, prepend <file_sep> to file-level FIM (if no other files)
+    -- OR other files can be provided w/o names and only prefix contents with <file_sep>
+    -- from StarCoder paper
+    --   <file_sep>code1<file_sep>code2 ... <|endoftext|>.
+    --     50% of time repo metadata not included (no repo name, no file paths)..
+    --
+    -- Can I confirm if this syntax was used in Qwen training? Qwen paper makes ref to StartCoder2 for repo-level FIM but it only metnions the metadata variant w/ repo_name and file_paths
+end
+
 function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
     -- Repo-level + File-level FIM template:
     --   this is from the Qwen2.5-Coder Tech Paper: https://arxiv.org/pdf/2409.12186
@@ -120,8 +131,17 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     --   https://arxiv.org/pdf/2402.19173
     --   StarCoder paper
     --
+    --    *** test below scenarios standalone too (practice format, see what mistakes you make, understand when useful)
+    --
     --   <repo_name>reponame<file_sep>filepath0\ncode0<file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid<file_sep> ...<|endoftext|>
-    --      TODO ... try no new line after reponame woa... this version has no new line after reponame! that could be part of my issue
+    --      TODO! try no new line after reponame
+    --      TODO give full path to file (relative to repo root?)
+    --
+    --   <file_sep>code1<file_sep>code2 ... <|endoftext|>.
+    --     50% of time repo metadata not included (no repo name, no file paths)..
+    --     TODO! try w/o repo name AND file paths
+    --
+    --      woa... this version has no new line after reponame! that could be part of my issue
     --      TODO how about I test File-level FIM w/o using other files and just see how my FIM works with boilerplate ahead of it more or less
     --   - TODO wait they trained with other tags that I might be able to use! did qwen use these too?!
     --      see Table 5
@@ -145,11 +165,17 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     --  - TODO how many tokens are some of my current repos/subsets (i.e. my nvim config, hammerspoon, ask-openai plugin... ) how slow is it to give it all linked files at least if not all?!
     --
 
+    -- MISC:
+    -- - Tech Report mentions: Since too many instruction samples without code snippets hurt the model performance on code generation tasks (e.g. MultiPL-E, McEval, and MdEval), we remove most of the samples without code snippets to keep the code generation capability of our instruction model.
+    --    is it that perf is inversely affected by comments?
+    --    OR is it just when there is very little / no code at all?
+    --    TODO should I not be including comments if they go over a threshold?! argh I love notes in code
 
     -- Repo-level FIM (IIUC complete the last file entirely):
     --   the official repo shows a repo-level example w/o File-level FIM
     --   https://github.com/QwenLM/Qwen2.5-coder?tab=readme-ov-file#4-repository-level-code-completion
     --   this use case seems rare to me, though good to distinguish the difference and understand what the model was trained to do
+    --
     -- <|repo_name|>{repo_name}
     -- <|file_sep|>{file_path1}
     -- {file_content1}
@@ -158,7 +184,7 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     -- <|file_sep|>{file_path3}
     -- {file_content3_prefix}
     --
-    -- *** TLDR think of not having a suffix... so you only have Prefix and Middle... and I guess no need to include the FIM tokens?!
+    --    *** TLDR think of not having a suffix... so you only have Prefix and Middle... and I guess no need to include the FIM tokens?!
     --    is this a reliable way... if this works then does it mean there are other mods I can make that should reliably work too?
     --    i.e. to provide context another way?
     --
@@ -171,7 +197,7 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     --       so lets make sure this is well understood and tested before I conclude anything
     --
     -- - I should do some testing in isolation to see how specific prompts behave before I coclude much about wheter or not repo+file level FIM is useful
-    --
+
 
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
     local repo_prompt = sentinel_tokens.repo_name .. repo_name .. "\n"
