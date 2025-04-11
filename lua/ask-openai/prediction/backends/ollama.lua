@@ -101,10 +101,6 @@ function M.get_prompt_fim(prefix, suffix, sentinel_tokens)
     return prompt
 end
 
--- ! did Qwen include issues/PRs like StarCoder2?
---   Tech Report mentions:  "In addition to raw code, we also collected data from Pull Requests, Commits, Jupyter Notebooks, and Kaggle datasets, all of which were subjected to similar rule-based cleaning techniques."
--- ?? is Qwen's dataset public??? Qwen2.5-Coder-Data
-
 function M.get_prompt_repo_level_without_repo_meta(prefix, suffix, sentinel_tokens, current_context)
     -- TODO test this w/ StarCoder too! setup separate sentinels for StarCoder2
     -- IOTW, prepend <file_sep> to file-level FIM (if no other files)
@@ -151,12 +147,16 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     --
     --      woa... this version has no new line after reponame! that could be part of my issue
     --      TODO how about I test File-level FIM w/o using other files and just see how my FIM works with boilerplate ahead of it more or less
-    --   - TODO wait they trained with other tags that I might be able to use! did qwen use these too?!
+    --   StarCoder2 paper also used these sentinels:
     --      see Table 5
     --        <issue_[start|comment|closed]>
     --        <pr>,<pr_[status|is_merged|base|file|base_code|diff|diff_hunk|comment|event_id|review|review_state|in_reply_to_review_id|in_reply_to_comment_id|diff_hunk_comment_line]>
     --        <jupyter_[start|text|code|output|script]>,<empty_output>
     --        <code_to_intermediate>, <intermediate_to_code>
+    --     Q2.5C Tech Report mentions:  "In addition to raw code, we also collected data from Pull Requests, Commits, Jupyter Notebooks, and Kaggle datasets, all of which were subjected to similar rule-based cleaning techniques."
+    --       did qwen also use <issue_/<pr_/<jupyter_/etc tags?
+    --       <jupyter might give me a new way to express code gen requests!
+
     --
     --  TODO! try starcoder2 (and variants?)
     --     https://ollama.com/library/starcoder2/tags
