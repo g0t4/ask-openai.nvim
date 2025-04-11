@@ -111,6 +111,7 @@ function M.get_prompt_repo_level_without_repo_meta(prefix, suffix, sentinel_toke
     --
     -- Can I confirm if this syntax was used in Qwen training? Qwen paper makes ref to StartCoder2 for repo-level FIM but it only metnions the metadata variant w/ repo_name and file_paths
 
+    -- TODO pass current_context as files?
     local prompt = M.get_prompt_fim(prefix, suffix, sentinel_tokens)
     return sentinel_tokens.file_sep .. prompt
 end
