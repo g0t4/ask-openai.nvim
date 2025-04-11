@@ -6,60 +6,32 @@ M.counter = 1
 M.callbacks = {}
 
 
--- MCP docs:
---   spec: https://modelcontextprotocol.io/specification/2025-03-26
---   message formats: https://modelcontextprotocol.io/specification/2025-03-26/basic#messages
---     requests: https://modelcontextprotocol.io/specification/2025-03-26/basic#requests
---     responses: https://modelcontextprotocol.io/specification/2025-03-26/basic#responses
---   schema: https://github.com/modelcontextprotocol/modelcontextprotocol/blob/main/schema/2025-03-26/schema.json
-
-
--- TODO support an array of servers
---   TODO keep servers running after listing? or list and shutdown until used?
--- requests:
--- {
---   jsonrpc: "2.0";
---   id: string | number;
---   method: string;
---   params?: {
---     [key: string]: unknown;
---   };
--- }
-
 local servers = {
-    {
-        name = "mcp-server-fetch",
-        command = "uvx",
-        args = {
-            "--directory",
-            "/Users/wesdemos/repos/github/g0t4/mcp-servers/src/fetch",
-            "mcp-server-fetch",
-            "--ignore-robots-txt",
-        },
-    },
-    {
-        name = "mcp-server-commands",
+    -- fetch = {
+    --     command = "uvx",
+    --     args = {
+    --         -- "--directory",
+    --         -- "/Users/wesdemos/repos/github/g0t4/mcp-servers/src/fetch",
+    --         "mcp-server-fetch",
+    --         -- "--ignore-robots-txt",
+    --     },
+    -- },
+    commands = {
         command = "npx",
         args = {
             "/Users/wesdemos/repos/github/g0t4/mcp-server-commands/build/index.js",
-            "--verbose",
+            -- "--verbose",
         },
     },
 }
 
 
-function start_mcp_server(on_message)
+function start_mcp_server(name, on_message)
     local stdin = uv.new_pipe(false)
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
 
-    local options = {
-        command = "npx",
-        args = {
-            "/Users/wesdemos/repos/github/g0t4/mcp-server-commands/build/index.js",
-            "--verbose",
-        },
-    }
+    local options = servers[name]
 
     local handle
 
@@ -106,6 +78,7 @@ function start_mcp_server(on_message)
     local function send(msg, callback)
         local this_id = tostring(M.counter) -- rather have them be strings, so we don't have array index issues
         msg.id = this_id
+        msg.jsonrpc = "2.0"
         M.counter = M.counter + 1
         if callback then
             M.callbacks[this_id] = callback
@@ -113,6 +86,20 @@ function start_mcp_server(on_message)
         local str = vim.json.encode(msg)
         -- print("MCP send:", str)
         stdin:write(str .. "\n")
+    end
+
+    local function tools_list(callback)
+        send({ method = "tools/list" }, callback)
+    end
+
+    local function tools_call(tool_name, args, callback)
+        send({
+            method = "tools/call",
+            params = {
+                name = name,
+                arguments = args,
+            },
+        }, callback)
     end
 
     return {
@@ -126,79 +113,41 @@ function start_mcp_server(on_message)
                     -- print("process closed", handle, pid)
                 end)
             end)
-        end
+        end,
+        tools_list = tools_list,
+        tools_call = tools_call,
     }
 end
 
-local mcp = start_mcp_server(function(msg)
-    if msg.id then
-        local callback = M.callbacks[msg.id]
-        if callback then
-            callback(msg)
+M.running_servers = {}
+
+for name, server in pairs(servers) do
+    print("starting mcp server " .. name)
+    local mcp = start_mcp_server(name, function(msg)
+        if msg.id then
+            local callback = M.callbacks[msg.id]
+            if callback then
+                callback(msg)
+            end
         end
-    end
-    -- print("MCP message:", vim.inspect(msg))
-end)
-
-M.tools_available = {
-}
-
-M.setup = function()
-    M.tools_list(function(msg)
+        -- print("MCP message:", vim.inspect(msg))
+    end)
+    M.running_servers[name] = mcp
+    mcp.tools_list(function(msg)
         -- print("tools/list:", vim.inspect(msg))
         for _, tool in ipairs(msg.result.tools) do
+            print("found " .. tool.name)
             M.tools_available[tool.name] = tool
         end
     end)
+end
 
-    -- TODO need to wire up AI response w/ tool_calls into the tools... for now test manually
-    M.tools_call("run_command", { command = "ls -al" }, function(msg)
-        print("tools/call:", vim.inspect(msg))
-    end)
+M.tools_available = {}
 
+M.setup = function()
     vim.api.nvim_create_user_command("McpListTools", function()
         print(vim.inspect(M.tools_available))
     end, { nargs = 0 })
 end
 
-M.tools_list = function(callback)
-    local request_list_tools = {
-        jsonrpc = "2.0",
-        method = "tools/list",
-    }
-    mcp.send(request_list_tools, callback)
-end
-
-M.tools_call = function(name, args, callback)
-    local request_call_tool = {
-        jsonrpc = "2.0",
-        method = "tools/call",
-        params = {
-            name = name,
-            arguments = args,
-        },
-    }
-    mcp.send(request_call_tool, callback)
-end
-
 return M
-
-
--- NOTES
-
--- *** working examples (manual testing)
---
---   tools/list
---     { "jsonrpc": "2.0", "id": 4, "method": "tools/list", "params": {} }
---     { "jsonrpc": "2.0", "id": 1, "method": "tools/list" }
---
---     won't work if jsonrpc is missing, or params is serialized to an array []
---     don't send params if empty, set it nil before serializing
---
--- FYI practice sending messages:
---   node /Users/wesdemos/repos/github/g0t4/mcp-server-commands/build/index.js --verbose
---      then paste manual messages into prompt and hit return (new line) to submit
---      entire message must be on one line
---
---   npm run inspector
---      use gui to design messages and then can see the payload and copy/paste it
