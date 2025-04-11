@@ -7,6 +7,15 @@ M.callbacks = {}
 
 
 local servers = {
+
+    -- fetch is currently broken, hangs indefinitely or at least crashes when you try to send a message over STDIN at CLI
+    --    but, dammit the inspector tool has it working with uvx :(
+    --    it does this on me when I use it manually or using uv.spawn below... smth isn't right
+    --
+    --         |     raise RuntimeError(
+    --         |         "Received request before initialization was complete"
+    --         |     )   --
+    --
     -- fetch = {
     --     command = "uvx",
     --     args = {
