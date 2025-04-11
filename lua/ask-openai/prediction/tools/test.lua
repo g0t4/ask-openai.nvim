@@ -144,6 +144,11 @@ M.setup = function()
     M.tools_list(function(msg)
         print("tools/list:", vim.inspect(msg))
     end)
+
+    -- TODO need to wire up AI response w/ tool_calls into the tools... for now test manually
+    M.tools_call("run_command", { command = "ls -al" }, function(msg)
+        print("tools/call:", vim.inspect(msg))
+    end)
 end
 
 M.tools_list = function(callback)
@@ -154,11 +159,23 @@ M.tools_list = function(callback)
     mcp.send(request_list_tools, callback)
 end
 
+M.tools_call = function(name, args, callback)
+    local request_call_tool = {
+        jsonrpc = "2.0",
+        method = "tools/call",
+        params = {
+            name = name,
+            arguments = args,
+        },
+    }
+    mcp.send(request_call_tool, callback)
+end
+
 return M
 
 
 -- NOTES
---
+
 -- *** working examples (manual testing)
 --
 --   tools/list
@@ -170,5 +187,8 @@ return M
 --
 -- FYI practice sending messages:
 --   node /Users/wesdemos/repos/github/g0t4/mcp-server-commands/build/index.js --verbose
---   run yourself, just don't forget the new line at the end of a message
---   also seems like jsonrpc must be set
+--      then paste manual messages into prompt and hit return (new line) to submit
+--      entire message must be on one line
+--
+--   npm run inspector
+--      use gui to design messages and then can see the payload and copy/paste it
