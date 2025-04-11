@@ -162,7 +162,7 @@ function _module.setup(options)
 
     require("ask-openai.rewrites.inline").setup()
     require("ask-openai.questions.ask").setup()
-    require("ask-openai.prediction.tools.test").setup()
+    require("ask-openai.prediction.tools.mcp").setup()
 end
 
 return _module
