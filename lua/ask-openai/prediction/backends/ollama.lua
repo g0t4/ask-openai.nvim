@@ -101,6 +101,10 @@ function M.get_prompt_fim(prefix, suffix, sentinel_tokens)
     return prompt
 end
 
+-- ! did Qwen include issues/PRs like StarCoder2?
+--   Tech Report mentions:  "In addition to raw code, we also collected data from Pull Requests, Commits, Jupyter Notebooks, and Kaggle datasets, all of which were subjected to similar rule-based cleaning techniques."
+-- ?? is Qwen's dataset public??? Qwen2.5-Coder-Data
+
 function M.get_prompt_repo_level_without_repo_meta(prefix, suffix, sentinel_tokens, current_context)
     -- TODO test this w/ StarCoder too! setup separate sentinels for StarCoder2
     -- IOTW, prepend <file_sep> to file-level FIM (if no other files)
