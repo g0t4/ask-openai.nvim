@@ -65,7 +65,7 @@ function M.send_question(user_prompt, code, file_name, use_tools)
         --   FTR... if tools are requested, it's usually fast (one or two small chunks).. so I don't care if that is not streaming
         --      I get to show the tool_calls to the user and then they'll know (that is very stream like)
         --   issue is... I want any non-tool use (i.e. explanations) to be streaming
-        --
+        --   WORST CASE - I might need to use a raw /api/chat and format the request and parse response myself.... shouldn't need to though (vllm I bet has streaming tools)
         body.tools = mcp.openai_tools()
     end
 
