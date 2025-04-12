@@ -1,6 +1,5 @@
 local M = {}
 local log = require("ask-openai.prediction.logger").predictions()
-_G.PLAIN_FIND = true
 
 local function body_for(prefix, suffix, _recent_edits)
     local body = {
@@ -75,7 +74,7 @@ local function body_for(prefix, suffix, _recent_edits)
 
         -- FYI also ollama warns about:
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
-    elseif not string.find(body.model, "Qwen2.5-Coder", nil, _G.PLAIN_FIND) then
+    elseif not string.find(body.model, "Qwen2.5-Coder", nil, true) then
         -- warn that FIM tokens need to be set
         log:error("PLEASE REVIEW FIM SENTINEL TOKENS FOR THE NEW MODEL! right now you are using sentinel_tokens for qwen2.5-coder")
         return

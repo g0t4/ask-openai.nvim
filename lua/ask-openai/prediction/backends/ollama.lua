@@ -3,11 +3,6 @@ local log = require("ask-openai.prediction.logger").predictions()
 local qwen = require("ask-openai.backends.models.qwen")
 local meta = require("ask-openai.backends.models.meta")
 
-_G.PLAIN_FIND = true
--- TODO can I define an interface in lua?
---    then use a backend variable in handlers.lua... w/ completion regardless of backend
---       local backend = require("../backends/x")
-
 local function body_for(prefix, suffix, current_context)
     local body = {
 
@@ -56,7 +51,7 @@ local function body_for(prefix, suffix, current_context)
 
         -- FYI also ollama warns about:
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
-    elseif not string.find(body.model, "qwen2.5-coder", nil, _G.PLAIN_FIND) then
+    elseif not string.find(body.model, "qwen2.5-coder", nil, true) then
         -- warn that FIM tokens need to be set
         log:error("PLEASE REVIEW FIM SENTINEL TOKENS FOR THE NEW MODEL! right now you are using sentinel_tokens for qwen2.5-coder")
         return

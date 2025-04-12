@@ -26,7 +26,6 @@ local log = require("ask-openai.prediction.logger").predictions()
 --
 
 local M = {}
-_G.PLAIN_FIND = true
 function M.curl_for(body, base_url, frontend)
     local url = base_url .. "/v1/completions"
 
