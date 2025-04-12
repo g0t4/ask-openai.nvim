@@ -37,7 +37,7 @@ local curl = require("ask-openai.backends.curl_streaming")
 
 function M.curl_for(body, base_url, frontend)
     local url = base_url .. "/v1/chat/completions"
-    return curl.reusable_curl_seam(body, url, frontend, M.choice_text)
+    return curl.reusable_curl_seam(body, url, frontend, M.parse_choice)
 end
 
 M.terminate = curl.terminate
@@ -97,7 +97,7 @@ M.terminate = curl.terminate
 
 -- * differs vs /v1/completions endpoint
 -- TODO rename to parse_choice?
-function M.choice_text(choice)
+function M.parse_choice(choice)
     if choice.delta == nil then
         log:warn("WARN - unexpected, no delta in completion choice, what gives?!")
         return ""

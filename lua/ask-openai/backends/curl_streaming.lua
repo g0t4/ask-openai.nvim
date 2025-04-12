@@ -26,7 +26,7 @@ function M.terminate(request)
     -- TODO! see :h uv.spawn() for using uv.shutdown/uv.close? and fallback to kill, or does it matter?
 end
 
-function M.reusable_curl_seam(body, url, frontend, choice_text)
+function M.reusable_curl_seam(body, url, frontend, parse_choice)
     local request = {
         body = body
     }
@@ -87,7 +87,7 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
             return
         end
 
-        local chunk, finish_reason, tool_calls = M.sse_to_chunk(data, choice_text)
+        local chunk, finish_reason, tool_calls = M.sse_to_chunk(data, parse_choice)
         if chunk then
             frontend.process_chunk(chunk)
         end
@@ -120,7 +120,7 @@ end
 
 --- @param data string
 --- @return string|nil text, string|nil finish_reason, table|nil tool_calls
-function M.sse_to_chunk(data, choice_text)
+function M.sse_to_chunk(data, parse_choice)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
@@ -153,7 +153,7 @@ function M.sse_to_chunk(data, choice_text)
                 end
             end
             local new_chunk
-            new_chunk, tool_calls = choice_text(first_choice)
+            new_chunk, tool_calls = parse_choice(first_choice)
             chunk = (chunk or "") .. new_chunk
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)

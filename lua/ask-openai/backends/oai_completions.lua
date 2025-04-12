@@ -29,7 +29,7 @@ local M = {}
 _G.PLAIN_FIND = true
 function M.curl_for(body, base_url, frontend)
     local url = base_url .. "/v1/completions"
-    return curl.reusable_curl_seam(body, url, frontend, M.choice_text)
+    return curl.reusable_curl_seam(body, url, frontend, M.parse_choice)
 end
 
 M.terminate = curl.terminate
@@ -67,7 +67,7 @@ M.terminate = curl.terminate
 -- }
 
 -- * differs vs /v1/chat/completions endpoint
-function M.choice_text(choice)
+function M.parse_choice(choice)
     if choice.text == nil then
         log:warn("WARN - unexpected, no choice in completion, do you need to add special logic to handle this?")
         return ""
