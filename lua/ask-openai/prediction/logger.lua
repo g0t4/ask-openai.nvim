@@ -167,9 +167,10 @@ function Logger:log(level, ...)
     self.file:flush() -- 0.69ms (max in my tests) => down to 0.02ms (most of time)
 end
 
--- for troubleshooting, do not use/modify this for selective logging
+-- verbose, for troubleshooting
 -- intended so I don't replicate this code every time I have a uv.spwan on_exit handler
-function Logger:trace_on_exit(code, signal)
+function Logger:trace_on_exit_always(code, signal)
+    -- do not modify this for selective logging
     self:trace("on_exit code:" .. (code or "nil") .. ", signal:" .. (signal or "nil"))
 end
 
@@ -187,17 +188,13 @@ function Logger:trace_on_exit_errors(code, signal)
         return
     end
     -- for now defer all non-zero exit codes to use verbose trace:
-    self:trace_on_exit(code, signal)
+    self:trace_on_exit_always(code, signal)
 end
 
--- verbose, for troubleshooting... ensure always a log entry
+-- verbose, for troubleshooting
 -- intended so I don't replicate this code every time I have a uv.spwan on_stdout/on_stderr handler
--- also codify the diff between read errors and stderr
--- read_error s/b super rare AFAICT I have never encountered it (i.e. pipe closed?)
-function Logger:trace_stdio_read(label, read_error, data)
-    -- PURPOSE: consolidate logic for consistently dumping err/data for troubleshooting
-    -- there should always be one log regardless of what is set/not
-
+function Logger:trace_stdio_read_always(label, read_error, data)
+    -- do not modify this for selective logging
     -- FYI read_error is only for the read operation on the pipe, not the underlying process itself
     if read_error ~= nil then
         -- do not bother with err if its nil, don't need to mention that

@@ -61,7 +61,7 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
     local stderr = uv.new_pipe(false)
 
     options.on_exit = function(code, signal)
-        log:trace_on_exit(code, signal)
+        log:trace_on_exit_always(code, signal)
         -- log:trace_on_exit_errors(code, signal) -- less verbose
 
         if code ~= nil and code ~= 0 then
@@ -85,7 +85,7 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
     }, options.on_exit)
 
     options.on_stdout = function(read_error, data)
-        log:trace_stdio_read("on_stdout", read_error, data)
+        log:trace_stdio_read_always("on_stdout", read_error, data)
         -- log:trace_stdio_read_errors("on_stdout", err, data)
 
         local no_data = data == nil or data == ""
@@ -108,7 +108,7 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
     uv.read_start(stdout, options.on_stdout)
 
     options.on_stderr = function(read_error, data)
-        log:trace_stdio_read("on_stderr", read_error, data)
+        log:trace_stdio_read_always("on_stderr", read_error, data)
         -- log:trace_stdio_read_errors("on_stderr", err, data)
 
         local no_data = data == nil or data == ""
