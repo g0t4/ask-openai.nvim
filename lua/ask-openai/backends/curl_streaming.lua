@@ -27,7 +27,10 @@ function M.terminate(request)
 end
 
 local function log_json(msg)
-    local job_id = vim.fn.jobstart({ "bat", "--style=plain", "--color", "always", "-l", "json" }, {
+    -- local command = { "bat", "--style=plain", "--color", "always", "-l", "json" }
+    local command = { "jq", ".", "--compact-output", "--color-output" }
+
+    local job_id = vim.fn.jobstart(command, {
         stdout_buffered = true,
         on_stderr = function(_, data)
             if data then
