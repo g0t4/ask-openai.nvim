@@ -1,4 +1,5 @@
 local log = require("ask-openai.prediction.logger").predictions()
+local mcp = require("ask-openai.prediction.tools.mcp")
 local uv = vim.uv
 
 local M = {}
@@ -29,6 +30,9 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
     local request = {
         body = body
     }
+
+    -- TODO toggle to control
+    body.tools = mcp.openai_tools()
 
     body.stream = true
     local json = vim.fn.json_encode(body)
