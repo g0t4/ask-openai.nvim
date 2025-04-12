@@ -26,36 +26,6 @@ function M.terminate(request)
     -- TODO! see :h uv.spawn() for using uv.shutdown/uv.close? and fallback to kill, or does it matter?
 end
 
-local function log_json(msg)
-    -- local command = { "bat", "--style=plain", "--color", "always", "-l", "json" }
-    local command = { "jq", ".", "--compact-output", "--color-output" }
-    -- WHY DIDN'T I TRY THIS SOONER!?
-
-    local job_id = vim.fn.jobstart(command, {
-        stdout_buffered = true,
-        on_stderr = function(_, data)
-            if not data then
-                return
-            end
-            for _, line in ipairs(data) do
-                log:trace(line)
-            end
-        end,
-        on_stdout = function(_, data)
-            if not data then
-                return
-            end
-            for _, line in ipairs(data) do
-                log:trace(line)
-            end
-        end,
-        on_exit = function()
-        end
-    })
-    vim.fn.chansend(job_id, msg .. "\n")
-    vim.fn.chanclose(job_id, "stdin")
-end
-
 function M.reusable_curl_seam(body, url, frontend, choice_text)
     local request = {
         body = body
@@ -67,7 +37,7 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
 
     body.stream = true
     local json = vim.fn.json_encode(body)
-    log_json(json)
+    log:json_info(json)
 
     -- TODO look for "curl" and "--no-buffer" to find all spots to merge together into this final backend
     local options = {

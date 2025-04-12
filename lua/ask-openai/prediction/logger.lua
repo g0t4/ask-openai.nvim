@@ -106,6 +106,44 @@ function Logger:info(...)
     self:log(LEVEL.INFO, ...)
 end
 
+function Logger:jsonify_info(...)
+    local args = { ... }
+    local json = vim.json.encode(args)
+    self:json_info(json)
+end
+
+function Logger:json_info(json)
+    -- TODO add a toggle for compact vs pretty print... make the change when you want that in the logs
+    -- TODO add other formats using bat or w/e else
+
+    -- local command = { "bat", "--style=plain", "--color", "always", "-l", "json" }
+    local command = { "jq", ".", "--compact-output", "--color-output" }
+
+    local job_id = vim.fn.jobstart(command, {
+        stdout_buffered = true,
+        on_stderr = function(_, data)
+            if not data then
+                return
+            end
+            for _, line in ipairs(data) do
+                self:trace(line)
+            end
+        end,
+        on_stdout = function(_, data)
+            if not data then
+                return
+            end
+            for _, line in ipairs(data) do
+                self:trace(line)
+            end
+        end,
+        on_exit = function()
+        end
+    })
+    vim.fn.chansend(job_id, json .. "\n")
+    vim.fn.chanclose(job_id, "stdin")
+end
+
 local verbose = require("ask-openai.config").get_options().verbose
 
 function Logger.is_verbose_enabled()
