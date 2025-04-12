@@ -2,6 +2,10 @@
 
 ## qwen2.5-coder + ollama -- tool use!
 
+TODO can I bait qwen into a parallel tool request?
+
+BTW there were no previous SSEs before these two:
+
 First, we have a tool request (IIAC can be multiple of these across chunks):
 ```json
 {
