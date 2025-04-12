@@ -112,12 +112,15 @@ function Logger:jsonify_info(...)
     self:json_info(json)
 end
 
-function Logger:json_info(json)
-    -- TODO add a toggle for compact vs pretty print... make the change when you want that in the logs
+function Logger:json_info(json, pretty)
     -- TODO add other formats using bat or w/e else
 
     -- local command = { "bat", "--style=plain", "--color", "always", "-l", "json" }
-    local command = { "jq", ".", "--compact-output", "--color-output" }
+    local command = { "jq", ".", "--color-output" }
+    pretty = pretty or false
+    if not pretty then
+        table.insert(command, "--compact-output")
+    end
 
     local job_id = vim.fn.jobstart(command, {
         stdout_buffered = true,

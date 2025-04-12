@@ -37,7 +37,7 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
 
     body.stream = true
     local json = vim.fn.json_encode(body)
-    log:json_info(json)
+    log:json_info(json, true)
 
     -- TODO look for "curl" and "--no-buffer" to find all spots to merge together into this final backend
     local options = {
