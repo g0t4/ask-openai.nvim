@@ -27,13 +27,7 @@ function M.terminate(request)
 end
 
 local function log_json(msg)
-    local tmpfile = os.tmpname() .. ".log"
-    local f = io.open(tmpfile, "w")
-    f:write(msg .. "\n")
-    f:close()
-
-    vim.fn.jobstart({ "bat", "--style=plain", "--color", "always", "-l", "json", tmpfile }, {
-
+    local job_id = vim.fn.jobstart({ "bat", "--style=plain", "--color", "always", "-l", "json" }, {
         stdout_buffered = true,
         on_stderr = function(_, data)
             if data then
@@ -50,9 +44,10 @@ local function log_json(msg)
             end
         end,
         on_exit = function()
-            os.remove(tmpfile)
         end
     })
+    vim.fn.chansend(job_id, msg .. "\n")
+    vim.fn.chanclose(job_id, "stdin")
 end
 
 function M.reusable_curl_seam(body, url, frontend, choice_text)
