@@ -1,8 +1,10 @@
 
 
-## qwen2.5-coder + ollama -- tool use!
+## qwen2.5-coder + ollama -- tool use - /v1/chat/completions
 
 TODO can I bait qwen into a parallel tool request?
+   ollama has tool_call(s) from model... does qwen support parallel tool requests?
+
 
 BTW there were no previous SSEs before these two:
 
