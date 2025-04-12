@@ -7,7 +7,7 @@ local agentica = require("ask-openai.backends.models.agentica")
 
 local M = {}
 
-function M.send_question(user_prompt, code, file_name)
+function M.send_question(user_prompt, code, file_name, use_tools)
     M.abort_last_request()
 
     local system_prompt = "Your name is Ben Dover, you are a neovim AI plugin that answers questions."
@@ -54,12 +54,27 @@ function M.send_question(user_prompt, code, file_name)
     local base_url = "http://ollama:11434"
     -- local base_url = "http://build21:8000"
 
-    body.tools = mcp.openai_tools()
+    if use_tools then
+        -- TODO check if vllm has streaming + tools support
+        -- TODO during follow up I need to be able to change the toggle too
+
+        -- FYI right now ollama doesn't support stream+tools for /v1/chat/completions
+        --   if tools set, model responds with one/few chunks after full response is ready
+        --   fix might be in the works: https://github.com/ollama/ollama/issues/8887#issuecomment-2640721896
+        --
+        --   FTR... if tools are requested, it's usually fast (one or two small chunks).. so I don't care if that is not streaming
+        --      I get to show the tool_calls to the user and then they'll know (that is very stream like)
+        --   issue is... I want any non-tool use (i.e. explanations) to be streaming
+        --
+        body.tools = mcp.openai_tools()
+    end
 
     M.last_request = backend.curl_for(body, base_url, M)
 end
 
-local function ask_question_about(opts)
+local function ask_question_about(opts, use_tools)
+    use_tools = use_tools or false
+
     local selection = buffers.get_visual_selection()
     if selection:is_empty() then
         error("No visual selection found.")
@@ -70,14 +85,25 @@ local function ask_question_about(opts)
     local file_name = vim.fn.expand("%:t")
 
     M.open_response_window()
-    M.send_question(user_prompt, selection.original_text, file_name)
+    M.send_question(user_prompt, selection.original_text, file_name, use_tools)
 end
 
-local function ask_question(opts)
+local function ask_question(opts, use_tools)
+    use_tools = use_tools or false
+
     local user_prompt = opts.args
     M.open_response_window()
-    M.send_question(user_prompt)
+    M.send_question(user_prompt, nil, nil, use_tools)
 end
+
+local function ask_tool_use(opts)
+    ask_question(opts, true)
+end
+
+local function ask_tool_use_about(opts)
+    ask_question_about(opts, true)
+end
+
 
 function M.abort_and_close()
     M.abort_last_request()
@@ -177,12 +203,22 @@ function M.abort_last_request()
 end
 
 function M.setup()
+    -- explicitly ask to use tools (vs not)... long term I hope to remove this need
+    --    but, using smaller models its probably wise to control when they are allowed to use tools
+    --    will also speed up responses to not send tools list
+    --    also need this b/c right now ollama doesn't stream chunks when tools are passed
+    vim.api.nvim_create_user_command("AskToolUse", ask_tool_use, { range = true, nargs = 1 })
+    vim.api.nvim_create_user_command("AskToolUseAbout", ask_tool_use_about, { range = true, nargs = 1 })
+    vim.api.nvim_set_keymap('n', '<Leader>at', ':<C-u>AskToolUse ', { noremap = true })
+    vim.api.nvim_set_keymap('v', '<Leader>at', ':<C-u>AskToolUseAbout ', { noremap = true })
+
     -- once again, pass question in command line for now... b/c then I can use cmd history to ask again or modify question easily
     --  if I move to a float window, I'll want to add history there then which I can handle later when this falls apart
     vim.api.nvim_create_user_command("AskQuestion", ask_question, { range = true, nargs = 1 })
     vim.api.nvim_create_user_command("AskQuestionAbout", ask_question_about, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('v', '<Leader>aq', ':<C-u>AskQuestionAbout ', { noremap = true })
     vim.api.nvim_set_keymap('n', '<Leader>aq', ':AskQuestion ', { noremap = true })
+
     vim.keymap.set('n', '<leader>ao', M.open_response_window, { noremap = true })
     vim.keymap.set('n', '<leader>aa', M.abort_last_request, { noremap = true })
 end
