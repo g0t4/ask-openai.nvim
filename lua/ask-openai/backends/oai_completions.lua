@@ -29,11 +29,13 @@ local M = {}
 _G.PLAIN_FIND = true
 function M.curl_for(body, base_url, frontend)
     local url = base_url .. "/v1/completions"
-    return curl.reusable_curl_seam(body, url, frontend, M.parse_choice, M)
-end
 
-function M.supports_toolcalls()
-    return false
+    if body.tools ~= nil then
+        error("tool use was requested, but this backend " .. url .. " does not support tools")
+        return
+    end
+
+    return curl.reusable_curl_seam(body, url, frontend, M.parse_choice, M)
 end
 
 M.terminate = curl.terminate

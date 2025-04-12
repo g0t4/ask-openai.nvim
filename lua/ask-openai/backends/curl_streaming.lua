@@ -30,14 +30,6 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
         body = body
     }
 
-    if body.tools ~= nil and not backend.supports_toolcalls() then
-        -- to use tools, you need:
-        --   backend support
-        --   frontend request w/ tools listed
-        error("too use was requested, but the backend " .. url .. " does not support tools")
-        return
-    end
-
     body.stream = true
     local json = vim.fn.json_encode(body)
     log:json_info(json)

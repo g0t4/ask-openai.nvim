@@ -40,10 +40,6 @@ function M.curl_for(body, base_url, frontend)
     return curl.reusable_curl_seam(body, url, frontend, M.parse_choice, M)
 end
 
-function M.supports_toolcalls()
-    return true
-end
-
 M.terminate = curl.terminate
 
 -- *** output shape
