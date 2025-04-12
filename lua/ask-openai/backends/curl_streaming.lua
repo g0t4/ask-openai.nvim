@@ -61,6 +61,9 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
     local stderr = uv.new_pipe(false)
 
     options.on_exit = function(code, signal)
+        log:trace_on_exit(code, signal)
+        -- log:trace_on_exit_errors(code, signal) -- less verbose
+
         if code ~= nil and code ~= 0 then
             log:error("spawn - non-zero exit code: '" .. code .. "' Signal: '" .. signal .. "'")
 

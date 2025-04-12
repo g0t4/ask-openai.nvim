@@ -89,9 +89,7 @@ end
 --     so have the on exit handler in backend check request status before reporting back!
 --
 --  TODO should I print std_err messages? along the way? thats only way to show the message to the user
---
 --  TODO should I detect some failures like Failed to connect in on_stderr? and print/pass the message back in that case?
---
 --  TODO synchronize frontend API with rewrite too
 --
 -- i.e.

@@ -167,6 +167,33 @@ function Logger:log(level, ...)
     self.file:flush() -- 0.69ms (max in my tests) => down to 0.02ms (most of time)
 end
 
+-- for troubleshooting, do not use/modify this for selective logging
+-- intended so I don't replicate this code every time I have a uv.spwan on_exit handler
+function Logger:trace_on_exit(code, signal)
+    self:trace("on_exit code:" .. (code or "nil") .. ", signal:" .. (signal or "nil"))
+end
+
+-- trace on errors and unexpected conditions only, use this when not troubleshooting
+-- intended so I don't replicate this code every time I have a uv.spwan on_exit handler
+function Logger:trace_on_exit_errors(code, signal)
+    -- FYI on_exit wasn't called when I used handle:kill("sigterm")
+
+    if code ~= nil and code == 0 then
+        -- code == 0, signal == 0 => normal exit
+        if signal ~= nil and signal ~= 0 then
+            -- for now lets see if this ever happens and if I notice it and need to address it
+            self:trace("on_exit: unexpected code is 0, signal is non-zero: '" .. signal .. "'")
+        end
+        return
+    end
+    -- for now defer all non-zero exit codes to use verbose trace:
+    self:trace_on_exit(code, signal)
+end
+
+-- verbose, for troubleshooting... ensure always a log entry
+-- intended so I don't replicate this code every time I have a uv.spwan on_stdout/on_stderr handler
+-- also codify the diff between read errors and stderr
+-- read_error s/b super rare AFAICT I have never encountered it (i.e. pipe closed?)
 function Logger:trace_stdio_read(label, read_error, data)
     -- PURPOSE: consolidate logic for consistently dumping err/data for troubleshooting
     -- there should always be one log regardless of what is set/not
@@ -182,6 +209,7 @@ function Logger:trace_stdio_read(label, read_error, data)
     -- ftr... nil prints as "nil"
 end
 
+-- less verbose, use this when not troubleshooting
 function Logger:trace_stdio_read_errors(label, read_error, _data)
     -- FYI read_error is only for the read operation on the pipe, not the underlying process itself
     if read_error ~= nil then
