@@ -51,7 +51,7 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
         },
     }
     -- PRN could use bat -l sh for this one:
-    -- log:warn("curl args: ", table.concat(options.args, " "))
+    log:warn("curl args: ", table.concat(options.args, " "))
 
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)

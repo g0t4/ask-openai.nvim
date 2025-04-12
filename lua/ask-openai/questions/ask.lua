@@ -44,10 +44,10 @@ function M.send_question(user_prompt, code, file_name)
 
     -- /v1/chat/completions
     -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
-    -- local body = qwen_chat_completions
+    local body = qwen_chat_body
 
     -- /v1/completions
-    local body = qwen_legacy_body
+    -- local body = qwen_legacy_body
 
     -- vllm or ollama:
     local base_url = "http://ollama:11434"
