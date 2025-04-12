@@ -86,13 +86,17 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
             -- reminder, rely on trace above
             return
         end
-        vim.schedule(function()
-            local chunk = M.sse_to_chunk(data, choice_text)
-            if chunk then
-                frontend.process_chunk(chunk)
-            end
-            -- TODO tool_calls!
-        end)
+
+        local chunk, finish_reason, tool_calls = M.sse_to_chunk(data, choice_text)
+        if chunk then
+            frontend.process_chunk(chunk)
+        end
+        if tool_calls then
+            frontend.process_tool_calls(tool_calls)
+        end
+        if finish_reason ~= nil and finish_reason ~= vim.NIL then
+            frontend.process_finish_reason(finish_reason)
+        end
     end
     uv.read_start(stdout, options.on_stdout)
 

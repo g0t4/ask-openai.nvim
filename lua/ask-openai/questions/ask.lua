@@ -149,10 +149,26 @@ function M.open_response_window()
 end
 
 function M.process_chunk(text)
-    local count_of_lines = vim.api.nvim_buf_line_count(M.bufnr)
-    local last_line = vim.api.nvim_buf_get_lines(M.bufnr, count_of_lines - 1, count_of_lines, false)[1]
-    local replace_lines = vim.split(last_line .. text, "\n")
-    vim.api.nvim_buf_set_lines(M.bufnr, count_of_lines - 1, count_of_lines, false, replace_lines)
+    vim.schedule(function()
+        local count_of_lines = vim.api.nvim_buf_line_count(M.bufnr)
+        local last_line = vim.api.nvim_buf_get_lines(M.bufnr, count_of_lines - 1, count_of_lines, false)[1]
+        local replace_lines = vim.split(last_line .. text, "\n")
+        vim.api.nvim_buf_set_lines(M.bufnr, count_of_lines - 1, count_of_lines, false, replace_lines)
+    end)
+end
+
+function M.process_tool_calls(tool_calls)
+    -- for now just write tool dcalls to the buffer
+    local tool_calls_str = vim.inspect(tool_calls)
+    -- TODO if I keep this call to process_chunk, lets extract an underlying func for buffer_append or smth so its not confusing as this is not a chunk
+    -- FYI if need to mod UI use vim.schedule (right now process_chunk does that)
+    M.process_chunk(tool_calls_str)
+end
+
+function M.process_finish_reason(finish_reason)
+    -- TODO long term do nothing OR set some visual indicator (i.e. spinner or pending request icon in statusline)
+    -- FYI if need to mod UI use vim.schedule (right now process_chunk does that)
+    M.process_chunk("finish_reason: " .. tostring(finish_reason))
 end
 
 function M.abort_last_request()

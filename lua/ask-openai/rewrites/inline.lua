@@ -105,6 +105,22 @@ function M.process_chunk(chunk)
     end)
 end
 
+function M.process_tool_calls(tool_calls)
+    -- for now just write tool dcalls to the buffer
+    vim.schedule(function()
+        local tool_calls_str = vim.inspect(tool_calls)
+        -- TODO if I keep this call to process_chunk, lets extract an underlying func for buffer_append or smth so its not confusing as this is not a chunk
+        M.process_chunk(tool_calls_str)
+    end)
+end
+
+function M.process_finish_reason(finish_reason)
+    -- TODO long term do nothing OR set some visual indicator (i.e. spinner or pending request icon in statusline)
+    vim.schedule(function()
+        M.process_chunk("finish_reason: " .. finish_reason)
+    end)
+end
+
 function M.accept_rewrite()
     vim.schedule(function()
         local lines = split_text_into_lines(M.accumulated_chunks)
@@ -239,14 +255,12 @@ local function ask_and_stream_from_ollama(opts)
     M.stream_from_ollama(user_prompt, selection.original_text, file_name)
 end
 
-function M.request_failed()
+function M.request_failed(code)
     -- FYI test by point at wrong server/port
-    --
     -- this is for AFTER the request completes and curl exits
     vim.schedule(function()
-        -- or in this case should I show a notification?
-        -- lets see how often and if its annoying written as code to the buffer
-        M.process_chunk("\nerror: request failed")
+        -- for now just write into buffer is fine
+        M.process_chunk("\nerror: request failed with code: " .. code)
     end)
 end
 
