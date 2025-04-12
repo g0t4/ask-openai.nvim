@@ -159,4 +159,34 @@ M.setup = function()
     end, { nargs = 0 })
 end
 
+function M.openai_tools()
+    local tools = {}
+    for _, mcp_tool in pairs(M.tools_available) do
+        table.insert(tools, openai_tool(mcp_tool))
+    end
+    return tools
+end
+
+function openai_tool(mcp_tool)
+    -- effectively a deep clone
+    params = {}
+    params.required = mcp_tool.inputSchema.required
+    params.type = mcp_tool.inputSchema.type
+    params.properties = {}
+    for k, v in pairs(mcp_tool.inputSchema.properties) do
+        params.properties[k] = {}
+        for k2, v2 in pairs(v) do
+            params.properties[k][k2] = v2
+        end
+        params.properties[k] = v
+    end
+
+    return {
+        name = mcp_tool.name,
+        -- FYI mcp-server-commands doesn't currently set a desc (won't see that in testing)
+        description = mcp_tool.description,
+        parameters = params,
+    }
+end
+
 return M
