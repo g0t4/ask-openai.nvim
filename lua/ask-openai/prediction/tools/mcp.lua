@@ -183,8 +183,6 @@ function openai_tool(mcp_tool)
         params.properties[k] = v
     end
 
-    -- yay qwen responded:
-    -- [3.977]sec [TRACE] on_stdout chunk:  data: {"id":"chatcmpl-184","object":"chat.completion.chunk","created":1744438704,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"tool_calls"}]}
     return {
         type = "function",
         ["function"] = {

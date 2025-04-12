@@ -145,8 +145,12 @@ function M.sse_to_chunk(data, choice_text)
             finish_reason = first_choice.finish_reason
             if finish_reason ~= nil and finish_reason ~= vim.NIL then
                 done = true
+                if finish_reason == "tool_call" then
+                    -- yay qwen responded:3
+                    -- [3.977]sec [TRACE] on_stdout chunk:  data: {"id":"chatcmpl-184","object":"chat.completion.chunk", "created":1744438704,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama", "choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"tool_calls"}]}
+                end
                 if finish_reason ~= "stop" and finish_reason ~= "length" then
-                    log:warn("[WARN] unexpected finish_reason: '", finish_reason, "'")
+                    log:warn("[WARN] unexpected finish_reason: '" .. finish_reason .. "'")
                 end
             end
             chunk = (chunk or "") .. choice_text(first_choice)
