@@ -152,7 +152,9 @@ function M.sse_to_chunk(data, choice_text)
                     log:warn("[WARN] unexpected finish_reason: '" .. finish_reason .. "'")
                 end
             end
-            chunk = (chunk or "") .. choice_text(first_choice)
+            local new_chunk
+            new_chunk, tool_calls = choice_text(first_choice)
+            chunk = (chunk or "") .. new_chunk
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end

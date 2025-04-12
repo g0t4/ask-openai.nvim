@@ -96,12 +96,13 @@ M.terminate = curl.terminate
 -- {"id":"chatcmpl-209","object":"chat.completion.chunk","created":1743021818,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop"}]}
 
 -- * differs vs /v1/completions endpoint
+-- TODO rename to parse_choice?
 function M.choice_text(choice)
-    if choice.delta == nil or choice.delta.content == nil then
-        log:warn("WARN - unexpected, no delta.content in completion choice, do you need to add special logic to handle this?")
+    if choice.delta == nil then
+        log:warn("WARN - unexpected, no delta in completion choice, what gives?!")
         return ""
     end
-    return choice.delta.content
+    return choice.delta.content, choice.delta.tool_calls
 end
 
 return M
