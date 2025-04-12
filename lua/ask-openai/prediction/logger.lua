@@ -167,4 +167,27 @@ function Logger:log(level, ...)
     self.file:flush() -- 0.69ms (max in my tests) => down to 0.02ms (most of time)
 end
 
+function Logger:trace_stdio_read(label, read_error, data)
+    -- PURPOSE: consolidate logic for consistently dumping err/data for troubleshooting
+    -- there should always be one log regardless of what is set/not
+
+    -- FYI read_error is only for the read operation on the pipe, not the underlying process itself
+    if read_error ~= nil then
+        -- do not bother with err if its nil, don't need to mention that
+        -- ?? dump colorful stack trace
+        self:trace(label .. " read_error:", read_error)
+    end
+    if data == "" then data = "<empty>" end
+    self:trace(label .. " data:", data)
+    -- ftr... nil prints as "nil"
+end
+
+function Logger:trace_stdio_read_errors(label, read_error, _data)
+    -- FYI read_error is only for the read operation on the pipe, not the underlying process itself
+    if read_error ~= nil then
+        -- ?? dump colorful stack trace
+        self:trace(label .. " read_error:", read_error)
+    end
+end
+
 return Logger

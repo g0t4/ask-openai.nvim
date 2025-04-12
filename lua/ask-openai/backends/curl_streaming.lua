@@ -77,41 +77,37 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
         stdio = { nil, stdout, stderr },
     }, options.on_exit)
 
-    options.on_stdout = function(err, data)
-        log:trace("on_stdout chunk: ", data)
-        if err then
-            log:warn("on_stdout error: ", err)
-            return
-        end
-        if not data then
+    options.on_stdout = function(read_error, data)
+        log:trace_stdio_read("on_stdout", read_error, data)
+        -- log:trace_stdio_read_errors("on_stdout", err, data)
+
+        local no_data = data == nil or data == ""
+        if read_error or no_data then
+            -- reminder, rely on trace above
             return
         end
         vim.schedule(function()
-            local chunk, generation_done, done_reason = M.sse_to_chunk(data, choice_text)
+            local chunk = M.sse_to_chunk(data, choice_text)
             if chunk then
                 frontend.process_chunk(chunk)
             end
-            -- PRN anything on done?
-            -- if generation_done then
-            --     PRN add for empty response checking like with predictions (need to capture all chunks to determine this and its gonna be basically impossible to have the response be valid and empty, so not a priority)
-            --     this_prediction:mark_generation_finished()
-            -- end
+            -- TODO tool_calls!
         end)
     end
     uv.read_start(stdout, options.on_stdout)
 
-    options.on_stderr = function(err, data)
-        if data ~= nil and data ~= "" then
-            -- legit errors, i.e. from curl, will show as text in data
-            log:warn("on_stderr data: ", data)
-            print("on_stderr data: ", data)
-            frontend.on_stderr_data(data)
+    options.on_stderr = function(read_error, data)
+        log:trace_stdio_read("on_stderr", read_error, data)
+        -- log:trace_stdio_read_errors("on_stderr", err, data)
+
+        local no_data = data == nil or data == ""
+        if read_error or no_data then
+            -- reminder, rely on trace above
+            return
         end
-        if err then
-            log:warn("on_stderr ", err)
-            -- lets print for now too and see how many false positives we get
-            print("on_stderr: ", err)
-        end
+
+        -- keep in mind... curl errors will show as text in STDERR
+        frontend.on_stderr_data(data)
     end
     uv.read_start(stderr, options.on_stderr)
 
