@@ -34,17 +34,19 @@ local function log_json(msg)
     local job_id = vim.fn.jobstart(command, {
         stdout_buffered = true,
         on_stderr = function(_, data)
-            if data then
-                for _, line in ipairs(data) do
-                    log:trace(line)
-                end
+            if not data then
+                return
+            end
+            for _, line in ipairs(data) do
+                log:trace(line)
             end
         end,
         on_stdout = function(_, data)
-            if data then
-                for _, line in ipairs(data) do
-                    log:trace(line)
-                end
+            if not data then
+                return
+            end
+            for _, line in ipairs(data) do
+                log:trace(line)
             end
         end,
         on_exit = function()
