@@ -29,7 +29,11 @@ local M = {}
 _G.PLAIN_FIND = true
 function M.curl_for(body, base_url, frontend)
     local url = base_url .. "/v1/completions"
-    return curl.reusable_curl_seam(body, url, frontend, M.parse_choice)
+    return curl.reusable_curl_seam(body, url, frontend, M.parse_choice, M)
+end
+
+function M.supports_toolcalls()
+    return false
 end
 
 M.terminate = curl.terminate

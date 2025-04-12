@@ -26,14 +26,18 @@ function M.terminate(request)
     -- TODO! see :h uv.spawn() for using uv.shutdown/uv.close? and fallback to kill, or does it matter?
 end
 
-function M.reusable_curl_seam(body, url, frontend, parse_choice)
+function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
     local request = {
         body = body
     }
 
-    -- FYI only valid for /api/chat, /v1/chat/completions (not /v1/completions and /api/generate)
-    -- TODO toggle to control
-    body.tools = mcp.openai_tools()
+    if backend.supports_toolcalls() then
+        -- FYI only valid for /api/chat, /v1/chat/completions (not /v1/completions and /api/generate)
+        -- TODO add some ability to request the tools too, has to have both:
+        --   backend support
+        --   frontend request/approval
+        body.tools = mcp.openai_tools()
+    end
 
     body.stream = true
     local json = vim.fn.json_encode(body)
