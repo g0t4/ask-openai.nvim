@@ -39,7 +39,6 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
     local json = vim.fn.json_encode(body)
     log:json_info(json, true)
 
-    -- TODO look for "curl" and "--no-buffer" to find all spots to merge together into this final backend
     local options = {
         command = "curl",
         args = {
@@ -51,6 +50,7 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
             "-d", json
         },
     }
+    -- PRN could use bat -l sh for this one:
     -- log:warn("curl args: ", table.concat(options.args, " "))
 
     local stdout = uv.new_pipe(false)
