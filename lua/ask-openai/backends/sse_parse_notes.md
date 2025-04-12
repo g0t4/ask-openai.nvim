@@ -19,6 +19,25 @@
   ]
 }
 ```
+
+### qwen made a parallel tool call! first `ls` then `ls -al` almost like I might forget to list all and so he asked for it a second time
+
+models s/b able to cancel tool calls! tool_cancels!
+though this would suggest that the model doesn't finish and remains there waiting and able to say more stuff at any time... which actually can make sense... a low-power mode where the model thinks a bit more about what he asked for and if it was the wrong thing! and so yeah... say NO I meant!
+
+
+```sh
+ls
+# data: {"id":"chatcmpl-18","object":"chat.completion.chunk","created":1744446075,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"","tool_calls":[{"id":"call_wteop8bt","index":0,"type":"function","function":{"name":"run_command","arguments":"{\"command\":\"ls\"}"}}]},"finish_reason":null}]}
+
+ls -l
+# data: {"id":"chatcmpl-18","object":"chat.completion.chunk","created":1744446075,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"","tool_calls":[{"id":"call_rk2xye1l","index":1,"type":"function","function":{"name":"run_command","arguments":"{\"command\":\"ls -l\"}"}}]},"finish_reason":null}]}
+
+# done, waiting on tool_calls
+# data: {"id":"chatcmpl-18","object":"chat.completion.chunk","created":1744446075,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"tool_calls"}]}
+```
+
+
 ## qwen2.5-coder + ollama -- tool use - /v1/chat/completions streaming
 
 TODO can I bait qwen into a parallel tool request?
