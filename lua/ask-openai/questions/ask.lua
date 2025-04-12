@@ -7,6 +7,8 @@ local agentica = require("ask-openai.backends.models.agentica")
 local M = {}
 
 function M.send_question(user_prompt, code, file_name)
+    M.abort_last_request()
+
     local system_prompt = "Your name is Ben Dover, you are a neovim AI plugin that answers questions."
         .. " Please respond with markdown formatted text, that will be presented in a floating window."
 

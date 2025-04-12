@@ -163,6 +163,8 @@ function M.cancel_rewrite()
 end
 
 function M.stream_from_ollama(user_prompt, code, file_name)
+    M.abort_last_request()
+
     local system_prompt = "You are a neovim AI plugin that rewrites code. "
         .. "Preserve indentation."
         .. "No explanations, no markdown blocks. No ``` nor ` surrounding your answer. "
