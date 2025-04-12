@@ -119,18 +119,18 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
 end
 
 --- @param data string
---- @return string|nil text, boolean|nil is_done, string|nil finish_reason
+--- @return string|nil text, string|nil finish_reason, table|nil tool_calls
 function M.sse_to_chunk(data, choice_text)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
     local chunk = nil -- combine all chunks into one string and check for done
-    local done = false
     local finish_reason = nil
+    local tool_calls = nil
     for ss_event in data:gmatch("[^\r\n]+") do
         if ss_event:match("^data:%s*%[DONE%]$") then
             -- done, courtesy last event... mostly ignore b/c finish_reason already comes on the prior SSE
-            return chunk, true
+            return chunk, nil, nil
         end
 
         --  strip leading "data: " (if present)
@@ -144,12 +144,11 @@ function M.sse_to_chunk(data, choice_text)
             local first_choice = parsed.choices[1]
             finish_reason = first_choice.finish_reason
             if finish_reason ~= nil and finish_reason ~= vim.NIL then
-                done = true
-                if finish_reason == "tool_call" then
-                    -- yay qwen responded:3
-                    -- [3.977]sec [TRACE] on_stdout chunk:  data: {"id":"chatcmpl-184","object":"chat.completion.chunk", "created":1744438704,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama", "choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"tool_calls"}]}
-                end
-                if finish_reason ~= "stop" and finish_reason ~= "length" then
+                -- FYI merely a warning when new finish_reason is encountered (i.e. today tool_calls)
+                if finish_reason ~= "stop"
+                    and finish_reason ~= "length"
+                    and finish_reason ~= "tool_calls"
+                then
                     log:warn("[WARN] unexpected finish_reason: '" .. finish_reason .. "'")
                 end
             end
@@ -158,7 +157,7 @@ function M.sse_to_chunk(data, choice_text)
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
     end
-    return chunk, done, finish_reason
+    return chunk, finish_reason, tool_calls
 end
 
 -- PRN does vllm have both finish_reason and stop_reason?
