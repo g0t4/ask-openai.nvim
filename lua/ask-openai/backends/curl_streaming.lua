@@ -29,6 +29,7 @@ end
 local function log_json(msg)
     -- local command = { "bat", "--style=plain", "--color", "always", "-l", "json" }
     local command = { "jq", ".", "--compact-output", "--color-output" }
+    -- WHY DIDN'T I TRY THIS SOONER!?
 
     local job_id = vim.fn.jobstart(command, {
         stdout_buffered = true,
