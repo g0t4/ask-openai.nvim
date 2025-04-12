@@ -1,5 +1,4 @@
 local log = require("ask-openai.prediction.logger").predictions()
-local mcp = require("ask-openai.prediction.tools.mcp")
 local uv = vim.uv
 
 local M = {}
@@ -31,12 +30,12 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
         body = body
     }
 
-    if backend.supports_toolcalls() then
-        -- FYI only valid for /api/chat, /v1/chat/completions (not /v1/completions and /api/generate)
-        -- TODO add some ability to request the tools too, has to have both:
+    if body.tools ~= nil and not backend.supports_toolcalls() then
+        -- to use tools, you need:
         --   backend support
-        --   frontend request/approval
-        body.tools = mcp.openai_tools()
+        --   frontend request w/ tools listed
+        error("too use was requested, but the backend " .. url .. " does not support tools")
+        return
     end
 
     body.stream = true

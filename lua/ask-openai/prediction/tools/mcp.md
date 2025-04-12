@@ -1,6 +1,19 @@
 
 
- NOTES
+## backend support for tools:
+
+YES:
+- /v1/chat/completions (openai compat)
+   - validated ollama, vllm support tools with this endpoint too
+   - important to check, b/c some "openai compatible" backends may not support all openai compat params
+- /api/chat (ollama)
+
+NO:
+- /v1/completions (openai - not in API spec)
+- /api/generate (ollama)
+
+
+## NOTES:
 
  MCP docs:
    spec: https://modelcontextprotocol.io/specification/2025-03-26

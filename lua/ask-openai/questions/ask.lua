@@ -1,5 +1,6 @@
 local buffers = require("ask-openai.helpers.buffers")
 local log = require("ask-openai.prediction.logger").predictions()
+local mcp = require("ask-openai.prediction.tools.mcp")
 local backend = require("ask-openai.backends.oai_chat")
 -- local backend = require("ask-openai.backends.oai_completions")
 local agentica = require("ask-openai.backends.models.agentica")
@@ -52,6 +53,8 @@ function M.send_question(user_prompt, code, file_name)
     -- vllm or ollama:
     local base_url = "http://ollama:11434"
     -- local base_url = "http://build21:8000"
+
+    body.tools = mcp.openai_tools()
 
     M.last_request = backend.curl_for(body, base_url, M)
 end
