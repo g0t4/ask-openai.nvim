@@ -1,6 +1,25 @@
+## qwen2.5-coder + ollama -- completion chunk - /v1/chat/completions streaming
 
-
-## qwen2.5-coder + ollama -- tool use - /v1/chat/completions
+```json
+{
+  "id": "chatcmpl-768",
+  "object": "chat.completion.chunk",
+  "created": 1744445346,
+  "model": "qwen2.5-coder:7b-instruct-q8_0",
+  "system_fingerprint": "fp_ollama",
+  "choices": [
+    {
+      "index": 0,
+      "delta": {
+        "role": "assistant",
+        "content": "My name is Ben Dover. How can I help you today?"
+      },
+      "finish_reason": "stop"
+    }
+  ]
+}
+```
+## qwen2.5-coder + ollama -- tool use - /v1/chat/completions streaming
 
 TODO can I bait qwen into a parallel tool request?
    ollama has tool_call(s) from model... does qwen support parallel tool requests?
