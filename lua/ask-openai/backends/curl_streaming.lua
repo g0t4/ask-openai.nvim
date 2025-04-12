@@ -60,6 +60,7 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
         body = body
     }
 
+    -- FYI only valid for /api/chat, /v1/chat/completions (not /v1/completions and /api/generate)
     -- TODO toggle to control
     body.tools = mcp.openai_tools()
 
