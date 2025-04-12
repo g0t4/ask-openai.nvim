@@ -37,7 +37,7 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
 
     body.stream = true
     local json = vim.fn.json_encode(body)
-    log:json_info(json, true)
+    log:json_info(json)
 
     local options = {
         command = "curl",
