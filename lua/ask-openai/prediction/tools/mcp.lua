@@ -131,7 +131,7 @@ end
 M.running_servers = {}
 
 for name, server in pairs(servers) do
-    print("starting mcp server " .. name)
+    -- print("starting mcp server " .. name)
     local mcp = start_mcp_server(name, function(msg)
         if msg.id then
             local callback = M.callbacks[msg.id]
@@ -145,7 +145,7 @@ for name, server in pairs(servers) do
     mcp.tools_list(function(msg)
         -- print("tools/list:", vim.inspect(msg))
         for _, tool in ipairs(msg.result.tools) do
-            print("found " .. tool.name)
+            -- print("found " .. tool.name)
             M.tools_available[tool.name] = tool
         end
     end)
@@ -168,6 +168,8 @@ function M.openai_tools()
 end
 
 function openai_tool(mcp_tool)
+    -- OpenAI docs for tools: https://platform.openai.com/docs/api-reference/chat/create#chat-create-tools
+
     -- effectively a deep clone
     params = {}
     params.required = mcp_tool.inputSchema.required
@@ -181,11 +183,17 @@ function openai_tool(mcp_tool)
         params.properties[k] = v
     end
 
+    -- yay qwen responded:
+    -- [3.977]sec [TRACE] on_stdout chunk:  data: {"id":"chatcmpl-184","object":"chat.completion.chunk","created":1744438704,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"tool_calls"}]}
     return {
-        name = mcp_tool.name,
-        -- FYI mcp-server-commands doesn't currently set a desc (won't see that in testing)
-        description = mcp_tool.description,
-        parameters = params,
+        type = "function",
+        ["function"] = {
+            name = mcp_tool.name,
+            -- FYI mcp-server-commands doesn't currently set a desc (won't see that in testing)
+            description = mcp_tool.description,
+            parameters = params,
+            -- strict = false -- default is false... should I set true?
+        }
     }
 end
 

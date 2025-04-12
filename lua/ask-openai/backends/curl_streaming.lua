@@ -83,19 +83,20 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
             log:warn("on_stdout error: ", err)
             return
         end
-        if data then
-            vim.schedule(function()
-                local chunk, generation_done, done_reason = M.sse_to_chunk(data, choice_text)
-                if chunk then
-                    frontend.process_chunk(chunk)
-                end
-                -- PRN anything on done?
-                -- if generation_done then
-                --     PRN add for empty response checking like with predictions (need to capture all chunks to determine this and its gonna be basically impossible to have the response be valid and empty, so not a priority)
-                --     this_prediction:mark_generation_finished()
-                -- end
-            end)
+        if not data then
+            return
         end
+        vim.schedule(function()
+            local chunk, generation_done, done_reason = M.sse_to_chunk(data, choice_text)
+            if chunk then
+                frontend.process_chunk(chunk)
+            end
+            -- PRN anything on done?
+            -- if generation_done then
+            --     PRN add for empty response checking like with predictions (need to capture all chunks to determine this and its gonna be basically impossible to have the response be valid and empty, so not a priority)
+            --     this_prediction:mark_generation_finished()
+            -- end
+        end)
     end
     uv.read_start(stdout, options.on_stdout)
 
