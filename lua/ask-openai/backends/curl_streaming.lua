@@ -26,7 +26,7 @@ function M.terminate(request)
     -- TODO! see :h uv.spawn() for using uv.shutdown/uv.close? and fallback to kill, or does it matter?
 end
 
-local function logb(msg)
+local function log_json(msg)
     local tmpfile = os.tmpname() .. ".log"
     local f = io.open(tmpfile, "w")
     f:write(msg .. "\n")
@@ -66,7 +66,7 @@ function M.reusable_curl_seam(body, url, frontend, choice_text)
 
     body.stream = true
     local json = vim.fn.json_encode(body)
-    logb(json)
+    log_json(json)
 
     -- TODO look for "curl" and "--no-buffer" to find all spots to merge together into this final backend
     local options = {
