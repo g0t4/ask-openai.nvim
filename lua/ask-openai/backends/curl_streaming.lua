@@ -161,6 +161,9 @@ function M.sse_to_chunk(data, parse_choice)
     return chunk, finish_reason, tool_calls
 end
 
+-- OpenAI streaming tool calls:
+--   https://platform.openai.com/docs/guides/function-calling?api-mode=chat#streaming
+
 -- PRN does vllm have both finish_reason and stop_reason?
 --   wait to handle it until actually needed
 --   probably coalesce finish_reason|stop_reason to keep it transparent

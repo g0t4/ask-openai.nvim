@@ -16,7 +16,8 @@ end
 -- ***! use <leader>u to run tests in this file! (habituate that, don't type out the cmd yourself)
 
 describe("tool use SSE parsing in /v1/chat/completions", function()
-    it("parses ollama tool_calls", function()
+    it("parses ollama all-in-one tool_calls", function()
+        -- FYI! ollama might get streaming support at which point this test may become obsolete as it should split up the tool call across chunks (IIAC like vllm, and OpenAI)
         -- *** escape SSE log outputs: \" => \\"    (only backslashes, not " b/c you are putting this inside a ' single quote)
         local data =
         'data: {"id":"chatcmpl-304","object":"chat.completion.chunk","created":1744521962,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"","tool_calls":[{"id":"call_lbcjwr0u","index":0,"type":"function","function":{"name":"run_command","arguments":"{\\"command\\":\\"ls -a\\"}"}}]},"finish_reason":null}]}'
