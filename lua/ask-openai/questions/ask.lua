@@ -58,13 +58,17 @@ function M.send_question(user_prompt, code, file_name, use_tools)
     -- body.model = "" -- dont pass model, use whatever is served
 
     if use_tools then
-        -- TODO impl streaming tool_call chunking with vllm (it works)!
+        -- 2.5-Coder vllm tool use issues, a bunch of people have this problem:
+        --  https://github.com/QwenLM/Qwen2.5-Coder/issues/180#issuecomment-2523247811
+        --  apparently there is a Qwen2 style function calling that may work with Coder variant...
+        --  also Coder github does not mention tool use on top level page whereas the non-Coder variant has several references to it
+        --
         --   https://github.com/vllm-project/vllm/issues/7912#issuecomment-2413840297
         --   TODO find out why Coder variant doesn't produce tool calls in vllm whereas non-coder works... and versus in ollama coder variant produces tool calls just fine (I skimmed prompts and they appear the same)
         --   vllm serve Qwen/Qwen2.5-Coder-7B-Instruct --enable-auto-tool-choice --tool-call-parser hermes     # not ever giving tool calls in vllm only
         --   vllm serve Qwen/Qwen2.5-7B-Instruct --enable-auto-tool-choice --tool-call-parser hermes           # giving tool calls
         --   https://qwen.readthedocs.io/en/latest/framework/function_call.html#id8
-        -- ? parse for json blocks with tool use in them... I actualy wouldn't mind this style b/c its easily understood w/ explanations too... why use that other stupid format with fucking xml <tool_call> nonsense?
+        -- TODO impl streaming tool_call chunking with vllm (it works)!
 
         -- TODO during follow up I need to be able to change the toggle too
 
