@@ -159,13 +159,13 @@ end
 function M.process_tool_calls(tool_calls)
     -- for now just write tool dcalls to the buffer
     local tool_calls_str = vim.inspect(tool_calls)
-    M.last_request.tools = M.last_request.tools or {}
+    M.last_request.tool_calls = M.last_request.tool_calls or {}
 
     -- each time this is called, its a list of tool_call
     -- insert those into overall list (flatten)
     for _, tool_call in ipairs(tool_calls) do
         -- TODO write insertMany
-        table.insert(M.last_request.tools, tool_call)
+        table.insert(M.last_request.tool_calls, tool_call)
     end
 
     M.process_chunk(tool_calls_str)
@@ -177,17 +177,56 @@ function M.process_finish_reason(finish_reason)
 end
 
 function M.call_tools()
-    -- log:trace("tools:", vim.inspect(M.last_request.tools))
-    if M.last_request.tools == {} then
+    log:trace("tools:", vim.inspect(M.last_request.tool_calls))
+    if M.last_request.tool_calls == {} then
         return
     end
-    for _, tool in ipairs(M.last_request.tools) do
-        log:jsonify_info(tool)
-        mcp.send_tool_call(tool, function(mcp_response)
-            tool.response = mcp_response
+    for _, tool_call in ipairs(M.last_request.tool_calls) do
+        log:jsonify_info("tool", tool_call)
+        -- log:trace("tool:", vim.inspect(tool))
+        -- tool:
+        -- {
+        --   ["function"] = {
+        --     arguments = '{"command":"ls"}',
+        --     name = "run_command"
+        --   },
+        --   id = "call_mmftuy7j",
+        --   index = 0,
+        --   type = "function"
+        -- }
+
+        mcp.send_tool_call(tool_call, function(mcp_response)
+            tool_call.response = mcp_response
+            log:jsonify_info("mcp_response", mcp_response)
+            -- log:trace("mcp_response:", vim.inspect(mcp_response))
+            -- mcp_response:
+            --  {
+            --   id = "call_mmftuy7j",
+            --   jsonrpc = "2.0",
+            --   result = {
+            --     toolResult = {
+            --       content = { {
+            --           name = "STDOUT",
+            --           text = "README.md\nflows\nlua\nlua_modules\ntests\ntmp\n",
+            --           type = "text"
+            --         } },
+            --       isError = false
+            --     }
+            --   }
+            -- }
+
             M.process_chunk(vim.inspect(mcp_response))
-            log:jsonify_info(mcp_response)
             -- TODO now these need to be put into the buffer to send back to the LLM! user can approve if needed or it can happen when all tools finish?
+            -- TODO if all tools finished, then send back to LLM
+
+            local tool_message = {
+                role = "tool",
+                content = tool_call.response.result.toolResult,
+                tool_call_id = tool_call.id,
+                name = tool_call["function"].name,
+            }
+            log:trace("tool_message:", vim.inspect(tool_message))
+            log:jsonify_info("tool_message", tool_message)
         end)
     end
 end
