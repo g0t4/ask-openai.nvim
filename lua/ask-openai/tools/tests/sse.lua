@@ -6,8 +6,9 @@ local function should_be_equal(t1, t2)
     assert.are.equal(t1, t2)
 end
 
--- TODO do I like this style of assertions? if so add more
 local function should_be_nil(t)
+    -- FYI you can join with _ instead of dot (.)
+    --   must use this for keywords like nil, function, etc
     assert.is_nil(t)
 end
 
