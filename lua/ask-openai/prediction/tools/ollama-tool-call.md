@@ -52,3 +52,25 @@ curl http://localhost:11434/api/chat -d '{
 "eval_duration": 2005950875
 }
 ```
+
+
+## ok 2.5-coder also has generated some crazy examples of not tool calls but looks close
+makes me wonder if the vllm issue with 2.5-coder is maybe b/c the coder variant is not wise for tool use?
+keep in mind I have that request for markdown at the top of the prompt.. that could cause some issues too...
+
+[4.544]sec [TRACE] on_stdout data: data: {"id":"chatcmpl-783","object":"chat.completion.chunk","created":1744517081,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"```\nxml\n\u003ccommand\u003e\n  \u003crun_command\u003e\n    \u003ccommand\u003els -l\u003c/command\u003e\n  \u003c/run_command\u003e\n\u003c/command\u003e\n```"},"finish_reason":"stop"}]}
+=>
+```xml
+<command>
+  <run_command>
+    <command>ls -l</command>
+  </run_command>
+</command>
+```
+
+[13.184]sec [TRACE] on_stdout data: data: {"id":"chatcmpl-470","object":"chat.completion.chunk","created":1744517090,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"\u003crun_command command=\"ls -l\" /\u003e"},"finish_reason":"stop"}]}
+=>
+<run_command command="ls -l" />
+
+
+
