@@ -1,0 +1,12 @@
+local curls = require("ask-openai.backends.curl_streaming")
+local assert = require("luassert")
+
+describe("tool use SSE parsing", function()
+    it("", function()
+        -- assert.are.equal("foo", response)
+    end)
+    it("", function()
+    end)
+    it("", function()
+    end)
+end)
