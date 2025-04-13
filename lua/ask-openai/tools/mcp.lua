@@ -86,12 +86,14 @@ function start_mcp_server(name, on_message)
     uv.read_start(stderr, on_stderr)
 
     local function send(msg, callback)
-        local this_id = tostring(M.counter) -- rather have them be strings, so we don't have array index issues
-        msg.id = this_id
+        if not msg.id then
+            -- set a unique id if no id is provided
+            msg.id = M.counter
+            M.counter = M.counter + 1
+        end
         msg.jsonrpc = "2.0"
-        M.counter = M.counter + 1
         if callback then
-            M.callbacks[this_id] = callback
+            M.callbacks[msg.id] = callback
         end
         local str = vim.json.encode(msg)
         -- print("MCP send:", str)
@@ -102,8 +104,9 @@ function start_mcp_server(name, on_message)
         send({ method = "tools/list" }, callback)
     end
 
-    local function tools_call(tool_name, args, callback)
+    local function tools_call(id, tool_name, args, callback)
         send({
+            id = id,
             method = "tools/call",
             params = {
                 name = tool_name,
@@ -220,7 +223,7 @@ M.send_tool_call = function(tool_call, callback)
 
     -- PRN timeout mechanism? might be a good spot to wrap an async timer to check back (wait for the need to arise)
 
-    tool.server.tools_call(name, args_decoded, vim.schedule_wrap(callback))
+    tool.server.tools_call(tool_call.id, name, args_decoded, vim.schedule_wrap(callback))
 end
 
 return M
