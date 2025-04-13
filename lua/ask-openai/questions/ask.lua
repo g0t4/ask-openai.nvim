@@ -182,9 +182,12 @@ function M.process_tool_calls(tool_calls)
     local tool_calls_str = vim.inspect(tool_calls)
     M.last_request.tools = M.last_request.tools or {}
 
-    -- for now insert completed tool call...
-    --  later will have to be diff in process_sse b/c it will be partial tool call pieces when streaming works in ollama/vllm
-    table.insert(M.last_request.tools, tool_calls)
+    -- each time this is called, its a list of tool_call
+    -- insert those into overall list (flatten)
+    for _, tool_call in ipairs(tool_calls) do
+        -- TODO write insertMany
+        table.insert(M.last_request.tools, tool_call)
+    end
 
     M.process_chunk(tool_calls_str)
 end
@@ -195,19 +198,21 @@ function M.process_finish_reason(finish_reason)
 end
 
 function M.call_tools()
-    if M.last_request.tools == nil then
+    log:trace("tools:", vim.inspect(M.last_request.tools))
+    if M.last_request.tools == {} then
         return
     end
     for _, tool in ipairs(M.last_request.tools) do
-   -- {
-   --   "function": {
-   --     "name": "run_command",
-   --     "arguments": {
-   --       "command": "df -h"
-   --     }
-   --   }
-   -- }
-   --
+        -- {
+        --   "function": {
+        --     "name": "run_command",
+        --     "arguments": {
+        --       "command": "df -h"
+        --     }
+        --   }
+        -- }
+        --
+        log:trace("tool call:", vim.inspect(tool))
         mcp.tool_call(tool)
     end
 end

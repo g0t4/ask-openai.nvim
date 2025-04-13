@@ -146,6 +146,7 @@ for name, server in pairs(servers) do
         -- print("tools/list:", vim.inspect(msg))
         for _, tool in ipairs(msg.result.tools) do
             -- print("found " .. tool.name)
+            tool.server = mcp
             M.tools_available[tool.name] = tool
         end
     end)
@@ -193,6 +194,19 @@ function openai_tool(mcp_tool)
             -- strict = false -- default is false... should I set true?
         }
     }
+end
+
+M.tool_call = function(tool)
+    local args = tool["function"].arguments
+    local name = tool["function"].name
+    local tool = M.tools_available[name]
+    if tool == nil then
+        print("tool not found: " .. name)
+        return
+    end
+    tool.server.tools_call(name, args, function(msg)
+        print("tool call result:", vim.inspect(msg))
+    end)
 end
 
 return M
