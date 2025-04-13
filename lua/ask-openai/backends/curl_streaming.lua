@@ -35,13 +35,13 @@ M.on_chunk = function(data, parse_choice, frontend, request)
         frontend.process_chunk(chunk)
     end
     if tool_calls_s then
-        -- TODO implement w/ prepared test...
-        -- IIAC I can still emit the tool call was seen...
-        -- and/or...
-        -- I probably want to sum up tool calls (current aggregated state here
-        --   think event oriented architectures - CQRS style!
-        -- TODO? helper.add_partial_tool_calls(request, tool_calls)
-        frontend.process_tool_calls(tool_calls_s)
+        local flattened_calls = {}
+        for _, tool_calls in ipairs(tool_calls_s) do
+            for _, tool_call in ipairs(tool_calls) do
+                flattened_calls[#flattened_calls + 1] = tool_call
+            end
+        end
+        frontend.process_tool_calls(flattened_calls)
     end
     if finish_reason ~= nil and finish_reason ~= vim.NIL then
         -- TODO? pass combined chunk and tool_calls here?
