@@ -198,17 +198,6 @@ function openai_tool(mcp_tool)
 end
 
 M.send_tool_call = function(tool_call)
-    local args = tool_call["function"].arguments
-    local args_decoded = vim.json.decode(args)
-    log:trace("args_decoded: " .. vim.inspect(args_decoded))
-
-    local name = tool_call["function"].name
-    local tool = M.tools_available[name]
-    if tool == nil then
-        log:trace("tool not found: " .. name)
-        return
-    end
-
     -- tool call: {
     --   ["function"] = {
     --     arguments = '{"command":"ls -la","cwd":""}',
@@ -218,14 +207,16 @@ M.send_tool_call = function(tool_call)
     --   index = 0,
     --   type = "function"
     -- }
-    -- tool call result: {
-    --   error = {
-    --     code = -32603,
-    --     message = '[\n  {\n    "code": "invalid_type",\n    "expected": "object",\n    "received": "string",\n    "path": [\n      "params",\n      "arguments"\n    ],\n    "message": "Expected object, received string"\n  }\n]'
-    --   },
-    --   id = "2",
-    --   jsonrpc = "2.0"
-    -- }
+
+    local args = tool_call["function"].arguments
+    local args_decoded = vim.json.decode(args)
+    -- log:trace("args_decoded: " .. vim.inspect(args_decoded))
+    local name = tool_call["function"].name
+    local tool = M.tools_available[name]
+    if tool == nil then
+        log:trace("tool not found: " .. name)
+        return
+    end
 
     tool.server.tools_call(name, args_decoded, function(msg)
         log:trace("tool call result:", vim.inspect(msg))
