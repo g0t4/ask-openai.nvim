@@ -51,7 +51,7 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         'data: {"id":"chatcmpl-304","object":"chat.completion.chunk","created":1744521962,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"tool_calls"}]}'
         local _, finish_reason, tool_calls = curls.sse_to_chunk(data, oai_chat.parse_choice)
         should_be_equal(finish_reason, "tool_calls")
-        should_be_nil(finish_reason)
+        should_be_nil(tool_calls)
     end)
 
     -- it("", function()
