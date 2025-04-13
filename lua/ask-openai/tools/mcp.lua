@@ -1,3 +1,4 @@
+local log = require("ask-openai.prediction.logger").predictions()
 local uv = vim.loop
 
 local M = {}
@@ -201,11 +202,11 @@ M.send_tool_call = function(tool_call)
     local name = tool_call["function"].name
     local tool = M.tools_available[name]
     if tool == nil then
-        print("tool not found: " .. name)
+        log:trace("tool not found: " .. name)
         return
     end
     tool.server.tools_call(name, args, function(msg)
-        print("tool call result:", vim.inspect(msg))
+        log:trace("tool call result:", vim.inspect(msg))
     end)
 end
 
