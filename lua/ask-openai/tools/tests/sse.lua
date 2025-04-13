@@ -55,6 +55,29 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         should_be_nil(tool_calls)
     end)
 
+    local FakeFrontend = {}
+    function FakeFrontend:new()
+        -- create a table and attach methods
+        local f = setmetatable({}, { __index = self })
+
+        f.process_chunk_calls = {}
+        f.process_tool_calls_calls = {}
+        f.process_finish_reason_calls = {}
+        return f
+    end
+
+    function FakeFrontend:process_chunk(chunk)
+        table.insert(self.process_chunk_calls, chunk)
+    end
+
+    function FakeFrontend:process_tool_calls(tool_calls)
+        table.insert(self.process_tool_calls_calls, tool_calls)
+    end
+
+    function FakeFrontend:process_finish_reason(reason)
+        table.insert(self.process_finish_reason_calls, reason)
+    end
+
     describe("streaming tool call SSEs", function()
         it("vllm capture", function()
             -- example from: https://platform.openai.com/docs/guides/function-calling?api-mode=chat#streaming
@@ -68,31 +91,25 @@ data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completio
 data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"content":""},"logprobs":null,"finish_reason":"tool_calls","stop_reason":null}]}
 data: [DONE]
             ]]
-            -- btw I might want a lower level seam if I want to directly test combining tool_calls across SSEs... if too complicated at higher level here
-            local FakeFrontend = {}
-            function FakeFrontend:new()
-                -- generate a new table and attach fake_frontend methods
-                local f = setmetatable({}, { __index = self })
-                f.process_chunk_calls = {}
-                f.process_tool_calls_calls = {}
-                f.process_finish_reason_calls = {}
-                return f
+            local FakeFrontend = FakeFrontend:new()
+            local request = {}
+            for _, event in ipairs(vim.split(events, "\n")) do
+                if not event == "" then
+                    local data = vim.fn.json_decode(event)
+                    -- btw I might want a lower level seam if I want to directly test combining tool_calls across SSEs... if too complicated at higher level here
+                    curls.on_chunk(data, oai_chat.parse_choice, FakeFrontend, request)
+                end
             end
 
-            function FakeFrontend:process_chunk(chunk)
-                table.insert(self.process_chunk_calls, chunk)
-            end
 
-            function FakeFrontend:process_tool_calls(tool_calls)
-                table.insert(self.process_tool_calls_calls, tool_calls)
-            end
-
-            function FakeFrontend:process_finish_reason(reason)
-                table.insert(self.process_finish_reason_calls, reason)
-            end
-
-            -- TODO make reusable
+            -- TODO validate all of these at least once
+            -- index, id, type, function
+            -- id, function.name, type - only set on first tool_call for a given index
+            -- index set on all
+            -- function.arguments is aggregated across all deltas, just like content, into one string (serialized json for args)
         end)
+        -- TODO capture and test a double tool_call
+        --  IIAC index will be 0 and 1?
 
         -- it("full tool_call parses", function()
         --     -- example from: https://platform.openai.com/docs/guides/function-calling?api-mode=chat#streaming
