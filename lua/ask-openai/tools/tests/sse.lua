@@ -118,6 +118,10 @@ data: [DONE]
             should_be_equal(#frontend.process_tool_calls_calls[6], 0)
             should_be_equal(#frontend.process_tool_calls_calls[7], 0)
 
+            -- *** first tool_calls has:
+            --    id, function.name, type - only set on first tool_call for a given index
+            --    index - all tool_calls have this
+            --
             -- [{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,
             --     "function":{"name":"run_command"}}]
             second = frontend.process_tool_calls_calls[2]
@@ -131,6 +135,7 @@ data: [DONE]
             func = second_only_tool_call["function"]
             should_be_equal("run_command", func.name)
 
+            -- *** 2nd + tool_calls have index and function.arguments (deltas)
             -- [{"index":0,"function":{"arguments":"{\"command\": \""}}]
             third = frontend.process_tool_calls_calls[3]
             third_tool = third[1]
@@ -158,12 +163,11 @@ data: [DONE]
             func_args = fifth_only_tool_call["function"]["arguments"]
             should_be_equal("\"}", func_args)
 
-
-            -- TODO validate all of these at least once
-            -- index, id, type, function
-            -- id, function.name, type - only set on first tool_call for a given index
-            -- index set on all
+            -- TODO test aggregated function.arguments
             -- function.arguments is aggregated across all deltas, just like content, into one string (serialized json for args)
+
+            -- is it possible for other fields like function.name to be split up too (deltas)?
+            --    I do not believe this is possible but it could fit the mold of function.arguments
         end)
         -- TODO capture and test a double tool_call
         --  IIAC index will be 0 and 1?
