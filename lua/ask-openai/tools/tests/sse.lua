@@ -55,6 +55,30 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         should_be_nil(tool_calls)
     end)
 
-    -- it("", function()
-    -- end)
+    describe("streaming tool call SSEs", function()
+        it("vllm capture", function()
+            -- example from: https://platform.openai.com/docs/guides/function-calling?api-mode=chat#streaming
+            -- indent doesn't matter for json parsing
+            local events = [[
+
+            ]]
+        end)
+        -- it("full tool_call parses", function()
+        --     -- example from: https://platform.openai.com/docs/guides/function-calling?api-mode=chat#streaming
+        --     -- indent doesn't matter for json parsing
+        --     -- local events = [[
+        --     --     [{"index": 0, "id": "call_DdmO9pD3xa9XTPNJ32zg2hcA", "function": {"arguments": "", "name": "get_weather"}, "type": "function"}]
+        --     --     [{"index": 0, "id": null, "function": {"arguments": "{\"", "name": null}, "type": null}]
+        --     --     [{"index": 0, "id": null, "function": {"arguments": "location", "name": null}, "type": null}]
+        --     --     [{"index": 0, "id": null, "function": {"arguments": "\":\"", "name": null}, "type": null}]
+        --     --     [{"index": 0, "id": null, "function": {"arguments": "Paris", "name": null}, "type": null}]
+        --     --     [{"index": 0, "id": null, "function": {"arguments": ",", "name": null}, "type": null}]
+        --     --     [{"index": 0, "id": null, "function": {"arguments": " France", "name": null}, "type": null}]
+        --     --     [{"index": 0, "id": null, "function": {"arguments": "\"}", "name": null}, "type": null}]
+        --     --     null
+        --     -- ]]
+        --     -- ok I think the last null means the last SSE has `tool_calls: null`
+        --     -- actually lets wait to get a real sample... the above is NOT the full SSE... darnit
+        -- end)
+    end)
 end)
