@@ -213,8 +213,8 @@ function M.call_tools()
         -- }
         --
         log:trace("tool call:", vim.inspect(tool))
-        mcp.send_tool_call(tool, function(msg)
-            log:trace("tool call result:", vim.inspect(msg))
+        mcp.send_tool_call(tool, function(mcp_response)
+            log:trace("tool call result:", vim.inspect(mcp_response))
             -- TODO now these need to be put into the buffer to send back to the LLM! user can approve if needed or it can happen when all tools finish?
         end)
     end

@@ -218,6 +218,8 @@ M.send_tool_call = function(tool_call, callback)
         return
     end
 
+    -- PRN timeout mechanism? might be a good spot to wrap an async timer to check back (wait for the need to arise)
+
     tool.server.tools_call(name, args_decoded, callback)
 end
 
