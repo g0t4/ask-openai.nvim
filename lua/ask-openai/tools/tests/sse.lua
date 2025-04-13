@@ -118,7 +118,8 @@ data: [DONE]
             should_be_equal(#frontend.process_tool_calls_calls[6], 0)
             should_be_equal(#frontend.process_tool_calls_calls[7], 0)
 
-            -- [{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,"function":{"name":"run_command"}}]
+            -- [{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,
+            --     "function":{"name":"run_command"}}]
             second = frontend.process_tool_calls_calls[2]
             -- print("second", vim.inspect(second))
             second_tool = second[1] -- only 1
@@ -130,7 +131,32 @@ data: [DONE]
             func = second_only_tool_call["function"]
             should_be_equal("run_command", func.name)
 
+            -- [{"index":0,"function":{"arguments":"{\"command\": \""}}]
+            third = frontend.process_tool_calls_calls[3]
+            third_tool = third[1]
+            should_be_equal(#third_tool, 1)
+            third_only_tool_call = third_tool[1]
+            should_be_equal(0, third_only_tool_call.index)
+            func_args = third_only_tool_call["function"]["arguments"]
+            should_be_equal("{\"command\": \"", func_args)
 
+            -- [{"index":0,"function":{"arguments":"ls"}}]
+            fourth = frontend.process_tool_calls_calls[4]
+            fourth_tool = fourth[1]
+            should_be_equal(#fourth_tool, 1)
+            fourth_only_tool_call = fourth_tool[1]
+            should_be_equal(0, fourth_only_tool_call.index)
+            func_args = fourth_only_tool_call["function"]["arguments"]
+            should_be_equal("ls", func_args)
+
+            -- [{"index":0,"function":{"arguments":"\"}"}}]
+            fifth = frontend.process_tool_calls_calls[5]
+            fifth_tool = fifth[1]
+            should_be_equal(#fifth_tool, 1)
+            fifth_only_tool_call = fifth_tool[1]
+            should_be_equal(0, fifth_only_tool_call.index)
+            func_args = fifth_only_tool_call["function"]["arguments"]
+            should_be_equal("\"}", func_args)
 
 
             -- TODO validate all of these at least once
