@@ -50,16 +50,21 @@ function M.send_question(user_prompt, code, file_name, use_tools)
     -- /v1/completions
     -- local body = qwen_legacy_body
 
-    -- vllm or ollama:
-    -- local base_url = "http://ollama:11434"
-    local base_url = "http://build21:8000"
-    body.model = "" -- dont pass model, use whatever is served
+    -- ollama:
+    local base_url = "http://ollama:11434"
+    --
+    -- vllm:
+    -- local base_url = "http://build21:8000"
+    -- body.model = "" -- dont pass model, use whatever is served
 
     if use_tools then
-        -- TODO check if vllm has streaming + tools support
+        -- TODO impl streaming tool_call chunking with vllm (it works)!
         --   https://github.com/vllm-project/vllm/issues/7912#issuecomment-2413840297
-        --   vllm serve Qwen/Qwen2.5-Coder-7B-Instruct --enable-auto-tool-choice --tool-call-parser hermes
-        --   FYI so far I cannot get it to suggest a tool... todo compare its templated prompt to the ones I use in ollama?
+        --   TODO find out why Coder variant doesn't produce tool calls in vllm whereas non-coder works... and versus in ollama coder variant produces tool calls just fine (I skimmed prompts and they appear the same)
+        --   vllm serve Qwen/Qwen2.5-Coder-7B-Instruct --enable-auto-tool-choice --tool-call-parser hermes     # not ever giving tool calls in vllm only
+        --   vllm serve Qwen/Qwen2.5-7B-Instruct --enable-auto-tool-choice --tool-call-parser hermes           # giving tool calls
+        --   https://qwen.readthedocs.io/en/latest/framework/function_call.html#id8
+
         -- TODO during follow up I need to be able to change the toggle too
 
         -- FYI right now ollama doesn't support stream+tools for /v1/chat/completions
