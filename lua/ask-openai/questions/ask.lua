@@ -170,10 +170,14 @@ end
 
 function M.process_chunk(text)
     vim.schedule(function()
-        local count_of_lines = vim.api.nvim_buf_line_count(M.bufnr)
-        local last_line = vim.api.nvim_buf_get_lines(M.bufnr, count_of_lines - 1, count_of_lines, false)[1]
-        local replace_lines = vim.split(last_line .. text, "\n")
-        vim.api.nvim_buf_set_lines(M.bufnr, count_of_lines - 1, count_of_lines, false, replace_lines)
+        local lines = vim.api.nvim_buf_line_count(M.bufnr)
+        local last_line = vim.api.nvim_buf_get_lines(M.bufnr, lines - 1, lines, false)[1]
+        local replace_lines = vim.split(last_line .. text .. "\n", "\n")
+        vim.api.nvim_buf_set_lines(M.bufnr, lines - 1, lines, false, replace_lines)
+
+        -- move cursor/scroll to end of buffer
+        lines = vim.api.nvim_buf_line_count(M.bufnr)
+        vim.api.nvim_win_set_cursor(0, { lines, 0 })
     end)
 end
 
