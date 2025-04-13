@@ -25,6 +25,26 @@ function M.terminate(request)
     -- TODO! see :h uv.spawn() for using uv.shutdown/uv.close? and fallback to kill, or does it matter?
 end
 
+M.on_chunk = function(data, parse_choice, frontend)
+    local chunk, finish_reason, tool_calls = M.sse_to_chunk(data, parse_choice)
+    if chunk then
+        frontend.process_chunk(chunk)
+    end
+    if tool_calls then
+        -- TODO implement w/ prepared test...
+        -- IIAC I can still emit the tool call was seen...
+        -- and/or...
+        -- I probably want to sum up tool calls (current aggregated state here
+        --   think event oriented architectures - CQRS style!
+        frontend.process_tool_calls(tool_calls)
+    end
+    if finish_reason ~= nil and finish_reason ~= vim.NIL then
+        -- TODO? pass combined chunk and tool_calls here?
+        -- PRN any final processing (i.e. tool fallback)
+        frontend.process_finish_reason(finish_reason)
+    end
+end
+
 function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
     local request = {
         body = body
@@ -85,17 +105,7 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
             return
         end
 
-        local chunk, finish_reason, tool_calls = M.sse_to_chunk(data, parse_choice)
-        if chunk then
-            frontend.process_chunk(chunk)
-        end
-        if tool_calls then
-            frontend.process_tool_calls(tool_calls)
-        end
-        if finish_reason ~= nil and finish_reason ~= vim.NIL then
-            -- PRN any final processing (i.e. tool fallback)
-            frontend.process_finish_reason(finish_reason)
-        end
+        M.on_chunk(data, parse_choice, frontend)
     end
     uv.read_start(stdout, options.on_stdout)
 
