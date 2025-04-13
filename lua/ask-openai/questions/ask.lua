@@ -51,11 +51,15 @@ function M.send_question(user_prompt, code, file_name, use_tools)
     -- local body = qwen_legacy_body
 
     -- vllm or ollama:
-    local base_url = "http://ollama:11434"
-    -- local base_url = "http://build21:8000"
+    -- local base_url = "http://ollama:11434"
+    local base_url = "http://build21:8000"
+    body.model = "" -- dont pass model, use whatever is served
 
     if use_tools then
         -- TODO check if vllm has streaming + tools support
+        --   https://github.com/vllm-project/vllm/issues/7912#issuecomment-2413840297
+        --   vllm serve Qwen/Qwen2.5-Coder-7B-Instruct --enable-auto-tool-choice --tool-call-parser hermes
+        --   FYI so far I cannot get it to suggest a tool... todo compare its templated prompt to the ones I use in ollama?
         -- TODO during follow up I need to be able to change the toggle too
 
         -- FYI right now ollama doesn't support stream+tools for /v1/chat/completions
