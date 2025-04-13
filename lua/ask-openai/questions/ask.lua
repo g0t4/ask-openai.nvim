@@ -198,7 +198,7 @@ function M.process_finish_reason(finish_reason)
 end
 
 function M.call_tools()
-    log:trace("tools:", vim.inspect(M.last_request.tools))
+    -- log:trace("tools:", vim.inspect(M.last_request.tools))
     if M.last_request.tools == {} then
         return
     end
