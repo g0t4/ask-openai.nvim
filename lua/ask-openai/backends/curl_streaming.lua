@@ -168,7 +168,7 @@ function M.sse_to_chunk(data, parse_choice)
             end
             local new_chunk
             new_chunk, tool_calls = parse_choice(first_choice)
-            chunk = (chunk or "") .. new_chunk
+            chunk = (chunk or "") .. (new_chunk or "")
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
