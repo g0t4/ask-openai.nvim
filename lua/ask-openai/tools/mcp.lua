@@ -46,7 +46,7 @@ function start_mcp_server(name, on_message)
     local handle
 
     function on_exit(code, signal)
-        print("MCP exited with code", code, "and signal", signal)
+        log:trace("MCP exited with code", code, "and signal", signal)
     end
 
     handle, pid = uv.spawn(options.command, {
@@ -55,7 +55,7 @@ function start_mcp_server(name, on_message)
     }, on_exit)
 
     function on_stdout(err, data)
-        -- print("MCP stdout:", data)
+        -- log:trace("MCP stdout:", data)
         assert(not err, err)
         -- receive messages
 
@@ -68,7 +68,7 @@ function start_mcp_server(name, on_message)
             if ok and on_message then
                 on_message(msg)
             else
-                print("MCP decode error:", line)
+                log:trace("MCP decode error:", line)
                 -- vim.notify("MCP decode error: " .. line, vim.log.levels.ERROR)
             end
         end
@@ -78,9 +78,9 @@ function start_mcp_server(name, on_message)
 
     function on_stderr(err, data)
         if err then
-            print("MCP stderr error:", err)
+            log:trace("MCP stderr error:", err)
         end
-        print("MCP stderr:", data)
+        log:trace("MCP stderr:", data)
     end
 
     uv.read_start(stderr, on_stderr)
@@ -96,7 +96,7 @@ function start_mcp_server(name, on_message)
             M.callbacks[msg.id] = callback
         end
         local str = vim.json.encode(msg)
-        -- print("MCP send:", str)
+        -- log:trace("MCP send:", str)
         stdin:write(str .. "\n")
     end
 
@@ -120,10 +120,8 @@ function start_mcp_server(name, on_message)
         stop = function()
             -- handle:kill("sigterm")
             uv.shutdown(stdin, function()
-                -- print("stdin shutdown", stdin)
                 uv.close(handle, function()
                     -- free memory by closing handle
-                    -- print("process closed", handle, pid)
                 end)
             end)
         end,
@@ -135,7 +133,7 @@ end
 M.running_servers = {}
 
 for name, server in pairs(servers) do
-    -- print("starting mcp server " .. name)
+    -- log:trace("starting mcp server " .. name)
     local mcp = start_mcp_server(name, function(msg)
         if msg.id then
             local callback = M.callbacks[msg.id]
@@ -143,13 +141,13 @@ for name, server in pairs(servers) do
                 callback(msg)
             end
         end
-        -- print("MCP message:", vim.inspect(msg))
+        -- log:trace("MCP message:", vim.inspect(msg))
     end)
     M.running_servers[name] = mcp
     mcp.tools_list(function(msg)
-        -- print("tools/list:", vim.inspect(msg))
+        -- log:trace("tools/list:", vim.inspect(msg))
         for _, tool in ipairs(msg.result.tools) do
-            -- print("found " .. tool.name)
+            -- log:trace("found " .. tool.name)
             tool.server = mcp
             M.tools_available[tool.name] = tool
         end
@@ -160,7 +158,7 @@ M.tools_available = {}
 
 M.setup = function()
     vim.api.nvim_create_user_command("McpListTools", function()
-        print(vim.inspect(M.tools_available))
+        log:trace(vim.inspect(M.tools_available))
     end, { nargs = 0 })
 end
 
