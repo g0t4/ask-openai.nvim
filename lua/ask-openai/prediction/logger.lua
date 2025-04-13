@@ -106,13 +106,13 @@ function Logger:info(...)
     self:log(LEVEL.INFO, ...)
 end
 
-function Logger:jsonify_info(...)
+function Logger:jsonify_info(message, ...)
     local args = { ... }
     local json = vim.json.encode(args)
-    self:json_info(json)
+    self:json_info(message, json)
 end
 
-function Logger:json_info(json, pretty)
+function Logger:json_info(message, json, pretty)
     -- TODO add other formats using bat or w/e else
 
     -- local command = { "bat", "--style=plain", "--color", "always", "-l", "json" }
@@ -129,7 +129,7 @@ function Logger:json_info(json, pretty)
                 return
             end
             for _, line in ipairs(data) do
-                self:trace(line)
+                self:trace(message, line)
             end
         end,
         on_stdout = function(_, data)
@@ -137,7 +137,7 @@ function Logger:json_info(json, pretty)
                 return
             end
             for _, line in ipairs(data) do
-                self:trace(line)
+                self:trace(message, line)
             end
         end,
         on_exit = function()
