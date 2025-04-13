@@ -69,7 +69,29 @@ data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completio
 data: [DONE]
             ]]
             -- btw I might want a lower level seam if I want to directly test combining tool_calls across SSEs... if too complicated at higher level here
-            --
+            local FakeFrontend = {}
+            function FakeFrontend:new()
+                -- generate a new table and attach fake_frontend methods
+                local f = setmetatable({}, { __index = self })
+                f.process_chunk_calls = {}
+                f.process_tool_calls_calls = {}
+                f.process_finish_reason_calls = {}
+                return f
+            end
+
+            function FakeFrontend:process_chunk(chunk)
+                table.insert(self.process_chunk_calls, chunk)
+            end
+
+            function FakeFrontend:process_tool_calls(tool_calls)
+                table.insert(self.process_tool_calls_calls, tool_calls)
+            end
+
+            function FakeFrontend:process_finish_reason(reason)
+                table.insert(self.process_finish_reason_calls, reason)
+            end
+
+            -- TODO make reusable
         end)
 
         -- it("full tool_call parses", function()
