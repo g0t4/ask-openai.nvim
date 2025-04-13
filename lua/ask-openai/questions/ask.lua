@@ -182,7 +182,7 @@ function M.call_tools()
         return
     end
     for _, tool_call in ipairs(M.last_request.tool_calls) do
-        log:jsonify_info("tool", tool_call)
+        log:jsonify_info("tool:", tool_call)
         -- log:trace("tool:", vim.inspect(tool))
         -- tool:
         -- {
@@ -197,7 +197,7 @@ function M.call_tools()
 
         mcp.send_tool_call(tool_call, function(mcp_response)
             tool_call.response = mcp_response
-            log:jsonify_info("mcp_response", mcp_response)
+            log:jsonify_info("mcp_response:", mcp_response)
             -- log:trace("mcp_response:", vim.inspect(mcp_response))
             -- mcp_response:
             --  {
