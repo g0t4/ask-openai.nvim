@@ -221,12 +221,16 @@ function M.call_tools()
 
             local tool_message = {
                 role = "tool",
-                content = tool_call.response.result.toolResult,
+                -- make sure content is a string (keep json structure)
+                -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
+                -- PRN if issues, experiment with pretty printing the serialized json?
+                content = vim.fn.json_encode(tool_call.response.result.toolResult),
+                -- tool_call_id = tool_call.id,
                 tool_call_id = tool_call.id,
                 name = tool_call["function"].name,
             }
-            log:trace("tool_message:", vim.inspect(tool_message))
-            log:jsonify_info("tool_message", tool_message)
+            -- log:trace("tool_message:", vim.inspect(tool_message))
+            log:jsonify_info("tool_message:", tool_message)
         end)
     end
 end
