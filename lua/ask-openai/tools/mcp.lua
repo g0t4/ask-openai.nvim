@@ -220,6 +220,7 @@ M.send_tool_call = function(tool_call)
 
     tool.server.tools_call(name, args_decoded, function(msg)
         log:trace("tool call result:", vim.inspect(msg))
+        -- TODO now these need to be put into the buffer to send back to the LLM! user can approve if needed or it can happen when all tools finish?
     end)
 end
 
