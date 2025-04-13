@@ -205,6 +205,26 @@ M.send_tool_call = function(tool_call)
         log:trace("tool not found: " .. name)
         return
     end
+
+    -- tool call: {
+    --   ["function"] = {
+    --     arguments = '{"command":"ls -la","cwd":""}',
+    --     name = "run_command"
+    --   },
+    --   id = "call_8yoj8qqo",
+    --   index = 0,
+    --   type = "function"
+    -- }
+    -- tool call result: {
+    --   error = {
+    --     code = -32603,
+    --     message = '[\n  {\n    "code": "invalid_type",\n    "expected": "object",\n    "received": "string",\n    "path": [\n      "params",\n      "arguments"\n    ],\n    "message": "Expected object, received string"\n  }\n]'
+    --   },
+    --   id = "2",
+    --   jsonrpc = "2.0"
+    -- }
+    -- TODO send correct format for tools/call
+
     tool.server.tools_call(name, args, function(msg)
         log:trace("tool call result:", vim.inspect(msg))
     end)
