@@ -180,15 +180,36 @@ end
 function M.process_tool_calls(tool_calls)
     -- for now just write tool dcalls to the buffer
     local tool_calls_str = vim.inspect(tool_calls)
-    -- TODO if I keep this call to process_chunk, lets extract an underlying func for buffer_append or smth so its not confusing as this is not a chunk
-    -- FYI if need to mod UI use vim.schedule (right now process_chunk does that)
+    M.last_request.tools = M.last_request.tools or {}
+
+    -- for now insert completed tool call...
+    --  later will have to be diff in process_sse b/c it will be partial tool call pieces when streaming works in ollama/vllm
+    table.insert(M.last_request.tools, tool_calls)
+
     M.process_chunk(tool_calls_str)
 end
 
 function M.process_finish_reason(finish_reason)
-    -- TODO long term do nothing OR set some visual indicator (i.e. spinner or pending request icon in statusline)
-    -- FYI if need to mod UI use vim.schedule (right now process_chunk does that)
     M.process_chunk("finish_reason: " .. tostring(finish_reason))
+    M.call_tools()
+end
+
+function M.call_tools()
+    if M.last_request.tools == nil then
+        return
+    end
+    for _, tool in ipairs(M.last_request.tools) do
+   -- {
+   --   "function": {
+   --     "name": "run_command",
+   --     "arguments": {
+   --       "command": "df -h"
+   --     }
+   --   }
+   -- }
+   --
+        mcp.tool_call(tool)
+    end
 end
 
 function M.abort_last_request()

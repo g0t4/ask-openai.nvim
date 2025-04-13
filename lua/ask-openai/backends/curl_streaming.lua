@@ -93,6 +93,7 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
             frontend.process_tool_calls(tool_calls)
         end
         if finish_reason ~= nil and finish_reason ~= vim.NIL then
+            -- PRN any final processing (i.e. tool fallback)
             frontend.process_finish_reason(finish_reason)
         end
     end
