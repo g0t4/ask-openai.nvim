@@ -106,7 +106,7 @@ function start_mcp_server(name, on_message)
         send({
             method = "tools/call",
             params = {
-                name = name,
+                name = tool_name,
                 arguments = args,
             },
         }, callback)
@@ -199,6 +199,9 @@ end
 
 M.send_tool_call = function(tool_call)
     local args = tool_call["function"].arguments
+    local args_decoded = vim.json.decode(args)
+    log:trace("args_decoded: " .. vim.inspect(args_decoded))
+
     local name = tool_call["function"].name
     local tool = M.tools_available[name]
     if tool == nil then
@@ -223,9 +226,8 @@ M.send_tool_call = function(tool_call)
     --   id = "2",
     --   jsonrpc = "2.0"
     -- }
-    -- TODO send correct format for tools/call
 
-    tool.server.tools_call(name, args, function(msg)
+    tool.server.tools_call(name, args_decoded, function(msg)
         log:trace("tool call result:", vim.inspect(msg))
     end)
 end
