@@ -3,6 +3,7 @@ local oai_chat = require("ask-openai.backends.oai_chat")
 local assert = require("luassert")
 
 -- PRN move this to backends dir and consolidate all tests there?
+-- ***! use <leader>u to run tests in this file! (habituate that, don't type out the cmd yourself)
 
 describe("tool use SSE parsing in /v1/chat/completions", function()
     it("parses ollama tool_calls - all in one SSE", function()
@@ -26,6 +27,8 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         assert.are.equal(#tool_calls, 1)
         local tool = tool_calls[1]
         assert.are.equal(tool.id, "call_lbcjwr0u")
+        assert.are.equal(tool.index, 0)
+        assert.are.equal(tool.type, "function")
         func = tool["function"]
         assert.are.equal(type(func), "table")
         assert.are.equal(func.name, "run_command")
