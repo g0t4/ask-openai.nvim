@@ -220,7 +220,7 @@ M.send_tool_call = function(tool_call, callback)
 
     -- PRN timeout mechanism? might be a good spot to wrap an async timer to check back (wait for the need to arise)
 
-    tool.server.tools_call(name, args_decoded, callback)
+    tool.server.tools_call(name, args_decoded, vim.schedule_wrap(callback))
 end
 
 return M

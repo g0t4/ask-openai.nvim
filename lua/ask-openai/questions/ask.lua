@@ -205,7 +205,9 @@ function M.call_tools()
     for _, tool in ipairs(M.last_request.tools) do
         log:jsonify_info(tool)
         mcp.send_tool_call(tool, function(mcp_response)
-            log:trace("tool call result:", vim.inspect(mcp_response))
+            tool.response = mcp_response
+            M.process_chunk(vim.inspect(mcp_response))
+            log:jsonify_info(mcp_response)
             -- TODO now these need to be put into the buffer to send back to the LLM! user can approve if needed or it can happen when all tools finish?
         end)
     end
