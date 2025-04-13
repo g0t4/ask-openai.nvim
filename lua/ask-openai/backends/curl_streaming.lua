@@ -26,7 +26,7 @@ function M.terminate(request)
 end
 
 M.on_chunk = function(data, parse_choice, frontend, request)
-    local chunk, finish_reason, tool_calls = M.sse_to_chunk(data, parse_choice)
+    local chunk, finish_reason, tool_calls_s = M.parse_SSEs(data, parse_choice)
     if chunk then
         -- TODO combine chunks too so the request has the final combined text
         -- - right now I just show the chunks one by one
@@ -34,14 +34,14 @@ M.on_chunk = function(data, parse_choice, frontend, request)
         -- - makes sense to coalesce here
         frontend.process_chunk(chunk)
     end
-    if tool_calls then
+    if tool_calls_s then
         -- TODO implement w/ prepared test...
         -- IIAC I can still emit the tool call was seen...
         -- and/or...
         -- I probably want to sum up tool calls (current aggregated state here
         --   think event oriented architectures - CQRS style!
         -- TODO? helper.add_partial_tool_calls(request, tool_calls)
-        frontend.process_tool_calls(tool_calls)
+        frontend.process_tool_calls(tool_calls_s)
     end
     if finish_reason ~= nil and finish_reason ~= vim.NIL then
         -- TODO? pass combined chunk and tool_calls here?
@@ -133,18 +133,22 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
 end
 
 --- @param data string
---- @return string|nil text, string|nil finish_reason, table|nil tool_calls
-function M.sse_to_chunk(data, parse_choice)
+--- @return string|nil text, string|nil finish_reason, table|nil tool_calls_s
+function M.parse_SSEs(data, parse_choice)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
     local chunk = nil -- combine all chunks into one string and check for done
-    local finish_reason = nil
-    local tool_calls = nil
+    local finish_reason = nil -- only ever one for entire request
+    local tool_calls_s = {} -- can be multiple
+    -- for lack of a better name right now, call it tool_calls_s so it at least stands out
+
     for ss_event in data:gmatch("[^\r\n]+") do
+        -- PERHAPS I should be returning multiple then instead of adding them below?
+
         if ss_event:match("^data:%s*%[DONE%]$") then
-            -- done, courtesy last event... mostly ignore b/c finish_reason already comes on the prior SSE
-            return chunk, nil, nil
+            -- ignore the [DONE] line, nothing to parse
+            goto continue
         end
 
         --  strip leading "data: " (if present)
@@ -166,14 +170,20 @@ function M.sse_to_chunk(data, parse_choice)
                     log:warn("[WARN] unexpected finish_reason: '" .. finish_reason .. "'")
                 end
             end
+
             local new_chunk
             new_chunk, tool_calls = parse_choice(first_choice)
+            -- PRN if any good reason to do so.. can return  chunks (not chunk concatenated):
             chunk = (chunk or "") .. (new_chunk or "")
+            -- use tests to add conditions like vim.NIL, nil for:
+            table.insert(tool_calls_s, tool_calls)
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
+
+        ::continue::
     end
-    return chunk, finish_reason, tool_calls
+    return chunk, finish_reason, tool_calls_s
 end
 
 -- PRN does vllm have both finish_reason and stop_reason?

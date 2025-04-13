@@ -34,9 +34,10 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         --     },
         --     "finish_reason":null
         --   }]
-        local _, _, tool_calls = curls.sse_to_chunk(data, oai_chat.parse_choice)
-        should_be_equal(#tool_calls, 1)
-        local tool = tool_calls[1]
+        local _, _, tool_calls_s = curls.parse_SSEs(data, oai_chat.parse_choice)
+        should_be_equal(#tool_calls_s, 1) -- table of
+        should_be_equal(#tool_calls_s[1], 1) -- table of calls
+        local tool = tool_calls_s[1][1]
         should_be_equal(tool.id, "call_lbcjwr0u")
         should_be_equal(tool.index, 0)
         should_be_equal(tool.type, "function")
@@ -50,9 +51,9 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
     it("parses ollama finish_reason", function()
         local data =
         'data: {"id":"chatcmpl-304","object":"chat.completion.chunk","created":1744521962,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"tool_calls"}]}'
-        local _, finish_reason, tool_calls = curls.sse_to_chunk(data, oai_chat.parse_choice)
+        local _, finish_reason, tool_calls_s = curls.parse_SSEs(data, oai_chat.parse_choice)
         should_be_equal(finish_reason, "tool_calls")
-        should_be_nil(tool_calls)
+        should_be_equal(#tool_calls_s, 0)
     end)
 
     local FakeFrontend = {}
@@ -83,7 +84,7 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         return f
     end
 
-    describe("streaming tool call SSEs", function()
+    describe("streaming tool_calls parses all SSEs", function()
         it("vllm capture", function()
             -- example from: https://platform.openai.com/docs/guides/function-calling?api-mode=chat#streaming
             -- indent doesn't matter for json parsing
@@ -104,8 +105,8 @@ data: [DONE]
                     curls.on_chunk(data, oai_chat.parse_choice, frontend, request)
                 end
             end
-            should_be_equal(#frontend.process_tool_calls_calls, 4) -- first and last do not have tool_calls set
-
+            should_be_equal(#frontend.process_tool_calls_calls, 7) -- first and last do not have tool_calls set
+            -- TODO test aggregated content and then don't worry as much about the frontend handlers
 
             -- TODO validate all of these at least once
             -- index, id, type, function
