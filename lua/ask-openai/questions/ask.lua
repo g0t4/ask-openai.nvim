@@ -177,7 +177,7 @@ function M.process_finish_reason(finish_reason)
 end
 
 function M.call_tools()
-    log:trace("tools:", vim.inspect(M.last_request.tool_calls))
+    -- log:trace("tools:", vim.inspect(M.last_request.tool_calls))
     if M.last_request.tool_calls == {} then
         return
     end
@@ -225,11 +225,16 @@ function M.call_tools()
                 -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
                 -- PRN if issues, experiment with pretty printing the serialized json?
                 content = vim.fn.json_encode(tool_call.response.result.toolResult),
-                -- tool_call_id = tool_call.id,
                 tool_call_id = tool_call.id,
                 name = tool_call["function"].name,
             }
             -- log:trace("tool_message:", vim.inspect(tool_message))
+            -- tool_message: {
+            --   content = '{"isError": false, "content": [{"name": "STDOUT", "type": "text", "text": "README.md\\nflows\\nlua\\nlua_modules\\ntests\\ntmp\\n"}]}',
+            --   name = "run_command",
+            --   role = "tool",
+            --   tool_call_id = "call_n44nr8e2"
+            -- }
             log:jsonify_info("tool_message:", tool_message)
         end)
     end

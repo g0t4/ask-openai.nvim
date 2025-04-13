@@ -129,6 +129,12 @@ function Logger:json_info(message, json, pretty)
                 return
             end
             for _, line in ipairs(data) do
+                if line:match("^%s*$") then
+                    -- skip empty lines
+                    return
+                end
+                -- PRN remove message on every line and just add to first?
+                --   FYI most json logging is compact right now so NBD, yet
                 self:trace(message, line)
             end
         end,
@@ -137,6 +143,10 @@ function Logger:json_info(message, json, pretty)
                 return
             end
             for _, line in ipairs(data) do
+                if line:match("^%s*$") then
+                    -- skip empty lines
+                    return
+                end
                 self:trace(message, line)
             end
         end,
