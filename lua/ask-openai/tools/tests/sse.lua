@@ -100,13 +100,38 @@ data: [DONE]
             local frontend = FakeFrontend:new()
             local request  = {}
             local lines    = vim.split(events, "\n")
-            for k, data in pairs(lines) do
-                if data:gmatch("^data: ") then
+            for _, data in pairs(lines) do
+                if data:match("^data: ") then
                     curls.on_chunk(data, oai_chat.parse_choice, frontend, request)
                 end
             end
-            should_be_equal(#frontend.process_tool_calls_calls, 7) -- first and last do not have tool_calls set
-            -- TODO test aggregated content and then don't worry as much about the frontend handlers
+
+            should_be_equal(7, #frontend.process_tool_calls_calls) -- *** 3 layers deep actually (on_chunk/sse/tool_calls) - each sse can have 1+ tool_calls
+            -- print(vim.inspect(frontend.process_tool_calls_calls))
+            --
+            -- *** # of tool_calls per on_chunk:
+            should_be_equal(#frontend.process_tool_calls_calls[1], 0)
+            should_be_equal(#frontend.process_tool_calls_calls[2], 1)
+            should_be_equal(#frontend.process_tool_calls_calls[3], 1)
+            should_be_equal(#frontend.process_tool_calls_calls[4], 1)
+            should_be_equal(#frontend.process_tool_calls_calls[5], 1)
+            should_be_equal(#frontend.process_tool_calls_calls[6], 0)
+            should_be_equal(#frontend.process_tool_calls_calls[7], 0)
+
+            -- [{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,"function":{"name":"run_command"}}]
+            second = frontend.process_tool_calls_calls[2]
+            -- print("second", vim.inspect(second))
+            second_tool = second[1] -- only 1
+            should_be_equal(#second_tool, 1) -- third layer down gets to a single tool_call
+            second_only_tool_call = second_tool[1]
+            should_be_equal(0, second_only_tool_call.index)
+            should_be_equal("chatcmpl-tool-ca99dda515524c6abe47d1ea22813507", second_only_tool_call.id)
+            should_be_equal("function", second_only_tool_call.type)
+            func = second_only_tool_call["function"]
+            should_be_equal("run_command", func.name)
+
+
+
 
             -- TODO validate all of these at least once
             -- index, id, type, function
