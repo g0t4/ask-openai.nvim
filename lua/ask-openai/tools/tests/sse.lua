@@ -73,7 +73,6 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         end
 
         function f.process_tool_calls(tool_calls)
-            print('test')
             table.insert(f.process_tool_calls_calls, tool_calls)
         end
 
@@ -101,14 +100,11 @@ data: [DONE]
             local request  = {}
             local lines    = vim.split(events, "\n")
             for k, data in pairs(lines) do
-                print(data)
-                -- btw I might want a lower level seam if I want to directly test combining tool_calls across SSEs... if too complicated at higher level here
                 if data:gmatch("^data: ") then
-                    -- btw I might want a lower level seam if I want to directly test combining tool_calls across SSEs... if too complicated at higher level here
                     curls.on_chunk(data, oai_chat.parse_choice, frontend, request)
                 end
             end
-            should_be_equal(#frontend.process_tool_calls_calls, 4) -- oh derp yes... first and last do not have tool_calls set
+            should_be_equal(#frontend.process_tool_calls_calls, 4) -- first and last do not have tool_calls set
 
 
             -- TODO validate all of these at least once
