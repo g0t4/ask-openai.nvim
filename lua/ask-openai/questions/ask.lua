@@ -4,7 +4,7 @@ local mcp = require("ask-openai.tools.mcp")
 local backend = require("ask-openai.backends.oai_chat")
 -- local backend = require("ask-openai.backends.oai_completions")
 local agentica = require("ask-openai.backends.models.agentica")
-
+local ChatWindow = require("ask-openai.questions.chat_window")
 local M = {}
 
 function M.send_question(user_prompt, code, file_name, use_tools)
@@ -100,7 +100,9 @@ end
 
 function M.abort_and_close()
     M.abort_last_request()
-    vim.cmd(":q", { buffer = M.bufnr })
+    if M.chat_window ~= nil then
+        M.chat_window:close()
+    end
 end
 
 -- WIP - callback when non-zero exit code (at end)
@@ -135,49 +137,22 @@ function M.on_stderr_data(text)
 end
 
 function M.open_response_window()
-    local name = 'Question Response'
-
-    if M.bufnr == nil then
-        M.bufnr = vim.api.nvim_create_buf(false, true)
-        vim.api.nvim_buf_set_name(M.bufnr, name)
+    if M.chat_window == nil then
+        M.chat_window = ChatWindow:new()
 
         -- stop generation, if still wanna look at it w/o closing the window
-        vim.keymap.set("n", "<Esc>", M.abort_last_request, { buffer = M.bufnr, nowait = true })
-        vim.keymap.set("n", "<F8>", M.abort_and_close, { buffer = M.bufnr }) -- I already use this globally to close a window (:q) ... so just add stop to it
-        -- OR, should I let it keep completing in background and then I can come back when its done? for async?
+        vim.keymap.set("n", "<Esc>", M.abort_last_request, { buffer = M.chat_window.buffer_number })
+        -- I already use this globally to close a window (:q) ... so just add stop to it:
+        vim.keymap.set("n", "<F8>", M.abort_and_close, { buffer = M.chat_window.buffer_number })
     end
 
-    vim.api.nvim_buf_set_lines(M.bufnr, 0, -1, false, {}) -- clear the buffer, is there an easier way?
-
-    local screen_lines = vim.api.nvim_get_option_value('lines', {})
-    local screen_columns = vim.api.nvim_get_option_value('columns', {})
-    local win_height = math.ceil(0.5 * screen_lines)
-    local win_width = math.ceil(0.5 * screen_columns)
-    local top_is_at_row = screen_lines / 2 - win_height / 2
-    local left_is_at_col = screen_columns / 2 - win_width / 2
-    local _winid = vim.api.nvim_open_win(M.bufnr, true, {
-        relative = 'editor',
-        width = win_width,
-        height = win_height,
-        row = top_is_at_row,
-        col = left_is_at_col,
-        style = 'minimal',
-        border = 'single'
-    })
-    -- set FileType after creating window, otherwise the default wrap option (vim.o.wrap) will override any ftplugin mods to wrap (and the same for other window-local options like wrap)
-    vim.api.nvim_set_option_value('filetype', 'markdown', { buf = M.bufnr })
+    M.chat_window:clear()
+    M.chat_window:open()
 end
 
 function M.process_chunk(text)
     vim.schedule(function()
-        local lines = vim.api.nvim_buf_line_count(M.bufnr)
-        local last_line = vim.api.nvim_buf_get_lines(M.bufnr, lines - 1, lines, false)[1]
-        local replace_lines = vim.split(last_line .. text .. "\n", "\n")
-        vim.api.nvim_buf_set_lines(M.bufnr, lines - 1, lines, false, replace_lines)
-
-        -- move cursor/scroll to end of buffer
-        lines = vim.api.nvim_buf_line_count(M.bufnr)
-        vim.api.nvim_win_set_cursor(0, { lines, 0 })
+        M.chat_window:append(text)
     end)
 end
 

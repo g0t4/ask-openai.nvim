@@ -1,0 +1,46 @@
+local BufferController = require("ask-openai.questions.buffers")
+
+local ChatWindow = {}
+
+function ChatWindow:new()
+    local b = setmetatable({}, { __index = ChatWindow })
+    local bufnr = vim.api.nvim_create_buf(false, true)
+    b.buffer_number = bufnr
+    b.buffer = BufferController:new(b.buffer_number)
+    vim.api.nvim_buf_set_name(b.buffer_number, 'Question Response')
+    return b
+end
+
+function ChatWindow:open()
+    local screen_lines = vim.api.nvim_get_option_value('lines', {})
+    local screen_columns = vim.api.nvim_get_option_value('columns', {})
+    local win_height = math.ceil(0.5 * screen_lines)
+    local win_width = math.ceil(0.5 * screen_columns)
+    local top_is_at_row = screen_lines / 2 - win_height / 2
+    local left_is_at_col = screen_columns / 2 - win_width / 2
+    local _winid = vim.api.nvim_open_win(self.buffer_number, true, {
+        relative = 'editor',
+        width = win_width,
+        height = win_height,
+        row = top_is_at_row,
+        col = left_is_at_col,
+        style = 'minimal',
+        border = 'single'
+    })
+    -- set FileType after creating window, otherwise the default wrap option (vim.o.wrap) will override any ftplugin mods to wrap (and the same for other window-local options like wrap)
+    vim.api.nvim_set_option_value('filetype', 'markdown', { buf = self.buffer_number })
+end
+
+function ChatWindow:append(text)
+    self.buffer:append(text)
+end
+
+function ChatWindow:clear()
+    self.buffer:clear()
+end
+
+function ChatWindow:close()
+    vim.api.nvim_win_close(0, true)
+end
+
+return ChatWindow
