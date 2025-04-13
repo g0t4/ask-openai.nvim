@@ -63,26 +63,32 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         f.process_chunk_calls = {}
         f.process_tool_calls_calls = {}
         f.process_finish_reason_calls = {}
+
+        -- if I make actual frontends into a class.. then I can break these out:
+        --   but for now I need the closure to get to "self" which is "f" here
+        --   b/c I am not calling with ":" and likely wont ever
+
+        function f.process_chunk(chunk)
+            table.insert(f.process_chunk_calls, chunk)
+        end
+
+        function f.process_tool_calls(tool_calls)
+            print('test')
+            table.insert(f.process_tool_calls_calls, tool_calls)
+        end
+
+        function f.process_finish_reason(reason)
+            table.insert(f.process_finish_reason_calls, reason)
+        end
+
         return f
-    end
-
-    function FakeFrontend:process_chunk(chunk)
-        table.insert(self.process_chunk_calls, chunk)
-    end
-
-    function FakeFrontend:process_tool_calls(tool_calls)
-        table.insert(self.process_tool_calls_calls, tool_calls)
-    end
-
-    function FakeFrontend:process_finish_reason(reason)
-        table.insert(self.process_finish_reason_calls, reason)
     end
 
     describe("streaming tool call SSEs", function()
         it("vllm capture", function()
             -- example from: https://platform.openai.com/docs/guides/function-calling?api-mode=chat#streaming
             -- indent doesn't matter for json parsing
-            local events = [[
+            local events   = [[
 data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}]}
 data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"tool_calls":[{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,"function":{"name":"run_command"}}]},"logprobs":null,"finish_reason":null}]}
 data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"command\": \""}}]},"logprobs":null,"finish_reason":null}]}
@@ -91,15 +97,18 @@ data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completio
 data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"content":""},"logprobs":null,"finish_reason":"tool_calls","stop_reason":null}]}
 data: [DONE]
             ]]
-            local FakeFrontend = FakeFrontend:new()
-            local request = {}
-            for _, event in ipairs(vim.split(events, "\n")) do
-                if not event == "" then
-                    local data = vim.fn.json_decode(event)
+            local frontend = FakeFrontend:new()
+            local request  = {}
+            local lines    = vim.split(events, "\n")
+            for k, data in pairs(lines) do
+                print(data)
+                -- btw I might want a lower level seam if I want to directly test combining tool_calls across SSEs... if too complicated at higher level here
+                if data:gmatch("^data: ") then
                     -- btw I might want a lower level seam if I want to directly test combining tool_calls across SSEs... if too complicated at higher level here
-                    curls.on_chunk(data, oai_chat.parse_choice, FakeFrontend, request)
+                    curls.on_chunk(data, oai_chat.parse_choice, frontend, request)
                 end
             end
+            should_be_equal(#frontend.process_tool_calls_calls, 4) -- oh derp yes... first and last do not have tool_calls set
 
 
             -- TODO validate all of these at least once
