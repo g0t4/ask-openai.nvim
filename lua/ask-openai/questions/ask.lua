@@ -194,7 +194,7 @@ end
 
 function M.process_finish_reason(finish_reason)
     M.process_chunk("finish_reason: " .. tostring(finish_reason))
-    M.call_tools()
+    vim.schedule_wrap(M.call_tools)()
 end
 
 function M.call_tools()
@@ -203,16 +203,7 @@ function M.call_tools()
         return
     end
     for _, tool in ipairs(M.last_request.tools) do
-        -- {
-        --   "function": {
-        --     "name": "run_command",
-        --     "arguments": {
-        --       "command": "df -h"
-        --     }
-        --   }
-        -- }
-        --
-        log:trace("tool call:", vim.inspect(tool))
+        log:jsonify_info(tool)
         mcp.send_tool_call(tool, function(mcp_response)
             log:trace("tool call result:", vim.inspect(mcp_response))
             -- TODO now these need to be put into the buffer to send back to the LLM! user can approve if needed or it can happen when all tools finish?
