@@ -28,6 +28,10 @@ end
 M.on_chunk = function(data, parse_choice, frontend, request)
     local chunk, finish_reason, tool_calls = M.sse_to_chunk(data, parse_choice)
     if chunk then
+        -- TODO combine chunks too so the request has the final combined text
+        -- - right now I just show the chunks one by one
+        -- - later I'll need this for message history
+        -- - makes sense to coalesce here
         frontend.process_chunk(chunk)
     end
     if tool_calls then
@@ -36,6 +40,7 @@ M.on_chunk = function(data, parse_choice, frontend, request)
         -- and/or...
         -- I probably want to sum up tool calls (current aggregated state here
         --   think event oriented architectures - CQRS style!
+        -- TODO? helper.add_partial_tool_calls(request, tool_calls)
         frontend.process_tool_calls(tool_calls)
     end
     if finish_reason ~= nil and finish_reason ~= vim.NIL then
