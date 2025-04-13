@@ -196,9 +196,9 @@ function openai_tool(mcp_tool)
     }
 end
 
-M.tool_call = function(tool)
-    local args = tool["function"].arguments
-    local name = tool["function"].name
+M.send_tool_call = function(tool_call)
+    local args = tool_call["function"].arguments
+    local name = tool_call["function"].name
     local tool = M.tools_available[name]
     if tool == nil then
         print("tool not found: " .. name)

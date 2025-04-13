@@ -213,7 +213,7 @@ function M.call_tools()
         -- }
         --
         log:trace("tool call:", vim.inspect(tool))
-        mcp.tool_call(tool)
+        mcp.send_tool_call(tool)
     end
 end
 
