@@ -242,27 +242,19 @@ function M.on_delta(choice, parse_choice, frontend, request)
             parsed_call = message.tool_calls[call.index + 1]
             if parsed_call == nil then
                 parsed_call = {
-                    id           = call.id,
-                    index        = call.index,
-                    type         = call.type,
-                    ["function"] = { -- this should be a table (not a string)
-                        name      = call["function"].name,
-                        arguments = call["function"].arguments,
-                    },
+                    -- assuming these are always on first delta per message
+                    id    = call.id,
+                    index = call.index,
+                    type  = call.type,
                 }
                 table.insert(message.tool_calls, parsed_call)
             end
-
-            -- parsed_call = {
-            --     id           = call.id,
-            --     index        = call.index,
-            --     type         = call.type,
-            --     ["function"] = {
-            --         name = call["function"].name,
-            --         arguments = call["function"].arguments,
-            --     }
-            --
-            -- }
+            func = call["function"]
+            if func ~= nil then
+                parsed_call["function"] = parsed_call["function"] or {}
+                parsed_call["function"].name = func.name
+                parsed_call["function"].arguments = func.arguments
+            end
         end
     end
 
