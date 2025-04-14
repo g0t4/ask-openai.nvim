@@ -1,9 +1,11 @@
+---@class BufferController
+---@field buffer_number number
 local BufferController = {}
 
 function BufferController:new(buffer_number)
-    local b = setmetatable({}, { __index = BufferController })
-    b.buffer_number = buffer_number
-    return b
+    self = setmetatable({}, { __index = BufferController })
+    self.buffer_number = buffer_number
+    return self
 end
 
 function BufferController:append(text)
