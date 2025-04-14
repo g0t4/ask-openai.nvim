@@ -63,7 +63,6 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         local f = setmetatable({}, { __index = self })
 
         f.process_chunk_calls = {}
-        f.process_tool_calls_calls = {}
         f.process_finish_reason_calls = {}
 
         -- if I make actual frontends into a class.. then I can break these out:
@@ -74,97 +73,17 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
             table.insert(f.process_chunk_calls, chunk)
         end
 
-        function f.process_tool_calls(tool_calls)
-            table.insert(f.process_tool_calls_calls, tool_calls)
-        end
-
         function f.process_finish_reason(reason)
             table.insert(f.process_finish_reason_calls, reason)
+        end
+
+        function f.signal_deltas()
         end
 
         return f
     end
 
     describe("streaming tool_calls parses all SSEs", function()
-        it("vllm capture", function()
-            -- example from: https://platform.openai.com/docs/guides/function-calling?api-mode=chat#streaming
-            -- indent doesn't matter for json parsing
-            local events   = [[
-data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}]}
-data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"tool_calls":[{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,"function":{"name":"run_command"}}]},"logprobs":null,"finish_reason":null}]}
-data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"command\": \""}}]},"logprobs":null,"finish_reason":null}]}
-data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"ls"}}]},"logprobs":null,"finish_reason":null}]}
-data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"}"}}]},"logprobs":null,"finish_reason":null}]}
-data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"content":""},"logprobs":null,"finish_reason":"tool_calls","stop_reason":null}]}
-data: [DONE]
-            ]]
-            local frontend = FakeFrontend:new()
-            local request  = {}
-            local lines    = vim.split(events, "\n")
-            for _, data in pairs(lines) do
-                if data:match("^data: ") then
-                    curls.on_chunk(data, oai_chat.parse_choice, frontend, request)
-                end
-            end
-
-            should_be_equal(7, #frontend.process_tool_calls_calls) -- *** 3 layers deep actually (on_chunk/sse/tool_calls) - each sse can have 1+ tool_calls
-            -- print(vim.inspect(frontend.process_tool_calls_calls))
-            --
-            -- *** # of tool_calls per on_chunk:
-            should_be_equal(#frontend.process_tool_calls_calls[1], 0)
-            should_be_equal(#frontend.process_tool_calls_calls[2], 1)
-            should_be_equal(#frontend.process_tool_calls_calls[3], 1)
-            should_be_equal(#frontend.process_tool_calls_calls[4], 1)
-            should_be_equal(#frontend.process_tool_calls_calls[5], 1)
-            should_be_equal(#frontend.process_tool_calls_calls[6], 0)
-            should_be_equal(#frontend.process_tool_calls_calls[7], 0)
-
-            -- *** first tool_calls has:
-            --    id, function.name, type - only set on first tool_call for a given index
-            --    index - all tool_calls have this
-            --
-            -- [{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,
-            --     "function":{"name":"run_command"}}]
-            second = frontend.process_tool_calls_calls[2]
-            -- print("second", vim.inspect(second))
-            second_only_tool_call = second[1]
-            should_be_equal(0, second_only_tool_call.index)
-            should_be_equal("chatcmpl-tool-ca99dda515524c6abe47d1ea22813507", second_only_tool_call.id)
-            should_be_equal("function", second_only_tool_call.type)
-            func = second_only_tool_call["function"]
-            should_be_equal("run_command", func.name)
-
-            -- *** 2nd + tool_calls have index and function.arguments (deltas)
-            -- [{"index":0,"function":{"arguments":"{\"command\": \""}}]
-            third = frontend.process_tool_calls_calls[3]
-            third_only_tool_call = third[1]
-            should_be_equal(0, third_only_tool_call.index)
-            func_args = third_only_tool_call["function"]["arguments"]
-            should_be_equal("{\"command\": \"", func_args)
-
-            -- [{"index":0,"function":{"arguments":"ls"}}]
-            fourth = frontend.process_tool_calls_calls[4]
-            fourth_only_tool_call = fourth[1]
-            should_be_equal(0, fourth_only_tool_call.index)
-            func_args = fourth_only_tool_call["function"]["arguments"]
-            should_be_equal("ls", func_args)
-
-            -- [{"index":0,"function":{"arguments":"\"}"}}]
-            fifth = frontend.process_tool_calls_calls[5]
-            fifth_only_tool_call = fifth[1]
-            should_be_equal(0, fifth_only_tool_call.index)
-            func_args = fifth_only_tool_call["function"]["arguments"]
-            should_be_equal("\"}", func_args)
-
-            -- TODO test aggregated function.arguments
-            -- function.arguments is aggregated across all deltas, just like content, into one string (serialized json for args)
-
-            -- is it possible for other fields like function.name to be split up too (deltas)?
-            --    I do not believe this is possible but it could fit the mold of function.arguments
-        end)
-        -- TODO capture and test a double tool_call
-        --  IIAC index will be 0 and 1?
-
         it("on_delta, thru on_chunk, reconstitutes messages (integration test) ", function()
             -- TODO add more advanced examples (multiple tool calls, multiple message [non tool call style])
             --   IOTW index != 0 and role parsing (perhaps even group by role?)
@@ -277,6 +196,15 @@ data: [DONE]
         -- TODO add a test that validates lookup on index/role per message... need a multi message scenario (if that's ever a thing... and not multi choice... literally need two messages at same time, streaming)
 
         it("streaming tool_calls (multiple SSE/deltas per tool_call) - vllm capture", function()
+            -- local sses  = [[
+            -- data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}]}
+            -- data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"tool_calls":[{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,"function":{"name":"run_command"}}]},"logprobs":null,"finish_reason":null}]}
+            -- data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"command\": \""}}]},"logprobs":null,"finish_reason":null}]}
+            -- data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"ls"}}]},"logprobs":null,"finish_reason":null}]}
+            -- data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"}"}}]},"logprobs":null,"finish_reason":null}]}
+            -- data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"content":""},"logprobs":null,"finish_reason":"tool_calls","stop_reason":null}]}
+            -- data: [DONE]
+            -- ]]
             local choices = [[
                 {"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}
                 {"index":0,"delta":{"tool_calls":[{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,"function":{"name":"run_command"}}]},"logprobs":null,"finish_reason":null}
