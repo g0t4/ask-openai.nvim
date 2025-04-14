@@ -127,7 +127,7 @@ end
 -- [4.603]sec [WARN] on_stderr chunk:  curl: (7) Failed to connect to build21 port 8000 after 7 ms: Couldn't connect to server
 -- [4.609]sec [ERROR] spawn - non-zero exit code: 7 Signal: 0
 --
-function M.request_failed()
+function M.handle_request_failed()
     -- this is for AFTER the request completes and curl exits
     vim.schedule(function()
         M.chat_window:append("\nerror: request failed")

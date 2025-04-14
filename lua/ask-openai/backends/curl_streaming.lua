@@ -40,8 +40,8 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
         if code ~= nil and code ~= 0 then
             log:error("spawn - non-zero exit code: '" .. code .. "' Signal: '" .. signal .. "'")
 
-            -- todo what logic do I want to NOT call request_failed here?
-            frontend.request_failed(code)
+            -- todo what logic do I want to NOT call handle_request_failed here?
+            frontend.handle_request_failed(code)
         else
             frontend.handle_request_completed()
         end

@@ -249,7 +249,7 @@ local function ask_and_stream_from_ollama(opts)
     M.stream_from_ollama(user_prompt, selection.original_text, file_name)
 end
 
-function M.request_failed(code)
+function M.handle_request_failed(code)
     -- FYI test by point at wrong server/port
     -- this is for AFTER the request completes and curl exits
     vim.schedule(function()
