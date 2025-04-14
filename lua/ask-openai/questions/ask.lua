@@ -152,7 +152,7 @@ function M.ensure_response_window_is_open()
         vim.keymap.set("n", "<F8>", M.abort_and_close, { buffer = M.chat_window.buffer_number })
     end
 
-    M.chat_window:open()
+    M.chat_window:ensure_open()
 end
 
 function M.process_chunk(text)

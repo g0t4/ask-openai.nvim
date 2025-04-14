@@ -3,6 +3,7 @@ local BufferController = require("ask-openai.questions.buffers")
 ---@class ChatWindow
 ---@field buffer_number number
 ---@field buffer BufferController
+---@field winid number
 local ChatWindow = {}
 
 function ChatWindow:new()
@@ -24,7 +25,7 @@ function ChatWindow:open()
     local win_width = math.ceil(width_percent / 100 * screen_columns)
     local top_is_at_row = screen_lines / 2 - win_height / 2
     local left_is_at_col = screen_columns / 2 - win_width / 2
-    local _winid = vim.api.nvim_open_win(self.buffer_number, true, {
+    self.winid = vim.api.nvim_open_win(self.buffer_number, true, {
         relative = 'editor',
         width = win_width,
         height = win_height,
@@ -35,6 +36,13 @@ function ChatWindow:open()
     })
     -- set FileType after creating window, otherwise the default wrap option (vim.o.wrap) will override any ftplugin mods to wrap (and the same for other window-local options like wrap)
     vim.api.nvim_set_option_value('filetype', 'markdown', { buf = self.buffer_number })
+end
+
+function ChatWindow:ensure_open()
+    if self.winid and vim.api.nvim_win_is_valid(self.winid) then
+        return
+    end
+    self:open()
 end
 
 function ChatWindow:append(text)
