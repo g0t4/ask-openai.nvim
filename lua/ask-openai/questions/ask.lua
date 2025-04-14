@@ -280,7 +280,11 @@ function M.send_tool_messages_if_all_tools_done()
     if M.any_outstanding_tool_calls() then
         return
     end
-    M.process_chunk("sending tool results")
+    -- M.process_chunk("sending tool results")
+    -- TODO send a new prompt to remind it that hte tools are done and now you can help with the original question?
+    --  maybe even include that previous question again?
+    --  why? I am noticidng qwen starts to go off on a tangent based on tool results as if no original question was asked
+    --  need to refocus qwen
     M.send_messages()
 end
 
