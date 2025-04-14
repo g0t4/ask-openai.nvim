@@ -25,20 +25,6 @@ function M.send_question(user_prompt, code, file_name, use_tools)
     -- show initial question
     M.process_chunk("**system**:\n" .. system_prompt .. "\n\n**user**:\n" .. user_message)
 
-    -- FYI not going to support /v1/completions anymore... not until I have a specific need to use it
-    --  I would need to manually format the prompt with a template or otherwise and so now /v1/chat/completions exclusively makes sense
-    --  if anything I might go the route of supporting /api/chat, i.e. using ApiChatThread that has a different to_body()...
-    --  same could be done with /v1/completions a LegacyChatThread but then I am reinventing everything that /v1/chat/completions does
-    --  also tool use would be entirely manually done (build template into prompt, parse response for tools, etc)!
-    --
-    -- local qwen_legacy_body = {
-    --     model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
-    --     prompt = system_prompt .. "\n" .. user_message,
-    --     -- todo temp etc
-    -- }
-    -- /v1/completions
-    -- local body = qwen_legacy_body
-
     ---@type ChatMessage[]
     local qwen_messages = {
         { role = "system", content = system_prompt },
