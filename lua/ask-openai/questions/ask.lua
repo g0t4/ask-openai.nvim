@@ -24,7 +24,7 @@ function M.send_question(user_prompt, code, file_name, use_tools)
     end
 
     -- show initial question
-    M.process_chunk("**system**:\n" .. system_prompt .. "\n\n**user**:\n" .. user_message)
+    M.chat_window:append("**system**:\n" .. system_prompt .. "\n\n**user**:\n" .. user_message)
 
     ---@type ChatMessage[]
     local qwen_messages = {
@@ -184,7 +184,9 @@ function M.process_tool_calls(tool_calls)
         arguments = tool_call["function"].arguments
         table.insert(tool_calls_summmary, arguments)
     end
-    M.process_chunk(table.concat(tool_calls_summmary, "\n"))
+    vim.schedule(function()
+        M.chat_window:append(table.concat(tool_calls_summmary, "\n"))
+    end)
 end
 
 function M.process_finish_reason(finish_reason)
