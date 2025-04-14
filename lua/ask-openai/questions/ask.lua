@@ -216,7 +216,7 @@ function M.call_tools()
             -- }
 
             M.process_chunk(vim.inspect(mcp_response))
-            local tool_message = {
+            local response_message = {
                 role = "tool",
                 -- make sure content is a string (keep json structure)
                 -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
@@ -232,10 +232,29 @@ function M.call_tools()
             --   role = "tool",
             --   tool_call_id = "call_n44nr8e2"
             -- }
-            log:jsonify_info("tool_message:", tool_message)
-            tool_call.response_message = tool_message
+            log:jsonify_info("tool_message:", response_message)
+            tool_call.response_message = response_message
+            M.send_tool_messages_if_all_tools_done()
         end)
     end
+end
+
+function M.send_tool_messages_if_all_tools_done()
+    if not M.are_all_tools_done() then
+        return
+    end
+    M.process_chunk("all tools done")
+    -- M.send_tool_messages()
+end
+
+---@return boolean
+function M.are_all_tools_done()
+    for _, tool_call in ipairs(M.last_request.tool_calls) do
+        if tool_call.response_message == nil then
+            return false
+        end
+    end
+    return true
 end
 
 function M.abort_last_request()
