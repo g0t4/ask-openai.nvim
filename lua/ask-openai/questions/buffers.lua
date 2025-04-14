@@ -24,6 +24,10 @@ function BufferController:clear()
     vim.api.nvim_buf_set_lines(self.buffer_number, 0, -1, false, {})
 end
 
+function BufferController:get_line_count()
+    return vim.api.nvim_buf_line_count(self.buffer_number)
+end
+
 function BufferController:get_cursor_line_number_0based()
     local cursor = vim.api.nvim_win_get_cursor(0)
     return cursor[1] - 1
