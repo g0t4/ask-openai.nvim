@@ -264,13 +264,13 @@ function M.call_tools()
 
                 M.signal_deltas()
 
+                -- *** tool response messages back to model
                 -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
                 -- make sure content is a string (keep json structure)
                 -- PRN if issues, experiment with pretty printing the serialized json?
                 -- TODO move encoding into newToolResponse?
                 local content = vim.fn.json_encode(tool_call.response.result.toolResult)
                 local tool_response_message = ChatMessage:new_tool_response(content, tool_call.id, tool_call["function"].name)
-
                 -- log:trace("tool_message:", vim.inspect(response_message))
                 -- tool_message: {
                 --   content = '{"isError": false, "content": [{"name": "STDOUT", "type": "text", "text": "README.md\\nflows\\nlua\\nlua_modules\\ntests\\ntmp\\n"}]}',
@@ -281,7 +281,9 @@ function M.call_tools()
                 log:jsonify_info("tool_message:", tool_response_message)
                 tool_call.response_message = tool_response_message
                 M.thread:add_message(tool_response_message)
-                M.send_tool_messages_if_all_tools_done()
+                --
+                -- TODO re-enable sending after I fix line capture
+                -- M.send_tool_messages_if_all_tools_done()
             end)
         end
     end
