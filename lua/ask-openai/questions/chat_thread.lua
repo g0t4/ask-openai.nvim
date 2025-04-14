@@ -12,6 +12,10 @@ function ChatThread:new()
     return self
 end
 
+function ChatThread:set_last_request(request)
+    self.last_request = request
+end
+
 function ChatThread:add_message(role, content)
     table.insert(self.messages, { role = role, content = content })
 end

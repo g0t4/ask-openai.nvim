@@ -64,8 +64,8 @@ function M.send_question(user_prompt, code, file_name, use_tools)
         body.tools = mcp.openai_tools()
     end
 
-    M.thread = ChatThread.new(body) -- todo pass to chat window?
-    M.thread.last_request = backend.curl_for(body, base_url, M)
+    M.thread = ChatThread.new(body)
+    M.thread:set_last_request(backend.curl_for(body, base_url, M))
 end
 
 local function ask_question_about(opts, use_tools)
