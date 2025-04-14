@@ -200,6 +200,9 @@ end
 function M.process_request_completed()
     -- TODO use new aggregated request.messages!!
     --   then resume this:
+    --
+    --   TODO MOVE tool call setup here... get off of DENORMALIZER
+    --
     -- vim.schedule(function()
     --     log:jsonify_info("assistant_message:", assistant_message)
     --     M.call_tools()

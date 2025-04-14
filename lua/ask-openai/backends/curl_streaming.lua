@@ -163,21 +163,10 @@ M.on_chunk = function(data, parse_choice, frontend, request)
     local chunk, finish_reason, tool_calls_s = M.parse_SSEs(data, parse_choice, frontend, request)
     -- signal delta(s) arrived and parsed
     frontend.signal_deltas()
+
+    -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
     if chunk then
-        -- TODO combine chunks too so the request has the final combined text
-        -- - right now I just show the chunks one by one
-        -- - later I'll need this for message history
-        -- - makes sense to coalesce here
         frontend.process_chunk(chunk)
-    end
-    if tool_calls_s then
-        local flattened_calls = {}
-        for _, tool_calls in ipairs(tool_calls_s) do
-            for _, tool_call in ipairs(tool_calls) do
-                flattened_calls[#flattened_calls + 1] = tool_call
-            end
-        end
-        frontend.process_tool_calls(flattened_calls)
     end
 end
 
