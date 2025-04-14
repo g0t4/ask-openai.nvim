@@ -1,8 +1,9 @@
---- @class ChatMessage
---- @field role string
---- @field content string
---- @field tool_call_id string|nil
---- @field name string|nil
+---@class ChatMessage
+---@field role string
+---@field content string
+---@field tool_call_id string|nil
+---@field name string|nil
+---@field tool_calls ToolCall[]|nil
 local ChatMessage = {}
 
 --- FYI largely a marker interface as well, don't need to actually use this ctor
