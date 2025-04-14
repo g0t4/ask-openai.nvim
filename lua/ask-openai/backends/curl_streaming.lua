@@ -236,23 +236,25 @@ function M.on_delta(choice, parse_choice, frontend, request)
     calls = choice.delta.tool_calls
     if calls then
         message.tool_calls = (message.tool_calls or {})
-        for _, call in ipairs(calls) do
+        for _, call_delta in ipairs(calls) do
             -- TODO test stream case w/ vllm b/c non stream case is easier
             -- for now just assume entirely new tool call each time... will fix this with a test of streaming later
-            parsed_call = message.tool_calls[call.index + 1]
+            parsed_call = message.tool_calls[call_delta.index + 1]
             if parsed_call == nil then
                 parsed_call = {
                     -- assuming these are always on first delta per message
-                    id    = call.id,
-                    index = call.index,
-                    type  = call.type,
+                    id    = call_delta.id,
+                    index = call_delta.index,
+                    type  = call_delta.type,
                 }
                 table.insert(message.tool_calls, parsed_call)
             end
-            func = call["function"]
+            func = call_delta["function"]
             if func ~= nil then
                 parsed_call["function"] = parsed_call["function"] or {}
-                parsed_call["function"].name = func.name
+                if func.name ~= nil then
+                    parsed_call["function"].name = func.name
+                end
                 parsed_call["function"].arguments = func.arguments
             end
         end
