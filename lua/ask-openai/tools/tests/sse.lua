@@ -214,7 +214,9 @@ data: [DONE]
             local msg = request.messages[1]
             should_be_equal(0, msg.index)
             should_be_equal("assistant", msg.role)
-            -- should_be_equal("My name is Neo Vim.", msg.content)
+            should_be_equal("My name is Neo Vim.", msg.content)
         end)
+
+        -- TODO add a test that validates lookup on index/role per message
     end)
 end)
