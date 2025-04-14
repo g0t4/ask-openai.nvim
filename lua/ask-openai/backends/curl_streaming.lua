@@ -92,7 +92,7 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
 end
 
 --- @param data string
---- @return string|nil text, string|nil finish_reason, table|nil tool_calls_s
+--- @return string|nil text
 function M.parse_SSEs(data, parse_choice, frontend, request)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
@@ -156,11 +156,11 @@ function M.parse_SSEs(data, parse_choice, frontend, request)
 
         ::continue::
     end
-    return chunk, finish_reason, tool_calls_s
+    return chunk
 end
 
 M.on_chunk = function(data, parse_choice, frontend, request)
-    local chunk, finish_reason, tool_calls_s = M.parse_SSEs(data, parse_choice, frontend, request)
+    local chunk = M.parse_SSEs(data, parse_choice, frontend, request)
     -- signal delta(s) arrived and parsed
     frontend.signal_deltas()
 
