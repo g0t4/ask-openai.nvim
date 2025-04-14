@@ -62,7 +62,7 @@ function M.send_question(user_prompt, code, file_name, use_tools)
     end
 
     M.thread = ChatThread:new(qwen_messages, qwen_params, base_url)
-    local request = backend.curl_for(M.thread:next_body(), base_url, M)
+    local request = backend.curl_for(M.thread:next_body(), M.thread.base_url, M)
     M.thread:set_last_request(request)
 end
 
