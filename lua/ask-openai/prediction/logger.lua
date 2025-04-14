@@ -225,8 +225,8 @@ end
 function NOOP_LOGGER:json_info(...)
 end
 
--- local DISABLED = false
-local DISABLED = true
+local DISABLED = false
+-- local DISABLED = true
 local predictions_logger = nil
 function Logger.predictions()
     if DISABLED then
