@@ -293,7 +293,14 @@ function M.call_tools()
                 M.thread:add_message(tool_response_message)
                 --
                 -- TODO re-enable sending after I fix line capture
-                -- M.send_tool_messages_if_all_tools_done()
+                vim.schedule(function()
+                    -- FYI I am scheduling this... b/c the redraws are all scheduled...
+                    -- so this has to happen after redraws
+                    -- otherwise this will capture the wrong line count to replace ...
+                    -- yes, soon we can just track line numbers on the buffer itself and then
+                    -- REMOVE THIS if I dont have another reason to schedule it
+                    M.send_tool_messages_if_all_tools_done()
+                end)
             end)
         end
     end
