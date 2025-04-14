@@ -226,7 +226,7 @@ function M.call_tools()
             -- PRN if issues, experiment with pretty printing the serialized json?
             -- TODO move encoding into newToolResponse?
             local content = vim.fn.json_encode(tool_call.response.result.toolResult)
-            local response_message = ChatMessage:newToolResponse(content, tool_call.id, tool_call["function"].name)
+            local response_message = ChatMessage:new_tool_response(content, tool_call.id, tool_call["function"].name)
 
             -- log:trace("tool_message:", vim.inspect(response_message))
             -- tool_message: {

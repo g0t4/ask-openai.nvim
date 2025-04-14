@@ -20,12 +20,6 @@ end
 
 --- @param message ChatMessage
 function ChatThread:add_message(message)
-    if not message.role then
-        error("message.role is required")
-    end
-    if not message.content then
-        error("message.content is required")
-    end
     table.insert(self.messages, message)
 end
 
