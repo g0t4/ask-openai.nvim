@@ -91,6 +91,17 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
     return request
 end
 
+M.on_chunk = function(data, parse_choice, frontend, request)
+    local chunk = M.parse_SSEs(data, parse_choice, frontend, request)
+    -- signal delta(s) arrived and parsed
+    frontend.signal_deltas()
+
+    -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
+    if chunk then
+        frontend.process_chunk(chunk)
+    end
+end
+
 --- @param data string
 --- @return string|nil text
 function M.parse_SSEs(data, parse_choice, frontend, request)
@@ -157,17 +168,6 @@ function M.parse_SSEs(data, parse_choice, frontend, request)
         ::continue::
     end
     return chunk
-end
-
-M.on_chunk = function(data, parse_choice, frontend, request)
-    local chunk = M.parse_SSEs(data, parse_choice, frontend, request)
-    -- signal delta(s) arrived and parsed
-    frontend.signal_deltas()
-
-    -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
-    if chunk then
-        frontend.process_chunk(chunk)
-    end
 end
 
 function M.on_delta(choice, frontend, request)
