@@ -183,6 +183,8 @@ end
 
 function M.on_delta(choice)
     -- this is the new pathway that will rebuild the full message (as if sent stream: false)
+    --   will be used to have accurate message history to send for follow up/tool results/etc
+
     -- later, I can use this to update the UI for what I do with chunks currently
     --    that will entail redrawing message history (or at least part of it for the current messages being streamed)
 
