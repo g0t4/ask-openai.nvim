@@ -245,6 +245,10 @@ data: [DONE]
             local request, frontend = call_on_delta(choices)
             -- print("request", vim.inspect(request))
             should_be_equal(1, #request.messages)
+            local msg = request.messages[1]
+            should_be_equal(0, msg.index)
+            should_be_equal("assistant", msg.role)
+            should_be_equal("tool_calls", msg.finish_reason)
         end)
         -- TODO add a test that validates lookup on index/role per message... need a multi message scenario (if that's ever a thing... and not multi choice... literally need two messages at same time, streaming)
 
