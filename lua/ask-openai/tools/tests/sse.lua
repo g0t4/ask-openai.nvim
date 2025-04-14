@@ -276,6 +276,28 @@ data: [DONE]
         end)
         -- TODO add a test that validates lookup on index/role per message... need a multi message scenario (if that's ever a thing... and not multi choice... literally need two messages at same time, streaming)
 
+        it("streaming tool_calls (multiple SSE/deltas per tool_call) - vllm capture", function()
+            local choices = [[
+                {"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}
+                {"index":0,"delta":{"tool_calls":[{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,"function":{"name":"run_command"}}]},"logprobs":null,"finish_reason":null}
+                {"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"command\": \""}}]},"logprobs":null,"finish_reason":null}
+                {"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"ls"}}]},"logprobs":null,"finish_reason":null}
+                {"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"}"}}]},"logprobs":null,"finish_reason":null}
+                {"index":0,"delta":{"content":""},"logprobs":null,"finish_reason":"tool_calls","stop_reason":null}
+            ]]
+            local request, frontend = call_on_delta(choices)
+            should_be_equal(1, #request.messages)
+            msg = request.messages[1]
+            should_be_equal("assistant", msg.role)
+            -- FYI VLLM IS NOT DUPLICATING ATTRS like role across all deltas, just on first one it seems
+            should_be_equal(0, msg.index)
+            should_be_equal("", msg.content)
+            -- FYI I do not care about logprobs
+            should_be_equal("tool_calls", msg.finish_reason)
+            -- FYI stop_reason for now
+
+        end)
+
         -- TODO move the vllm dual tool test here for on_delta direct testing?
     end)
 end)
