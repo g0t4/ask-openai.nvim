@@ -188,7 +188,7 @@ function M.process_tool_calls(tool_calls)
 end
 
 function M.process_finish_reason(finish_reason)
-    M.process_chunk("finish_reason: " .. tostring(finish_reason))
+    -- M.process_chunk("finish_reason: " .. tostring(finish_reason))
     vim.schedule_wrap(M.call_tools)()
 end
 
