@@ -224,6 +224,7 @@ function M.call_tools()
             -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
             -- make sure content is a string (keep json structure)
             -- PRN if issues, experiment with pretty printing the serialized json?
+            -- TODO move encoding into newToolResponse?
             local content = vim.fn.json_encode(tool_call.response.result.toolResult)
             local response_message = ChatMessage:newToolResponse(content, tool_call.id, tool_call["function"].name)
 
