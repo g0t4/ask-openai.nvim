@@ -177,23 +177,29 @@ function M.signal_deltas()
             -- FYI keep in mind later on I can come back and insert tool results!
             --   for that I'll need a rich model of what is where in the buffer
 
-            local tool_name = "**" .. (call["function"].name or "") .. "**"
-            tool_name = tool_name .. " (" .. call.id .. ")"
+            -- * tool name/id/status
+            local tool_header = "**" .. (call["function"].name or "") .. "**"
+            tool_header = tool_header .. " (" .. call.id .. ")"
+            if call.response then
+                if call.response.result.toolResult.isError then
+                    tool_header = "❌ " .. tool_header
+                else
+                    tool_header = "✅ " .. tool_header
+                end
+            end
+            table.insert(new_lines, tool_header)
+
             assert(not role:find("\n"), "tool should not have a new line but it does")
-            table.insert(new_lines, tool_name)
+
+            -- * tool args
             local args = call["function"].arguments
             if args then
                 -- TODO new line in args? s\b \n right?
                 table.insert(new_lines, args)
             end
+
+            -- * tool result
             if call.response then
-                if call.response.result.toolResult.isError then
-                    local failed = "❌ (" .. call.id .. ")"
-                    table.insert(new_lines, failed)
-                else
-                    local success = "✅ (" .. call.id .. ")"
-                    table.insert(new_lines, success)
-                end
                 for _, tool_content in ipairs(call.response.result.toolResult.content) do
                     table.insert(new_lines, tool_content.name)
                     if tool_content.type == "text" then
