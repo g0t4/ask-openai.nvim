@@ -50,6 +50,8 @@ local default_options = {
             -- when it makes sense, configure diff model for predictions
             -- tmp == not a stable config architecture
 
+            enabled = true,
+
             keymaps = {
                 accept_all = "<Tab>",
                 accept_line = "<C-right>",

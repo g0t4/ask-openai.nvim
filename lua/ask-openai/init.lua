@@ -106,6 +106,10 @@ function _module.remove_prediction_triggers()
 end
 
 function _module.enable_predictions()
+    if not config.get_options().tmp.predictions.enabled then
+        -- if disabled in config, then never enable
+        return
+    end
     if is_predictions_enabled_runtime then
         return
     end
