@@ -145,6 +145,16 @@ function M.parse_SSEs(data, parse_choice)
 
         if success and parsed and parsed.choices and parsed.choices[1] then
             local first_choice = parsed.choices[1]
+
+            -- btw everything outside of the delta is just its package for delivery, not needed after I get the delta out
+            M.on_delta(first_choice)
+
+            -- TODO eventually I will rip out most if not all of the following
+            --   this method will become ONLY the parser...
+            --   the aggregator will be on_delta
+            --   and I won't be doing any chunk/tool aggregation logic below!
+            --   and all events can be built off of the on_delta event
+
             finish_reason = first_choice.finish_reason
             if finish_reason ~= nil and finish_reason ~= vim.NIL then
                 -- FYI merely a warning when new finish_reason is encountered (i.e. today tool_calls)
@@ -169,6 +179,13 @@ function M.parse_SSEs(data, parse_choice)
         ::continue::
     end
     return chunk, finish_reason, tool_calls_s
+end
+
+function M.on_delta(choice)
+    -- this is the new pathway that will rebuild the full message (as if sent stream: false)
+    -- later, I can use this to update the UI for what I do with chunks currently
+    --    that will entail redrawing message history (or at least part of it for the current messages being streamed)
+
 end
 
 -- PRN does vllm have both finish_reason and stop_reason?
