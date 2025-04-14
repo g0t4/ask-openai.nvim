@@ -6,6 +6,8 @@ local log = require("ask-openai.prediction.logger").predictions()
 ---@field pid integer
 local LastRequest = {}
 
+--- @param body table<string, any>
+--- @return LastRequest
 function LastRequest:new(body)
     self = setmetatable({}, { __index = LastRequest })
     -- PRN some connection back to the thread its a part of so it can communicate status changes (i.e. after termination)
