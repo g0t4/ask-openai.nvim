@@ -229,7 +229,7 @@ data: [DONE]
         end)
 
 
-        it("on_delta with two tool use requests - ollama (each tool is one delta only, currently)", function()
+        it("on_delta with two tool use requests in one message - ollama (each tool is one delta only, currently)", function()
             -- TODO can use full SSEs for parse_SSE testing/refactoring
             -- body: {"messages":[{"role":"system","content":"You are a neovim AI plugin. Your name is Neo Vim.  Please respond with markdown formatted text"},{"role":"user","content":"please list files"}],"model":"qwen2.5-coder:7b-instruct-q8_0","stream":true,"tools":[{"function":{"name":"run_command","parameters":{"properties":{"cwd":{"description":"Current working directory, leave empty in most cases","type":"string"},"command":{"description":"Command with args","type":"string"}},"required":["command"],"type":"object"}},"type":"function"},{"function":{"name":"run_script","parameters":{"properties":{"interpreter":{"description":"Command with arguments. Script will be piped to stdin. Examples: bash, fish, zsh, python, or: bash --norc","type":"string"},"script":{"description":"Script to run","type":"string"},"cwd":{"description":"Current working directory","type":"string"}},"required":["script"],"type":"object"}},"type":"function"}]}
             -- data: {"id":"chatcmpl-225","object":"chat.completion.chunk","created":1744655392,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"","tool_calls":[{"id":"call_809l7n8f","index":0,"type":"function","function":{"name":"run_command","arguments":"{\"command\":\"ls -la\"}"}}]},"finish_reason":null}]}
@@ -244,6 +244,8 @@ data: [DONE]
             ]]
 
             local request, frontend = call_on_delta(choices)
+            -- print("request", vim.inspect(request))
+            should_be_equal(1, #request.messages)
         end)
 
         -- TODO move the vllm dual tool test here for on_delta direct testing?
