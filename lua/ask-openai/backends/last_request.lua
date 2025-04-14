@@ -4,6 +4,7 @@ local log = require("ask-openai.prediction.logger").predictions()
 ---@field body table
 ---@field handle uv_process_t
 ---@field pid integer
+---@field thread ChatThread
 local LastRequest = {}
 
 --- @param body table<string, any>
@@ -15,6 +16,7 @@ function LastRequest:new(body)
     self.body = body
     self.handle = nil
     self.pid = nil
+    self.thread = nil -- TODO pass thread in ctor?
     return self
 end
 

@@ -13,9 +13,14 @@ end
 
 --- @param request LastRequest
 function ChatThread:set_last_request(request)
-    -- TODO need to extract new messages from request? or should I pass messages and return a request object?
-    -- TODO? request.thread = self  -- two way reference to thread from request too?
+    -- PRN consider moving this up a level to ctor as I would only need this the very first time..
+    --  also maybe instead of using a body table I should start with a thread and pass that to curl_for
+    request.thread = self -- TODO try this out
     self.last_request = request
+    -- tmp way to copy over initial messages until I rewrite curl_for
+    for _, message in ipairs(request.body.messages) do
+        self:add_message(message)
+    end
 end
 
 --- @param message ChatMessage

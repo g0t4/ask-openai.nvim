@@ -66,6 +66,7 @@ function M.send_question(user_prompt, code, file_name, use_tools)
     end
 
     M.thread = ChatThread.new(body)
+    -- TODO how about -- backend.curl_for(thread, base_url, M)? or thread.body() and pass that to backend.curl_for?
     M.thread:set_last_request(backend.curl_for(body, base_url, M))
 end
 
