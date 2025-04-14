@@ -249,6 +249,7 @@ function M.call_tools()
             --   type = "function"
             -- }
 
+            ---@param tool_call ToolCall
             mcp.send_tool_call(tool_call, function(mcp_response)
                 tool_call.response = mcp_response
                 log:jsonify_info("mcp_response:", mcp_response)
