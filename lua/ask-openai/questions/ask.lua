@@ -177,7 +177,9 @@ function M.process_tool_calls(tool_calls)
 
     local tools_text = {}
     for _, tool_call in ipairs(tool_calls) do
-        name = "**" .. tool_call["function"].name .. "**"
+        name = "**" .. tool_call["function"].name
+        -- PRN add a "verbose" mode? and show things like id then:
+        name = name .. "**" .. " (" .. tool_call.id .. ")"
         table.insert(tools_text, name)
         arguments = tool_call["function"].arguments
         table.insert(tools_text, arguments)
