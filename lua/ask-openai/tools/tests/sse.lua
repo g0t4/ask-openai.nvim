@@ -304,8 +304,8 @@ data: [DONE]
             should_be_equal(0, call.index)
             should_be_equal("function", call.type)
             -- -- * function.name
-            -- func = call["function"]
-            -- should_be_equal("run_command", func.name)
+            func = call["function"]
+            should_be_equal("run_command", func.name)
             --
             -- * tool delta 2-4:
             -- [{"index":0,"function":{"arguments":"{\"command\": \""}}
