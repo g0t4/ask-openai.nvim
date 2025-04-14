@@ -184,6 +184,16 @@ end
 
 function M.on_delta(choice, parse_choice, frontend, request)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
+    -- choice == {"index":0,"delta":{"role":"assistant","content":""}
+
+    -- FYI for now lets only do this for oai_chat (which uses delta in the choice)...
+    --   oai_completions doesn't have delta, I would need to look at its examples before I try to fit it in here...
+    --   I probably should have a diff aggregator for each backend's streaming format
+    --   FYI I called oai_chat the 'middleend' briefly, this could be passed by the middleend to on_chunk
+    if not choice.delta then
+        return
+    end
+
 
     -- this is the new pathway that will rebuild the full message (as if sent stream: false)
     --   will be used to have accurate message history to send for follow up/tool results/etc
