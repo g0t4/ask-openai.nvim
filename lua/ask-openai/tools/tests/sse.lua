@@ -313,7 +313,7 @@ data: [DONE]
             -- [{"index":0,"function":{"arguments":"\"}"}}
             --
             -- concatenate args:
-            -- should_be_equal("{\"command\": \"ls\"}", func.arguments)
+            should_be_equal("{\"command\": \"ls\"}", func.arguments)
         end)
 
         -- TODO add vllm dual tool use test so I can validate that index is whats different
