@@ -2,7 +2,6 @@ local buffers = require("ask-openai.helpers.buffers")
 local log = require("ask-openai.prediction.logger").predictions()
 local mcp = require("ask-openai.tools.mcp")
 local backend = require("ask-openai.backends.oai_chat")
--- local backend = require("ask-openai.backends.oai_completions")
 local agentica = require("ask-openai.backends.models.agentica")
 local ChatWindow = require("ask-openai.questions.chat_window")
 local ChatThread = require("ask-openai.questions.chat_thread")
@@ -23,6 +22,20 @@ function M.send_question(user_prompt, code, file_name, use_tools)
             .. ":\n\n" .. code
     end
 
+    -- FYI not going to support /v1/completions anymore... not until I have a specific need to use it
+    --  I would need to manually format the prompt with a template or otherwise and so now /v1/chat/completions exclusively makes sense
+    --  if anything I might go the route of supporting /api/chat, i.e. using ApiChatThread that has a different to_body()...
+    --  same could be done with /v1/completions a LegacyChatThread but then I am reinventing everything that /v1/chat/completions does
+    --  also tool use would be entirely manually done (build template into prompt, parse response for tools, etc)!
+    --
+    -- local qwen_legacy_body = {
+    --     model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
+    --     prompt = system_prompt .. "\n" .. user_message,
+    --     -- todo temp etc
+    -- }
+    -- /v1/completions
+    -- local body = qwen_legacy_body
+
     local qwen_chat_body = {
         messages = {
             { role = "system", content = system_prompt },
@@ -39,19 +52,10 @@ function M.send_question(user_prompt, code, file_name, use_tools)
         --   review start logs for n_ctx and during completion it warns if truncated prompt:
         --     level=WARN source=runner.go:131 msg="truncating input prompt" limit=8192 prompt=10552 keep=4 new=8192
     }
-
-    local qwen_legacy_body = {
-        model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
-        prompt = system_prompt .. "\n" .. user_message,
-        -- todo temp etc
-    }
-
     -- /v1/chat/completions
     -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
     local body = qwen_chat_body
 
-    -- /v1/completions
-    -- local body = qwen_legacy_body
 
     -- ollama:
     local base_url = "http://ollama:11434"
