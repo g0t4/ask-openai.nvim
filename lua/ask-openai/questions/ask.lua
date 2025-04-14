@@ -156,7 +156,7 @@ function M.ensure_response_window_is_open()
     M.chat_window:ensure_open()
 end
 
-function M.signal_deltas()
+function M.handle_messages_updated()
     -- TODO rename last_request to just request? or current_request?
     if not M.thread.last_request.messages then
         return
@@ -266,7 +266,7 @@ function M.call_tools()
                 --   }
                 -- }
 
-                M.signal_deltas()
+                M.handle_messages_updated()
 
                 -- *** tool response messages back to model
                 -- Claude shows content with top level isError and content (STDOUT/STDERR fields)

@@ -37,7 +37,7 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
             table.insert(f.process_finish_reason_calls, reason)
         end
 
-        function f.signal_deltas()
+        function f.handle_messages_updated()
         end
 
         return f

@@ -111,7 +111,7 @@ M.on_chunk = function(data, parse_choice, frontend, request)
             local first_choice = parsed.choices[1]
 
             M.on_delta(first_choice, frontend, request)
-            frontend.signal_deltas()
+            frontend.handle_messages_updated()
 
             -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
             local chunk = parse_choice(first_choice)
