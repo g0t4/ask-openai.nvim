@@ -256,7 +256,7 @@ data: [DONE]
             --    "arguments":"{\"command\":\"ls -la\"}"}}]},"finish_reason":null}
             first_call = msg.tool_calls[1]
             should_be_equal("call_809l7n8f", first_call.id)
-            -- should_be_equal(0, msg.index)
+            should_be_equal(0, first_call.index)
             -- should_be_equal("function", first_call.type)
             -- func = first_call["function"]
             -- should_be_equal("run_command", func.name)
