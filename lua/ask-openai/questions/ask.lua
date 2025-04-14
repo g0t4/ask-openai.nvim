@@ -192,18 +192,14 @@ function M.process_tool_calls(tool_calls)
     end)
 end
 
-function M.process_finish_reason(finish_reason)
-    -- TODO not hack this back together, I should use the entire choice delta to determine:
-    --   index/role (grouping) and content (aggregated)
-    --   same as tool use except I need both to be stream-able
-    --
+function M.process_request_completed()
+    -- TODO use new aggregated request.messages!!
     local message = table.concat(M.current_message_chunks, "")
     M.current_message_chunks = {} -- for next message
     local assistant_message = ChatMessage:new("assistant", message)
     -- any tool requests too?
     M.thread:add_message(assistant_message)
 
-    -- M.chat_window:append("finish_reason: " .. tostring(finish_reason))
     vim.schedule(function()
         log:jsonify_info("assistant_message:", assistant_message)
         M.call_tools()

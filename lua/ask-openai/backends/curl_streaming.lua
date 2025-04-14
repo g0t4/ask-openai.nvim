@@ -42,6 +42,8 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
 
             -- todo what logic do I want to NOT call request_failed here?
             frontend.request_failed(code)
+        else
+            frontend.process_request_completed()
         end
         stdout:close()
         stderr:close()
@@ -174,11 +176,6 @@ M.on_chunk = function(data, parse_choice, frontend, request)
             end
         end
         frontend.process_tool_calls(flattened_calls)
-    end
-    if finish_reason ~= nil and finish_reason ~= vim.NIL then
-        -- TODO? pass combined chunk and tool_calls here?
-        -- PRN any final processing (i.e. tool fallback)
-        frontend.process_finish_reason(finish_reason)
     end
 end
 

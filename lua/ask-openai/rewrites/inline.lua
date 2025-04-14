@@ -114,11 +114,9 @@ function M.process_tool_calls(tool_calls)
     end)
 end
 
-function M.process_finish_reason(finish_reason)
-    -- TODO long term do nothing OR set some visual indicator (i.e. spinner or pending request icon in statusline)
-    vim.schedule(function()
-        M.process_chunk("finish_reason: " .. finish_reason)
-    end)
+function M.process_request_completed()
+    -- TODO visual indicator?
+    -- TODO update rewrite to use aggregator like ask.lua tool use
 end
 
 function M.accept_rewrite()
