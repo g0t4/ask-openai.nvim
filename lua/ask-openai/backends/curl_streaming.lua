@@ -133,6 +133,9 @@ function M.parse_SSEs(data, parse_choice)
             goto continue
         end
 
+        -- TODO shouldn't be aggregating across deltas w/o looking at role/index!
+        --    just worked out fine that I never have differing values for role/index so far
+
         --  strip leading "data: " (if present)
         local event_json = ss_event
         if ss_event:sub(1, 6) == "data: " then
