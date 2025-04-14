@@ -216,9 +216,6 @@ function M.call_tools()
             -- }
 
             M.process_chunk(vim.inspect(mcp_response))
-            -- TODO now these need to be put into the buffer to send back to the LLM! user can approve if needed or it can happen when all tools finish?
-            -- TODO if all tools finished, then send back to LLM
-
             local tool_message = {
                 role = "tool",
                 -- make sure content is a string (keep json structure)
@@ -236,6 +233,7 @@ function M.call_tools()
             --   tool_call_id = "call_n44nr8e2"
             -- }
             log:jsonify_info("tool_message:", tool_message)
+            tool_call.response_message = tool_message
         end)
     end
 end
