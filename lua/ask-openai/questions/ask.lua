@@ -159,13 +159,10 @@ function M.signal_deltas()
     -- TODO for lack of a better name, this will trigger a redraw of ChatWindow
     --    OR at least redraw current requests's contents (messages/tool calls, both will stream this way too!)
     -- great way to illustrate how this works:
-    log:trace("signal", vim.inspect(M.thread.last_request))
+    -- log:trace("signal", vim.inspect(M.thread.last_request))
     -- TODO rename last_request to just request? or current_request?
-end
 
-function M.process_chunk(_)
-    -- NOOP until I rip this out of rewrite too
-    -- TODO REMOVE WHEN DENORMALIZER fully integrated for showing streaming state
+
 end
 
 function M.process_request_completed()
