@@ -231,7 +231,27 @@ function M.call_tools()
             --   }
             -- }
 
-            M.process_chunk(vim.inspect(mcp_response))
+            -- TODO DECOUPLE from run_command/run_script... when I wanna use other tools... can have special display logic just careful when to apply it
+            -- M.process_chunk(vim.inspect(mcp_response))
+            -- FYI might be cool to mod the original tool_call display and insert the result there and put the status line on its original name/id?
+            --  that way I can see the cmd + result easily
+            local result_summary = {}
+            if tool_call.response.result.toolResult.isError then
+                local failed = "❌ (" .. tool_call.id .. ")"
+                table.insert(result_summary, failed)
+            else
+                local success = "✅ (" .. tool_call.id .. ")"
+                table.insert(result_summary, success)
+            end
+            for _, content in ipairs(tool_call.response.result.toolResult.content) do
+                table.insert(result_summary, content.name)
+                if content.type == "text" then
+                    table.insert(result_summary, content.text)
+                else
+                    table.insert(result_summary, "  unexpected content type: " .. content.type)
+                end
+            end
+            M.process_chunk(table.concat(result_summary, "\n"))
 
             -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
             -- make sure content is a string (keep json structure)
