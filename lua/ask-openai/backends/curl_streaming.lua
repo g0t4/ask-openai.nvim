@@ -245,6 +245,7 @@ function M.on_delta(choice, parse_choice, frontend, request)
                 type         = call.type,
                 ["function"] = {
                     name = call["function"].name,
+                    arguments = call["function"].arguments,
                 }
 
             }
