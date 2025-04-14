@@ -249,8 +249,9 @@ data: [DONE]
             should_be_equal(0, msg.index)
             should_be_equal("assistant", msg.role)
             should_be_equal("tool_calls", msg.finish_reason)
-            -- tool_calls:
+
             should_be_equal(2, #msg.tool_calls)
+            -- * tool1:
             -- {"id":"call_809l7n8f","index":0,"type":"function", "function":{
             --    "name":"run_command",
             --    "arguments":"{\"command\":\"ls -la\"}"}}]},"finish_reason":null}
@@ -261,10 +262,17 @@ data: [DONE]
             func = first_call["function"]
             should_be_equal("run_command", func.name)
             should_be_equal("{\"command\":\"ls -la\"}", func.arguments)
-
+            -- * tool2:
             -- {"id":"call_oqp1e2a1","index":1,"type":"function", "function":{
             --    "name":"run_command",
             --    "arguments":"{\"command\":\"ls -la\",\"cwd\":\"/path/to/directory\"}"}}]},"finish_reason":null}
+            second_call = msg.tool_calls[2]
+            should_be_equal("call_oqp1e2a1", second_call.id)
+            should_be_equal(1, second_call.index)
+            should_be_equal("function", second_call.type)
+            func = second_call["function"]
+            should_be_equal("run_command", func.name)
+            should_be_equal("{\"command\":\"ls -la\",\"cwd\":\"/path/to/directory\"}", func.arguments)
         end)
         -- TODO add a test that validates lookup on index/role per message... need a multi message scenario (if that's ever a thing... and not multi choice... literally need two messages at same time, streaming)
 
