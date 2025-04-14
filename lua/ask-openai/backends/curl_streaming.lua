@@ -6,25 +6,7 @@ local M = {}
 
 ---@param request LastRequest
 function M.terminate(request)
-    -- TODO move this onto a request class?
-    --  and if its on request, the request can be marked w/ a status instead of nil for values
-    -- PRN add interface to frontend to be notified when a request is aborted or its status changes in general
-    if request == nil or request.handle == nil then
-        return
-    end
-
-    local handle = request.handle
-    local pid = request.pid
-    request.handle = nil
-    request.pid = nil
-    if handle ~= nil and not handle:is_closing() then
-        log:trace("Terminating process, pid: ", pid)
-
-        handle:kill("sigterm")
-        handle:close()
-        -- FYI ollama should show that connection closed/aborted
-    end
-    -- TODO! see :h uv.spawn() for using uv.shutdown/uv.close? and fallback to kill, or does it matter?
+    LastRequest.terminate(request)
 end
 
 M.on_chunk = function(data, parse_choice, frontend, request)
