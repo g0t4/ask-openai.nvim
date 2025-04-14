@@ -223,7 +223,9 @@ function M.on_delta(choice, parse_choice, frontend, request)
         request.messages[msg_lookup] = message
     end
 
-
+    if choice.delta.content ~= nil then
+        message.content = (message.content or "") .. choice.delta.content
+    end
 
     -- this is the new pathway that will rebuild the full message (as if sent stream: false)
     --   will be used to have accurate message history to send for follow up/tool results/etc
