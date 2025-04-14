@@ -186,6 +186,7 @@ function M.signal_deltas()
                 -- TODO new line in args? s\b \n right?
                 table.insert(new_lines, args)
             end
+            table.insert(new_lines, "") -- between messages?
         end
     end
 
