@@ -189,7 +189,7 @@ data: [DONE]
             local deltas   = split_lines_skip_empties(choices)
             for _, delta_json in pairs(deltas) do
                 local delta_table = vim.json.decode(delta_json)
-                curls.on_delta(delta_table, oai_chat.parse_choice, frontend, request)
+                curls.on_delta(delta_table, frontend, request)
             end
             return request, frontend
         end

@@ -147,7 +147,7 @@ function M.parse_SSEs(data, parse_choice, frontend, request)
             local first_choice = parsed.choices[1]
 
             -- btw everything outside of the delta is just its package for delivery, not needed after I get the delta out
-            M.on_delta(first_choice, parse_choice, frontend, request)
+            M.on_delta(first_choice, frontend, request)
 
 
             -- TODO eventually I will rip out most if not all of the following
@@ -182,9 +182,14 @@ function M.parse_SSEs(data, parse_choice, frontend, request)
     return chunk, finish_reason, tool_calls_s
 end
 
-function M.on_delta(choice, parse_choice, frontend, request)
+function M.on_delta(choice, frontend, request)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
-    -- choice == {"index":0,"delta":{"role":"assistant","content":""}
+    -- rebuilds message as if sent `stream: false`
+    -- for message history / follow up
+    -- TODO later, use to update the ChatWindow
+    --    == rip out the original pathways that called process_chunk / etc
+    --    KEEP DeltaArrived signal though (refreshes/rebuilds ChatWindow)
+
 
     -- FYI for now lets only do this for oai_chat (which uses delta in the choice)...
     --   oai_completions doesn't have delta, I would need to look at its examples before I try to fit it in here...
@@ -264,14 +269,6 @@ function M.on_delta(choice, parse_choice, frontend, request)
             end
         end
     end
-
-    -- this is the new pathway that will rebuild the full message (as if sent stream: false)
-    --   will be used to have accurate message history to send for follow up/tool results/etc
-
-    -- later, I can use this to update the UI for what I do with chunks currently
-    --    that will entail redrawing message history (or at least part of it for the current messages being streamed)
-
-    -- TODO when I encounter a finish_reason or other stop signal, make sure to reset tmp_current_messages!
 end
 
 -- PRN does vllm have both finish_reason and stop_reason?
