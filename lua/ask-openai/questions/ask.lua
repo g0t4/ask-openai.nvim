@@ -186,6 +186,24 @@ function M.signal_deltas()
                 -- TODO new line in args? s\b \n right?
                 table.insert(new_lines, args)
             end
+            if call.response then
+                if call.response.result.toolResult.isError then
+                    local failed = "❌ (" .. call.id .. ")"
+                    table.insert(new_lines, failed)
+                else
+                    local success = "✅ (" .. call.id .. ")"
+                    table.insert(new_lines, success)
+                end
+                for _, tool_content in ipairs(call.response.result.toolResult.content) do
+                    table.insert(new_lines, tool_content.name)
+                    if tool_content.type == "text" then
+                        table.insert(new_lines, tool_content.text)
+                    else
+                        table.insert(new_lines, "  unexpected content type: " .. tool_content.type)
+                    end
+                end
+            end
+
             table.insert(new_lines, "") -- between messages?
         end
     end
