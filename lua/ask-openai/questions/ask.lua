@@ -202,11 +202,6 @@ function M.process_request_completed()
 end
 
 function M.call_tools()
-    -- log:trace("tools:", vim.inspect(M.thread.last_request.tool_calls))
-    if M.thread.last_request.tool_calls == {} then
-        return
-    end
-
     for _, message in ipairs(M.thread.last_request.messages or {}) do
         for _, tool_call in ipairs(message.tool_calls or {}) do
             log:jsonify_info("tool:", tool_call)
@@ -303,9 +298,11 @@ end
 
 ---@return boolean
 function M.any_outstanding_tool_calls()
-    for _, tool_call in ipairs(M.thread.last_request.tool_calls) do
-        if tool_call.response_message == nil then
-            return true
+    for _, message in ipairs(M.thread.last_request.messages or {}) do
+        for _, tool_call in ipairs(message.tool_calls or {}) do
+            if tool_call.response_message == nil then
+                return true
+            end
         end
     end
     return false
