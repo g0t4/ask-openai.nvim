@@ -240,9 +240,12 @@ function M.on_delta(choice, parse_choice, frontend, request)
             -- TODO test stream case w/ vllm b/c non stream case is easier
             -- for now just assume entirely new tool call each time... will fix this with a test of streaming later
             parsed_call = {
-                id = call.id,
-                index = call.index,
-                type = call.type,
+                id           = call.id,
+                index        = call.index,
+                type         = call.type,
+                ["function"] = {
+                    name = call["function"].name,
+                }
 
             }
             table.insert(message.tool_calls, parsed_call)
