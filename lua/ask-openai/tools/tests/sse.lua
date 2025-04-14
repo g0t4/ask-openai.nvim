@@ -192,7 +192,7 @@ data: [DONE]
         end
 
 
-        it("on_delta for question (no tool calls)", function()
+        it("on_delta for question (no tool calls) - ollama btw (shouldn't matter)", function()
             -- [511.761]sec [TRACE] body: {"messages":[{"role":"system","content":"You are a neovim AI plugin. Your name is Neo Vim.  Please respond with markdown formatted text"},{"role":"user","content":"what is your name?"}],"model":"qwen2.5-coder:7b-instruct-q8_0","stream":true}
             -- [513.194]sec [TRACE] on_stdout data: data: {"id":"chatcmpl-192","object":"chat.completion.chunk","created":1744646668,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"My"},"finish_reason":null}]}
             -- [513.206]sec [TRACE] on_stdout data: data: {"id":"chatcmpl-192","object":"chat.completion.chunk","created":1744646668,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" name"},"finish_reason":null}]}
