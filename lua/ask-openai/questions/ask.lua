@@ -231,11 +231,11 @@ function M.call_tools()
             --   }
             -- }
 
-            -- TODO DECOUPLE from run_command/run_script... when I wanna use other tools... can have special display logic just careful when to apply it
             -- M.process_chunk(vim.inspect(mcp_response))
             -- FYI might be cool to mod the original tool_call display and insert the result there and put the status line on its original name/id?
             --  that way I can see the cmd + result easily
             local result_summary = {}
+            -- FYI ... isError is part of MCP spec, all tools return it IIUC... so this is not coupled to run_command
             if tool_call.response.result.toolResult.isError then
                 local failed = "❌ (" .. tool_call.id .. ")"
                 table.insert(result_summary, failed)
