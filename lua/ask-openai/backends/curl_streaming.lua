@@ -233,6 +233,17 @@ function M.on_delta(choice, parse_choice, frontend, request)
         message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
     end
 
+    calls = choice.delta.tool_calls
+    if calls then
+        message.tool_calls = (message.tool_calls or {})
+        for _, call in ipairs(calls) do
+            -- TODO test stream case w/ vllm b/c non stream case is easier
+            -- for now just assume entirely new tool call each time... will fix this with a test of streaming later
+            parsed_call = {}
+            table.insert(message.tool_calls, parsed_call)
+        end
+    end
+
     -- this is the new pathway that will rebuild the full message (as if sent stream: false)
     --   will be used to have accurate message history to send for follow up/tool results/etc
 
