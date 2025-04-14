@@ -248,9 +248,6 @@ function M.call_tools()
             --   index = 0,
             --   type = "function"
             -- }
-            -- TODO! ok now replace the tool calls in the final summary as results arrive!
-            --   move logic to format the output up above (into template up in signal_deltas) then you can call it from here
-            --    then redraw every time a tool finishes
 
             mcp.send_tool_call(tool_call, function(mcp_response)
                 tool_call.response = mcp_response
