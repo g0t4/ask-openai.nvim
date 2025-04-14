@@ -163,10 +163,9 @@ function M.signal_deltas()
     -- TODO rename last_request to just request? or current_request?
 end
 
-function M.process_chunk(text)
-    vim.schedule(function()
-        M.chat_window:append(text)
-    end)
+function M.process_chunk(_)
+    -- NOOP until I rip this out of rewrite too
+    -- TODO REMOVE WHEN DENORMALIZER fully integrated for showing streaming state
 end
 
 function M.process_request_completed()
