@@ -34,6 +34,8 @@ function BufferController:get_cursor_line_number_0based()
 end
 
 function BufferController:replace_lines_after(line_number, new_lines)
+    -- TODO if perf is an issue, I could easily keep last lines, do a diff and patch only changed lines
+    --   that said, given this is just the current request... that basically is a coarse grain diff
     vim.api.nvim_buf_set_lines(self.buffer_number, line_number, -1, false, new_lines)
 end
 
