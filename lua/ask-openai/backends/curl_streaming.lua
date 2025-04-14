@@ -10,7 +10,7 @@ function M.terminate(request)
 end
 
 M.on_chunk = function(data, parse_choice, frontend, request)
-    local chunk, finish_reason, tool_calls_s = M.parse_SSEs(data, parse_choice)
+    local chunk, finish_reason, tool_calls_s = M.parse_SSEs(data, parse_choice, frontend)
     if chunk then
         -- TODO combine chunks too so the request has the final combined text
         -- - right now I just show the chunks one by one
@@ -116,7 +116,7 @@ end
 
 --- @param data string
 --- @return string|nil text, string|nil finish_reason, table|nil tool_calls_s
-function M.parse_SSEs(data, parse_choice)
+function M.parse_SSEs(data, parse_choice, frontend)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
@@ -181,7 +181,7 @@ function M.parse_SSEs(data, parse_choice)
     return chunk, finish_reason, tool_calls_s
 end
 
-function M.on_delta(choice)
+function M.on_delta(choice, frontend)
     -- this is the new pathway that will rebuild the full message (as if sent stream: false)
     --   will be used to have accurate message history to send for follow up/tool results/etc
 

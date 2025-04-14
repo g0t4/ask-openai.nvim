@@ -34,7 +34,7 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         --     },
         --     "finish_reason":null
         --   }]
-        local _, _, tool_calls_s = curls.parse_SSEs(data, oai_chat.parse_choice)
+        local _, _, tool_calls_s = curls.parse_SSEs(data, oai_chat.parse_choice, "TODO")
         should_be_equal(#tool_calls_s, 1) -- table of
         should_be_equal(#tool_calls_s[1], 1) -- table of calls
         local tool = tool_calls_s[1][1]
@@ -51,7 +51,7 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
     it("parses ollama finish_reason", function()
         local data =
         'data: {"id":"chatcmpl-304","object":"chat.completion.chunk","created":1744521962,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"tool_calls"}]}'
-        local _, finish_reason, tool_calls_s = curls.parse_SSEs(data, oai_chat.parse_choice)
+        local _, finish_reason, tool_calls_s = curls.parse_SSEs(data, oai_chat.parse_choice, "TODO")
         should_be_equal(finish_reason, "tool_calls")
         should_be_equal(#tool_calls_s, 0)
     end)
