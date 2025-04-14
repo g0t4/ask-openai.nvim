@@ -255,7 +255,11 @@ function M.on_delta(choice, parse_choice, frontend, request)
                 if func.name ~= nil then
                     parsed_call["function"].name = func.name
                 end
-                parsed_call["function"].arguments = func.arguments
+                if func.arguments ~= nil then
+                    -- technically, need a test to validate nil check here but just do it for now
+                    current = parsed_call["function"].arguments or ""
+                    parsed_call["function"].arguments = (current .. func.arguments)
+                end
             end
         end
     end
