@@ -33,6 +33,10 @@ function BufferController:get_cursor_line_number_0based()
     return cursor[1] - 1
 end
 
+function BufferController:replace_lines_after(line_number, new_lines)
+    vim.api.nvim_buf_set_lines(self.buffer_number, line_number, -1, false, new_lines)
+end
+
 function BufferController:get_last_paragraph()
     -- TODO add unit tests of this
     --   TODO notably handle whether or not this should include the empty line above a paragraph (when there is one, i.e. not when only paragraph is on line 1

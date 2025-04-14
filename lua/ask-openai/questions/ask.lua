@@ -167,16 +167,21 @@ function M.signal_deltas()
     if not M.thread.last_request.messages then
         return
     end
-    -- TODO call replace lines
 
-    for _, message in ipairs(M.threa.last_request.messages) do
-        local role = "**" .. (message.role or "") .. "**"
-        local content = message.content or ""
-        local line = role .. ": \n" .. content
-        vim.schedule(function()
-            M.chat_window:append(line)
-        end)
-    end
+    vim.schedule(function()
+        local new_lines = {}
+        for _, message in ipairs(M.thread.last_request.messages) do
+            local role = "**" .. (message.role or "") .. "**"
+            assert(not role:find("\n"), "role should not have a new line but it does")
+            table.insert(new_lines, role)
+            local content = message.content or ""
+            for _, line in ipairs(vim.split(content, "\n")) do
+                table.insert(new_lines, line)
+            end
+            table.insert(new_lines, "") -- between messages?
+        end
+        M.chat_window.buffer:replace_lines_after(M.hack_lines_before_request, new_lines)
+    end)
 end
 
 function M.process_request_completed()
