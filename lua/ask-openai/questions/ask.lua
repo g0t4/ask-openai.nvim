@@ -197,7 +197,10 @@ function M.signal_deltas()
                 for _, tool_content in ipairs(call.response.result.toolResult.content) do
                     table.insert(new_lines, tool_content.name)
                     if tool_content.type == "text" then
-                        table.insert(new_lines, tool_content.text)
+                        -- split on new lines for buffer insert
+                        for _, line in ipairs(vim.split(tool_content.text, "\n")) do
+                            table.insert(new_lines, "  " .. line)
+                        end
                     else
                         table.insert(new_lines, "  unexpected content type: " .. tool_content.type)
                     end
