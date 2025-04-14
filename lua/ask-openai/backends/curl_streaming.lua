@@ -92,13 +92,8 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
 end
 
 M.on_chunk = function(data, parse_choice, frontend, request)
-    local chunk = M.parse_SSEs(data, parse_choice, frontend, request)
+    M.parse_SSEs(data, parse_choice, frontend, request)
     frontend.signal_deltas()
-
-    -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
-    if chunk then
-        frontend.process_chunk(chunk)
-    end
 end
 
 --- @param data string
@@ -107,21 +102,10 @@ function M.parse_SSEs(data, parse_choice, frontend, request)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
-    local chunk = nil -- combine all chunks into one string and check for done
-    local finish_reason = nil -- only ever one for entire request
-    local tool_calls_s = {} -- can be multiple
-    -- for lack of a better name right now, call it tool_calls_s so it at least stands out
-
     for ss_event in data:gmatch("[^\r\n]+") do
-        -- PERHAPS I should be returning multiple then instead of adding them below?
-
         if ss_event:match("^data:%s*%[DONE%]$") then
-            -- ignore the [DONE] line, nothing to parse
-            goto continue
+            goto ignore_done
         end
-
-        -- TODO shouldn't be aggregating across deltas w/o looking at role/index!
-        --    just worked out fine that I never have differing values for role/index so far
 
         --  strip leading "data: " (if present)
         local event_json = ss_event
@@ -133,40 +117,19 @@ function M.parse_SSEs(data, parse_choice, frontend, request)
         if success and parsed and parsed.choices and parsed.choices[1] then
             local first_choice = parsed.choices[1]
 
-            -- btw everything outside of the delta is just its package for delivery, not needed after I get the delta out
             M.on_delta(first_choice, frontend, request)
 
-
-            -- TODO eventually I will rip out most if not all of the following
-            --   this method will become ONLY the parser...
-            --   the aggregator will be on_delta
-            --   and I won't be doing any chunk/tool aggregation logic below!
-            --   and all events can be built off of the on_delta event
-
-            finish_reason = first_choice.finish_reason
-            if finish_reason ~= nil and finish_reason ~= vim.NIL then
-                -- FYI merely a warning when new finish_reason is encountered (i.e. today tool_calls)
-                if finish_reason ~= "stop"
-                    and finish_reason ~= "length"
-                    and finish_reason ~= "tool_calls"
-                then
-                    log:warn("[WARN] unexpected finish_reason: '" .. finish_reason .. "'")
-                end
+            -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
+            local chunk = parse_choice(first_choice)
+            if chunk then
+                frontend.process_chunk(chunk)
             end
-
-            local new_chunk
-            new_chunk, tool_calls = parse_choice(first_choice)
-            -- PRN if any good reason to do so.. can return  chunks (not chunk concatenated):
-            chunk = (chunk or "") .. (new_chunk or "")
-            -- use tests to add conditions like vim.NIL, nil for:
-            table.insert(tool_calls_s, tool_calls)
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
 
-        ::continue::
+        ::ignore_done::
     end
-    return chunk
 end
 
 function M.on_delta(choice, frontend, request)

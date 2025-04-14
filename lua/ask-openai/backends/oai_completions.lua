@@ -78,7 +78,7 @@ function M.parse_choice(choice)
         return ""
     end
     -- no tool calls in /v1/completions (so just pass nil)
-    return choice.text, nil
+    return choice.text
 end
 
 return M
