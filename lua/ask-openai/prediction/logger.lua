@@ -3,15 +3,6 @@ Logger.__index = Logger
 
 local module_loaded_at = vim.loop.hrtime()
 
-local predictions_logger = nil
-function Logger.predictions()
-    if predictions_logger then
-        return predictions_logger
-    end
-    predictions_logger = Logger:new("ask-predictions.log")
-    return predictions_logger
-end
-
 -- purposes:
 -- - only open file once per process
 -- - only check for directory existence once
@@ -223,6 +214,30 @@ function Logger:trace_stdio_read_errors(label, read_error, _data)
         -- ?? dump colorful stack trace
         self:trace(label .. " read_error:", read_error)
     end
+end
+
+-- *** NOOP LOGGER STUBS TO SHUT DOWN 99% of expense of logging
+NOOP_LOGGER = {}
+NOOP_LOGGER = setmetatable({}, { __index = Logger })
+function NOOP_LOGGER:log(...)
+end
+
+function NOOP_LOGGER:json_info(...)
+end
+
+-- local DISABLED = false
+local DISABLED = true
+local predictions_logger = nil
+function Logger.predictions()
+    if DISABLED then
+        return NOOP_LOGGER
+    end
+
+    if predictions_logger then
+        return predictions_logger
+    end
+    predictions_logger = Logger:new("ask-predictions.log")
+    return predictions_logger
 end
 
 return Logger
