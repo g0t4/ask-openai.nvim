@@ -163,12 +163,27 @@ function M.signal_deltas()
     -- TODO rename last_request to just request? or current_request?
 
 
+    -- take current buffer and remove lines added since last request started so we can replace them
+    if not M.thread.last_request.messages then
+        return
+    end
+    -- TODO call replace lines
+
+    for _, message in ipairs(M.threa.last_request.messages) do
+        local role = "**" .. (message.role or "") .. "**"
+        local content = message.content or ""
+        local line = role .. ": \n" .. content
+        vim.schedule(function()
+            M.chat_window:append(line)
+        end)
+    end
 end
 
 function M.process_request_completed()
     -- TODO use new aggregated request.messages!!
     --   then resume this:
     --
+    do return end
 
     -- TODO extract tool calls and flatten FROM the DENORMALIZER
     -- for now just write tool dcalls to the buffer
