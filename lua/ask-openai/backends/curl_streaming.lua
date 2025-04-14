@@ -241,6 +241,7 @@ function M.on_delta(choice, parse_choice, frontend, request)
             -- for now just assume entirely new tool call each time... will fix this with a test of streaming later
             parsed_call = {
                 id = call.id,
+                index = call.index,
             }
             table.insert(message.tool_calls, parsed_call)
         end
