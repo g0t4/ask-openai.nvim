@@ -232,7 +232,7 @@ end
 function M.call_tools()
     for _, message in ipairs(M.thread.last_request.messages or {}) do
         for _, tool_call in ipairs(message.tool_calls or {}) do
-            log:jsonify_info("tool:", tool_call)
+            -- log:jsonify_info("tool:", tool_call)
             -- log:trace("tool:", vim.inspect(tool))
             -- tool:
             -- {
@@ -248,7 +248,7 @@ function M.call_tools()
             ---@param tool_call ToolCall
             mcp.send_tool_call(tool_call, function(mcp_response)
                 tool_call.response = mcp_response
-                log:jsonify_info("mcp_response:", mcp_response)
+                -- log:jsonify_info("mcp_response:", mcp_response)
                 -- log:trace("mcp_response:", vim.inspect(mcp_response))
                 -- mcp_response:
                 --  {
