@@ -182,6 +182,16 @@ data: [DONE]
             local request  = {}
         end)
 
+        local function call_on_delta(choices, frontend, request)
+            local deltas = split_lines_skip_empties(choices)
+            for _, delta_json in pairs(deltas) do
+                local delta_table = vim.json.decode(delta_json)
+                curls.on_delta(delta_table, oai_chat.parse_choice, frontend, request)
+            end
+            return deltas
+        end
+
+
         it("on_delta for question (no tool calls)", function()
             -- [511.761]sec [TRACE] body: {"messages":[{"role":"system","content":"You are a neovim AI plugin. Your name is Neo Vim.  Please respond with markdown formatted text"},{"role":"user","content":"what is your name?"}],"model":"qwen2.5-coder:7b-instruct-q8_0","stream":true}
             -- [513.194]sec [TRACE] on_stdout data: data: {"id":"chatcmpl-192","object":"chat.completion.chunk","created":1744646668,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"My"},"finish_reason":null}]}
@@ -204,11 +214,8 @@ data: [DONE]
 
             local frontend = FakeFrontend:new()
             local request  = {}
-            local deltas   = split_lines_skip_empties(choices)
-            for _, delta_json in pairs(deltas) do
-                local delta_table = vim.json.decode(delta_json)
-                curls.on_delta(delta_table, oai_chat.parse_choice, frontend, request)
-            end
+            local deltas   = call_on_delta(choices, frontend, request)
+
             should_be_equal(1, #request.messages)
             local msg = request.messages[1]
             should_be_equal(0, msg.index)
