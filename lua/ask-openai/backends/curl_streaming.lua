@@ -242,6 +242,8 @@ function M.on_delta(choice, parse_choice, frontend, request)
             parsed_call = {
                 id = call.id,
                 index = call.index,
+                type = call.type,
+
             }
             table.insert(message.tool_calls, parsed_call)
         end
