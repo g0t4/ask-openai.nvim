@@ -240,6 +240,7 @@ function M.on_delta(choice, parse_choice, frontend, request)
             -- TODO test stream case w/ vllm b/c non stream case is easier
             -- for now just assume entirely new tool call each time... will fix this with a test of streaming later
             parsed_call = message.tool_calls[call_delta.index + 1]
+            -- PRN lookup message by index # and dont rely on contiguous index values?
             if parsed_call == nil then
                 parsed_call = {
                     -- assuming these are always on first delta per message
