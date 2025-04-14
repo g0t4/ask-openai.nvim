@@ -163,6 +163,7 @@ function M.signal_deltas()
 
     local new_lines = {}
     for _, message in ipairs(M.thread.last_request.messages) do
+        -- TODO extract a message formatter to build the lines below
         local role = "**" .. (message.role or "") .. "**"
         assert(not role:find("\n"), "role should not have a new line but it does")
         table.insert(new_lines, role)
@@ -177,6 +178,7 @@ function M.signal_deltas()
             --   for that I'll need a rich model of what is where in the buffer
 
             local tool_name = "**" .. (call["function"].name or "") .. "**"
+            tool_name = tool_name .. " (" .. call.id .. ")"
             assert(not role:find("\n"), "tool should not have a new line but it does")
             table.insert(new_lines, tool_name)
             local args = call["function"].arguments
@@ -193,39 +195,10 @@ function M.signal_deltas()
 end
 
 function M.process_request_completed()
-    do return end
-
-    -- TODO extract tool calls and flatten FROM the DENORMALIZER
-    -- for now just write tool dcalls to the buffer
-    M.thread.last_request.tool_calls = M.thread.last_request.tool_calls or {}
-
-    -- each time this is called, its a list of tool_call
-    -- insert those into overall list (flatten)
-    for _, tool_call in ipairs(tool_calls) do
-        table.insert(M.thread.last_request.tool_calls, tool_call)
-    end
-
-    -- local tool_calls_str = vim.inspect(tool_calls)
-    -- M.chat_window:append(tool_calls_str)
-
-    local tool_calls_summmary = {}
-    for _, tool_call in ipairs(tool_calls) do
-        name = "**" .. tool_call["function"].name
-        -- PRN add a "verbose" mode? and show things like id then:
-        name = name .. "**" .. " (" .. tool_call.id .. ")"
-        table.insert(tool_calls_summmary, name)
-        arguments = tool_call["function"].arguments
-        table.insert(tool_calls_summmary, arguments)
-    end
     vim.schedule(function()
-        M.chat_window:append(table.concat(tool_calls_summmary, "\n"))
+        -- log:jsonify_info("assistant_message:", assistant_message)
+        M.call_tools()
     end)
-
-    -- TODO THEN CALL THEM:
-    -- vim.schedule(function()
-    --     log:jsonify_info("assistant_message:", assistant_message)
-    --     M.call_tools()
-    -- end)
 end
 
 function M.call_tools()
@@ -233,82 +206,86 @@ function M.call_tools()
     if M.thread.last_request.tool_calls == {} then
         return
     end
-    for _, tool_call in ipairs(M.thread.last_request.tool_calls) do
-        log:jsonify_info("tool:", tool_call)
-        -- log:trace("tool:", vim.inspect(tool))
-        -- tool:
-        -- {
-        --   ["function"] = {
-        --     arguments = '{"command":"ls"}',
-        --     name = "run_command"
-        --   },
-        --   id = "call_mmftuy7j",
-        --   index = 0,
-        --   type = "function"
-        -- }
 
-        mcp.send_tool_call(tool_call, function(mcp_response)
-            tool_call.response = mcp_response
-            log:jsonify_info("mcp_response:", mcp_response)
-            -- log:trace("mcp_response:", vim.inspect(mcp_response))
-            -- mcp_response:
-            --  {
+    for _, message in ipairs(M.thread.last_request.messages or {}) do
+        for _, tool_call in ipairs(message.tool_calls or {}) do
+            log:jsonify_info("tool:", tool_call)
+            -- log:trace("tool:", vim.inspect(tool))
+            -- tool:
+            -- {
+            --   ["function"] = {
+            --     arguments = '{"command":"ls"}',
+            --     name = "run_command"
+            --   },
             --   id = "call_mmftuy7j",
-            --   jsonrpc = "2.0",
-            --   result = {
-            --     toolResult = {
-            --       content = { {
-            --           name = "STDOUT",
-            --           text = "README.md\nflows\nlua\nlua_modules\ntests\ntmp\n",
-            --           type = "text"
-            --         } },
-            --       isError = false
-            --     }
-            --   }
+            --   index = 0,
+            --   type = "function"
             -- }
+            -- TODO! ok now replace the tool calls in the final summary as results arrive!
 
-            -- M.chat_window:append(vim.inspect(mcp_response))
-            -- FYI might be cool to mod the original tool_call display and insert the result there and put the status line on its original name/id?
-            --    -- TODO if I have a builder pattern for showing the chat history... I can rebuild it then, or at least rebuild it for the last request's tool calls
-            --  that way I can see the cmd + result easily
-            local result_summary = {}
-            -- FYI ... isError is part of MCP spec, all tools return it IIUC... so this is not coupled to run_command
-            if tool_call.response.result.toolResult.isError then
-                local failed = "❌ (" .. tool_call.id .. ")"
-                table.insert(result_summary, failed)
-            else
-                local success = "✅ (" .. tool_call.id .. ")"
-                table.insert(result_summary, success)
-            end
-            for _, content in ipairs(tool_call.response.result.toolResult.content) do
-                table.insert(result_summary, content.name)
-                if content.type == "text" then
-                    table.insert(result_summary, content.text)
+            mcp.send_tool_call(tool_call, function(mcp_response)
+                tool_call.response = mcp_response
+                log:jsonify_info("mcp_response:", mcp_response)
+                -- log:trace("mcp_response:", vim.inspect(mcp_response))
+                -- mcp_response:
+                --  {
+                --   id = "call_mmftuy7j",
+                --   jsonrpc = "2.0",
+                --   result = {
+                --     toolResult = {
+                --       content = { {
+                --           name = "STDOUT",
+                --           text = "README.md\nflows\nlua\nlua_modules\ntests\ntmp\n",
+                --           type = "text"
+                --         } },
+                --       isError = false
+                --     }
+                --   }
+                -- }
+
+                -- M.chat_window:append(vim.inspect(mcp_response))
+                -- FYI might be cool to mod the original tool_call display and insert the result there and put the status line on its original name/id?
+                --    -- TODO if I have a builder pattern for showing the chat history... I can rebuild it then, or at least rebuild it for the last request's tool calls
+                --  that way I can see the cmd + result easily
+                local result_summary = {}
+                -- FYI ... isError is part of MCP spec, all tools return it IIUC... so this is not coupled to run_command
+                if tool_call.response.result.toolResult.isError then
+                    local failed = "❌ (" .. tool_call.id .. ")"
+                    table.insert(result_summary, failed)
                 else
-                    table.insert(result_summary, "  unexpected content type: " .. content.type)
+                    local success = "✅ (" .. tool_call.id .. ")"
+                    table.insert(result_summary, success)
                 end
-            end
-            M.chat_window:append(table.concat(result_summary, "\n"))
+                for _, content in ipairs(tool_call.response.result.toolResult.content) do
+                    table.insert(result_summary, content.name)
+                    if content.type == "text" then
+                        table.insert(result_summary, content.text)
+                    else
+                        table.insert(result_summary, "  unexpected content type: " .. content.type)
+                    end
+                end
+                M.chat_window:append(table.concat(result_summary, "\n"))
 
-            -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
-            -- make sure content is a string (keep json structure)
-            -- PRN if issues, experiment with pretty printing the serialized json?
-            -- TODO move encoding into newToolResponse?
-            local content = vim.fn.json_encode(tool_call.response.result.toolResult)
-            local tool_response_message = ChatMessage:new_tool_response(content, tool_call.id, tool_call["function"].name)
+                -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
+                -- make sure content is a string (keep json structure)
+                -- PRN if issues, experiment with pretty printing the serialized json?
+                -- TODO move encoding into newToolResponse?
+                local content = vim.fn.json_encode(tool_call.response.result.toolResult)
+                local tool_response_message = ChatMessage:new_tool_response(content, tool_call.id, tool_call["function"].name)
 
-            -- log:trace("tool_message:", vim.inspect(response_message))
-            -- tool_message: {
-            --   content = '{"isError": false, "content": [{"name": "STDOUT", "type": "text", "text": "README.md\\nflows\\nlua\\nlua_modules\\ntests\\ntmp\\n"}]}',
-            --   name = "run_command",
-            --   role = "tool",
-            --   tool_call_id = "call_n44nr8e2"
-            -- }
-            log:jsonify_info("tool_message:", tool_response_message)
-            tool_call.response_message = tool_response_message
-            M.thread:add_message(tool_response_message)
-            M.send_tool_messages_if_all_tools_done()
-        end)
+                -- log:trace("tool_message:", vim.inspect(response_message))
+                -- tool_message: {
+                --   content = '{"isError": false, "content": [{"name": "STDOUT", "type": "text", "text": "README.md\\nflows\\nlua\\nlua_modules\\ntests\\ntmp\\n"}]}',
+                --   name = "run_command",
+                --   role = "tool",
+                --   tool_call_id = "call_n44nr8e2"
+                -- }
+                log:jsonify_info("tool_message:", tool_response_message)
+                tool_call.response_message = tool_response_message
+                M.thread:add_message(tool_response_message)
+                M.send_tool_messages_if_all_tools_done()
+            end)
+        end
     end
 end
 
