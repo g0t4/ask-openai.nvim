@@ -22,6 +22,9 @@ function M.send_question(user_prompt, code, file_name, use_tools)
             .. ":\n\n" .. code
     end
 
+    -- show initial question
+    M.process_chunk("**system**:\n" .. system_prompt .. "\n\n**user**:\n" .. user_message)
+
     -- FYI not going to support /v1/completions anymore... not until I have a specific need to use it
     --  I would need to manually format the prompt with a template or otherwise and so now /v1/chat/completions exclusively makes sense
     --  if anything I might go the route of supporting /api/chat, i.e. using ApiChatThread that has a different to_body()...
