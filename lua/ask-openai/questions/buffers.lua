@@ -38,7 +38,7 @@ function BufferController:get_last_paragraph()
     local line_number_0based = self:get_cursor_line_number_0based()
     local lines = vim.api.nvim_buf_get_lines(self.buffer_number, line_number_0based, -1, false)
     local paragraph = table.concat(lines, "\n")
-
+    vim.cmd("normal! G$o") -- move back to end of buffer, add new line below
     -- PRN if I need line numbers, I could return those as 2nd/3rd return values
     return paragraph
 end

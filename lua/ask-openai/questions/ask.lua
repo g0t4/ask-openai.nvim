@@ -233,6 +233,7 @@ function M.call_tools()
 
             -- M.process_chunk(vim.inspect(mcp_response))
             -- FYI might be cool to mod the original tool_call display and insert the result there and put the status line on its original name/id?
+            --    -- TODO if I have a builder pattern for showing the chat history... I can rebuild it then, or at least rebuild it for the last request's tool calls
             --  that way I can see the cmd + result easily
             local result_summary = {}
             -- FYI ... isError is part of MCP spec, all tools return it IIUC... so this is not coupled to run_command
