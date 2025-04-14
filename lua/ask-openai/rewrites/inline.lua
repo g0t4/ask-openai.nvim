@@ -106,12 +106,8 @@ function M.process_chunk(chunk)
 end
 
 function M.process_tool_calls(tool_calls)
-    -- for now just write tool dcalls to the buffer
-    vim.schedule(function()
-        local tool_calls_str = vim.inspect(tool_calls)
-        -- TODO if I keep this call to process_chunk, lets extract an underlying func for buffer_append or smth so its not confusing as this is not a chunk
-        M.process_chunk(tool_calls_str)
-    end)
+    log:trace("unexpected tool call in rewrite", vim.inspect(tool_calls))
+    -- currently tool calls not intended for rewrites
 end
 
 function M.process_request_completed()
