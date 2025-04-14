@@ -239,17 +239,30 @@ function M.on_delta(choice, parse_choice, frontend, request)
         for _, call in ipairs(calls) do
             -- TODO test stream case w/ vllm b/c non stream case is easier
             -- for now just assume entirely new tool call each time... will fix this with a test of streaming later
-            parsed_call = {
-                id           = call.id,
-                index        = call.index,
-                type         = call.type,
-                ["function"] = {
-                    name = call["function"].name,
-                    arguments = call["function"].arguments,
+            parsed_call = message.tool_calls[call.index + 1]
+            if parsed_call == nil then
+                parsed_call = {
+                    id           = call.id,
+                    index        = call.index,
+                    type         = call.type,
+                    ["function"] = { -- this should be a table (not a string)
+                        name      = call["function"].name,
+                        arguments = call["function"].arguments,
+                    },
                 }
+                table.insert(message.tool_calls, parsed_call)
+            end
 
-            }
-            table.insert(message.tool_calls, parsed_call)
+            -- parsed_call = {
+            --     id           = call.id,
+            --     index        = call.index,
+            --     type         = call.type,
+            --     ["function"] = {
+            --         name = call["function"].name,
+            --         arguments = call["function"].arguments,
+            --     }
+            --
+            -- }
         end
     end
 
