@@ -156,30 +156,24 @@ function M.ensure_response_window_is_open()
 end
 
 function M.signal_deltas()
-    -- TODO for lack of a better name, this will trigger a redraw of ChatWindow
-    --    OR at least redraw current requests's contents (messages/tool calls, both will stream this way too!)
-    -- great way to illustrate how this works:
-    -- log:trace("signal", vim.inspect(M.thread.last_request))
     -- TODO rename last_request to just request? or current_request?
-
-
-    -- take current buffer and remove lines added since last request started so we can replace them
     if not M.thread.last_request.messages then
         return
     end
 
-    vim.schedule(function()
-        local new_lines = {}
-        for _, message in ipairs(M.thread.last_request.messages) do
-            local role = "**" .. (message.role or "") .. "**"
-            assert(not role:find("\n"), "role should not have a new line but it does")
-            table.insert(new_lines, role)
-            local content = message.content or ""
-            for _, line in ipairs(vim.split(content, "\n")) do
-                table.insert(new_lines, line)
-            end
-            table.insert(new_lines, "") -- between messages?
+    local new_lines = {}
+    for _, message in ipairs(M.thread.last_request.messages) do
+        local role = "**" .. (message.role or "") .. "**"
+        assert(not role:find("\n"), "role should not have a new line but it does")
+        table.insert(new_lines, role)
+        local content = message.content or ""
+        for _, line in ipairs(vim.split(content, "\n")) do
+            table.insert(new_lines, line)
         end
+        table.insert(new_lines, "") -- between messages?
+    end
+
+    vim.schedule(function()
         M.chat_window.buffer:replace_lines_after(M.hack_lines_before_request, new_lines)
     end)
 end
