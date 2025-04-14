@@ -182,13 +182,16 @@ data: [DONE]
             local request  = {}
         end)
 
-        local function call_on_delta(choices, frontend, request)
-            local deltas = split_lines_skip_empties(choices)
+        local function call_on_delta(choices)
+            local frontend = FakeFrontend:new()
+            local request  = {}
+
+            local deltas   = split_lines_skip_empties(choices)
             for _, delta_json in pairs(deltas) do
                 local delta_table = vim.json.decode(delta_json)
                 curls.on_delta(delta_table, oai_chat.parse_choice, frontend, request)
             end
-            return deltas
+            return request, frontend
         end
 
 
@@ -202,7 +205,7 @@ data: [DONE]
             -- data: {"id":"chatcmpl-192","object":"chat.completion.chunk","created":1744646668,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"."},"finish_reason":null}]}
             -- data: {"id":"chatcmpl-192","object":"chat.completion.chunk","created":1744646668,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop"}]}
             -- data: [DONE]
-            local choices  = [[
+            local choices = [[
                     {"index":0,"delta":{"role":"assistant","content":"My"},"finish_reason":null}
                     {"index":0,"delta":{"role":"assistant","content":" name"},"finish_reason":null}
                     {"index":0,"delta":{"role":"assistant","content":" is"},"finish_reason":null}
@@ -212,9 +215,7 @@ data: [DONE]
                     {"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop"}
             ]]
 
-            local frontend = FakeFrontend:new()
-            local request  = {}
-            local deltas   = call_on_delta(choices, frontend, request)
+            local request = call_on_delta(choices)
 
             should_be_equal(1, #request.messages)
             local msg = request.messages[1]
@@ -241,6 +242,8 @@ data: [DONE]
                     {"index":0,"delta":{"role":"assistant","content":"","tool_calls":[{"id":"call_oqp1e2a1","index":1,"type":"function","function":{"name":"run_command","arguments":"{\"command\":\"ls -la\",\"cwd\":\"/path/to/directory\"}"}}]},"finish_reason":null}
                     {"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"tool_calls"}
             ]]
+
+            local request, frontend = call_on_delta(choices)
         end)
 
         -- TODO move the vllm dual tool test here for on_delta direct testing?
