@@ -36,6 +36,7 @@ end
 
 --- build the body of a curl request!
 ---    taking into account all messages
+----@return string JSON
 function ChatThread:to_body()
     local json_messages = {}
     -- PRN map to change shape to fit api endpoint? ... for now I think ChatMessage type already matches fully what is needed
@@ -44,7 +45,8 @@ function ChatThread:to_body()
     --     table.insert(json_messages, { role = message.role, content = message.content })
     -- end
     -- -- TODO other body components specific to the thread, if any?
-    return vim.fn.json_encode({ messages = self.messages })
+    -- TODO clone self.messages to avoid mutating the original
+    return { messages = self.messages }
 end
 
 return ChatThread
