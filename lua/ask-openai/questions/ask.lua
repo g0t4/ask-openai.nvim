@@ -129,7 +129,7 @@ end
 function M.request_failed()
     -- this is for AFTER the request completes and curl exits
     vim.schedule(function()
-        M.process_chunk("\nerror: request failed")
+        M.chat_window:append("\nerror: request failed")
     end)
 end
 
@@ -138,7 +138,7 @@ function M.on_stderr_data(text)
     --  first I need to understand what is returned across even successfulrequests (if anything)
     --  then I can decide what this is doing
     vim.schedule(function()
-        M.process_chunk(text)
+        M.chat_window:append(text)
     end)
 end
 
@@ -254,7 +254,7 @@ function M.call_tools()
                     table.insert(result_summary, "  unexpected content type: " .. content.type)
                 end
             end
-            M.process_chunk(table.concat(result_summary, "\n"))
+            M.chat_window:append(table.concat(result_summary, "\n"))
 
             -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
             -- make sure content is a string (keep json structure)
