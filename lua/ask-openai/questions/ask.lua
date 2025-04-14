@@ -66,7 +66,7 @@ function M.send_question(user_prompt, code, file_name, use_tools)
     M.thread:set_last_request(request)
 end
 
-function M.send_tool_messages()
+function M.send_messages()
     local request = backend.curl_for(M.thread:next_body(), M.thread.base_url, M)
     M.thread:set_last_request(request)
 end
@@ -249,7 +249,7 @@ function M.send_tool_messages_if_all_tools_done()
         return
     end
     M.process_chunk("sending tool results")
-    M.send_tool_messages()
+    M.send_messages()
 end
 
 ---@return boolean
@@ -273,15 +273,22 @@ function M.follow_up()
     -- take the last paragraph of text in the buffer and ask about it
     --  if already a M.thread then add to that with a new message
     -- can leave paragraph as is in the buffer, just need to copy it to a message to send
-
     -- copy it
     M.ensure_response_window_is_open()
     local paragraph = M.chat_window.buffer:get_last_paragraph()
-    log:trace("paragraph:", paragraph)
-    -- local message = ChatMessage:new_user_message(paragraph)
-    -- log:trace("message:", message)
-    -- M.thread:add_message(message)
-    -- M.send_question(message.content, nil, nil, true)
+    -- log:trace("last paragraph:", paragraph)
+
+    -- TODO CLEANUP sending first vs follow up to not need to differentiate all over
+    if not M.thread then
+        -- assume tool use here
+        M.send_question(paragraph, nil, nil, true)
+        return
+    end
+
+    local message = ChatMessage:new_user_message(paragraph)
+    log:trace("message:", message)
+    M.thread:add_message(message)
+    M.send_messages()
 end
 
 function M.setup()
