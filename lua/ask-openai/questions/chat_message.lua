@@ -1,6 +1,7 @@
 ---@class ChatMessage
 ---@field role string
 ---@field content string
+---@field finish_reason string|nil
 ---@field tool_call_id string|nil
 ---@field name string|nil
 ---@field tool_calls ToolCall[]|nil
@@ -11,6 +12,7 @@ function ChatMessage:new(role, content)
     self = setmetatable({}, { __index = ChatMessage })
     self.role = role
     self.content = content
+    self.finish_reason = nil
     -- PRN enforce content is string here?
     return self
 end
@@ -33,6 +35,23 @@ end
 
 function ChatMessage:new_system_message(content)
     return ChatMessage:new("system", content)
+end
+
+function ChatMessage:add_tool_call_requests(call_request)
+    if self.tool_calls == nil then
+        self.tool_calls = {}
+    end
+    -- ONLY clone fields on the original call request from the model
+    local new_call = {
+        id = call_request.id,
+        index = call_request.index,
+        type = call_request.type,
+        ["function"] = {
+            name = call_request["function"].name,
+            arguments = call_request["function"].arguments,
+        }
+    }
+    table.insert(self.tool_calls, new_call)
 end
 
 return ChatMessage

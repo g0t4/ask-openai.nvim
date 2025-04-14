@@ -223,8 +223,31 @@ function M.handle_messages_updated()
 end
 
 function M.handle_request_completed()
+    -- TODO! if I send a follow up does it keep entire message history?
+    -- TODO! If I use ask_question/ask_tool_use after previous... w/o clear anything, does it keep messages?
+
     vim.schedule(function()
-        -- log:jsonify_info("assistant_message:", assistant_message)
+        for _, message in ipairs(M.thread.last_request.messages or {}) do
+            -- log:jsonify_info("last request message:", message)
+            -- KEEP IN MIND, thread.last_request.messages IS NOT the same as thread.messages
+            --
+            -- this is the response(s) from the model, they need to be added to the message history!!!
+            --   and before any tool responses
+            --   theoretically there can be multiple messages, with w/e role so I kept this in a loop and generic
+            local role = message.role
+            local content = message.content
+            local model_responses = ChatMessage:new(role, content)
+            model_responses.finish_reason = message.finish_reason
+
+            -- TODO do I need to copy message.index too? ... this might be weird on top level but maybe not?
+            -- TODO if ever can be multiple messages from model, are they sorted by index then? (not tool_call.index, there's also a message.index)
+            for _, call_request in ipairs(message.tool_calls or {}) do
+                model_responses:add_tool_call_requests(call_request)
+            end
+            -- log:jsonify_info("final model_response message:", model_responses)
+            M.thread:add_message(model_responses)
+        end
+
         M.call_tools()
     end)
 end
