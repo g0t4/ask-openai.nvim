@@ -288,6 +288,7 @@ function M.setup()
 
     vim.keymap.set('n', '<leader>ao', M.ensure_response_window_is_open, { noremap = true })
     vim.keymap.set('n', '<leader>aa', M.abort_last_request, { noremap = true })
+    vim.keymap.set('n', '<leader>af', M.follow_up, { noremap = true })
 end
 
 return M

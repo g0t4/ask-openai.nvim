@@ -22,4 +22,16 @@ function ChatMessage:new_tool_response(content, tool_call_id, name)
     return self
 end
 
+function ChatMessage:new_user_message(content)
+    return ChatMessage:new("user", content)
+end
+
+function ChatMessage:new_assistant_message(content)
+    return ChatMessage:new("assistant", content)
+end
+
+function ChatMessage:new_system_message(content)
+    return ChatMessage:new("system", content)
+end
+
 return ChatMessage
