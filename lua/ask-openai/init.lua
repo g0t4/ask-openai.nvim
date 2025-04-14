@@ -2,11 +2,11 @@ local _module = {}
 
 local config = require("ask-openai.config")
 
-local is_predictions_enabled = false
+local is_predictions_enabled_runtime = false
 
 function _module.is_predictions_enabled()
     -- todo organize top level funcs on a module instead
-    return is_predictions_enabled
+    return is_predictions_enabled_runtime
 end
 
 local augroup = "ask-openai.prediction"
@@ -83,7 +83,7 @@ local function register_prediction_triggers()
     -- TODO make this configurable
     vim.api.nvim_set_hl(0, "AskPrediction", { italic = true, fg = "#dddddd" }) -- FYI can call repeatedly and no errors
 
-    is_predictions_enabled = true
+    is_predictions_enabled_runtime = true
 end
 
 function _module.remove_prediction_triggers()
@@ -106,19 +106,19 @@ function _module.remove_prediction_triggers()
 end
 
 function _module.enable_predictions()
-    if is_predictions_enabled then
+    if is_predictions_enabled_runtime then
         return
     end
     register_prediction_triggers()
-    is_predictions_enabled = true
+    is_predictions_enabled_runtime = true
 end
 
 function _module.disable_predictions()
-    if not is_predictions_enabled then
+    if not is_predictions_enabled_runtime then
         return
     end
     _module.remove_prediction_triggers()
-    is_predictions_enabled = false
+    is_predictions_enabled_runtime = false
 end
 
 local function trim_null_characters(input)
