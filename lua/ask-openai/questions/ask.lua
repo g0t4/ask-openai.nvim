@@ -83,7 +83,7 @@ local function ask_question_about(opts, use_tools)
     local user_prompt = opts.args
     local file_name = vim.fn.expand("%:t")
 
-    M.open_response_window()
+    M.ensure_response_window_is_open()
     M.send_question(user_prompt, selection.original_text, file_name, use_tools)
 end
 
@@ -91,7 +91,7 @@ local function ask_question(opts, use_tools)
     use_tools = use_tools or false
 
     local user_prompt = opts.args
-    M.open_response_window()
+    M.ensure_response_window_is_open()
     M.send_question(user_prompt, nil, nil, use_tools)
 end
 
@@ -142,7 +142,7 @@ function M.on_stderr_data(text)
     end)
 end
 
-function M.open_response_window()
+function M.ensure_response_window_is_open()
     if M.chat_window == nil then
         M.chat_window = ChatWindow:new()
 
@@ -286,7 +286,7 @@ function M.setup()
     vim.api.nvim_set_keymap('v', '<Leader>aq', ':<C-u>AskQuestionAbout ', { noremap = true })
     vim.api.nvim_set_keymap('n', '<Leader>aq', ':AskQuestion ', { noremap = true })
 
-    vim.keymap.set('n', '<leader>ao', M.open_response_window, { noremap = true })
+    vim.keymap.set('n', '<leader>ao', M.ensure_response_window_is_open, { noremap = true })
     vim.keymap.set('n', '<leader>aa', M.abort_last_request, { noremap = true })
 end
 
