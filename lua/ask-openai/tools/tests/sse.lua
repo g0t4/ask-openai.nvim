@@ -1,15 +1,16 @@
 local curls = require("ask-openai.backends.curl_streaming")
 local oai_chat = require("ask-openai.backends.oai_chat")
+require("ask-openai.helpers.buffers")
 local assert = require("luassert")
 
-local function should_be_equal(t1, t2)
-    assert.are.equal(t1, t2)
+local function should_be_equal(expected, actual)
+    assert.are.equal(expected, actual)
 end
 
-local function should_be_nil(t)
+local function should_be_nil(actual)
     -- FYI you can join with _ instead of dot (.)
     --   must use this for keywords like nil, function, etc
-    assert.is_nil(t)
+    assert.is_nil(actual)
 end
 
 -- PRN move this to backends dir and consolidate all tests there?
@@ -164,22 +165,52 @@ data: [DONE]
         -- TODO capture and test a double tool_call
         --  IIAC index will be 0 and 1?
 
-        -- it("full tool_call parses", function()
-        --     -- example from: https://platform.openai.com/docs/guides/function-calling?api-mode=chat#streaming
-        --     -- indent doesn't matter for json parsing
-        --     -- local events = [[
-        --     --     [{"index": 0, "id": "call_DdmO9pD3xa9XTPNJ32zg2hcA", "function": {"arguments": "", "name": "get_weather"}, "type": "function"}]
-        --     --     [{"index": 0, "id": null, "function": {"arguments": "{\"", "name": null}, "type": null}]
-        --     --     [{"index": 0, "id": null, "function": {"arguments": "location", "name": null}, "type": null}]
-        --     --     [{"index": 0, "id": null, "function": {"arguments": "\":\"", "name": null}, "type": null}]
-        --     --     [{"index": 0, "id": null, "function": {"arguments": "Paris", "name": null}, "type": null}]
-        --     --     [{"index": 0, "id": null, "function": {"arguments": ",", "name": null}, "type": null}]
-        --     --     [{"index": 0, "id": null, "function": {"arguments": " France", "name": null}, "type": null}]
-        --     --     [{"index": 0, "id": null, "function": {"arguments": "\"}", "name": null}, "type": null}]
-        --     --     null
-        --     -- ]]
-        --     -- ok I think the last null means the last SSE has `tool_calls: null`
-        --     -- actually lets wait to get a real sample... the above is NOT the full SSE... darnit
-        -- end)
+        it("on_delta, thru on_chunk, reconstitutes messages (integration test) ", function()
+            -- TODO add more advanced examples (multiple tool calls, multiple message [non tool call style])
+            --   IOTW index != 0 and role parsing (perhaps even group by role?)
+            --
+            local events   = [[
+data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"role":"assistant","content":""},"logprobs":null,"finish_reason":null}]}
+data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"tool_calls":[{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,"function":{"name":"run_command"}}]},"logprobs":null,"finish_reason":null}]}
+data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\"command\": \""}}]},"logprobs":null,"finish_reason":null}]}
+data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"ls"}}]},"logprobs":null,"finish_reason":null}]}
+data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"}"}}]},"logprobs":null,"finish_reason":null}]}
+data: {"id":"chatcmpl-d0c68c86be0641129cffa5053c0c217e","object":"chat.completion.chunk","created":1744513664,"model":"","choices":[{"index":0,"delta":{"content":""},"logprobs":null,"finish_reason":"tool_calls","stop_reason":null}]}
+data: [DONE]
+            ]]
+            local frontend = FakeFrontend:new()
+            local request  = {}
+        end)
+
+        it("on_delta for question (no tool calls)", function()
+            -- [511.761]sec [TRACE] body: {"messages":[{"role":"system","content":"You are a neovim AI plugin. Your name is Neo Vim.  Please respond with markdown formatted text"},{"role":"user","content":"what is your name?"}],"model":"qwen2.5-coder:7b-instruct-q8_0","stream":true}
+            -- [513.194]sec [TRACE] on_stdout data: data: {"id":"chatcmpl-192","object":"chat.completion.chunk","created":1744646668,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"My"},"finish_reason":null}]}
+            -- [513.206]sec [TRACE] on_stdout data: data: {"id":"chatcmpl-192","object":"chat.completion.chunk","created":1744646668,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" name"},"finish_reason":null}]}
+            -- [513.212]sec [TRACE] on_stdout data: data: {"id":"chatcmpl-192","object":"chat.completion.chunk","created":1744646668,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" is"},"finish_reason":null}]}
+            -- [513.219]sec [TRACE] on_stdout data: data: {"id":"chatcmpl-192","object":"chat.completion.chunk","created":1744646668,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" Neo"},"finish_reason":null}]}
+            -- [513.226]sec [TRACE] on_stdout data: data: {"id":"chatcmpl-192","object":"chat.completion.chunk","created":1744646668,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":" Vim"},"finish_reason":null}]}
+            -- [513.232]sec [TRACE] on_stdout data: data: {"id":"chatcmpl-192","object":"chat.completion.chunk","created":1744646668,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"."},"finish_reason":null}]}
+            -- [513.239]sec [TRACE] on_stdout data: data: {"id":"chatcmpl-192","object":"chat.completion.chunk","created":1744646668,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop"}]}
+            -- data: [DONE]
+            local choices  = [[
+                    {"index":0,"delta":{"role":"assistant","content":"My"},"finish_reason":null}
+                    {"index":0,"delta":{"role":"assistant","content":" name"},"finish_reason":null}
+                    {"index":0,"delta":{"role":"assistant","content":" is"},"finish_reason":null}
+                    {"index":0,"delta":{"role":"assistant","content":" Neo"},"finish_reason":null}
+                    {"index":0,"delta":{"role":"assistant","content":" Vim"},"finish_reason":null}
+                    {"index":0,"delta":{"role":"assistant","content":"."},"finish_reason":null}
+                    {"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop"}
+            ]]
+
+            local frontend = FakeFrontend:new()
+            local request  = {}
+            local deltas   = split_lines_skip_empties(choices)
+            should_be_equal(7, #deltas)
+            for _, delta_json in pairs(deltas) do
+                local delta_table = vim.json.decode(delta_json)
+                curls.on_delta(delta_table, oai_chat.parse_choice, frontend, request)
+            end
+            should_be_equal(1, #request.messages)
+        end)
     end)
 end)

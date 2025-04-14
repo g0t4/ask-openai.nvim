@@ -190,9 +190,35 @@ function M.on_delta(choice, parse_choice, frontend, request)
     --   oai_completions doesn't have delta, I would need to look at its examples before I try to fit it in here...
     --   I probably should have a diff aggregator for each backend's streaming format
     --   FYI I called oai_chat the 'middleend' briefly, this could be passed by the middleend to on_chunk
-    if not choice.delta then
+    if request == nil then
+        log:trace("[WARN] on_delta not implemented")
+        -- TODO REMOVE WHEN TESTS/CODE ARE UPDATED
         return
     end
+    if type(request) == "string" and request:match("^TODO") then
+        log:trace("[WARN] on_delta not implemented for some tests")
+        -- TODO REMOVE WHEN TESTS ARE UPDATED
+        return
+    end
+
+    if choice == nil or choice.delta == nil then
+        log:trace("[WARN] skipping b/c choice/choice.delta is nil: '" .. vim.inspect(choice) .. "'")
+        return
+    end
+    if request.messages == nil then
+        -- TODO move this to a request type?
+        request.messages = {}
+    end
+
+    -- lookup or create message
+    local index = choice.index + 1
+    local message = request.messages[index]
+    if message == nil then
+        message = {}
+        -- assumes contiguous indexes, s/b almost always 0 index only, 1 too with dual tool call IIRC
+        request.messages[index] = message
+    end
+
 
 
     -- this is the new pathway that will rebuild the full message (as if sent stream: false)
