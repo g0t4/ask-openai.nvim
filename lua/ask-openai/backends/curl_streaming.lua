@@ -93,7 +93,6 @@ end
 
 M.on_chunk = function(data, parse_choice, frontend, request)
     local chunk = M.parse_SSEs(data, parse_choice, frontend, request)
-    -- signal delta(s) arrived and parsed
     frontend.signal_deltas()
 
     -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
