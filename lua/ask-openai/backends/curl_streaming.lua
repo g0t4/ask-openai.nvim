@@ -1,8 +1,10 @@
 local log = require("ask-openai.prediction.logger").predictions()
+local LastRequest = require("ask-openai.backends.last_request")
 local uv = vim.uv
 
 local M = {}
 
+---@param request LastRequest
 function M.terminate(request)
     -- TODO move this onto a request class?
     --  and if its on request, the request can be marked w/ a status instead of nil for values
@@ -51,9 +53,7 @@ M.on_chunk = function(data, parse_choice, frontend, request)
 end
 
 function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
-    local request = {
-        body = body
-    }
+    local request = LastRequest:new(body)
 
     body.stream = true
     local json = vim.fn.json_encode(body)
