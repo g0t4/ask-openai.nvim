@@ -240,7 +240,7 @@ function M.call_tools()
 end
 
 function M.send_tool_messages_if_all_tools_done()
-    if not M.are_all_tools_done() then
+    if M.any_outstanding_tool_calls() then
         return
     end
     M.process_chunk("all tools done")
@@ -248,13 +248,13 @@ function M.send_tool_messages_if_all_tools_done()
 end
 
 ---@return boolean
-function M.are_all_tools_done()
+function M.any_outstanding_tool_calls()
     for _, tool_call in ipairs(M.last_request.tool_calls) do
         if tool_call.response_message == nil then
-            return false
+            return true
         end
     end
-    return true
+    return false
 end
 
 function M.abort_last_request()
