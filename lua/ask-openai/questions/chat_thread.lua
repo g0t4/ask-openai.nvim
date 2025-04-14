@@ -15,6 +15,7 @@ end
 --- @param request LastRequest
 function ChatThread:set_last_request(request)
     -- TODO need to extract new messages from request? or should I pass messages and return a request object?
+    -- TODO? request.thread = self  -- two way reference to thread from request too?
     self.last_request = request
 end
 
