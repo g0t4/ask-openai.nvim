@@ -155,7 +155,10 @@ function M.ensure_response_window_is_open()
     M.chat_window:ensure_open()
 end
 
+M.current_message_chunks = {}
+
 function M.process_chunk(text)
+    table.insert(M.current_message_chunks, text) -- insert chunks so we have the full, final message
     vim.schedule(function()
         M.chat_window:append(text)
     end)
@@ -190,8 +193,18 @@ function M.process_tool_calls(tool_calls)
 end
 
 function M.process_finish_reason(finish_reason)
+    -- TODO unit test this reconstitution
+    local message = table.concat(M.current_message_chunks, "")
+    M.current_message_chunks = {} -- for next message
+    local assistant_message = ChatMessage:new("assistant", message)
+    -- any tool requests too?
+    M.thread:add_message(assistant_message)
+
     -- M.chat_window:append("finish_reason: " .. tostring(finish_reason))
-    vim.schedule_wrap(M.call_tools)()
+    vim.schedule(function()
+        log:jsonify_info("assistant_message:", assistant_message)
+        M.call_tools()
+    end)
 end
 
 function M.call_tools()
