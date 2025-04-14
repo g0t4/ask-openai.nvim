@@ -227,6 +227,12 @@ function M.on_delta(choice, parse_choice, frontend, request)
         message.content = (message.content or "") .. choice.delta.content
     end
 
+    if choice.finish_reason ~= nil then
+        -- TODO is finish_reason per message OR the entire request!?
+        -- PRN throw if finish_reason already set?
+        message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
+    end
+
     -- this is the new pathway that will rebuild the full message (as if sent stream: false)
     --   will be used to have accurate message history to send for follow up/tool results/etc
 

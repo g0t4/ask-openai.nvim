@@ -215,6 +215,10 @@ data: [DONE]
             should_be_equal(0, msg.index)
             should_be_equal("assistant", msg.role)
             should_be_equal("My name is Neo Vim.", msg.content)
+
+            -- TODO is finish_reason per message OR the entire request!?
+            --   TODO get a multi message response to review
+            should_be_equal("stop", msg.finish_reason)
         end)
 
         -- TODO add a test that validates lookup on index/role per message
