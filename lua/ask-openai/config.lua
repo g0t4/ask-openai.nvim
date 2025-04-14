@@ -67,7 +67,7 @@ local default_options = {
             use_api_groq = false,
             use_api_openai = false,
 
-            model = "qwen2.5-coder:3b",
+            model = "qwen2.5-coder:3b-base-q8_0",
             max_tokens = 40,
         }
     }
