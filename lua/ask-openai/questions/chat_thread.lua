@@ -12,15 +12,20 @@ function ChatThread:new()
     return self
 end
 
+--- @param request LastRequest
 function ChatThread:set_last_request(request)
+    -- TODO need to extract new messages from request? or should I pass messages and return a request object?
     self.last_request = request
 end
 
+--- @param role string
+--- @param content string
 function ChatThread:add_message(role, content)
     table.insert(self.messages, { role = role, content = content })
 end
 
 function ChatThread:to_json()
+    -- TODO use this? or get rid of it... a way to serialize all messages?
     local json_messages = {}
     for _, message in ipairs(self.messages) do
         table.insert(json_messages, { role = message.role, content = message.content })
