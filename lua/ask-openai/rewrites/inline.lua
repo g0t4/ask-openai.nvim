@@ -110,7 +110,7 @@ function M.process_chunk(chunk)
     end)
 end
 
-function M.process_request_completed()
+function M.handle_request_completed()
     -- TODO visual indicator?
     -- TODO update rewrite to use aggregator like ask.lua tool use
 end

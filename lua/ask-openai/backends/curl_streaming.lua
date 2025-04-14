@@ -43,7 +43,7 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
             -- todo what logic do I want to NOT call request_failed here?
             frontend.request_failed(code)
         else
-            frontend.process_request_completed()
+            frontend.handle_request_completed()
         end
         stdout:close()
         stderr:close()

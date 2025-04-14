@@ -222,7 +222,7 @@ function M.signal_deltas()
     end)
 end
 
-function M.process_request_completed()
+function M.handle_request_completed()
     vim.schedule(function()
         -- log:jsonify_info("assistant_message:", assistant_message)
         M.call_tools()
