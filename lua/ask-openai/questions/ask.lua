@@ -270,6 +270,9 @@ function M.abort_last_request()
 end
 
 function M.follow_up()
+    -- TODO this needs some serious love and rethink keys...
+    --   ultimatley I wanna pop open the window and type my prompt it in altogether
+
     -- take the last paragraph of text in the buffer and ask about it
     --  if already a M.thread then add to that with a new message
     -- can leave paragraph as is in the buffer, just need to copy it to a message to send
