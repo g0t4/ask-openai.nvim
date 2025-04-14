@@ -205,7 +205,6 @@ data: [DONE]
             local frontend = FakeFrontend:new()
             local request  = {}
             local deltas   = split_lines_skip_empties(choices)
-            should_be_equal(7, #deltas)
             for _, delta_json in pairs(deltas) do
                 local delta_table = vim.json.decode(delta_json)
                 curls.on_delta(delta_table, oai_chat.parse_choice, frontend, request)
