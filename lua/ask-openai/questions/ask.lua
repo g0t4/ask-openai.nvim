@@ -167,11 +167,15 @@ function M.signal_deltas()
         local role = "**" .. (message.role or "") .. "**"
         assert(not role:find("\n"), "role should not have a new line but it does")
         table.insert(new_lines, role)
+
+        -- * message contents
         local content = message.content or ""
-        for _, line in ipairs(vim.split(content, "\n")) do
-            table.insert(new_lines, line)
+        if content ~= "" then
+            for _, line in ipairs(vim.split(content, "\n")) do
+                table.insert(new_lines, line)
+            end
+            table.insert(new_lines, "") -- between messages?
         end
-        table.insert(new_lines, "") -- between messages?
 
         for _, call in ipairs(message.tool_calls or {}) do
             -- FYI keep in mind later on I can come back and insert tool results!
