@@ -169,14 +169,18 @@ function M.process_chunk(text)
     end)
 end
 
-function M.process_tool_calls(tool_calls)
+function M.process_request_completed()
+    -- TODO use new aggregated request.messages!!
+    --   then resume this:
+    --
+
+    -- TODO extract tool calls and flatten FROM the DENORMALIZER
     -- for now just write tool dcalls to the buffer
     M.thread.last_request.tool_calls = M.thread.last_request.tool_calls or {}
 
     -- each time this is called, its a list of tool_call
     -- insert those into overall list (flatten)
     for _, tool_call in ipairs(tool_calls) do
-        -- TODO write insertMany
         table.insert(M.thread.last_request.tool_calls, tool_call)
     end
 
@@ -195,14 +199,8 @@ function M.process_tool_calls(tool_calls)
     vim.schedule(function()
         M.chat_window:append(table.concat(tool_calls_summmary, "\n"))
     end)
-end
 
-function M.process_request_completed()
-    -- TODO use new aggregated request.messages!!
-    --   then resume this:
-    --
-    --   TODO MOVE tool call setup here... get off of DENORMALIZER
-    --
+    -- TODO THEN CALL THEM:
     -- vim.schedule(function()
     --     log:jsonify_info("assistant_message:", assistant_message)
     --     M.call_tools()
