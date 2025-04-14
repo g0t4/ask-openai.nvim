@@ -211,12 +211,13 @@ function M.on_delta(choice, parse_choice, frontend, request)
     end
 
     -- lookup or create message
-    local index = choice.index + 1
-    local message = request.messages[index]
+    local msg_lookup = choice.index + 1
+    local message = request.messages[msg_lookup]
     if message == nil then
-        message = {}
+        message = { index = choice.index }
         -- assumes contiguous indexes, s/b almost always 0 index only, 1 too with dual tool call IIRC
-        request.messages[index] = message
+        -- PRN alternative is to enumerate and select based on message.index and then you are safe w.r.t. non-contiguous index values
+        request.messages[msg_lookup] = message
     end
 
 

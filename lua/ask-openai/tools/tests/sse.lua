@@ -211,6 +211,10 @@ data: [DONE]
                 curls.on_delta(delta_table, oai_chat.parse_choice, frontend, request)
             end
             should_be_equal(1, #request.messages)
+            local msg = request.messages[1]
+            should_be_equal(0, msg.index)
+            -- should_be_equal("assistant", msg.role)
+            -- should_be_equal("My name is Neo Vim.", msg.content)
         end)
     end)
 end)
