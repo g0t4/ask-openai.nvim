@@ -105,11 +105,6 @@ function M.process_chunk(chunk)
     end)
 end
 
-function M.process_tool_calls(tool_calls)
-    log:trace("unexpected tool call in rewrite", vim.inspect(tool_calls))
-    -- currently tool calls not intended for rewrites
-end
-
 function M.process_request_completed()
     -- TODO visual indicator?
     -- TODO update rewrite to use aggregator like ask.lua tool use
