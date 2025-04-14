@@ -7,8 +7,8 @@ local function body_for(prefix, suffix, current_context)
     local body = {
 
         -- FYI set of possible models for demoing impact of fine tune
-        model = "qwen2.5-coder:14b-base-q8_0", -- ** shorter responses, more "EOF" focused
-        -- model = "qwen2.5-coder:7b-base-q8_0", -- ** shorter responses, more "EOF" focused
+        -- model = "qwen2.5-coder:14b-base-q8_0", -- ** shorter responses, more "EOF" focused
+        model = "qwen2.5-coder:7b-base-q8_0", -- ** shorter responses, more "EOF" focused
         -- model = "qwen2.5-coder:7b-instruct-q8_0", -- longer, long winded, often seemingly ignores EOF
         --
         -- model = "codellama:7b-code-q8_0", -- shorter too
