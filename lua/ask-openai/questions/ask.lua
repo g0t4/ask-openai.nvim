@@ -6,6 +6,7 @@ local backend = require("ask-openai.backends.oai_chat")
 local agentica = require("ask-openai.backends.models.agentica")
 local ChatWindow = require("ask-openai.questions.chat_window")
 local ChatThread = require("ask-openai.questions.chat_thread")
+local ChatMessage = require("ask-openai.questions.chat_message")
 local M = {}
 
 
@@ -219,16 +220,16 @@ function M.call_tools()
             -- }
 
             M.process_chunk(vim.inspect(mcp_response))
-            local response_message = {
-                role = "tool",
-                -- make sure content is a string (keep json structure)
-                -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
-                -- PRN if issues, experiment with pretty printing the serialized json?
-                content = vim.fn.json_encode(tool_call.response.result.toolResult),
-                tool_call_id = tool_call.id,
-                name = tool_call["function"].name,
-            }
-            -- log:trace("tool_message:", vim.inspect(tool_message))
+
+            -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
+            -- make sure content is a string (keep json structure)
+            -- PRN if issues, experiment with pretty printing the serialized json?
+            local content = vim.fn.json_encode(tool_call.response.result.toolResult)
+            local response_message = ChatMessage:new("tool", content)
+            response_message.tool_call_id = tool_call.id
+            response_message.name = tool_call["function"].name
+
+            -- log:trace("tool_message:", vim.inspect(response_message))
             -- tool_message: {
             --   content = '{"isError": false, "content": [{"name": "STDOUT", "type": "text", "text": "README.md\\nflows\\nlua\\nlua_modules\\ntests\\ntmp\\n"}]}',
             --   name = "run_command",
@@ -237,6 +238,7 @@ function M.call_tools()
             -- }
             log:jsonify_info("tool_message:", response_message)
             tool_call.response_message = response_message
+            M.thread:add_message(response_message)
             M.send_tool_messages_if_all_tools_done()
         end)
     end

@@ -1,8 +1,7 @@
----
 -- @class ChatThread
 -- @see https://platform.openai.com/docs/api-reference/chat/create
--- @field messages table
--- @field last_request string
+-- @field messages ChatMessage[]
+-- @field last_request LastRequest
 local ChatThread = {}
 
 function ChatThread:new()
@@ -19,10 +18,15 @@ function ChatThread:set_last_request(request)
     self.last_request = request
 end
 
---- @param role string
---- @param content string
-function ChatThread:add_message(role, content)
-    table.insert(self.messages, { role = role, content = content })
+--- @param message ChatMessage
+function ChatThread:add_message(message)
+    if not message.role then
+        error("message.role is required")
+    end
+    if not message.content then
+        error("message.content is required")
+    end
+    table.insert(self.messages, message)
 end
 
 function ChatThread:to_json()
