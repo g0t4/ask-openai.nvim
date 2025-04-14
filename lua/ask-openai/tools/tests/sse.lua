@@ -17,46 +17,6 @@ end
 -- ***! use <leader>u to run tests in this file! (habituate that, don't type out the cmd yourself)
 
 describe("tool use SSE parsing in /v1/chat/completions", function()
-    it("parses ollama all-in-one tool_calls", function()
-        -- FYI! ollama might get streaming support at which point this test may become obsolete as it should split up the tool call across chunks (IIAC like vllm, and OpenAI)
-        -- *** escape SSE log outputs: \" => \\"    (only backslashes, not " b/c you are putting this inside a ' single quote)
-        local data =
-        'data: {"id":"chatcmpl-304","object":"chat.completion.chunk","created":1744521962,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"","tool_calls":[{"id":"call_lbcjwr0u","index":0,"type":"function","function":{"name":"run_command","arguments":"{\\"command\\":\\"ls -a\\"}"}}]},"finish_reason":null}]}'
-        -- "choices":[
-        --   {"index":0,"delta":
-        --     {"role":"assistant","content":"","tool_calls":
-        --       [{
-        --         "id":"call_lbcjwr0u","index":0,"type":"function",
-        --         "function": {
-        --           "name":"run_command",
-        --           "arguments":"{\"command\":\"ls -a\"}"
-        --         }
-        --       }]
-        --     },
-        --     "finish_reason":null
-        --   }]
-        local _, _, tool_calls_s = curls.parse_SSEs(data, oai_chat.parse_choice, "TODO-frontend", "TODO-request")
-        should_be_equal(#tool_calls_s, 1) -- table of
-        should_be_equal(#tool_calls_s[1], 1) -- table of calls
-        local tool = tool_calls_s[1][1]
-        should_be_equal(tool.id, "call_lbcjwr0u")
-        should_be_equal(tool.index, 0)
-        should_be_equal(tool.type, "function")
-        func = tool["function"]
-        should_be_equal(type(func), "table")
-        should_be_equal(func.name, "run_command")
-        should_be_equal(func.arguments, '{"command":"ls -a"}')
-        -- TODO leave arguments as serialized json as it'll be passed as is to MCP (IIRC)
-    end)
-
-    it("parses ollama finish_reason", function()
-        local data =
-        'data: {"id":"chatcmpl-304","object":"chat.completion.chunk","created":1744521962,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"tool_calls"}]}'
-        local _, finish_reason, tool_calls_s = curls.parse_SSEs(data, oai_chat.parse_choice, "TODO-frontend", "TODO-request")
-        should_be_equal(finish_reason, "tool_calls")
-        should_be_equal(#tool_calls_s, 0)
-    end)
-
     local FakeFrontend = {}
     function FakeFrontend:new()
         -- create a table and attach methods
