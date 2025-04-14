@@ -71,8 +71,13 @@ function M.send_question(user_prompt, code, file_name, use_tools)
         qwen_params.tools = mcp.openai_tools()
     end
 
-    M.thread = ChatThread:new(qwen_messages, qwen_params)
+    M.thread = ChatThread:new(qwen_messages, qwen_params, base_url)
     local request = backend.curl_for(M.thread:next_body(), base_url, M)
+    M.thread:set_last_request(request)
+end
+
+function M.send_tool_messages()
+    local request = backend.curl_for(M.thread:next_body(), M.thread.base_url, M)
     M.thread:set_last_request(request)
 end
 
@@ -254,8 +259,8 @@ function M.send_tool_messages_if_all_tools_done()
     if M.any_outstanding_tool_calls() then
         return
     end
-    M.process_chunk("all tools done")
-    -- M.send_tool_messages()
+    M.process_chunk("sending tool results")
+    M.send_tool_messages()
 end
 
 ---@return boolean

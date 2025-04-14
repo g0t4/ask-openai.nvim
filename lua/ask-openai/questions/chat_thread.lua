@@ -3,17 +3,20 @@
 -- @field messages ChatMessage[]
 -- @field params ChatParams
 -- @field last_request LastRequest
+-- @field base_url string
 local ChatThread = {}
 
 --- @param messages ChatMessage[]
 --- @param params ChatParams
-function ChatThread:new(messages, params)
+function ChatThread:new(messages, params, base_url)
     self = setmetatable({}, { __index = ChatThread })
     self.messages = messages or {}
     -- FYI think of params as the next request params
     self.params = params or {}
     -- if I want a history of requests I can build that separately
     self.last_request = nil
+
+    self.base_url = base_url
     return self
 end
 
