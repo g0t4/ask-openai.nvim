@@ -213,7 +213,7 @@ data: [DONE]
             should_be_equal(1, #request.messages)
             local msg = request.messages[1]
             should_be_equal(0, msg.index)
-            -- should_be_equal("assistant", msg.role)
+            should_be_equal("assistant", msg.role)
             -- should_be_equal("My name is Neo Vim.", msg.content)
         end)
     end)
