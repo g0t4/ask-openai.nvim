@@ -299,10 +299,10 @@ data: [DONE]
             -- * tool delta 1:
             -- [{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,"function":{"name":"run_command"}}
             should_be_equal(1, #msg.tool_calls)
-            -- call = msg.tool_calls[1]
-            -- should_be_equal("chatcmpl-tool-ca99dda515524c6abe47d1ea22813507", call.id)
-            -- should_be_equal(0, call.index)
-            -- should_be_equal("function", call.type)
+            call = msg.tool_calls[1]
+            should_be_equal("chatcmpl-tool-ca99dda515524c6abe47d1ea22813507", call.id)
+            should_be_equal(0, call.index)
+            should_be_equal("function", call.type)
             -- -- * function.name
             -- func = call["function"]
             -- should_be_equal("run_command", func.name)
