@@ -13,4 +13,12 @@ function ChatMessage:new(role, content)
     return self
 end
 
+function ChatMessage:newToolResponse(content, tool_call_id, name)
+    self = ChatMessage:new("tool", content)
+    --PRN enforce strings are not empty?
+    self.tool_call_id = tool_call_id
+    self.name = name
+    return self
+end
+
 return ChatMessage
