@@ -236,7 +236,6 @@ data: [DONE]
             -- data: {"id":"chatcmpl-225","object":"chat.completion.chunk","created":1744655393,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"","tool_calls":[{"id":"call_oqp1e2a1","index":1,"type":"function","function":{"name":"run_command","arguments":"{\"command\":\"ls -la\",\"cwd\":\"/path/to/directory\"}"}}]},"finish_reason":null}]}
             -- data: {"id":"chatcmpl-225","object":"chat.completion.chunk","created":1744655393,"model":"qwen2.5-coder:7b-instruct-q8_0","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"tool_calls"}]}
             -- data: [DONE]
-            -- TODO add a test that validates lookup on index/role per message
             local choices = [[
                     {"index":0,"delta":{"role":"assistant","content":"","tool_calls":[{"id":"call_809l7n8f","index":0,"type":"function","function":{"name":"run_command","arguments":"{\"command\":\"ls -la\"}"}}]},"finish_reason":null}
                     {"index":0,"delta":{"role":"assistant","content":"","tool_calls":[{"id":"call_oqp1e2a1","index":1,"type":"function","function":{"name":"run_command","arguments":"{\"command\":\"ls -la\",\"cwd\":\"/path/to/directory\"}"}}]},"finish_reason":null}
@@ -247,6 +246,7 @@ data: [DONE]
             -- print("request", vim.inspect(request))
             should_be_equal(1, #request.messages)
         end)
+        -- TODO add a test that validates lookup on index/role per message... need a multi message scenario (if that's ever a thing... and not multi choice... literally need two messages at same time, streaming)
 
         -- TODO move the vllm dual tool test here for on_delta direct testing?
     end)
