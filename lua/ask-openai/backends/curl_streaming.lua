@@ -9,31 +9,6 @@ function M.terminate(request)
     LastRequest.terminate(request)
 end
 
-M.on_chunk = function(data, parse_choice, frontend, request)
-    local chunk, finish_reason, tool_calls_s = M.parse_SSEs(data, parse_choice, frontend, request)
-    if chunk then
-        -- TODO combine chunks too so the request has the final combined text
-        -- - right now I just show the chunks one by one
-        -- - later I'll need this for message history
-        -- - makes sense to coalesce here
-        frontend.process_chunk(chunk)
-    end
-    if tool_calls_s then
-        local flattened_calls = {}
-        for _, tool_calls in ipairs(tool_calls_s) do
-            for _, tool_call in ipairs(tool_calls) do
-                flattened_calls[#flattened_calls + 1] = tool_call
-            end
-        end
-        frontend.process_tool_calls(flattened_calls)
-    end
-    if finish_reason ~= nil and finish_reason ~= vim.NIL then
-        -- TODO? pass combined chunk and tool_calls here?
-        -- PRN any final processing (i.e. tool fallback)
-        frontend.process_finish_reason(finish_reason)
-    end
-end
-
 function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
     local request = LastRequest:new(body)
 
@@ -180,6 +155,31 @@ function M.parse_SSEs(data, parse_choice, frontend, request)
         ::continue::
     end
     return chunk, finish_reason, tool_calls_s
+end
+
+M.on_chunk = function(data, parse_choice, frontend, request)
+    local chunk, finish_reason, tool_calls_s = M.parse_SSEs(data, parse_choice, frontend, request)
+    if chunk then
+        -- TODO combine chunks too so the request has the final combined text
+        -- - right now I just show the chunks one by one
+        -- - later I'll need this for message history
+        -- - makes sense to coalesce here
+        frontend.process_chunk(chunk)
+    end
+    if tool_calls_s then
+        local flattened_calls = {}
+        for _, tool_calls in ipairs(tool_calls_s) do
+            for _, tool_call in ipairs(tool_calls) do
+                flattened_calls[#flattened_calls + 1] = tool_call
+            end
+        end
+        frontend.process_tool_calls(flattened_calls)
+    end
+    if finish_reason ~= nil and finish_reason ~= vim.NIL then
+        -- TODO? pass combined chunk and tool_calls here?
+        -- PRN any final processing (i.e. tool fallback)
+        frontend.process_finish_reason(finish_reason)
+    end
 end
 
 function M.on_delta(choice, frontend, request)
