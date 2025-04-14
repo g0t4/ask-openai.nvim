@@ -171,6 +171,20 @@ function M.signal_deltas()
             table.insert(new_lines, line)
         end
         table.insert(new_lines, "") -- between messages?
+
+        for _, call in ipairs(message.tool_calls or {}) do
+            -- FYI keep in mind later on I can come back and insert tool results!
+            --   for that I'll need a rich model of what is where in the buffer
+
+            local tool_name = "**" .. (call["function"].name or "") .. "**"
+            assert(not role:find("\n"), "tool should not have a new line but it does")
+            table.insert(new_lines, tool_name)
+            local args = call["function"].arguments
+            if args then
+                -- TODO new line in args? s\b \n right?
+                table.insert(new_lines, args)
+            end
+        end
     end
 
     vim.schedule(function()
@@ -179,9 +193,6 @@ function M.signal_deltas()
 end
 
 function M.process_request_completed()
-    -- TODO use new aggregated request.messages!!
-    --   then resume this:
-    --
     do return end
 
     -- TODO extract tool calls and flatten FROM the DENORMALIZER
