@@ -296,8 +296,26 @@ data: [DONE]
             should_be_equal("tool_calls", msg.finish_reason)
             -- FYI stop_reason for now
 
+            -- * tool delta 1:
+            -- [{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,"function":{"name":"run_command"}}
+            should_be_equal(1, #msg.tool_calls)
+            -- call = msg.tool_calls[1]
+            -- should_be_equal("chatcmpl-tool-ca99dda515524c6abe47d1ea22813507", call.id)
+            -- should_be_equal(0, call.index)
+            -- should_be_equal("function", call.type)
+            -- -- * function.name
+            -- func = call["function"]
+            -- should_be_equal("run_command", func.name)
+            --
+            -- * tool delta 2-4:
+            -- [{"index":0,"function":{"arguments":"{\"command\": \""}}
+            -- [{"index":0,"function":{"arguments":"ls"}}
+            -- [{"index":0,"function":{"arguments":"\"}"}}
+            --
+            -- concatenate args:
+            -- should_be_equal("{\"command\": \"ls\"}", func.arguments)
         end)
 
-        -- TODO move the vllm dual tool test here for on_delta direct testing?
+        -- TODO add vllm dual tool use test so I can validate that index is whats different
     end)
 end)
