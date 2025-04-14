@@ -173,7 +173,7 @@ function M.process_tool_calls(tool_calls)
     end
 
     -- local tool_calls_str = vim.inspect(tool_calls)
-    -- M.process_chunk(tool_calls_str)
+    -- M.chat_window:append(tool_calls_str)
 
     local tool_calls_summmary = {}
     for _, tool_call in ipairs(tool_calls) do
@@ -190,7 +190,7 @@ function M.process_tool_calls(tool_calls)
 end
 
 function M.process_finish_reason(finish_reason)
-    -- M.process_chunk("finish_reason: " .. tostring(finish_reason))
+    -- M.chat_window:append("finish_reason: " .. tostring(finish_reason))
     vim.schedule_wrap(M.call_tools)()
 end
 
@@ -233,7 +233,7 @@ function M.call_tools()
             --   }
             -- }
 
-            -- M.process_chunk(vim.inspect(mcp_response))
+            -- M.chat_window:append(vim.inspect(mcp_response))
             -- FYI might be cool to mod the original tool_call display and insert the result there and put the status line on its original name/id?
             --    -- TODO if I have a builder pattern for showing the chat history... I can rebuild it then, or at least rebuild it for the last request's tool calls
             --  that way I can see the cmd + result easily
@@ -282,7 +282,7 @@ function M.send_tool_messages_if_all_tools_done()
     if M.any_outstanding_tool_calls() then
         return
     end
-    -- M.process_chunk("sending tool results")
+    -- M.chat_window:append("sending tool results")
     -- TODO send a new prompt to remind it that hte tools are done and now you can help with the original question?
     --  maybe even include that previous question again?
     --  why? I am noticidng qwen starts to go off on a tangent based on tool results as if no original question was asked
