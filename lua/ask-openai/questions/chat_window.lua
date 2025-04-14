@@ -15,10 +15,13 @@ function ChatWindow:new()
 end
 
 function ChatWindow:open()
+    local height_percent = 80
+    local width_percent = 50
+
     local screen_lines = vim.api.nvim_get_option_value('lines', {})
     local screen_columns = vim.api.nvim_get_option_value('columns', {})
-    local win_height = math.ceil(0.5 * screen_lines)
-    local win_width = math.ceil(0.5 * screen_columns)
+    local win_height = math.ceil(height_percent / 100 * screen_lines)
+    local win_width = math.ceil(width_percent / 100 * screen_columns)
     local top_is_at_row = screen_lines / 2 - win_height / 2
     local left_is_at_col = screen_columns / 2 - win_width / 2
     local _winid = vim.api.nvim_open_win(self.buffer_number, true, {
