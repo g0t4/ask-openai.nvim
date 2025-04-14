@@ -175,16 +175,16 @@ function M.process_tool_calls(tool_calls)
     -- local tool_calls_str = vim.inspect(tool_calls)
     -- M.process_chunk(tool_calls_str)
 
-    local tools_text = {}
+    local tool_calls_summmary = {}
     for _, tool_call in ipairs(tool_calls) do
         name = "**" .. tool_call["function"].name
         -- PRN add a "verbose" mode? and show things like id then:
         name = name .. "**" .. " (" .. tool_call.id .. ")"
-        table.insert(tools_text, name)
+        table.insert(tool_calls_summmary, name)
         arguments = tool_call["function"].arguments
-        table.insert(tools_text, arguments)
+        table.insert(tool_calls_summmary, arguments)
     end
-    M.process_chunk(table.concat(tools_text, "\n"))
+    M.process_chunk(table.concat(tool_calls_summmary, "\n"))
 end
 
 function M.process_finish_reason(finish_reason)
