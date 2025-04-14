@@ -163,7 +163,6 @@ end
 
 function M.process_tool_calls(tool_calls)
     -- for now just write tool dcalls to the buffer
-    local tool_calls_str = vim.inspect(tool_calls)
     M.thread.last_request.tool_calls = M.thread.last_request.tool_calls or {}
 
     -- each time this is called, its a list of tool_call
@@ -173,7 +172,17 @@ function M.process_tool_calls(tool_calls)
         table.insert(M.thread.last_request.tool_calls, tool_call)
     end
 
-    M.process_chunk(tool_calls_str)
+    -- local tool_calls_str = vim.inspect(tool_calls)
+    -- M.process_chunk(tool_calls_str)
+
+    local tools_text = {}
+    for _, tool_call in ipairs(tool_calls) do
+        name = "**" .. tool_call["function"].name .. "**"
+        table.insert(tools_text, name)
+        arguments = tool_call["function"].arguments
+        table.insert(tools_text, arguments)
+    end
+    M.process_chunk(table.concat(tools_text, "\n"))
 end
 
 function M.process_finish_reason(finish_reason)
