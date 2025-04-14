@@ -34,13 +34,17 @@ function ChatThread:add_message(message)
     table.insert(self.messages, message)
 end
 
-function ChatThread:to_json()
-    -- TODO use this? or get rid of it... a way to serialize all messages?
+--- build the body of a curl request!
+---    taking into account all messages
+function ChatThread:to_body()
     local json_messages = {}
-    for _, message in ipairs(self.messages) do
-        table.insert(json_messages, { role = message.role, content = message.content })
-    end
-    return vim.fn.json_encode({ messages = json_messages })
+    -- PRN map to change shape to fit api endpoint? ... for now I think ChatMessage type already matches fully what is needed
+    -- TODO ensure serializes correctly to json messages
+    -- for _, message in ipairs(self.messages) do
+    --     table.insert(json_messages, { role = message.role, content = message.content })
+    -- end
+    -- -- TODO other body components specific to the thread, if any?
+    return vim.fn.json_encode({ messages = self.messages })
 end
 
 return ChatThread
