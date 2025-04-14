@@ -260,8 +260,7 @@ data: [DONE]
             should_be_equal("function", first_call.type)
             func = first_call["function"]
             should_be_equal("run_command", func.name)
-            -- args_json = func.arguments
-
+            should_be_equal("{\"command\":\"ls -la\"}", func.arguments)
 
             -- {"id":"call_oqp1e2a1","index":1,"type":"function", "function":{
             --    "name":"run_command",
