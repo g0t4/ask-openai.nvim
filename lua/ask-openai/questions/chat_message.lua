@@ -5,6 +5,7 @@
 --- @field name string|nil
 local ChatMessage = {}
 
+--- FYI largely a marker interface as well, don't need to actually use this ctor
 function ChatMessage:new(role, content)
     self = setmetatable({}, { __index = ChatMessage })
     self.role = role

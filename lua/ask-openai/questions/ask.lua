@@ -36,11 +36,14 @@ function M.send_question(user_prompt, code, file_name, use_tools)
     -- /v1/completions
     -- local body = qwen_legacy_body
 
-    local qwen_chat_body = {
-        messages = {
-            { role = "system", content = system_prompt },
-            { role = "user",   content = user_message },
-        },
+    ---@type ChatMessage[]
+    local qwen_messages = {
+        { role = "system", content = system_prompt },
+        { role = "user",   content = user_message },
+    }
+
+    ---@type ChatParams
+    local qwen_params = {
 
         model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
         -- model = "gemma3:12b-it-q8_0", -- btw -base- does terrible here :)
@@ -54,8 +57,7 @@ function M.send_question(user_prompt, code, file_name, use_tools)
     }
     -- /v1/chat/completions
     -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
-    local body = qwen_chat_body
-
+    -- PRN split agentica into messages and params
 
     -- ollama:
     local base_url = "http://ollama:11434"
@@ -66,12 +68,12 @@ function M.send_question(user_prompt, code, file_name, use_tools)
 
     if use_tools then
         -- TODO impl streaming tool_call chunking with vllm (it works)!
-        body.tools = mcp.openai_tools()
+        qwen_params.tools = mcp.openai_tools()
     end
 
-    M.thread = ChatThread.new(body)
-    -- TODO how about -- backend.curl_for(thread, base_url, M)? or thread.body() and pass that to backend.curl_for?
-    M.thread:set_last_request(backend.curl_for(body, base_url, M))
+    M.thread = ChatThread:new(qwen_messages, qwen_params)
+    local request = backend.curl_for(M.thread:next_body(), base_url, M)
+    M.thread:set_last_request(request)
 end
 
 local function ask_question_about(opts, use_tools)
