@@ -160,6 +160,7 @@ function M.signal_deltas()
     --    OR at least redraw current requests's contents (messages/tool calls, both will stream this way too!)
     -- great way to illustrate how this works:
     log:trace("signal", vim.inspect(M.thread.last_request))
+    -- TODO rename last_request to just request? or current_request?
 end
 
 function M.process_chunk(text)
