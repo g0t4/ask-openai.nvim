@@ -7,6 +7,7 @@ local ChatWindow = require("ask-openai.questions.chat_window")
 local ChatThread = require("ask-openai.questions.chat_thread")
 local ChatMessage = require("ask-openai.questions.chat_message")
 local M = {}
+require("ask-openai.helpers.buffers")
 
 
 function M.send_question(user_prompt, code, file_name, use_tools)
@@ -171,9 +172,7 @@ function M.signal_deltas()
         -- * message contents
         local content = message.content or ""
         if content ~= "" then
-            for _, line in ipairs(vim.split(content, "\n")) do
-                table.insert(new_lines, line)
-            end
+            table_insert_split_lines(new_lines, content)
             table.insert(new_lines, "") -- between messages?
         end
 
@@ -207,10 +206,7 @@ function M.signal_deltas()
                 for _, tool_content in ipairs(call.response.result.toolResult.content) do
                     table.insert(new_lines, tool_content.name)
                     if tool_content.type == "text" then
-                        -- split on new lines for buffer insert
-                        for _, line in ipairs(vim.split(tool_content.text, "\n")) do
-                            table.insert(new_lines, "  " .. line)
-                        end
+                        table_insert_split_lines(new_lines, tool_content.text)
                     else
                         table.insert(new_lines, "  unexpected content type: " .. tool_content.type)
                     end

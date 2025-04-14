@@ -108,4 +108,14 @@ function split_lines_skip_empties(string)
     return keep
 end
 
+function table_insert_many(tbl, items)
+    for _, item in ipairs(items) do
+        table.insert(tbl, item)
+    end
+end
+
+function table_insert_split_lines(tbl, text)
+    table_insert_many(tbl, vim.split(text, "\n"))
+end
+
 return M
