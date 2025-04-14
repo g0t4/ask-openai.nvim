@@ -161,6 +161,8 @@ end
 
 M.on_chunk = function(data, parse_choice, frontend, request)
     local chunk, finish_reason, tool_calls_s = M.parse_SSEs(data, parse_choice, frontend, request)
+    -- signal delta(s) arrived and parsed
+    frontend.signal_deltas()
     if chunk then
         -- TODO combine chunks too so the request has the final combined text
         -- - right now I just show the chunks one by one

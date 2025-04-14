@@ -66,6 +66,11 @@ local function ensure_new_lines_around(code, response_lines)
     return response_lines
 end
 
+function M.signal_deltas()
+    -- TODO replaces process_chunk... go get the entire current refactor from the denormalizer?
+    --  OR I can pass the latest chunk still... do smth in the normalizer for that or still have a sep pathway per delta (no chunkin though?)
+end
+
 function M.process_chunk(chunk)
     if not chunk then return end
 

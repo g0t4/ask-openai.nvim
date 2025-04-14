@@ -157,6 +157,11 @@ end
 
 M.current_message_chunks = {}
 
+function M.signal_deltas()
+    -- TODO for lack of a better name, this will trigger a redraw of ChatWindow
+    --    OR at least redraw current requests's contents (messages/tool calls, both will stream this way too!)
+end
+
 function M.process_chunk(text)
     table.insert(M.current_message_chunks, text) -- insert chunks so we have the full, final message
     vim.schedule(function()
