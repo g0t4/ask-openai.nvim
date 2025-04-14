@@ -155,15 +155,12 @@ function M.ensure_response_window_is_open()
     M.chat_window:ensure_open()
 end
 
-M.current_message_chunks = {}
-
 function M.signal_deltas()
     -- TODO for lack of a better name, this will trigger a redraw of ChatWindow
     --    OR at least redraw current requests's contents (messages/tool calls, both will stream this way too!)
 end
 
 function M.process_chunk(text)
-    table.insert(M.current_message_chunks, text) -- insert chunks so we have the full, final message
     vim.schedule(function()
         M.chat_window:append(text)
     end)
@@ -199,16 +196,11 @@ end
 
 function M.process_request_completed()
     -- TODO use new aggregated request.messages!!
-    local message = table.concat(M.current_message_chunks, "")
-    M.current_message_chunks = {} -- for next message
-    local assistant_message = ChatMessage:new("assistant", message)
-    -- any tool requests too?
-    M.thread:add_message(assistant_message)
-
-    vim.schedule(function()
-        log:jsonify_info("assistant_message:", assistant_message)
-        M.call_tools()
-    end)
+    --   then resume this:
+    -- vim.schedule(function()
+    --     log:jsonify_info("assistant_message:", assistant_message)
+    --     M.call_tools()
+    -- end)
 end
 
 function M.call_tools()
