@@ -12,14 +12,15 @@ local M = {}
 function M.send_question(user_prompt, code, file_name, use_tools)
     M.abort_last_request()
 
-    local system_prompt = "Your name is Ben Dover, you are a neovim AI plugin that answers questions."
-        .. " Please respond with markdown formatted text, that will be presented in a floating window."
+    local system_prompt = "You are a neovim AI plugin. Your name is Neo Vim. "
+        .. " Please respond with markdown formatted text"
 
     local user_message = user_prompt
     if code then
+        -- would make sense to fold the code initially
         user_message = user_message
             .. ". Here is my code from " .. file_name
-            .. ":\n\n" .. code
+            .. ":" .. code
     end
 
     -- show initial question
@@ -56,7 +57,7 @@ function M.send_question(user_prompt, code, file_name, use_tools)
     -- body.model = "" -- dont pass model, use whatever is served
 
     if use_tools then
-        -- TODO impl streaming tool_call chunking with vllm (it works)!
+        -- TODO impl final test case for streaming tool_calls with vllm!
         qwen_params.tools = mcp.openai_tools()
     end
 
