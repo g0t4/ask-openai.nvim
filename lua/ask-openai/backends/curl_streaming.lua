@@ -10,7 +10,7 @@ function M.terminate(request)
 end
 
 M.on_chunk = function(data, parse_choice, frontend, request)
-    local chunk, finish_reason, tool_calls_s = M.parse_SSEs(data, parse_choice, frontend)
+    local chunk, finish_reason, tool_calls_s = M.parse_SSEs(data, parse_choice, frontend, request)
     if chunk then
         -- TODO combine chunks too so the request has the final combined text
         -- - right now I just show the chunks one by one
@@ -116,7 +116,7 @@ end
 
 --- @param data string
 --- @return string|nil text, string|nil finish_reason, table|nil tool_calls_s
-function M.parse_SSEs(data, parse_choice, frontend)
+function M.parse_SSEs(data, parse_choice, frontend, request)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
@@ -147,7 +147,8 @@ function M.parse_SSEs(data, parse_choice, frontend)
             local first_choice = parsed.choices[1]
 
             -- btw everything outside of the delta is just its package for delivery, not needed after I get the delta out
-            M.on_delta(first_choice)
+            M.on_delta(first_choice, parse_choice, frontend, request)
+
 
             -- TODO eventually I will rip out most if not all of the following
             --   this method will become ONLY the parser...
@@ -181,7 +182,7 @@ function M.parse_SSEs(data, parse_choice, frontend)
     return chunk, finish_reason, tool_calls_s
 end
 
-function M.on_delta(choice, frontend)
+function M.on_delta(choice, parse_choice, frontend, request)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
 
     -- this is the new pathway that will rebuild the full message (as if sent stream: false)
@@ -189,6 +190,8 @@ function M.on_delta(choice, frontend)
 
     -- later, I can use this to update the UI for what I do with chunks currently
     --    that will entail redrawing message history (or at least part of it for the current messages being streamed)
+
+    -- TODO when I encounter a finish_reason or other stop signal, make sure to reset tmp_current_messages!
 end
 
 -- PRN does vllm have both finish_reason and stop_reason?
