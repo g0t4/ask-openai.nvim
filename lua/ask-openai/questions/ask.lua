@@ -193,7 +193,10 @@ function M.process_tool_calls(tool_calls)
 end
 
 function M.process_finish_reason(finish_reason)
-    -- TODO unit test this reconstitution
+    -- TODO not hack this back together, I should use the entire choice delta to determine:
+    --   index/role (grouping) and content (aggregated)
+    --   same as tool use except I need both to be stream-able
+    --
     local message = table.concat(M.current_message_chunks, "")
     M.current_message_chunks = {} -- for next message
     local assistant_message = ChatMessage:new("assistant", message)
