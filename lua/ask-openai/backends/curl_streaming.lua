@@ -92,13 +92,6 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
 end
 
 M.on_chunk = function(data, parse_choice, frontend, request)
-    M.parse_SSEs(data, parse_choice, frontend, request)
-    frontend.signal_deltas()
-end
-
---- @param data string
---- @return string|nil text
-function M.parse_SSEs(data, parse_choice, frontend, request)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
@@ -118,6 +111,7 @@ function M.parse_SSEs(data, parse_choice, frontend, request)
             local first_choice = parsed.choices[1]
 
             M.on_delta(first_choice, frontend, request)
+            frontend.signal_deltas()
 
             -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
             local chunk = parse_choice(first_choice)
