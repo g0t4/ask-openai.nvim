@@ -3,12 +3,12 @@ local BufferController = require("ask-openai.questions.buffers")
 local ChatWindow = {}
 
 function ChatWindow:new()
-    local b = setmetatable({}, { __index = ChatWindow })
+    local self = setmetatable({}, { __index = ChatWindow })
     local bufnr = vim.api.nvim_create_buf(false, true)
-    b.buffer_number = bufnr
-    b.buffer = BufferController:new(b.buffer_number)
-    vim.api.nvim_buf_set_name(b.buffer_number, 'Question Response')
-    return b
+    self.buffer_number = bufnr
+    self.buffer = BufferController:new(self.buffer_number)
+    vim.api.nvim_buf_set_name(self.buffer_number, 'Question Response')
+    return self
 end
 
 function ChatWindow:open()

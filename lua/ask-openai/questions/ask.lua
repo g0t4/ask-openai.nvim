@@ -5,7 +5,9 @@ local backend = require("ask-openai.backends.oai_chat")
 -- local backend = require("ask-openai.backends.oai_completions")
 local agentica = require("ask-openai.backends.models.agentica")
 local ChatWindow = require("ask-openai.questions.chat_window")
+local ChatThread = require("ask-openai.questions.chat_thread")
 local M = {}
+
 
 function M.send_question(user_prompt, code, file_name, use_tools)
     M.abort_last_request()
@@ -62,7 +64,8 @@ function M.send_question(user_prompt, code, file_name, use_tools)
         body.tools = mcp.openai_tools()
     end
 
-    M.last_request = backend.curl_for(body, base_url, M)
+    M.thread = ChatThread.new(body) -- todo pass to chat window?
+    M.thread.last_request = backend.curl_for(body, base_url, M)
 end
 
 local function ask_question_about(opts, use_tools)
@@ -159,13 +162,13 @@ end
 function M.process_tool_calls(tool_calls)
     -- for now just write tool dcalls to the buffer
     local tool_calls_str = vim.inspect(tool_calls)
-    M.last_request.tool_calls = M.last_request.tool_calls or {}
+    M.thread.last_request.tool_calls = M.thread.last_request.tool_calls or {}
 
     -- each time this is called, its a list of tool_call
     -- insert those into overall list (flatten)
     for _, tool_call in ipairs(tool_calls) do
         -- TODO write insertMany
-        table.insert(M.last_request.tool_calls, tool_call)
+        table.insert(M.thread.last_request.tool_calls, tool_call)
     end
 
     M.process_chunk(tool_calls_str)
@@ -177,11 +180,11 @@ function M.process_finish_reason(finish_reason)
 end
 
 function M.call_tools()
-    -- log:trace("tools:", vim.inspect(M.last_request.tool_calls))
-    if M.last_request.tool_calls == {} then
+    -- log:trace("tools:", vim.inspect(M.thread.last_request.tool_calls))
+    if M.thread.last_request.tool_calls == {} then
         return
     end
-    for _, tool_call in ipairs(M.last_request.tool_calls) do
+    for _, tool_call in ipairs(M.thread.last_request.tool_calls) do
         log:jsonify_info("tool:", tool_call)
         -- log:trace("tool:", vim.inspect(tool))
         -- tool:
@@ -249,7 +252,7 @@ end
 
 ---@return boolean
 function M.any_outstanding_tool_calls()
-    for _, tool_call in ipairs(M.last_request.tool_calls) do
+    for _, tool_call in ipairs(M.thread.last_request.tool_calls) do
         if tool_call.response_message == nil then
             return true
         end
@@ -258,7 +261,10 @@ function M.any_outstanding_tool_calls()
 end
 
 function M.abort_last_request()
-    backend.terminate(M.last_request)
+    if not M.thread then
+        return
+    end
+    backend.terminate(M.thread.last_request)
 end
 
 function M.setup()
