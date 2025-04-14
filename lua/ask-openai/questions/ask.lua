@@ -162,7 +162,6 @@ function M.open_response_window()
         vim.keymap.set("n", "<F8>", M.abort_and_close, { buffer = M.chat_window.buffer_number })
     end
 
-    M.chat_window:clear()
     M.chat_window:open()
 end
 
