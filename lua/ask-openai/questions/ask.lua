@@ -259,28 +259,7 @@ function M.call_tools()
                 --   }
                 -- }
 
-                -- M.chat_window:append(vim.inspect(mcp_response))
-                -- FYI might be cool to mod the original tool_call display and insert the result there and put the status line on its original name/id?
-                --    -- TODO if I have a builder pattern for showing the chat history... I can rebuild it then, or at least rebuild it for the last request's tool calls
-                --  that way I can see the cmd + result easily
-                local result_summary = {}
-                -- FYI ... isError is part of MCP spec, all tools return it IIUC... so this is not coupled to run_command
-                if tool_call.response.result.toolResult.isError then
-                    local failed = "❌ (" .. tool_call.id .. ")"
-                    table.insert(result_summary, failed)
-                else
-                    local success = "✅ (" .. tool_call.id .. ")"
-                    table.insert(result_summary, success)
-                end
-                for _, content in ipairs(tool_call.response.result.toolResult.content) do
-                    table.insert(result_summary, content.name)
-                    if content.type == "text" then
-                        table.insert(result_summary, content.text)
-                    else
-                        table.insert(result_summary, "  unexpected content type: " .. content.type)
-                    end
-                end
-                M.chat_window:append(table.concat(result_summary, "\n"))
+                M.signal_deltas()
 
                 -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
                 -- make sure content is a string (keep json structure)
