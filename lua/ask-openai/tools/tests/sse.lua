@@ -249,6 +249,15 @@ data: [DONE]
             should_be_equal(0, msg.index)
             should_be_equal("assistant", msg.role)
             should_be_equal("tool_calls", msg.finish_reason)
+            -- tool_calls:
+            should_be_equal(2, #msg.tool_calls)
+            -- {"id":"call_809l7n8f","index":0,"type":"function", "function":{
+            --    "name":"run_command",
+            --    "arguments":"{\"command\":\"ls -la\"}"}}]},"finish_reason":null}
+
+            -- {"id":"call_oqp1e2a1","index":1,"type":"function", "function":{
+            --    "name":"run_command",
+            --    "arguments":"{\"command\":\"ls -la\",\"cwd\":\"/path/to/directory\"}"}}]},"finish_reason":null}
         end)
         -- TODO add a test that validates lookup on index/role per message... need a multi message scenario (if that's ever a thing... and not multi choice... literally need two messages at same time, streaming)
 
