@@ -1,3 +1,4 @@
+local log = require("ask-openai.prediction.logger").predictions()
 ---@class BufferController
 ---@field buffer_number number
 local BufferController = {}
@@ -21,6 +22,26 @@ end
 
 function BufferController:clear()
     vim.api.nvim_buf_set_lines(self.buffer_number, 0, -1, false, {})
+end
+
+function BufferController:get_cursor_line_number_0based()
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    return cursor[1] - 1
+end
+
+function BufferController:get_last_paragraph()
+    -- TODO add unit tests of this
+    --   TODO notably handle whether or not this should include the empty line above a paragraph (when there is one, i.e. not when only paragraph is on line 1
+    --        FYI could remove empty line before/after paragraph
+    vim.cmd("normal! G{") -- find line with start of last paragraph
+    -- FYI G{ will move in the buffer, which is fine b/c if typing a question, s/b at bottom already
+    local line_number_1based = vim.api.nvim_win_get_cursor(0)[1]
+    local line_number_0based = line_number_1based - 1
+    local lines = vim.api.nvim_buf_get_lines(self.buffer_number, line_number_0based, -1, false)
+    local paragraph = table.concat(lines, "\n")
+
+    -- PRN if I need line numbers, I could return those as 2nd/3rd return values
+    return paragraph
 end
 
 return BufferController

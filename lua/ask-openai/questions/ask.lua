@@ -269,6 +269,21 @@ function M.abort_last_request()
     backend.terminate(M.thread.last_request)
 end
 
+function M.follow_up()
+    -- take the last paragraph of text in the buffer and ask about it
+    --  if already a M.thread then add to that with a new message
+    -- can leave paragraph as is in the buffer, just need to copy it to a message to send
+
+    -- copy it
+    M.ensure_response_window_is_open()
+    local paragraph = M.chat_window.buffer:get_last_paragraph()
+    log:trace("paragraph:", paragraph)
+    -- local message = ChatMessage:new_user_message(paragraph)
+    -- log:trace("message:", message)
+    -- M.thread:add_message(message)
+    -- M.send_question(message.content, nil, nil, true)
+end
+
 function M.setup()
     -- explicitly ask to use tools (vs not)... long term I hope to remove this need
     --    but, using smaller models its probably wise to control when they are allowed to use tools
