@@ -10,8 +10,21 @@
 
 
     "workspace.library": [
-        "/opt/homebrew/Cellar/neovim/0.11.0/share/nvim/runtime/lua",
-        "/opt/homebrew/Cellar/neovim/0.11.0/share/nvim/runtime/lua/vim/lsp",
+        // FYI nvim-tree used these... do I need a nested path or can I just do full VIMRUNTIME only?
+        //    so far in my testing, at least some things work (shift+K on vim.schedule, for example)
+        // "$VIMRUNTIME/lua/vim",
+        // "${3rd}/luv/library"
+        //   TODO ${3rd} is set to what, is it related to this:
+        //     https://github.com/LuaLS/lua-language-server/tree/master/3rd
+        //
+        // can use VIMRUNTIME!
+        //   https://github.com/LuaLS/LuaLS.github.io/issues/49
+        // check what VIMRUNTIME is set to on your machine:
+        //   :!fish -c "env | grep -i vim"
+        //   VIMRUNTIME=/opt/homebrew/Cellar/neovim/0.11.0/share/nvim/runtime
+        "$VIMRUNTIME",
+        //
+        // TODO look into using 3rd with rxlua? at least this doesn't change with version bumps... and not between mac/linux
         "~/.local/share/nvim/lazy/rxlua"
         // FYI not using luarocks for dependencies, not currently, instead use package manager to install the respective repo into RTP
     ]
