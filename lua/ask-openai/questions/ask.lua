@@ -10,18 +10,18 @@ local M = {}
 require("ask-openai.helpers.buffers")
 
 
-function M.send_question(user_prompt, code, file_name, use_tools)
+function M.send_question(user_prompt, selected_text, file_name, use_tools)
     M.abort_last_request()
 
     local system_prompt = "You are a neovim AI plugin. Your name is Neo Vim. "
         .. " Please respond with markdown formatted text"
 
     local user_message = user_prompt
-    if code then
+    if selected_text then
         -- would make sense to fold the code initially
         user_message = user_message
             .. ". Here is my code from " .. file_name
-            .. ":\n" .. code
+            .. ":\n" .. selected_text
     end
 
     -- show initial question
