@@ -41,6 +41,8 @@ function BufferController:replace_lines_after(line_number, new_lines)
     -- TODO if perf is an issue, I could easily keep last lines, do a diff and patch only changed lines
     --   that said, given this is just the current request... that basically is a coarse grain diff
     vim.api.nvim_buf_set_lines(self.buffer_number, line_number, -1, false, new_lines)
+
+    self:scroll_cursor_to_end_of_buffer()
 end
 
 function BufferController:get_last_paragraph()
