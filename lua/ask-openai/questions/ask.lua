@@ -14,14 +14,23 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools)
     M.abort_last_request()
 
     local system_prompt = "You are a neovim AI plugin. Your name is Neo Vim. "
-        .. " Please respond with markdown formatted text"
+        .. " Please respond with markdown formatted text."
 
     local user_message = user_prompt
     if selected_text then
         -- would make sense to fold the code initially
-        user_message = user_message
-            .. ". Here is my code from " .. file_name
-            .. ":\n" .. selected_text
+
+        file_extension = file_name:match("%.(%w+)$") or ""
+
+        -- TODO do not wrap in ``` block if the text has ``` in it? i.e. from markdown file
+        --    I could easily drop the ``` block part, I just thought it would be nice for display in the chat history (since I use md formatting there)
+        --    but AFAICT qwen does perfectly fine w/o it (I didn't have it initially and loved the responses, likely b/c I always had the file name which told the file type)
+
+        user_message = user_message .. "\n\n"
+            .. "I selected the following from `" .. file_name .. "`\n"
+            .. "```" .. file_extension .. "\n"
+            .. selected_text .. "\n"
+            .. "```"
     end
 
     -- show initial question
