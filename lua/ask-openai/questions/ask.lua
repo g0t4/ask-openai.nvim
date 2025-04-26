@@ -21,7 +21,7 @@ function M.send_question(user_prompt, code, file_name, use_tools)
         -- would make sense to fold the code initially
         user_message = user_message
             .. ". Here is my code from " .. file_name
-            .. ":" .. code
+            .. ":\n" .. code
     end
 
     -- show initial question
