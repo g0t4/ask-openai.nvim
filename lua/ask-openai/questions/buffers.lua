@@ -42,6 +42,8 @@ function BufferController:replace_lines_after(line_number, new_lines)
     --   that said, given this is just the current request... that basically is a coarse grain diff
     vim.api.nvim_buf_set_lines(self.buffer_number, line_number, -1, false, new_lines)
 
+    -- todo should I only scroll if the new content goes past the last line? i.e. if more than one line in new_lines?
+    --   would that have any performance impact?
     self:scroll_cursor_to_end_of_buffer()
 end
 
