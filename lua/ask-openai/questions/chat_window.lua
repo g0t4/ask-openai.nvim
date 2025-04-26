@@ -12,6 +12,9 @@ function ChatWindow:new()
     self.buffer_number = bufnr
     self.buffer = BufferController:new(self.buffer_number)
     vim.api.nvim_buf_set_name(self.buffer_number, 'Question Response')
+    -- buffer local keymaps
+    -- PRN use <LocalLeader>?
+    vim.keymap.set('n', '<leader>c', function() self:clear() end, { buffer = self.buffer_number, desc = "clear the chat window, and eventually the message history" })
     return self
 end
 
@@ -51,6 +54,7 @@ end
 
 function ChatWindow:clear()
     self.buffer:clear()
+    -- TODO clear message history (how do I want to link that? did I finish follow up already?)
 end
 
 function ChatWindow:close()

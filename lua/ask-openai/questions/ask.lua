@@ -399,6 +399,8 @@ function M.setup()
     vim.keymap.set('n', '<leader>ao', M.ensure_response_window_is_open, { noremap = true })
     vim.keymap.set('n', '<leader>aa', M.abort_last_request, { noremap = true })
     vim.keymap.set('n', '<leader>af', M.follow_up, { noremap = true })
+
+    -- TODO keymap to clear chat and start new thread, outside of the chat window so I can open it cleared with a new question ??
 end
 
 return M
