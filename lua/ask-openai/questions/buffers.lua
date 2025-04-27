@@ -19,9 +19,7 @@ function BufferController:append(text)
 end
 
 function BufferController:scroll_cursor_to_end_of_buffer()
-    -- move cursor/scroll to end of buffer
-    lines = vim.api.nvim_buf_line_count(self.buffer_number)
-    vim.api.nvim_win_set_cursor(0, { lines, 0 })
+    vim.cmd("normal! G")
 end
 
 function BufferController:clear()
