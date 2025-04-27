@@ -47,18 +47,10 @@ function BufferController:replace_lines_after(line_number, new_lines)
     self:scroll_cursor_to_end_of_buffer()
 end
 
-function BufferController:get_last_paragraph()
-    -- TODO add unit tests of this
-    --   TODO notably handle whether or not this should include the empty line above a paragraph (when there is one, i.e. not when only paragraph is on line 1
-    --        FYI could remove empty line before/after paragraph
-    vim.cmd("normal! G{") -- find line with start of last paragraph
-    -- FYI G{ will move in the buffer, which is fine b/c if typing a question, s/b at bottom already
-    local line_number_0based = self:get_cursor_line_number_0based()
+function BufferController:get_lines_after(line_number_0based)
+    -- I can extend this to a line range later... for now I just want all lines after a line #
     local lines = vim.api.nvim_buf_get_lines(self.buffer_number, line_number_0based, -1, false)
-    local paragraph = table.concat(lines, "\n")
-    vim.cmd("normal! G$o") -- move back to end of buffer, add new line below
-    -- PRN if I need line numbers, I could return those as 2nd/3rd return values
-    return paragraph
+    return table.concat(lines, "\n")
 end
 
 return BufferController

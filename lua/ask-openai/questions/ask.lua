@@ -262,6 +262,7 @@ function M.handle_request_completed()
 
             -- for now show user role as hint that you can follow up...
             M.chat_window:append("\n" .. format_role("user"))
+            M.chat_window.followup_starts_at_line_0based = M.chat_window.buffer:get_line_count() - 1
         end
 
         M.call_tools()
@@ -371,25 +372,28 @@ function M.abort_last_request()
 end
 
 function M.follow_up()
-    -- TODO this needs some serious love and rethink keys...
-    --   ultimatley I wanna pop open the window and type my prompt it in altogether
-
-    -- take the last paragraph of text in the buffer and ask about it
+    -- TODO setup so I can use follow up approach to ask initial question
+    --   ALSO keep the ability to select and send text
+    --
+    -- take follow up after end of prior response message from assistant
     --  if already a M.thread then add to that with a new message
-    -- can leave paragraph as is in the buffer, just need to copy it to a message to send
-    -- copy it
+    --  leave content as is in the buffer, close enough to what it would be if redrawn
+    --  and I don't use the buffer contents for past messages
+    --  so, just copy it out into a new message from user
     M.ensure_response_window_is_open()
-    local paragraph = M.chat_window.buffer:get_last_paragraph()
-    -- log:trace("last paragraph:", paragraph)
+    local followup = M.chat_window.buffer:get_lines_after(M.chat_window.followup_starts_at_line_0based)
+    M.chat_window.buffer:scroll_cursor_to_end_of_buffer()
+    vim.cmd("normal! o") -- move to end of buffer, add new line below to separate subsequent follow up response message
+    log:trace("follow up content:", followup)
 
     -- TODO CLEANUP sending first vs follow up to not need to differentiate all over
     if not M.thread then
         -- assume tool use here
-        M.send_question(paragraph, nil, nil, true)
+        M.send_question(followup, nil, nil, true)
         return
     end
 
-    local message = ChatMessage:new_user_message(paragraph)
+    local message = ChatMessage:new_user_message(followup)
     log:trace("message:", message)
     M.thread:add_message(message)
     M.send_messages()
