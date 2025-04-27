@@ -165,6 +165,10 @@ function M.ensure_response_window_is_open()
     M.chat_window:ensure_open()
 end
 
+local function format_role(role)
+    return "**" .. (role or "") .. "**"
+end
+
 function M.handle_messages_updated()
     -- TODO rename last_request to just request? or current_request?
     if not M.thread.last_request.messages then
@@ -174,7 +178,7 @@ function M.handle_messages_updated()
     local new_lines = {}
     for _, message in ipairs(M.thread.last_request.messages) do
         -- TODO extract a message formatter to build the lines below
-        local role = "**" .. (message.role or "") .. "**"
+        local role = format_role(message.role)
         assert(not role:find("\n"), "role should not have a new line but it does")
         table.insert(new_lines, role)
 
@@ -255,6 +259,9 @@ function M.handle_request_completed()
             end
             -- log:jsonify_info("final model_response message:", model_responses)
             M.thread:add_message(model_responses)
+
+            -- for now show user role as hint that you can follow up...
+            M.chat_window:append("\n" .. format_role("user"))
         end
 
         M.call_tools()
