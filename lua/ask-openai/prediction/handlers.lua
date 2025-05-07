@@ -203,6 +203,7 @@ end
 
 local ignore_filetypes = {
     "TelescopePrompt",
+    "TelescopeResults",
     "NvimTree",
     "DressingInput", -- pickers from nui (IIRC) => in nvim tree add a file => the file name box is one of these
     -- TODO make sure only check this on enter buffer first time? not on every event (cursormoved,etc)
