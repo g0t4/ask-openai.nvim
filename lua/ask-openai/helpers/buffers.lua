@@ -19,33 +19,33 @@ function Selection:is_empty()
     return self.original_text == nil or self.original_text == ""
 end
 
-function Selection:to_str(as_0based)
-    as_0based = as_0based or false
-    if as_0based then
+function Selection:to_str(as_0indexed)
+    as_0indexed = as_0indexed or false
+    if as_0indexed then
         return
-            "Selection: 0-based start(line=" .. (self.start_line_1indexed - 1)
+            "Selection: 0-indexed start(line=" .. (self.start_line_1indexed - 1)
             .. ",col=" .. (self.start_col_1indexed - 1)
             .. ") end(line=" .. (self.end_line_1indexed - 1)
             .. ",col=" .. (self.end_col_1indexed - 1)
             .. ") (" .. self.original_text .. ")"
     end
     return
-        "Selection: 1-based start(line=" .. self.start_line_1indexed
+        "Selection: 1-indexed start(line=" .. self.start_line_1indexed
         .. ",col=" .. self.start_col_1indexed
         .. ") end(line=" .. self.end_line_1indexed
         .. ",col=" .. self.end_col_1indexed
         .. ") (" .. self.original_text .. ")"
 end
 
-function Selection:log_info(as_0based)
-    log:info(self:to_str(as_0based))
+function Selection:log_info(as_0indexed)
+    log:info(self:to_str(as_0indexed))
 end
 
 function M.get_visual_selection()
     -- FYI getpos returns a byte index, getcharpos() returns a char index (prefer it)
     --   getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
     local _, start_line_1indexed, start_col_1indexed, _ = unpack(vim.fn.getcharpos("'<"))
-    -- start_line/start_col are 1-based (from register value)
+    -- start_line/start_col are 1-indexed (from register value)
     local _, end_line_1indexed, end_col_1indexed, _ = unpack(vim.fn.getcharpos("'>"))
     if start_line_1indexed == 0 and start_col_1indexed == 0 and end_line_1indexed == 0 and end_col_1indexed == 0 then
         -- log:info("no selection, using cursor position with empty selection")
@@ -58,7 +58,7 @@ function M.get_visual_selection()
         return Selection:new({}, start_line_1indexed, start_col_1indexed, end_line_1indexed, end_col_1indexed)
     end
 
-    -- end_line/end_col are 1-based, end_col appears to be the cursor position at the end of a selection
+    -- end_line/end_col are 1-indexed, end_col appears to be the cursor position at the end of a selection
     --
     -- FYI, while in visual modes (char/line) the current selection is NOT the last selection
     --   if this lua func is called from a keymap using a lua handler, the WIP selection won't be available yet
@@ -83,7 +83,7 @@ function M.get_visual_selection()
     --   tackle this (if its even an issue) when I encounter a problem with it
     --
 
-    -- getline is 1-based, end-inclusive (optional)
+    -- getline is 1-indexed, end-inclusive (optional)
     local selected_lines = vim.fn.getline(start_line_1indexed, end_line_1indexed)
 
     if #selected_lines == 0 then

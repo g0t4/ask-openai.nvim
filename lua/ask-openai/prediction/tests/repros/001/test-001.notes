@@ -1,6 +1,6 @@
 ## describe example
 
-position cursor on line 7 (0-based => #6)
+position cursor on line 7 (0-indexed => #6)
    at column 8 (on the "i" in "envi")
 in normal mode:
    type "A" for append at end of line

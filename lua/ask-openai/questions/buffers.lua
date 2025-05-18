@@ -30,7 +30,7 @@ function BufferController:get_line_count()
     return vim.api.nvim_buf_line_count(self.buffer_number)
 end
 
-function BufferController:get_cursor_line_number_0based()
+function BufferController:get_cursor_line_number_0indexed()
     local cursor = vim.api.nvim_win_get_cursor(0)
     return cursor[1] - 1
 end
@@ -45,9 +45,9 @@ function BufferController:replace_lines_after(line_number, new_lines)
     self:scroll_cursor_to_end_of_buffer()
 end
 
-function BufferController:get_lines_after(line_number_0based)
+function BufferController:get_lines_after(line_number_0indexed)
     -- I can extend this to a line range later... for now I just want all lines after a line #
-    local lines = vim.api.nvim_buf_get_lines(self.buffer_number, line_number_0based, -1, false)
+    local lines = vim.api.nvim_buf_get_lines(self.buffer_number, line_number_0indexed, -1, false)
     return table.concat(lines, "\n")
 end
 

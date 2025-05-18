@@ -263,7 +263,7 @@ function M.handle_request_completed()
 
             -- for now show user role as hint that you can follow up...
             M.chat_window:append("\n" .. format_role("user"))
-            M.chat_window.followup_starts_at_line_0based = M.chat_window.buffer:get_line_count() - 1
+            M.chat_window.followup_starts_at_line_0indexed = M.chat_window.buffer:get_line_count() - 1
         end
 
         M.call_tools()
@@ -382,7 +382,7 @@ function M.follow_up()
     --  and I don't use the buffer contents for past messages
     --  so, just copy it out into a new message from user
     M.ensure_response_window_is_open()
-    local followup = M.chat_window.buffer:get_lines_after(M.chat_window.followup_starts_at_line_0based)
+    local followup = M.chat_window.buffer:get_lines_after(M.chat_window.followup_starts_at_line_0indexed)
     M.chat_window.buffer:scroll_cursor_to_end_of_buffer()
     vim.cmd("normal! o") -- move to end of buffer, add new line below to separate subsequent follow up response message
     log:trace("follow up content:", followup)

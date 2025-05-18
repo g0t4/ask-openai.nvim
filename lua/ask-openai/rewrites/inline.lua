@@ -121,28 +121,28 @@ function M.accept_rewrite()
         lines = M.strip_md_from_completion(lines)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
 
-        local use_start_line_0based = M.selection.start_line_1indexed - 1
-        local use_end_line_0based = M.selection.end_line_1indexed - 1
-        local use_start_col_0based = M.selection.start_col_1indexed - 1
-        local use_end_col_0based = M.selection.end_col_1indexed - 1
+        local use_start_line_0indexed = M.selection.start_line_1indexed - 1
+        local use_end_line_0indexed = M.selection.end_line_1indexed - 1
+        local use_start_col_0indexed = M.selection.start_col_1indexed - 1
+        local use_end_col_0indexed = M.selection.end_col_1indexed - 1
 
-        log:info("nvim_buf_set_text: 0-based "
-            .. "start(line=" .. use_start_line_0based
-            .. ",col=" .. use_start_col_0based
-            .. ") end(line=" .. use_end_line_0based
-            .. ",col=" .. use_end_col_0based
+        log:info("nvim_buf_set_text: 0-indexed "
+            .. "start(line=" .. use_start_line_0indexed
+            .. ",col=" .. use_start_col_0indexed
+            .. ") end(line=" .. use_end_line_0indexed
+            .. ",col=" .. use_end_col_0indexed
             .. ")")
 
-        -- Dump selection in 0based for debugging too
+        -- Dump selection in 0indexed for debugging too
         M.selection:log_info(true)
 
         -- Relpace the selected text with the generated content
         vim.api.nvim_buf_set_text(
             0, -- Current buffer
-            use_start_line_0based, -- Zero-indexed
-            use_start_col_0based, -- Zero-indexed
-            use_end_line_0based, -- Zero-indexed, end-inclusive line/row
-            use_end_col_0based, -- Zero-indexed, end-exclusive column
+            use_start_line_0indexed, -- Zero-indexed
+            use_start_col_0indexed, -- Zero-indexed
+            use_end_line_0indexed, -- Zero-indexed, end-inclusive line/row
+            use_end_col_0indexed, -- Zero-indexed, end-exclusive column
             lines
         )
 

@@ -16,7 +16,7 @@ local log = require("ask-openai.prediction.logger").predictions()
 
 
 function M.get_line_range(current_row, allow_lines, total_lines_in_doc)
-    -- FYI do not adjust for 0/1 based, assume all of these are in same 1/0 base
+    -- FYI do not adjust for 0/1-indexed, assume all of these are in same 0/1-index
     --   only adjust when using nvim's line funcs
 
     local first_row = current_row - allow_lines
@@ -48,21 +48,21 @@ local CURRENT_BUFFER = 0
 function M.ask_for_prediction()
     M.cancel_current_prediction()
 
-    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(CURRENT_BUFFER)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
-    local original_row = original_row_1indexed - 1 -- 0-based now
+    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(CURRENT_BUFFER)) -- (1,0)-indexed #s... aka original_row starts at 1, original_col starts at 0
+    local original_row = original_row_1indexed - 1 -- 0-indexed now
 
     local allow_lines = 80
     local num_rows_total = vim.api.nvim_buf_line_count(CURRENT_BUFFER)
-    -- TODO test for 0based vs 1indexed indexing in get_line_range (I know you can get a number past end of document but that works out given get_lines is END-EXCLUSIVE
+    -- TODO test for 0indexed vs 1indexed indexing in get_line_range (I know you can get a number past end of document but that works out given get_lines is END-EXCLUSIVE
     local first_row, last_row = M.get_line_range(original_row, allow_lines, num_rows_total)
     log:trace("first_row", first_row, "last_row", last_row, "original_row", original_row, "original_col", original_col)
 
 
     local current_line = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row, original_row + 1, IGNORE_BOUNDARIES)[1]
-    -- get_lines is END-EXCLUSIVE, 0-based
+    -- get_lines is END-EXCLUSIVE, 0-indexed
     log:trace("current_line", current_line)
 
-    local before_is_thru_col = original_col -- original_col is 0-based, but don't +1 b/c that would include the char under the cursor which goes after any typed/inserted chars
+    local before_is_thru_col = original_col -- original_col is 0-indexed, but don't +1 b/c that would include the char under the cursor which goes after any typed/inserted chars
     -- test edge case: enter insert mode 'i' => type/paste char(s) => observe char under cursor position shifts right
     local current_line_before_split = current_line:sub(1, before_is_thru_col) -- sub is END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
     log:trace("current_line_before (1 => " .. before_is_thru_col .. "): '" .. current_line_before_split .. "'")
@@ -77,15 +77,15 @@ function M.ask_for_prediction()
     --   - Prediction should only fill the domain of inserting text after/before existing text
     --   - If I want help w/ a line I can wipe the end to get all of it redone (that is not ideal for cases when the cue is midway or toward end but that is gonna have to wait for as AskImplicitRewrite :) that compliments AskExplicitRewrite
 
-    local after_starts_at_char_under_cursor = original_col + 1 -- FYI original_col is 0 based, thus +1
+    local after_starts_at_char_under_cursor = original_col + 1 -- FYI original_col is 0-indexed, thus +1
     local current_line_after_split = current_line:sub(after_starts_at_char_under_cursor)
     log:trace("current_line_after (" .. after_starts_at_char_under_cursor .. " => end): '" .. current_line_after_split .. "'")
 
-    local lines_before_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, first_row, original_row, IGNORE_BOUNDARIES) -- 0based, END-EXCLUSIVE
+    local lines_before_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, first_row, original_row, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
     local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_line_before_split
 
     -- TODO edge cases for new line at end of current line? is that a concern
-    local lines_after_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row + 1, last_row, IGNORE_BOUNDARIES) -- 0based END-EXCLUSIVE
+    local lines_after_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row + 1, last_row, IGNORE_BOUNDARIES) -- 0indexed END-EXCLUSIVE
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local document_suffix = current_line_after_split .. "\n" .. table.concat(lines_after_current, "\n")
 
