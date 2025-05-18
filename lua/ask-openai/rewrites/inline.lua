@@ -17,10 +17,11 @@ M.namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
 M.extmark_id = nil
 
 function M.strip_thinking_tags(lines, tag_name)
-    -- strip only first set, and right now I only intend to do this on accept (I want user to see in preview)
-    -- it looks good actually to see the model is busy (like a progress indicator)
-    -- PRN I could have a secondary accept that keeps the thinking, and comments it out!
-
+    local text = table.concat(lines, "\n")
+    -- must only have whitespace before the opening tag
+    local pattern = "^%s*<" .. tag_name .. ">[^<]*</" .. tag_name .. ">"
+    text = text:gsub(pattern, "")
+    return vim.split(text, "\n")
 end
 
 function M.strip_md_from_completion(lines)
