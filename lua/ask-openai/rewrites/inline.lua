@@ -215,6 +215,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         -- model = "qwen2.5-coder:7b-instruct-q8_0",
         model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base"
         -- model = "gemma3:12b-it-q8_0",
+        max_tokens = 4096,
         temperature = 0.2,
         -- TODO do I need num_ctx (can't recall why I set it - check predicitons code)
         -- options = {
