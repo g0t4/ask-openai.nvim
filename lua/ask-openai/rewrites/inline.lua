@@ -1,6 +1,6 @@
 local buffers = require("ask-openai.helpers.buffers")
--- local backend = require("ask-openai.backends.oai_chat")
-local backend = require("ask-openai.backends.oai_completions")
+local backend = require("ask-openai.backends.oai_chat")
+-- local backend = require("ask-openai.backends.oai_completions")
 local log = require("ask-openai.prediction.logger").predictions()
 local agentica = require("ask-openai.backends.models.agentica")
 local M = {}
@@ -215,10 +215,10 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
     -- /v1/chat/completions
     -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
-    -- local body = qwen_chat_body
+    local body = qwen_chat_body
 
     -- /v1/completions
-    local body = qwen_legacy_body
+    -- local body = qwen_legacy_body
 
     -- vllm or ollama:
     -- local base_url = "http://build21:8000"
