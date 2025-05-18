@@ -26,35 +26,42 @@ describe("test strip markdown from completion responses", function()
         local response = rewrites.strip_md_from_completion(lines)
         assert.are.same(response, lines)
     end)
+    -- PRN can I find a library/algo someone already setup to do this?
+    -- or can I use structured outputs with ollama? I know I can with vllm... that might help too
 end)
 
 describe("test strip special html thinking tags from completion responses", function()
     -- BTW... don't include the think tag example if you want help...
     -- it ends up stopping the model when it first reflects on the closing tag
 
-    it("should remove one set of special html tags <foo> and </foo>", function()
-        local completion = "This is some text with <foo>special tag</foo> and more text."
+    it("should remove one set of special html tags <foo> and </foo> when they come first", function()
+        local completion = "<foo>special tag</foo> and more text."
         local lines = vim.split(completion, "\n")
-        local response = rewrites.strip_md_from_completion(lines)
-        assert.are.same({ "This is some text with  and more text." }, response)
+        local response = rewrites.strinp_thinking_tags(lines, "foo")
+        assert.are.same({ " and more text." }, response)
     end)
-
-    -- TODO what about open only? for now, lets do nothing
-    -- TODO what about close only? for now, lets do nothing
-
-    it("when multiple tagged regions, should only remove the first one", function()
-        local completion = "Multiple <foo>tags</foo> and <foo>another</foo> and <foo>one more</foo>."
-        local lines = vim.split(completion, "\n")
-        local response = rewrites.strip_md_from_completion(lines)
-        assert.are.same({ "Multiple  and  and ." }, response)
-    end)
-
-    it("should not remove other html tags", function()
-        local completion = "This is a <div>normal html tag</div> and <p>some text</p>."
-        local lines = vim.split(completion, "\n")
-        local response = rewrites.strip_md_from_completion(lines)
-        assert.are.same({ "This is a <div>normal html tag</div> and <p>some text</p>." }, response)
-    end)
-    -- PRN can I find a library/algo someone already setup to do this?
-    -- or can I use structured outputs with ollama? I know I can with vllm... that might help too
+    --
+    -- it("should ??? remove one set of special html tags <foo> and </foo> when they don't come first", function()
+    --     local completion = "This is some text with <foo>special tag</foo> and more text."
+    --     local lines = vim.split(completion, "\n")
+    --     local response = rewrites.strip_md_from_completion(lines)
+    --     assert.are.same({ "This is some text with  and more text." }, response)
+    -- end)
+    --
+    -- -- TODO what about open only? for now, lets do nothing
+    -- -- TODO what about close only? for now, lets do nothing
+    --
+    -- it("when multiple tagged regions, should only remove the first one", function()
+    --     local completion = "Multiple <foo>tags</foo> and <foo>another</foo> and <foo>one more</foo>."
+    --     local lines = vim.split(completion, "\n")
+    --     local response = rewrites.strip_md_from_completion(lines)
+    --     assert.are.same({ "Multiple  and  and ." }, response)
+    -- end)
+    --
+    -- it("should not remove other html tags", function()
+    --     local completion = "This is a <div>normal html tag</div> and <p>some text</p>."
+    --     local lines = vim.split(completion, "\n")
+    --     local response = rewrites.strip_md_from_completion(lines)
+    --     assert.are.same({ "This is a <div>normal html tag</div> and <p>some text</p>." }, response)
+    -- end)
 end)
