@@ -1,6 +1,8 @@
 local rewrites = require("lua.ask-openai.rewrites.inline")
 local assert = require("luassert")
--- TODO PORT TO WORK WITH inline2
+
+-- TODO anything else to port for "inline2" => I already did the text=>lines fix
+--   I cannot recall what inline2 was about... but seems lines might have been part of it
 
 describe("test strip markdown from completion responses", function()
     it("should remove markdown from a simple completion", function()
