@@ -198,7 +198,7 @@ function M.handle_messages_updated()
             local tool_header = "**" .. (call["function"].name or "") .. "**"
             tool_header = tool_header .. " (" .. call.id .. ")"
             if call.response then
-                if call.response.result.toolResult.isError then
+                if call.response.result.isError then
                     tool_header = "❌ " .. tool_header
                 else
                     tool_header = "✅ " .. tool_header
@@ -217,7 +217,7 @@ function M.handle_messages_updated()
 
             -- * tool result
             if call.response then
-                for _, tool_content in ipairs(call.response.result.toolResult.content) do
+                for _, tool_content in ipairs(call.response.result.content) do
                     table.insert(new_lines, tool_content.name)
                     if tool_content.type == "text" then
                         table_insert_split_lines(new_lines, tool_content.text)
