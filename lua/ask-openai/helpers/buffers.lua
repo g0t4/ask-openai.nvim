@@ -47,6 +47,21 @@ function M.get_visual_selection()
     local _, start_line_1based, start_col_1based, _ = unpack(vim.fn.getcharpos("'<"))
     -- start_line/start_col are 1-based (from register value)
     local _, end_line_1based, end_col_1based, _ = unpack(vim.fn.getcharpos("'>"))
+    if start_line_1based == 0 and start_col_1based == 0 and end_line_1based == 0 and end_col_1based == 0 then
+        log:info("no selection, using cursor position with empty selection")
+        local row_1indexed, col_0indexed = unpack(vim.api.nvim_win_get_cursor(0))
+        start_line_1based = row_1indexed
+        start_col_1based = col_0indexed + 1
+        -- copy to end position
+        end_line_1based = start_line_1based
+        end_col_1based = start_col_1based
+        return Selection:new({}, start_line_1based, start_col_1based, end_line_1based, end_col_1based)
+    end
+
+    log:info("start_line_1based: " .. start_line_1based)
+    log:info("start_col_1based: " .. start_col_1based)
+    log:info("end_line_1based: " .. end_line_1based)
+    log:info("end_col_1based: " .. end_col_1based)
     -- end_line/end_col are 1-based, end_col appears to be the cursor position at the end of a selection
     --
     -- FYI, while in visual modes (char/line) the current selection is NOT the last selection
@@ -75,7 +90,10 @@ function M.get_visual_selection()
     -- getline is 1-based, end-inclusive (optional)
     local selected_lines = vim.fn.getline(start_line_1based, end_line_1based)
 
-    if #selected_lines == 0 then return "" end
+    if #selected_lines == 0 then
+        -- TODO test for this?
+        return Selection:new({}, start_line_1based, start_col_1based, end_line_1based, end_col_1based)
+    end
 
     -- Truncate the last line to the specified end column
     local last_line = selected_lines[#selected_lines]

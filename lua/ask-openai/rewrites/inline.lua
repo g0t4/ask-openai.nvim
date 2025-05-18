@@ -185,8 +185,11 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     --    also allow smth custom per project in its root dir.. here TBH could list what prompts are included by default vs on demand (prompt sets)
 
     local user_message = user_prompt
-        .. ". Here is my code from " .. file_name
-        .. ":\n\n" .. code
+    if user_prompt ~= nil and user_prompt ~= "" then
+        user_message = user_message
+            .. ". Here is my code from " .. file_name
+            .. ":\n\n" .. code
+    end
 
     -- TODO extract out this ollama stuff into qwen/gemma...
     local qwen_chat_body = {
@@ -233,10 +236,11 @@ local function ask_and_stream_from_ollama(opts)
     -- TODO end column calc is off by one
 
     local selection = buffers.get_visual_selection()
-    if selection:is_empty() then
-        error("No visual selection found.")
-        return
-    end
+    log:info("Selection: " .. selection:to_str())
+    -- if selection:is_empty() then
+    --     error("No visual selection found.")
+    --     return
+    -- end
 
     local user_prompt = opts.args
     local file_name = vim.fn.expand("%:t")
@@ -283,7 +287,7 @@ end
 function M.setup()
     -- Create commands and keymaps for the rewrite functionality
     vim.api.nvim_create_user_command("AskRewrite", ask_and_stream_from_ollama, { range = true, nargs = 1 })
-    vim.api.nvim_set_keymap('v', '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
+    vim.keymap.set({ 'n', 'v' }, '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
 
     -- Add a command to abort the stream if needed
     vim.api.nvim_create_user_command("AskRewriteAbort", M.abort_last_request, {})
