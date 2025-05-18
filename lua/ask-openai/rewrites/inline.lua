@@ -176,20 +176,34 @@ end
 function M.stream_from_ollama(user_prompt, code, file_name)
     M.abort_last_request()
 
-    local system_prompt = "You are a neovim AI plugin that rewrites code. "
-        .. "Preserve indentation."
-        .. "No explanations, no markdown blocks. No ``` nor ` surrounding your answer. "
-        .. "Avoid pointless comments. Do not remove existing code/comments unless the user asks you to."
+    -- TODO toggle for /no_think
+
+    local system_prompt = "You are a neovim AI plugin that rewrites and/or creates new code. "
+        .. "You strongly believe in the following: "
+        .. "1. Explanations and markdown blocks are a waste of time. No ``` nor ` surrounding your work. "
+        .. "2. Identation should be diligently preserved. "
+        .. "3. Pointless comments are infuriating. "
+        .. "4. Unrelated, existing code/comments must be carefully preserved (not removed, nor changed). "
+        .. "5. If user instructions are ambiguous, it's paramount to ask for clarification. " -- TODO keep? (this is new)
+        .. "6. Adherence to the user's request is of utmost importance. "
+    -- TODO would be nice for there to be a workflow to ask a user to clarify...
+    --   actually I could just resubmit the AskRewrite!
+    --   and add shortcut to reselect visual selection + restore cmdline
 
     -- TODO it would be nice to have a toggle option to include a project specific prompt (i.e. with hammerspoon APIs, or in nvim config have lua/neovim APIS, etc)
     --    actually one could be language specific (detect in nvim => neovim + lua, in vimscript =>  vim APIs, in a hammerspoon file => Lua + Hammerspoon APIs)
     --    also allow smth custom per project in its root dir.. here TBH could list what prompts are included by default vs on demand (prompt sets)
 
     local user_message = user_prompt
-    if user_prompt ~= nil and user_prompt ~= "" then
+    if code ~= nil and code ~= "" then
         user_message = user_message
-            .. ". Here is my code from " .. file_name
+            .. "\n Here is my code from " .. file_name
             .. ":\n\n" .. code
+        log:info("user_message: '" .. user_message .. "'")
+    else
+        -- PRN detect if punctuation on end of user_message
+        user_message = user_message
+            .. "\n I am working on this file: " .. file_name
     end
 
     -- TODO extract out this ollama stuff into qwen/gemma...
