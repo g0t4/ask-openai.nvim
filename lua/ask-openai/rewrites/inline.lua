@@ -236,7 +236,7 @@ local function ask_and_stream_from_ollama(opts)
     -- TODO end column calc is off by one
 
     local selection = buffers.get_visual_selection()
-    log:info("Selection: " .. selection:to_str())
+    -- log:info("Selection: " .. selection:to_str())
     -- if selection:is_empty() then
     --     error("No visual selection found.")
     --     return
