@@ -98,8 +98,8 @@ function M.process_chunk(chunk)
         M.extmark_id = vim.api.nvim_buf_set_extmark(
             0, -- Current buffer
             M.namespace_id,
-            M.selection.start_line_1based - 1, -- Zero-indexed
-            M.selection.start_col_1based - 1, -- Zero-indexed
+            M.selection.start_line_1indexed - 1, -- Zero-indexed
+            M.selection.start_col_1indexed - 1, -- Zero-indexed
             {
                 virt_text = first_line,
                 virt_lines = virt_lines,
@@ -121,10 +121,10 @@ function M.accept_rewrite()
         lines = M.strip_md_from_completion(lines)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
 
-        local use_start_line_0based = M.selection.start_line_1based - 1
-        local use_end_line_0based = M.selection.end_line_1based - 1
-        local use_start_col_0based = M.selection.start_col_1based - 1
-        local use_end_col_0based = M.selection.end_col_1based - 1
+        local use_start_line_0based = M.selection.start_line_1indexed - 1
+        local use_end_line_0based = M.selection.end_line_1indexed - 1
+        local use_start_col_0based = M.selection.start_col_1indexed - 1
+        local use_end_col_0based = M.selection.end_col_1indexed - 1
 
         log:info("nvim_buf_set_text: 0-based "
             .. "start(line=" .. use_start_line_0based

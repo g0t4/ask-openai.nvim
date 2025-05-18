@@ -52,8 +52,8 @@ function Prediction:redraw_extmarks()
     self:clear_extmarks()
     -- clear from 0 to -1 => entire buffer
 
-    local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
-    local original_row = original_row_1based - 1 -- 0-based now
+    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
+    local original_row = original_row_1indexed - 1 -- 0-based now
 
     if self.prediction == nil then
         print("unexpected... prediction is nil?")
@@ -143,13 +143,13 @@ function Prediction:accept_first_line()
     local first_line = table.remove(lines, 1) -- mostly just change this to accept 1+ words/lines
 
     -- insert first line into document
-    local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
-    local original_row = original_row_1based - 1 -- 0-based now
+    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
+    local original_row = original_row_1indexed - 1 -- 0-based now
 
     self.disable_cursor_moved = true
     -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
     vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, { first_line, "" })
-    vim.api.nvim_win_set_cursor(0, { original_row_1based + 1, 0 }) -- (1,0)-based (row,col)
+    vim.api.nvim_win_set_cursor(0, { original_row_1indexed + 1, 0 }) -- (1,0)-based (row,col)
 
     self.prediction = table.concat(lines, "\n") -- strip that first line then from the prediction (and update it)
     self:redraw_extmarks()
@@ -188,13 +188,13 @@ function Prediction:accept_first_word()
     lines[1] = lines[1]:sub(word_end + 1) or "" -- shouldn't need `or ""`
 
     -- insert first word into document
-    local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
-    local original_row = original_row_1based - 1 -- 0-based now
+    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
+    local original_row = original_row_1indexed - 1 -- 0-based now
 
     self.disable_cursor_moved = true
     -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
     vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, { first_word })
-    vim.api.nvim_win_set_cursor(0, { original_row_1based, original_col + #first_word }) -- (1,0)-based (row,col)
+    vim.api.nvim_win_set_cursor(0, { original_row_1indexed, original_col + #first_word }) -- (1,0)-based (row,col)
 
     self.prediction = table.concat(lines, "\n") -- strip that first line then from the prediction (and update it)
     self:redraw_extmarks()
@@ -206,15 +206,15 @@ function Prediction:accept_all()
         return
     end
 
-    local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
-    local original_row = original_row_1based - 1 -- 0-based now
+    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
+    local original_row = original_row_1indexed - 1 -- 0-based now
 
     self.disable_cursor_moved = true
     vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, lines)
 
     -- cursor should stop at end of inserted text
     local last_col = #lines[#lines] --
-    local last_row = original_row_1based + #lines - 1
+    local last_row = original_row_1indexed + #lines - 1
     vim.api.nvim_win_set_cursor(0, { last_row, last_col }) -- (1,0)-based (row,col)
 
     self.prediction = "" -- strip all lines from the prediction (and update it)

@@ -2,13 +2,13 @@ local log = require("ask-openai.prediction.logger").predictions() -- TODO rename
 local M = {}
 
 local Selection = {}
-function Selection:new(selected_lines, start_line_1based, start_col_1based, end_line_1based, end_col_1based)
+function Selection:new(selected_lines, start_line_1indexed, start_col_1indexed, end_line_1indexed, end_col_1indexed)
     local obj = {
         original_text = vim.fn.join(selected_lines, "\n"),
-        start_line_1based = start_line_1based,
-        start_col_1based = start_col_1based,
-        end_line_1based = end_line_1based,
-        end_col_1based = end_col_1based,
+        start_line_1indexed = start_line_1indexed,
+        start_col_1indexed = start_col_1indexed,
+        end_line_1indexed = end_line_1indexed,
+        end_col_1indexed = end_col_1indexed,
     }
     setmetatable(obj, self)
     self.__index = self
@@ -23,17 +23,17 @@ function Selection:to_str(as_0based)
     as_0based = as_0based or false
     if as_0based then
         return
-            "Selection: 0-based start(line=" .. (self.start_line_1based - 1)
-            .. ",col=" .. (self.start_col_1based - 1)
-            .. ") end(line=" .. (self.end_line_1based - 1)
-            .. ",col=" .. (self.end_col_1based - 1)
+            "Selection: 0-based start(line=" .. (self.start_line_1indexed - 1)
+            .. ",col=" .. (self.start_col_1indexed - 1)
+            .. ") end(line=" .. (self.end_line_1indexed - 1)
+            .. ",col=" .. (self.end_col_1indexed - 1)
             .. ") (" .. self.original_text .. ")"
     end
     return
-        "Selection: 1-based start(line=" .. self.start_line_1based
-        .. ",col=" .. self.start_col_1based
-        .. ") end(line=" .. self.end_line_1based
-        .. ",col=" .. self.end_col_1based
+        "Selection: 1-based start(line=" .. self.start_line_1indexed
+        .. ",col=" .. self.start_col_1indexed
+        .. ") end(line=" .. self.end_line_1indexed
+        .. ",col=" .. self.end_col_1indexed
         .. ") (" .. self.original_text .. ")"
 end
 
@@ -44,18 +44,18 @@ end
 function M.get_visual_selection()
     -- FYI getpos returns a byte index, getcharpos() returns a char index (prefer it)
     --   getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
-    local _, start_line_1based, start_col_1based, _ = unpack(vim.fn.getcharpos("'<"))
+    local _, start_line_1indexed, start_col_1indexed, _ = unpack(vim.fn.getcharpos("'<"))
     -- start_line/start_col are 1-based (from register value)
-    local _, end_line_1based, end_col_1based, _ = unpack(vim.fn.getcharpos("'>"))
-    if start_line_1based == 0 and start_col_1based == 0 and end_line_1based == 0 and end_col_1based == 0 then
+    local _, end_line_1indexed, end_col_1indexed, _ = unpack(vim.fn.getcharpos("'>"))
+    if start_line_1indexed == 0 and start_col_1indexed == 0 and end_line_1indexed == 0 and end_col_1indexed == 0 then
         -- log:info("no selection, using cursor position with empty selection")
         local row_1indexed, col_0indexed = unpack(vim.api.nvim_win_get_cursor(0))
-        start_line_1based = row_1indexed
-        start_col_1based = col_0indexed + 1
+        start_line_1indexed = row_1indexed
+        start_col_1indexed = col_0indexed + 1
         -- copy to end position
-        end_line_1based = start_line_1based
-        end_col_1based = start_col_1based
-        return Selection:new({}, start_line_1based, start_col_1based, end_line_1based, end_col_1based)
+        end_line_1indexed = start_line_1indexed
+        end_col_1indexed = start_col_1indexed
+        return Selection:new({}, start_line_1indexed, start_col_1indexed, end_line_1indexed, end_col_1indexed)
     end
 
     -- end_line/end_col are 1-based, end_col appears to be the cursor position at the end of a selection
@@ -84,22 +84,22 @@ function M.get_visual_selection()
     --
 
     -- getline is 1-based, end-inclusive (optional)
-    local selected_lines = vim.fn.getline(start_line_1based, end_line_1based)
+    local selected_lines = vim.fn.getline(start_line_1indexed, end_line_1indexed)
 
     if #selected_lines == 0 then
         log:info("HOW DID WE GET HERE!? this shouldn't happen!")
-        return Selection:new({}, start_line_1based, start_col_1based, end_line_1based, end_col_1based)
+        return Selection:new({}, start_line_1indexed, start_col_1indexed, end_line_1indexed, end_col_1indexed)
     end
 
     -- Truncate the last line to the specified end column
     local last_line = selected_lines[#selected_lines]
-    selected_lines[#selected_lines] = string.sub(last_line, 1, end_col_1based)
+    selected_lines[#selected_lines] = string.sub(last_line, 1, end_col_1indexed)
 
     -- Truncate the first line thru the specified start column
     local first_line = selected_lines[1]
-    selected_lines[1] = string.sub(first_line, start_col_1based)
+    selected_lines[1] = string.sub(first_line, start_col_1indexed)
 
-    local selection = Selection:new(selected_lines, start_line_1based, start_col_1based, end_line_1based, end_col_1based)
+    local selection = Selection:new(selected_lines, start_line_1indexed, start_col_1indexed, end_line_1indexed, end_col_1indexed)
     selection:log_info()
     return selection
 end

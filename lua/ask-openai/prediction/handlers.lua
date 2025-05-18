@@ -48,12 +48,12 @@ local CURRENT_BUFFER = 0
 function M.ask_for_prediction()
     M.cancel_current_prediction()
 
-    local original_row_1based, original_col = unpack(vim.api.nvim_win_get_cursor(CURRENT_BUFFER)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
-    local original_row = original_row_1based - 1 -- 0-based now
+    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(CURRENT_BUFFER)) -- (1,0) based #s... aka original_row starts at 1, original_col starts at 0
+    local original_row = original_row_1indexed - 1 -- 0-based now
 
     local allow_lines = 80
     local num_rows_total = vim.api.nvim_buf_line_count(CURRENT_BUFFER)
-    -- TODO test for 0based vs 1based indexing in get_line_range (I know you can get a number past end of document but that works out given get_lines is END-EXCLUSIVE
+    -- TODO test for 0based vs 1indexed indexing in get_line_range (I know you can get a number past end of document but that works out given get_lines is END-EXCLUSIVE
     local first_row, last_row = M.get_line_range(original_row, allow_lines, num_rows_total)
     log:trace("first_row", first_row, "last_row", last_row, "original_row", original_row, "original_col", original_col)
 
