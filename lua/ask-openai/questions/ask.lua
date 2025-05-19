@@ -109,10 +109,12 @@ end
 
 local function ask_question(opts, use_tools, include_context)
     local user_prompt = opts.args
+    local file_name = vim.fn.expand("%:t")
     local context = include_context and buffers.get_current_buffer_entire_text() or nil
 
+    local selection = nil
     M.ensure_response_window_is_open()
-    M.send_question(user_prompt, nil, nil, use_tools, context)
+    M.send_question(user_prompt, selection, file_name, use_tools, context)
 end
 
 local function ask_question_with_context(opts)
