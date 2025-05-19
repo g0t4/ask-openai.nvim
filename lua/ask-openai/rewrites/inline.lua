@@ -18,7 +18,10 @@ M.extmark_id = nil
 
 function M.set_thinking_tag(thinking_tag)
     M.thinking_tag = thinking_tag
-    M.thinking_open_and_close_tags = "^%s*<" .. M.thinking_tag .. ">[^<]*</" .. M.thinking_tag .. ">"
+    -- FYI - == match shortest possible sequence (thus we can find first full closinng tag afterwards while skipping partial tags)
+    --    also %s%S helps match everything possible, including newlines
+    --    :h lua-patternitem
+    M.thinking_open_and_close_tags = "^%s*<" .. M.thinking_tag .. ">([%s%S]-)</" .. M.thinking_tag .. ">"
     -- TODO explore detecting and stripping or showing animation when thinking tag isn't closed yet
     M.thinking_open_tag_only = "^%s*<" .. M.thinking_tag .. ">[^<]*"
 end
@@ -28,6 +31,7 @@ M.set_thinking_tag("think")
 function M.strip_thinking_tags(lines)
     local text = table.concat(lines, "\n")
     -- must only have whitespace before the opening tag
+    -- FYI it might actually be easier to just scan for open tag, then first close tag after it... if regex gets yucky
     text = text:gsub(M.thinking_open_and_close_tags, "")
     return vim.split(text, "\n")
 end
