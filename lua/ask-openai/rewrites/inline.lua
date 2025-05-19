@@ -127,6 +127,7 @@ function M.accept_rewrite()
     vim.schedule(function()
         local lines = split_text_into_lines(M.accumulated_chunks)
         lines = M.strip_md_from_completion(lines)
+        lines = M.strip_thinking_tags(lines, "think")
         -- TODO strip out <think></think> tags (ok to show in preview but don't accept them!)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
 
