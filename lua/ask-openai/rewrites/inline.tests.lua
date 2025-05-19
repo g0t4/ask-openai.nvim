@@ -48,13 +48,13 @@ describe("test strip special html thinking tags from completion responses", func
         assert.are.same({ " and more text." }, response)
     end)
 
-    -- it("should ??? remove one set of special html tags <foo> and </foo> when they don't come first", function()
-    --     local completion = "This is some text with <foo>special tag</foo> and more text."
-    --     local lines = vim.split(completion, "\n")
-    --     local response = rewrites.strip_md_from_completion(lines)
-    --     assert.are.same({ "This is some text with  and more text." }, response)
-    -- end)
-    --
+    it("should NOT remove one set of special html tags <foo> and </foo> when they don't come first", function()
+        local original_completion = "This is some text with <foo>special tag</foo> and more text."
+        local lines = vim.split(original_completion, "\n")
+        local response = rewrites.strip_thinking_tags(lines, "foo")
+        assert.are.same(lines, response)
+    end)
+
     -- -- TODO what about open only? for now, lets do nothing
     -- -- TODO what about close only? for now, lets do nothing
     --
