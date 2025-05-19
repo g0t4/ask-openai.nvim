@@ -152,8 +152,8 @@ function M.accept_rewrite()
     vim.schedule(function()
         local lines = split_text_into_lines(M.accumulated_chunks)
         lines = M.strip_md_from_completion(lines)
+        -- TODO do I wanna keep it without closing think tag?
         lines = M.strip_thinking_tags(lines)
-        -- TODO strip out <think></think> tags (ok to show in preview but don't accept them!)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
 
         local use_start_line_0indexed = M.selection.start_line_1indexed - 1
