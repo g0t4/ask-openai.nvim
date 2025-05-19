@@ -19,6 +19,8 @@ M.extmark_id = nil
 function M.set_thinking_tag(thinking_tag)
     M.thinking_tag = thinking_tag
     M.thinking_open_and_close_tags = "^%s*<" .. M.thinking_tag .. ">[^<]*</" .. M.thinking_tag .. ">"
+    -- TODO explore detecting and stripping or showing animation when thinking tag isn't closed yet
+    M.thinking_open_tag_only = "^%s*<" .. M.thinking_tag .. ">[^<]*"
 end
 
 M.set_thinking_tag("think")
