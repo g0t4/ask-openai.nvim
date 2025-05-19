@@ -55,6 +55,11 @@ describe("test strip special html thinking tags from completion responses", func
         assert.are.same({ " and more text." }, response)
     end)
 
+    it("should NOT remove one set of special html tags \n<foo> and </foo> when they don't come first, even if starts at start of a line", function()
+        local original_completion = "This is some text with <foo>special tag</foo> and more text."
+        test_strip_thinking_tags(original_completion, original_completion)
+    end)
+
     it("should NOT remove one set of special html tags <foo> and </foo> when they don't come first", function()
         local original_completion = "This is some text with <foo>special tag</foo> and more text."
         test_strip_thinking_tags(original_completion, original_completion)
