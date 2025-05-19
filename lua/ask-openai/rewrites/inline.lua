@@ -15,13 +15,18 @@ M.selection = nil
 M.accumulated_chunks = ""
 M.namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
 M.extmark_id = nil
-M.thinking_tag = "think"
 
-function M.strip_thinking_tags(lines, tag_name)
+function M.set_thinking_tag(thinking_tag)
+    M.thinking_tag = thinking_tag
+    M.pattern = "^%s*<" .. M.thinking_tag .. ">[^<]*</" .. M.thinking_tag .. ">"
+end
+
+M.set_thinking_tag("think")
+
+function M.strip_thinking_tags(lines)
     local text = table.concat(lines, "\n")
     -- must only have whitespace before the opening tag
-    local pattern = "^%s*<" .. tag_name .. ">[^<]*</" .. tag_name .. ">"
-    text = text:gsub(pattern, "")
+    text = text:gsub(M.pattern, "")
     return vim.split(text, "\n")
 end
 
@@ -128,7 +133,7 @@ function M.accept_rewrite()
     vim.schedule(function()
         local lines = split_text_into_lines(M.accumulated_chunks)
         lines = M.strip_md_from_completion(lines)
-        lines = M.strip_thinking_tags(lines, M.thinking_tag)
+        lines = M.strip_thinking_tags(lines)
         -- TODO strip out <think></think> tags (ok to show in preview but don't accept them!)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
 

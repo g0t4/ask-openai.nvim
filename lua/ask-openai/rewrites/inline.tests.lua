@@ -44,7 +44,8 @@ describe("test strip special html thinking tags from full completion responses",
 
     local function test_strip_thinking_tags(input_text, expected_text)
         local input_lines = vim.split(input_text, "\n")
-        local output_lines = rewrites.strip_thinking_tags(input_lines, "foo")
+        rewrites.set_thinking_tag("foo") -- just to avoid the special tag in code I might want to dog food help with
+        local output_lines = rewrites.strip_thinking_tags(input_lines)
         local output_text = table.concat(output_lines, "\n")
         assert.are.same(expected_text, output_text)
     end
