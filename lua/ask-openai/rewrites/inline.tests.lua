@@ -41,6 +41,13 @@ describe("test strip special html thinking tags from completion responses", func
     --   prefix each line w/ comment char
     --   that way, if there was any code (shouldn't be but just in case) on the close tag line after close tag... it gets pushed down a line and not commented out
 
+    local function test_strip_thinking_tags(input_text, expected_text)
+        local input_lines = vim.split(input_text, "\n")
+        local output_lines = rewrites.strip_thinking_tags(input_lines, "foo")
+        local output_text = table.concat(output_lines, "\n")
+        assert.are.same(expected_text, output_text)
+    end
+
     it("should remove one set of special html tags <foo> and </foo> when they come first", function()
         local completion = "<foo>special tag</foo> and more text."
         local lines = vim.split(completion, "\n")
@@ -50,9 +57,7 @@ describe("test strip special html thinking tags from completion responses", func
 
     it("should NOT remove one set of special html tags <foo> and </foo> when they don't come first", function()
         local original_completion = "This is some text with <foo>special tag</foo> and more text."
-        local lines = vim.split(original_completion, "\n")
-        local response = rewrites.strip_thinking_tags(lines, "foo")
-        assert.are.same(lines, response)
+        test_strip_thinking_tags(original_completion, original_completion)
     end)
 
     -- -- TODO what about open only? for now, lets do nothing
