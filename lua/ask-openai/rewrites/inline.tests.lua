@@ -77,7 +77,7 @@ describe("test strip special html thinking tags from completion responses", func
     end)
 
     it("when only open tag, should do nothing", function()
-        -- TODO or do I want it to strip it?
+        -- FYI I might want another streaming helper that can strip it out after open tag detected... that can be separate or incorporated later
         local input_text = "<foo>special tag foo the bar."
         local expected_text = input_text
         test_strip_thinking_tags(input_text, expected_text)
