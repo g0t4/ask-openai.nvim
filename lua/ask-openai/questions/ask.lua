@@ -10,7 +10,9 @@ local M = {}
 require("ask-openai.helpers.buffers")
 
 
-function M.send_question(user_prompt, selected_text, file_name, use_tools)
+function M.send_question(user_prompt, selected_text, file_name, use_tools, context)
+    use_tools = use_tools or false
+
     M.abort_last_request()
 
     local system_prompt = "You are a neovim AI plugin. Your name is Neo Vim. "
@@ -30,6 +32,14 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools)
             .. "I selected the following from `" .. file_name .. "`\n"
             .. "```" .. file_extension .. "\n"
             .. selected_text .. "\n"
+            .. "```"
+    end
+    if context then
+        -- crude, take the whole file :)
+        user_message = user_message .. "\n\n"
+            .. "And I want you to see the entire file I am asking about:\n"
+            .. "```" .. file_name .. "`\n"
+            .. context .. "\n"
             .. "```"
     end
 
@@ -82,9 +92,7 @@ function M.send_messages()
     M.thread:set_last_request(request)
 end
 
-local function ask_question_about(opts, use_tools)
-    use_tools = use_tools or false
-
+local function ask_question_about(opts, use_tools, include_context)
     local selection = buffers.get_visual_selection()
     if selection:is_empty() then
         error("No visual selection found.")
@@ -93,17 +101,26 @@ local function ask_question_about(opts, use_tools)
 
     local user_prompt = opts.args
     local file_name = vim.fn.expand("%:t")
+    local context = include_context and buffers.get_current_buffer_entire_text() or nil
 
     M.ensure_response_window_is_open()
-    M.send_question(user_prompt, selection.original_text, file_name, use_tools)
+    M.send_question(user_prompt, selection.original_text, file_name, use_tools, context)
 end
 
-local function ask_question(opts, use_tools)
-    use_tools = use_tools or false
-
+local function ask_question(opts, use_tools, include_context)
     local user_prompt = opts.args
+    local context = include_context and buffers.get_current_buffer_entire_text() or nil
+
     M.ensure_response_window_is_open()
-    M.send_question(user_prompt, nil, nil, use_tools)
+    M.send_question(user_prompt, nil, nil, use_tools, context)
+end
+
+local function ask_question_with_context(opts)
+    ask_question(opts, false, true)
+end
+
+local function ask_question_about_with_context(opts)
+    ask_question_about(opts, false, true)
 end
 
 local function ask_tool_use(opts)
@@ -390,7 +407,7 @@ function M.follow_up()
     -- TODO CLEANUP sending first vs follow up to not need to differentiate all over
     if not M.thread then
         -- assume tool use here
-        M.send_question(followup, nil, nil, true)
+        M.send_question(followup, nil, nil, true, nil)
         return
     end
 
@@ -413,9 +430,13 @@ function M.setup()
     -- once again, pass question in command line for now... b/c then I can use cmd history to ask again or modify question easily
     --  if I move to a float window, I'll want to add history there then which I can handle later when this falls apart
     vim.api.nvim_create_user_command("AskQuestion", ask_question, { range = true, nargs = 1 })
+    vim.api.nvim_set_keymap('n', '<Leader>aq', ':AskQuestion ', { noremap = true })
+    vim.api.nvim_create_user_command("AskQuestionWithContext", ask_question_with_context, { range = true, nargs = 1 })
+    vim.api.nvim_set_keymap('n', '<Leader>aqc', ':AskQuestionWithContext ', { noremap = true })
     vim.api.nvim_create_user_command("AskQuestionAbout", ask_question_about, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('v', '<Leader>aq', ':<C-u>AskQuestionAbout ', { noremap = true })
-    vim.api.nvim_set_keymap('n', '<Leader>aq', ':AskQuestion ', { noremap = true })
+    vim.api.nvim_create_user_command("AskQuestionAboutWithContext", ask_question_about_with_context, { range = true, nargs = 1 })
+    vim.api.nvim_set_keymap('v', '<Leader>aqc', ':<C-u>AskQuestionAboutWithContext ', { noremap = true })
 
     vim.keymap.set('n', '<leader>ao', M.ensure_response_window_is_open, { noremap = true })
     vim.keymap.set('n', '<leader>aa', M.abort_last_request, { noremap = true })

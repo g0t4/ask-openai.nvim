@@ -104,6 +104,12 @@ function M.get_visual_selection()
     return selection
 end
 
+function M.get_current_buffer_entire_text()
+    -- PRN take buffer_number
+    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+    return table.concat(lines, "\n")
+end
+
 function M.dump_last_seletion()
     local selection = M.get_visual_selection()
     print(vim.inspect(selection))
