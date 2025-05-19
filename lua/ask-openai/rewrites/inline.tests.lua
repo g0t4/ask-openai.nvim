@@ -30,7 +30,7 @@ describe("test strip markdown from completion responses", function()
     -- or can I use structured outputs with ollama? I know I can with vllm... that might help too
 end)
 
-describe("test strip special html thinking tags from completion responses", function()
+describe("test strip special html thinking tags from full completion responses", function()
     -- BTW... don't include the think tag example if you want help...
     -- it ends up stopping the model when it first reflects on the closing tag
 
