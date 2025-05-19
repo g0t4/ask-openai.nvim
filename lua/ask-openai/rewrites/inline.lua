@@ -42,7 +42,8 @@ function M.strip_thinking_tags(lines)
     local close_start, close_end = text:find("</" .. M.thinking_tag .. ">", open_end + 1)
     if not close_start then
         -- TODO case to show animation? or return nothing?
-        return lines
+        -- TODO return smth to signal missing closing but open is present, as a second arg
+        return lines, true
     end
     local stripped_text = text:sub(close_end + 1)
     return vim.split(stripped_text, "\n")

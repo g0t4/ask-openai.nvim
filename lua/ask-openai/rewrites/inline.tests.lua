@@ -109,8 +109,12 @@ describe("test strip special html thinking tags from full completion responses",
     it("when only open tag, should do nothing", function()
         -- FYI I might want another streaming helper that can strip it out after open tag detected... that can be separate or incorporated later
         local input_text = "<foo>special tag foo the bar."
-        local expected_text = input_text
-        test_strip_thinking_tags(input_text, expected_text)
+        local input_lines = vim.split(input_text, "\n")
+        rewrites.set_thinking_tag("foo")
+        local output_lines, open_without_close_yet = rewrites.strip_thinking_tags(input_lines)
+        local output_text = table.concat(output_lines, "\n")
+        assert.are.same(input_text, output_text)
+        assert.are.equal(true, open_without_close_yet)
     end)
 
     it("when only closing tag, should do nothing", function()
