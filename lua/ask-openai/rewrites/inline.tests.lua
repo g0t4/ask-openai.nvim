@@ -20,17 +20,14 @@ describe("test strip markdown from completion responses", function()
 
     it("should remove markdown block with filetype specified", function()
         local input_text = "```python\nfoo\n```"
-        local input_lines = vim.split(input_text, "\n")
-        local output_lines = rewrites.strip_md_from_completion(input_lines)
-        assert.are.same({ "foo" }, output_lines)
+        local expected_text = "foo"
+        test_strip_md_from_completion(input_text, expected_text)
     end)
 
     it("should not remove code blocks in the middle of the completion", function()
         -- i.e. when completing markdown content, maybe I should have a special check for that? cuz then wouldn't it be reasonable to even allow a full completion that is one code block?
         local input_text = "This is some text\n```\nprint('Hello World')\n```\nfoo the bar"
-        local input_lines = vim.split(input_text, "\n")
-        local output_lines = rewrites.strip_md_from_completion(input_lines)
-        assert.are.same(output_lines, input_lines)
+        test_strip_md_from_completion(input_text, input_text)
     end)
     -- PRN can I find a library/algo someone already setup to do this?
     -- or can I use structured outputs with ollama? I know I can with vllm... that might help too
@@ -66,8 +63,8 @@ describe("test strip special html thinking tags from full completion responses",
     end)
 
     it("should NOT remove one set of special html tags <foo> and </foo> when they don't come first", function()
-        local input_tex = "This is some text with <foo>special tag</foo> and more text."
-        test_strip_thinking_tags(input_tex, input_tex)
+        local input_text = "This is some text with <foo>special tag</foo> and more text."
+        test_strip_thinking_tags(input_text, input_text)
     end)
 
     it("when multiple tagged regions, should only remove the first one", function()
