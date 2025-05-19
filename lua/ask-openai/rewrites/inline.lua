@@ -18,7 +18,7 @@ M.extmark_id = nil
 
 function M.set_thinking_tag(thinking_tag)
     M.thinking_tag = thinking_tag
-    M.pattern = "^%s*<" .. M.thinking_tag .. ">[^<]*</" .. M.thinking_tag .. ">"
+    M.thinking_open_and_close_tags = "^%s*<" .. M.thinking_tag .. ">[^<]*</" .. M.thinking_tag .. ">"
 end
 
 M.set_thinking_tag("think")
@@ -26,7 +26,7 @@ M.set_thinking_tag("think")
 function M.strip_thinking_tags(lines)
     local text = table.concat(lines, "\n")
     -- must only have whitespace before the opening tag
-    text = text:gsub(M.pattern, "")
+    text = text:gsub(M.thinking_open_and_close_tags, "")
     return vim.split(text, "\n")
 end
 
