@@ -66,12 +66,11 @@ describe("test strip special html thinking tags from completion responses", func
 
     -- -- TODO what about open only? for now, lets do nothing
     -- -- TODO what about close only? for now, lets do nothing
-    --
+
     it("when multiple tagged regions, should only remove the first one", function()
-        local completion = "<foo>tags</foo> and <foo>another</foo> and <foo>one more</foo>."
-        local lines = vim.split(completion, "\n")
-        local response = rewrites.strip_thinking_tags(lines, "foo")
-        assert.are.same({ " and <foo>another</foo> and <foo>one more</foo>." }, response)
+        local input_text = "<foo>tags</foo> and <foo>another</foo> and <foo>one more</foo>."
+        local expected_text = " and <foo>another</foo> and <foo>one more</foo>."
+        test_strip_thinking_tags(input_text, expected_text)
     end)
     --
     -- it("should not remove other html tags", function()
