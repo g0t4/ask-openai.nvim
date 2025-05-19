@@ -5,11 +5,17 @@ local assert = require("luassert")
 --   I cannot recall what inline2 was about... but seems lines might have been part of it
 
 describe("test strip markdown from completion responses", function()
-    it("should remove markdown from a simple completion", function()
-        local input_text = "```\nfoo\n```"
+    local function test_strip_md_from_completion(input_text, expected_text)
         local input_lines = vim.split(input_text, "\n")
         local output_lines = rewrites.strip_md_from_completion(input_lines)
-        assert.are.same({ "foo" }, output_lines)
+        local output_text = table.concat(output_lines, "\n")
+        assert.are.same(expected_text, output_text)
+    end
+
+    it("should remove markdown from a simple completion", function()
+        local input_text = "```\nfoo\n```"
+        local expected_text = "foo"
+        test_strip_md_from_completion(input_text, expected_text)
     end)
 
     it("should remove markdown block with filetype specified", function()
