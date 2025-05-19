@@ -72,11 +72,10 @@ describe("test strip special html thinking tags from completion responses", func
         local expected_text = " and <foo>another</foo> and <foo>one more</foo>."
         test_strip_thinking_tags(input_text, expected_text)
     end)
-    --
-    -- it("should not remove other html tags", function()
-    --     local completion = "This is a <div>normal html tag</div> and <p>some text</p>."
-    --     local lines = vim.split(completion, "\n")
-    --     local response = rewrites.strip_md_from_completion(lines)
-    --     assert.are.same({ "This is a <div>normal html tag</div> and <p>some text</p>." }, response)
-    -- end)
+
+    it("should not remove other html tags", function()
+        local input_text = "This is a <div>normal html tag</div> and <p>some text</p>."
+        local expected_text = "This is a <div>normal html tag</div> and <p>some text</p>."
+        test_strip_thinking_tags(input_text, expected_text)
+    end)
 end)
