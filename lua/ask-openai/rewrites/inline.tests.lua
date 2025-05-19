@@ -64,9 +64,6 @@ describe("test strip special html thinking tags from completion responses", func
         test_strip_thinking_tags(input_tex, input_tex)
     end)
 
-    -- -- TODO what about open only? for now, lets do nothing
-    -- -- TODO what about close only? for now, lets do nothing
-
     it("when multiple tagged regions, should only remove the first one", function()
         local input_text = "<foo>tags</foo> and <foo>another</foo> and <foo>one more</foo>."
         local expected_text = " and <foo>another</foo> and <foo>one more</foo>."
@@ -76,6 +73,19 @@ describe("test strip special html thinking tags from completion responses", func
     it("should not remove other html tags", function()
         local input_text = "This is a <div>normal html tag</div> and <p>some text</p>."
         local expected_text = "This is a <div>normal html tag</div> and <p>some text</p>."
+        test_strip_thinking_tags(input_text, expected_text)
+    end)
+
+    it("when only open tag, should do nothing", function()
+        -- TODO or do I want it to strip it?
+        local input_text = "<foo>special tag foo the bar."
+        local expected_text = input_text
+        test_strip_thinking_tags(input_text, expected_text)
+    end)
+
+    it("when only closing tag, should do nothing", function()
+        local input_text = "foo the </foo> bar."
+        local expected_text = input_text
         test_strip_thinking_tags(input_text, expected_text)
     end)
 end)
