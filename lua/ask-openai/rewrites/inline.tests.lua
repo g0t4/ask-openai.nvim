@@ -56,6 +56,34 @@ describe("test strip special html thinking tags from full completion responses",
         test_strip_thinking_tags(input_text, expected_text)
     end)
 
+    -- TODO greedy testing:
+    -- { "</foo>", "<foo>special </foo> tag</foo> and more text.", " tag</foo> and more text." }
+
+    it("if there are two closing tags, it should stop right after the first one", function()
+        local input_text = "<foo>special tag</foo> and more text.</foo> foo"
+        local expected_text = " and more text.</foo> foo"
+        test_strip_thinking_tags(input_text, expected_text)
+    end)
+
+    describe("handling partial/full unrelated tags inside thinking tags", function()
+        -- TODO what is the specified behavior, should this ever happen?
+        local partial_cases = {
+            { "< (less than sign)",      "<foo>special < tag</foo> and more text.",     " and more text." },
+            { "> (greater than sign)",   "<foo>special > tag</foo> and more text.",     " and more text." },
+            { "</ (partial close tag)",  "<foo>special </ tag</foo> and more text.",    " and more text." },
+            { "<foo> (extra start tag)", "<foo>special <foo> tag</foo> and more text.", " and more text." },
+        }
+
+        for _, case in ipairs(partial_cases) do
+            local case_description = case[1]
+            local input_text = case[2]
+            local expected_text = case[3]
+            it("should ignore " .. case_description .. "< inside think tags", function()
+                test_strip_thinking_tags(input_text, expected_text)
+            end)
+        end
+    end)
+
     it("should NOT remove one set of special html tags \n<foo> and </foo> when they don't come first, even if starts at start of a line", function()
         local input_text = "This is some text with <foo>special tag</foo> and more text."
         test_strip_thinking_tags(input_text, input_text)
