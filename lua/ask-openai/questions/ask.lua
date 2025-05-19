@@ -16,7 +16,7 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, conte
     M.abort_last_request()
 
     local system_prompt = "You are a neovim AI plugin. Your name is Neo Vim. "
-        .. " Please respond with markdown formatted text."
+        .. " Please respond with markdown formatted text. Always include a TLDR at the end of your response."
 
     local user_message = user_prompt
     if selected_text then
