@@ -34,13 +34,20 @@ describe("test strip special html thinking tags from completion responses", func
     -- BTW... don't include the think tag example if you want help...
     -- it ends up stopping the model when it first reflects on the closing tag
 
+    -- TODO add a test case to comment out and keep the think tags...
+    --   pass comment char(s) as arg, with text, and tag_name
+    --   have it find the thinking section, "take it out"
+    --   "split them on new lines"
+    --   prefix each line w/ comment char
+    --   that way, if there was any code (shouldn't be but just in case) on the close tag line after close tag... it gets pushed down a line and not commented out
+
     it("should remove one set of special html tags <foo> and </foo> when they come first", function()
         local completion = "<foo>special tag</foo> and more text."
         local lines = vim.split(completion, "\n")
         local response = rewrites.strip_thinking_tags(lines, "foo")
         assert.are.same({ " and more text." }, response)
     end)
-    --
+
     -- it("should ??? remove one set of special html tags <foo> and </foo> when they don't come first", function()
     --     local completion = "This is some text with <foo>special tag</foo> and more text."
     --     local lines = vim.split(completion, "\n")
