@@ -104,6 +104,8 @@ function M.handle_messages_updated()
     --  OR I can pass the latest chunk still... do smth in the normalizer for that or still have a sep pathway per delta (no chunkin though?)
 end
 
+local dots = ""
+
 function M.process_chunk(chunk)
     if not chunk then return end
 
@@ -111,6 +113,15 @@ function M.process_chunk(chunk)
 
     local lines = split_text_into_lines(M.accumulated_chunks)
     lines = M.strip_md_from_completion(lines)
+    local pending_close = nil
+    lines, pending_close = M.strip_thinking_tags(lines)
+    if pending_close then
+        dots = dots .. "."
+        if #dots > 50 then
+            dots = ""
+        end
+        lines = { "thinking: " .. dots }
+    end
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 
     vim.schedule(function()
