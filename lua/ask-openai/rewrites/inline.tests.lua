@@ -49,10 +49,9 @@ describe("test strip special html thinking tags from completion responses", func
     end
 
     it("should remove one set of special html tags <foo> and </foo> when they come first", function()
-        local completion = "<foo>special tag</foo> and more text."
-        local lines = vim.split(completion, "\n")
-        local response = rewrites.strip_thinking_tags(lines, "foo")
-        assert.are.same({ " and more text." }, response)
+        local input_text = "<foo>special tag</foo> and more text."
+        local expected_text = " and more text."
+        test_strip_thinking_tags(input_text, expected_text)
     end)
 
     it("should NOT remove one set of special html tags \n<foo> and </foo> when they don't come first, even if starts at start of a line", function()
