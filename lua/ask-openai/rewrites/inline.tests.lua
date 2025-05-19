@@ -55,13 +55,13 @@ describe("test strip special html thinking tags from completion responses", func
     end)
 
     it("should NOT remove one set of special html tags \n<foo> and </foo> when they don't come first, even if starts at start of a line", function()
-        local original_completion = "This is some text with <foo>special tag</foo> and more text."
-        test_strip_thinking_tags(original_completion, original_completion)
+        local input_text = "This is some text with <foo>special tag</foo> and more text."
+        test_strip_thinking_tags(input_text, input_text)
     end)
 
     it("should NOT remove one set of special html tags <foo> and </foo> when they don't come first", function()
-        local original_completion = "This is some text with <foo>special tag</foo> and more text."
-        test_strip_thinking_tags(original_completion, original_completion)
+        local input_tex = "This is some text with <foo>special tag</foo> and more text."
+        test_strip_thinking_tags(input_tex, input_tex)
     end)
 
     -- -- TODO what about open only? for now, lets do nothing
