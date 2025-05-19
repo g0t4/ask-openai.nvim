@@ -1,9 +1,6 @@
 local rewrites = require("lua.ask-openai.rewrites.inline")
 local assert = require("luassert")
 
--- TODO anything else to port for "inline2" => I already did the text=>lines fix
---   I cannot recall what inline2 was about... but seems lines might have been part of it
-
 describe("test strip markdown from completion responses", function()
     local function test_strip_md_from_completion(input_text, expected_text)
         -- PRN how about create a class that can handle lines <=> text conversions on-demand so I don't have to think about it?
