@@ -6,6 +6,7 @@ local assert = require("luassert")
 
 describe("test strip markdown from completion responses", function()
     local function test_strip_md_from_completion(input_text, expected_text)
+        -- PRN how about create a class that can handle lines <=> text conversions on-demand so I don't have to think about it?
         local input_lines = vim.split(input_text, "\n")
         local output_lines = rewrites.strip_md_from_completion(input_lines)
         local output_text = table.concat(output_lines, "\n")
