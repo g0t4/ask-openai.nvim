@@ -56,7 +56,8 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, conte
     local qwen_params = {
 
         -- model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
-        model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base"
+        model = "devstral:24b-small-2505-q8_0",
+        -- model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base"
         -- model = "gemma3:12b-it-q8_0", -- btw -base- does terrible here :)
         -- temperature = 0.2, -- TODO what temp?
         -- PRN limit num_predict?
