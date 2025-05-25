@@ -1,8 +1,6 @@
 local Logger = {}
 Logger.__index = Logger
 
-local module_loaded_at = vim.loop.hrtime()
-
 -- purposes:
 -- - only open file once per process
 -- - only check for directory existence once
@@ -67,12 +65,9 @@ local function build_entry(level, ...)
         -- make sure everything is a string so it can be concatenated
         args_strings[i] = tostring(value)
     end
-    local elapsed = (vim.loop.hrtime() - module_loaded_at) / 1e9 -- added for us/ns level timing of messages since os.time/date() doesn't go beyond sec (IIRC)
-
 
     return string.format(
-        "[%.3f]sec [%s] %s\n",
-        elapsed,
+        "[%s] %s\n",
         log_level_string(level),
         table.concat(args_strings, " ")
     )
