@@ -58,8 +58,8 @@ local function body_for(prefix, suffix, current_context)
     end
 
 
-    body.prompt = M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
-    -- body.prompt = M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
+    -- body.prompt = M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
+    body.prompt = M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
     log:trace('body.prompt', body.prompt)
 
     local body_json = vim.json.encode(body)
