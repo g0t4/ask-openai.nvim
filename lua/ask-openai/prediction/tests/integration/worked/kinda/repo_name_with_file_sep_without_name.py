@@ -4,6 +4,8 @@ from show import show_completion_for
 #   i.e. `python -m file_level_fim`
 #   `python -m file_name_without_ext` b/c then I can keep shared show lib in dir above and nest diff "modules" in dirs like "worked"
 
+# FYI! worked ok ish... but a few times it generated not valid python... so w/o the name it seemed to have a little trouble
+
 request_body = {
     "prompt": "<|repo_name|>maths<|file_sep|><|fim_prefix|>local M = {}\n\nfunction M.add(a, b)\n    return a + b\nend\n\n<|fim_suffix|>\n\n\nreturn M<|fim_middle|>",
     "options": {
