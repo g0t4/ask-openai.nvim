@@ -26,8 +26,8 @@ set curl_command curl \
 # FYI STDERR not redirected, so it will show failure info
 set response_json (echo $request_body | $curl_command )
 
-log_ --red "## FULL RESPONSE BODY:"
-echo $response_json | jq
+# log_ --red "## FULL RESPONSE BODY:"
+# echo $response_json | jq
 
 log_ --yellow "## OUTPUT"
 echo "done: $(echo $response_json | jq .done)"
