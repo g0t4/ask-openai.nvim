@@ -11,14 +11,14 @@ print("1+3 = " .. calc.add(1, 3))
 
 print("sqrt of -5 = " .. tostring(calc.sqroot(-5)))
 """
-prompt_calc_user = "<|file_sep|>calc_user.py\n" + calc_user_file
+prompt_calc_user = "<|file_sep|>calc_user.lua\n" + calc_user_file
 
-prompt_calc = "<|file_sep|>calc.py\n<|fim_prefix|>local M = {}\n\nfunction M.add(a, b)\n    return a + b\nend\n\n<|fim_suffix|>\n\n\nreturn M<|fim_middle|>"
+prompt_calc = "<|file_sep|>calc.lua\n<|fim_prefix|>local M = {}\n\nfunction M.add(a, b)\n    return a + b\nend\n\n<|fim_suffix|>\n\n\nreturn M<|fim_middle|>"
 
 # TODO drop repo_name, is it ok then?
 prompt = "<|repo_name|>maths\n" + prompt_calc_user + "\n" + prompt_calc
 
-# FYI also works fine to add file_sep with calc.py (as is expected)
+# FYI also works fine to add file_sep with calc.lua (as is expected)
 request_body = {
     "prompt": prompt,
     "options": {
