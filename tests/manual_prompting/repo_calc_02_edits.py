@@ -5,13 +5,13 @@ from show import show_completion_for
 # FYI run as a module (not script):
 #   i.e. `python -m test_calculator_context`
 
-calc_user_file = """
-local calc = require("calc")
-print("1+3 = " .. calc.add(1, 3))
+recent_edits_summary = """
+-- The user made the following recent edits in neovim
 
+-- calc-tests:10 added:
 print("sqrt of -5 = " .. tostring(calc.sqroot(-5)))
 """
-prompt_calc_user = "<|file_sep|>calc_user.lua\n" + calc_user_file
+prompt_calc_user = "<|file_sep|>recent_edits\n" + recent_edits_summary
 
 prompt_calc = "<|file_sep|>calc.lua\n<|fim_prefix|>local M = {}\n\nfunction M.add(a, b)\n    return a + b\nend\n\n<|fim_suffix|>\n\n\nreturn M<|fim_middle|>"
 
