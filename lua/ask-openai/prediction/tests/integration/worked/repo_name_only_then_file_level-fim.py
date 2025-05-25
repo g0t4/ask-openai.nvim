@@ -1,5 +1,7 @@
 from show import show_completion_for
 
+# WOW WORKS fine! no impact on completions (nothing noticeable thus far)
+
 request_body = {
     "prompt": "<|repo_name|>maths<|fim_prefix|>local M = {}\n\nfunction M.add(a, b)\n    return a + b\nend\n\n<|fim_suffix|>\n\n\nreturn M<|fim_middle|>",
     "options": {
