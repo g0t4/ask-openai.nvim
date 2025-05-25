@@ -127,6 +127,8 @@ function M.ask_for_prediction()
 
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
+    assert(stdout ~= nil)
+    assert(stderr ~= nil)
 
     options.on_exit = function(code, signal)
         log:trace(string.format("spawn - exit code: %d  signal:%s", code, signal))
