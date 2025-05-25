@@ -71,20 +71,11 @@ local function body_for(prefix, suffix, current_context)
 end
 
 function M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
-    -- TODO is it possible to provide guidance using tokens beyond FIM file/repo level?
-    --   can I just <|im_start|> blah <|im_end|>?
-    --   see qwen2.5-coder template for how it might work
-    --   i.e. the basic ability to "chat" with the model:
-    --     https://github.com/QwenLM/Qwen2.5-Coder#1-basic-usage
-
-    -- PSM inference format:
     log:trace("prefix", "'" .. prefix .. "'")
     log:trace("suffix", "'" .. suffix .. "'")
 
     -- *** File-level FIM template:
-    --
     --   <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_mid}<|endoftext|>
-    --
     --   from Tech Report: https://arxiv.org/pdf/2409.12187
     --   official example: https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-fim.py
 
