@@ -88,6 +88,8 @@ function M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
 end
 
 function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
+    -- FYI see fim.md for extensive FIM notes
+
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
     local repo_prompt = sentinel_tokens.repo_name .. repo_name .. "\n"
     local context_file_prompt = sentinel_tokens.file_sep .. "nvim-context-tracking-notes.md\n"
