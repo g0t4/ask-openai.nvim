@@ -59,7 +59,7 @@ local function body_for(prefix, suffix, current_context)
 
 
     -- body.prompt = M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_context)
-    body.prompt = M.get_prompt_fim(prefix, suffix, sentinel_tokens)
+    body.prompt = M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
     -- body.prompt = M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
     log:trace('body.prompt', body.prompt)
 
@@ -70,7 +70,7 @@ local function body_for(prefix, suffix, current_context)
     return body_json
 end
 
-function M.get_prompt_fim(prefix, suffix, sentinel_tokens)
+function M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
     -- TODO is it possible to provide guidance using tokens beyond FIM file/repo level?
     --   can I just <|im_start|> blah <|im_end|>?
     --   see qwen2.5-coder template for how it might work
@@ -111,7 +111,7 @@ function M.get_prompt_repo_level_without_repo_meta(prefix, suffix, sentinel_toke
     -- TODO STEP3 - test with context as files (yanks, edits, etc)
 
     -- TODO pass current_context as files?
-    local prompt = M.get_prompt_fim(prefix, suffix, sentinel_tokens)
+    local prompt = M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
     return sentinel_tokens.file_sep .. prompt
 end
 
@@ -218,7 +218,7 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
         context_file_prompt = context_file_prompt .. "\n" .. current_context.yanks .. "\n\n"
     end
 
-    local fim_file_contents = M.get_prompt_fim(prefix, suffix, sentinel_tokens)
+    local fim_file_contents = M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
     local current_file_name = vim.fn.expand('%'):match("([^/]+)$")
     local fim_file = sentinel_tokens.file_sep .. current_file_name .. "\n"
         .. fim_file_contents .. "\n"
@@ -228,7 +228,7 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
 end
 
 function M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_context)
-    local raw_prompt = M.get_prompt_fim(prefix, suffix, sentinel_tokens)
+    local raw_prompt = M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
 
     -- Edit history totally messed up FIM... how can I include this while preserving the FIM request...
     --   i.e. in calc.lua... it just chatted to me and that's an easy FIM task
