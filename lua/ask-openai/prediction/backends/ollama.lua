@@ -58,7 +58,6 @@ local function body_for(prefix, suffix, current_context)
     end
 
 
-    -- body.prompt = M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_context)
     body.prompt = M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
     -- body.prompt = M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
     log:trace('body.prompt', body.prompt)
@@ -200,24 +199,14 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     return repo_prompt .. fim_file
 end
 
-function M.get_prompt_fim_with_context(prefix, suffix, sentinel_tokens, current_context)
-    local raw_prompt = M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
-
-    -- Edit history totally messed up FIM... how can I include this while preserving the FIM request...
-    --   i.e. in calc.lua... it just chatted to me and that's an easy FIM task
-
-    -- local recent_changes = "Here are some recent lines that were edited by the user: "
-    -- for _, change in pairs(current_context.edits) do
-    --     local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
-    --     -- todo include line/col or not?
-    --     -- todo include file?
-    --     recent_changes = recent_changes .. "\n" .. str
-    -- end
-    -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
-
-    raw_prompt = current_context.yanks .. "\n\n## Here is the code file for completions" .. raw_prompt
-    return raw_prompt
-end
+-- local recent_changes = "Here are some recent lines that were edited by the user: "
+-- for _, change in pairs(current_context.edits) do
+--     local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
+--     -- todo include line/col or not?
+--     -- todo include file?
+--     recent_changes = recent_changes .. "\n" .. str
+-- end
+-- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
 function M.build_request(prefix, suffix, current_context)
     local options = {
