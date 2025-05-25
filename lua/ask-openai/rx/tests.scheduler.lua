@@ -24,9 +24,9 @@ tests.describe("timeout scheduler", function()
             end, 500)
         end, 1)
 
-        local start_time = vim.loop.hrtime()
+        local start_time = vim.uv.hrtime()
         local result = block_until()
-        local elapsed_ms = (vim.loop.hrtime() - start_time) / 1e6
+        local elapsed_ms = (vim.uv.hrtime() - start_time) / 1e6
 
         assert.are.equal(result, "elapsed")
         match.is_gt(elapsed_ms, 499)
@@ -43,9 +43,9 @@ end)
 --     end, 1) -- `1` means the function has 1 callback argument
 --
 --     a.tests.it("should block until async operation completes", function()
---         local start_time = vim.loop.hrtime()
+--         local start_time = vim.uv.hrtime()
 --         local result = block_until_callbacked()
---         local elapsed_ms = (vim.loop.hrtime() - start_time) / 1e6
+--         local elapsed_ms = (vim.uv.hrtime() - start_time) / 1e6
 --
 --         assert.are.equal(result, "wrapped_done")
 --         -- assert.is_gt(elapsed_ms, 198)
