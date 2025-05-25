@@ -51,3 +51,23 @@ Comments note:
       so lets make sure this is well understood and tested before I conclude anything
 - I should do some testing in isolation to see how specific prompts behave before I coclude much about wheter or not repo+file level FIM is useful
 
+## FIXED: Extraneous newline after file threw off indentation
+- OMG... simple things can really throw off completions...
+  - with repo level I had an extra \n at end of the FIM file (last file) and that messed up indentation when I put my cursor inside the function block in calc.lua! once I removed the extra trailing new line then the indentation worked again inside the function!
+```
+<|repo_name|>ask-openai.nvim
+<|file_sep|>calc.lua
+<|fim_prefix|>local M = {}
+
+function M.add(a, b)
+    <|fim_suffix|>
+    return a + b
+end
+
+
+
+return M<|fim_middle|>
+<-- this extra new line threw off indentation when cursor was inside function M.add above return! (press o to go into insert mode while on the return line... and bam the new line here was trouble... possibly b/c lua code may tend to end with no new lines? or I suppose MOST files end w/o extraneous new lines!! that might make more sense given typical unix line ending and EOF conventions
+```
+
+
