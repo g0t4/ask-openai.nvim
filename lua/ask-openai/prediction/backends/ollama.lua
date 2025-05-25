@@ -88,24 +88,6 @@ function M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
     return prompt
 end
 
-function M.get_prompt_repo_level_without_repo_meta(prefix, suffix, sentinel_tokens, current_context)
-    -- TODO test this w/ StarCoder too! setup separate sentinels for StarCoder2
-    -- IOTW, prepend <file_sep> to file-level FIM (if no other files)
-    -- OR other files can be provided w/o names and only prefix contents with <file_sep>
-    -- from StarCoder paper
-    --   <file_sep>code1<file_sep>code2 ... <|endoftext|>.
-    --     50% of time repo metadata not included (no repo name, no file paths)..
-    --
-    -- Can I confirm if this syntax was used in Qwen training? Qwen paper makes ref to StartCoder2 for repo-level FIM but it only metnions the metadata variant w/ repo_name and file_paths
-    -- TODO STEP1 - test with just the FIM file
-    -- TODO STEP2 - test with other real files
-    -- TODO STEP3 - test with context as files (yanks, edits, etc)
-
-    -- TODO pass current_context as files?
-    local prompt = M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
-    return sentinel_tokens.file_sep .. prompt
-end
-
 function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
     -- *** Repo-level + File-level FIM template:
     --   this is from the Qwen2.5-Coder Tech Paper: https://arxiv.org/pdf/2409.12186
