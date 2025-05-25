@@ -6,7 +6,7 @@ from show import show_completion_for
 
 # FYI also works fine to add file_sep with calc.py (as is expected)
 request_body = {
-    "prompt": "<|repo_name|>maths<|file_sep|>calc.py<|fim_prefix|>local M = {}\n\nfunction M.add(a, b)\n    return a + b\nend\n\n<|fim_suffix|>\n\n\nreturn M<|fim_middle|>",
+    "prompt": "<|repo_name|>maths\n<|file_sep|>calc.py\n<|fim_prefix|>local M = {}\n\nfunction M.add(a, b)\n    return a + b\nend\n\n<|fim_suffix|>\n\n\nreturn M<|fim_middle|>",
     "options": {
         "num_ctx": 8192
     },
