@@ -89,13 +89,13 @@ end
 
 function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
     -- FYI see fim.md for extensive FIM notes
+    -- TODO address concerns about excessive empty predictions (see fim.md notes, I observed this in some initial testing with repo level)
 
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
     local repo_prompt = sentinel_tokens.repo_name .. repo_name .. "\n"
     local context_file_prompt = sentinel_tokens.file_sep .. "nvim-context-tracking-notes.md\n"
         .. "The following notes are gathered automatically, they capture recent user activities that may help in completing FIM requests\n"
     if current_context.yanks ~= "" then
-        -- TODO? format the prompt entirely here so it can differ vs plain FIM context?
         context_file_prompt = context_file_prompt .. "\n" .. current_context.yanks .. "\n\n"
     end
 
