@@ -199,15 +199,6 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     return repo_prompt .. fim_file
 end
 
--- local recent_changes = "Here are some recent lines that were edited by the user: "
--- for _, change in pairs(current_context.edits) do
---     local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
---     -- todo include line/col or not?
---     -- todo include file?
---     recent_changes = recent_changes .. "\n" .. str
--- end
--- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
-
 function M.build_request(prefix, suffix, current_context)
     local options = {
         command = "curl",
