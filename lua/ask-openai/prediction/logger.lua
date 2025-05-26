@@ -44,12 +44,14 @@ local LEVEL = {
 }
 
 local function log_level_string(level)
+    -- TODO extract out color helpers (i.e. copy over devtools ansi.lua module)
     local lookup = {
-        [LEVEL.TRACE] = "TRACE",
-        [LEVEL.INFO] = "INFO",
-        [LEVEL.WARN] = "WARN",
-        [LEVEL.ERROR] = "ERROR",
+        [LEVEL.TRACE] = "\27[1;37mTRACE\27[0m",
+        [LEVEL.INFO] = "\27[1;34mINFO \27[0m",
+        [LEVEL.WARN] = "\27[1;33mWARN \27[0m",
+        [LEVEL.ERROR] = "\27[1;35mERROR\27[0m",
     }
+
     return lookup[level]
 end
 
