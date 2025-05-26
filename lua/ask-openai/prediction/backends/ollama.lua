@@ -3,12 +3,12 @@ local log = require("ask-openai.prediction.logger").predictions()
 local qwen = require("ask-openai.backends.models.qwen")
 local meta = require("ask-openai.backends.models.meta")
 
-local OllamaRequestBuilder = {}
-M.OllamaRequestBuilder = OllamaRequestBuilder
+local OllamaFimPsmRequestBuilder = {}
+M.OllamaFimPsmRequestBuilder = OllamaFimPsmRequestBuilder
 
-OllamaRequestBuilder.__index = OllamaRequestBuilder
+OllamaFimPsmRequestBuilder.__index = OllamaFimPsmRequestBuilder
 
-function OllamaRequestBuilder:new(prefix, suffix, current_context)
+function OllamaFimPsmRequestBuilder:new(prefix, suffix, current_context)
     local instance = {
         prefix = prefix,
         suffix = suffix,
@@ -18,7 +18,7 @@ function OllamaRequestBuilder:new(prefix, suffix, current_context)
     return instance
 end
 
-function OllamaRequestBuilder:build_request()
+function OllamaFimPsmRequestBuilder:build_request()
     return M.build_request(self.prefix, self.suffix, self.current_context)
 end
 
