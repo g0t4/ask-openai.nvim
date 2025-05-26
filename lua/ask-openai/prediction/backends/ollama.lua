@@ -116,6 +116,7 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
 
     -- return repo_prompt .. context_file_prompt .. fim_file
     return repo_prompt .. fim_file
+    -- return fim_file_contents -- file level only (for testing)
 end
 
 function M.build_request(prefix, suffix, current_context)
