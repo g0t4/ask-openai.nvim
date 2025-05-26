@@ -129,8 +129,7 @@ function OllamaFimBackend:get_prompt_repo_style_with_context()
 
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
     local repo_prompt = self.sentinel_tokens.repo_name .. repo_name .. "\n"
-    local context_file_prompt = self.sentinel_tokens.file_sep .. "nvim-context-tracking-notes.md\n"
-        .. "The following notes are gathered automatically, they capture recent user activities that may help in completing FIM requests\n"
+    local context_file_prompt = self.sentinel_tokens.file_sep .. "nvim-recent-yanks.txt\n"
     if self.current_context.yanks ~= "" then
         context_file_prompt = context_file_prompt .. "\n" .. self.current_context.yanks .. "\n\n"
     end
