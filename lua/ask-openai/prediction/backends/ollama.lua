@@ -103,13 +103,13 @@ function OllamaFimPsmRequestBuilder:get_file_level_fim_prompt()
     return prompt
 end
 
-function OllamaFimPsmRequestBuilder:get_prompt_repo_style_with_context(self.prefix, self.suffix, sentinel_tokens, current_context)
+function OllamaFimPsmRequestBuilder:get_prompt_repo_style_with_context(self.prefix, self.suffix, self.sentinel_tokens, current_context)
     -- FYI see fim.md for extensive FIM notes
     -- TODO address concerns about excessive empty predictions (see fim.md notes, I observed this in some initial testing with repo level)
 
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
-    local repo_prompt = sentinel_tokens.repo_name .. repo_name .. "\n"
-    local context_file_prompt = sentinel_tokens.file_sep .. "nvim-context-tracking-notes.md\n"
+    local repo_prompt = self.sentinel_tokens.repo_name .. repo_name .. "\n"
+    local context_file_prompt = self.sentinel_tokens.file_sep .. "nvim-context-tracking-notes.md\n"
         .. "The following notes are gathered automatically, they capture recent user activities that may help in completing FIM requests\n"
     if current_context.yanks ~= "" then
         context_file_prompt = context_file_prompt .. "\n" .. current_context.yanks .. "\n\n"
@@ -125,13 +125,13 @@ function OllamaFimPsmRequestBuilder:get_prompt_repo_style_with_context(self.pref
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    local file_level_fim_prompt = M.get_file_level_fim_prompt(self.prefix, self.suffix, sentinel_tokens)
+    local file_level_fim_prompt = M.get_file_level_fim_prompt(self.prefix, self.suffix, self.sentinel_tokens)
 
     -- PRN is this a better way to get filename?
     -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
     local current_file_name = vim.fn.expand('%'):match("([^/]+)$")
 
-    local fim_file = sentinel_tokens.file_sep .. current_file_name .. "\n"
+    local fim_file = self.sentinel_tokens.file_sep .. current_file_name .. "\n"
         .. file_level_fim_prompt
     -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
 
