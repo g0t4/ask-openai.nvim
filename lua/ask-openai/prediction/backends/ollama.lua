@@ -24,6 +24,21 @@ function OllamaFimBackend:new(prefix, suffix, current_context)
     return instance
 end
 
+function OllamaFimBackend:request_options()
+    local options = {
+        command = "curl",
+        args = {
+            "-fsSL",
+            "--no-buffer", -- test w/ `curl *` vs `curl * | cat`
+            "-X", "POST",
+            "http://ollama:11434/api/generate",
+            "-H", "Content-Type: application/json",
+            "-d", self:body_for(),
+        },
+    }
+    return options
+end
+
 function OllamaFimBackend:body_for()
     local body = {
 
@@ -144,21 +159,6 @@ function OllamaFimBackend:get_prompt_repo_style_with_context()
     -- return repo_prompt .. context_file_prompt .. fim_file
     return repo_prompt .. fim_file
     -- return file_level_fim_prompt
-end
-
-function OllamaFimBackend:request_options()
-    local options = {
-        command = "curl",
-        args = {
-            "-fsSL",
-            "--no-buffer", -- test w/ `curl *` vs `curl * | cat`
-            "-X", "POST",
-            "http://ollama:11434/api/generate",
-            "-H", "Content-Type: application/json",
-            "-d", self:body_for(),
-        },
-    }
-    return options
 end
 
 function OllamaFimBackend.process_sse(data)
