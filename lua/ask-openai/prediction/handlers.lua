@@ -3,9 +3,9 @@ local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
 local CurrentContext = require("ask-openai.prediction.context")
 
--- local backend = require("ask-openai.prediction.backends.legacy-completions")
--- local backend = require("ask-openai.prediction.backends.ollama")
 local OllamaFimBackend = require("ask-openai.prediction.backends.ollama")
+-- TODO! rewrite other backends to use new builder pattern (not a big change):
+-- local backend = require("ask-openai.prediction.backends.legacy-completions")
 -- local backend = require("ask-openai.prediction.backends.backendsvllm")
 
 -- FYI would need current prediction PER buffer in the future if want multiple buffers to have predictions at same time (not sure I want this feature)
