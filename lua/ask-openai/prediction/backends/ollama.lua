@@ -12,7 +12,6 @@ OllamaFimBackend.__index = OllamaFimBackend
 
 ---@param prefix string
 ---@param suffix string
----@param current_context CurrentContext
 ---@return OllamaFimBackend
 function OllamaFimBackend:new(prefix, suffix)
     local instance = {
