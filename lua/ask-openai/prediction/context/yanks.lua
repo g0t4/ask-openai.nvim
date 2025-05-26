@@ -4,7 +4,8 @@
 local M = {}
 
 function M.print_yanks()
-    return M.get_prompt()
+    local prompt_text = M.get_prompt()
+    print(prompt_text)
 end
 
 function M.dump_yank_event()
