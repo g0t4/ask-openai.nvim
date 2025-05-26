@@ -188,13 +188,17 @@ function M.accept_rewrite()
         -- Dump selection in 0indexed for debugging too
         M.selection:log_info(true)
 
-        -- Relpace the selected text with the generated content
+        -- Replace the selected text with the generated content
         vim.api.nvim_buf_set_text(
             0, -- Current buffer
             use_start_line_0indexed, -- Zero-indexed
             use_start_col_0indexed, -- Zero-indexed
             use_end_line_0indexed, -- Zero-indexed, end-inclusive line/row
-            use_end_col_0indexed, -- Zero-indexed, end-exclusive column
+            use_end_col_0indexed + 1, -- Zero-indexed, end-exclusive column
+            -- so, add 1 to end_col to replace the last char
+            -- TODO add tests of +1 for end inclusive col, and check that it works the same in diff visual selection modes
+            --   FYI when I make a selection and invoke AskRewrite you can see the selection does not include the cursor position... that might be part of the reason too
+            --   but, when I do line wise visual select... it also had an issue with last char not being replaced
             lines
         )
 
