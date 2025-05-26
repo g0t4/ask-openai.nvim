@@ -185,6 +185,19 @@ function M.accept_rewrite()
             .. ",col=" .. use_end_col_0indexed
             .. ")")
 
+        -- FYI notes about not replacing last character of selection
+        --   select some text, i.e. viw => then <leader>rw => notice it doesn't show the char that was under the cursor as selected
+        --     technically it wasn't selected, so possibly start selecting one more (cursor on char AFTER last char in selection)
+        --     that's b/c the cursor is to the left of the char it is over...
+        --     so, why not get used to selecting one more after...
+        --     there are some settings in vim/nvim I should investigate for this
+        --   working right now:
+        --     linewise visual selections that end on an empty line work fine
+        --     select thru end of current line (v$)
+        --     AFAICT only when I select charwise do I have issues
+        --       again that is when I wanna move the cursor to cover char AFTER end of selection I want
+        --   DONT TRY A QUICK FIX.. try to change how you select first
+
         -- Dump selection in 0indexed for debugging too
         M.selection:log_info(true)
 
