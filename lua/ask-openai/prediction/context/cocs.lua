@@ -14,6 +14,7 @@
 local M = {}
 
 function M.setup()
+    vim.api.nvim_create_user_command("AskDumpCocs", M.print_cocs, {})
 end
 
 return M
