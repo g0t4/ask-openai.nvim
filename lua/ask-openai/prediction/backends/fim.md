@@ -51,9 +51,13 @@ Comments note:
       so lets make sure this is well understood and tested before I conclude anything
 - I should do some testing in isolation to see how specific prompts behave before I coclude much about wheter or not repo+file level FIM is useful
 
-## FIXED: Extraneous newline after file threw off indentation AND QUALITY of suggestions in repo_level!
-- OMG... simple things can really throw off completions...
-  - with repo level I had an extra \n at end of the FIM file (last file) and that messed up indentation when I put my cursor inside the function block in calc.lua! once I removed the extra trailing new line then the indentation worked again inside the function!
+## FIXED: DO NOT put anything after the file_level_fim_prompt - trailing newline trouble!
+- I had trouble with indentation inside the M.add function, in calc.lua.
+- I had an extraneous \n after fim_middle, which comes across as part of the completion!
+- Thus the model added a \t for the start of the next line!
+- But, I didn't pick up my \n when inserting the prediction... instead I started with \t which lead to a double \t\t
+  when there should've only been one \t! And indentation seemed off but it wasn't!
+  - One good hint was multi line completions were correctly indented (one \t) after the first line
 ```
 <|repo_name|>ask-openai.nvim
 <|file_sep|>calc.lua
@@ -67,16 +71,9 @@ end
 
 
 return M<|fim_middle|>
-<-- this extra new line threw off indentation when cursor was inside function M.add above return! (press o to go into insert mode while on the return line... and bam the new line here was trouble... possibly b/c lua code may tend to end with no new lines? or I suppose MOST files end w/o extraneous new lines!! that might make more sense given typical unix line ending and EOF conventions
+\n <--  this will be part of the prediction (as the model sees it.. you started to answer for it... like when you add "assisstant" role on a new message when using chat history)
 ```
-ALSO, I am noticing MUCH better quality of completions outside of the function with this new line gone!
 
-
-- TLDR diff the prompt b/w repo_level vs file_level if they are behaving wildly different
-    - and see if can make things match as closely as possible to resolve differences...
-    - AND DONT TAKE THIS AS GOSPEL ABOUT NEWLINEs, I HAVE NO IDEA WHY IT CAUSED DIFFERENCES...
-        - it is not necessarily the issue so much as it was what differed in this one situation...
-        - in others you might be missing a new line and get wonky behavior without it!
-    - *** NO HARD AND FAST RULES UNLESS YOU KNOW WHY...
-
+- TLDR => if quality or indentation is off, diff vs other prompts
+  i.e. file_level vs repo_level. Try to spot the difference that might have caused it!
 
