@@ -8,6 +8,7 @@ local cocs = require("ask-openai.prediction.context.cocs")
 ---@field edits string
 local CurrentContext = {}
 
+---@return CurrentContext
 function CurrentContext:new()
     local instance = {
         yanks = yanks:get_prompt(),
