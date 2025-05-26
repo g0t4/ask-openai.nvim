@@ -49,6 +49,17 @@ function M.black(text, options)
     return "\27[" .. color_keys.black .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
 end
 
+function M.red_bold(text, options)
+    options = options or {}
+    options.color = options.color or true -- default is true
+    if not options.color then
+        return text
+    end
+    local bold_text =
+        "\27[" .. color_keys.bright .. ";" .. color_keys.red .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
+    return bold_text
+end
+
 function M.red(text, options)
     options = options or {}
     options.color = options.color or true -- default is true
@@ -85,6 +96,17 @@ function M.green(text, options)
     return "\27[" .. color_keys.green .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
 end
 
+function M.yellow_bold(text, options)
+    options = options or {}
+    options.color = options.color or true -- default is true
+    if not options.color then
+        return text
+    end
+    local bold_text =
+        "\27[" .. color_keys.bright .. ";" .. color_keys.yellow .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
+    return bold_text
+end
+
 function M.yellow(text, options)
     options = options or {}
     options.color = options.color or true -- default is true
@@ -92,6 +114,19 @@ function M.yellow(text, options)
         return text
     end
     return "\27[" .. color_keys.yellow .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
+end
+
+-- TODO later you can cleanup duplication
+
+function M.white_bold(text, options)
+    options = options or {}
+    options.color = options.color or true -- default is true
+    if not options.color then
+        return text
+    end
+    local bold_text =
+        "\27[" .. color_keys.bright .. ";" .. color_keys.white .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
+    return bold_text
 end
 
 function M.white(text, options)

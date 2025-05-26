@@ -1,3 +1,4 @@
+local ansi = require("ask-openai.prediction.ansi")
 local Logger = {}
 Logger.__index = Logger
 
@@ -46,10 +47,10 @@ local LEVEL = {
 local function log_level_string(level)
     -- TODO extract out color helpers (i.e. copy over devtools ansi.lua module)
     local lookup = {
-        [LEVEL.TRACE] = "\27[1;37mTRACE\27[0m",
-        [LEVEL.INFO] = "\27[1;34mINFO \27[0m",
-        [LEVEL.WARN] = "\27[1;33mWARN \27[0m",
-        [LEVEL.ERROR] = "\27[1;35mERROR\27[0m",
+        [LEVEL.TRACE] = ansi.blue("TRACE"),
+        [LEVEL.INFO] = ansi.white_bold("INFO "),
+        [LEVEL.WARN] = ansi.yellow_bold("WARN "),
+        [LEVEL.ERROR] = ansi.red_bold("ERROR"),
     }
 
     return lookup[level]
