@@ -3,6 +3,25 @@ local log = require("ask-openai.prediction.logger").predictions()
 local qwen = require("ask-openai.backends.models.qwen")
 local meta = require("ask-openai.backends.models.meta")
 
+local OllamaRequestBuilder = {}
+M.OllamaRequestBuilder = OllamaRequestBuilder
+
+OllamaRequestBuilder.__index = OllamaRequestBuilder
+
+function OllamaRequestBuilder:new(prefix, suffix, current_context)
+    local instance = {
+        prefix = prefix,
+        suffix = suffix,
+        current_context = current_context
+    }
+    setmetatable(instance, self)
+    return instance
+end
+
+function OllamaRequestBuilder:build_request()
+    return M.build_request(self.prefix, self.suffix, self.current_context)
+end
+
 local function body_for(prefix, suffix, current_context)
     local body = {
 
