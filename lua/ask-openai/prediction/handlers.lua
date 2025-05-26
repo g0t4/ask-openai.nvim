@@ -105,7 +105,7 @@ function M.ask_for_prediction()
         end
     end
 
-    local current_context = CurrentContext.current_context()
+    local current_context = CurrentContext:new()
 
     local backend = OllamaFimBackend:new(document_prefix, document_suffix, current_context)
     local spawn_curl_options = backend:request_options()

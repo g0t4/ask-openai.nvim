@@ -18,10 +18,6 @@ function CurrentContext:new()
     return instance
 end
 
-function CurrentContext.current_context()
-    return CurrentContext:new()
-end
-
 function CurrentContext.setup()
     yanks.setup()
     changelists.setup()
