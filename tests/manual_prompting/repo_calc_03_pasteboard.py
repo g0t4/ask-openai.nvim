@@ -1,12 +1,6 @@
 from show import show_completion_for
 
-# FYI WORKS!
-
-# FYI run as a module (not script):
-#   i.e. `python -m test_calculator_context`
-
 recent_edits_summary = """
--- The user made the following recent edits in neovim
 
 -- calc-tests:10 added:
 print("sqrt of -5 = " .. tostring(calc.sqroot(-5)))
