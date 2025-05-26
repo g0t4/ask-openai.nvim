@@ -100,6 +100,7 @@ end
 
 function Logger:json_info_deferred(message, data)
     vim.defer_fn(function()
+        -- TODO handling for when data is not valid json?
         self:json_info(message, data)
     end, 0)
 end
