@@ -119,10 +119,10 @@ function M.ask_for_prediction()
     local suffix = document_suffix
     -- "middle" is what is generated
 
-    local RequestBuilder = {}
-    RequestBuilder.__index = RequestBuilder
+    local OllamaRequestBuilder = {}
+    OllamaRequestBuilder.__index = OllamaRequestBuilder
 
-    function RequestBuilder:new(prefix, suffix, current_context)
+    function OllamaRequestBuilder:new(prefix, suffix, current_context)
         local instance = {
             prefix = prefix,
             suffix = suffix,
@@ -132,11 +132,11 @@ function M.ask_for_prediction()
         return instance
     end
 
-    function RequestBuilder:build_request()
+    function OllamaRequestBuilder:build_request()
         return backend.build_request(self.prefix, self.suffix, self.current_context)
     end
 
-    local builder = RequestBuilder:new(prefix, suffix, current_context)
+    local builder = OllamaRequestBuilder:new(prefix, suffix, current_context)
     local options = builder:build_request()
 
     -- log:trace("curl", table.concat(options.args, " "))
