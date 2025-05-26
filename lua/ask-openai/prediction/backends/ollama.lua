@@ -103,7 +103,7 @@ function OllamaFimPsmRequestBuilder:get_file_level_fim_prompt()
     return prompt
 end
 
-function OllamaFimPsmRequestBuilder:get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
+function OllamaFimPsmRequestBuilder:get_prompt_repo_style_with_context(self.prefix, suffix, sentinel_tokens, current_context)
     -- FYI see fim.md for extensive FIM notes
     -- TODO address concerns about excessive empty predictions (see fim.md notes, I observed this in some initial testing with repo level)
 
@@ -125,7 +125,7 @@ function OllamaFimPsmRequestBuilder:get_prompt_repo_style_with_context(prefix, s
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    local file_level_fim_prompt = M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
+    local file_level_fim_prompt = M.get_file_level_fim_prompt(self.prefix, suffix, sentinel_tokens)
 
     -- PRN is this a better way to get filename?
     -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
