@@ -117,8 +117,6 @@ function M.ask_for_prediction()
     -- PSM format:
     local prefix = document_prefix
     local suffix = document_suffix
-    -- "middle" is what is generated
-
     local builder = backend.OllamaRequestBuilder:new(prefix, suffix, current_context)
     local options = builder:build_request()
 
