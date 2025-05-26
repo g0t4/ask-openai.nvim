@@ -20,6 +20,7 @@ function M.dump_yank_event()
     -- }
 end
 
+local KEEP_TEN_YANKS = 10
 M.yanks = {}
 function M.on_yank()
     -- ignore if empty
@@ -28,8 +29,7 @@ function M.on_yank()
         -- ignore empty yanks
         return
     end
-    local prune_after = 10
-    if #M.yanks >= prune_after then
+    if #M.yanks >= KEEP_TEN_YANKS then
         table.remove(M.yanks, 1)
     end
     table.insert(M.yanks, vim.v.event.regcontents)
