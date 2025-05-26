@@ -18,10 +18,6 @@ function OllamaFimPsmRequestBuilder:new(prefix, suffix, current_context)
     return instance
 end
 
-function OllamaFimPsmRequestBuilder:build_request()
-    return M.build_request(self.prefix, self.suffix, self.current_context)
-end
-
 local function body_for(prefix, suffix, current_context)
     local body = {
 
@@ -143,7 +139,7 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     -- return file_level_fim_prompt
 end
 
-function M.build_request(prefix, suffix, current_context)
+function OllamaFimPsmRequestBuilder:build_request()
     local options = {
         command = "curl",
         args = {
@@ -152,7 +148,7 @@ function M.build_request(prefix, suffix, current_context)
             "-X", "POST",
             "http://ollama:11434/api/generate",
             "-H", "Content-Type: application/json",
-            "-d", body_for(prefix, suffix, current_context),
+            "-d", body_for(self.prefix, self.suffix, self.current_context),
         },
     }
     return options
