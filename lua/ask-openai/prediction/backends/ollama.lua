@@ -6,6 +6,7 @@ local meta = require("ask-openai.backends.models.meta")
 local OllamaFimBackend = {}
 OllamaFimBackend.__index = OllamaFimBackend
 
+---@return OllamaFimBackend
 function OllamaFimBackend:new(prefix, suffix, current_context)
     local instance = {
         prefix = prefix,
