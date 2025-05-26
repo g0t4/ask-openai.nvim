@@ -47,7 +47,7 @@ local LEVEL = {
 local function log_level_string(level)
     -- TODO extract out color helpers (i.e. copy over devtools ansi.lua module)
     local lookup = {
-        [LEVEL.TRACE] = ansi.blue("TRACE"),
+        [LEVEL.TRACE] = ansi.cyan("TRACE"),
         [LEVEL.INFO] = ansi.white_bold("INFO "),
         [LEVEL.WARN] = ansi.yellow_bold("WARN "),
         [LEVEL.ERROR] = ansi.red_bold("ERROR"),

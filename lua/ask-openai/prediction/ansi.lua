@@ -49,6 +49,15 @@ function M.black(text, options)
     return "\27[" .. color_keys.black .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
 end
 
+function M.cyan(text, options)
+    options = options or {}
+    options.color = options.color or true -- default is true
+    if not options.color then
+        return text
+    end
+    return "\27[" .. color_keys.cyan .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
+end
+
 function M.red_bold(text, options)
     options = options or {}
     options.color = options.color or true -- default is true
