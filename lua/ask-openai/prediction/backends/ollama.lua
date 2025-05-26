@@ -85,8 +85,8 @@ function OllamaFimPsmRequestBuilder:body_for()
     return body_json
 end
 
-function M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
-    log:trace("prefix", "'" .. prefix .. "'")
+function OllamaFimPsmRequestBuilder:get_file_level_fim_prompt(suffix, sentinel_tokens)
+    log:trace("prefix", "'" .. self.prefix .. "'")
     log:trace("suffix", "'" .. suffix .. "'")
 
     -- *** File-level FIM template:
@@ -96,14 +96,14 @@ function M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
 
     -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
 
-    local prompt = sentinel_tokens.fim_prefix .. prefix
+    local prompt = sentinel_tokens.fim_prefix .. self.prefix
         .. sentinel_tokens.fim_suffix .. suffix
         .. sentinel_tokens.fim_middle
 
     return prompt
 end
 
-function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
+function OllamaFimPsmRequestBuilder:get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
     -- FYI see fim.md for extensive FIM notes
     -- TODO address concerns about excessive empty predictions (see fim.md notes, I observed this in some initial testing with repo level)
 
