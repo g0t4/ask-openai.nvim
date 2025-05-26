@@ -105,8 +105,8 @@ function M.ask_for_prediction()
     local current_context = context.current_context()
 
     -- TODO rethink process_sse? should it be part of request builder? rename request builder?
-    local builder = OllamaFimBackend:new(document_prefix, document_suffix, current_context)
-    local spawn_curl_options = builder:build_request()
+    local backend = OllamaFimBackend:new(document_prefix, document_suffix, current_context)
+    local spawn_curl_options = backend:build_request()
 
     -- log:trace("curl", table.concat(spawn_curl_options.args, " "))
 
@@ -142,7 +142,7 @@ function M.ask_for_prediction()
         end
         if data then
             vim.schedule(function()
-                local chunk, generation_done, done_reason = builder.process_sse(data)
+                local chunk, generation_done, done_reason = backend.process_sse(data)
                 if chunk then
                     this_prediction:add_chunk_to_prediction(chunk)
                 end
