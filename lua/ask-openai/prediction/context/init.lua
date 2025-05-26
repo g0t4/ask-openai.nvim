@@ -5,14 +5,20 @@ local cocs = require("ask-openai.prediction.context.cocs")
 
 local M = {}
 
-function M.current_context()
-    -- TODO classify this ctx object and use it as type hint in consumer code
-    local ctx = {
-        -- TODO have each context type build its own prompt and pass that back here
-        yanks = yanks.get_prompt(),
-        edits = {}, -- TODO
+-- @type Context
+-- @field yanks string
+-- @field edits string
+function M:new()
+    local instance = {
+        yanks = yanks:get_prompt(),
+        edits = {}
     }
-    return ctx
+    setmetatable(instance, { __index = self })
+    return instance
+end
+
+function M.current_context()
+    return M:new()
 end
 
 function M.setup()
