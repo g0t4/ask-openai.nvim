@@ -109,14 +109,14 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    local fim_file_contents = M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
+    local file_level_fim_prompt = M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
     local current_file_name = vim.fn.expand('%'):match("([^/]+)$")
     local fim_file = sentinel_tokens.file_sep .. current_file_name .. "\n"
-        .. fim_file_contents
+        .. file_level_fim_prompt
 
     -- return repo_prompt .. context_file_prompt .. fim_file
     return repo_prompt .. fim_file
-    -- return fim_file_contents -- file level only (for testing)
+    -- return file_level_fim_prompt
 end
 
 function M.build_request(prefix, suffix, current_context)
