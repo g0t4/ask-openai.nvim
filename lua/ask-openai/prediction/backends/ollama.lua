@@ -18,7 +18,7 @@ function OllamaFimPsmRequestBuilder:new(prefix, suffix, current_context)
     return instance
 end
 
-local function body_for(prefix, suffix, current_context)
+function OllamaFimPsmRequestBuilder:body_for()
     local body = {
 
         -- FYI set of possible models for demoing impact of fine tune
@@ -73,8 +73,8 @@ local function body_for(prefix, suffix, current_context)
     end
 
 
-    -- body.prompt = M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
-    body.prompt = M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, current_context)
+    -- body.prompt = M.get_file_level_fim_prompt(self.prefix, self.suffix, sentinel_tokens)
+    body.prompt = M.get_prompt_repo_style_with_context(self.prefix, self.suffix, sentinel_tokens, self.current_context)
     log:trace('body.prompt', body.prompt)
 
     local body_json = vim.json.encode(body)
@@ -148,7 +148,7 @@ function OllamaFimPsmRequestBuilder:build_request()
             "-X", "POST",
             "http://ollama:11434/api/generate",
             "-H", "Content-Type: application/json",
-            "-d", body_for(self.prefix, self.suffix, self.current_context),
+            "-d", self:body_for(),
         },
     }
     return options
