@@ -5,6 +5,7 @@ local CurrentContext = require("ask-openai.prediction.context")
 
 local OllamaFimBackend = require("ask-openai.prediction.backends.ollama")
 -- TODO! rewrite other backends to use new builder pattern (not a big change):
+--    TODO add :new, rearrange to self: methods
 -- local backend = require("ask-openai.prediction.backends.legacy-completions")
 -- local backend = require("ask-openai.prediction.backends.backendsvllm")
 
