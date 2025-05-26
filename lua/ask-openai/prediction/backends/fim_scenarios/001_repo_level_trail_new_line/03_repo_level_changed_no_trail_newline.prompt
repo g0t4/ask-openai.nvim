@@ -1,0 +1,12 @@
+<|repo_name|>ask-openai.nvim
+<|file_sep|>calc.lua
+<|fim_prefix|>local M = {}
+
+function M.add(a, b)
+    <|fim_suffix|>
+    return a + b
+end
+
+
+
+return M<|fim_middle|>
