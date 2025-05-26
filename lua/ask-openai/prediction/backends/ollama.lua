@@ -75,7 +75,7 @@ function OllamaFimPsmRequestBuilder:body_for()
     -- TODO! is this the best spot to set sentinel_tokens? I just set it here to keep going on request builder refactoring
     self.sentinel_tokens = sentinel_tokens
     -- body.prompt = M.get_file_level_fim_prompt()
-    body.prompt = M.get_prompt_repo_style_with_context()
+    body.prompt = self:get_prompt_repo_style_with_context()
     log:trace('body.prompt', body.prompt)
 
     local body_json = vim.json.encode(body)
@@ -83,6 +83,7 @@ function OllamaFimPsmRequestBuilder:body_for()
     log:trace("body", body_json)
 
     return body_json
+
 end
 
 function OllamaFimPsmRequestBuilder:get_file_level_fim_prompt()
@@ -125,7 +126,7 @@ function OllamaFimPsmRequestBuilder:get_prompt_repo_style_with_context()
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    local file_level_fim_prompt = M.get_file_level_fim_prompt(self.prefix, self.suffix, self.sentinel_tokens)
+    local file_level_fim_prompt = self:get_file_level_fim_prompt(self.prefix, self.suffix, self.sentinel_tokens)
 
     -- PRN is this a better way to get filename?
     -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
