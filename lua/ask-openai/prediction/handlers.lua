@@ -104,9 +104,9 @@ function M.ask_for_prediction()
     local current_context = context.current_context()
 
     local builder = backend.OllamaFimPsmRequestBuilder:new(document_prefix, document_suffix, current_context)
-    local options = builder:build_request()
+    local spawn_curl_options = builder:build_request()
 
-    -- log:trace("curl", table.concat(options.args, " "))
+    -- log:trace("curl", table.concat(spawn_curl_options.args, " "))
 
     local this_prediction = Prediction:new()
     M.current_prediction = this_prediction
@@ -116,7 +116,7 @@ function M.ask_for_prediction()
     assert(stdout ~= nil)
     assert(stderr ~= nil)
 
-    options.on_exit = function(code, signal)
+    spawn_curl_options.on_exit = function(code, signal)
         log:trace(string.format("spawn - exit code: %d  signal:%s", code, signal))
         if code ~= 0 then
             log:error("spawn - non-zero exit code:", code, "Signal:", signal)
@@ -125,12 +125,12 @@ function M.ask_for_prediction()
         stderr:close()
     end
 
-    M.handle, M.pid = uv.spawn(options.command, {
-        args = options.args,
+    M.handle, M.pid = uv.spawn(spawn_curl_options.command, {
+        args = spawn_curl_options.args,
         stdio = { nil, stdout, stderr },
-    }, options.on_exit)
+    }, spawn_curl_options.on_exit)
 
-    options.on_stdout = function(err, data)
+    spawn_curl_options.on_stdout = function(err, data)
         log:trace("on_stdout chunk: ", data)
         if err then
             log:warn("on_stdout error: ", err)
@@ -153,15 +153,15 @@ function M.ask_for_prediction()
             end)
         end
     end
-    uv.read_start(stdout, options.on_stdout)
+    uv.read_start(stdout, spawn_curl_options.on_stdout)
 
-    options.on_stderr = function(err, data)
+    spawn_curl_options.on_stderr = function(err, data)
         log:warn("on_stderr chunk: ", data)
         if err then
             log:warn("on_stderr error: ", err)
         end
     end
-    uv.read_start(stderr, options.on_stderr)
+    uv.read_start(stderr, spawn_curl_options.on_stderr)
 end
 
 function M.cancel_current_prediction()
