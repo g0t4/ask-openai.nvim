@@ -1,7 +1,7 @@
 local uv = vim.uv
 local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
-local context = require("ask-openai.prediction.context.init")
+local CurrentContext = require("ask-openai.prediction.context")
 
 -- local backend = require("ask-openai.prediction.backends.legacy-completions")
 -- local backend = require("ask-openai.prediction.backends.ollama")
@@ -102,7 +102,7 @@ function M.ask_for_prediction()
         end
     end
 
-    local current_context = context.current_context()
+    local current_context = CurrentContext.current_context()
 
     local backend = OllamaFimBackend:new(document_prefix, document_suffix, current_context)
     local spawn_curl_options = backend:request_options()

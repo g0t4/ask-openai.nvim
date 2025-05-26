@@ -1,11 +1,18 @@
 local log = require("ask-openai.prediction.logger").predictions()
+local CurrentContext = require("ask-openai.prediction.context")
 local qwen = require("ask-openai.backends.models.qwen")
 local meta = require("ask-openai.backends.models.meta")
 
 ---@class OllamaFimBackend
+---@field prefix string
+---@field suffix string
+---@field current_context CurrentContext
 local OllamaFimBackend = {}
 OllamaFimBackend.__index = OllamaFimBackend
 
+---@param prefix string
+---@param suffix string
+---@param current_context CurrentContext
 ---@return OllamaFimBackend
 function OllamaFimBackend:new(prefix, suffix, current_context)
     local instance = {
