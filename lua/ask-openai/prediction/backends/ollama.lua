@@ -125,9 +125,9 @@ function M.build_request(prefix, suffix, current_context)
         command = "curl",
         args = {
             "-fsSL",
-            "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
+            "--no-buffer", -- test w/ `curl *` vs `curl * | cat`
             "-X", "POST",
-            "http://ollama:11434/api/generate", -- TODO pass in api base_url (via config)
+            "http://ollama:11434/api/generate",
             "-H", "Content-Type: application/json",
             "-d", body_for(prefix, suffix, current_context),
         },
