@@ -4,7 +4,8 @@ local Prediction = require("ask-openai.prediction.prediction")
 local context = require("ask-openai.prediction.context.init")
 
 -- local backend = require("ask-openai.prediction.backends.legacy-completions")
-local backend = require("ask-openai.prediction.backends.ollama")
+-- local backend = require("ask-openai.prediction.backends.ollama")
+local OllamaFimPsmRequestBuilder = require("ask-openai.prediction.backends.ollama")
 -- local backend = require("ask-openai.prediction.backends.backendsvllm")
 
 -- FYI would need current prediction PER buffer in the future if want multiple buffers to have predictions at same time (not sure I want this feature)
@@ -103,7 +104,8 @@ function M.ask_for_prediction()
 
     local current_context = context.current_context()
 
-    local builder = backend.OllamaFimPsmRequestBuilder:new(document_prefix, document_suffix, current_context)
+    -- TODO rethink process_sse? should it be part of request builder? rename request builder?
+    local builder = OllamaFimPsmRequestBuilder:new(document_prefix, document_suffix, current_context)
     local spawn_curl_options = builder:build_request()
 
     -- log:trace("curl", table.concat(spawn_curl_options.args, " "))
@@ -140,7 +142,7 @@ function M.ask_for_prediction()
         end
         if data then
             vim.schedule(function()
-                local chunk, generation_done, done_reason = backend.process_sse(data)
+                local chunk, generation_done, done_reason = builder.process_sse(data)
                 if chunk then
                     this_prediction:add_chunk_to_prediction(chunk)
                 end

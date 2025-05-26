@@ -1,10 +1,8 @@
-local M = {}
 local log = require("ask-openai.prediction.logger").predictions()
 local qwen = require("ask-openai.backends.models.qwen")
 local meta = require("ask-openai.backends.models.meta")
 
 local OllamaFimPsmRequestBuilder = {}
-M.OllamaFimPsmRequestBuilder = OllamaFimPsmRequestBuilder
 
 OllamaFimPsmRequestBuilder.__index = OllamaFimPsmRequestBuilder
 
@@ -126,7 +124,7 @@ function OllamaFimPsmRequestBuilder:get_prompt_repo_style_with_context()
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    local file_level_fim_prompt = self:get_file_level_fim_prompt(self.prefix, self.suffix, self.sentinel_tokens)
+    local file_level_fim_prompt = self:get_file_level_fim_prompt()
 
     -- PRN is this a better way to get filename?
     -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
@@ -156,7 +154,7 @@ function OllamaFimPsmRequestBuilder:build_request()
     return options
 end
 
-function M.process_sse(data)
+function OllamaFimPsmRequestBuilder.process_sse(data)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
@@ -200,4 +198,4 @@ function M.process_sse(data)
     return chunk, done, done_reason
 end
 
-return M
+return OllamaFimPsmRequestBuilder
