@@ -103,7 +103,7 @@ function OllamaFimPsmRequestBuilder:get_file_level_fim_prompt()
     return prompt
 end
 
-function OllamaFimPsmRequestBuilder:get_prompt_repo_style_with_context(self.prefix, self.suffix, self.sentinel_tokens, self.current_context)
+function OllamaFimPsmRequestBuilder:get_prompt_repo_style_with_context()
     -- FYI see fim.md for extensive FIM notes
     -- TODO address concerns about excessive empty predictions (see fim.md notes, I observed this in some initial testing with repo level)
 
