@@ -2,11 +2,10 @@ local log = require("ask-openai.prediction.logger").predictions()
 local qwen = require("ask-openai.backends.models.qwen")
 local meta = require("ask-openai.backends.models.meta")
 
-local OllamaFimPsmRequestBuilder = {}
+local M = {}
+M.__index = M
 
-OllamaFimPsmRequestBuilder.__index = OllamaFimPsmRequestBuilder
-
-function OllamaFimPsmRequestBuilder:new(prefix, suffix, current_context)
+function M:new(prefix, suffix, current_context)
     local instance = {
         prefix = prefix,
         suffix = suffix,
@@ -16,7 +15,7 @@ function OllamaFimPsmRequestBuilder:new(prefix, suffix, current_context)
     return instance
 end
 
-function OllamaFimPsmRequestBuilder:body_for()
+function M:body_for()
     local body = {
 
         -- FYI set of possible models for demoing impact of fine tune
@@ -84,7 +83,7 @@ function OllamaFimPsmRequestBuilder:body_for()
 
 end
 
-function OllamaFimPsmRequestBuilder:get_file_level_fim_prompt()
+function M:get_file_level_fim_prompt()
     log:trace("prefix", "'" .. self.prefix .. "'")
     log:trace("suffix", "'" .. self.suffix .. "'")
 
@@ -102,7 +101,7 @@ function OllamaFimPsmRequestBuilder:get_file_level_fim_prompt()
     return prompt
 end
 
-function OllamaFimPsmRequestBuilder:get_prompt_repo_style_with_context()
+function M:get_prompt_repo_style_with_context()
     -- FYI see fim.md for extensive FIM notes
     -- TODO address concerns about excessive empty predictions (see fim.md notes, I observed this in some initial testing with repo level)
 
@@ -139,7 +138,7 @@ function OllamaFimPsmRequestBuilder:get_prompt_repo_style_with_context()
     -- return file_level_fim_prompt
 end
 
-function OllamaFimPsmRequestBuilder:build_request()
+function M:build_request()
     local options = {
         command = "curl",
         args = {
@@ -154,7 +153,7 @@ function OllamaFimPsmRequestBuilder:build_request()
     return options
 end
 
-function OllamaFimPsmRequestBuilder.process_sse(data)
+function M.process_sse(data)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
@@ -198,4 +197,4 @@ function OllamaFimPsmRequestBuilder.process_sse(data)
     return chunk, done, done_reason
 end
 
-return OllamaFimPsmRequestBuilder
+return M
