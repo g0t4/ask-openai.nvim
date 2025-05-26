@@ -102,10 +102,7 @@ function M.ask_for_prediction()
 
     local current_context = context.current_context()
 
-    -- PSM format:
-    local prefix = document_prefix
-    local suffix = document_suffix
-    local builder = backend.OllamaFimPsmRequestBuilder:new(prefix, suffix, current_context)
+    local builder = backend.OllamaFimPsmRequestBuilder:new(document_prefix, document_suffix, current_context)
     local options = builder:build_request()
 
     -- log:trace("curl", table.concat(options.args, " "))
