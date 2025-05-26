@@ -85,7 +85,7 @@ function OllamaFimPsmRequestBuilder:body_for()
     return body_json
 end
 
-function OllamaFimPsmRequestBuilder:get_file_level_fim_prompt(self.suffix, sentinel_tokens)
+function OllamaFimPsmRequestBuilder:get_file_level_fim_prompt(sentinel_tokens)
     log:trace("prefix", "'" .. self.prefix .. "'")
     log:trace("suffix", "'" .. self.suffix .. "'")
 
