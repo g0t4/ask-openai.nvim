@@ -106,7 +106,7 @@ function M.ask_for_prediction()
 
     -- TODO rethink process_sse? should it be part of request builder? rename request builder?
     local backend = OllamaFimBackend:new(document_prefix, document_suffix, current_context)
-    local spawn_curl_options = backend:build_request()
+    local spawn_curl_options = backend:request_options()
 
     -- log:trace("curl", table.concat(spawn_curl_options.args, " "))
 
