@@ -155,8 +155,8 @@ function OllamaFimBackend:get_prompt_repo_style_with_context()
         .. file_level_fim_prompt
     -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
 
-    -- return repo_prompt .. context_file_prompt .. fim_file
-    return repo_prompt .. fim_file
+    return repo_prompt .. context_file_prompt .. fim_file
+    -- return repo_prompt .. fim_file
     -- return file_level_fim_prompt
 end
 
