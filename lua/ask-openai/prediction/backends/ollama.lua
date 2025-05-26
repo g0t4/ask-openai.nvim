@@ -138,7 +138,7 @@ function M:get_prompt_repo_style_with_context()
     -- return file_level_fim_prompt
 end
 
-function M:build_request()
+function M:request_options()
     local options = {
         command = "curl",
         args = {
