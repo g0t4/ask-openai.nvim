@@ -85,9 +85,9 @@ function OllamaFimPsmRequestBuilder:body_for()
     return body_json
 end
 
-function OllamaFimPsmRequestBuilder:get_file_level_fim_prompt(suffix, sentinel_tokens)
+function OllamaFimPsmRequestBuilder:get_file_level_fim_prompt(self.suffix, sentinel_tokens)
     log:trace("prefix", "'" .. self.prefix .. "'")
-    log:trace("suffix", "'" .. suffix .. "'")
+    log:trace("suffix", "'" .. self.suffix .. "'")
 
     -- *** File-level FIM template:
     --   <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_mid}<|endoftext|>
@@ -97,7 +97,7 @@ function OllamaFimPsmRequestBuilder:get_file_level_fim_prompt(suffix, sentinel_t
     -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
 
     local prompt = sentinel_tokens.fim_prefix .. self.prefix
-        .. sentinel_tokens.fim_suffix .. suffix
+        .. sentinel_tokens.fim_suffix .. self.suffix
         .. sentinel_tokens.fim_middle
 
     return prompt
