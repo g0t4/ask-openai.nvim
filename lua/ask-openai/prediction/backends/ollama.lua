@@ -14,11 +14,11 @@ OllamaFimBackend.__index = OllamaFimBackend
 ---@param suffix string
 ---@param current_context CurrentContext
 ---@return OllamaFimBackend
-function OllamaFimBackend:new(prefix, suffix, current_context)
+function OllamaFimBackend:new(prefix, suffix)
     local instance = {
         prefix = prefix,
         suffix = suffix,
-        current_context = current_context
+        current_context = CurrentContext:new(),
     }
     setmetatable(instance, self)
     return instance
