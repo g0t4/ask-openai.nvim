@@ -100,6 +100,10 @@ end
 
 function Logger:json_info(message, json, pretty)
     -- TODO add other formats using bat or w/e else
+    if json == nil then
+        self:info(message, "nil (passed to json_info)")
+        return
+    end
 
     -- local command = { "bat", "--style=plain", "--color", "always", "-l", "json" }
     local command = { "jq", ".", "--color-output" }
