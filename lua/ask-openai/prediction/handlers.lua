@@ -77,6 +77,7 @@ function M.ask_for_prediction()
     --   - Prediction should only fill the domain of inserting text after/before existing text
     --   - If I want help w/ a line I can wipe the end to get all of it redone (that is not ideal for cases when the cue is midway or toward end but that is gonna have to wait for as AskImplicitRewrite :) that compliments AskExplicitRewrite
 
+    -- TODO! add a PSM Buffer/Window Parser! and test it (like builder but on the parsing side)
     local after_starts_at_char_under_cursor = original_col + 1 -- FYI original_col is 0-indexed, thus +1
     local current_line_after_split = current_line:sub(after_starts_at_char_under_cursor)
     log:trace("current_line_after (" .. after_starts_at_char_under_cursor .. " => end): '" .. current_line_after_split .. "'")
