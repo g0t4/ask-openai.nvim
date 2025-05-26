@@ -100,18 +100,6 @@ function M.ask_for_prediction()
         end
     end
 
-
-
-    -- *** add filename in a comment at start of file (prefix)
-    -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
-    -- if vim.o.commentstring ~= nil then
-    --     local comment_header = string.format(vim.o.commentstring, "the following code is from a file named: '" .. filename .. "'") .. "\n\n"
-    --     document_prefix = comment_header .. document_prefix
-    --     log:trace("comment_header: ", comment_header)
-    -- else
-    --     log:warn("vim.o.commentstring is nil, not including file name in comment header")
-    -- end
-
     local current_context = context.current_context()
 
     -- PSM format:

@@ -129,7 +129,11 @@ function M.get_prompt_repo_style_with_context(prefix, suffix, sentinel_tokens, c
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
     local file_level_fim_prompt = M.get_file_level_fim_prompt(prefix, suffix, sentinel_tokens)
+
+    -- PRN is this a better way to get filename?
+    -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
     local current_file_name = vim.fn.expand('%'):match("([^/]+)$")
+
     local fim_file = sentinel_tokens.file_sep .. current_file_name .. "\n"
         .. file_level_fim_prompt
     -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
