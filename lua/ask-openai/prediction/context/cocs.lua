@@ -13,6 +13,43 @@
 
 local M = {}
 
+local function get_symbol_at_cursor()
+    local symbols = vim.fn.CocAction('documentSymbols')
+    if not symbols or vim.tbl_isempty(symbols) then
+        print('No symbols found')
+        return
+    end
+
+    local cursor = vim.api.nvim_win_get_cursor(0)
+    local line = cursor[1] - 1 -- 0-based
+    local col = cursor[2]
+
+    local function is_in_range(range)
+        local s, e = range.start, range["end"]
+        if line < s.line or line > e.line then return false end
+        if line == s.line and col < s.character then return false end
+        if line == e.line and col > e.character then return false end
+        return true
+    end
+
+    for _, symbol in ipairs(symbols) do
+        -- if is_in_range(symbol.range) then
+            vim.print(symbol.text)
+
+            -- print('Symbol: ' .. symbol.name .. ' (' .. symbol.kind .. ')')
+            -- return
+        -- end
+    end
+
+    print('No symbol at cursor')
+end
+
+vim.api.nvim_create_user_command('CocSymbolAtCursor', get_symbol_at_cursor, {})
+
+function M.print_cocs()
+    get_symbol_at_cursor()
+end
+
 function M.setup()
     vim.api.nvim_create_user_command("AskDumpCocs", M.print_cocs, {})
 end
