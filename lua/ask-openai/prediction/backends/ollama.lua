@@ -72,9 +72,10 @@ function OllamaFimPsmRequestBuilder:body_for()
         return
     end
 
-
-    -- body.prompt = M.get_file_level_fim_prompt(self.prefix, self.suffix, sentinel_tokens)
-    body.prompt = M.get_prompt_repo_style_with_context(self.prefix, self.suffix, sentinel_tokens, self.current_context)
+    -- TODO! is this the best spot to set sentinel_tokens? I just set it here to keep going on request builder refactoring
+    self.sentinel_tokens = sentinel_tokens
+    -- body.prompt = M.get_file_level_fim_prompt()
+    body.prompt = M.get_prompt_repo_style_with_context()
     log:trace('body.prompt', body.prompt)
 
     local body_json = vim.json.encode(body)
