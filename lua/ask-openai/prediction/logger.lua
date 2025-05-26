@@ -98,6 +98,12 @@ function Logger:jsonify_info(message, ...)
     self:json_info(message, json)
 end
 
+function Logger:json_info_deferred(message, data)
+    vim.defer_fn(function()
+        self:json_info(message, data)
+    end, 0)
+end
+
 function Logger:json_info(message, json, pretty)
     -- TODO add other formats using bat or w/e else
     if json == nil then
