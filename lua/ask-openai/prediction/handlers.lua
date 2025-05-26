@@ -118,7 +118,26 @@ function M.ask_for_prediction()
     local prefix = document_prefix
     local suffix = document_suffix
     -- "middle" is what is generated
-    local options = backend.build_request(prefix, suffix, current_context)
+
+    local RequestBuilder = {}
+    RequestBuilder.__index = RequestBuilder
+
+    function RequestBuilder:new(prefix, suffix, current_context)
+        local instance = {
+            prefix = prefix,
+            suffix = suffix,
+            current_context = current_context
+        }
+        setmetatable(instance, self)
+        return instance
+    end
+
+    function RequestBuilder:build_request()
+        return backend.build_request(self.prefix, self.suffix, self.current_context)
+    end
+
+    local builder = RequestBuilder:new(prefix, suffix, current_context)
+    local options = builder:build_request()
 
     -- log:trace("curl", table.concat(options.args, " "))
 
