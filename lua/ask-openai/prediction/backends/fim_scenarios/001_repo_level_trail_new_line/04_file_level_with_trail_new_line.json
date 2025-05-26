@@ -1,0 +1,1 @@
+{"stream":true,"options":{"num_ctx":8192},"raw":true,"num_predict":200,"model":"qwen2.5-coder:7b-base-q8_0","prompt":"<|fim_prefix|>local M = {}\n\nfunction M.add(a, b)\n    <|fim_suffix|>\n    return a + b\nend\n\n\n\nreturn M<|fim_middle|>\n"}
