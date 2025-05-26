@@ -104,7 +104,6 @@ function M.ask_for_prediction()
 
     local current_context = context.current_context()
 
-    -- TODO rethink process_sse? should it be part of request builder? rename request builder?
     local backend = OllamaFimBackend:new(document_prefix, document_suffix, current_context)
     local spawn_curl_options = backend:request_options()
 
