@@ -170,7 +170,7 @@ function M.starcoder2.get_fim_prompt(request)
 
     -- TODO add to qwen code too
     -- local current_file_path = vim.fn.expand('%'):match("([^/]+)$")
-    local current_file_path = request.current_file_path()
+    local current_file_path = request.get_current_file_path()
     if current_file_path == nil then
         -- i.e. if :new and before first :w (save)
         -- for now just leave filename blank?

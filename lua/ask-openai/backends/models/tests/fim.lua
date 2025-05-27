@@ -8,12 +8,13 @@ local should = require("devtools.tests.should")
 describe("starcoder2", function()
     it("get_fim_prompt", function()
         local request = {
+            -- TODO! add type def for this request/backend/builder type
             prefix = "foo\nthe\nprefix",
             suffix = "bar\nbaz",
             current_context = {
                 yanks = "yanks",
             },
-            current_file_path = function()
+            get_current_file_path = function()
                 return "path/to/current.lua"
             end
         }
