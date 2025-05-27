@@ -27,4 +27,11 @@ describe("starcoder2", function()
 
         should.be_equal(expected, prompt)
     end)
+
+    -- TODO need to do some integration testing of a better way to generate git commit messages
+    --   starcoder2 (at least) and IIRC qwen... refuse to pull symbols from suffix only...
+    --   nevermind it cleary a commit message!!!
+    --     file even called .git/COMMIT_EDITMSG
+    --   maybe put all of it as a separate context file?
+    --   or have special reminder prompt in this case
 end)
