@@ -2,7 +2,7 @@ local curls = require("ask-openai.backends.curl_streaming")
 local oai_chat = require("ask-openai.backends.oai_chat")
 require("ask-openai.helpers.buffers")
 local test_setup = require("ask-openai.helpers.test_setup")
-test_setup.add_devtools_to_package_path()
+test_setup.add_test_deps_to_package_path()
 
 local should = require("devtools.tests.should")
 
