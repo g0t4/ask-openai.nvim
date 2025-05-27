@@ -6,7 +6,33 @@ local should = require("devtools.tests.should")
 
 describe("qwen2.5-coder", function()
     it("get_fim_prompt", function()
+        -- USE example:
+        --   https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel-fim.py
 
+        local request = {
+            prefix = "foo\nthe\nprefix",
+            suffix = "bar\nbaz",
+            current_context = {
+                yanks = "yanks",
+            },
+            get_current_file_path = function()
+                return "path/to/current.lua"
+            end,
+            get_repo_name = function()
+                return "my_repo_name"
+            end
+        }
+        local prompt = fim.starcoder2.get_fim_prompt(request)
+
+        -- TODO confirm \n after each file contents? or not?
+        --    is it required? otherwise if optional, then it doesn't matter
+        local expected = "<|repo_name|>my_repo_name<|file_sep|>nvim-recent-yanks.txt\nyanks"
+            .. "<|file_sep|>path/to/current.lua\n"
+            .. "<|fim_prefix|>foo\nthe\nprefix"
+            .. "<|fim_suffix|>bar\nbaz"
+            .. "<|fim_middle|>"
+
+        should.be_equal(expected, prompt)
     end)
 end)
 

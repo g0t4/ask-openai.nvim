@@ -22,6 +22,11 @@ M.qwen25coder = {
     },
 }
 
+M.qwen25coder.get_fim_prompt = function(request)
+
+end
+
+
 M.mellum = {
     -- https://huggingface.co/JetBrains/Mellum-4b-base/blob/main/special_tokens_map.json
     -- much in common with starcoder2
