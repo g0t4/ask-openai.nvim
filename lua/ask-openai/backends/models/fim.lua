@@ -122,4 +122,54 @@ M.starcoder2 = {
     }
 }
 
+function M.starcoder2.get_fim_prompt()
+    -- see notes in starcoder2.md
+
+    -- <repo_name>reponame<file_sep>filepath0\ncode0<file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid<file_sep> ...<|endoftext|>
+    -- TODO <|endoftext|> to stop tokens? must already be set IIGC cuz I get completions that terminate appropriately, quite often
+
+
+    local repo_name = vim.fn.getcwd():match("([^/]+)$")
+    -- TODO starcoder2 doesn't have trailing \n after repo_name
+    -- TODO confirm qwen2.5coder has trailing \n after repo_name
+    local repo_prompt = self.sentinel_tokens.repo_name .. repo_name .. "\n"
+    local context_file_prompt = self.sentinel_tokens.file_sep .. "nvim-recent-yanks.txt\n"
+    if self.current_context.yanks ~= "" then
+        context_file_prompt = context_file_prompt .. "\n" .. self.current_context.yanks .. "\n\n"
+    end
+
+    -- * recent edits
+    -- local recent_changes = "Here are some recent lines that were edited by the user: "
+    -- for _, change in pairs(current_context.edits) do
+    --     local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
+    --     -- todo include line/col or not?
+    --     -- todo include file?
+    --     recent_changes = recent_changes .. "\n" .. str
+    -- end
+    -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
+
+    local file_level_fim_prompt = self:get_file_level_fim_prompt()
+
+    -- PRN is this a better way to get filename?
+    -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
+    local current_file_path = vim.fn.expand('%'):match("([^/]+)$")
+
+    if current_file_path == nil then
+        -- i.e. if :new and before first :w (save)
+        -- for now just leave filename blank?
+        --  or, maybe mark it as new?
+        --   can I deterine filetype using some heuristic or other metadata?
+        --   should I mark it "new"
+        log:warn("current_file_name is nil")
+        current_file_path = ""
+    end
+
+    -- confirmed: starcoder2 adds \n after filepath
+    local fim_file = self.sentinel_tokens.file_sep .. current_file_path .. "\n"
+        .. file_level_fim_prompt
+    -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
+
+    return repo_prompt .. context_file_prompt .. fim_file
+end
+
 return M
