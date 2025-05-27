@@ -167,9 +167,7 @@ function M.starcoder2.get_fim_prompt(request)
     -- * FIM file
     log:trace("prefix", "'" .. request.prefix .. "'")
     log:trace("suffix", "'" .. request.suffix .. "'")
-    --
-    -- PRN is this a better way to get filename?
-    -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
+
     local current_file_path = vim.fn.expand('%'):match("([^/]+)$")
     if current_file_path == nil then
         -- i.e. if :new and before first :w (save)
