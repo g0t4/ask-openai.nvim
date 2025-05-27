@@ -169,6 +169,10 @@ function M.starcoder2.get_fim_prompt(request)
     --
     -- TODO ESCAPE presence of any sentinel tokens? i.e. should be rare but if someone is working on LLM code it may not be!
     --
+    -- FYI carefully observe the format:
+    --   <file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid
+    --   <fim_prefix> comes BEFORE filepath!
+    local fim_file_contents = "" -- TODO
     local file_level_fim_prompt = tokens.fim_prefix
         .. request.prefix
         .. tokens.fim_suffix
