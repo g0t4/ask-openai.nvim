@@ -1,4 +1,17 @@
-## StarCoder2 FIM notes
+## StarCoder2
+
+### FIM format
+
+```
+<repo_name>reponame<file_sep>filepath0\ncode0<file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid<file_sep> ...<|endoftext|>
+```
+- The only `\n` added is after `filepathX` and before the file's `codeX`
+- Obviously, the file's code can have `\n` too
+
+### FIM notes
+
+- FIM file can be in the middle of the files list?
+- also sounds like you could do FIM on multiple files?! what?
 
 - llm.nvim supports starcoder2
     - https://github.com/huggingface/llm.nvim
