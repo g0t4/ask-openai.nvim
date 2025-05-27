@@ -19,7 +19,8 @@ M.qwen25coder = {
     },
 }
 
-M.StarCoder2 = {
+M.starcoder2 = {
+    -- PRN did starcoder v1 have diff special tokens?
     sentinel_tokens = {
         -- https://huggingface.co/bigcode/starcoder2-15b/blob/main/special_tokens_map.json
         fim_prefix = "<fim_prefix>",
