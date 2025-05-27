@@ -1,6 +1,6 @@
 local log = require("ask-openai.prediction.logger").predictions()
 local CurrentContext = require("ask-openai.prediction.context")
-local qwen = require("ask-openai.backends.models.fim")
+local fim = require("ask-openai.backends.models.fim")
 local meta = require("ask-openai.backends.models.meta")
 
 ---@class OllamaFimBackend
@@ -82,7 +82,7 @@ function OllamaFimBackend:body_for()
         }
     }
 
-    local sentinel_tokens = qwen.qwen25coder.sentinel_tokens
+    local sentinel_tokens = fim.qwen25coder.sentinel_tokens
 
     if string.find(body.model, "codellama") then
         sentinel_tokens = meta.codellama.sentinel_tokens
@@ -94,7 +94,11 @@ function OllamaFimBackend:body_for()
 
         -- FYI also ollama warns about:
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
-        -- elseif
+    elseif string.find(body.model, "starcoder2") then
+
+        sentinel_tokens = fim.starcoder2.sentinel_tokens
+        -- TODO! stop?
+        -- body.options.stop = { "<EOF>" }
     elseif not string.find(body.model, "qwen2.5-coder", nil, true) then
         -- warn that FIM tokens need to be set
         local message = "MISSING FIM SENTINEL TOKENS for this model " .. body.model
