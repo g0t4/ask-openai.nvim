@@ -152,11 +152,11 @@ function OllamaFimBackend:get_file_level_fim_prompt()
 end
 
 function OllamaFimBackend:get_qwen2_5_coder_prompt_repo_style_with_context()
-    -- FYI see fim.md for extensive FIM notes
+    -- FYI! see fim.md for extensive FIM notes
 
+    -- TODO confirm repo naming? is it just basename of repo root? or GH link? or org/repo?
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
-    -- TODO starcoder2 doesn't have trailing \n after repo_name
-    -- TODO confirm qwen2.5coder has trailing \n after repo_name
+    -- TODO! confirm qwen2.5coder has trailing \n after repo_name
     local repo_prompt = self.sentinel_tokens.repo_name .. repo_name .. "\n"
     local context_file_prompt = self.sentinel_tokens.file_sep .. "nvim-recent-yanks.txt\n"
     if self.current_context.yanks ~= "" then

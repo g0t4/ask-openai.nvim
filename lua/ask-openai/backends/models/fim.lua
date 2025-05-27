@@ -122,16 +122,19 @@ M.starcoder2 = {
     }
 }
 
-function M.starcoder2.get_fim_prompt()
-    -- see notes in starcoder2.md
+function M.mellum.get_fim_prompt()
+    -- TODO, does it support repo/file or both level context?
+    -- TODO!
+end
+
+function M.starcoder2.get_fim_prompt(self)
+    -- FYI! see notes in starcoder2.md
 
     -- <repo_name>reponame<file_sep>filepath0\ncode0<file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid<file_sep> ...<|endoftext|>
     -- TODO <|endoftext|> to stop tokens? must already be set IIGC cuz I get completions that terminate appropriately, quite often
 
-
+    -- TODO confirm repo naming? is it just basename of repo root? or GH link? or org/repo?
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
-    -- TODO starcoder2 doesn't have trailing \n after repo_name
-    -- TODO confirm qwen2.5coder has trailing \n after repo_name
     local repo_prompt = self.sentinel_tokens.repo_name .. repo_name .. "\n"
     local context_file_prompt = self.sentinel_tokens.file_sep .. "nvim-recent-yanks.txt\n"
     if self.current_context.yanks ~= "" then
