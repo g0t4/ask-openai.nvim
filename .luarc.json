@@ -15,8 +15,9 @@
         "library": [
             // lua-language-server provides type hints for several popular packages here:
             //   https://github.com/LuaLS/lua-language-server/tree/master/meta/3rd
-            //   makes vim.uv.* work... comment out and usages like vim.uv.new_pipe will turn into diagnostic warnings
-            "${3rd}/luv/library",
+            //
+            "${3rd}/luv/library", // vim.uv
+            "${3rd}/luassert/library",
 
             // can use VIMRUNTIME!
             //   https://github.com/LuaLS/LuaLS.github.io/issues/49
