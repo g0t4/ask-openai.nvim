@@ -7,6 +7,12 @@
     - Optional to include `<repo_name>`
 - Files were ordered at random, per repo... presumably context window for training included multiple batches of repo/files?
 
+### PSM vs SPM
+
+- Both are supported, 50/50 data split in training:
+- Confirm PSM format, also mention of file_sep as STOP token:
+  - https://github.com/bigcode-project/starcoder2/issues/10#issuecomment-1979014959
+
 ### Format - Source Code (no FIM) w/ Repo/File Metadata
 
 ```

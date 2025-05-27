@@ -161,11 +161,26 @@ function M.mellum.get_fim_prompt()
     --
 end
 
+function M.starcoder2.get_spm_fim_prompt(request)
+    -- TODO add support for SPM (also)...
+    -- investigate perf differences
+    -- i.e. kv cache impact
+    --
+    -- StarCoder2 supports both:
+    --   https://github.com/bigcode-project/starcoder2/issues/14   --
+    --   was trained on 50/50
+    --   IIRC so was Qwen2.5-Coder?
+    --     TODO investigate if Qwen2.5-Coder supports SPM
+end
+
 function M.starcoder2.get_fim_prompt(request)
     -- FYI! see notes in starcoder2.md
 
     -- <repo_name>reponame<file_sep>filepath0\ncode0<file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid<file_sep> ...<|endoftext|>
     -- TODO <|endoftext|> to stop tokens? must already be set IIGC cuz I get completions that terminate appropriately, quite often
+    --   TODO add <file_sep> to STOP tokens?
+    --      https://github.com/bigcode-project/starcoder2/issues/10#issuecomment-2214157190
+    --      is it already setup that way?
     local tokens = M.starcoder2.sentinel_tokens
 
     -- TODO confirm repo naming? is it just basename of repo root? or GH link? or org/repo?
