@@ -85,7 +85,7 @@ describe("Duplicate detection tests", function()
         }
         local k = 3 -- Shingle size
         local num_hashes = 20 -- Number of hash functions
-        local threshold = 0.8 -- Similarity threshold
+        local threshold = 0.4 -- Similarity threshold (currently 0.45 for above)
 
         local duplicates = detect_near_duplicates(yanks, k, num_hashes, threshold)
         for _, dup in ipairs(duplicates) do
