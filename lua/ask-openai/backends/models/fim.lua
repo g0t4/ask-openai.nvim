@@ -137,7 +137,7 @@ function M.starcoder2.get_fim_prompt(request)
     local tokens = M.starcoder2.sentinel_tokens
 
     -- TODO confirm repo naming? is it just basename of repo root? or GH link? or org/repo?
-    local repo_name = vim.fn.getcwd():match("([^/]+)$")
+    local repo_name = request.get_repo_name()
     local prompt = tokens.repo_name .. repo_name
 
     local function append_file_non_fim(file_path, file_contents)

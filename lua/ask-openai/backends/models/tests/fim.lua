@@ -16,11 +16,14 @@ describe("starcoder2", function()
             },
             get_current_file_path = function()
                 return "path/to/current.lua"
+            end,
+            get_repo_name = function()
+                return "my_repo_name"
             end
         }
         local prompt = fim.starcoder2.get_fim_prompt(request)
 
-        local expected = "<repo_name>ask-openai.nvim<file_sep>nvim-recent-yanks.txt\nyanks"
+        local expected = "<repo_name>my_repo_name<file_sep>nvim-recent-yanks.txt\nyanks"
             .. "<file_sep><fim_prefix>path/to/current.lua\n"
             .. "foo\nthe\nprefix"
             .. "<fim_suffix>bar\nbaz"
