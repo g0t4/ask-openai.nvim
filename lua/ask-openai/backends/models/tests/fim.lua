@@ -6,9 +6,21 @@ local should = require("devtools.tests.should")
 
 
 describe("starcoder2", function()
+    -- by the way, the following would be used if I didn't have "raw" on the request (that's PSM right there!)
+    --    ollama show --template starcoder2:7b-q8_0
+    --
+    -- <file_sep>
+    -- {{- if .Suffix }}<fim_prefix>
+    -- {{ .Prompt }}<fim_suffix>{{ .Suffix }}<fim_middle>
+    -- {{- else }}{{ .Prompt }}
+    -- {{- end }}<|end_of_text|>
+    --
+    --  BUT... <|end_of_text|> is not the right tag?! its' <|endoftext|>
+    --   i.e. https://github.com/bigcode-project/starcoder2/issues/10#issuecomment-1979014959
+
     it("get_fim_prompt", function()
         local request = {
-            -- TODO! add type def for this request/backend/builder type
+            -- TODO add type def for this request/backend/builder type
             prefix = "foo\nthe\nprefix",
             suffix = "bar\nbaz",
             current_context = {
@@ -38,4 +50,72 @@ describe("starcoder2", function()
     --     file even called .git/COMMIT_EDITMSG
     --   maybe put all of it as a separate context file?
     --   or have special reminder prompt in this case
+end)
+
+describe("mellum", function()
+    -- TODO! WOA! mellum docs show an SPM FIM!!! (not PSM)
+    -- I will assume it was trained on both... b/c its working right now with PSM
+
+    -- * docs commit history => all SPM
+    --
+    -- - https://huggingface.co/JetBrains/Mellum-4b-base/commit/b7d42cacc4ea2889f32479777266fb731248a3d8
+    --     * oldest => initial add of example
+    --     encoded_input = tokenizer(f"<fim_suffix>suffix<fim_prefix>{prefix}<fim_middle>", return_tensors='pt', return_token_type_ids=False)
+    --
+    -- - https://huggingface.co/JetBrains/Mellum-4b-base/commit/4179e39f97ed12c1de07de86f3e194e36badec23
+    --     * just fixed {} around suffix
+    --     encoded_input = tokenizer(f"<fim_suffix>{suffix}<fim_prefix>{prefix}<fim_middle>", return_tensors='pt', return_token_type_ids=False)
+    --
+    -- - https://huggingface.co/JetBrains/Mellum-4b-base/commit/ddf77ce4289722d1bfd59a34b8899500c2ce87c8
+    --     * introduced the repo level FIM template
+    --     example = """<filename>utils.py
+    --     def multiply(x, y):
+    --         return x * y
+    --     <filename>config.py
+    --     DEBUG = True
+    --     MAX_VALUE = 100
+    --     <filename>example.py
+    --     <fim_suffix>
+    --
+    --     # Test the function
+    --     result = calculate_sum(5, 10)
+    --     print(result)<fim_prefix>def calculate_sum(a, b):
+    --     <fim_middle>"""
+    --
+    --     encoded_input = tokenizer(example, return_tensors='pt', return_token_type_ids=False)
+    --
+
+    it("get_fim_prompt", function()
+        local request = {
+            -- TODO add type def for this request/backend/builder type
+            prefix = "foo\nthe\nprefix",
+            suffix = "bar\nbaz",
+            current_context = {
+                yanks = "yanks",
+            },
+            get_current_file_path = function()
+                return "path/to/current.lua"
+            end,
+            get_repo_name = function()
+                return "my_mellum_repo"
+            end
+        }
+        local prompt = fim.mellum.get_fim_prompt(request)
+
+        -- TODO is repo_name ok here? or was it not trained with?
+        local expected = "<repo_name>my_repo_name<filename>nvim-recent-yanks.txt\nyanks"
+            -- NOTE the filename comes before the fim_suffix tag (unlike StarCoder2 where filename comes after fim_prefix tag)
+            .. "<filename>path/to/current.lua\n"
+            .. "<fim_suffix>bar\nbaz"
+            .. "<fim_prefix>foo\nthe\nprefix"
+            .. "<fim_middle>"
+        should.be_equal(expected, prompt)
+    end)
+
+    -- btw
+    -- no hints in prompt template:
+    --   ollama show --template huggingface.co/JetBrains/Mellum-4b-base-gguf:latest
+    -- {{ .Prompt }}
+    --
+    --  TLDR => raw!
 end)
