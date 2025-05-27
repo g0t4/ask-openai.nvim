@@ -23,6 +23,8 @@ M.qwen25coder = {
 }
 
 M.qwen25coder.get_fim_prompt = function(request)
+    -- FYI! see fim.md for extensive FIM notes
+
     local function get_file_level_fim_prompt()
         log:trace("prefix", "'" .. request.prefix .. "'")
         log:trace("suffix", "'" .. request.suffix .. "'")
@@ -41,8 +43,6 @@ M.qwen25coder.get_fim_prompt = function(request)
 
         return prompt
     end
-
-    -- FYI! see fim.md for extensive FIM notes
 
     local repo_name = request:get_repo_name()
 
@@ -63,7 +63,7 @@ M.qwen25coder.get_fim_prompt = function(request)
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    local file_level_fim_prompt = request:get_file_level_fim_prompt()
+    local file_level_fim_prompt = get_file_level_fim_prompt()
 
     -- PRN is this a better way to get filename?
     -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
