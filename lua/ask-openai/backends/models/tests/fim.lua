@@ -5,6 +5,11 @@ test_setup.modify_package_path()
 local should = require("devtools.tests.should")
 
 describe("qwen2.5-coder", function()
+    -- *** File-level FIM template:
+    --   <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_mid}<|endoftext|>
+    --   from Tech Report: https://arxiv.org/pdf/2409.12187
+    --   official example: https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-fim.py
+
     it("get_fim_prompt", function()
         -- USE example:
         --   https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel-fim.py
