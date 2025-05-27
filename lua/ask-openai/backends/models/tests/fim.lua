@@ -12,5 +12,6 @@ describe("starcoder2", function()
             },
         }
         local prompt = fim.starcoder2.get_fim_prompt(request)
+
     end)
 end)

@@ -27,7 +27,8 @@
             "${3rd}/luassert/library",
 
             // TODO look into using 3rd with rxlua? at least this doesn't change with version bumps... and not between mac/linux
-            "~/.local/share/nvim/lazy/rxlua"
+            "~/.local/share/nvim/lazy/rxlua",
+            "~/repos/github/g0t4/devtools.nvim/lua",
             // FYI not using luarocks for dependencies, not currently, instead use package manager to install the respective repo into RTP
         ],
     },
