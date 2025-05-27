@@ -17,7 +17,7 @@ local function add_devtools_to_package_path()
     package.path = package.path .. ";" .. plugin_path .. "?.lua"
 end
 
-function M.add_test_deps_to_package_path()
+function M.modify_package_path()
     add_devtools_to_package_path()
     add_rxlua_to_package_path()
 end

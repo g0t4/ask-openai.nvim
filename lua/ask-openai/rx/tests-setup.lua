@@ -1,5 +1,5 @@
 local assert = require 'luassert'
-require("ask-openai.helpers.test_setup").add_test_deps_to_package_path()
+require("ask-openai.helpers.test_setup").modify_package_path()
 
 local function is_gt(state, arguments)
     local expected = arguments[1]
