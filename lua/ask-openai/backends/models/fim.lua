@@ -159,10 +159,9 @@ function M.starcoder2.get_fim_prompt(request)
     --
     -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
     --
-    -- Qwen2.5-Coder:
-    local file_level_fim_prompt = request.sentinel_tokens.fim_prefix .. request.prefix
-        .. request.sentinel_tokens.fim_suffix .. request.suffix
-        .. request.sentinel_tokens.fim_middle
+    local file_level_fim_prompt = M.starcoder2.sentinel_tokens.fim_prefix .. request.prefix
+        .. M.starcoder2.sentinel_tokens.fim_suffix .. request.suffix
+        .. M.starcoder2.sentinel_tokens.fim_middle
 
 
     -- PRN is this a better way to get filename?
