@@ -153,9 +153,9 @@ function M.starcoder2.get_fim_prompt(request)
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    local function get_file_level_fim_prompt(self)
-        log:trace("prefix", "'" .. self.prefix .. "'")
-        log:trace("suffix", "'" .. self.suffix .. "'")
+    local function get_file_level_fim_prompt(request)
+        log:trace("prefix", "'" .. request.prefix .. "'")
+        log:trace("suffix", "'" .. request.suffix .. "'")
 
         -- *** File-level FIM template:
         --   <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_mid}<|endoftext|>
@@ -165,9 +165,9 @@ function M.starcoder2.get_fim_prompt(request)
         -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
 
         -- Qwen2.5-Coder:
-        local prompt = self.sentinel_tokens.fim_prefix .. self.prefix
-            .. self.sentinel_tokens.fim_suffix .. self.suffix
-            .. self.sentinel_tokens.fim_middle
+        local prompt = request.sentinel_tokens.fim_prefix .. request.prefix
+            .. request.sentinel_tokens.fim_suffix .. request.suffix
+            .. request.sentinel_tokens.fim_middle
 
         return prompt
     end
