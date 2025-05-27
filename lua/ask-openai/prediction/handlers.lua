@@ -201,6 +201,11 @@ local ignore_filetypes = {
 }
 
 local ignore_buftypes = {
+    -- FYI with yank history and edits... rename window should be brought back b/c it will suggest good names for files
+    --   should tell model specifically about the window that is open in this case (and maybe others)
+    --   so it knows what task the user is performing
+    --   put that into a file_sep section like WIP.md or smth?
+    --
     "nofile", -- rename refactor popup window uses this w/o a filetype, also Dressing rename in nvimtree uses nofile
     "terminal",
 }
