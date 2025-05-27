@@ -147,11 +147,11 @@ function M.starcoder2.get_fim_prompt(request)
         -- FYI now its clear the extra \n\n is part of the file contents... so if that isn't needed in the file I should remove one or both!
         local file_contents = request.current_context.yanks .. "\n\n"
 
-        local function create_context_prompt(file_path, file_contents)
+        local function prompt_for_file(file_path, file_contents)
             return tokens.file_sep .. file_path .. "\n" .. file_contents
         end
 
-        local context_file_prompt = create_context_prompt(file_path, file_contents)
+        local context_file_prompt = prompt_for_file(file_path, file_contents)
 
         prompt = prompt .. context_file_prompt
     end
