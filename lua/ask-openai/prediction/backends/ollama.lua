@@ -106,10 +106,7 @@ function OllamaFimBackend:body_for()
         sentinel_tokens = fim.mellum.sentinel_tokens
         -- TODO! stop tokens? or use defaults w/ model
     elseif string.find(body.model, "starcoder2") then
-        -- TODO!! does starcoder use new line after filename and other tags or just next tag?
-        --  might need to override get_file_level_fim_prompt?
-        sentinel_tokens = fim.starcoder2.sentinel_tokens
-        -- TODO! stop tokens? or use defaults w/ model
+        -- TODO double check stop is correct by default (completions seem to stop appropirately, so I'm fine with it as is)
         -- body.options.stop = { "<EOF>" }
     elseif not string.find(body.model, "qwen2.5-coder", nil, true) then
         -- warn that FIM tokens need to be set
@@ -119,7 +116,7 @@ function OllamaFimBackend:body_for()
         return
     end
 
-    -- TODO! is this the best spot to set sentinel_tokens? I just set it here to keep going on request builder refactoring
+    -- TODO move sentinel_tokens into builders and not here
     self.sentinel_tokens = sentinel_tokens
     -- body.prompt = M.get_file_level_fim_prompt()
     body.prompt = self:get_qwen2_5_coder_prompt_repo_style_with_context()
