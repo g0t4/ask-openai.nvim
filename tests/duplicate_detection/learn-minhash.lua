@@ -1,3 +1,5 @@
+local assert = require('luassert')
+
 local function tokenize(code)
     -- Basic tokenizer: split on whitespace, remove comments and normalize
     local tokens = {}
@@ -68,7 +70,7 @@ local function detect_near_duplicates(yanks, k, num_hashes, threshold)
         for j = i + 1, #yanks do
             local similarity = jaccard_similarity(signatures[i], signatures[j])
             if similarity >= threshold then
-                table.insert(duplicates, {i, j, similarity})
+                table.insert(duplicates, { i, j, similarity })
             end
         end
     end
@@ -88,8 +90,12 @@ describe("Duplicate detection tests", function()
         local threshold = 0.4 -- Similarity threshold (currently 0.45 for above)
 
         local duplicates = detect_near_duplicates(yanks, k, num_hashes, threshold)
-        for _, dup in ipairs(duplicates) do
-            print(string.format("Yanks %d and %d are near duplicates (similarity: %.2f)", dup[1], dup[2], dup[3]))
-        end
+        assert.are.equal(1, #duplicates)
+        assert.are.same({ 1, 3, 0.45 }, duplicates[1])
+        -- TODO more test cases...
+        -- TODO do I understand the above correctly? review the algos
+        -- grok was wrong that #2 was a near dup!... IIUC it has 4 tokens that differ vs #1:  a b a b
+        --    remember, +/*/, are ignored
+        -- #3 only has one differing token vs #1: multiply
     end)
 end)
