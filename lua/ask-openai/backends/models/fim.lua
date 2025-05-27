@@ -140,16 +140,16 @@ function M.starcoder2.get_fim_prompt(request)
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
     local prompt = tokens.repo_name .. repo_name
 
-    local function prompt_for_no_fim_file(file_path, file_contents)
+    local function append_file_non_fim(file_path, file_contents)
         -- this makes it VERY clear what is what!
-        return tokens.file_sep .. file_path .. "\n" .. file_contents
+        prompt = prompt .. tokens.file_sep .. file_path .. "\n" .. file_contents
     end
 
     -- * recent yanks
     if request.current_context.yanks ~= "" then
         local file_path = "nvim-recent-yanks.txt"
         local file_contents = request.current_context.yanks
-        prompt = prompt .. prompt_for_no_fim_file(file_path, file_contents)
+        append_file_non_fim(file_path, file_contents)
     end
 
     -- * recent edits
