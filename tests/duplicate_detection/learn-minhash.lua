@@ -78,13 +78,29 @@ local function detect_near_duplicates(yanks, k, num_hashes, threshold)
 end
 
 describe("Duplicate detection tests", function()
+    local yanks = {
+        "function add(a, b) return a + b end",
+        "function add(x, y) return x + y end",
+        "function multiply(a, b) return a * b end",
+    }
+
+    it("should tokenize code correctly", function()
+        -- FYI just to understand the algorithm, not for exhaustive testing
+        local tokens = tokenize(yanks[1])
+        assert.are.same({
+            "function",
+            "add(a,",
+            "b)",
+            "return",
+            "a",
+            "+",
+            "b",
+            "end"
+        }, tokens)
+    end)
+
     it("should correctly find near duplicate code snippets", function()
         -- TODO! revisit this for yanks/edit near-deduplication
-        local yanks = {
-            "function add(a, b) return a + b end",
-            "function add(x, y) return x + y end",
-            "function multiply(a, b) return a * b end",
-        }
         local k = 3 -- Shingle size
         local num_hashes = 20 -- Number of hash functions
         local threshold = 0.4 -- Similarity threshold (currently 0.45 for above)
