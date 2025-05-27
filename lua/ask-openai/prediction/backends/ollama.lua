@@ -91,6 +91,9 @@ function OllamaFimBackend:body_for()
     }
 
     local sentinel_tokens = fim.qwen25coder.sentinel_tokens
+    local builder = function()
+        return self:get_qwen2_5_coder_prompt_repo_style_with_context()
+    end
 
     if string.find(body.model, "codellama") then
         sentinel_tokens = meta.codellama.sentinel_tokens
@@ -119,7 +122,7 @@ function OllamaFimBackend:body_for()
     -- TODO move sentinel_tokens into builders and not here
     self.sentinel_tokens = sentinel_tokens
     -- body.prompt = M.get_file_level_fim_prompt()
-    body.prompt = self:get_qwen2_5_coder_prompt_repo_style_with_context()
+    body.prompt = builder()
     log:trace('body.prompt', body.prompt)
 
     local body_json = vim.json.encode(body)
