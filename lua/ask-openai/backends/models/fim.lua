@@ -167,6 +167,20 @@ function M.starcoder2.get_fim_prompt(request)
     log:trace("prefix", "'" .. request.prefix .. "'")
     log:trace("suffix", "'" .. request.suffix .. "'")
     --
+    -- PRN is this a better way to get filename?
+    -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
+    local current_file_path = vim.fn.expand('%'):match("([^/]+)$")
+    if current_file_path == nil then
+        -- i.e. if :new and before first :w (save)
+        -- for now just leave filename blank?
+        --  or, maybe mark it as new?
+        --   can I deterine filetype using some heuristic or other metadata?
+        --   should I mark it "new"
+        log:warn("current_file_name is nil")
+        current_file_path = ""
+        -- TODO! what to do here? should I switch the entire prompt away from reponame/filepath (or can I just do one file?)
+    end
+    --
     -- TODO ESCAPE presence of any sentinel tokens? i.e. should be rare but if someone is working on LLM code it may not be!
     --
     -- FYI carefully observe the format:
@@ -178,21 +192,6 @@ function M.starcoder2.get_fim_prompt(request)
         .. tokens.fim_suffix
         .. request.suffix
         .. tokens.fim_middle
-
-
-    -- PRN is this a better way to get filename?
-    -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
-    local current_file_path = vim.fn.expand('%'):match("([^/]+)$")
-
-    if current_file_path == nil then
-        -- i.e. if :new and before first :w (save)
-        -- for now just leave filename blank?
-        --  or, maybe mark it as new?
-        --   can I deterine filetype using some heuristic or other metadata?
-        --   should I mark it "new"
-        log:warn("current_file_name is nil")
-        current_file_path = ""
-    end
 
     -- confirmed: starcoder2 adds \n after filepath
     local fim_file = tokens.file_sep .. current_file_path .. "\n"
