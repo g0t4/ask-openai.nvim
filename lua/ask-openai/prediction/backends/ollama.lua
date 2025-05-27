@@ -157,15 +157,15 @@ function OllamaFimBackend:get_current_file_path()
     return vim.fn.expand('%'):match("([^/]+)$")
 end
 
+function OllamaFimBackend:get_repo_name()
+    -- TODO confirm repo naming? is it just basename of repo root? or GH link? or org/repo?
+    return vim.fn.getcwd():match("([^/]+)$")
+end
+
 function OllamaFimBackend:get_qwen2_5_coder_prompt_repo_style_with_context()
     -- FYI! see fim.md for extensive FIM notes
 
-    function get_repo_name()
-        -- TODO confirm repo naming? is it just basename of repo root? or GH link? or org/repo?
-        return vim.fn.getcwd():match("([^/]+)$")
-    end
-
-    local repo_name = get_repo_name()
+    local repo_name = self:get_repo_name()
 
     -- TODO! confirm qwen2.5coder has trailing \n after repo_name
     local repo_prompt = self.sentinel_tokens.repo_name .. repo_name .. "\n"
