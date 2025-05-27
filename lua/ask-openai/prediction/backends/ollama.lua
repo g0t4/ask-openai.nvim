@@ -41,11 +41,19 @@ end
 function OllamaFimBackend:body_for()
     local body = {
 
+
         -- FYI set of possible models for demoing impact of fine tune
-        -- model = "qwen2.5-coder:14b-base-q8_0", -- ** shorter responses, more "EOF" focused
         model = "qwen2.5-coder:7b-base-q8_0", -- ** shorter responses, more "EOF" focused
+        -- model = "qwen2.5-coder:14b-base-q8_0", -- ** shorter responses, more "EOF" focused
         -- model = "qwen2.5-coder:7b-instruct-q8_0", -- longer, long winded, often seemingly ignores EOF
-        --
+
+        -- starcoder2:15b-instruct-v0.1-q8_0                      a11b58c111d9    16 GB     6 weeks ago
+        -- starcoder2:15b-q8_0                                    95f55571067f    16 GB     6 weeks ago
+        -- starcoder2:7b-fp16                                     f0643097e171    14 GB     6 weeks ago
+        -- starcoder2:3b-q8_0                                     003abcecad23    3.2 GB    6 weeks ago
+        -- starcoder2:7b-q8_0                                     d76878e96d8a    7.6 GB    6 weeks ago
+        model = "starcoder2:7b-q8_0",
+
         -- model = "codellama:7b-code-q8_0", -- shorter too
         -- model = "codellama:7b-instruct-q8_0", -- longer too
         -- model = "codellama:7b-python-q8_0", -- doesn't do well with FIM (spits out FIM tokens text as if not recognized)... also not sure it supports FIM based on reading docs only code/instruct are mentioned for FIM support)
@@ -86,9 +94,12 @@ function OllamaFimBackend:body_for()
 
         -- FYI also ollama warns about:
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
+        -- elseif
     elseif not string.find(body.model, "qwen2.5-coder", nil, true) then
         -- warn that FIM tokens need to be set
-        log:error("PLEASE REVIEW FIM SENTINEL TOKENS FOR THE NEW MODEL! right now you are using sentinel_tokens for qwen2.5-coder")
+        local message = "MISSING FIM SENTINEL TOKENS for this model " .. body.model
+        log:error(message)
+        error(message)
         return
     end
 
