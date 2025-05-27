@@ -141,6 +141,7 @@ function M.starcoder2.get_fim_prompt(request)
     local prompt = tokens.repo_name .. repo_name
 
     local function prompt_for_file(file_path, file_contents)
+        -- this makes it VERY clear what is what!
         return tokens.file_sep .. file_path .. "\n" .. file_contents
     end
 
