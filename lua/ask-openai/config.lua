@@ -58,6 +58,7 @@ local default_options = {
                 accept_word = "<M-right>",
                 resume_stream = "<M-up>",
                 pause_stream = "<M-down>",
+                new_prediction = "<M-Tab>",
             },
 
             provider = "keyless", -- TODO set to ? by default

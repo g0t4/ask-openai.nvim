@@ -287,6 +287,10 @@ function M.accept_word_invoked()
     M.current_prediction:accept_first_word()
 end
 
+function M.new_prediction_invoked()
+    M.cursor_moved_in_insert_mode()
+end
+
 function M.vim_is_quitting()
     -- PRN detect rogue curl processes still running?
     log:trace("Vim is quitting, stopping current prediction (ensures curl is terminated)...")

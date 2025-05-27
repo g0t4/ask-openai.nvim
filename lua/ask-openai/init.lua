@@ -50,6 +50,11 @@ local function register_prediction_triggers()
         })
     end
 
+    if predictions.keymaps.new_prediction then
+        vim.api.nvim_set_keymap('i', predictions.keymaps.new_prediction, "",
+            { noremap = true, callback = handlers.new_prediction_invoked })
+    end
+
     -- FYI why don't I reserve ~ for debug keymap(s) and move it around to w/e I need it for currently?
     --   ~ not intended as a permanent keymap here
     vim.keymap.set("n", "<leader>~", "<cmd>AskDumpEdits<CR>", {})
@@ -103,6 +108,7 @@ function _module.remove_prediction_triggers()
     pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_word)
     pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.pause_stream)
     pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.resume_stream)
+    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.new_prediction)
 end
 
 function _module.enable_predictions()
