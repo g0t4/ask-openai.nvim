@@ -102,7 +102,7 @@ function OllamaFimBackend:body_for()
 
         -- FYI also ollama warns about:
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
-    elseif string.find(body.model, "mellum") then
+    elseif string.find(body.model, "Mellum") then
         sentinel_tokens = fim.mellum.sentinel_tokens
         -- TODO! stop tokens? or use defaults w/ model
     elseif string.find(body.model, "starcoder2") then
