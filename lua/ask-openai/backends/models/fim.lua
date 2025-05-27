@@ -161,12 +161,13 @@ function M.starcoder2.get_fim_prompt(request)
     -- end
     -- prompt = prompt .. prompt_for_file("nvim-recent-edits.txt", recent_changes)
     --    TODO one edits file? or group changes PER file? or one file per edit?
+    --    TODO what is the file_path and file_contents (per file) - make it clear
 
     -- * FIM file
     log:trace("prefix", "'" .. request.prefix .. "'")
     log:trace("suffix", "'" .. request.suffix .. "'")
     --
-    -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
+    -- TODO ESCAPE presence of any sentinel tokens? i.e. should be rare but if someone is working on LLM code it may not be!
     --
     local file_level_fim_prompt = tokens.fim_prefix
         .. request.prefix
