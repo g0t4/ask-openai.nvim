@@ -153,7 +153,6 @@ end
 
 function OllamaFimBackend:get_qwen2_5_coder_prompt_repo_style_with_context()
     -- FYI see fim.md for extensive FIM notes
-    -- TODO address concerns about excessive empty predictions (see fim.md notes, I observed this in some initial testing with repo level)
 
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
     -- TODO starcoder2 doesn't have trailing \n after repo_name
