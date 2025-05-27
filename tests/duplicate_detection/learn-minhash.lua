@@ -79,10 +79,10 @@ end
 
 describe("Duplicate detection tests", function()
     it("should correctly find near duplicate code snippets", function()
-        -- Example usage
+        -- TODO! revisit this for yanks/edit near-deduplication
         local yanks = {
             "function add(a, b) return a + b end",
-            "function add(x, y) return x + y end", -- Near duplicate
+            "function add(x, y) return x + y end",
             "function multiply(a, b) return a * b end",
         }
         local k = 3 -- Shingle size
