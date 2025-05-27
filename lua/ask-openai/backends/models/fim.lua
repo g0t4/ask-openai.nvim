@@ -186,8 +186,7 @@ function M.starcoder2.get_fim_prompt(request)
     -- FYI carefully observe the format:
     --   <file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid
     --   <fim_prefix> comes BEFORE filepath!
-    local fim_file_contents = "" -- TODO
-    local file_level_fim_prompt = tokens.fim_prefix
+    local fim_file_contents = tokens.fim_prefix
         .. request.prefix
         .. tokens.fim_suffix
         .. request.suffix
@@ -195,7 +194,7 @@ function M.starcoder2.get_fim_prompt(request)
 
     -- confirmed: starcoder2 adds \n after filepath
     local fim_file = tokens.file_sep .. current_file_path .. "\n"
-        .. file_level_fim_prompt
+        .. fim_file_contents
     -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
     prompt = prompt .. fim_file
 
