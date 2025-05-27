@@ -49,25 +49,27 @@ function OllamaFimBackend:body_for()
         -- TODO add in other fine tunes for languages as released
 
         -- FYI set of possible models for demoing impact of fine tune
-        model = "qwen2.5-coder:7b-base-q8_0", -- ** shorter responses, more "EOF" focused
-        -- model = "qwen2.5-coder:14b-base-q8_0", -- ** shorter responses, more "EOF" focused
-        -- model = "qwen2.5-coder:7b-instruct-q8_0", -- longer, long winded, often seemingly ignores EOF
+        -- qwen2.5-coder:7b-base-q8_0  -- ** shorter responses, more "EOF" focused
+        -- qwen2.5-coder:14b-base-q8_0 -- ** shorter responses, more "EOF" focused
+        -- qwen2.5-coder:7b-instruct-q8_0 -- DO NOT USE instruct
+        -- model = "qwen2.5-coder:7b-base-q8_0",
 
         -- starcoder2:15b-instruct-v0.1-q8_0                      a11b58c111d9    16 GB     6 weeks ago
         -- starcoder2:15b-q8_0                                    95f55571067f    16 GB     6 weeks ago
         -- starcoder2:7b-fp16                                     f0643097e171    14 GB     6 weeks ago
         -- starcoder2:3b-q8_0                                     003abcecad23    3.2 GB    6 weeks ago
         -- starcoder2:7b-q8_0                                     d76878e96d8a    7.6 GB    6 weeks ago
-        model = "starcoder2:7b-q8_0",
+        -- model = "starcoder2:7b-q8_0",
 
-        -- model = "codellama:7b-code-q8_0", -- shorter too
-        -- model = "codellama:7b-instruct-q8_0", -- longer too
-        -- model = "codellama:7b-python-q8_0", -- doesn't do well with FIM (spits out FIM tokens text as if not recognized)... also not sure it supports FIM based on reading docs only code/instruct are mentioned for FIM support)
-        --
-        -- model = "llama3.1:8b-text-q8_0", -- weird, generated some "code"/text in this file that wasn't terrible!... verbose
-        -- model = "llama3.1:8b-instruct-q8_0", --
+        -- codellama:7b-code-q8_0 -- shorter too
+        -- codellama:7b-instruct-q8_0 -- longer too
+        -- codellama:7b-python-q8_0 -- doesn't do well with FIM (spits out FIM tokens text as if not recognized)... also not sure it supports FIM based on reading docs only code/instruct are mentioned for FIM support)
+        -- model = "codellama:7b-code-q8_0",
+
+        -- llama3.1:8b-text-q8_0 -- weird, generated some "code"/text in this file that wasn't terrible!... verbose
+        -- llama3.1:8b-instruct-q8_0
+        -- model = "llama3.1:8b-instruct-q8_0",
         -- https://github.com/meta-llama/codellama/blob/main/llama/generation.py#L496
-
 
 
         raw = true, -- bypass templates (only /api/generate, not /v1/completions)
