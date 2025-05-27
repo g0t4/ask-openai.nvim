@@ -15,7 +15,16 @@ describe("starcoder2", function()
             },
         }
         local prompt = fim.starcoder2.get_fim_prompt(request)
-        local expected = ""
+
+
+        local expected = "<repo_name>ask-openai.nvim<file_sep>nvim-recent-yanks.txt\nyanks"
+            -- TODO fix passing current file name
+            .. "<file_sep><fim_prefix>\n"
+            -- .. "<file_sep><fim_prefix>lua/ask-openai/backends/models/tests/fim.lua\n"
+            .. "foo\nthe\nprefix"
+            .. "<fim_suffix>bar\nbaz"
+            .. "<fim_middle>"
+
         should.be_equal(expected, prompt)
     end)
 end)
