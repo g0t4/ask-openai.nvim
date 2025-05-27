@@ -111,6 +111,9 @@ function OllamaFimBackend:body_for()
     elseif string.find(body.model, "starcoder2") then
         -- TODO double check stop is correct by default (completions seem to stop appropirately, so I'm fine with it as is)
         -- body.options.stop = { "<EOF>" }
+        builder = function()
+            return fim.starcoder2.get_fim_prompt(self)
+        end
     elseif not string.find(body.model, "qwen2.5-coder", nil, true) then
         -- warn that FIM tokens need to be set
         local message = "MISSING FIM SENTINEL TOKENS for this model " .. body.model
