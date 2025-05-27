@@ -12,6 +12,9 @@
 - Both are supported, 50/50 data split in training:
 - Confirm PSM format, also mention of file_sep as STOP token:
   - https://github.com/bigcode-project/starcoder2/issues/10#issuecomment-1979014959
+- BTW SPM should be better for KV cache, can cache entire prompt (minus the most recent typed chars)
+  - whereas with PSM, the suffix is pushed down when the prefix is modified (as you type)
+  - pretty sure llama.cpp had a way to work around this limitation though by using blocks that are re-arrangeable (if I wanted to try that in llama.cpp)
 
 ### Format - Source Code (no FIM) w/ Repo/File Metadata
 
