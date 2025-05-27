@@ -160,7 +160,7 @@ function M.starcoder2.get_fim_prompt(request)
     --     -- todo include line/col or not?
     --     -- todo include file?
     -- end
-    -- prompt = prompt .. prompt_for_file("nvim-recent-edits.txt", recent_changes)
+    -- TODO append_file_non_fim("nvim-recent-edits.txt", recent_changes)
     --    TODO one edits file? or group changes PER file? or one file per edit?
     --    TODO what is the file_path and file_contents (per file) - make it clear
 
