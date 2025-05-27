@@ -148,9 +148,7 @@ function M.starcoder2.get_fim_prompt(request)
     -- * recent yanks
     if request.current_context.yanks ~= "" then
         local file_path = "nvim-recent-yanks.txt"
-        -- FYI now its clear the extra \n\n is part of the file contents... so if that isn't needed in the file I should remove one or both!
-        local file_contents = request.current_context.yanks .. "\n\n"
-
+        local file_contents = request.current_context.yanks
         prompt = prompt .. prompt_for_file(file_path, file_contents)
     end
 
