@@ -103,6 +103,8 @@ function OllamaFimBackend:body_for()
         -- ollama show codellama:7b-code-q8_0 --parameters # => no stop param
         body.options.stop = { "<EOT>" }
 
+        error("review FIM requirements for codellama, make sure you are using expected template, it used to work with qwen like FIM but I changed that to repo level now and would need to test it")
+
         -- FYI also ollama warns about:
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
     elseif string.find(body.model, "Mellum") then
