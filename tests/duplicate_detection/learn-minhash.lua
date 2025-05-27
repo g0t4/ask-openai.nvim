@@ -14,7 +14,7 @@ local function get_shingles(tokens, k)
     -- Generate k-shingles from tokens
     local shingles = {}
     for i = 1, #tokens - k + 1 do
-        local shingle = table.concat({ table.unpack(tokens, i, i + k - 1) }, " ")
+        local shingle = table.concat({ unpack(tokens, i, i + k - 1) }, " ")
         shingles[shingle] = true
     end
     return shingles
@@ -75,17 +75,21 @@ local function detect_near_duplicates(yanks, k, num_hashes, threshold)
     return duplicates
 end
 
--- Example usage
-local yanks = {
-    "function add(a, b) return a + b end",
-    "function add(x, y) return x + y end", -- Near duplicate
-    "function multiply(a, b) return a * b end",
-}
-local k = 3 -- Shingle size
-local num_hashes = 20 -- Number of hash functions
-local threshold = 0.8 -- Similarity threshold
+describe("Duplicate detection tests", function()
+    it("should correctly find near duplicate code snippets", function()
+        -- Example usage
+        local yanks = {
+            "function add(a, b) return a + b end",
+            "function add(x, y) return x + y end", -- Near duplicate
+            "function multiply(a, b) return a * b end",
+        }
+        local k = 3 -- Shingle size
+        local num_hashes = 20 -- Number of hash functions
+        local threshold = 0.8 -- Similarity threshold
 
-local duplicates = detect_near_duplicates(yanks, k, num_hashes, threshold)
-for _, dup in ipairs(duplicates) do
-    print(string.format("Yanks %d and %d are near duplicates (similarity: %.2f)", dup[1], dup[2], dup[3]))
-end
+        local duplicates = detect_near_duplicates(yanks, k, num_hashes, threshold)
+        for _, dup in ipairs(duplicates) do
+            print(string.format("Yanks %d and %d are near duplicates (similarity: %.2f)", dup[1], dup[2], dup[3]))
+        end
+    end)
+end)
