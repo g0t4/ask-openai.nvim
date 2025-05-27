@@ -142,7 +142,8 @@ function M.starcoder2.get_fim_prompt(request)
 
     local function append_file_non_fim(file_path, file_contents)
         -- this makes it VERY clear what is what!
-        prompt = prompt .. tokens.file_sep .. file_path .. "\n" .. file_contents
+        local non_fim_file = tokens.file_sep .. file_path .. "\n" .. file_contents
+        prompt = prompt .. non_fim_file
     end
 
     -- * recent yanks
