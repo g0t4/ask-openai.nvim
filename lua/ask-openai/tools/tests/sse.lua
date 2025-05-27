@@ -1,18 +1,17 @@
 local curls = require("ask-openai.backends.curl_streaming")
 local oai_chat = require("ask-openai.backends.oai_chat")
 require("ask-openai.helpers.buffers")
-local assert = require("luassert")
 
-local function should_be_equal(expected, actual)
-    assert.are.equal(expected, actual)
+function modify_package_path_for_tests()
+    local plugin_path = os.getenv("HOME") .. "/repos/github/g0t4/devtools.nvim/lua/"
+    package.path = package.path .. ";" .. plugin_path .. "?.lua"
 end
 
-local function should_be_nil(actual)
-    -- FYI you can join with _ instead of dot (.)
-    --   must use this for keywords like nil, function, etc
-    assert.is_nil(actual)
-end
+modify_package_path_for_tests()
 
+local should = require("devtools.tests.should")
+
+local should_be_equal = should.be_equal
 -- PRN move this to backends dir and consolidate all tests there?
 -- ***! use <leader>u to run tests in this file! (habituate that, don't type out the cmd yourself)
 
