@@ -151,6 +151,12 @@ function OllamaFimBackend:get_file_level_fim_prompt()
     return prompt
 end
 
+function OllamaFimBackend:get_current_file_path()
+    -- TODO which is better?
+    -- local buffer_name = vim.api.nvim_buf_get_name(0)  -- buffer's file path
+    return vim.fn.expand('%'):match("([^/]+)$")
+end
+
 function OllamaFimBackend:get_qwen2_5_coder_prompt_repo_style_with_context()
     -- FYI! see fim.md for extensive FIM notes
 
@@ -177,7 +183,7 @@ function OllamaFimBackend:get_qwen2_5_coder_prompt_repo_style_with_context()
 
     -- PRN is this a better way to get filename?
     -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
-    local current_file_path = vim.fn.expand('%'):match("([^/]+)$")
+    local current_file_path = self:get_current_file_path()
 
     if current_file_path == nil then
         -- i.e. if :new and before first :w (save)
