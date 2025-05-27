@@ -143,6 +143,7 @@ function OllamaFimBackend:get_file_level_fim_prompt()
 
     -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
 
+    -- Qwen2.5-Coder:
     local prompt = self.sentinel_tokens.fim_prefix .. self.prefix
         .. self.sentinel_tokens.fim_suffix .. self.suffix
         .. self.sentinel_tokens.fim_middle
