@@ -122,7 +122,7 @@ function OllamaFimBackend:body_for()
     -- TODO! is this the best spot to set sentinel_tokens? I just set it here to keep going on request builder refactoring
     self.sentinel_tokens = sentinel_tokens
     -- body.prompt = M.get_file_level_fim_prompt()
-    body.prompt = self:get_prompt_repo_style_with_context()
+    body.prompt = self:get_qwen2_5_coder_prompt_repo_style_with_context()
     log:trace('body.prompt', body.prompt)
 
     local body_json = vim.json.encode(body)
@@ -151,7 +151,7 @@ function OllamaFimBackend:get_file_level_fim_prompt()
     return prompt
 end
 
-function OllamaFimBackend:get_prompt_repo_style_with_context()
+function OllamaFimBackend:get_qwen2_5_coder_prompt_repo_style_with_context()
     -- FYI see fim.md for extensive FIM notes
     -- TODO address concerns about excessive empty predictions (see fim.md notes, I observed this in some initial testing with repo level)
 
