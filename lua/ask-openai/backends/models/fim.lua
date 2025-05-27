@@ -127,6 +127,38 @@ M.starcoder2 = {
 function M.mellum.get_fim_prompt()
     -- TODO, does it support repo/file or both level context?
     -- TODO!
+
+    -- TODO! WOA! mellum docs show an SPM FIM!!! (not PSM)
+    -- was it trained on both or just one?
+    --
+    -- * docs commit history => all SPM
+    --
+    -- - https://huggingface.co/JetBrains/Mellum-4b-base/commit/b7d42cacc4ea2889f32479777266fb731248a3d8
+    --     * oldest => initial add of example
+    --     encoded_input = tokenizer(f"<fim_suffix>suffix<fim_prefix>{prefix}<fim_middle>", return_tensors='pt', return_token_type_ids=False)
+    --
+    -- - https://huggingface.co/JetBrains/Mellum-4b-base/commit/4179e39f97ed12c1de07de86f3e194e36badec23
+    --     * just fixed {} around suffix
+    --     encoded_input = tokenizer(f"<fim_suffix>{suffix}<fim_prefix>{prefix}<fim_middle>", return_tensors='pt', return_token_type_ids=False)
+    --
+    -- - https://huggingface.co/JetBrains/Mellum-4b-base/commit/ddf77ce4289722d1bfd59a34b8899500c2ce87c8
+    --     * introduced the repo level FIM template
+    --     example = """<filename>utils.py
+    --     def multiply(x, y):
+    --         return x * y
+    --     <filename>config.py
+    --     DEBUG = True
+    --     MAX_VALUE = 100
+    --     <filename>example.py
+    --     <fim_suffix>
+    --
+    --     # Test the function
+    --     result = calculate_sum(5, 10)
+    --     print(result)<fim_prefix>def calculate_sum(a, b):
+    --     <fim_middle>"""
+    --
+    --     encoded_input = tokenizer(example, return_tensors='pt', return_token_type_ids=False)
+    --
 end
 
 function M.starcoder2.get_fim_prompt(request)
