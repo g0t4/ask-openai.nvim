@@ -140,9 +140,11 @@ function M.starcoder2.get_fim_prompt(request)
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
     local prompt = tokens.repo_name .. repo_name
 
+
     -- * recent yanks
     if request.current_context.yanks ~= "" then
-        local context_file_prompt = tokens.file_sep .. "nvim-recent-yanks.txt\n"
+        local filepath = "nvim-recent-yanks.txt"
+        local context_file_prompt = tokens.file_sep .. filepath .. "\n"
         context_file_prompt = context_file_prompt .. "\n" .. request.current_context.yanks .. "\n\n"
         prompt = prompt .. context_file_prompt
     end
