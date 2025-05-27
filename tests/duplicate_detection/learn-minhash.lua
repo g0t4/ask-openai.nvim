@@ -14,7 +14,7 @@ local function get_shingles(tokens, k)
     -- Generate k-shingles from tokens
     local shingles = {}
     for i = 1, #tokens - k + 1 do
-        local shingle = table.concat({table.unpack(tokens, i, i + k - 1)}, " ")
+        local shingle = table.concat({ table.unpack(tokens, i, i + k - 1) }, " ")
         shingles[shingle] = true
     end
     return shingles
@@ -24,7 +24,7 @@ local function simple_hash(s)
     -- Simple string hash function
     local hash = 0
     for i = 1, #s do
-        hash = (hash * 31 + string.byte(s, i)) % 2^32
+        hash = (hash * 31 + string.byte(s, i)) % 2 ^ 32
     end
     return hash
 end
