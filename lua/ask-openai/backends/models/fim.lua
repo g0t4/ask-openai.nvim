@@ -1,5 +1,9 @@
 local M = {}
 
+-- these models work for other purposes too...
+--   but lets collect them under fim for now
+--   really these are the fim related special tokens
+
 M.qwen25coder = {
     sentinel_tokens = {
         fim_prefix = "<|fim_prefix|>",

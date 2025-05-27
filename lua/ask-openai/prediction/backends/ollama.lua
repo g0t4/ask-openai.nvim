@@ -1,6 +1,6 @@
 local log = require("ask-openai.prediction.logger").predictions()
 local CurrentContext = require("ask-openai.prediction.context")
-local qwen = require("ask-openai.backends.models.qwen")
+local qwen = require("ask-openai.backends.models.fim")
 local meta = require("ask-openai.backends.models.meta")
 
 ---@class OllamaFimBackend
