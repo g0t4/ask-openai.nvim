@@ -1,6 +1,7 @@
 ## StarCoder2
 
 - Refer to paper for formatting specifics: https://arxiv.org/html/2402.19173v1#S5
+    - Also cites https://arxiv.org/abs/2207.14255, though doesn't list what was kept/modified specifically so YMMV => mostly about PSM/SPM and chunking
 - AFAICT starcoder2 was trained with `repo-level` (repo-context) FIM ONLY..
     - IIUC this means I should always include AT least the `<file_sep>` per file
     - Optional to include `<repo_name>`
