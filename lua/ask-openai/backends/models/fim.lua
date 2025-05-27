@@ -1,3 +1,5 @@
+local log = require("ask-openai.prediction.logger").predictions()
+
 local M = {}
 
 -- these models work for other purposes too...
