@@ -128,15 +128,24 @@ function M.mellum.get_fim_prompt(request)
     -- FYI! see test case for mellum, I have a bunch of notes over there
     local tokens = M.starcoder2.sentinel_tokens
 
+    -- * repo_name
     local repo_name = request.get_repo_name()
     local prompt = tokens.repo_name .. repo_name
 
-    --     example = """<filename>utils.py
-    --     def multiply(x, y):
-    --         return x * y
-    --     <filename>config.py
-    --     DEBUG = True
-    --     MAX_VALUE = 100
+    local function append_file_non_fim(file_path, file_contents)
+        -- <filename>filepathX\ncodeX
+        local non_fim_file = tokens.file_sep .. file_path .. "\n" .. file_contents
+        prompt = prompt .. non_fim_file
+    end
+
+    -- * recent yanks
+    if request.current_context.yanks ~= "" then
+        local file_path = "nvim-recent-yanks.txt"
+        local file_contents = request.current_context.yanks
+        append_file_non_fim(file_path, file_contents)
+    end
+    -- f"<fim_suffix>{suffix}<fim_prefix>{prefix}<fim_middle>"
+
     --     <filename>example.py
     --     <fim_suffix>
     --
@@ -173,6 +182,7 @@ function M.starcoder2.get_fim_prompt(request)
     --      is it already setup that way?
     local tokens = M.starcoder2.sentinel_tokens
 
+    -- * repo_name
     -- TODO confirm repo naming? is it just basename of repo root? or GH link? or org/repo?
     local repo_name = request.get_repo_name()
     local prompt = tokens.repo_name .. repo_name
