@@ -13,14 +13,14 @@ describe("starcoder2", function()
             current_context = {
                 yanks = "yanks",
             },
+            current_file_path = function()
+                return "path/to/current.lua"
+            end
         }
         local prompt = fim.starcoder2.get_fim_prompt(request)
 
-
         local expected = "<repo_name>ask-openai.nvim<file_sep>nvim-recent-yanks.txt\nyanks"
-            -- TODO fix passing current file name
-            .. "<file_sep><fim_prefix>\n"
-            -- .. "<file_sep><fim_prefix>lua/ask-openai/backends/models/tests/fim.lua\n"
+            .. "<file_sep><fim_prefix>path/to/current.lua\n"
             .. "foo\nthe\nprefix"
             .. "<fim_suffix>bar\nbaz"
             .. "<fim_middle>"
