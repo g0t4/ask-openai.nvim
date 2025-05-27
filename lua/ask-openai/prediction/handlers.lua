@@ -2,6 +2,7 @@ local uv = vim.uv
 local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
 local CurrentContext = require("ask-openai.prediction.context")
+local ansi = require("ask-openai.prediction.ansi")
 
 local OllamaFimBackend = require("ask-openai.prediction.backends.ollama")
 -- TODO! rewrite other backends to use new builder pattern (not a big change):
@@ -149,7 +150,7 @@ function M.ask_for_prediction()
                 if generation_done then
                     if not this_prediction:any_chunks() then
                         -- FYI great way to test this, go to a line that is done (i.e. a return) and go into insert mode before the returned variable and it almost always suggests that is EOS (at least with qwen2.5-coder + ollama)
-                        log:trace("DONE, empty prediction, done reason: '" .. (done_reason or "") .. "'")
+                        log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (done_reason or "") .. "'")
                     end
                     this_prediction:mark_generation_finished()
                 end
