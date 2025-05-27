@@ -153,20 +153,20 @@ function M.starcoder2.get_fim_prompt(request)
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-        log:trace("prefix", "'" .. request.prefix .. "'")
-        log:trace("suffix", "'" .. request.suffix .. "'")
+    log:trace("prefix", "'" .. request.prefix .. "'")
+    log:trace("suffix", "'" .. request.suffix .. "'")
 
-        -- *** File-level FIM template:
-        --   <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_mid}<|endoftext|>
-        --   from Tech Report: https://arxiv.org/pdf/2409.12187
-        --   official example: https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-fim.py
+    -- *** File-level FIM template:
+    --   <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_mid}<|endoftext|>
+    --   from Tech Report: https://arxiv.org/pdf/2409.12187
+    --   official example: https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-fim.py
 
-        -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
+    -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
 
-        -- Qwen2.5-Coder:
-        local file_level_fim_prompt = request.sentinel_tokens.fim_prefix .. request.prefix
-            .. request.sentinel_tokens.fim_suffix .. request.suffix
-            .. request.sentinel_tokens.fim_middle
+    -- Qwen2.5-Coder:
+    local file_level_fim_prompt = request.sentinel_tokens.fim_prefix .. request.prefix
+        .. request.sentinel_tokens.fim_suffix .. request.suffix
+        .. request.sentinel_tokens.fim_middle
 
 
     -- PRN is this a better way to get filename?
