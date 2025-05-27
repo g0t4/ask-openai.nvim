@@ -59,7 +59,7 @@ function OllamaFimBackend:body_for()
         -- starcoder2:7b-fp16                                     f0643097e171    14 GB     6 weeks ago
         -- starcoder2:3b-q8_0                                     003abcecad23    3.2 GB    6 weeks ago
         -- starcoder2:7b-q8_0                                     d76878e96d8a    7.6 GB    6 weeks ago
-        -- model = "starcoder2:7b-q8_0",
+        model = "starcoder2:7b-q8_0",
 
         -- codellama:7b-code-q8_0 -- shorter too
         -- codellama:7b-instruct-q8_0 -- longer too
@@ -106,6 +106,8 @@ function OllamaFimBackend:body_for()
         sentinel_tokens = fim.mellum.sentinel_tokens
         -- TODO! stop tokens? or use defaults w/ model
     elseif string.find(body.model, "starcoder2") then
+        -- TODO!! does starcoder use new line after filename and other tags or just next tag?
+        --  might need to override get_file_level_fim_prompt?
         sentinel_tokens = fim.starcoder2.sentinel_tokens
         -- TODO! stop tokens? or use defaults w/ model
         -- body.options.stop = { "<EOF>" }
