@@ -9,7 +9,7 @@ local match = require 'luassert.match'
 -- https://github.com/nvim-lua/plenary.nvim/blob/master/TESTS_README.md
 
 require("ask-openai.rx.tests-setup")
-test_env_setup_rug()
+test_setup_add_rxlua_to_package_path()
 
 local rx = require("rx")
 local TimeoutScheduler = require("ask-openai.rx.scheduler")
