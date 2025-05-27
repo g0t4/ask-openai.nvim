@@ -4,7 +4,7 @@
   <repo_name>reponame<file_sep>filepath0\ncode0<file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid<file_sep> ...<|endoftext|>
      StarCoder2 doesn't include new line after reponame/filepathX, basically only between filepath\ncode...
      also means when no filepaths included then there are no new lines at all
-     BUT, qwen examlpes show new lines:
+     BUT, qwen examples show new lines:
        https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel-fim.py
        AND, in my testing Qwen worked fine w/ and w/o newlines in several spots
 
@@ -24,10 +24,15 @@ Comments note:
 - TLDR... stop putting dense comments into code... use a md file.
 - And by dense I mean like 50 lines... a few is smart to keep local still
 
+*** File-level FIM template:
+- official example:
+  - [Qwen2.5-Coder-fim.py](https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-fim.py)
+  - more FIM examples - file and/or repo level [Qwen2.5-Coder.md](https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder.md)
+
 *** Repo-level + File-level FIM template:
--  official examples:
-  -  https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel.py
-  -  https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel-fim.py
+- official examples:
+  - [Qwen2.5-Coder-repolevel.py](https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel.py) - complete rest of last file (not FIM)
+  - [Qwen2.5-Coder-repolevel-fim.py](https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel-fim.py) - FIM in the last file
 - example is also in readme: https://github.com/QwenLM/Qwen2.5-coder?tab=readme-ov-file#4-repository-level-code-completion
 - this is from the Qwen2.5-Coder Tech Paper: https://arxiv.org/pdf/2409.12186
 
