@@ -131,6 +131,20 @@ function M.mellum.get_fim_prompt(request)
     local repo_name = request.get_repo_name()
     local prompt = tokens.repo_name .. repo_name
 
+    --     example = """<filename>utils.py
+    --     def multiply(x, y):
+    --         return x * y
+    --     <filename>config.py
+    --     DEBUG = True
+    --     MAX_VALUE = 100
+    --     <filename>example.py
+    --     <fim_suffix>
+    --
+    --     # Test the function
+    --     result = calculate_sum(5, 10)
+    --     print(result)<fim_prefix>def calculate_sum(a, b):
+    --     <fim_middle>"""
+
     return prompt
 end
 
