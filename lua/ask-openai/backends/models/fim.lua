@@ -153,7 +153,6 @@ function M.starcoder2.get_fim_prompt(request)
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    local function get_file_level_fim_prompt(request)
         log:trace("prefix", "'" .. request.prefix .. "'")
         log:trace("suffix", "'" .. request.suffix .. "'")
 
@@ -165,14 +164,10 @@ function M.starcoder2.get_fim_prompt(request)
         -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
 
         -- Qwen2.5-Coder:
-        local prompt = request.sentinel_tokens.fim_prefix .. request.prefix
+        local file_level_fim_prompt = request.sentinel_tokens.fim_prefix .. request.prefix
             .. request.sentinel_tokens.fim_suffix .. request.suffix
             .. request.sentinel_tokens.fim_middle
 
-        return prompt
-    end
-
-    local file_level_fim_prompt = get_file_level_fim_prompt()
 
     -- PRN is this a better way to get filename?
     -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
