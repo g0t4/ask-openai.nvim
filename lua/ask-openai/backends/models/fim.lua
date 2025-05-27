@@ -25,10 +25,13 @@ M.qwen25coder = {
 M.qwen25coder.get_fim_prompt = function(request)
     -- FYI! see fim.md for extensive FIM notes
 
-    local repo_name = request:get_repo_name()
-
     -- TODO! confirm qwen2.5coder has trailing \n after repo_name
+    --   I see this in the example files: https://github.com/QwenLM/Qwen2.5-Coder/blob/f20915b77910de5ba8463547e7654beb056ec7d0/examples/Qwen2.5-Coder-repolevel-fim.py
+    --   it might not matter?
+    local repo_name = request:get_repo_name()
     local repo_prompt = request.sentinel_tokens.repo_name .. repo_name .. "\n"
+
+    -- * recent yanks
     local context_file_prompt = request.sentinel_tokens.file_sep .. "nvim-recent-yanks.txt\n"
     if request.current_context.yanks ~= "" then
         context_file_prompt = context_file_prompt .. "\n" .. request.current_context.yanks .. "\n\n"
