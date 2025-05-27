@@ -1,13 +1,8 @@
 local curls = require("ask-openai.backends.curl_streaming")
 local oai_chat = require("ask-openai.backends.oai_chat")
 require("ask-openai.helpers.buffers")
-
-function test_setup_add_devtools_to_package_path()
-    local plugin_path = os.getenv("HOME") .. "/repos/github/g0t4/devtools.nvim/lua/"
-    package.path = package.path .. ";" .. plugin_path .. "?.lua"
-end
-
-test_setup_add_devtools_to_package_path()
+local test_setup = require("ask-openai.helpers.test_setup")
+test_setup.test_setup_add_devtools_to_package_path()
 
 local should = require("devtools.tests.should")
 
