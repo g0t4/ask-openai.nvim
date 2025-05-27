@@ -6,6 +6,11 @@ local M = {}
 M.counter = 1
 M.callbacks = {}
 
+-- TODO! look into Memory tools / RAG, i.e. in Qwen-Agent
+-- TODO! https://github.com/QwenLM/Qwen-Agent/blob/main/qwen_agent/memory/memory.py
+-- also check out other examples in qwen-agent for new ideas:
+--    https://github.com/QwenLM/Qwen-Agent/tree/main/examples
+-- PRN also I wanna test out large qwen models, hosted by Alibaba/groq/others
 
 local servers = {
 
