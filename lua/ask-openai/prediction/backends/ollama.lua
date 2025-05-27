@@ -124,6 +124,8 @@ function OllamaFimBackend:body_for()
 
     -- TODO move sentinel_tokens into builders and not here
     self.sentinel_tokens = sentinel_tokens
+
+    -- ?? for qwen2.5-coder should I use file level context ever? or always repo level?
     -- body.prompt = M.get_file_level_fim_prompt()
     body.prompt = builder()
     log:trace('body.prompt', body.prompt)
