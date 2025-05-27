@@ -1,4 +1,5 @@
 local assert = require 'luassert'
+require("ask-openai.helpers.test_setup").add_test_deps_to_package_path()
 
 local function is_gt(state, arguments)
     local expected = arguments[1]
@@ -7,15 +8,3 @@ local function is_gt(state, arguments)
     end
 end
 assert:register("matcher", "gt", is_gt)
-
-function test_setup_add_rxlua_to_package_path()
-    -- IIUC PlenaryTestFile runs w/ minimal init config and thus I have to wire up some of the things I use in dotfiles repoo
-    -- PRN... could I add this to my scheduler interface, so I can reuse it and ensure always registered?
-
-    -- fix resolution of rxlua in rtp
-    local plugin_path = vim.fn.stdpath("data") .. "/lazy/RxLua/"
-    package.path = package.path .. ";" .. plugin_path .. "?.lua"
-
-    -- other possibilities:
-    --   -- vim.opt.runtimepath:append("~/.local/share/nvim/lazy/rxlua")
-end

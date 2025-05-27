@@ -4,7 +4,6 @@ local assert = require 'luassert'
 local match = require 'luassert.match'
 
 require("ask-openai.rx.tests-setup")
-test_setup_add_rxlua_to_package_path()
 
 local handlers = require("ask-openai.prediction.handlers")
 
