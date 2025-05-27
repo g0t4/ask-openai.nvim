@@ -159,8 +159,10 @@ function M.starcoder2.get_fim_prompt(request)
     --
     -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
     --
-    local file_level_fim_prompt = M.starcoder2.sentinel_tokens.fim_prefix .. request.prefix
-        .. M.starcoder2.sentinel_tokens.fim_suffix .. request.suffix
+    local file_level_fim_prompt = M.starcoder2.sentinel_tokens.fim_prefix
+        .. request.prefix
+        .. M.starcoder2.sentinel_tokens.fim_suffix
+        .. request.suffix
         .. M.starcoder2.sentinel_tokens.fim_middle
 
 
