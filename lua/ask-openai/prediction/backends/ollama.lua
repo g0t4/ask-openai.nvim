@@ -156,6 +156,8 @@ function OllamaFimBackend:get_prompt_repo_style_with_context()
     -- TODO address concerns about excessive empty predictions (see fim.md notes, I observed this in some initial testing with repo level)
 
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
+    -- TODO starcoder2 doesn't have trailing \n after repo_name
+    -- TODO confirm qwen2.5coder has trailing \n after repo_name
     local repo_prompt = self.sentinel_tokens.repo_name .. repo_name .. "\n"
     local context_file_prompt = self.sentinel_tokens.file_sep .. "nvim-recent-yanks.txt\n"
     if self.current_context.yanks ~= "" then
@@ -176,19 +178,20 @@ function OllamaFimBackend:get_prompt_repo_style_with_context()
 
     -- PRN is this a better way to get filename?
     -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
-    local current_file_name = vim.fn.expand('%'):match("([^/]+)$")
+    local current_file_path = vim.fn.expand('%'):match("([^/]+)$")
 
-    if current_file_name == nil then
+    if current_file_path == nil then
         -- i.e. if :new and before first :w (save)
         -- for now just leave filename blank?
         --  or, maybe mark it as new?
         --   can I deterine filetype using some heuristic or other metadata?
         --   should I mark it "new"
         log:warn("current_file_name is nil")
-        current_file_name = ""
+        current_file_path = ""
     end
 
-    local fim_file = self.sentinel_tokens.file_sep .. current_file_name .. "\n"
+    -- confirmed: starcoder2 adds \n after filepath
+    local fim_file = self.sentinel_tokens.file_sep .. current_file_path .. "\n"
         .. file_level_fim_prompt
     -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
 
