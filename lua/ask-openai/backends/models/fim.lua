@@ -13,6 +13,7 @@ M.qwen25coder = {
         -- fim_pad = "<|fim_pad|>",
         repo_name = "<|repo_name|>",
         file_sep = "<|file_sep|>",
+
         im_start = "<|im_start|>",
         im_end = "<|im_end|>",
         -- endoftext = "<|endoftext|>"
@@ -21,16 +22,18 @@ M.qwen25coder = {
 
 M.mellum = {
     -- https://huggingface.co/JetBrains/Mellum-4b-base/blob/main/special_tokens_map.json
-    -- FYI very close to starcoder2
+    -- much in common with starcoder2
     sentinel_tokens = {
 
         -- FIM
-        fim_middle = "<fim_middle>",
         fim_prefix = "<fim_prefix>",
+        fim_middle = "<fim_middle>",
         fim_suffix = "<fim_suffix>",
         fim_pad = "<fim_pad>",
-        filename = "<filename>",
-        reponame = "<reponame>",
+        -- FYI file_sep => filename, repo_name => reponame... can put that back if the prompt is unique to mellum anyways
+        --  but right now I suspect it will be the same as qwen25coder and starcoder2
+        file_sep = "<filename>",
+        repo_name = "<reponame>",
 
         -- roles:
         system = "<system>",
@@ -76,9 +79,10 @@ M.starcoder2 = {
         fim_middle = "<fim_middle>",
         fim_suffix = "<fim_suffix>",
         fim_pad = "<fim_pad>",
-        endoftext = "<|endoftext|>",
-        repo_name = "<repo_name>",
         file_sep = "<file_sep>",
+        repo_name = "<repo_name>",
+
+        endoftext = "<|endoftext|>",
         issue_start = "<issue_start>",
         issue_comment = "<issue_comment>",
         issue_closed = "<issue_closed>",
