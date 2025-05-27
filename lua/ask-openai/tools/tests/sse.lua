@@ -11,7 +11,6 @@ modify_package_path_for_tests()
 
 local should = require("devtools.tests.should")
 
-local should_be_equal = should.be_equal
 -- PRN move this to backends dir and consolidate all tests there?
 -- ***! use <leader>u to run tests in this file! (habituate that, don't type out the cmd yourself)
 
@@ -95,15 +94,15 @@ data: [DONE]
 
             local request = call_on_delta(choices)
 
-            should_be_equal(1, #request.messages)
+            should.be_equal(1, #request.messages)
             local msg = request.messages[1]
-            should_be_equal(0, msg.index)
-            should_be_equal("assistant", msg.role)
-            should_be_equal("My name is Neo Vim.", msg.content)
+            should.be_equal(0, msg.index)
+            should.be_equal("assistant", msg.role)
+            should.be_equal("My name is Neo Vim.", msg.content)
 
             -- TODO is finish_reason per message OR the entire request!?
             --   TODO get a multi message response to review
-            should_be_equal("stop", msg.finish_reason)
+            should.be_equal("stop", msg.finish_reason)
         end)
 
 
@@ -122,35 +121,35 @@ data: [DONE]
 
             local request, frontend = call_on_delta(choices)
             -- print("request", vim.inspect(request))
-            should_be_equal(1, #request.messages)
+            should.be_equal(1, #request.messages)
             local msg = request.messages[1]
-            should_be_equal(0, msg.index)
-            should_be_equal("assistant", msg.role)
-            should_be_equal("tool_calls", msg.finish_reason)
+            should.be_equal(0, msg.index)
+            should.be_equal("assistant", msg.role)
+            should.be_equal("tool_calls", msg.finish_reason)
 
-            should_be_equal(2, #msg.tool_calls)
+            should.be_equal(2, #msg.tool_calls)
             -- * tool1:
             -- {"id":"call_809l7n8f","index":0,"type":"function", "function":{
             --    "name":"run_command",
             --    "arguments":"{\"command\":\"ls -la\"}"}}]},"finish_reason":null}
             first_call = msg.tool_calls[1]
-            should_be_equal("call_809l7n8f", first_call.id)
-            should_be_equal(0, first_call.index)
-            should_be_equal("function", first_call.type)
+            should.be_equal("call_809l7n8f", first_call.id)
+            should.be_equal(0, first_call.index)
+            should.be_equal("function", first_call.type)
             func = first_call["function"]
-            should_be_equal("run_command", func.name)
-            should_be_equal("{\"command\":\"ls -la\"}", func.arguments)
+            should.be_equal("run_command", func.name)
+            should.be_equal("{\"command\":\"ls -la\"}", func.arguments)
             -- * tool2:
             -- {"id":"call_oqp1e2a1","index":1,"type":"function", "function":{
             --    "name":"run_command",
             --    "arguments":"{\"command\":\"ls -la\",\"cwd\":\"/path/to/directory\"}"}}]},"finish_reason":null}
             second_call = msg.tool_calls[2]
-            should_be_equal("call_oqp1e2a1", second_call.id)
-            should_be_equal(1, second_call.index)
-            should_be_equal("function", second_call.type)
+            should.be_equal("call_oqp1e2a1", second_call.id)
+            should.be_equal(1, second_call.index)
+            should.be_equal("function", second_call.type)
             func = second_call["function"]
-            should_be_equal("run_command", func.name)
-            should_be_equal("{\"command\":\"ls -la\",\"cwd\":\"/path/to/directory\"}", func.arguments)
+            should.be_equal("run_command", func.name)
+            should.be_equal("{\"command\":\"ls -la\",\"cwd\":\"/path/to/directory\"}", func.arguments)
         end)
         -- TODO add a test that validates lookup on index/role per message... need a multi message scenario (if that's ever a thing... and not multi choice... literally need two messages at same time, streaming)
 
@@ -173,26 +172,26 @@ data: [DONE]
                 {"index":0,"delta":{"content":""},"logprobs":null,"finish_reason":"tool_calls","stop_reason":null}
             ]]
             local request, frontend = call_on_delta(choices)
-            should_be_equal(1, #request.messages)
+            should.be_equal(1, #request.messages)
             msg = request.messages[1]
-            should_be_equal("assistant", msg.role)
+            should.be_equal("assistant", msg.role)
             -- FYI VLLM IS NOT DUPLICATING ATTRS like role across all deltas, just on first one it seems
-            should_be_equal(0, msg.index)
-            should_be_equal("", msg.content)
+            should.be_equal(0, msg.index)
+            should.be_equal("", msg.content)
             -- FYI I do not care about logprobs
-            should_be_equal("tool_calls", msg.finish_reason)
+            should.be_equal("tool_calls", msg.finish_reason)
             -- FYI stop_reason for now
 
             -- * tool delta 1:
             -- [{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,"function":{"name":"run_command"}}
-            should_be_equal(1, #msg.tool_calls)
+            should.be_equal(1, #msg.tool_calls)
             call = msg.tool_calls[1]
-            should_be_equal("chatcmpl-tool-ca99dda515524c6abe47d1ea22813507", call.id)
-            should_be_equal(0, call.index)
-            should_be_equal("function", call.type)
+            should.be_equal("chatcmpl-tool-ca99dda515524c6abe47d1ea22813507", call.id)
+            should.be_equal(0, call.index)
+            should.be_equal("function", call.type)
             -- -- * function.name
             func = call["function"]
-            should_be_equal("run_command", func.name)
+            should.be_equal("run_command", func.name)
             --
             -- * tool delta 2-4:
             -- [{"index":0,"function":{"arguments":"{\"command\": \""}}
@@ -200,7 +199,7 @@ data: [DONE]
             -- [{"index":0,"function":{"arguments":"\"}"}}
             --
             -- concatenate args:
-            should_be_equal("{\"command\": \"ls\"}", func.arguments)
+            should.be_equal("{\"command\": \"ls\"}", func.arguments)
         end)
 
         -- TODO add vllm dual tool use test so I can validate that index is whats different
