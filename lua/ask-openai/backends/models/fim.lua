@@ -158,9 +158,9 @@ function M.starcoder2.get_fim_prompt(request)
     --     local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
     --     -- todo include line/col or not?
     --     -- todo include file?
-    --     recent_changes = recent_changes .. "\n" .. str
     -- end
-    -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
+    -- prompt = prompt .. prompt_for_file("nvim-recent-edits.txt", recent_changes)
+    --    TODO one edits file? or group changes PER file? or one file per edit?
 
     -- * FIM file
     log:trace("prefix", "'" .. request.prefix .. "'")
