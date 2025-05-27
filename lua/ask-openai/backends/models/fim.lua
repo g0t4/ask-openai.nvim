@@ -137,7 +137,9 @@ function M.starcoder2.get_fim_prompt(request)
 
     -- TODO confirm repo naming? is it just basename of repo root? or GH link? or org/repo?
     local repo_name = vim.fn.getcwd():match("([^/]+)$")
-    local repo_prompt = M.starcoder2.sentinel_tokens.repo_name .. repo_name .. "\n"
+    local repo_prompt = M.starcoder2.sentinel_tokens.repo_name .. repo_name
+
+    -- * recent yanks
     local context_file_prompt = M.starcoder2.sentinel_tokens.file_sep .. "nvim-recent-yanks.txt\n"
     if request.current_context.yanks ~= "" then
         context_file_prompt = context_file_prompt .. "\n" .. request.current_context.yanks .. "\n\n"
