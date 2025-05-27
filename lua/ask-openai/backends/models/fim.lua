@@ -22,10 +22,10 @@ M.qwen25coder = {
     },
 }
 
-M.qwen25coder.get_fim_prompt = function(self)
+M.qwen25coder.get_fim_prompt = function(request)
     local function get_file_level_fim_prompt()
-        log:trace("prefix", "'" .. self.prefix .. "'")
-        log:trace("suffix", "'" .. self.suffix .. "'")
+        log:trace("prefix", "'" .. request.prefix .. "'")
+        log:trace("suffix", "'" .. request.suffix .. "'")
 
         -- *** File-level FIM template:
         --   <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_mid}<|endoftext|>
@@ -35,22 +35,22 @@ M.qwen25coder.get_fim_prompt = function(self)
         -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
 
         -- Qwen2.5-Coder:
-        local prompt = self.sentinel_tokens.fim_prefix .. self.prefix
-            .. self.sentinel_tokens.fim_suffix .. self.suffix
-            .. self.sentinel_tokens.fim_middle
+        local prompt = request.sentinel_tokens.fim_prefix .. request.prefix
+            .. request.sentinel_tokens.fim_suffix .. request.suffix
+            .. request.sentinel_tokens.fim_middle
 
         return prompt
     end
 
     -- FYI! see fim.md for extensive FIM notes
 
-    local repo_name = self:get_repo_name()
+    local repo_name = request:get_repo_name()
 
     -- TODO! confirm qwen2.5coder has trailing \n after repo_name
-    local repo_prompt = self.sentinel_tokens.repo_name .. repo_name .. "\n"
-    local context_file_prompt = self.sentinel_tokens.file_sep .. "nvim-recent-yanks.txt\n"
-    if self.current_context.yanks ~= "" then
-        context_file_prompt = context_file_prompt .. "\n" .. self.current_context.yanks .. "\n\n"
+    local repo_prompt = request.sentinel_tokens.repo_name .. repo_name .. "\n"
+    local context_file_prompt = request.sentinel_tokens.file_sep .. "nvim-recent-yanks.txt\n"
+    if request.current_context.yanks ~= "" then
+        context_file_prompt = context_file_prompt .. "\n" .. request.current_context.yanks .. "\n\n"
     end
 
     -- * recent edits
@@ -63,11 +63,11 @@ M.qwen25coder.get_fim_prompt = function(self)
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    local file_level_fim_prompt = self:get_file_level_fim_prompt()
+    local file_level_fim_prompt = request:get_file_level_fim_prompt()
 
     -- PRN is this a better way to get filename?
     -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
-    local current_file_path = self:get_current_file_path()
+    local current_file_path = request:get_current_file_path()
 
     if current_file_path == nil then
         -- i.e. if :new and before first :w (save)
@@ -80,7 +80,7 @@ M.qwen25coder.get_fim_prompt = function(self)
     end
 
     -- confirmed: starcoder2 adds \n after filepath
-    local fim_file = self.sentinel_tokens.file_sep .. current_file_path .. "\n"
+    local fim_file = request.sentinel_tokens.file_sep .. current_file_path .. "\n"
         .. file_level_fim_prompt
     -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
 
