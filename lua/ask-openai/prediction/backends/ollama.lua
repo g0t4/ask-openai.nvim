@@ -128,6 +128,9 @@ function OllamaFimBackend:body_for()
         return
     end
 
+    log:trace("prefix", "'" .. self.prefix .. "'")
+    log:trace("suffix", "'" .. self.suffix .. "'")
+
     -- TODO move sentinel_tokens into builders and not here
     self.sentinel_tokens = sentinel_tokens
 

@@ -144,6 +144,13 @@ function M.mellum.get_fim_prompt(request)
         local file_contents = request.current_context.yanks
         append_file_non_fim(file_path, file_contents)
     end
+
+    -- * TODO recent edits
+
+
+
+
+    -- alt format example
     -- f"<fim_suffix>{suffix}<fim_prefix>{prefix}<fim_middle>"
 
     --     <filename>example.py
@@ -212,11 +219,6 @@ function M.starcoder2.get_fim_prompt(request)
     --    TODO what is the file_path and file_contents (per file) - make it clear
 
     -- * FIM file
-    log:trace("prefix", "'" .. request.prefix .. "'")
-    log:trace("suffix", "'" .. request.suffix .. "'")
-
-    -- TODO add to qwen code too
-    -- local current_file_path = vim.fn.expand('%'):match("([^/]+)$")
     local current_file_path = request.get_current_file_path()
     if current_file_path == nil then
         -- i.e. if :new and before first :w (save)
