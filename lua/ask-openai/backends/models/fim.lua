@@ -145,7 +145,7 @@ function M.starcoder2.get_fim_prompt(request)
     if request.current_context.yanks ~= "" then
         local filepath = "nvim-recent-yanks.txt"
         local context_file_prompt = tokens.file_sep .. filepath .. "\n"
-        context_file_prompt = context_file_prompt .. request.current_context.yanks .. "\n\n"
+            .. request.current_context.yanks .. "\n\n"
         prompt = prompt .. context_file_prompt
     end
 
