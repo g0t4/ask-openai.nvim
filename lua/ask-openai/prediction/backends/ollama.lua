@@ -175,6 +175,16 @@ function OllamaFimBackend:get_prompt_repo_style_with_context()
     -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
     local current_file_name = vim.fn.expand('%'):match("([^/]+)$")
 
+    if current_file_name == nil then
+        -- i.e. if :new and before first :w (save)
+        -- for now just leave filename blank?
+        --  or, maybe mark it as new?
+        --   can I deterine filetype using some heuristic or other metadata?
+        --   should I mark it "new"
+        log:warn("current_file_name is nil")
+        current_file_name = ""
+    end
+
     local fim_file = self.sentinel_tokens.file_sep .. current_file_name .. "\n"
         .. file_level_fim_prompt
     -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
