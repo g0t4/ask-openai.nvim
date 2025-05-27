@@ -14,31 +14,50 @@
 local M = {}
 
 local function get_symbol_at_cursor()
-    local symbols = vim.fn.CocAction('documentSymbols')
+    -- 100% experimental here... just playing with APIs and finding what I want
+    error "not yet implemented"
+
+    -- local symbols = vim.fn.CocAction('documentSymbols')
+    local symbols = vim.fn.CocAction('getWorkspaceSymbols')
     if not symbols or vim.tbl_isempty(symbols) then
         print('No symbols found')
         return
     end
 
-    local cursor = vim.api.nvim_win_get_cursor(0)
-    local line = cursor[1] - 1 -- 0-based
-    local col = cursor[2]
+    local cursor_position = vim.api.nvim_win_get_cursor(0)
+    local my_line = cursor_position[1] - 1 -- 0-based
+    local my_column = cursor_position[2]
+    local my_uri = vim.uri_from_bufnr(0)
+    print("my_uri: " .. my_uri)
 
-    local function is_in_range(range)
-        local s, e = range.start, range["end"]
-        if line < s.line or line > e.line then return false end
-        if line == s.line and col < s.character then return false end
-        if line == e.line and col > e.character then return false end
+    local function is_in_range_of_me(location)
+        local uri = location.uri
+        local s, e = location.range.start, location.range["end"]
+
+        if uri ~= my_uri then return false end
+        vim.print(location)
+        if my_line < s.line or my_line > e.line then return false end
+        if my_line == s.line and my_column < s.character then return false end
+        if my_line == e.line and my_column > e.character then return false end
         return true
+    end
+    local function get_what(symbol)
+        if symbol.text ~= nil then return "text: " .. symbol.text end
+        if symbol.name then return "name: " .. symbol.name end
+        if symbol.kind then return "kind: " .. symbol.kind end
+        if symbol.textEdit then return "text edit" end
+        -- return "unknown symbol: " .. vim.inspect(symbol)
     end
 
     for _, symbol in ipairs(symbols) do
-        -- if is_in_range(symbol.range) then
-            vim.print(symbol.text)
-
-            -- print('Symbol: ' .. symbol.name .. ' (' .. symbol.kind .. ')')
-            -- return
+        -- vim.print(get_what(symbol))
+        -- vim.print((symbol))
+        -- if symbol.location.range then
+        --     vim.print("   " .. vim.inspect(symbol.location.range))
         -- end
+        if symbol.location and is_in_range_of_me(symbol.location) then
+            print('Symbol: ' .. get_what(symbol) .. ' (' .. symbol.kind .. ')')
+        end
     end
 
     print('No symbol at cursor')
