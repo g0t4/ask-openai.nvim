@@ -59,7 +59,7 @@ function OllamaFimBackend:body_for()
         -- starcoder2:7b-fp16                                     f0643097e171    14 GB     6 weeks ago
         -- starcoder2:3b-q8_0                                     003abcecad23    3.2 GB    6 weeks ago
         -- starcoder2:7b-q8_0                                     d76878e96d8a    7.6 GB    6 weeks ago
-        model = "starcoder2:7b-q8_0",
+        -- model = "starcoder2:7b-q8_0",
 
         -- codellama:7b-code-q8_0 -- shorter too
         -- codellama:7b-instruct-q8_0 -- longer too
