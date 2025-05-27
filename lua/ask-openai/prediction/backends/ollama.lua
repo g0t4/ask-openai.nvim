@@ -107,7 +107,13 @@ function OllamaFimBackend:body_for()
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
     elseif string.find(body.model, "Mellum") then
         sentinel_tokens = fim.mellum.sentinel_tokens
-        -- TODO! stop tokens? or use defaults w/ model
+        -- body.options.stop = {
+        --     sentinel_tokens.eos_token,
+        --     sentinel_tokens.file_sep
+        -- }
+        builder = function()
+            return fim.mellum.get_fim_prompt(self)
+        end
     elseif string.find(body.model, "starcoder2") then
         -- TODO double check stop is correct by default (completions seem to stop appropirately, so I'm fine with it as is)
         -- body.options.stop = { "<EOF>" }

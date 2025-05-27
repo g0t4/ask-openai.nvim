@@ -124,8 +124,14 @@ M.starcoder2 = {
     }
 }
 
-function M.mellum.get_fim_prompt()
+function M.mellum.get_fim_prompt(request)
     -- FYI! see test case for mellum, I have a bunch of notes over there
+    local tokens = M.starcoder2.sentinel_tokens
+
+    local repo_name = request.get_repo_name()
+    local prompt = tokens.repo_name .. repo_name
+
+    return prompt
 end
 
 function M.starcoder2.get_spm_fim_prompt(request)
