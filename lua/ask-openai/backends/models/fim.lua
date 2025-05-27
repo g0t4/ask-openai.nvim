@@ -141,11 +141,11 @@ function M.starcoder2.get_fim_prompt(request)
     local prompt = tokens.repo_name .. repo_name
 
     -- * recent yanks
-    local context_file_prompt = tokens.file_sep .. "nvim-recent-yanks.txt\n"
     if request.current_context.yanks ~= "" then
+        local context_file_prompt = tokens.file_sep .. "nvim-recent-yanks.txt\n"
         context_file_prompt = context_file_prompt .. "\n" .. request.current_context.yanks .. "\n\n"
+        prompt = prompt .. context_file_prompt
     end
-    prompt = prompt .. context_file_prompt
 
     -- * recent edits
     -- local recent_changes = "Here are some recent lines that were edited by the user: "
