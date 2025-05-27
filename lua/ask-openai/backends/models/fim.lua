@@ -188,7 +188,9 @@ function M.starcoder2.get_fim_prompt(request)
         .. file_level_fim_prompt
     -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
 
-    return repo_prompt .. context_file_prompt .. fim_file
+    local prompt = repo_prompt .. context_file_prompt .. fim_file
+
+    return prompt
 end
 
 return M
