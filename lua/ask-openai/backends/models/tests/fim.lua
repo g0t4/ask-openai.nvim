@@ -4,6 +4,11 @@ local test_setup = require("ask-openai.helpers.test_setup")
 test_setup.modify_package_path()
 local should = require("devtools.tests.should")
 
+describe("qwen2.5-coder", function()
+    it("get_fim_prompt", function()
+
+    end)
+end)
 
 describe("starcoder2", function()
     -- by the way, the following would be used if I didn't have "raw" on the request (that's PSM right there!)
