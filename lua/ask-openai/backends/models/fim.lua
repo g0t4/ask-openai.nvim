@@ -25,18 +25,6 @@ M.qwen25coder = {
 M.qwen25coder.get_fim_prompt = function(request)
     -- FYI! see fim.md for extensive FIM notes
 
-    local function get_file_level_fim_prompt()
-
-        -- TODO ESCAPE presence of any sentinel tokens! i.e. should be rare but if someone is working on LLM code it may not be!
-
-        -- Qwen2.5-Coder:
-        local prompt = request.sentinel_tokens.fim_prefix .. request.prefix
-            .. request.sentinel_tokens.fim_suffix .. request.suffix
-            .. request.sentinel_tokens.fim_middle
-
-        return prompt
-    end
-
     local repo_name = request:get_repo_name()
 
     -- TODO! confirm qwen2.5coder has trailing \n after repo_name
@@ -56,7 +44,9 @@ M.qwen25coder.get_fim_prompt = function(request)
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    local file_level_fim_prompt = get_file_level_fim_prompt()
+    local file_level_fim_prompt = request.sentinel_tokens.fim_prefix .. request.prefix
+        .. request.sentinel_tokens.fim_suffix .. request.suffix
+        .. request.sentinel_tokens.fim_middle
 
     -- PRN is this a better way to get filename?
     -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
