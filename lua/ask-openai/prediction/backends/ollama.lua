@@ -84,16 +84,18 @@ function OllamaFimBackend:body_for()
             -- options only for /api/generate
             --   /v1/completions ignores them even though it uses same GenerateHandler!
 
-
             -- TODO can I pass OLLAMA_NUM_PARALLEL=1 via request?
             num_ctx = 8192,
         }
     }
 
+    -- defaults to Qwen2.5-Coder (that may work fine with many other models)
     local sentinel_tokens = fim.qwen25coder.sentinel_tokens
     local builder = function()
         return self:get_qwen2_5_coder_prompt_repo_style_with_context()
     end
+
+    -- FYI some models have a propmt template that will handle the format, if you set raw=false
 
     if string.find(body.model, "codellama") then
         sentinel_tokens = meta.codellama.sentinel_tokens
@@ -109,8 +111,8 @@ function OllamaFimBackend:body_for()
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
     elseif string.find(body.model, "Mellum") then
         -- body.options.stop = {
-        --     sentinel_tokens.eos_token,
-        --     sentinel_tokens.file_sep
+        --     m.mellum.sentinel_tokens.eos_token,
+        --     m.mellum.sentinel_tokens.file_sep
         -- }
         builder = function()
             return fim.mellum.get_fim_prompt(self)
