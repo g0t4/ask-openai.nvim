@@ -41,6 +41,12 @@ end
 function OllamaFimBackend:body_for()
     local body = {
 
+        -- https://huggingface.co/collections/JetBrains/mellum-68120b4ae1423c86a2da007a
+        model = "huggingface.co/JetBrains/Mellum-4b-base-gguf",
+        -- model = "huggingface.co/JetBrains/Mellum-4b-sft-python-gguf", -- TODO TRY!
+        -- kotlin exists but no gguf on hf yet:
+        --   https://huggingface.co/JetBrains/Mellum-4b-sft-kotlin
+        -- TODO add in other fine tunes for languages as released
 
         -- FYI set of possible models for demoing impact of fine tune
         model = "qwen2.5-coder:7b-base-q8_0", -- ** shorter responses, more "EOF" focused
@@ -94,10 +100,12 @@ function OllamaFimBackend:body_for()
 
         -- FYI also ollama warns about:
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
+    elseif string.find(body.model, "mellum") then
+        sentinel_tokens = fim.mellum.sentinel_tokens
+        -- TODO! stop tokens? or use defaults w/ model
     elseif string.find(body.model, "starcoder2") then
-
         sentinel_tokens = fim.starcoder2.sentinel_tokens
-        -- TODO! stop?
+        -- TODO! stop tokens? or use defaults w/ model
         -- body.options.stop = { "<EOF>" }
     elseif not string.find(body.model, "qwen2.5-coder", nil, true) then
         -- warn that FIM tokens need to be set
