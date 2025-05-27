@@ -104,7 +104,8 @@ describe("mellum", function()
         local prompt = fim.mellum.get_fim_prompt(request)
 
         -- TODO is repo_name ok here? or was it not trained with?
-        local expected = "<repo_name>my_mellum_repo<filename>nvim-recent-yanks.txt\nyanks"
+        --  only spot I've seen mention: https://huggingface.co/JetBrains/Mellum-4b-base/blob/main/special_tokens_map.json
+        local expected = "<reponame>my_mellum_repo<filename>nvim-recent-yanks.txt\nyanks"
             -- NOTE the filename comes before the fim_suffix tag (unlike StarCoder2 where filename comes after fim_prefix tag)
             .. "<filename>path/to/current.lua\n"
             .. "<fim_suffix>bar\nbaz"

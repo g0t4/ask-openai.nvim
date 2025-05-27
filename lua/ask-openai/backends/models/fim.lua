@@ -126,7 +126,7 @@ M.starcoder2 = {
 
 function M.mellum.get_fim_prompt(request)
     -- FYI! see test case for mellum, I have a bunch of notes over there
-    local tokens = M.starcoder2.sentinel_tokens
+    local tokens = M.mellum.sentinel_tokens
 
     -- * repo_name
     local repo_name = request.get_repo_name()
@@ -147,12 +147,17 @@ function M.mellum.get_fim_prompt(request)
 
     -- * TODO recent edits
 
-
-
-
-    -- alt format example
-    -- f"<fim_suffix>{suffix}<fim_prefix>{prefix}<fim_middle>"
-
+    -- * FIM file
+    local current_file_path = request.get_current_file_path()
+    if current_file_path == nil then
+        -- TODO what did I do on other builders here?
+        log:warn("current_file_name is nil")
+        current_file_path = ""
+    end
+    --
+    -- TODO ESCAPE sentinal tokens?
+    --
+    -- FYI carefully observe the format:
     --     <filename>example.py
     --     <fim_suffix>
     --
@@ -160,6 +165,23 @@ function M.mellum.get_fim_prompt(request)
     --     result = calculate_sum(5, 10)
     --     print(result)<fim_prefix>def calculate_sum(a, b):
     --     <fim_middle>"""
+    local fim_file_contents = tokens.file_sep
+        .. current_file_path
+        .. "\n"
+        .. tokens.fim_suffix
+        .. request.suffix
+        .. tokens.fim_prefix
+        .. request.prefix
+        .. tokens.fim_middle
+
+    prompt = prompt .. fim_file_contents
+
+    -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
+
+
+    -- alt format example
+    -- f"<fim_suffix>{suffix}<fim_prefix>{prefix}<fim_middle>"
+
 
     return prompt
 end
