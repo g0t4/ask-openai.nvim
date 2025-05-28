@@ -33,7 +33,7 @@ describe("qwen2.5-coder", function()
         --    is it required? otherwise if optional, then it doesn't matter
         local expected = "<|repo_name|>my_repo_name\n" -- TODO confirm if \n after repo name
             .. "<|file_sep|>nvim-recent-yanks.txt\nyanks"
-            -- .. "<|file_sep|>path/to/current.lua\n"
+            .. "<|file_sep|>path/to/current.lua\n"
             -- .. "<|fim_prefix|>foo\nthe\nprefix"
             -- .. "<|fim_suffix|>bar\nbaz"
             -- .. "<|fim_middle|>"

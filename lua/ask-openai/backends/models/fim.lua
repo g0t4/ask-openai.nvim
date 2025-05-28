@@ -64,6 +64,9 @@ function M.qwen25coder.get_fim_prompt(request)
     -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
     local current_file_path = request:get_current_file_path()
 
+
+    -- * FIM file
+    local current_file_path = request.get_current_file_path()
     if current_file_path == nil then
         -- i.e. if :new and before first :w (save)
         -- for now just leave filename blank?
@@ -72,6 +75,7 @@ function M.qwen25coder.get_fim_prompt(request)
         --   should I mark it "new"
         log:warn("current_file_name is nil")
         current_file_path = ""
+        -- TODO! what to do here? should I switch the entire prompt away from reponame/filepath (or can I just do one file?)
     end
 
     -- confirmed: starcoder2 adds \n after filepath
