@@ -90,7 +90,6 @@ function OllamaFimBackend:body_for()
     }
 
     -- defaults to Qwen2.5-Coder (that may work fine with many other models)
-    local sentinel_tokens = fim.qwen25coder.sentinel_tokens
     local builder = function()
         return fim.qwen25coder.get_fim_prompt(self)
     end
@@ -98,7 +97,9 @@ function OllamaFimBackend:body_for()
     -- FYI some models have a propmt template that will handle the format, if you set raw=false
 
     if string.find(body.model, "codellama") then
-        sentinel_tokens = meta.codellama.sentinel_tokens
+        -- TODO fim.codellama.get_fim_prompt()
+        --   FYI if I want a generic builder for all models w/o a specific prompt format then add that, maybe use qwen2.5-coder?
+        --   sentinel_tokens = meta.codellama.sentinel_tokens
 
         -- codellama uses <EOT> that seems to not be set as param in modelfile (at least for FIM?)
         --   without this change you will see <EOT> in code at end of completions
@@ -123,7 +124,11 @@ function OllamaFimBackend:body_for()
         builder = function()
             return fim.starcoder2.get_fim_prompt(self)
         end
-    elseif not string.find(body.model, "qwen2.5-coder", nil, true) then
+    elseif string.find(body.model, "qwen2.5-coder", nil, true) then
+        builder = function()
+            return fim.qwen25coder.get_fim_prompt(self)
+        end
+    else
         -- warn that FIM tokens need to be set
         local message = "MISSING FIM SENTINEL TOKENS for this model " .. body.model
         log:error(message)
@@ -133,9 +138,6 @@ function OllamaFimBackend:body_for()
 
     log:trace("prefix", "'" .. self.prefix .. "'")
     log:trace("suffix", "'" .. self.suffix .. "'")
-
-    -- TODO move sentinel_tokens into builders and not here
-    self.sentinel_tokens = sentinel_tokens
 
     -- ?? for qwen2.5-coder should I use file level context ever? or always repo level?
     -- body.prompt = M.get_file_level_fim_prompt()
