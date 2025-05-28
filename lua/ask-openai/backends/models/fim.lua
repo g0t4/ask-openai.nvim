@@ -44,7 +44,6 @@ function M.qwen25coder.get_fim_prompt(request)
         local file_contents = request.current_context.yanks
         append_file_non_fim(file_path, file_contents)
     end
-    do return prompt end
 
     -- * recent edits
     -- local recent_changes = "Here are some recent lines that were edited by the user: "
@@ -55,15 +54,6 @@ function M.qwen25coder.get_fim_prompt(request)
     --     recent_changes = recent_changes .. "\n" .. str
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
-
-    local file_level_fim_prompt = tokens.fim_prefix .. request.prefix
-        .. tokens.fim_suffix .. request.suffix
-        .. tokens.fim_middle
-
-    -- PRN is this a better way to get filename?
-    -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
-    local current_file_path = request:get_current_file_path()
-
 
     -- * FIM file
     local current_file_path = request.get_current_file_path()
@@ -77,13 +67,24 @@ function M.qwen25coder.get_fim_prompt(request)
         current_file_path = ""
         -- TODO! what to do here? should I switch the entire prompt away from reponame/filepath (or can I just do one file?)
     end
+    --
+    -- TODO ESCAPE presence of any sentinel tokens? i.e. should be rare but if someone is working on LLM code it may not be!
+    --
+    -- FYI carefully observe the format:
+    --   <file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid
+    --   <fim_prefix> comes BEFORE filepath!
+    local fim_file_contents = tokens.file_sep
+        .. current_file_path
+        .. "\n"
+        .. tokens.fim_prefix
+        .. request.prefix
+        .. tokens.fim_suffix
+        .. request.suffix
+        .. tokens.fim_middle
 
-    -- confirmed: starcoder2 adds \n after filepath
-    local fim_file = tokens.file_sep .. current_file_path .. "\n"
-        .. file_level_fim_prompt
     -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
 
-    return prompt .. fim_file
+    return prompt .. fim_file_contents
 end
 
 M.mellum = {
