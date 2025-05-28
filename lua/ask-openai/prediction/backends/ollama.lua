@@ -92,7 +92,7 @@ function OllamaFimBackend:body_for()
     -- defaults to Qwen2.5-Coder (that may work fine with many other models)
     local sentinel_tokens = fim.qwen25coder.sentinel_tokens
     local builder = function()
-        return self:get_qwen2_5_coder_prompt_repo_style_with_context()
+        return fim.qwen25coder.get_fim_prompt(self)
     end
 
     -- FYI some models have a propmt template that will handle the format, if you set raw=false

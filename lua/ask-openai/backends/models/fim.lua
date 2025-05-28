@@ -22,20 +22,29 @@ M.qwen25coder = {
     },
 }
 
-M.qwen25coder.get_fim_prompt = function(request)
+function M.qwen25coder.get_fim_prompt(request)
     -- FYI! see fim.md for extensive FIM notes
+    local tokens = M.qwen25coder.sentinel_tokens
 
     -- TODO! confirm qwen2.5coder has trailing \n after repo_name
     --   I see this in the example files: https://github.com/QwenLM/Qwen2.5-Coder/blob/f20915b77910de5ba8463547e7654beb056ec7d0/examples/Qwen2.5-Coder-repolevel-fim.py
     --   it might not matter?
     local repo_name = request:get_repo_name()
-    local repo_prompt = request.sentinel_tokens.repo_name .. repo_name .. "\n"
+    local prompt = tokens.repo_name .. repo_name .. "\n"
+
+    local function append_file_non_fim(file_path, file_contents)
+        -- <file_sep>filepath0\ncode0
+        local non_fim_file = tokens.file_sep .. file_path .. "\n" .. file_contents
+        prompt = prompt .. non_fim_file
+    end
 
     -- * recent yanks
-    local context_file_prompt = request.sentinel_tokens.file_sep .. "nvim-recent-yanks.txt\n"
     if request.current_context.yanks ~= "" then
-        context_file_prompt = context_file_prompt .. "\n" .. request.current_context.yanks .. "\n\n"
+        local file_path = "nvim-recent-yanks.txt"
+        local file_contents = request.current_context.yanks
+        append_file_non_fim(file_path, file_contents)
     end
+    do return prompt end
 
     -- * recent edits
     -- local recent_changes = "Here are some recent lines that were edited by the user: "
@@ -47,9 +56,9 @@ M.qwen25coder.get_fim_prompt = function(request)
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    local file_level_fim_prompt = request.sentinel_tokens.fim_prefix .. request.prefix
-        .. request.sentinel_tokens.fim_suffix .. request.suffix
-        .. request.sentinel_tokens.fim_middle
+    local file_level_fim_prompt = tokens.fim_prefix .. request.prefix
+        .. tokens.fim_suffix .. request.suffix
+        .. tokens.fim_middle
 
     -- PRN is this a better way to get filename?
     -- local filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(CURRENT_BUFFER), ":t")
@@ -66,15 +75,12 @@ M.qwen25coder.get_fim_prompt = function(request)
     end
 
     -- confirmed: starcoder2 adds \n after filepath
-    local fim_file = request.sentinel_tokens.file_sep .. current_file_path .. "\n"
+    local fim_file = tokens.file_sep .. current_file_path .. "\n"
         .. file_level_fim_prompt
     -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
 
-    return repo_prompt .. context_file_prompt .. fim_file
-    -- return repo_prompt .. fim_file
-    -- return file_level_fim_prompt
+    return prompt .. fim_file
 end
-
 
 M.mellum = {
     -- https://huggingface.co/JetBrains/Mellum-4b-base/blob/main/special_tokens_map.json
