@@ -91,10 +91,10 @@ function OllamaFimBackend:body_for()
 
     -- defaults to Qwen2.5-Coder (that may work fine with many other models)
     local builder = function()
-        return fim.qwen25coder.get_fim_prompt(self)
+        error("missing fim prompt builder for " .. body.model)
     end
 
-    -- FYI some models have a propmt template that will handle the format, if you set raw=false
+    -- FYI some models have a bundled (or in ollama Modelfile, IIRC) prompt template that will handle the format, if you set raw=false
 
     if string.find(body.model, "codellama") then
         builder = function()
