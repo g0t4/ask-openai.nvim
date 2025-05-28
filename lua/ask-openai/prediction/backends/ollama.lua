@@ -97,13 +97,17 @@ function OllamaFimBackend:body_for()
     -- FYI some models have a propmt template that will handle the format, if you set raw=false
 
     if string.find(body.model, "codellama") then
-        -- TODO fim.codellama.get_fim_prompt()
-        --   FYI if I want a generic builder for all models w/o a specific prompt format then add that, maybe use qwen2.5-coder?
-        --   sentinel_tokens = meta.codellama.sentinel_tokens
+        builder = function()
+            -- TODO:
+            return fim.codellama.get_fim_prompt(self)
+            -- have it use meta.codellama.sentinel_tokens
+            -- FYI if I want a generic builder for all models w/o a specific prompt format then add that, maybe use qwen2.5-coder?
+        end
 
         -- codellama uses <EOT> that seems to not be set as param in modelfile (at least for FIM?)
         --   without this change you will see <EOT> in code at end of completions
         -- ollama show codellama:7b-code-q8_0 --parameters # => no stop param
+        -- PRN move stop and other options to model specific config under fim.model.*
         body.options.stop = { "<EOT>" }
 
         error("review FIM requirements for codellama, make sure you are using expected template, it used to work with qwen like FIM but I changed that to repo level now and would need to test it")
