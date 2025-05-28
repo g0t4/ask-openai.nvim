@@ -331,11 +331,10 @@ function M.starcoder2.get_fim_prompt(request)
         .. request.suffix
         .. tokens.fim_middle
 
-    prompt = prompt .. tokens.file_sep .. fim_file_contents
 
     -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
 
-    return prompt
+    return prompt .. tokens.file_sep .. fim_file_contents
 end
 
 return M
