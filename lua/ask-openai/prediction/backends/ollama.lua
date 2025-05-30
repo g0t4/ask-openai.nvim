@@ -116,8 +116,8 @@ function OllamaFimBackend:body_for()
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
     elseif string.find(body.model, "Mellum") then
         -- body.options.stop = {
-        --     m.mellum.sentinel_tokens.eos_token,
-        --     m.mellum.sentinel_tokens.file_sep
+        --     fim.mellum.sentinel_tokens.eos_token,
+        --     fim.mellum.sentinel_tokens.file_sep
         -- }
         builder = function()
             return fim.mellum.get_fim_prompt(self)
