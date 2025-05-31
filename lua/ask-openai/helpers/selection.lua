@@ -42,10 +42,10 @@ function Selection:to_str(as_0indexed)
             .. ") (" .. self.original_text .. ")"
     end
     return
-        "Selection: 1-indexed start(line=" .. self.start_line_1indexed
-        .. ",col=" .. self.start_col_1indexed
-        .. ") end(line=" .. self.end_line_1indexed
-        .. ",col=" .. self.end_col_1indexed
+        "Selection: 1-indexed start(line=" .. self:start_line_1indexed()
+        .. ",col=" .. self:start_col_1indexed()
+        .. ") end(line=" .. self:end_line_1indexed()
+        .. ",col=" .. self:end_col_1indexed()
         .. ") (" .. self.original_text .. ")"
 end
 
