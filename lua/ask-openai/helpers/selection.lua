@@ -1,10 +1,13 @@
 local log = require("ask-openai.prediction.logger").predictions()
 
+---@class Selection
+---@field original_text string
 local Selection = {}
 
 function Selection:new(selected_lines, start_line_1indexed, start_col_1indexed, end_line_1indexed, end_col_1indexed)
     local obj = {
         original_text = vim.fn.join(selected_lines, "\n"),
+        -- FYI these are all private, will have accessors ultimatley to get 0 or 1 based?
         start_line_1indexed = start_line_1indexed,
         start_col_1indexed = start_col_1indexed,
         end_line_1indexed = end_line_1indexed,
