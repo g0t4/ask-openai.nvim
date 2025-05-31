@@ -61,7 +61,7 @@ function M.get_visual_selection()
     selected_lines[1] = string.sub(first_line, start_col_1indexed)
 
     local selection = Selection:new(selected_lines, start_line_1indexed, start_col_1indexed, end_line_1indexed, end_col_1indexed)
-    selection:log_info()
+    selection:log_info("get_visual_selection():")
     return selection
 end
 

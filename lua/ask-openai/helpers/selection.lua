@@ -57,8 +57,8 @@ function Selection:end_col_0indexed()
     return self._end_col_0indexed
 end
 
-function Selection:log_info(as_0indexed)
-    log:info(self:to_str(as_0indexed))
+function Selection:log_info(message, as_0indexed)
+    log:info(message, self:to_str(as_0indexed))
 end
 
 return Selection

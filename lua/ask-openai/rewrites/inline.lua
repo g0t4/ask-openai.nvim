@@ -172,7 +172,7 @@ function M.accept_rewrite()
         --   DONT TRY A QUICK FIX.. try to change how you select first
 
         -- Dump selection in 0indexed for debugging too
-        M.selection:log_info(true)
+        M.selection:log_info("acccepting... original selection was: ", true)
 
         -- Replace the selected text with the generated content
         vim.api.nvim_buf_set_text(
