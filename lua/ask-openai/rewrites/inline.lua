@@ -55,8 +55,6 @@ local function ensure_new_lines_around(code, response_lines)
         response_last_line == nil or response_last_line:match("^%s*$")
 
     if selection_ends_with_newline and not response_ends_with_newline then
-        -- response = response .. "\n" .. selected_last_line .. "\n"
-        -- TODO do I need a new line appeneded too?
         table.insert(response_lines, selected_last_line)
     end
 
@@ -64,12 +62,13 @@ local function ensure_new_lines_around(code, response_lines)
 end
 
 function M.handle_messages_updated()
-    -- TODO replaces process_chunk... go get the entire current refactor from the denormalizer?
-    --  OR I can pass the latest chunk still... do smth in the normalizer for that or still have a sep pathway per delta (no chunkin though?)
+    -- ?? replace process_chunk?...
+    --   get entire current refactor from the denormalizer?
+    --   OR I can pass the latest chunk still...
+    --   do smth in the normalizer for that or still have a sep pathway per delta (no chunkin though?)
 end
 
 local function clear_extmarks()
-    -- Clear previous extmark
     vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
 end
 
@@ -199,15 +198,8 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         .. "2. Identation should be diligently preserved. "
         .. "3. Pointless comments are infuriating. "
         .. "4. Unrelated, existing code/comments must be carefully preserved (not removed, nor changed). "
-        .. "5. If user instructions are ambiguous, it's paramount to ask for clarification. " -- TODO keep? (this is new)
+        .. "5. If user instructions are ambiguous, it's paramount to ask for clarification. "
         .. "6. Adherence to the user's request is of utmost importance. "
-    -- TODO would be nice for there to be a workflow to ask a user to clarify...
-    --   actually I could just resubmit the AskRewrite!
-    --   and add shortcut to reselect visual selection + restore cmdline
-
-    -- TODO it would be nice to have a toggle option to include a project specific prompt (i.e. with hammerspoon APIs, or in nvim config have lua/neovim APIS, etc)
-    --    actually one could be language specific (detect in nvim => neovim + lua, in vimscript =>  vim APIs, in a hammerspoon file => Lua + Hammerspoon APIs)
-    --    also allow smth custom per project in its root dir.. here TBH could list what prompts are included by default vs on demand (prompt sets)
 
     local user_message = user_prompt
     if code ~= nil and code ~= "" then
@@ -221,7 +213,6 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             .. "\n I am working on this file: " .. file_name
     end
 
-    -- TODO extract out this ollama stuff into qwen/gemma...
     local qwen_chat_body = {
         messages = {
             { role = "system", content = system_prompt },
@@ -236,7 +227,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         -- model = "gemma3:12b-it-q8_0",
         max_tokens = 4096,
         temperature = 0.2,
-        -- TODO do I need num_ctx (can't recall why I set it - check predicitons code)
+        -- ?? do I need num_ctx (can't recall why I set it - check predicitons code)
         -- options = {
         --     num_ctx = 8192
         -- }
@@ -263,14 +254,6 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 end
 
 local function ask_and_stream_from_ollama(opts)
-    -- TODO add an arg or separate command that includes surrounding context (and marks what is selected for rewrite => kinda like Zed does)
-    -- TODO add a mechanism to capture requests so I can look into prompt updates/fine-tuning/DPO/etc or just test cases
-    -- TODO add a feedback like mechanism to take notes about the response (i.e. if I like it or not)
-    -- PRN capture relevant symbols (i.e. look at variables in scope of the selection and fetch symbols from CoC or just whole file?)
-    --    and/or past edits might be sufficient quite often
-
-    -- TODO end column calc is off by one
-
     local selection = buffers.get_visual_selection()
     -- log:info("Selection: " .. selection:to_str())
     -- if selection:is_empty() then
@@ -290,7 +273,7 @@ local function ask_and_stream_from_ollama(opts)
 end
 
 function M.handle_request_failed(code)
-    -- FYI test by point at wrong server/port
+    -- FYI test by pointing at the wrong server/port
     -- this is for AFTER the request completes and curl exits
     vim.schedule(function()
         -- for now just write into buffer is fine
@@ -299,8 +282,6 @@ function M.handle_request_failed(code)
 end
 
 function M.on_stderr_data(text)
-    -- FYI test by point at wrong server/port
-    -- TODO match api changes in ask
     vim.schedule(function()
         M.process_chunk("\n" .. text)
     end)
