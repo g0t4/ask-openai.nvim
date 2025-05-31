@@ -3,6 +3,7 @@ local backend = require("ask-openai.backends.oai_chat")
 -- local backend = require("ask-openai.backends.oai_completions")
 local log = require("ask-openai.prediction.logger").predictions()
 local agentica = require("ask-openai.backends.models.agentica")
+local text = require("ask-openai.helpers.text")
 local M = {}
 
 -- Set up a highlight group for the extmarks
@@ -63,14 +64,9 @@ function M.strip_md_from_completion(lines)
     return lines
 end
 
-local function split_text_into_lines(text)
-    -- preserve empty lines too
-    return vim.split(text, "\n")
-end
-
 local function ensure_new_lines_around(code, response_lines)
     -- * Ensure preserve blank line at start of selection (if present)
-    local selected_lines = split_text_into_lines(code)
+    local selected_lines = text.split_lines(code)
     local selected_first_line = selected_lines[1]
     local response_first_line = response_lines[1]
 
@@ -112,7 +108,7 @@ function M.process_chunk(chunk)
 
     M.accumulated_chunks = M.accumulated_chunks .. chunk
 
-    local lines = split_text_into_lines(M.accumulated_chunks)
+    local lines = text.split_lines(M.accumulated_chunks)
     lines = M.strip_md_from_completion(lines)
     local pending_close = nil
     lines, pending_close = M.strip_thinking_tags(lines)
@@ -167,7 +163,7 @@ end
 
 function M.accept_rewrite()
     vim.schedule(function()
-        local lines = split_text_into_lines(M.accumulated_chunks)
+        local lines = text.split_lines(M.accumulated_chunks)
         lines = M.strip_md_from_completion(lines)
         -- TODO do I wanna keep it without closing think tag?
         lines = M.strip_thinking_tags(lines)
