@@ -286,7 +286,6 @@ local function ask_and_stream_from_ollama(opts)
     -- Store selection details for later use
     M.selection = selection
     M.accumulated_chunks = ""
-    selection:log_info()
 
     M.stream_from_ollama(user_prompt, selection.original_text, file_name)
 end
