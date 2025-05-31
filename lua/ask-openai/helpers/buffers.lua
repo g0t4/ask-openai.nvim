@@ -115,19 +115,6 @@ function M.dump_last_seletion()
     print(vim.inspect(selection))
 end
 
-function split_lines_skip_empties(string)
-    -- TODO search for other uses of this and replace them! (where I manually split and check blanks)
-    -- wrapper as a reminder really
-    local lines = vim.split(string, "\n", { trimempty = true })
-    local keep = {}
-    for _, line in ipairs(lines) do
-        if line:match("%S") then
-            table.insert(keep, line)
-        end
-    end
-    return keep
-end
-
 function table_insert_many(tbl, items)
     for _, item in ipairs(items) do
         table.insert(tbl, item)
