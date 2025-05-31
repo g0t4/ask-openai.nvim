@@ -1,4 +1,5 @@
 local rewrites = require("lua.ask-openai.rewrites.inline")
+local thinking = require("lua.ask-openai.rewrites.thinking.init")
 local assert = require("luassert")
 
 describe("test strip markdown from completion responses", function()
@@ -44,7 +45,7 @@ describe("test strip special html thinking tags from full completion responses",
 
     local function test_strip_thinking_tags(input_text, expected_text)
         local input_lines = vim.split(input_text, "\n")
-        rewrites.set_thinking_tag_and_patterns("foo") -- just to avoid the special tag in code I might want to dog food help with
+        thinking.set_thinking_tag_and_patterns("foo") -- just to avoid the special tag in code I might want to dog food help with
         local output_lines = rewrites.strip_thinking_tags(input_lines)
         local output_text = table.concat(output_lines, "\n")
         assert.are.same(expected_text, output_text)
@@ -110,7 +111,7 @@ describe("test strip special html thinking tags from full completion responses",
         -- FYI I might want another streaming helper that can strip it out after open tag detected... that can be separate or incorporated later
         local input_text = "<foo>special tag foo the bar."
         local input_lines = vim.split(input_text, "\n")
-        rewrites.set_thinking_tag_and_patterns("foo")
+        thinking.set_thinking_tag_and_patterns("foo")
         local output_lines, open_without_close_yet = rewrites.strip_thinking_tags(input_lines)
         local output_text = table.concat(output_lines, "\n")
         assert.are.same(input_text, output_text)
