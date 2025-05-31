@@ -156,16 +156,11 @@ function M.accept_rewrite()
         lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
 
-        local use_start_line_0indexed = M.selection:start_line_0indexed()
-        local use_end_line_0indexed = M.selection:end_line_0indexed()
-        local use_start_col_0indexed = M.selection:start_col_0indexed()
-        local use_end_col_0indexed = M.selection:end_col_0indexed()
-
         log:info("nvim_buf_set_text: 0-indexed "
-            .. "start(line=" .. use_start_line_0indexed
-            .. ",col=" .. use_start_col_0indexed
-            .. ") end(line=" .. use_end_line_0indexed
-            .. ",col=" .. use_end_col_0indexed
+            .. "start(line=" .. M.selection:start_line_0indexed()
+            .. ",col=" .. M.selection:start_col_0indexed()
+            .. ") end(line=" .. M.selection:end_line_0indexed()
+            .. ",col=" .. M.selection:end_col_0indexed()
             .. ")")
 
         -- TODO! study what to do to fix this, versus change how I select text in char/line/blockwise visual modes
@@ -188,10 +183,10 @@ function M.accept_rewrite()
         -- Replace the selected text with the generated content
         vim.api.nvim_buf_set_text(
             0, -- Current buffer
-            use_start_line_0indexed, -- Zero-indexed
-            use_start_col_0indexed, -- Zero-indexed
-            use_end_line_0indexed, -- Zero-indexed, end-inclusive line/row
-            use_end_col_0indexed, -- Zero-indexed, end-exclusive column
+            M.selection:start_line_0indexed(), -- Zero-indexed
+            M.selection:start_col_0indexed(), -- Zero-indexed
+            M.selection:end_line_0indexed(), -- Zero-indexed, end-inclusive line/row
+            M.selection:end_col_0indexed(), -- Zero-indexed, end-exclusive column
             lines
         )
 
