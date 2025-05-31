@@ -2,7 +2,6 @@ local M = {}
 local log = require("ask-openai.prediction.logger").predictions()
 
 local function body_for(prefix, suffix)
-
     local body = {
 
         model = "fim_qwen:7b-instruct-q8_0", -- qwen2.5-coder, see Modelfile
@@ -38,7 +37,8 @@ function M.build_request(prefix, suffix)
     local options = {
         command = "curl",
         args = {
-            "-fsSL",
+            "--fail-with-body",
+            "-sSL",
             "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
             "http://ollama:11434/v1/completions", -- TODO pass in api base_url (via config)

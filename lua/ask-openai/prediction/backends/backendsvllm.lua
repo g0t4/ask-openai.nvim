@@ -146,7 +146,8 @@ function M.build_request(prefix, suffix, recent_edits)
     local options = {
         command = "curl",
         args = {
-            "-fsSL",
+            "--fail-with-body",
+            "-sSL",
             "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
             "http://ollama:8000/v1/completions", -- TODO pass in api base_url (via config)

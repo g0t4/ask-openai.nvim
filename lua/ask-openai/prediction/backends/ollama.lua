@@ -27,7 +27,8 @@ function OllamaFimBackend:request_options()
     local options = {
         command = "curl",
         args = {
-            "-fsSL",
+            "--fail-with-body",
+            "-sSL",
             "--no-buffer", -- test w/ `curl *` vs `curl * | cat`
             "-X", "POST",
             "http://ollama:11434/api/generate",

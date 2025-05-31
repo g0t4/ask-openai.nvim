@@ -19,7 +19,8 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
     local options = {
         command = "curl",
         args = {
-            "-fsSL",
+            "--fail-with-body",
+            "-sSL",
             "--no-buffer", -- w/o this curl batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
             url,
