@@ -2,6 +2,11 @@ require('ask-openai.helpers.testing')
 local Selection = require('ask-openai.helpers.selection')
 local should = require('devtools.tests.should')
 local log = require("ask-openai.prediction.logger").predictions()
+local busted = require("plenary.busted")
+local before_each = busted.before_each
+-- FYI useful way to find loaded modules (via globals)
+-- vim.print(_G)
+
 
 -- ***! methods to simulate a user selection:
 --
