@@ -274,7 +274,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 end
 
 local function ask_and_stream_from_ollama(opts)
-    local selection = Selection.get_visual_selection()
+    local selection = Selection.get_visual_selection_for_current_window()
     -- if selection:is_empty() then
     --     error("No visual selection found.")
     --     return

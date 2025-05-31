@@ -8,7 +8,7 @@ function M.get_current_buffer_entire_text()
 end
 
 function M.dump_last_seletion()
-    local selection = Selection.get_visual_selection()
+    local selection = Selection.get_visual_selection_for_current_window()
     print(vim.inspect(selection))
 end
 

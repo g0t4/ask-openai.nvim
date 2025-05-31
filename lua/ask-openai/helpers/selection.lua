@@ -61,7 +61,9 @@ function Selection:log_info(message, as_0indexed)
     log:info(message, self:to_str(as_0indexed))
 end
 
-function Selection._get_visual_selection(buffer_number)
+function Selection._get_visual_selection_for_window_id(window_id)
+    local buffer_number = vim.api.nvim_win_get_buf(window_id)
+
     -- FYI getpos returns a byte index, getcharpos() returns a char index (prefer it)
     --   getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
     local _, start_line_1indexed, start_col_1indexed, _ = unpack(vim.fn.getcharpos("'<"))
@@ -124,10 +126,9 @@ function Selection._get_visual_selection(buffer_number)
     return selection
 end
 
-function Selection.get_visual_selection()
-    return Selection._get_visual_selection(
-        vim.api.nvim_get_current_buf()
-    )
+function Selection.get_visual_selection_for_current_window()
+    local current_window_id = vim.api.nvim_get_current_win()
+    return Selection._get_visual_selection_for_window_id(current_window_id)
 end
 
 return Selection

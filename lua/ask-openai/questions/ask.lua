@@ -97,7 +97,7 @@ function M.send_messages()
 end
 
 local function ask_question_about(opts, use_tools, include_context)
-    local selection = Selection.get_visual_selection()
+    local selection = Selection.get_visual_selection_for_current_window()
     if selection:is_empty() then
         error("No visual selection found.")
         return

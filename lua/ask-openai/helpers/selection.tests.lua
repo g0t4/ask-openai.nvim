@@ -1,39 +1,73 @@
 require('ask-openai.helpers.testing')
 local Selection = require('ask-openai.helpers.selection')
 local should = require('devtools.tests.should')
+local log = require("ask-openai.prediction.logger").predictions()
+
+-- ***! methods to simulate a user selection:
+--
+-- *** marks are ONLY SET ON EXITING VISUAL MODE!!!
+--
+-- vim.cmd("normal! VV") -- works! (enter and exit)
+--
+-- vim.cmd("normal! V<Esc>") -- works! (enter and exit)
+--
+-- * set marks manually! good for testing too... especially for precise testing
+-- vim.api.nvim_win_set_cursor(win, { 1, 2 }) -- line 3, col 2
+-- vim.cmd("normal! m<")
+-- vim.api.nvim_win_set_cursor(win, { 3, 4 }) -- line 2, col 4
+-- vim.cmd("normal! m>")
+--
+-- ***! set precise mark positions
+-- vim.fn.setcharpos("'<", { 0, 1, 2, 0 })
+-- vim.fn.setcharpos("'>", { 0, 1, 4, 0 })
+--
+-- vim.print("current bufnr: " .. vim.api.nvim_get_current_buf())
+-- vim.print("current win: " .. vim.api.nvim_get_current_win())
+-- vim.print("'< is ", vim.fn.getcharpos("'<"))
+-- vim.print("'> is ", vim.fn.getcharpos("'>"))
 
 describe("get_visual_selection()", function()
     -- TODO! vet if issue w/ trailing char left after accept... is it in the selection logic
 
     local test_buffer_number = 0
-    local function buffer_has_lines(lines)
+    local function load_lines(lines)
         test_buffer_number = vim.api.nvim_create_buf(false, true)
         vim.api.nvim_buf_set_lines(test_buffer_number, 0, -1, false, lines)
+
+        local win = vim.api.nvim_open_win(test_buffer_number, true, {
+            relative = 'editor',
+            width = 80,
+            height = 10,
+            row = 0,
+            col = 0,
+            style = 'minimal',
+        })
+        vim.api.nvim_set_current_win(win)
+        -- TODO do I need to set cursor initially before command?
+        -- vim.api.nvim_win_set_cursor(win, { 1, 0 })
     end
 
     local function get_selection()
-        return Selection._get_visual_selection(test_buffer_number)
+        return Selection.get_visual_selection_for_current_window()
     end
 
     describe("linewise", function()
         describe("only one line", function()
             it("no selection is empty", function()
-                buffer_has_lines({ "foo the bar" })
+                load_lines({ "foo the bar" })
+                -- nothing to do if its a new buffer/window
+                -- vim.cmd("normal! <Esc>")
                 local selection = get_selection()
                 assert(selection:is_empty())
             end)
 
             it("one line selected, only one in buffer", function()
-                buffer_has_lines({ "foo the bar" })
+                load_lines({ "foo the bar" })
+                vim.cmd('normal! VV') -- second V exits
                 local selection = get_selection()
-                -- local expected = { start_row = 1, end_row = 2 }
-                -- should.equal(selection, expected)
-
-
-                -- vim.execute [[execute 'normal! <M-v>']]
+                should.be_equal("foo the bar", selection.original_text)
             end)
             it("one line selected, subset of buffer", function()
-                -- vim.execute [[execute 'normal! <M-v>']]
             end)
         end)
 
