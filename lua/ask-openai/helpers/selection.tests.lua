@@ -57,31 +57,55 @@ describe("get_visual_selection()", function()
     end
 
 
-    describe("linewise", function()
-        describe("only one line", function()
-            before_each(function()
-                load_lines({ "foo the bar" })
-            end)
-
-            it("no selection is empty", function()
-                -- nothing to do if its a new buffer/window
-                -- vim.cmd("normal! <Esc>")
-                local selection = get_selection()
-                assert(selection:is_empty())
-            end)
-
-            it("one line selected, only one in buffer", function()
-                vim.cmd('normal! VV') -- second V exits
-                local selection = get_selection()
-                should.be_equal("foo the bar", selection.original_text)
-            end)
-
-            it("one line selected, subset of buffer", function()
-
-            end)
+    describe("only one line", function()
+        before_each(function()
+            load_lines({ "foo the bar" })
         end)
 
-        it("multiline selection, subset of buffer", function()
+        it("no selection is empty", function()
+            -- nothing to do if its a new buffer/window
+            -- vim.cmd("normal! <Esc>")
+            local selection = get_selection()
+            assert(selection:is_empty())
         end)
+
+        it("one line selected, only one in buffer", function()
+            vim.cmd('normal! VV') -- second V exits
+            local selection = get_selection()
+            should.be_equal("foo the bar", selection.original_text)
+        end)
+
+        it("middle of a line", function()
+            vim.cmd('normal! 0wvw<Esc>') -- third V exits
+            -- moves cursor to second word, then selects through one word (w)
+            --   which results in the cursor on the third word,
+            --   taking the first letter...
+            --   which is interesting b/c my understanding is cursor is left of the char it visually sits on top of... maybe not in charwise?
+            local selection = get_selection()
+            should.be_equal("the b", selection.original_text)
+        end)
+
+        it("start of line (0) to end of line $", function()
+            vim.cmd('normal! 0v$<Esc>')
+            local selection = get_selection()
+            should.be_equal("foo the bar", selection.original_text)
+        end)
+
+        -- it("end of a line with trailing newline", function()
+        --     vim.cmd('normal! Vj') -- third V exits
+        --     local selection = get_selection()
+        --     should.be_equal("the bar\n", selection.original_text)
+        --     end)
+        -- end)
+
+        -- describe("multiline", function()
+        --     before_each(function()
+        --         load_lines({ "foo the bar\n", "baz bat" })
+        --     end)
+    end)
+
+    it("one line selected, subset of buffer", function()
+    end)
+    it("multiline selection, subset of buffer", function()
     end)
 end)
