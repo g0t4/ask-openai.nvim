@@ -100,9 +100,21 @@ function M.handle_messages_updated()
     --  OR I can pass the latest chunk still... do smth in the normalizer for that or still have a sep pathway per delta (no chunkin though?)
 end
 
-local dots_module = {
+
+dots_module = {
     dots = "",
     count = 0,
+    generate_dots = function(count, dots)
+        count = count + 1
+        if count % 4 == 0 then
+            dots = dots .. "."
+        end
+        if count > 120 then
+            dots = ""
+            count = 0
+        end
+        return count, dots
+    end,
 }
 
 local dots_count = dots_module.count
@@ -118,15 +130,7 @@ function M.process_chunk(chunk)
     local pending_close = nil
     lines, pending_close = M.strip_thinking_tags(lines)
     if pending_close then
-        -- PRN slow it down, use a counter and only increment on every Xth chunk
-        dots_count = dots_count + 1
-        if dots_count % 4 == 0 then
-            dots = dots .. "."
-        end
-        if dots_count > 120 then
-            dots = ""
-            dots_count = 0
-        end
+        dots_count, dots = dots_module.generate_dots(dots_count, dots)
         lines = { "thinking: " .. dots }
     end
     lines = ensure_new_lines_around(M.selection.original_text, lines)
