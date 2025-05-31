@@ -100,8 +100,13 @@ function M.handle_messages_updated()
     --  OR I can pass the latest chunk still... do smth in the normalizer for that or still have a sep pathway per delta (no chunkin though?)
 end
 
-local dots_count = 0
-local dots = ""
+local dots_module = {
+    dots = "",
+    count = 0,
+}
+
+local dots_count = dots_module.count
+local dots = dots_module.dots
 
 function M.process_chunk(chunk)
     if not chunk then return end
