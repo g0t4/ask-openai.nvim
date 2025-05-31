@@ -72,6 +72,34 @@ local function clear_extmarks()
     vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
 end
 
+local function show_green_preview_of_just_new_text(lines)
+    clear_extmarks()
+
+    if #lines == 0 then return end
+
+    local first_line = { { table.remove(lines, 1), hlgroup } }
+
+    -- Format remaining lines for virt_lines
+    local virt_lines = {}
+    for _, line in ipairs(lines) do
+        table.insert(virt_lines, { { line, hlgroup } })
+    end
+
+    -- Set extmark at the beginning of the selection
+    M.extmark_id = vim.api.nvim_buf_set_extmark(
+        0, -- Current buffer
+        M.namespace_id,
+        M.selection.start_line_1indexed - 1, -- Zero-indexed
+        M.selection.start_col_1indexed - 1, -- Zero-indexed
+        {
+            virt_text = first_line,
+            virt_lines = virt_lines,
+            virt_text_pos = "overlay",
+            hl_mode = "combine"
+        }
+    )
+end
+
 function M.process_chunk(chunk)
     if not chunk then return end
 
@@ -85,34 +113,6 @@ function M.process_chunk(chunk)
         lines = { thinking.dots:get_still_thinking_message() }
     end
     lines = ensure_new_lines_around(M.selection.original_text, lines)
-
-    local function show_green_preview_of_just_new_text(lines)
-        clear_extmarks()
-
-        if #lines == 0 then return end
-
-        local first_line = { { table.remove(lines, 1), hlgroup } }
-
-        -- Format remaining lines for virt_lines
-        local virt_lines = {}
-        for _, line in ipairs(lines) do
-            table.insert(virt_lines, { { line, hlgroup } })
-        end
-
-        -- Set extmark at the beginning of the selection
-        M.extmark_id = vim.api.nvim_buf_set_extmark(
-            0, -- Current buffer
-            M.namespace_id,
-            M.selection.start_line_1indexed - 1, -- Zero-indexed
-            M.selection.start_col_1indexed - 1, -- Zero-indexed
-            {
-                virt_text = first_line,
-                virt_lines = virt_lines,
-                virt_text_pos = "overlay",
-                hl_mode = "combine"
-            }
-        )
-    end
 
     vim.schedule(function()
         show_green_preview_of_just_new_text(lines)
