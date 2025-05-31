@@ -5,6 +5,8 @@ local log = require("ask-openai.prediction.logger").predictions()
 local agentica = require("ask-openai.backends.models.agentica")
 local text_helpers = require("ask-openai.helpers.text")
 local thinking = require("ask-openai.rewrites.thinking")
+local Selection = require("ask-openai.helpers.selection")
+
 local M = {}
 
 -- Set up a highlight group for the extmarks
@@ -101,6 +103,31 @@ local function show_green_preview_of_just_new_text(lines)
     )
 end
 
+---@param selection Selection
+local function show_diff_ohhhhh_yeahhhhh(selection, lines)
+    clear_extmarks()
+
+    -- local first_line = { { table.remove(lines, 1), hlgroup } }
+    -- -- Format remaining lines for virt_lines
+    -- local virt_lines = {}
+    -- for _, line in ipairs(lines) do
+    --     table.insert(virt_lines, { { line, hlgroup } })
+    -- end
+    -- -- Set extmark at the beginning of the selection
+    -- M.extmark_id = vim.api.nvim_buf_set_extmark(
+    --     0, -- Current buffer
+    --     M.namespace_id,
+    --     M.selection.start_line_1indexed - 1, -- Zero-indexed
+    --     M.selection.start_col_1indexed - 1, -- Zero-indexed
+    --     {
+    --         virt_text = first_line,
+    --         virt_lines = virt_lines,
+    --         virt_text_pos = "overlay",
+    --         hl_mode = "combine"
+    --     }
+    -- )
+end
+
 function M.process_chunk(chunk)
     if not chunk then return end
 
@@ -116,7 +143,7 @@ function M.process_chunk(chunk)
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 
     -- vim.schedule(function() show_green_preview_of_just_new_text(lines) end)
-    vim.schedule(function() show_diff_ohhhhh_yeahhhhh(lines) end)
+    vim.schedule(function() show_diff_ohhhhh_yeahhhhh(M.selection, lines) end)
 end
 
 function M.handle_request_completed()
