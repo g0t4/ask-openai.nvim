@@ -104,6 +104,10 @@ describe("get_visual_selection()", function()
         --     end)
     end)
 
+    local function move_cursor_to_start_of_doc()
+        vim.api.nvim_win_set_cursor(0, { 1, 0 })
+    end
+
     describe("multi line", function()
         before_each(function()
             local lines = {
@@ -121,15 +125,35 @@ describe("get_visual_selection()", function()
                 "",
                 "line 9",
                 "line 10 the cow is over there",
-                ""
             }
             load_lines(lines)
         end)
 
-        it("one line selected, subset of buffer", function()
+        describe("linewise selections", function()
+            it("single line selection, first line", function()
+                move_cursor_to_start_of_doc()
+                vim.cmd('normal! VV') -- second V exits
+                local selection = get_selection()
+                should.be_equal("line 1 cow", selection.original_text)
+            end)
+
+            it("single line selection, middle of document", function()
+                move_cursor_to_start_of_doc()
+                vim.cmd('normal! 2jVV') -- second V exits
+                local selection = get_selection()
+                should.be_equal("line 3 goose gooose goose", selection.original_text)
+            end)
+
+            it("single line selection, empty line", function()
+                move_cursor_to_start_of_doc()
+                vim.cmd('normal! GVV') -- second V exits
+                local selection = get_selection()
+                should.be_equal("line 10 the cow is over there", selection.original_text)
+            end)
         end)
 
-        it("multiline selection, subset of buffer", function()
+        describe("multiline selection, subset of buffer", function()
+
         end)
     end)
 end)
