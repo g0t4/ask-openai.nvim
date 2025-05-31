@@ -156,13 +156,6 @@ function M.accept_rewrite()
         lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
 
-        log:info("nvim_buf_set_text: 0-indexed "
-            .. "start(line=" .. M.selection:start_line_0indexed()
-            .. ",col=" .. M.selection:start_col_0indexed()
-            .. ") end(line=" .. M.selection:end_line_0indexed()
-            .. ",col=" .. M.selection:end_col_0indexed()
-            .. ")")
-
         -- TODO! study what to do to fix this, versus change how I select text in char/line/blockwise visual modes
         -- FYI notes about not replacing last character of selection
         --   select some text, i.e. viw => then <leader>rw => notice it doesn't show the char that was under the cursor as selected
