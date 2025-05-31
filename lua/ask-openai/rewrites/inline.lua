@@ -68,6 +68,11 @@ function M.handle_messages_updated()
     --  OR I can pass the latest chunk still... do smth in the normalizer for that or still have a sep pathway per delta (no chunkin though?)
 end
 
+local function clear_extmarks()
+    -- Clear previous extmark
+    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
+end
+
 function M.process_chunk(chunk)
     if not chunk then return end
 
@@ -83,8 +88,7 @@ function M.process_chunk(chunk)
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 
     vim.schedule(function()
-        -- Clear previous extmark
-        vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
+        clear_extmarks()
 
         if #lines == 0 then return end
 
@@ -161,8 +165,7 @@ function M.accept_rewrite()
             lines
         )
 
-        -- Clear the extmark
-        vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
+        clear_extmarks()
 
         -- Reset the module state
         M.accumulated_chunks = ""
@@ -175,8 +178,7 @@ end
 
 function M.cancel_rewrite()
     vim.schedule(function()
-        -- Clear the extmark
-        vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
+        clear_extmarks()
 
         -- PRN store this in a last_accumulated_chunks / canceled_accumulated_chunks?
         --  log similarly in accept?
@@ -312,8 +314,7 @@ function M.abort_last_request()
 
     backend.terminate(M.last_request)
 
-    -- Clear any extmarks
-    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
+    clear_extmarks()
 end
 
 function M.setup()
