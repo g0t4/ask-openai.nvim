@@ -6,6 +6,8 @@ local agentica = require("ask-openai.backends.models.agentica")
 local ChatWindow = require("ask-openai.questions.chat_window")
 local ChatThread = require("ask-openai.questions.chat_thread")
 local ChatMessage = require("ask-openai.questions.chat_message")
+local Selection = require("ask-openai.helpers.selection")
+
 local M = {}
 require("ask-openai.helpers.buffers")
 
@@ -95,7 +97,7 @@ function M.send_messages()
 end
 
 local function ask_question_about(opts, use_tools, include_context)
-    local selection = buffers.get_visual_selection()
+    local selection = Selection.get_visual_selection()
     if selection:is_empty() then
         error("No visual selection found.")
         return
