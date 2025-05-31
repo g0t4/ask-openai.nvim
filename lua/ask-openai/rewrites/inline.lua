@@ -302,8 +302,6 @@ function M.on_stderr_data(text)
     -- FYI test by point at wrong server/port
     -- TODO match api changes in ask
     vim.schedule(function()
-        -- or in this case should I show a notification?
-        -- lets see how often and if its annoying written as code to the buffer
         M.process_chunk("\n" .. text)
     end)
 end
