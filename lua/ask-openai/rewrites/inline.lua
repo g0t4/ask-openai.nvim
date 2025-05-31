@@ -180,6 +180,8 @@ function M.cancel_rewrite()
         -- Clear the extmark
         vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
 
+        -- PRN store this in a last_accumulated_chunks / canceled_accumulated_chunks?
+        --  log similarly in accept?
         log:info("Canceling this rewrite: ", M.accumulated_chunks)
 
         -- Reset the module state
