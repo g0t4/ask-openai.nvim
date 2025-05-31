@@ -104,7 +104,7 @@ end
 dots_module = {
     dots = "",
     count = 0,
-    generate_dots = function()
+    still_thinking = function()
         dots_module.count = dots_module.count + 1
         if dots_module.count % 4 == 0 then
             dots_module.dots = dots_module.dots .. "."
@@ -126,7 +126,7 @@ function M.process_chunk(chunk)
     local pending_close = nil
     lines, pending_close = M.strip_thinking_tags(lines)
     if pending_close then
-        dots_module.generate_dots()
+        dots_module.still_thinking()
         lines = { "thinking: " .. dots_module.dots }
     end
     lines = ensure_new_lines_around(M.selection.original_text, lines)
