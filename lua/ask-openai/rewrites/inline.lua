@@ -4,7 +4,7 @@ local backend = require("ask-openai.backends.oai_chat")
 local log = require("ask-openai.prediction.logger").predictions()
 local agentica = require("ask-openai.backends.models.agentica")
 local text = require("ask-openai.helpers.text")
-local thinking_dots = require("ask-openai.rewrites.dots")
+local thinking_dots = require("ask-openai.rewrites.thinking.dots")
 local M = {}
 
 -- Set up a highlight group for the extmarks
