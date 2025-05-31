@@ -18,7 +18,7 @@ M.accumulated_chunks = ""
 M.namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
 M.extmark_id = nil
 
-function M.set_thinking_tag(thinking_tag)
+function M.set_thinking_tag_and_patterns(thinking_tag)
     M.thinking_tag = thinking_tag
     -- FYI - == match shortest possible sequence (thus we can find first full closinng tag afterwards while skipping partial tags)
     --    also %s%S helps match everything possible, including newlines
@@ -30,7 +30,7 @@ function M.set_thinking_tag(thinking_tag)
     M.thinking_open_tag_only = "^%s*<" .. M.thinking_tag .. ">[^<]*"
 end
 
-M.set_thinking_tag("think")
+M.set_thinking_tag_and_patterns("think")
 
 function M.strip_thinking_tags(lines)
     local text = table.concat(lines, "\n")
