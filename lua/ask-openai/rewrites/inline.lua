@@ -340,7 +340,7 @@ function M.setup()
     -- also prints don't popup if they originated in a lua handler, whereas they do with a vim command
     --   thus w/ a cmd I get to see the vim.inspect(selection) with a pprint json like view of fields
 
-    require("ask-openai.prediction.context.init").setup()
+    require("ask-openai.prediction.context").setup()
 end
 
 return M
