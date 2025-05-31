@@ -1,4 +1,4 @@
-local rewrites = require("lua.ask-openai.rewrites.inline")
+local rewrites = require("ask-openai.rewrites.inline")
 local assert = require("luassert")
 
 -- TODO PORT TO WORK WITH inline2
