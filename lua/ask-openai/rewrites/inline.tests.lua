@@ -32,7 +32,7 @@ describe("test strip markdown from completion responses", function()
     -- or can I use structured outputs with ollama? I know I can with vllm... that might help too
 end)
 
-describe("test strip special html thinking tags from full completion responses", function()
+describe("test strip html thinking tags from full completion responses", function()
     -- BTW... don't include the think tag example if you want help...
     -- it ends up stopping the model when it first reflects on the closing tag
 
@@ -51,7 +51,7 @@ describe("test strip special html thinking tags from full completion responses",
         assert.are.same(expected_text, output_text)
     end
 
-    it("should remove one set of special html tags <foo> and </foo> when they come first", function()
+    it("should remove one set of thinking html tags <foo> and </foo> when they come first", function()
         local input_text = "<foo>special tag</foo> and more text."
         local expected_text = " and more text."
         test_strip_thinking_tags(input_text, expected_text)
@@ -85,12 +85,12 @@ describe("test strip special html thinking tags from full completion responses",
         end
     end)
 
-    it("should NOT remove one set of special html tags \n<foo> and </foo> when they don't come first, even if starts at start of a line", function()
+    it("should NOT remove one set of thinking html tags \n<foo> and </foo> when they don't come first, even if starts at start of a line", function()
         local input_text = "This is some text with <foo>special tag</foo> and more text."
         test_strip_thinking_tags(input_text, input_text)
     end)
 
-    it("should NOT remove one set of special html tags <foo> and </foo> when they don't come first", function()
+    it("should NOT remove one set of thinking html tags <foo> and </foo> when they don't come first", function()
         local input_text = "This is some text with <foo>special tag</foo> and more text."
         test_strip_thinking_tags(input_text, input_text)
     end)
