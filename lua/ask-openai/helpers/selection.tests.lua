@@ -51,10 +51,14 @@ describe("get_visual_selection()", function()
         return Selection.get_visual_selection_for_current_window()
     end
 
+
     describe("linewise", function()
         describe("only one line", function()
-            it("no selection is empty", function()
+            before_each(function()
                 load_lines({ "foo the bar" })
+            end)
+
+            it("no selection is empty", function()
                 -- nothing to do if its a new buffer/window
                 -- vim.cmd("normal! <Esc>")
                 local selection = get_selection()
@@ -62,12 +66,13 @@ describe("get_visual_selection()", function()
             end)
 
             it("one line selected, only one in buffer", function()
-                load_lines({ "foo the bar" })
                 vim.cmd('normal! VV') -- second V exits
                 local selection = get_selection()
                 should.be_equal("foo the bar", selection.original_text)
             end)
+
             it("one line selected, subset of buffer", function()
+
             end)
         end)
 
