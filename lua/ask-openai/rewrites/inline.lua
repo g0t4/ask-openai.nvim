@@ -114,7 +114,8 @@ function M.process_chunk(chunk)
     end
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 
-    vim.schedule(function() show_green_preview_of_just_new_text(lines) end)
+    -- vim.schedule(function() show_green_preview_of_just_new_text(lines) end)
+    vim.schedule(function() show_diff_ohhhhh_yeahhhhh(lines) end)
 end
 
 function M.handle_request_completed()
