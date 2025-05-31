@@ -31,31 +31,31 @@ local before_each = busted.before_each
 -- vim.print("'< is ", vim.fn.getcharpos("'<"))
 -- vim.print("'> is ", vim.fn.getcharpos("'>"))
 
+local test_buffer_number = 0
+local function load_lines(lines)
+    test_buffer_number = vim.api.nvim_create_buf(false, true)
+    vim.api.nvim_buf_set_lines(test_buffer_number, 0, -1, false, lines)
+
+    local win = vim.api.nvim_open_win(test_buffer_number, true, {
+        relative = 'editor',
+        width = 80,
+        height = 10,
+        row = 0,
+        col = 0,
+        style = 'minimal',
+    })
+    vim.api.nvim_set_current_win(win)
+    -- TODO do I need to set cursor initially before command?
+    -- vim.api.nvim_win_set_cursor(win, { 1, 0 })
+end
+
+local function get_selection()
+    return Selection.get_visual_selection_for_current_window()
+end
+
+
 describe("get_visual_selection()", function()
     -- TODO! vet if issue w/ trailing char left after accept... is it in the selection logic
-
-    local test_buffer_number = 0
-    local function load_lines(lines)
-        test_buffer_number = vim.api.nvim_create_buf(false, true)
-        vim.api.nvim_buf_set_lines(test_buffer_number, 0, -1, false, lines)
-
-        local win = vim.api.nvim_open_win(test_buffer_number, true, {
-            relative = 'editor',
-            width = 80,
-            height = 10,
-            row = 0,
-            col = 0,
-            style = 'minimal',
-        })
-        vim.api.nvim_set_current_win(win)
-        -- TODO do I need to set cursor initially before command?
-        -- vim.api.nvim_win_set_cursor(win, { 1, 0 })
-    end
-
-    local function get_selection()
-        return Selection.get_visual_selection_for_current_window()
-    end
-
 
     describe("only one line", function()
         before_each(function()
@@ -104,8 +104,32 @@ describe("get_visual_selection()", function()
         --     end)
     end)
 
-    it("one line selected, subset of buffer", function()
-    end)
-    it("multiline selection, subset of buffer", function()
+    describe("multi line", function()
+        before_each(function()
+            local lines = {
+                "line 1 cow",
+                "line 2 duck duck",
+                "line 3 goose gooose goose",
+                "line 4 goose",
+                "",
+                "line 6 storm the gates",
+                "line 7stormy weather",
+                "",
+                "lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.",
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+                "Integer posuere erat a ante",
+                "",
+                "line 9",
+                "line 10 the cow is over there",
+                ""
+            }
+            load_lines(lines)
+        end)
+
+        it("one line selected, subset of buffer", function()
+        end)
+
+        it("multiline selection, subset of buffer", function()
+        end)
     end)
 end)
