@@ -78,7 +78,7 @@ function M.process_chunk(chunk)
     local pending_close = nil
     lines, pending_close = thinking.strip_thinking_tags(lines)
     if pending_close then
-        lines = { thinking.dots:model_is_still_thinking() }
+        lines = { thinking.dots:get_still_thinking_message() }
     end
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 

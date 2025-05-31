@@ -3,7 +3,7 @@ local M = {}
 M.count = 0
 M.dots = ""
 
-function M.model_is_still_thinking(self)
+function M.get_still_thinking_message(self)
     self.count = self.count + 1
     if self.count % 4 == 0 then
         self.dots = self.dots .. "."
