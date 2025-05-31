@@ -15,6 +15,7 @@ vim.api.nvim_command("highlight default " .. hlgroup .. " guifg=#ccffcc ctermfg=
 -- FYI I like having a slightly different color vs predictions completions
 
 -- Initialize selection position variables at module level
+---@type Selection|nil
 M.selection = nil
 M.accumulated_chunks = ""
 M.namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
