@@ -8,6 +8,9 @@ trim_trailing_whitespace = true
 # end_of_line = lf
 
 [*.lua]
+# https://github.com/CppCXY/EmmyLuaCodeStyle/blob/master/docs/format_config_EN.md
+# https://github.com/CppCXY/EmmyLuaCodeStyle/blob/master/lua.template.editorconfig
 indent_size = 4
 max_line_length = 200
 align_continuous_inline_comment = false
+
