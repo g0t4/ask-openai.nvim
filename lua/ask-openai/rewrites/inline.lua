@@ -86,9 +86,7 @@ function M.process_chunk(chunk)
     end
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 
-    vim.schedule(show_green_preview_of_just_new_text)
-
-    function show_green_preview_of_just_new_text()
+    local function show_green_preview_of_just_new_text()
         clear_extmarks()
 
         if #lines == 0 then return end
@@ -115,6 +113,8 @@ function M.process_chunk(chunk)
             }
         )
     end
+
+    vim.schedule(show_green_preview_of_just_new_text)
 end
 
 function M.handle_request_completed()
