@@ -3,6 +3,9 @@ local Selection = require("ask-openai.helpers.selection")
 local M = {}
 
 function M.get_visual_selection()
+    -- TODO! get tests of this in place using plenary... with a real buffer
+    -- TODO! the issue w/ extra trailing char left behind might have to do with this logic?
+
     -- FYI getpos returns a byte index, getcharpos() returns a char index (prefer it)
     --   getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
     local _, start_line_1indexed, start_col_1indexed, _ = unpack(vim.fn.getcharpos("'<"))
