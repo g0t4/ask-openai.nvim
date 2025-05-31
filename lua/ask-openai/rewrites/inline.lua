@@ -92,8 +92,8 @@ local function show_green_preview_of_just_new_text(lines)
     M.extmark_id = vim.api.nvim_buf_set_extmark(
         0, -- Current buffer
         M.namespace_id,
-        M.selection.start_line_1indexed - 1, -- Zero-indexed
-        M.selection.start_col_1indexed - 1, -- Zero-indexed
+        M.selection:start_line_0indexed(),
+        M.selection:start_col_0indexed(),
         {
             virt_text = first_line,
             virt_lines = virt_lines,
@@ -117,8 +117,8 @@ local function show_diff_ohhhhh_yeahhhhh(selection, lines)
     -- M.extmark_id = vim.api.nvim_buf_set_extmark(
     --     0, -- Current buffer
     --     M.namespace_id,
-    --     M.selection.start_line_1indexed - 1, -- Zero-indexed
-    --     M.selection.start_col_1indexed - 1, -- Zero-indexed
+    --     M.selection:start_line_0indexed(),
+    --     M.selection:start_col_0indexed(),
     --     {
     --         virt_text = first_line,
     --         virt_lines = virt_lines,
@@ -156,10 +156,10 @@ function M.accept_rewrite()
         lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
 
-        local use_start_line_0indexed = M.selection.start_line_1indexed - 1
-        local use_end_line_0indexed = M.selection.end_line_1indexed - 1
-        local use_start_col_0indexed = M.selection.start_col_1indexed - 1
-        local use_end_col_0indexed = M.selection.end_col_1indexed - 1
+        local use_start_line_0indexed = M.selection:start_line_0indexed()
+        local use_end_line_0indexed = M.selection:end_line_0indexed()
+        local use_start_col_0indexed = M.selection:start_col_0indexed()
+        local use_end_col_0indexed = M.selection:end_col_0indexed()
 
         log:info("nvim_buf_set_text: 0-indexed "
             .. "start(line=" .. use_start_line_0indexed
