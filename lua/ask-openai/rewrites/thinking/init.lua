@@ -1,4 +1,6 @@
-local M = {}
+local M = {
+    dots = require("ask-openai.rewrites.thinking.dots"),
+}
 
 function M.set_thinking_tag_and_patterns(thinking_tag)
     M.thinking_tag = thinking_tag

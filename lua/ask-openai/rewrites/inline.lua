@@ -4,7 +4,6 @@ local backend = require("ask-openai.backends.oai_chat")
 local log = require("ask-openai.prediction.logger").predictions()
 local agentica = require("ask-openai.backends.models.agentica")
 local text_helpers = require("ask-openai.helpers.text")
-local thinking_dots = require("ask-openai.rewrites.thinking.dots")
 local thinking = require("ask-openai.rewrites.thinking.init")
 local M = {}
 
@@ -98,8 +97,8 @@ function M.process_chunk(chunk)
     local pending_close = nil
     lines, pending_close = M.strip_thinking_tags(lines)
     if pending_close then
-        thinking_dots:still_thinking()
-        lines = { "thinking: " .. thinking_dots.dots }
+        thinking.dots:still_thinking()
+        lines = { "thinking: " .. thinking.dots.dots }
     end
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 
