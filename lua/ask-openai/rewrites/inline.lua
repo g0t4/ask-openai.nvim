@@ -4,6 +4,7 @@ local backend = require("ask-openai.backends.oai_chat")
 local log = require("ask-openai.prediction.logger").predictions()
 local agentica = require("ask-openai.backends.models.agentica")
 local text = require("ask-openai.helpers.text")
+local dots_module = require("ask-openai.rewrites.dots")
 local M = {}
 
 -- Set up a highlight group for the extmarks
@@ -110,7 +111,7 @@ function M.process_chunk(chunk)
     local pending_close = nil
     lines, pending_close = M.strip_thinking_tags(lines)
     if pending_close then
-        dots_module.still_thinking()
+        dots_module:still_thinking()
         lines = { "thinking: " .. dots_module.dots }
     end
     lines = ensure_new_lines_around(M.selection.original_text, lines)
