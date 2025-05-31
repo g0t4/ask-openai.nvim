@@ -5,7 +5,7 @@ local log = require("ask-openai.prediction.logger").predictions()
 local agentica = require("ask-openai.backends.models.agentica")
 local text_helpers = require("ask-openai.helpers.text")
 local thinking_dots = require("ask-openai.rewrites.thinking.dots")
-local thinking = require("ask-openai.rewrites.thinking")
+local thinking = require("ask-openai.rewrites.thinking.init")
 local M = {}
 
 -- Set up a highlight group for the extmarks
