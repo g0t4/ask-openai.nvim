@@ -15,6 +15,7 @@ function Selection:new(selected_lines, start_line_1indexed, start_col_1indexed, 
     return obj
 end
 
+-- TODO add some tests of working with selection!!! YES
 function Selection:is_empty()
     return self.original_text == nil or self.original_text == ""
 end
