@@ -274,7 +274,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         },
         --
         -- model = "qwen2.5-coder:7b-instruct-q8_0",
-        -- model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base"
+        model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base"
         --
         -- model = "deepseek-r1:8b-0528-qwen3-q8_0", -- /nothink doesn't work :(
         --
