@@ -1,5 +1,6 @@
 local rewrites = require("ask-openai.rewrites.inline")
-local thinking = require("ask-openai.rewrites.thinking.init")
+-- FYI be careful how you import init.lua... must be same if imported in multiple spots (i.e. the tests)
+local thinking = require("ask-openai.rewrites.thinking")
 local assert = require("luassert")
 
 describe("test strip markdown from completion responses", function()
