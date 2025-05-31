@@ -113,15 +113,12 @@ function M.process_chunk(chunk)
 end
 
 function M.handle_request_completed()
-    -- TODO visual indicator?
-    -- TODO update rewrite to use aggregator like ask.lua tool use
 end
 
 function M.accept_rewrite()
     vim.schedule(function()
         local lines = text_helpers.split_lines(M.accumulated_chunks)
         lines = M.strip_md_from_completion(lines)
-        -- TODO do I wanna keep it without closing think tag?
         lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
 
@@ -137,6 +134,7 @@ function M.accept_rewrite()
             .. ",col=" .. use_end_col_0indexed
             .. ")")
 
+        -- TODO! study what to do to fix this, versus change how I select text in char/line/blockwise visual modes
         -- FYI notes about not replacing last character of selection
         --   select some text, i.e. viw => then <leader>rw => notice it doesn't show the char that was under the cursor as selected
         --     technically it wasn't selected, so possibly start selecting one more (cursor on char AFTER last char in selection)
