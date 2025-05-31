@@ -18,25 +18,6 @@ M.accumulated_chunks = ""
 M.namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
 M.extmark_id = nil
 
-function M.strip_thinking_tags(lines)
-    local text = table.concat(lines, "\n")
-    -- must only have whitespace before the opening tag
-    -- FYI it might actually be easier to just scan for open tag, then first close tag after it... if regex gets yucky
-    -- text = text:gsub(M.thinking_open_and_close_tags, "")
-    local open_start, open_end = text:find("^%s*<" .. thinking.thinking_tag.. ">")
-    if not open_start then
-        return lines
-    end
-    local close_start, close_end = text:find("</" .. thinking.thinking_tag .. ">", open_end + 1)
-    if not close_start then
-        -- TODO case to show animation? or return nothing?
-        -- TODO return smth to signal missing closing but open is present, as a second arg
-        return lines, true
-    end
-    local stripped_text = text:sub(close_end + 1)
-    return vim.split(stripped_text, "\n")
-end
-
 function M.strip_md_from_completion(lines)
     local isFirstLineStartOfCodeBlock = lines[1]:match("^```(%S*)$")
     local isLastLineEndOfCodeBlock = lines[#lines]:match("^```")
@@ -95,7 +76,7 @@ function M.process_chunk(chunk)
     local lines = text_helpers.split_lines(M.accumulated_chunks)
     lines = M.strip_md_from_completion(lines)
     local pending_close = nil
-    lines, pending_close = M.strip_thinking_tags(lines)
+    lines, pending_close = thinking.strip_thinking_tags(lines)
     if pending_close then
         thinking.dots:still_thinking()
         lines = { "thinking: " .. thinking.dots.dots }
@@ -142,7 +123,7 @@ function M.accept_rewrite()
         local lines = text_helpers.split_lines(M.accumulated_chunks)
         lines = M.strip_md_from_completion(lines)
         -- TODO do I wanna keep it without closing think tag?
-        lines = M.strip_thinking_tags(lines)
+        lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
 
         local use_start_line_0indexed = M.selection.start_line_1indexed - 1
