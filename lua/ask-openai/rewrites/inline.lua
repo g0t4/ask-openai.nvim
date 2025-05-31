@@ -72,6 +72,7 @@ local function clear_extmarks()
     vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
 end
 
+---@diagnostic disable-next-line: unused-function   -- just long enough to test out new diff impl and keep this around just in case
 local function show_green_preview_of_just_new_text(lines)
     clear_extmarks()
 
