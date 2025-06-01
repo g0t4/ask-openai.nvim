@@ -141,11 +141,16 @@ function M.process_chunk(chunk)
     lines, pending_close = thinking.strip_thinking_tags(lines)
     if pending_close then
         lines = { thinking.dots:get_still_thinking_message() }
+        -- while thinking, we show the green text w/ ....
+        vim.schedule(function() show_green_preview_of_just_new_text(lines) end)
+        return
+        -- TODO do I need the ensure_new_lines_around for thinking message too? I don't think so
     end
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 
-    vim.schedule(function() show_green_preview_of_just_new_text(lines) end)
-    -- vim.schedule(function() show_diff_ohhhhh_yeahhhhh(M.selection, lines) end)
+    -- NOW, we can do green here too (after thinking done)... OR diff:
+    -- vim.schedule(function() show_green_preview_of_just_new_text(lines) end)
+    vim.schedule(function() show_diff_ohhhhh_yeahhhhh(M.selection, lines) end)
 end
 
 function M.handle_request_completed()
