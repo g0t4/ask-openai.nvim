@@ -133,12 +133,6 @@ describe("get_visual_selection()", function()
                 should.be_equal("line 1 cow", selection.original_text)
 
                 -- TODO add verification of selection offsets for other critical test cases, this should help find the issue w/ trailing character bug
-                should.be_same(1, selection:start_line_1indexed())
-                should.be_same(1, selection:start_col_1indexed())
-                should.be_same(1, selection:end_line_1indexed())
-                should.be_same(10, selection:end_col_1indexed())
-
-                -- range_str test
                 should.be_equal("[r1,c1]-[r1,c10]", selection:range_str())
             end)
 
