@@ -55,8 +55,6 @@ end
 -- baz boo doo
 
 describe("get_visual_selection()", function()
-    -- TODO! vet if issue w/ trailing char left after accept... is it in the selection logic
-
     describe("edge case hunting - only one line", function()
         before_each(function()
             load_lines({ "foo the bar" })
@@ -101,6 +99,13 @@ describe("get_visual_selection()", function()
             --  that could be my own logic or what I amdoing with with
             should.be_equal("foo the bar", selection.original_text)
             should.be_equal("[r1,c1]-[r1,c12]", selection:range_str())
+
+            -- PRN revisit later... too much for now, I need to do more exciting things... btw this is a contraction of the selection range around \n which is not the bug I've encountered that I wanna fix... and now with the selection tests being pretty robust... seems like it would have to be smth in the replace logic that has a bug
+            -- -- OK THIS IS WEIRD... gv => yank doesn't copy the \n on the end?!
+            -- --   this is in part b/c yank doesn't wait for marks to be set, IIUC... it happens before marks are set? and so it has different behavior to determine what is selected?
+            -- vim.cmd('normal! gv"vy') -- copy selection to register v... I wanna check original_text matches the the selection is yanked as a double check
+            -- local yanked = vim.fn.getreg("v")
+            -- should.be_equal("foo the bar", yanked)
         end)
 
         -- TODO! do I want to add some tests to cover what using getcharpos accomplishes for me?
