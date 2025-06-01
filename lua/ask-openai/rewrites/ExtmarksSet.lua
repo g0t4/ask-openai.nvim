@@ -44,7 +44,7 @@ end
 
 --- create OR update (i.e. move) an existing mark
 --- @param mark_id integer
---- @param opts table
+--- @param opts { start_line:integer, start_col:integer, ... } # nvim_buf_set_extmark options
 ---@return integer mark_id # useful if you didn't provide a mark_id and want the generated id
 function ExtmarksSet:set(mark_id, opts)
     -- PRN how about create helpers for different types of marks that I commonly use?
