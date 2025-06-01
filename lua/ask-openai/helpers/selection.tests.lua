@@ -135,6 +135,13 @@ describe("get_visual_selection()", function()
                 vim.cmd('normal! VV') -- second V exits
                 local selection = get_selection()
                 should.be_equal("line 1 cow", selection.original_text)
+                -- TODO verify the selection start/end points... that is gonna be important in some cases too
+                local _, start_row, start_col, _ = unpack(vim.fn.getcharpos("'<")) -- 1-indexed
+                should.be_same(1, start_row) -- 1-indexed
+                should.be_same(1, start_col) -- 1-indexed
+                local _, end_row, end_col, _ = unpack(vim.fn.getcharpos("'>")) -- 1-indexed
+                should.be_same(1, end_row) -- 1-indexed
+                should.be_same(10, end_col) -- 1-indexed
             end)
 
             it("single line selection, middle of document", function()
