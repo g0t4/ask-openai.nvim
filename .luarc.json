@@ -4,7 +4,7 @@
     // config ref: https://github.com/josa42/coc-lua
 
     "diagnostics": {
-        "globals": [ "vim", "describe", "it", "assert" ],
+        "globals": [ "vim" ],
         "disable": [
             "lowercase-global",
             "need-check-nil",
@@ -28,7 +28,7 @@
 
             // TODO look into using 3rd with rxlua? at least this doesn't change with version bumps... and not between mac/linux
             "~/.local/share/nvim/lazy/rxlua",
-            "~/.local/share/nvim/lazy/plenary.nvim",
+            "~/.local/share/nvim/lazy/plenary.nvim", // adds globals for describe, it, before_each, etc
             "~/repos/github/g0t4/devtools.nvim",
             // FYI not using luarocks for dependencies, not currently, instead use package manager to install the respective repo into RTP
         ],
