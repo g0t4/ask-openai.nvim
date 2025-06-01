@@ -117,7 +117,7 @@ describe("test strip html thinking tags from full completion responses", functio
         local output_lines, open_without_close_yet = thinking.strip_thinking_tags(input_lines)
         local output_text = table.concat(output_lines, "\n")
         assert.are.same(input_text, output_text)
-        assert.are.equal(true, open_without_close_yet)
+        assert.are.equal(thinking.ThinkingStatus.Thinking, open_without_close_yet)
     end)
 
     it("when only closing tag, should do nothing", function()
