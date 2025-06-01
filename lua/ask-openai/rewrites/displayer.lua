@@ -7,25 +7,27 @@ Displayer.__index = Displayer
 -- TODO move over concepts like ExtmarksSet (AFTER I GET DIFF GOING)
 -- local prediction_namespace = vim.api.nvim_create_namespace('zeta-prediction')
 
-function Displayer:new()
+function Displayer:new(_current_accept, _current_cancel)
     self = setmetatable({}, Displayer)
+    self._current_cancel = _current_cancel
+    self._current_accept = _current_accept
     return self
 end
 
-function Displayer:accept()
-    -- TODO move logic to accept here, later
-    self:remove_keymaps()
-end
+-- function Displayer:accept()
+--     -- TODO move logic to accept here, later
+--     self:remove_keymaps()
+-- end
 
-function Displayer:reject()
-    self:remove_keymaps()
-end
+-- function Displayer:reject()
+--     self:remove_keymaps()
+-- end
 
 function Displayer:set_keymaps()
     function accept()
         vim.schedule(function()
             log:info('Accepting')
-            self:accept()
+            self._current_accept()
         end)
     end
 
@@ -36,7 +38,7 @@ function Displayer:set_keymaps()
     function reject()
         vim.schedule(function()
             log:info('Rejecting')
-            self:reject()
+            self._current_cancel()
         end)
     end
 

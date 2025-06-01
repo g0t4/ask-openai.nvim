@@ -154,7 +154,7 @@ end
 function M.accept_rewrite()
     if M.displayer ~= nil then
         -- TODO eventually move more accept logic into displayer (also an applier, changer?)
-        M.displayer:accept()
+        M.displayer:remove_keymaps()
         M.displayer = nil
     end
     vim.schedule(function()
@@ -216,7 +216,7 @@ function M.cancel_rewrite()
     M.abort_last_request()
 
     if M.displayer ~= nil then
-        M.displayer:reject()
+        M.displayer:remove_keymaps()
         M.displayer = nil
     end
 
@@ -338,7 +338,7 @@ local function fake_rewrite_instant_one_chunk(opts)
     vim.cmd("normal! v6jv") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     M.selection = Selection.get_visual_selection_for_current_window()
-    M.displayer = Displayer:new()
+    M.displayer = Displayer:new(M.accept_rewrite, M.cancel_rewrite)
     M.displayer:set_keymaps()
 
     local full_rewrite = M.selection.original_text .. "\nINSTANT NEW LINE"
