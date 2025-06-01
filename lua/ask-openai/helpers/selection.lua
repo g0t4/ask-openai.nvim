@@ -138,6 +138,19 @@ function Selection.get_visual_selection_for_current_window()
     return Selection._get_visual_selection_for_window_id(current_window_id)
 end
 
+--- Set the selection and get a reference to it.
+---@param range string
+---@return Selection
+function Selection.set_selection_from_range(range)
+    -- FYI the following works to select a range based on start/end positions
+    -- move cursor to start row/col
+    -- vim.cmd("normal! v")
+    -- move cursor to end row/col
+    -- vim.cmd("normal! v")
+    error("set_selection_from_range not implemented yet")
+    return Selection.get_visual_selection_for_current_window()
+end
+
 function Selection:range_str()
     local range = string.format(
         "[r%d,c%d]-[r%d,c%d]",
