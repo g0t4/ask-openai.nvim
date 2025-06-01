@@ -58,11 +58,10 @@ function Displayer:on_response(selection, lines)
     local lines_text = table.concat(lines, "\n")
     local diff = combined.combined_diff(selection.original_text, lines_text)
     -- log:info("diff:", vim.inspect(diff))
-    do return end
 
     local extmark_lines = vim.iter(diff):fold({ {} }, function(accum, chunk)
         if chunk == nil then
-            messages.append('nil chunk: ' .. tostring(chunk))
+            log:info('nil chunk: ' .. tostring(chunk))
         else
             -- each chunk has has two strings: { "text\nfoo\nbar", "type" }
             --   type == "same", "add", "del"
@@ -93,8 +92,7 @@ function Displayer:on_response(selection, lines)
                 end
             else
                 local splits = vim.split(text, '\n')
-                messages.header('splits:')
-                messages.append(inspect(splits))
+                log:info("splits:", vim.inspect(splits))
                 for i, piece in ipairs(splits) do
                     -- FYI often v will be empty (i.e. a series of newlines)... do not exclude these empty lines!
                     local len_text = #piece
@@ -125,13 +123,13 @@ function Displayer:on_response(selection, lines)
         table.remove(extmark_lines, #extmark_lines)
     end
 
-    -- messages.header("extmark_lines")
+    -- log:info("extmark_lines")
     -- for _, v in ipairs(extmark_lines) do
-    --     messages.append(vim.inspect(v))
+    --     log:info(vim.inspect(v))
     -- end
 
     if #extmark_lines < 1 then
-        messages.append('no lines')
+        log:info('no lines')
         return
     end
 
@@ -151,9 +149,9 @@ function Displayer:on_response(selection, lines)
     -- ?? switch to incremental diff presentation (not AIO), and with it partial accept/reject?!
     -- self.marks:diff_strike_lines(start_line, end_line)
 
-    messages.header('extmark_lines')
+    log:info('extmark_lines')
     for _, v in ipairs(extmark_lines) do
-        messages.append(vim.inspect(v))
+        log:info(vim.inspect(v))
     end
 
 
@@ -187,9 +185,9 @@ function Displayer:on_response(selection, lines)
                     --   type i to go into insert mode
                     --   then type a new char to trigger this
                     --   TODO better yet setup a trigger in insert mode again for fake testing so not wait on real deal
-                    messages.header('InsertCharPre')
-                    messages.append(args)
-                    messages.append(char)
+                    log:info('InsertCharPre')
+                    log:info(args)
+                    log:info(char)
 
                     -- * inlined reject so I can control timing better
                     -- self:reject()
