@@ -19,6 +19,7 @@ function Displayer:new(_current_accept, _current_cancel)
     self._current_accept = _current_accept
     self.window = WindowController:new_from_current_window()
     self.marks = ExtmarksSet:new(self.window:buffer().buffer_number, extmarks_namespace_id)
+    self.removed_original_lines = false
     return self
 end
 
@@ -152,7 +153,12 @@ function Displayer:on_response(selection, lines)
     -- delete original lines (that way only diff shows in extmarks)
     self.original_lines = self.window:buffer():get_lines(start_line, end_line)
     table.insert(self.original_lines, '') -- add empty line (why?)
-    self.window:buffer():replace_lines(start_line, end_line, {})
+    if not self.removed_original_lines then
+        -- TODO only do this after done thinking? if applicable?
+        self.window:buffer():replace_lines(start_line, end_line, {})
+        self.removed_original_lines = true
+    end
+
 
     if false then
         -- TODO! UMM I DONT NEED THIS as I do not type to get predictions for AskRewrite (an explicit rewrite)

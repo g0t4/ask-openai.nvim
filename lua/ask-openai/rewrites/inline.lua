@@ -255,7 +255,7 @@ local function simulate_rewrite_stream_chunks(opts)
     M.displayer = Displayer:new(M.accept_rewrite, M.cancel_rewrite)
     M.displayer:set_keymaps()
 
-    local optional_thinking_text = [[ <think>
+    local optional_thinking_text = [[<think>
 foo the bar lorem ipsum toodle doodle banana bie foo the bar bar the foo and foo the bar and bbbbbb the foo the bar bar the
 foobar and foo the bar bar foo the bar lorem ipsum toodle doodle banana bie foo the bar bar the foo and foo the bar and bbbbbb
 the foo the bar bar the foobar and foo the bar bar foo the bar lorem ipsum toodle doodle banana bie foo the bar bar the foo
