@@ -111,16 +111,16 @@ describe("get_visual_selection()", function()
                 "line 2 duck duck",
                 "line 3 goose gooose goose",
                 "line 4 goose",
-                "",
+                "", -- 5
                 "line 6 storm the gates",
-                "line 7stormy weather",
-                "",
-                "lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.",
-                "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-                "Integer posuere erat a ante",
-                "",
-                "line 9",
-                "line 10 the cow is over there",
+                "line 7 stormy weather",
+                "", -- 8
+                "lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.", -- 9
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit.", -- 10
+                "Integer posuere erat a ante", -- 11
+                "", -- 12
+                "line 13",
+                "line 14 the cow is over there",
             }
             load_lines(lines)
         end)
