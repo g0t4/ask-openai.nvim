@@ -72,9 +72,9 @@ function M.process_chunk(chunk)
 
     local lines = text_helpers.split_lines(M.accumulated_chunks)
     lines = M.strip_md_from_completion(lines)
-    local pending_close = nil
-    lines, pending_close = thinking.strip_thinking_tags(lines)
-    if pending_close then
+    local thinking_status = nil
+    lines, thinking_status = thinking.strip_thinking_tags(lines)
+    if thinking_status == thinking.ThinkingStatus.Thinking then
         lines = { thinking.dots:get_still_thinking_message() }
         -- while thinking, we show the green text w/ ....
         vim.schedule(function() Displayer.show_green_preview_text(M.selection, lines) end)

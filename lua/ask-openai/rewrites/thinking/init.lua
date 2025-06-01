@@ -20,6 +20,19 @@ end
 
 M.set_thinking_tag_and_patterns("think")
 
+
+---@enum ThinkingStatus
+M.ThinkingStatus = {
+    NoThinkingTags = 1,
+    Thinking = 2,
+    DoneThinking = 3,
+    [1] = "NoThinkingTags",
+    [2] = "Thinking",
+    [3] = "DoneThinking",
+}
+
+---@param lines string[]
+---@return string[] stripped_lines, ThinkingStatus status
 function M.strip_thinking_tags(lines)
     local text = table.concat(lines, "\n")
     -- must only have whitespace before the opening tag
@@ -27,16 +40,16 @@ function M.strip_thinking_tags(lines)
     -- text = text:gsub(M.thinking_open_and_close_tags, "")
     local open_start, open_end = text:find("^%s*<" .. M.thinking_tag .. ">")
     if not open_start then
-        return lines
+        return lines, M.ThinkingStatus.NoThinkingTags
     end
     local close_start, close_end = text:find("</" .. M.thinking_tag .. ">", open_end + 1)
     if not close_start then
         -- TODO case to show animation? or return nothing?
         -- TODO return smth to signal missing closing but open is present, as a second arg
-        return lines, true
+        return lines, M.ThinkingStatus.Thinking
     end
     local stripped_text = text:sub(close_end + 1)
-    return vim.split(stripped_text, "\n")
+    return vim.split(stripped_text, "\n"), M.ThinkingStatus.DoneThinking
 end
 
 return M
