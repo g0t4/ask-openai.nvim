@@ -139,15 +139,16 @@ function Selection.get_visual_selection_for_current_window()
 end
 
 --- Set the selection and get a reference to it.
----@param range string
+---TODO is List<integer,integer> right for the type... table w/ two numbers in it?
+---@param start_pos List<integer,integer>
+---@param end_pos List<integer,integer>
 ---@return Selection
-function Selection.set_selection_from_range(range)
+function Selection.set_selection_from_range(start_pos, end_pos)
     -- FYI the following works to select a range based on start/end positions
-    -- move cursor to start row/col
-    -- vim.cmd("normal! v")
-    -- move cursor to end row/col
-    -- vim.cmd("normal! v")
-    error("set_selection_from_range not implemented yet")
+    vim.api.nvim_win_set_cursor(0, start_pos)
+    vim.cmd("normal! v")
+    vim.api.nvim_win_set_cursor(0, end_pos)
+    vim.cmd("normal! v")
     return Selection.get_visual_selection_for_current_window()
 end
 

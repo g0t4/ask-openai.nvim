@@ -189,8 +189,9 @@ describe("get_visual_selection()", function()
             end)
 
             it("select end of line and start of next", function()
-                local start_r1c6_1indexed = { 1, 5 } -- start on "1" in "line 1 cow"
-                vim.api.nvim_win_set_cursor(0, start_r1c6_1indexed)
+                -- row is 1-index, col is 0-index (when set cursor)
+                local start_r1c6 = { 1, 5 } -- start on "1" in "line 1 cow"
+                vim.api.nvim_win_set_cursor(0, start_r1c6)
 
                 -- start charwise selection
                 vim.cmd('normal! v3wv')
@@ -203,8 +204,18 @@ describe("get_visual_selection()", function()
             end)
         end)
 
-        describe("multiline selection, subset of buffer", function()
-
+        describe("set_selection_from_range", function()
+            it("test it out", function()
+                -- row is 1-index, col is 0-index (when set cursor)
+                local start_r1c6 = { 1, 5 } -- start on "1" in "line 1 cow"
+                vim.api.nvim_win_set_cursor(0, start_r1c6)
+                local end_r3c12 = { 3, 11 } -- end on "e" in first goose in "line 3 goose gooose goose"
+                vim.api.nvim_win_set_cursor(0, end_r3c12)
+                -- start charwise selection
+                local resulting_selection = Selection.set_selection_from_range(start_r1c6, end_r3c12)
+                -- should.be_equal("1 cow\nline 2", resulting_selection.original_text)
+                should.be_equal("[r1,c6]-[r3,c12]", resulting_selection:range_str())
+            end)
         end)
     end)
 end)
