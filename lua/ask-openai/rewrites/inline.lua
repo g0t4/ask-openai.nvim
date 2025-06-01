@@ -203,12 +203,17 @@ function M.accept_rewrite()
     end)
 end
 
-function M.cancel_rewrite()
-    if M.last_request then
-        -- IIAC terminate only applies if its still running? (leave that up to backend)
-        backend.terminate(M.last_request)
-        M.last_request = nil
+function M.abort_last_request()
+    if not M.last_request then
+        return
     end
+
+    backend.terminate(M.last_request)
+    clear_extmarks()
+end
+
+function M.cancel_rewrite()
+    M.abort_last_request()
 
     if M.displayer ~= nil then
         M.displayer:reject()
