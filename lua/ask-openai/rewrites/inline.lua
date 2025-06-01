@@ -152,6 +152,11 @@ function M.handle_request_completed()
 end
 
 function M.accept_rewrite()
+    if M.displayer ~= nil then
+        -- TODO eventually move more accept logic into displayer (also an applier, changer?)
+        M.displayer:accept()
+        M.displayer = nil
+    end
     vim.schedule(function()
         local lines = text_helpers.split_lines(M.accumulated_chunks)
         log:info("accepting-lines-1:", vim.inspect(lines))
@@ -199,6 +204,17 @@ function M.accept_rewrite()
 end
 
 function M.cancel_rewrite()
+    if M.last_request then
+        -- IIAC terminate only applies if its still running? (leave that up to backend)
+        backend.terminate(M.last_request)
+        M.last_request = nil
+    end
+
+    if M.displayer ~= nil then
+        M.displayer:reject()
+        M.displayer = nil
+    end
+
     vim.schedule(function()
         clear_extmarks()
 
@@ -357,40 +373,28 @@ function M.on_stderr_data(text)
     end)
 end
 
-function M.abort_last_request()
-    if not M.last_request then
-        -- PRN still clear extmarks just in case?
-        return -- no request to abort
-    end
-
-    backend.terminate(M.last_request)
-
-    clear_extmarks()
-end
-
 function M.setup()
     -- Create commands and keymaps for the rewrite functionality
     vim.api.nvim_create_user_command("AskRewrite", ask_and_stream_from_ollama, { range = true, nargs = 1 })
     vim.keymap.set({ 'n', 'v' }, '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
 
-    -- fake for testing extmarks / accept / cancel / etc - the during/after workflow
+
+    -- * simulations
     vim.api.nvim_create_user_command("AskRewriteFakeInstant", fake_rewrite_instant_one_chunk, {})
     vim.keymap.set({ 'n' }, '<Leader>rt', ':<C-u>AskRewriteFakeInstant<CR>', { noremap = true })
-
-    -- streaming fake
+    --
     vim.api.nvim_create_user_command("AskRewriteFakeStream", fake_rewrite_stream_chunks, {})
     vim.keymap.set({ 'n' }, '<Leader>rs', ':<C-u>AskRewriteFakeStream<CR>', { noremap = true })
 
-    -- Add a command to abort the stream if needed
-    vim.api.nvim_create_user_command("AskRewriteAbort", M.abort_last_request, {})
-    vim.api.nvim_set_keymap('n', '<Leader>ra', ':AskRewriteAbort<CR>', { noremap = true })
 
+    -- TODO either remove ry/rc or move them to only apply when displayer is visible
     -- Add commands and keymaps for accepting or cancelling the rewrite
     vim.api.nvim_create_user_command("AskRewriteAccept", M.accept_rewrite, {})
     vim.api.nvim_set_keymap('n', '<Leader>ry', ':AskRewriteAccept<CR>', { noremap = true })
-
+    --
     vim.api.nvim_create_user_command("AskRewriteCancel", M.cancel_rewrite, {})
     vim.api.nvim_set_keymap('n', '<Leader>rc', ':AskRewriteCancel<CR>', { noremap = true })
+
 
     -- dump helpers while building this tooling - [a]sk [d]ump last [s]election
     vim.api.nvim_create_user_command("AskDumpLastSelection", buffers.dump_last_seletion, {})
