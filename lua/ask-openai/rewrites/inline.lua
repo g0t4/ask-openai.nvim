@@ -144,8 +144,8 @@ function M.process_chunk(chunk)
         -- while thinking, we show the green text w/ ....
         vim.schedule(function() show_green_preview_of_just_new_text(lines) end)
         return
-        -- TODO do I need the ensure_new_lines_around for thinking message too? I don't think so
     end
+    -- FYI it looks fine to not add lines with the thinking message... just shows up right where cursor was at
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 
     -- NOW, we can do green here too (after thinking done)... OR diff:
