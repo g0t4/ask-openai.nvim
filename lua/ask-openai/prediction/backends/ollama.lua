@@ -43,8 +43,8 @@ function OllamaFimBackend:body_for()
     local body = {
 
         -- https://huggingface.co/collections/JetBrains/mellum-68120b4ae1423c86a2da007a
-        model = "huggingface.co/JetBrains/Mellum-4b-base-gguf",
-        -- model = "huggingface.co/JetBrains/Mellum-4b-sft-python-gguf", -- TODO TRY!
+        -- model = "huggingface.co/JetBrains/Mellum-4b-base-gguf",
+        model = "huggingface.co/JetBrains/Mellum-4b-sft-python-gguf", -- TODO TRY!
         -- kotlin exists but no gguf on hf yet:
         --   https://huggingface.co/JetBrains/Mellum-4b-sft-kotlin
         -- TODO add in other fine tunes for languages as released
@@ -112,7 +112,6 @@ function OllamaFimBackend:body_for()
         body.options.stop = { "<EOT>" }
 
         error("review FIM requirements for codellama, make sure you are using expected template, it used to work with qwen like FIM but I changed that to repo level now and would need to test it")
-
         -- FYI also ollama warns about:
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
     elseif string.find(body.model, "Mellum") then
