@@ -204,11 +204,12 @@ function M.accept_rewrite()
 end
 
 function M.abort_last_request()
+    M.stop_streaming = true -- HACK to stop streaming simulations too
+
     if not M.last_request then
         return
     end
 
-    M.stop_streaming = true -- HACK to stop streaming simulations too
     backend.terminate(M.last_request)
     clear_extmarks()
 end
