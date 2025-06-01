@@ -64,6 +64,7 @@ describe("get_visual_selection()", function()
             local selection = get_selection()
             assert(selection:is_empty())
             assert(selection.original_text == '')
+            should.be_equal("[r1,c1]-[r1,c1]", selection:range_str())
         end)
 
         it("one line selected, only one in buffer", function()
