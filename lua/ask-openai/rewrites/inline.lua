@@ -208,6 +208,7 @@ function M.abort_last_request()
         return
     end
 
+    M.stop_streaming = true -- HACK to stop streaming simulations too
     backend.terminate(M.last_request)
     clear_extmarks()
 end
@@ -297,6 +298,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     M.last_request = backend.curl_for(body, base_url, M)
 end
 
+M.stop_streaming = false
 local function fake_rewrite_stream_chunks(opts)
     -- use this for timing and to test streaming diff!
 
@@ -305,6 +307,7 @@ local function fake_rewrite_stream_chunks(opts)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     M.selection = Selection.get_visual_selection_for_current_window()
     M.accumulated_chunks = ""
+    M.stop_streaming = false
     M.displayer = Displayer:new(M.accept_rewrite, M.cancel_rewrite)
     M.displayer:set_keymaps()
 
@@ -317,7 +320,9 @@ local function fake_rewrite_stream_chunks(opts)
     local slow_ms = 50
 
     local function stream_words(remaining_words)
-        if not remaining_words then
+        if not remaining_words
+            or M.stop_streaming
+        then
             -- TODO done signal? not sure I have one right now
             return
         end
