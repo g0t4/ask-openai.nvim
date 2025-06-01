@@ -188,17 +188,12 @@ describe("get_visual_selection()", function()
             end)
 
             it("select end of line and start of next", function()
-                -- TODO might be nice to have a convenience method for testing to move cursor based on [r1,c1] syntax
                 local start_r1c6_1indexed = { 1, 5 } -- start on "1" in "line 1 cow"
                 vim.api.nvim_win_set_cursor(0, start_r1c6_1indexed)
 
                 -- start charwise selection
-                -- vim.cmd('normal! v3wv')
+                vim.cmd('normal! v3wv')
 
-                vim.cmd('normal! v')
-                local end_r2c6_1index = { 2, 5 }
-                vim.api.nvim_win_set_cursor(0, end_r2c6_1index)
-                vim.cmd('normal! v') -- exit visual mode
                 print_all_lines()
 
                 local selection = get_selection()
