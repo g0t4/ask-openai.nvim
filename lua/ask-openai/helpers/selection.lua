@@ -152,4 +152,14 @@ function Selection.get_visual_selection_for_current_window()
     return Selection._get_visual_selection_for_window_id(current_window_id)
 end
 
+function Selection:range_str()
+    return string.format(
+        "[r%d,c%d]-[r%d,c%d]",
+        self:start_line_1indexed(),
+        self:start_col_1indexed(),
+        self:end_line_1indexed(),
+        self:end_col_1indexed()
+    )
+end
+
 return Selection

@@ -137,6 +137,9 @@ describe("get_visual_selection()", function()
                 should.be_same(1, selection:start_col_1indexed())
                 should.be_same(1, selection:end_line_1indexed())
                 should.be_same(10, selection:end_col_1indexed())
+
+                -- range_str test
+                should.be_equal("[r1,c1]-[r1,c10]", selection:range_str())
             end)
 
             it("single line selection, middle of document", function()
