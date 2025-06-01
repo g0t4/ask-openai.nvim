@@ -153,13 +153,17 @@ function Selection.get_visual_selection_for_current_window()
 end
 
 function Selection:range_str()
-    return string.format(
+    local range = string.format(
         "[r%d,c%d]-[r%d,c%d]",
         self:start_line_1indexed(),
         self:start_col_1indexed(),
         self:end_line_1indexed(),
         self:end_col_1indexed()
     )
+    if self:is_empty() then
+        range = range .. " (empty)"
+    end
+    return range
 end
 
 return Selection
