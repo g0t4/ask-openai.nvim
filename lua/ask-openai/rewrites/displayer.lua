@@ -13,6 +13,8 @@ vim.api.nvim_command("highlight default " .. hlgroup .. " guifg=#ccffcc ctermfg=
 -- TODO move over concepts like ExtmarksSet (AFTER I GET DIFF GOING)
 local extmarks_namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
 Displayer.extmarks_namespace_id = extmarks_namespace_id -- TODO remove once Displayer takes over all extmarks
+--
+local select_excerpt_mark_id = 11
 
 function Displayer:new(_current_accept, _current_cancel)
     self = setmetatable({}, Displayer)
