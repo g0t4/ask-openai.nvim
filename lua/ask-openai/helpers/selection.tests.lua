@@ -2,12 +2,6 @@ require('ask-openai.helpers.testing')
 local Selection = require('ask-openai.helpers.selection')
 local should = require('devtools.tests.should')
 local log = require("ask-openai.prediction.logger").predictions()
-local busted = require("plenary.busted")
----@diagnostic disable-next-line: unused-local
-local before_each, it, after_each, describe, assert, setup, teardown = busted.before_each, busted.it, busted.after_each, busted.describe, busted.assert, busted.setup, busted.teardown
-
--- FYI useful way to find loaded modules (via globals)
--- vim.print(_G)
 
 
 -- ***! methods to simulate a user selection:
