@@ -10,10 +10,7 @@ Displayer.__index = Displayer
 
 local hlgroup = "AskRewrite"
 vim.api.nvim_command("highlight default " .. hlgroup .. " guifg=#ccffcc ctermfg=green")
--- TODO move over concepts like ExtmarksSet (AFTER I GET DIFF GOING)
 local extmarks_namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
-Displayer.extmarks_namespace_id = extmarks_namespace_id -- TODO remove once Displayer takes over all extmarks
---
 local select_excerpt_mark_id = 11
 
 function Displayer:new(_current_accept, _current_cancel)
@@ -48,7 +45,7 @@ function Displayer.show_green_preview_of_just_new_text(selection, lines)
     -- Set extmark at the beginning of the selection
     vim.api.nvim_buf_set_extmark(
         0, -- Current buffer
-        Displayer.extmarks_namespace_id,
+        extmarks_namespace_id,
         selection:start_line_0indexed(),
         selection:start_col_0indexed(),
         {
