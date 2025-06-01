@@ -206,7 +206,8 @@ describe("get_visual_selection()", function()
 
         describe("set_selection_from_range", function()
             it("test it out", function()
-                -- row is 1-index, col is 0-index (when set cursor)
+                -- FTR... I am trying naming r\dc\d here instead of some sort of string parsing convenience method for setting position... which I could add but this is faster, use variable name
+                -- FYI r\d+c\d+ is shown in 1-indexed numbers... hence I use the c6 here and 5 in the data... b/c the data needs to match for the nvim_win_set_cursor call
                 local start_r1c6 = { 1, 5 } -- start on "1" in "line 1 cow"
                 vim.api.nvim_win_set_cursor(0, start_r1c6)
                 local end_r3c12 = { 3, 11 } -- end on "e" in first goose in "line 3 goose gooose goose"
