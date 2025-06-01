@@ -193,11 +193,12 @@ describe("get_visual_selection()", function()
                 vim.api.nvim_win_set_cursor(0, start_r1c6_1indexed)
 
                 -- start charwise selection
-                vim.cmd('normal! v3wv')
+                -- vim.cmd('normal! v3wv')
 
-                -- local end_r2c6_1index = { 2, 5 }
-                -- vim.api.nvim_win_set_cursor(0, end_r2c6_1index)
-                -- vim.cmd('normal! v') -- exit visual mode
+                vim.cmd('normal! v')
+                local end_r2c6_1index = { 2, 5 }
+                vim.api.nvim_win_set_cursor(0, end_r2c6_1index)
+                vim.cmd('normal! v') -- exit visual mode
                 print_all_lines()
 
                 local selection = get_selection()
