@@ -6,6 +6,7 @@ local agentica = require("ask-openai.backends.models.agentica")
 local text_helpers = require("ask-openai.helpers.text")
 local thinking = require("ask-openai.rewrites.thinking")
 local Selection = require("ask-openai.helpers.selection")
+local Displayer = require("ask-openai.rewrites.displayer")
 
 local M = {}
 
@@ -316,6 +317,8 @@ local function fake_rewrite_instant_one_chunk(opts)
     vim.cmd("normal! v6jv") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     M.selection = Selection.get_visual_selection_for_current_window()
+    M.displayer = Displayer:new()
+    M.displayer:set_keymaps()
 
     local full_rewrite = M.selection.original_text .. "\nINSTANT NEW LINE"
     M.process_chunk(full_rewrite)
