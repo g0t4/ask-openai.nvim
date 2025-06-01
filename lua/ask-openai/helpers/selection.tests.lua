@@ -50,6 +50,10 @@ local function get_selection()
 end
 
 
+-- examples for testing selection methods
+--foo the bar
+-- baz boo doo
+
 describe("get_visual_selection()", function()
     -- TODO! vet if issue w/ trailing char left after accept... is it in the selection logic
 
@@ -89,12 +93,20 @@ describe("get_visual_selection()", function()
             -- THIS IS not the same as Shift-V in terms of selecting...
             --   ... this is an exploratory test
             --   and indeed, the range is different!
-            --   this must be related to the inclusivity factor, of the end of range!
+            -- TODO figure out if this difference with \n at end of line has implications for selection replacement?
+            --   and part of it is, $ goes thru the \n at the end of the line, whereas Shift-V doesn't select the \n on end (however it still pastes w/ a \n at end)
             vim.cmd('normal! 0v$<Esc>')
             local selection = get_selection()
+            -- note the text I return does NOT include the \n...
+            --  that could be my own logic or what I amdoing with with
             should.be_equal("foo the bar", selection.original_text)
-            should.be_equal("[r1,c1]-[r1,c11]", selection:range_str())
+            should.be_equal("[r1,c1]-[r1,c12]", selection:range_str())
         end)
+
+        -- TODO! do I want to add some tests to cover what using getcharpos accomplishes for me?
+        -- * getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
+        -- I should do some high level tests so I could swap out getcharpos if needed?
+
 
         -- it("end of a line with trailing newline", function()
         --     vim.cmd('normal! Vj') -- third V exits
