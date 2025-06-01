@@ -213,7 +213,7 @@ describe("get_visual_selection()", function()
                 vim.api.nvim_win_set_cursor(0, end_r3c12)
                 -- start charwise selection
                 local resulting_selection = Selection.set_selection_from_range(start_r1c6, end_r3c12)
-                -- should.be_equal("1 cow\nline 2", resulting_selection.original_text)
+                should.be_equal("1 cow\nline 2 duck duck\nline 3 goose", resulting_selection.original_text)
                 should.be_equal("[r1,c6]-[r3,c12]", resulting_selection:range_str())
             end)
         end)
