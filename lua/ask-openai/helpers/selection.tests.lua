@@ -117,7 +117,8 @@ describe("get_visual_selection()", function()
         vim.api.nvim_win_set_cursor(0, { 1, 0 })
     end
 
-    local function print_all_lines()
+    ---@diagnostic disable-next-line: unused-function
+    local function print_all_lines_troubleshoot()
         -- for testing only
         vim.print(vim.api.nvim_buf_get_lines(0, 0, -1, False))
     end
@@ -194,7 +195,7 @@ describe("get_visual_selection()", function()
                 -- start charwise selection
                 vim.cmd('normal! v3wv')
 
-                print_all_lines()
+                -- print_all_lines_troubleshoot()
 
                 local selection = get_selection()
                 should.be_equal("1 cow\nline 2", selection.original_text)
