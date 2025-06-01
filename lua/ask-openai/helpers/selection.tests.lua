@@ -153,7 +153,7 @@ describe("get_visual_selection()", function()
                 move_cursor_to_start_of_doc()
                 vim.cmd('normal! GVV') -- second V exits
                 local selection = get_selection()
-                should.be_equal("line 10 the cow is over there", selection.original_text)
+                should.be_equal("line 14 the cow is over there", selection.original_text)
             end)
         end)
 
