@@ -77,14 +77,14 @@ function M.process_chunk(chunk)
     if pending_close then
         lines = { thinking.dots:get_still_thinking_message() }
         -- while thinking, we show the green text w/ ....
-        vim.schedule(function() Displayer.show_green_preview_of_just_new_text(M.selection, lines) end)
+        vim.schedule(function() Displayer.show_green_preview_text(M.selection, lines) end)
         return
     end
     -- FYI it looks fine to not add lines with the thinking message... just shows up right where cursor was at
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 
     -- FYI can switch back to green here is fine! and skip diff if its not ready
-    -- vim.schedule(function() Displayer.show_green_preview_of_just_new_text(M.selection, lines) end)
+    -- vim.schedule(function() Displayer.show_green_preview_text(M.selection, lines) end)
     vim.schedule(function()
         M.displayer:on_response(M.selection, lines)
     end)

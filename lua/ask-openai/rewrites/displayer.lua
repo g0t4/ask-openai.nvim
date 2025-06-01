@@ -28,8 +28,8 @@ end
 
 ---@param selection Selection
 ---@param lines { string }
----@diagnostic disable-next-line: unused-function   -- just long enough to test out new diff impl and keep this around just in case
-function Displayer.show_green_preview_of_just_new_text(selection, lines)
+---@diagnostic disable-next-line: unused-function
+function Displayer.show_green_preview_text(selection, lines)
     Displayer.clear_extmarks()
 
     if #lines == 0 then return end
