@@ -153,16 +153,16 @@ function Displayer:on_response(selection, lines)
     table.insert(self.original_lines, '') -- add empty line (why?)
     self.window:buffer():replace_lines(start_line, end_line, {})
 
-    -- PRN... register event handler that fires once ... on user typing, to undo and put stuff back
-    --    this works-ish... feels wrong direction but...
-    --    revisit how zed does the diff display/interaction...
-    --    does it feel right to show it and then type to say no? it probably does
-    --       as long as its not constantly lagging the typing for you
     if false then
+        -- TODO! UMM I DONT NEED THIS as I do not type to get predictions for AskRewrite (an explicit rewrite)
+        -- PRN... register event handler that fires once ... on user typing, to undo and put stuff back
+        --    this works-ish... feels wrong direction but...
+        --    revisit how zed does the diff display/interaction...
+        --    does it feel right to show it and then type to say no? it probably does
+        --       as long as its not constantly lagging the typing for you
         vim.api.nvim_create_autocmd({ 'InsertCharPre' }, {
             buffer = self.window:buffer().buffer_number,
             callback = function(args)
-                -- TODO! this conflicts with accepting on Tab.. or w/e keymap
                 local char = vim.v.char
                 vim.schedule(function()
                     -- Btw to trigger this if you are  in normal moded for fake prediction:
@@ -175,7 +175,6 @@ function Displayer:on_response(selection, lines)
 
                     -- * inlined reject so I can control timing better
                     -- self:reject()
-                    self:pause_watcher()
 
                     -- * undo or put lines back:
                     vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>u', true, false, true), 'n', false)
@@ -201,15 +200,11 @@ function Displayer:on_response(selection, lines)
                     -- FYI disable other copilots (llama.vim) seems to cause some sort of fighting here
 
                     -- * put back cursor (so far seems like it goes back to where it was)
-
-                    self:resume_watcher() -- FYI the delay here just means user has to maybe type a few more chars to trigger next prediction, that's fine for now
                 end)
             end,
             once = true
         })
     end
-
-    self:resume_watcher()
 
     self:set_keymaps()
 end
