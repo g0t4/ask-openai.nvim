@@ -1,5 +1,6 @@
 local log = require("ask-openai.prediction.logger").predictions()
 local combined = require("devtools.diff.combined")
+local ExtmarksSet = require("ask-openai.rewrites.ExtmarksSet")
 
 ---@class Displayer
 local Displayer = {}
@@ -15,6 +16,7 @@ function Displayer:new(_current_accept, _current_cancel)
     self = setmetatable({}, Displayer)
     self._current_cancel = _current_cancel
     self._current_accept = _current_accept
+    self.marks = ExtmarksSet:new(self.window:buffer().buffer_number, extmarks_namespace_id)
     return self
 end
 
