@@ -6,7 +6,8 @@ local Displayer = {}
 Displayer.__index = Displayer
 
 -- TODO move over concepts like ExtmarksSet (AFTER I GET DIFF GOING)
--- local prediction_namespace = vim.api.nvim_create_namespace('zeta-prediction')
+local extmarks_namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
+Displayer.extmarks_namespace_id = extmarks_namespace_id -- TODO remove once Displayer takes over all extmarks
 
 function Displayer:new(_current_accept, _current_cancel)
     self = setmetatable({}, Displayer)
@@ -15,11 +16,15 @@ function Displayer:new(_current_accept, _current_cancel)
     return self
 end
 
+function Displayer.clear_extmarks()
+    vim.api.nvim_buf_clear_namespace(0, extmarks_namespace_id, 0, -1)
+end
+
 ---@param selection Selection
 function Displayer:on_response(selection, lines)
     local lines_text = table.concat(lines, "\n")
     local diff = combined.combined_diff(selection.original_text, lines_text)
-    log:info("diff:", vim.inspect(diff))
+    -- log:info("diff:", vim.inspect(diff))
     do return end
 
     local extmark_lines = vim.iter(diff):fold({ {} }, function(accum, chunk)

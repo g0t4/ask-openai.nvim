@@ -19,7 +19,6 @@ vim.api.nvim_command("highlight default " .. hlgroup .. " guifg=#ccffcc ctermfg=
 ---@type Selection|nil
 M.selection = nil
 M.accumulated_chunks = ""
-M.namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
 M.extmark_id = nil
 
 function M.strip_md_from_completion(lines)
@@ -72,13 +71,9 @@ function M.handle_messages_updated()
     --   do smth in the normalizer for that or still have a sep pathway per delta (no chunkin though?)
 end
 
-local function clear_extmarks()
-    vim.api.nvim_buf_clear_namespace(0, M.namespace_id, 0, -1)
-end
-
 ---@diagnostic disable-next-line: unused-function   -- just long enough to test out new diff impl and keep this around just in case
 local function show_green_preview_of_just_new_text(lines)
-    clear_extmarks()
+    Displayer.clear_extmarks()
 
     if #lines == 0 then return end
 
@@ -93,7 +88,7 @@ local function show_green_preview_of_just_new_text(lines)
     -- Set extmark at the beginning of the selection
     M.extmark_id = vim.api.nvim_buf_set_extmark(
         0, -- Current buffer
-        M.namespace_id,
+        Displayer.extmarks_namespace_id,
         M.selection:start_line_0indexed(),
         M.selection:start_col_0indexed(),
         {
@@ -176,7 +171,7 @@ function M.accept_rewrite()
             lines
         )
 
-        clear_extmarks()
+        Displayer.clear_extmarks()
 
         -- Reset the module state
         M.accumulated_chunks = ""
@@ -195,7 +190,7 @@ function M.abort_last_request()
     end
 
     backend.terminate(M.last_request)
-    clear_extmarks()
+    Displayer.clear_extmarks()
 end
 
 function M.cancel_rewrite()
@@ -207,7 +202,7 @@ function M.cancel_rewrite()
     end
 
     vim.schedule(function()
-        clear_extmarks()
+        Displayer.clear_extmarks()
 
         -- PRN store this in a last_accumulated_chunks / canceled_accumulated_chunks?
         --  log similarly in accept?
