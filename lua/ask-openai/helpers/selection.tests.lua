@@ -171,8 +171,23 @@ describe("get_visual_selection()", function()
             end)
         end)
 
-        describe("multiline selection, subset of buffer", function()
+        describe("charwise", function()
+            it("select 0$ with following line =>?? ", function()
+                -- local r1c4 = { 1, 5 }
+                -- vim.api.nvim_win_set_cursor(0, r1c4)
+                -- print(unpack(vim.api.nvim_win_get_cursor(0)))
+                move_cursor_to_start_of_doc()
+                vim.cmd('normal! v0$<Esc>')
+                local selection = get_selection()
+                should.be_equal("line 1 cow", selection.original_text)
+                should.be_equal("[r1,c1]-[r1,c11]", selection:range_str())
+                -- FYI original text does not have \n
+                -- FYI and in this case we have the end_col > if we used Shift-V
+            end)
+        end)
 
+        describe("multiline selection, subset of buffer", function()
+            -- TODO
         end)
     end)
 end)
