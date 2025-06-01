@@ -136,6 +136,10 @@ function Displayer:on_response(selection, lines)
         log:info(vim.inspect(v))
     end
 
+    -- FYI! if diff is stable, I don't need to bother with clearing the extmarks then every time... just after the thinking....  is done
+    -- also, how about not rebuild/modify any of the extmark lines before the current line unless diff invalidates previous diff state?
+    Displayer.clear_extmarks()
+
     self.marks:set(select_excerpt_mark_id, {
         start_line = start_line - 1, -- that way first virt_line is in line below == start_line
         start_col = 0,
