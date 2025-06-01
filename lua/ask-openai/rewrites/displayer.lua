@@ -1,4 +1,5 @@
 local log = require("ask-openai.prediction.logger").predictions()
+local combined = require("devtools.diff.combined")
 
 ---@class Displayer
 local Displayer = {}
@@ -14,43 +15,12 @@ function Displayer:new(_current_accept, _current_cancel)
     return self
 end
 
----@param request PredictionRequest
----@param response_body_stdout string
-function Displayer:on_response(request, response_body_stdout)
-    self.current_request = request
-    self.current_response_body_stdout = response_body_stdout
-
-    local decoded = vim.fn.json_decode(response_body_stdout)
-    messages.header('response_body_stdout:')
-    messages.append(inspect(decoded))
-    assert(decoded ~= nil, 'decoded reponse body should not be nil')
-    local rewritten = decoded.output_excerpt
-    if rewritten == nil then
-        messages.header('output_excerpt is nil, aborting...')
-        return
-    end
-
-    local original = request.details.body.input_excerpt or ''
-    messages.header('input_excerpt:')
-    messages.append(original)
-    messages.header('output_excerpt:')
-    messages.append(rewritten)
-
-    original_editable = tags.get_editable_region(original) or ''
-    -- PRN use cursor position? i.e. check if cursor has moved since prediction requested (might not need this actually)
-    -- cursor_position = parser.get_position_of_user_cursor(original) or 0
-    -- messages.header("cursor_position:", cursor_position)
-    original_editable = tags.strip_user_cursor_tag(original_editable)
-
-    self.rewritten_editable = tags.get_editable_region(rewritten) or ''
-    messages.header('original_editable:')
-    messages.append(original_editable)
-    messages.header('rewritten_editable:')
-    messages.append(self.rewritten_editable)
-
-    local diff = combined.combined_diff(original_editable, self.rewritten_editable)
-    -- messages.header("diff:")
-    -- messages.append(inspect(diff))
+---@param selection Selection
+function Displayer:on_response(selection, lines)
+    local lines_text = table.concat(lines, "\n")
+    local diff = combined.combined_diff(selection.original_text, lines_text)
+    log:info("diff:", vim.inspect(diff))
+    do return end
 
     local extmark_lines = vim.iter(diff):fold({ {} }, function(accum, chunk)
         if chunk == nil then
@@ -223,7 +193,6 @@ function Displayer:on_response(request, response_body_stdout)
 
     self:set_keymaps()
 end
-
 
 -- function Displayer:accept()
 --     -- TODO move logic to accept here, later

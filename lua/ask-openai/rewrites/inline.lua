@@ -7,7 +7,6 @@ local text_helpers = require("ask-openai.helpers.text")
 local thinking = require("ask-openai.rewrites.thinking")
 local Selection = require("ask-openai.helpers.selection")
 local Displayer = require("ask-openai.rewrites.displayer")
-local combined = require("devtools.diff.combined")
 
 local M = {}
 
@@ -106,35 +105,6 @@ local function show_green_preview_of_just_new_text(lines)
     )
 end
 
----@param selection Selection
-local function show_diff_ohhhhh_yeahhhhh(selection, lines)
-    clear_extmarks()
-
-    local lines_text = table.concat(lines, "\n")
-    local diff = combined.combined_diff(selection.original_text, lines_text)
-
-
-    -- local first_line = { { table.remove(lines, 1), hlgroup } }
-    -- -- Format remaining lines for virt_lines
-    -- local virt_lines = {}
-    -- for _, line in ipairs(lines) do
-    --     table.insert(virt_lines, { { line, hlgroup } })
-    -- end
-    -- -- Set extmark at the beginning of the selection
-    -- M.extmark_id = vim.api.nvim_buf_set_extmark(
-    --     0, -- Current buffer
-    --     M.namespace_id,
-    --     M.selection:start_line_0indexed(),
-    --     M.selection:start_col_0indexed(),
-    --     {
-    --         virt_text = first_line,
-    --         virt_lines = virt_lines,
-    --         virt_text_pos = "overlay",
-    --         hl_mode = "combine"
-    --     }
-    -- )
-end
-
 function M.process_chunk(chunk)
     if not chunk then return end
 
@@ -155,7 +125,9 @@ function M.process_chunk(chunk)
 
     -- NOW, we can do green here too (after thinking done)... OR diff:
     -- vim.schedule(function() show_green_preview_of_just_new_text(lines) end)
-    vim.schedule(function() show_diff_ohhhhh_yeahhhhh(M.selection, lines) end)
+    vim.schedule(function()
+        M.displayer:on_response(M.selection, lines)
+    end)
 end
 
 function M.handle_request_completed()
