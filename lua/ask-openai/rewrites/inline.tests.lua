@@ -1,3 +1,4 @@
+require("ask-openai.helpers.test_setup").modify_package_path()
 local rewrites = require("ask-openai.rewrites.inline")
 -- FYI be careful how you import init.lua... must be same if imported in multiple spots (i.e. the tests)
 local thinking = require("ask-openai.rewrites.thinking")
