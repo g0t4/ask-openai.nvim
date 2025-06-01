@@ -319,7 +319,14 @@ local function simulate_rewrite_stream_chunks(opts)
     M.displayer = Displayer:new(M.accept_rewrite, M.cancel_rewrite)
     M.displayer:set_keymaps()
 
-    local rewritten_text = M.selection.original_text .. "\nSTREAMING NEW CONTENT\nthis is fun"
+    local optional_thinking_text = [[ <think>
+foo the bar lorem ipsum toodle doodle banana bie foo the bar bar the foo and foo the bar and bbbbbb the foo the bar bar the
+foobar and foo the bar bar foo the bar lorem ipsum toodle doodle banana bie foo the bar bar the foo and foo the bar and bbbbbb
+the foo the bar bar the foobar and foo the bar bar foo the bar lorem ipsum toodle doodle banana bie foo the bar bar the foo
+and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
+</think> ]]
+    local rewritten_text = optional_thinking_text .. M.selection.original_text .. "\nSTREAMING w/ THINKING CONTENT"
+    -- local rewritten_text = M.selection.original_text .. "\nSTREAMING NEW CONTENT\nthis is fun"
 
     -- FYI can split on new line to simulate streaming lines instead of words
     local all_words = vim.split(rewritten_text, " ")
@@ -344,7 +351,7 @@ local function simulate_rewrite_stream_chunks(opts)
         M.process_chunk(cur_word)
         -- delay and do next
         -- FYI can adjust interval to visually slow down and see what is happening with each chunk, s/b especially helpful with streaming diff
-        vim.defer_fn(function() stream_words(remaining_words) end, slow_ms)
+        vim.defer_fn(function() stream_words(remaining_words) end, fast_ms)
     end
     stream_words(all_words)
 end
