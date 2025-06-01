@@ -304,6 +304,9 @@ local function fake_rewrite_stream_chunks(opts)
     vim.cmd("normal! v6jv") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     M.selection = Selection.get_visual_selection_for_current_window()
+    M.accumulated_chunks = ""
+    M.displayer = Displayer:new(M.accept_rewrite, M.cancel_rewrite)
+    M.displayer:set_keymaps()
 
     local rewritten_text = M.selection.original_text .. "\nSTREAMING NEW CONTENT\nthis is fun"
 
