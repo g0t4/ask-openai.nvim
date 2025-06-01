@@ -10,8 +10,6 @@ local log = require("ask-openai.prediction.logger").predictions()
 --
 -- vim.cmd("normal! VV") -- works! (enter and exit)
 --
--- vim.cmd("normal! V<Esc>") -- works! (enter and exit)
---
 -- * set marks manually! good for testing too... especially for precise testing
 -- vim.api.nvim_win_set_cursor(win, { 1, 2 }) -- line 3, col 2
 -- vim.cmd("normal! m<")
@@ -56,13 +54,18 @@ end
 
 describe("get_visual_selection()", function()
     describe("edge case hunting - only one line", function()
+        ---@diagnostic disable-next-line: unused-function
+        local function print_all_lines_troubleshoot()
+            -- for testing only
+            vim.print(vim.api.nvim_buf_get_lines(0, 0, -1, False))
+        end
+
         before_each(function()
             load_lines({ "foo the bar" })
         end)
 
         it("no selection => is empty", function()
             -- nothing to do if its a new buffer/window
-            -- vim.cmd("normal! <Esc>")
             local selection = get_selection()
             assert(selection:is_empty())
             assert(selection.original_text == '')
@@ -77,7 +80,8 @@ describe("get_visual_selection()", function()
         end)
 
         it("middle of a line", function()
-            vim.cmd('normal! 0wvw<Esc>') -- third V exits
+            vim.cmd('normal! 0wvwv') -- second v completes selection
+            -- print_all_lines_troubleshoot()
             -- moves cursor to second word, then selects through one word (w)
             --   which results in the cursor on the third word,
             --   taking the first letter...
@@ -93,7 +97,7 @@ describe("get_visual_selection()", function()
             --   and indeed, the range is different!
             -- TODO figure out if this difference with \n at end of line has implications for selection replacement?
             --   and part of it is, $ goes thru the \n at the end of the line, whereas Shift-V doesn't select the \n on end (however it still pastes w/ a \n at end)
-            vim.cmd('normal! 0v$<Esc>')
+            vim.cmd('normal! 0v$v')
             local selection = get_selection()
             -- note the text I return does NOT include the \n...
             --  that could be my own logic or what I amdoing with with
@@ -115,12 +119,6 @@ describe("get_visual_selection()", function()
 
     local function move_cursor_to_start_of_doc()
         vim.api.nvim_win_set_cursor(0, { 1, 0 })
-    end
-
-    ---@diagnostic disable-next-line: unused-function
-    local function print_all_lines_troubleshoot()
-        -- for testing only
-        vim.print(vim.api.nvim_buf_get_lines(0, 0, -1, False))
     end
 
     describe("multi line", function()
@@ -180,7 +178,8 @@ describe("get_visual_selection()", function()
         describe("charwise", function()
             it("select 0$ with following line =>?? ", function()
                 move_cursor_to_start_of_doc()
-                vim.cmd('normal! v0$<Esc>')
+                vim.cmd('normal! v0$v') -- second v completes selection
+                -- print_all_lines_troubleshoot()
                 local selection = get_selection()
                 should.be_equal("line 1 cow", selection.original_text)
                 should.be_equal("[r1,c1]-[r1,c11]", selection:range_str())
