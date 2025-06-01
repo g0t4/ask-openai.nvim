@@ -143,8 +143,8 @@ function M.process_chunk(chunk)
     end
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 
-    -- vim.schedule(function() show_green_preview_of_just_new_text(lines) end)
-    vim.schedule(function() show_diff_ohhhhh_yeahhhhh(M.selection, lines) end)
+    vim.schedule(function() show_green_preview_of_just_new_text(lines) end)
+    -- vim.schedule(function() show_diff_ohhhhh_yeahhhhh(M.selection, lines) end)
 end
 
 function M.handle_request_completed()
@@ -275,6 +275,53 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     M.last_request = backend.curl_for(body, base_url, M)
 end
 
+local function fake_rewrite_stream_chunks(opts)
+    -- use this for timing and to test streaming diff!
+
+    M.abort_last_request()
+    vim.cmd("normal! v6jv") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
+    vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
+    M.selection = Selection.get_visual_selection_for_current_window()
+
+    local rewritten_text = M.selection.original_text .. "\nSTREAMING NEW CONTENT\nthis is fun"
+
+    -- FYI can split on new line to simulate streaming lines instead of words
+    local all_words = vim.split(rewritten_text, " ")
+
+    local fast_ms = 20
+    local slow_ms = 50
+
+    local function stream_words(remaining_words)
+        if not remaining_words then
+            -- TODO done signal? not sure I have one right now
+            return
+        end
+        -- take out first word
+        local cur_word = remaining_words[1]
+        table.remove(remaining_words, 1) -- insert current word in middle of line
+        if #remaining_words > 0 then
+            -- put back the space
+            cur_word = cur_word .. " "
+        end
+        M.process_chunk(cur_word)
+        -- delay and do next
+        -- FYI can adjust interval to visually slow down and see what is happening with each chunk, s/b especially helpful with streaming diff
+        vim.defer_fn(function() stream_words(remaining_words) end, slow_ms)
+    end
+    stream_words(all_words)
+end
+
+local function fake_rewrite_instant_one_chunk(opts)
+    M.abort_last_request()
+    vim.cmd("normal! v6jv") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
+    vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
+    M.selection = Selection.get_visual_selection_for_current_window()
+
+    local full_rewrite = M.selection.original_text .. "\nINSTANT NEW LINE"
+    M.process_chunk(full_rewrite)
+    -- FYI could call display method here and bypass M.process_chunk (mostly... need to set M.accumulated_chunks too)
+end
+
 local function ask_and_stream_from_ollama(opts)
     local selection = Selection.get_visual_selection_for_current_window()
     -- if selection:is_empty() then
@@ -322,6 +369,14 @@ function M.setup()
     -- Create commands and keymaps for the rewrite functionality
     vim.api.nvim_create_user_command("AskRewrite", ask_and_stream_from_ollama, { range = true, nargs = 1 })
     vim.keymap.set({ 'n', 'v' }, '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
+
+    -- fake for testing extmarks / accept / cancel / etc - the during/after workflow
+    vim.api.nvim_create_user_command("AskRewriteFakeInstant", fake_rewrite_instant_one_chunk, {})
+    vim.keymap.set({ 'n' }, '<Leader>rt', ':<C-u>AskRewriteFakeInstant<CR>', { noremap = true })
+
+    -- streaming fake
+    vim.api.nvim_create_user_command("AskRewriteFakeStream", fake_rewrite_stream_chunks, {})
+    vim.keymap.set({ 'n' }, '<Leader>rs', ':<C-u>AskRewriteFakeStream<CR>', { noremap = true })
 
     -- Add a command to abort the stream if needed
     vim.api.nvim_create_user_command("AskRewriteAbort", M.abort_last_request, {})
