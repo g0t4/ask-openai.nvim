@@ -359,6 +359,8 @@ local function ask_and_stream_from_ollama(opts)
     -- Store selection details for later use
     M.selection = selection
     M.accumulated_chunks = ""
+    M.displayer = Displayer:new(M.accept_rewrite, M.cancel_rewrite)
+    M.displayer:set_keymaps()
 
     M.stream_from_ollama(user_prompt, selection.original_text, file_name)
 end
