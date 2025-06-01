@@ -84,8 +84,10 @@ function M.process_chunk(chunk)
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 
     -- FYI can switch back to green here is fine! and skip diff if its not ready
-    vim.schedule(function() Displayer.show_green_preview_of_just_new_text(M.selection, lines) end)
-    -- vim.schedule(function() M.displayer:on_response(M.selection, lines) end)
+    -- vim.schedule(function() Displayer.show_green_preview_of_just_new_text(M.selection, lines) end)
+    vim.schedule(function()
+        M.displayer:on_response(M.selection, lines)
+    end)
 end
 
 function M.handle_request_completed()
