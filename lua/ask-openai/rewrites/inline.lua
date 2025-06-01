@@ -299,7 +299,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 end
 
 M.stop_streaming = false
-local function fake_rewrite_stream_chunks(opts)
+local function simulate_rewrite_stream_chunks(opts)
     -- use this for timing and to test streaming diff!
 
     M.abort_last_request()
@@ -341,7 +341,7 @@ local function fake_rewrite_stream_chunks(opts)
     stream_words(all_words)
 end
 
-local function fake_rewrite_instant_one_chunk(opts)
+local function simulate_rewrite_instant_one_chunk(opts)
     M.abort_last_request()
     vim.cmd("normal! v6jv") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
@@ -396,11 +396,11 @@ function M.setup()
 
 
     -- * simulations
-    vim.api.nvim_create_user_command("AskRewriteFakeInstant", fake_rewrite_instant_one_chunk, {})
-    vim.keymap.set({ 'n' }, '<Leader>rt', ':<C-u>AskRewriteFakeInstant<CR>', { noremap = true })
+    vim.api.nvim_create_user_command("AskRewriteSimulateInstant", simulate_rewrite_instant_one_chunk, {})
+    vim.keymap.set({ 'n' }, '<Leader>rt', ':<C-u>AskRewriteSimulateInstant<CR>', { noremap = true })
     --
-    vim.api.nvim_create_user_command("AskRewriteFakeStream", fake_rewrite_stream_chunks, {})
-    vim.keymap.set({ 'n' }, '<Leader>rs', ':<C-u>AskRewriteFakeStream<CR>', { noremap = true })
+    vim.api.nvim_create_user_command("AskRewriteSimulateStream", simulate_rewrite_stream_chunks, {})
+    vim.keymap.set({ 'n' }, '<Leader>rs', ':<C-u>AskRewriteSimulateStream<CR>', { noremap = true })
 
 
     -- TODO either remove ry/rc or move them to only apply when displayer is visible
