@@ -117,6 +117,11 @@ describe("get_visual_selection()", function()
         vim.api.nvim_win_set_cursor(0, { 1, 0 })
     end
 
+    local function print_all_lines()
+        -- for testing only
+        vim.print(vim.api.nvim_buf_get_lines(0, 0, -1, False))
+    end
+
     describe("multi line", function()
         before_each(function()
             local lines = {
@@ -173,9 +178,6 @@ describe("get_visual_selection()", function()
 
         describe("charwise", function()
             it("select 0$ with following line =>?? ", function()
-                -- local r1c4 = { 1, 5 }
-                -- vim.api.nvim_win_set_cursor(0, r1c4)
-                -- print(unpack(vim.api.nvim_win_get_cursor(0)))
                 move_cursor_to_start_of_doc()
                 vim.cmd('normal! v0$<Esc>')
                 local selection = get_selection()
@@ -184,10 +186,28 @@ describe("get_visual_selection()", function()
                 -- FYI original text does not have \n
                 -- FYI and in this case we have the end_col > if we used Shift-V
             end)
+
+            it("select end of line and start of next", function()
+                -- TODO might be nice to have a convenience method for testing to move cursor based on [r1,c1] syntax
+                local start_r1c6_1indexed = { 1, 5 } -- start on "1" in "line 1 cow"
+                vim.api.nvim_win_set_cursor(0, start_r1c6_1indexed)
+
+                -- start charwise selection
+                vim.cmd('normal! v3wv')
+
+                -- local end_r2c6_1index = { 2, 5 }
+                -- vim.api.nvim_win_set_cursor(0, end_r2c6_1index)
+                -- vim.cmd('normal! v') -- exit visual mode
+                print_all_lines()
+
+                local selection = get_selection()
+                should.be_equal("1 cow\nline 2", selection.original_text)
+                should.be_equal("[r1,c6]-[r2,c6]", selection:range_str())
+            end)
         end)
 
         describe("multiline selection, subset of buffer", function()
-            -- TODO
+
         end)
     end)
 end)
