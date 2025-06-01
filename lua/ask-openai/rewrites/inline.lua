@@ -80,6 +80,7 @@ function M.process_chunk(chunk)
         vim.schedule(function() Displayer.show_green_preview_text(M.selection, lines) end)
         return
     end
+    -- TODO! detect first chunk AFTER thinking section so we can clear the Thinking... message and not need to clear before every token
     -- FYI it looks fine to not add lines with the thinking message... just shows up right where cursor was at
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 
