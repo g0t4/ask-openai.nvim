@@ -58,11 +58,12 @@ describe("get_visual_selection()", function()
             load_lines({ "foo the bar" })
         end)
 
-        it("no selection is empty", function()
+        it("no selection => is empty", function()
             -- nothing to do if its a new buffer/window
             -- vim.cmd("normal! <Esc>")
             local selection = get_selection()
             assert(selection:is_empty())
+            assert(selection.original_text == '')
         end)
 
         it("one line selected, only one in buffer", function()
