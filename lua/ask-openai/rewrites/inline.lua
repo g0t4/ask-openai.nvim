@@ -171,8 +171,7 @@ function M.accept_rewrite()
         --       again that is when I wanna move the cursor to cover char AFTER end of selection I want
         --   DONT TRY A QUICK FIX.. try to change how you select first
 
-        -- Dump selection in 0indexed for debugging too
-        M.selection:log_info("acccepting... original selection was: ", true)
+        M.selection:log_info("accepting... original selection was: ")
 
         -- Replace the selected text with the generated content
         vim.api.nvim_buf_set_text(

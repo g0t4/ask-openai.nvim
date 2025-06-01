@@ -111,19 +111,6 @@ describe("get_visual_selection()", function()
         -- TODO! do I want to add some tests to cover what using getcharpos accomplishes for me?
         -- * getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
         -- I should do some high level tests so I could swap out getcharpos if needed?
-
-
-        -- it("end of a line with trailing newline", function()
-        --     vim.cmd('normal! Vj') -- third V exits
-        --     local selection = get_selection()
-        --     should.be_equal("the bar\n", selection.original_text)
-        --     end)
-        -- end)
-
-        -- describe("multiline", function()
-        --     before_each(function()
-        --         load_lines({ "foo the bar\n", "baz bat" })
-        --     end)
     end)
 
     local function move_cursor_to_start_of_doc()

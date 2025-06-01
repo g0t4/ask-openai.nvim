@@ -22,27 +22,12 @@ function Selection:new(selected_lines, start_line_1indexed, start_col_1indexed, 
     return obj
 end
 
--- TODO add some tests of working with selection!!! YES
 function Selection:is_empty()
     return self.original_text == nil or self.original_text == ""
 end
 
-function Selection:to_str(as_0indexed)
-    as_0indexed = as_0indexed or false
-    if as_0indexed then
-        return
-            "Selection: 0-indexed start(line=" .. (self._start_line_0indexed)
-            .. ",col=" .. (self._start_col_0indexed)
-            .. ") end(line=" .. (self._end_line_0indexed)
-            .. ",col=" .. (self._end_col_0indexed)
-            .. ") (" .. self.original_text .. ")"
-    end
-    return
-        "Selection: 1-indexed start(line=" .. (self:start_line_0indexed() + 1)
-        .. ",col=" .. (self:start_col_0indexed() + 1)
-        .. ") end(line=" .. (self:end_line_0indexed() + 1)
-        .. ",col=" .. (self:end_col_0indexed() + 1)
-        .. ") (" .. self.original_text .. ")"
+function Selection:to_str()
+    return "Selection: " .. self:range_str() .. " 1-indexed"
 end
 
 function Selection:start_line_0indexed()
@@ -77,8 +62,8 @@ function Selection:end_col_1indexed()
     return self._end_col_0indexed + 1
 end
 
-function Selection:log_info(message, as_0indexed)
-    log:info(message, self:to_str(as_0indexed))
+function Selection:log_info(message)
+    log:info(message, self:to_str())
 end
 
 function Selection._get_visual_selection_for_window_id(window_id)
