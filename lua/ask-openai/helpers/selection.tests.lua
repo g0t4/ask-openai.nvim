@@ -53,7 +53,7 @@ end
 describe("get_visual_selection()", function()
     -- TODO! vet if issue w/ trailing char left after accept... is it in the selection logic
 
-    describe("only one line", function()
+    describe("edge case hunting - only one line", function()
         before_each(function()
             load_lines({ "foo the bar" })
         end)
@@ -69,6 +69,7 @@ describe("get_visual_selection()", function()
             vim.cmd('normal! VV') -- second V exits
             local selection = get_selection()
             should.be_equal("foo the bar", selection.original_text)
+            should.be_equal("[r1,c1]-[r1,c11]", selection:range_str())
         end)
 
         it("middle of a line", function()
@@ -154,6 +155,7 @@ describe("get_visual_selection()", function()
                 vim.cmd('normal! GVV') -- second V exits
                 local selection = get_selection()
                 should.be_equal("line 14 the cow is over there", selection.original_text)
+                should.be_equal("[r14,c1]-[r14,c29]", selection:range_str())
             end)
         end)
 
