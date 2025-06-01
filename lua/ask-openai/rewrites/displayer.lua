@@ -27,7 +27,7 @@ function Displayer.clear_extmarks()
 end
 
 ---@param selection Selection
----@param lines { string }
+---@param lines string[]
 ---@diagnostic disable-next-line: unused-function
 function Displayer.show_green_preview_text(selection, lines)
     Displayer.clear_extmarks()
