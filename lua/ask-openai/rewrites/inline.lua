@@ -152,6 +152,8 @@ function M.handle_request_completed()
 end
 
 function M.accept_rewrite()
+    M.stop_streaming = true -- go ahead and stop with whatever has been generated so far
+
     if M.displayer ~= nil then
         -- TODO eventually move more accept logic into displayer (also an applier, changer?)
         M.displayer:remove_keymaps()
