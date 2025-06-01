@@ -2,6 +2,10 @@ local log = require("ask-openai.prediction.logger").predictions()
 
 ---@class Selection
 ---@field original_text string
+---@field _start_line_0indexed integer
+---@field _start_col_0indexed integer
+---@field _end_line_0indexed integer
+---@field _end_col_0indexed integer
 local Selection = {}
 
 function Selection:new(selected_lines, start_line_1indexed, start_col_1indexed, end_line_1indexed, end_col_1indexed)
@@ -55,6 +59,22 @@ end
 
 function Selection:end_col_0indexed()
     return self._end_col_0indexed
+end
+
+function Selection:start_line_1indexed()
+    return self._start_line_0indexed + 1
+end
+
+function Selection:start_col_1indexed()
+    return self._start_col_0indexed + 1
+end
+
+function Selection:end_line_1indexed()
+    return self._end_line_0indexed + 1
+end
+
+function Selection:end_col_1indexed()
+    return self._end_col_0indexed + 1
 end
 
 function Selection:log_info(message, as_0indexed)
@@ -126,6 +146,7 @@ function Selection._get_visual_selection_for_window_id(window_id)
     return selection
 end
 
+---@return Selection
 function Selection.get_visual_selection_for_current_window()
     local current_window_id = vim.api.nvim_get_current_win()
     return Selection._get_visual_selection_for_window_id(current_window_id)
