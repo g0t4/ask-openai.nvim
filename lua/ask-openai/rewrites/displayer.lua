@@ -112,48 +112,25 @@ function Displayer:on_response(selection, lines)
         return accum
     end)
 
-    -- TODO! double check logic that this is ok to do,
-    -- this fixes extra line issue... and it seems right to remove this
-    -- review fold logic above, meticulously
-    -- TODO even better, write a unit test for this:
-    --
     -- check if last group is empty, remove if so
     local last_line = extmark_lines[#extmark_lines]
     if #last_line < 1 then
         table.remove(extmark_lines, #extmark_lines)
     end
 
-    -- log:info("extmark_lines")
-    -- for _, v in ipairs(extmark_lines) do
-    --     log:info(vim.inspect(v))
-    -- end
-
     if #extmark_lines < 1 then
         log:info('no lines')
         return
     end
 
-    -- hide the original edtiable lines?
-    -- show the diff where they were?
-    -- or do like I do on AskRewrite, just show it all at the top of the selection as extmarks
-    --   and then accept / reject accordingly... thats a good start point...
-    --   then later can decide if I wanna hide the original
-    --   I kinda like how that approach pushes the original down for easy reference too
-    --   OR, popup window w/ diff?
-
-    local start_line = request.details.editable_start_line
-    local end_line = request.details.editable_end_line
-
-    self:pause_watcher()
-
-    -- ?? switch to incremental diff presentation (not AIO), and with it partial accept/reject?!
-    -- self.marks:diff_strike_lines(start_line, end_line)
+    -- TODO! do I need to support rewrites in the middle of a line? I doubt it... and right now the zeta rewrite is based on whole lines IIRC
+    local start_line = selection:start_line_0indexed()
+    local end_line = selection:end_line_0indexed()
 
     log:info('extmark_lines')
     for _, v in ipairs(extmark_lines) do
         log:info(vim.inspect(v))
     end
-
 
     self.marks:set(select_excerpt_mark_id, {
         start_line = start_line - 1, -- that way first virt_line is in line below == start_line
