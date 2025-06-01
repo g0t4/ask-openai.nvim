@@ -10,16 +10,10 @@ local Displayer = require("ask-openai.rewrites.displayer")
 
 local M = {}
 
--- Set up a highlight group for the extmarks
-local hlgroup = "AskRewrite"
-vim.api.nvim_command("highlight default " .. hlgroup .. " guifg=#ccffcc ctermfg=green")
--- FYI I like having a slightly different color vs predictions completions
-
 -- Initialize selection position variables at module level
 ---@type Selection|nil
 M.selection = nil
 M.accumulated_chunks = ""
-M.extmark_id = nil
 
 function M.strip_md_from_completion(lines)
     local isFirstLineStartOfCodeBlock = lines[1]:match("^```(%S*)$")
@@ -71,35 +65,6 @@ function M.handle_messages_updated()
     --   do smth in the normalizer for that or still have a sep pathway per delta (no chunkin though?)
 end
 
----@diagnostic disable-next-line: unused-function   -- just long enough to test out new diff impl and keep this around just in case
-local function show_green_preview_of_just_new_text(lines)
-    Displayer.clear_extmarks()
-
-    if #lines == 0 then return end
-
-    local first_line = { { table.remove(lines, 1), hlgroup } }
-
-    -- Format remaining lines for virt_lines
-    local virt_lines = {}
-    for _, line in ipairs(lines) do
-        table.insert(virt_lines, { { line, hlgroup } })
-    end
-
-    -- Set extmark at the beginning of the selection
-    M.extmark_id = vim.api.nvim_buf_set_extmark(
-        0, -- Current buffer
-        Displayer.extmarks_namespace_id,
-        M.selection:start_line_0indexed(),
-        M.selection:start_col_0indexed(),
-        {
-            virt_text = first_line,
-            virt_lines = virt_lines,
-            virt_text_pos = "overlay",
-            hl_mode = "combine"
-        }
-    )
-end
-
 function M.process_chunk(chunk)
     if not chunk then return end
 
@@ -112,14 +77,14 @@ function M.process_chunk(chunk)
     if pending_close then
         lines = { thinking.dots:get_still_thinking_message() }
         -- while thinking, we show the green text w/ ....
-        vim.schedule(function() show_green_preview_of_just_new_text(lines) end)
+        vim.schedule(function() Displayer.show_green_preview_of_just_new_text(M.selection, lines) end)
         return
     end
     -- FYI it looks fine to not add lines with the thinking message... just shows up right where cursor was at
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 
-    -- NOW, we can do green here too (after thinking done)... OR diff:
-    -- vim.schedule(function() show_green_preview_of_just_new_text(lines) end)
+    -- FYI can switch back to green here is fine! and skip diff if its not ready
+    -- vim.schedule(function() Displayer.show_green_preview_of_just_new_text(M.selection, lines) end)
     vim.schedule(function()
         M.displayer:on_response(M.selection, lines)
     end)
@@ -175,7 +140,6 @@ function M.accept_rewrite()
 
         -- Reset the module state
         M.accumulated_chunks = ""
-        M.extmark_id = nil
 
         -- Log acceptance
         log:info("Rewrite accepted and inserted into buffer")
@@ -210,7 +174,6 @@ function M.cancel_rewrite()
 
         -- Reset the module state
         M.accumulated_chunks = ""
-        M.extmark_id = nil
     end)
 end
 

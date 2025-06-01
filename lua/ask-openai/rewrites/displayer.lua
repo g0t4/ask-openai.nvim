@@ -5,6 +5,8 @@ local combined = require("devtools.diff.combined")
 local Displayer = {}
 Displayer.__index = Displayer
 
+local hlgroup = "AskRewrite"
+vim.api.nvim_command("highlight default " .. hlgroup .. " guifg=#ccffcc ctermfg=green")
 -- TODO move over concepts like ExtmarksSet (AFTER I GET DIFF GOING)
 local extmarks_namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
 Displayer.extmarks_namespace_id = extmarks_namespace_id -- TODO remove once Displayer takes over all extmarks
@@ -18,6 +20,37 @@ end
 
 function Displayer.clear_extmarks()
     vim.api.nvim_buf_clear_namespace(0, extmarks_namespace_id, 0, -1)
+end
+
+---@param selection Selection
+---@param lines { string }
+---@diagnostic disable-next-line: unused-function   -- just long enough to test out new diff impl and keep this around just in case
+function Displayer.show_green_preview_of_just_new_text(selection, lines)
+    Displayer.clear_extmarks()
+
+    if #lines == 0 then return end
+
+    local first_line = { { table.remove(lines, 1), hlgroup } }
+
+    -- Format remaining lines for virt_lines
+    local virt_lines = {}
+    for _, line in ipairs(lines) do
+        table.insert(virt_lines, { { line, hlgroup } })
+    end
+
+    -- Set extmark at the beginning of the selection
+    vim.api.nvim_buf_set_extmark(
+        0, -- Current buffer
+        Displayer.extmarks_namespace_id,
+        selection:start_line_0indexed(),
+        selection:start_col_0indexed(),
+        {
+            virt_text = first_line,
+            virt_lines = virt_lines,
+            virt_text_pos = "overlay",
+            hl_mode = "combine"
+        }
+    )
 end
 
 ---@param selection Selection
