@@ -133,7 +133,12 @@ describe("get_visual_selection()", function()
                 should.be_equal("line 1 cow", selection.original_text)
 
                 -- TODO add verification of selection offsets for other critical test cases, this should help find the issue w/ trailing character bug
-                should.be_equal("[r1,c1]-[r1,c10]", selection:range_str())
+                should.be_equal("[r1,c1]-[r1,c11]", selection:range_str())
+                -- *** when the ranges don't match, plenary shows string diff (stacked) and it all lines up SUPER USEFUL! i.e.:
+                -- Passed in:
+                -- (string) '[r1,c1]-[r1,c10]'
+                -- Expected:
+                -- (string) '[r1,c1]-[r1,c11]'
             end)
 
             it("single line selection, middle of document", function()
@@ -141,6 +146,7 @@ describe("get_visual_selection()", function()
                 vim.cmd('normal! 2jVV') -- second V exits
                 local selection = get_selection()
                 should.be_equal("line 3 goose gooose goose", selection.original_text)
+                should.be_equal("[r3,c1]-[r3,c25]", selection:range_str())
             end)
 
             it("single line selection, empty line", function()
