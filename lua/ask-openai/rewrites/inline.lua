@@ -153,9 +153,12 @@ end
 function M.accept_rewrite()
     vim.schedule(function()
         local lines = text_helpers.split_lines(M.accumulated_chunks)
+        log:info("accepting-lines-1:", vim.inspect(lines))
         lines = M.strip_md_from_completion(lines)
         lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
+        log:info("accepting-lines-2:", vim.inspect(lines))
+
 
         -- TODO! study what to do to fix this, versus change how I select text in char/line/blockwise visual modes
         -- FYI notes about not replacing last character of selection
