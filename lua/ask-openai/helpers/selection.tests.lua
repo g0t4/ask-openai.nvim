@@ -82,12 +82,18 @@ describe("get_visual_selection()", function()
             --   which is interesting b/c my understanding is cursor is left of the char it visually sits on top of... maybe not in charwise?
             local selection = get_selection()
             should.be_equal("the b", selection.original_text)
+            should.be_equal("[r1,c5]-[r1,c9]", selection:range_str())
         end)
 
-        it("start of line (0) to end of line $", function()
+        it("start of line with 0 to end of line with $", function()
+            -- THIS IS not the same as Shift-V in terms of selecting...
+            --   ... this is an exploratory test
+            --   and indeed, the range is different!
+            --   this must be related to the inclusivity factor, of the end of range!
             vim.cmd('normal! 0v$<Esc>')
             local selection = get_selection()
             should.be_equal("foo the bar", selection.original_text)
+            should.be_equal("[r1,c1]-[r1,c11]", selection:range_str())
         end)
 
         -- it("end of a line with trailing newline", function()
