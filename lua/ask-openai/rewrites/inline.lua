@@ -165,7 +165,7 @@ function M.abort_last_request()
     end
 end
 
-function M.cancel_rewrite()
+function M.cleanup_after_cancel()
     M.abort_last_request()
     M.displayer = nil
 
@@ -250,7 +250,7 @@ local function simulate_rewrite_stream_chunks(opts)
     M.selection = Selection.get_visual_selection_for_current_window()
     M.accumulated_chunks = ""
     M.stop_streaming = false
-    M.displayer = Displayer:new(M.accept_rewrite, M.cancel_rewrite)
+    M.displayer = Displayer:new(M.accept_rewrite, M.cleanup_after_cancel)
     M.displayer:set_keymaps()
 
     local optional_thinking_text = [[<think>
@@ -296,7 +296,7 @@ local function simulate_rewrite_instant_one_chunk(opts)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     M.selection = Selection.get_visual_selection_for_current_window()
     M.accumulated_chunks = ""
-    M.displayer = Displayer:new(M.accept_rewrite, M.cancel_rewrite)
+    M.displayer = Displayer:new(M.accept_rewrite, M.cleanup_after_cancel)
     M.displayer:set_keymaps()
 
     local full_rewrite = M.selection.original_text .. "\nINSTANT NEW LINE"
@@ -317,7 +317,7 @@ local function ask_and_stream_from_ollama(opts)
     -- Store selection details for later use
     M.selection = selection
     M.accumulated_chunks = ""
-    M.displayer = Displayer:new(M.accept_rewrite, M.cancel_rewrite)
+    M.displayer = Displayer:new(M.accept_rewrite, M.cleanup_after_cancel)
     M.displayer:set_keymaps()
 
     M.stream_from_ollama(user_prompt, selection.original_text, file_name)
