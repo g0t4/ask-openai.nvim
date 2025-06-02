@@ -61,6 +61,7 @@ function Displayer:show_green_preview_text(selection, lines)
     )
 end
 
+---@diagnostic disable-next-line: unused-function
 local function inspect_diff(diff)
     local lines = {}
     for _, v in ipairs(diff) do
@@ -85,7 +86,7 @@ end
 function Displayer:on_response(selection, lines)
     local lines_text = table.concat(lines, "\n")
     local diff = combined.combined_diff(selection.original_text, lines_text)
-    log:info("diff:\n" .. inspect_diff(diff))
+    -- log:info("diff:\n" .. inspect_diff(diff))
 
     local extmark_lines = vim.iter(diff):fold({ {} }, function(accum, chunk)
         if chunk == nil then
@@ -122,7 +123,7 @@ function Displayer:on_response(selection, lines)
                 -- TODO this needs testing, something could be buggy and it'd be very hard to find out
                 local split_lines = vim.split(text, '\n')
                 -- ? is split_lines the right name here? why did I use piece below and not line? (wes notes inline rewrites)
-                log:info("split_lines:", vim.inspect(split_lines))
+                -- log:info("split_lines:", vim.inspect(split_lines))
                 for i, piece in ipairs(split_lines) do
                     -- FYI often v will be empty (i.e. a series of newlines)... do not exclude these empty lines!
                     local len_text = #piece
@@ -157,13 +158,13 @@ function Displayer:on_response(selection, lines)
     -- TODO! do I need to support rewrites in the middle of a line? I doubt it... and right now the zeta rewrite is based on whole lines IIRC
     local start_line_0i = selection:start_line_0indexed()
     local end_line_0i = selection:end_line_0indexed()
-    log:info("original selection: " .. selection:range_str_0indexed())
+    -- log:info("original selection: " .. selection:range_str_0indexed())
 
 
-    log:info('extmark_lines')
-    for _, v in ipairs(extmark_lines) do
-        log:info(vim.inspect(v))
-    end
+    -- log:info('extmark_lines')
+    -- for _, v in ipairs(extmark_lines) do
+    --     log:info(vim.inspect(v))
+    -- end
 
     -- delete original lines (that way only diff shows in extmarks)
     if not self.removed_original_lines then
