@@ -203,6 +203,8 @@ function Displayer:set_keymaps()
     function accept()
         vim.schedule(function()
             log:info('Accepting')
+            self:remove_keymaps()
+            self:clear_extmarks()
             self._current_accept()
         end)
     end

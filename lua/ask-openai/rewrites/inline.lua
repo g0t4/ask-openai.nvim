@@ -96,14 +96,8 @@ end
 
 function M.accept_rewrite()
     M.stop_streaming = true -- go ahead and stop with whatever has been generated so far
+    M.displayer = nil
 
-    local displayer_was = nil
-    if M.displayer ~= nil then
-        -- TODO eventually move more accept logic into displayer (also an applier, changer?)
-        M.displayer:remove_keymaps()
-        displayer_was = M.displayer
-        M.displayer = nil
-    end
     vim.schedule(function()
         local lines = text_helpers.split_lines(M.accumulated_chunks)
         log:info("accepting-lines-1:", vim.inspect(lines))
@@ -111,7 +105,6 @@ function M.accept_rewrite()
         lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
         log:info("accepting-lines-2:", vim.inspect(lines))
-
 
         -- TODO! study what to do to fix this, versus change how I select text in char/line/blockwise visual modes
         -- FYI notes about not replacing last character of selection
@@ -138,10 +131,6 @@ function M.accept_rewrite()
             M.selection:end_col_0indexed(), -- Zero-indexed, end-exclusive column
             lines
         )
-
-        if displayer_was ~= nil then
-            displayer_was:clear_extmarks()
-        end
 
         -- Reset the module state
         M.accumulated_chunks = ""
