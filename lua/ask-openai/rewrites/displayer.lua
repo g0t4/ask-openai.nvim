@@ -129,8 +129,9 @@ function Displayer:on_response(selection, lines)
     end
 
     -- TODO! do I need to support rewrites in the middle of a line? I doubt it... and right now the zeta rewrite is based on whole lines IIRC
-    local start_line = selection:start_line_0indexed()
-    local end_line = selection:end_line_0indexed()
+    local start_line_0i = selection:start_line_0indexed()
+    local end_line_0i = selection:end_line_0indexed()
+    log:info("original lines: start_line_0i = " .. start_line_0i .. ", end_line_0i = " .. end_line_0i)
 
     log:info('extmark_lines')
     for _, v in ipairs(extmark_lines) do
@@ -142,7 +143,7 @@ function Displayer:on_response(selection, lines)
     Displayer.clear_extmarks()
 
     self.marks:set(select_excerpt_mark_id, {
-        start_line = start_line - 1, -- that way first virt_line is in line below == start_line
+        start_line = start_line_0i - 1, -- that way first virt_line is in line below == start_line
         start_col = 0,
         -- virt_text = first_extmark_line, -- leave first line unchanged (its the line before the changes)
         id = select_excerpt_mark_id,
@@ -151,11 +152,11 @@ function Displayer:on_response(selection, lines)
     })
 
     -- delete original lines (that way only diff shows in extmarks)
-    self.original_lines = self.window:buffer():get_lines(start_line, end_line)
+    self.original_lines = self.window:buffer():get_lines(start_line_0i, end_line_0i)
     table.insert(self.original_lines, '') -- add empty line (why?)
     if not self.removed_original_lines then
         -- TODO only do this after done thinking? if applicable?
-        self.window:buffer():replace_lines(start_line, end_line, {})
+        self.window:buffer():replace_lines(start_line_0i, end_line_0i, {})
         self.removed_original_lines = true
     end
 
