@@ -11,7 +11,6 @@ local Selection = {}
 function Selection:new(selected_lines, start_line_1indexed, start_col_1indexed, end_line_1indexed, end_col_1indexed)
     local obj = {
         original_text = vim.fn.join(selected_lines, "\n"),
-        -- FYI these are all private, will have accessors ultimatley to get 0 or 1 based?
         _start_line_0indexed = start_line_1indexed - 1,
         _start_col_0indexed = start_col_1indexed - 1,
         _end_line_0indexed = end_line_1indexed - 1,
@@ -27,7 +26,7 @@ function Selection:is_empty()
 end
 
 function Selection:to_str()
-    return "Selection: " .. self:range_str() .. " 1-indexed"
+    return "Selection: " .. self:range_str()
 end
 
 function Selection:start_line_0indexed()
@@ -144,7 +143,6 @@ end
 ---@param end_pos List<integer,integer>
 ---@return Selection
 function Selection.set_selection_from_range(start_pos, end_pos)
-    -- FYI the following works to select a range based on start/end positions
     vim.api.nvim_win_set_cursor(0, start_pos)
     vim.cmd("normal! v")
     vim.api.nvim_win_set_cursor(0, end_pos)
@@ -154,11 +152,25 @@ end
 
 function Selection:range_str()
     local range = string.format(
-        "[r%d,c%d]-[r%d,c%d]",
+        "[r%d,c%d]-[r%d,c%d] 1-indexed",
         self:start_line_1indexed(),
         self:start_col_1indexed(),
         self:end_line_1indexed(),
         self:end_col_1indexed()
+    )
+    if self:is_empty() then
+        range = range .. " (empty)"
+    end
+    return range
+end
+
+function Selection:range_str_0indexed()
+    local range = string.format(
+        "[r%d,c%d]-[r%d,c%d] 0-indexed",
+        self:start_line_0indexed(),
+        self:start_col_0indexed(),
+        self:end_line_0indexed(),
+        self:end_col_0indexed()
     )
     if self:is_empty() then
         range = range .. " (empty)"

@@ -47,14 +47,14 @@ describe("get_visual_selection()", function()
             local selection = get_selection()
             assert(selection:is_empty())
             assert(selection.original_text == '')
-            should.be_equal("[r1,c1]-[r1,c1] (empty)", selection:range_str())
+            should.be_equal("[r1,c1]-[r1,c1] 1-indexed (empty)", selection:range_str())
         end)
 
         it("one line selected, only one in buffer", function()
             vim.cmd('normal! VV') -- second V exits
             local selection = get_selection()
             should.be_equal("foo the bar", selection.original_text)
-            should.be_equal("[r1,c1]-[r1,c11]", selection:range_str())
+            should.be_equal("[r1,c1]-[r1,c11] 1-indexed", selection:range_str())
         end)
 
         it("middle of a line", function()
@@ -66,7 +66,7 @@ describe("get_visual_selection()", function()
             --   which is interesting b/c my understanding is cursor is left of the char it visually sits on top of... maybe not in charwise?
             local selection = get_selection()
             should.be_equal("the b", selection.original_text)
-            should.be_equal("[r1,c5]-[r1,c9]", selection:range_str())
+            should.be_equal("[r1,c5]-[r1,c9] 1-indexed", selection:range_str())
         end)
 
         it("start of line with 0 to end of line with $", function()
@@ -80,7 +80,7 @@ describe("get_visual_selection()", function()
             -- note the text I return does NOT include the \n...
             --  that could be my own logic or what I amdoing with with
             should.be_equal("foo the bar", selection.original_text)
-            should.be_equal("[r1,c1]-[r1,c12]", selection:range_str())
+            should.be_equal("[r1,c1]-[r1,c12] 1-indexed", selection:range_str())
 
             -- PRN revisit later... too much for now, I need to do more exciting things... btw this is a contraction of the selection range around \n which is not the bug I've encountered that I wanna fix... and now with the selection tests being pretty robust... seems like it would have to be smth in the replace logic that has a bug
             -- -- OK THIS IS WEIRD... gv => yank doesn't copy the \n on the end?!
@@ -128,7 +128,7 @@ describe("get_visual_selection()", function()
                 should.be_equal("line 1 cow", selection.original_text)
 
                 -- TODO add verification of selection offsets for other critical test cases, this should help find the issue w/ trailing character bug
-                should.be_equal("[r1,c1]-[r1,c10]", selection:range_str())
+                should.be_equal("[r1,c1]-[r1,c10] 1-indexed", selection:range_str())
                 -- *** when the ranges don't match, plenary shows string diff (stacked) and it all lines up SUPER USEFUL! i.e.:
                 -- Passed in:
                 -- (string) '[r1,c1]-[r1,c10]'
@@ -141,7 +141,7 @@ describe("get_visual_selection()", function()
                 vim.cmd('normal! 2jVV') -- second V exits
                 local selection = get_selection()
                 should.be_equal("line 3 goose gooose goose", selection.original_text)
-                should.be_equal("[r3,c1]-[r3,c25]", selection:range_str())
+                should.be_equal("[r3,c1]-[r3,c25] 1-indexed", selection:range_str())
             end)
 
             it("single line selection, empty line", function()
@@ -149,7 +149,7 @@ describe("get_visual_selection()", function()
                 vim.cmd('normal! GVV') -- second V exits
                 local selection = get_selection()
                 should.be_equal("line 14 the cow is over there", selection.original_text)
-                should.be_equal("[r14,c1]-[r14,c29]", selection:range_str())
+                should.be_equal("[r14,c1]-[r14,c29] 1-indexed", selection:range_str())
             end)
         end)
 
@@ -160,7 +160,7 @@ describe("get_visual_selection()", function()
                 -- print_all_lines_troubleshoot()
                 local selection = get_selection()
                 should.be_equal("line 1 cow", selection.original_text)
-                should.be_equal("[r1,c1]-[r1,c11]", selection:range_str())
+                should.be_equal("[r1,c1]-[r1,c11] 1-indexed", selection:range_str())
                 -- FYI original text does not have \n
                 -- FYI and in this case we have the end_col > if we used Shift-V
             end)
@@ -177,7 +177,7 @@ describe("get_visual_selection()", function()
 
                 local selection = get_selection()
                 should.be_equal("1 cow\nline 2", selection.original_text)
-                should.be_equal("[r1,c6]-[r2,c6]", selection:range_str())
+                should.be_equal("[r1,c6]-[r2,c6] 1-indexed", selection:range_str())
             end)
         end)
 
@@ -192,7 +192,7 @@ describe("get_visual_selection()", function()
                 -- start charwise selection
                 local resulting_selection = Selection.set_selection_from_range(start_r1c6, end_r3c12)
                 should.be_equal("1 cow\nline 2 duck duck\nline 3 goose", resulting_selection.original_text)
-                should.be_equal("[r1,c6]-[r3,c12]", resulting_selection:range_str())
+                should.be_equal("[r1,c6]-[r3,c12] 1-indexed", resulting_selection:range_str())
             end)
         end)
     end)
