@@ -175,8 +175,6 @@ function Displayer:on_response(selection, lines)
     })
 
     -- delete original lines (that way only diff shows in extmarks)
-    self.original_lines = self.window:buffer():get_lines(start_line_0i, end_line_0i)
-    table.insert(self.original_lines, '') -- add empty line (why?)
     if not self.removed_original_lines then
         -- TODO only do this after done thinking? if applicable?
         self.window:buffer():replace_lines(start_line_0i, end_line_0i, {})
