@@ -122,7 +122,7 @@ function M.accept_rewrite()
 
         M.selection:log_info("accepting... original selection was: ")
 
-        -- Replace the selected text with the generated content
+        -- Insert (replace) the text right on the empty line added by the Displayer (it already removed the original lines)
         vim.api.nvim_buf_set_text(
             0, -- Current buffer
             M.selection:start_line_0indexed(), -- Zero-indexed
