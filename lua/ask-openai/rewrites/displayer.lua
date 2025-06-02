@@ -169,7 +169,7 @@ function Displayer:on_response(selection, lines)
     if not self.removed_original_lines then
         -- keep in mind, doing this before/after set extmarks matters
         self.window:buffer():replace_lines(
-            start_line_0i, end_line_0i, { "", "" })
+            start_line_0i, end_line_0i + 1, { "", "" })
         self.removed_original_lines = true
     end
 
