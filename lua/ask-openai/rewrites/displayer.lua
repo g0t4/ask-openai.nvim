@@ -98,7 +98,8 @@ function Displayer:on_response(selection, lines)
             else
                 -- TODO this needs testing, something could be buggy and it'd be very hard to find out
                 local split_lines = vim.split(text, '\n')
-                -- log:info("splits:", vim.inspect(splits))
+                -- ? is split_lines the right name here? why did I use piece below and not line? (wes notes inline rewrites)
+                log:info("split_lines:", vim.inspect(split_lines))
                 for i, piece in ipairs(split_lines) do
                     -- FYI often v will be empty (i.e. a series of newlines)... do not exclude these empty lines!
                     local len_text = #piece
@@ -107,6 +108,7 @@ function Displayer:on_response(selection, lines)
                         table.insert(current_line, { piece, type_hlgroup })
                     end
                     if i < #split_lines then
+                        -- ? why isn't this done on the last split line? (wes notes inline rewrites)
                         -- start a new, empty line (even if last piece was empty)
                         current_line = {}
                         accum[#accum + 1] = current_line
