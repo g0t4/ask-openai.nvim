@@ -32,8 +32,6 @@ end
 ---@param lines string[]
 ---@diagnostic disable-next-line: unused-function
 function Displayer:show_green_preview_text(selection, lines)
-    self:clear_extmarks()
-
     if #lines == 0 then return end
 
     local first_line = { { table.remove(lines, 1), hlgroup } }
