@@ -183,60 +183,6 @@ function Displayer:on_response(selection, lines)
         self.removed_original_lines = true
     end
 
-
-    if false then
-        -- TODO! UMM I DONT NEED THIS as I do not type to get predictions for AskRewrite (an explicit rewrite)
-        -- PRN... register event handler that fires once ... on user typing, to undo and put stuff back
-        --    this works-ish... feels wrong direction but...
-        --    revisit how zed does the diff display/interaction...
-        --    does it feel right to show it and then type to say no? it probably does
-        --       as long as its not constantly lagging the typing for you
-        vim.api.nvim_create_autocmd({ 'InsertCharPre' }, {
-            buffer = self.window:buffer().buffer_number,
-            callback = function(args)
-                local char = vim.v.char
-                vim.schedule(function()
-                    -- Btw to trigger this if you are  in normal moded for fake prediction:
-                    --   type i to go into insert mode
-                    --   then type a new char to trigger this
-                    --   TODO better yet setup a trigger in insert mode again for fake testing so not wait on real deal
-                    log:info('InsertCharPre')
-                    log:info(args)
-                    log:info(char)
-
-                    -- * inlined reject so I can control timing better
-                    -- self:reject()
-
-                    -- * undo or put lines back:
-                    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>u', true, false, true), 'n', false)
-                    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>u', true, false, true), 'n', false)
-                    -- why am I needing two undos? that part is confusing me... used to work with just one?
-                    -- -- put back manually (have to add back below capturing this and fix off by one line issue):
-                    -- self.window:buffer():replace_lines(
-                    --     self.current_request.details.editable_start_line,
-                    --     self.current_request.details.editable_start_line,
-                    --     self.original_lines)
-
-                    -- * clear marks
-                    self.marks:clear_all()
-
-                    -- * back to insert mode
-                    -- vim.api.nvim_feedkeys("i", 'n', true) -- back to insert standalone
-                    -- WORKS!!!
-                    vim.api.nvim_feedkeys('i' .. char, 'n', true) -- back to insert mode and type key.. not working
-                    -- STILL VERY ROUGH AROUND THE EDGES BUT THIS IS WORKING!
-
-
-                    -- TODO RESUME LATER... test w/ insert mode real predictions!
-                    -- FYI disable other copilots (llama.vim) seems to cause some sort of fighting here
-
-                    -- * put back cursor (so far seems like it goes back to where it was)
-                end)
-            end,
-            once = true
-        })
-    end
-
     self:set_keymaps()
 end
 
