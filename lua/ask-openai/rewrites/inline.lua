@@ -132,11 +132,7 @@ function M.accept_rewrite()
             lines
         )
 
-        -- Reset the module state
         M.accumulated_chunks = ""
-
-        -- Log acceptance
-        log:info("Rewrite accepted and inserted into buffer")
     end)
 end
 
@@ -161,7 +157,6 @@ function M.cleanup_after_cancel()
     -- PRN store this in a last_accumulated_chunks / canceled_accumulated_chunks?
     log:info("Canceling this rewrite: ", M.accumulated_chunks)
 
-    -- Reset the module state
     M.accumulated_chunks = ""
 end
 
