@@ -104,8 +104,8 @@ function M.accept_rewrite()
         lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
 
-        -- TODO! study what to do to fix this, versus change how I select text in char/line/blockwise visual modes
-        -- FYI notes about not replacing last character of selection
+        -- FYI this may not be a problem with the linewise only mode that I setup for now with the streaming diff
+        -- notes about not replacing last character of selection
         --   select some text, i.e. viw => then <leader>rw => notice it doesn't show the char that was under the cursor as selected
         --     technically it wasn't selected, so possibly start selecting one more (cursor on char AFTER last char in selection)
         --     that's b/c the cursor is to the left of the char it is over...
