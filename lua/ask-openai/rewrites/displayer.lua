@@ -51,6 +51,7 @@ function Displayer.show_green_preview_text(selection, lines)
         selection:start_line_0indexed(),
         selection:start_col_0indexed(),
         {
+            id = select_excerpt_mark_id,
             virt_text = first_line,
             virt_lines = virt_lines,
             virt_text_pos = "overlay",
@@ -163,16 +164,12 @@ function Displayer:on_response(selection, lines)
         log:info(vim.inspect(v))
     end
 
-    -- FYI! if diff is stable, I don't need to bother with clearing the extmarks then every time... just after the thinking....  is done
-    -- also, how about not rebuild/modify any of the extmark lines before the current line unless diff invalidates previous diff state?
-    Displayer.clear_extmarks()
-
+    -- no need to clear on each chunk b/c I use one mark w/ same mark_id each time (replaces it)
     self.marks:set(select_excerpt_mark_id, {
         -- cannot do start_line_0i - 1 at the start of the document (line 0)... so rethink this
         start_line = start_line_0i,
         start_col = 0, -- TODO! allow intra line selections too
         -- virt_text = first_extmark_line, -- leave first line unchanged (its the line before the changes)
-        id = select_excerpt_mark_id,
         virt_lines = extmark_lines, -- all changes appear under the line above the diff
         virt_text_pos = 'overlay',
     })
