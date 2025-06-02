@@ -214,6 +214,12 @@ function Displayer:set_keymaps()
     function reject()
         vim.schedule(function()
             log:info('Rejecting')
+            self:remove_keymaps()
+            self:clear_extmarks()
+
+            -- * reverse the removed lines
+            vim.cmd("undo")
+
             self._current_cancel()
         end)
     end

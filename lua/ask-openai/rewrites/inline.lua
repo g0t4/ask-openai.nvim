@@ -167,25 +167,13 @@ end
 
 function M.cancel_rewrite()
     M.abort_last_request()
+    M.displayer = nil
 
+    -- PRN store this in a last_accumulated_chunks / canceled_accumulated_chunks?
+    log:info("Canceling this rewrite: ", M.accumulated_chunks)
 
-    vim.schedule(function()
-        if M.displayer ~= nil then
-            M.displayer:remove_keymaps()
-            M.displayer:clear_extmarks()
-            M.displayer = nil
-        end
-
-        -- PRN store this in a last_accumulated_chunks / canceled_accumulated_chunks?
-        --  log similarly in accept?
-        log:info("Canceling this rewrite: ", M.accumulated_chunks)
-
-        -- * reverse the removed lines
-        vim.cmd("undo")
-
-        -- Reset the module state
-        M.accumulated_chunks = ""
-    end)
+    -- Reset the module state
+    M.accumulated_chunks = ""
 end
 
 function M.stream_from_ollama(user_prompt, code, file_name)
