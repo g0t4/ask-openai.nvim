@@ -172,6 +172,8 @@ function Displayer:on_response(selection, lines)
         -- virt_text = first_extmark_line, -- leave first line unchanged (its the line before the changes)
         virt_lines = extmark_lines, -- all changes appear under the line above the diff
         virt_text_pos = 'overlay',
+        -- virt_lines_above = 1, -- virt_lines_above doesn't quite work when on first line, have to scroll up with mouse to see the lines then
+        -- virt_text_win_col = 0,
     })
 
     -- delete original lines (that way only diff shows in extmarks)
