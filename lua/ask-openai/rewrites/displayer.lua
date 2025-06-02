@@ -2,7 +2,8 @@ local log = require("ask-openai.prediction.logger").predictions()
 local combined = require("devtools.diff.combined")
 local ExtmarksSet = require("ask-openai.rewrites.ExtmarksSet")
 local WindowController = require("ask-openai.rewrites.WindowController")
-
+local inspect = require("devtools.inspect")
+local ansi = require("devtools.ansi")
 
 ---@class Displayer
 local Displayer = {}
@@ -62,7 +63,7 @@ end
 function Displayer:on_response(selection, lines)
     local lines_text = table.concat(lines, "\n")
     local diff = combined.combined_diff(selection.original_text, lines_text)
-    log:info("diff:", vim.inspect(diff))
+    log:info("diff:", inspect(diff))
 
     local extmark_lines = vim.iter(diff):fold({ {} }, function(accum, chunk)
         if chunk == nil then
