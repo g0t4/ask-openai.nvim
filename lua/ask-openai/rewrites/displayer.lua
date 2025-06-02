@@ -131,7 +131,8 @@ function Displayer:on_response(selection, lines)
     -- TODO! do I need to support rewrites in the middle of a line? I doubt it... and right now the zeta rewrite is based on whole lines IIRC
     local start_line_0i = selection:start_line_0indexed()
     local end_line_0i = selection:end_line_0indexed()
-    log:info("original lines: start_line_0i = " .. start_line_0i .. ", end_line_0i = " .. end_line_0i)
+    log:info("original selection: " .. selection:range_str())
+
 
     log:info('extmark_lines')
     for _, v in ipairs(extmark_lines) do
