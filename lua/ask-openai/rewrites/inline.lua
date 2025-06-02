@@ -126,9 +126,11 @@ function M.accept_rewrite()
         vim.api.nvim_buf_set_text(
             0, -- Current buffer
             M.selection:start_line_0indexed(), -- Zero-indexed
-            M.selection:start_col_0indexed(), -- Zero-indexed
+            -- set start col to zero always, b/c right now only support full line
+            0, -- Zero-indexed
             M.selection:start_line_0indexed() + 1, -- Zero-indexed
-            M.selection:end_col_0indexed(), -- Zero-indexed, end-exclusive column
+            -- set end line to zero always, b/c right now only support full line
+            0, -- Zero-indexed, end-exclusive column
             lines
         )
 
