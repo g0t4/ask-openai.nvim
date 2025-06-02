@@ -96,6 +96,7 @@ function Displayer:on_response(selection, lines)
                     table.insert(current_line, { text, type_hlgroup })
                 end
             else
+                -- TODO this needs testing, something could be buggy and it'd be very hard to find out
                 local split_lines = vim.split(text, '\n')
                 -- log:info("splits:", vim.inspect(splits))
                 for i, piece in ipairs(split_lines) do
@@ -146,7 +147,7 @@ function Displayer:on_response(selection, lines)
     self.marks:set(select_excerpt_mark_id, {
         -- cannot do start_line_0i - 1 at the start of the document (line 0)... so rethink this
         start_line = start_line_0i,
-        start_col = 0,
+        start_col = 0, -- TODO! allow intra line selections too
         -- virt_text = first_extmark_line, -- leave first line unchanged (its the line before the changes)
         id = select_excerpt_mark_id,
         virt_lines = extmark_lines, -- all changes appear under the line above the diff
