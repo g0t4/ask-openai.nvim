@@ -174,7 +174,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     if code ~= nil and code ~= "" then
         user_message = user_message
             .. "\n Here is my code from " .. file_name
-            .. ":\n\n" .. code
+            .. ":\n" .. code
         log:info("user_message: '" .. user_message .. "'")
     else
         -- PRN detect if punctuation on end of user_message
