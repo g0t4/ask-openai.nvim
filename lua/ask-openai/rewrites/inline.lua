@@ -180,8 +180,8 @@ function M.cancel_rewrite()
         --  log similarly in accept?
         log:info("Canceling this rewrite: ", M.accumulated_chunks)
 
-        -- * reverse the removed lines... (with undo)
-        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<Esc>u', true, false, true), 'n', false)
+        -- * reverse the removed lines
+        vim.cmd("undo")
 
         -- Reset the module state
         M.accumulated_chunks = ""
