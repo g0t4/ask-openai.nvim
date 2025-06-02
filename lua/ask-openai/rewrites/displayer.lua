@@ -62,7 +62,6 @@ end
 local function inspect_diff(diff)
     local lines = {}
     for _, v in ipairs(diff) do
-        log:info("diff inspect:", ansi.yellow(inspect(v)))
         local type = v[1]
         local text = v[2]
         if type == "+" then
