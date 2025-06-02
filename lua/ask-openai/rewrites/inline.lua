@@ -100,11 +100,9 @@ function M.accept_rewrite()
 
     vim.schedule(function()
         local lines = text_helpers.split_lines(M.accumulated_chunks)
-        log:info("accepting-lines-1:", vim.inspect(lines))
         lines = M.strip_md_from_completion(lines)
         lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
-        log:info("accepting-lines-2:", vim.inspect(lines))
 
         -- TODO! study what to do to fix this, versus change how I select text in char/line/blockwise visual modes
         -- FYI notes about not replacing last character of selection
@@ -120,8 +118,6 @@ function M.accept_rewrite()
         --       again that is when I wanna move the cursor to cover char AFTER end of selection I want
         --   DONT TRY A QUICK FIX.. try to change how you select first
 
-        M.selection:log_info("accepting... original selection was: ")
-
         -- Insert (replace) the text right on the empty line added by the Displayer (it already removed the original lines)
         vim.api.nvim_buf_set_text(
             0, -- Current buffer
@@ -133,7 +129,6 @@ function M.accept_rewrite()
             0, -- Zero-indexed, end-exclusive column
             lines
         )
-
 
         M.accumulated_chunks = ""
     end)
