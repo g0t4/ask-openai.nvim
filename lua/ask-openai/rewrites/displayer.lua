@@ -88,7 +88,7 @@ function Displayer:on_response(selection, lines)
         if chunk == nil then
             log:info('nil chunk: ' .. tostring(chunk))
         else
-            -- each chunk has has two strings: { "text\nfoo\nbar", "type" }
+            -- each chunk has has two strings: { "type", "text\nfoo\nbar" }
             --   type == "same", "add", "del"
             -- text must be split on new line into an array
             --  when \n is encountered, start a new line in the accum
