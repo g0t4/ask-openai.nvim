@@ -351,16 +351,6 @@ function M.setup()
     vim.api.nvim_create_user_command("AskRewriteSimulateStream", simulate_rewrite_stream_chunks, {})
     vim.keymap.set({ 'n' }, '<Leader>rs', ':<C-u>AskRewriteSimulateStream<CR>', { noremap = true })
 
-
-    -- TODO either remove ry/rc or move them to only apply when displayer is visible
-    -- Add commands and keymaps for accepting or cancelling the rewrite
-    vim.api.nvim_create_user_command("AskRewriteAccept", M.accept_rewrite, {})
-    vim.api.nvim_set_keymap('n', '<Leader>ry', ':AskRewriteAccept<CR>', { noremap = true })
-    --
-    vim.api.nvim_create_user_command("AskRewriteCancel", M.cancel_rewrite, {})
-    vim.api.nvim_set_keymap('n', '<Leader>rc', ':AskRewriteCancel<CR>', { noremap = true })
-
-
     -- dump helpers while building this tooling - [a]sk [d]ump last [s]election
     vim.api.nvim_create_user_command("AskDumpLastSelection", buffers.dump_last_seletion, {})
     vim.api.nvim_set_keymap('n', '<Leader>ads', ':AskDumpLastSelection<CR>', { noremap = true })
