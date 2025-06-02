@@ -168,8 +168,12 @@ function Displayer:on_response(selection, lines)
     -- delete original lines (that way only diff shows in extmarks)
     if not self.removed_original_lines then
         -- keep in mind, doing this before/after set extmarks matters
+        -- ? any issues with going past end of file for this end exclusive scenario?
+        local end_line_exclusive_0i = end_line_0i + 1
         self.window:buffer():replace_lines(
-            start_line_0i, end_line_0i + 1, { "", "" })
+            start_line_0i,
+            end_line_exclusive_0i, -- exclusive of this line
+            { "", "" })
         self.removed_original_lines = true
     end
 
