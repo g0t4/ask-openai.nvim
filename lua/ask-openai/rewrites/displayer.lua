@@ -164,6 +164,14 @@ function Displayer:on_response(selection, lines)
         log:info(vim.inspect(v))
     end
 
+    -- delete original lines (that way only diff shows in extmarks)
+    if not self.removed_original_lines then
+        -- keep in mind, doing this before/after set extmarks matters
+        self.window:buffer():replace_lines(
+            start_line_0i, end_line_0i, { "", "" })
+        self.removed_original_lines = true
+    end
+
     -- no need to clear on each chunk b/c I use one mark w/ same mark_id each time (replaces it)
     self.marks:set(select_excerpt_mark_id, {
         -- cannot do start_line_0i - 1 at the start of the document (line 0)... so rethink this
@@ -175,13 +183,6 @@ function Displayer:on_response(selection, lines)
         -- virt_lines_above = 1, -- virt_lines_above doesn't quite work when on first line, have to scroll up with mouse to see the lines then
         -- virt_text_win_col = 0,
     })
-
-    -- delete original lines (that way only diff shows in extmarks)
-    if not self.removed_original_lines then
-        self.window:buffer():replace_lines(
-            start_line_0i, end_line_0i, {})
-        self.removed_original_lines = true
-    end
 
     self:set_keymaps()
 end
