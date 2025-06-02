@@ -62,7 +62,7 @@ end
 function Displayer:on_response(selection, lines)
     local lines_text = table.concat(lines, "\n")
     local diff = combined.combined_diff(selection.original_text, lines_text)
-    -- log:info("diff:", vim.inspect(diff))
+    log:info("diff:", vim.inspect(diff))
 
     local extmark_lines = vim.iter(diff):fold({ {} }, function(accum, chunk)
         if chunk == nil then
