@@ -96,16 +96,16 @@ function Displayer:on_response(selection, lines)
                     table.insert(current_line, { text, type_hlgroup })
                 end
             else
-                local splits = vim.split(text, '\n')
-                log:info("splits:", vim.inspect(splits))
-                for i, piece in ipairs(splits) do
+                local split_lines = vim.split(text, '\n')
+                -- log:info("splits:", vim.inspect(splits))
+                for i, piece in ipairs(split_lines) do
                     -- FYI often v will be empty (i.e. a series of newlines)... do not exclude these empty lines!
                     local len_text = #piece
                     if len_text > 0 then
                         -- don't add empty pieces, just make sure we add the lines (even if empty)
                         table.insert(current_line, { piece, type_hlgroup })
                     end
-                    if i < #splits then
+                    if i < #split_lines then
                         -- start a new, empty line (even if last piece was empty)
                         current_line = {}
                         accum[#accum + 1] = current_line
