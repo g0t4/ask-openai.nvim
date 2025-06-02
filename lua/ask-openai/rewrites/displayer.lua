@@ -143,7 +143,8 @@ function Displayer:on_response(selection, lines)
     Displayer.clear_extmarks()
 
     self.marks:set(select_excerpt_mark_id, {
-        start_line = start_line_0i - 1, -- that way first virt_line is in line below == start_line
+        -- cannot do start_line_0i - 1 at the start of the document (line 0)... so rethink this
+        start_line = start_line_0i,
         start_col = 0,
         -- virt_text = first_extmark_line, -- leave first line unchanged (its the line before the changes)
         id = select_excerpt_mark_id,
