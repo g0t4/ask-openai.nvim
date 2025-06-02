@@ -178,7 +178,8 @@ function Displayer:on_response(selection, lines)
 
     -- delete original lines (that way only diff shows in extmarks)
     if not self.removed_original_lines then
-        self.window:buffer():replace_lines(start_line_0i, end_line_0i, {})
+        self.window:buffer():replace_lines(
+            start_line_0i, end_line_0i, {})
         self.removed_original_lines = true
     end
 
