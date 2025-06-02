@@ -59,11 +59,31 @@ function Displayer.show_green_preview_text(selection, lines)
     )
 end
 
+local function inspect_diff(diff)
+    local lines = {}
+    for _, v in ipairs(diff) do
+        log:info("diff inspect:", ansi.yellow(inspect(v)))
+        local type = v[1]
+        local text = v[2]
+        if type == "+" then
+            text = ansi.green(text)
+        elseif type == '-' then
+            text = ansi.red(text)
+        else
+            text = ansi.white(text)
+        end
+        type = ansi.black(ansi.white_bg(type))
+        local line = type .. " " .. text
+        table.insert(lines, line)
+    end
+    return table.concat(lines, "\n")
+end
+
 ---@param selection Selection
 function Displayer:on_response(selection, lines)
     local lines_text = table.concat(lines, "\n")
     local diff = combined.combined_diff(selection.original_text, lines_text)
-    log:info("diff:", inspect(diff))
+    log:info("diff:\n" .. inspect_diff(diff))
 
     local extmark_lines = vim.iter(diff):fold({ {} }, function(accum, chunk)
         if chunk == nil then
