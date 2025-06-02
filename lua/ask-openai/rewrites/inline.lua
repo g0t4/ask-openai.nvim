@@ -127,10 +127,11 @@ function M.accept_rewrite()
             0, -- Current buffer
             M.selection:start_line_0indexed(), -- Zero-indexed
             M.selection:start_col_0indexed(), -- Zero-indexed
-            M.selection:end_line_0indexed(), -- Zero-indexed, end-inclusive line/row
+            M.selection:start_line_0indexed() + 1, -- Zero-indexed
             M.selection:end_col_0indexed(), -- Zero-indexed, end-exclusive column
             lines
         )
+
 
         M.accumulated_chunks = ""
     end)
