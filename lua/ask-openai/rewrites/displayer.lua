@@ -78,6 +78,18 @@ local function inspect_diff(diff)
     return table.concat(lines, "\n")
 end
 
+-- * use for testing line selection/diff/replacement:
+--1
+--2
+--3
+--4
+--5
+--6
+--7
+--8
+--9
+--10
+
 ---@param selection Selection
 function Displayer:on_response(selection, lines)
     local lines_text = table.concat(lines, "\n")
