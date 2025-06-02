@@ -173,12 +173,14 @@ function Displayer:on_response(selection, lines)
         self.removed_original_lines = true
     end
 
+    local first_extmark_line = table.remove(extmark_lines, 1)
+
     -- no need to clear on each chunk b/c I use one mark w/ same mark_id each time (replaces it)
     self.marks:set(select_excerpt_mark_id, {
         -- cannot do start_line_0i - 1 at the start of the document (line 0)... so rethink this
         start_line = start_line_0i,
         start_col = 0, -- TODO! allow intra line selections too
-        -- virt_text = first_extmark_line, -- leave first line unchanged (its the line before the changes)
+        virt_text = first_extmark_line, -- leave first line unchanged (its the line before the changes)
         virt_lines = extmark_lines, -- all changes appear under the line above the diff
         virt_text_pos = 'overlay',
         -- virt_lines_above = 1, -- virt_lines_above doesn't quite work when on first line, have to scroll up with mouse to see the lines then
