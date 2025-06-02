@@ -76,7 +76,7 @@ function Selection._get_visual_selection_for_window_id(window_id)
     -- start_line/start_col are 1-indexed (from register value)
     local _, end_line_1indexed, end_col_1indexed, _ = unpack(vim.fn.getcharpos("'>"))
     if start_line_1indexed == 0 and start_col_1indexed == 0 and end_line_1indexed == 0 and end_col_1indexed == 0 then
-        print("no selection, using cursor position with empty selection")
+        log:info("no selection, using cursor position with empty selection")
         local row_1indexed, col_0indexed = unpack(vim.api.nvim_win_get_cursor(0))
         start_line_1indexed = row_1indexed
         start_col_1indexed = col_0indexed + 1
