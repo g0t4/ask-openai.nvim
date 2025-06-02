@@ -43,8 +43,8 @@ function OllamaFimBackend:body_for()
     local body = {
 
         -- https://huggingface.co/collections/JetBrains/mellum-68120b4ae1423c86a2da007a
-        -- model = "huggingface.co/JetBrains/Mellum-4b-base-gguf",
-        model = "huggingface.co/JetBrains/Mellum-4b-sft-python-gguf", -- TODO TRY!
+        -- model = "huggingface.co/JetBrains/Mellum-4b-base-gguf", -- no language specific fine tuning
+        -- model = "huggingface.co/JetBrains/Mellum-4b-sft-python-gguf", -- ** did better with Lua than base!
         -- kotlin exists but no gguf on hf yet:
         --   https://huggingface.co/JetBrains/Mellum-4b-sft-kotlin
         -- TODO add in other fine tunes for languages as released
@@ -53,7 +53,7 @@ function OllamaFimBackend:body_for()
         -- qwen2.5-coder:7b-base-q8_0  -- ** shorter responses, more "EOF" focused
         -- qwen2.5-coder:14b-base-q8_0 -- ** shorter responses, more "EOF" focused
         -- qwen2.5-coder:7b-instruct-q8_0 -- DO NOT USE instruct
-        -- model = "qwen2.5-coder:7b-base-q8_0",
+        model = "qwen2.5-coder:7b-base-q8_0",
 
         -- starcoder2:15b-instruct-v0.1-q8_0                      a11b58c111d9    16 GB     6 weeks ago
         -- starcoder2:15b-q8_0                                    95f55571067f    16 GB     6 weeks ago
