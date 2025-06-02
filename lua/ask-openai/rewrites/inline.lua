@@ -77,7 +77,7 @@ function M.process_chunk(chunk)
     if thinking_status == thinking.ThinkingStatus.Thinking then
         lines = { thinking.dots:get_still_thinking_message() }
         -- while thinking, we show the green text w/ ....
-        vim.schedule(function() Displayer.show_green_preview_text(M.selection, lines) end)
+        vim.schedule(function() M.displayer:show_green_preview_text(M.selection, lines) end)
         return
     end
     -- TODO! detect first chunk AFTER thinking section so we can clear the Thinking... message and not need to clear before every token
@@ -85,7 +85,7 @@ function M.process_chunk(chunk)
     lines = ensure_new_lines_around(M.selection.original_text, lines)
 
     -- FYI can switch back to green here is fine! and skip diff if its not ready
-    -- vim.schedule(function() Displayer.show_green_preview_text(M.selection, lines) end)
+    -- vim.schedule(function() M.displayer:show_green_preview_text(M.selection, lines) end)
     vim.schedule(function()
         M.displayer:on_response(M.selection, lines)
     end)
@@ -97,9 +97,11 @@ end
 function M.accept_rewrite()
     M.stop_streaming = true -- go ahead and stop with whatever has been generated so far
 
+    local displayer_was = nil
     if M.displayer ~= nil then
         -- TODO eventually move more accept logic into displayer (also an applier, changer?)
         M.displayer:remove_keymaps()
+        displayer_was = M.displayer
         M.displayer = nil
     end
     vim.schedule(function()
@@ -137,7 +139,9 @@ function M.accept_rewrite()
             lines
         )
 
-        Displayer.clear_extmarks()
+        if displayer_was ~= nil then
+            displayer_was:clear_extmarks()
+        end
 
         -- Reset the module state
         M.accumulated_chunks = ""
@@ -155,19 +159,22 @@ function M.abort_last_request()
     end
 
     backend.terminate(M.last_request)
-    Displayer.clear_extmarks()
+
+    if M.displayer ~= nil then
+        M.displayer:clear_extmarks()
+    end
 end
 
 function M.cancel_rewrite()
     M.abort_last_request()
 
-    if M.displayer ~= nil then
-        M.displayer:remove_keymaps()
-        M.displayer = nil
-    end
 
     vim.schedule(function()
-        Displayer.clear_extmarks()
+        if M.displayer ~= nil then
+            M.displayer:remove_keymaps()
+            M.displayer:clear_extmarks()
+            M.displayer = nil
+        end
 
         -- PRN store this in a last_accumulated_chunks / canceled_accumulated_chunks?
         --  log similarly in accept?

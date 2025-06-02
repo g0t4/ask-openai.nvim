@@ -24,15 +24,15 @@ function Displayer:new(_current_accept, _current_cancel)
     return self
 end
 
-function Displayer.clear_extmarks()
-    vim.api.nvim_buf_clear_namespace(0, extmarks_namespace_id, 0, -1)
+function Displayer:clear_extmarks()
+    self.marks:clear_all()
 end
 
 ---@param selection Selection
 ---@param lines string[]
 ---@diagnostic disable-next-line: unused-function
-function Displayer.show_green_preview_text(selection, lines)
-    Displayer.clear_extmarks()
+function Displayer:show_green_preview_text(selection, lines)
+    self:clear_extmarks()
 
     if #lines == 0 then return end
 
