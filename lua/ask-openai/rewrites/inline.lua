@@ -320,11 +320,28 @@ function M.on_stderr_data(text)
     end)
 end
 
+local function retry()
+    local function run_last_command_that_started_with(filter)
+        -- PRN if I like this, move it to devtools
+
+        -- start typing the command, just like a user would:
+        vim.fn.feedkeys(":" .. filter, "n")
+        -- then hit Up to take last from the history
+        -- and Enter to execute it
+        vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<Up><CR>", true, false, true), "n")
+    end
+    -- for when the last command failed, try it again, i.e. you forgot to start ollama
+    -- assume can just go back in history and grab it and run it
+    -- by the way, AFAICT there's no way to search command history
+    run_last_command_that_started_with('AskRewrite')
+end
+
 function M.setup()
     -- Create commands and keymaps for the rewrite functionality
     vim.api.nvim_create_user_command("AskRewrite", ask_and_stream_from_ollama, { range = true, nargs = 1 })
     vim.keymap.set({ 'n', 'v' }, '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
 
+    vim.keymap.set({ 'n', 'v' }, '<Leader>ry', retry, { noremap = true })
 
     -- * simulations
     vim.api.nvim_create_user_command("AskRewriteSimulateInstant", simulate_rewrite_instant_one_chunk, {})
