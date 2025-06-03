@@ -321,19 +321,26 @@ function M.on_stderr_data(text)
 end
 
 local function retry()
+    if M.displayer then
+        M.displayer:reject()
+    end
+
     local function run_last_command_that_started_with(filter)
         -- PRN if I like this, move it to devtools
-
         -- start typing the command, just like a user would:
         vim.fn.feedkeys(":" .. filter, "n")
         -- then hit Up to take last from the history
         -- and Enter to execute it
         vim.fn.feedkeys(vim.api.nvim_replace_termcodes("<Up><CR>", true, false, true), "n")
     end
-    -- for when the last command failed, try it again, i.e. you forgot to start ollama
-    -- assume can just go back in history and grab it and run it
-    -- by the way, AFAICT there's no way to search command history
-    run_last_command_that_started_with('AskRewrite')
+
+    -- schedule so it runs after any cancel logic that is scheduled
+    vim.schedule(function()
+        -- for when the last command failed, try it again, i.e. you forgot to start ollama
+        -- assume can just go back in history and grab it and run it
+        -- by the way, AFAICT there's no way to search command history
+        run_last_command_that_started_with('AskRewrite')
+    end)
 end
 
 function M.setup()
