@@ -195,44 +195,31 @@ function Displayer:on_response(selection, lines)
     self:set_keymaps()
 end
 
--- function Displayer:accept()
---     -- TODO move logic to accept here, later
---     self:remove_keymaps()
--- end
+function Displayer:accept()
+    vim.schedule(function()
+        log:info('Accepting')
+        self:remove_keymaps()
+        self:clear_extmarks()
+        self._current_accept()
+    end)
+end
 
--- function Displayer:reject()
---     self:remove_keymaps()
--- end
+function Displayer:reject()
+    vim.schedule(function()
+        log:info('Rejecting')
+        self:remove_keymaps()
+        self:clear_extmarks()
+
+        -- * reverse the removed lines
+        vim.cmd("undo")
+
+        self._current_cancel()
+    end)
+end
 
 function Displayer:set_keymaps()
-    function accept()
-        vim.schedule(function()
-            log:info('Accepting')
-            self:remove_keymaps()
-            self:clear_extmarks()
-            self._current_accept()
-        end)
-    end
-
-    -- TODO pick if I want tab or alt-tab?
-    vim.keymap.set({ 'i', 'n' }, '<Tab>', accept, { expr = true, buffer = true })
-    vim.keymap.set({ 'i', 'n' }, '<M-Tab>', accept, { expr = true, buffer = true })
-
-    function reject()
-        vim.schedule(function()
-            log:info('Rejecting')
-            self:remove_keymaps()
-            self:clear_extmarks()
-
-            -- * reverse the removed lines
-            vim.cmd("undo")
-
-            self._current_cancel()
-        end)
-    end
-
-    vim.keymap.set({ 'i', 'n' }, '<Esc>', reject, { expr = true, buffer = true })
-    vim.keymap.set({ 'i', 'n' }, '<M-Esc>', reject, { expr = true, buffer = true })
+    vim.keymap.set({ 'i', 'n' }, '<Tab>', function() self:accept() end, { expr = true, buffer = true })
+    vim.keymap.set({ 'i', 'n' }, '<Esc>', function() self:reject() end, { expr = true, buffer = true })
 end
 
 function Displayer:remove_keymaps()
