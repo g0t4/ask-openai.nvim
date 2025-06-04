@@ -224,13 +224,9 @@ function Displayer:remove_keymaps()
     vim.cmd([[
       silent! iunmap <buffer> <Tab>
       silent! iunmap <buffer> <Esc>
-      silent! iunmap <buffer> <M-Tab>
-      silent! iunmap <buffer> <M-Esc>
 
       silent! nunmap <buffer> <Tab>
       silent! nunmap <buffer> <Esc>
-      silent! nunmap <buffer> <M-Tab>
-      silent! nunmap <buffer> <M-Esc>
     ]])
 end
 
