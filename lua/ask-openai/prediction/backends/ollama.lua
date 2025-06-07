@@ -53,7 +53,7 @@ function OllamaFimBackend:body_for()
         -- qwen2.5-coder:7b-base-q8_0  -- ** shorter responses, more "EOF" focused
         -- qwen2.5-coder:14b-base-q8_0 -- ** shorter responses, more "EOF" focused
         -- qwen2.5-coder:7b-instruct-q8_0 -- DO NOT USE instruct
-        model = "qwen2.5-coder:7b-base-q8_0",
+        -- model = "qwen2.5-coder:7b-base-q8_0", -- ** favorite
 
         -- starcoder2:15b-instruct-v0.1-q8_0                      a11b58c111d9    16 GB     6 weeks ago
         -- starcoder2:15b-q8_0                                    95f55571067f    16 GB     6 weeks ago
@@ -71,6 +71,8 @@ function OllamaFimBackend:body_for()
         -- llama3.1:8b-instruct-q8_0
         -- model = "llama3.1:8b-instruct-q8_0",
         -- https://github.com/meta-llama/codellama/blob/main/llama/generation.py#L496
+
+        model = "codestral:22b-v0.1-q4_K_M",
 
 
         raw = true, -- bypass templates (only /api/generate, not /v1/completions)
