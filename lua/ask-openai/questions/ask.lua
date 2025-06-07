@@ -20,6 +20,11 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, conte
     local system_prompt = "You are a neovim AI plugin. Your name is Neo Vim. "
         .. " Please respond with markdown formatted text. Always include a TLDR at the end of your response."
 
+    if use_tools then
+        -- devstral is hesitant to use tools w/o this:
+        system_prompt = system_prompt .. " You also have a set of tools you can use."
+    end
+
     local user_message = user_prompt
     if selected_text then
         -- would make sense to fold the code initially
