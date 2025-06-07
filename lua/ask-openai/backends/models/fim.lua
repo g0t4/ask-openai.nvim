@@ -375,12 +375,12 @@ function M.codestral.get_fim_prompt(request)
     --   https://github.com/ollama/ollama/issues/5403
     --   <s>[SUFFIX] {{ suffix }} [PREFIX] {{ prefix }}
     --    TODO this doesn't include [MIDDLE]... should I add it?
-    local fim_file_contents = tokens.bos_token
-        .. tokens.fim_suffix
+    local fim_file_contents = tokens.fim_suffix
         .. request.suffix
         .. tokens.fim_prefix
         .. request.prefix
-    -- .. tokens.fim_middle -- TODO! do I need fim_middle? its in tokens list and usually is included somewhere
+        -- .. tokens.fim_middle -- TODO! do I need fim_middle? its in tokens list and usually is included somewhere
+
 
     -- TODO filename, multi-file, etc?
     return fim_file_contents

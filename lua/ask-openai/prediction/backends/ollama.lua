@@ -144,7 +144,7 @@ function OllamaFimBackend:body_for()
         end
         -- TODO! DROP temperature per other reports:
         --   https://github.com/ollama/ollama/issues/4709
-        body.options.temperature = 0.0 -- TODO! verify this is better for codestral
+        -- body.options.temperature = 0.0 -- TODO! verify this is better for codestral
         -- TODO! adjust temp on other models too?!
 
         -- TODO! set stop token to EOS?
