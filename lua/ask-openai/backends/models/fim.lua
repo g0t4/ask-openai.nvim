@@ -358,7 +358,6 @@ M.codestral = {
     },
 }
 
-
 M.deepseek_coder_v2 = {
     -- https://github.com/deepseek-ai/DeepSeek-Coder-V2
     -- https://github.com/deepseek-ai/DeepSeek-Coder-V2?tab=readme-ov-file#code-insertion
@@ -401,12 +400,6 @@ function M.deepseek_coder_v2.get_fim_prompt(request)
     -- TODO stop token(s)?
     local tokens = M.deepseek_coder_v2.sentinel_tokens
 
-    -- TODO! does it support multiple files, w/ names?
-    -- if so, add yanks, etc
-
-    -- paper also says at "document level" ... ** so, can I include file info?
-    -- * multiple files?
-
     -- PSM format:
     -- <｜fim_begin｜> 𝑓𝑝𝑟𝑒<｜fim_hole｜> 𝑓𝑠𝑢 𝑓<｜fim_end｜> 𝑓𝑚𝑖𝑑𝑑𝑙𝑒<|eos_token|>
     local fim_file_contents = tokens.fim_begin
@@ -415,12 +408,11 @@ function M.deepseek_coder_v2.get_fim_prompt(request)
         .. request.suffix
         .. tokens.fim_end
 
-    -- TODO stop token should include <|eos_token|>
-    -- it's explicitly listed in the format (in the paper)
-
     return fim_file_contents
 
-    -- TODO see qwen2.5-coder/starcoder for filenames, multi files / yanks / etc
+    -- ** paper also says at "document level" ...
+    -- * can I include fileanme? (if so => yanks/edits/etc)
+    -- * multiple files?
     -- return prompt .. tokens.file_sep .. fim_file_contents
 end
 
