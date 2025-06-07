@@ -379,8 +379,7 @@ function M.codestral.get_fim_prompt(request)
         .. request.suffix
         .. tokens.fim_prefix
         .. request.prefix
-        -- .. tokens.fim_middle -- TODO! do I need fim_middle? its in tokens list and usually is included somewhere
-
+        -- .. tokens.fim_middle -- TODO! find out about MIDDLE? completions work well enough w/ and w/o this
 
     -- TODO filename, multi-file, etc?
     return fim_file_contents
