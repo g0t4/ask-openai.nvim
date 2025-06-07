@@ -72,7 +72,11 @@ function OllamaFimBackend:body_for()
         -- model = "llama3.1:8b-instruct-q8_0",
         -- https://github.com/meta-llama/codellama/blob/main/llama/generation.py#L496
 
-        model = "codestral:22b-v0.1-q4_K_M",
+        -- model = "codestral:22b-v0.1-q4_K_M",
+
+        -- ** FAST MoE
+        model = "deepseek-coder-v2:16b-lite-base-q8_0", -- *** 217 TPS!
+        -- model = "deepseek-coder-v2:16b-lite-base-fp16" -- TODO! TRY THIS ONE
 
 
         raw = true, -- bypass templates (only /api/generate, not /v1/completions)
@@ -134,6 +138,16 @@ function OllamaFimBackend:body_for()
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
+    elseif string.find(body.model, "codestral", nil, true) then
+        builder = function()
+            return fim.codestral.get_fim_prompt(self)
+        end
+    elseif string.find(body.model, "deepseek-coder-v2", nil, true) then
+        builder = function()
+            return fim.deepseek_coder_v2.get_fim_prompt(self)
+        end
+
+        body.options.stop = fim.deepseek_coder_v2.sentinel_tokens.stop_tokens
     else
         -- warn that FIM tokens need to be set
         local message = "MISSING FIM SENTINEL TOKENS for this model " .. body.model

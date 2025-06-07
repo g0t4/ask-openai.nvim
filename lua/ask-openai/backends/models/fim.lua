@@ -337,4 +337,91 @@ function M.starcoder2.get_fim_prompt(request)
     return prompt .. tokens.file_sep .. fim_file_contents
 end
 
+M.codestral = {
+    -- https://docs.mistral.ai/capabilities/code_generation/
+    -- by the way this repo might have reference templates for several models
+    --   https://github.com/continuedev/continue/blob/main/core/llm/templates/edit/codestral.ts#L1
+    --
+    --
+    -- TODO try codestra-2501 via API - s/b a material update to codestral 2405 (IIRC, 2024)
+    --   watch for a release of it
+    -- TODO try mamba-codestral via API (or its on hf and should work w/ mlx but can't figure it out yet)
+    -- TODO devstral, can it do FIM?
+
+    sentinel_tokens = {
+        -- TODO!
+        --  [PREFIX]??
+        -- [SUFFIX]
+        -- IIUC no middle token, must be assumed after suffix?
+        --  or is it SPM?
+
+    },
+}
+
+
+M.deepseek_coder_v2 = {
+    -- https://github.com/deepseek-ai/DeepSeek-Coder-V2
+    -- https://github.com/deepseek-ai/DeepSeek-Coder-V2?tab=readme-ov-file#code-insertion
+    --  "lite" == 16B size
+    --    * AFAICT only lite has FIM
+    --  base = FIM  /  instruct = chat
+    -- ** FAST MoE
+    -- 217 TPS! first load OMFG
+    -- model = "deepseek-coder-v2:16b-lite-base-q8_0", # **** 217 TPS!
+    -- model = "deepseek-coder-v2:16b-lite-base-fp16" # TODO TRY THIS ONE
+    -- TODO can I get fp in memory?!
+
+    sentinel_tokens = {
+        --
+        -- FYI it's not spaces around the pipe char:
+        fim_begin = "<｜fim▁begin｜>",
+        fim_hole = "<｜fim▁hole｜>",
+        fim_end = "<｜fim▁end｜>",
+
+        -- TODO what name for this?
+        stop_tokens = { "<|eos_token|>" }
+    }
+
+}
+
+-- input_text = """<｜fim▁begin｜>def quick_sort(arr):
+--     if len(arr) <= 1:
+--         return arr
+--     pivot = arr[0]
+--     left = []
+--     right = []
+-- <｜fim▁hole｜>
+--         if arr[i] < pivot:
+--             left.append(arr[i])
+--         else:
+--             right.append(arr[i])
+--     return quick_sort(left) + [pivot] + quick_sort(right)<｜fim▁end｜>"""
+
+function M.deepseek_coder_v2.get_fim_prompt(request)
+    -- TODO stop token(s)?
+    local tokens = M.deepseek_coder_v2.sentinel_tokens
+
+    -- TODO! does it support multiple files, w/ names?
+    -- if so, add yanks, etc
+
+    -- paper also says at "document level" ... ** so, can I include file info?
+    -- * multiple files?
+
+    -- PSM format:
+    -- <｜fim_begin｜> 𝑓𝑝𝑟𝑒<｜fim_hole｜> 𝑓𝑠𝑢 𝑓<｜fim_end｜> 𝑓𝑚𝑖𝑑𝑑𝑙𝑒<|eos_token|>
+    local fim_file_contents = tokens.fim_begin
+        .. request.prefix
+        .. tokens.fim_hole
+        .. request.suffix
+        .. tokens.fim_end
+
+    -- TODO stop token should include <|eos_token|>
+    -- it's explicitly listed in the format (in the paper)
+
+    return fim_file_contents
+
+    -- TODO see qwen2.5-coder/starcoder for filenames, multi files / yanks / etc
+    -- return prompt .. tokens.file_sep .. fim_file_contents
+end
+
 return M
