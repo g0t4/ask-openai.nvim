@@ -375,15 +375,17 @@ function M.codestral.get_fim_prompt(request)
     --   https://github.com/ollama/ollama/issues/5403
     --   <s>[SUFFIX] {{ suffix }} [PREFIX] {{ prefix }}
     --    TODO this doesn't include [MIDDLE]... should I add it?
+    -- TODO! try PSM format next... sometimes in calc.lua I am getting [SUFFIX] on end of response!
     local fim_file_contents = tokens.fim_suffix
         .. request.suffix
         .. tokens.fim_prefix
         .. request.prefix
-        -- .. tokens.fim_middle -- TODO! find out about MIDDLE? completions work well enough w/ and w/o this
+        .. tokens.fim_middle -- TODO! find out about MIDDLE? completions work well enough w/ and w/o this
 
     -- TODO filename, multi-file, etc?
     return fim_file_contents
 end
+
 
 M.deepseek_coder_v2 = {
     -- https://github.com/deepseek-ai/DeepSeek-Coder-V2

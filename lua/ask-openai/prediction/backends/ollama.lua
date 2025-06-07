@@ -142,14 +142,15 @@ function OllamaFimBackend:body_for()
         builder = function()
             return fim.codestral.get_fim_prompt(self)
         end
-        -- TODO! DROP temperature per other reports:
+        -- TODO? DROP temperature per:
         --   https://github.com/ollama/ollama/issues/4709
-        -- body.options.temperature = 0.0 -- TODO! verify this is better for codestral
-        -- TODO! adjust temp on other models too?!
+        --   make it more repeatable?
+        -- body.options.temperature = 0.0
 
-        -- TODO! set stop token to EOS?
-        -- body.options.stop = fim.codestral.sentinel_tokens.eos_token
+        -- TODO! investigate temp (etc) for all models
 
+        -- TODO set stop token to EOS? IIAC this is already set?!
+        -- body.options.stop = { fim.codestral.sentinel_tokens.eos_token }
     elseif string.find(body.model, "deepseek-coder-v2", nil, true) then
         builder = function()
             return fim.deepseek_coder_v2.get_fim_prompt(self)
