@@ -348,15 +348,43 @@ M.codestral = {
     -- TODO try mamba-codestral via API (or its on hf and should work w/ mlx but can't figure it out yet)
     -- TODO devstral, can it do FIM?
 
+
     sentinel_tokens = {
-        -- TODO!
-        --  [PREFIX]??
-        -- [SUFFIX]
-        -- IIUC no middle token, must be assumed after suffix?
-        --  or is it SPM?
+        -- TODO is there a paper?
+        -- only references I can find so far:
+        --   * https://huggingface.co/mistralai/Codestral-22B-v0.1/blob/main/tokenizer_config.json
+        --   https://huggingface.co/mistralai/Codestral-22B-v0.1/blob/main/special_tokens_map.json
+        --   [PREFIX]
+        fim_prefix = "[PREFIX]",
+        fim_middle = "[MIDDLE]",
+        fim_suffix = "[SUFFIX]",
+
+        bos_token = "<s>",
+        eos_token = "</s>",
+        unk_token = "<unk>",
 
     },
+
 }
+
+function M.codestral.get_fim_prompt(request)
+    local tokens = M.codestral.sentinel_tokens
+
+    -- TODO! VERIFY THE FORMAT!!!! this is just a GH issue that suggested it
+    -- found suggestion:
+    --   https://github.com/ollama/ollama/issues/5403
+    --   <s>[SUFFIX] {{ suffix }} [PREFIX] {{ prefix }}
+    --    TODO this doesn't include [MIDDLE]... should I add it?
+    local fim_file_contents = tokens.bos_token
+        .. tokens.fim_suffix
+        .. request.suffix
+        .. tokens.fim_prefix
+        .. request.prefix
+    -- .. tokens.fim_middle -- TODO! do I need fim_middle? its in tokens list and usually is included somewhere
+
+    -- TODO filename, multi-file, etc?
+    return fim_file_contents
+end
 
 M.deepseek_coder_v2 = {
     -- https://github.com/deepseek-ai/DeepSeek-Coder-V2
@@ -397,7 +425,6 @@ M.deepseek_coder_v2 = {
 --     return quick_sort(left) + [pivot] + quick_sort(right)<｜fim▁end｜>"""
 
 function M.deepseek_coder_v2.get_fim_prompt(request)
-    -- TODO stop token(s)?
     local tokens = M.deepseek_coder_v2.sentinel_tokens
 
     -- PSM format:
