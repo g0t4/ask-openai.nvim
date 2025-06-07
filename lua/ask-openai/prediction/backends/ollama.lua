@@ -72,11 +72,11 @@ function OllamaFimBackend:body_for()
         -- model = "llama3.1:8b-instruct-q8_0",
         -- https://github.com/meta-llama/codellama/blob/main/llama/generation.py#L496
 
-        model = "codestral:22b-v0.1-q4_K_M",
+        -- model = "codestral:22b-v0.1-q4_K_M",
 
         -- ** FAST MoE
-        -- model = "deepseek-coder-v2:16b-lite-base-q8_0", -- *** 217 TPS! WORKS GOOD!
-        -- model = "deepseek-coder-v2:16b-lite-base-fp16" -- TODO! TRY THIS ONE
+        model = "deepseek-coder-v2:16b-lite-base-q8_0", -- *** 217 TPS! WORKS GOOD!
+        -- model = "deepseek-coder-v2:16b-lite-base-fp16", -- FITS! and its still fast (MoE)
 
 
         raw = true, -- bypass templates (only /api/generate, not /v1/completions)
