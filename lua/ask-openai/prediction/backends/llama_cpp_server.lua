@@ -4,30 +4,14 @@ local log = require("ask-openai.prediction.logger").predictions()
 local function body_for(prefix, suffix)
     local body = {
 
-        model = "fim_qwen:7b-instruct-q8_0", -- qwen2.5-coder, see Modelfile
+        model = "fim_qwen:7b-instruct-q8_0",
 
-        -- *** deepseek-coder-v2 (MOE 16b model)
-        -- TODO retry w/ truncate fixes (ensure logs show not truncating)
-        -- model = "deepseek-coder-v2:16b-lite-instruct-q8_0",
-        --   prompt has template w/ PSM!
-        --      ollama show --template deepseek-coder-v2:16b-lite-instruct-q8_0
-
-        -- *** codellama
-        -- TODO retry w/ truncate fixes (ensure logs show not truncating)
-        -- model = "codellama:7b-code-q8_0", -- `code` and `python` have FIM, `instruct` does not
-        -- keeps generating <EOT> in output ... is the template wrong?
-        --    - PRN add to stop parameter?
-        -- btw => codellama:-code uses: <PRE> -- calculator\nlocal M = {}\n\nfunction M.add(a, b)\n    return a + b\nend1 <SUF>1\n\n\n\nreturn M <MID>
-
-        -- /v1/completions uses Template (no raw override)
-        -- - https://github.com/ollama/ollama/blob/main/docs/template.md#example-fill-in-middle
+        -- /v1/completions DOES NOT USE A TEMPLATE AFAICT in llama-server
         prompt = prefix,
         suffix = suffix,
 
         stream = true,
         max_tokens = 200,
-
-        -- TODO temperature, top_p, etc => (see notes for more)
     }
 
     return vim.json.encode(body)
@@ -39,9 +23,9 @@ function M.build_request(prefix, suffix)
         args = {
             "--fail-with-body",
             "-sSL",
-            "--no-buffer", -- curl seems to be the culprit... w/o this it batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
+            "--no-buffer",
             "-X", "POST",
-            "http://ollama:11434/v1/completions", -- TODO pass in api base_url (via config)
+            "http://ollama:8012/v1/completions",
             "-H", "Content-Type: application/json",
             "-d", body_for(prefix, suffix)
         },
@@ -50,7 +34,6 @@ function M.build_request(prefix, suffix)
 end
 
 function M.process_sse(data)
-    -- TODO tests of parsing?
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
