@@ -53,7 +53,7 @@ function OllamaFimBackend:body_for()
         -- qwen2.5-coder:7b-base-q8_0  -- ** shorter responses, more "EOF" focused
         -- qwen2.5-coder:14b-base-q8_0 -- ** shorter responses, more "EOF" focused
         -- qwen2.5-coder:7b-instruct-q8_0 -- DO NOT USE instruct
-        -- model = "qwen2.5-coder:7b-base-q8_0", -- ** favorite
+        model = "qwen2.5-coder:7b-base-q8_0", -- ** favorite
 
         -- starcoder2:15b-instruct-v0.1-q8_0                      a11b58c111d9    16 GB     6 weeks ago
         -- starcoder2:15b-q8_0                                    95f55571067f    16 GB     6 weeks ago
@@ -75,7 +75,7 @@ function OllamaFimBackend:body_for()
         -- model = "codestral:22b-v0.1-q4_K_M",
 
         -- ** FAST MoE
-        model = "deepseek-coder-v2:16b-lite-base-q8_0", -- *** 217 TPS! WORKS GOOD!
+        -- model = "deepseek-coder-v2:16b-lite-base-q8_0", -- *** 217 TPS! WORKS GOOD!
         -- model = "deepseek-coder-v2:16b-lite-base-fp16", -- FITS! and its still fast (MoE)
 
 
