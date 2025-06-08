@@ -3,7 +3,8 @@ local CurrentContext = require("ask-openai.prediction.context")
 local fim = require("ask-openai.backends.models.fim")
 local meta = require("ask-openai.backends.models.meta")
 
-local use_llama_cpp_server = true
+local use_llama_cpp_server = false
+
 
 ---@class OllamaFimBackend
 ---@field prefix string
@@ -243,7 +244,7 @@ function parse_llama_cpp_server(sse)
     return sse.content, sse.content, sse.stop_type
 end
 
-function parse_ollama_api_generate(success, sse)
+function parse_ollama_api_generate(sse)
     -- *** examples /api/generate:
     --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.1915236Z","response":"\n","done":false}
     --  done example:
