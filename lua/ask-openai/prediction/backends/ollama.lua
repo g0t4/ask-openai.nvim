@@ -31,7 +31,8 @@ function OllamaFimBackend:request_options()
             "-sSL",
             "--no-buffer", -- test w/ `curl *` vs `curl * | cat`
             "-X", "POST",
-            "http://ollama:11434/api/generate",
+            "http://ollama:8012/completions", -- llama-server
+            -- "http://ollama:11434/api/generate", -- ollama serve
             "-H", "Content-Type: application/json",
             "-d", self:body_for(),
         },
