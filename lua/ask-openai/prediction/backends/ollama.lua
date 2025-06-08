@@ -3,6 +3,8 @@ local CurrentContext = require("ask-openai.prediction.context")
 local fim = require("ask-openai.backends.models.fim")
 local meta = require("ask-openai.backends.models.meta")
 
+local use_llama_cpp_server = true
+
 ---@class OllamaFimBackend
 ---@field prefix string
 ---@field suffix string
@@ -24,6 +26,10 @@ function OllamaFimBackend:new(prefix, suffix)
 end
 
 function OllamaFimBackend:request_options()
+    local url = "http://ollama:11434/api/generate" -- ollama serve
+    if use_llama_cpp_server then
+        url = "http://ollama:8012/completions" -- llama-server
+    end
     local options = {
         command = "curl",
         args = {
@@ -31,8 +37,7 @@ function OllamaFimBackend:request_options()
             "-sSL",
             "--no-buffer", -- test w/ `curl *` vs `curl * | cat`
             "-X", "POST",
-            "http://ollama:8012/completions", -- llama-server
-            -- "http://ollama:11434/api/generate", -- ollama serve
+            url,
             "-H", "Content-Type: application/json",
             "-d", self:body_for(),
         },
