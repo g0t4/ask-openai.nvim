@@ -219,26 +219,37 @@ function OllamaFimBackend.process_sse(data)
         end
         local success, parsed = pcall(vim.json.decode, event_json)
 
-        -- *** examples /api/generate:
-        --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.1915236Z","response":"\n","done":false}
-        --  done example:
-        --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.2800621Z","response":"","done":true,"done_reason":"stop","total_duration":131193100,"load_duration":16550700,"prompt_eval_count":19,"prompt_eval_duration":5000000,"eval_count":12,"eval_duration":106000000}
-        if success and parsed and parsed.response then
-            if parsed.done then
-                done_reason = parsed.done_reason
-                done = true
-                if done_reason ~= "stop" then
-                    log:warn("WARN - unexpected /api/generate done_reason: ", done_reason, " do you need to handle this too?")
-                    -- ok for now to continue too
-                end
+        if success and parsed then
+            if use_llama_cpp_server then
+                parsed_chunk, done, done_reason = parse_llama_cpp_server(parsed)
+            else
+                parsed_chunk, done, done_reason = parse_ollama_api_generate(parsed)
             end
-            chunk = (chunk or "") .. parsed.response
+            chunk = (chunk or "") .. parsed_chunk
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
     end
     -- TODO test passing back finish_reason (i.e. for an empty prediction log entry)
     return chunk, done, done_reason
+end
+
+function parse_llama_cpp_server(sse)
+    -- {"index":0,"content":"\",","tokens":[497],"stop":false,"id_slot":-1,"tokens_predicted":14,"tokens_evaluated":1963}
+    -- stop: true => a few fields (it returns entire prompt too so it's huge!... maybe skip logging the prompt field?)
+    -- "truncated": false,
+    -- "stop_type": "eos",
+    -- "stopping_word": "",
+    return sse.content, sse.content, sse.stop_type
+end
+
+function parse_ollama_api_generate(success, sse)
+    -- *** examples /api/generate:
+    --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.1915236Z","response":"\n","done":false}
+    --  done example:
+    --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.2800621Z","response":"","done":true,"done_reason":"stop","total_duration":131193100,"load_duration":16550700,"prompt_eval_count":19,"prompt_eval_duration":5000000,"eval_count":12,"eval_duration":106000000}
+
+    return sse.response, sse.done, sse.done_reason
 end
 
 return OllamaFimBackend
