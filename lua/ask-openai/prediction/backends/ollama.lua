@@ -3,7 +3,7 @@ local CurrentContext = require("ask-openai.prediction.context")
 local fim = require("ask-openai.backends.models.fim")
 local meta = require("ask-openai.backends.models.meta")
 
-local use_llama_cpp_server = false
+local use_llama_cpp_server = true
 
 
 ---@class OllamaFimBackend
