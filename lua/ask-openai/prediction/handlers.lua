@@ -132,7 +132,7 @@ function M.ask_for_prediction()
     }, spawn_curl_options.on_exit)
 
     spawn_curl_options.on_stdout = function(err, data)
-        log:json_info_deferred("on_stdout chunk: ", data)
+        log:trace("on_stdout chunk: ", data)
 
         if err then
             log:warn("on_stdout error: ", err)
