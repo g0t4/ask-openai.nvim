@@ -38,12 +38,20 @@ function M.qwen25coder.get_fim_prompt(request)
         prompt = prompt .. non_fim_file
     end
 
+    -- * ctags
+    if request.current_context.ctags ~= "" then
+        local file_path = "tags"
+        local file_contents = request.current_context.ctags
+        append_file_non_fim(file_path, file_contents)
+    end
+
     -- * recent yanks
     if request.current_context.yanks ~= "" then
         local file_path = "nvim-recent-yanks.txt"
         local file_contents = request.current_context.yanks
         append_file_non_fim(file_path, file_contents)
     end
+
 
     -- * recent edits
     -- local recent_changes = "Here are some recent lines that were edited by the user: "
@@ -385,7 +393,6 @@ function M.codestral.get_fim_prompt(request)
     -- TODO filename, multi-file, etc?
     return fim_file_contents
 end
-
 
 M.deepseek_coder_v2 = {
     -- https://github.com/deepseek-ai/DeepSeek-Coder-V2
