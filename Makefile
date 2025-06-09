@@ -1,10 +1,10 @@
 
 tags:
-        ctags -R
+		ctags -R
 
 tests:
 		fd "\.tests\." | xargs -I_ nvim --headless -c 'PlenaryBustedFile _'
 
 clean:
-        rm -f tags
+		rm -f tags
 
