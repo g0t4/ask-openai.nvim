@@ -1,5 +1,5 @@
 local messages = require("devtools.messages")
-local dev_ts = require("devtools.treesitter")
+local dev_ts = require("devtools.ts")
 
 local M = {}
 
