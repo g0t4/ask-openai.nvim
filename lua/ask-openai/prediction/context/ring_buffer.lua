@@ -26,3 +26,5 @@ function RingBuffer:items()
     end
     return items
 end
+
+return RingBuffer
