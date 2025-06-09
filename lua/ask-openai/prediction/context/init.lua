@@ -14,7 +14,7 @@ function CurrentContext:new()
     local instance = {
         yanks = yanks:get_prompt(),
         edits = "",
-        ctags = ctags:get_prompt(),
+        ctags = ctags:get_prompt_files()(),
     }
     setmetatable(instance, { __index = self })
     return instance
