@@ -1,10 +1,11 @@
 local messages = require("devtools.messages")
-local dev_ts = require("devtools.ts")
+local require_parser = require("devtools.ts.require_parser")
 
 local M = {}
 
 function M.get_imports()
-    dev_ts.get_static_requires_lua()
+    require_parser.get_static_requires_lua()
+    --TODO use them! i.e. get symbols for them from coc
 end
 
 -- FYI IDEAS:
