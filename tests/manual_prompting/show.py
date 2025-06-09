@@ -4,12 +4,18 @@ import json
 raw_print = print
 from rich import print
 
+use_llama_cpp_server = True
+url = "http://localhost:11434/api/generate"
+if use_llama_cpp_server:
+    url = "http://ollama:8012/completions"
+
 def show_completion_for(body):
     print("[blue]## PROMPT")
     raw_print(body["prompt"])
 
+    # "http://ollama:11434/api/generate",
     response = requests.post(
-        "http://ollama:11434/api/generate",
+        url,
         headers={"Content-Type": "application/json"},
         data=json.dumps(body),
     )
@@ -27,5 +33,15 @@ def show_completion_for(body):
     print()
 
     print("[blue]## COMPLETION")
-    completion = result["response"]
+    if result.get("response"):
+        completion = result["response"]
+    # elif result.get("choices"):
+    #     completion = result["choices"][0]["text"]
+    elif result.get("content"):
+        completion = result["content"]
+    else:
+        print("Unknown response format: ")
+        print(result)
+        raise Exception("Unknown response format")
+
     raw_print(completion)
