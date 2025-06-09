@@ -16,21 +16,21 @@ function M.get_tag_list(file_path)
     return result
 end
 
-function M.get_lib_prompts()
+function M.get_devtools_tags()
     local devtools_tags = "~/repos/github/g0t4/devtools.nvim/tags"
     local tags = M.get_tag_list(devtools_tags)
     return table.concat(tags, "\n") .. "\n"
 end
 
-function M.get_prompt_files()
+function M.get_ctag_files()
     return {
         -- todo more than one lib prompts!
-        M.get_lib_prompts(),
-        M.get_my_tags_prompt(),
+        M.get_devtools_tags(),
+        M.get_my_tags(),
     }
 end
 
-function M.get_my_tags_prompt()
+function M.get_my_tags()
     local tags = M.get_tag_list(M.find_tag_file())
     return table.concat(tags, "\n") .. "\n"
     -- TODO! filter what I want to save on tokens?
