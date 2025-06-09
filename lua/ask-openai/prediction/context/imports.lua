@@ -4,6 +4,7 @@ local require_parser = require("devtools.ts.require_parser")
 local M = {}
 
 function M.get_imports()
+    -- TODO language specific queries... probably put that into devtools? or? at least the impl of each language in devtools.ts
     require_parser.get_static_requires_lua()
     --TODO use them! i.e. get symbols for them from coc
 end
