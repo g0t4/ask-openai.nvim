@@ -15,5 +15,5 @@
 # and at least luarc
 --exclude=.luarc.json
 --exclude=tmp
---exclude=lua/ask-openai/prediction/tests/cpp
-
+# test exercise files, dont need indexed:
+--exclude=lua/ask-openai/prediction/tests
