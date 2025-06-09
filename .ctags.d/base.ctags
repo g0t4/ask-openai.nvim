@@ -1,0 +1,17 @@
+# --languages=Lua
+# --languages=Python
+# -R
+# --extras=+q
+# --fields=+S
+# --exclude=*tests*
+--exclude=iterm2env
+--exclude=.venv
+--exclude=node_modules
+--exclude=*.md
+--exclude=*.patch
+--exclude=Makefile
+# for now exclude json files
+--exclude=*.json
+# and at least luarc
+--exclude=.luarc.json
+
