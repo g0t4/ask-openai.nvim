@@ -24,37 +24,6 @@ end)
 describe("u-ctags format", function()
     -- right now assuming u-ctags format, could add more in future
     -- https://docs.ctags.io/en/latest/man/tags.5.html#tags-5
-    describe("filtering lines", function()
-        it("excludes pseudo tags / metadata lines (starts with !) and comments", function()
-            local lines = {
-                "#_TAG_EXTRA_DESCRIPTION",
-                "function1",
-                "!_TAG_FIELD_DESCRIPTION",
-                "function2",
-            }
-            local filtered = ctags.filter_tag_lines(lines)
-            local expected = { "function1", "function2" }
-            should.be_same(expected, filtered)
-        end)
-
-        it("excludes files with .tests. in name", function()
-            local lines = {
-                "sort	lua/devtools/super_iter.lua	/^    iter.sort = function(self, cmp_fn)$/;\"	f	unknown:iter",
-                "sorted	lua/devtools/super_iter.tests.lua	/^        local sorted = super_iter(unsorted):sort(function(a, b) return a > b end):totable()$/;\"	f",
-            }
-            local filtered = ctags.filter_tag_lines(lines)
-            local expected = { lines[1] }
-            should.be_same(expected, filtered)
-        end)
-        -- TODO! filter by language of file completing in
-        --
-        --
-        -- *** in dotfiles...
-        -- nvim / hammerspoon s/b separated for tags
-        --   architectually... I should probably only generate a tags file in the parent most dir related and name by language then
-        --    OR I need a config mechanism to NOT just use global tags
-        -- cat tags | grep "nvim.*\.lua" | wordcount
-    end)
 
     describe("parse_ctags", function()
         it("splits on \t", function()
@@ -101,6 +70,38 @@ describe("u-ctags format", function()
                 local expected_keep_lines = { tags[3] }
                 should.be_same(expected_keep_lines, filtered)
             end)
+        end)
+
+        describe("filtering lines", function()
+            it("excludes pseudo tags / metadata lines (starts with !) and comments", function()
+                local lines = {
+                    "#_TAG_EXTRA_DESCRIPTION",
+                    "function1",
+                    "!_TAG_FIELD_DESCRIPTION",
+                    "function2",
+                }
+                local filtered = ctags.filter_tag_lines(lines)
+                local expected = { "function1", "function2" }
+                should.be_same(expected, filtered)
+            end)
+
+            it("excludes files with .tests. in name", function()
+                local lines = {
+                    "sort	lua/devtools/super_iter.lua	/^    iter.sort = function(self, cmp_fn)$/;\"	f	unknown:iter",
+                    "sorted	lua/devtools/super_iter.tests.lua	/^        local sorted = super_iter(unsorted):sort(function(a, b) return a > b end):totable()$/;\"	f",
+                }
+                local filtered = ctags.filter_tag_lines(lines)
+                local expected = { lines[1] }
+                should.be_same(expected, filtered)
+            end)
+            -- TODO! filter by language of file completing in
+            --
+            --
+            -- *** in dotfiles...
+            -- nvim / hammerspoon s/b separated for tags
+            --   architectually... I should probably only generate a tags file in the parent most dir related and name by language then
+            --    OR I need a config mechanism to NOT just use global tags
+            -- cat tags | grep "nvim.*\.lua" | wordcount
         end)
 
 
