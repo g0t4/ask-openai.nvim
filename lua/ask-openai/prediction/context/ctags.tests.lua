@@ -18,6 +18,13 @@ describe("integration test tags file", function()
         local filtered = ctags.parse_tag_lines(lines, "lua")
         print("filtered count: " .. tostring(#filtered))
         expect(#filtered > 0)
+
+        -- dump reassembled to file to inspect manually
+        local reassembled = ctags.reassembled_tags(filtered)
+        local filename = "tmp/reassembled_tags.txt"
+        local handle = io.open(filename, "w")
+        handle:write(reassembled)
+        handle:close()
     end)
 end)
 
@@ -115,6 +122,44 @@ describe("u-ctags format", function()
                     "on_delete	lua/devtools/diff/weslcs.lua	/^    function builder:on_delete(token)$/;\"	f	unknown:builder}",
                     "sort	lua/devtools/super_iter.lua	/^    iter.sort = function(self, cmp_fn)$/;\"	f	unknown:iter",
                 }
+
+                local expected_linesA = {
+                    "lua/devtools/diff/weslcs.lua",
+                    "    /^    function builder:on_delete(_token)$/",
+                    "    /^    function builder:on_delete(token)$/",
+                    "lua/devtools/super_iter.lua",
+                    "    /^    iter.sort = function(self, cmp_fn)$/",
+                }
+
+                local expected_linesB = {
+                    "lua/devtools/super_iter.lua",
+                    "    /^    iter.sort = function(self, cmp_fn)$/",
+                    "lua/devtools/diff/weslcs.lua",
+                    "    /^    function builder:on_delete(_token)$/",
+                    "    /^    function builder:on_delete(token)$/",
+                }
+
+                local tags = ctags.parse_tag_lines(lines, "lua")
+                local assembled = ctags.reassembled_tags(tags)
+
+                -- FYI right now I cannot guarantee the order of the two groups is the same
+                --   so I check that either way, the corresponding lines match per group
+                --   PRN... any way to make the order predictable for the tests w/o altering the impl?
+                --   OR, should I sort keys (filenames) or?
+                local expected_reassembledA = table.concat(expected_linesA, "\n")
+                local expected_reassembledB = table.concat(expected_linesB, "\n")
+                local either = assembled == expected_reassembledA or assembled == expected_reassembledB
+                if not either then
+                    print("\n")
+                    print("## reassembled: ")
+                    print(assembled)
+                    print("## expectedA: ")
+                    print(expected_reassembledA)
+                    print("## expectedB: ")
+                    print(expected_reassembledB)
+                    print("\n")
+                end
+                assert(either)
             end)
         end)
     end)

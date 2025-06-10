@@ -1,3 +1,4 @@
+local super_iter = require("devtools.super_iter")
 local M = {}
 
 function M.find_tag_file()
@@ -36,6 +37,21 @@ function M.parse_tag_lines(lines, language)
             return not tag.ex_command:match("/^%s*local")
         end)
         :totable()
+end
+
+function M.reassembled_tags(parsed_lines)
+    return super_iter(parsed_lines)
+        :group_by(function(tag)
+            return tag.file_name
+        end)
+        :map(function(key, items)
+            local lines = { key }
+            for _, tag in ipairs(items) do
+                table.insert(lines, "    " .. tag.ex_command)
+            end
+            return table.concat(lines, "\n")
+        end)
+        :join("\n")
 end
 
 function M.get_devtools_tag_lines()
