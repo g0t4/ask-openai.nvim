@@ -90,5 +90,38 @@ describe("u-ctags format", function()
             }
             should.be_same(expected, second)
         end)
+
+
+        -- LUA specific:
+        --  drop local functions/vars/etc (only those in the current file, in the PSM already... will matter)
+        --     /^local function simulate_rewrite_instant_one_chunk(opts)$/;"
+        --     /^            local tool_header = "**" .. (call["function"].name or "") .. "**"$/;"
+        --
+        describe("filter_parsed_tags", function()
+            it("removes local symbols", function()
+                local lines = {
+                    -- strip these:
+                    "split_lines_to_table	lua/ask-openai/prediction/prediction.lua	/^local function split_lines_to_table(text)$/;\"	f",
+                    "tool_header	lua/ask-openai/questions/ask.lua	/^            local tool_header = \"**\" .. (call[\"function\"].name or \"\") .. \"**\"$/;\"	f",
+                    -- keep lines:
+                    "on_delete	lua/devtools/diff/weslcs.lua	/^    function builder:on_delete(_token)$/;\"	f	unknown:builder",
+                }
+                local tags = ctags.parse_tag_lines(lines)
+                local filtered = ctags.filter_parsed_tags(tags)
+                local expected_keep_lines = { tags[3] }
+                should.be_same(expected_keep_lines, filtered)
+            end)
+        end)
+
+
+        describe("re-assemble SPIKE", function()
+            it("try this", function()
+                local lines = {
+                    "on_delete	lua/devtools/diff/weslcs.lua	/^    function builder:on_delete(_token)$/;\"	f	unknown:builder",
+                    "on_delete	lua/devtools/diff/weslcs.lua	/^    function builder:on_delete(token)$/;\"	f	unknown:builder}",
+                    "sort	lua/devtools/super_iter.lua	/^    iter.sort = function(self, cmp_fn)$/;\"	f	unknown:iter",
+                }
+            end)
+        end)
     end)
 end)

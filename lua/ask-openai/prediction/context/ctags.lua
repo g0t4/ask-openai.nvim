@@ -35,6 +35,14 @@ function M.parse_tag_lines(lines)
         :totable()
 end
 
+function M.filter_parsed_tags(parsed_tags)
+    return vim.iter(parsed_tags)
+        :filter(function(tag)
+            return not tag.ex_command:match("/^%s*local")
+        end)
+        :totable()
+end
+
 function M.get_devtools_tag_lines()
     local devtools_tags = os.getenv("HOME") .. "/repos/github/g0t4/devtools.nvim/tags"
     local tags = M.get_tag_lines(devtools_tags)
