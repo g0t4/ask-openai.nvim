@@ -65,4 +65,16 @@ describe("u-ctags format", function()
         --    OR I need a config mechanism to NOT just use global tags
         -- cat tags | grep "nvim.*\.lua" | wordcount
     end)
+
+    describe("parse_ctags", function()
+        it("splits on \t", function()
+            local lines = {
+                "on_delete	lua/devtools/diff/weslcs.lua	/^    function builder:on_delete(_token)$/;\"	f	unknown:builder",
+                "on_delete	lua/devtools/diff/weslcs.lua	/^    function builder:on_delete(token)$/;\"	f	unknown:builder}",
+                "sort	lua/devtools/super_iter.lua	/^    iter.sort = function(self, cmp_fn)$/;\"	f	unknown:iter",
+                "sorted	lua/devtools/super_iter.tests.lua	/^        local sorted = super_iter(unsorted):sort(function(a, b) return a > b end):totable()$/;\"	f",
+            }
+            local tags = ctags.parse_ctags_lines(lines)
+        end)
+    end)
 end)

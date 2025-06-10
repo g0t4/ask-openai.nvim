@@ -22,6 +22,14 @@ function M.filter_tag_list(tag_list)
         :totable()
 end
 
+function M.parse_ctags_lines(lines)
+    return vim.iter(lines)
+        :map(function(line)
+            vim.split(line, "\t", { plain = true, n = 2 })
+        end)
+        :totable()
+end
+
 function M.get_devtools_tags()
     local devtools_tags = os.getenv("HOME") .. "/repos/github/g0t4/devtools.nvim/tags"
     local tags = M.get_tag_list(devtools_tags)
