@@ -1,23 +1,31 @@
 local M = {}
 
 function M.find_tag_file()
-    local result = vim.fn.findfile("tags", vim.fn.getcwd() .. ";")
-    if result ~= "" then
-        return result
-    end
+    return "tags"
+    -- local result = vim.fn.findfile("tags", vim.fn.getcwd() .. ";")
 end
 
 function M.get_tag_list(file_path)
-    local result = {}
+    local lines = {}
     for line in io.lines(file_path) do
-        table.insert(result, line)
+        table.insert(lines, line)
     end
-    return result
+    return lines
+end
+
+function M.filter_tag_list(tag_list)
+    return vim.iter(tag_list)
+        :filter(function(line)
+            return not line:match("^!")
+                and not line:match("%.tests%.")
+        end)
+        :totable()
 end
 
 function M.get_devtools_tags()
     local devtools_tags = os.getenv("HOME") .. "/repos/github/g0t4/devtools.nvim/tags"
     local tags = M.get_tag_list(devtools_tags)
+
     return table.concat(tags, "\n") .. "\n"
 end
 
