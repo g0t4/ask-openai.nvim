@@ -38,14 +38,14 @@ function M.qwen25coder.get_fim_prompt(request)
         prompt = prompt .. non_fim_file
     end
 
-    -- -- * ctags
-    -- if request.current_context.ctags ~= "" then
-    --     local files = request.current_context.ctags_files
-    --     -- for _, f in files do
-    --     append_file_non_fim("devtools/tags", files[1])
-    --     append_file_non_fim("tags", files[2])
-    --     -- end
-    -- end
+    -- * ctags
+    if request.current_context.ctags ~= "" then
+        local files = request.current_context.ctags_files
+        -- for _, f in files do
+        append_file_non_fim("devtools/tags", files[1])
+        append_file_non_fim("tags", files[2])
+        -- end
+    end
 
     -- * recent yanks
     if request.current_context.yanks ~= "" then

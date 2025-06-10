@@ -58,11 +58,18 @@ function M.reassembled_tags(parsed_lines)
         :join("\n")
 end
 
+function M.read_and_reassemble(file)
+    return M.reassembled_tags(
+        M.parse_tag_lines(
+            M.get_tag_lines(file),
+            "lua"
+        )
+    )
+end
+
 function M.get_devtools_tag_lines()
     local devtools_tags = os.getenv("HOME") .. "/repos/github/g0t4/devtools.nvim/tags"
-    local tags = M.get_tag_lines(devtools_tags)
-
-    return table.concat(tags, "\n") .. "\n"
+    return M.read_and_reassemble(devtools_tags)
 end
 
 function M.get_ctag_files()
@@ -74,16 +81,8 @@ function M.get_ctag_files()
 end
 
 function M.get_this_project_tag_lines()
-    local tags = M.get_tag_lines(M.find_tag_file())
-    return table.concat(tags, "\n") .. "\n"
-    -- TODO! filter what I want to save on tokens?
-    --   drop last column, AFAICT its useless for lua
-    --   drop NOT lua lines
-    --
-    -- for _, line in ipairs(tags) do
-    --     local tag_name = line:match("^(.*)\t")
-    --     prompt_text = prompt_text .. "- `" .. tag_name .. "`\n"
-    -- end
+    local tags = M.find_tag_file()
+    return M.read_and_reassemble(tags)
 end
 
 return M
