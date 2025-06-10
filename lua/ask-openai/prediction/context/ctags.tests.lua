@@ -40,12 +40,6 @@ describe("u-ctags format", function()
             local expected = { "function1", "function2" }
             should.be_same(expected, filtered)
         end)
-        local lines = {
-            "on_delete	lua/devtools/diff/weslcs.lua	/^    function builder:on_delete(_token)$/;\"	f	unknown:builder",
-            "on_delete	lua/devtools/diff/weslcs.lua	/^    function builder:on_delete(token)$/;\"	f	unknown:builder}",
-            "sort	lua/devtools/super_iter.lua	/^    iter.sort = function(self, cmp_fn)$/;\"	f	unknown:iter",
-            "sorted	lua/devtools/super_iter.tests.lua	/^        local sorted = super_iter(unsorted):sort(function(a, b) return a > b end):totable()$/;\"	f",
-        }
 
         it("excludes files with .tests. in name", function()
             local lines = {
