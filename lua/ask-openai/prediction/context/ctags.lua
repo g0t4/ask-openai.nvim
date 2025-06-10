@@ -1,6 +1,5 @@
 local M = {}
 
-
 function M.find_tag_file()
     local result = vim.fn.findfile("tags", vim.fn.getcwd() .. ";")
     if result ~= "" then

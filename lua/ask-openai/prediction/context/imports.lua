@@ -4,18 +4,9 @@ local require_parser = require("devtools.ts.require_parser")
 local M = {}
 
 function M.get_imports()
-    -- TODO language specific queries... probably put that into devtools? or? at least the impl of each language in devtools.ts
-    require_parser.get_static_requires_lua()
-    --TODO use them! i.e. get symbols for them from coc
+    -- require_parser.get_static_requires_lua()
+    -- TODO WAIT... can I just find the imports in a file (at the top of the file) and show them when I'm editing a file and w/in its top lines?
+    --  take top lines until first blank, up to 10 lines per file?
 end
-
--- FYI IDEAS:
--- include public surface of imported modules
--- also need to handle table assignments and local function assignments
--- also need to look at modules that are imported
--- keep a cache of most imported modules too?
---  and include their public methods?
---  heck could look for most used methods too?
---   => i.e. devtools.messages
 
 return M
