@@ -39,13 +39,14 @@ function M.qwen25coder.get_fim_prompt(request)
     end
 
     -- * ctags
-    if request.current_context.ctags_files ~= nil then
-        local files = request.current_context.ctags_files
-        -- for _, f in files do
-        append_file_non_fim("devtools/tags", files[1])
-        append_file_non_fim("tags", files[2])
-        -- end
-    end
+    -- if request.current_context.ctags_files ~= nil then
+    --     local files = request.current_context.ctags_files
+    --     log:trace("ctags_files sizes: " .. #files[1] .. " " .. #files[2])
+    --     -- for _, f in files do
+    --     append_file_non_fim("devtools/tags", files[1])
+    --     append_file_non_fim("tags", files[2])
+    --     -- end
+    -- end
 
     -- * recent yanks
     if request.current_context.yanks ~= "" then
