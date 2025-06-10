@@ -24,11 +24,7 @@ end)
 describe("u-ctags format", function()
     -- right now assuming u-ctags format, could add more in future
     -- https://docs.ctags.io/en/latest/man/tags.5.html#tags-5
-    describe("filter_tag_lines", function()
-        it("excludes comment lines", function()
-
-        end)
-
+    describe("filtering lines", function()
         it("excludes pseudo tags / metadata lines (starts with !) and comments", function()
             local lines = {
                 "#_TAG_EXTRA_DESCRIPTION",
