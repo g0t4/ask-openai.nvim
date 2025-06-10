@@ -13,17 +13,14 @@ function M.get_tag_lines(file_path)
     return lines
 end
 
-function M.filter_tag_lines(lines)
+function M.parse_tag_lines(lines)
     return vim.iter(lines)
+        -- filter on raw lines
         :filter(function(line)
             return not line:match("^[#!]")
                 and not line:match("%.tests%.")
         end)
-        :totable()
-end
-
-function M.parse_tag_lines(lines)
-    return vim.iter(lines)
+        -- split her up!
         :map(function(line)
             local splits = vim.split(line, "\t", { plain = true, n = 2 })
             return {
@@ -32,11 +29,7 @@ function M.parse_tag_lines(lines)
                 ex_command = splits[3]:gsub(';"$', "")
             }
         end)
-        :totable()
-end
-
-function M.filter_parsed_tags(parsed_tags)
-    return vim.iter(parsed_tags)
+        -- filter on fields
         :filter(function(tag)
             return not tag.ex_command:match("/^%s*local")
         end)

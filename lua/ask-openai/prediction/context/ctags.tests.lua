@@ -10,12 +10,12 @@ describe("integration test tags file", function()
     end)
 
     it("get_tag_lines", function()
-        local tags = ctags.get_tag_lines("tags")
-        local num_tags = #tags -- use for expect which only handles showing primitives (not tables nor operations)
+        local lines = ctags.get_tag_lines("tags")
+        local num_tags = #lines -- use for expect which only handles showing primitives (not tables nor operations)
         print("original tag count: " .. tostring(num_tags))
         expect(num_tags > 0)
 
-        local filtered = ctags.filter_tag_lines(tags)
+        local filtered = ctags.parse_tag_lines(lines)
         print("filtered count: " .. tostring(#filtered))
         expect(#filtered > 0)
     end)
@@ -66,21 +66,25 @@ describe("u-ctags format", function()
                     "on_delete	lua/devtools/diff/weslcs.lua	/^    function builder:on_delete(_token)$/;\"	f	unknown:builder",
                 }
                 local tags = ctags.parse_tag_lines(lines)
-                local filtered = ctags.filter_parsed_tags(tags)
-                local expected_keep_lines = { tags[3] }
-                should.be_same(expected_keep_lines, filtered)
+                expect(#tags == 1)
+                local only = tags[1]
+                -- FYI this is not a test of parsing, so only verify the one item looks approx right
+                should.be_same(only.tag_name, "on_delete")
             end)
 
             it("excludes pseudo tags / metadata lines (starts with !) and comments", function()
                 local lines = {
                     "#_TAG_EXTRA_DESCRIPTION",
-                    "function1",
+                    "function1	lua/ask-openai/prediction/prediction.lua	/^function split_lines_to_table(text)$/;\"	f",
                     "!_TAG_FIELD_DESCRIPTION",
-                    "function2",
+                    "function2	lua/ask-openai/prediction/prediction.lua	/^function split_lines_to_table(text)$/;\"	f",
                 }
-                local filtered = ctags.filter_tag_lines(lines)
-                local expected = { "function1", "function2" }
-                should.be_same(expected, filtered)
+                local tags = ctags.parse_tag_lines(lines)
+                expect(#tags == 2)
+                local first = tags[1]
+                local second = tags[2]
+                should.be_same(first.tag_name, "function1")
+                should.be_same(second.tag_name, "function2")
             end)
 
             it("excludes files with .tests. in name", function()
@@ -88,9 +92,10 @@ describe("u-ctags format", function()
                     "sort	lua/devtools/super_iter.lua	/^    iter.sort = function(self, cmp_fn)$/;\"	f	unknown:iter",
                     "sorted	lua/devtools/super_iter.tests.lua	/^        local sorted = super_iter(unsorted):sort(function(a, b) return a > b end):totable()$/;\"	f",
                 }
-                local filtered = ctags.filter_tag_lines(lines)
-                local expected = { lines[1] }
-                should.be_same(expected, filtered)
+                local tags = ctags.parse_tag_lines(lines)
+                expect(#tags == 1)
+                local first = tags[1]
+                should.be_same(first.tag_name, "sort")
             end)
             -- TODO! filter by language of file completing in
             --
