@@ -15,7 +15,7 @@ describe("integration test tags file", function()
         print("original tag count: " .. tostring(num_tags))
         expect(num_tags > 0)
 
-        local filtered = ctags.parse_tag_lines(lines)
+        local filtered = ctags.parse_tag_lines(lines, "lua")
         print("filtered count: " .. tostring(#filtered))
         expect(#filtered > 0)
     end)
@@ -33,7 +33,7 @@ describe("u-ctags format", function()
                 "sort	lua/devtools/super_iter.lua	/^    iter.sort = function(self, cmp_fn)$/;\"	f	unknown:iter",
                 "sorted	lua/devtools/super_iter.tests.lua	/^        local sorted = super_iter(unsorted):sort(function(a, b) return a > b end):totable()$/;\"	f",
             }
-            local tags = ctags.parse_tag_lines(lines)
+            local tags = ctags.parse_tag_lines(lines, "lua")
             local second = tags[2]
 
             -- https://docs.ctags.io/en/latest/man/ctags.1.html
@@ -65,7 +65,7 @@ describe("u-ctags format", function()
                     -- keep lines:
                     "on_delete	lua/devtools/diff/weslcs.lua	/^    function builder:on_delete(_token)$/;\"	f	unknown:builder",
                 }
-                local tags = ctags.parse_tag_lines(lines)
+                local tags = ctags.parse_tag_lines(lines, "lua")
                 expect(#tags == 1)
                 local only = tags[1]
                 -- FYI this is not a test of parsing, so only verify the one item looks approx right
@@ -79,7 +79,7 @@ describe("u-ctags format", function()
                     "!_TAG_FIELD_DESCRIPTION",
                     "function2	lua/ask-openai/prediction/prediction.lua	/^function split_lines_to_table(text)$/;\"	f",
                 }
-                local tags = ctags.parse_tag_lines(lines)
+                local tags = ctags.parse_tag_lines(lines, "lua")
                 expect(#tags == 2)
                 local first = tags[1]
                 local second = tags[2]
@@ -92,7 +92,7 @@ describe("u-ctags format", function()
                     "sort	lua/devtools/super_iter.lua	/^    iter.sort = function(self, cmp_fn)$/;\"	f	unknown:iter",
                     "sorted	lua/devtools/super_iter.tests.lua	/^        local sorted = super_iter(unsorted):sort(function(a, b) return a > b end):totable()$/;\"	f",
                 }
-                local tags = ctags.parse_tag_lines(lines)
+                local tags = ctags.parse_tag_lines(lines, "lua")
                 expect(#tags == 1)
                 local first = tags[1]
                 should.be_same(first.tag_name, "sort")

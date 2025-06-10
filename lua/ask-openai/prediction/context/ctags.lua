@@ -13,7 +13,9 @@ function M.get_tag_lines(file_path)
     return lines
 end
 
-function M.parse_tag_lines(lines)
+function M.parse_tag_lines(lines, language)
+    language = language or "lua"
+
     return vim.iter(lines)
         -- filter on raw lines
         :filter(function(line)
