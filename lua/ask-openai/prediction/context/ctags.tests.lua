@@ -29,9 +29,9 @@ describe("u-ctags format", function()
 
         end)
 
-        it("excludes pseudo tags / metadata lines (starts with !)", function()
+        it("excludes pseudo tags / metadata lines (starts with !) and comments", function()
             local lines = {
-                "!_TAG_EXTRA_DESCRIPTION",
+                "#_TAG_EXTRA_DESCRIPTION",
                 "function1",
                 "!_TAG_FIELD_DESCRIPTION",
                 "function2",

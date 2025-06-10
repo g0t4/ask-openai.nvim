@@ -16,7 +16,7 @@ end
 function M.filter_tag_list(tag_list)
     return vim.iter(tag_list)
         :filter(function(line)
-            return not line:match("^!")
+            return not line:match("^[#!]")
                 and not line:match("%.tests%.")
         end)
         :totable()
