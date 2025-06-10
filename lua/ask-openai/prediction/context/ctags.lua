@@ -46,7 +46,11 @@ function M.reassembled_tags(parsed_lines)
         :map(function(key, items)
             local lines = { key }
             for _, tag in ipairs(items) do
-                table.insert(lines, "    " .. tag.ex_command)
+                -- FYI stripping /^ $/ removed 19% of tokens in a test run
+                local stripped_ex_command = tag.ex_command
+                    :gsub("/^", "")
+                    :gsub("$/", "")
+                table.insert(lines, "    " .. stripped_ex_command)
             end
             return table.concat(lines, "\n")
         end)

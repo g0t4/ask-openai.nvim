@@ -137,18 +137,18 @@ describe("u-ctags format", function()
 
                 local expected_linesA = {
                     "lua/devtools/diff/weslcs.lua",
-                    "    /^    function builder:on_delete(_token)$/",
-                    "    /^    function builder:on_delete(token)$/",
+                    "        function builder:on_delete(_token)",
+                    "        function builder:on_delete(token)",
                     "lua/devtools/super_iter.lua",
-                    "    /^    iter.sort = function(self, cmp_fn)$/",
+                    "        iter.sort = function(self, cmp_fn)",
                 }
 
                 local expected_linesB = {
                     "lua/devtools/super_iter.lua",
-                    "    /^    iter.sort = function(self, cmp_fn)$/",
+                    "        iter.sort = function(self, cmp_fn)",
                     "lua/devtools/diff/weslcs.lua",
-                    "    /^    function builder:on_delete(_token)$/",
-                    "    /^    function builder:on_delete(token)$/",
+                    "        function builder:on_delete(_token)",
+                    "        function builder:on_delete(token)",
                 }
 
                 local tags = ctags.parse_tag_lines(lines, "lua")
