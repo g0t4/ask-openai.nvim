@@ -1,7 +1,7 @@
 local M = {}
 
 function M.add(a, b)
-    -- messages
+    messages
     return a + b
 end
 

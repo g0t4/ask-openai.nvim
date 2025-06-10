@@ -39,7 +39,7 @@ function M.qwen25coder.get_fim_prompt(request)
     end
 
     -- * ctags
-    if request.current_context.ctags ~= "" then
+    if request.current_context.ctags_files ~= nil then
         local files = request.current_context.ctags_files
         -- for _, f in files do
         append_file_non_fim("devtools/tags", files[1])

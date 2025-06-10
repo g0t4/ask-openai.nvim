@@ -14,6 +14,7 @@ function CurrentContext:new()
     local instance = {
         yanks = yanks:get_prompt(),
         edits = "",
+        -- FYI just comment out to disable:
         ctags_files = ctags:get_ctag_files(),
     }
     setmetatable(instance, { __index = self })
