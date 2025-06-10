@@ -9,13 +9,13 @@ describe("integration test tags file", function()
         should.be_equal("tags", file)
     end)
 
-    it("get_tag_list", function()
-        local tags = ctags.get_tag_list("tags")
+    it("get_tag_lines", function()
+        local tags = ctags.get_tag_lines("tags")
         local num_tags = #tags -- use for expect which only handles showing primitives (not tables nor operations)
         print("original tag count: " .. tostring(num_tags))
         expect(num_tags > 0)
 
-        local filtered = ctags.filter_tag_list(tags)
+        local filtered = ctags.filter_tag_lines(tags)
         print("filtered count: " .. tostring(#filtered))
         expect(#filtered > 0)
     end)
@@ -24,7 +24,7 @@ end)
 describe("u-ctags format", function()
     -- right now assuming u-ctags format, could add more in future
     -- https://docs.ctags.io/en/latest/man/tags.5.html#tags-5
-    describe("filter_tag_list", function()
+    describe("filter_tag_lines", function()
         it("excludes comment lines", function()
 
         end)
@@ -36,7 +36,7 @@ describe("u-ctags format", function()
                 "!_TAG_FIELD_DESCRIPTION",
                 "function2",
             }
-            local filtered = ctags.filter_tag_list(lines)
+            local filtered = ctags.filter_tag_lines(lines)
             local expected = { "function1", "function2" }
             should.be_same(expected, filtered)
         end)
@@ -52,7 +52,7 @@ describe("u-ctags format", function()
                 "sort	lua/devtools/super_iter.lua	/^    iter.sort = function(self, cmp_fn)$/;\"	f	unknown:iter",
                 "sorted	lua/devtools/super_iter.tests.lua	/^        local sorted = super_iter(unsorted):sort(function(a, b) return a > b end):totable()$/;\"	f",
             }
-            local filtered = ctags.filter_tag_list(lines)
+            local filtered = ctags.filter_tag_lines(lines)
             local expected = { lines[1] }
             should.be_same(expected, filtered)
         end)
@@ -74,7 +74,7 @@ describe("u-ctags format", function()
                 "sort	lua/devtools/super_iter.lua	/^    iter.sort = function(self, cmp_fn)$/;\"	f	unknown:iter",
                 "sorted	lua/devtools/super_iter.tests.lua	/^        local sorted = super_iter(unsorted):sort(function(a, b) return a > b end):totable()$/;\"	f",
             }
-            local tags = ctags.parse_ctags_lines(lines)
+            local tags = ctags.parse_tag_lines(lines)
         end)
     end)
 end)

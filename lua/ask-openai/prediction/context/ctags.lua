@@ -5,7 +5,7 @@ function M.find_tag_file()
     -- local result = vim.fn.findfile("tags", vim.fn.getcwd() .. ";")
 end
 
-function M.get_tag_list(file_path)
+function M.get_tag_lines(file_path)
     local lines = {}
     for line in io.lines(file_path) do
         table.insert(lines, line)
@@ -13,8 +13,8 @@ function M.get_tag_list(file_path)
     return lines
 end
 
-function M.filter_tag_list(tag_list)
-    return vim.iter(tag_list)
+function M.filter_tag_lines(lines)
+    return vim.iter(lines)
         :filter(function(line)
             return not line:match("^[#!]")
                 and not line:match("%.tests%.")
@@ -22,7 +22,7 @@ function M.filter_tag_list(tag_list)
         :totable()
 end
 
-function M.parse_ctags_lines(lines)
+function M.parse_tag_lines(lines)
     return vim.iter(lines)
         :map(function(line)
             vim.split(line, "\t", { plain = true, n = 2 })
@@ -30,9 +30,9 @@ function M.parse_ctags_lines(lines)
         :totable()
 end
 
-function M.get_devtools_tags()
+function M.get_devtools_tag_lines()
     local devtools_tags = os.getenv("HOME") .. "/repos/github/g0t4/devtools.nvim/tags"
-    local tags = M.get_tag_list(devtools_tags)
+    local tags = M.get_tag_lines(devtools_tags)
 
     return table.concat(tags, "\n") .. "\n"
 end
@@ -40,13 +40,13 @@ end
 function M.get_ctag_files()
     return {
         -- todo more than one lib prompts!
-        M.get_devtools_tags(),
-        M.get_my_tags(),
+        M.get_devtools_tag_lines(),
+        M.get_this_project_tag_lines(),
     }
 end
 
-function M.get_my_tags()
-    local tags = M.get_tag_list(M.find_tag_file())
+function M.get_this_project_tag_lines()
+    local tags = M.get_tag_lines(M.find_tag_file())
     return table.concat(tags, "\n") .. "\n"
     -- TODO! filter what I want to save on tokens?
     --   drop last column, AFAICT its useless for lua
