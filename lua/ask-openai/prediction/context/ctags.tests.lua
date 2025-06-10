@@ -76,12 +76,17 @@ describe("u-ctags format", function()
             }
             local tags = ctags.parse_tag_lines(lines)
             local second = tags[2]
+
+            -- https://docs.ctags.io/en/latest/man/ctags.1.html
+            -- u-ctags format
+            -- <tag_name><TAB><file_name><TAB><ex_cmd>;"<TAB><extension_fields>
+
             local expected = {
-                name = "on_delete",
-                filename = "lua/devtools/diff/weslcs.lua",
-                line = "/^    function builder:on_delete(token)$/;\"",
-                kind = "f",
-                extras = "unknown:builder}",
+                tag_name = "on_delete",
+                file_name = "lua/devtools/diff/weslcs.lua",
+                -- make sure to strip delimiter ;" at the end of the ex_command
+                ex_command = "/^    function builder:on_delete(token)$/",
+                -- FOR NOW I am not gonna use extras... so skip it
             }
             should.be_same(expected, second)
         end)

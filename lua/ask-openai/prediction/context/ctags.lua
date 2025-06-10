@@ -27,11 +27,9 @@ function M.parse_tag_lines(lines)
         :map(function(line)
             local splits = vim.split(line, "\t", { plain = true, n = 2 })
             return {
-                name = splits[1],
-                filename = splits[2],
-                line = splits[3],
-                kind = splits[4],
-                extras = splits[5],
+                tag_name = splits[1],
+                file_name = splits[2],
+                ex_command = splits[3]:gsub(';"$', "")
             }
         end)
         :totable()
