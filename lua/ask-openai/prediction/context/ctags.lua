@@ -17,7 +17,7 @@ function M.get_tag_list(file_path)
 end
 
 function M.get_devtools_tags()
-    local devtools_tags = "~/repos/github/g0t4/devtools.nvim/tags"
+    local devtools_tags = os.getenv("HOME") .. "/repos/github/g0t4/devtools.nvim/tags"
     local tags = M.get_tag_list(devtools_tags)
     return table.concat(tags, "\n") .. "\n"
 end

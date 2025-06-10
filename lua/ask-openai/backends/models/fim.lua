@@ -40,9 +40,11 @@ function M.qwen25coder.get_fim_prompt(request)
 
     -- * ctags
     if request.current_context.ctags ~= "" then
-        local file_path = "tags"
-        local file_contents = request.current_context.ctags
-        append_file_non_fim(file_path, file_contents)
+        local files = request.current_context.ctags_files
+        -- for _, f in files do
+        append_file_non_fim("devtools/tags", files[1])
+        append_file_non_fim("tags", files[2])
+        -- end
     end
 
     -- * recent yanks
