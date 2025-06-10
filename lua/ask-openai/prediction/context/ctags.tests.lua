@@ -104,6 +104,18 @@ describe("u-ctags format", function()
                 local first = tags[1]
                 should.be_same(first.tag_name, "sort")
             end)
+
+            it("excludes non-lua files when language=lua", function()
+                local lines = {
+                    "sort	lua/devtools/super_iter.lua	/^function(self, cmp_fn)$/;\"	f	unknown:iter",
+                    "sort	lua/devtools/super_iter.py	/^function(self, cmp_fn)$/;\"	f	unknown:iter",
+                }
+                local tags = ctags.parse_tag_lines(lines, "lua")
+                expect(#tags == 1)
+                local first = tags[1]
+                should.be_same(first.tag_name, "sort")
+            end)
+
             -- TODO! filter by language of file completing in
             --
             --

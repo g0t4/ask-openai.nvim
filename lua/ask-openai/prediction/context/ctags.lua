@@ -15,8 +15,6 @@ function M.get_tag_lines(file_path)
 end
 
 function M.parse_tag_lines(lines, language)
-    language = language or "lua"
-
     return vim.iter(lines)
         -- filter on raw lines
         :filter(function(line)
@@ -35,6 +33,7 @@ function M.parse_tag_lines(lines, language)
         -- filter on fields
         :filter(function(tag)
             return not tag.ex_command:match("/^%s*local")
+                and tag.file_name:match("." .. language .. "$")
         end)
         :totable()
 end
