@@ -47,8 +47,9 @@ function M.reassembled_tags(parsed_lines)
             local lines = { key }
             for _, tag in ipairs(items) do
                 -- FYI stripping /^ $/ removed 19% of tokens in a test run
+                -- also strip leading spaces... not sure it would be useful anyways (did not analyze savings from that)
                 local stripped_ex_command = tag.ex_command
-                    :gsub("/^", "")
+                    :gsub("/^%s*", "")
                     :gsub("$/", "")
                 table.insert(lines, "    " .. stripped_ex_command)
             end
