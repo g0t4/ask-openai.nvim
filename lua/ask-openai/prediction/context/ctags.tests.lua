@@ -56,7 +56,7 @@ describe("u-ctags format", function()
         --     /^local function simulate_rewrite_instant_one_chunk(opts)$/;"
         --     /^            local tool_header = "**" .. (call["function"].name or "") .. "**"$/;"
         --
-        describe("filter_parsed_tags", function()
+        describe("filter tag lines", function()
             it("removes local symbols", function()
                 local lines = {
                     -- strip these:
@@ -70,9 +70,7 @@ describe("u-ctags format", function()
                 local expected_keep_lines = { tags[3] }
                 should.be_same(expected_keep_lines, filtered)
             end)
-        end)
 
-        describe("filtering lines", function()
             it("excludes pseudo tags / metadata lines (starts with !) and comments", function()
                 local lines = {
                     "#_TAG_EXTRA_DESCRIPTION",
