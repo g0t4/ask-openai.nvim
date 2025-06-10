@@ -75,6 +75,15 @@ describe("u-ctags format", function()
                 "sorted	lua/devtools/super_iter.tests.lua	/^        local sorted = super_iter(unsorted):sort(function(a, b) return a > b end):totable()$/;\"	f",
             }
             local tags = ctags.parse_tag_lines(lines)
+            local second = tags[2]
+            local expected = {
+                name = "on_delete",
+                filename = "lua/devtools/diff/weslcs.lua",
+                line = "/^    function builder:on_delete(token)$/;\"",
+                kind = "f",
+                extras = "unknown:builder}",
+            }
+            should.be_same(expected, second)
         end)
     end)
 end)
