@@ -50,6 +50,7 @@ M.qwen25coder = {
 --     --   eos_token_ids = [    151643, 151645,     151659,     151661,  151662,    151663,   151664, ]
 --     --                     endoftext, im_end, fim_prefix, fim_suffix, fim_pad, repo_name, file_sep,
 --     M.qwen25coder.sentinel_tokens.endoftext,
+--     TODO... also why exclude these tokens... doesn't make sense to me... unless a mistake is made and model skips EOS?!?
 --     M.qwen25coder.sentinel_tokens.im_end,
 --     M.qwen25coder.sentinel_tokens.fim_prefix,
 --     M.qwen25coder.sentinel_tokens.fim_suffix,
