@@ -6,19 +6,47 @@ local M = {}
 --   but lets collect them under fim for now
 --   really these are the fim related special tokens
 
+
+
 M.qwen25coder = {
     sentinel_tokens = {
         -- https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct/blob/main/tokenizer_config.json
-        fim_prefix = "<|fim_prefix|>",
-        fim_middle = "<|fim_middle|>",
-        fim_suffix = "<|fim_suffix|>",
-        -- fim_pad = "<|fim_pad|>",
-        repo_name = "<|repo_name|>",
-        file_sep = "<|file_sep|>",
+        fim_prefix = "<|fim_prefix|>", -- 151659
+        fim_middle = "<|fim_middle|>", -- 151660
+        fim_suffix = "<|fim_suffix|>", -- 151661
+        -- fim_pad = "<|fim_pad|>", -- 151662
+        repo_name = "<|repo_name|>", -- 151663
+        file_sep = "<|file_sep|>", -- 151664
 
-        im_start = "<|im_start|>",
-        im_end = "<|im_end|>",
-        -- endoftext = "<|endoftext|>"
+        im_start = "<|im_start|>", -- 151644
+        im_end = "<|im_end|>", -- 151645
+        endoftext = "<|endoftext|>", -- 151643
+
+        -- TODO rename other stop_tokens that are fim specific for other models below
+        fim_stop_tokens = {
+            -- FIM examples show setting several stop tokens
+            -- https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-fim.py
+            --   eos_token_ids = [151664, 151662, 151659, 151660, 151661, 151662, 151663, 151664, 151645, 151643]
+            -- https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel-fim.py
+            --   eos_token_ids = [151659, 151661, 151662, 151663, 151664, 151643, 151645]
+
+
+        },
+
+        -- * other tokens in logs, consider as needed:
+        -- LF token         = 198 'Ċ'
+        -- 151653 '<|vision_end|>'
+        -- 151648 '<|box_start|>'
+        -- 151646 '<|object_ref_start|>'
+        -- 151649 '<|box_end|>'
+        -- 151655 '<|image_pad|>'
+        -- 151651 '<|quad_end|>'
+        -- 151647 '<|object_ref_end|>'
+        -- 151652 '<|vision_start|>'
+        -- 151654 '<|vision_pad|>'
+        -- 151656 '<|video_pad|>'
+        -- 151650 '<|quad_start|>'
+
     },
 }
 
