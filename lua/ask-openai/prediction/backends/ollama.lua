@@ -145,6 +145,7 @@ function OllamaFimBackend:body_for()
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
+        body.options.stop = fim.qwen25coder.sentinel_tokens.fim_stop_tokens
     elseif string.find(body.model, "codestral", nil, true) then
         builder = function()
             return fim.codestral.get_fim_prompt(self)

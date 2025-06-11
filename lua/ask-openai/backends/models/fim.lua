@@ -22,18 +22,6 @@ M.qwen25coder = {
         im_end = "<|im_end|>", -- 151645
         endoftext = "<|endoftext|>", -- 151643
 
-        -- TODO rename other stop_tokens that are fim specific for other models below
-        fim_stop_tokens = {
-            -- FIM examples show setting several stop tokens
-            -- https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-fim.py
-            --   eos_token_ids = [ 151643, 151645, 151659, 151660, 151661, 151662, 151663, 151664 ]
-            --       only extra token here: 151660  (fim_middle)
-            -- https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel-fim.py
-            --   eos_token_ids = [    151643, 151645,     151659,     151661,  151662,    151663,   151664, ]
-            --                     endoftext, im_end, fim_prefix, fim_suffix, fim_pad, repo_name, file_sep,
-
-        },
-
         -- * other tokens in logs, consider as needed:
         -- LF token         = 198 'Ċ'
         -- 151653 '<|vision_end|>'
@@ -49,6 +37,24 @@ M.qwen25coder = {
         -- 151650 '<|quad_start|>'
 
     },
+}
+
+-- TODO rename other stop_tokens that are fim specific for other models below
+M.qwen25coder.sentinel_tokens.fim_stop_tokens = {
+    -- FIM examples show setting several stop tokens
+    -- https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-fim.py
+    --   eos_token_ids = [ 151643, 151645, 151659, 151660, 151661, 151662, 151663, 151664 ]
+    --       only extra token here: 151660  (fim_middle)
+    -- https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel-fim.py
+    --   eos_token_ids = [    151643, 151645,     151659,     151661,  151662,    151663,   151664, ]
+    --                     endoftext, im_end, fim_prefix, fim_suffix, fim_pad, repo_name, file_sep,
+    M.qwen25coder.sentinel_tokens.endoftext,
+    M.qwen25coder.sentinel_tokens.im_end,
+    M.qwen25coder.sentinel_tokens.fim_prefix,
+    M.qwen25coder.sentinel_tokens.fim_suffix,
+    -- M.qwen25coder.sentinel_tokens.fim_pad, -- shows as null in llama-cpp request body verbose output?!
+    M.qwen25coder.sentinel_tokens.repo_name,
+    M.qwen25coder.sentinel_tokens.file_sep,
 }
 
 function M.qwen25coder.get_fim_prompt(request)
