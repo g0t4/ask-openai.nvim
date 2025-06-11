@@ -39,7 +39,6 @@ M.qwen25coder = {
     },
 }
 
--- TODO rename other stop_tokens that are fim specific for other models below
 M.qwen25coder.sentinel_tokens.fim_stop_tokens = {
     -- FIM examples show setting several stop tokens
     -- https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-fim.py
@@ -452,7 +451,7 @@ M.deepseek_coder_v2 = {
         fim_end = "<｜fim▁end｜>",
 
         -- TODO what name for this?
-        stop_tokens = { "<|eos_token|>" }
+        fim_stop_tokens = { "<|eos_token|>" }
     }
 
 }
