@@ -26,9 +26,9 @@ M.qwen25coder = {
         fim_stop_tokens = {
             -- FIM examples show setting several stop tokens
             -- https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-fim.py
-            --   eos_token_ids = [151664, 151659, 151660, 151661, 151662, 151663, 151645, 151643]
+            --   eos_token_ids = [ 151643, 151645, 151659, 151660, 151661, 151662, 151663, 151664 ]
             -- https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel-fim.py
-            --   eos_token_ids = [151659, 151661, 151662, 151663, 151664, 151643, 151645]
+            --   eos_token_ids = [ 151643, 151645, 151659, 151661, 151662, 151663, 151664 ]
 
 
         },
