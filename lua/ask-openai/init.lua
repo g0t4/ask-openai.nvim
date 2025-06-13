@@ -109,6 +109,8 @@ function _module.remove_prediction_triggers()
     pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.pause_stream)
     pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.resume_stream)
     pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.new_prediction)
+
+    are_predictions_running = false
 end
 
 function _module.enable_predictions()
@@ -116,7 +118,6 @@ function _module.enable_predictions()
         return
     end
     register_prediction_triggers()
-    are_predictions_running = true
 end
 
 function _module.disable_predictions()
@@ -124,7 +125,6 @@ function _module.disable_predictions()
         return
     end
     _module.remove_prediction_triggers()
-    are_predictions_running = false
 end
 
 local function trim_null_characters(input)
