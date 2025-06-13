@@ -27,9 +27,7 @@ end
 function M._setup()
     -- FYI underscore in _setup is to indicate this is internal use only, won't hurt if users call it again though
 
-    vim.api.nvim_create_user_command('AskTogglePredictions', function()
-        M.toggle_predictions()
-    end, {})
+    vim.api.nvim_create_user_command('AskTogglePredictions', M.toggle_predictions, {})
 
     vim.api.nvim_create_user_command('AskStatus', function()
         if M.are_predictions_enabled() then
