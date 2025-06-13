@@ -1,3 +1,5 @@
+local local_share = require("ask-openai.config.local_share")
+
 --- ask-openai options
 --- @class AskOpenAIOptions
 --- @field model string
@@ -63,7 +65,7 @@ local default_options = {
 
             provider = "keyless", -- TODO set to ? by default
 
-            verbose = true,       -- TODO default to false
+            verbose = true, -- TODO default to false
 
             api_url = nil,
             use_api_ollama = false,
@@ -224,5 +226,5 @@ return {
     get_provider = get_provider,
     get_chat_completions_url = get_chat_completions_url,
     get_validated_bearer_token = get_validated_bearer_token,
-    check = check
+    check = check,
 }
