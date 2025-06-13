@@ -159,13 +159,12 @@ function _module.setup(user_options)
     local lhs = config.get_options().keymaps.cmdline_ask
     if not lhs then
         config.print_verbose("cmdline_ask keymap is disabled, skipping")
-        return
-    end
 
-    -- [e]valuate vimscript expression luaeval("...") which runs nested lua code
-    -- DO NOT SET silent=true, messes up putting result into cmdline, also I wanna see print messages, IIUC that would be affected
-    -- FYI `<C-\>e` is critical in the following, don't remove the `e` and `\\` is to escape the `\` in lua
-    vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai\').ask_openai()")<CR>', { noremap = true, })
+        -- [e]valuate vimscript expression luaeval("...") which runs nested lua code
+        -- DO NOT SET silent=true, messes up putting result into cmdline, also I wanna see print messages, IIUC that would be affected
+        -- FYI `<C-\>e` is critical in the following, don't remove the `e` and `\\` is to escape the `\` in lua
+        vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai\').ask_openai()")<CR>', { noremap = true, })
+    end
 
     _module.enable_predictions()
 
