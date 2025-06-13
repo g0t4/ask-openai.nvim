@@ -237,4 +237,6 @@ function M.lualine()
     }
 end
 
+M.local_share = local_share
+
 return M
