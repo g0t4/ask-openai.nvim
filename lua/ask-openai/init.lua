@@ -154,7 +154,7 @@ end
 
 --- @param user_options AskOpenAIOptions
 function _module.setup(user_options)
-    require("ask-openai.config").setup(user_options)
+    config.setup(user_options)
 
     local lhs = config.get_options().keymaps.cmdline_ask
     if not lhs then
