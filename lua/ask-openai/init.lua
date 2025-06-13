@@ -147,6 +147,7 @@ function M.setup(user_options)
     -- FYI this is called by the plugin consumer... passing their options
     config.setup(user_options)
 
+    -- PRN feels like this belongs in cmdline_ask.setup()
     local lhs = config.get_options().keymaps.cmdline_ask
     if not lhs then
         config.print_verbose("cmdline_ask keymap is disabled, skipping")
@@ -157,6 +158,7 @@ function M.setup(user_options)
         vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai\').ask_openai()")<CR>', { noremap = true, })
     end
 
+    -- PRN feels like this belongs in predictions.setup()
     if config.local_share.is_predictions_enabled() then
         M.start_predictions()
     end
