@@ -4,7 +4,7 @@ local config = require("ask-openai.config")
 
 local are_predictions_running = false
 
-function M.is_predictions_enabled()
+function M.are_predictions_running()
     return are_predictions_running
 end
 

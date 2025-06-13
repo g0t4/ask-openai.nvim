@@ -13,7 +13,7 @@ function M.disable_predictions()
 end
 
 function M.is_enabled()
-    return init.is_predictions_enabled()
+    return init.are_predictions_running()
 end
 
 return M
