@@ -1,10 +1,10 @@
-local _module = {}
+local M = {}
 
 local config = require("ask-openai.config")
 
 local are_predictions_running = false
 
-function _module.is_predictions_enabled()
+function M.is_predictions_enabled()
     -- todo organize top level funcs on a module instead
     return are_predictions_running
 end
@@ -91,7 +91,7 @@ local function register_prediction_triggers()
     are_predictions_running = true
 end
 
-function _module.remove_prediction_triggers()
+function M.remove_prediction_triggers()
     -- FYI pcall blocks error propagation (returns status code, though in this case I don't care about that)
     -- remove event triggers
     pcall(vim.api.nvim_del_augroup_by_name, augroup) -- most del methods will throw if doesn't exist... so just ignore that
@@ -113,18 +113,18 @@ function _module.remove_prediction_triggers()
     are_predictions_running = false
 end
 
-function _module.enable_predictions()
+function M.enable_predictions()
     if are_predictions_running then
         return
     end
     register_prediction_triggers()
 end
 
-function _module.disable_predictions()
+function M.disable_predictions()
     if not are_predictions_running then
         return
     end
-    _module.remove_prediction_triggers()
+    M.remove_prediction_triggers()
 end
 
 local function trim_null_characters(input)
@@ -136,7 +136,7 @@ local function trim_null_characters(input)
     return input:gsub("%z", "")
 end
 
-function _module.ask_openai()
+function M.ask_openai()
     local cmdline = vim.fn.getcmdline()
     print("asking...") -- overwrites showing luaeval("...") in cmdline
 
@@ -149,7 +149,7 @@ function _module.ask_openai()
 end
 
 --- @param user_options AskOpenAIOptions
-function _module.setup(user_options)
+function M.setup(user_options)
     -- FYI this is called by the plugin consumer... passing their options
     config.setup(user_options)
 
@@ -163,11 +163,11 @@ function _module.setup(user_options)
         vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai\').ask_openai()")<CR>', { noremap = true, })
     end
 
-    _module.enable_predictions()
+    M.enable_predictions()
 
     require("ask-openai.rewrites.inline").setup()
     require("ask-openai.questions.ask").setup()
     require("ask-openai.tools.mcp").setup()
 end
 
-return _module
+return M
