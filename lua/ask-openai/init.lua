@@ -173,6 +173,7 @@ function _module.setup(options)
     require("ask-openai.rewrites.inline").setup()
     require("ask-openai.questions.ask").setup()
     require("ask-openai.tools.mcp").setup()
+    require("ask-openai.local_config").setup()
 end
 
 return _module
