@@ -5,7 +5,6 @@ local config = require("ask-openai.config")
 local are_predictions_running = false
 
 function M.is_predictions_enabled()
-    -- todo organize top level funcs on a module instead
     return are_predictions_running
 end
 
