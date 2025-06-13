@@ -14,6 +14,11 @@ end
 
 function M.toggle_predictions()
     local enabled = config.local_share.toggle_predictions()
+    if enabled then
+        init.start_predictions()
+    else
+        init.stop_predictions()
+    end
     print('Ask Predictions ' .. (enabled and 'enabled' or 'disabled'))
 end
 
