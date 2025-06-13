@@ -1,5 +1,7 @@
 local local_share = require("ask-openai.config.local_share")
 
+local M = {}
+
 --- ask-openai options
 --- @class AskOpenAIOptions
 --- @field model string
@@ -87,7 +89,7 @@ local function set_user_options(user_options)
 end
 
 ---@return AskOpenAIOptions
-local function get_options()
+function M.get_options()
     return cached_options
 end
 
@@ -96,7 +98,7 @@ end
 --- @field check fun() # optional
 --- @field get_chat_completions_url fun(): string # optional
 
-local function print_verbose(msg, ...)
+function M.print_verbose(msg, ...)
     if not cached_options.verbose then
         return
     end
@@ -123,15 +125,15 @@ end
 local cached_provider = nil
 
 --- @return Provider
-local function get_provider()
+function M.get_provider()
     if cached_provider == nil then
         cached_provider = _get_provider()
     end
     return cached_provider
 end
 
-local function get_chat_completions_url()
-    local _provider = get_provider()
+function M.get_chat_completions_url()
+    local _provider = M.get_provider()
     if _provider.get_chat_completions_url then
         return _provider.get_chat_completions_url()
     end
@@ -150,7 +152,7 @@ local function get_chat_completions_url()
     end
 end
 
-local function get_key_from_stdout(cmd_string)
+function M.get_key_from_stdout(cmd_string)
     local handle = io.popen(cmd_string)
     if not handle then
         return nil
@@ -165,8 +167,8 @@ local function get_key_from_stdout(cmd_string)
     return api_key
 end
 
-local function get_validated_bearer_token()
-    local bearer_token = get_provider().get_bearer_token()
+function M.get_validated_bearer_token()
+    local bearer_token = M.get_provider().get_bearer_token()
 
     -- TODO can I reuse check() for these same checks? or just remove these and rely on checkhealth alone?
     -- VALIDATION => could push into provider, but especially w/ func provider it's good to do generic validation/tracing across all providers
@@ -174,14 +176,14 @@ local function get_validated_bearer_token()
         return 'Ask failed, bearer_token is nil'
     elseif bearer_token == "" then
         -- don't fail, just add to tracing
-        print_verbose("FYI bearer_token is empty")
+        M.print_verbose("FYI bearer_token is empty")
     end
 
     return bearer_token
 end
 
-local function check()
-    local _provider = get_provider()
+function M.check()
+    local _provider = M.get_provider()
     if _provider.check then
         _provider.check()
     end
@@ -193,7 +195,7 @@ local function check()
         vim.health.error("bearer_token is empty")
     else
         vim.health.ok("bearer_token retrieved")
-        if get_options().verbose then
+        if M.get_options().verbose then
             -- TODO extract mask function and test it, try to submit to plenary? or does plenary have one?
             local len = string.len(bearer_token)
             local num = math.min(5, math.floor(len * 0.07)) -- first and last 7%, max of 5 chars
@@ -209,31 +211,18 @@ local function check()
     end
 
     local options = {
-        chat_url = get_chat_completions_url(),
-        provider_type = get_options().provider,
-        model = get_options().model,
+        chat_url = M.get_chat_completions_url(),
+        provider_type = M.get_options().provider,
+        model = M.get_options().model,
     }
     vim.health.info(vim.inspect(options))
 end
 
-local function setup(user_options)
+function M.setup(user_options)
     set_user_options(user_options)
-    -- TODO MERGE THIS WITH original config  logic...
-    --   right now I am just using this for local_share purposes:
     local_share.setup()
 end
 
--- FYI one drawback of exports at end is that refactor rename requires two renames
--- FYI another drawback is F12 to nav is twice
--- FYI another drawback is order matters whereas with `function M.foo()` it doesn't matter
-return {
-    get_key_from_stdout = get_key_from_stdout,
-    get_options = get_options,
-    print_verbose = print_verbose,
-    get_provider = get_provider,
-    get_chat_completions_url = get_chat_completions_url,
-    get_validated_bearer_token = get_validated_bearer_token,
-    check = check,
-    lualine = local_share.lualine,
-    setup = setup,
-}
+M.lualine = local_share.lualine
+
+return M
