@@ -222,6 +222,21 @@ function M.setup(user_options)
     local_share.setup()
 end
 
-M.lualine = local_share.lualine
+function M.lualine()
+    -- FYI this is an example, copy and modify it to your liking!
+    return {
+        function()
+            -- reference: "󰼇" "󰼈"
+            return '󰼇'
+        end,
+        color = function()
+            local fg_color = ''
+            if not local_share.is_enabled() then
+                fg_color = '#333333'
+            end
+            return { fg = fg_color }
+        end,
+    }
+end
 
 return M

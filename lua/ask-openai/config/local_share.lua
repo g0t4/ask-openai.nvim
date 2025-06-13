@@ -59,23 +59,6 @@ function M.save()
     end
 end
 
-function M.lualine()
-    -- FYI this is an example, copy and modify it to your liking!
-    return {
-        function()
-            -- reference: "󰼇" "󰼈"
-            return '󰼇'
-        end,
-        color = function()
-            local fg_color = ''
-            if not M.is_enabled() then
-                fg_color = '#333333'
-            end
-            return { fg = fg_color }
-        end,
-    }
-end
-
 function M.is_enabled()
     return M.get().enabled
 end
