@@ -154,6 +154,7 @@ end
 
 --- @param user_options AskOpenAIOptions
 function _module.setup(user_options)
+    -- FYI this is called by the plugin consumer... passing their options
     config.setup(user_options)
 
     local lhs = config.get_options().keymaps.cmdline_ask
