@@ -13,7 +13,7 @@ function M.disable_predictions()
 end
 
 function M.is_enabled()
-    return init.are_predictions_running()
+    return config.local_share.is_predictions_enabled()
 end
 
 return M

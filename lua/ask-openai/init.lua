@@ -4,10 +4,6 @@ local config = require("ask-openai.config")
 
 local are_predictions_running = false
 
-function M.are_predictions_running()
-    return are_predictions_running
-end
-
 local augroup = "ask-openai.prediction"
 
 function M.start_predictions()
