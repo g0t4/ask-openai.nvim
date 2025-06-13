@@ -4,11 +4,13 @@ local config = require("ask-openai.config")
 
 function M.enable_predictions()
     config.local_share.set_predictions_enabled()
+    print("Starting Ask Predictions...")
     init.start_predictions()
 end
 
 function M.disable_predictions()
     config.local_share.set_predictions_disabled()
+    print("Stopping Ask Predictions...")
     init.stop_predictions()
 end
 

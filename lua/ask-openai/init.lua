@@ -11,8 +11,6 @@ function M.start_predictions()
         return
     end
 
-    print("Starting Ask Predictions...")
-
     local handlers = require("ask-openai.prediction.handlers")
 
     local predictions = config.get_options().tmp.predictions
@@ -96,8 +94,6 @@ function M.stop_predictions()
     if not are_predictions_running then
         return
     end
-
-    print("Stopping Ask Predictions...")
 
     -- FYI pcall blocks error propagation (returns status code, though in this case I don't care about that)
     -- remove event triggers
