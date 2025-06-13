@@ -154,7 +154,7 @@ function M.setup(user_options)
     end
 
     -- PRN feels like this belongs in predictions.setup()
-    if config.local_share.is_predictions_enabled() then
+    if config.local_share.are_predictions_enabled() then
         M.start_predictions()
     end
 
