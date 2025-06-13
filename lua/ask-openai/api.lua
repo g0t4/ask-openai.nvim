@@ -12,6 +12,10 @@ function M.disable_predictions()
     init.stop_predictions()
 end
 
+function M.toggle_predictions()
+    config.local_share.toggle_predictions()
+end
+
 function M.are_predictions_enabled()
     return config.local_share.are_predictions_enabled()
 end
