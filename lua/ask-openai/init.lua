@@ -152,10 +152,9 @@ function _module.ask_openai()
     return trim_null_characters(result)
 end
 
---- @param options AskOpenAIOptions
-function _module.setup(options)
-    require("ask-openai.config").setup()
-    config.set_user_options(options)
+--- @param user_options AskOpenAIOptions
+function _module.setup(user_options)
+    require("ask-openai.config").setup(user_options)
 
     local lhs = config.get_options().keymaps.cmdline_ask
     if not lhs then

@@ -217,6 +217,7 @@ local function check()
 end
 
 local function setup(user_options)
+    set_user_options(user_options)
     -- TODO MERGE THIS WITH original config  logic...
     --   right now I am just using this for local_share purposes:
     local_share.setup()
@@ -227,7 +228,6 @@ end
 -- FYI another drawback is order matters whereas with `function M.foo()` it doesn't matter
 return {
     get_key_from_stdout = get_key_from_stdout,
-    set_user_options = set_user_options,
     get_options = get_options,
     print_verbose = print_verbose,
     get_provider = get_provider,
