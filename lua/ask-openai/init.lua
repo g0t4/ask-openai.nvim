@@ -154,8 +154,8 @@ end
 
 --- @param options AskOpenAIOptions
 function _module.setup(options)
-    -- MAYBE remove setup and let it be implicit? that said I like only wirting up the key if someone calls this
-    config.set_user_options(options) -- MAYBE I can move this out to elsewhere, isn't there a config method for this?
+    require("ask-openai.config").setup()
+    config.set_user_options(options)
 
     local lhs = config.get_options().keymaps.cmdline_ask
     if not lhs then
@@ -173,7 +173,6 @@ function _module.setup(options)
     require("ask-openai.rewrites.inline").setup()
     require("ask-openai.questions.ask").setup()
     require("ask-openai.tools.mcp").setup()
-    require("ask-openai.config").setup()
 end
 
 return _module
