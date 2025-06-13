@@ -11,7 +11,7 @@ end
 
 local augroup = "ask-openai.prediction"
 
-local function register_prediction_triggers()
+local function start_predictions()
     local handlers = require("ask-openai.prediction.handlers")
 
     local predictions = config.get_options().tmp.predictions
@@ -91,7 +91,7 @@ local function register_prediction_triggers()
     are_predictions_running = true
 end
 
-function remove_prediction_triggers()
+function stop_predictions()
     -- FYI pcall blocks error propagation (returns status code, though in this case I don't care about that)
     -- remove event triggers
     pcall(vim.api.nvim_del_augroup_by_name, augroup) -- most del methods will throw if doesn't exist... so just ignore that
@@ -117,14 +117,14 @@ function M.enable_predictions()
     if are_predictions_running then
         return
     end
-    register_prediction_triggers()
+    start_predictions()
 end
 
 function M.disable_predictions()
     if not are_predictions_running then
         return
     end
-    remove_prediction_triggers()
+    stop_predictions()
 end
 
 local function trim_null_characters(input)
