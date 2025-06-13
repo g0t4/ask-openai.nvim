@@ -13,7 +13,7 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
     local request = LastRequest:new(body)
 
     body.stream = true
-    local json = vim.fn.json_encode(body)
+    local json = vim.json.encode(body)
     log:json_info("body:", json)
 
     local options = {
