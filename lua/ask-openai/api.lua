@@ -3,12 +3,12 @@ local init = require("ask-openai")
 local config = require("ask-openai.config")
 
 function M.enable_predictions()
-    config.local_share.set_predictions_on()
+    config.local_share.set_predictions_enabled()
     init.start_predictions()
 end
 
 function M.disable_predictions()
-    config.local_share.set_predictions_off()
+    config.local_share.set_predictions_disabled()
     init.stop_predictions()
 end
 

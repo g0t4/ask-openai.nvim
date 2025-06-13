@@ -54,6 +54,18 @@ local function save()
     end
 end
 
+function M.set_predictions_enabled()
+    local cfg = get()
+    cfg.predictions.enabled = true
+    save()
+end
+
+function M.set_predictions_disabled()
+    local cfg = get()
+    cfg.predictions.enabled = false
+    save()
+end
+
 function M.are_predictions_enabled()
     return get().predictions.enabled
 end
