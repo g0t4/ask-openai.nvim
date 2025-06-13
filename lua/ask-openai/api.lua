@@ -24,4 +24,19 @@ function M.are_predictions_enabled()
     return config.local_share.are_predictions_enabled()
 end
 
+function M._setup()
+    vim.api.nvim_create_user_command('AskTogglePredictions', function()
+        local api = require("ask-openai.api")
+        api.toggle_predictions()
+    end, {})
+
+    vim.api.nvim_create_user_command('AskStatus', function()
+        if M.are_predictions_enabled() then
+            print('Ask predictions enabled')
+        else
+            print('Ask predictions disabled')
+        end
+    end, {})
+end
+
 return M
