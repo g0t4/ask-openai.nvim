@@ -90,9 +90,6 @@ end
 
 ---@return AskOpenAIOptions
 function M.get_options()
-    -- TODO how about throw if setup not called before someone tries to access options?
-    --  and then get rid of using get_options()?
-    --  it s/b config.foo ... NOT config.get_options().foo
     return cached_options
 end
 
