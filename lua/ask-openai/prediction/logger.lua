@@ -24,7 +24,7 @@ end
 function Logger:ensure_file_is_open()
     if not self.file then
         -- data => ~/.local/share/nvim usually
-        local path = vim.fn.stdpath("data") .. "/" .. "ask/" .. self.filename
+        local path = vim.fn.stdpath("data") .. "/" .. "ask-openai/" .. self.filename
         ensure_directory_exists(path)
         self.file = io.open(path, "w")
         if not self.file then

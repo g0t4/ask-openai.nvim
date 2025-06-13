@@ -14,7 +14,7 @@ local OllamaFimBackend = require("ask-openai.prediction.backends.ollama")
 M.current_prediction = nil -- set on module for now, just so I can inspect it easily
 
 -- FYI useful to observe what is happening under hood, run in pane below nvim (don't need to esc and look at :messages)
---    tail -f /Users/wesdemos/.local/share/nvim/ask/ask-predictions.log
+--    tail -f /Users/wesdemos/.local/share/nvim/ask-openai/ask-predictions.log
 local log = require("ask-openai.prediction.logger").predictions()
 
 
