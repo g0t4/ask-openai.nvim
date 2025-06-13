@@ -1,5 +1,9 @@
 local local_share = require("ask-openai.config.local_share")
 
+--- @class Provider
+--- @field get_bearer_token fun(): string
+--- @field check fun() # optional
+--- @field get_chat_completions_url fun(): string # optional
 local M = {}
 
 --- ask-openai options
@@ -92,11 +96,6 @@ end
 function M.get_options()
     return cached_options
 end
-
---- @class Provider
---- @field get_bearer_token fun(): string
---- @field check fun() # optional
---- @field get_chat_completions_url fun(): string # optional
 
 function M.print_verbose(msg, ...)
     if not cached_options.verbose then
