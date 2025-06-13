@@ -13,7 +13,8 @@ function M.disable_predictions()
 end
 
 function M.toggle_predictions()
-    config.local_share.toggle_predictions()
+    local enabled = config.local_share.toggle_predictions()
+    print('Ask Predictions ' .. (enabled and 'enabled' or 'disabled'))
 end
 
 function M.are_predictions_enabled()

@@ -79,8 +79,8 @@ end
 
 function M.setup()
     vim.api.nvim_create_user_command('AskTogglePredictions', function()
-        local state = M.toggle_predictions()
-        print('Ask Predictions ' .. (state and 'enabled' or 'disabled'))
+        local api = require("ask-openai.api")
+        api.toggle_predictions()
     end, {})
 
     vim.api.nvim_create_user_command('AskStatus', function()
