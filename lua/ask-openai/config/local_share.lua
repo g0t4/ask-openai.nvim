@@ -68,7 +68,7 @@ end
 function M.setup()
     vim.api.nvim_create_user_command('AskTogglePredictions', function()
         local state = M.toggle_predictions()
-        print('Predictions ' .. (state and 'enabled' or 'disabled') .. ', please restart nvim to take effect')
+        print('Ask Predictions ' .. (state and 'enabled' or 'disabled'))
     end, {})
 
     vim.api.nvim_create_user_command('AskStatus', function()
