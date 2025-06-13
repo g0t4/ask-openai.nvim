@@ -157,6 +157,7 @@ function M.setup(user_options)
         vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai\').ask_openai()")<CR>', { noremap = true, })
     end
 
+    -- TODO! this should be checked by my new local_share config
     M.start_predictions()
 
     require("ask-openai.rewrites.inline").setup()
