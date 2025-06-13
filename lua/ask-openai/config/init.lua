@@ -215,6 +215,13 @@ local function check()
     }
     vim.health.info(vim.inspect(options))
 end
+
+local function setup(user_options)
+    -- TODO MERGE THIS WITH original config  logic...
+    --   right now I am just using this for local_share purposes:
+    local_share.setup()
+end
+
 -- FYI one drawback of exports at end is that refactor rename requires two renames
 -- FYI another drawback is F12 to nav is twice
 -- FYI another drawback is order matters whereas with `function M.foo()` it doesn't matter
@@ -227,4 +234,6 @@ return {
     get_chat_completions_url = get_chat_completions_url,
     get_validated_bearer_token = get_validated_bearer_token,
     check = check,
+    lualine = local_share.lualine,
+    setup = setup,
 }
