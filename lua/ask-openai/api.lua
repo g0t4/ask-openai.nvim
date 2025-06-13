@@ -2,6 +2,8 @@ local M = {}
 local init = require("ask-openai")
 local config = require("ask-openai.config")
 
+-- FYI uses can add commands if that's what they want, they have the API to do so:
+
 function M.enable_predictions()
     config.local_share.set_predictions_enabled()
     init.start_predictions()
