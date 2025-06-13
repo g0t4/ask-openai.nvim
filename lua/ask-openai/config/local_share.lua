@@ -41,27 +41,27 @@ local function save_config(data)
     end
 end
 
-function M.get()
+local function get()
     if not config then
         config = load_config()
     end
     return config
 end
 
-function M.save()
+local function save()
     if config then
         save_config(config)
     end
 end
 
 function M.is_predictions_enabled()
-    return M.get().predictions.enabled
+    return get().predictions.enabled
 end
 
 function M.toggle_predictions()
-    local cfg = M.get()
+    local cfg = get()
     cfg.predictions.enabled = not cfg.predictions.enabled
-    M.save()
+    save()
     return cfg.predictions.enabled
 end
 
