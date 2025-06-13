@@ -54,15 +54,15 @@ function M.save()
     end
 end
 
-function M.is_enabled()
-    return M.get().enabled
+function M.is_predictions_enabled()
+    return M.get().predictions.enabled
 end
 
 function M.toggle_predictions()
     local cfg = M.get()
-    cfg.enabled = not cfg.enabled
+    cfg.predictions.enabled = not cfg.predictions.enabled
     M.save()
-    return cfg.enabled
+    return cfg.predictions.enabled
 end
 
 function M.setup()
@@ -72,7 +72,7 @@ function M.setup()
     end, {})
 
     vim.api.nvim_create_user_command('AskStatus', function()
-        if M.is_enabled() then
+        if M.is_predictions_enabled() then
             print('Ask predictions enabled')
         else
             print('Ask predictions disabled')

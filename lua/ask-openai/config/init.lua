@@ -231,7 +231,7 @@ function M.lualine()
         end,
         color = function()
             local fg_color = ''
-            if not local_share.is_enabled() then
+            if not local_share.is_predictions_enabled() then
                 fg_color = '#333333'
             end
             return { fg = fg_color }
