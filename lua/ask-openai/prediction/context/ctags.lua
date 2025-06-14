@@ -3,11 +3,14 @@ local messages = require("devtools.messages")
 
 local M = {}
 
+---@return string? file_path
 function M.find_tag_file()
     return "tags"
     -- local result = vim.fn.findfile("tags", vim.fn.getcwd() .. ";")
 end
 
+---@param file_path string
+---@return string[]
 function M.get_tag_lines(file_path)
     local lines = {}
     for line in io.lines(file_path) do
@@ -16,6 +19,11 @@ function M.get_tag_lines(file_path)
     return lines
 end
 
+---@alias ParsedTagLine { tag_name: string, file_name: string, ex_command : string }
+
+---@param lines string[]
+---@param language string
+---@return ParsedTagLine[]
 function M.parse_tag_lines(lines, language)
     return vim.iter(lines)
         -- filter on raw lines
@@ -40,6 +48,8 @@ function M.parse_tag_lines(lines, language)
         :totable()
 end
 
+---@param parsed_lines ParsedTagLine[]
+---@return string
 function M.reassembled_tags(parsed_lines)
     return super_iter(parsed_lines)
         :group_by(function(tag)
@@ -60,31 +70,36 @@ function M.reassembled_tags(parsed_lines)
         :join("\n")
 end
 
-function M.read_and_reassemble(file)
+---@param file_path string
+---@return string tags_reassembled
+function M.read_and_reassemble(file_path)
     return M.reassembled_tags(
         M.parse_tag_lines(
-            M.get_tag_lines(file),
+            M.get_tag_lines(file_path),
             "lua"
         )
     )
 end
 
+---@return string
 function M.get_devtools_tag_lines()
     local devtools_tags = os.getenv("HOME") .. "/repos/github/g0t4/devtools.nvim/tags"
     return M.read_and_reassemble(devtools_tags)
 end
 
+---@return string
+function M.get_this_project_tag_lines()
+    local tags = M.find_tag_file()
+    return M.read_and_reassemble(tags)
+end
+
+---@return string[]
 function M.get_ctag_files()
     return {
         -- todo more than one lib prompts!
         M.get_devtools_tag_lines(),
         M.get_this_project_tag_lines(),
     }
-end
-
-function M.get_this_project_tag_lines()
-    local tags = M.find_tag_file()
-    return M.read_and_reassemble(tags)
 end
 
 function M.dump_this()
