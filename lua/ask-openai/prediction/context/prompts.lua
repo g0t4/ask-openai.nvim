@@ -34,8 +34,11 @@ function M.parse_includes(prompt)
         return cleaned
     end
 
-    includes.cleaned_prompt = clean_prompt(prompt, "/all")
-
+    local cleaned = prompt
+    for _, k in ipairs({ "/yanks", "/all" }) do
+        cleaned = clean_prompt(cleaned, k)
+    end
+    includes.cleaned_prompt = cleaned
 
     return includes
 end
