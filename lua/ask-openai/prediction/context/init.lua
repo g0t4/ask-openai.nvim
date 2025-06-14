@@ -27,39 +27,39 @@ function CurrentContext:new()
 end
 
 function parse_includes(prompt)
-    local include = {
+    local includes = {
         yanks = false,
         commits = false,
     }
     local include_all = (prompt == nil) or (prompt:gmatch("/all") ~= nil)
     if include_all then
-        include.yanks = true
-        include.commits = true
+        includes.yanks = true
+        includes.commits = true
     else
-        include.yanks = (prompt:gmatch("/yank") ~= nil)
-        include.commits = (prompt:gmatch("/commits") ~= nil)
+        includes.yanks = (prompt:gmatch("/yank") ~= nil)
+        includes.commits = (prompt:gmatch("/commits") ~= nil)
     end
 
     -- strip /yank et al from prompt
-    include.cleaned_prompt = prompt:gsub("/all", ""):gsub("/yanks", ""):gsub("/commits", "")
+    includes.cleaned_prompt = prompt:gsub("/all", ""):gsub("/yanks", ""):gsub("/commits", "")
 
-    return include
+    return includes
 end
 
 function CurrentContext:items(prompt)
     local items = {}
-    local include = parse_includes(prompt)
-    if include.yanks then
+    local includes = parse_includes(prompt)
+    if includes.yanks then
         table.insert(items, yanks.get_context_items())
     end
-    if include.commits then
+    if includes.commits then
         table.insert(items, git_diff.get_context_items())
     end
     -- table.insert(items, changelists.get_context_items())
     -- table.insert(items, matching_symbols.get_context_items())
     -- table.insert(items, inspect.get_context_items())
     -- table.insert(items, ctags.get_context_items())
-    items.include = include
+    items.includes = includes
     return items
 end
 
