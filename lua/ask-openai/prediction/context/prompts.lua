@@ -1,7 +1,17 @@
 local M = {}
 
+local function clean_prompt(prompt, command)
+    -- in middle, between whitespace
+    local cleaned = prompt:gsub("(%W)(" .. command .. ")%W", "%1")
+    -- start of string, with whitespace after
+    cleaned = cleaned:gsub("^" .. command .. "%W", "")
+    -- end of string, with whitespace before
+    cleaned = cleaned:gsub("%W" .. command .. "$", "")
+    return cleaned
+end
+
 function M.parse_includes(prompt)
-    function has(command)
+    local function has(command)
         -- in middle, between whitespace
         local found = prompt:find("%W(" .. command .. ")%W")
         -- start of string, with whitespace after
@@ -19,16 +29,6 @@ function M.parse_includes(prompt)
     if not includes.all then
         includes.yanks = has("/yanks")
         includes.commits = has("/commits")
-    end
-
-    function clean_prompt(prompt, command)
-        -- in middle, between whitespace
-        local cleaned = prompt:gsub("(%W)(" .. command .. ")%W", "%1")
-        -- start of string, with whitespace after
-        cleaned = cleaned:gsub("^" .. command .. "%W", "")
-        -- end of string, with whitespace before
-        cleaned = cleaned:gsub("%W" .. command .. "$", "")
-        return cleaned
     end
 
     local cleaned = prompt
