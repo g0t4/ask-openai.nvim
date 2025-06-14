@@ -31,8 +31,8 @@ function parse_includes(prompt)
         yanks = false,
         commits = false,
     }
-    local include_all = (prompt == nil) or (prompt:gmatch("/all") ~= nil)
-    if include_all then
+    includes.all = (prompt == nil) or (prompt:gmatch("/all") ~= nil)
+    if includes.all then
         includes.yanks = true
         includes.commits = true
     else
