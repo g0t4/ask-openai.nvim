@@ -43,7 +43,6 @@ describe("parse_includes", function()
         end)
     end)
     describe("/others", function()
-        -- just add one test per, do not exercise tests of the parsing/stripping
         it("should detect /yanks", function()
             function ensure_detects(command)
                 local includes = prompts.parse_includes("foo /" .. command .. " bar")
@@ -51,6 +50,7 @@ describe("parse_includes", function()
                 assert.are_equal("foo bar", includes.cleaned_prompt)
             end
 
+            -- just add one test per, do not exercise tests of the parsing/stripping
             ensure_detects("yanks")
         end)
     end)
