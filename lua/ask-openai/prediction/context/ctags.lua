@@ -127,16 +127,6 @@ function M.parsed_tag_lines_for_this_lua_project()
     return M.parse_tag_lines(M.get_tag_lines(M.find_tags_for_this_project()), "lua")
 end
 
----@return ParsedTagLine[]
-function M.all_parsed_tag_lines()
-    return super_iter(M.all_reassembled_lua_tags())
-        :map(function(tags)
-            return M.parse_tag_lines(M.get_tag_lines(tags), "lua")
-        end)
-        :concat()
-        :totable()
-end
-
 function M.dump_this()
     messages.ensure_open()
     messages.append(M.reassembled_tags_for_this_lua_project())
