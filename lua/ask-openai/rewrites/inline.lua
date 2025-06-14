@@ -196,7 +196,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         -- model = "deepseek-r1:8b-0528-qwen3-q8_0", -- /nothink doesn't work :(
         --
         -- model = "gemma3:12b-it-q8_0",
-        max_tokens = 4096,
+        max_tokens = 8192,
         temperature = 0.2,
         -- ?? do I need num_ctx (can't recall why I set it - check predicitons code)
         -- options = {
@@ -204,11 +204,11 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         -- }
     }
 
-    local qwen_legacy_body = {
-        model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
-        prompt = system_prompt .. "\n" .. user_message,
-        temperature = 0.2,
-    }
+    -- local qwen_legacy_body = {
+    --     model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
+    --     prompt = system_prompt .. "\n" .. user_message,
+    --     temperature = 0.2,
+    -- }
 
     -- /v1/chat/completions
     -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
