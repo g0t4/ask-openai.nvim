@@ -28,18 +28,18 @@ end
 
 function CurrentContext:items(prompt)
     local items = {}
-    local include = prompts.parse_includes(prompt)
-    if include.yanks then
+    local includes = prompts.parse_includes(prompt)
+    if includes.yanks then
         table.insert(items, yanks.get_context_items())
     end
-    if include.commits then
+    if includes.commits then
         table.insert(items, git_diff.get_context_items())
     end
     -- table.insert(items, changelists.get_context_items())
     -- table.insert(items, matching_symbols.get_context_items())
     -- table.insert(items, inspect.get_context_items())
     -- table.insert(items, ctags.get_context_items())
-    items.includes = include
+    items.includes = includes
     return items
 end
 
