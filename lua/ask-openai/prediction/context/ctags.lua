@@ -92,6 +92,7 @@ function M.find_devtools_tags_file()
     return os.getenv("HOME") .. "/repos/github/g0t4/devtools.nvim/tags"
 end
 
+-- * reassembled entrypoints:
 ---@return string
 function M.reassembled_tags_for_lua_devtools()
     return M.get_reassembled_text(
@@ -113,6 +114,27 @@ function M.all_reassembled_lua_tags()
         M.reassembled_tags_for_lua_devtools(),
         M.reassembled_tags_for_this_lua_project(),
     }
+end
+
+-- * parsed_tag_lines (only) entrypoints:
+---@return ParsedTagLine[]
+function M.parsed_tag_lines_for_lua_devtools()
+    return M.parse_tag_lines(M.get_tag_lines(M.find_devtools_tags_file()), "lua")
+end
+
+---@return ParsedTagLine[]
+function M.parsed_tag_lines_for_this_lua_project()
+    return M.parse_tag_lines(M.get_tag_lines(M.find_tags_for_this_project()), "lua")
+end
+
+---@return ParsedTagLine[]
+function M.all_parsed_tag_lines()
+    return super_iter(M.all_reassembled_lua_tags())
+        :map(function(tags)
+            return M.parse_tag_lines(M.get_tag_lines(tags), "lua")
+        end)
+        :concat()
+        :totable()
 end
 
 function M.dump_this()
