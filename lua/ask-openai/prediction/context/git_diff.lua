@@ -44,6 +44,7 @@ function test()
         messages.divider()
         messages.append(hunk)
     end
+    -- TODO! inject the diffs as context => 1 file per diff? => name file with the "diff --git ..." line? (don't parse it!)
 end
 
 vim.keymap.set("n", "<space>g", test, { silent = true })
