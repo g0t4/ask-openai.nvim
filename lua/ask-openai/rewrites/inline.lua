@@ -199,6 +199,11 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     if context.includes.yanks and context.yanks then
         table.insert(messages, { role = "user", content = context.yanks.content })
     end
+    if context.includes.commits and context.commits then
+        for i, commit in ipairs(context.commits) do
+            table.insert(messages, { role = "user", content = commit.content })
+        end
+    end
 
     table.insert(messages, { role = "user", content = user_message })
 
