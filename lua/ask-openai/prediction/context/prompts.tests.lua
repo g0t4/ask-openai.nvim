@@ -30,22 +30,11 @@ describe("parse_includes", function()
             should_not_detect_slash_all(" /allFoo")
             should_not_detect_slash_all("/allFoo")
         end)
-
         it("'foo/allbar' - in between word is not stripped", function()
-            local at_start = "foo/allbar "
-            local includes = prompts.parse_includes(at_start)
-            assert.is_false(includes.all)
-            assert.are_equal(at_start, includes.cleaned_prompt)
-
-            local at_end = " foo/allbar"
-            local includes = prompts.parse_includes(at_end)
-            assert.is_false(includes.all)
-            assert.are_equal(at_end, includes.cleaned_prompt)
-
-            local in_middle = " foo/allbar "
-            local includes = prompts.parse_includes(in_middle)
-            assert.is_false(includes.all)
-            assert.are_equal(in_middle, includes.cleaned_prompt)
+            should_not_detect_slash_all("foo/allbar ")
+            should_not_detect_slash_all(" foo/allbar ")
+            should_not_detect_slash_all(" foo/allbar")
+            should_not_detect_slash_all("foo/allbar")
         end)
         -- it("'/allbar' - at end of word is not stripped", function()
         --     local includes = prompts.parse_includes("/allbar")
