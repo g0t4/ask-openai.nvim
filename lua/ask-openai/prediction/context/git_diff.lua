@@ -41,7 +41,7 @@ local function git_diff()
     return split_on_diff_headers(diff_output)
 end
 
-function get_context_items()
+function M.get_context_items()
     local files = git_diff()
     local items = {}
     for _, file in ipairs(files) do
