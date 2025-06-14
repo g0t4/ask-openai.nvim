@@ -1,9 +1,9 @@
 local yanks = require("ask-openai.prediction.context.yanks")
--- local ctags = require("ask-openai.prediction.context.ctags")
+local ctags = require("ask-openai.prediction.context.ctags")
 -- local changelists = require("ask-openai.prediction.context.changelists")
 -- local inspect = require("ask-openai.prediction.context.inspect")
 local git_diff = require("ask-openai.prediction.context.git_diff")
--- local matching_symbols = require("ask-openai.prediction.context.matching_symbols")
+local matching_ctags = require("ask-openai.prediction.context.matching_ctags")
 local prompts = require("ask-openai.prediction.context.prompts")
 
 ---@class CurrentContext
@@ -29,10 +29,13 @@ function CurrentContext:items(prompt, always_includes)
     if includes.commits then
         items.commits = git_diff.get_context_items()
     end
-    -- table.insert(items, changelists.get_context_items())
-    -- table.insert(items, matching_symbols.get_context_items())
-    -- table.insert(items, inspect.get_context_items())
-    -- table.insert(items, ctags.get_context_items())
+    -- if includes.ctags then
+    --     items.ctags = ctags.get_context_items()
+    -- end
+    if includes.matching_ctags then
+        items.matching_ctags = matching_ctags.get_context_item()
+    end
+
     items.includes = includes
     items.cleaned_prompt = includes.cleaned_prompt
     return items
@@ -41,7 +44,8 @@ end
 function CurrentContext.setup()
     yanks.setup()
     git_diff.setup()
-
+    ctags.setup()
+    matching_ctags.setup()
     -- changelists.setup()
     -- cocs.setup()
 end

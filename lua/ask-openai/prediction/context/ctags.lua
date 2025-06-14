@@ -1,4 +1,6 @@
 local super_iter = require("devtools.super_iter")
+local messages = require("devtools.messages")
+
 local M = {}
 
 function M.find_tag_file()
@@ -83,6 +85,15 @@ end
 function M.get_this_project_tag_lines()
     local tags = M.find_tag_file()
     return M.read_and_reassemble(tags)
+end
+
+function M.dump_this()
+    messages.ensure_open()
+    messages.append(M.get_this_project_tag_lines())
+end
+
+function M.setup()
+    vim.api.nvim_create_user_command("AskDumpCTags", M.dump_this, {})
 end
 
 return M
