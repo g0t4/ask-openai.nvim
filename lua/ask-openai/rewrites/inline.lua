@@ -7,6 +7,7 @@ local text_helpers = require("ask-openai.helpers.text")
 local thinking = require("ask-openai.rewrites.thinking")
 local Selection = require("ask-openai.helpers.selection")
 local Displayer = require("ask-openai.rewrites.displayer")
+local CurrentContext = require("ask-openai.prediction.context")
 
 local M = {}
 
@@ -173,6 +174,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     local user_message = user_prompt
     if code ~= nil and code ~= "" then
         user_message = user_message
+            -- PRN move code selection to the CurrentContext type?
             .. "\n Here is my code from " .. file_name
             .. ":\n" .. code
         log:info("user_message: '" .. user_message .. "'")
@@ -182,7 +184,8 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             .. "\n I am working on this file: " .. file_name
     end
 
-    -- TODO add in context items? toggle for this?
+    local context = CurrentContext:items(user_prompt)
+    log:info("context: '" .. vim.inspect(context) .. "'")
 
     local qwen_chat_body = {
         messages = {
