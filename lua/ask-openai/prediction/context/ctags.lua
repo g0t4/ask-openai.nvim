@@ -3,8 +3,8 @@ local messages = require("devtools.messages")
 
 local M = {}
 
----@return string? file_path
-function M.find_tag_file()
+---@return string file_path
+function M.find_tags_for_this_project()
     return "tags"
     -- local result = vim.fn.findfile("tags", vim.fn.getcwd() .. ";")
 end
@@ -48,10 +48,10 @@ function M.parse_tag_lines(lines, language)
         :totable()
 end
 
----@param parsed_lines ParsedTagLine[]
+---@param parsed_tag_lines ParsedTagLine[]
 ---@return string
-function M.reassembled_tags(parsed_lines)
-    return super_iter(parsed_lines)
+function M.reassemble_tags(parsed_tag_lines)
+    return super_iter(parsed_tag_lines)
         :group_by(function(tag)
             return tag.file_name
         end)
@@ -71,40 +71,53 @@ function M.reassembled_tags(parsed_lines)
 end
 
 ---@param file_path string
+---@param language string
+---@return ParsedTagLine[]
+function M.get_parsed_tag_lines(file_path, language)
+    return M.parse_tag_lines(
+        M.get_tag_lines(file_path),
+        language
+    )
+end
+
+---@param file_path string
+---@param language string
 ---@return string tags_reassembled
-function M.read_and_reassemble(file_path)
-    return M.reassembled_tags(
-        M.parse_tag_lines(
-            M.get_tag_lines(file_path),
-            "lua"
-        )
+function M.get_reassembled_text(file_path, language)
+    return M.reassemble_tags(M.get_parsed_tag_lines(file_path, language))
+end
+
+---@return string file_path
+function M.find_devtools_tags_file()
+    return os.getenv("HOME") .. "/repos/github/g0t4/devtools.nvim/tags"
+end
+
+---@return string
+function M.reassembled_tags_for_lua_devtools()
+    return M.get_reassembled_text(
+        M.find_devtools_tags_file(),
+        "lua"
     )
 end
 
 ---@return string
-function M.get_devtools_tag_lines()
-    local devtools_tags = os.getenv("HOME") .. "/repos/github/g0t4/devtools.nvim/tags"
-    return M.read_and_reassemble(devtools_tags)
-end
-
----@return string
-function M.get_this_project_tag_lines()
-    local tags = M.find_tag_file()
-    return M.read_and_reassemble(tags)
+function M.reassembled_tags_for_this_lua_project()
+    local tags = M.find_tags_for_this_project()
+    return M.get_reassembled_text(tags, "lua")
 end
 
 ---@return string[]
-function M.get_ctag_files()
+function M.all_reassembled_lua_tags()
     return {
         -- todo more than one lib prompts!
-        M.get_devtools_tag_lines(),
-        M.get_this_project_tag_lines(),
+        M.reassembled_tags_for_lua_devtools(),
+        M.reassembled_tags_for_this_lua_project(),
     }
 end
 
 function M.dump_this()
     messages.ensure_open()
-    messages.append(M.get_this_project_tag_lines())
+    messages.append(M.reassembled_tags_for_this_lua_project())
 end
 
 function M.setup()

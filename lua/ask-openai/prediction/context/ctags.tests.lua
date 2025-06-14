@@ -5,7 +5,7 @@ local should = require("devtools.tests.should")
 describe("integration test tags file", function()
     it("find_tag_file PLACEHOLDER", function()
         -- TODO placeholder for when I need something more sophisticated than just "tags"
-        local file = ctags.find_tag_file()
+        local file = ctags.find_tags_for_this_project()
         should.be_equal("tags", file)
     end)
 
@@ -20,7 +20,7 @@ describe("integration test tags file", function()
         expect(#filtered > 0)
 
         -- dump reassembled to file to inspect manually
-        local reassembled = ctags.reassembled_tags(filtered)
+        local reassembled = ctags.reassemble_tags(filtered)
         local filename = "tmp/reassembled_tags.txt"
         local handle = io.open(filename, "w")
         handle:write(reassembled)
@@ -152,7 +152,7 @@ describe("u-ctags format", function()
                 }
 
                 local tags = ctags.parse_tag_lines(lines, "lua")
-                local assembled = ctags.reassembled_tags(tags)
+                local assembled = ctags.reassemble_tags(tags)
 
                 -- FYI right now I cannot guarantee the order of the two groups is the same
                 --   so I check that either way, the corresponding lines match per group
