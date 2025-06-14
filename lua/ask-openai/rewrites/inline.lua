@@ -182,6 +182,8 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             .. "\n I am working on this file: " .. file_name
     end
 
+    -- TODO add in context items? toggle for this?
+
     local qwen_chat_body = {
         messages = {
             { role = "system", content = system_prompt },
