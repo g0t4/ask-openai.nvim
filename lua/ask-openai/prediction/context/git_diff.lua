@@ -60,11 +60,10 @@ end
 
 function test()
     messages.ensure_open()
-    for _, hunk in pairs(git_diff()) do
+    for _, item in pairs(get_context_items()) do
         messages.divider()
-        messages.append(hunk)
+        messages.append(item)
     end
-    -- TODO! inject the diffs as context => 1 file per diff? => name file with the "diff --git ..." line? (don't parse it!)
 end
 
 function M.setup()
