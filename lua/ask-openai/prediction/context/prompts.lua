@@ -2,7 +2,13 @@ local M = {}
 
 function M.parse_includes(prompt)
     function has(command)
-        local found = prompt:find(command)
+        -- in middle, between whitespace
+        local found = prompt:find("%W(" .. command .. ")%W")
+        -- start of string, with whitespace after
+        found = found or prompt:find("^" .. command .. "%W")
+        -- end of string, with whitespace before
+        found = found or prompt:find("%W" .. command .. "$")
+
         return found ~= nil
     end
 
