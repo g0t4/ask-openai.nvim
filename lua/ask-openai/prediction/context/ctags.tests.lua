@@ -10,7 +10,7 @@ describe("integration test tags file", function()
     end)
 
     it("get_tag_lines", function()
-        local lines = ctags.get_tag_lines("tags")
+        local lines = ctags.read_file_lines("tags")
         local num_tags = #lines -- use for expect which only handles showing primitives (not tables nor operations)
         print("original tag count: " .. tostring(num_tags))
         expect(num_tags > 0)

@@ -11,7 +11,7 @@ end
 
 ---@param file_path string
 ---@return string[]
-function M.get_tag_lines(file_path)
+function M.read_file_lines(file_path)
     local lines = {}
     for line in io.lines(file_path) do
         table.insert(lines, line)
@@ -75,7 +75,7 @@ end
 ---@return ParsedTagLine[]
 function M.get_parsed_tag_lines(file_path, language)
     return M.parse_tag_lines(
-        M.get_tag_lines(file_path),
+        M.read_file_lines(file_path),
         language
     )
 end
@@ -119,12 +119,12 @@ end
 -- * parsed_tag_lines (only) entrypoints:
 ---@return ParsedTagLine[]
 function M.parsed_tag_lines_for_lua_devtools()
-    return M.parse_tag_lines(M.get_tag_lines(M.find_devtools_tags_file()), "lua")
+    return M.parse_tag_lines(M.read_file_lines(M.find_devtools_tags_file()), "lua")
 end
 
 ---@return ParsedTagLine[]
 function M.parsed_tag_lines_for_this_lua_project()
-    return M.parse_tag_lines(M.get_tag_lines(M.find_tags_for_this_project()), "lua")
+    return M.parse_tag_lines(M.read_file_lines(M.find_tags_for_this_project()), "lua")
 end
 
 function M.dump_this()
