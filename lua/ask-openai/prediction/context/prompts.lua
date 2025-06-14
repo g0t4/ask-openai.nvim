@@ -14,12 +14,15 @@ function M.parse_includes(prompt)
         includes.commits = (prompt:find("/commits") ~= nil)
     end
 
-    -- strip /yank et al from prompt
-    includes.cleaned_prompt = prompt:gsub("(%W)(/all)%W", "%1")
-    includes.cleaned_prompt = includes.cleaned_prompt:gsub("^/all%W", "")
-    -- at end with whitespace before:
-    includes.cleaned_prompt = includes.cleaned_prompt:gsub("%W/all$", "")
 
+    function clean_prompt(prompt, command)
+        local cleaned = prompt:gsub("(%W)(" .. command .. ")%W", "%1")
+        cleaned = cleaned:gsub("^" .. command .. "%W", "")
+        cleaned = cleaned:gsub("%W" .. command .. "$", "")
+        return cleaned
+    end
+
+    includes.cleaned_prompt = clean_prompt(prompt, "/all")
 
 
     return includes
