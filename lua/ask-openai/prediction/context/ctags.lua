@@ -4,7 +4,7 @@ local messages = require("devtools.messages")
 local M = {}
 
 ---@return string file_path
-function M.find_tags_for_this_project()
+function M.find_tags_file_for_this_workspace()
     return "tags"
     -- local result = vim.fn.findfile("tags", vim.fn.getcwd() .. ";")
 end
@@ -106,17 +106,17 @@ function M.reassembled_tags_for_lua_devtools()
 end
 
 ---@return string
-function M.reassembled_tags_for_this_lua_project()
-    local tags = M.find_tags_for_this_project()
-    return M.get_reassembled_text(tags, "lua")
+function M.reassembled_tags_for_this_workspace(language)
+    local tags = M.find_tags_file_for_this_workspace()
+    return M.get_reassembled_text(tags, language)
 end
 
 ---@return string[]
-function M.all_reassembled_lua_tags()
+function M.all_reassembled_tags()
     return {
         -- todo more than one lib prompts!
         M.reassembled_tags_for_lua_devtools(),
-        M.reassembled_tags_for_this_lua_project(),
+        M.reassembled_tags_for_this_workspace("lua"),
     }
 end
 
@@ -127,13 +127,23 @@ function M.parsed_tag_lines_for_lua_devtools()
 end
 
 ---@return ParsedTagLine[]
-function M.parsed_tag_lines_for_this_lua_project()
-    return M.parse_tag_lines(M.read_file_lines(M.find_tags_for_this_project()), "lua")
+function M.parsed_tag_lines_for_this_workspace(language)
+    return M.parse_tag_lines(M.read_file_lines(M.find_tags_file_for_this_workspace()), language)
+end
+
+function get_language_for_current_buffer()
+    -- PRN can add logic to map here
+    return vim.bo.filetype
 end
 
 function M.dump_this()
+    -- get current file's type
+    local language = get_language_for_current_buffer()
+
+    messages.header("Parsed lines for `" .. language .. "`")
     messages.ensure_open()
-    messages.append(M.reassembled_tags_for_this_lua_project())
+    messages.append(M.reassembled_tags_for_this_workspace(language))
+    messages.scroll_back_before_last_append()
 end
 
 function M.setup()

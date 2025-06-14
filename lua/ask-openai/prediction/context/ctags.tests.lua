@@ -5,7 +5,7 @@ local should = require("devtools.tests.should")
 describe("integration test tags file", function()
     it("find_tag_file PLACEHOLDER", function()
         -- TODO placeholder for when I need something more sophisticated than just "tags"
-        local file = ctags.find_tags_for_this_project()
+        local file = ctags.find_tags_file_for_this_workspace()
         should.be_equal("tags", file)
     end)
 

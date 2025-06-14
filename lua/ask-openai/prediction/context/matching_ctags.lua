@@ -6,7 +6,7 @@ local ctags = require("ask-openai.prediction.context.ctags")
 local M = {}
 
 function M.filter_ctags_by_word(word)
-    local tags = ctags.all_reassembled_lua_tags()
+    local tags = ctags.all_reassembled_tags()
     local filtered_tags = {}
     for _, tag in ipairs(tags) do
         if tag.tag_name:match(word) then
