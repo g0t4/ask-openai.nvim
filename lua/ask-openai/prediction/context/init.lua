@@ -4,7 +4,7 @@ local changelists = require("ask-openai.prediction.context.changelists")
 local inspect = require("ask-openai.prediction.context.inspect")
 local git_diff = require("ask-openai.prediction.context.git_diff")
 local matching_symbols = require("ask-openai.prediction.context.matching_symbols")
-
+local prompts = require("ask-openai.prediction.context.prompts")
 
 ---@class CurrentContext
 ---@field yanks string
@@ -26,40 +26,20 @@ function CurrentContext:new()
     return instance
 end
 
-function parse_includes(prompt)
-    local includes = {
-        yanks = false,
-        commits = false,
-    }
-    includes.all = (prompt == nil) or (prompt:gmatch("/all") ~= nil)
-    if includes.all then
-        includes.yanks = true
-        includes.commits = true
-    else
-        includes.yanks = (prompt:gmatch("/yank") ~= nil)
-        includes.commits = (prompt:gmatch("/commits") ~= nil)
-    end
-
-    -- strip /yank et al from prompt
-    includes.cleaned_prompt = prompt:gsub("/all", ""):gsub("/yanks", ""):gsub("/commits", "")
-
-    return includes
-end
-
 function CurrentContext:items(prompt)
     local items = {}
-    local includes = parse_includes(prompt)
-    if includes.yanks then
+    local include = prompts.parse_includes(prompt)
+    if include.yanks then
         table.insert(items, yanks.get_context_items())
     end
-    if includes.commits then
+    if include.commits then
         table.insert(items, git_diff.get_context_items())
     end
     -- table.insert(items, changelists.get_context_items())
     -- table.insert(items, matching_symbols.get_context_items())
     -- table.insert(items, inspect.get_context_items())
     -- table.insert(items, ctags.get_context_items())
-    items.includes = includes
+    items.includes = include
     return items
 end
 
