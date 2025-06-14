@@ -58,17 +58,16 @@ function M.get_context_items()
     return items
 end
 
-function test()
+function dump_commits()
     messages.ensure_open()
-    for _, item in pairs(get_context_items()) do
+    for _, item in pairs(M.get_context_items()) do
         messages.divider()
         messages.append(item)
     end
 end
 
 function M.setup()
-    -- TODO when done, remove this
-    vim.keymap.set("n", "<space>g", test, { silent = true })
+    vim.api.nvim_create_user_command("AskDumpCommits", dump_commits, {})
 end
 
 return M
