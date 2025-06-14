@@ -59,6 +59,7 @@ function CurrentContext:items(prompt)
     -- table.insert(items, matching_symbols.get_context_items())
     -- table.insert(items, inspect.get_context_items())
     -- table.insert(items, ctags.get_context_items())
+    items.include = include
     return items
 end
 
