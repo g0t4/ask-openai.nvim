@@ -185,7 +185,8 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     end
 
     local context = CurrentContext:items(user_prompt)
-    log:info("context: '" .. vim.inspect(context) .. "'")
+    -- log:info("context: '" .. vim.inspect(context) .. "'")
+    log:info("includes: '" .. vim.inspect(context.includes) .. "'")
 
     local qwen_chat_body = {
         messages = {
