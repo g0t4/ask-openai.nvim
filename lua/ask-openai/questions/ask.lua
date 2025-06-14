@@ -6,6 +6,7 @@ local agentica = require("ask-openai.backends.models.agentica")
 local ChatWindow = require("ask-openai.questions.chat_window")
 local ChatThread = require("ask-openai.questions.chat_thread")
 local ChatMessage = require("ask-openai.questions.chat_message")
+local ChatParams = require("ask-openai.questions.chat_params")
 local Selection = require("ask-openai.helpers.selection")
 
 local M = {}
@@ -62,7 +63,7 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, conte
     }
 
     ---@type ChatParams
-    local qwen_params = {
+    local qwen_params = ChatParams:new({
 
         -- model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
         model = "devstral:24b-small-2505-q4_K_M",
@@ -76,7 +77,7 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, conte
         --   SEE NOTES about how to set this with env vars / Modelfile instead that can work with openai endpoints (don't have to use /api/generate to fix this issue)
         --   review start logs for n_ctx and during completion it warns if truncated prompt:
         --     level=WARN source=runner.go:131 msg="truncating input prompt" limit=8192 prompt=10552 keep=4 new=8192
-    }
+    })
     -- /v1/chat/completions
     -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
     -- PRN split agentica into messages and params
