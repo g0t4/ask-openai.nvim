@@ -35,6 +35,23 @@ function M.on_yank()
     table.insert(M.yanks, vim.v.event.regcontents)
 end
 
+function get_context_items()
+    if #M.yanks == 0 then
+        return {}
+    end
+
+    local content = "## Recent yanks across all files in the project:\n"
+    for _, yank in ipairs(M.yanks) do
+        content = content .. table.concat(yank, '\n') .. '\n\n'
+    end
+    return {
+        {
+            content = content,
+            filename = "nvim-recent-yanks"
+        }
+    }
+end
+
 function M.get_prompt()
     if #M.yanks == 0 then
         return ""
