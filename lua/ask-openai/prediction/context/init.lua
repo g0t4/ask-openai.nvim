@@ -26,11 +26,19 @@ function CurrentContext:new()
     return instance
 end
 
-function CurrentContext:items()
+function CurrentContext:items(prompt)
     local items = {}
-    table.insert(items, yanks.get_context_items())
+    local include_all = prompt == nil or prompt:gmatch("/all")
+    local include_yanks = prompt:gmatch("/yank") or include_all
+    if include_yanks then
+        table.insert(items, yanks.get_context_items())
+    end
+    local include_commits = prompt:gmatch("/commits") or include_all
+    if include_commits then
+        -- TODO pass param to /diff w/ # commits!?
+        table.insert(items, git_diff.get_context_items())
+    end
     -- table.insert(items, changelists.get_context_items())
-    table.insert(items, git_diff.get_context_items())
     -- table.insert(items, matching_symbols.get_context_items())
     -- table.insert(items, inspect.get_context_items())
     -- table.insert(items, ctags.get_context_items())
