@@ -15,9 +15,9 @@
 local ChatParams = {}
 
 -- FYI mostly use this as a marker interface and put it on hash-lik tables that I new up w/o this ctor
-function ChatParams:new()
+function ChatParams:new(params)
     -- no reason to use this ctor until I have some logic here (i.e. validate)
-    self = setmetatable({}, { __index = ChatParams })
+    self = setmetatable(params, { __index = ChatParams })
     return self
 end
 
