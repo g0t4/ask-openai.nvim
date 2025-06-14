@@ -47,4 +47,5 @@ function test()
     -- TODO! inject the diffs as context => 1 file per diff? => name file with the "diff --git ..." line? (don't parse it!)
 end
 
+-- TODO when done, remove this
 vim.keymap.set("n", "<space>g", test, { silent = true })
