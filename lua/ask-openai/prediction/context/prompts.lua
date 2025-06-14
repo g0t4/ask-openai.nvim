@@ -12,10 +12,10 @@ function M.parse_includes(prompt)
     end
 
     local includes = {
+        all = (prompt == nil) or has("/all"),
         yanks = true,
         commits = true,
     }
-    includes.all = (prompt == nil) or has("/all")
     if not includes.all then
         includes.yanks = has("/yanks")
         includes.commits = has("/commits")
