@@ -196,7 +196,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         -- model = "deepseek-r1:8b-0528-qwen3-q8_0", -- /nothink doesn't work :(
         --
         -- model = "gemma3:12b-it-q8_0",
-        max_tokens = 8192,
+        max_tokens = 8192, -- TODO set high if using /think only?
         temperature = 0.2,
         -- ?? do I need num_ctx (can't recall why I set it - check predicitons code)
         -- options = {

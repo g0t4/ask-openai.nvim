@@ -39,6 +39,10 @@ function parse_includes(prompt)
         include.yanks = (prompt:gmatch("/yank") ~= nil)
         include.commits = (prompt:gmatch("/commits") ~= nil)
     end
+
+    -- strip /yank et al from prompt
+    include.cleaned_prompt = prompt:gsub("/all", ""):gsub("/yanks", ""):gsub("/commits", "")
+
     return include
 end
 
