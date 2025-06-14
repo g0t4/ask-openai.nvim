@@ -8,12 +8,12 @@ describe("parse_includes", function()
             assert.is_true(includes.all, "includes.all should be true for '" .. original_prompt .. "'")
             assert.are_equal(expected_cleaned, includes.cleaned_prompt)
         end
-
         it("'/all' slash command is detected and stripped", function()
             should_detect_slash_all("foo /all bar", "foo bar")
             should_detect_slash_all("/all foo", "foo")
             should_detect_slash_all("foo /all", "foo")
         end)
+
         local function should_not_detect_slash_all(original_prompt)
             local includes = prompts.parse_includes(original_prompt)
             assert.is_false(includes.all, "includes.all should be false for '" .. original_prompt .. "'")
