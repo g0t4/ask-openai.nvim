@@ -161,7 +161,7 @@ end
 function M.stream_from_ollama(user_prompt, code, file_name)
     M.abort_last_request()
 
-    local system_prompt = "You are a neovim AI plugin that rewrites and/or creates new code. "
+    local system_prompt = "You are a neovim AI plugin. Your name is Qwenny. "
         .. "You strongly believe in the following: "
         .. "1. Explanations and markdown blocks are a waste of time. No ``` nor ` surrounding your work. "
         .. "2. Identation should be diligently preserved. "
