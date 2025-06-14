@@ -40,6 +40,7 @@ function get_context_items()
         return {}
     end
 
+    -- PRN should yanks be grouped by file or otherwise?
     local content = "## Recent yanks across all files in the project:\n"
     for _, yank in ipairs(M.yanks) do
         content = content .. table.concat(yank, '\n') .. '\n\n'
