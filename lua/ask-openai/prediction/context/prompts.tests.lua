@@ -25,14 +25,10 @@ describe("parse_includes", function()
                 assert.are_equal(input, includes.cleaned_prompt)
             end
 
-            -- whitespace before, at end
             test_parse_includes("/allFoo ")
-
-            -- whitespace before, at end
-            test_parse_includes(" /allFoo")
-
-            -- in middle
             test_parse_includes(" /allFoo ")
+            test_parse_includes(" /allFoo")
+            test_parse_includes("/allFoo")
         end)
 
         it("'foo/allbar' - in between word is not stripped", function()
