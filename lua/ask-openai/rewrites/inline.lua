@@ -171,6 +171,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         .. "5. If user instructions are ambiguous, it's paramount to ask for clarification. "
         .. "6. Adherence to the user's request is of utmost importance. "
 
+    --TODO! what do I ALWAYS want for rewrites? OR NOTHING?
     local always_includes = { yanks = true }
     local context = CurrentContext:items(user_prompt, always_includes)
     log:info("user_prompt: '" .. user_prompt .. "'")
