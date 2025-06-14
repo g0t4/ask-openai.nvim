@@ -1,19 +1,23 @@
 local M = {}
 
 function M.parse_includes(prompt)
+    function has(command)
+        local found = prompt:find(command)
+        return found ~= nil
+    end
+
     local includes = {
         yanks = false,
         commits = false,
     }
-    includes.all = (prompt == nil) or (prompt:find("/all") ~= nil)
+    includes.all = (prompt == nil) or has("/all")
     if includes.all then
         includes.yanks = true
         includes.commits = true
     else
-        includes.yanks = (prompt:find("/yank") ~= nil)
-        includes.commits = (prompt:find("/commits") ~= nil)
+        includes.yanks = has("/yanks")
+        includes.commits = has("/commits")
     end
-
 
     function clean_prompt(prompt, command)
         local cleaned = prompt:gsub("(%W)(" .. command .. ")%W", "%1")
