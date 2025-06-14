@@ -45,9 +45,13 @@ describe("parse_includes", function()
     describe("/others", function()
         -- just add one test per, do not exercise tests of the parsing/stripping
         it("should detect /yanks", function()
-            local includes = prompts.parse_includes("foo /yanks bar")
-            assert.is_true(includes.yanks, "includes.yanks should be true")
-            assert.are_equal("foo bar", includes.cleaned_prompt)
+            function ensure_detects(command)
+                local includes = prompts.parse_includes("foo /" .. command .. " bar")
+                assert.is_true(includes[command], "includes." .. command .. " should be true")
+                assert.are_equal("foo bar", includes.cleaned_prompt)
+            end
+
+            ensure_detects("yanks")
         end)
     end)
 end)
