@@ -20,8 +20,11 @@ function M.parse_includes(prompt)
     end
 
     function clean_prompt(prompt, command)
+        -- in middle, between whitespace
         local cleaned = prompt:gsub("(%W)(" .. command .. ")%W", "%1")
+        -- start of string, with whitespace after
         cleaned = cleaned:gsub("^" .. command .. "%W", "")
+        -- end of string, with whitespace before
         cleaned = cleaned:gsub("%W" .. command .. "$", "")
         return cleaned
     end
