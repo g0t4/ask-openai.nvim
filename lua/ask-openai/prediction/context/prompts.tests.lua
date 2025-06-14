@@ -20,19 +20,22 @@ describe("parse_includes", function()
         end)
         it("'/allFoo' - in front of word is not stripped", function()
             -- whitespace after, at start
-            local includes = prompts.parse_includes("/allFoo ")
+            local at_start = "/allFoo "
+            local includes = prompts.parse_includes(at_start)
             assert.is_false(includes.all)
-            assert.are_equal("/allFoo ", includes.cleaned_prompt)
+            assert.are_equal(at_start, includes.cleaned_prompt)
 
             -- whitespace before, at end
-            local includes = prompts.parse_includes(" /allFoo")
+            local at_end = " /allFoo"
+            local includes = prompts.parse_includes(at_end)
             assert.is_false(includes.all)
-            assert.are_equal(" /allFoo", includes.cleaned_prompt)
+            assert.are_equal(at_end, includes.cleaned_prompt)
 
             -- in middle
-            local includes = prompts.parse_includes(" /allFoo ")
+            local in_middle = " /allFoo "
+            local includes = prompts.parse_includes(in_middle)
             assert.is_false(includes.all)
-            assert.are_equal(" /allFoo ", includes.cleaned_prompt)
+            assert.are_equal(in_middle, includes.cleaned_prompt)
         end)
         it("'foo/allbar' - in between word is not stripped", function()
             local at_start = "foo/allbar "
