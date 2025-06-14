@@ -52,6 +52,7 @@ describe("parse_includes", function()
 
             -- just add one test per, do not exercise tests of the parsing/stripping
             ensure_detects("yanks")
+            ensure_detects("commits")
         end)
     end)
 end)
