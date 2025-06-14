@@ -2,6 +2,7 @@ local yanks = require("ask-openai.prediction.context.yanks")
 local ctags = require("ask-openai.prediction.context.ctags")
 local changelists = require("ask-openai.prediction.context.changelists")
 local inspect = require("ask-openai.prediction.context.inspect")
+local git_diff = require("ask-openai.prediction.context.git_diff")
 
 ---@class CurrentContext
 ---@field yanks string
