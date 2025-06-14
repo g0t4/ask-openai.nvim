@@ -5,6 +5,7 @@ local messages = require("devtools.messages")
 --
 -- THEN, I think I should split on filename and break each into its own file_sep
 --
+local M = {}
 
 local function split_on_diff_headers(diff_output)
     local hunks = {}
@@ -47,5 +48,9 @@ function test()
     -- TODO! inject the diffs as context => 1 file per diff? => name file with the "diff --git ..." line? (don't parse it!)
 end
 
--- TODO when done, remove this
-vim.keymap.set("n", "<space>g", test, { silent = true })
+function M.setup()
+    -- TODO when done, remove this
+    vim.keymap.set("n", "<space>g", test, { silent = true })
+end
+
+return M

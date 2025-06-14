@@ -26,6 +26,8 @@ end
 
 function CurrentContext.setup()
     yanks.setup()
+    git_diff.setup()
+
     -- changelists.setup()
     -- cocs.setup()
 end
