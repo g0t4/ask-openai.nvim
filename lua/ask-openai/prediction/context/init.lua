@@ -26,16 +26,29 @@ function CurrentContext:new()
     return instance
 end
 
+function parse_includes(prompt)
+    local include = {
+        yanks = false,
+        commits = false,
+    }
+    local include_all = (prompt == nil) or (prompt:gmatch("/all") ~= nil)
+    if include_all then
+        include.yanks = true
+        include.commits = true
+    else
+        include.yanks = (prompt:gmatch("/yank") ~= nil)
+        include.commits = (prompt:gmatch("/commits") ~= nil)
+    end
+    return include
+end
+
 function CurrentContext:items(prompt)
     local items = {}
-    local include_all = prompt == nil or prompt:gmatch("/all")
-    local include_yanks = prompt:gmatch("/yank") or include_all
-    if include_yanks then
+    local include = parse_includes(prompt)
+    if include.yanks then
         table.insert(items, yanks.get_context_items())
     end
-    local include_commits = prompt:gmatch("/commits") or include_all
-    if include_commits then
-        -- TODO pass param to /diff w/ # commits!?
+    if include.commits then
         table.insert(items, git_diff.get_context_items())
     end
     -- table.insert(items, changelists.get_context_items())
