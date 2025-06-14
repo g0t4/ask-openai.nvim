@@ -57,8 +57,8 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, conte
 
     ---@type ChatMessage[]
     local qwen_messages = {
-        { role = "system", content = system_prompt },
-        { role = "user",   content = user_message },
+        ChatMessage:new("system", system_prompt),
+        ChatMessage:new("user", user_message),
     }
 
     ---@type ChatParams
