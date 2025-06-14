@@ -50,6 +50,8 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, conte
             .. "```"
     end
 
+    -- TODO add in other context items? toggles for these? yes! actually lets do like /foo and see if I like that
+
     -- show initial question
     M.chat_window:append("**system**:\n" .. system_prompt .. "\n\n**user**:\n" .. user_message)
 
