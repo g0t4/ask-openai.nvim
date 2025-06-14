@@ -19,10 +19,10 @@ describe("parse_includes", function()
             assert.are_equal("foo", includes.cleaned_prompt)
         end)
 
-        local function should_not_detect_slash_all(input)
-            local includes = prompts.parse_includes(input)
+        local function should_not_detect_slash_all(original_prompt)
+            local includes = prompts.parse_includes(original_prompt)
             assert.is_false(includes.all)
-            assert.are_equal(input, includes.cleaned_prompt)
+            assert.are_equal(original_prompt, includes.cleaned_prompt)
         end
         it("'/allFoo' - in front of word is not stripped", function()
             should_not_detect_slash_all("/allFoo ")
