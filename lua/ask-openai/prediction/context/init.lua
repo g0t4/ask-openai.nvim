@@ -26,6 +26,17 @@ function CurrentContext:new()
     return instance
 end
 
+function CurrentContext:items()
+    local items = {}
+    table.insert(items, yanks.get_context_items())
+    -- table.insert(items, changelists.get_context_items())
+    table.insert(items, git_diff.get_context_items())
+    -- table.insert(items, matching_symbols.get_context_items())
+    -- table.insert(items, inspect.get_context_items())
+    -- table.insert(items, ctags.get_context_items())
+    return items
+end
+
 function CurrentContext.setup()
     yanks.setup()
     git_diff.setup()
