@@ -17,8 +17,8 @@ describe("qwen2.5-coder", function()
         local request = {
             prefix = "foo\nthe\nprefix",
             suffix = "bar\nbaz",
-            current_context = {
-                yanks = "yanks",
+            context = {
+                yanks = { filename = "nvim-recent-yanks.txt", content = "yanks" },
             },
             get_current_file_path = function()
                 return "path/to/current.lua"
@@ -60,8 +60,8 @@ describe("starcoder2", function()
             -- TODO add type def for this request/backend/builder type
             prefix = "foo\nthe\nprefix",
             suffix = "bar\nbaz",
-            current_context = {
-                yanks = "yanks",
+            context = {
+                yanks = { filename = "nvim-recent-yanks.txt", content = "yanks" },
             },
             get_current_file_path = function()
                 return "path/to/current.lua"
@@ -128,8 +128,8 @@ describe("mellum", function()
             -- TODO add type def for this request/backend/builder type
             prefix = "foo\nthe\nprefix",
             suffix = "bar\nbaz",
-            current_context = {
-                yanks = "yanks",
+            context = {
+                yanks = { filename = "nvim-recent-yanks.txt", content = "yanks" },
             },
             get_current_file_path = function()
                 return "path/to/current.lua"

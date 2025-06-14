@@ -1,45 +1,34 @@
 local yanks = require("ask-openai.prediction.context.yanks")
-local ctags = require("ask-openai.prediction.context.ctags")
-local changelists = require("ask-openai.prediction.context.changelists")
-local inspect = require("ask-openai.prediction.context.inspect")
+-- local ctags = require("ask-openai.prediction.context.ctags")
+-- local changelists = require("ask-openai.prediction.context.changelists")
+-- local inspect = require("ask-openai.prediction.context.inspect")
 local git_diff = require("ask-openai.prediction.context.git_diff")
-local matching_symbols = require("ask-openai.prediction.context.matching_symbols")
+-- local matching_symbols = require("ask-openai.prediction.context.matching_symbols")
 local prompts = require("ask-openai.prediction.context.prompts")
 
 ---@class CurrentContext
----@field yanks string
----@field edits string
+---@field yanks ContextItem
+---@field commits ContextItem[]
+---@field includes { yanks: boolean?, commits: boolean?, [string]: any }
+---@field cleaned_prompt string
 local CurrentContext = {}
 
 ---@return CurrentContext
-function CurrentContext:new()
-    local instance = {
-        yanks = yanks:get_prompt(),
-        edits = "",
-        -- FYI just comment out to disable:
-        -- ctags_files = ctags:get_ctag_files(),
-        --   TODO how about target only currently imported files and their tags only... that would be tiny
-        --    and maybe a list of require examples to make it easy to add a new import?
-        --    OR, most frequently used tags? within the project
-    }
-    setmetatable(instance, { __index = self })
-    return instance
-end
-
 function CurrentContext:items(prompt)
     local items = {}
     local includes = prompts.parse_includes(prompt)
     if includes.yanks then
-        table.insert(items, yanks.get_context_items())
+        items.yanks = yanks.get_context_item()
     end
     if includes.commits then
-        table.insert(items, git_diff.get_context_items())
+        items.commits = git_diff.get_context_items()
     end
     -- table.insert(items, changelists.get_context_items())
     -- table.insert(items, matching_symbols.get_context_items())
     -- table.insert(items, inspect.get_context_items())
     -- table.insert(items, ctags.get_context_items())
     items.includes = includes
+    items.cleaned_prompt = includes.cleaned_prompt
     return items
 end
 

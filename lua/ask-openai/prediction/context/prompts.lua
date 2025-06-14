@@ -11,6 +11,8 @@ local function clean_prompt(prompt, command)
 end
 
 function M.parse_includes(prompt)
+    prompt = prompt or ""
+
     local function has(command)
         -- in middle, between whitespace
         local found = prompt:find("%W(" .. command .. ")%W")
@@ -22,7 +24,7 @@ function M.parse_includes(prompt)
     end
 
     local includes = {
-        all = (prompt == nil) or has("/all"),
+        all = (prompt == "") or has("/all"),
         yanks = true,
         commits = true,
     }

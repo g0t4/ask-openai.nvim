@@ -171,7 +171,12 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         .. "5. If user instructions are ambiguous, it's paramount to ask for clarification. "
         .. "6. Adherence to the user's request is of utmost importance. "
 
-    local user_message = user_prompt
+    local context = CurrentContext:items(user_prompt)
+    -- log:info("context: '" .. vim.inspect(context) .. "'")
+    log:info("includes: '" .. vim.inspect(context.includes) .. "'")
+
+    -- make sure to remove slash commands like /yanks (hence cleaned_prompt)
+    local user_message = context.cleaned_prompt
     if code ~= nil and code ~= "" then
         user_message = user_message
             -- PRN move code selection to the CurrentContext type?
@@ -184,15 +189,18 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             .. "\n I am working on this file: " .. file_name
     end
 
-    local context = CurrentContext:items(user_prompt)
-    -- log:info("context: '" .. vim.inspect(context) .. "'")
-    log:info("includes: '" .. vim.inspect(context.includes) .. "'")
+    local messages = {
+        { role = "system", content = system_prompt }
+    }
+
+    if context.includes.yanks and context.yanks then
+        table.insert(messages, { role = "user", content = context.yanks.content })
+    end
+
+    table.insert(messages, { role = "user", content = user_message })
 
     local qwen_chat_body = {
-        messages = {
-            { role = "system", content = system_prompt },
-            { role = "user",   content = user_message },
-        },
+        messages = messages,
         --
         -- model = "qwen2.5-coder:7b-instruct-q8_0",
         model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base"

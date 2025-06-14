@@ -1,11 +1,11 @@
+local ContextItem = require("ask-openai.prediction.context.item")
 -- for now, don't try to track external clipboard copies
 -- yanked text is way more likely to be relevant
 
 local M = {}
 
 function M.print_yanks()
-    local prompt_text = M.get_prompt()
-    print(prompt_text)
+    vim.print(M.get_context_item())
 end
 
 function M.dump_yank_event()
@@ -35,9 +35,10 @@ function M.on_yank()
     table.insert(M.yanks, vim.v.event.regcontents)
 end
 
-function M.get_context_items()
+--- @return ContextItem|nil
+function M.get_context_item()
     if #M.yanks == 0 then
-        return {}
+        return nil
     end
 
     -- PRN should yanks be grouped by file or otherwise?
@@ -45,12 +46,7 @@ function M.get_context_items()
     for _, yank in ipairs(M.yanks) do
         content = content .. table.concat(yank, '\n') .. '\n\n'
     end
-    return {
-        {
-            content = content,
-            filename = "nvim-recent-yanks"
-        }
-    }
+    return ContextItem:new(content, "nvim-recent-yanks.txt")
 end
 
 function M.get_prompt()

@@ -9,7 +9,7 @@ local use_llama_cpp_server = true
 ---@class OllamaFimBackend
 ---@field prefix string
 ---@field suffix string
----@field current_context CurrentContext
+---@field context CurrentContext
 local OllamaFimBackend = {}
 OllamaFimBackend.__index = OllamaFimBackend
 
@@ -20,8 +20,9 @@ function OllamaFimBackend:new(prefix, suffix)
     local instance = {
         prefix = prefix,
         suffix = suffix,
-        current_context = CurrentContext:new(),
+        context = CurrentContext:items() -- this will parse all items... which is fine b/c I decide in FIM prompt builder which to use per model
     }
+    log:info("context: ", vim.inspect(self.context))
     setmetatable(instance, self)
     return instance
 end

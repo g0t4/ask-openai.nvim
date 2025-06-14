@@ -69,15 +69,16 @@ function M.qwen25coder.get_fim_prompt(request)
     local repo_name = request:get_repo_name()
     local prompt = tokens.repo_name .. repo_name .. "\n"
 
-    local function append_file_non_fim(file_path, file_contents)
+    --- @param context_item ContextItem
+    local function append_file_non_fim(context_item)
         -- <file_sep>filepath0\ncode0
-        local non_fim_file = tokens.file_sep .. file_path .. "\n" .. file_contents
+        local non_fim_file = tokens.file_sep .. context_item.filename .. "\n" .. context_item.content
         prompt = prompt .. non_fim_file
     end
 
     -- * ctags
-    -- if request.current_context.ctags_files ~= nil then
-    --     local files = request.current_context.ctags_files
+    -- if request.context.ctags_files ~= nil then
+    --     local files = request.context.ctags_files
     --     log:trace("ctags_files sizes: " .. #files[1] .. " " .. #files[2])
     --     -- for _, f in files do
     --     append_file_non_fim("devtools/tags", files[1])
@@ -86,16 +87,14 @@ function M.qwen25coder.get_fim_prompt(request)
     -- end
 
     -- * recent yanks
-    if request.current_context.yanks ~= "" then
-        local file_path = "nvim-recent-yanks.txt"
-        local file_contents = request.current_context.yanks
-        append_file_non_fim(file_path, file_contents)
+    if request.context.includes.yanks and request.context.yanks then
+        -- TODO! run real tests of yanks w/ FIM!
+        append_file_non_fim(request.context.yanks)
     end
-
 
     -- * recent edits
     -- local recent_changes = "Here are some recent lines that were edited by the user: "
-    -- for _, change in pairs(current_context.edits) do
+    -- for _, change in pairs(context.edits) do
     --     local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
     --     -- todo include line/col or not?
     --     -- todo include file?
@@ -245,20 +244,17 @@ function M.mellum.get_fim_prompt(request)
     local repo_name = request.get_repo_name()
     local prompt = tokens.repo_name .. repo_name
 
-    local function append_file_non_fim(file_path, file_contents)
+    --- @param context_item ContextItem
+    local function append_file_non_fim(context_item)
         -- <filename>filepathX\ncodeX
-        local non_fim_file = tokens.file_sep .. file_path .. "\n" .. file_contents
+        local non_fim_file = tokens.file_sep .. context_item.filename .. "\n" .. context_item.content
         prompt = prompt .. non_fim_file
     end
 
     -- * recent yanks
-    if request.current_context.yanks ~= "" then
-        local file_path = "nvim-recent-yanks.txt"
-        local file_contents = request.current_context.yanks
-        append_file_non_fim(file_path, file_contents)
+    if request.context.includes.yanks and request.context.yanks then
+        append_file_non_fim(request.context.yanks)
     end
-
-    -- * TODO recent edits
 
     -- * FIM file
     local current_file_path = request.get_current_file_path()
@@ -329,29 +325,17 @@ function M.starcoder2.get_fim_prompt(request)
     local repo_name = request.get_repo_name()
     local prompt = tokens.repo_name .. repo_name
 
-    local function append_file_non_fim(file_path, file_contents)
+    --- @param context_item ContextItem
+    local function append_file_non_fim(context_item)
         -- <file_sep>filepath0\ncode0
-        local non_fim_file = tokens.file_sep .. file_path .. "\n" .. file_contents
+        local non_fim_file = tokens.file_sep .. context_item.filename .. "\n" .. context_item.content
         prompt = prompt .. non_fim_file
     end
 
     -- * recent yanks
-    if request.current_context.yanks ~= "" then
-        local file_path = "nvim-recent-yanks.txt"
-        local file_contents = request.current_context.yanks
-        append_file_non_fim(file_path, file_contents)
+    if request.context.includes.yanks and request.context.yanks then
+        append_file_non_fim(request.context.yanks)
     end
-
-    -- * recent edits
-    -- local recent_changes = "Here are some recent lines that were edited by the user: "
-    -- for _, change in pairs(current_context.edits) do
-    --     local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
-    --     -- todo include line/col or not?
-    --     -- todo include file?
-    -- end
-    -- TODO append_file_non_fim("nvim-recent-edits.txt", recent_changes)
-    --    TODO one edits file? or group changes PER file? or one file per edit?
-    --    TODO what is the file_path and file_contents (per file) - make it clear
 
     -- * FIM file
     local current_file_path = request.get_current_file_path()
