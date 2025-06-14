@@ -1,4 +1,6 @@
 local messages = require("devtools.messages")
+local ContextItem = require("ask-openai.prediction.context.item")
+
 -- get a combined (per file) diff across X recent commits
 --  exclude some files like uv.lock
 -- git --no-pager diff -p HEAD~10..HEAD -- . ':(exclude)uv.lock'
@@ -37,6 +39,23 @@ local function git_diff()
     messages.append(cmd)
 
     return split_on_diff_headers(diff_output)
+end
+
+function get_context_items()
+    local files = git_diff()
+    local items = {}
+    for _, file in ipairs(files) do
+        local diff_lines = vim.split(file, "\n")
+        -- get the filename from the diff header
+        local file_name = vim.split(diff_lines[1], " ")[3]
+        local diff_text = table.concat(diff_lines, "\n")
+        -- TODO parse the diff into hunks and then each hunk into a ContextItem
+        -- NOTE: the diff is already split into hunks, so we can just use the diff_text
+        --       for each hunk
+        local context_item = ContextItem:new(diff_text, file_name)
+        table.insert(items, context_item)
+    end
+    return items
 end
 
 function test()
