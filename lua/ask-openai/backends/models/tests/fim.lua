@@ -21,7 +21,7 @@ describe("qwen2.5-coder", function()
                 yanks = { filename = "nvim-recent-yanks.txt", content = "yanks" },
                 includes = { yanks = true },
             },
-            get_current_file_path = function()
+            inject_file_path = function()
                 return "path/to/current.lua"
             end,
             get_repo_name = function()
@@ -65,7 +65,7 @@ describe("starcoder2", function()
                 yanks = { filename = "nvim-recent-yanks.txt", content = "yanks" },
                 includes = { yanks = true },
             },
-            get_current_file_path = function()
+            inject_file_path = function()
                 return "path/to/current.lua"
             end,
             get_repo_name = function()
@@ -134,7 +134,7 @@ describe("mellum", function()
                 yanks = { filename = "nvim-recent-yanks.txt", content = "yanks" },
                 includes = { yanks = true },
             },
-            get_current_file_path = function()
+            inject_file_path = function()
                 return "path/to/current.lua"
             end,
             get_repo_name = function()

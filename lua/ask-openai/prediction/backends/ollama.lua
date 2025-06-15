@@ -196,10 +196,8 @@ function OllamaFimBackend:body_for()
     return body_json
 end
 
-function OllamaFimBackend:get_current_file_path()
-    -- TODO which is better?
-    -- local buffer_name = vim.api.nvim_buf_get_name(0)  -- buffer's file path
-    -- or using expand:
+function OllamaFimBackend:inject_file_path()
+    -- FYI this function is a wrapper JUST so I can inject the value in testing
     return files.get_current_file_relative_path()
 end
 
