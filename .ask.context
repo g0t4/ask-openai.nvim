@@ -1,4 +1,0 @@
-Don't forget, any time you see a file path, in lua code... you can turn that into a require call... for example:
-lua/ask-openai/foo/bar.lua => require("ask-openai.foo.bar")
-
-
