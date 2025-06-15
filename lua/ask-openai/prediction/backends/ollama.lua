@@ -2,6 +2,7 @@ local log = require("ask-openai.prediction.logger").predictions()
 local CurrentContext = require("ask-openai.prediction.context")
 local fim = require("ask-openai.backends.models.fim")
 local meta = require("ask-openai.backends.models.meta")
+local files = require("ask-openai.prediction.context.helpers.files")
 
 local use_llama_cpp_server = true
 
@@ -198,7 +199,8 @@ end
 function OllamaFimBackend:get_current_file_path()
     -- TODO which is better?
     -- local buffer_name = vim.api.nvim_buf_get_name(0)  -- buffer's file path
-    return vim.fn.expand('%'):match("([^/]+)$")
+    -- or using expand:
+    return files.get_current_file_relative_path()
 end
 
 function OllamaFimBackend:get_repo_name()

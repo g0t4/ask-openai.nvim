@@ -9,6 +9,8 @@ local Selection = require("ask-openai.helpers.selection")
 local Displayer = require("ask-openai.rewrites.displayer")
 local CurrentContext = require("ask-openai.prediction.context")
 local ChatMessage = require("ask-openai.questions.chat_message")
+local files = require("ask-openai.prediction.context.helpers.files")
+
 local M = {}
 
 -- Initialize selection position variables at module level
@@ -325,8 +327,7 @@ local function ask_and_stream_from_ollama(opts)
     -- end
 
     local user_prompt = opts.args
-    local relative_file_path = vim.fn.expand("%:p:.")
-
+    local relative_file_path = files.get_current_file_relative_path()
     -- Store selection details for later use
     M.selection = selection
     M.accumulated_chunks = ""

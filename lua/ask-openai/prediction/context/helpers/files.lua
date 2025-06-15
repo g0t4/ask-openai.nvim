@@ -29,4 +29,9 @@ function M.read_file_string(file_path)
     return content
 end
 
+function M.get_current_file_relative_path()
+    -- returns full path to files outside of PWD
+    return vim.fn.expand("%")
+end
+
 return M

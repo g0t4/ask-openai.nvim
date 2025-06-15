@@ -9,7 +9,7 @@ local ChatMessage = require("ask-openai.questions.chat_message")
 local ChatParams = require("ask-openai.questions.chat_params")
 local Selection = require("ask-openai.helpers.selection")
 local CurrentContext = require("ask-openai.prediction.context")
-
+local files = require("ask-openai.prediction.context.helpers.files")
 
 local M = {}
 require("ask-openai.helpers.buffers")
@@ -37,15 +37,13 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
     if selected_text then
         -- would make sense to fold the code initially
 
-        file_extension = file_name:match("%.(%w+)$") or ""
-
         -- TODO do not wrap in ``` block if the text has ``` in it? i.e. from markdown file
         --    I could easily drop the ``` block part, I just thought it would be nice for display in the chat history (since I use md formatting there)
         --    but AFAICT qwen does perfectly fine w/o it (I didn't have it initially and loved the responses, likely b/c I always had the file name which told the file type)
 
         user_message = user_message .. "\n\n"
-            .. "I selected the following from `" .. file_name .. "`\n"
-            .. "```" .. file_extension .. "\n"
+            .. "I selected the following\n"
+            .. "```" .. file_name .. "\n"
             .. selected_text .. "\n"
             .. "```"
     end
@@ -53,7 +51,7 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
         -- crude, take the whole file :)
         user_message = user_message .. "\n\n"
             .. "And I want you to see the entire file I am asking about:\n"
-            .. "```" .. file_name .. "`\n"
+            .. "```" .. file_name .. "\n"
             .. entire_file .. "\n"
             .. "```"
     end
@@ -134,7 +132,7 @@ local function ask_question_about(opts, use_tools, include_context)
     end
 
     local user_prompt = opts.args
-    local file_name = vim.fn.expand("%:t")
+    local file_name = files.get_current_file_relative_path()
     local context = include_context and buffers.get_current_buffer_entire_text() or nil
 
     M.ensure_response_window_is_open()
@@ -143,7 +141,7 @@ end
 
 local function ask_question(opts, use_tools, include_context)
     local user_prompt = opts.args
-    local file_name = vim.fn.expand("%:t")
+    local file_name = files.get_current_file_relative_path()
     local context = include_context and buffers.get_current_buffer_entire_text() or nil
 
     local selection = nil
