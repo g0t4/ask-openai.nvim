@@ -4,6 +4,7 @@ local matching_ctags = require("ask-openai.prediction.context.matching_ctags")
 local should = require("devtools.tests.should")
 
 describe("matching_ctags", function()
+    -- FYI ALTERNATIVELY... I could create a context provider that also uses ctags (wanna cache in this case at least per request)... and extracts require calls...
     it("requires", function()
         local maps_to = matching_ctags._require_for_file_path("lua/foo/bar.lua")
         should.be_equal(maps_to, "require('foo.bar')")
