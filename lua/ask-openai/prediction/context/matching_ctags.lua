@@ -10,8 +10,8 @@ local ContextItem = require("ask-openai.prediction.context.item")
 local M = {}
 
 ---@return ParsedTagLine[] tag_lines
-function M.filter_ctags_by_word(word)
-    local tags = ctags.parsed_tag_lines_for_this_workspace(ctags.get_language_for_current_buffer())
+function M.filter_ctags_by_word(word, language)
+    local tags = ctags.parsed_tag_lines_for_this_workspace(language)
     local devtools_tags = ctags.parsed_tag_lines_for_lua_devtools()
     tags = vim.list_extend(tags, devtools_tags)
     local filtered_tags = {}
@@ -32,6 +32,7 @@ end
 
 ---@return ContextItem? item
 function M.get_context_item()
+    local language = ctags.get_language_for_current_buffer()
     -- TODO return multiple context items, one per tag file (per project/workspace?)
     -- TODO check if current line is empty? abort before even trying then?
     local word = vim.fn.expand("<cword>")
@@ -53,7 +54,7 @@ function M.get_context_item()
     end
     -- PRN also <cWORD> ? match either?! perhaps if under a token budge?
 
-    return M.get_context_item_for(word)
+    return M.get_context_item_for(word, language)
 end
 
 function M._require_for_file_path(file_path)
@@ -67,12 +68,12 @@ function M._require_for_file_path(file_path)
 end
 
 ---@return ContextItem? item
-function M.get_context_item_for(word)
-    local matches = M.filter_ctags_by_word(word)
+function M.get_context_item_for(word, language)
+    local matches = M.filter_ctags_by_word(word, language)
     -- TODO! instead of file path, how about turn it into a require call!
     -- TODO require equivalents for other languages? (i.e. python imports)
     local file_name_transformer = M._require_for_file_path
-    if ctags.get_language_for_current_buffer() ~= "lua" then
+    if language ~= "lua" then
         file_name_transformer = nil
     end
 
