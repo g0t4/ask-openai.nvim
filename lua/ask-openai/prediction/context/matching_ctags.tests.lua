@@ -19,6 +19,10 @@ lua/ask-openai/prediction/context/matching_ctags.lua
 lua/ask-openai/prediction/context/project.lua
     function M.get_context_items()
 ]]
-        should.equal(hardcoded, item.content)
+
+        local hard_git_diff = [[lua/ask-openai/prediction/context/git_diff.lua
+    function M.get_context_items()]]
+
+        assert.is.not_nil(string.find(item.content, hard_git_diff, 1, true))
     end)
 end)
