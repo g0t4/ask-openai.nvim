@@ -19,6 +19,7 @@ describe("qwen2.5-coder", function()
             suffix = "bar\nbaz",
             context = {
                 yanks = { filename = "nvim-recent-yanks.txt", content = "yanks" },
+                includes = { yanks = true },
             },
             get_current_file_path = function()
                 return "path/to/current.lua"
@@ -62,6 +63,7 @@ describe("starcoder2", function()
             suffix = "bar\nbaz",
             context = {
                 yanks = { filename = "nvim-recent-yanks.txt", content = "yanks" },
+                includes = { yanks = true },
             },
             get_current_file_path = function()
                 return "path/to/current.lua"
@@ -130,6 +132,7 @@ describe("mellum", function()
             suffix = "bar\nbaz",
             context = {
                 yanks = { filename = "nvim-recent-yanks.txt", content = "yanks" },
+                includes = { yanks = true },
             },
             get_current_file_path = function()
                 return "path/to/current.lua"
