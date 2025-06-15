@@ -17,11 +17,16 @@ OllamaFimBackend.__index = OllamaFimBackend
 ---@param suffix string
 ---@return OllamaFimBackend
 function OllamaFimBackend:new(prefix, suffix)
+    local always_includes = {
+        -- yanks = true,
+        -- matching_ctags = true,
+        project = true,
+    }
     local instance = {
         prefix = prefix,
         suffix = suffix,
         -- FYI gonna limit FIM while I test different sources
-        context = CurrentContext:items("", { yanks = true, matching_ctags = true })
+        context = CurrentContext:items("", always_includes)
     }
     setmetatable(instance, self)
     log:info("context: ", vim.inspect(instance.context))
