@@ -1,6 +1,7 @@
 local messages = require("devtools.messages")
 local ctags = require("ask-openai.prediction.context.ctags")
 local log = require("ask-openai.prediction.logger").predictions()
+local ContextItem = require("ask-openai.prediction.context.item")
 
 -- TODO what about context based on the current statement/expression...
 --   like if I type ChatMessage... go get the class for me (its whole file) and include that?!
