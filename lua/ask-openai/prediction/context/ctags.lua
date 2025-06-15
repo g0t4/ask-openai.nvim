@@ -41,13 +41,17 @@ end
 
 ---@param parsed_tag_lines ParsedTagLine[]
 ---@return string
-function M.reassemble_tags(parsed_tag_lines)
+function M.reassemble_tags(parsed_tag_lines, file_name_func)
+    file_name_func = file_name_func or function(tag)
+        return tag.file_name
+    end
+
     return super_iter(parsed_tag_lines)
         :group_by(function(tag)
             return tag.file_name
         end)
         :map(function(key, items)
-            local lines = { key }
+            local lines = { file_name_func(key) }
             for _, tag in ipairs(items) do
                 -- FYI stripping /^ $/ removed 19% of tokens in a test run
                 -- also strip leading spaces... not sure it would be useful anyways (did not analyze savings from that)

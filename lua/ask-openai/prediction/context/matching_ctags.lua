@@ -52,11 +52,21 @@ function M.get_context_item()
     return M.get_context_item_for(word)
 end
 
+function M._require_for_file_path(file_path)
+    -- strip leading lua
+    file_path = file_path:gsub("^lua/", "")
+    -- strip trailing .lua
+    file_path = file_path:gsub("%.lua$", "")
+    -- replace / with .
+    file_path = file_path:gsub("/", ".")
+    return string.format("require('%s')", file_path)
+end
+
 ---@return ContextItem? item
 function M.get_context_item_for(word)
     local matches = M.filter_ctags_by_word(word)
     -- TODO! instead of file path, how about turn it into a require call!
-    local reassembled_content = ctags.reassemble_tags(matches)
+    local reassembled_content = ctags.reassemble_tags(matches, M._require_for_file_path)
     return ContextItem:new(reassembled_content, "tags")
 end
 
