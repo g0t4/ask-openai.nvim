@@ -18,8 +18,8 @@ OllamaFimBackend.__index = OllamaFimBackend
 ---@return OllamaFimBackend
 function OllamaFimBackend:new(prefix, suffix)
     local always_includes = {
-        -- yanks = true,
-        -- matching_ctags = true,
+        yanks = true,
+        matching_ctags = true,
         project = true,
     }
     local instance = {

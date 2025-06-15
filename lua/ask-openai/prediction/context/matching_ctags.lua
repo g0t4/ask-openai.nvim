@@ -47,10 +47,15 @@ function M.get_context_item()
         return nil
     end
     -- PRN also <cWORD> ? match either?! perhaps if under a token budge?
+
+    M.get_context_item_for(word)
+end
+
+---@return ContextItem? item
+function M.get_context_item_for(word)
     local matches = M.filter_ctags_by_word(word)
     -- TODO! instead of file path, how about turn it into a require call!
     local reassembled_content = ctags.reassemble_tags(matches)
-
     return ContextItem:new(reassembled_content, "tags")
 end
 
