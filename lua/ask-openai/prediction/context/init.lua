@@ -5,11 +5,17 @@ local ctags = require("ask-openai.prediction.context.ctags")
 local git_diff = require("ask-openai.prediction.context.git_diff")
 local matching_ctags = require("ask-openai.prediction.context.matching_ctags")
 local prompts = require("ask-openai.prediction.context.prompts")
+local project = require("ask-openai.prediction.context.project")
+
+---@alias IncludeToggles { yanks: boolean, commits: boolean, matching_ctags: boolean, ctags: boolean, commits: boolean }
 
 ---@class CurrentContext
 ---@field yanks ContextItem
 ---@field commits ContextItem[]
----@field includes { yanks: boolean?, commits: boolean?, [string]: any }
+---@field ctags ContextItem
+---@field matching_ctags ContextItem
+---@field project ContextItem
+---@field includes IncludeToggles
 ---@field cleaned_prompt string
 local CurrentContext = {}
 
@@ -23,6 +29,7 @@ function CurrentContext:items(prompt, always_includes)
     includes.yanks = includes.yanks or (always_includes.yanks == true)
     includes.commits = includes.commits or (always_includes.commits == true)
     includes.matching_ctags = includes.matching_ctags or (always_includes.matching_ctags == true)
+    includes.project = includes.project or (always_includes.project == true)
 
     if includes.yanks then
         items.yanks = yanks.get_context_item()
@@ -36,6 +43,9 @@ function CurrentContext:items(prompt, always_includes)
     if includes.matching_ctags then
         items.matching_ctags = matching_ctags.get_context_item()
     end
+    if includes.project then
+        items.project = project.get_context_items()
+    end
 
     items.includes = includes
     items.cleaned_prompt = includes.cleaned_prompt
@@ -47,6 +57,7 @@ function CurrentContext.setup()
     git_diff.setup()
     ctags.setup()
     matching_ctags.setup()
+    project.setup()
     -- changelists.setup()
     -- cocs.setup()
 end

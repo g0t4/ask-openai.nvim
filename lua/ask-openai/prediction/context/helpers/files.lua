@@ -14,4 +14,11 @@ function M.read_file_lines(file_path)
     return lines
 end
 
+function M.read_file_string(file_path)
+    local file = io.open(file_path, "r")
+    local content = file:read("*a")
+    file:close()
+    return content
+end
+
 return M

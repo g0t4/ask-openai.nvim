@@ -35,7 +35,7 @@ function M.on_yank()
     table.insert(M.yanks, vim.v.event.regcontents)
 end
 
---- @return ContextItem|nil
+--- @return ContextItem?
 function M.get_context_item()
     if #M.yanks == 0 then
         return nil
