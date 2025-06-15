@@ -325,7 +325,7 @@ local function ask_and_stream_from_ollama(opts)
     -- end
 
     local user_prompt = opts.args
-    local file_name = vim.fn.expand("%:t")
+    local relative_file_path = vim.fn.expand("%:p:.")
 
     -- Store selection details for later use
     M.selection = selection
@@ -333,7 +333,7 @@ local function ask_and_stream_from_ollama(opts)
     M.displayer = Displayer:new(M.accept_rewrite, M.cleanup_after_cancel)
     M.displayer:set_keymaps()
 
-    M.stream_from_ollama(user_prompt, selection.original_text, file_name)
+    M.stream_from_ollama(user_prompt, selection.original_text, relative_file_path)
 end
 
 function M.handle_request_failed(code)
