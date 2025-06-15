@@ -7,14 +7,23 @@ local matching_ctags = require("ask-openai.prediction.context.matching_ctags")
 local prompts = require("ask-openai.prediction.context.prompts")
 local project = require("ask-openai.prediction.context.project")
 
----@alias IncludeToggles { yanks: boolean, commits: boolean, matching_ctags: boolean, ctags: boolean, commits: boolean }
+---@alias IncludeToggles {
+---  yanks: boolean,
+---  commits: boolean,
+---  ctags: boolean,
+---  matching_ctags: boolean,
+---  project: boolean
+---  git_diff: boolean,
+--- }
 
 ---@class CurrentContext
+---
 ---@field yanks ContextItem
 ---@field commits ContextItem[]
 ---@field ctags ContextItem
 ---@field matching_ctags ContextItem
 ---@field project ContextItem
+---
 ---@field includes IncludeToggles
 ---@field cleaned_prompt string
 local CurrentContext = {}

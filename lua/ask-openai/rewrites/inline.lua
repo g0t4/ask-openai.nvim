@@ -172,8 +172,11 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         .. "6. Adherence to the user's request is of utmost importance. "
 
     --TODO! what do I ALWAYS want for rewrites? OR NOTHING?
-    local always_includes = { yanks = true }
-    local context = CurrentContext:items(user_prompt, always_includes)
+    local always_include = {
+        yanks = true,
+        project = true,
+    }
+    local context = CurrentContext:items(user_prompt, always_include)
     log:info("user_prompt: '" .. user_prompt .. "'")
     -- log:info("context: '" .. vim.inspect(context) .. "'")
     log:info("includes: '" .. vim.inspect(context.includes) .. "'")
@@ -200,9 +203,15 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         table.insert(messages, { role = "user", content = context.yanks.content })
     end
     if context.includes.commits and context.commits then
-        for i, commit in ipairs(context.commits) do
+        for _, commit in pairs(context.commits) do
             table.insert(messages, { role = "user", content = commit.content })
         end
+    end
+    if context.includes.project and context.project then
+        vim.iter(context.project)
+            :each(function(value)
+                table.insert(messages, { role = "user", content = value.content })
+            end)
     end
 
     table.insert(messages, { role = "user", content = user_message })
