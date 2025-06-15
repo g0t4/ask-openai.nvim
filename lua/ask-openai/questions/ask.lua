@@ -447,7 +447,7 @@ function M.follow_up()
         return
     end
 
-    local message = ChatMessage:new_user_message(followup)
+    local message = ChatMessage:user(followup)
     log:trace("message:", message)
     M.thread:add_message(message)
     M.send_messages()
