@@ -14,15 +14,14 @@ function M.filter_ctags_by_word(word)
     local tags = ctags.parsed_tag_lines_for_this_workspace(ctags.get_language_for_current_buffer())
     local devtools_tags = ctags.parsed_tag_lines_for_lua_devtools()
     tags = vim.list_extend(tags, devtools_tags)
-    -- PRN maybe limit tags used by requires, IF there are LOTS of matches, over a token budget?
     local filtered_tags = {}
     for _, tag in ipairs(tags) do
         if tag.tag_name:find(word, 1, true) then
             table.insert(filtered_tags, tag)
         end
     end
-    -- TODO! extract suggested requires by either LSP... or use the tags files! (can hardcode for lua for now)
-    -- just manually build the requires here and insert as neww tag lines
+    -- TODO also match on filename? that means the full file is included b/c every entry would match
+    --  but, if you type local messages => would give require("...")
     return filtered_tags
 end
 
