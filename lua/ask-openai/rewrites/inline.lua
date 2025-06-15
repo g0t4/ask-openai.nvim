@@ -8,7 +8,7 @@ local thinking = require("ask-openai.rewrites.thinking")
 local Selection = require("ask-openai.helpers.selection")
 local Displayer = require("ask-openai.rewrites.displayer")
 local CurrentContext = require("ask-openai.prediction.context")
-
+local ChatMessage = require("ask-openai.questions.chat_message")
 local M = {}
 
 -- Initialize selection position variables at module level
@@ -200,7 +200,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     }
 
     if context.includes.yanks and context.yanks then
-        table.insert(messages, { role = "user", content = context.yanks.content })
+        table.insert(messages, ChatMessage:user(context.yanks.content))
     end
     if context.includes.commits and context.commits then
         for _, commit in pairs(context.commits) do
