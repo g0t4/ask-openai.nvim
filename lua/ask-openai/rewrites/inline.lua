@@ -201,22 +201,24 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         { role = "system", content = system_prompt }
     }
 
+    -- PRN should I just have all of this in a single user message?
+    --  are models trained on multiple user messages at a time?
     if context.includes.yanks and context.yanks then
         table.insert(messages, ChatMessage:user(context.yanks.content))
     end
     if context.includes.commits and context.commits then
         for _, commit in pairs(context.commits) do
-            table.insert(messages, { role = "user", content = commit.content })
+            table.insert(messages, ChatMessage:user(commit.content))
         end
     end
     if context.includes.project and context.project then
         vim.iter(context.project)
             :each(function(value)
-                table.insert(messages, { role = "user", content = value.content })
+                table.insert(messages, ChatMessage:user(value.content))
             end)
     end
 
-    table.insert(messages, { role = "user", content = user_message })
+    table.insert(messages, ChatMessage:user(user_message))
 
     local qwen_chat_body = {
         messages = messages,
