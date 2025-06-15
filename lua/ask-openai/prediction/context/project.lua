@@ -3,7 +3,7 @@
 --  maybe start with a file (per project)...  like tags
 --  could even aggregate these for dependencies too... like tags (ctags)
 local messages = require("devtools.messages")
-local files = require("ask-openai.prediction.context.helpers.files")
+local files = require("ask-openai.helpers.files")
 
 
 local M = {}

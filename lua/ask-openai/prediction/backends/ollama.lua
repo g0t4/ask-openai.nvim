@@ -2,7 +2,7 @@ local log = require("ask-openai.prediction.logger").predictions()
 local CurrentContext = require("ask-openai.prediction.context")
 local fim = require("ask-openai.backends.models.fim")
 local meta = require("ask-openai.backends.models.meta")
-local files = require("ask-openai.prediction.context.helpers.files")
+local files = require("ask-openai.helpers.files")
 
 local use_llama_cpp_server = true
 

@@ -1,6 +1,6 @@
 local super_iter = require("devtools.super_iter")
 local messages = require("devtools.messages")
-local files = require("ask-openai.prediction.context.helpers.files")
+local files = require("ask-openai.helpers.files")
 
 local M = {}
 

@@ -9,7 +9,7 @@ local Selection = require("ask-openai.helpers.selection")
 local Displayer = require("ask-openai.rewrites.displayer")
 local CurrentContext = require("ask-openai.prediction.context")
 local ChatMessage = require("ask-openai.questions.chat_message")
-local files = require("ask-openai.prediction.context.helpers.files")
+local files = require("ask-openai.helpers.files")
 
 local M = {}
 
