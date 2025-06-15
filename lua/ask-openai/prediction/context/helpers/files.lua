@@ -1,4 +1,4 @@
-local messages = require("devtools.messages")
+local log = require("ask-openai.prediction.logger").predictions()
 
 local M = {}
 
@@ -6,7 +6,7 @@ local M = {}
 ---@return string[]
 function M.read_file_lines(file_path)
     if vim.fn.filereadable(file_path) == 0 then
-        messages.append("read_file_lines failed to read: " .. tostring(file_path) .. " does not exist!")
+        log:info("read_file_lines failed to read: " .. tostring(file_path) .. " does not exist!")
         return {}
     end
     local lines = {}
@@ -20,7 +20,7 @@ end
 ---@return string?
 function M.read_file_string(file_path)
     if vim.fn.filereadable(file_path) == 0 then
-        messages.append("read_file_string failed to read: " .. tostring(file_path) .. " does not exist!")
+        log:info("read_file_string failed to read: " .. tostring(file_path) .. " does not exist!")
         return nil
     end
     local file = io.open(file_path, "r")
