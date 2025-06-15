@@ -177,9 +177,9 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         project = true,
     }
     local context = CurrentContext:items(user_prompt, always_include)
-    log:info("user_prompt: '" .. user_prompt .. "'")
+    -- log:info("user_prompt: '" .. user_prompt .. "'")
     -- log:info("context: '" .. vim.inspect(context) .. "'")
-    log:info("includes: '" .. vim.inspect(context.includes) .. "'")
+    -- log:info("includes: '" .. vim.inspect(context.includes) .. "'")
 
     -- make sure to remove slash commands like /yanks (hence cleaned_prompt)
     local user_message = context.cleaned_prompt

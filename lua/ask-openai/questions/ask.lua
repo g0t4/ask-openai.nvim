@@ -8,12 +8,14 @@ local ChatThread = require("ask-openai.questions.chat_thread")
 local ChatMessage = require("ask-openai.questions.chat_message")
 local ChatParams = require("ask-openai.questions.chat_params")
 local Selection = require("ask-openai.helpers.selection")
+local CurrentContext = require("ask-openai.prediction.context")
+
 
 local M = {}
 require("ask-openai.helpers.buffers")
 
 
-function M.send_question(user_prompt, selected_text, file_name, use_tools, context)
+function M.send_question(user_prompt, selected_text, file_name, use_tools, entire_file)
     use_tools = use_tools or false
 
     M.abort_last_request()
@@ -25,6 +27,11 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, conte
         -- devstral is hesitant to use tools w/o this:
         system_prompt = system_prompt .. " You also have a set of tools you can use."
     end
+    local always_include = {
+        yanks = true,
+        project = true,
+    }
+    local context = CurrentContext:items(user_prompt, always_include)
 
     local user_message = user_prompt
     if selected_text then
@@ -42,12 +49,12 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, conte
             .. selected_text .. "\n"
             .. "```"
     end
-    if context then
+    if entire_file then
         -- crude, take the whole file :)
         user_message = user_message .. "\n\n"
             .. "And I want you to see the entire file I am asking about:\n"
             .. "```" .. file_name .. "`\n"
-            .. context .. "\n"
+            .. entire_file .. "\n"
             .. "```"
     end
 
@@ -57,10 +64,11 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, conte
     M.chat_window:append("**system**:\n" .. system_prompt .. "\n\n**user**:\n" .. user_message)
 
     ---@type ChatMessage[]
-    local qwen_messages = {
+    local messages = {
         ChatMessage:new("system", system_prompt),
-        ChatMessage:new("user", user_message),
     }
+
+    table.insert(messages, ChatMessage:new("user", user_message))
 
     ---@type ChatParams
     local qwen_params = ChatParams:new({
@@ -94,7 +102,7 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, conte
         qwen_params.tools = mcp.openai_tools()
     end
 
-    M.thread = ChatThread:new(qwen_messages, qwen_params, base_url)
+    M.thread = ChatThread:new(messages, qwen_params, base_url)
     M.send_messages()
 end
 
