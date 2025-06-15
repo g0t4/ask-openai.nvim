@@ -40,6 +40,7 @@ function M.parse_tag_lines(lines, language)
 end
 
 ---@param parsed_tag_lines ParsedTagLine[]
+---@param file_name_func fun(tag: ParsedTagLine) -> string
 ---@return string
 function M.reassemble_tags(parsed_tag_lines, file_name_func)
     file_name_func = file_name_func or function(tag)

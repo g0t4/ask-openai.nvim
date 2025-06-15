@@ -70,7 +70,13 @@ end
 function M.get_context_item_for(word)
     local matches = M.filter_ctags_by_word(word)
     -- TODO! instead of file path, how about turn it into a require call!
-    local reassembled_content = ctags.reassemble_tags(matches, M._require_for_file_path)
+    -- TODO require equivalents for other languages? (i.e. python imports)
+    local file_name_transformer = M._require_for_file_path
+    if ctags.get_language_for_current_buffer() ~= "lua" then
+        file_name_transformer = nil
+    end
+
+    local reassembled_content = ctags.reassemble_tags(matches, file_name_transformer)
     return ContextItem:new(reassembled_content, "tags")
 end
 
