@@ -196,8 +196,7 @@ function OllamaFimBackend:body_for()
     return body_json
 end
 
-function OllamaFimBackend:inject_file_path()
-    -- FYI this function is a wrapper JUST so I can inject the value in testing
+function OllamaFimBackend:inject_file_path_test_seam()
     return files.get_current_file_relative_path()
 end
 
