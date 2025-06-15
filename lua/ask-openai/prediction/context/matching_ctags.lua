@@ -16,7 +16,7 @@ function M.filter_ctags_by_word(word)
     -- PRN maybe limit tags used by requires, IF there are LOTS of matches, over a token budget?
     local filtered_tags = {}
     for _, tag in ipairs(tags) do
-        if tag.tag_name:match(word) then
+        if tag.tag_name:find(word, 1, true) then
             table.insert(filtered_tags, tag)
         end
     end
@@ -48,7 +48,7 @@ function M.get_context_item()
     end
     -- PRN also <cWORD> ? match either?! perhaps if under a token budge?
 
-    M.get_context_item_for(word)
+    return M.get_context_item_for(word)
 end
 
 ---@return ContextItem? item
