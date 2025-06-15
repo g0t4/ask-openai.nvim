@@ -17,6 +17,9 @@ end
 function M.get_context_items()
     local file_path = M.find_ask_context_file_for_this_project()
     local file_contents = files.read_file_string(file_path)
+    if file_contents == nil then
+        return {}
+    end
     -- PRN add other sources, i.e. a dependency
     return { ContextItem:new(file_contents, file_path) }
 end

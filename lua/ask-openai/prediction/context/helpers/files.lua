@@ -1,10 +1,12 @@
+local messages = require("devtools.messages")
+
 local M = {}
 
 ---@param file_path string
 ---@return string[]
 function M.read_file_lines(file_path)
     if vim.fn.filereadable(file_path) == 0 then
-        vim.notify("read_file_lines failed to read: " .. tostring(file_path) .. " does not exist!")
+        messages.append("read_file_lines failed to read: " .. tostring(file_path) .. " does not exist!")
         return {}
     end
     local lines = {}
@@ -14,7 +16,13 @@ function M.read_file_lines(file_path)
     return lines
 end
 
+---@param file_path string
+---@return string?
 function M.read_file_string(file_path)
+    if vim.fn.filereadable(file_path) == 0 then
+        messages.append("read_file_string failed to read: " .. tostring(file_path) .. " does not exist!")
+        return nil
+    end
     local file = io.open(file_path, "r")
     local content = file:read("*a")
     file:close()
