@@ -24,8 +24,8 @@ end
 function M.dump_this()
     local items = M.get_context_items()
     messages.ensure_open()
-    messages.header("Items in project context")
     for _, item in ipairs(items) do
+        messages.header(item.filename)
         messages.append(item.content)
     end
     messages.scroll_back_before_last_append()
