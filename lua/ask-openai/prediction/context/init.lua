@@ -20,16 +20,16 @@ local project = require("ask-openai.prediction.context.project")
 local CurrentContext = {}
 
 ---@return CurrentContext
-function CurrentContext:items(prompt, always_includes)
+function CurrentContext:items(prompt, always_include)
     local items = {}
     local includes = prompts.parse_includes(prompt)
 
     -- allow override to force include context items
-    always_includes = always_includes or {}
-    includes.yanks = includes.yanks or (always_includes.yanks == true)
-    includes.commits = includes.commits or (always_includes.commits == true)
-    includes.matching_ctags = includes.matching_ctags or (always_includes.matching_ctags == true)
-    includes.project = includes.project or (always_includes.project == true)
+    always_include = always_include or {}
+    includes.yanks = includes.yanks or (always_include.yanks == true)
+    includes.commits = includes.commits or (always_include.commits == true)
+    includes.matching_ctags = includes.matching_ctags or (always_include.matching_ctags == true)
+    includes.project = includes.project or (always_include.project == true)
 
     if includes.yanks then
         items.yanks = yanks.get_context_item()
