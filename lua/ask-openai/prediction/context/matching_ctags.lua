@@ -28,8 +28,7 @@ end
 ---@return ContextItem? item
 function M.get_context_item()
     -- TODO return multiple context items, one per tag file (per project/workspace?)
-    -- TODO! review for completeness
-    -- TODO check if current line is empty? abort before even trying then? OR should I just return full ctags on empty lines?
+    -- TODO check if current line is empty? abort before even trying then?
     local word = vim.fn.expand("<cword>")
     --
     -- if empty, then get word before
@@ -42,12 +41,14 @@ function M.get_context_item()
         word = before_cursor:match("([%w_]+)$")
     end
     if word == nil then
+        -- TODO OR should I just return full ctags on empty lines?
         -- i.e. on a neww line, nothing's gonna match!
         log:info("no word at cursor, or before... skipping matching_ctags")
         return nil
     end
     -- PRN also <cWORD> ? match either?! perhaps if under a token budge?
     local matches = M.filter_ctags_by_word(word)
+    -- TODO! instead of file path, how about turn it into a require call!
     local reassembled_content = ctags.reassemble_tags(matches)
 
     return ContextItem:new(reassembled_content, "tags")
