@@ -1,5 +1,6 @@
 local super_iter = require("devtools.super_iter")
 local messages = require("devtools.messages")
+local files = require("ask-openai.prediction.context.helpers.files")
 
 local M = {}
 
@@ -7,20 +8,6 @@ local M = {}
 function M.find_tags_file_for_this_workspace()
     return "tags"
     -- local result = vim.fn.findfile("tags", vim.fn.getcwd() .. ";")
-end
-
----@param file_path string
----@return string[]
-function M.read_file_lines(file_path)
-    if vim.fn.filereadable(file_path) == 0 then
-        vim.notify("read_file_lines failed to read: " .. tostring(file_path) .. " does not exist!")
-        return {}
-    end
-    local lines = {}
-    for line in io.lines(file_path) do
-        table.insert(lines, line)
-    end
-    return lines
 end
 
 ---@alias ParsedTagLine { tag_name: string, file_name: string, ex_command : string }
@@ -78,7 +65,7 @@ end
 ---@param language string
 ---@return ParsedTagLine[]
 function M.get_parsed_tag_lines(file_path, language)
-    return M.parse_tag_lines(M.read_file_lines(file_path), language)
+    return M.parse_tag_lines(files.read_file_lines(file_path), language)
 end
 
 ---@param file_path string
@@ -125,12 +112,12 @@ end
 -- * parsed_tag_lines (only) entrypoints:
 ---@return ParsedTagLine[]
 function M.parsed_tag_lines_for_lua_devtools()
-    return M.parse_tag_lines(M.read_file_lines(M.find_devtools_tags_file()), "lua")
+    return M.parse_tag_lines(files.read_file_lines(M.find_devtools_tags_file()), "lua")
 end
 
 ---@return ParsedTagLine[]
 function M.parsed_tag_lines_for_this_workspace(language)
-    return M.parse_tag_lines(M.read_file_lines(M.find_tags_file_for_this_workspace()), language)
+    return M.parse_tag_lines(files.read_file_lines(M.find_tags_file_for_this_workspace()), language)
 end
 
 function M.get_language_for_current_buffer()
