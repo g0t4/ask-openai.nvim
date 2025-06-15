@@ -68,6 +68,20 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
         ChatMessage:new("system", system_prompt),
     }
 
+    if context.includes.yanks and context.yanks then
+        table.insert(messages, ChatMessage:new("user", context.yanks.content))
+    end
+    if context.includes.commits and context.commits then
+        for _, commit in pairs(context.commits) do
+            table.insert(messages, ChatMessage:new("user", commit.content))
+        end
+    end
+    if context.includes.project and context.project then
+        for _, value in pairs(context.project) do
+            table.insert(messages, ChatMessage:new("user", value.content))
+        end
+    end
+
     table.insert(messages, ChatMessage:new("user", user_message))
 
     ---@type ChatParams
