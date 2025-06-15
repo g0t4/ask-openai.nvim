@@ -88,8 +88,14 @@ function M.qwen25coder.get_fim_prompt(request)
 
     -- * recent yanks
     if request.context.includes.yanks and request.context.yanks then
-        -- TODO! run real tests of yanks w/ FIM!
+        -- TODO! capture some EVAL examples with yanks in real completions that were useful
         append_file_non_fim(request.context.yanks)
+    end
+
+    -- * matching_ctags
+    if request.context.includes.matching_ctags and request.context.matching_ctags then
+        -- TODO! capture some EVAL examples with matching_ctags too
+        append_file_non_fim(request.context.matching_ctags)
     end
 
     -- * recent edits

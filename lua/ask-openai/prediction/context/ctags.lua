@@ -78,10 +78,7 @@ end
 ---@param language string
 ---@return ParsedTagLine[]
 function M.get_parsed_tag_lines(file_path, language)
-    return M.parse_tag_lines(
-        M.read_file_lines(file_path),
-        language
-    )
+    return M.parse_tag_lines(M.read_file_lines(file_path), language)
 end
 
 ---@param file_path string
@@ -111,13 +108,18 @@ function M.reassembled_tags_for_this_workspace(language)
     return M.get_reassembled_text(tags, language)
 end
 
+-- TODO fix ctags context to use this new all_reassembled_tags method
 ---@return string[]
 function M.all_reassembled_tags()
-    return {
+    local language = M.get_language_for_current_buffer()
+    local reassembeds = {
         -- todo more than one lib prompts!
-        M.reassembled_tags_for_lua_devtools(),
-        M.reassembled_tags_for_this_workspace("lua"),
+        M.reassembled_tags_for_this_workspace(language),
     }
+    if language == "lua" then
+        table.insert(reassembeds, M.reassembled_tags_for_lua_devtools())
+    end
+    return reassembeds
 end
 
 -- * parsed_tag_lines (only) entrypoints:
@@ -131,14 +133,14 @@ function M.parsed_tag_lines_for_this_workspace(language)
     return M.parse_tag_lines(M.read_file_lines(M.find_tags_file_for_this_workspace()), language)
 end
 
-function get_language_for_current_buffer()
+function M.get_language_for_current_buffer()
     -- PRN can add logic to map here
     return vim.bo.filetype
 end
 
 function M.dump_this()
     -- get current file's type
-    local language = get_language_for_current_buffer()
+    local language = M.get_language_for_current_buffer()
 
     messages.header("Parsed lines for `" .. language .. "`")
     messages.ensure_open()

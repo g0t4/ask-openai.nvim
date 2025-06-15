@@ -20,10 +20,11 @@ function OllamaFimBackend:new(prefix, suffix)
     local instance = {
         prefix = prefix,
         suffix = suffix,
-        context = CurrentContext:items() -- this will parse all items... which is fine b/c I decide in FIM prompt builder which to use per model
+        -- FYI gonna limit FIM while I test different sources
+        context = CurrentContext:items("", { yanks = true, matching_ctags = true })
     }
-    log:info("context: ", vim.inspect(self.context))
     setmetatable(instance, self)
+    log:info("context: ", vim.inspect(instance.context))
     return instance
 end
 

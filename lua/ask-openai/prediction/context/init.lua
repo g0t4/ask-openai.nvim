@@ -22,12 +22,13 @@ function CurrentContext:items(prompt, always_includes)
     always_includes = always_includes or {}
     includes.yanks = includes.yanks or (always_includes.yanks == true)
     includes.commits = includes.commits or (always_includes.commits == true)
+    includes.matching_ctags = includes.matching_ctags or (always_includes.matching_ctags == true)
 
     if includes.yanks then
         items.yanks = yanks.get_context_item()
     end
     if includes.commits then
-        items.commits = git_diff.get_context_items()
+        -- items.commits = git_diff.get_context_items()
     end
     -- if includes.ctags then
     --     items.ctags = ctags.get_context_items()
