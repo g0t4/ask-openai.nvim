@@ -4,16 +4,10 @@ local matching_ctags = require("ask-openai.prediction.context.matching_ctags")
 local should = require("devtools.tests.should")
 
 describe("matching_ctags", function()
-
-    -- FYI ALTERNATIVES for REQUIRES:
-    -- separtely distill all requires into a list (not filtered)
-    -- OR, match current word on file name too and include the file name (not items though, me thinks, or yes all items?)
-
     it("requires", function()
         local maps_to = matching_ctags._require_for_file_path("lua/foo/bar.lua")
         should.be_equal(maps_to, "require('foo.bar')")
     end)
-
 
     it("get_context_item()", function()
         local item = matching_ctags.get_context_item_for("get_context_items")
@@ -42,5 +36,18 @@ require('ask-openai.prediction.context.git_diff')
 lua/ask-openai/prediction/context/git_diff.lua
     function M.get_context_items()]]
         -- assert.is.not_nil(string.find(item.content, hard_git_diff, 1, true))
+    end)
+
+    -- FYI ALTERNATIVES for REQUIRES:
+    -- separtely distill all requires into a list (not filtered)
+    it("matches on file_name too", function()
+        local item = matching_ctags.get_context_item_for("messages")
+        vim.print(item.content)
+
+        local hard_git_diff_with_require = [[
+require('devtools.messages')]]
+        -- FYI end of [[]] needs to not have extra newlines / chars
+
+        assert.is.not_nil(string.find(item.content, hard_git_diff_with_require, 1, true))
     end)
 end)

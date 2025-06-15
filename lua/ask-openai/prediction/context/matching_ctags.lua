@@ -16,12 +16,17 @@ function M.filter_ctags_by_word(word)
     tags = vim.list_extend(tags, devtools_tags)
     local filtered_tags = {}
     for _, tag in ipairs(tags) do
-        if tag.tag_name:find(word, 1, true) then
+        if tag.tag_name:find(word, 1, true)
+            -- match on file name too! just try it (would include all items then)
+            -- think `local messages<PAUSE>` => would then have require("devtools.messages") in its tags file
+            or tag.file_name:find(word, 1, true)
+        -- TODO if this is too much, I could match separately and ONLY include the require call
+        -- FYI reliable way to test is to go to top and type local and a few chars of the variable name for the module (i.e. local cta<PAUSE>)
+        --   if you finish the word and go on to = then it won't see the variable name as the current word, no longer
+        then
             table.insert(filtered_tags, tag)
         end
     end
-    -- TODO also match on filename? that means the full file is included b/c every entry would match
-    --  but, if you type local messages => would give require("...")
     return filtered_tags
 end
 
