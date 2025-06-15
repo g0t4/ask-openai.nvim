@@ -88,7 +88,8 @@ function M.qwen25coder.get_fim_prompt(request)
 
     if request.context.includes.project and request.context.project then
         -- TODO! capture some EVAL examples with project in real completions that were useful
-        append_file_non_fim(request.context.project)
+        vim.iter(request.context.project)
+            :each(append_file_non_fim)
     end
 
     -- * recent edits
