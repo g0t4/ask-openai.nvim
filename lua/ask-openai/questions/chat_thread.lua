@@ -1,3 +1,5 @@
+local log = require('ask-openai.prediction.logger').predictions()
+
 -- @class ChatThread
 -- @see https://platform.openai.com/docs/api-reference/chat/create
 -- @field messages ChatMessage[]
@@ -55,6 +57,17 @@ function ChatThread:next_body()
     -- return body so it can be modified by backend (i.e. stream vs not)
     -- backend will serialize as is needed
     return body
+end
+
+function ChatThread:dump()
+    log:info("ChatThread:dump", vim.inspect(self.messages))
+
+    local texts = { "ChatThread:dump" }
+    for _, message in ipairs(self.messages) do
+        table.insert(texts, message:dump_text())
+    end
+
+    log:info(table.concat(texts, "\n"))
 end
 
 return ChatThread

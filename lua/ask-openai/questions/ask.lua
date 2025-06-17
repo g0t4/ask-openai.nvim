@@ -227,6 +227,8 @@ function M.handle_messages_updated()
         return
     end
 
+    -- TODO toggle to expand what is displayed (i.e. hidden messages), tool definitions?
+
     local new_lines = {}
     for _, message in ipairs(M.thread.last_request.messages) do
         -- TODO extract a message formatter to build the lines below
@@ -451,6 +453,14 @@ function M.follow_up()
     M.send_messages()
 end
 
+function ask_dump_thread()
+    if not M.thread then
+        print("no thread to dump")
+        return
+    end
+    M.thread:dump()
+end
+
 function M.setup()
     -- explicitly ask to use tools (vs not)... long term I hope to remove this need
     --    but, using smaller models its probably wise to control when they are allowed to use tools
@@ -475,6 +485,8 @@ function M.setup()
     vim.keymap.set('n', '<leader>ao', M.ensure_response_window_is_open, { noremap = true })
     vim.keymap.set('n', '<leader>aa', M.abort_last_request, { noremap = true })
     vim.keymap.set('n', '<leader>af', M.follow_up, { noremap = true })
+
+    vim.api.nvim_create_user_command("AskDumpThread", ask_dump_thread, {})
 
     -- TODO keymap to clear chat and start new thread, outside of the chat window so I can open it cleared with a new question ??
 end

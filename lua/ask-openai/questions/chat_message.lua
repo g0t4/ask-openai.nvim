@@ -1,3 +1,6 @@
+local log = require('ask-openai.prediction.logger').predictions()
+local ansi = require('ask-openai.prediction.ansi')
+
 ---@class ChatMessage
 ---@field role string
 ---@field content string
@@ -52,6 +55,22 @@ function ChatMessage:add_tool_call_requests(call_request)
         }
     }
     table.insert(self.tool_calls, new_call)
+end
+
+---@return string
+function ChatMessage:dump_text()
+    local lines = {
+        ansi.white_bold(self.role .. ":") .. " " .. self.content,
+    }
+    -- include fields not explicitly in the template above
+    for key, v in pairs(self) do
+        if key ~= "__index" and key ~= "role" and key ~= "content" then
+            local color_key = ansi.yellow(key)
+            local line = string.format("%s: %s", color_key, vim.inspect(v))
+            table.insert(lines, line)
+        end
+    end
+    return table.concat(lines, "\n")
 end
 
 return ChatMessage
