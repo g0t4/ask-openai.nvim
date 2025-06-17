@@ -1,0 +1,3 @@
+# common lua imports
+local log = require('ask-openai.prediction.logger').predictions()
+
