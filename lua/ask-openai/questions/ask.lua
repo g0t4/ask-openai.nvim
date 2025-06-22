@@ -25,7 +25,7 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
 
     if use_tools then
         -- devstral is hesitant to use tools w/o this:
-        system_prompt = system_prompt .. " You also have a set of tools you can use."
+        system_prompt = system_prompt .. " If the user requests that you use tools, do not refuse."
     end
     local always_include = {
         yanks = true,
