@@ -66,19 +66,19 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
         ChatMessage:new("system", system_prompt),
     }
 
-    if context.includes.yanks and context.yanks then
-        table.insert(messages, ChatMessage:new("user", context.yanks.content))
-    end
-    if context.includes.commits and context.commits then
-        for _, commit in pairs(context.commits) do
-            table.insert(messages, ChatMessage:new("user", commit.content))
-        end
-    end
-    if context.includes.project and context.project then
-        for _, value in pairs(context.project) do
-            table.insert(messages, ChatMessage:new("user", value.content))
-        end
-    end
+    -- if context.includes.yanks and context.yanks then
+    --     table.insert(messages, ChatMessage:new("user", context.yanks.content))
+    -- end
+    -- if context.includes.commits and context.commits then
+    --     for _, commit in pairs(context.commits) do
+    --         table.insert(messages, ChatMessage:new("user", commit.content))
+    --     end
+    -- end
+    -- if context.includes.project and context.project then
+    --     for _, value in pairs(context.project) do
+    --         table.insert(messages, ChatMessage:new("user", value.content))
+    --     end
+    -- end
 
     table.insert(messages, ChatMessage:new("user", user_message))
 
@@ -86,12 +86,13 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
     local qwen_params = ChatParams:new({
 
         -- model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
-        model = "devstral:24b-small-2505-q4_K_M",
+        -- model = "devstral:24b-small-2505-q4_K_M",
         -- model = "devstral:24b-small-2505-q8_0",
-        -- model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base"
+        model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base"
         -- model = "gemma3:12b-it-q8_0", -- btw -base- does terrible here :)
         -- temperature = 0.2, -- TODO what temp?
         -- PRN limit num_predict?
+        -- model = "huggingface.co/lmstudio-community/openhands-lm-32b-v0.1-GGUF:latest", -- qwen fine tuned for SWE
 
         -- FYI - ollama, be careful w/ `num_ctx`, can't set it with OpenAI compat endpoints (whereas can pass with /api/generate)
         --   SEE NOTES about how to set this with env vars / Modelfile instead that can work with openai endpoints (don't have to use /api/generate to fix this issue)
