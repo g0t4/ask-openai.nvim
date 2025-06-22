@@ -31,7 +31,7 @@ end
 local MAX_YANKS = 10
 M.yanks = {}
 function M.on_yank()
-    dump_yank_event()
+    -- dump_yank_event()
     -- ignore if empty
     if vim.v.event.regcontents == nil or #vim.v.event.regcontents == 0 then
         -- TODO what does 0 mean for regcontents?
