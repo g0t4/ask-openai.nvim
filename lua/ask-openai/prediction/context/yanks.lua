@@ -1,15 +1,23 @@
 local ContextItem = require("ask-openai.prediction.context.item")
+local log = require('ask-openai.prediction.logger').predictions()
+
 -- for now, don't try to track external clipboard copies
 -- yanked text is way more likely to be relevant
 
 local M = {}
 
 function M.print_yanks()
-    vim.print(M.get_context_item())
+    local yanks = M.get_context_item()
+    if not yanks then
+        vim.print("nothing yanked")
+        return
+    end
+    log:info("yanks:\n" .. yanks.content)
+    vim.print(yanks.content)
 end
 
 function M.dump_yank_event()
-    print("yanked: " .. vim.inspect(vim.v.event))
+    -- print("yanked: " .. vim.inspect(vim.v.event))
     -- yanked: {
     --   inclusive = false,
     --   operator = "y",
@@ -20,16 +28,17 @@ function M.dump_yank_event()
     -- }
 end
 
-local KEEP_TEN_YANKS = 10
+local MAX_YANKS = 10
 M.yanks = {}
 function M.on_yank()
+    log:info("yanked")
     -- ignore if empty
     if vim.v.event.regcontents == nil or #vim.v.event.regcontents == 0 then
         -- TODO what does 0 mean for regcontents?
         -- ignore empty yanks
         return
     end
-    if #M.yanks >= KEEP_TEN_YANKS then
+    if #M.yanks >= MAX_YANKS then
         table.remove(M.yanks, 1)
     end
     table.insert(M.yanks, vim.v.event.regcontents)
