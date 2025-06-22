@@ -6,18 +6,8 @@ local log = require('ask-openai.prediction.logger').predictions()
 
 local M = {}
 
-function M.print_yanks()
-    local yanks = M.get_context_item()
-    if not yanks then
-        vim.print("nothing yanked")
-        return
-    end
-    log:info("yanks:\n" .. yanks.content)
-    vim.print(yanks.content)
-end
-
-function M.dump_yank_event()
-    -- print("yanked: " .. vim.inspect(vim.v.event))
+local function dump_yank_event()
+    log:info("yanked: " .. vim.inspect(vim.v.event))
     -- yanked: {
     --   inclusive = false,
     --   operator = "y",
@@ -28,10 +18,20 @@ function M.dump_yank_event()
     -- }
 end
 
+function M.print_yanks()
+    local yanks = M.get_context_item()
+    if not yanks then
+        vim.print("nothing yanked")
+        return
+    end
+    log:info("yanks:\n" .. yanks.content)
+    vim.print(yanks.content)
+end
+
 local MAX_YANKS = 10
 M.yanks = {}
 function M.on_yank()
-    log:info("yanked")
+    dump_yank_event()
     -- ignore if empty
     if vim.v.event.regcontents == nil or #vim.v.event.regcontents == 0 then
         -- TODO what does 0 mean for regcontents?
