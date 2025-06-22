@@ -85,14 +85,14 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
     ---@type ChatParams
     local qwen_params = ChatParams:new({
 
-        -- model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
+        -- model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :) -- instruct works at random... seems to be a discrepency in published template and what it was actually trained with? (for tool calls)
         -- model = "devstral:24b-small-2505-q4_K_M",
         -- model = "devstral:24b-small-2505-q8_0",
-        model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base"
+        model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base" # * doing very well
         -- model = "gemma3:12b-it-q8_0", -- btw -base- does terrible here :)
         -- temperature = 0.2, -- TODO what temp?
         -- PRN limit num_predict?
-        -- model = "huggingface.co/lmstudio-community/openhands-lm-32b-v0.1-GGUF:latest", -- qwen fine tuned for SWE
+        -- model = "huggingface.co/lmstudio-community/openhands-lm-32b-v0.1-GGUF:latest", -- qwen fine tuned for SWE ... not doing well... same issue as qwen2.5-coder
 
         -- FYI - ollama, be careful w/ `num_ctx`, can't set it with OpenAI compat endpoints (whereas can pass with /api/generate)
         --   SEE NOTES about how to set this with env vars / Modelfile instead that can work with openai endpoints (don't have to use /api/generate to fix this issue)
