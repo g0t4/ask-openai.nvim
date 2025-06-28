@@ -3,6 +3,8 @@ local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
 local CurrentContext = require("ask-openai.prediction.context")
 local ansi = require("ask-openai.prediction.ansi")
+local rag = require("ask-openai.prediction.context.rag")
+
 
 local OllamaFimBackend = require("ask-openai.prediction.backends.ollama")
 -- TODO rewrite other backends to use new builder pattern (not a big change):
@@ -109,43 +111,6 @@ function M.ask_for_prediction()
 
     local document_prefix, document_suffix = get_prefix_suffix()
 
-    local function query_rag_first()
-        local sock = vim.fn.sockconnect("tcp", "localhost:9999", {
-            on_data = function(_, data)
-                -- TODO how do I ensure ONLY one response?!
-                --  I am getting multiple on_data callbacks... last one is empty though?
-                if data == nil then
-                    log:info("nil data, aborting...")
-                    return
-                end
-                log:info("raw data", vim.inspect(data))
-                data = table.concat(data, "\n")
-                if data ~= "" then
-                    local response = vim.fn.json_decode(data)
-                    local rag_matches = response.matches or {}
-                    log:trace("rag_matches", vim.inspect(rag_matches))
-                    send_fim(rag_matches)
-                end
-            end,
-            rpc = false,
-        })
-
-        local function safe_concat(prefix, suffix, limit)
-            limit = limit or 1500 -- 2000?
-            local half = math.floor(limit / 2)
-
-            local short_prefix = prefix:sub(-half)
-            local short_suffix = suffix:sub(1, half)
-
-            return short_prefix .. "\n<<<FIM>>>\n" .. short_suffix
-        end
-
-        local query = safe_concat(document_prefix, document_suffix)
-        local message = { text = query }
-        local json = vim.fn.json_encode(message)
-        vim.fn.chansend(sock, json .. "\n")
-    end
-
     function send_fim(rag_matches)
         local backend = OllamaFimBackend:new(document_prefix, document_suffix, rag_matches)
         local spawn_curl_options = backend:request_options()
@@ -209,7 +174,7 @@ function M.ask_for_prediction()
         uv.read_start(stderr, spawn_curl_options.on_stderr)
     end
 
-    query_rag_first()
+    rag.query_rag_first(document_prefix, document_suffix, send_fim)
     -- send_fim()
 end
 
