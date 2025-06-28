@@ -62,10 +62,10 @@ def handle_query(query, top_k=3):
 async def handle_client(reader, writer):
     data = await reader.read(4096)
     if not data:
-        print("[INFO] No data received, skipping...")
+        print("[red bold][WARN] No data received, skipping...")
         return
 
-    print(f"[INFO] Received data: {data}")
+    # print(f"[INFO] Received data: {data}")
 
     # TODO failures
     query = json.loads(data)
