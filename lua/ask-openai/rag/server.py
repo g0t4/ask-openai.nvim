@@ -1,7 +1,5 @@
-from contextlib import contextmanager
+import asyncio
 import json
-import os
-import socket
 
 import faiss
 from rich import print
@@ -12,13 +10,12 @@ from timing import Timer
 #   test with:
 # cdr # repo root for tmp dir
 # python3 lua/ask-openai/rag/server.py
-#   TODO make into package if this works out with FIM
+# echo '{"text": "server sent events"}' | socat - TCP:localhost:9999 | jq
+#
+# older unix socket:
 # echo '{"text": "server sent events"}' | socat - UNIX-CONNECT:./tmp/raggy.sock | jq
 
 # TODO! try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
-
-
-
 
 with Timer("importing sentence_transformers"):
     from sentence_transformers import SentenceTransformer
@@ -52,6 +49,7 @@ def handle_query(query, top_k=3):
     q_vec = model.encode([f"query: {query}"], normalize_embeddings=True)\
         .astype("float32")
     # TODO how do I exclude matches in the same file? need to pass file to exclude but then also not query those chunks? do I get top 10 and then take first 3 not the same file?
+    # FAISS search (GIL released)
     scores, ids = index.search(q_vec, top_k)
 
     matches = []
@@ -61,38 +59,31 @@ def handle_query(query, top_k=3):
 
     return {"matches": matches}
 
-@contextmanager
-def unix_socket_server(path):
-    if os.path.exists(path):
-        os.remove(path)
-    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    server.bind(path)
-    server.listen(1)
-    try:
-        yield server
-    finally:
-        server.close()
-        os.remove(path)
+async def handle_client(reader, writer):
+    data = await reader.read(1024)
+    if not data:
+        print("[INFO] No data received, skipping...")
+        return
 
-@contextmanager
-def accept_client(server):
-    conn, _ = server.accept()
-    try:
-        yield conn
-    finally:
-        conn.close()
+    print(f"[INFO] Received data: {data}")
 
-with unix_socket_server("./tmp/raggy.sock") as server:
-    while True:
-        with accept_client(server) as conn:
-            data = conn.recv(8192).decode()
-            if not data:
-                print("[INFO] No data received, skipping...")
-                continue
-            print(f"[INFO] Received data: {data}")
+    # TODO failures
+    query = json.loads(data)
 
-            # TODO failures
-            query = json.loads(data)
+    matches = handle_query(query["text"])
+    writer.write(json.dumps(matches).encode())
 
-            matches = handle_query(query["text"])
-            conn.send(json.dumps(matches).encode())
+    await writer.drain()
+    writer.close()
+    await writer.wait_closed()
+
+async def start_socket_server():
+    server = await asyncio.start_server(handle_client, 'localhost', 9999)
+    async with server:
+        await server.serve_forever()
+
+def main():
+    asyncio.run(start_socket_server())
+
+if __name__ == '__main__':
+    main()
