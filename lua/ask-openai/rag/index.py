@@ -21,7 +21,7 @@ def simple_chunk_file(path, lines_per_chunk=20, overlap=5):
             })
     return chunks
 
-def build_index(source_dir=".", out_dir="rag_index", model_name="intfloat/e5-base-v2"):
+def build_index(source_dir=".", out_dir="./tmp/rag_index", model_name="intfloat/e5-base-v2"):
     model = SentenceTransformer(model_name)
     chunks = []
     for file in Path(source_dir).rglob("*.lua"):

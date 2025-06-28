@@ -3,7 +3,7 @@ import json
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-def query_index(query, index_path="rag_index/vectors.index", chunks_path="rag_index/chunks.json", top_k=3, model_name="intfloat/e5-base-v2"):
+def query_index(query, index_path="./tmp/rag_index/vectors.index", chunks_path="rag_index/chunks.json", top_k=3, model_name="intfloat/e5-base-v2"):
     index = faiss.read_index(index_path)
     with open(chunks_path) as f:
         chunks = json.load(f)
