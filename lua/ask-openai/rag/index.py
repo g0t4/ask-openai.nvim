@@ -3,6 +3,7 @@ import json
 import numpy as np
 from pathlib import Path
 from timing import Timer
+from rich import print
 
 with Timer("Build RAG index"):
     from sentence_transformers import SentenceTransformer
