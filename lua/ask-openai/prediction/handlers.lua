@@ -3,7 +3,7 @@ local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
 local CurrentContext = require("ask-openai.prediction.context")
 local ansi = require("ask-openai.prediction.ansi")
-local rag = require("ask-openai.prediction.context.rag")
+local rag = require("ask-openai.rag.context")
 
 
 local OllamaFimBackend = require("ask-openai.prediction.backends.ollama")
