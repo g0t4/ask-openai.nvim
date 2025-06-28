@@ -204,8 +204,8 @@ function M.ask_for_prediction()
         uv.read_start(stderr, spawn_curl_options.on_stderr)
     end
 
-    -- query_rag_first()
-    send_fim()
+    query_rag_first()
+    -- send_fim()
 end
 
 function M.cancel_current_prediction()
