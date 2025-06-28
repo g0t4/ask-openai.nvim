@@ -66,16 +66,22 @@ async def handle_client(reader, writer):
 
     # print(f"[INFO] Received data: {data}")
 
-    with Timer("Query"):
-        # TODO failures
-        query = json.loads(data)
-
-        matches = handle_query(query["text"])
-        writer.write(json.dumps(matches).encode())
-
+    async def send_message(message):
+        writer.write(json.dumps(message).encode())
         await writer.drain()
         writer.close()
         await writer.wait_closed()
+
+    with Timer("Query"):
+        try:
+            query = json.loads(data)
+        except json.JSONDecodeError:
+            print("[red bold][ERROR] Failed to parse JSON: {data}")
+            await send_message({"failed": True, "error": "Invalid JSON"})
+            return
+
+        response = handle_query(query["text"])
+        await send_message(response)
 
 async def start_socket_server(stop_event: asyncio.Event):
     server = await asyncio.start_server(handle_client, 'localhost', 9999)
