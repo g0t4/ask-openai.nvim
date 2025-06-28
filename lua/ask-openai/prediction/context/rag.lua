@@ -2,7 +2,8 @@ local log = require("ask-openai.prediction.logger").predictions()
 local M = {}
 
 function M.query_rag_first(document_prefix, document_suffix, callback)
-    local sock = vim.fn.sockconnect("tcp", "localhost:9999", {
+    local sock
+    sock = vim.fn.sockconnect("tcp", "localhost:9999", {
         on_data = function(_, data)
             -- TODO how do I ensure ONLY one response?!
             --  I am getting multiple on_data callbacks... last one is empty though?
@@ -13,7 +14,8 @@ function M.query_rag_first(document_prefix, document_suffix, callback)
             log:info("raw data", vim.inspect(data))
             data = table.concat(data, "\n")
             if data == "" then
-                log:info("empty data, aborting...")
+                log:info("empty data, closing socket...")
+                vim.fn.chanclose(sock)
                 return
             end
             local response = vim.fn.json_decode(data)
