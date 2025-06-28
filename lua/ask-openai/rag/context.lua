@@ -36,7 +36,7 @@ function M.query_rag_first(document_prefix, document_suffix, callback)
         rpc = false,
     })
 
-    local function safe_concat(prefix, suffix, limit)
+    local function fim_concat(prefix, suffix, limit)
         limit = limit or 1500 -- 2000?
         local half = math.floor(limit / 2)
 
@@ -46,7 +46,7 @@ function M.query_rag_first(document_prefix, document_suffix, callback)
         return short_prefix .. "\n<<<FIM>>>\n" .. short_suffix
     end
 
-    local query = safe_concat(document_prefix, document_suffix)
+    local query = fim_concat(document_prefix, document_suffix)
     local message = { text = query }
     local json = vim.fn.json_encode(message)
     vim.fn.chansend(sock, json .. "\n")
