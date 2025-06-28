@@ -36,6 +36,7 @@ print()
 # PRN make top_k configurable (or other params)
 def handle_query(query, top_k=3):
 
+    # query: prefix is what the model was trained on (and the documents have passage: prefix)
     q_vec = model.encode([f"query: {query}"], normalize_embeddings=True)\
         .astype("float32")
     scores, ids = index.search(q_vec, top_k)
