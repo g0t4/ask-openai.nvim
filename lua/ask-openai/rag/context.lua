@@ -1,7 +1,14 @@
 local log = require("ask-openai.prediction.logger").predictions()
 local M = {}
-
 function M.query_rag_first(document_prefix, document_suffix, callback)
+    local cwd = vim.fn.getcwd()
+    -- only testing ask-openai project currently
+    local is_ask_openai_dir = cwd:find("ask-openai", 1, true) ~= nil
+    if not is_ask_openai_dir then
+        callback(nil)
+        return
+    end
+
     local sock
     sock = vim.fn.sockconnect("tcp", "localhost:9999", {
         on_data = function(_, data)
