@@ -1,12 +1,24 @@
-import faiss
 import json
-import numpy as np
 from pathlib import Path
-from timing import Timer
+import subprocess
+
+import faiss
+import numpy as np
 from rich import print
+
+from timing import Timer
+
+# constants for subprocess.run for readability
+IGNORE_FAILURE = False
+STOP_ON_FAILURE = True
 
 with Timer("Build RAG index"):
     from sentence_transformers import SentenceTransformer
+
+rag_dir = "./tmp/rag_index"
+model_name = "intfloat/e5-base-v2"
+with Timer(f"Load model {model_name}"):
+    model = SentenceTransformer(model_name)
 
 def simple_chunk_file(path, lines_per_chunk=20, overlap=5):
     chunks = []
@@ -25,20 +37,29 @@ def simple_chunk_file(path, lines_per_chunk=20, overlap=5):
             })
     return chunks
 
-def build_index(source_dir=".", out_dir="./tmp/rag_index", model_name="intfloat/e5-base-v2"):
-    with Timer(f"Load model {model_name}"):
-        model = SentenceTransformer(model_name)
+def find_files_with_fd(source_dir: str, language_extension: str) -> list[Path]:
+    result = subprocess.run(
+        ["fd", f".*\\.{language_extension}$", source_dir, "--absolute-path", "--type", "f"],
+        stdout=subprocess.PIPE,
+        text=True,
+        check=True,
+    )
+    return [Path(line) for line in result.stdout.strip().splitlines()]
+
+def build_index(source_dir=".", language_extension="lua"):
+    print(f"[bold]Building {language_extension} RAG index:")
 
     chunks = []
 
     with Timer("Find files"):
-        lua_files = list(Path(source_dir).rglob("*.lua"))
-        print(f"Found {len(lua_files)} .lua files")
+        files = find_files_with_fd(source_dir, language_extension)
+        print(f"Found {len(files)} {language_extension} files")
+        print(files)
 
     with Timer("Chunk files"):
-        for i, file in enumerate(lua_files):
+        for i, file in enumerate(files):
             if i % 50 == 0 and i > 0:  # Progress update every 50 files
-                print(f"Processed {i}/{len(lua_files)} files...")
+                print(f"Processed {i}/{len(files)} files...")
 
             file_chunks = simple_chunk_file(file)
             chunks.extend(file_chunks)
@@ -56,7 +77,8 @@ def build_index(source_dir=".", out_dir="./tmp/rag_index", model_name="intfloat/
         index = faiss.IndexFlatIP(vecs_np.shape[1])
         index.add(vecs_np)
 
-    Path(out_dir).mkdir(exist_ok=True)
+    out_dir = Path(rag_dir, language_extension)
+    Path(out_dir).mkdir(exist_ok=True, parents=True)
 
     with Timer("Write vectors.index"):
         faiss.write_index(index, f"{out_dir}/vectors.index")
@@ -65,6 +87,12 @@ def build_index(source_dir=".", out_dir="./tmp/rag_index", model_name="intfloat/
         with open(f"{out_dir}/chunks.json", "w") as f:
             json.dump(chunks, f, indent=2)
 
+def trash_indexes(language_extension="lua"):
+    index_path = Path(rag_dir, language_extension)
+    subprocess.run(["trash", index_path], check=IGNORE_FAILURE)
+
 if __name__ == "__main__":
     with Timer("Total indexing time"):
-        build_index()
+        trash_indexes()
+        build_index(language_extension="lua")
+        build_index(language_extension="py")
