@@ -14,13 +14,11 @@ function M.query_rag_first(document_prefix, document_suffix, callback)
     local sock
     sock = vim.fn.sockconnect("tcp", "localhost:9999", {
         on_data = function(_, data)
-            -- TODO how do I ensure ONLY one response?!
-            --  I am getting multiple on_data callbacks... last one is empty though?
             if data == nil then
                 log:info("nil data, aborting...")
                 return
             end
-            log:info("raw rag response", vim.inspect(data))
+            -- log:info("raw rag response", vim.inspect(data))
             data = table.concat(data, "\n")
             if data == "" then
                 -- TODO verify if emtpy indeed is when I want to close the socket?
