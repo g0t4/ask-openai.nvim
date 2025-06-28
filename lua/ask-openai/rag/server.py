@@ -1,13 +1,15 @@
+from contextlib import contextmanager
 import json
-import json
+import os
 import socket
 
 import faiss
 from rich import print
-from sentence_transformers import SentenceTransformer
 
-from contextlib import contextmanager
-import os
+from timing import Timer
+
+with Timer("importing sentence_transformers"):
+    from sentence_transformers import SentenceTransformer
 
 # this is simple and to the point...
 #  can reload data after this alone proves itself!
@@ -16,14 +18,18 @@ import os
 index_path = "./tmp/rag_index/vectors.index"
 chunks_path = "./tmp/rag_index/chunks.json"
 
-index = faiss.read_index(index_path)
-print(f"[INFO] Loaded index {index_path} with {index.ntotal} vectors")
-with open(chunks_path) as f:
-    chunks = json.load(f)
-print(f"[INFO] Loaded {len(chunks)} chunks from {chunks_path}")
+with Timer("Loading index and chunks"):
+    index = faiss.read_index(index_path)
+    print(f"[INFO] Loaded index {index_path} with {index.ntotal} vectors")
+
+with Timer("Loading chunks"):
+    with open(chunks_path) as f:
+        chunks = json.load(f)
+    print(f"[INFO] Loaded {len(chunks)} chunks from {chunks_path}")
+
 model_name = "intfloat/e5-base-v2"
 model = SentenceTransformer(model_name)
-print("[INFO] Loaded model {model_name}")
+print(f"[INFO] Loaded model {model_name}")
 print("[bold green]READY")
 print()
 
