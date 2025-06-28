@@ -76,7 +76,7 @@ async def handle_client(reader, writer):
         try:
             query = json.loads(data)
         except json.JSONDecodeError:
-            print("[red bold][ERROR] Failed to parse JSON: {data}")
+            print(f"[red bold][ERROR] Failed to parse JSON: {data}")
             await send_message({"failed": True, "error": "Invalid JSON"})
             return
 

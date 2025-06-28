@@ -14,6 +14,9 @@ function M.query_rag_first(document_prefix, document_suffix, callback)
             log:info("raw data", vim.inspect(data))
             data = table.concat(data, "\n")
             if data == "" then
+                -- TODO verify if emtpy indeed is when I want to close the socket?
+                --   I've always received it last, but I can't find docs about on_data to find out when its called
+                --   i.e. is "" a signal that the server disconnected?
                 log:info("empty data, closing socket...")
                 vim.fn.chanclose(sock)
                 return
