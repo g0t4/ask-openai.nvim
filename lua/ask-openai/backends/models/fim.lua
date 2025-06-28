@@ -89,21 +89,22 @@ function M.qwen25coder.get_fim_prompt(request)
         prompt = prompt .. non_fim_file
     end
 
-    -- if request.context.includes.yanks and request.context.yanks then
-    --     -- TODO! capture some EVAL examples with yanks in real completions that were useful
-    --     append_file_non_fim(request.context.yanks)
-    -- end
-    --
-    -- if request.context.includes.matching_ctags and request.context.matching_ctags then
-    --     -- TODO! capture some EVAL examples with matching_ctags too
-    --     append_file_non_fim(request.context.matching_ctags)
-    -- end
-    --
-    -- if request.context.includes.project and request.context.project then
-    --     -- TODO! capture some EVAL examples with project in real completions that were useful
-    --     vim.iter(request.context.project)
-    --         :each(append_file_non_fim)
-    -- end
+    if request.context.includes.yanks and request.context.yanks then
+        -- TODO! capture some EVAL examples with yanks in real completions that were useful
+        append_file_non_fim(request.context.yanks)
+    end
+
+    if request.context.includes.matching_ctags and request.context.matching_ctags then
+        -- TODO! capture some EVAL examples with matching_ctags too
+        append_file_non_fim(request.context.matching_ctags)
+    end
+
+    if request.context.includes.project and request.context.project then
+        -- TODO! capture some EVAL examples with project in real completions that were useful
+        vim.iter(request.context.project)
+            :each(append_file_non_fim)
+    end
+
     if request.rag_matches then
         vim.iter(request.rag_matches)
             :each(function(chunk)
