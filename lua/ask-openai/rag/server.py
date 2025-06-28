@@ -15,6 +15,9 @@ from timing import Timer
 #   TODO make into package if this works out with FIM
 # echo '{"text": "server sent events"}' | socat - UNIX-CONNECT:./tmp/raggy.sock | jq
 
+# TODO! try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
+
+
 
 
 with Timer("importing sentence_transformers"):
