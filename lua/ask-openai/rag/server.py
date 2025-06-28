@@ -67,15 +67,16 @@ async def handle_client(reader, writer):
 
     # print(f"[INFO] Received data: {data}")
 
-    # TODO failures
-    query = json.loads(data)
+    with Timer("Query"):
+        # TODO failures
+        query = json.loads(data)
 
-    matches = handle_query(query["text"])
-    writer.write(json.dumps(matches).encode())
+        matches = handle_query(query["text"])
+        writer.write(json.dumps(matches).encode())
 
-    await writer.drain()
-    writer.close()
-    await writer.wait_closed()
+        await writer.drain()
+        writer.close()
+        await writer.wait_closed()
 
 async def start_socket_server():
     server = await asyncio.start_server(handle_client, 'localhost', 9999)
