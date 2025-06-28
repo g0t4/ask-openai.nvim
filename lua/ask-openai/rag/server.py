@@ -42,10 +42,19 @@ with Timer(f"Loading SentenceTransformer model ({model_name})"):
     model = SentenceTransformer(model_name)
 
 # PRN make top_k configurable (or other params)
-def handle_query(query, top_k=3):
+def handle_query(message, top_k=3):
+    text = message.get("text")
+    if not text:
+        print("[red bold][ERROR] No query provided")
+        return {"failed": True, "error": "No query provided"}
+    # TODO does this semantic belong here? or should it be like exclude_files?
+    #   can worry about this when I expand RAG beyond FIM
+    current_file = message.get("current_file")
+    # print(f"[INFO] Querying for [green bold]{text}[/green bold]")
+    # print(f"[INFO] Current file: [green bold]{current_file}[/green bold]")
 
     # query: prefix is what the model was trained on (and the documents have passage: prefix)
-    q_vec = model.encode([f"query: {query}"], normalize_embeddings=True)\
+    q_vec = model.encode([f"query: {text}"], normalize_embeddings=True)\
         .astype("float32")
     # TODO how do I exclude matches in the same file? need to pass file to exclude but then also not query those chunks? do I get top 10 and then take first 3 not the same file?
     # FAISS search (GIL released)
@@ -54,6 +63,9 @@ def handle_query(query, top_k=3):
     matches = []
     for rank, idx in enumerate(ids[0]):
         chunk = chunks[idx]
+        if current_file and current_file == chunks[idx]["file"]:
+            print("[yellow bold][WARN] Skipping match in current file", current_file)
+            continue
         matches.append({
             "score": float(scores[0][rank]),
             "text": chunk["text"],
@@ -63,6 +75,9 @@ def handle_query(query, top_k=3):
             "type": chunk.get("type"),
             "rank": rank + 1,
         })
+    if len(matches) == 0:
+        # warn if this happens, that all were basically the same doc
+        print("[red bold][WARN] No matches found")
 
     return {"matches": matches}
 
@@ -88,7 +103,7 @@ async def handle_client(reader, writer):
             await send_message({"failed": True, "error": "Invalid JSON"})
             return
 
-        response = handle_query(query.text)
+        response = handle_query(query)
         await send_message(response)
 
 async def start_socket_server(stop_event: asyncio.Event):

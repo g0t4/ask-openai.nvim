@@ -1,4 +1,5 @@
 local log = require("ask-openai.prediction.logger").predictions()
+local files = require("ask-openai.helpers.files")
 local M = {}
 
 local cwd = vim.fn.getcwd()
@@ -47,7 +48,10 @@ function M.query_rag_first(document_prefix, document_suffix, callback)
     end
 
     local query = fim_concat(document_prefix, document_suffix)
-    local message = { text = query }
+    local message = {
+        text = query,
+        current_file = files.get_current_file_relative_path(),
+    }
     local json = vim.fn.json_encode(message)
     vim.fn.chansend(sock, json .. "\n")
 end
