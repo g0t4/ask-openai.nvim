@@ -51,6 +51,7 @@ local CURRENT_BUFFER = 0
 function M.ask_for_prediction()
     M.cancel_current_prediction()
 
+    local function get_prefix_suffix()
         local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(CURRENT_BUFFER)) -- (1,0)-indexed #s... aka original_row starts at 1, original_col starts at 0
         local original_row = original_row_1indexed - 1 -- 0-indexed now
 
@@ -103,6 +104,7 @@ function M.ask_for_prediction()
                 log:trace("diff\n", vim.diff(entire_document, combined))
             end
         end
+    end
 
     local function query_rag_first()
         local sock = vim.fn.sockconnect("pipe", "./tmp/raggy.sock", {
