@@ -38,8 +38,8 @@ with Timer("Loading chunks"):
     print(f"[INFO] Loaded {len(chunks)} chunks from {chunks_path}")
 
 model_name = "intfloat/e5-base-v2"
-model = SentenceTransformer(model_name)
-print(f"[INFO] Loaded model {model_name}")
+with Timer(f"Loading SentenceTransformer model ({model_name})"):
+    model = SentenceTransformer(model_name)
 
 # PRN make top_k configurable (or other params)
 def handle_query(query, top_k=3):
