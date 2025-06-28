@@ -109,7 +109,7 @@ function M.qwen25coder.get_fim_prompt(request)
         vim.iter(request.rag_matches)
             :each(function(chunk)
                 if current_file_path == chunk.file then
-                    local message = ansi.red_bold("Skipping current RAG match because it is from the same file: " .. chunk.file)
+                    local message = ansi.red_bold("Skipping RAG from the same file: " .. chunk.file)
                     log:warn(message)
                     -- TODO! TMP shortcircuit to exclude current file... need to update RAG server to not look at it? or just ask for n+1 matches?
                     return

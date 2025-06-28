@@ -51,6 +51,7 @@ local IGNORE_BOUNDARIES = false
 local CURRENT_BUFFER = 0
 
 local function get_prefix_suffix()
+    -- TODO! add some tests here next time something goes wrong or needs changed
     local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(CURRENT_BUFFER)) -- (1,0)-indexed #s... aka original_row starts at 1, original_col starts at 0
     local original_row = original_row_1indexed - 1 -- 0-indexed now
 
@@ -59,7 +60,6 @@ local function get_prefix_suffix()
     -- TODO test for 0indexed vs 1indexed indexing in get_line_range (I know you can get a number past end of document but that works out given get_lines is END-EXCLUSIVE
     local first_row, last_row = M.get_line_range(original_row, allow_lines, num_rows_total)
     log:trace("first_row", first_row, "last_row", last_row, "original_row", original_row, "original_col", original_col)
-
 
     local current_line = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row, original_row + 1, IGNORE_BOUNDARIES)[1]
     -- get_lines is END-EXCLUSIVE, 0-indexed
