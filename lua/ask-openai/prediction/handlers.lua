@@ -104,6 +104,35 @@ function M.ask_for_prediction()
         end
     end
 
+    local sock = vim.fn.sockconnect("pipe", "./tmp/raggy.sock", {
+        on_data = function(_, data)
+            -- TODO how do I ensure ONLY one response?!
+            --  I am getting multiple on_data callbacks... last one is empty though?
+            if data == nil then
+                log:info("nil data, aborting...")
+                return
+            end
+            log:info("raw data", vim.inspect(data))
+            data = table.concat(data, "\n")
+            if data ~= "" then
+                local response = vim.fn.json_decode(data)
+                local rag_matches = response.matches or {}
+                log:trace("rag_matches", vim.inspect(rag_matches))
+            end
+        end,
+        rpc = false,
+    })
+
+    local query = document_prefix .. "\n<<<FIM>>>\n" .. document_suffix
+    -- local message = { text = query }
+    local message = { text = "test" }
+    local json = vim.fn.json_encode(message)
+    vim.fn.chansend(sock, json .. "\n")
+
+    -- TODO just test getting chunks for now
+    -- can call this next code in callback
+    do return end
+
     local backend = OllamaFimBackend:new(document_prefix, document_suffix)
     local spawn_curl_options = backend:request_options()
 
