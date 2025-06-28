@@ -8,6 +8,15 @@ from rich import print
 
 from timing import Timer
 
+# FYI:
+#   test with:
+# cdr # repo root for tmp dir
+# python3 lua/ask-openai/rag/server.py
+#   TODO make into package if this works out with FIM
+# echo '{"text": "server sent events"}' | socat - UNIX-CONNECT:./tmp/raggy.sock | jq
+
+
+
 with Timer("importing sentence_transformers"):
     from sentence_transformers import SentenceTransformer
 
