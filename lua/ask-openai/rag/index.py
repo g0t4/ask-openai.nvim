@@ -25,25 +25,48 @@ def simple_chunk_file(path, lines_per_chunk=20, overlap=5):
     return chunks
 
 def build_index(source_dir=".", out_dir="./tmp/rag_index", model_name="intfloat/e5-base-v2"):
-    model = SentenceTransformer(model_name)
+    with Timer("Loading SentenceTransformer model"):
+        model = SentenceTransformer(model_name)
+
     chunks = []
-    for file in Path(source_dir).rglob("*.lua"):
-        chunks.extend(simple_chunk_file(file))
+
+    with Timer("Finding and processing .lua files"):
+        lua_files = list(Path(source_dir).rglob("*.lua"))
+        print(f"Found {len(lua_files)} .lua files")
+
+        with Timer("Chunking files"):
+            for i, file in enumerate(lua_files):
+                if i % 50 == 0 and i > 0:  # Progress update every 50 files
+                    print(f"Processed {i}/{len(lua_files)} files...")
+
+                file_chunks = simple_chunk_file(file)
+                chunks.extend(file_chunks)
+
+    print(f"Created {len(chunks)} total chunks")
 
     texts = [f"passage: {c['text']}" for c in chunks]
-    vecs = model.encode(texts, normalize_embeddings=True)
+
+    with Timer("Encoding texts to vectors"):
+        vecs = model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
+
     vecs_np = np.array(vecs).astype("float32")
 
-    index = faiss.IndexFlatIP(vecs_np.shape[1])
-    index.add(vecs_np)
+    with Timer("Building FAISS index"):
+        index = faiss.IndexFlatIP(vecs_np.shape[1])
+        index.add(vecs_np)
 
-    Path(out_dir).mkdir(exist_ok=True)
-    faiss.write_index(index, f"{out_dir}/vectors.index")
-    with open(f"{out_dir}/chunks.json", "w") as f:
-        json.dump(chunks, f, indent=2)
+    with Timer("Creating output directory and saving files"):
+        Path(out_dir).mkdir(exist_ok=True)
 
-    print(f"Indexed {len(chunks)} chunks.")
+        with Timer("Writing FAISS index to disk"):
+            faiss.write_index(index, f"{out_dir}/vectors.index")
+
+        with Timer("Writing chunks JSON to disk"):
+            with open(f"{out_dir}/chunks.json", "w") as f:
+                json.dump(chunks, f, indent=2)
+
+    print(f"Successfully indexed {len(chunks)} chunks from {len(lua_files)} files.")
 
 if __name__ == "__main__":
-    build_index()
-
+    with Timer("Total indexing time"):
+        build_index()
