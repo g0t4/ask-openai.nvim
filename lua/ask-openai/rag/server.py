@@ -54,7 +54,15 @@ def handle_query(query, top_k=3):
     matches = []
     for rank, idx in enumerate(ids[0]):
         chunk = chunks[idx]
-        matches.append({"score": float(scores[0][rank]), "text": chunk["text"], "file": chunk.get("file"), "start_line": chunk.get("start_line"), "end_line": chunk.get("end_line"), "type": chunk.get("type"), "rank": rank + 1})
+        matches.append({
+            "score": float(scores[0][rank]),
+            "text": chunk["text"],
+            "file": chunk.get("file"),
+            "start_line": chunk.get("start_line"),
+            "end_line": chunk.get("end_line"),
+            "type": chunk.get("type"),
+            "rank": rank + 1,
+        })
 
     return {"matches": matches}
 
