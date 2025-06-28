@@ -12,12 +12,14 @@ function M.query_rag_first(document_prefix, document_suffix, callback)
             end
             log:info("raw data", vim.inspect(data))
             data = table.concat(data, "\n")
-            if data ~= "" then
-                local response = vim.fn.json_decode(data)
-                local rag_matches = response.matches or {}
-                log:trace("rag_matches", vim.inspect(rag_matches))
-                callback(rag_matches)
+            if data == "" then
+                log:info("empty data, aborting...")
+                return
             end
+            local response = vim.fn.json_decode(data)
+            local rag_matches = response.matches or {}
+            log:trace("rag_matches", vim.inspect(rag_matches))
+            callback(rag_matches)
         end,
         rpc = false,
     })
