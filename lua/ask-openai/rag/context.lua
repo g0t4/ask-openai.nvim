@@ -18,7 +18,7 @@ function M.query_rag_first(document_prefix, document_suffix, callback)
                 log:info("nil data, aborting...")
                 return
             end
-            log:info("raw data", vim.inspect(data))
+            log:info("raw rag response", vim.inspect(data))
             data = table.concat(data, "\n")
             if data == "" then
                 -- TODO verify if emtpy indeed is when I want to close the socket?
