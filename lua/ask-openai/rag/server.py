@@ -65,6 +65,7 @@ def handle_query(message, top_k=3):
         chunk = chunks[idx]
         if current_file and current_file == chunks[idx]["file"]:
             print("[yellow bold][WARN] Skipping match in current file", current_file)
+            # PRN could filter too high of similarity instead? or somem other rerank or ?
             continue
         matches.append({
             "score": float(scores[0][rank]),
