@@ -118,6 +118,7 @@ function M.ask_for_prediction()
                 local response = vim.fn.json_decode(data)
                 local rag_matches = response.matches or {}
                 log:trace("rag_matches", vim.inspect(rag_matches))
+                fim_after_rag(rag_matches)
             end
         end,
         rpc = false,
@@ -134,13 +135,11 @@ function M.ask_for_prediction()
     end
 
     local query = safe_concat(document_prefix, document_suffix)
-
     local message = { text = query }
-    -- local message = { text = "test" }
     local json = vim.fn.json_encode(message)
     vim.fn.chansend(sock, json .. "\n")
 
-    function fim_after_rag()
+    function fim_after_rag(rag_matches)
 
         local backend = OllamaFimBackend:new(document_prefix, document_suffix)
         local spawn_curl_options = backend:request_options()
