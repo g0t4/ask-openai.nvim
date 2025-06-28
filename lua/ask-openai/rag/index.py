@@ -2,7 +2,10 @@ import faiss
 import json
 import numpy as np
 from pathlib import Path
-from sentence_transformers import SentenceTransformer
+from timing import Timer
+
+with Timer("Build RAG index"):
+    from sentence_transformers import SentenceTransformer
 
 def simple_chunk_file(path, lines_per_chunk=20, overlap=5):
     chunks = []
