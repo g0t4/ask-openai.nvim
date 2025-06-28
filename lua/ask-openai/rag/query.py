@@ -1,6 +1,7 @@
 import faiss
 import json
 import numpy as np
+from rich import print
 from sentence_transformers import SentenceTransformer
 
 index_path = "./tmp/rag_index/vectors.index"
