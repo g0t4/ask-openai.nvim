@@ -16,8 +16,9 @@ OllamaFimBackend.__index = OllamaFimBackend
 
 ---@param prefix string
 ---@param suffix string
+---@param rag_matches table
 ---@return OllamaFimBackend
-function OllamaFimBackend:new(prefix, suffix)
+function OllamaFimBackend:new(prefix, suffix, rag_matches)
     local always_include = {
         yanks = true,
         matching_ctags = true,
@@ -26,6 +27,7 @@ function OllamaFimBackend:new(prefix, suffix)
     local instance = {
         prefix = prefix,
         suffix = suffix,
+        rag_matches = rag_matches,
         -- FYI gonna limit FIM while I test different sources
         context = CurrentContext:items("", always_include)
     }

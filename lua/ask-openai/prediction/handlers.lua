@@ -140,8 +140,7 @@ function M.ask_for_prediction()
     vim.fn.chansend(sock, json .. "\n")
 
     function fim_after_rag(rag_matches)
-
-        local backend = OllamaFimBackend:new(document_prefix, document_suffix)
+        local backend = OllamaFimBackend:new(document_prefix, document_suffix, rag_matches)
         local spawn_curl_options = backend:request_options()
 
         -- log:trace("curl", table.concat(spawn_curl_options.args, " "))

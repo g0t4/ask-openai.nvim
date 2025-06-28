@@ -91,6 +91,14 @@ function M.qwen25coder.get_fim_prompt(request)
         vim.iter(request.context.project)
             :each(append_file_non_fim)
     end
+    if request.rag_matches then
+        vim.iter(request.rag_matches)
+            :each(function(chunk)
+                -- FYI this comes from embeddings query results... so the structure is different than other context providers
+                local non_fim_file = tokens.file_sep .. chunk.file .. "\n" .. chunk.text
+                prompt = prompt .. non_fim_file
+            end)
+    end
 
     -- * recent edits
     -- local recent_changes = "Here are some recent lines that were edited by the user: "
