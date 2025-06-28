@@ -110,7 +110,7 @@ function M.ask_for_prediction()
     local document_prefix, document_suffix = get_prefix_suffix()
 
     local function query_rag_first()
-        local sock = vim.fn.sockconnect("pipe", "./tmp/raggy.sock", {
+        local sock = vim.fn.sockconnect("tcp", "localhost:9999", {
             on_data = function(_, data)
                 -- TODO how do I ensure ONLY one response?!
                 --  I am getting multiple on_data callbacks... last one is empty though?
