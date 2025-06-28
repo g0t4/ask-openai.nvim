@@ -30,7 +30,7 @@ function M.query_rag_first(document_prefix, document_suffix, callback)
             end
             local response = vim.fn.json_decode(data)
             local rag_matches = response.matches or {}
-            log:trace("rag_matches", vim.inspect(rag_matches))
+            -- log:trace("rag_matches", vim.inspect(rag_matches))
             callback(rag_matches)
         end,
         rpc = false,
