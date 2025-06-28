@@ -88,7 +88,7 @@ async def handle_client(reader, writer):
             await send_message({"failed": True, "error": "Invalid JSON"})
             return
 
-        response = handle_query(query["text"])
+        response = handle_query(query.text)
         await send_message(response)
 
 async def start_socket_server(stop_event: asyncio.Event):

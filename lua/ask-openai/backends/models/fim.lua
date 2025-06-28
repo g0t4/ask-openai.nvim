@@ -115,7 +115,9 @@ function M.qwen25coder.get_fim_prompt(request)
                     return
                 end
                 -- FYI this comes from embeddings query results... so the structure is different than other context providers
-                local non_fim_file = tokens.file_sep .. chunk.file .. "\n" .. chunk.text
+                -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
+                local file_name = chunk.file .. ":" .. chunk.start_line .. "-" .. chunk.end_line
+                local non_fim_file = tokens.file_sep .. file_name .. "\n" .. chunk.text
                 prompt = prompt .. non_fim_file
             end)
     end
