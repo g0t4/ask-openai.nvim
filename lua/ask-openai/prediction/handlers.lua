@@ -123,9 +123,20 @@ function M.ask_for_prediction()
         rpc = false,
     })
 
-    local query = document_prefix .. "\n<<<FIM>>>\n" .. document_suffix
-    -- local message = { text = query }
-    local message = { text = "test" }
+    local function safe_concat(prefix, suffix, limit)
+        limit = limit or 1500 -- 2000?
+        local half = math.floor(limit / 2)
+
+        local short_prefix = prefix:sub(-half)
+        local short_suffix = suffix:sub(1, half)
+
+        return short_prefix .. "\n<<<FIM>>>\n" .. short_suffix
+    end
+
+    local query = safe_concat(document_prefix, document_suffix)
+
+    local message = { text = query }
+    -- local message = { text = "test" }
     local json = vim.fn.json_encode(message)
     vim.fn.chansend(sock, json .. "\n")
 
