@@ -1,4 +1,5 @@
 local log = require("ask-openai.prediction.logger").predictions()
+local ansi = require("ask-openai.prediction.ansi")
 
 local M = {}
 
@@ -69,6 +70,18 @@ function M.qwen25coder.get_fim_prompt(request)
     local repo_name = request:get_repo_name()
     local prompt = tokens.repo_name .. repo_name .. "\n"
 
+    -- * FIM file
+    local current_file_path = request.inject_file_path_test_seam()
+    if current_file_path == nil then
+        -- i.e. if :new and before first :w (save)
+        -- for now just leave filename blank?
+        --  or, maybe mark it as new?
+        --   can I deterine filetype using some heuristic or other metadata?
+        --   should I mark it "new"
+        log:warn("current_file_name is nil")
+        current_file_path = ""
+    end
+
     --- @param context_item ContextItem
     local function append_file_non_fim(context_item)
         -- <file_sep>filepath0\ncode0
@@ -94,6 +107,12 @@ function M.qwen25coder.get_fim_prompt(request)
     if request.rag_matches then
         vim.iter(request.rag_matches)
             :each(function(chunk)
+                if current_file_path == chunk.file then
+                    local message = ansi.red_bold("Skipping current RAG match because it is from the same file: " .. chunk.file)
+                    log:info(message)
+                    -- TODO! TMP shortcircuit to exclude current file... need to update RAG server to not look at it? or just ask for n+1 matches?
+                    return
+                end
                 -- FYI this comes from embeddings query results... so the structure is different than other context providers
                 local non_fim_file = tokens.file_sep .. chunk.file .. "\n" .. chunk.text
                 prompt = prompt .. non_fim_file
@@ -110,17 +129,6 @@ function M.qwen25coder.get_fim_prompt(request)
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    -- * FIM file
-    local current_file_path = request.inject_file_path_test_seam()
-    if current_file_path == nil then
-        -- i.e. if :new and before first :w (save)
-        -- for now just leave filename blank?
-        --  or, maybe mark it as new?
-        --   can I deterine filetype using some heuristic or other metadata?
-        --   should I mark it "new"
-        log:warn("current_file_name is nil")
-        current_file_path = ""
-    end
     --
     -- TODO ESCAPE presence of any sentinel tokens? i.e. should be rare but if someone is working on LLM code it may not be!
     --
@@ -135,6 +143,7 @@ function M.qwen25coder.get_fim_prompt(request)
         .. tokens.fim_suffix
         .. request.suffix
         .. tokens.fim_middle
+
 
     -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
 
