@@ -104,7 +104,9 @@ function M.ask_for_prediction()
                 log:trace("diff\n", vim.diff(entire_document, combined))
             end
         end
+        return document_prefix, document_suffix
     end
+    local document_prefix, document_suffix = get_prefix_suffix()
 
     local function query_rag_first()
         local sock = vim.fn.sockconnect("pipe", "./tmp/raggy.sock", {
