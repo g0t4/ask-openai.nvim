@@ -1,5 +1,6 @@
 import asyncio
 import json
+import signal
 
 import faiss
 from rich import print
@@ -39,8 +40,6 @@ with Timer("Loading chunks"):
 model_name = "intfloat/e5-base-v2"
 model = SentenceTransformer(model_name)
 print(f"[INFO] Loaded model {model_name}")
-print("[bold green]READY")
-print()
 
 # PRN make top_k configurable (or other params)
 def handle_query(query, top_k=3):
@@ -78,13 +77,28 @@ async def handle_client(reader, writer):
         writer.close()
         await writer.wait_closed()
 
-async def start_socket_server():
+async def start_socket_server(stop_event: asyncio.Event):
     server = await asyncio.start_server(handle_client, 'localhost', 9999)
+    print("[bold green]READY\n")
+
     async with server:
-        await server.serve_forever()
+        await stop_event.wait()
+        print("[INFO] Shutting down...")
+        server.close()
+        await server.wait_closed()
 
 def main():
-    asyncio.run(start_socket_server())
+    stop_event = asyncio.Event()
+
+    def shutdown():
+        print("\n[INFO] Received shutdown signal")
+        stop_event.set()
+
+    loop = asyncio.get_event_loop()
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        loop.add_signal_handler(sig, shutdown)
+
+    loop.run_until_complete(start_socket_server(stop_event))
 
 if __name__ == '__main__':
     main()
