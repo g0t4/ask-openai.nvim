@@ -51,6 +51,7 @@ def handle_query(query, top_k=3):
     # query: prefix is what the model was trained on (and the documents have passage: prefix)
     q_vec = model.encode([f"query: {query}"], normalize_embeddings=True)\
         .astype("float32")
+    # TODO how do I exclude matches in the same file? need to pass file to exclude but then also not query those chunks? do I get top 10 and then take first 3 not the same file?
     scores, ids = index.search(q_vec, top_k)
 
     matches = []
