@@ -161,6 +161,7 @@ function M.setup(user_options)
     require("ask-openai.rewrites.inline").setup()
     require("ask-openai.questions.ask").setup()
     require("ask-openai.tools.mcp").setup()
+    require("ask-openai.rag").setup()
 end
 
 return M
