@@ -140,70 +140,69 @@ function M.ask_for_prediction()
     local json = vim.fn.json_encode(message)
     vim.fn.chansend(sock, json .. "\n")
 
-    -- TODO just test getting chunks for now
-    -- can call this next code in callback
-    do return end
+    function fim_after_rag()
 
-    local backend = OllamaFimBackend:new(document_prefix, document_suffix)
-    local spawn_curl_options = backend:request_options()
+        local backend = OllamaFimBackend:new(document_prefix, document_suffix)
+        local spawn_curl_options = backend:request_options()
 
-    -- log:trace("curl", table.concat(spawn_curl_options.args, " "))
+        -- log:trace("curl", table.concat(spawn_curl_options.args, " "))
 
-    local this_prediction = Prediction:new()
-    M.current_prediction = this_prediction
+        local this_prediction = Prediction:new()
+        M.current_prediction = this_prediction
 
-    local stdout = uv.new_pipe(false)
-    local stderr = uv.new_pipe(false)
-    assert(stdout ~= nil)
-    assert(stderr ~= nil)
+        local stdout = uv.new_pipe(false)
+        local stderr = uv.new_pipe(false)
+        assert(stdout ~= nil)
+        assert(stderr ~= nil)
 
-    spawn_curl_options.on_exit = function(code, signal)
-        log:trace(string.format("spawn - exit code: %d  signal:%s", code, signal))
-        if code ~= 0 then
-            log:error("spawn - non-zero exit code:", code, "Signal:", signal)
+        spawn_curl_options.on_exit = function(code, signal)
+            log:trace(string.format("spawn - exit code: %d  signal:%s", code, signal))
+            if code ~= 0 then
+                log:error("spawn - non-zero exit code:", code, "Signal:", signal)
+            end
+            stdout:close()
+            stderr:close()
         end
-        stdout:close()
-        stderr:close()
-    end
 
-    M.handle, M.pid = uv.spawn(spawn_curl_options.command, {
-        args = spawn_curl_options.args,
-        stdio = { nil, stdout, stderr },
-    }, spawn_curl_options.on_exit)
+        M.handle, M.pid = uv.spawn(spawn_curl_options.command, {
+            args = spawn_curl_options.args,
+            stdio = { nil, stdout, stderr },
+        }, spawn_curl_options.on_exit)
 
-    spawn_curl_options.on_stdout = function(err, data)
-        log:trace("on_stdout chunk: ", data)
+        spawn_curl_options.on_stdout = function(err, data)
+            log:trace("on_stdout chunk: ", data)
 
-        if err then
-            log:warn("on_stdout error: ", err)
-            this_prediction:mark_generation_failed()
-            return
-        end
-        if data then
-            vim.schedule(function()
-                local chunk, generation_done, done_reason = backend.process_sse(data)
-                if chunk then
-                    this_prediction:add_chunk_to_prediction(chunk)
-                end
-                if generation_done then
-                    if not this_prediction:any_chunks() then
-                        -- FYI great way to test this, go to a line that is done (i.e. a return) and go into insert mode before the returned variable and it almost always suggests that is EOS (at least with qwen2.5-coder + ollama)
-                        log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (done_reason or "") .. "'")
+            if err then
+                log:warn("on_stdout error: ", err)
+                this_prediction:mark_generation_failed()
+                return
+            end
+            if data then
+                vim.schedule(function()
+                    local chunk, generation_done, done_reason = backend.process_sse(data)
+                    if chunk then
+                        this_prediction:add_chunk_to_prediction(chunk)
                     end
-                    this_prediction:mark_generation_finished()
-                end
-            end)
+                    if generation_done then
+                        if not this_prediction:any_chunks() then
+                            -- FYI great way to test this, go to a line that is done (i.e. a return) and go into insert mode before the returned variable and it almost always suggests that is EOS (at least with qwen2.5-coder + ollama)
+                            log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (done_reason or "") .. "'")
+                        end
+                        this_prediction:mark_generation_finished()
+                    end
+                end)
+            end
         end
-    end
-    uv.read_start(stdout, spawn_curl_options.on_stdout)
+        uv.read_start(stdout, spawn_curl_options.on_stdout)
 
-    spawn_curl_options.on_stderr = function(err, data)
-        log:warn("on_stderr chunk: ", data)
-        if err then
-            log:warn("on_stderr error: ", err)
+        spawn_curl_options.on_stderr = function(err, data)
+            log:warn("on_stderr chunk: ", data)
+            if err then
+                log:warn("on_stderr error: ", err)
+            end
         end
+        uv.read_start(stderr, spawn_curl_options.on_stderr)
     end
-    uv.read_start(stderr, spawn_curl_options.on_stderr)
 end
 
 function M.cancel_current_prediction()
