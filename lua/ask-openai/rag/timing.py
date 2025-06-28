@@ -1,5 +1,6 @@
 import time
 
+from rich import print
 
 class Timer:
 
@@ -15,5 +16,3 @@ class Timer:
         elapsed_ns = self.end_ns - self.start_ns
         elapsed_ms = elapsed_ns / 1000000
         print(f"wall time ({self.message}): {elapsed_ms:,.2f} ms")
-
-
