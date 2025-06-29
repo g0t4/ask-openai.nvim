@@ -6,6 +6,17 @@ local cwd = vim.fn.getcwd()
 -- only testing ask-openai project currently
 local is_rag_indexed_workspace = cwd:find("ask-openai", 1, true) ~= nil
 
+function M.is_rag_supported()
+    local current_file = files.get_current_file_relative_path()
+    local is_lua = current_file:match("%.lua$")
+    if not is_lua then
+        log:info("skipping RAG for non-lua files: " .. current_file)
+        return false
+    end
+
+    return is_rag_indexed_workspace
+end
+
 local function fim_concat(prefix, suffix, limit)
     limit = limit or 1500 -- 2000?
     local half = math.floor(limit / 2)
@@ -17,24 +28,11 @@ local function fim_concat(prefix, suffix, limit)
 end
 
 function M.query_rag_via_lsp(document_prefix, document_suffix, callback)
-    if not is_rag_indexed_workspace then
-        callback(nil)
-        return
-    end
-    -- PRN have server instruct client what languages are supported (have an index built or buildable?)
-
-    local current_file = files.get_current_file_relative_path()
-    local is_lua = current_file:match("%.lua$")
-    if not is_lua then
-        log:info("skipping RAG for non-lua files: " .. current_file)
-        callback(nil)
-        return
-    end
-
     local query = fim_concat(document_prefix, document_suffix)
+
     local message = {
         text = query,
-        current_file = current_file,
+        current_file = files.get_current_file_relative_path(),
     }
 
     local _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", {

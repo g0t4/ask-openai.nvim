@@ -113,7 +113,8 @@ function M.ask_for_prediction()
     local document_prefix, document_suffix = get_prefix_suffix()
 
     function send_fim(rag_matches)
-        if enable_rag and M.rag_cancel == nil then
+        -- use rag_matches ~= nil b/c hot mess of other calls here when rag not used -- TODO CLEANUP NONSENSE WES
+        if enable_rag and rag_matches ~= nil and M.rag_cancel == nil then
             log:error("rag_cancel is nil, assuming RAG was canceled") -- should be rare, but possible
             return
         end
@@ -181,7 +182,7 @@ function M.ask_for_prediction()
         uv.read_start(stderr, spawn_curl_options.on_stderr)
     end
 
-    if enable_rag then
+    if enable_rag and rag.is_rag_supported() then
         local request_ids, cancel =
             rag.query_rag_via_lsp(document_prefix, document_suffix, send_fim)
         M.rag_cancel = cancel
