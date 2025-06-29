@@ -22,10 +22,17 @@ function M.query_rag_via_lsp(document_prefix, document_suffix, callback)
         return
     end
 
+    local current_file = files.get_current_file_relative_path()
+    if not current_file:find("lua", 1, true) then
+        log:info("skipping RAG for non-lua files: " .. current_file)
+        callback(nil)
+        return
+    end
+
     local query = fim_concat(document_prefix, document_suffix)
     local message = {
         text = query,
-        current_file = files.get_current_file_relative_path(),
+        current_file = current_file,
     }
 
     vim.lsp.buf_request(0, "workspace/executeCommand", {
