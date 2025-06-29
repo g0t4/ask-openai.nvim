@@ -34,4 +34,8 @@ function M.get_current_file_relative_path()
     return vim.fn.expand("%")
 end
 
+function M.get_current_file_absolute_path()
+    return vim.fn.expand("%:p")
+end
+
 return M

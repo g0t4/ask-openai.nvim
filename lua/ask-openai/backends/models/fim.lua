@@ -1,4 +1,5 @@
 local log = require("ask-openai.prediction.logger").predictions()
+local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.prediction.ansi")
 
 local M = {}
@@ -71,15 +72,15 @@ function M.qwen25coder.get_fim_prompt(request)
     local prompt = tokens.repo_name .. repo_name .. "\n"
 
     -- * FIM file
-    local current_file_path = request.inject_file_path_test_seam()
-    if current_file_path == nil then
+    local current_file_relative_path = request.inject_file_path_test_seam()
+    if current_file_relative_path == nil then
         -- i.e. if :new and before first :w (save)
         -- for now just leave filename blank?
         --  or, maybe mark it as new?
         --   can I deterine filetype using some heuristic or other metadata?
         --   should I mark it "new"
         log:warn("current_file_name is nil")
-        current_file_path = ""
+        current_file_relative_path = ""
     end
 
     --- @param context_item ContextItem
@@ -106,9 +107,17 @@ function M.qwen25coder.get_fim_prompt(request)
     end
 
     if request.rag_matches then
+        -- FYI if you want to test rag_matches in prompt, then add a test seam for getting absolute path like relative path
+        local current_file_path_absolute = files.get_current_file_absolute_path()
+
         vim.iter(request.rag_matches)
             :each(function(chunk)
-                if current_file_path == chunk.file then
+                log:info("chunk.file", chunk.file)
+
+                log:info("current_file_path", current_file_relative_path)
+                if current_file_path_absolute == chunk.file
+                    or current_file_relative_path == chunk.file
+                then
                     local message = ansi.red_bold("Skipping RAG from the same file: " .. chunk.file)
                     log:warn(message)
                     -- TODO! TMP shortcircuit to exclude current file... need to update RAG server to not look at it? or just ask for n+1 matches?
@@ -139,7 +148,7 @@ function M.qwen25coder.get_fim_prompt(request)
     --   <file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid
     --   <fim_prefix> comes BEFORE filepath!
     local fim_file_contents = tokens.file_sep
-        .. current_file_path
+        .. current_file_relative_path
         .. "\n"
         .. tokens.fim_prefix
         .. request.prefix
