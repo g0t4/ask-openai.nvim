@@ -53,6 +53,11 @@ class IncrementalRAGIndexer:
         chunk_str = f"{file_path}:{chunk_index}:{file_hash}"
         return hashlib.sha256(chunk_str.encode()).hexdigest()[:16]
     
+    def chunk_id_to_faiss_id(self, chunk_id: str) -> int:
+        """Convert chunk ID to FAISS ID (int64)"""
+        # Use first 8 bytes of hash as int64 for FAISS ID
+        return int(hashlib.sha256(chunk_id.encode()).hexdigest()[:16], 16)
+    
     def simple_chunk_file(self, path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Dict]:
         """Chunk a file with unique chunk IDs"""
         chunks = []
@@ -167,26 +172,96 @@ class IncrementalRAGIndexer:
         
         return chunks
     
-    def rebuild_faiss_index(self, chunks: Dict) -> faiss.Index:
-        """Rebuild FAISS index from scratch using current chunks"""
+    def get_chunks_for_files(self, chunks: Dict, file_paths: Set[str]) -> Set[str]:
+        """Get all chunk IDs for the given file paths"""
+        chunk_ids = set()
+        for chunk_id, chunk in chunks.items():
+            if chunk['file'] in file_paths:
+                chunk_ids.add(chunk_id)
+        return chunk_ids
+    
+    def update_faiss_index_incrementally(self, index: Optional[faiss.Index], 
+                                       chunks: Dict, changed_files: Set[Path], 
+                                       deleted_files: Set[str]) -> faiss.Index:
+        """Update FAISS index incrementally using IndexIDMap"""
+        
+        # Create base index if it doesn't exist
+        if index is None:
+            print("Creating new FAISS index")
+            # Create a dummy vector to get dimensions
+            sample_text = "passage: sample"
+            sample_vec = self.model.encode([sample_text], normalize_embeddings=True)
+            base_index = faiss.IndexFlatIP(sample_vec.shape[1])
+            index = faiss.IndexIDMap(base_index)
+        elif not isinstance(index, faiss.IndexIDMap):
+            print("Converting existing index to IndexIDMap")
+            # If we have an old-style index, we need to rebuild it as IndexIDMap
+            return self.rebuild_faiss_index_with_ids(chunks)
+        
+        # Remove vectors for changed and deleted files
+        files_to_remove = set(str(f) for f in changed_files) | deleted_files
+        if files_to_remove:
+            chunk_ids_to_remove = self.get_chunks_for_files(chunks, files_to_remove)
+            if chunk_ids_to_remove:
+                faiss_ids_to_remove = [self.chunk_id_to_faiss_id(cid) for cid in chunk_ids_to_remove]
+                print(f"Removing {len(faiss_ids_to_remove)} vectors for changed/deleted files")
+                
+                with Timer("Remove old vectors"):
+                    selector = faiss.IDSelectorArray(np.array(faiss_ids_to_remove, dtype="int64"))
+                    index.remove_ids(selector)
+        
+        # Add vectors for changed files only
+        if changed_files:
+            new_chunks = []
+            new_chunk_ids = []
+            
+            for file_path in changed_files:
+                for chunk_id, chunk in chunks.items():
+                    if chunk['file'] == str(file_path):
+                        new_chunks.append(chunk)
+                        new_chunk_ids.append(chunk_id)
+            
+            if new_chunks:
+                print(f"Adding {len(new_chunks)} new vectors for changed files")
+                
+                texts = [f"passage: {chunk['text']}" for chunk in new_chunks]
+                faiss_ids = [self.chunk_id_to_faiss_id(cid) for cid in new_chunk_ids]
+                
+                with Timer("Encode new vectors"):
+                    vecs = self.model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
+                
+                vecs_np = np.array(vecs).astype("float32")
+                faiss_ids_np = np.array(faiss_ids, dtype="int64")
+                
+                with Timer("Add new vectors to index"):
+                    index.add_with_ids(vecs_np, faiss_ids_np)
+        
+        return index
+    
+    def rebuild_faiss_index_with_ids(self, chunks: Dict) -> faiss.Index:
+        """Rebuild FAISS index from scratch with IndexIDMap"""
         if not chunks:
             print("[yellow]No chunks to index")
             return None
         
         print(f"Rebuilding FAISS index with {len(chunks)} chunks")
         
-        # Get texts in consistent order (sorted by chunk ID for reproducibility)
-        sorted_chunks = sorted(chunks.items())
-        texts = [f"passage: {chunk['text']}" for _, chunk in sorted_chunks]
+        # Get all chunks and their IDs
+        chunk_items = list(chunks.items())
+        texts = [f"passage: {chunk['text']}" for _, chunk in chunk_items]
+        chunk_ids = [chunk_id for chunk_id, _ in chunk_items]
+        faiss_ids = [self.chunk_id_to_faiss_id(cid) for cid in chunk_ids]
         
         with Timer("Encode texts to vectors"):
             vecs = self.model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
         
         vecs_np = np.array(vecs).astype("float32")
+        faiss_ids_np = np.array(faiss_ids, dtype="int64")
         
-        with Timer("Build FAISS index"):
-            index = faiss.IndexFlatIP(vecs_np.shape[1])
-            index.add(vecs_np)
+        with Timer("Build FAISS IndexIDMap"):
+            base_index = faiss.IndexFlatIP(vecs_np.shape[1])
+            index = faiss.IndexIDMap(base_index)
+            index.add_with_ids(vecs_np, faiss_ids_np)
         
         return index
     
@@ -250,9 +325,11 @@ class IncrementalRAGIndexer:
         
         print(f"Total chunks after update: {len(chunks)}")
         
-        # Always rebuild the FAISS index (needed because we can't easily remove vectors)
-        # For very large indexes, you might want to implement a more sophisticated approach
-        index = self.rebuild_faiss_index(chunks)
+        # Incrementally update the FAISS index
+        if changed_files or deleted_files:
+            index = self.update_faiss_index_incrementally(existing_index, chunks, changed_files, deleted_files)
+        else:
+            index = existing_index
         
         if index is None:
             return
