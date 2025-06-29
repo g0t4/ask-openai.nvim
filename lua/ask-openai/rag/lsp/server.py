@@ -8,12 +8,12 @@
 import os
 from pygls.server import LanguageServer
 from lsprotocol.types import (
-    TEXT_DOCUMENT_COMPLETION,
     CompletionItem,
     CompletionList,
     CompletionParams,
     ExecuteCommandParams,
 )
+import lsprotocol.types as types
 
 import rag
 from logs import logging, LogTimer
@@ -27,7 +27,7 @@ server = LanguageServer("ask_language_server", "v0.1")
 #     you can register built-in features, and your hooks will be called AFTER the builtins!
 #     does not replace them
 
-@server.feature('initialized')
+@server.feature(types.INITIALIZED)
 def on_initialized(server):
     #  FYI server is managed by the client!
     #  client sends initialize request first => waits for server to send InitializeResult
@@ -35,10 +35,9 @@ def on_initialized(server):
     #  then, client sends initialized (this) request => waits for completion
     #    does not send other requests until initialized is done
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
-    logging.info("on_initialized")
     rag.load_model()
 
-@server.feature(TEXT_DOCUMENT_COMPLETION)
+@server.feature(types.TEXT_DOCUMENT_COMPLETION)
 def completions(params: CompletionParams):
     # FYI this is just for initial testing, ok to nuke as I have no plans for completions support
     items = []
