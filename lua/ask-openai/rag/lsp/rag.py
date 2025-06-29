@@ -69,6 +69,8 @@ def handle_query(message, top_k=3):
     q_vec = model.encode([f"query: {text}"], normalize_embeddings=True).astype("float32")
     # FAISS search (GIL released)
     scores, ids = index.search(q_vec, top_k)
+    logging.info(f'{scores=}')
+    logging.info(f'{ids=}')
 
     matches = []
     current_file_abs = None
