@@ -23,7 +23,9 @@ server = LanguageServer("ask_language_server", "v0.1")
 # @server.feature('initialize')
 # def on_initialize(ls: LanguageServer, params: dict):
 #     logging.info("on_initialize")
-#     IIUC I have to build the InitializeResult then if I add this hook... though completions continue to work w/o me doing that here
+#     PER https://pygls.readthedocs.io/en/latest/servers/user-guide.html#built-in-features
+#     you can register built-in features, and your hooks will be called AFTER the builtins!
+#     does not replace them
 
 @server.feature('initialized')
 def on_initialized(server):
