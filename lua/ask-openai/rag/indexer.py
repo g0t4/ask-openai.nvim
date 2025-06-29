@@ -55,8 +55,10 @@ class IncrementalRAGIndexer:
     
     def chunk_id_to_faiss_id(self, chunk_id: str) -> int:
         """Convert chunk ID to FAISS ID (int64)"""
-        # Use first 8 bytes of hash as int64 for FAISS ID
-        return int(hashlib.sha256(chunk_id.encode()).hexdigest()[:16], 16)
+        # Use first 8 bytes of hash but mask to ensure it fits in signed int64
+        hash_int = int(hashlib.sha256(chunk_id.encode()).hexdigest()[:16], 16)
+        # Mask to fit in signed int64 (0x7FFFFFFFFFFFFFFF = 2^63 - 1)
+        return hash_int & 0x7FFFFFFFFFFFFFFF
     
     def simple_chunk_file(self, path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Dict]:
         """Chunk a file with unique chunk IDs"""
