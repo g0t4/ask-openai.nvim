@@ -56,6 +56,10 @@ def build_index(source_dir=".", language_extension="lua"):
         print(f"Found {len(files)} {language_extension} files")
         print(files)
 
+    if not files:
+        print("[red]No files found, no index to build")
+        return
+
     with Timer("Chunk files"):
         for i, file in enumerate(files):
             if i % 50 == 0 and i > 0:  # Progress update every 50 files

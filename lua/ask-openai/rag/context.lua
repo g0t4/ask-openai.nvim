@@ -17,16 +17,30 @@ local function fim_concat(prefix, suffix, limit)
 end
 
 function M.query_rag_via_lsp(document_prefix, document_suffix, callback)
+    if not is_rag_indexed_workspace then
+        callback(nil)
+        return
+    end
+
+    local query = fim_concat(document_prefix, document_suffix)
+    local message = {
+        text = query,
+        current_file = files.get_current_file_relative_path(),
+    }
+
     vim.lsp.buf_request(0, "workspace/executeCommand", {
         command = "ask.ragQuery",
-        arguments = { "my input here" },
+        -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
+        arguments = { message },
     }, function(err, result)
         if err then
             vim.notify("RAG query failed: " .. err.message, vim.log.levels.ERROR)
             return
         end
-        print("RAG result:", vim.inspect(result))
-        callback(nil)
+
+        log:info("RAG result:", vim.inspect(result))
+        local rag_matches = result.matches or {}
+        callback(rag_matches)
     end)
 end
 
@@ -60,7 +74,6 @@ function M.query_rag_first(document_prefix, document_suffix, callback)
         end,
         rpc = false,
     })
-
 
     local query = fim_concat(document_prefix, document_suffix)
     local message = {
