@@ -112,15 +112,13 @@ function M.qwen25coder.get_fim_prompt(request)
 
         vim.iter(request.rag_matches)
             :each(function(chunk)
-                log:info("chunk.file", chunk.file)
-
-                log:info("current_file_path", current_file_relative_path)
+                -- log:info("chunk.file", chunk.file)
+                -- log:info("current_file_path", current_file_relative_path)
                 if current_file_path_absolute == chunk.file
                     or current_file_relative_path == chunk.file
                 then
                     local message = ansi.red_bold("Skipping RAG from the same file: " .. chunk.file)
                     log:warn(message)
-                    -- TODO! TMP shortcircuit to exclude current file... need to update RAG server to not look at it? or just ask for n+1 matches?
                     return
                 end
                 -- FYI this comes from embeddings query results... so the structure is different than other context providers
