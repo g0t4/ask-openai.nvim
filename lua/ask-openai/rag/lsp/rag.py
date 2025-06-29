@@ -11,7 +11,7 @@ from pathlib import Path
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 def load_model():
-    global model, index, chunks
+    global model, index, chunks, chunks_by_id
     with LogTimer("importing sentence_transformers"):
         from sentence_transformers import SentenceTransformer
 
@@ -26,6 +26,11 @@ def load_model():
         with open(chunks_path) as f:
             chunks = json.load(f)
         logging.info(f"[INFO] Loaded {len(chunks)} chunks from {chunks_path}")
+
+    chunks_by_id = {}
+    for chunk in chunks:
+        chunks_by_id[chunk['id']] = chunk
+    logging.info(f"[INFO] Loaded {len(chunks_by_id)} chunks by id")
 
     # TODO try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
     model_name = "intfloat/e5-base-v2"
@@ -67,7 +72,7 @@ def handle_query(message, top_k=3):
     if current_file:
         current_file_abs = Path(current_file).absolute()
     for rank, idx in enumerate(ids[0]):
-        chunk = chunks[idx]
+        chunk = chunks_by_id[idx]
         chunk_file_abs = Path(chunk["file"]).absolute()
         same_file = current_file_abs == chunk_file_abs
         # logging.info(f"{current_file_abs=} {chunk_file_abs=} {same_file=}")
