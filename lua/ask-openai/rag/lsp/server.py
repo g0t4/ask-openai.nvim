@@ -49,6 +49,8 @@ def rag_query(ls: LanguageServer, params: ExecuteCommandParams):
         logging.error(f"aborting ask.rag.fim.query b/c missing params {params}")
         return
 
+    # PRN cache last N rag queries? would help to regen another completion but maybe not that common?
+
     args = params[0]
     logging.info("Query: %s", args)
     return rag.handle_query(args)
