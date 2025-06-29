@@ -6,6 +6,16 @@ local cwd = vim.fn.getcwd()
 -- only testing ask-openai project currently
 local is_rag_indexed_workspace = cwd:find("ask-openai", 1, true) ~= nil
 
+local function fim_concat(prefix, suffix, limit)
+    limit = limit or 1500 -- 2000?
+    local half = math.floor(limit / 2)
+
+    local short_prefix = prefix:sub(-half)
+    local short_suffix = suffix:sub(1, half)
+
+    return short_prefix .. "\n<<<FIM>>>\n" .. short_suffix
+end
+
 function M.query_rag_via_lsp(document_prefix, document_suffix, callback)
     vim.lsp.buf_request(0, "workspace/executeCommand", {
         command = "ask.ragQuery",
@@ -51,15 +61,6 @@ function M.query_rag_first(document_prefix, document_suffix, callback)
         rpc = false,
     })
 
-    local function fim_concat(prefix, suffix, limit)
-        limit = limit or 1500 -- 2000?
-        local half = math.floor(limit / 2)
-
-        local short_prefix = prefix:sub(-half)
-        local short_suffix = suffix:sub(1, half)
-
-        return short_prefix .. "\n<<<FIM>>>\n" .. short_suffix
-    end
 
     local query = fim_concat(document_prefix, document_suffix)
     local message = {
