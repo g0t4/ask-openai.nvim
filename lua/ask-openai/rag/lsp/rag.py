@@ -5,13 +5,14 @@ import faiss
 
 from logs import LogTimer, logging
 from pathlib import Path
+from ids import chunk_id_to_faiss_id
 
 # avoid checking for model files every time you load the model...
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 def load_model():
-    global model, index, chunks, chunks_by_id
+    global model, index, chunks, chunks_by_faiss_id
     with LogTimer("importing sentence_transformers"):
         from sentence_transformers import SentenceTransformer
 
@@ -27,10 +28,12 @@ def load_model():
             chunks = json.load(f)
         logging.info(f"[INFO] Loaded {len(chunks)} chunks from {chunks_path}")
 
-    chunks_by_id = {}
+    chunks_by_faiss_id = {}
     for chunk in chunks:
-        chunks_by_id[chunk['id']] = chunk
-    logging.info(f"[INFO] Loaded {len(chunks_by_id)} chunks by id")
+        chunk['faiss_id'] = chunk_id_to_faiss_id(chunk['id'])
+        logging.info(f"{chunk['faiss_id']=}")
+        chunks_by_faiss_id[chunk['faiss_id']] = chunk
+    logging.info(f"[INFO] Loaded {len(chunks_by_faiss_id)} chunks by id")
 
     # TODO try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
     model_name = "intfloat/e5-base-v2"
@@ -72,7 +75,7 @@ def handle_query(message, top_k=3):
     if current_file:
         current_file_abs = Path(current_file).absolute()
     for rank, idx in enumerate(ids[0]):
-        chunk = chunks_by_id[idx]
+        chunk = chunks_by_faiss_id[idx]
         chunk_file_abs = Path(chunk["file"]).absolute()
         same_file = current_file_abs == chunk_file_abs
         # logging.info(f"{current_file_abs=} {chunk_file_abs=} {same_file=}")

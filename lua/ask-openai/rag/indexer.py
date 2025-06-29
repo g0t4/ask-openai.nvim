@@ -5,6 +5,8 @@ import subprocess
 from typing import Dict, List, Set, Tuple, Optional
 import os
 
+from lsp.ids import  chunk_id_to_faiss_id
+
 import faiss
 import numpy as np
 from rich import print
@@ -52,14 +54,7 @@ class IncrementalRAGIndexer:
         """Generate unique chunk ID based on file path, chunk index, and file hash"""
         chunk_str = f"{file_path}:{chunk_index}:{file_hash}"
         return hashlib.sha256(chunk_str.encode()).hexdigest()[:16]
-    
-    def chunk_id_to_faiss_id(self, chunk_id: str) -> int:
-        """Convert chunk ID to FAISS ID (int64)"""
-        # Convert hex string directly to int and mask for signed int64
-        hash_int = int(chunk_id, 16)
-        # Mask to fit in signed int64 (0x7FFFFFFFFFFFFFFF = 2^63 - 1)
-        return hash_int & 0x7FFFFFFFFFFFFFFF
-    
+
     def simple_chunk_file(self, path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Dict]:
         """Chunk a file with unique chunk IDs"""
         chunks = []
@@ -205,7 +200,7 @@ class IncrementalRAGIndexer:
         if files_to_remove:
             chunk_ids_to_remove = self.get_chunks_for_files(chunks, files_to_remove)
             if chunk_ids_to_remove:
-                faiss_ids_to_remove = [self.chunk_id_to_faiss_id(cid) for cid in chunk_ids_to_remove]
+                faiss_ids_to_remove = [chunk_id_to_faiss_id(cid) for cid in chunk_ids_to_remove]
                 print(f"Removing {len(faiss_ids_to_remove)} vectors for changed/deleted files")
                 
                 with Timer("Remove old vectors"):
@@ -227,8 +222,8 @@ class IncrementalRAGIndexer:
                 print(f"Adding {len(new_chunks)} new vectors for changed files")
                 
                 texts = [f"passage: {chunk['text']}" for chunk in new_chunks]
-                faiss_ids = [self.chunk_id_to_faiss_id(cid) for cid in new_chunk_ids]
-                
+                faiss_ids = [chunk_id_to_faiss_id(cid) for cid in new_chunk_ids]
+
                 with Timer("Encode new vectors"):
                     vecs = self.model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
                 
@@ -252,8 +247,8 @@ class IncrementalRAGIndexer:
         chunk_items = list(chunks.items())
         texts = [f"passage: {chunk['text']}" for _, chunk in chunk_items]
         chunk_ids = [chunk_id for chunk_id, _ in chunk_items]
-        faiss_ids = [self.chunk_id_to_faiss_id(cid) for cid in chunk_ids]
-        
+        faiss_ids = [chunk_id_to_faiss_id(cid) for cid in chunk_ids]
+
         with Timer("Encode texts to vectors"):
             vecs = self.model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
         
