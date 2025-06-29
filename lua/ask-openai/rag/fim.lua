@@ -37,7 +37,7 @@ function M.query_rag_via_lsp(document_prefix, document_suffix, callback)
         current_file = current_file,
     }
 
-    vim.lsp.buf_request(0, "workspace/executeCommand", {
+    local _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", {
         command = "ask.rag.fim.query",
         -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
         arguments = { message },
