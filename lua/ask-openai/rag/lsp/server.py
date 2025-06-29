@@ -20,20 +20,6 @@ from logs import logging, LogTimer
 
 server = LanguageServer("ask_language_server", "v0.1")
 
-@server.feature(types.TEXT_DOCUMENT_HOVER)
-def on_hover(ls: LanguageServer, params: types.HoverParams):
-    doc = ls.workspace.get_document(params.text_document.uri)
-    return types.Hover(
-        contents=types.MarkupContent(
-            kind=types.MarkupKind.Markdown,
-            value="`HELLO` world",
-        ),
-        # range=types.Range(
-        #     start=types.Position(line=pos.line, character=0),
-        #     end=types.Position(line=pos.line + 1, character=0),
-        # ),
-    )
-
 @server.feature(types.INITIALIZED)
 def on_initialized(server):
     #  FYI server is managed by the client!

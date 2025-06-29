@@ -15,31 +15,6 @@ local function fim_concat(prefix, suffix, limit)
 
     return short_prefix .. "\n<<<FIM>>>\n" .. short_suffix
 end
--- keymap to strigger example hover
-vim.keymap.set("n", "<leader>lh", function()
-    local params = vim.lsp.util.make_position_params()
-    vim.lsp.buf_request(0, "textDocument/hover", params, function(err, result)
-        if err then
-            vim.notify("LSP error: " .. err.message, vim.log.levels.ERROR)
-            return
-        end
-        if not result then
-            vim.notify("No hover information found.", vim.log.levels.WARN)
-            return
-        end
-        local content = result.contents
-        -- if vim.islist(content) then
-        --     content = vim.lsp.util.convert_doc_links(content, vim.api.nvim_buf_get_name(0))
-        -- else
-        content = vim.lsp.util.convert_input_to_markdown_lines(content)
-        -- end
-        -- vim.api.nvim_echo({ { content, "Normal" } }, false, {})
-        vim.print(content)
-        return vim.lsp.util.open_floating_preview(content, "markdown", { width = 30, height = 2 })
-    end)
-end, { desc = "LSP Hover", noremap = true })
-
-
 
 function M.query_rag_via_lsp(document_prefix, document_suffix, callback)
     if not is_rag_indexed_workspace then
