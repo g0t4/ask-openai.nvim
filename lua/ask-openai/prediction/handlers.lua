@@ -112,6 +112,12 @@ function M.ask_for_prediction()
     local document_prefix, document_suffix = get_prefix_suffix()
 
     function send_fim(rag_matches)
+        if not M.rag_cancel then
+            log:error("rag_cancel is nil, assuming RAG was canceled") -- should be rare, but possible
+            return
+        end
+        -- TODO check response's request_ids vs last RAG request ids (avoid accepting past RAG matches)
+
         local backend = OllamaFimBackend:new(document_prefix, document_suffix, rag_matches)
         local spawn_curl_options = backend:request_options()
 
@@ -174,12 +180,21 @@ function M.ask_for_prediction()
         uv.read_start(stderr, spawn_curl_options.on_stderr)
     end
 
-    rag.query_rag_via_lsp(document_prefix, document_suffix, send_fim)
+    local request_ids, cancel =
+        rag.query_rag_via_lsp(document_prefix, document_suffix, send_fim)
     -- rag.query_rag_first(document_prefix, document_suffix, send_fim)
     -- send_fim()
+    M.rag_cancel = cancel
+    M.rag_request_ids = request_ids
+    log:trace("RAG request ids: ", request_ids)
+    log:trace("RAG cancel: ", cancel)
 end
 
 function M.cancel_current_prediction()
+    if M.rag_cancel then
+        M.rag_cancel()
+        M.rag_cancel = nil
+    end
     local this_prediction = M.current_prediction
     if not this_prediction then
         return

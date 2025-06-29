@@ -51,6 +51,7 @@ function M.query_rag_via_lsp(document_prefix, document_suffix, callback)
         local rag_matches = result.matches or {}
         callback(rag_matches)
     end)
+    return _client_request_ids, _cancel_all_requests
 end
 
 function M.query_rag_first(document_prefix, document_suffix, callback)
