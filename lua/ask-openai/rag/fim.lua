@@ -21,6 +21,7 @@ function M.query_rag_via_lsp(document_prefix, document_suffix, callback)
         callback(nil)
         return
     end
+    -- PRN have server instruct client what languages are supported (have an index built or buildable?)
 
     local current_file = files.get_current_file_relative_path()
     local is_lua = current_file:match("%.lua$")
