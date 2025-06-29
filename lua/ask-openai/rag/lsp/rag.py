@@ -57,9 +57,7 @@ def handle_query(message, top_k=3):
     # embedding = model.encode([[sentence]])
 
     # query: prefix is what the model was trained on (and the documents have passage: prefix)
-    q_vec = model.encode([f"query: {text}"], normalize_embeddings=True)\
-        .astype("float32")
-    # TODO how do I exclude matches in the same file? need to pass file to exclude but then also not query those chunks? do I get top 10 and then take first 3 not the same file?
+    q_vec = model.encode([f"query: {text}"], normalize_embeddings=True).astype("float32")
     # FAISS search (GIL released)
     scores, ids = index.search(q_vec, top_k)
 
