@@ -55,8 +55,8 @@ class IncrementalRAGIndexer:
     
     def chunk_id_to_faiss_id(self, chunk_id: str) -> int:
         """Convert chunk ID to FAISS ID (int64)"""
-        # Use first 8 bytes of hash but mask to ensure it fits in signed int64
-        hash_int = int(hashlib.sha256(chunk_id.encode()).hexdigest()[:16], 16)
+        # Convert hex string directly to int and mask for signed int64
+        hash_int = int(chunk_id, 16)
         # Mask to fit in signed int64 (0x7FFFFFFFFFFFFFFF = 2^63 - 1)
         return hash_int & 0x7FFFFFFFFFFFFFFF
     
