@@ -70,7 +70,7 @@ def handle_query(message, top_k=3):
         chunk = chunks[idx]
         chunk_file_abs = Path(chunk["file"]).absolute()
         same_file = current_file_abs == chunk_file_abs
-        logging.info(f"{current_file_abs=} {chunk_file_abs=} {same_file=}")
+        # logging.info(f"{current_file_abs=} {chunk_file_abs=} {same_file=}")
         if same_file:
             logging.info("[yellow bold][WARN] Skipping match in current file", current_file)
             # PRN could filter too high of similarity instead? or somem other rerank or ?
