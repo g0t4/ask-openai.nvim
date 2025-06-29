@@ -112,15 +112,6 @@ function M.qwen25coder.get_fim_prompt(request)
 
         vim.iter(request.rag_matches)
             :each(function(chunk)
-                -- log:info("chunk.file", chunk.file)
-                -- log:info("current_file_path", current_file_relative_path)
-                if current_file_path_absolute == chunk.file
-                    or current_file_relative_path == chunk.file
-                then
-                    local message = ansi.red_bold("Skipping RAG from the same file: " .. chunk.file)
-                    log:warn(message)
-                    return
-                end
                 -- FYI this comes from embeddings query results... so the structure is different than other context providers
                 -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
                 local file_name = chunk.file .. ":" .. chunk.start_line .. "-" .. chunk.end_line
