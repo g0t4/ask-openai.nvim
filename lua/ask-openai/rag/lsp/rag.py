@@ -4,6 +4,7 @@ import os
 import faiss
 
 from logs import LogTimer, logging
+from pathlib import Path
 
 # avoid checking for model files every time you load the model...
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
@@ -62,9 +63,15 @@ def handle_query(message, top_k=3):
     scores, ids = index.search(q_vec, top_k)
 
     matches = []
+    current_file_abs = None
+    if current_file:
+        current_file_abs = Path(current_file).absolute()
     for rank, idx in enumerate(ids[0]):
         chunk = chunks[idx]
-        if current_file and current_file == chunks[idx]["file"]:
+        chunk_file_abs = Path(chunk["file"]).absolute()
+        same_file = current_file_abs == chunk_file_abs
+        logging.info(f"{current_file_abs=} {chunk_file_abs=} {same_file=}")
+        if same_file:
             logging.info("[yellow bold][WARN] Skipping match in current file", current_file)
             # PRN could filter too high of similarity instead? or somem other rerank or ?
             continue
