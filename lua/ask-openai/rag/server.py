@@ -25,8 +25,8 @@ with Timer("importing sentence_transformers"):
 #  can reload data after this alone proves itself!
 #  for now restart this server!
 #
-index_path = "./tmp/rag_index/vectors.index"
-chunks_path = "./tmp/rag_index/chunks.json"
+index_path = "./tmp/rag_index/lua/vectors.index"
+chunks_path = "./tmp/rag_index/lua/chunks.json"
 
 with Timer("Loading index and chunks"):
     index = faiss.read_index(index_path)
