@@ -23,7 +23,8 @@ function M.query_rag_via_lsp(document_prefix, document_suffix, callback)
     end
 
     local current_file = files.get_current_file_relative_path()
-    if not current_file:find("lua", 1, true) then
+    local is_lua = current_file:match("%.lua$")
+    if not is_lua then
         log:info("skipping RAG for non-lua files: " .. current_file)
         callback(nil)
         return
