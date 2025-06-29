@@ -96,3 +96,4 @@ if __name__ == "__main__":
         trash_indexes()
         build_index(language_extension="lua")
         build_index(language_extension="py")
+        build_index(language_extension="fish")
