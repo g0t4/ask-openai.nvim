@@ -3,6 +3,7 @@ local api = vim.api
 local messages = require("devtools.messages")
 
 local function extract_lua_chunks(bufnr)
+    -- TODO consider move this into rag indexer and use it or smth like it instead of line ranges
     bufnr = bufnr or api.nvim_get_current_buf()
     local parser = ts.get_parser(bufnr, "lua")
     local tree = parser:parse()[1]
