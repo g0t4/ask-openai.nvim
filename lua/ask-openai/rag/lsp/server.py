@@ -43,10 +43,10 @@ def completions(params: CompletionParams):
     ]
     return CompletionList(is_incomplete=False, items=items)
 
-@server.command("ask.ragQuery")
+@server.command("ask.rag.fim.query")
 def rag_query(ls: LanguageServer, params: ExecuteCommandParams):
     if params is None or params[0] is None:
-        logging.error(f"aborting ask.ragQuery b/c missing params {params}")
+        logging.error(f"aborting ask.rag.fim.query b/c missing params {params}")
         return
 
     args = params[0]
