@@ -56,15 +56,6 @@ def handle_query(message, top_k=3):
     # logging.info(f"[INFO] Querying for [green bold]{text}[/green bold]")
     # logging.info(f"[INFO] Current file: [green bold]{current_file}[/green bold]")
 
-    # # PRN try using InstructorEmbedding to include a prompt with the query!
-    # #   guides the encoding... like a system prompt... obviously requires different models than direct embedding
-    # #   also need to use on the document embedding side too, with consistent instruction (prompt)
-    # from InstructorEmbedding import INSTRUCTOR
-    # # hkunlp/instructor-large|base|xl
-    # model = INSTRUCTOR("hkunlp/instructor-large")
-    # sentence = "Represent this sentence for retrieval"
-    # embedding = model.encode([[sentence]])
-
     # query: prefix is what the model was trained on (and the documents have passage: prefix)
     q_vec = model.encode([f"query: {text}"], normalize_embeddings=True).astype("float32")
     # FAISS search (GIL released)
