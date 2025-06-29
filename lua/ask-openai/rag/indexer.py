@@ -177,9 +177,7 @@ class IncrementalRAGIndexer:
                 chunk_ids.add(chunk_id)
         return chunk_ids
 
-    def update_faiss_index_incrementally(self, index: Optional[faiss.Index],
-                                       chunks: Dict, changed_files: Set[Path],
-                                       deleted_files: Set[str]) -> faiss.Index:
+    def update_faiss_index_incrementally(self, index: Optional[faiss.Index], chunks: Dict, changed_files: Set[Path], deleted_files: Set[str]) -> faiss.Index:
         """Update FAISS index incrementally using IndexIDMap"""
 
         # Create base index if it doesn't exist
@@ -304,10 +302,7 @@ class IncrementalRAGIndexer:
                     print(f"Processed {i}/{len(changed_files)} changed files...")
 
                 # Remove old chunks for this file
-                old_chunks_to_remove = [
-                    chunk_id for chunk_id, chunk in chunks.items()
-                    if chunk['file'] == str(file_path)
-                ]
+                old_chunks_to_remove = [chunk_id for chunk_id, chunk in chunks.items() if chunk['file'] == str(file_path)]
                 for chunk_id in old_chunks_to_remove:
                     del chunks[chunk_id]
 
