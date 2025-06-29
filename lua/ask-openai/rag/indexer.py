@@ -97,7 +97,6 @@ def trash_indexes(language_extension="lua"):
 
 if __name__ == "__main__":
     with Timer("Total indexing time"):
-        trash_indexes()
         build_index(language_extension="lua")
         build_index(language_extension="py")
         build_index(language_extension="fish")
