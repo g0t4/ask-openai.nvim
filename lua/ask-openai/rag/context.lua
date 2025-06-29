@@ -6,6 +6,20 @@ local cwd = vim.fn.getcwd()
 -- only testing ask-openai project currently
 local is_rag_indexed_workspace = cwd:find("ask-openai", 1, true) ~= nil
 
+function M.query_rag_via_lsp(document_prefix, document_suffix, callback)
+    vim.lsp.buf_request(0, "workspace/executeCommand", {
+        command = "ask.ragQuery",
+        arguments = { "my input here" },
+    }, function(err, result)
+        if err then
+            vim.notify("RAG query failed: " .. err.message, vim.log.levels.ERROR)
+            return
+        end
+        print("RAG result:", vim.inspect(result))
+        callback(nil)
+    end)
+end
+
 function M.query_rag_first(document_prefix, document_suffix, callback)
     if not is_rag_indexed_workspace then
         callback(nil)

@@ -174,7 +174,8 @@ function M.ask_for_prediction()
         uv.read_start(stderr, spawn_curl_options.on_stderr)
     end
 
-    rag.query_rag_first(document_prefix, document_suffix, send_fim)
+    rag.query_rag_via_lsp(document_prefix, document_suffix, send_fim)
+    -- rag.query_rag_first(document_prefix, document_suffix, send_fim)
     -- send_fim()
 end
 
