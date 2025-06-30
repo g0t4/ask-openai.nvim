@@ -3,6 +3,9 @@ from pathlib import Path
 import subprocess
 import unittest
 
+import faiss
+from rich import print
+
 from indexer import IncrementalRAGIndexer
 
 class TestBuildIndex(unittest.TestCase):
@@ -21,22 +24,36 @@ class TestBuildIndex(unittest.TestCase):
         indexer = IncrementalRAGIndexer(self.rag_dir, self.source_dir)
         indexer.build_index(language_extension="lua")
 
-        chunks_json = self.rag_dir / "lua" / "chunks.json"
-        print(f'{chunks_json=}')
-        assert chunks_json.exists()
+        chunks_json_path = self.rag_dir / "lua" / "chunks.json"
+        print(f'{chunks_json_path=}')
+        assert chunks_json_path.exists()
 
-        files_json = self.rag_dir / "lua" / "files.json"
-        print(f'{files_json=}')
-        assert files_json.exists()
+        files_json_path = self.rag_dir / "lua" / "files.json"
+        print(f'{files_json_path=}')
+        assert files_json_path.exists()
 
-        with open(chunks_json, "r") as f:
-            contents = f.read()
-            chunks = json.loads(contents)
-            assert len(chunks) > 0
+        vectors_index_path = self.rag_dir / "lua" / "vectors.index"
+        print(f'{vectors_index_path=}')
+        assert vectors_index_path.exists()
 
-            # assert "chunks" in contents
-            # assert "text" in contents
-            # assert "metadata" in contents
+        with open(chunks_json_path, "r") as f:
+            chunks = json.loads(f.read())
+            assert len(chunks) == 3  # 41 lines currently, 5 overlap + 20 per chunk
+
+        with open(files_json_path, "r") as f:
+            contents = json.loads(f.read())
+            assert len(contents) == 1  # 1 file
+
+        # verify 3 vectors
+        # https://faiss.ai/cpp_api/struct/structfaiss_1_1IndexFlatIP.html
+        index = faiss.read_index(str(vectors_index_path))
+        assert index.ntotal == 3  # 41 lines currently, 5 overlap + 20 per chunk
+        print(f'{index=}')
+        # assert index.ntotal == len(chunks)
+
+        # assert "chunks" in contents
+        # assert "text" in contents
+        # assert "metadata" in contents
 
 if __name__ == "__main__":
     unittest.main()
