@@ -1,16 +1,17 @@
-import json
 import hashlib
+import json
 from pathlib import Path
 import subprocess
-from typing import Dict, List, Set, Tuple, Optional
-
-from lsp.ids import chunk_id_to_faiss_id
-from timing import Timer
+import sys
+from typing import Dict, List, Optional, Set, Tuple
 
 import faiss
 import numpy as np
 from rich import print
 
+import fs
+from lsp.ids import chunk_id_to_faiss_id
+from timing import Timer
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False
 STOP_ON_FAILURE = True
@@ -318,8 +319,11 @@ def trash_indexes(rag_dir, language_extension="lua"):
 if __name__ == "__main__":
     with Timer("Total indexing time"):
         # yup, can turn this into a command that uses git repo of CWD
-        root_directory = subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
-        rag_dir = Path(root_directory) / ".rag"
+        root_directory = fs.get_cwd_repo_root()
+        if not root_directory:
+            print("[red]No Git repository found in current working directory, cannot build RAG index.")
+            sys.exit(1)
+        rag_dir = root_directory / ".rag"
         source_dir = "."
         print(f"[bold]RAG directory: {rag_dir}")
         indexer = IncrementalRAGIndexer(rag_dir, source_dir)
