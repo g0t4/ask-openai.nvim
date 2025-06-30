@@ -86,7 +86,7 @@ class TestBuildIndex(unittest.TestCase):
         for i in range(index.ntotal):
             print(i)
 
-    def test_encode_integration_exploratory(self):
+    def ignore_test_encode_integration_exploratory(self):
         from lsp.model import model
         q = model.encode(["hello"], normalize_embeddings=True)
         print(f'{q.shape=}')
