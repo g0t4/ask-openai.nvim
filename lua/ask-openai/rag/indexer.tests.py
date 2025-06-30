@@ -42,7 +42,7 @@ class TestBuildIndex(unittest.TestCase):
         with open(files_json_path, "r") as f:
             return json.loads(f.read())
 
-    def test(self):
+    def test_building_rag_index_from_scratch(self):
 
         # FYI! slow to recreate index, so do it once and comment this out to quickly run assertions
         # * recreate index
@@ -108,7 +108,7 @@ class TestBuildIndex(unittest.TestCase):
         for i in range(index.ntotal):
             print(i)
 
-    def test_encode_integration_exploratory(self):
+    def test_encode_and_search_index(self):
         # FYI! SLOW TEST, change name to disable
         from lsp.model import model
         q = model.encode(["hello"], normalize_embeddings=True)
