@@ -34,14 +34,17 @@ class TestBuildIndex(unittest.TestCase):
         with open(chunks_json_path, "r") as f:
             return json.loads(f.read())
 
+    def get_files(self):
+        files_json_path = self.rag_dir / "lua" / "files.json"
+        print(f'{files_json_path=}')
+        assert files_json_path.exists()
+        with open(files_json_path, "r") as f:
+            return json.loads(f.read())
+
     def test(self):
         self.trash_rag_dir()
         indexer = IncrementalRAGIndexer(self.rag_dir, self.source_dir)
         indexer.build_index(language_extension="lua")
-
-        files_json_path = self.rag_dir / "lua" / "files.json"
-        print(f'{files_json_path=}')
-        assert files_json_path.exists()
 
         chunks = self.get_chunks()
             assert len(chunks) == 3  # 41 lines currently, 5 overlap + 20 per chunk
@@ -73,8 +76,7 @@ class TestBuildIndex(unittest.TestCase):
             self.assertEqual(third_chunk["start_line"], 31)
             self.assertEqual(third_chunk["end_line"], 41)
 
-        with open(files_json_path, "r") as f:
-            contents = json.loads(f.read())
+        contents = self.get_files()
             assert len(contents) == 1
             file_meta = contents[str(sample_lua_path)]
 
