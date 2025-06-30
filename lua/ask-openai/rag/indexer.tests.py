@@ -132,8 +132,8 @@ class TestBuildIndex(unittest.TestCase):
         def copy_file(src, dest):
             (self.tmp_updater_src_dir / dest).write_text((self.test_cases / src).read_text())
 
-        copy_file("numbers.30.txt", "numbers.lua")
-        copy_file("unchanged.lua.txt", "unchanged.lua")
+        copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
+        copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
         indexer = IncrementalRAGIndexer(self.rag_dir, self.tmp_updater_src_dir)
@@ -143,6 +143,10 @@ class TestBuildIndex(unittest.TestCase):
         chunks = self.get_chunks()
         files = self.get_files()
         index = self.get_vector_index()
+
+        self.assertEqual(len(chunks), 4)
+        self.assertEqual(len(files), 2)
+        self.assertEqual(index.ntotal, 4)
 
     def test_update_index_changed_file(self):
         pass

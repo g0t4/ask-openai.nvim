@@ -54,26 +54,31 @@ class IncrementalRAGIndexer:
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
             lines = f.readlines()
 
-        for i in range(0, len(lines), lines_per_chunk - overlap):
-            chunk_lines = lines[i:i + lines_per_chunk]
-            text = "".join(chunk_lines).strip()
-            start_line = i + 1
-            end_line = i + len(chunk_lines)
-            chunk_type = "lines"
-            if text:
+        def iter_chunks(lines, lines_per_chunk=20, overlap=4, min_chunk_size=10):
+            n_lines = len(lines)
+            step = lines_per_chunk - overlap
+            for idx, i in enumerate(range(0, n_lines, step)):
+                start = i
+                end_line = min(i + lines_per_chunk, n_lines)
+                if (end_line - start) < min_chunk_size and idx > 0:
+                    break
+
+                chunk_type = "lines"
+                start_line = start + 1
                 chunk_id = self.generate_chunk_id(path, chunk_type, start_line, end_line, file_hash)
-                chunks.append({
+                yield {
                     "id": chunk_id,
-                    # add integer id directly... just for quick comparisons
-                    # FYI your json parser might choke on large integers... if so wrap this in a string just incase
                     "id_int": str(chunk_id_to_faiss_id(chunk_id)),
-                    "text": text,
+                    "text": "".join(lines[start:end_line]).strip(),
                     "file": str(path),
                     "start_line": start_line,
                     "end_line": end_line,
                     "type": chunk_type,
                     "file_hash": file_hash,
-                })
+                }
+
+        for _, chunk in enumerate(iter_chunks(lines, lines_per_chunk, overlap)):
+            chunks.append(chunk)
         return chunks
 
     def find_files_with_fd(self, language_extension: str) -> List[Path]:
