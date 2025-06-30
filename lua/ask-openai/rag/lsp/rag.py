@@ -46,9 +46,9 @@ def handle_query(message, top_k=3):
         return {"failed": True, "error": "No query provided"}
     # TODO does this semantic belong here? or should it be like exclude_files?
     #   can worry about this when I expand RAG beyond FIM
-    current_file = message.get("current_file")
+    current_file_absolute_path = message.get("current_file_absolute_path")
     # logging.info(f"[INFO] Querying for [green bold]{text}[/green bold]")
-    # logging.info(f"[INFO] Current file: [green bold]{current_file}[/green bold]")
+    # logging.info(f"[INFO] Current file: [green bold]{current_file_absolute_path}[/green bold]")
 
     # query: prefix is what the model was trained on (and the documents have passage: prefix)
     q_vec = model.encode([f"query: {text}"], normalize_embeddings=True).astype("float32")
@@ -58,17 +58,15 @@ def handle_query(message, top_k=3):
     # logging.info(f'{ids=}')
 
     matches = []
-    current_file_abs = None
-    if current_file:
-        current_file_abs = Path(current_file).absolute()
     for rank, idx in enumerate(ids[0]):
         chunk = chunks_by_faiss_id[idx]
         # TODO graceful handling of missing chunk? (i.e. change indexing ID  :) )
-        chunk_file_abs = Path(chunk["file"]).absolute()
-        same_file = current_file_abs == chunk_file_abs
-        # logging.info(f"{current_file_abs=} {chunk_file_abs=} {same_file=}")
+        # TODO! capture absolute path in indexer! that way I dont have to rebuild absolute path here?
+        chunk_file_abs = chunk["file"] # capture abs path, already works
+        same_file = current_file_absolute_path == chunk_file_abs
+        logging.info(f"{current_file_absolute_path=} {chunk_file_abs=} {chunk["file"]=} {same_file=}")
         if same_file:
-            logging.info("[yellow bold][WARN] Skipping match in current file", current_file)
+            logging.info("[yellow bold][WARN] Skipping match in current file", current_file_absolute_path)
             # PRN could filter too high of similarity instead? or somem other rerank or ?
             continue
         matches.append({
