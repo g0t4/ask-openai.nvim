@@ -12,7 +12,7 @@ from ids import chunk_id_to_faiss_id
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 def load_model():
-    global model, index, chunks, chunks_by_faiss_id
+    global model, index, chunks_by_faiss_id
     with LogTimer("importing sentence_transformers"):
         from sentence_transformers import SentenceTransformer
 
@@ -26,12 +26,12 @@ def load_model():
     with LogTimer("Loading chunks"):
         with open(chunks_path) as f:
             chunks = json.load(f)
-        logging.info(f"[INFO] Loaded {len(chunks)} chunks from {chunks_path}")
+        # logging.info(f"[INFO] Loaded {len(chunks)} chunks from {chunks_path}")
 
     chunks_by_faiss_id = {}
     for chunk in chunks:
         chunk['faiss_id'] = chunk_id_to_faiss_id(chunk['id'])
-        logging.info(f"{chunk['faiss_id']=}")
+        # logging.info(f"{chunk['faiss_id']=}")
         chunks_by_faiss_id[chunk['faiss_id']] = chunk
     logging.info(f"[INFO] Loaded {len(chunks_by_faiss_id)} chunks by id")
 
