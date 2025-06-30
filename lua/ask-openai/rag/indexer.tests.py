@@ -87,6 +87,9 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(index.ntotal, 3)
         self.assertEqual(index.d, 768)
         print(f'{index=}')
+        # print(f'{index.metric_type=}')
+        # print(f'{index.metric_arg=}')
+        # print(f'{index.is_trained=}')
         for i in range(index.ntotal):
             print(i)
 
@@ -94,11 +97,18 @@ class TestBuildIndex(unittest.TestCase):
         from lsp.model import model
         q = model.encode(["hello"], normalize_embeddings=True)
         print(f'{q.shape=}')
-
         # currently hard coded model:
         # https://huggingface.co/intfloat/e5-base-v2
         # This model has 12 layers and the embedding size is 768.
         self.assertEqual(q.shape, (1, 768))
+
+        index = self.get_vector_index()
+        self.assertEqual(index.ntotal, 3)
+        self.assertEqual(index.d, 768)
+
+        distances, indices = index.search(q, 1)
+        print(f"{distances=}")
+        print(f"{indices=}")
 
 if __name__ == "__main__":
     unittest.main()
