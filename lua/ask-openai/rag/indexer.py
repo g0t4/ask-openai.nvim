@@ -43,9 +43,9 @@ class IncrementalRAGIndexer:
             'size': stat.st_size,
         }
 
-    def generate_chunk_id(self, file_path: Path, chunk_index: int, file_hash: str) -> str:
+    def generate_chunk_id(self, file_path: Path, start_line: int, end_line: int, file_hash: str) -> str:
         """Generate unique chunk ID based on file path, chunk index, and file hash"""
-        chunk_str = f"{file_path}:{chunk_index}:{file_hash}"
+        chunk_str = f"{file_path}:{start_line}-{end_line}:{file_hash}"
         return hashlib.sha256(chunk_str.encode()).hexdigest()[:16]
 
     def get_file_chunks(self, path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Dict]:
@@ -60,7 +60,7 @@ class IncrementalRAGIndexer:
             start_line = i + 1
             end_line = i + len(chunk_lines)
             if text:
-                chunk_id = self.generate_chunk_id(path, i, file_hash)
+                chunk_id = self.generate_chunk_id(path, start_line, end_line, file_hash)
                 chunks.append({
                     "id": chunk_id,
                     # add integer id directly... just for quick comparisons
