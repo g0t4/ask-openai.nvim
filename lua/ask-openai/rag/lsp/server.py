@@ -1,11 +1,5 @@
-# := vim.lsp.get_log_path()
-# tail -F ~/.local/state/nvim/lsp.log
+from pathlib import Path
 
-#
-# v1 migration:
-#   https://pygls.readthedocs.io/en/latest/pygls/howto/migrate-to-v1.html
-# FYI guides have v2 examples already... ugh
-from pygls.server import LanguageServer
 from lsprotocol.types import (
     CompletionItem,
     CompletionList,
@@ -13,12 +7,27 @@ from lsprotocol.types import (
     ExecuteCommandParams,
 )
 import lsprotocol.types as types
+from pygls.server import LanguageServer
 
-# print(f'{__package__=}')
-import lsp.rag as rag
+from lsp import rag
+from pygls import uris
+
 from .logs import logging
 
 server = LanguageServer("ask_language_server", "v0.1")
+
+@server.feature(types.INITIALIZE)
+def on_initialize(ls: LanguageServer, params: types.InitializeParams):
+    root_uri = params.root_uri  # ., root_uri='file:///Users/wesdemos/repos/github/g0t4/ask-openai.nvim'
+    if root_uri is None:
+        logging.error(f"aborting on_initialize b/c missing client workspace root_uri {root_uri}")
+        raise ValueError("root_uri is None")
+    logging.info(f"root_uri {root_uri}")
+    fspath = uris.to_fs_path(root_uri)
+    if fspath is None:
+        logging.error(f"aborting on_initialize b/c missing client workspace fspath {fspath}")
+        raise ValueError("fspath is None")
+    logging.info(f"fspath {fspath}")
 
 @server.feature(types.INITIALIZED)
 def on_initialized(server):
