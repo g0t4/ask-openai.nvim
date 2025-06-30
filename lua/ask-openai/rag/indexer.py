@@ -19,6 +19,8 @@ STOP_ON_FAILURE = True
 rag_dir = "./tmp/rag_index"
 #! TODO! all prints and progress must be redirected to a log once I run this INSIDE the LSP
 
+#! TODO updating changed docs is messing up vectors... I get missing key ids... might be not removing dropped vectors?
+
 class IncrementalRAGIndexer:
 
     def __init__(self, rag_dir: str = "./tmp/rag_index", model_name: str = "intfloat/e5-base-v2"):
