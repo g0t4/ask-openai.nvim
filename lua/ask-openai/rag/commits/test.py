@@ -74,6 +74,8 @@ if __name__ == "__main__":
     print()
 
     # sort
+    # FYI looking at this reminds me I care WAY more about recency than frequency!
+    #  make recency dominate the scoring only frequency only matters for similarly recent files
     sorted_files = sorted(frecency_data.items(), key=lambda x: x[1].score, reverse=True)
     for file, data in sorted_files:
         print(f"{file}: {data.score}")
