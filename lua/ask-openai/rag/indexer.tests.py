@@ -49,6 +49,9 @@ class TestBuildIndex(unittest.TestCase):
             self.assertEqual(first_chunk["start_line"], 1)
             self.assertEqual(first_chunk["end_line"], 20)
             self.assertEqual(len(first_chunk["text"].split("\n")), 18)
+            start = "local TestRunner = {}"
+            self.assertEqual(first_chunk["text"].startswith(start), True)
+
 
             second_chunk = [c for c in chunks if c["start_line"] == 16][0]
             self.assertEqual(second_chunk["start_line"], 16)
