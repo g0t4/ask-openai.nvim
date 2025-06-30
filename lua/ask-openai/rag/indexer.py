@@ -82,40 +82,37 @@ class IncrementalRAGIndexer:
         """Load existing index, chunks, and file metadata"""
         index_dir = self.rag_dir / language_extension
 
-        # Load FAISS index
-        index_path = index_dir / "vectors.index"
+        vectors_index_path = index_dir / "vectors.index"
         index = None
-        if index_path.exists():
+        if vectors_index_path.exists():
             try:
-                index = faiss.read_index(str(index_path))
+                index = faiss.read_index(str(vectors_index_path))
                 print(f"Loaded existing FAISS index with {index.ntotal} vectors")
             except Exception as e:
                 print(f"[yellow]Warning: Could not load existing index: {e}")
 
-        # Load chunks
-        chunks_path = index_dir / "chunks.json"
+        chunks_json_path = index_dir / "chunks.json"
         chunks = {}
-        if chunks_path.exists():
+        if chunks_json_path.exists():
             try:
-                with open(chunks_path, 'r') as f:
+                with open(chunks_json_path, 'r') as f:
                     chunks_list = json.load(f)
                     chunks = {chunk['id']: chunk for chunk in chunks_list}
                 print(f"Loaded {len(chunks)} existing chunks")
             except Exception as e:
                 print(f"[yellow]Warning: Could not load existing chunks: {e}")
 
-        # Load file metadata
-        metadata_path = index_dir / "files.json"
-        file_metadata = {}
-        if metadata_path.exists():
+        files_json_path = index_dir / "files.json"
+        files = {}
+        if files_json_path.exists():
             try:
-                with open(metadata_path, 'r') as f:
-                    file_metadata = json.load(f)
-                print(f"Loaded metadata for {len(file_metadata)} files")
+                with open(files_json_path, 'r') as f:
+                    files = json.load(f)
+                print(f"Loaded metadata for {len(files)} files")
             except Exception as e:
                 print(f"[yellow]Warning: Could not load file metadata: {e}")
 
-        return index, chunks, file_metadata
+        return index, chunks, files
 
     def find_changed_files(self, current_files: List[Path], existing_metadata: Dict) -> Tuple[Set[Path], Set[str]]:
         """Find files that have changed or are new, and files that were deleted"""
