@@ -60,7 +60,17 @@ class TestBuildIndex(unittest.TestCase):
 
         with open(files_json_path, "r") as f:
             contents = json.loads(f.read())
-            assert len(contents) == 1  # 1 file
+            assert len(contents) == 1
+            file_meta = contents[str(sample_lua_path)]
+
+            # sha256sum /Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag/tests/indexer_src/sample.lua | cut -d ' ' -f1
+            self.assertEqual(file_meta["hash"], "b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b")
+            # PRN get rid of redundancy in path? already key
+            self.assertEqual(file_meta["path"], str(sample_lua_path))
+            # how do I assert the timestamp is at least reasonable?
+            self.assertTrue(file_meta["mtime"] > 1735711201)  # Jan 1 2025 00:00:00 UTC - before this code existed :)
+            # cat tests/indexer_src/sample.lua | wc -c
+            self.assertEqual(file_meta["size"], 1_173)
 
         # verify 3 vectors
         # https://faiss.ai/cpp_api/struct/structfaiss_1_1IndexFlatIP.html
