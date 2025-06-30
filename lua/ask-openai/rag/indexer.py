@@ -4,8 +4,8 @@ from pathlib import Path
 import subprocess
 from typing import Dict, List, Set, Tuple, Optional
 
-from ids import chunk_id_to_faiss_id
-from model import model
+from lsp.ids import chunk_id_to_faiss_id
+from lsp.model import model
 from timing import Timer
 
 import faiss

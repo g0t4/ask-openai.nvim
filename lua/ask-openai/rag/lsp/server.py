@@ -5,7 +5,6 @@
 # v1 migration:
 #   https://pygls.readthedocs.io/en/latest/pygls/howto/migrate-to-v1.html
 # FYI guides have v2 examples already... ugh
-import os
 from pygls.server import LanguageServer
 from lsprotocol.types import (
     CompletionItem,
@@ -15,8 +14,9 @@ from lsprotocol.types import (
 )
 import lsprotocol.types as types
 
-import rag
-from logs import logging, LogTimer
+# print(f'{__package__=}')
+import lsp.rag as rag
+from .logs import logging
 
 server = LanguageServer("ask_language_server", "v0.1")
 

@@ -1,11 +1,11 @@
 import json
 import os
+from pathlib import Path
 
 import faiss
 
-from logs import LogTimer, logging
-from pathlib import Path
-from ids import chunk_id_to_faiss_id
+from .ids import chunk_id_to_faiss_id
+from .logs import LogTimer, logging
 
 # avoid checking for model files every time you load the model...
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
@@ -13,10 +13,10 @@ os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 def load_model():
     global model, index, chunks_by_faiss_id
-    from model import model
+    from .model import model
 
-    index_path = "./tmp/rag_index/lua/vectors.index"
-    chunks_path = "./tmp/rag_index/lua/chunks.json"
+    index_path = "../../../tmp/rag_index/lua/vectors.index"
+    chunks_path = "../../../tmp/rag_index/lua/chunks.json"
 
     with LogTimer("Loading index and chunks"):
         index = faiss.read_index(index_path)

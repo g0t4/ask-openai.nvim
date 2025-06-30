@@ -1,4 +1,4 @@
-from logs import LogTimer
+from .logs import LogTimer
 
 with LogTimer("importing sentence transformers"):
     from sentence_transformers import SentenceTransformer
