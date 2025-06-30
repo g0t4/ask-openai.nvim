@@ -76,9 +76,9 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(third_chunk["start_line"], 31)
         self.assertEqual(third_chunk["end_line"], 41)
 
-        contents = self.get_files()
-        assert len(contents) == 1
-        file_meta = contents[str(sample_lua_path)]
+        files = self.get_files()
+        assert len(files) == 1
+        file_meta = files[str(sample_lua_path)]
 
         # sha256sum /Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag/tests/indexer_src/sample.lua | cut -d ' ' -f1
         self.assertEqual(file_meta["hash"], "b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b")
