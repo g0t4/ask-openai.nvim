@@ -40,6 +40,15 @@ class TestBuildIndex(unittest.TestCase):
         with open(chunks_json_path, "r") as f:
             chunks = json.loads(f.read())
             assert len(chunks) == 3  # 41 lines currently, 5 overlap + 20 per chunk
+            sample_lua_path = (self.source_dir / "sample.lua").absolute()
+            print(f'{sample_lua_path=}')
+            for c in chunks:
+                self.assertEqual(c["file"], str(sample_lua_path))
+
+            # first = chunks[0]
+            # assert len(first["text"]) == 20
+            # # assert first["metadata"]["filename"] == "indexer.lua"
+            # # assert first["metadata"]["line_num"] == 1
 
         with open(files_json_path, "r") as f:
             contents = json.loads(f.read())
