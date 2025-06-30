@@ -1,0 +1,32 @@
+Banana = {
+    __index = {},
+    __newindex = function(t, k, v)
+        if k == "color" or k == "weight" then
+            rawset(t, k, v)
+        else
+            error("Cannot set property: " .. k)
+        end
+    end
+}
+
+function Banana:new(color, weight)
+    local instance = {
+        color = color,
+        weight = weight
+    }
+    setmetatable(instance, self)
+    return instance
+end
+
+function Banana:peel()
+    print("Peeling banana...")
+    self.color = "yellow"
+end
+
+function Banana:eat()
+    print("Eating banana...")
+    self.weight = self.weight - 1
+end
+
+-- Export the class
+return Banana

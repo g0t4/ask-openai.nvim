@@ -15,45 +15,39 @@ class TestBuildIndex(unittest.TestCase):
         super().__init__(*args, **kwargs)
         self.rag_dir = Path(__file__).parent / "tests/.rag"
         self.rag_dir.mkdir(exist_ok=True, parents=True)
-        self.source_dir = Path(__file__).parent / "tests" / "indexer_src"
+        self.indexer_src_dir = Path(__file__).parent / "tests" / "indexer_src"
+        self.tmp_updater_src_dir = Path(__file__).parent / "tests" / "tmp_updater_src"
+        self.test_cases = Path(__file__).parent / "tests" / "test_cases"
 
-    def trash_rag_dir(self):
-        if self.rag_dir.exists():
-            subprocess.run(["trash", self.rag_dir])
+    def trash_path(self, dir):
+        if dir.exists():
+            subprocess.run(["trash", dir])
 
     def get_vector_index(self):
         vectors_index_path = self.rag_dir / "lua" / "vectors.index"
-        print(f'{vectors_index_path=}')
-        assert vectors_index_path.exists()
         index = faiss.read_index(str(vectors_index_path))
         return index
 
     def get_chunks(self):
         chunks_json_path = self.rag_dir / "lua" / "chunks.json"
-        print(f'{chunks_json_path=}')
-        assert chunks_json_path.exists()
-        with open(chunks_json_path, "r") as f:
-            return json.loads(f.read())
+        return json.loads(chunks_json_path.read_text())
 
     def get_files(self):
         files_json_path = self.rag_dir / "lua" / "files.json"
-        print(f'{files_json_path=}')
-        assert files_json_path.exists()
-        with open(files_json_path, "r") as f:
-            return json.loads(f.read())
+        return json.loads(files_json_path.read_text())
 
     def test_building_rag_index_from_scratch(self):
 
         # FYI! slow to recreate index, so do it once and comment this out to quickly run assertions
         # * recreate index
-        self.trash_rag_dir()
-        indexer = IncrementalRAGIndexer(self.rag_dir, self.source_dir)
+        self.trash_path(self.rag_dir)
+        indexer = IncrementalRAGIndexer(self.rag_dir, self.indexer_src_dir)
         indexer.build_index(language_extension="lua")
 
         # * chunks
         chunks = self.get_chunks()
         assert len(chunks) == 3  # 41 lines currently, 5 overlap + 20 per chunk
-        sample_lua_path = (self.source_dir / "sample.lua").absolute()
+        sample_lua_path = (self.indexer_src_dir / "sample.lua").absolute()
         print(f'{sample_lua_path=}')
         for c in chunks:
             self.assertEqual(c["file"], str(sample_lua_path))
@@ -127,9 +121,28 @@ class TestBuildIndex(unittest.TestCase):
         np.testing.assert_array_equal(indices, expected)
 
     def test_update_index_removed_file(self):
-        # TODO test a change to index
-        # use a second directory so the file is changed entirely?
-        pass
+        # * clear rag_dir
+        self.trash_path(self.rag_dir)
+
+        # * recreate source directory with initial files
+        self.trash_path(self.tmp_updater_src_dir)
+
+        self.tmp_updater_src_dir.mkdir(exist_ok=True, parents=True)
+
+        def copy_file(src, dest):
+            (self.tmp_updater_src_dir / dest).write_text((self.test_cases / src).read_text())
+
+        copy_file("numbers.30.txt", "numbers.lua")
+        copy_file("unchanged.lua.txt", "unchanged.lua")
+
+        # * build initial index
+        indexer = IncrementalRAGIndexer(self.rag_dir, self.tmp_updater_src_dir)
+        indexer.build_index(language_extension="lua")
+
+        # * check counts
+        chunks = self.get_chunks()
+        files = self.get_files()
+        index = self.get_vector_index()
 
     def test_update_index_changed_file(self):
         pass

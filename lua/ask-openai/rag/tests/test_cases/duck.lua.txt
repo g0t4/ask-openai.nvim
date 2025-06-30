@@ -1,0 +1,13 @@
+Duck = {}
+function Duck.new(name)
+    local duck = {
+        name = name
+    }
+    duck.quack = function()
+        print("Quack!")
+    end
+    duck.fly = function()
+        print("Flying...")
+    end
+    return duck
+end
