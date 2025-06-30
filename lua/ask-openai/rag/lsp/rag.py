@@ -20,19 +20,19 @@ def load_model():
 
     with LogTimer("Loading index and chunks"):
         index = faiss.read_index(index_path)
-        logging.info(f"[INFO] Loaded index {index_path} with {index.ntotal} vectors")
+        logging.info(f"Loaded index {index_path} with {index.ntotal} vectors")
 
     with LogTimer("Loading chunks"):
         with open(chunks_path) as f:
             chunks = json.load(f)
-        # logging.info(f"[INFO] Loaded {len(chunks)} chunks from {chunks_path}")
+        # logging.info(f"Loaded {len(chunks)} chunks from {chunks_path}")
 
     chunks_by_faiss_id = {}
     for chunk in chunks:
         chunk['faiss_id'] = chunk_id_to_faiss_id(chunk['id'])
         # logging.info(f"{chunk['faiss_id']=}")
         chunks_by_faiss_id[chunk['faiss_id']] = chunk
-    logging.info(f"[INFO] Loaded {len(chunks_by_faiss_id)} chunks by id")
+    logging.info(f"Loaded {len(chunks_by_faiss_id)} chunks by id")
 
 # PRN make top_k configurable (or other params)
 def handle_query(message, top_k=3):
@@ -47,8 +47,8 @@ def handle_query(message, top_k=3):
     # TODO does this semantic belong here? or should it be like exclude_files?
     #   can worry about this when I expand RAG beyond FIM
     current_file_absolute_path = message.get("current_file_absolute_path")
-    # logging.info(f"[INFO] Querying for [green bold]{text}[/green bold]")
-    # logging.info(f"[INFO] Current file: [green bold]{current_file_absolute_path}[/green bold]")
+    # logging.info(f"Querying for [green bold]{text}[/green bold]")
+    # logging.info(f"Current file: [green bold]{current_file_absolute_path}[/green bold]")
 
     # query: prefix is what the model was trained on (and the documents have passage: prefix)
     q_vec = model.encode([f"query: {text}"], normalize_embeddings=True).astype("float32")
@@ -66,7 +66,7 @@ def handle_query(message, top_k=3):
         same_file = current_file_absolute_path == chunk_file_abs
         logging.info(f"{current_file_absolute_path=} {chunk_file_abs=} {chunk["file"]=} {same_file=}")
         if same_file:
-            logging.info("[yellow bold][WARN] Skipping match in current file", current_file_absolute_path)
+            logging.warning(f"Skipping match in current file: {chunk_file_abs=}")
             # PRN could filter too high of similarity instead? or somem other rerank or ?
             continue
         matches.append({
@@ -80,6 +80,6 @@ def handle_query(message, top_k=3):
         })
     if len(matches) == 0:
         # warn if this happens, that all were basically the same doc
-        logging.info("[red bold][WARN] No matches found")
+        logging.warning("No matches found")
 
     return {"matches": matches}
