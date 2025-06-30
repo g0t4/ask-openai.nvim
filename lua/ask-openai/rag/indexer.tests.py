@@ -60,6 +60,8 @@ class TestBuildIndex(unittest.TestCase):
             # manually computed when running on my machine... so maybe warn if not same path
             # echo -n "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag/tests/indexer_src/sample.lua:1-20:b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b" | sha256sum | head -c16
             self.assertEqual(first_chunk["id"], "2ef77c6f6c3f03bf")
+            # bitmaths 0x2ef77c6f6c3f03bf
+            self.assertEqual(first_chunk["id_int"], "3384310462991500223")
 
             second_chunk = [c for c in chunks if c["start_line"] == 16][0]
             self.assertEqual(second_chunk["start_line"], 16)
