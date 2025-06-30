@@ -57,6 +57,8 @@ class IncrementalRAGIndexer:
         for i in range(0, len(lines), lines_per_chunk - overlap):
             chunk_lines = lines[i:i + lines_per_chunk]
             text = "".join(chunk_lines).strip()
+            start_line = i + 1
+            end_line = i + len(chunk_lines)
             if text:
                 chunk_id = self.generate_chunk_id(path, i, file_hash)
                 chunks.append({
@@ -66,8 +68,8 @@ class IncrementalRAGIndexer:
                     "id_int": str(chunk_id_to_faiss_id(chunk_id)),
                     "text": text,
                     "file": str(path),
-                    "start_line": i + 1,
-                    "end_line": i + len(chunk_lines),
+                    "start_line": start_line,
+                    "end_line": end_line,
                     "type": "lines",
                     "file_hash": file_hash,
                 })
