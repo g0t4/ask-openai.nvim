@@ -21,9 +21,9 @@ class TestBuildIndex(unittest.TestCase):
             subprocess.run(["trash", self.rag_dir])
 
     def test(self):
-        # self.trash_rag_dir()
-        # indexer = IncrementalRAGIndexer(self.rag_dir, self.source_dir)
-        # indexer.build_index(language_extension="lua")
+        self.trash_rag_dir()
+        indexer = IncrementalRAGIndexer(self.rag_dir, self.source_dir)
+        indexer.build_index(language_extension="lua")
 
         chunks_json_path = self.rag_dir / "lua" / "chunks.json"
         print(f'{chunks_json_path=}')
