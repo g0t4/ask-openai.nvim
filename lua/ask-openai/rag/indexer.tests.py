@@ -126,5 +126,16 @@ class TestBuildIndex(unittest.TestCase):
         expected = np.array([[5737032561938488959, 7876391420168697139, 2711563645975913899]])
         np.testing.assert_array_equal(indices, expected)
 
+    def test_update_index_removed_file(self):
+        # TODO test a change to index
+        # use a second directory so the file is changed entirely?
+        pass
+
+    def test_update_index_changed_file(self):
+        pass
+
+    def test_update_index_added_file(self):
+        pass
+
 if __name__ == "__main__":
     unittest.main()
