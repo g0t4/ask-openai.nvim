@@ -68,7 +68,15 @@ if __name__ == "__main__":
     # Save to file or process as needed
     # with open('git_frecency_data.json', 'w') as f:
     #     json.dump(frecency_data, f)
+
+    print()
     print(frecency_data)
+    print()
+
+    # sort
+    sorted_files = sorted(frecency_data.items(), key=lambda x: x[1].score, reverse=True)
+    for file, data in sorted_files:
+        print(f"{file}: {data.score}")
 
 # could do multisignal frecency ... i.e.
 # def code_frecency(file_data):
