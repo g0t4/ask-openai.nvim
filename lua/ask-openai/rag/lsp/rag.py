@@ -13,8 +13,7 @@ os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 def load_model():
     global model, index, chunks_by_faiss_id
-    with LogTimer("importing sentence_transformers"):
-        from sentence_transformers import SentenceTransformer
+    from model import model
 
     index_path = "./tmp/rag_index/lua/vectors.index"
     chunks_path = "./tmp/rag_index/lua/chunks.json"
@@ -34,11 +33,6 @@ def load_model():
         # logging.info(f"{chunk['faiss_id']=}")
         chunks_by_faiss_id[chunk['faiss_id']] = chunk
     logging.info(f"[INFO] Loaded {len(chunks_by_faiss_id)} chunks by id")
-
-    # TODO try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
-    model_name = "intfloat/e5-base-v2"
-    with LogTimer(f"Loading SentenceTransformer model ({model_name})"):
-        model = SentenceTransformer(model_name)
 
 # PRN make top_k configurable (or other params)
 def handle_query(message, top_k=3):

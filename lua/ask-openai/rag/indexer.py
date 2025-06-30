@@ -3,9 +3,9 @@ import hashlib
 from pathlib import Path
 import subprocess
 from typing import Dict, List, Set, Tuple, Optional
-import os
 
 from lsp.ids import chunk_id_to_faiss_id
+from lsp.model import model
 
 import faiss
 import numpy as np
@@ -17,13 +17,7 @@ from timing import Timer
 IGNORE_FAILURE = False
 STOP_ON_FAILURE = True
 
-with Timer("Build RAG index"):
-    from sentence_transformers import SentenceTransformer
-
 rag_dir = "./tmp/rag_index"
-model_name = "intfloat/e5-base-v2"
-with Timer(f"Load model {model_name}"):
-    model = SentenceTransformer(model_name)
 
 class IncrementalRAGIndexer:
 
