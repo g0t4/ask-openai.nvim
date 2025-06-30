@@ -80,13 +80,21 @@ class TestBuildIndex(unittest.TestCase):
         # verify 3 vectors
         # https://faiss.ai/cpp_api/struct/structfaiss_1_1IndexFlatIP.html
         index = faiss.read_index(str(vectors_index_path))
-        assert index.ntotal == 3  # 41 lines currently, 5 overlap + 20 per chunk
+        self.assertEqual(index.ntotal, 3)
+        self.assertEqual(index.d, 768)
         print(f'{index=}')
-        # assert index.ntotal == len(chunks)
+        for i in range(index.ntotal):
+            print(i)
 
-        # assert "chunks" in contents
-        # assert "text" in contents
-        # assert "metadata" in contents
+    def test_encode_integration_exploratory(self):
+        from lsp.model import model
+        q = model.encode(["hello"], normalize_embeddings=True)
+        print(f'{q.shape=}')
+
+        # currently hard coded model:
+        # https://huggingface.co/intfloat/e5-base-v2
+        # This model has 12 layers and the embedding size is 768.
+        self.assertEqual(q.shape, (1, 768))
 
 if __name__ == "__main__":
     unittest.main()
