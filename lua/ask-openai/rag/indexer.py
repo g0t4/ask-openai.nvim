@@ -6,7 +6,7 @@ from typing import Dict, List, Set, Tuple, Optional
 
 from ids import chunk_id_to_faiss_id
 from model import model
-from logs import LogTimer
+from timing import Timer
 
 import faiss
 import numpy as np
@@ -195,7 +195,7 @@ class IncrementalRAGIndexer:
                 faiss_ids_to_remove = [chunk_id_to_faiss_id(cid) for cid in chunk_ids_to_remove]
                 print(f"Removing {len(faiss_ids_to_remove)} vectors for changed/deleted files")
 
-                with LogTimer("Remove old vectors"):
+                with Timer("Remove old vectors"):
                     selector = faiss.IDSelectorArray(np.array(faiss_ids_to_remove, dtype="int64"))
                     index.remove_ids(selector)
 
@@ -216,13 +216,13 @@ class IncrementalRAGIndexer:
                 texts = [f"passage: {chunk['text']}" for chunk in new_chunks]
                 faiss_ids = [chunk_id_to_faiss_id(cid) for cid in new_chunk_ids]
 
-                with LogTimer("Encode new vectors"):
+                with Timer("Encode new vectors"):
                     vecs = self.model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
 
                 vecs_np = np.array(vecs).astype("float32")
                 faiss_ids_np = np.array(faiss_ids, dtype="int64")
 
-                with LogTimer("Add new vectors to index"):
+                with Timer("Add new vectors to index"):
                     index.add_with_ids(vecs_np, faiss_ids_np)
 
         return index
@@ -241,13 +241,13 @@ class IncrementalRAGIndexer:
         chunk_ids = [chunk_id for chunk_id, _ in chunk_items]
         faiss_ids = [chunk_id_to_faiss_id(cid) for cid in chunk_ids]
 
-        with LogTimer("Encode texts to vectors"):
+        with Timer("Encode texts to vectors"):
             vecs = self.model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
 
         vecs_np = np.array(vecs).astype("float32")
         faiss_ids_np = np.array(faiss_ids, dtype="int64")
 
-        with LogTimer("Build FAISS IndexIDMap"):
+        with Timer("Build FAISS IndexIDMap"):
             base_index = faiss.IndexFlatIP(vecs_np.shape[1])
             index = faiss.IndexIDMap(base_index)
             index.add_with_ids(vecs_np, faiss_ids_np)
@@ -262,7 +262,7 @@ class IncrementalRAGIndexer:
         existing_index, existing_chunks, existing_file_metadata = self.load_existing_index(language_extension)
 
         # Find current files
-        with LogTimer("Find files"):
+        with Timer("Find files"):
             current_files = self.find_files_with_fd(source_dir, language_extension)
             print(f"Found {len(current_files)} {language_extension} files")
 
@@ -290,7 +290,7 @@ class IncrementalRAGIndexer:
             if deleted_file in new_file_metadata:
                 del new_file_metadata[deleted_file]
 
-        with LogTimer("Process changed files"):
+        with Timer("Process changed files"):
             for i, file_path in enumerate(changed_files):
                 if i % 10 == 0 and i > 0:
                     print(f"Processed {i}/{len(changed_files)} changed files...")
@@ -324,17 +324,17 @@ class IncrementalRAGIndexer:
         index_dir = self.rag_dir / language_extension
         index_dir.mkdir(exist_ok=True, parents=True)
 
-        with LogTimer("Save FAISS index"):
+        with Timer("Save FAISS index"):
             faiss.write_index(index, str(index_dir / "vectors.index"))
 
-        with LogTimer("Save chunks"):
+        with Timer("Save chunks"):
             chunks_list = list(chunks.values())
             # Sort by chunk ID for consistent ordering
             chunks_list.sort(key=lambda x: x['id'])
             with open(index_dir / "chunks.json", 'w') as f:
                 json.dump(chunks_list, f, indent=2)
 
-        with LogTimer("Save file metadata"):
+        with Timer("Save file metadata"):
             with open(index_dir / "file_metadata.json", 'w') as f:
                 json.dump(new_file_metadata, f, indent=2)
 
@@ -355,7 +355,7 @@ def trash_indexes(language_extension="lua"):
     subprocess.run(["trash", index_path], check=IGNORE_FAILURE)
 
 if __name__ == "__main__":
-    with LogTimer("Total indexing time"):
+    with Timer("Total indexing time"):
         indexer = IncrementalRAGIndexer(rag_dir)
         indexer.build_index(language_extension="lua")
         indexer.build_index(language_extension="py")
