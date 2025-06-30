@@ -19,7 +19,7 @@ STOP_ON_FAILURE = True
 rag_dir = "./tmp/rag_index"
 #! TODO! all prints and progress must be redirected to a log once I run this INSIDE the LSP
 
-#! TODO updating changed docs is messing up vectors... I get missing key ids... might be not removing dropped vectors?
+#! TODO! fix the cluster F of deleting chunks and then requerying them... in build_index... chicken egg and Claude Foo'd it up bad
 
 class IncrementalRAGIndexer:
 
