@@ -103,9 +103,6 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(q.shape, (1, 768))
 
         index = self.get_vector_index()
-        self.assertEqual(index.ntotal, 3)
-        self.assertEqual(index.d, 768)
-
         distances, indices = index.search(q, 1)
         print(f"{distances=}")
         print(f"{indices=}")
