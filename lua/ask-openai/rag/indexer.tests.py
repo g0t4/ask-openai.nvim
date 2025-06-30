@@ -4,6 +4,7 @@ import subprocess
 import unittest
 
 import faiss
+import numpy as np
 from rich import print
 
 from indexer import IncrementalRAGIndexer
@@ -116,9 +117,12 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(q.shape, (1, 768))
 
         index = self.get_vector_index()
-        distances, indices = index.search(q, 1)
+        distances, indices = index.search(q, 3)
         print(f"{distances=}")
         print(f"{indices=}")
+        # first two id_ints here have the hello world, last doesn't
+        expected = np.array([[5737032561938488959, 7876391420168697139, 2711563645975913899]])
+        np.testing.assert_array_equal(indices, expected)
 
 if __name__ == "__main__":
     unittest.main()
