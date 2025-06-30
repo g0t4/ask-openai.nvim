@@ -20,6 +20,13 @@ class TestBuildIndex(unittest.TestCase):
         if self.rag_dir.exists():
             subprocess.run(["trash", self.rag_dir])
 
+    def get_vector_index(self):
+        vectors_index_path = self.rag_dir / "lua" / "vectors.index"
+        print(f'{vectors_index_path=}')
+        assert vectors_index_path.exists()
+        index = faiss.read_index(str(vectors_index_path))
+        return index
+
     def test(self):
         self.trash_rag_dir()
         indexer = IncrementalRAGIndexer(self.rag_dir, self.source_dir)
@@ -32,10 +39,6 @@ class TestBuildIndex(unittest.TestCase):
         files_json_path = self.rag_dir / "lua" / "files.json"
         print(f'{files_json_path=}')
         assert files_json_path.exists()
-
-        vectors_index_path = self.rag_dir / "lua" / "vectors.index"
-        print(f'{vectors_index_path=}')
-        assert vectors_index_path.exists()
 
         with open(chunks_json_path, "r") as f:
             chunks = json.loads(f.read())
@@ -79,7 +82,8 @@ class TestBuildIndex(unittest.TestCase):
 
         # verify 3 vectors
         # https://faiss.ai/cpp_api/struct/structfaiss_1_1IndexFlatIP.html
-        index = faiss.read_index(str(vectors_index_path))
+        index = self.get_vector_index()
+
         self.assertEqual(index.ntotal, 3)
         self.assertEqual(index.d, 768)
         print(f'{index=}')
