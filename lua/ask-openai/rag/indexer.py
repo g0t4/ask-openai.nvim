@@ -94,13 +94,13 @@ class IncrementalRAGIndexer:
                 print(f"[yellow]Warning: Could not load existing index: {e}")
 
         chunks_json_path = index_dir / "chunks.json"
-        chunks = {}
+        chunks_by_id = {}
         if chunks_json_path.exists():
             try:
                 with open(chunks_json_path, 'r') as f:
                     chunks_list = json.load(f)
-                    chunks = {chunk['id']: chunk for chunk in chunks_list}
-                print(f"Loaded {len(chunks)} existing chunks")
+                    chunks_by_id = {chunk['id']: chunk for chunk in chunks_list}
+                print(f"Loaded {len(chunks_by_id)} existing chunks")
             except Exception as e:
                 print(f"[yellow]Warning: Could not load existing chunks: {e}")
 
@@ -114,7 +114,7 @@ class IncrementalRAGIndexer:
             except Exception as e:
                 print(f"[yellow]Warning: Could not load file metadata: {e}")
 
-        return index, chunks, files
+        return index, chunks_by_id, files
 
     def find_changed_files(self, current_files: List[Path], existing_metadata: Dict) -> Tuple[Set[Path], Set[str]]:
         """Find files that have changed or are new, and files that were deleted"""
@@ -225,7 +225,7 @@ class IncrementalRAGIndexer:
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
-        existing_index, existing_chunks, existing_file_metadata = self.load_existing_index(language_extension)
+        existing_index, existing_chunks_by_id, existing_file_metadata = self.load_existing_index(language_extension)
 
         with Timer("Find current files"):
             current_files = self.find_files_with_fd(language_extension)
@@ -247,7 +247,7 @@ class IncrementalRAGIndexer:
         # TODO at least capture the ids of what were remoged into one collection
         # TODO just OMG I hate this whole pilee of crap
         # TODO later wes
-        chunks = self.remove_chunks_for_deleted_files(existing_chunks, deleted_files)
+        chunks = self.remove_chunks_for_deleted_files(existing_chunks_by_id, deleted_files)
 
         # * Process changed files
         new_file_metadata = existing_file_metadata.copy()
