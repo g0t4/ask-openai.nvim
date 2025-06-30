@@ -27,21 +27,23 @@ class TestBuildIndex(unittest.TestCase):
         index = faiss.read_index(str(vectors_index_path))
         return index
 
+    def get_chunks(self):
+        chunks_json_path = self.rag_dir / "lua" / "chunks.json"
+        print(f'{chunks_json_path=}')
+        assert chunks_json_path.exists()
+        with open(chunks_json_path, "r") as f:
+            return json.loads(f.read())
+
     def test(self):
         self.trash_rag_dir()
         indexer = IncrementalRAGIndexer(self.rag_dir, self.source_dir)
         indexer.build_index(language_extension="lua")
 
-        chunks_json_path = self.rag_dir / "lua" / "chunks.json"
-        print(f'{chunks_json_path=}')
-        assert chunks_json_path.exists()
-
         files_json_path = self.rag_dir / "lua" / "files.json"
         print(f'{files_json_path=}')
         assert files_json_path.exists()
 
-        with open(chunks_json_path, "r") as f:
-            chunks = json.loads(f.read())
+        chunks = self.get_chunks()
             assert len(chunks) == 3  # 41 lines currently, 5 overlap + 20 per chunk
             sample_lua_path = (self.source_dir / "sample.lua").absolute()
             print(f'{sample_lua_path=}')
