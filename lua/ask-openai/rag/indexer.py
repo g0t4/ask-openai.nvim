@@ -215,6 +215,7 @@ class IncrementalRAGIndexer:
 
                 texts = [f"passage: {chunk['text']}" for chunk in new_chunks]
                 faiss_ids = [chunk_id_to_faiss_id(cid) for cid in new_chunk_ids]
+                print(f"{faiss_ids=}")
 
                 with Timer("Encode new vectors"):
                     vecs = model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
