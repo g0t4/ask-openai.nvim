@@ -51,7 +51,8 @@ class TestBuildIndex(unittest.TestCase):
             self.assertEqual(len(first_chunk["text"].split("\n")), 18)
             start = "local TestRunner = {}"
             self.assertEqual(first_chunk["text"].startswith(start), True)
-
+            end = "table.insert(self.results, {status = \"fail\", message = \"Test failed: expected \" .. tostring(test.expected) .. \", got \" .. tostring(result)})"
+            self.assertEqual(first_chunk["text"].endswith(end), True)
 
             second_chunk = [c for c in chunks if c["start_line"] == 16][0]
             self.assertEqual(second_chunk["start_line"], 16)
