@@ -22,8 +22,9 @@ STOP_ON_FAILURE = True
 
 class IncrementalRAGIndexer:
 
-    def __init__(self, rag_dir):
+    def __init__(self, rag_dir, source_dir):
         self.rag_dir = Path(rag_dir)
+        self.source_dir = Path(source_dir)
 
     def get_file_hash(self, file_path: Path) -> str:
         hasher = hashlib.sha256()
@@ -68,10 +69,10 @@ class IncrementalRAGIndexer:
                 })
         return chunks
 
-    def find_files_with_fd(self, source_dir: str, language_extension: str) -> List[Path]:
+    def find_files_with_fd(self, language_extension: str) -> List[Path]:
         """Find files using fd command"""
         result = subprocess.run(
-            ["fd", f".*\\.{language_extension}$", source_dir, "--absolute-path", "--type", "f"],
+            ["fd", f".*\\.{language_extension}$", str(self.source_dir), "--absolute-path", "--type", "f"],
             stdout=subprocess.PIPE,
             text=True,
             check=True,
@@ -219,14 +220,14 @@ class IncrementalRAGIndexer:
 
         return index
 
-    def build_index(self, source_dir: str = ".", language_extension: str = "lua"):
+    def build_index(self, language_extension: str = "lua"):
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
         existing_index, existing_chunks, existing_file_metadata = self.load_existing_index(language_extension)
 
         with Timer("Find current files"):
-            current_files = self.find_files_with_fd(source_dir, language_extension)
+            current_files = self.find_files_with_fd(language_extension)
             print(f"Found {len(current_files)} {language_extension} files")
 
         if not current_files:
@@ -319,8 +320,9 @@ if __name__ == "__main__":
         # yup, can turn this into a command that uses git repo of CWD
         root_directory = subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
         rag_dir = Path(root_directory) / ".rag"
+        source_dir = "."
         print(f"[bold]RAG directory: {rag_dir}")
-        indexer = IncrementalRAGIndexer(rag_dir)
+        indexer = IncrementalRAGIndexer(rag_dir, source_dir)
         indexer.build_index(language_extension="lua")
         indexer.build_index(language_extension="py")
         indexer.build_index(language_extension="fish")

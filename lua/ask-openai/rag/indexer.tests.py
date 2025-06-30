@@ -11,13 +11,14 @@ class TestBuildIndex(unittest.TestCase):
         super().__init__(*args, **kwargs)
         self.rag_dir = Path(__file__).parent / "tests/.rag"
         self.rag_dir.mkdir(exist_ok=True, parents=True)
+        self.source_dir = Path(__file__).parent / "tests" / "indexer_src"
 
     def setUp(self):
         if self.rag_dir.exists():
             subprocess.run(["trash", self.rag_dir])
 
     def test(self):
-        indexer = IncrementalRAGIndexer(self.rag_dir)
+        indexer = IncrementalRAGIndexer(self.rag_dir, self.source_dir)
         indexer.build_index(language_extension="lua")
 
         chunks_json = self.rag_dir / "lua" / "chunks.json"
