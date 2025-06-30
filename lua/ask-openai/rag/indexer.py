@@ -61,6 +61,9 @@ class IncrementalRAGIndexer:
                 chunk_id = self.generate_chunk_id(path, i, file_hash)
                 chunks.append({
                     "id": chunk_id,
+                    # add integer id directly... just for quick comparisons
+                    # FYI your json parser might choke on large integers... if so wrap this in a string just incase
+                    "id_int": str(chunk_id_to_faiss_id(chunk_id)),
                     "text": text,
                     "file": str(path),
                     "start_line": i + 1,
