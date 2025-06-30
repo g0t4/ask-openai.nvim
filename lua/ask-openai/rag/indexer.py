@@ -315,11 +315,6 @@ class IncrementalRAGIndexer:
         if deleted_files:
             print(f"[green]Removed {len(deleted_files)} deleted files")
 
-def build_index(source_dir=".", language_extension="lua"):
-    """Legacy function wrapper for backward compatibility"""
-    indexer = IncrementalRAGIndexer(rag_dir)
-    indexer.build_index(source_dir, language_extension)
-
 def trash_indexes(language_extension="lua"):
     """Remove index for a specific language"""
     index_path = Path(rag_dir, language_extension)
