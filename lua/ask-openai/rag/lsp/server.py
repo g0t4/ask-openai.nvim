@@ -18,16 +18,17 @@ server = LanguageServer("ask_language_server", "v0.1")
 
 @server.feature(types.INITIALIZE)
 def on_initialize(ls: LanguageServer, params: types.InitializeParams):
+    global root_fs_path
     root_uri = params.root_uri  # ., root_uri='file:///Users/wesdemos/repos/github/g0t4/ask-openai.nvim'
     if root_uri is None:
         logging.error(f"aborting on_initialize b/c missing client workspace root_uri {root_uri}")
         raise ValueError("root_uri is None")
     logging.info(f"root_uri {root_uri}")
-    fspath = uris.to_fs_path(root_uri)
-    if fspath is None:
-        logging.error(f"aborting on_initialize b/c missing client workspace fspath {fspath}")
+    root_fs_path = uris.to_fs_path(root_uri)
+    if root_fs_path is None:
+        logging.error(f"aborting on_initialize b/c missing client workspace fspath {root_fs_path}")
         raise ValueError("fspath is None")
-    logging.info(f"fspath {fspath}")
+    logging.info(f"fspath {root_fs_path}")
 
 @server.feature(types.INITIALIZED)
 def on_initialized(server):
