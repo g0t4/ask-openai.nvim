@@ -150,7 +150,7 @@ class IncrementalRAGIndexer:
 
         return changed_files, deleted_files
 
-    def remove_chunks_for_files(self, chunks: Dict, deleted_files: Set[str]) -> Dict:
+    def remove_chunks_for_deleted_files(self, chunks: Dict, deleted_files: Set[str]) -> Dict:
         """Remove chunks for deleted files"""
         chunks_to_remove = []
         for chunk_id, chunk in chunks.items():
@@ -282,7 +282,7 @@ class IncrementalRAGIndexer:
         print(f"Processing {len(changed_files)} changed files")
 
         # Start with existing chunks and remove deleted files
-        chunks = self.remove_chunks_for_files(existing_chunks, deleted_files)
+        chunks = self.remove_chunks_for_deleted_files(existing_chunks, deleted_files)
 
         # Process changed files
         new_file_metadata = existing_file_metadata.copy()
