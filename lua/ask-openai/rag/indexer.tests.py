@@ -42,10 +42,13 @@ class TestBuildIndex(unittest.TestCase):
             return json.loads(f.read())
 
     def test(self):
+
+        # * recreate index
         self.trash_rag_dir()
         indexer = IncrementalRAGIndexer(self.rag_dir, self.source_dir)
         indexer.build_index(language_extension="lua")
 
+        # * chunks
         chunks = self.get_chunks()
         assert len(chunks) == 3  # 41 lines currently, 5 overlap + 20 per chunk
         sample_lua_path = (self.source_dir / "sample.lua").absolute()
@@ -76,6 +79,7 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(third_chunk["start_line"], 31)
         self.assertEqual(third_chunk["end_line"], 41)
 
+        # * files
         files = self.get_files()
         assert len(files) == 1
         file_meta = files[str(sample_lua_path)]
@@ -89,7 +93,7 @@ class TestBuildIndex(unittest.TestCase):
         # cat tests/indexer_src/sample.lua | wc -c
         self.assertEqual(file_meta["size"], 1_173)
 
-        # verify 3 vectors
+        # * vectors
         # https://faiss.ai/cpp_api/struct/structfaiss_1_1IndexFlatIP.html
         index = self.get_vector_index()
 
