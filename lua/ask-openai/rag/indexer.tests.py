@@ -148,6 +148,18 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(len(files), 2)
         self.assertEqual(index.ntotal, 4)
 
+        copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 4 chunks (starts = 1-20, 16-35, 31-50)
+        indexer.build_index(language_extension="lua")
+
+        # * check counts
+        chunks = self.get_chunks()
+        files = self.get_files()
+        index = self.get_vector_index()
+
+        self.assertEqual(len(chunks), 5)
+        self.assertEqual(len(files), 2)
+        self.assertEqual(index.ntotal, 5)
+
     def test_update_index_changed_file(self):
         pass
 
