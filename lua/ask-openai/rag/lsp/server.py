@@ -24,10 +24,11 @@ def on_initialize(ls: LanguageServer, params: types.InitializeParams):
         logging.error(f"aborting on_initialize b/c missing client workspace root_uri {root_uri}")
         raise ValueError("root_uri is None")
     logging.info(f"root_uri {root_uri}")
-    root_fs_path = uris.to_fs_path(root_uri)
-    if root_fs_path is None:
-        logging.error(f"aborting on_initialize b/c missing client workspace fspath {root_fs_path}")
+    fs_path = uris.to_fs_path(root_uri)
+    if fs_path is None:
+        logging.error(f"aborting on_initialize b/c missing client workspace fspath {fs_path}")
         raise ValueError("fspath is None")
+    root_fs_path = Path(fs_path)
     logging.info(f"fspath {root_fs_path}")
 
 @server.feature(types.INITIALIZED)
@@ -38,7 +39,7 @@ def on_initialized(server):
     #  then, client sends initialized (this) request => waits for completion
     #    does not send other requests until initialized is done
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
-    rag.load_model_and_indexes()
+    rag.load_model_and_indexes(root_fs_path)
 
 @server.feature(types.TEXT_DOCUMENT_COMPLETION)
 def completions(params: CompletionParams):

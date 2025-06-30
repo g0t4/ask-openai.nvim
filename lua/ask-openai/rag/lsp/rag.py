@@ -11,7 +11,7 @@ from .logs import LogTimer, logging
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
-def load_model_and_indexes():
+def load_model_and_indexes(root_fs_path: Path):
     global model, index, chunks_by_faiss_id
     from .model import model
 
