@@ -268,8 +268,8 @@ class IncrementalRAGIndexer:
                     print(f"Processed {i}/{len(changed_files)} changed files...")
 
                 # Remove old chunks for this file
-                old_chunks_to_remove = [chunk_id for chunk_id, chunk in chunks.items() if chunk['file'] == str(file_path)]
-                for chunk_id in old_chunks_to_remove:
+                old_chunk_ids_to_remove = [chunk_id for chunk_id, chunk in chunks.items() if chunk['file'] == str(file_path)]
+                for chunk_id in old_chunk_ids_to_remove:
                     del chunks[chunk_id]
 
                 # Get new file metadata
