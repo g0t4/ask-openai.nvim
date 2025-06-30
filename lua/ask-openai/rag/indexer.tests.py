@@ -45,10 +45,18 @@ class TestBuildIndex(unittest.TestCase):
             for c in chunks:
                 self.assertEqual(c["file"], str(sample_lua_path))
 
-            # first = chunks[0]
-            # assert len(first["text"]) == 20
-            # # assert first["metadata"]["filename"] == "indexer.lua"
-            # # assert first["metadata"]["line_num"] == 1
+            first_chunk = [c for c in chunks if c["start_line"] == 1][0]
+            self.assertEqual(first_chunk["start_line"], 1)
+            self.assertEqual(first_chunk["end_line"], 20)
+            self.assertEqual(len(first_chunk["text"].split("\n")), 18)
+
+            second_chunk = [c for c in chunks if c["start_line"] == 16][0]
+            self.assertEqual(second_chunk["start_line"], 16)
+            self.assertEqual(second_chunk["end_line"], 35)
+
+            third_chunk = [c for c in chunks if c["start_line"] == 31][0]
+            self.assertEqual(third_chunk["start_line"], 31)
+            self.assertEqual(third_chunk["end_line"], 41)
 
         with open(files_json_path, "r") as f:
             contents = json.loads(f.read())
