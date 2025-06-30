@@ -45,7 +45,7 @@ function M.query_rag_via_lsp(document_prefix, document_suffix, callback)
             return
         end
 
-        log:info("RAG result:", vim.inspect(result))
+        log:info("RAG matches (client):", vim.inspect(result))
         local rag_matches = result.matches or {}
         callback(rag_matches)
     end)

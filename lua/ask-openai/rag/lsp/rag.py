@@ -69,6 +69,7 @@ def handle_query(message, top_k=3):
         current_file_abs = Path(current_file).absolute()
     for rank, idx in enumerate(ids[0]):
         chunk = chunks_by_faiss_id[idx]
+        # TODO graceful handling of missing chunk? (i.e. change indexing ID  :) )
         chunk_file_abs = Path(chunk["file"]).absolute()
         same_file = current_file_abs == chunk_file_abs
         # logging.info(f"{current_file_abs=} {chunk_file_abs=} {same_file=}")
