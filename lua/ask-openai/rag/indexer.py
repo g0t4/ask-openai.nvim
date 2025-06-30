@@ -252,6 +252,10 @@ class IncrementalRAGIndexer:
         print(f"Processing {len(changed_files)} changed files")
 
         # Start with existing chunks and remove deleted files
+        # TODO this shouldn't be deleting the chunks that are then tried to be usedlater...
+        # TODO at least capture the ids of what were remoged into one collection
+        # TODO just OMG I hate this whole pilee of crap
+        # TODO later wes
         chunks = self.remove_chunks_for_deleted_files(existing_chunks, deleted_files)
 
         # Process changed files
