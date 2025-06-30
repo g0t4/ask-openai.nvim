@@ -15,8 +15,11 @@ def load_model_and_indexes(root_fs_path: Path):
     global model, index, chunks_by_faiss_id
     from .model import model
 
-    index_path = "../../../tmp/rag_index/lua/vectors.index"
-    chunks_path = "../../../tmp/rag_index/lua/chunks.json"
+    # index_path = "../../../tmp/rag_index/lua/vectors.index"
+    # chunks_path = "../../../tmp/rag_index/lua/chunks.json"
+    lua_dir = root_fs_path / ".rag" / "lua"
+    index_path = str(lua_dir / "vectors.index")
+    chunks_path = str(lua_dir / "chunks.json")
 
     with LogTimer("Loading index and chunks"):
         index = faiss.read_index(index_path)

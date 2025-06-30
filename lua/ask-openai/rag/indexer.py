@@ -5,7 +5,6 @@ import subprocess
 from typing import Dict, List, Set, Tuple, Optional
 
 from lsp.ids import chunk_id_to_faiss_id
-from lsp.model import model
 from timing import Timer
 
 import faiss
@@ -16,7 +15,6 @@ from rich import print
 IGNORE_FAILURE = False
 STOP_ON_FAILURE = True
 
-rag_dir = "./tmp/rag_index"
 #! FYI! this works with a rebuild (nuk the dir tmp/rag_index)
 #! TODO! all prints and progress must be redirected to a log once I run this INSIDE the LSP
 # !!! DO NOT USE INCREMENTAL REBUILD UNTIL FIX ORDERING ISSUE WITH DELETES
@@ -24,10 +22,8 @@ rag_dir = "./tmp/rag_index"
 
 class IncrementalRAGIndexer:
 
-    def __init__(self, rag_dir: str = "./tmp/rag_index", model_name: str = "intfloat/e5-base-v2"):
+    def __init__(self, rag_dir):
         self.rag_dir = Path(rag_dir)
-        self.model_name = model_name
-        self.model = model  # Use the globally loaded model
 
     def get_file_hash(self, file_path: Path) -> str:
         hasher = hashlib.sha256()
@@ -109,7 +105,7 @@ class IncrementalRAGIndexer:
                 print(f"[yellow]Warning: Could not load existing chunks: {e}")
 
         # Load file metadata
-        metadata_path = index_dir / "file_metadata.json"
+        metadata_path = index_dir / "files.json"
         file_metadata = {}
         if metadata_path.exists():
             try:
@@ -174,13 +170,14 @@ class IncrementalRAGIndexer:
 
     def update_faiss_index_incrementally(self, index: Optional[faiss.Index], chunks: Dict, changed_files: Set[Path], deleted_files: Set[str]) -> faiss.Index:
         """Update FAISS index incrementally using IndexIDMap"""
+        from lsp.model import model
 
         # Create base index if it doesn't exist
         if index is None:
             print("Creating new FAISS index")
             # Create a dummy vector to get dimensions
             sample_text = "passage: sample"
-            sample_vec = self.model.encode([sample_text], normalize_embeddings=True)
+            sample_vec = model.encode([sample_text], normalize_embeddings=True)
             base_index = faiss.IndexFlatIP(sample_vec.shape[1])
             index = faiss.IndexIDMap(base_index)
             # FYI if someone deletes the vectors file... this won't recreate it if metadata still exists...
@@ -215,7 +212,7 @@ class IncrementalRAGIndexer:
                 faiss_ids = [chunk_id_to_faiss_id(cid) for cid in new_chunk_ids]
 
                 with Timer("Encode new vectors"):
-                    vecs = self.model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
+                    vecs = model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
 
                 vecs_np = np.array(vecs).astype("float32")
                 faiss_ids_np = np.array(faiss_ids, dtype="int64")
@@ -306,7 +303,7 @@ class IncrementalRAGIndexer:
                 json.dump(chunks_list, f, indent=2)
 
         with Timer("Save file metadata"):
-            with open(index_dir / "file_metadata.json", 'w') as f:
+            with open(index_dir / "files.json", 'w') as f:
                 json.dump(new_file_metadata, f, indent=2)
 
         print(f"[green]Index updated successfully!")
@@ -315,13 +312,17 @@ class IncrementalRAGIndexer:
         if deleted_files:
             print(f"[green]Removed {len(deleted_files)} deleted files")
 
-def trash_indexes(language_extension="lua"):
+def trash_indexes(rag_dir, language_extension="lua"):
     """Remove index for a specific language"""
     index_path = Path(rag_dir, language_extension)
     subprocess.run(["trash", index_path], check=IGNORE_FAILURE)
 
 if __name__ == "__main__":
     with Timer("Total indexing time"):
+        # yup, can turn this into a command that uses git repo of CWD
+        root_directory = subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
+        rag_dir = Path(root_directory) / ".rag"
+        print(f"[bold]RAG directory: {rag_dir}")
         indexer = IncrementalRAGIndexer(rag_dir)
         indexer.build_index(language_extension="lua")
         indexer.build_index(language_extension="py")
