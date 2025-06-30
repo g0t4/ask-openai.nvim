@@ -58,10 +58,10 @@ class TestBuildIndex(unittest.TestCase):
             end = "table.insert(self.results, {status = \"fail\", message = \"Test failed: expected \" .. tostring(test.expected) .. \", got \" .. tostring(result)})"
             self.assertEqual(first_chunk["text"].endswith(end), True)
             # manually computed when running on my machine... so maybe warn if not same path
-            # echo -n "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag/tests/indexer_src/sample.lua:1-20:b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b" | sha256sum | head -c16
-            self.assertEqual(first_chunk["id"], "2ef77c6f6c3f03bf")
-            # bitmaths 0x2ef77c6f6c3f03bf
-            self.assertEqual(first_chunk["id_int"], "3384310462991500223")
+            # echo -n "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag/tests/indexer_src/sample.lua:lines:1-20:b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b" | sha256sum | head -c16
+            self.assertEqual(first_chunk["id"], "a5a168c50041e5ab")
+            # bitmaths 0xa5a168c50041e5ab # but then  have to drop 64th bit (if set)=> bitmath => wc = do again if 64th was set and then use that value (last 63 bits of int64)
+            self.assertEqual(first_chunk["id_int"], "2711563645975913899")
 
             second_chunk = [c for c in chunks if c["start_line"] == 16][0]
             self.assertEqual(second_chunk["start_line"], 16)
