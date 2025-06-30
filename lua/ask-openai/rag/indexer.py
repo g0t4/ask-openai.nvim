@@ -184,6 +184,7 @@ class IncrementalRAGIndexer:
             sample_vec = self.model.encode([sample_text], normalize_embeddings=True)
             base_index = faiss.IndexFlatIP(sample_vec.shape[1])
             index = faiss.IndexIDMap(base_index)
+            # FYI if someone deletes the vectors file... this won't recreate it if metadata still exists...
 
         # Remove vectors for changed and deleted files
         files_to_remove = set(str(f) for f in changed_files) | deleted_files
