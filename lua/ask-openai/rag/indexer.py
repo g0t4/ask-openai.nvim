@@ -30,7 +30,6 @@ class IncrementalRAGIndexer:
         self.model = model  # Use the globally loaded model
 
     def get_file_hash(self, file_path: Path) -> str:
-        """Get SHA256 hash of file contents"""
         hasher = hashlib.sha256()
         with open(file_path, 'rb') as f:
             for chunk in iter(lambda: f.read(4096), b""):
@@ -38,7 +37,6 @@ class IncrementalRAGIndexer:
         return hasher.hexdigest()
 
     def get_file_metadata(self, file_path: Path) -> Dict:
-        """Get file metadata (hash, mtime, size)"""
         stat = file_path.stat()
         return {
             'path': str(file_path),
@@ -52,7 +50,7 @@ class IncrementalRAGIndexer:
         chunk_str = f"{file_path}:{chunk_index}:{file_hash}"
         return hashlib.sha256(chunk_str.encode()).hexdigest()[:16]
 
-    def simple_chunk_file(self, path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Dict]:
+    def get_file_chunks(self, path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Dict]:
         """Chunk a file with unique chunk IDs"""
         chunks = []
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
@@ -231,11 +229,9 @@ class IncrementalRAGIndexer:
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
-        # Load existing data
         existing_index, existing_chunks, existing_file_metadata = self.load_existing_index(language_extension)
 
-        # Find current files
-        with Timer("Find files"):
+        with Timer("Find current files"):
             current_files = self.find_files_with_fd(source_dir, language_extension)
             print(f"Found {len(current_files)} {language_extension} files")
 
@@ -243,7 +239,6 @@ class IncrementalRAGIndexer:
             print("[red]No files found, no index to build")
             return
 
-        # Find changed and deleted files
         changed_files, deleted_files = self.find_changed_files(current_files, existing_file_metadata)
 
         if not changed_files and not deleted_files:
@@ -252,14 +247,13 @@ class IncrementalRAGIndexer:
 
         print(f"Processing {len(changed_files)} changed files")
 
-        # Start with existing chunks and remove deleted files
         # TODO this shouldn't be deleting the chunks that are then tried to be usedlater...
         # TODO at least capture the ids of what were remoged into one collection
         # TODO just OMG I hate this whole pilee of crap
         # TODO later wes
         chunks = self.remove_chunks_for_deleted_files(existing_chunks, deleted_files)
 
-        # Process changed files
+        # * Process changed files
         new_file_metadata = existing_file_metadata.copy()
 
         # Remove metadata and chunks for deleted files
@@ -282,13 +276,13 @@ class IncrementalRAGIndexer:
                 new_file_metadata[str(file_path)] = file_metadata
 
                 # Create new chunks for this file
-                file_chunks = self.simple_chunk_file(file_path, file_metadata['hash'])
+                file_chunks = self.get_file_chunks(file_path, file_metadata['hash'])
                 for chunk in file_chunks:
                     chunks[chunk['id']] = chunk
 
         print(f"Total chunks after update: {len(chunks)}")
 
-        # Incrementally update the FAISS index
+        # * Incrementally update the FAISS index
         if changed_files or deleted_files:
             index = self.update_faiss_index_incrementally(existing_index, chunks, changed_files, deleted_files)
         else:
