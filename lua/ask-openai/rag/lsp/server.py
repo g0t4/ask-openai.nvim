@@ -38,7 +38,7 @@ def on_initialized(server):
     #  then, client sends initialized (this) request => waits for completion
     #    does not send other requests until initialized is done
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
-    rag.load_model()
+    rag.load_model_and_indexes()
 
 @server.feature(types.TEXT_DOCUMENT_COMPLETION)
 def completions(params: CompletionParams):
