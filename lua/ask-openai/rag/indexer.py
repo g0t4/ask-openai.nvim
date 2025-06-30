@@ -65,7 +65,7 @@ class IncrementalRAGIndexer:
                     "file": str(path),
                     "start_line": i + 1,
                     "end_line": i + len(chunk_lines),
-                    "type": "raw",
+                    "type": "lines",
                     "file_hash": file_hash,
                 })
         return chunks

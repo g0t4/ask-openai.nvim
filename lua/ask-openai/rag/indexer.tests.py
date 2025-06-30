@@ -44,6 +44,7 @@ class TestBuildIndex(unittest.TestCase):
             print(f'{sample_lua_path=}')
             for c in chunks:
                 self.assertEqual(c["file"], str(sample_lua_path))
+                self.assertEqual(c["type"], "lines")
 
             first_chunk = [c for c in chunks if c["start_line"] == 1][0]
             self.assertEqual(first_chunk["start_line"], 1)
