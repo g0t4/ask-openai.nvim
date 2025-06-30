@@ -44,6 +44,7 @@ class TestBuildIndex(unittest.TestCase):
 
     def test(self):
 
+        # FYI! slow to recreate index, so do it once and comment this out to quickly run assertions
         # * recreate index
         self.trash_rag_dir()
         indexer = IncrementalRAGIndexer(self.rag_dir, self.source_dir)
@@ -107,7 +108,8 @@ class TestBuildIndex(unittest.TestCase):
         for i in range(index.ntotal):
             print(i)
 
-    def ignore_test_encode_integration_exploratory(self):
+    def test_encode_integration_exploratory(self):
+        # FYI! SLOW TEST, change name to disable
         from lsp.model import model
         q = model.encode(["hello"], normalize_embeddings=True)
         print(f'{q.shape=}')
