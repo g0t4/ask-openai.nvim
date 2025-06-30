@@ -3,7 +3,11 @@ from rich import print
 
 def build_frecency_from_git():
     # Get commits with file stats
-    git_log = subprocess.run(['git', 'log', '--numstat', '--pretty=format:%H|%at|%an', '--since=6 months ago'], capture_output=True, text=True)
+    git_log = subprocess.run(
+        ['git', 'log', '--numstat', '--pretty=format:%H|%at|%an', '--since=6 months ago'],
+        capture_output=True,
+        text=True,
+    )
 
     frecency_data = {}
     for line in git_log.stdout.split('\n'):
@@ -15,7 +19,12 @@ def build_frecency_from_git():
             if filepath not in frecency_data:
                 frecency_data[filepath] = []
 
-            frecency_data[filepath].append({'timestamp': int(timestamp), 'author': author, 'changes': int(adds) + int(dels), 'commit': commit_hash})
+            frecency_data[filepath].append({
+                'timestamp': int(timestamp),
+                'author': author,
+                'changes': int(adds) + int(dels),
+                'commit': commit_hash,
+            })
     return frecency_data
 
 if __name__ == "__main__":
