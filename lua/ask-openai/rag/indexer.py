@@ -184,10 +184,6 @@ class IncrementalRAGIndexer:
             sample_vec = self.model.encode([sample_text], normalize_embeddings=True)
             base_index = faiss.IndexFlatIP(sample_vec.shape[1])
             index = faiss.IndexIDMap(base_index)
-        elif not isinstance(index, faiss.IndexIDMap):
-            print("Converting existing index to IndexIDMap")
-            # If we have an old-style index, we need to rebuild it as IndexIDMap
-            return self.rebuild_faiss_index_with_ids(chunks)
 
         # Remove vectors for changed and deleted files
         files_to_remove = set(str(f) for f in changed_files) | deleted_files
@@ -226,33 +222,6 @@ class IncrementalRAGIndexer:
 
                 with Timer("Add new vectors to index"):
                     index.add_with_ids(vecs_np, faiss_ids_np)
-
-        return index
-
-    def rebuild_faiss_index_with_ids(self, chunks: Dict) -> faiss.Index:
-        """Rebuild FAISS index from scratch with IndexIDMap"""
-        if not chunks:
-            print("[yellow]No chunks to index")
-            return None
-
-        print(f"Rebuilding FAISS index with {len(chunks)} chunks")
-
-        # Get all chunks and their IDs
-        chunk_items = list(chunks.items())
-        texts = [f"passage: {chunk['text']}" for _, chunk in chunk_items]
-        chunk_ids = [chunk_id for chunk_id, _ in chunk_items]
-        faiss_ids = [chunk_id_to_faiss_id(cid) for cid in chunk_ids]
-
-        with Timer("Encode texts to vectors"):
-            vecs = self.model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
-
-        vecs_np = np.array(vecs).astype("float32")
-        faiss_ids_np = np.array(faiss_ids, dtype="int64")
-
-        with Timer("Build FAISS IndexIDMap"):
-            base_index = faiss.IndexFlatIP(vecs_np.shape[1])
-            index = faiss.IndexIDMap(base_index)
-            index.add_with_ids(vecs_np, faiss_ids_np)
 
         return index
 
