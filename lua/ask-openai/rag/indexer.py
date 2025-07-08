@@ -148,9 +148,9 @@ class IncrementalRAGIndexer:
                 print(f"[green]New file: {file_path}")
             else:
                 # Check if file has changed
-                current_mtime = file_path.stat().st_mtime
-                existing_mtime = prior_metadata[file_str]['mtime']
-                if current_mtime > existing_mtime:
+                current_mod_time = file_path.stat().st_mtime
+                prior_mod_time = prior_metadata[file_str]['mtime']
+                if current_mod_time > prior_mod_time:
                     changed_file_paths.add(file_path)
                     print(f"[blue]Modified file: {file_path}")
 
@@ -243,7 +243,7 @@ class IncrementalRAGIndexer:
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
-        existing_index, existing_chunks_by_id, existing_file_metadata = self.load_existing_index(language_extension)
+        existing_index, existing_chunks_by_id, prior_file_metadata = self.load_existing_index(language_extension)
 
         with Timer("Find current files"):
             current_files = self.find_files_with_fd(language_extension)
@@ -253,7 +253,7 @@ class IncrementalRAGIndexer:
             print("[red]No files found, no index to build")
             return
 
-        files = self.find_changed_files(current_files, existing_file_metadata)
+        files = self.find_changed_files(current_files, prior_file_metadata)
         changed_files = files.changed
         deleted_files = files.deleted
 
@@ -270,7 +270,7 @@ class IncrementalRAGIndexer:
         chunks = self.remove_chunks_for_deleted_files(existing_chunks_by_id, deleted_files)
 
         # * Process changed files
-        new_file_metadata = existing_file_metadata.copy()
+        new_file_metadata = prior_file_metadata.copy()
 
         # Remove metadata and chunks for deleted files
         for deleted_file in deleted_files:
