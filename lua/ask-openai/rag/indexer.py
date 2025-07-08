@@ -224,10 +224,6 @@ class IncrementalRAGIndexer:
             current_files = self.find_files_with_fd(language_extension)
             print(f"Found {len(current_files)} {language_extension} files")
 
-        if not current_files:
-            print("[red]No files found, no index to build")
-            return
-
         file_paths = self.find_changed_files(current_files, prior_files_by_path)
 
         if not file_paths.changed and not file_paths.deleted:
