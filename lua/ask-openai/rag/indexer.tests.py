@@ -148,9 +148,15 @@ class TestBuildIndex(unittest.TestCase):
         chunks_by_file = self.get_chunks_by_file()
         files = self.get_files()
         index = self.get_vector_index()
-
-        self.assertEqual(len(chunks_by_file), 4)
+        #
         self.assertEqual(len(files), 2)
+        #
+        self.assertEqual(len(chunks_by_file), 2)  # 2 files
+        first_file_chunks = chunks_by_file[str(self.tmp_updater_src_dir / "numbers.lua")]
+        second_file_chunks = chunks_by_file[str(self.tmp_updater_src_dir / "unchanged.lua")]
+        self.assertEqual(len(first_file_chunks), 2)  # 2 chunks
+        self.assertEqual(len(second_file_chunks), 2)
+        #
         self.assertEqual(index.ntotal, 4)
 
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 4 chunks (starts = 1-20, 16-35, 31-50)
@@ -160,8 +166,14 @@ class TestBuildIndex(unittest.TestCase):
         chunks_by_file = self.get_chunks_by_file()
         files = self.get_files()
         index = self.get_vector_index()
-
-        self.assertEqual(len(chunks_by_file), 5)
+        #
+        self.assertEqual(len(chunks_by_file), 2)
+        #
+        first_file_chunks = chunks_by_file[str(self.tmp_updater_src_dir / "numbers.lua")]
+        second_file_chunks = chunks_by_file[str(self.tmp_updater_src_dir / "unchanged.lua")]
+        self.assertEqual(len(first_file_chunks), 3)
+        self.assertEqual(len(second_file_chunks), 2)
+        #
         self.assertEqual(len(files), 2)
         self.assertEqual(index.ntotal, 5)
         # TODO FIX this test for ntotal (is 7 now, s/b 5)... b/c old chunks aren't removed for updated document
