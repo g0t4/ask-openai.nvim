@@ -129,7 +129,7 @@ class IncrementalRAGIndexer:
 
     def find_changed_files(self, current_files: List[Path], existing_metadata: Dict) -> Tuple[Set[Path], Set[str]]:
         """Find files that have changed or are new, and files that were deleted"""
-        changed_files = set()
+        changed_file_paths = set()
         current_file_paths = {str(f) for f in current_files}
         existing_file_paths = set(existing_metadata.keys())
 
@@ -138,14 +138,14 @@ class IncrementalRAGIndexer:
             file_str = str(file_path)
             if file_str not in existing_metadata:
                 # New file
-                changed_files.add(file_path)
+                changed_file_paths.add(file_path)
                 print(f"[green]New file: {file_path}")
             else:
                 # Check if file has changed
                 current_mtime = file_path.stat().st_mtime
                 existing_mtime = existing_metadata[file_str]['mtime']
                 if current_mtime > existing_mtime:
-                    changed_files.add(file_path)
+                    changed_file_paths.add(file_path)
                     print(f"[blue]Modified file: {file_path}")
 
         # Find deleted files
@@ -153,7 +153,7 @@ class IncrementalRAGIndexer:
         for deleted_file in deleted_file_paths:
             print(f"[red]Deleted file: {deleted_file}")
 
-        return changed_files, deleted_file_paths
+        return changed_file_paths, deleted_file_paths
 
     def remove_chunks_for_deleted_files(self, chunks: Dict, deleted_files: Set[str]) -> Dict:
         """Remove chunks for deleted files"""
