@@ -122,16 +122,16 @@ class IncrementalRAGIndexer:
                 print(f"[yellow]Warning: Could not load existing chunks: {e}")
 
         files_json_path = index_dir / "files.json"
-        files = {}
+        files_by_path = {}
         if files_json_path.exists():
             try:
                 with open(files_json_path, 'r') as f:
-                    files = json.load(f)
-                print(f"Loaded metadata for {len(files)} files")
+                    files_by_path = json.load(f)
+                print(f"Loaded metadata for {len(files_by_path)} files")
             except Exception as e:
                 print(f"[yellow]Warning: Could not load file metadata: {e}")
 
-        return index, chunks_by_id, files
+        return index, chunks_by_id, files_by_path
 
     def find_changed_files(self, current_files: List[Path], prior_metadata_by_path: Dict) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
@@ -243,7 +243,7 @@ class IncrementalRAGIndexer:
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
-        prior_index, prior_chunks_by_id, prior_file_metadata = self.load_prior_index(language_extension)
+        prior_index, prior_chunks_by_id, prior_files_by_path = self.load_prior_index(language_extension)
 
         with Timer("Find current files"):
             current_files = self.find_files_with_fd(language_extension)
@@ -253,7 +253,7 @@ class IncrementalRAGIndexer:
             print("[red]No files found, no index to build")
             return
 
-        files = self.find_changed_files(current_files, prior_file_metadata)
+        files = self.find_changed_files(current_files, prior_files_by_path)
         changed_files = files.changed
         deleted_files = files.deleted
 
@@ -270,7 +270,7 @@ class IncrementalRAGIndexer:
         chunks = self.remove_chunks_for_deleted_files(prior_chunks_by_id, deleted_files)
 
         # * Process changed files
-        new_file_metadata = prior_file_metadata.copy()
+        new_file_metadata = prior_files_by_path.copy()
 
         # Remove metadata and chunks for deleted files
         for deleted_file in deleted_files:
