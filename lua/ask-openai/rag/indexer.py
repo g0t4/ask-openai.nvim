@@ -174,52 +174,32 @@ class IncrementalRAGIndexer:
             index = faiss.IndexIDMap(base_index)
             # FYI if someone deletes the vectors file... this won't recreate it if metadata still exists...
 
-        # Remove vectors for changed and deleted files
-        faiss_ids_to_remove = []
-        # FYI deleted_chunks_by_file has an entry PER file, the file path indexes the entry... the entry is AN ARRAY of chunks... each chunk then has its own id
-        for _, chunks in deleted_chunks_by_file.items():
-            # TODO verify correctly finding deletes
-            faiss_ids_to_remove.extend([chunk_id_to_faiss_id(chunk['id']) for chunk in chunks])
-        print(f'{faiss_ids_to_remove=}')
-        for _, chunks in updated_chunks_by_file.items():
-            # TODO verify correctly finding adds/change
-            faiss_ids_to_remove.extend([chunk_id_to_faiss_id(chunk['id']) for chunk in chunks])
-        print(f'{faiss_ids_to_remove=}')
+        new_chunks = []
+        new_faiss_ids = []
+        for file_chunks in updated_chunks_by_file.values():
+            for chunk in file_chunks:
+                new_chunks.append(chunk)
+                new_faiss_ids.append(chunk_id_to_faiss_id(chunk['id']))
 
-        if faiss_ids_to_remove:
-            print(f"Removing {len(faiss_ids_to_remove)} vectors for changed/deleted files")
+        with Timer("Remove old vectors"):
+            keep_selector = faiss.IDSelectorArray(np.array(new_faiss_ids, dtype="int64"))
+            not_keep_selector = faiss.IDSelectorNot(keep_selector)
+            index.remove_ids(not_keep_selector)
 
-            with Timer("Remove old vectors"):
-                # TODO! recreate full index?! why just delete removed/updated.. that risks drift if smth goes awry and there are files in here that aren't say tracked in metadata?
-                # TODO can I ask for all IDs and then review and delete anything not in the holdovers and new?
-                #   THAT WAY I NUKE DRIFT?
-                selector = faiss.IDSelectorArray(np.array(faiss_ids_to_remove, dtype="int64"))
-                index.remove_ids(selector)
+        if new_chunks:
+            print(f"Adding {len(new_chunks)} new vectors for changed files")
 
-        # Add vectors for changed files only
-        if file_paths.changed:
-            new_chunks = []
-            new_faiss_ids = []
+            texts = [f"passage: {chunk['text']}" for chunk in new_chunks]
+            print(f"{new_faiss_ids=}")
 
-            for file_chunks in updated_chunks_by_file.values():
-                for chunk in file_chunks:
-                    new_chunks.append(chunk)
-                    new_faiss_ids.append(chunk_id_to_faiss_id(chunk['id']))
+            with Timer("Encode new vectors"):
+                vecs = model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
 
-            if new_chunks:
-                print(f"Adding {len(new_chunks)} new vectors for changed files")
+            vecs_np = np.array(vecs).astype("float32")
+            faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
 
-                texts = [f"passage: {chunk['text']}" for chunk in new_chunks]
-                print(f"{new_faiss_ids=}")
-
-                with Timer("Encode new vectors"):
-                    vecs = model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
-
-                vecs_np = np.array(vecs).astype("float32")
-                faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
-
-                with Timer("Add new vectors to index"):
-                    index.add_with_ids(vecs_np, faiss_ids_np)
+            with Timer("Add new vectors to index"):
+                index.add_with_ids(vecs_np, faiss_ids_np)
 
         return index
 

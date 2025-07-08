@@ -105,6 +105,7 @@ class TestBuildIndex(unittest.TestCase):
         # print(f'{index.is_trained=}')
         for i in range(index.ntotal):
             print(i)
+            # PRN verify vectors too?
 
     def test_encode_and_search_index(self):
         # FYI! SLOW TEST, change name to disable
