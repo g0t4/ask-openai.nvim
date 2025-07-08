@@ -45,9 +45,13 @@ class TestBuildIndex(unittest.TestCase):
         indexer.build_index(language_extension="lua")
 
         # * chunks
-        chunks = self.get_chunks()
-        assert len(chunks) == 3  # 41 lines currently, 5 overlap + 20 per chunk
+        chunks_by_file = self.get_chunks()
+        self.assertEqual(len(chunks_by_file), 1)  # only one test file
+        # 41 lines currently, 5 overlap + 20 per chunk
         sample_lua_path = (self.indexer_src_dir / "sample.lua").absolute()
+        self.assertEqual(chunks_by_file.keys(), {str(sample_lua_path)})
+        chunks = chunks_by_file[str(sample_lua_path)]
+        self.assertEqual(len(chunks), 3)
         print(f'{sample_lua_path=}')
         for c in chunks:
             self.assertEqual(c["file"], str(sample_lua_path))

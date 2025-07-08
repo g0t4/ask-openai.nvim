@@ -31,11 +31,26 @@ def load_model_and_indexes(root_fs_path: Path):
         # logging.info(f"Loaded {len(chunks)} chunks from {chunks_path}")
 
     chunks_by_faiss_id = {}
+    # TODO! update for storage format change...  now chunks.json is object with file paths as keys, and each has array of its chunks
+    # FYI STILL USING LAST BUILD => when rebuild index then need to update this code
+    #  chunks will be dict[key:string, list[chunk]]
+    #
+    #  # this is new code, should work fine: (get rid of loop below)
+    #   and rename chunks above to chunks_by_file
+    #
+    # for file in chunks_by_file:
+    #     for chunk in chunks_by_file[file]:
+    #         chunk['faiss_id'] = chunk_id_to_faiss_id(chunk['id'])
+    #         # logging.info(f"{chunk['faiss_id']=}")
+    #         chunks_by_faiss_id[chunk['faiss_id']] = chunk
+
     for chunk in chunks:
         chunk['faiss_id'] = chunk_id_to_faiss_id(chunk['id'])
         # logging.info(f"{chunk['faiss_id']=}")
         chunks_by_faiss_id[chunk['faiss_id']] = chunk
+    logging.info(f"Loaded {chunks_by_faiss_id=}")
     logging.info(f"Loaded {len(chunks_by_faiss_id)} chunks by id")
+
 
 # PRN make top_k configurable (or other params)
 def handle_query(message, top_k=3):

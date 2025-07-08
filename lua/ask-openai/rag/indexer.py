@@ -111,13 +111,12 @@ class IncrementalRAGIndexer:
                 print(f"[yellow]Warning: Could not load existing index: {e}")
 
         chunks_json_path = index_dir / "chunks.json"
-        chunks_by_id = {}
+        chunks_by_file = {}
         if chunks_json_path.exists():
             try:
                 with open(chunks_json_path, 'r') as f:
-                    chunks_list = json.load(f)
-                    chunks_by_id = {chunk['id']: chunk for chunk in chunks_list}
-                print(f"Loaded {len(chunks_by_id)} existing chunks")
+                    chunks_by_file = json.load(f)
+                print(f"Loaded {len(chunks_by_file)} existing chunks")
             except Exception as e:
                 print(f"[yellow]Warning: Could not load existing chunks: {e}")
 
@@ -131,7 +130,7 @@ class IncrementalRAGIndexer:
             except Exception as e:
                 print(f"[yellow]Warning: Could not load file metadata: {e}")
 
-        return index, chunks_by_id, files_by_path
+        return index, chunks_by_file, files_by_path
 
     def find_changed_files(self, current_files: List[Path], prior_metadata_by_path: Dict) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
@@ -161,30 +160,7 @@ class IncrementalRAGIndexer:
 
         return FilesDiff(changed_file_paths, deleted_file_paths)
 
-    def remove_chunks_for_deleted_files(self, chunks: Dict, deleted_files: Set[str]) -> Dict:
-        """Remove chunks for deleted files"""
-        chunks_to_remove = []
-        for chunk_id, chunk in chunks.items():
-            if chunk['file'] in deleted_files:
-                chunks_to_remove.append(chunk_id)
-
-        for chunk_id in chunks_to_remove:
-            del chunks[chunk_id]
-
-        if chunks_to_remove:
-            print(f"Removed {len(chunks_to_remove)} chunks for deleted files")
-
-        return chunks
-
-    def get_chunks_for_files(self, chunks: Dict, file_paths: Set[str]) -> Set[str]:
-        """Get all chunk IDs for the given file paths"""
-        chunk_ids = set()
-        for chunk_id, chunk in chunks.items():
-            if chunk['file'] in file_paths:
-                chunk_ids.add(chunk_id)
-        return chunk_ids
-
-    def update_faiss_index_incrementally(self, index: Optional[faiss.Index], chunks: Dict, changed_files: Set[Path], deleted_files: Set[str]) -> faiss.Index:
+    def update_faiss_index_incrementally(self, index: Optional[faiss.Index], updated_chunks_by_file, deleted_chunks_by_file, file_paths) -> faiss.Index:
         """Update FAISS index incrementally using IndexIDMap"""
         from lsp.model import model
 
@@ -199,40 +175,45 @@ class IncrementalRAGIndexer:
             # FYI if someone deletes the vectors file... this won't recreate it if metadata still exists...
 
         # Remove vectors for changed and deleted files
-        files_to_remove = set(str(f) for f in changed_files) | deleted_files
-        if files_to_remove:
-            chunk_ids_to_remove = self.get_chunks_for_files(chunks, files_to_remove)
-            if chunk_ids_to_remove:
-                faiss_ids_to_remove = [chunk_id_to_faiss_id(cid) for cid in chunk_ids_to_remove]
-                print(f"Removing {len(faiss_ids_to_remove)} vectors for changed/deleted files")
+        faiss_ids_to_remove = []
+        # FYI deleted_chunks_by_file has an entry PER file, the file path indexes the entry... the entry is AN ARRAY of chunks... each chunk then has its own id
+        for _, chunks in deleted_chunks_by_file.items():
+            # TODO verify correctly finding deletes
+            faiss_ids_to_remove.extend([chunk_id_to_faiss_id(chunk['id']) for chunk in chunks])
+        print(f'{faiss_ids_to_remove=}')
+        for _, chunks in updated_chunks_by_file.items():
+            # TODO verify correctly finding adds/change
+            faiss_ids_to_remove.extend([chunk_id_to_faiss_id(chunk['id']) for chunk in chunks])
+        print(f'{faiss_ids_to_remove=}')
 
-                with Timer("Remove old vectors"):
-                    selector = faiss.IDSelectorArray(np.array(faiss_ids_to_remove, dtype="int64"))
-                    index.remove_ids(selector)
+        if faiss_ids_to_remove:
+            print(f"Removing {len(faiss_ids_to_remove)} vectors for changed/deleted files")
+
+            with Timer("Remove old vectors"):
+                selector = faiss.IDSelectorArray(np.array(faiss_ids_to_remove, dtype="int64"))
+                index.remove_ids(selector)
 
         # Add vectors for changed files only
-        if changed_files:
+        if file_paths.changed:
             new_chunks = []
-            new_chunk_ids = []
+            new_faiss_ids = []
 
-            for file_path in changed_files:
-                for chunk_id, chunk in chunks.items():
-                    if chunk['file'] == str(file_path):
-                        new_chunks.append(chunk)
-                        new_chunk_ids.append(chunk_id)
+            for file_chunks in updated_chunks_by_file.values():
+                for chunk in file_chunks:
+                    new_chunks.append(chunk)
+                    new_faiss_ids.append(chunk_id_to_faiss_id(chunk['id']))
 
             if new_chunks:
                 print(f"Adding {len(new_chunks)} new vectors for changed files")
 
                 texts = [f"passage: {chunk['text']}" for chunk in new_chunks]
-                faiss_ids = [chunk_id_to_faiss_id(cid) for cid in new_chunk_ids]
-                print(f"{faiss_ids=}")
+                print(f"{new_faiss_ids=}")
 
                 with Timer("Encode new vectors"):
                     vecs = model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
 
                 vecs_np = np.array(vecs).astype("float32")
-                faiss_ids_np = np.array(faiss_ids, dtype="int64")
+                faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
 
                 with Timer("Add new vectors to index"):
                     index.add_with_ids(vecs_np, faiss_ids_np)
@@ -243,7 +224,7 @@ class IncrementalRAGIndexer:
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
-        prior_index, prior_chunks_by_id, prior_files_by_path = \
+        prior_index, prior_chunks_by_file, prior_files_by_path = \
             self.load_prior_index(language_extension)
 
         with Timer("Find current files"):
@@ -254,55 +235,54 @@ class IncrementalRAGIndexer:
             print("[red]No files found, no index to build")
             return
 
-        files = self.find_changed_files(current_files, prior_files_by_path)
-        changed_files = files.changed
-        deleted_files = files.deleted
+        file_paths = self.find_changed_files(current_files, prior_files_by_path)
 
-        if not changed_files and not deleted_files:
+        if not file_paths.changed and not file_paths.deleted:
             print("[green]No changes detected, index is up to date!")
             return
 
-        print(f"Processing {len(changed_files)} changed files")
-
-        # TODO this shouldn't be deleting the chunks that are then tried to be usedlater...
-        # TODO at least capture the ids of what were remoged into one collection
-        # TODO just OMG I hate this whole pilee of crap
-        # TODO later wes
-        chunks_by_id = self.remove_chunks_for_deleted_files(prior_chunks_by_id, deleted_files)
+        print(f"Processing {len(file_paths.changed)} changed files")
 
         # * Process changed files
         new_file_metadata = prior_files_by_path.copy()
 
         # Remove metadata and chunks for deleted files
-        for deleted_file in deleted_files:
+        deleted_chunks_by_file = {}
+        # TODO need to enumerate changed here too
+        for deleted_file in (set(file_paths.deleted) or set(file_paths.deleted)):
             if deleted_file in new_file_metadata:
                 del new_file_metadata[deleted_file]
+            if deleted_file in prior_chunks_by_file:
+                deleted_chunks_by_file[deleted_file] = prior_chunks_by_file[deleted_file]
+                del prior_chunks_by_file[deleted_file]
 
+        updated_chunks_by_file = {}
         with Timer("Process changed files"):
-            for i, file_path in enumerate(changed_files):
+            for i, file_path in enumerate(file_paths.changed):
                 if i % 10 == 0 and i > 0:
-                    print(f"Processed {i}/{len(changed_files)} changed files...")
-
-                # Remove old chunks for this file
-                old_chunk_ids_to_remove = [chunk_id for chunk_id, chunk in chunks_by_id.items() \
-                    if chunk['file'] == str(file_path)]
-                for chunk_id in old_chunk_ids_to_remove:
-                    del chunks_by_id[chunk_id]
+                    print(f"Processed {i}/{len(file_paths.changed)} changed files...")
 
                 # Get new file metadata
                 file_metadata = self.get_file_metadata(file_path)
                 new_file_metadata[str(file_path)] = file_metadata
 
                 # Create new chunks for this file
-                file_chunks = self.get_file_chunks(file_path, file_metadata['hash'])
-                for chunk in file_chunks:
-                    chunks_by_id[chunk['id']] = chunk
+                chunks = self.get_file_chunks(file_path, file_metadata['hash'])
+                updated_chunks_by_file[str(file_path)] = chunks
 
-        print(f"Total chunks after update: {len(chunks_by_id)}")
+        print(f"Total updated chunks: {len(updated_chunks_by_file)}")
+
+        # TODO remove after done testing new indexer
+        print(f'{deleted_chunks_by_file=}')
+        print(f'{updated_chunks_by_file=}')
+        print()
+        print()
+        print()
+        print()
 
         # * Incrementally update the FAISS index
-        if changed_files or deleted_files:
-            index = self.update_faiss_index_incrementally(prior_index, chunks_by_id, changed_files, deleted_files)
+        if file_paths.changed or file_paths.deleted:
+            index = self.update_faiss_index_incrementally(prior_index, updated_chunks_by_file, deleted_chunks_by_file, file_paths)
         else:
             index = prior_index
 
@@ -317,21 +297,24 @@ class IncrementalRAGIndexer:
             faiss.write_index(index, str(index_dir / "vectors.index"))
 
         with Timer("Save chunks"):
-            chunks_list = list(chunks_by_id.values())
-            # Sort by chunk ID for consistent ordering
-            chunks_list.sort(key=lambda x: x['id'])
+            # TODO fix the slop with prior vs current etc vars here:
+            prior_remaining_chunks_by_file = prior_chunks_by_file # just a reminder right now that I already removed the items
+            all_chunks_by_file = updated_chunks_by_file.copy()
+            all_chunks_by_file.update(prior_remaining_chunks_by_file)
+            # PRN? sort by file path for consistent ordering in chunks.json? not sure it matters right now and has overhead anyways
+            print(f'{all_chunks_by_file=}')
             with open(index_dir / "chunks.json", 'w') as f:
-                json.dump(chunks_list, f, indent=2)
+                json.dump(all_chunks_by_file, f, indent=2)
 
         with Timer("Save file metadata"):
             with open(index_dir / "files.json", 'w') as f:
                 json.dump(new_file_metadata, f, indent=2)
 
         print(f"[green]Index updated successfully!")
-        if changed_files:
-            print(f"[green]Processed {len(changed_files)} changed files")
-        if deleted_files:
-            print(f"[green]Removed {len(deleted_files)} deleted files")
+        if file_paths.changed:
+            print(f"[green]Processed {len(file_paths.changed)} changed files")
+        if file_paths.deleted:
+            print(f"[green]Removed {len(file_paths.deleted)} deleted files")
 
 def trash_indexes(rag_dir, language_extension="lua"):
     """Remove index for a specific language"""
