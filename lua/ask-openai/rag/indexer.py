@@ -97,8 +97,8 @@ class IncrementalRAGIndexer:
         )
         return [Path(line) for line in result.stdout.strip().splitlines()]
 
-    def load_existing_index(self, language_extension: str) -> Tuple[Optional[faiss.Index], Dict, Dict]:
-        """Load existing index, chunks, and file metadata"""
+    def load_prior_index(self, language_extension: str) -> Tuple[Optional[faiss.Index], Dict, Dict]:
+        """Load existing (aka prior) index, chunks, and file metadata"""
         index_dir = self.rag_dir / language_extension
 
         vectors_index_path = index_dir / "vectors.index"
@@ -243,7 +243,7 @@ class IncrementalRAGIndexer:
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
-        prior_index, prior_chunks_by_id, prior_file_metadata = self.load_existing_index(language_extension)
+        prior_index, prior_chunks_by_id, prior_file_metadata = self.load_prior_index(language_extension)
 
         with Timer("Find current files"):
             current_files = self.find_files_with_fd(language_extension)
