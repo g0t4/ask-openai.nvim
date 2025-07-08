@@ -131,7 +131,7 @@ class IncrementalRAGIndexer:
         """Find files that have changed or are new, and files that were deleted"""
         changed_file_paths = set()
         current_file_paths = {str(f) for f in current_files}
-        existing_file_paths = set(existing_metadata.keys())
+        prior_file_paths = set(existing_metadata.keys())
 
         # Check for new and modified files
         for file_path in current_files:
@@ -149,7 +149,7 @@ class IncrementalRAGIndexer:
                     print(f"[blue]Modified file: {file_path}")
 
         # Find deleted files
-        deleted_file_paths = existing_file_paths - current_file_paths
+        deleted_file_paths = prior_file_paths - current_file_paths
         for deleted_file in deleted_file_paths:
             print(f"[red]Deleted file: {deleted_file}")
 
