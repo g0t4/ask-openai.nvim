@@ -163,7 +163,7 @@ class IncrementalRAGIndexer:
     def update_faiss_index_incrementally(
         self,
         index: Optional[faiss.Index],
-        prior_chunks_by_file: Dict,
+        unchanged_chunks_by_file: Dict,
         updated_chunks_by_file,
     ) -> faiss.Index:
         """Update FAISS index incrementally using IndexIDMap"""
@@ -189,7 +189,7 @@ class IncrementalRAGIndexer:
         with Timer("Remove old vectors"):
             # TODO need to pass holdovers too
             keep_ids = new_faiss_ids.copy()
-            for _, file_chunks in prior_chunks_by_file.items():
+            for _, file_chunks in unchanged_chunks_by_file.items():
                 for chunk in file_chunks:
                     keep_ids.append(chunk_id_to_faiss_id(chunk['id']))
             keep_selector = faiss.IDSelectorArray(np.array(keep_ids, dtype="int64"))
@@ -217,7 +217,7 @@ class IncrementalRAGIndexer:
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
-        prior_index, prior_chunks_by_file, prior_files_by_path = \
+        prior_index, all_prior_chunks_by_file, all_prior_files_by_path = \
             self.load_prior_index(language_extension)
 
         with Timer("Find current files"):
@@ -226,7 +226,7 @@ class IncrementalRAGIndexer:
 
         # FYI allow NO files to CLEAR everything! and add some tests that use this!
 
-        file_paths = self.find_changed_files(current_files, prior_files_by_path)
+        file_paths = self.find_changed_files(current_files, all_prior_files_by_path)
 
         if not file_paths.changed and not file_paths.deleted:
             print("[green]No changes detected, index is up to date!")
@@ -235,17 +235,19 @@ class IncrementalRAGIndexer:
         print(f"Processing {len(file_paths.changed)} changed files")
 
         # * Process changed files
-        new_file_metadata = prior_files_by_path.copy()
+        new_file_metadata = all_prior_files_by_path.copy()
+        unchanged_chunks_by_file = all_prior_chunks_by_file.copy()
 
-        # Remove metadata and chunks for deleted files
+        # Remove metadata and chunks for deleted files, since we started with prior lists
         deleted_chunks_by_file = {}
         # TODO need to enumerate changed here too
         for deleted_file in set(file_paths.deleted):
             if deleted_file in new_file_metadata:
+                # make sure file metadata doesn't get copied into new file list
                 del new_file_metadata[deleted_file]
-            if deleted_file in prior_chunks_by_file:
-                deleted_chunks_by_file[deleted_file] = prior_chunks_by_file[deleted_file]
-                del prior_chunks_by_file[deleted_file]
+            if deleted_file in unchanged_chunks_by_file:
+                deleted_chunks_by_file[deleted_file] = unchanged_chunks_by_file[deleted_file]
+                del unchanged_chunks_by_file[deleted_file]
 
         updated_chunks_by_file = {}
         with Timer("Process changed files"):
@@ -265,20 +267,20 @@ class IncrementalRAGIndexer:
 
         # TODO remove after done testing new indexer
         print(f'{deleted_chunks_by_file=}')
+        print()
         print(f'{updated_chunks_by_file=}')
         print()
+        print(f'{unchanged_chunks_by_file=}')
         print()
         print()
         print()
-
-        # TODO fix the slop with prior vs current etc vars here:
-        prior_remaining_chunks_by_file = prior_chunks_by_file  # just a reminder right now that I already removed the items
+        print()
 
         # * Incrementally update the FAISS index
         if file_paths.changed or file_paths.deleted:
             index = self.update_faiss_index_incrementally(
                 prior_index,
-                prior_chunks_by_file,
+                unchanged_chunks_by_file,
                 updated_chunks_by_file,
             )
         else:
@@ -297,7 +299,7 @@ class IncrementalRAGIndexer:
         with Timer("Save chunks"):
             # TODO fix the slop with prior vs current etc vars here:
             all_chunks_by_file = updated_chunks_by_file.copy()
-            all_chunks_by_file.update(prior_remaining_chunks_by_file)
+            all_chunks_by_file.update(unchanged_chunks_by_file)
             # PRN? sort by file path for consistent ordering in chunks.json? not sure it matters right now and has overhead anyways
             print(f'{all_chunks_by_file=}')
             with open(index_dir / "chunks.json", 'w') as f:
