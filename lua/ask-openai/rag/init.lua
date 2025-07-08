@@ -1,6 +1,7 @@
 local M = {}
 
 function M.setup()
+    -- do return end
     local lspconfig = require("lspconfig")
     local configs = require("lspconfig.configs")
 
@@ -21,7 +22,6 @@ function M.setup()
     end
 
     lspconfig.ask_language_server.setup({})
-    -- TODO try moving lspconfig here
 end
 
 return M

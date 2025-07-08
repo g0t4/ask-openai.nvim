@@ -108,7 +108,7 @@ end
 
 function M.ask_for_prediction()
     M.cancel_current_prediction()
-    local enable_rag = false
+    local enable_rag = true
 
     local document_prefix, document_suffix = get_prefix_suffix()
 
