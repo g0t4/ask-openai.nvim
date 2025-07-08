@@ -21,6 +21,12 @@ STOP_ON_FAILURE = True
 # !!! DO NOT USE INCREMENTAL REBUILD UNTIL FIX ORDERING ISSUE WITH DELETES
 #! TODO! fix the cluster F of deleting chunks and then requerying them... in build_index... chicken egg and Claude Foo'd it up bad
 
+class FilesDiff:
+
+    def __init__(self, changed, deleted):
+        self.changed = changed
+        self.deleted = deleted
+
 class IncrementalRAGIndexer:
 
     def __init__(self, rag_dir, source_dir):
@@ -127,7 +133,7 @@ class IncrementalRAGIndexer:
 
         return index, chunks_by_id, files
 
-    def find_changed_files(self, current_files: List[Path], existing_metadata: Dict) -> Tuple[Set[Path], Set[str]]:
+    def find_changed_files(self, current_files: List[Path], existing_metadata: Dict) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
         changed_file_paths = set()
         current_file_paths = {str(f) for f in current_files}
@@ -153,7 +159,7 @@ class IncrementalRAGIndexer:
         for deleted_file in deleted_file_paths:
             print(f"[red]Deleted file: {deleted_file}")
 
-        return changed_file_paths, deleted_file_paths
+        return FilesDiff(changed_file_paths, deleted_file_paths)
 
     def remove_chunks_for_deleted_files(self, chunks: Dict, deleted_files: Set[str]) -> Dict:
         """Remove chunks for deleted files"""
@@ -247,7 +253,9 @@ class IncrementalRAGIndexer:
             print("[red]No files found, no index to build")
             return
 
-        changed_files, deleted_files = self.find_changed_files(current_files, existing_file_metadata)
+        files = self.find_changed_files(current_files, existing_file_metadata)
+        changed_files = files.changed
+        deleted_files = files.deleted
 
         if not changed_files and not deleted_files:
             print("[green]No changes detected, index is up to date!")
