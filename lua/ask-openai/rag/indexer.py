@@ -243,7 +243,8 @@ class IncrementalRAGIndexer:
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
-        prior_index, prior_chunks_by_id, prior_files_by_path = self.load_prior_index(language_extension)
+        prior_index, prior_chunks_by_id, prior_files_by_path = \
+            self.load_prior_index(language_extension)
 
         with Timer("Find current files"):
             current_files = self.find_files_with_fd(language_extension)
@@ -283,7 +284,8 @@ class IncrementalRAGIndexer:
                     print(f"Processed {i}/{len(changed_files)} changed files...")
 
                 # Remove old chunks for this file
-                old_chunk_ids_to_remove = [chunk_id for chunk_id, chunk in chunks.items() if chunk['file'] == str(file_path)]
+                old_chunk_ids_to_remove = [chunk_id for chunk_id, chunk in chunks.items() \
+                    if chunk['file'] == str(file_path)]
                 for chunk_id in old_chunk_ids_to_remove:
                     del chunks[chunk_id]
 
