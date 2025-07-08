@@ -190,6 +190,9 @@ class IncrementalRAGIndexer:
             print(f"Removing {len(faiss_ids_to_remove)} vectors for changed/deleted files")
 
             with Timer("Remove old vectors"):
+                # TODO! recreate full index?! why just delete removed/updated.. that risks drift if smth goes awry and there are files in here that aren't say tracked in metadata?
+                # TODO can I ask for all IDs and then review and delete anything not in the holdovers and new?
+                #   THAT WAY I NUKE DRIFT?
                 selector = faiss.IDSelectorArray(np.array(faiss_ids_to_remove, dtype="int64"))
                 index.remove_ids(selector)
 
@@ -298,7 +301,7 @@ class IncrementalRAGIndexer:
 
         with Timer("Save chunks"):
             # TODO fix the slop with prior vs current etc vars here:
-            prior_remaining_chunks_by_file = prior_chunks_by_file # just a reminder right now that I already removed the items
+            prior_remaining_chunks_by_file = prior_chunks_by_file  # just a reminder right now that I already removed the items
             all_chunks_by_file = updated_chunks_by_file.copy()
             all_chunks_by_file.update(prior_remaining_chunks_by_file)
             # PRN? sort by file path for consistent ordering in chunks.json? not sure it matters right now and has overhead anyways
