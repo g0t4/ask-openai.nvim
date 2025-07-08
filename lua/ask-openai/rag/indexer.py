@@ -133,23 +133,23 @@ class IncrementalRAGIndexer:
 
         return index, chunks_by_id, files
 
-    def find_changed_files(self, current_files: List[Path], prior_metadata: Dict) -> FilesDiff:
+    def find_changed_files(self, current_files: List[Path], prior_metadata_by_path: Dict) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
         changed_file_paths = set()
         current_file_paths = {str(f) for f in current_files}
-        prior_file_paths = set(prior_metadata.keys())
+        prior_file_paths = set(prior_metadata_by_path.keys())
 
         # Check for new and modified files
         for file_path in current_files:
             file_str = str(file_path)
-            if file_str not in prior_metadata:
+            if file_str not in prior_metadata_by_path:
                 # New file
                 changed_file_paths.add(file_path)
                 print(f"[green]New file: {file_path}")
             else:
                 # Check if file has changed
                 current_mod_time = file_path.stat().st_mtime
-                prior_mod_time = prior_metadata[file_str]['mtime']
+                prior_mod_time = prior_metadata_by_path[file_str]['mtime']
                 if current_mod_time > prior_mod_time:
                     changed_file_paths.add(file_path)
                     print(f"[blue]Modified file: {file_path}")
