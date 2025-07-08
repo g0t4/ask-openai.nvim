@@ -160,6 +160,7 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(index.ntotal, 4)
 
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 4 chunks (starts = 1-20, 16-35, 31-50)
+        indexer = IncrementalRAGIndexer(self.rag_dir, self.tmp_updater_src_dir)
         indexer.build_index(language_extension="lua")
 
         # * check counts
