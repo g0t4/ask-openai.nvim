@@ -243,7 +243,7 @@ class IncrementalRAGIndexer:
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
-        existing_index, existing_chunks_by_id, prior_file_metadata = self.load_existing_index(language_extension)
+        prior_index, prior_chunks_by_id, prior_file_metadata = self.load_existing_index(language_extension)
 
         with Timer("Find current files"):
             current_files = self.find_files_with_fd(language_extension)
@@ -267,7 +267,7 @@ class IncrementalRAGIndexer:
         # TODO at least capture the ids of what were remoged into one collection
         # TODO just OMG I hate this whole pilee of crap
         # TODO later wes
-        chunks = self.remove_chunks_for_deleted_files(existing_chunks_by_id, deleted_files)
+        chunks = self.remove_chunks_for_deleted_files(prior_chunks_by_id, deleted_files)
 
         # * Process changed files
         new_file_metadata = prior_file_metadata.copy()
@@ -300,9 +300,9 @@ class IncrementalRAGIndexer:
 
         # * Incrementally update the FAISS index
         if changed_files or deleted_files:
-            index = self.update_faiss_index_incrementally(existing_index, chunks, changed_files, deleted_files)
+            index = self.update_faiss_index_incrementally(prior_index, chunks, changed_files, deleted_files)
         else:
-            index = existing_index
+            index = prior_index
 
         if index is None:
             return
