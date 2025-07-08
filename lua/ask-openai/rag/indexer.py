@@ -149,11 +149,11 @@ class IncrementalRAGIndexer:
                     print(f"[blue]Modified file: {file_path}")
 
         # Find deleted files
-        deleted_files = existing_file_paths - current_file_paths
-        for deleted_file in deleted_files:
+        deleted_file_paths = existing_file_paths - current_file_paths
+        for deleted_file in deleted_file_paths:
             print(f"[red]Deleted file: {deleted_file}")
 
-        return changed_files, deleted_files
+        return changed_files, deleted_file_paths
 
     def remove_chunks_for_deleted_files(self, chunks: Dict, deleted_files: Set[str]) -> Dict:
         """Remove chunks for deleted files"""
