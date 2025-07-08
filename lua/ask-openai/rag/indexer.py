@@ -268,7 +268,7 @@ class IncrementalRAGIndexer:
         # TODO at least capture the ids of what were remoged into one collection
         # TODO just OMG I hate this whole pilee of crap
         # TODO later wes
-        chunks = self.remove_chunks_for_deleted_files(prior_chunks_by_id, deleted_files)
+        chunks_by_id = self.remove_chunks_for_deleted_files(prior_chunks_by_id, deleted_files)
 
         # * Process changed files
         new_file_metadata = prior_files_by_path.copy()
@@ -284,10 +284,10 @@ class IncrementalRAGIndexer:
                     print(f"Processed {i}/{len(changed_files)} changed files...")
 
                 # Remove old chunks for this file
-                old_chunk_ids_to_remove = [chunk_id for chunk_id, chunk in chunks.items() \
+                old_chunk_ids_to_remove = [chunk_id for chunk_id, chunk in chunks_by_id.items() \
                     if chunk['file'] == str(file_path)]
                 for chunk_id in old_chunk_ids_to_remove:
-                    del chunks[chunk_id]
+                    del chunks_by_id[chunk_id]
 
                 # Get new file metadata
                 file_metadata = self.get_file_metadata(file_path)
@@ -296,13 +296,13 @@ class IncrementalRAGIndexer:
                 # Create new chunks for this file
                 file_chunks = self.get_file_chunks(file_path, file_metadata['hash'])
                 for chunk in file_chunks:
-                    chunks[chunk['id']] = chunk
+                    chunks_by_id[chunk['id']] = chunk
 
-        print(f"Total chunks after update: {len(chunks)}")
+        print(f"Total chunks after update: {len(chunks_by_id)}")
 
         # * Incrementally update the FAISS index
         if changed_files or deleted_files:
-            index = self.update_faiss_index_incrementally(prior_index, chunks, changed_files, deleted_files)
+            index = self.update_faiss_index_incrementally(prior_index, chunks_by_id, changed_files, deleted_files)
         else:
             index = prior_index
 
@@ -317,7 +317,7 @@ class IncrementalRAGIndexer:
             faiss.write_index(index, str(index_dir / "vectors.index"))
 
         with Timer("Save chunks"):
-            chunks_list = list(chunks.values())
+            chunks_list = list(chunks_by_id.values())
             # Sort by chunk ID for consistent ordering
             chunks_list.sort(key=lambda x: x['id'])
             with open(index_dir / "chunks.json", 'w') as f:
