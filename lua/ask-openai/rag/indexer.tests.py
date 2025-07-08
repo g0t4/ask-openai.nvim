@@ -28,7 +28,7 @@ class TestBuildIndex(unittest.TestCase):
         index = faiss.read_index(str(vectors_index_path))
         return index
 
-    def get_chunks(self):
+    def get_chunks_by_file(self):
         chunks_json_path = self.rag_dir / "lua" / "chunks.json"
         return json.loads(chunks_json_path.read_text())
 
@@ -45,7 +45,7 @@ class TestBuildIndex(unittest.TestCase):
         indexer.build_index(language_extension="lua")
 
         # * chunks
-        chunks_by_file = self.get_chunks()
+        chunks_by_file = self.get_chunks_by_file()
         self.assertEqual(len(chunks_by_file), 1)  # only one test file
         # 41 lines currently, 5 overlap + 20 per chunk
         sample_lua_path = (self.indexer_src_dir / "sample.lua").absolute()
@@ -145,11 +145,11 @@ class TestBuildIndex(unittest.TestCase):
         indexer.build_index(language_extension="lua")
 
         # * check counts
-        chunks = self.get_chunks()
+        chunks_by_file = self.get_chunks_by_file()
         files = self.get_files()
         index = self.get_vector_index()
 
-        self.assertEqual(len(chunks), 4)
+        self.assertEqual(len(chunks_by_file), 4)
         self.assertEqual(len(files), 2)
         self.assertEqual(index.ntotal, 4)
 
@@ -157,11 +157,11 @@ class TestBuildIndex(unittest.TestCase):
         indexer.build_index(language_extension="lua")
 
         # * check counts
-        chunks = self.get_chunks()
+        chunks_by_file = self.get_chunks_by_file()
         files = self.get_files()
         index = self.get_vector_index()
 
-        self.assertEqual(len(chunks), 5)
+        self.assertEqual(len(chunks_by_file), 5)
         self.assertEqual(len(files), 2)
         self.assertEqual(index.ntotal, 5)
         # TODO FIX this test for ntotal (is 7 now, s/b 5)... b/c old chunks aren't removed for updated document
