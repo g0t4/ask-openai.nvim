@@ -240,7 +240,7 @@ class IncrementalRAGIndexer:
         # Remove metadata and chunks for deleted files
         deleted_chunks_by_file = {}
         # TODO need to enumerate changed here too
-        for deleted_file in (set(file_paths.deleted) or set(file_paths.deleted)):
+        for deleted_file in set(file_paths.deleted):
             if deleted_file in new_file_metadata:
                 del new_file_metadata[deleted_file]
             if deleted_file in prior_chunks_by_file:
