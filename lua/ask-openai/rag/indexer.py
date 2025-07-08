@@ -160,7 +160,12 @@ class IncrementalRAGIndexer:
 
         return FilesDiff(changed_file_paths, deleted_file_paths)
 
-    def update_faiss_index_incrementally(self, index: Optional[faiss.Index], updated_chunks_by_file, deleted_chunks_by_file, file_paths) -> faiss.Index:
+    def update_faiss_index_incrementally(
+        self,
+        index: Optional[faiss.Index],
+        prior_chunks_by_file: Dict,
+        updated_chunks_by_file,
+    ) -> faiss.Index:
         """Update FAISS index incrementally using IndexIDMap"""
         from lsp.model import model
 
@@ -182,7 +187,12 @@ class IncrementalRAGIndexer:
                 new_faiss_ids.append(chunk_id_to_faiss_id(chunk['id']))
 
         with Timer("Remove old vectors"):
-            keep_selector = faiss.IDSelectorArray(np.array(new_faiss_ids, dtype="int64"))
+            # TODO need to pass holdovers too
+            keep_ids = new_faiss_ids.copy()
+            for _, file_chunks in prior_chunks_by_file.items():
+                for chunk in file_chunks:
+                    keep_ids.append(chunk_id_to_faiss_id(chunk['id']))
+            keep_selector = faiss.IDSelectorArray(np.array(keep_ids, dtype="int64"))
             not_keep_selector = faiss.IDSelectorNot(keep_selector)
             index.remove_ids(not_keep_selector)
 
@@ -263,9 +273,16 @@ class IncrementalRAGIndexer:
         print()
         print()
 
+        # TODO fix the slop with prior vs current etc vars here:
+        prior_remaining_chunks_by_file = prior_chunks_by_file  # just a reminder right now that I already removed the items
+
         # * Incrementally update the FAISS index
         if file_paths.changed or file_paths.deleted:
-            index = self.update_faiss_index_incrementally(prior_index, updated_chunks_by_file, deleted_chunks_by_file, file_paths)
+            index = self.update_faiss_index_incrementally(
+                prior_index,
+                prior_chunks_by_file,
+                updated_chunks_by_file,
+            )
         else:
             index = prior_index
 
@@ -281,7 +298,6 @@ class IncrementalRAGIndexer:
 
         with Timer("Save chunks"):
             # TODO fix the slop with prior vs current etc vars here:
-            prior_remaining_chunks_by_file = prior_chunks_by_file  # just a reminder right now that I already removed the items
             all_chunks_by_file = updated_chunks_by_file.copy()
             all_chunks_by_file.update(prior_remaining_chunks_by_file)
             # PRN? sort by file path for consistent ordering in chunks.json? not sure it matters right now and has overhead anyways
