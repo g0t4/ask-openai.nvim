@@ -187,7 +187,7 @@ function M.ask_for_prediction()
             rag.query_rag_via_lsp(document_prefix, document_suffix, send_fim)
         M.rag_cancel = cancel
         M.rag_request_ids = request_ids
-        log:trace("RAG request ids: ", request_ids)
+        log:trace("RAG request ids: ", vim.inspect(request_ids))
         log:trace("RAG cancel: ", cancel)
     else
         send_fim()
