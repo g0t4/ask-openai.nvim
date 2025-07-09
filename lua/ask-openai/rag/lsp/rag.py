@@ -12,10 +12,8 @@ from .storage import Chunk, chunk_id_to_faiss_id, load_chunks
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
-
 # TODO! on LSP events for files, rebuild that one file's chunks and update in-memory index... that way I can avoid thinking about synchronization between multiple app instances?
 #   rebuild on git commit + incremental updates s/b super fast
-
 
 def log_pretty(message, data):
     logging.info(f"{message} {rich.pretty.pretty_repr(data)}")
@@ -48,7 +46,6 @@ def load_model_and_indexes(root_fs_path: Path):
     # log_pretty("chunks_by_faiss_id", chunks_by_faiss_id)
     logging.info(f"Loaded {len(chunks_by_faiss_id)} chunks by id")
 
-
 # PRN make top_k configurable (or other params)
 def handle_query(message, top_k=3):
     if model is None:
@@ -77,20 +74,20 @@ def handle_query(message, top_k=3):
         chunk = chunks_by_faiss_id[idx]
         # TODO graceful handling of missing chunk? (i.e. change indexing ID  :) )
         # TODO! capture absolute path in indexer! that way I dont have to rebuild absolute path here?
-        chunk_file_abs = chunk["file"] # capture abs path, already works
+        chunk_file_abs = chunk.file  # capture abs path, already works
         same_file = current_file_absolute_path == chunk_file_abs
-        logging.info(f"{current_file_absolute_path=} {chunk_file_abs=} {chunk["file"]=} {same_file=}")
+        logging.info(f"{current_file_absolute_path=} {chunk_file_abs=} {chunk.file=} {same_file=}")
         if same_file:
             logging.warning(f"Skipping match in current file: {chunk_file_abs=}")
             # PRN could filter too high of similarity instead? or somem other rerank or ?
             continue
         matches.append({
             "score": float(scores[0][rank]),
-            "text": chunk["text"],
-            "file": chunk.get("file"),
-            "start_line": chunk.get("start_line"),
-            "end_line": chunk.get("end_line"),
-            "type": chunk.get("type"),
+            "text": chunk.text,
+            "file": chunk.file,
+            "start_line": chunk.start_line,
+            "end_line": chunk.end_line,
+            "type": chunk.type,
             "rank": rank + 1,
         })
     if len(matches) == 0:
