@@ -1,6 +1,9 @@
 import lsprotocol.types as types
 from tree_sitter import Language, Parser
 
+
+#! TODO do this later ... not now (just wanted idea/reminder)
+
 # Build or load grammar
 Language.build_library(
     'build/my-languages.so',
