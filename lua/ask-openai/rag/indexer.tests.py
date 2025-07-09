@@ -215,11 +215,5 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(len(files), 2)
         self.assertEqual(index.ntotal, 4)
 
-    def test_update_index_changed_file(self):
-        pass
-
-    def test_update_index_added_file(self):
-        pass
-
 if __name__ == "__main__":
     unittest.main()
