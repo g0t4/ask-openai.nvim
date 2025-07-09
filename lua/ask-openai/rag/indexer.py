@@ -54,7 +54,7 @@ class IncrementalRAGIndexer:
         chunk_str = f"{file_path}:{chunk_type}:{start_line}-{end_line}:{file_hash}"
         return hashlib.sha256(chunk_str.encode()).hexdigest()[:16]
 
-    def get_file_chunks(self, path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Dict]:
+    def build_file_chunks(self, path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Dict]:
         """Chunk a file with unique chunk IDs"""
         chunks = []
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
@@ -260,7 +260,7 @@ class IncrementalRAGIndexer:
                 new_file_metadata[str(file_path)] = file_metadata
 
                 # Create new chunks for this file
-                chunks = self.get_file_chunks(file_path, file_metadata['hash'])
+                chunks = self.build_file_chunks(file_path, file_metadata['hash'])
                 updated_chunks_by_file[str(file_path)] = chunks
 
         print(f"Total updated chunks: {len(updated_chunks_by_file)}")
