@@ -6,7 +6,7 @@ import lsprotocol.types as types
 from pygls import uris
 from pygls.server import LanguageServer
 
-from lsp import rag
+from lsp import rag, imports
 
 from .logs import logging
 
