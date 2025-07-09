@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from rich import print
 from rich.pretty import pprint
 
-from files import write_json
+from pydants import write_json
 import fs
 from lsp.ids import chunk_id_to_faiss_id
 from timing import Timer
