@@ -149,15 +149,13 @@ class IncrementalRAGIndexer:
         current_file_paths = {str(f) for f in current_files}
         prior_file_paths = set(prior_metadata_by_path.keys())
 
-        # Check for new and modified files
         for file_path in current_files:
             file_path_str = str(file_path)
-            if file_path_str not in prior_metadata_by_path:
-                # New file
+            is_new_file = file_path_str not in prior_metadata_by_path
+            if is_new_file:
                 changed_file_paths.add(file_path)
                 print(f"[green]New file: {file_path}")
             else:
-                # Check if file has changed
                 current_mod_time = file_path.stat().st_mtime
                 prior_mod_time = prior_metadata_by_path[file_path_str]['mtime']
                 if current_mod_time > prior_mod_time:
