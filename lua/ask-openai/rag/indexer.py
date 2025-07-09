@@ -40,13 +40,11 @@ class Chunk(BaseModel):
     type: str
     file_hash: str
 
-# FYI using str for key (file path) currently, don't need to change it to Path, it's fine as is
-ChunksByFilePathStr: TypeAlias = dict[str, List[Chunk]]
 FileMetaByPathStr: TypeAlias = dict[str, FileMeta]
 
 @dataclass
 class RAGDataset:
-    chunks_by_file: ChunksByFilePathStr
+    chunks_by_file: dict[str, List[Chunk]]
     files_by_path: FileMetaByPathStr
     index: Optional[faiss.Index] = None
 
@@ -141,7 +139,7 @@ class IncrementalRAGIndexer:
                 print(f"[yellow]Warning: Could not load existing index: {e}")
 
         chunks_json_path = index_dir / "chunks.json"
-        chunks_by_file: ChunksByFilePathStr = {}
+        chunks_by_file: dict[str, List[Chunk]] = {}
 
         if chunks_json_path.exists():
             try:
