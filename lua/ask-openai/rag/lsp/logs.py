@@ -5,12 +5,25 @@ import time
 from rich.console import Console
 from rich.logging import RichHandler
 
-log_file = os.path.expanduser("~/.local/share/ask-openai/language.server.log")
-# logging.basicConfig(filename=log_file, level=logging.DEBUG)
+logging.getLogger("pygls.protocol.json_rpc").setLevel(logging.WARN)  # hide DEBUG messages
+# TODO use verbose flag to toggle on DEBUG/INFO messages?
+# does nvim have a setting that is used across LS's that I can somehow have passed besides obviously just adding to my own config somewhere?
 
-f = open(log_file, 'w')
-console = Console(file=f, color_system='256')
-logging.basicConfig(level="NOTSET", format="%(message)s", datefmt="[%X]", handlers=[RichHandler(console=console)])
+log_file_path = os.path.expanduser("~/.local/share/ask-openai/language.server.log")
+log_file = open(log_file_path, "w", encoding="utf-8")
+# logging.basicConfig(filename=log_file, level=logging.DEBUG)
+console = Console(file=log_file, force_terminal=True, width=150)
+# TODO how can I get rich to not add wraps on long lines... width=None still wraps
+hand = RichHandler(markup=True, rich_tracebacks=True, console=console, show_path=False, show_time=False)
+
+format = "%(asctime)s %(name)s: %(message)s"
+# %(asctime)s
+logging.basicConfig(
+    level="NOTSET",
+    format=format,
+    datefmt="[%X]",
+    handlers=[hand],
+)
 
 class LogTimer:
 
