@@ -259,7 +259,7 @@ class IncrementalRAGIndexer:
 
         print(f"Processing {len(paths.changed)} changed files")
 
-        new_stat_by_path = {path_str: prior.stat_by_path[path_str] for path_str in paths.unchanged}
+        new_stat_by_file = {path_str: prior.stat_by_path[path_str] for path_str in paths.unchanged}
         unchanged_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.unchanged}
 
         updated_chunks_by_file = {}
@@ -270,7 +270,7 @@ class IncrementalRAGIndexer:
                     print(f"Processed {i}/{len(paths.changed)} changed files...")
 
                 stat = self.get_file_stat(file_path)
-                new_stat_by_path[file_path_str] = stat
+                new_stat_by_file[file_path_str] = stat
 
                 # Create new chunks for this file
                 chunks = self.build_file_chunks(file_path, stat.hash)
@@ -318,7 +318,7 @@ class IncrementalRAGIndexer:
             write_json(all_chunks_by_file, index_dir / "chunks.json")
 
         with Timer("Save file stats"):
-            write_json(new_stat_by_path, index_dir / "files.json")
+            write_json(new_stat_by_file, index_dir / "files.json")
 
         print(f"[green]Index updated successfully!")
         if paths.changed:
