@@ -24,7 +24,7 @@ STOP_ON_FAILURE = True
 
 # TODO! all prints and progress must be redirected to a log once I run this INSIDE the LSP
 
-class FileMeta(BaseModel):
+class FileStat(BaseModel):
     mtime: float
     size: int
     hash: str
@@ -43,7 +43,7 @@ class Chunk(BaseModel):
 @dataclass
 class RAGDataset:
     chunks_by_file: dict[str, List[Chunk]]
-    files_by_path: dict[str, FileMeta]
+    files_by_path: dict[str, FileStat]
     index: Optional[faiss.Index] = None
 
 @dataclass
@@ -66,9 +66,9 @@ class IncrementalRAGIndexer:
                 hasher.update(chunk)
         return hasher.hexdigest()
 
-    def get_file_metadata(self, file_path: Path) -> FileMeta:
+    def get_file_metadata(self, file_path: Path) -> FileStat:
         stat = file_path.stat()
-        return FileMeta(
+        return FileStat(
             mtime=stat.st_mtime,
             size=stat.st_size,
             hash=self.get_file_hash(file_path),
@@ -152,14 +152,14 @@ class IncrementalRAGIndexer:
         if files_json_path.exists():
             try:
                 with open(files_json_path, 'r') as f:
-                    files_by_path = {k: FileMeta(**v) for k, v in json.load(f).items()}
+                    files_by_path = {k: FileStat(**v) for k, v in json.load(f).items()}
                 print(f"Loaded metadata for {len(files_by_path)} files")
             except Exception as e:
                 print(f"[yellow]Warning: Could not load file metadata: {e}")
 
         return RAGDataset(chunks_by_file, files_by_path, index)
 
-    def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: dict[str, FileMeta]) -> FilesDiff:
+    def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: dict[str, FileStat]) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
         changed_paths: Set[Path] = set()
         current_path_strs: Set[str] = set(str(f) for f in current_files)
