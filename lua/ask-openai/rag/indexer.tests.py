@@ -197,6 +197,7 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(index.ntotal, 2)
 
         # * add a file
+        # FYI car.lua.txt was designed to catch issues with overlap (32 lines => 0 to 20, 15 to 35, but NOT 30 to 50 b/c only overlap exists so the next chunk has nothing unique in its non-overlapping segment) so maybe use a diff input file... if this causes issues here (move car.lua to a new test then)
         copy_file("car.lua.txt", "car.lua")
         indexer = IncrementalRAGIndexer(self.rag_dir, self.tmp_updater_src_dir)
         indexer.build_index(language_extension="lua")
