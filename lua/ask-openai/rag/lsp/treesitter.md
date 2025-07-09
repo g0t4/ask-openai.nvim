@@ -3,6 +3,7 @@
 bindings - aka ts APIs
 grammars - language parsers
 
+- docs: https://tree-sitter.github.io/tree-sitter
 - Start w/ [tree-sitter org](https://github.com/tree-sitter) on GitHub
   - top-level org page has docs and repos for bindings/grammars
   - [grammars search](https://github.com/tree-sitter/?q=grammar&type=all&language=&sort=)
