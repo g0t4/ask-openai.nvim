@@ -217,7 +217,7 @@ class IncrementalRAGIndexer:
                 for chunk in file_chunks:
                     keep_ids.append(chunk_id_to_faiss_id(chunk.id))
 
-            self.pretty_print("keep_ids", keep_ids)
+            pretty_print("keep_ids", keep_ids)
 
             keep_selector = faiss.IDSelectorArray(np.array(keep_ids, dtype="int64"))
             not_keep_selector = faiss.IDSelectorNot(keep_selector)
@@ -239,11 +239,6 @@ class IncrementalRAGIndexer:
                 index.add_with_ids(vecs_np, faiss_ids_np)
 
         return index
-
-    def pretty_print(self, message, what):
-        print(f"[bold]{message}:")
-        pprint(what)
-        print()
 
     def build_index(self, language_extension: str = "lua"):
         """Build or update the RAG index incrementally"""
@@ -279,9 +274,9 @@ class IncrementalRAGIndexer:
                 chunks = self.build_file_chunks(file_path, stat.hash)
                 updated_chunks_by_file[file_path_str] = chunks
 
-        self.pretty_print("Deleted chunks", paths.deleted)
-        self.pretty_print("Updated chunks", updated_chunks_by_file)
-        self.pretty_print("Unchanged chunks", unchanged_chunks_by_file)
+        pretty_print("Deleted chunks", paths.deleted)
+        pretty_print("Updated chunks", updated_chunks_by_file)
+        pretty_print("Unchanged chunks", unchanged_chunks_by_file)
 
         # * Incrementally update the FAISS index
         if paths.changed or paths.deleted:
@@ -306,7 +301,7 @@ class IncrementalRAGIndexer:
         with Timer("Save chunks"):
             all_chunks_by_file = unchanged_chunks_by_file.copy()
             all_chunks_by_file.update(updated_chunks_by_file)
-            self.pretty_print("all_chunks_by_file", all_chunks_by_file)
+            pretty_print("all_chunks_by_file", all_chunks_by_file)
 
         with Timer("Save chunks"):
             write_json(all_chunks_by_file, index_dir / "chunks.json")
@@ -324,6 +319,11 @@ def trash_indexes(rag_dir, language_extension="lua"):
     """Remove index for a specific language"""
     index_path = Path(rag_dir, language_extension)
     subprocess.run(["trash", index_path], check=IGNORE_FAILURE)
+
+def pretty_print(message, what):
+    print(f"[bold]{message}:")
+    pprint(what)
+    print()
 
 if __name__ == "__main__":
     verbose = "--verbose" in sys.argv
