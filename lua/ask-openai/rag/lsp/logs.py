@@ -35,6 +35,8 @@ logging.basicConfig(
     handlers=[hand],
 )
 
+logger = logging.getLogger("timer")
+
 class LogTimer:
 
     def __init__(self, finished_message=""):
@@ -48,4 +50,4 @@ class LogTimer:
         self.end_ns = time.time_ns()
         elapsed_ns = self.end_ns - self.start_ns
         elapsed_ms = elapsed_ns / 1000000
-        logging.info(f"wall time ({self.finished_message}): {elapsed_ms:,.2f} ms")
+        logger.info(f"{self.finished_message}: {elapsed_ms:,.2f} ms")
