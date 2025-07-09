@@ -1,6 +1,25 @@
+import hashlib
 from pathlib import Path
-from typing import List, Dict
-from lsp.storage import Chunk, chunk_id_for, chunk_id_to_faiss_id
+from typing import Dict, List
+
+from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id
+
+def get_file_hash(file_path: Path) -> str:
+    # PRN is this slow? or ok?
+    hasher = hashlib.sha256()
+    with open(file_path, 'rb') as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+def get_file_stat(file_path: Path) -> FileStat:
+    stat = file_path.stat()
+    return FileStat(
+        mtime=stat.st_mtime,
+        size=stat.st_size,
+        hash=get_file_hash(file_path),
+        path=str(file_path)  # for serializing and reading by LSP
+    )
 
 def build_file_chunks(path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Dict]:
 

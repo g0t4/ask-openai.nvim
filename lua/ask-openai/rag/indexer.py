@@ -16,7 +16,7 @@ from pydants import write_json
 from timing import Timer
 import timing
 from lsp.storage import FileStat, Chunk, load_chunks, chunk_id_to_faiss_id
-from lsp.build import build_file_chunks
+from lsp.build import build_file_chunks, get_file_stat
 
 #
 # constants for subprocess.run for readability
@@ -43,23 +43,6 @@ class IncrementalRAGIndexer:
     def __init__(self, rag_dir, source_dir):
         self.rag_dir = Path(rag_dir)
         self.source_dir = Path(source_dir)
-
-    def get_file_hash(self, file_path: Path) -> str:
-        # PRN is this slow? or ok?
-        hasher = hashlib.sha256()
-        with open(file_path, 'rb') as f:
-            for chunk in iter(lambda: f.read(4096), b""):
-                hasher.update(chunk)
-        return hasher.hexdigest()
-
-    def get_file_stat(self, file_path: Path) -> FileStat:
-        stat = file_path.stat()
-        return FileStat(
-            mtime=stat.st_mtime,
-            size=stat.st_size,
-            hash=self.get_file_hash(file_path),
-            path=str(file_path)  # for serializing and reading by LSP
-        )
 
     def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Split files into: changed (added/updated), unchagned, deleted"""
@@ -218,7 +201,7 @@ class IncrementalRAGIndexer:
                 if i % 10 == 0 and i > 0:
                     print(f"Processed {i}/{len(paths.changed)} changed files...")
 
-                stat = self.get_file_stat(file_path)
+                stat = get_file_stat(file_path)
                 all_stat_by_path[file_path_str] = stat
 
                 # Create new chunks for this file
