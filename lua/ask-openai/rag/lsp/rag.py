@@ -92,7 +92,7 @@ def handle_query(message, top_k=3):
 
     return {"matches": matches}
 
-def update_one_file(path: str):
+def update_one_file_from_disk(path: str):
     logger.info(f"Update ONE {path}")
     if path not in chunks_by_file_path_str:
         logger.info(f"No chunks for {path}")

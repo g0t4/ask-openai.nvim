@@ -64,7 +64,7 @@ def doc_opened(params: types.DidOpenTextDocumentParams):
         logger.error(f"aborting doc_opened b/c missing file_path for {file_uri}")
         return
 
-    rag.update_one_file(file_path)
+    rag.update_one_file_from_disk(file_path)
 
 # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 def doc_changed(params: types.DidChangeTextDocumentParams):
