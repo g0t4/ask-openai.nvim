@@ -14,7 +14,7 @@ from rich.pretty import pprint
 
 from pydants import write_json
 import fs
-from lsp.ids import chunk_id_to_faiss_id
+from lsp.ids import chunk_id_to_faiss_id, generate_chunk_id
 from timing import Timer
 import timing
 #
@@ -52,11 +52,6 @@ class FilesDiff:
     changed: Set[Path]
     deleted: Set[str]
     unchanged: Set[str]
-
-def generate_chunk_id(file_path: Path, chunk_type: str, start_line: int, end_line: int, file_hash: str) -> str:
-    """Generate unique chunk ID based on file path, chunk index, and file hash"""
-    chunk_str = f"{file_path}:{chunk_type}:{start_line}-{end_line}:{file_hash}"
-    return hashlib.sha256(chunk_str.encode()).hexdigest()[:16]
 
 class IncrementalRAGIndexer:
 
