@@ -41,20 +41,32 @@ def on_initialized(server):
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
     rag.load_model_and_indexes(root_fs_path)
 
-@server.feature(types.TEXT_DOCUMENT_DID_OPEN)
-def doc_opened(params: types.DidOpenTextDocumentParams):
-    # FYI just for testing purposes
-    logging.info(f"didOpen: {params}")
+# TODO!!!! :
+@server.feature(types.TEXT_DOCUMENT_DID_SAVE)
+def doc_saved(params: types.DidSaveTextDocumentParams):
+    logging.info(f"didSave: {params}")
 
-@server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
-def doc_changed(params: types.DidChangeTextDocumentParams):
-    # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
-    logging.info(f"didChange: {params}")
-    # TODO is this the only event? is this the right one?
-    #  TODO what if I want to update the actual store? maybe I should have one process for that globally?
-    #   FYI should not run "in-band" with the current RAG query (if any)... just let the current index serve current requests... not likely gonna be much different anyways! esp if just typing chars!
-    # TODO! on LSP events for files, rebuild that one file's chunks and update in-memory index... that way I can avoid thinking about synchronization between multiple app instances?
-    #   rebuild on git commit + incremental updates s/b super fast
+@server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
+def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
+    #   workspace/didChangeWatchedFiles # when files changed outside of editor... i.e. nvim will detect someone else edited a file in the workspace (another nvim instance, maybe CLI tool, etc)
+    logging.info(f"didChangeWatchedFiles: {params}")
+
+#   # didOpen/Close are for real time change basically which I don't need, at least not for RAG (not yet?)
+
+# @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
+# def doc_opened(params: types.DidOpenTextDocumentParams):
+#     # FYI just for testing purposes
+#     logging.info(f"didOpen: {params}")
+
+# @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
+# def doc_changed(params: types.DidChangeTextDocumentParams):
+#     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
+#     logging.info(f"didChange: {params}")
+#     # TODO is this the only event? is this the right one?
+#     #  TODO what if I want to update the actual store? maybe I should have one process for that globally?
+#     #   FYI should not run "in-band" with the current RAG query (if any)... just let the current index serve current requests... not likely gonna be much different anyways! esp if just typing chars!
+#     # TODO! on LSP events for files, rebuild that one file's chunks and update in-memory index... that way I can avoid thinking about synchronization between multiple app instances?
+#     #   rebuild on git commit + incremental updates s/b super fast
 
 @server.feature(types.TEXT_DOCUMENT_COMPLETION)
 def completions(params: CompletionParams):
@@ -68,6 +80,20 @@ def completions(params: CompletionParams):
         CompletionItem(label="friend"),
     ]
     return CompletionList(is_incomplete=False, items=items)
+
+# !!!  MAKE THIS A CONTEXT LS... NOT JUST RAG!!!!
+@server.command("ask.context.query")
+def context_query(params: ExecuteCommandParams):
+    #  ! on didOpen and didChange => hunt imports! (if changed) and cache the list for this file
+    #  ! on didOpen track open files, didClose track closed... so you always KNOW WHAT IS OPEN!!!
+    #
+    # if params is None or params[0] is None:
+    #     logging.error(f"aborting ask.context.query b/c missing params {params}")
+    #     return
+    # args = params[0]
+    logging.info("ask.context.query: %s", params)
+    # return rag.handle_query(args)
+    raise RuntimeError("Not Implemented!")
 
 @server.command("ask.rag.fim.query")
 def rag_query(ls: LanguageServer, params: ExecuteCommandParams):
