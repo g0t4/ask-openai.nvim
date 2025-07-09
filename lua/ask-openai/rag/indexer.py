@@ -42,12 +42,12 @@ class Chunk(BaseModel):
 
 # FYI using str for key (file path) currently, don't need to change it to Path, it's fine as is
 ChunksByFile: TypeAlias = dict[str, List[Chunk]]
-FileMetadataByPath: TypeAlias = dict[str, FileMeta]
+FileMetaByPathStr: TypeAlias = dict[str, FileMeta]
 
 @dataclass
 class RAGDataset:
     chunks_by_file: ChunksByFile
-    files_by_path: FileMetadataByPath
+    files_by_path: FileMetaByPathStr
     index: Optional[faiss.Index] = None
 
 @dataclass
@@ -163,7 +163,7 @@ class IncrementalRAGIndexer:
 
         return RAGDataset(chunks_by_file, files_by_path, index)
 
-    def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: FileMetadataByPath) -> FilesDiff:
+    def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: FileMetaByPathStr) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
         changed_paths: Set[Path] = set()
         current_path_strs: Set[str] = set(str(f) for f in current_files)
