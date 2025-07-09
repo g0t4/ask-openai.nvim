@@ -259,15 +259,8 @@ class IncrementalRAGIndexer:
 
         print(f"Processing {len(paths.changed)} changed files")
 
-        # * Process changed files
-        new_stat_by_path = prior.stat_by_path.copy()
+        new_stat_by_path = {path_str: prior.stat_by_path[path_str] for path_str in paths.unchanged}
         unchanged_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.unchanged}
-
-        # Remove stat and chunks for deleted files, since we started with prior lists
-        for path_str in paths.deleted:
-            if path_str in new_stat_by_path:
-                # make sure file metadata doesn't get copied into new file list
-                del new_stat_by_path[path_str]
 
         updated_chunks_by_file = {}
         with Timer("Process changed files"):
