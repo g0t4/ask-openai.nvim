@@ -272,15 +272,13 @@ class IncrementalRAGIndexer:
 
         # * Process changed files
         new_file_metadata = prior.files_by_path.copy()
-        unchanged_chunks_by_file = prior.chunks_by_file.copy()
+        unchanged_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.unchanged}
 
         # Remove metadata and chunks for deleted files, since we started with prior lists
         for path_str in paths.deleted:
             if path_str in new_file_metadata:
                 # make sure file metadata doesn't get copied into new file list
                 del new_file_metadata[path_str]
-            if path_str in unchanged_chunks_by_file:
-                del unchanged_chunks_by_file[path_str]
 
         updated_chunks_by_file = {}
         with Timer("Process changed files"):
@@ -295,10 +293,6 @@ class IncrementalRAGIndexer:
                 # Create new chunks for this file
                 chunks = self.build_file_chunks(file_path, metadata.hash)
                 updated_chunks_by_file[file_path_str] = chunks
-
-                if file_path_str in unchanged_chunks_by_file:
-                    # remove from original list as this is changed...
-                    del unchanged_chunks_by_file[file_path_str]
 
         print("[bold]Deleted chunks:")
         pprint(paths.deleted)
