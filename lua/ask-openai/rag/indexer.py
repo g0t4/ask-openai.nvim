@@ -16,7 +16,7 @@ from pydantic import BaseModel
 import fs
 from lsp.ids import chunk_id_to_faiss_id
 from timing import Timer
-from files import write_json, read_json
+from files import write_json
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False
 STOP_ON_FAILURE = True
