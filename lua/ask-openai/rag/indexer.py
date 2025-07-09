@@ -246,14 +246,14 @@ class IncrementalRAGIndexer:
         # Remove metadata and chunks for deleted files, since we started with prior lists
         deleted_chunks_by_file = {}
         # TODO need to enumerate changed here too
-        for deleted_file in set(file_paths.deleted):
-            deleted_file_path_str = str(deleted_file)
-            if deleted_file_path_str in new_file_metadata:
+        for file in set(file_paths.deleted):
+            path_str = str(file)
+            if path_str in new_file_metadata:
                 # make sure file metadata doesn't get copied into new file list
-                del new_file_metadata[deleted_file_path_str]
-            if deleted_file_path_str in unchanged_chunks_by_file:
-                deleted_chunks_by_file[deleted_file_path_str] = unchanged_chunks_by_file[deleted_file_path_str]
-                del unchanged_chunks_by_file[deleted_file_path_str]
+                del new_file_metadata[path_str]
+            if path_str in unchanged_chunks_by_file:
+                deleted_chunks_by_file[path_str] = unchanged_chunks_by_file[path_str]
+                del unchanged_chunks_by_file[path_str]
 
         updated_chunks_by_file = {}
         with Timer("Process changed files"):
