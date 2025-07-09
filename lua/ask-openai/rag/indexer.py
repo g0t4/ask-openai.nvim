@@ -55,6 +55,7 @@ class FilesDiff:
     # FYI type mismatch IS FINE with type hints... LEAVE IT!
     changed: Set[Path]
     deleted: Set[str]
+    unchanged: Set[str]
 
 class IncrementalRAGIndexer:
 
@@ -165,7 +166,7 @@ class IncrementalRAGIndexer:
     def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: FileMetadataByPath) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
         changed_paths: Set[Path] = set()
-        current_path_strs: Set[str] = {str(f) for f in current_files}
+        current_path_strs: Set[str] = set(str(f) for f in current_files)
         prior_path_strs: Set[str] = set(prior_metadata_by_path.keys())
 
         for file_path in current_files:
@@ -186,7 +187,10 @@ class IncrementalRAGIndexer:
         for deleted_file in deleted_path_strs:
             print(f"[red]Deleted file: {deleted_file}")
 
-        return FilesDiff(changed_paths, deleted_path_strs)
+        changed_path_strs = set(str(f) for f in changed_paths)
+        unchanged_path_strs = prior_path_strs - changed_path_strs - deleted_path_strs
+
+        return FilesDiff(changed_paths, deleted_path_strs, unchanged_path_strs)
 
     def update_faiss_index_incrementally(
         self,
