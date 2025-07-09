@@ -262,13 +262,13 @@ class IncrementalRAGIndexer:
 
         # FYI allow NO files to CLEAR everything! and add some tests that use this!
 
-        paths_diff = self.get_file_changes(current_file_paths, prior.files_by_path)
+        paths = self.get_file_changes(current_file_paths, prior.files_by_path)
 
-        if not paths_diff.changed and not paths_diff.deleted:
+        if not paths.changed and not paths.deleted:
             print("[green]No changes detected, index is up to date!")
             return
 
-        print(f"Processing {len(paths_diff.changed)} changed files")
+        print(f"Processing {len(paths.changed)} changed files")
 
         # * Process changed files
         new_file_metadata = prior.files_by_path.copy()
@@ -276,7 +276,7 @@ class IncrementalRAGIndexer:
 
         # Remove metadata and chunks for deleted files, since we started with prior lists
         deleted_chunks_by_file = {}
-        for path_str in paths_diff.deleted:
+        for path_str in paths.deleted:
             if path_str in new_file_metadata:
                 # make sure file metadata doesn't get copied into new file list
                 del new_file_metadata[path_str]
@@ -286,10 +286,10 @@ class IncrementalRAGIndexer:
 
         updated_chunks_by_file = {}
         with Timer("Process changed files"):
-            for i, file_path in enumerate(paths_diff.changed):
+            for i, file_path in enumerate(paths.changed):
                 file_path_str = str(file_path)
                 if i % 10 == 0 and i > 0:
-                    print(f"Processed {i}/{len(paths_diff.changed)} changed files...")
+                    print(f"Processed {i}/{len(paths.changed)} changed files...")
 
                 metadata = self.get_file_metadata(file_path)
                 new_file_metadata[file_path_str] = metadata
@@ -313,7 +313,7 @@ class IncrementalRAGIndexer:
         print()
 
         # * Incrementally update the FAISS index
-        if paths_diff.changed or paths_diff.deleted:
+        if paths.changed or paths.deleted:
             index = self.update_faiss_index_incrementally(
                 prior.index,
                 unchanged_chunks_by_file,
@@ -347,10 +347,10 @@ class IncrementalRAGIndexer:
             write_json(new_file_metadata, index_dir / "files.json")
 
         print(f"[green]Index updated successfully!")
-        if paths_diff.changed:
-            print(f"[green]Processed {len(paths_diff.changed)} changed files")
-        if paths_diff.deleted:
-            print(f"[green]Removed {len(paths_diff.deleted)} deleted files")
+        if paths.changed:
+            print(f"[green]Processed {len(paths.changed)} changed files")
+        if paths.deleted:
+            print(f"[green]Removed {len(paths.deleted)} deleted files")
 
 def trash_indexes(rag_dir, language_extension="lua"):
     """Remove index for a specific language"""
