@@ -58,7 +58,8 @@ def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 def doc_opened(params: types.DidOpenTextDocumentParams):
     # TODO build and cache imports context (build first use, update on didChange)!
-    logger.info(f"didOpen: {params}")
+    from rich.pretty import pretty_repr
+    logger.info("didOpen: %s", pretty_repr(params, indent_size=2))
 
 # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 # def doc_changed(params: types.DidChangeTextDocumentParams):
