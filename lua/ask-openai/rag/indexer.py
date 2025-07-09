@@ -281,8 +281,7 @@ class IncrementalRAGIndexer:
                 chunks = self.build_file_chunks(file_path, stat.hash)
                 updated_chunks_by_file[file_path_str] = chunks
 
-        message = "[bold]Deleted chunks:"
-        self.pretty_print(message, paths.deleted)
+        self.pretty_print("[bold]Deleted chunks:", paths.deleted)
         print("[bold]Updated chunks:")
         pprint(updated_chunks_by_file)
         print()
