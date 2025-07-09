@@ -143,7 +143,7 @@ class IncrementalRAGIndexer:
 
         return RAGDataset(chunks_by_file, files_by_path, index)
 
-    def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: Dict) -> FilesDiff:
+    def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: FileDict) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
         changed_file_paths = set()
         current_file_paths = {str(f) for f in current_files}
