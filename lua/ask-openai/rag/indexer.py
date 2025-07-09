@@ -8,6 +8,7 @@ from typing import Dict, List, Optional, Set, Tuple
 import faiss
 import numpy as np
 from rich import print
+from rich.pretty import pprint
 
 import fs
 from lsp.ids import chunk_id_to_faiss_id
@@ -191,6 +192,7 @@ class IncrementalRAGIndexer:
             for _, file_chunks in unchanged_chunks_by_file.items():
                 for chunk in file_chunks:
                     keep_ids.append(chunk_id_to_faiss_id(chunk['id']))
+
             keep_selector = faiss.IDSelectorArray(np.array(keep_ids, dtype="int64"))
             not_keep_selector = faiss.IDSelectorNot(keep_selector)
             index.remove_ids(not_keep_selector)
@@ -266,8 +268,6 @@ class IncrementalRAGIndexer:
                     del unchanged_chunks_by_file[str(file_path)]
 
         print(f"Total updated chunks: {len(updated_chunks_by_file)}")
-
-        from rich.pretty import pprint
 
         # TODO remove after done testing new indexer
         # print(f'{deleted_chunks_by_file=}')
