@@ -359,6 +359,7 @@ if __name__ == "__main__":
     if not verbose:
         print = lambda *_: None
         pprint = lambda *_: None
+        # FYI Timer.print is not affected and that seems maybe fine so it gives some overview top level
 
     with Timer("Total indexing time"):
         # yup, can turn this into a command that uses git repo of CWD
