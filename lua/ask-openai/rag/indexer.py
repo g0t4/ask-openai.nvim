@@ -160,8 +160,10 @@ class IncrementalRAGIndexer:
 
         return RAGDataset(chunks_by_file, files_by_path, index)
 
-    def get_file_changes(self, current_files: List[Path], prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
+    def get_file_changes(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
+        current_files = self.get_current_file_paths(language_extension)
+
         changed_paths: Set[Path] = set()
         current_path_strs: Set[str] = set(str(f) for f in current_files)
         prior_path_strs: Set[str] = set(prior_stat_by_path.keys())
@@ -248,9 +250,7 @@ class IncrementalRAGIndexer:
         return index
 
     def test(self, language_extension: str, prior) -> FilesDiff:
-        current_paths = self.get_current_file_paths(language_extension)
-        print(f"Found {len(current_paths)} {language_extension} files")
-        return self.get_file_changes(current_paths, prior.stat_by_path)
+        return self.get_file_changes(language_extension, prior.stat_by_path)
 
     def build_index(self, language_extension: str = "lua"):
         """Build or update the RAG index incrementally"""
