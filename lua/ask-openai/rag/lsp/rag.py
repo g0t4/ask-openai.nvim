@@ -6,7 +6,7 @@ import faiss
 
 from .ids import chunk_id_to_faiss_id
 from .logs import LogTimer, logging
-from .storage import FileStat, Chunk
+from .storage import FileStat, Chunk, load_chunks
 
 # avoid checking for model files every time you load the model...
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
@@ -19,31 +19,24 @@ def load_model_and_indexes(root_fs_path: Path):
     # index_path = "../../../tmp/rag_index/lua/vectors.index"
     # chunks_path = "../../../tmp/rag_index/lua/chunks.json"
     lua_dir = root_fs_path / ".rag" / "lua"
-    index_path = str(lua_dir / "vectors.index")
-    chunks_path = str(lua_dir / "chunks.json")
+    index_path_str = str(lua_dir / "vectors.index")
+    chunks_path = lua_dir / "chunks.json"
 
     with LogTimer("Loading index and chunks"):
-        index = faiss.read_index(index_path)
-        logging.info(f"Loaded index {index_path} with {index.ntotal} vectors")
+        index = faiss.read_index(index_path_str)
+        logging.info(f"Loaded index {index_path_str} with {index.ntotal} vectors")
 
     with LogTimer("Loading chunks"):
-        with open(chunks_path) as f:
-            chunks_by_file_path = json.load(f)
-        # logging.info(f"Loaded {len(chunks)} chunks from {chunks_path}")
+        chunks_by_file_typed = load_chunks(chunks_path)
 
     chunks_by_faiss_id = {}
-    # chunks.json is dict[file_path:str, list[chunk]]
-    for _file_path_str, chunks in chunks_by_file_path.items():
+    for _, chunks in chunks_by_file_typed.items():
         for chunk in chunks:
             # TODO! I am storing id_int as string ... hydrate that?
-            chunk['faiss_id'] = chunk_id_to_faiss_id(chunk['id'])
-            logging.info(f"{chunk['faiss_id']=}")
-            chunks_by_faiss_id[chunk['faiss_id']] = chunk
+            faiss_id = chunk_id_to_faiss_id(chunk.id)
+            logging.info(f"{faiss_id=}")
+            chunks_by_faiss_id[faiss_id] = chunk
 
-    # for chunk in chunks:
-    #     chunk['faiss_id'] = chunk_id_to_faiss_id(chunk['id'])
-    #     # logging.info(f"{chunk['faiss_id']=}")
-    #     chunks_by_faiss_id[chunk['faiss_id']] = chunk
     logging.info(f"Loaded {chunks_by_faiss_id=}")
     logging.info(f"Loaded {len(chunks_by_faiss_id)} chunks by id")
 

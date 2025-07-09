@@ -16,7 +16,7 @@ from lsp.ids import chunk_id_for, chunk_id_to_faiss_id
 from pydants import write_json
 from timing import Timer
 import timing
-from lsp.storage import FileStat, Chunk
+from lsp.storage import FileStat, Chunk, load_chunks
 
 #
 # constants for subprocess.run for readability
@@ -151,8 +151,7 @@ class IncrementalRAGIndexer:
 
         if chunks_json_path.exists():
             try:
-                with open(chunks_json_path, 'r') as f:
-                    chunks_by_file = {k: [Chunk(**v) for v in v] for k, v in json.load(f).items()}
+                chunks_by_file = load_chunks(chunks_json_path)
                 print(f"Loaded {len(chunks_by_file)} existing chunks")
             except Exception as e:
                 print(f"[yellow]Warning: Could not load existing chunks: {e}")
