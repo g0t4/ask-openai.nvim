@@ -1,9 +1,11 @@
 import hashlib
 import json
 from pathlib import Path
+from typing import TypeAlias
 import subprocess
 import sys
 from typing import Dict, List, Optional, Set, Tuple
+from dataclasses import dataclass
 
 import faiss
 import numpy as np
@@ -20,6 +22,15 @@ STOP_ON_FAILURE = True
 #! FYI! this works with a rebuild (nuk the dir tmp/rag_index)
 #! TODO! all prints and progress must be redirected to a log once I run this INSIDE the LSP
 # !!! DO NOT USE INCREMENTAL REBUILD UNTIL FIX ORDERING ISSUE WITH DELETES
+
+ChunksByFile: TypeAlias = dict[Path, List[dict]]
+FileDict: TypeAlias = dict[Path, dict]
+
+@dataclass
+class RAGDataset:
+    chunks_by_file: ChunksByFile
+    files_by_path: FileDict
+    index: Optional[faiss.Index] = None
 
 class FilesDiff:
 
@@ -97,7 +108,7 @@ class IncrementalRAGIndexer:
         )
         return [Path(line) for line in result.stdout.strip().splitlines()]
 
-    def load_prior_index(self, language_extension: str) -> Tuple[Optional[faiss.Index], Dict, Dict]:
+    def load_prior_index(self, language_extension: str) -> RAGDataset:
         """Load existing (aka prior) index, chunks, and file metadata"""
         index_dir = self.rag_dir / language_extension
 
@@ -130,7 +141,7 @@ class IncrementalRAGIndexer:
             except Exception as e:
                 print(f"[yellow]Warning: Could not load file metadata: {e}")
 
-        return index, chunks_by_file, files_by_path
+        return RAGDataset(chunks_by_file, files_by_path, index)
 
     def find_changed_files(self, current_files: List[Path], prior_metadata_by_path: Dict) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
@@ -222,8 +233,10 @@ class IncrementalRAGIndexer:
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
-        prior_index, all_prior_chunks_by_file, all_prior_files_by_path = \
-            self.load_prior_index(language_extension)
+        prior = self.load_prior_index(language_extension)
+        prior_index = prior.index
+        all_prior_chunks_by_file = prior.chunks_by_file
+        all_prior_files_by_path = prior.files_by_path
 
         with Timer("Find current files"):
             current_files = self.find_files_with_fd(language_extension)
