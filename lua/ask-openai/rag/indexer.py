@@ -15,7 +15,8 @@ import fs
 from pydants import write_json
 from timing import Timer
 import timing
-from lsp.storage import FileStat, Chunk, load_chunks, chunk_id_for, chunk_id_to_faiss_id
+from lsp.storage import FileStat, Chunk, load_chunks, chunk_id_to_faiss_id
+from lsp.build import build_file_chunks
 
 #
 # constants for subprocess.run for readability
@@ -59,39 +60,6 @@ class IncrementalRAGIndexer:
             hash=self.get_file_hash(file_path),
             path=str(file_path)  # for serializing and reading by LSP
         )
-
-    def build_file_chunks(self, path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Dict]:
-        """Chunk a file with unique chunk IDs"""
-        chunks = []
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
-            lines = f.readlines()
-
-        def iter_chunks(lines, lines_per_chunk=20, overlap=4, min_chunk_size=10):
-            n_lines = len(lines)
-            step = lines_per_chunk - overlap
-            for idx, i in enumerate(range(0, n_lines, step)):
-                start = i
-                end_line = min(i + lines_per_chunk, n_lines)
-                if (end_line - start) < min_chunk_size and idx > 0:
-                    break
-
-                chunk_type = "lines"
-                start_line = start + 1
-                chunk_id = chunk_id_for(path, chunk_type, start_line, end_line, file_hash)
-                yield Chunk(
-                    id=chunk_id,
-                    id_int=str(chunk_id_to_faiss_id(chunk_id)),
-                    text="".join(lines[start:end_line]).strip(),
-                    file=str(path),
-                    start_line=start_line,
-                    end_line=end_line,
-                    type=chunk_type,
-                    file_hash=file_hash,
-                )
-
-        for _, chunk in enumerate(iter_chunks(lines, lines_per_chunk, overlap)):
-            chunks.append(chunk)
-        return chunks
 
     def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Split files into: changed (added/updated), unchagned, deleted"""
@@ -254,7 +222,7 @@ class IncrementalRAGIndexer:
                 all_stat_by_path[file_path_str] = stat
 
                 # Create new chunks for this file
-                chunks = self.build_file_chunks(file_path, stat.hash)
+                chunks = build_file_chunks(file_path, stat.hash)
                 updated_chunks_by_file[file_path_str] = chunks
 
         pretty_print("Deleted chunks", paths.deleted)

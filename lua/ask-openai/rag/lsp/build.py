@@ -1,0 +1,36 @@
+from pathlib import Path
+from typing import List, Dict
+from lsp.storage import Chunk, chunk_id_for, chunk_id_to_faiss_id
+
+def build_file_chunks(path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Dict]:
+    """Chunk a file with unique chunk IDs"""
+    chunks = []
+    with open(path, "r", encoding="utf-8", errors="ignore") as f:
+        lines = f.readlines()
+
+    def iter_chunks(lines, lines_per_chunk=20, overlap=4, min_chunk_size=10):
+        n_lines = len(lines)
+        step = lines_per_chunk - overlap
+        for idx, i in enumerate(range(0, n_lines, step)):
+            start = i
+            end_line = min(i + lines_per_chunk, n_lines)
+            if (end_line - start) < min_chunk_size and idx > 0:
+                break
+
+            chunk_type = "lines"
+            start_line = start + 1
+            chunk_id = chunk_id_for(path, chunk_type, start_line, end_line, file_hash)
+            yield Chunk(
+                id=chunk_id,
+                id_int=str(chunk_id_to_faiss_id(chunk_id)),
+                text="".join(lines[start:end_line]).strip(),
+                file=str(path),
+                start_line=start_line,
+                end_line=end_line,
+                type=chunk_type,
+                file_hash=file_hash,
+            )
+
+    for _, chunk in enumerate(iter_chunks(lines, lines_per_chunk, overlap)):
+        chunks.append(chunk)
+    return chunks
