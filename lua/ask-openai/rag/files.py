@@ -2,6 +2,7 @@ from pydantic import BaseModel
 import json
 
 def cheap_serialize(obj):
+    """ use basic reflection of python's primitive types and pydantic models"""
     if isinstance(obj, BaseModel):
         return obj.model_dump()
     elif isinstance(obj, (str, int, float, bool)) or obj is None:
