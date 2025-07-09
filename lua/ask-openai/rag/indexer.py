@@ -21,9 +21,7 @@ from files import write_json
 IGNORE_FAILURE = False
 STOP_ON_FAILURE = True
 
-#! FYI! this works with a rebuild (nuk the dir tmp/rag_index)
-#! TODO! all prints and progress must be redirected to a log once I run this INSIDE the LSP
-# !!! DO NOT USE INCREMENTAL REBUILD UNTIL FIX ORDERING ISSUE WITH DELETES
+# TODO! all prints and progress must be redirected to a log once I run this INSIDE the LSP
 
 class FileMeta(BaseModel):
     mtime: float
