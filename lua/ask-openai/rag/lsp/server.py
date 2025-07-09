@@ -56,7 +56,7 @@ def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 def doc_opened(params: types.DidOpenTextDocumentParams):
     # FYI just for testing purposes
-    logging.info(f"didOpen: {params}", extra={"highlighter": None})
+    logging.info(f"didOpen: {params}")
 
 # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 # def doc_changed(params: types.DidChangeTextDocumentParams):
