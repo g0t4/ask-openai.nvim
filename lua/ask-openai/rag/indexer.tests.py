@@ -177,7 +177,6 @@ class TestBuildIndex(unittest.TestCase):
         #
         self.assertEqual(len(files), 2)
         self.assertEqual(index.ntotal, 5)
-        # TODO FIX this test for ntotal (is 7 now, s/b 5)... b/c old chunks aren't removed for updated document
 
     def test_update_index_changed_file(self):
         pass
