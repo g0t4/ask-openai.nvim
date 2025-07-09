@@ -1,7 +1,7 @@
 import hashlib
 from pathlib import Path
 
-def generate_chunk_id(file_path: Path, chunk_type: str, start_line: int, end_line: int, file_hash: str) -> str:
+def chunk_id_for(file_path: Path, chunk_type: str, start_line: int, end_line: int, file_hash: str) -> str:
     """Generate unique chunk ID based on file path, chunk index, and file hash"""
     chunk_str = f"{file_path}:{chunk_type}:{start_line}-{end_line}:{file_hash}"
     return hashlib.sha256(chunk_str.encode()).hexdigest()[:16]

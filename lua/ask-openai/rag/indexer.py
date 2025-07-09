@@ -14,7 +14,7 @@ from rich.pretty import pprint
 
 from pydants import write_json
 import fs
-from lsp.ids import chunk_id_to_faiss_id, generate_chunk_id
+from lsp.ids import chunk_id_to_faiss_id, chunk_id_for
 from timing import Timer
 import timing
 #
@@ -92,7 +92,7 @@ class IncrementalRAGIndexer:
 
                 chunk_type = "lines"
                 start_line = start + 1
-                chunk_id = generate_chunk_id(path, chunk_type, start_line, end_line, file_hash)
+                chunk_id = chunk_id_for(path, chunk_type, start_line, end_line, file_hash)
                 yield Chunk(
                     id=chunk_id,
                     id_int=str(chunk_id_to_faiss_id(chunk_id)),
