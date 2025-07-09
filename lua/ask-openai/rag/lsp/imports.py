@@ -1,17 +1,12 @@
 import lsprotocol.types as types
 from tree_sitter import Language, Parser
 
-
 #! TODO do this later ... not now (just wanted idea/reminder)
+import tree_sitter_python as tspython
+from tree_sitter import Language, Parser
 
-# Build or load grammar
-Language.build_library(
-    'build/my-languages.so',
-    ['tree-sitter-python'],
-)
-PY_LANGUAGE = Language('build/my-languages.so', 'python')
-parser = Parser()
-parser.set_language(PY_LANGUAGE)
+PY_LANGUAGE = Language(tspython.language())
+parser = Parser(PY_LANGUAGE)
 
 def on_open(params: types.DidOpenTextDocumentParams):
     text = params.text_document.text.encode()
