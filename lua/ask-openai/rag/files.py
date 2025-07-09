@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+import json
 
 def cheap_serialize(obj):
     if isinstance(obj, BaseModel):
@@ -11,3 +12,9 @@ def cheap_serialize(obj):
         return {k: cheap_serialize(v) for k, v in obj.items()}
     else:
         raise TypeError(f"Don't know how to serialize {type(obj)}")
+
+def to_json(obj):
+    return json.dumps(cheap_serialize(obj), indent=2)
+
+def from_json(obj):
+    return json.loads(obj)

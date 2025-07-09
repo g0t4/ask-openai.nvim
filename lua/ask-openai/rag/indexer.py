@@ -16,7 +16,7 @@ from pydantic import BaseModel
 import fs
 from lsp.ids import chunk_id_to_faiss_id
 from timing import Timer
-from files import cheap_serialize
+from files import to_json, from_json
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False
 STOP_ON_FAILURE = True
@@ -342,7 +342,7 @@ class IncrementalRAGIndexer:
         with Timer("Save chunks"):
             # Path(index_dir / "chunks.json").write_text(
             with open(index_dir / "chunks.json", 'w') as f:
-                json_str = json.dumps(cheap_serialize(all_chunks_by_file), indent=2)
+                json_str = to_json(all_chunks_by_file)
                 f.write(json_str)
 
         with Timer("Save file metadata"):
