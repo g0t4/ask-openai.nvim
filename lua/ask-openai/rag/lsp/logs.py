@@ -1,9 +1,11 @@
 import logging
 import os
 import time
+from typing import cast
 
 from rich.console import Console
 from rich.logging import RichHandler
+from rich.pretty import pretty_repr
 
 logging.getLogger("pygls.protocol.json_rpc").setLevel(logging.WARN)  # DEBUG messages on every message!
 logging.getLogger("pygls.protocol.language_server").setLevel(logging.WARN)  # server capabilities on startup
@@ -35,12 +37,29 @@ logging.basicConfig(
     handlers=[hand],
 )
 
+class Logger(logging.Logger):
+
+    def pp(self, obj):
+        return pretty_repr(obj, indent_size=2)
+
+    def pp_info(self, message, obj):
+        self.info(f"{message}: %s", self.pp(obj))
+
+    def timer(self, finished_message=""):
+        return LogTimer(finished_message, logger=self)
+
+def get_logger(name) -> Logger:
+    logging.setLoggerClass(Logger)
+    logger = cast(Logger, logging.getLogger(name))
+    return logger
+
 # by the way will have FQN, which how I run this is lsp.logs for this module
-logger = logging.getLogger(__name__)
+generic_logger = get_logger(__name__)
 
 class LogTimer:
 
-    def __init__(self, finished_message=""):
+    def __init__(self, finished_message="", logger=None):
+        self.logger = logger or generic_logger
         self.finished_message = finished_message
 
     def __enter__(self):
@@ -51,4 +70,4 @@ class LogTimer:
         self.end_ns = time.time_ns()
         elapsed_ns = self.end_ns - self.start_ns
         elapsed_ms = elapsed_ns / 1000000
-        logger.info(f"{self.finished_message}: {elapsed_ms:,.2f} ms")
+        self.logger.info(f"{self.finished_message}: {elapsed_ms:,.2f} ms")

@@ -1,21 +1,16 @@
 import os
 from pathlib import Path
-from typing import List
 
 import faiss
-import rich.pretty
 
-from .logs import LogTimer, logging
+from .logs import get_logger
 from .storage import Chunk, chunk_id_to_faiss_id, load_chunks
 
 # avoid checking for model files every time you load the model...
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
-logger = logging.getLogger(__name__)
-
-def log_pretty(message, data):
-    logger.info(f"{message} {rich.pretty.pretty_repr(data)}")
+logger = get_logger(__name__)
 
 chunks_by_faiss_id: dict[int, Chunk] = {}
 
@@ -29,11 +24,11 @@ def load_model_and_indexes(root_fs_path: Path):
     index_path_str = str(lua_dir / "vectors.index")
     chunks_path = lua_dir / "chunks.json"
 
-    with LogTimer("Loading index and chunks"):
+    with logger.timer("Loading index and chunks"):
         index = faiss.read_index(index_path_str)
         logger.info(f"Loaded index {index_path_str} with {index.ntotal} vectors")
 
-    with LogTimer("Loading chunks"):
+    with logger.timer("Loading chunks"):
         chunks_by_file_typed = load_chunks(chunks_path)
 
     chunks_by_faiss_id = {}
@@ -42,7 +37,7 @@ def load_model_and_indexes(root_fs_path: Path):
             faiss_id = chunk_id_to_faiss_id(chunk.id)
             chunks_by_faiss_id[faiss_id] = chunk
 
-    # log_pretty("chunks_by_faiss_id", chunks_by_faiss_id)
+    # logger.pp_info("chunks_by_faiss_id", chunks_by_faiss_id)
     logger.info(f"Loaded {len(chunks_by_faiss_id)} chunks by id")
 
 # PRN make top_k configurable (or other params)

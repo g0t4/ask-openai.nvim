@@ -18,7 +18,6 @@ def on_open(params: types.DidOpenTextDocumentParams):
     tree = parser.parse(text)
     root = tree.root_node
 
-    # Traverse tree to find import statements
     imports = []
 
     def visit(node):

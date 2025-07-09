@@ -8,19 +8,12 @@ from pygls.server import LanguageServer
 
 from lsp import rag, imports
 
-from .logs import logging
+from .logs import get_logger
 
 # BTW, cd to `rag` dir and => `python3 -m lsp.server` to test this w/o nvim, make sure it starts up at least
 
 # logger_name = __name__ if __name__ != "__main__" else "lsp-server" # PRN don't use __main__?
-logger = logging.getLogger(__name__)
-
-def pp(obj):
-    from rich.pretty import pretty_repr
-    return pretty_repr(obj, indent_size=2)
-
-def pp_info(message, obj):
-    logger.info(f"{message}: %s", pp(obj))
+logger = get_logger(__name__)
 
 server = LanguageServer("ask_language_server", "v0.1")
 
@@ -51,7 +44,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 def doc_saved(params: types.DidSaveTextDocumentParams):
-    pp_info("didSave", params)
+    logger.pp_info("didSave", params)
 
 @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
 def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
@@ -61,13 +54,13 @@ def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 def doc_opened(params: types.DidOpenTextDocumentParams):
     # TODO build and cache imports context (build first use, update on didChange)!
-    pp_info("didOpen", params)
+    logger.pp_info("didOpen", params)
     imports.on_open(params)
 
 @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 def doc_changed(params: types.DidChangeTextDocumentParams):
     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
-    pp_info("didChange", params)
+    logger.pp_info("didChange", params)
     # FYI would use this to invalidate internal caches and rebuild for a given file, i.e. imports, RAG vectors, etc
     #   rebuild on git commit + incremental updates s/b super fast?
 
