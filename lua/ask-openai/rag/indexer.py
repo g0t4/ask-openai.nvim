@@ -113,6 +113,9 @@ class IncrementalRAGIndexer:
             chunks.append(chunk)
         return chunks
 
+    def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
+        """Split files into: changed (added/updated), unchagned, deleted"""
+
     def get_current_file_paths(self, language_extension: str) -> List[Path]:
         """Find files using fd command"""
         result = subprocess.run(
@@ -124,8 +127,6 @@ class IncrementalRAGIndexer:
         # TODO combine fd and stat into one call?
         return [Path(line) for line in result.stdout.strip().splitlines()]
 
-    def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
-        """Split files into: changed (added/updated), unchagned, deleted"""
         current_files = self.get_current_file_paths(language_extension)
 
         changed_paths: Set[Path] = set()
