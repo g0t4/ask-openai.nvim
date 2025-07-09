@@ -51,6 +51,7 @@ class RAGDataset:
 
 @dataclass
 class FilesDiff:
+    # FYI type mismatch IS FINE with type hints... LEAVE IT!
     changed: Set[Path]
     deleted: Set[str]
 
