@@ -159,8 +159,9 @@ class TestBuildIndex(unittest.TestCase):
         #
         self.assertEqual(index.ntotal, 4)
 
+        # * update a file and rebuild
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 4 chunks (starts = 1-20, 16-35, 31-50)
-        indexer = IncrementalRAGIndexer(self.rag_dir, self.tmp_updater_src_dir)
+        indexer = IncrementalRAGIndexer(self.rag_dir, self.tmp_updater_src_dir)  # BTW recreate so no shared state (i.e. if cache added)
         indexer.build_index(language_extension="lua")
 
         # * check counts
@@ -177,6 +178,23 @@ class TestBuildIndex(unittest.TestCase):
         #
         self.assertEqual(len(files), 2)
         self.assertEqual(index.ntotal, 5)
+
+        # * delete a file and rebuild
+        (self.tmp_updater_src_dir / "numbers.lua").unlink()
+        indexer = IncrementalRAGIndexer(self.rag_dir, self.tmp_updater_src_dir)
+        indexer.build_index(language_extension="lua")
+        #
+        chunks_by_file = self.get_chunks_by_file()
+        files = self.get_files()
+        index = self.get_vector_index()
+        #
+        self.assertEqual(len(chunks_by_file), 1)
+        #
+        only_file_chunks = chunks_by_file[str(self.tmp_updater_src_dir / "unchanged.lua")]
+        self.assertEqual(len(only_file_chunks), 2)
+        #
+        self.assertEqual(len(files), 1)
+        self.assertEqual(index.ntotal, 2)
 
     def test_update_index_changed_file(self):
         pass
