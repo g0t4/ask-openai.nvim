@@ -1,15 +1,9 @@
 from pathlib import Path
 
-from lsprotocol.types import (
-    CompletionItem,
-    CompletionList,
-    CompletionParams,
-    ExecuteCommandParams,
-)
 import lsprotocol.types as types
 from pygls.server import LanguageServer
 
-from lsp import rag
+from lsp import rag  # , imports
 from pygls import uris
 
 from .logs import logging
@@ -27,7 +21,7 @@ def pp_info(message, obj):
 server = LanguageServer("ask_language_server", "v0.1")
 
 @server.feature(types.INITIALIZE)
-def on_initialize(ls: LanguageServer, params: types.InitializeParams):
+def on_initialize(_: LanguageServer, params: types.InitializeParams):
     global root_fs_path
     root_uri = params.root_uri  # ., root_uri='file:///Users/wesdemos/repos/github/g0t4/ask-openai.nvim'
     if root_uri is None:
@@ -42,7 +36,7 @@ def on_initialize(ls: LanguageServer, params: types.InitializeParams):
     logger.info(f"fspath {root_fs_path}")
 
 @server.feature(types.INITIALIZED)
-def on_initialized(server):
+def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #  FYI server is managed by the client!
     #  client sends initialize request first => waits for server to send InitializeResult
     #    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialize
@@ -65,6 +59,7 @@ def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
 def doc_opened(params: types.DidOpenTextDocumentParams):
     # TODO build and cache imports context (build first use, update on didChange)!
     pp_info("didOpen", params)
+    # imports.on_open(params)
 
 @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 def doc_changed(params: types.DidChangeTextDocumentParams):
@@ -74,21 +69,21 @@ def doc_changed(params: types.DidChangeTextDocumentParams):
     #   rebuild on git commit + incremental updates s/b super fast?
 
 @server.feature(types.TEXT_DOCUMENT_COMPLETION)
-def completions(params: CompletionParams):
+def completions(params: types.CompletionParams):
     # FYI this is just for initial testing, ok to nuke as I have no plans for completions support
     items = []
     document = server.workspace.get_document(params.text_document.uri)
     current_line = document.lines[params.position.line].strip()
     # if current_line.endswith("hello."):
     items = [
-        CompletionItem(label="world"),
-        CompletionItem(label="friend"),
+        types.CompletionItem(label="world"),
+        types.CompletionItem(label="friend"),
     ]
-    return CompletionList(is_incomplete=False, items=items)
+    return types.CompletionList(is_incomplete=False, items=items)
 
 # !!!  MAKE THIS A CONTEXT LS... NOT JUST RAG!!!!
 @server.command("ask.context.query")
-def context_query(params: ExecuteCommandParams):
+def context_query(params: types.ExecuteCommandParams):
     #  ! on didOpen and didChange => hunt imports! (if changed) and cache the list for this file
     #  ! on didOpen track open files, didClose track closed... so you always KNOW WHAT IS OPEN!!!
     #
@@ -101,7 +96,7 @@ def context_query(params: ExecuteCommandParams):
     raise RuntimeError("Not Implemented!")
 
 @server.command("ask.rag.fim.query")
-def rag_query(ls: LanguageServer, params: ExecuteCommandParams):
+def rag_query(_: LanguageServer, params: types.ExecuteCommandParams):
     if params is None or params[0] is None:
         logger.error(f"aborting ask.rag.fim.query b/c missing params {params}")
         return
