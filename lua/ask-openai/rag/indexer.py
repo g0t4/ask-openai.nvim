@@ -116,6 +116,7 @@ class IncrementalRAGIndexer:
     def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Split files into: changed (added/updated), unchagned, deleted"""
 
+        # * current files
         result = subprocess.run(
             ["fd", f".*\\.{language_extension}$", str(self.source_dir), "--absolute-path", "--type", "f"],
             stdout=subprocess.PIPE,
@@ -124,9 +125,8 @@ class IncrementalRAGIndexer:
         )
         current_path_strs = set(result.stdout.strip().splitlines())
 
+        # * added, modified (aka changed)
         changed_paths: Set[Path] = set()
-        prior_path_strs: Set[str] = set(prior_stat_by_path.keys())
-
         for file_path_str in current_path_strs:
             file_path = Path(file_path_str)
             is_new_file = file_path_str not in prior_stat_by_path
@@ -140,11 +140,14 @@ class IncrementalRAGIndexer:
                     changed_paths.add(file_path)
                     print(f"[blue]Modified file: {file_path}")
 
-        # Find deleted files
+        prior_path_strs: Set[str] = set(prior_stat_by_path.keys())
+
+        # * deleted
         deleted_path_strs = prior_path_strs - current_path_strs
         for deleted_file in deleted_path_strs:
             print(f"[red]Deleted file: {deleted_file}")
 
+        # * unchanged
         changed_path_strs = set(str(f) for f in changed_paths)
         unchanged_path_strs = prior_path_strs - changed_path_strs - deleted_path_strs
 
