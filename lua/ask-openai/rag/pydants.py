@@ -10,10 +10,10 @@ def cheap_serialize(obj):
     elif isinstance(obj, list):
         return [cheap_serialize(x) for x in obj]
     elif isinstance(obj, dict):
-        return {k: cheap_serialize(v) for k, v in obj.items()}
+        # lambda to limit sort to key only
+        return {k: cheap_serialize(v) for k, v in sorted(obj.items(), key=lambda x: x[0])}
     else:
         raise TypeError(f"Don't know how to serialize {type(obj)}")
-
 
 # ! DO NOT MOVE READ here... it is best left inline... even if seems repetitive... don't much it up here for very little (if any) savings for two uses!
 def to_json(obj):
