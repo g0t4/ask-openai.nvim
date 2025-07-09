@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
-from typing import Dict, List, Optional, TypeAlias
+from typing import Dict, List, Optional, TypeAlias, Set
 
 import faiss
 import numpy as np
@@ -49,11 +49,10 @@ class RAGDataset:
     files_by_path: FileMetadataByPath
     index: Optional[faiss.Index] = None
 
+@dataclass
 class FilesDiff:
-
-    def __init__(self, changed, deleted):
-        self.changed = changed
-        self.deleted = deleted
+    changed: Set[Path]
+    deleted: Set[str]
 
 class IncrementalRAGIndexer:
 
@@ -163,9 +162,9 @@ class IncrementalRAGIndexer:
 
     def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: FileMetadataByPath) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
-        changed_file_paths = set()
-        current_file_paths = {str(f) for f in current_files}
-        prior_file_paths = set(prior_metadata_by_path.keys())
+        changed_file_paths: Set[Path] = set()
+        current_file_paths: Set[str] = {str(f) for f in current_files}
+        prior_file_paths: Set[str] = set(prior_metadata_by_path.keys())
 
         for file_path in current_files:
             file_path_str = str(file_path)
