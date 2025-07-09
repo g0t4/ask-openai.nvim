@@ -59,10 +59,13 @@ def pp(obj):
     from rich.pretty import pretty_repr
     return pretty_repr(obj, indent_size=2)
 
+def pp_info(message, obj):
+    logger.info(f"{message}: %s", pp(obj))
+
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 def doc_opened(params: types.DidOpenTextDocumentParams):
     # TODO build and cache imports context (build first use, update on didChange)!
-    logger.info("didOpen: %s", pp(params))
+    pp_info("didOpen", params)
 
 # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 # def doc_changed(params: types.DidChangeTextDocumentParams):
