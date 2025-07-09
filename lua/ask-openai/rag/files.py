@@ -19,3 +19,11 @@ def to_json(obj):
 
 def from_json(obj):
     return json.loads(obj)
+
+def write_json(obj, path):
+    with open(path, 'w') as f:
+        json.dump(cheap_serialize(obj), f, indent=2)
+
+def read_json(path):
+    with open(path, 'r') as f:
+        return json.load(f)
