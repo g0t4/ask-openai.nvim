@@ -159,21 +159,21 @@ class IncrementalRAGIndexer:
 
         return RAGDataset(chunks_by_file, files_by_path, index)
 
-    def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: dict[str, FileStat]) -> FilesDiff:
+    def get_file_changes(self, current_files: List[Path], prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
         changed_paths: Set[Path] = set()
         current_path_strs: Set[str] = set(str(f) for f in current_files)
-        prior_path_strs: Set[str] = set(prior_metadata_by_path.keys())
+        prior_path_strs: Set[str] = set(prior_stat_by_path.keys())
 
         for file_path in current_files:
             file_path_str = str(file_path)
-            is_new_file = file_path_str not in prior_metadata_by_path
+            is_new_file = file_path_str not in prior_stat_by_path
             if is_new_file:
                 changed_paths.add(file_path)
                 print(f"[green]New file: {file_path}")
             else:
                 current_mod_time = file_path.stat().st_mtime
-                prior_mod_time = prior_metadata_by_path[file_path_str].mtime
+                prior_mod_time = prior_stat_by_path[file_path_str].mtime
                 if current_mod_time > prior_mod_time:
                     changed_paths.add(file_path)
                     print(f"[blue]Modified file: {file_path}")
