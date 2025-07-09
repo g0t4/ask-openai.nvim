@@ -13,9 +13,10 @@ os.environ["TRANSFORMERS_OFFLINE"] = "1"
 logger = get_logger(__name__)
 
 chunks_by_faiss_id: dict[int, Chunk] = {}
+chunks_by_file_path_str: dict[str, list[Chunk]] = {}
 
 def load_model_and_indexes(root_fs_path: Path):
-    global model, index, chunks_by_faiss_id
+    global model, index, chunks_by_faiss_id, chunks_by_file_path_str
     from .model import model
 
     # index_path = "../../../tmp/rag_index/lua/vectors.index"
@@ -29,10 +30,10 @@ def load_model_and_indexes(root_fs_path: Path):
         logger.info(f"Loaded index {index_path_str} with {index.ntotal} vectors")
 
     with logger.timer("Loading chunks"):
-        chunks_by_file_typed = load_chunks(chunks_path)
+        chunks_by_file_path_str = load_chunks(chunks_path)
 
     chunks_by_faiss_id = {}
-    for _, chunks in chunks_by_file_typed.items():
+    for _, chunks in chunks_by_file_path_str.items():
         for chunk in chunks:
             faiss_id = chunk_id_to_faiss_id(chunk.id)
             chunks_by_faiss_id[faiss_id] = chunk
