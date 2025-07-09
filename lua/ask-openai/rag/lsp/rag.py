@@ -27,27 +27,22 @@ def load_model_and_indexes(root_fs_path: Path):
 
     with LogTimer("Loading chunks"):
         with open(chunks_path) as f:
-            chunks = json.load(f)
+            chunks_by_file_path = json.load(f)
         # logging.info(f"Loaded {len(chunks)} chunks from {chunks_path}")
 
     chunks_by_faiss_id = {}
-    # TODO! update for storage format change...  now chunks.json is object with file paths as keys, and each has array of its chunks
-    # FYI STILL USING LAST BUILD => when rebuild index then need to update this code
-    #  chunks will be dict[key:string, list[chunk]]
-    #
-    #  # this is new code, should work fine: (get rid of loop below)
-    #   and rename chunks above to chunks_by_file
-    #
-    # for file in chunks_by_file:
-    #     for chunk in chunks_by_file[file]:
-    #         chunk['faiss_id'] = chunk_id_to_faiss_id(chunk['id'])
-    #         # logging.info(f"{chunk['faiss_id']=}")
-    #         chunks_by_faiss_id[chunk['faiss_id']] = chunk
+    # chunks.json is dict[file_path:str, list[chunk]]
+    for _file_path_str, chunks in chunks_by_file_path.items():
+        for chunk in chunks:
+            # TODO! I am storing id_int as string ... hydrate that?
+            chunk['faiss_id'] = chunk_id_to_faiss_id(chunk['id'])
+            logging.info(f"{chunk['faiss_id']=}")
+            chunks_by_faiss_id[chunk['faiss_id']] = chunk
 
-    for chunk in chunks:
-        chunk['faiss_id'] = chunk_id_to_faiss_id(chunk['id'])
-        # logging.info(f"{chunk['faiss_id']=}")
-        chunks_by_faiss_id[chunk['faiss_id']] = chunk
+    # for chunk in chunks:
+    #     chunk['faiss_id'] = chunk_id_to_faiss_id(chunk['id'])
+    #     # logging.info(f"{chunk['faiss_id']=}")
+    #     chunks_by_faiss_id[chunk['faiss_id']] = chunk
     logging.info(f"Loaded {chunks_by_faiss_id=}")
     logging.info(f"Loaded {len(chunks_by_faiss_id)} chunks by id")
 
