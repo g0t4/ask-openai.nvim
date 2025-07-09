@@ -106,11 +106,8 @@ def rag_query(_: LanguageServer, params: types.ExecuteCommandParams):
         logger.error(f"aborting ask.rag.fim.query b/c missing params {params}")
         return
 
-    # PRN cache last N rag queries? would help to regen another completion but maybe not that common?
-
-    args = params[0]
-    logger.info("Query: %s", args)
-    return rag.handle_query(args)
+    message = params[0]
+    return rag.handle_query(message)
 
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):
     print("SIGKILL myself")

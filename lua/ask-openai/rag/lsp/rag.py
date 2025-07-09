@@ -1,11 +1,9 @@
 import os
 from pathlib import Path
 
-import faiss
-
-from .logs import get_logger
-from .storage import Chunk, chunk_id_to_faiss_id, load_chunks
 from .build import build_file_chunks, get_file_hash
+from .logs import get_logger
+from .storage import Chunk, Datasets, load_all_datasets
 
 # avoid checking for model files every time you load the model...
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
@@ -13,35 +11,12 @@ os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 logger = get_logger(__name__)
 
-chunks_by_faiss_id: dict[int, Chunk] = {}
-chunks_by_file_path_str: dict[str, list[Chunk]] = {}
+datasets: Datasets
 
 def load_model_and_indexes(root_fs_path: Path):
-    global model, index, chunks_by_faiss_id, chunks_by_file_path_str
+    global model, datasets
     from .model import model
-
-    # TODO ALL LANGUAGES
-    # index_path = "../../../tmp/rag_index/lua/vectors.index"
-    # chunks_path = "../../../tmp/rag_index/lua/chunks.json"
-    lua_dir = root_fs_path / ".rag" / "lua"
-    index_path_str = str(lua_dir / "vectors.index")
-    chunks_path = lua_dir / "chunks.json"
-
-    with logger.timer("Loading index and chunks"):
-        index = faiss.read_index(index_path_str)
-        logger.info(f"Loaded index {index_path_str} with {index.ntotal} vectors")
-
-    with logger.timer("Loading chunks"):
-        chunks_by_file_path_str = load_chunks(chunks_path)
-
-    chunks_by_faiss_id = {}
-    for _, chunks in chunks_by_file_path_str.items():
-        for chunk in chunks:
-            faiss_id = chunk_id_to_faiss_id(chunk.id)
-            chunks_by_faiss_id[faiss_id] = chunk
-
-    # logger.pp_info("chunks_by_faiss_id", chunks_by_faiss_id)
-    logger.info(f"Loaded {len(chunks_by_faiss_id)} chunks by id")
+    datasets = load_all_datasets(root_fs_path / ".rag")
 
 # PRN make top_k configurable (or other params)
 def handle_query(message, top_k=3):
@@ -49,35 +24,43 @@ def handle_query(message, top_k=3):
         logger.info("MISSING MODEL, CANNOT query it")
         return
 
-    text = message.get("text")
-    if not text:
-        logger.info("[red bold][ERROR] No query provided")
-        return {"failed": True, "error": "No query provided"}
-    # TODO does this semantic belong here? or should it be like exclude_files?
-    #   can worry about this when I expand RAG beyond FIM
-    current_file_absolute_path = message.get("current_file_absolute_path")
-    # logger.info(f"Querying for [green bold]{text}[/green bold]")
-    # logger.info(f"Current file: [green bold]{current_file_absolute_path}[/green bold]")
+    logger.info("[blue bold]RAG[/blue bold] query: %s", message)
+
+    text = message.get("text")  # PRN rename to query? instead of text?
+    if text is None or len(text) == 0:
+        logger.info("[red bold][ERROR] No query text provided")
+        return {"failed": True, "error": "No query text provided"}
+
+    current_file_abs = message.get("current_file_absolute_path")
+    dataset = datasets.for_file(current_file_abs)
+    if dataset is None:
+        logger.info(f"No dataset")
+        return {"failed": True, "error": f"No dataset for {current_file_abs}"}
 
     # query: prefix is what the model was trained on (and the documents have passage: prefix)
+    # PRN make model wrapper and have it encode both query and passage/document (that was it is model specific, too)
     q_vec = model.encode([f"query: {text}"], normalize_embeddings=True).astype("float32")
     # FAISS search (GIL released)
-    scores, ids = index.search(q_vec, top_k)
+    scores, ids = dataset.index.search(q_vec, top_k)
     # logger.info(f'{scores=}')
     # logger.info(f'{ids=}')
 
     matches = []
     for rank, idx in enumerate(ids[0]):
-        chunk = chunks_by_faiss_id[idx]
-        # TODO graceful handling of missing chunk? (i.e. change indexing ID  :) )
-        # TODO! capture absolute path in indexer! that way I dont have to rebuild absolute path here?
+        chunk = datasets.get_chunk_by_faiss_id(idx)
+        if chunk is None:
+            logger.error(f"Missing chunk for id: {idx}")
+            continue
+
+        # TODO capture absolute path in indexer! that way I dont have to rebuild absolute path here?
         chunk_file_abs = chunk.file  # capture abs path, already works
-        same_file = current_file_absolute_path == chunk_file_abs
-        logger.info(f"{current_file_absolute_path=} {chunk_file_abs=} {chunk.file=} {same_file=}")
+        same_file = current_file_abs == chunk_file_abs
         if same_file:
-            logger.warning(f"Skipping match in current file: {chunk_file_abs=}")
+            logger.warning(f"Skip match in same file")
             # PRN could filter too high of similarity instead? or somem other rerank or ?
             continue
+        logger.info(f"matched {chunk.file}:L{chunk.start_line}-{chunk.end_line}")
+
         matches.append({
             "score": float(scores[0][rank]),
             "text": chunk.text,
@@ -89,30 +72,35 @@ def handle_query(message, top_k=3):
         })
     if len(matches) == 0:
         # warn if this happens, that all were basically the same doc
-        logger.warning("No matches found")
+        logger.warning(f"No matches found for {current_file_abs=}")
 
     return {"matches": matches}
 
-def update_one_file_from_disk(path: str):
-    global model, index, chunks_by_faiss_id, chunks_by_file_path_str
+def update_one_file_from_disk(file_path: str):
 
-    logger.info(f"Update ONE {path}")
-    if path not in chunks_by_file_path_str:
-        logger.info(f"No chunks for {path}")
+    dataset = datasets.for_file(file_path)
+    if dataset is None:
+        logger.info(f"No dataset for path: {file_path}")
+        return
+
+    if file_path not in dataset.chunks_by_file:
+        logger.info(f"No chunks for {file_path}")
         # TODO BUILD NEW?
         return
 
-    prior_chunks = chunks_by_file_path_str[path]
-    logger.pp_info("prior_chunks", prior_chunks)
+    prior_chunks = dataset.chunks_by_file[file_path]
     if not prior_chunks:
-        logger.info(f"Nothing to update for {path}")
+        logger.info(f"Nothing to update for {file_path}")
         # TODO BUILD NEW?
         return
-    logger.info(f"Updating {path}")
-    # TODO allow pass lines in ?
-    # stat = get_file_stat(path)  # for lines instead?
-    hash = get_file_hash(Path(path))
-    new_chunks = build_file_chunks(Path(path), hash)
+
+    logger.info(f"Updating {file_path}")
+    logger.pp_info("prior_chunks", prior_chunks)
+
+    hash = get_file_hash(file_path)
+    new_chunks = build_file_chunks(file_path, hash)
     logger.pp_info("new_chunks", new_chunks)
 
-    # chunks_by_file_path_str[path] = new_chunks
+    # TODO add something to Datasets/RAGDataset to have it handle the update
+    #  infact should this function exist elsewhere at some point?
+    # dataset.chunks_by_file[path] = new_chunks

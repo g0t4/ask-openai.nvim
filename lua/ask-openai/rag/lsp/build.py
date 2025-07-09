@@ -4,7 +4,8 @@ from typing import Dict, List
 
 from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id
 
-def get_file_hash(file_path: Path) -> str:
+def get_file_hash(file_path: Path | str) -> str:
+    file_path = Path(file_path)
     # PRN is this slow? or ok?
     hasher = hashlib.sha256()
     with open(file_path, 'rb') as f:
@@ -12,7 +13,9 @@ def get_file_hash(file_path: Path) -> str:
             hasher.update(chunk)
     return hasher.hexdigest()
 
-def get_file_stat(file_path: Path) -> FileStat:
+def get_file_stat(file_path: Path | str) -> FileStat:
+    file_path = Path(file_path)
+
     stat = file_path.stat()
     return FileStat(
         mtime=stat.st_mtime,
@@ -21,7 +24,8 @@ def get_file_stat(file_path: Path) -> FileStat:
         path=str(file_path)  # for serializing and reading by LSP
     )
 
-def build_file_chunks(path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Chunk]:
+def build_file_chunks(path: Path | str, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Chunk]:
+    path = Path(path)
 
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         lines = f.readlines()

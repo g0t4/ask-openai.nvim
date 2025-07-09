@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import hashlib
 import json
 from pathlib import Path
@@ -6,6 +6,9 @@ from typing import List, Optional
 
 import faiss
 from pydantic import BaseModel
+from .logs import get_logger
+
+logger = get_logger(__name__)
 
 def chunk_id_for(file_path: Path, chunk_type: str, start_line: int, end_line: int, file_hash: str) -> str:
     """Generate unique chunk ID based on file path, chunk index, and file hash"""
@@ -48,15 +51,38 @@ class RAGDataset:
     stat_by_path: dict[str, FileStat]
     index: Optional[faiss.Index] = None
 
+@dataclass
+class Datasets:
+    all_datasets: dict[str, RAGDataset]
+    # FYI must use default_factory else the default dict {} is shared among all instances! b/c defaults are evaluated ONCE in scope that declares this class
+    _chunks_by_faiss_id: dict[int, Chunk] = field(default_factory=dict)
+
+    def __post_init__(self):
+        for dataset in self.all_datasets.values():
+            for _, chunks in dataset.chunks_by_file.items():
+                for chunk in chunks:
+                    faiss_id = chunk.faiss_id()
+                    self._chunks_by_faiss_id[faiss_id] = chunk
+
+    def get_chunk_by_faiss_id(self, faiss_id) -> Optional[Chunk]:
+        # now consumers have no knowledge of the cache
+        #  this will help with updates too, to not let the updater have to think about this
+        # FYI I don't have to remove items here b/c they are content hashed so doesn't matter if they're left behind (for now)
+        # PRN might wanna move this to the dataset level to update it on updates to a doc in a dataset
+        return self._chunks_by_faiss_id.get(faiss_id)
+
+    def for_file(self, file_path: str):
+        language_extension = Path(file_path).suffix.removeprefix('.')
+        return self.all_datasets.get(language_extension)
+
 def load_chunks(chunks_json_path: Path):
     with open(chunks_json_path, 'r') as f:
         chunks_by_file = {k: [Chunk(**v) for v in v] for k, v in json.load(f).items()}
     return chunks_by_file
 
-def load_prior_data(language_extension: str, rag_dir: Path) -> RAGDataset:
-    index_dir = rag_dir / language_extension
+def load_prior_data(language_extension: str, language_dir: Path) -> RAGDataset:
 
-    vectors_index_path = index_dir / "vectors.index"
+    vectors_index_path = language_dir / "vectors.index"
     index = None
     if vectors_index_path.exists():
         try:
@@ -65,7 +91,7 @@ def load_prior_data(language_extension: str, rag_dir: Path) -> RAGDataset:
         except Exception as e:
             print(f"[yellow]Warning: Could not load existing index: {e}")
 
-    chunks_json_path = index_dir / "chunks.json"
+    chunks_json_path = language_dir / "chunks.json"
     chunks_by_file: dict[str, List[Chunk]] = {}
 
     if chunks_json_path.exists():
@@ -75,7 +101,7 @@ def load_prior_data(language_extension: str, rag_dir: Path) -> RAGDataset:
         except Exception as e:
             print(f"[yellow]Warning: Could not load existing chunks: {e}")
 
-    files_json_path = index_dir / "files.json"
+    files_json_path = language_dir / "files.json"
     files_by_path = {}
     if files_json_path.exists():
         try:
@@ -96,11 +122,13 @@ def find_language_dirs(rag_dir: str | Path):
 
     return [p for p in Path(rag_dir).glob("*") if p.is_dir()]
 
-def load_all_rag_datasets(rag_dir: str | Path):
+def load_all_datasets(rag_dir: str | Path) -> Datasets:
     dirs = find_language_dirs(rag_dir)
     datasets = {}
     for dir_path in dirs:
         language_extension = dir_path.name
         dataset = load_prior_data(language_extension, dir_path)
         datasets[language_extension] = dataset
-    return datasets
+        logger.info(f"[green]Loaded {language_extension} with {len(dataset.chunks_by_file)} chunks")
+
+    return Datasets(datasets)
