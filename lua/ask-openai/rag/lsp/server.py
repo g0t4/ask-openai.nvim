@@ -17,6 +17,13 @@ from .logs import logging
 # logger_name = __name__ if __name__ != "__main__" else "lsp-server" # PRN don't use __main__?
 logger = logging.getLogger(__name__)
 
+def pp(obj):
+    from rich.pretty import pretty_repr
+    return pretty_repr(obj, indent_size=2)
+
+def pp_info(message, obj):
+    logger.info(f"{message}: %s", pp(obj))
+
 server = LanguageServer("ask_language_server", "v0.1")
 
 @server.feature(types.INITIALIZE)
@@ -47,35 +54,24 @@ def on_initialized(server):
 # TODO!!!! :
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 def doc_saved(params: types.DidSaveTextDocumentParams):
-    logger.info(f"didSave: {params}")
+    pp_info("didSave", params)
 
 @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
 def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
     #   workspace/didChangeWatchedFiles # when files changed outside of editor... i.e. nvim will detect someone else edited a file in the workspace (another nvim instance, maybe CLI tool, etc)
     logger.info(f"didChangeWatchedFiles: {params}")
 
-#   # didOpen/Close are for real time change basically which I don't need, at least not for RAG (not yet?)
-def pp(obj):
-    from rich.pretty import pretty_repr
-    return pretty_repr(obj, indent_size=2)
-
-def pp_info(message, obj):
-    logger.info(f"{message}: %s", pp(obj))
-
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 def doc_opened(params: types.DidOpenTextDocumentParams):
     # TODO build and cache imports context (build first use, update on didChange)!
     pp_info("didOpen", params)
 
-# @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
-# def doc_changed(params: types.DidChangeTextDocumentParams):
-#     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
-#     logger.info(f"didChange: {params}")
-#     # TODO is this the only event? is this the right one?
-#     #  TODO what if I want to update the actual store? maybe I should have one process for that globally?
-#     #   FYI should not run "in-band" with the current RAG query (if any)... just let the current index serve current requests... not likely gonna be much different anyways! esp if just typing chars!
-#     # TODO! on LSP events for files, rebuild that one file's chunks and update in-memory index... that way I can avoid thinking about synchronization between multiple app instances?
-#     #   rebuild on git commit + incremental updates s/b super fast
+@server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
+def doc_changed(params: types.DidChangeTextDocumentParams):
+    # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
+    pp_info("didChange", params)
+    # FYI would use this to invalidate internal caches and rebuild for a given file, i.e. imports, RAG vectors, etc
+    #   rebuild on git commit + incremental updates s/b super fast?
 
 @server.feature(types.TEXT_DOCUMENT_COMPLETION)
 def completions(params: CompletionParams):
