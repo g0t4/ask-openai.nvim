@@ -234,7 +234,6 @@ class IncrementalRAGIndexer:
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
         prior = self.load_prior_index(language_extension)
-        prior_index = prior.index
         all_prior_chunks_by_file = prior.chunks_by_file
         all_prior_files_by_path = prior.files_by_path
 
@@ -307,12 +306,12 @@ class IncrementalRAGIndexer:
         # * Incrementally update the FAISS index
         if file_paths.changed or file_paths.deleted:
             index = self.update_faiss_index_incrementally(
-                prior_index,
+                prior.index,
                 unchanged_chunks_by_file,
                 updated_chunks_by_file,
             )
         else:
-            index = prior_index
+            index = prior.index
 
         if index is None:
             return
