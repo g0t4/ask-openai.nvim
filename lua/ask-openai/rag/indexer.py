@@ -149,7 +149,7 @@ class IncrementalRAGIndexer:
 
         return FilesDiff(changed_paths, deleted_path_strs, unchanged_path_strs)
 
-    def load_prior_index(self, language_extension: str) -> RAGDataset:
+    def load_prior_data(self, language_extension: str) -> RAGDataset:
         index_dir = self.rag_dir / language_extension
 
         vectors_index_path = index_dir / "vectors.index"
@@ -246,7 +246,7 @@ class IncrementalRAGIndexer:
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
-        prior = self.load_prior_index(language_extension)
+        prior = self.load_prior_data(language_extension)
 
         with Timer("Find current files"):
             paths = self.get_files_diff(language_extension, prior.stat_by_path)
