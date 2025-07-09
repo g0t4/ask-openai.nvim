@@ -122,7 +122,8 @@ class IncrementalRAGIndexer:
             text=True,
             check=True,
         )
-        current_files = [Path(line) for line in result.stdout.strip().splitlines()]
+        current_files_strs = result.stdout.strip().splitlines()
+        current_files = [Path(l) for l in current_files_strs]
 
         changed_paths: Set[Path] = set()
         current_path_strs: Set[str] = set(str(f) for f in current_files)
