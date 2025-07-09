@@ -217,9 +217,7 @@ class IncrementalRAGIndexer:
                 for chunk in file_chunks:
                     keep_ids.append(chunk_id_to_faiss_id(chunk.id))
 
-            print("keep_ids:")
-            pprint(keep_ids)
-            print()
+            self.pretty_print("keep_ids", keep_ids)
 
             keep_selector = faiss.IDSelectorArray(np.array(keep_ids, dtype="int64"))
             not_keep_selector = faiss.IDSelectorNot(keep_selector)
@@ -308,10 +306,7 @@ class IncrementalRAGIndexer:
         with Timer("Save chunks"):
             all_chunks_by_file = unchanged_chunks_by_file.copy()
             all_chunks_by_file.update(updated_chunks_by_file)
-            print()
-            print(f"all_chunks_by_file:")
-            pprint(all_chunks_by_file)
-            print()
+            self.pretty_print("all_chunks_by_file", all_chunks_by_file)
 
         with Timer("Save chunks"):
             write_json(all_chunks_by_file, index_dir / "chunks.json")
