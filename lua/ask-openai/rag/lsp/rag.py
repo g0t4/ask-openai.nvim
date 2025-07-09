@@ -20,6 +20,7 @@ def load_model_and_indexes(root_fs_path: Path):
     global model, index, chunks_by_faiss_id, chunks_by_file_path_str
     from .model import model
 
+    # TODO ALL LANGUAGES
     # index_path = "../../../tmp/rag_index/lua/vectors.index"
     # chunks_path = "../../../tmp/rag_index/lua/chunks.json"
     lua_dir = root_fs_path / ".rag" / "lua"
