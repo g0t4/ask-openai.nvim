@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 def on_open(params: types.DidOpenTextDocumentParams):
     if params.text_document.language_id != 'python':
         return
+    logger.info(f"analyzing imports from {params.text_document.uri}")
+
     text = params.text_document.text.encode()
     tree = parser.parse(text)
     root = tree.root_node
@@ -26,7 +28,7 @@ def on_open(params: types.DidOpenTextDocumentParams):
             visit(child)
 
     visit(root)
-    print(f"Imports in {params.text_document.uri}:\n" + '\n'.join(imports))
+    logger.info(f"Imports in {params.text_document.uri}:\n" + '\n'.join(imports))
 
 # TODO move to server.py? do I need this?
 # @ls.feature('textDocument/sync')
