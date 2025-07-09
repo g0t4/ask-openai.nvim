@@ -242,6 +242,11 @@ class IncrementalRAGIndexer:
 
         return index
 
+    def pretty_print(self, message, what):
+        print(message)
+        pprint(what)
+        print()
+
     def build_index(self, language_extension: str = "lua"):
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
@@ -276,9 +281,9 @@ class IncrementalRAGIndexer:
                 chunks = self.build_file_chunks(file_path, stat.hash)
                 updated_chunks_by_file[file_path_str] = chunks
 
-        print("[bold]Deleted chunks:")
-        pprint(paths.deleted)
-        print()
+        what = paths.deleted
+        message = "[bold]Deleted chunks:"
+        self.pretty_print(message, what)
         print("[bold]Updated chunks:")
         pprint(updated_chunks_by_file)
         print()
