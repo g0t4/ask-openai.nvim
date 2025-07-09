@@ -1,11 +1,12 @@
 import os
 from pathlib import Path
+from typing import List
 
 import faiss
 import rich.pretty
 
 from .logs import LogTimer, logging
-from .storage import chunk_id_to_faiss_id, load_chunks
+from .storage import Chunk, chunk_id_to_faiss_id, load_chunks
 
 # avoid checking for model files every time you load the model...
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
@@ -18,6 +19,8 @@ os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 def log_pretty(message, data):
     logging.info(f"{message} {rich.pretty.pretty_repr(data)}")
+
+chunks_by_faiss_id: dict[int, Chunk] = {}
 
 def load_model_and_indexes(root_fs_path: Path):
     global model, index, chunks_by_faiss_id
