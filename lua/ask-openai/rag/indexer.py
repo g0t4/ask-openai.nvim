@@ -124,6 +124,37 @@ class IncrementalRAGIndexer:
         # TODO combine fd and stat into one call?
         return [Path(line) for line in result.stdout.strip().splitlines()]
 
+    def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
+        """Split files into: changed (added/updated), unchagned, deleted"""
+        current_files = self.get_current_file_paths(language_extension)
+
+        changed_paths: Set[Path] = set()
+        current_path_strs: Set[str] = set(str(f) for f in current_files)
+        prior_path_strs: Set[str] = set(prior_stat_by_path.keys())
+
+        for file_path in current_files:
+            file_path_str = str(file_path)
+            is_new_file = file_path_str not in prior_stat_by_path
+            if is_new_file:
+                changed_paths.add(file_path)
+                print(f"[green]New file: {file_path}")
+            else:
+                current_mod_time = file_path.stat().st_mtime
+                prior_mod_time = prior_stat_by_path[file_path_str].mtime
+                if current_mod_time > prior_mod_time:
+                    changed_paths.add(file_path)
+                    print(f"[blue]Modified file: {file_path}")
+
+        # Find deleted files
+        deleted_path_strs = prior_path_strs - current_path_strs
+        for deleted_file in deleted_path_strs:
+            print(f"[red]Deleted file: {deleted_file}")
+
+        changed_path_strs = set(str(f) for f in changed_paths)
+        unchanged_path_strs = prior_path_strs - changed_path_strs - deleted_path_strs
+
+        return FilesDiff(changed_paths, deleted_path_strs, unchanged_path_strs)
+
     def load_prior_index(self, language_extension: str) -> RAGDataset:
         """Load existing (aka prior) index, chunks, and file metadata"""
         index_dir = self.rag_dir / language_extension
@@ -159,37 +190,6 @@ class IncrementalRAGIndexer:
                 print(f"[yellow]Warning: Could not load file metadata: {e}")
 
         return RAGDataset(chunks_by_file, files_by_path, index)
-
-    def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
-        """Split files into: changed (added/updated), unchagned, deleted"""
-        current_files = self.get_current_file_paths(language_extension)
-
-        changed_paths: Set[Path] = set()
-        current_path_strs: Set[str] = set(str(f) for f in current_files)
-        prior_path_strs: Set[str] = set(prior_stat_by_path.keys())
-
-        for file_path in current_files:
-            file_path_str = str(file_path)
-            is_new_file = file_path_str not in prior_stat_by_path
-            if is_new_file:
-                changed_paths.add(file_path)
-                print(f"[green]New file: {file_path}")
-            else:
-                current_mod_time = file_path.stat().st_mtime
-                prior_mod_time = prior_stat_by_path[file_path_str].mtime
-                if current_mod_time > prior_mod_time:
-                    changed_paths.add(file_path)
-                    print(f"[blue]Modified file: {file_path}")
-
-        # Find deleted files
-        deleted_path_strs = prior_path_strs - current_path_strs
-        for deleted_file in deleted_path_strs:
-            print(f"[red]Deleted file: {deleted_file}")
-
-        changed_path_strs = set(str(f) for f in changed_paths)
-        unchanged_path_strs = prior_path_strs - changed_path_strs - deleted_path_strs
-
-        return FilesDiff(changed_paths, deleted_path_strs, unchanged_path_strs)
 
     def update_faiss_index_incrementally(
         self,
