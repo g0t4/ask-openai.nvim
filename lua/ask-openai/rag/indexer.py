@@ -150,7 +150,6 @@ class IncrementalRAGIndexer:
         return FilesDiff(changed_paths, deleted_path_strs, unchanged_path_strs)
 
     def load_prior_index(self, language_extension: str) -> RAGDataset:
-        """Load existing (aka prior) index, chunks, and file metadata"""
         index_dir = self.rag_dir / language_extension
 
         vectors_index_path = index_dir / "vectors.index"
@@ -179,9 +178,9 @@ class IncrementalRAGIndexer:
             try:
                 with open(files_json_path, 'r') as f:
                     files_by_path = {k: FileStat(**v) for k, v in json.load(f).items()}
-                print(f"Loaded metadata for {len(files_by_path)} files")
+                print(f"Loaded stats for {len(files_by_path)} files")
             except Exception as e:
-                print(f"[yellow]Warning: Could not load file metadata: {e}")
+                print(f"[yellow]Warning: Could not load file stats {e}")
 
         return RAGDataset(chunks_by_file, files_by_path, index)
 
@@ -261,14 +260,14 @@ class IncrementalRAGIndexer:
         print(f"Processing {len(paths.changed)} changed files")
 
         # * Process changed files
-        new_file_metadata = prior.stat_by_path.copy()
+        new_stat_by_path = prior.stat_by_path.copy()
         unchanged_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.unchanged}
 
-        # Remove metadata and chunks for deleted files, since we started with prior lists
+        # Remove stat and chunks for deleted files, since we started with prior lists
         for path_str in paths.deleted:
-            if path_str in new_file_metadata:
+            if path_str in new_stat_by_path:
                 # make sure file metadata doesn't get copied into new file list
-                del new_file_metadata[path_str]
+                del new_stat_by_path[path_str]
 
         updated_chunks_by_file = {}
         with Timer("Process changed files"):
@@ -277,11 +276,11 @@ class IncrementalRAGIndexer:
                 if i % 10 == 0 and i > 0:
                     print(f"Processed {i}/{len(paths.changed)} changed files...")
 
-                metadata = self.get_file_stat(file_path)
-                new_file_metadata[file_path_str] = metadata
+                stat = self.get_file_stat(file_path)
+                new_stat_by_path[file_path_str] = stat
 
                 # Create new chunks for this file
-                chunks = self.build_file_chunks(file_path, metadata.hash)
+                chunks = self.build_file_chunks(file_path, stat.hash)
                 updated_chunks_by_file[file_path_str] = chunks
 
         print("[bold]Deleted chunks:")
@@ -325,8 +324,8 @@ class IncrementalRAGIndexer:
         with Timer("Save chunks"):
             write_json(all_chunks_by_file, index_dir / "chunks.json")
 
-        with Timer("Save file metadata"):
-            write_json(new_file_metadata, index_dir / "files.json")
+        with Timer("Save file stats"):
+            write_json(new_stat_by_path, index_dir / "files.json")
 
         print(f"[green]Index updated successfully!")
         if paths.changed:
