@@ -1,22 +1,22 @@
+from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
-from typing import TypeAlias
 import subprocess
 import sys
-from typing import Dict, List, Optional, Set, Tuple
-from dataclasses import dataclass
+from typing import Dict, List, Optional, TypeAlias
 
 import faiss
 import numpy as np
+from pydantic import BaseModel
 from rich import print
 from rich.pretty import pprint
-from pydantic import BaseModel
 
+from files import write_json
 import fs
 from lsp.ids import chunk_id_to_faiss_id
 from timing import Timer
-from files import write_json
+#
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False
 STOP_ON_FAILURE = True
