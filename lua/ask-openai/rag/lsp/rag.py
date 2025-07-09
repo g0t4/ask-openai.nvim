@@ -11,6 +11,9 @@ from .storage import chunk_id_to_faiss_id, load_chunks
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
+def log_pretty(message, data):
+    logging.info(f"{message} {rich.pretty.pretty_repr(data)}")
+
 def load_model_and_indexes(root_fs_path: Path):
     global model, index, chunks_by_faiss_id
     from .model import model
@@ -34,7 +37,7 @@ def load_model_and_indexes(root_fs_path: Path):
             faiss_id = chunk_id_to_faiss_id(chunk.id)
             chunks_by_faiss_id[faiss_id] = chunk
 
-    # logging.info(rich.pretty.pretty_repr(chunks_by_faiss_id))
+    # log_pretty("chunks_by_faiss_id", chunks_by_faiss_id)
     logging.info(f"Loaded {len(chunks_by_faiss_id)} chunks by id")
 
 
