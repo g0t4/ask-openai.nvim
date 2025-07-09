@@ -60,6 +60,7 @@ class IncrementalRAGIndexer:
         self.source_dir = Path(source_dir)
 
     def get_file_hash(self, file_path: Path) -> str:
+        # PRN is this slow? or ok?
         hasher = hashlib.sha256()
         with open(file_path, 'rb') as f:
             for chunk in iter(lambda: f.read(4096), b""):
