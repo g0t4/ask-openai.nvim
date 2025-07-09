@@ -122,7 +122,6 @@ class IncrementalRAGIndexer:
             text=True,
             check=True,
         )
-        # TODO combine fd and stat into one call?
         current_files = [Path(line) for line in result.stdout.strip().splitlines()]
 
         changed_paths: Set[Path] = set()
