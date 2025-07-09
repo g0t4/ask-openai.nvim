@@ -193,6 +193,10 @@ class IncrementalRAGIndexer:
                 for chunk in file_chunks:
                     keep_ids.append(chunk_id_to_faiss_id(chunk['id']))
 
+            print("[bold]keep_ids:")
+            pprint(keep_ids)
+            print()
+
             keep_selector = faiss.IDSelectorArray(np.array(keep_ids, dtype="int64"))
             not_keep_selector = faiss.IDSelectorNot(keep_selector)
             index.remove_ids(not_keep_selector)
