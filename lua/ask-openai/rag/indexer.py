@@ -27,6 +27,7 @@ STOP_ON_FAILURE = True
 
 @dataclass
 class RAGDataset:
+    language_extension: str
     chunks_by_file: dict[str, List[Chunk]]
     stat_by_path: dict[str, FileStat]
     index: Optional[faiss.Index] = None
@@ -116,7 +117,7 @@ class IncrementalRAGIndexer:
             except Exception as e:
                 print(f"[yellow]Warning: Could not load file stats {e}")
 
-        return RAGDataset(chunks_by_file, files_by_path, index)
+        return RAGDataset(language_extension, chunks_by_file, files_by_path, index)
 
     def update_faiss_index_incrementally(
         self,
