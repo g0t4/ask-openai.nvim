@@ -3,10 +3,12 @@ from typing import List, Dict
 from lsp.storage import Chunk, chunk_id_for, chunk_id_to_faiss_id
 
 def build_file_chunks(path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Dict]:
-    """Chunk a file with unique chunk IDs"""
-    chunks = []
+
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         lines = f.readlines()
+        return build_from_lines(path, file_hash, lines, lines_per_chunk, overlap)
+
+def build_from_lines(path: Path, file_hash: str, lines: List[str], lines_per_chunk: int = 20, overlap: int = 4) -> List[Dict]:
 
     def iter_chunks(lines, lines_per_chunk=20, overlap=4, min_chunk_size=10):
         n_lines = len(lines)
@@ -31,6 +33,8 @@ def build_file_chunks(path: Path, file_hash: str, lines_per_chunk: int = 20, ove
                 file_hash=file_hash,
             )
 
+    chunks = []
     for _, chunk in enumerate(iter_chunks(lines, lines_per_chunk, overlap)):
         chunks.append(chunk)
+
     return chunks
