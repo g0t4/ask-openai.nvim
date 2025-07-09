@@ -6,6 +6,7 @@ import faiss
 
 from .ids import chunk_id_to_faiss_id
 from .logs import LogTimer, logging
+# TODO! setup shared module with types for at least ChunksFile thingy
 
 # avoid checking for model files every time you load the model...
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
