@@ -50,6 +50,11 @@ def doc_opened(params: types.DidOpenTextDocumentParams):
 def doc_changed(params: types.DidChangeTextDocumentParams):
     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
     logging.info(f"didChange: {params}")
+    # TODO is this the only event? is this the right one?
+    #  TODO what if I want to update the actual store? maybe I should have one process for that globally?
+    #   FYI should not run "in-band" with the current RAG query (if any)... just let the current index serve current requests... not likely gonna be much different anyways! esp if just typing chars!
+    # TODO! on LSP events for files, rebuild that one file's chunks and update in-memory index... that way I can avoid thinking about synchronization between multiple app instances?
+    #   rebuild on git commit + incremental updates s/b super fast
 
 @server.feature(types.TEXT_DOCUMENT_COMPLETION)
 def completions(params: CompletionParams):

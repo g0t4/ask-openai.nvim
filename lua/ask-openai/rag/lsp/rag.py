@@ -12,9 +12,6 @@ from .storage import Chunk, chunk_id_to_faiss_id, load_chunks
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
 os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
-# TODO! on LSP events for files, rebuild that one file's chunks and update in-memory index... that way I can avoid thinking about synchronization between multiple app instances?
-#   rebuild on git commit + incremental updates s/b super fast
-
 def log_pretty(message, data):
     logging.info(f"{message} {rich.pretty.pretty_repr(data)}")
 
