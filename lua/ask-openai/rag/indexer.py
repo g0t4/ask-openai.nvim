@@ -24,12 +24,12 @@ STOP_ON_FAILURE = True
 # !!! DO NOT USE INCREMENTAL REBUILD UNTIL FIX ORDERING ISSUE WITH DELETES
 
 ChunksByFile: TypeAlias = dict[Path, List[dict]]
-FileDict: TypeAlias = dict[Path, dict]
+FileMetadataByPath: TypeAlias = dict[Path, dict]
 
 @dataclass
 class RAGDataset:
     chunks_by_file: ChunksByFile
-    files_by_path: FileDict
+    files_by_path: FileMetadataByPath
     index: Optional[faiss.Index] = None
 
 class FilesDiff:
@@ -143,7 +143,7 @@ class IncrementalRAGIndexer:
 
         return RAGDataset(chunks_by_file, files_by_path, index)
 
-    def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: FileDict) -> FilesDiff:
+    def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: FileMetadataByPath) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
         changed_file_paths = set()
         current_file_paths = {str(f) for f in current_files}
