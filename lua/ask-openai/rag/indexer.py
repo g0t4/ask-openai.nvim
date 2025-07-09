@@ -98,7 +98,7 @@ class IncrementalRAGIndexer:
             chunks.append(chunk)
         return chunks
 
-    def find_files_with_fd(self, language_extension: str) -> List[Path]:
+    def get_files_for(self, language_extension: str) -> List[Path]:
         """Find files using fd command"""
         result = subprocess.run(
             ["fd", f".*\\.{language_extension}$", str(self.source_dir), "--absolute-path", "--type", "f"],
@@ -236,7 +236,7 @@ class IncrementalRAGIndexer:
         prior = self.load_prior_index(language_extension)
 
         with Timer("Find current files"):
-            current_files = self.find_files_with_fd(language_extension)
+            current_files = self.get_files_for(language_extension)
             print(f"Found {len(current_files)} {language_extension} files")
 
         # FYI allow NO files to CLEAR everything! and add some tests that use this!
