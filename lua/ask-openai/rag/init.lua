@@ -14,8 +14,8 @@ function M.setup()
                     "lsp.server",
                 },
                 cmd_cwd = os.getenv("HOME") .. "/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag",
-                -- filetypes = { "lua", "python", "fish" },
-                filetypes = { "lua" }, -- USE this if python is too busy while you are writing code for LS!
+                filetypes = { "lua", "python", "fish" },
+                -- filetypes = { "lua" }, -- USE this if python is too busy while you are writing code for LS!
                 root_dir = require("lspconfig.util").root_pattern(".git", "."),
 
             },

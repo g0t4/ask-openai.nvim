@@ -1,14 +1,17 @@
+import logging
+
 import lsprotocol.types as types
 from tree_sitter import Language, Parser
-
-#! TODO do this later ... not now (just wanted idea/reminder)
 import tree_sitter_python as tspython
-from tree_sitter import Language, Parser
 
 PY_LANGUAGE = Language(tspython.language())
 parser = Parser(PY_LANGUAGE)
 
+logger = logging.getLogger(__name__)
+
 def on_open(params: types.DidOpenTextDocumentParams):
+    if params.text_document.language_id != 'python':
+        return
     text = params.text_document.text.encode()
     tree = parser.parse(text)
     root = tree.root_node

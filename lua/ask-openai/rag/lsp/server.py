@@ -62,7 +62,7 @@ def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
 def doc_opened(params: types.DidOpenTextDocumentParams):
     # TODO build and cache imports context (build first use, update on didChange)!
     pp_info("didOpen", params)
-    # imports.on_open(params)
+    imports.on_open(params)
 
 @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 def doc_changed(params: types.DidChangeTextDocumentParams):
