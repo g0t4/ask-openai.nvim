@@ -40,12 +40,10 @@ class Chunk(BaseModel):
     type: str
     file_hash: str
 
-FileMetaByPathStr: TypeAlias = dict[str, FileMeta]
-
 @dataclass
 class RAGDataset:
     chunks_by_file: dict[str, List[Chunk]]
-    files_by_path: FileMetaByPathStr
+    files_by_path: dict[str, FileMeta]
     index: Optional[faiss.Index] = None
 
 @dataclass
@@ -161,7 +159,7 @@ class IncrementalRAGIndexer:
 
         return RAGDataset(chunks_by_file, files_by_path, index)
 
-    def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: FileMetaByPathStr) -> FilesDiff:
+    def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: dict[str, FileMeta]) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
         changed_paths: Set[Path] = set()
         current_path_strs: Set[str] = set(str(f) for f in current_files)
