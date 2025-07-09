@@ -247,29 +247,32 @@ class IncrementalRAGIndexer:
         deleted_chunks_by_file = {}
         # TODO need to enumerate changed here too
         for deleted_file in set(file_paths.deleted):
-            if deleted_file in new_file_metadata:
+            deleted_file_path_str = str(deleted_file)
+            if deleted_file_path_str in new_file_metadata:
                 # make sure file metadata doesn't get copied into new file list
-                del new_file_metadata[deleted_file]
-            if deleted_file in unchanged_chunks_by_file:
-                deleted_chunks_by_file[deleted_file] = unchanged_chunks_by_file[deleted_file]
-                del unchanged_chunks_by_file[deleted_file]
+                del new_file_metadata[deleted_file_path_str]
+            if deleted_file_path_str in unchanged_chunks_by_file:
+                deleted_chunks_by_file[deleted_file_path_str] = unchanged_chunks_by_file[deleted_file_path_str]
+                del unchanged_chunks_by_file[deleted_file_path_str]
 
         updated_chunks_by_file = {}
         with Timer("Process changed files"):
             for i, file_path in enumerate(file_paths.changed):
+                file_path_str = str(file_path)
                 if i % 10 == 0 and i > 0:
                     print(f"Processed {i}/{len(file_paths.changed)} changed files...")
 
                 # Get new file metadata
                 file_metadata = self.get_file_metadata(file_path)
-                new_file_metadata[str(file_path)] = file_metadata
+                new_file_metadata[file_path_str] = file_metadata
 
                 # Create new chunks for this file
                 chunks = self.build_file_chunks(file_path, file_metadata['hash'])
-                updated_chunks_by_file[str(file_path)] = chunks
-                if file_path in unchanged_chunks_by_file:
+                updated_chunks_by_file[file_path_str] = chunks
+
+                if file_path_str in unchanged_chunks_by_file:
                     # remove from original list as this is changed...
-                    del unchanged_chunks_by_file[str(file_path)]
+                    del unchanged_chunks_by_file[file_path_str]
 
         print(f"Total updated chunks: {len(updated_chunks_by_file)}")
 
