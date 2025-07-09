@@ -247,11 +247,10 @@ class IncrementalRAGIndexer:
 
         return index
 
-    def test(self, language_extension: str, prior) -> None:
+    def test(self, language_extension: str, prior) -> FilesDiff:
         current_paths = self.get_current_file_paths(language_extension)
         print(f"Found {len(current_paths)} {language_extension} files")
-        paths = self.get_file_changes(current_paths, prior.stat_by_path)
-        return paths
+        return self.get_file_changes(current_paths, prior.stat_by_path)
 
     def build_index(self, language_extension: str = "lua"):
         """Build or update the RAG index incrementally"""
@@ -261,7 +260,6 @@ class IncrementalRAGIndexer:
 
         with Timer("Find current files"):
             paths = self.test(language_extension, prior)
-
 
         # TODO add test to assert delete last file is fine and wipes the data set
 
