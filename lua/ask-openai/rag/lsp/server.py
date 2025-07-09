@@ -14,7 +14,8 @@ from pygls import uris
 
 from .logs import logging
 
-logger = logging.getLogger("ask-rag")
+# logger_name = __name__ if __name__ != "__main__" else "lsp-server" # PRN don't use __main__?
+logger = logging.getLogger(__name__)
 
 server = LanguageServer("ask_language_server", "v0.1")
 

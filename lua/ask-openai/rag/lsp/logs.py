@@ -35,7 +35,8 @@ logging.basicConfig(
     handlers=[hand],
 )
 
-logger = logging.getLogger("timer")
+# by the way will have FQN, which how I run this is lsp.logs for this module
+logger = logging.getLogger(__name__)
 
 class LogTimer:
 
