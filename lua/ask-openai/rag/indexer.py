@@ -143,7 +143,7 @@ class IncrementalRAGIndexer:
 
         return RAGDataset(chunks_by_file, files_by_path, index)
 
-    def find_changed_files(self, current_files: List[Path], prior_metadata_by_path: Dict) -> FilesDiff:
+    def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: Dict) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
         changed_file_paths = set()
         current_file_paths = {str(f) for f in current_files}
@@ -241,7 +241,7 @@ class IncrementalRAGIndexer:
 
         # FYI allow NO files to CLEAR everything! and add some tests that use this!
 
-        files_diff = self.find_changed_files(current_file_paths, prior.files_by_path)
+        files_diff = self.get_file_changes(current_file_paths, prior.files_by_path)
 
         if not files_diff.changed and not files_diff.deleted:
             print("[green]No changes detected, index is up to date!")
