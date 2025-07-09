@@ -23,8 +23,16 @@ STOP_ON_FAILURE = True
 #! TODO! all prints and progress must be redirected to a log once I run this INSIDE the LSP
 # !!! DO NOT USE INCREMENTAL REBUILD UNTIL FIX ORDERING ISSUE WITH DELETES
 
-ChunksByFile: TypeAlias = dict[Path, List[dict]]
-FileMetadataByPath: TypeAlias = dict[Path, dict]
+@dataclass
+class FileMeta:
+    mtime: float
+    size: int
+    hash: str
+    path: str
+
+# FYI using str for key (file path) currently, don't need to change it to Path, it's fine as is
+ChunksByFile: TypeAlias = dict[str, List[dict]]
+FileMetadataByPath: TypeAlias = dict[str, FileMeta]
 
 @dataclass
 class RAGDataset:
@@ -51,14 +59,14 @@ class IncrementalRAGIndexer:
                 hasher.update(chunk)
         return hasher.hexdigest()
 
-    def get_file_metadata(self, file_path: Path) -> Dict:
+    def get_file_metadata(self, file_path: Path) -> FileMeta:
         stat = file_path.stat()
-        return {
-            'path': str(file_path),
-            'hash': self.get_file_hash(file_path),
-            'mtime': stat.st_mtime,
-            'size': stat.st_size,
-        }
+        return FileMeta(
+            mtime=stat.st_mtime,
+            size=stat.st_size,
+            hash=self.get_file_hash(file_path),
+            path=str(file_path)  # for serializing and reading by LSP
+        )
 
     def generate_chunk_id(self, file_path: Path, chunk_type: str, start_line: int, end_line: int, file_hash: str) -> str:
         """Generate unique chunk ID based on file path, chunk index, and file hash"""
@@ -157,7 +165,7 @@ class IncrementalRAGIndexer:
                 print(f"[green]New file: {file_path}")
             else:
                 current_mod_time = file_path.stat().st_mtime
-                prior_mod_time = prior_metadata_by_path[file_path_str]['mtime']
+                prior_mod_time = prior_metadata_by_path[file_path_str].mtime
                 if current_mod_time > prior_mod_time:
                     changed_file_paths.add(file_path)
                     print(f"[blue]Modified file: {file_path}")
@@ -269,12 +277,11 @@ class IncrementalRAGIndexer:
                 if i % 10 == 0 and i > 0:
                     print(f"Processed {i}/{len(files_diff.changed)} changed files...")
 
-                # Get new file metadata
-                file_metadata = self.get_file_metadata(file_path)
-                new_file_metadata[file_path_str] = file_metadata
+                metadata = self.get_file_metadata(file_path)
+                new_file_metadata[file_path_str] = metadata
 
                 # Create new chunks for this file
-                chunks = self.build_file_chunks(file_path, file_metadata['hash'])
+                chunks = self.build_file_chunks(file_path, metadata.hash)
                 updated_chunks_by_file[file_path_str] = chunks
 
                 if file_path_str in unchanged_chunks_by_file:
