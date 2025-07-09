@@ -5,6 +5,7 @@ import faiss
 
 from .logs import get_logger
 from .storage import Chunk, chunk_id_to_faiss_id, load_chunks
+from .build import build_file_chunks, get_file_hash
 
 # avoid checking for model files every time you load the model...
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
@@ -90,3 +91,23 @@ def handle_query(message, top_k=3):
         logger.warning("No matches found")
 
     return {"matches": matches}
+
+def update_one_file(path: str):
+    logger.info(f"Update ONE {path}")
+    if path not in chunks_by_file_path_str:
+        logger.info(f"No chunks for {path}")
+        # TODO BUILD NEW?
+        return
+
+    prior_chunks = chunks_by_file_path_str[path]
+    logger.pp_info("prior_chunks", prior_chunks)
+    if not prior_chunks:
+        logger.info(f"Nothing to update for {path}")
+        # TODO BUILD NEW?
+        return
+    logger.info(f"Updating {path}")
+    # TODO allow pass lines in ?
+    # stat = get_file_stat(path)  # for lines instead?
+    hash = get_file_hash(Path(path))
+    new_chunks = build_file_chunks(Path(path), hash)
+    logger.pp_info("new_chunks", new_chunks)

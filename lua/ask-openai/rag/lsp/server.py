@@ -58,6 +58,13 @@ def doc_opened(params: types.DidOpenTextDocumentParams):
     # FYI would want to cache the text of the doc on open and apply changes if I want didChange level of integration... that can come later
     logger.pp_info("didOpen", params)
     # imports.on_open(params)
+    file_uri = params.text_document.uri
+    file_path = uris.to_fs_path(file_uri)
+    if file_path is None:
+        logger.error(f"aborting doc_opened b/c missing file_path for {file_uri}")
+        return
+
+    rag.update_one_file(file_path)
 
 # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 def doc_changed(params: types.DidChangeTextDocumentParams):
