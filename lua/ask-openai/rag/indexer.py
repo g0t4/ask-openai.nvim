@@ -67,7 +67,7 @@ class IncrementalRAGIndexer:
                 hasher.update(chunk)
         return hasher.hexdigest()
 
-    def get_file_metadata(self, file_path: Path) -> FileStat:
+    def get_file_stat(self, file_path: Path) -> FileStat:
         stat = file_path.stat()
         return FileStat(
             mtime=stat.st_mtime,
@@ -277,7 +277,7 @@ class IncrementalRAGIndexer:
                 if i % 10 == 0 and i > 0:
                     print(f"Processed {i}/{len(paths.changed)} changed files...")
 
-                metadata = self.get_file_metadata(file_path)
+                metadata = self.get_file_stat(file_path)
                 new_file_metadata[file_path_str] = metadata
 
                 # Create new chunks for this file
