@@ -5,8 +5,8 @@ import time
 from rich.logging import RichHandler
 
 log_file = os.path.expanduser("~/.local/share/ask-openai/language.server.log")
-# logging.basicConfig(filename=log_file, level=logging.DEBUG)
-logging.basicConfig(level="NOTSET", format="%(message)s", datefmt="[%X]", handlers=[RichHandler()])
+logging.basicConfig(filename=log_file, level=logging.DEBUG)
+# logging.basicConfig(level="NOTSET", format="%(message)s", datefmt="[%X]", handlers=[RichHandler()])
 
 class LogTimer:
 
