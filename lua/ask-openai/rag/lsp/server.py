@@ -41,6 +41,16 @@ def on_initialized(server):
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
     rag.load_model_and_indexes(root_fs_path)
 
+@server.feature(types.TEXT_DOCUMENT_DID_OPEN)
+def doc_opened(params: types.DidOpenTextDocumentParams):
+    # FYI just for testing purposes
+    logging.info(f"didOpen: {params}")
+
+@server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
+def doc_changed(params: types.DidChangeTextDocumentParams):
+    # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
+    logging.info(f"didChange: {params}")
+
 @server.feature(types.TEXT_DOCUMENT_COMPLETION)
 def completions(params: CompletionParams):
     # FYI this is just for initial testing, ok to nuke as I have no plans for completions support
