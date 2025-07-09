@@ -55,12 +55,14 @@ def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
     logger.info(f"didChangeWatchedFiles: {params}")
 
 #   # didOpen/Close are for real time change basically which I don't need, at least not for RAG (not yet?)
+def pp(obj):
+    from rich.pretty import pretty_repr
+    return pretty_repr(obj, indent_size=2)
 
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 def doc_opened(params: types.DidOpenTextDocumentParams):
     # TODO build and cache imports context (build first use, update on didChange)!
-    from rich.pretty import pretty_repr
-    logger.info("didOpen: %s", pretty_repr(params, indent_size=2))
+    logger.info("didOpen: %s", pp(params))
 
 # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 # def doc_changed(params: types.DidChangeTextDocumentParams):
