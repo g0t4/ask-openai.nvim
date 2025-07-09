@@ -14,7 +14,13 @@ log_file = open(log_file_path, "w", encoding="utf-8")
 # logging.basicConfig(filename=log_file, level=logging.DEBUG)
 console = Console(file=log_file, force_terminal=True, width=150)
 # TODO how can I get rich to not add wraps on long lines... width=None still wraps
-hand = RichHandler(markup=True, rich_tracebacks=True, console=console, show_path=False, show_time=False)
+hand = RichHandler(
+    markup=True,  # i.e. [bold], [red]
+    rich_tracebacks=True,
+    console=console,
+    show_path=False,
+    show_time=False,
+)
 
 format = "%(asctime)s %(name)s: %(message)s"
 # %(asctime)s
