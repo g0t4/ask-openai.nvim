@@ -45,7 +45,6 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
     rag.load_model_and_indexes(root_fs_path)
 
-# TODO!!!! :
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 def doc_saved(params: types.DidSaveTextDocumentParams):
     pp_info("didSave", params)
