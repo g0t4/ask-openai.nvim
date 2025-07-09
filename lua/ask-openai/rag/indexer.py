@@ -116,8 +116,6 @@ class IncrementalRAGIndexer:
     def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Split files into: changed (added/updated), unchagned, deleted"""
 
-    def get_current_file_paths(self, language_extension: str) -> List[Path]:
-        """Find files using fd command"""
         result = subprocess.run(
             ["fd", f".*\\.{language_extension}$", str(self.source_dir), "--absolute-path", "--type", "f"],
             stdout=subprocess.PIPE,
