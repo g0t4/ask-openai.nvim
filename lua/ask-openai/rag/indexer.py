@@ -320,9 +320,9 @@ def trash_indexes(rag_dir, language_extension="lua"):
     index_path = Path(rag_dir, language_extension)
     subprocess.run(["trash", index_path], check=IGNORE_FAILURE)
 
-def pretty_print(message, what):
+def pretty_print(message, data):
     print(f"[bold]{message}:")
-    pprint(what)
+    pprint(data)
     print()
 
 if __name__ == "__main__":
