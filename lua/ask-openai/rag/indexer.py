@@ -164,29 +164,29 @@ class IncrementalRAGIndexer:
 
     def get_file_changes(self, current_files: List[Path], prior_metadata_by_path: FileMetadataByPath) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
-        changed_file_paths: Set[Path] = set()
-        current_file_paths: Set[str] = {str(f) for f in current_files}
-        prior_file_paths: Set[str] = set(prior_metadata_by_path.keys())
+        changed_paths: Set[Path] = set()
+        current_path_strs: Set[str] = {str(f) for f in current_files}
+        prior_path_strs: Set[str] = set(prior_metadata_by_path.keys())
 
         for file_path in current_files:
             file_path_str = str(file_path)
             is_new_file = file_path_str not in prior_metadata_by_path
             if is_new_file:
-                changed_file_paths.add(file_path)
+                changed_paths.add(file_path)
                 print(f"[green]New file: {file_path}")
             else:
                 current_mod_time = file_path.stat().st_mtime
                 prior_mod_time = prior_metadata_by_path[file_path_str].mtime
                 if current_mod_time > prior_mod_time:
-                    changed_file_paths.add(file_path)
+                    changed_paths.add(file_path)
                     print(f"[blue]Modified file: {file_path}")
 
         # Find deleted files
-        deleted_file_paths = prior_file_paths - current_file_paths
-        for deleted_file in deleted_file_paths:
+        deleted_path_strs = prior_path_strs - current_path_strs
+        for deleted_file in deleted_path_strs:
             print(f"[red]Deleted file: {deleted_file}")
 
-        return FilesDiff(changed_file_paths, deleted_file_paths)
+        return FilesDiff(changed_paths, deleted_path_strs)
 
     def update_faiss_index_incrementally(
         self,
