@@ -121,6 +121,7 @@ class IncrementalRAGIndexer:
             text=True,
             check=True,
         )
+        # TODO combine fd and stat into one call?
         return [Path(line) for line in result.stdout.strip().splitlines()]
 
     def load_prior_index(self, language_extension: str) -> RAGDataset:
