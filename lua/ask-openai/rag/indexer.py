@@ -160,7 +160,7 @@ class IncrementalRAGIndexer:
 
         return RAGDataset(chunks_by_file, files_by_path, index)
 
-    def get_file_changes(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
+    def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Find files that have changed or are new, and files that were deleted"""
         current_files = self.get_current_file_paths(language_extension)
 
@@ -256,7 +256,7 @@ class IncrementalRAGIndexer:
         prior = self.load_prior_index(language_extension)
 
         with Timer("Find current files"):
-            paths = self.get_file_changes(language_extension, prior.stat_by_path)
+            paths = self.get_files_diff(language_extension, prior.stat_by_path)
 
         # TODO add test to assert delete last file is fine and wipes the data set
 
