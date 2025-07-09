@@ -82,6 +82,8 @@ def on_open(params: types.DidOpenTextDocumentParams):
     logger.info(f"Imports in {params.text_document.uri}:\n" + '\n'.join(modules))
     logger.info(f"Resolved imports in {params.text_document.uri}:\n" + '\n'.join(resolved_modules))
 
+    # TODO! include as context!
+
 # TODO move to server.py? do I need this?
 # @ls.feature('textDocument/sync')
 def sync_kind(*_):
