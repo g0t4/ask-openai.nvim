@@ -54,6 +54,7 @@ def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 def doc_opened(params: types.DidOpenTextDocumentParams):
     # TODO build and cache imports context (build first use, update on didChange)!
+    # FYI would want to cache the text of the doc on open and apply changes if I want didChange level of integration... that can come later
     logger.pp_info("didOpen", params)
     imports.on_open(params)
 
