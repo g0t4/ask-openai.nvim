@@ -30,8 +30,18 @@ class FileMeta(BaseModel):
     hash: str
     path: str
 
+class Chunk(BaseModel):
+    id: str
+    id_int: str
+    text: str
+    file: str
+    start_line: int
+    end_line: int
+    type: str
+    file_hash: str
+
 # FYI using str for key (file path) currently, don't need to change it to Path, it's fine as is
-ChunksByFile: TypeAlias = dict[str, List[dict]]
+ChunksByFile: TypeAlias = dict[str, List[Chunk]]
 FileMetadataByPath: TypeAlias = dict[str, FileMeta]
 
 @dataclass
@@ -91,16 +101,16 @@ class IncrementalRAGIndexer:
                 chunk_type = "lines"
                 start_line = start + 1
                 chunk_id = self.generate_chunk_id(path, chunk_type, start_line, end_line, file_hash)
-                yield {
-                    "id": chunk_id,
-                    "id_int": str(chunk_id_to_faiss_id(chunk_id)),
-                    "text": "".join(lines[start:end_line]).strip(),
-                    "file": str(path),
-                    "start_line": start_line,
-                    "end_line": end_line,
-                    "type": chunk_type,
-                    "file_hash": file_hash,
-                }
+                yield Chunk(
+                    id=chunk_id,
+                    id_int=str(chunk_id_to_faiss_id(chunk_id)),
+                    text="".join(lines[start:end_line]).strip(),
+                    file=str(path),
+                    start_line=start_line,
+                    end_line=end_line,
+                    type=chunk_type,
+                    file_hash=file_hash,
+                )
 
         for _, chunk in enumerate(iter_chunks(lines, lines_per_chunk, overlap)):
             chunks.append(chunk)
@@ -130,11 +140,12 @@ class IncrementalRAGIndexer:
                 print(f"[yellow]Warning: Could not load existing index: {e}")
 
         chunks_json_path = index_dir / "chunks.json"
-        chunks_by_file = {}
+        chunks_by_file: ChunksByFile = {}
+
         if chunks_json_path.exists():
             try:
                 with open(chunks_json_path, 'r') as f:
-                    chunks_by_file = json.load(f)
+                    chunks_by_file = {k: [Chunk(**v) for v in v] for k, v in json.load(f).items()}
                 print(f"Loaded {len(chunks_by_file)} existing chunks")
             except Exception as e:
                 print(f"[yellow]Warning: Could not load existing chunks: {e}")
@@ -201,14 +212,14 @@ class IncrementalRAGIndexer:
         for file_chunks in updated_chunks_by_file.values():
             for chunk in file_chunks:
                 new_chunks.append(chunk)
-                new_faiss_ids.append(chunk_id_to_faiss_id(chunk['id']))
+                new_faiss_ids.append(chunk_id_to_faiss_id(chunk.id))
 
         with Timer("Remove old vectors"):
             # TODO need to pass holdovers too
             keep_ids = new_faiss_ids.copy()
             for _, file_chunks in unchanged_chunks_by_file.items():
                 for chunk in file_chunks:
-                    keep_ids.append(chunk_id_to_faiss_id(chunk['id']))
+                    keep_ids.append(chunk_id_to_faiss_id(chunk.id))
 
             print("[bold]keep_ids:")
             pprint(keep_ids)
@@ -221,7 +232,7 @@ class IncrementalRAGIndexer:
         if new_chunks:
             print(f"Adding {len(new_chunks)} new vectors for changed files")
 
-            texts = [f"passage: {chunk['text']}" for chunk in new_chunks]
+            texts = [f"passage: {chunk.text}" for chunk in new_chunks]
             print(f"{new_faiss_ids=}")
 
             with Timer("Encode new vectors"):
@@ -288,11 +299,6 @@ class IncrementalRAGIndexer:
                     # remove from original list as this is changed...
                     del unchanged_chunks_by_file[file_path_str]
 
-        print(f"Total updated chunks: {len(updated_chunks_by_file)}")
-
-        # TODO remove after done testing new indexer
-        # print(f'{deleted_chunks_by_file=}')
-        # pretty_deleted = json.dumps(deleted_chunks_by_file, indent=2)
         print("[bold]Deleted chunks:")
         pprint(deleted_chunks_by_file)
         print()
@@ -301,9 +307,6 @@ class IncrementalRAGIndexer:
         print()
         print(f"[bold]Unchanged chunks:")
         pprint(unchanged_chunks_by_file)
-        print()
-        print()
-        print()
         print()
 
         # * Incrementally update the FAISS index
@@ -336,11 +339,12 @@ class IncrementalRAGIndexer:
             pprint(all_chunks_by_file)
             print()
             with open(index_dir / "chunks.json", 'w') as f:
-                json.dump(all_chunks_by_file, f, indent=2)
+                json_str = json.dumps({k: [chunk.model_dump() for chunk in v] for k, v in all_chunks_by_file.items()}, indent=2)
+                f.write(json_str)
 
         with Timer("Save file metadata"):
             with open(index_dir / "files.json", 'w') as f:
-                json_str = json.dumps({k: v.dict() for k, v in new_file_metadata.items()}, indent=2)
+                json_str = json.dumps({k: v.model_dump() for k, v in new_file_metadata.items()}, indent=2)
                 f.write(json_str)
 
         print(f"[green]Index updated successfully!")
