@@ -1,7 +1,10 @@
+from dataclasses import dataclass
 import hashlib
 import json
 from pathlib import Path
+from typing import List, Optional
 
+import faiss
 from pydantic import BaseModel
 
 def chunk_id_for(file_path: Path, chunk_type: str, start_line: int, end_line: int, file_hash: str) -> str:
@@ -38,7 +41,48 @@ class Chunk(BaseModel):
         # for now just recompute and skip id_int:
         return chunk_id_to_faiss_id(self.id)
 
+@dataclass
+class RAGDataset:
+    language_extension: str
+    chunks_by_file: dict[str, List[Chunk]]
+    stat_by_path: dict[str, FileStat]
+    index: Optional[faiss.Index] = None
+
 def load_chunks(chunks_json_path: Path):
     with open(chunks_json_path, 'r') as f:
         chunks_by_file = {k: [Chunk(**v) for v in v] for k, v in json.load(f).items()}
     return chunks_by_file
+
+def load_prior_data(language_extension: str, rag_dir: Path) -> RAGDataset:
+    index_dir = rag_dir / language_extension
+
+    vectors_index_path = index_dir / "vectors.index"
+    index = None
+    if vectors_index_path.exists():
+        try:
+            index = faiss.read_index(str(vectors_index_path))
+            print(f"Loaded existing FAISS index with {index.ntotal} vectors")
+        except Exception as e:
+            print(f"[yellow]Warning: Could not load existing index: {e}")
+
+    chunks_json_path = index_dir / "chunks.json"
+    chunks_by_file: dict[str, List[Chunk]] = {}
+
+    if chunks_json_path.exists():
+        try:
+            chunks_by_file = load_chunks(chunks_json_path)
+            print(f"Loaded {len(chunks_by_file)} existing chunks")
+        except Exception as e:
+            print(f"[yellow]Warning: Could not load existing chunks: {e}")
+
+    files_json_path = index_dir / "files.json"
+    files_by_path = {}
+    if files_json_path.exists():
+        try:
+            with open(files_json_path, 'r') as f:
+                files_by_path = {k: FileStat(**v) for k, v in json.load(f).items()}
+            print(f"Loaded stats for {len(files_by_path)} files")
+        except Exception as e:
+            print(f"[yellow]Warning: Could not load file stats {e}")
+
+    return RAGDataset(language_extension, chunks_by_file, files_by_path, index)

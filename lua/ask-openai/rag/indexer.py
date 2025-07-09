@@ -1,10 +1,8 @@
 from dataclasses import dataclass
-import hashlib
-import json
 from pathlib import Path
 import subprocess
 import sys
-from typing import Dict, List, Optional, Set
+from typing import Dict, Optional, Set
 
 import faiss
 import numpy as np
@@ -15,7 +13,7 @@ import fs
 from pydants import write_json
 from timing import Timer
 import timing
-from lsp.storage import FileStat, Chunk, load_chunks, chunk_id_to_faiss_id
+from lsp.storage import FileStat, chunk_id_to_faiss_id, load_prior_data
 from lsp.build import build_file_chunks, get_file_stat
 
 #
@@ -24,13 +22,6 @@ IGNORE_FAILURE = False
 STOP_ON_FAILURE = True
 
 # TODO! all prints and progress must be redirected to a log once I run this INSIDE the LSP
-
-@dataclass
-class RAGDataset:
-    language_extension: str
-    chunks_by_file: dict[str, List[Chunk]]
-    stat_by_path: dict[str, FileStat]
-    index: Optional[faiss.Index] = None
 
 @dataclass
 class FilesDiff:
@@ -84,40 +75,6 @@ class IncrementalRAGIndexer:
         unchanged_path_strs = prior_path_strs - changed_path_strs - deleted_path_strs
 
         return FilesDiff(changed_paths, deleted_path_strs, unchanged_path_strs)
-
-    def load_prior_data(self, language_extension: str) -> RAGDataset:
-        index_dir = self.rag_dir / language_extension
-
-        vectors_index_path = index_dir / "vectors.index"
-        index = None
-        if vectors_index_path.exists():
-            try:
-                index = faiss.read_index(str(vectors_index_path))
-                print(f"Loaded existing FAISS index with {index.ntotal} vectors")
-            except Exception as e:
-                print(f"[yellow]Warning: Could not load existing index: {e}")
-
-        chunks_json_path = index_dir / "chunks.json"
-        chunks_by_file: dict[str, List[Chunk]] = {}
-
-        if chunks_json_path.exists():
-            try:
-                chunks_by_file = load_chunks(chunks_json_path)
-                print(f"Loaded {len(chunks_by_file)} existing chunks")
-            except Exception as e:
-                print(f"[yellow]Warning: Could not load existing chunks: {e}")
-
-        files_json_path = index_dir / "files.json"
-        files_by_path = {}
-        if files_json_path.exists():
-            try:
-                with open(files_json_path, 'r') as f:
-                    files_by_path = {k: FileStat(**v) for k, v in json.load(f).items()}
-                print(f"Loaded stats for {len(files_by_path)} files")
-            except Exception as e:
-                print(f"[yellow]Warning: Could not load file stats {e}")
-
-        return RAGDataset(language_extension, chunks_by_file, files_by_path, index)
 
     def update_faiss_index_incrementally(
         self,
@@ -179,7 +136,7 @@ class IncrementalRAGIndexer:
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
-        prior = self.load_prior_data(language_extension)
+        prior = load_prior_data(language_extension, self.rag_dir)
 
         with Timer("Find current files"):
             paths = self.get_files_diff(language_extension, prior.stat_by_path)
