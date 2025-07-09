@@ -16,7 +16,7 @@ from pydantic import BaseModel
 import fs
 from lsp.ids import chunk_id_to_faiss_id
 from timing import Timer
-from files import write_json, read_json
+from files import write_json, read_dict_str_model
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False
 STOP_ON_FAILURE = True
@@ -155,8 +155,7 @@ class IncrementalRAGIndexer:
         files_by_path = {}
         if files_json_path.exists():
             try:
-                with open(files_json_path, 'r') as f:
-                    files_by_path = {k: FileMeta(**v) for k, v in json.load(f).items()}
+                files_by_path = read_dict_str_model(files_json_path, lambda v: FileMeta(**v))
                 print(f"Loaded metadata for {len(files_by_path)} files")
             except Exception as e:
                 print(f"[yellow]Warning: Could not load file metadata: {e}")

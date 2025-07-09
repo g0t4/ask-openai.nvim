@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import TypeVar, Callable, Any
 import json
 
 def cheap_serialize(obj):
@@ -19,6 +20,12 @@ def to_json(obj):
 
 def from_json(obj):
     return json.loads(obj)
+
+T = TypeVar('T')
+
+def read_dict_str_model(path, ctor: Callable[[Any], T]) -> dict[str, T]:
+    with open(path, 'r') as f:
+        return {k: ctor(v) for k, v in json.load(f).items()}
 
 def write_json(obj, path):
     with open(path, 'w') as f:
