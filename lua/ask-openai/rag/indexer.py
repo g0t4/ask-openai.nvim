@@ -75,7 +75,7 @@ class IncrementalRAGIndexer:
             path=str(file_path)  # for serializing and reading by LSP
         )
 
-    def generate_chunk_id(self, file_path: Path, chunk_type: str, start_line: int, end_line: int, file_hash: str) -> str:
+    def generate_chunk_id(file_path: Path, chunk_type: str, start_line: int, end_line: int, file_hash: str) -> str:
         """Generate unique chunk ID based on file path, chunk index, and file hash"""
         chunk_str = f"{file_path}:{chunk_type}:{start_line}-{end_line}:{file_hash}"
         return hashlib.sha256(chunk_str.encode()).hexdigest()[:16]
@@ -97,7 +97,7 @@ class IncrementalRAGIndexer:
 
                 chunk_type = "lines"
                 start_line = start + 1
-                chunk_id = self.generate_chunk_id(path, chunk_type, start_line, end_line, file_hash)
+                chunk_id = generate_chunk_id(path, chunk_type, start_line, end_line, file_hash)
                 yield Chunk(
                     id=chunk_id,
                     id_int=str(chunk_id_to_faiss_id(chunk_id)),
