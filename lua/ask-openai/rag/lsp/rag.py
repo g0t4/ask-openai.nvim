@@ -94,6 +94,8 @@ def handle_query(message, top_k=3):
     return {"matches": matches}
 
 def update_one_file_from_disk(path: str):
+    global model, index, chunks_by_faiss_id, chunks_by_file_path_str
+
     logger.info(f"Update ONE {path}")
     if path not in chunks_by_file_path_str:
         logger.info(f"No chunks for {path}")
@@ -112,3 +114,5 @@ def update_one_file_from_disk(path: str):
     hash = get_file_hash(Path(path))
     new_chunks = build_file_chunks(Path(path), hash)
     logger.pp_info("new_chunks", new_chunks)
+
+    # chunks_by_file_path_str[path] = new_chunks

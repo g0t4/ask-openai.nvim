@@ -21,13 +21,14 @@ def get_file_stat(file_path: Path) -> FileStat:
         path=str(file_path)  # for serializing and reading by LSP
     )
 
-def build_file_chunks(path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Dict]:
+def build_file_chunks(path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Chunk]:
 
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         lines = f.readlines()
         return build_from_lines(path, file_hash, lines, lines_per_chunk, overlap)
 
-def build_from_lines(path: Path, file_hash: str, lines: List[str], lines_per_chunk: int = 20, overlap: int = 4) -> List[Dict]:
+def build_from_lines(path: Path, file_hash: str, lines: List[str], \
+                     lines_per_chunk: int = 20, overlap: int = 4)  -> List[Chunk]:
 
     def iter_chunks(lines, lines_per_chunk=20, overlap=4, min_chunk_size=10):
         n_lines = len(lines)
