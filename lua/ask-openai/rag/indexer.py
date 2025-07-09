@@ -12,11 +12,10 @@ from rich import print
 from rich.pretty import pprint
 
 import fs
-from lsp.ids import chunk_id_for, chunk_id_to_faiss_id
 from pydants import write_json
 from timing import Timer
 import timing
-from lsp.storage import FileStat, Chunk, load_chunks
+from lsp.storage import FileStat, Chunk, load_chunks, chunk_id_for, chunk_id_to_faiss_id
 
 #
 # constants for subprocess.run for readability

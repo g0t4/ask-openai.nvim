@@ -4,9 +4,8 @@ from pathlib import Path
 
 import faiss
 
-from .ids import chunk_id_to_faiss_id
 from .logs import LogTimer, logging
-from .storage import FileStat, Chunk, load_chunks
+from .storage import chunk_id_to_faiss_id, load_chunks
 
 # avoid checking for model files every time you load the model...
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
@@ -32,9 +31,7 @@ def load_model_and_indexes(root_fs_path: Path):
     chunks_by_faiss_id = {}
     for _, chunks in chunks_by_file_typed.items():
         for chunk in chunks:
-            # TODO! I am storing id_int as string ... hydrate that?
             faiss_id = chunk_id_to_faiss_id(chunk.id)
-            logging.info(f"{faiss_id=}")
             chunks_by_faiss_id[faiss_id] = chunk
 
     logging.info(f"Loaded {chunks_by_faiss_id=}")
