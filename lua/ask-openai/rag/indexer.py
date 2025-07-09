@@ -53,6 +53,11 @@ class FilesDiff:
     deleted: Set[str]
     unchanged: Set[str]
 
+def generate_chunk_id(file_path: Path, chunk_type: str, start_line: int, end_line: int, file_hash: str) -> str:
+    """Generate unique chunk ID based on file path, chunk index, and file hash"""
+    chunk_str = f"{file_path}:{chunk_type}:{start_line}-{end_line}:{file_hash}"
+    return hashlib.sha256(chunk_str.encode()).hexdigest()[:16]
+
 class IncrementalRAGIndexer:
 
     def __init__(self, rag_dir, source_dir):
@@ -74,11 +79,6 @@ class IncrementalRAGIndexer:
             hash=self.get_file_hash(file_path),
             path=str(file_path)  # for serializing and reading by LSP
         )
-
-    def generate_chunk_id(file_path: Path, chunk_type: str, start_line: int, end_line: int, file_hash: str) -> str:
-        """Generate unique chunk ID based on file path, chunk index, and file hash"""
-        chunk_str = f"{file_path}:{chunk_type}:{start_line}-{end_line}:{file_hash}"
-        return hashlib.sha256(chunk_str.encode()).hexdigest()[:16]
 
     def build_file_chunks(self, path: Path, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Dict]:
         """Chunk a file with unique chunk IDs"""
