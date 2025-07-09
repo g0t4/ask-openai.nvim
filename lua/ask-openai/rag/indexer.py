@@ -329,10 +329,8 @@ class IncrementalRAGIndexer:
             faiss.write_index(index, str(index_dir / "vectors.index"))
 
         with Timer("Save chunks"):
-            # TODO fix the slop with prior vs current etc vars here:
             all_chunks_by_file = unchanged_chunks_by_file.copy()
             all_chunks_by_file.update(updated_chunks_by_file)
-            # PRN? sort by file path for consistent ordering in chunks.json? not sure it matters right now and has overhead anyways
             print()
             print(f"[bold]all_chunks_by_file:")
             pprint(all_chunks_by_file)
