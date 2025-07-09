@@ -51,21 +51,22 @@ def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
     #   workspace/didChangeWatchedFiles # when files changed outside of editor... i.e. nvim will detect someone else edited a file in the workspace (another nvim instance, maybe CLI tool, etc)
     logger.info(f"didChangeWatchedFiles: {params}")
 
+# UNREGISTER WHILE NOT USING:
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 def doc_opened(params: types.DidOpenTextDocumentParams):
     # TODO build and cache imports context (build first use, update on didChange)!
     # FYI would want to cache the text of the doc on open and apply changes if I want didChange level of integration... that can come later
     logger.pp_info("didOpen", params)
-    imports.on_open(params)
+    # imports.on_open(params)
 
-@server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
+# @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 def doc_changed(params: types.DidChangeTextDocumentParams):
     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
     logger.pp_info("didChange", params)
     # FYI would use this to invalidate internal caches and rebuild for a given file, i.e. imports, RAG vectors, etc
     #   rebuild on git commit + incremental updates s/b super fast?
 
-@server.feature(types.TEXT_DOCUMENT_COMPLETION)
+# @server.feature(types.TEXT_DOCUMENT_COMPLETION)
 def completions(params: types.CompletionParams):
     # FYI this is just for initial testing, ok to nuke as I have no plans for completions support
     items = []
