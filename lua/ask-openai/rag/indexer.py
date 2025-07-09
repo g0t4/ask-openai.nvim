@@ -265,12 +265,19 @@ class IncrementalRAGIndexer:
 
         print(f"Total updated chunks: {len(updated_chunks_by_file)}")
 
+        from rich.pretty import pprint
+
         # TODO remove after done testing new indexer
-        print(f'{deleted_chunks_by_file=}')
+        # print(f'{deleted_chunks_by_file=}')
+        # pretty_deleted = json.dumps(deleted_chunks_by_file, indent=2)
+        print("[bold]Deleted chunks:")
+        pprint(deleted_chunks_by_file)
         print()
-        print(f'{updated_chunks_by_file=}')
+        print("[bold]Updated chunks:")
+        pprint(updated_chunks_by_file)
         print()
-        print(f'{unchanged_chunks_by_file=}')
+        print(f"[bold]Unchanged chunks:")
+        pprint(unchanged_chunks_by_file)
         print()
         print()
         print()
@@ -298,10 +305,13 @@ class IncrementalRAGIndexer:
 
         with Timer("Save chunks"):
             # TODO fix the slop with prior vs current etc vars here:
-            all_chunks_by_file = updated_chunks_by_file.copy()
-            all_chunks_by_file.update(unchanged_chunks_by_file)
+            all_chunks_by_file = unchanged_chunks_by_file.copy()
+            all_chunks_by_file.update(updated_chunks_by_file)
             # PRN? sort by file path for consistent ordering in chunks.json? not sure it matters right now and has overhead anyways
-            print(f'{all_chunks_by_file=}')
+            print()
+            print(f"[bold]all_chunks_by_file:")
+            pprint(all_chunks_by_file)
+            print()
             with open(index_dir / "chunks.json", 'w') as f:
                 json.dump(all_chunks_by_file, f, indent=2)
 
