@@ -2,14 +2,14 @@ import logging
 import os
 import time
 
-from rich.logging import RichHandler
 from rich.console import Console
+from rich.logging import RichHandler
 
 log_file = os.path.expanduser("~/.local/share/ask-openai/language.server.log")
 # logging.basicConfig(filename=log_file, level=logging.DEBUG)
 
 f = open(log_file, 'w')
-console = Console(file=f, force_terminal=True)
+console = Console(file=f, color_system='256')
 logging.basicConfig(level="NOTSET", format="%(message)s", datefmt="[%X]", handlers=[RichHandler(console=console)])
 
 class LogTimer:
