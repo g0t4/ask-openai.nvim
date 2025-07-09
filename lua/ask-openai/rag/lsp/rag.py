@@ -34,7 +34,7 @@ def load_model_and_indexes(root_fs_path: Path):
             faiss_id = chunk_id_to_faiss_id(chunk.id)
             chunks_by_faiss_id[faiss_id] = chunk
 
-    logging.info(rich.pretty.pretty_repr(chunks_by_faiss_id))
+    # logging.info(rich.pretty.pretty_repr(chunks_by_faiss_id))
     logging.info(f"Loaded {len(chunks_by_faiss_id)} chunks by id")
 
 
