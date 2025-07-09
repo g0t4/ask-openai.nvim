@@ -11,6 +11,7 @@ import faiss
 import numpy as np
 from rich import print
 from rich.pretty import pprint
+from pydantic import BaseModel
 
 import fs
 from lsp.ids import chunk_id_to_faiss_id
@@ -23,8 +24,7 @@ STOP_ON_FAILURE = True
 #! TODO! all prints and progress must be redirected to a log once I run this INSIDE the LSP
 # !!! DO NOT USE INCREMENTAL REBUILD UNTIL FIX ORDERING ISSUE WITH DELETES
 
-@dataclass
-class FileMeta:
+class FileMeta(BaseModel):
     mtime: float
     size: int
     hash: str
@@ -144,7 +144,7 @@ class IncrementalRAGIndexer:
         if files_json_path.exists():
             try:
                 with open(files_json_path, 'r') as f:
-                    files_by_path = json.load(f)
+                    files_by_path = {k: FileMeta(**v) for k, v in json.load(f).items()}
                 print(f"Loaded metadata for {len(files_by_path)} files")
             except Exception as e:
                 print(f"[yellow]Warning: Could not load file metadata: {e}")
@@ -340,7 +340,8 @@ class IncrementalRAGIndexer:
 
         with Timer("Save file metadata"):
             with open(index_dir / "files.json", 'w') as f:
-                json.dump(new_file_metadata, f, indent=2)
+                json_str = json.dumps({k: v.dict() for k, v in new_file_metadata.items()}, indent=2)
+                f.write(json_str)
 
         print(f"[green]Index updated successfully!")
         if files_diff.changed:
