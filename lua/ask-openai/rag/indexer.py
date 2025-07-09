@@ -126,7 +126,7 @@ class IncrementalRAGIndexer:
         current_files = [Path(l) for l in current_files_strs]
 
         changed_paths: Set[Path] = set()
-        current_path_strs: Set[str] = set(str(f) for f in current_files)
+        current_path_strs: Set[str] = set(current_files_strs)
         prior_path_strs: Set[str] = set(prior_stat_by_path.keys())
 
         for file_path in current_files:
