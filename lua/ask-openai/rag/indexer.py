@@ -16,6 +16,7 @@ from pydants import write_json
 import fs
 from lsp.ids import chunk_id_to_faiss_id
 from timing import Timer
+import timing
 #
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False
@@ -359,7 +360,7 @@ if __name__ == "__main__":
     if not verbose:
         print = lambda *_: None
         pprint = lambda *_: None
-        # FYI Timer.print is not affected and that seems maybe fine so it gives some overview top level
+        timing.print = print
 
     with Timer("Total indexing time"):
         # yup, can turn this into a command that uses git repo of CWD
