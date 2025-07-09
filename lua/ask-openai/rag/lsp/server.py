@@ -8,6 +8,8 @@ from pygls import uris
 
 from .logs import logging
 
+# BTW, cd to `rag` dir and => `python3 -m lsp.server` to test this w/o nvim, make sure it starts up at least
+
 # logger_name = __name__ if __name__ != "__main__" else "lsp-server" # PRN don't use __main__?
 logger = logging.getLogger(__name__)
 
