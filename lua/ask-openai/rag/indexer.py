@@ -217,7 +217,7 @@ class IncrementalRAGIndexer:
                 for chunk in file_chunks:
                     keep_ids.append(chunk_id_to_faiss_id(chunk.id))
 
-            print("[bold]keep_ids:")
+            print("keep_ids:")
             pprint(keep_ids)
             print()
 
@@ -243,7 +243,7 @@ class IncrementalRAGIndexer:
         return index
 
     def pretty_print(self, message, what):
-        print(message)
+        print(f"[bold]{message}:")
         pprint(what)
         print()
 
@@ -281,9 +281,9 @@ class IncrementalRAGIndexer:
                 chunks = self.build_file_chunks(file_path, stat.hash)
                 updated_chunks_by_file[file_path_str] = chunks
 
-        self.pretty_print("[bold]Deleted chunks:", paths.deleted)
-        self.pretty_print("[bold]Updated chunks:", updated_chunks_by_file)
-        self.pretty_print("[bold]Unchanged chunks:", unchanged_chunks_by_file)
+        self.pretty_print("Deleted chunks", paths.deleted)
+        self.pretty_print("Updated chunks", updated_chunks_by_file)
+        self.pretty_print("Unchanged chunks", unchanged_chunks_by_file)
 
         # * Incrementally update the FAISS index
         if paths.changed or paths.deleted:
@@ -309,7 +309,7 @@ class IncrementalRAGIndexer:
             all_chunks_by_file = unchanged_chunks_by_file.copy()
             all_chunks_by_file.update(updated_chunks_by_file)
             print()
-            print(f"[bold]all_chunks_by_file:")
+            print(f"all_chunks_by_file:")
             pprint(all_chunks_by_file)
             print()
 
