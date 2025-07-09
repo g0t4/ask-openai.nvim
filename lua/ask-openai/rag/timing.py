@@ -15,4 +15,4 @@ class Timer:
         self.end_ns = time.time_ns()
         elapsed_ns = self.end_ns - self.start_ns
         elapsed_ms = elapsed_ns / 1000000
-        print(f"wall time ({self.finished_message}): {elapsed_ms:,.2f} ms")
+        print(f"{self.finished_message}: {elapsed_ms:,.2f} ms")
