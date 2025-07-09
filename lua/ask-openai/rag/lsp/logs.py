@@ -5,7 +5,11 @@ import time
 from rich.console import Console
 from rich.logging import RichHandler
 
-logging.getLogger("pygls.protocol.json_rpc").setLevel(logging.WARN)  # hide DEBUG messages
+logging.getLogger("pygls.protocol.json_rpc").setLevel(logging.WARN)  # DEBUG messages on every message!
+logging.getLogger("pygls.protocol.language_server").setLevel(logging.WARN)  # server capabilities on startup
+logging.getLogger("pygls.feature_manager").setLevel(logging.WARN)  # what features are registered/detected
+logging.getLogger("pygls.server").setLevel(logging.WARN)  # mostly Content length messages (headers IIAC)
+
 # TODO use verbose flag to toggle on DEBUG/INFO messages?
 # does nvim have a setting that is used across LS's that I can somehow have passed besides obviously just adding to my own config somewhere?
 
