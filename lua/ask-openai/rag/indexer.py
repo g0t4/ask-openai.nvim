@@ -43,7 +43,7 @@ class Chunk(BaseModel):
 @dataclass
 class RAGDataset:
     chunks_by_file: dict[str, List[Chunk]]
-    files_by_path: dict[str, FileStat]
+    stat_by_path: dict[str, FileStat]
     index: Optional[faiss.Index] = None
 
 @dataclass
@@ -205,7 +205,7 @@ class IncrementalRAGIndexer:
             sample_vec = model.encode([sample_text], normalize_embeddings=True)
             base_index = faiss.IndexFlatIP(sample_vec.shape[1])
             index = faiss.IndexIDMap(base_index)
-            # FYI if someone deletes the vectors file... this won't recreate it if metadata still exists...
+            # FYI if someone deletes the vectors file... this won't recreate it if stat still exists...
 
         new_chunks = []
         new_faiss_ids = []
@@ -258,7 +258,7 @@ class IncrementalRAGIndexer:
 
         # FYI allow NO files to CLEAR everything! and add some tests that use this!
 
-        paths = self.get_file_changes(current_file_paths, prior.files_by_path)
+        paths = self.get_file_changes(current_file_paths, prior.stat_by_path)
 
         if not paths.changed and not paths.deleted:
             print("[green]No changes detected, index is up to date!")
@@ -267,7 +267,7 @@ class IncrementalRAGIndexer:
         print(f"Processing {len(paths.changed)} changed files")
 
         # * Process changed files
-        new_file_metadata = prior.files_by_path.copy()
+        new_file_metadata = prior.stat_by_path.copy()
         unchanged_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.unchanged}
 
         # Remove metadata and chunks for deleted files, since we started with prior lists
