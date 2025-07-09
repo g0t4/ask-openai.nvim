@@ -262,6 +262,9 @@ class IncrementalRAGIndexer:
                 # Create new chunks for this file
                 chunks = self.build_file_chunks(file_path, file_metadata['hash'])
                 updated_chunks_by_file[str(file_path)] = chunks
+                if file_path in unchanged_chunks_by_file:
+                    # remove from original list as this is changed...
+                    del unchanged_chunks_by_file[str(file_path)]
 
         print(f"Total updated chunks: {len(updated_chunks_by_file)}")
 
