@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
-from typing import Dict, List, Optional, TypeAlias, Set
+from typing import Dict, List, Optional, Set
 
 import faiss
 import numpy as np
@@ -12,9 +12,9 @@ from pydantic import BaseModel
 from rich import print
 from rich.pretty import pprint
 
-from pydants import write_json
 import fs
-from lsp.ids import chunk_id_to_faiss_id, chunk_id_for
+from lsp.ids import chunk_id_for, chunk_id_to_faiss_id
+from pydants import write_json
 from timing import Timer
 import timing
 #
