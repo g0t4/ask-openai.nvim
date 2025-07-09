@@ -1,10 +1,12 @@
+import os
 from pathlib import Path
+import signal
 
 import lsprotocol.types as types
+from pygls import uris
 from pygls.server import LanguageServer
 
-from lsp import rag  #, imports
-from pygls import uris
+from lsp import rag
 
 from .logs import logging
 
@@ -107,5 +109,11 @@ def rag_query(_: LanguageServer, params: types.ExecuteCommandParams):
     args = params[0]
     logger.info("Query: %s", args)
     return rag.handle_query(args)
+
+def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):
+    print("SIGKILL myself")
+    os.kill(os.getpid(), signal.SIGKILL)
+
+signal.signal(signal.SIGINT, sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS)
 
 server.start_io()
