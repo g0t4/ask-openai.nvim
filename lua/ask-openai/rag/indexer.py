@@ -342,13 +342,11 @@ class IncrementalRAGIndexer:
         with Timer("Save chunks"):
             # Path(index_dir / "chunks.json").write_text(
             with open(index_dir / "chunks.json", 'w') as f:
-                json_str = to_json(all_chunks_by_file)
-                f.write(json_str)
+                f.write(to_json(all_chunks_by_file))
 
         with Timer("Save file metadata"):
             with open(index_dir / "files.json", 'w') as f:
-                json_str = to_json(new_file_metadata)
-                f.write(json_str)
+                f.write(to_json(new_file_metadata))
 
         print(f"[green]Index updated successfully!")
         if files_diff.changed:
