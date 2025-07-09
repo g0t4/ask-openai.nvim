@@ -53,6 +53,10 @@ def load_chunks(chunks_json_path: Path):
         chunks_by_file = {k: [Chunk(**v) for v in v] for k, v in json.load(f).items()}
     return chunks_by_file
 
+def find_language_dirs(rag_dir: str | Path):
+    dirs = [p for p in Path(rag_dir).glob("*") if p.is_dir()]
+    return dirs
+
 def load_prior_data(language_extension: str, rag_dir: Path) -> RAGDataset:
     index_dir = rag_dir / language_extension
 
