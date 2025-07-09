@@ -336,6 +336,7 @@ class IncrementalRAGIndexer:
             print(f"[bold]all_chunks_by_file:")
             pprint(all_chunks_by_file)
             print()
+
         with Timer("Save chunks"):
             write_json(all_chunks_by_file, index_dir / "chunks.json")
 
@@ -354,6 +355,11 @@ def trash_indexes(rag_dir, language_extension="lua"):
     subprocess.run(["trash", index_path], check=IGNORE_FAILURE)
 
 if __name__ == "__main__":
+    verbose = "--verbose" in sys.argv
+    if not verbose:
+        print = lambda *_: None
+        pprint = lambda *_: None
+
     with Timer("Total indexing time"):
         # yup, can turn this into a command that uses git repo of CWD
         root_directory = fs.get_cwd_repo_root()
