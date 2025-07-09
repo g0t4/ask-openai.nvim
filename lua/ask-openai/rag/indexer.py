@@ -8,7 +8,6 @@ from typing import Dict, List, Optional, Set
 
 import faiss
 import numpy as np
-from pydantic import BaseModel
 from rich import print
 from rich.pretty import pprint
 
@@ -17,28 +16,14 @@ from lsp.ids import chunk_id_for, chunk_id_to_faiss_id
 from pydants import write_json
 from timing import Timer
 import timing
+from lsp.storage import FileStat, Chunk
+
 #
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False
 STOP_ON_FAILURE = True
 
 # TODO! all prints and progress must be redirected to a log once I run this INSIDE the LSP
-
-class FileStat(BaseModel):
-    mtime: float
-    size: int
-    hash: str
-    path: str
-
-class Chunk(BaseModel):
-    id: str
-    id_int: str
-    text: str
-    file: str
-    start_line: int
-    end_line: int
-    type: str
-    file_hash: str
 
 @dataclass
 class RAGDataset:
