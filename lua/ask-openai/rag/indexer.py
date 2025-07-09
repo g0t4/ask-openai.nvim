@@ -234,7 +234,6 @@ class IncrementalRAGIndexer:
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
         prior = self.load_prior_index(language_extension)
-        all_prior_chunks_by_file = prior.chunks_by_file
         all_prior_files_by_path = prior.files_by_path
 
         with Timer("Find current files"):
@@ -253,7 +252,7 @@ class IncrementalRAGIndexer:
 
         # * Process changed files
         new_file_metadata = all_prior_files_by_path.copy()
-        unchanged_chunks_by_file = all_prior_chunks_by_file.copy()
+        unchanged_chunks_by_file = prior.chunks_by_file.copy()
 
         # Remove metadata and chunks for deleted files, since we started with prior lists
         deleted_chunks_by_file = {}
