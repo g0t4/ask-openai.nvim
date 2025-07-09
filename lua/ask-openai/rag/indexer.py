@@ -236,12 +236,12 @@ class IncrementalRAGIndexer:
         prior = self.load_prior_index(language_extension)
 
         with Timer("Find current files"):
-            current_files = self.get_files_for(language_extension)
-            print(f"Found {len(current_files)} {language_extension} files")
+            current_file_paths = self.get_files_for(language_extension)
+            print(f"Found {len(current_file_paths)} {language_extension} files")
 
         # FYI allow NO files to CLEAR everything! and add some tests that use this!
 
-        file_paths = self.find_changed_files(current_files, prior.files_by_path)
+        file_paths = self.find_changed_files(current_file_paths, prior.files_by_path)
 
         if not file_paths.changed and not file_paths.deleted:
             print("[green]No changes detected, index is up to date!")
