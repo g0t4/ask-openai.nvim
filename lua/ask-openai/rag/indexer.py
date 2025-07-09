@@ -282,12 +282,8 @@ class IncrementalRAGIndexer:
                 updated_chunks_by_file[file_path_str] = chunks
 
         self.pretty_print("[bold]Deleted chunks:", paths.deleted)
-        print("[bold]Updated chunks:")
-        pprint(updated_chunks_by_file)
-        print()
-        print(f"[bold]Unchanged chunks:")
-        pprint(unchanged_chunks_by_file)
-        print()
+        self.pretty_print("[bold]Updated chunks:", updated_chunks_by_file)
+        self.pretty_print("[bold]Unchanged chunks:", unchanged_chunks_by_file)
 
         # * Incrementally update the FAISS index
         if paths.changed or paths.deleted:
