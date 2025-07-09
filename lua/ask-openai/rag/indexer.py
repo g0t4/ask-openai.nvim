@@ -347,7 +347,7 @@ class IncrementalRAGIndexer:
 
         with Timer("Save file metadata"):
             with open(index_dir / "files.json", 'w') as f:
-                json_str = json.dumps({k: v.model_dump() for k, v in new_file_metadata.items()}, indent=2)
+                json_str = to_json(new_file_metadata)
                 f.write(json_str)
 
         print(f"[green]Index updated successfully!")
