@@ -234,9 +234,9 @@ if __name__ == "__main__":
             print("[red]No Git repository found in current working directory, cannot build RAG index.")
             sys.exit(1)
         rag_dir = root_directory / ".rag"
-        source_dir = "."
+        source_code_dir = "."
         print(f"[bold]RAG directory: {rag_dir}")
-        indexer = IncrementalRAGIndexer(rag_dir, source_dir)
+        indexer = IncrementalRAGIndexer(rag_dir, source_code_dir)
         indexer.build_index(language_extension="lua")
         indexer.build_index(language_extension="py")
         indexer.build_index(language_extension="fish")
