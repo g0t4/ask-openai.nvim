@@ -9,7 +9,7 @@ import numpy as np
 
 import fs
 from pydants import write_json
-from lsp.storage import FileStat, chunk_id_to_faiss_id, load_prior_data
+from lsp.storage import Chunk, FileStat, chunk_id_to_faiss_id, load_prior_data
 from lsp.build import build_file_chunks, get_file_stat
 from lsp.model import model_wrapper
 
@@ -78,8 +78,8 @@ class IncrementalRAGIndexer:
     def update_faiss_index_incrementally(
         self,
         index: Optional[faiss.Index],
-        unchanged_chunks_by_file: Dict,
-        updated_chunks_by_file,
+        unchanged_chunks_by_file: dict[str, list[Chunk]],
+        updated_chunks_by_file: dict[str, list[Chunk]],
     ) -> faiss.Index:
         """Update FAISS index incrementally using IndexIDMap"""
 
@@ -92,7 +92,7 @@ class IncrementalRAGIndexer:
             index = faiss.IndexIDMap(base_index)
             # FYI if someone deletes the vectors file... this won't recreate it if stat still exists...
 
-        new_chunks = []
+        new_chunks: list[Chunk] = []
         new_faiss_ids = []
         for file_chunks in updated_chunks_by_file.values():
             for chunk in file_chunks:
@@ -150,7 +150,7 @@ class IncrementalRAGIndexer:
         all_stat_by_path = {path_str: prior.stat_by_path[path_str] for path_str in paths.unchanged}
         unchanged_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.unchanged}
 
-        updated_chunks_by_file = {}
+        updated_chunks_by_file: dict[str, list[Chunk]] = {}
         with logger.timer("Process changed files"):
             for i, file_path in enumerate(paths.changed):
                 file_path_str = str(file_path)
