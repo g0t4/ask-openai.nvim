@@ -43,29 +43,35 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
     rag.load_model_and_indexes(dot_rag_dir)
 
+def update_rag_file_chunks(file_uri: str):
+    file_path = uris.to_fs_path(file_uri)
+    if file_path is None:
+        logger.error(f"aborting didSave b/c missing file_path for {file_uri}")
+        return
+    rag.update_one_file_from_disk(file_path)
+
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 def doc_saved(params: types.DidSaveTextDocumentParams):
     logger.pp_info("didSave", params)
+    update_rag_file_chunks(params.text_document.uri)
 
 @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
 def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
     #   workspace/didChangeWatchedFiles # when files changed outside of editor... i.e. nvim will detect someone else edited a file in the workspace (another nvim instance, maybe CLI tool, etc)
     logger.info(f"didChangeWatchedFiles: {params}")
+    # TODO is this one or more events? do I need to uniqify?
+    # update_rag_file_chunks(params.changes[0].uri)
 
 # UNREGISTER WHILE NOT USING:
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 def doc_opened(params: types.DidOpenTextDocumentParams):
-    # TODO build and cache imports context (build first use, update on didChange)!
-    # FYI would want to cache the text of the doc on open and apply changes if I want didChange level of integration... that can come later
     logger.pp_info("didOpen", params)
-    # imports.on_open(params)
-    file_uri = params.text_document.uri
-    file_path = uris.to_fs_path(file_uri)
-    if file_path is None:
-        logger.error(f"aborting doc_opened b/c missing file_path for {file_uri}")
-        return
 
-    rag.update_one_file_from_disk(file_path)
+    # imports.on_open(params) # WIP
+
+    # * FYI this was just for quick testing to avoid needing a save or otherwise (just restart nvim)
+    # ONLY do this b/c right now I don't rebuild the entire dataset until manually (eventually git commit, later can update here to disk)
+    update_rag_file_chunks(params.text_document.uri)
 
 # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 def doc_changed(params: types.DidChangeTextDocumentParams):
