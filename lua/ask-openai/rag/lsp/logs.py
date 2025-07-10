@@ -33,7 +33,21 @@ def use_lang_server_logs():
     )
 
 def use_console():
-    pass
+    console = Console()
+    rich_handler = RichHandler(
+        markup=True,  # i.e. [bold], [red]
+        rich_tracebacks=True,
+        console=console,
+        show_path=False,
+        show_time=False,
+    )
+    format = "%(asctime)s %(name)s: %(message)s"
+    logging.basicConfig(
+        level="NOTSET",
+        format=format,
+        datefmt="[%X]",
+        handlers=[rich_handler],
+    )
 
 class Logger(logging.Logger):
 
