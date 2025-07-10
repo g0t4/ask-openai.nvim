@@ -37,4 +37,10 @@ class ModelWrapper:
             # device="cpu", # TODO should I set this or no?
         ).astype("float32")
 
+    def get_shape(self) -> None:
+        sample_text = "passage: sample"
+        sample_vec = model_wrapper._encode_text(sample_text)
+        shape = sample_vec.shape[1]
+        return shape
+
 model_wrapper = ModelWrapper()
