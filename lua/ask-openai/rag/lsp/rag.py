@@ -1,7 +1,9 @@
 import os
 from pathlib import Path
 
-from .build import build_file_chunks, get_file_hash
+from pygls.workspace import TextDocument
+
+from .build import build_file_chunks, build_from_lines, get_file_hash, get_file_hash_from_lines
 from .logs import get_logger
 from .storage import Chunk, Datasets, load_all_datasets
 from .model import model_wrapper
@@ -70,19 +72,18 @@ def handle_query(message, top_k=3):
 
     return {"matches": matches}
 
-def update_one_file_from_disk(file_path: str | Path):
-    file_path = Path(file_path)
-    # FYI! this is the first test that will use logging heavily instead of print, so check the langauge server logs!
+def update_one_file_from_disk(doc: TextDocument):
+    file_path = Path(doc.path)
 
-    # * build new chunks
-    # TODO! use server.workspace.get_document instead of reading file from disk?
-    #   FYI I don't think I need to worry about file stat(metadata)... i.e. mod time, if I am not writing index back to disk!
-    #    right now index on disk can be created by git commit or external process, and then I can just do updates for changes that aren't committed yet
-    # document = server.workspace.get_document(params.text_document.uri)
-    # current_line = document.lines[params.position.line].strip()
+    # * read directly from disk
+    # PRN add a separate overload to read from disk if that is useful in another scenario
+    # hash = get_file_hash(file_path)
+    # new_chunks = build_file_chunks(file_path, lines_hash)
 
-    hash = get_file_hash(file_path)
-    new_chunks = build_file_chunks(file_path, hash)
+    # * use pygls workspace docs
+    lines_hash = get_file_hash_from_lines(doc.lines)
+    new_chunks = build_from_lines(file_path, lines_hash, doc.lines)
+
     logger.pp_info("new_chunks", new_chunks)
 
     datasets.update_file(file_path, new_chunks)

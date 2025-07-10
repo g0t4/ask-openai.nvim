@@ -43,12 +43,16 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
     rag.load_model_and_indexes(dot_rag_dir)
 
-def update_rag_file_chunks(file_uri: str):
-    file_path = uris.to_fs_path(file_uri)
-    if file_path is None:
-        logger.error(f"aborting didSave b/c missing file_path for {file_uri}")
+def update_rag_file_chunks(text_doc_uri: str):
+    doc = server.workspace.get_document(text_doc_uri)
+    if doc is None:
+        logger.error(f"abort update_rag_file_chunks... doc not found {text_doc_uri}")
         return
-    rag.update_one_file_from_disk(file_path)
+    # logger.info(f'{doc.filename=}')
+    # logger.info(f'{doc.path=}')
+    # logger.info(f'{doc.language_id=}')
+    # logger.info(f'{doc.uri=}')
+    rag.update_one_file_from_disk(doc)
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 def doc_saved(params: types.DidSaveTextDocumentParams):
