@@ -13,8 +13,8 @@ class TestBuildIndex(unittest.TestCase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.rag_dir = Path(__file__).parent / "tests/.rag"
-        self.rag_dir.mkdir(exist_ok=True, parents=True)
+        self.dot_rag_dir = Path(__file__).parent / "tests/.rag"
+        self.dot_rag_dir.mkdir(exist_ok=True, parents=True)
         self.indexer_src_dir = Path(__file__).parent / "tests" / "indexer_src"
         self.tmp_source_code_dir = Path(__file__).parent / "tests" / "tmp_updater_src"
         self.test_cases = Path(__file__).parent / "tests" / "test_cases"
@@ -24,24 +24,24 @@ class TestBuildIndex(unittest.TestCase):
             subprocess.run(["trash", dir])
 
     def get_vector_index(self):
-        vectors_index_path = self.rag_dir / "lua" / "vectors.index"
+        vectors_index_path = self.dot_rag_dir / "lua" / "vectors.index"
         index = faiss.read_index(str(vectors_index_path))
         return index
 
     def get_chunks_by_file(self):
-        chunks_json_path = self.rag_dir / "lua" / "chunks.json"
+        chunks_json_path = self.dot_rag_dir / "lua" / "chunks.json"
         return json.loads(chunks_json_path.read_text())
 
     def get_files(self):
-        files_json_path = self.rag_dir / "lua" / "files.json"
+        files_json_path = self.dot_rag_dir / "lua" / "files.json"
         return json.loads(files_json_path.read_text())
 
     def test_building_rag_index_from_scratch(self):
 
         # FYI! slow to recreate index, so do it once and comment this out to quickly run assertions
         # * recreate index
-        self.trash_path(self.rag_dir)
-        indexer = IncrementalRAGIndexer(self.rag_dir, self.indexer_src_dir)
+        self.trash_path(self.dot_rag_dir)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir)
         indexer.build_index(language_extension="lua")
 
         # * chunks
@@ -126,7 +126,7 @@ class TestBuildIndex(unittest.TestCase):
 
     def test_slow__update_index_removed_file(self):
         # * clear rag_dir
-        self.trash_path(self.rag_dir)
+        self.trash_path(self.dot_rag_dir)
 
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
@@ -139,7 +139,7 @@ class TestBuildIndex(unittest.TestCase):
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
-        indexer = IncrementalRAGIndexer(self.rag_dir, self.tmp_source_code_dir)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir)
         indexer.build_index(language_extension="lua")
 
         # * check counts
@@ -159,7 +159,7 @@ class TestBuildIndex(unittest.TestCase):
 
         # * update a file and rebuild
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 4 chunks (starts = 1-20, 16-35, 31-50)
-        indexer = IncrementalRAGIndexer(self.rag_dir, self.tmp_source_code_dir)  # BTW recreate so no shared state (i.e. if cache added)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir)  # BTW recreate so no shared state (i.e. if cache added)
         indexer.build_index(language_extension="lua")
 
         # * check counts
@@ -179,7 +179,7 @@ class TestBuildIndex(unittest.TestCase):
 
         # * delete a file and rebuild
         (self.tmp_source_code_dir / "numbers.lua").unlink()
-        indexer = IncrementalRAGIndexer(self.rag_dir, self.tmp_source_code_dir)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir)
         indexer.build_index(language_extension="lua")
         #
         chunks_by_file = self.get_chunks_by_file()
@@ -197,7 +197,7 @@ class TestBuildIndex(unittest.TestCase):
         # * add a file
         # FYI car.lua.txt was designed to catch issues with overlap (32 lines => 0 to 20, 15 to 35, but NOT 30 to 50 b/c only overlap exists so the next chunk has nothing unique in its non-overlapping segment) so maybe use a diff input file... if this causes issues here (move car.lua to a new test then)
         copy_file("car.lua.txt", "car.lua")
-        indexer = IncrementalRAGIndexer(self.rag_dir, self.tmp_source_code_dir)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir)
         indexer.build_index(language_extension="lua")
         #
         chunks_by_file = self.get_chunks_by_file()
@@ -216,7 +216,7 @@ class TestBuildIndex(unittest.TestCase):
 
     def test_update_one_from_language_server(self):
         # * clear rag_dir
-        self.trash_path(self.rag_dir)
+        self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
         self.tmp_source_code_dir.mkdir(exist_ok=True, parents=True)
@@ -228,7 +228,7 @@ class TestBuildIndex(unittest.TestCase):
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         from lsp import rag
-        rag.load_model_and_indexes(self.rag_dir)
+        rag.load_model_and_indexes(self.dot_rag_dir)
         #
 
         # TODO what file?
