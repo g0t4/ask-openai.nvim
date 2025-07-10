@@ -130,7 +130,6 @@ class TestBuildIndex(unittest.TestCase):
 
         # * recreate source directory with initial files
         self.trash_path(self.tmp_updater_src_dir)
-
         self.tmp_updater_src_dir.mkdir(exist_ok=True, parents=True)
 
         def copy_file(src, dest):
@@ -216,8 +215,24 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(index.ntotal, 4)
 
     def test_update_one_from_language_server(self):
+        # * clear rag_dir
+        self.trash_path(self.rag_dir)
+        # * recreate source directory with initial files
+        self.trash_path(self.tmp_updater_src_dir)
+        self.tmp_updater_src_dir.mkdir(exist_ok=True, parents=True)
+
+        def copy_file(src, dest):
+            (self.tmp_updater_src_dir / dest).write_text((self.test_cases / src).read_text())
+
+        copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
+        copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
+
         from lsp import rag
         rag.load_model_and_indexes(self.rag_dir)
+        #
+
+        # TODO what file?
+        # rag.update_one_file_from_disk()
 
         # TODO
         # FYI I want to move much of the functionality into build.py module like indexer uses too...
