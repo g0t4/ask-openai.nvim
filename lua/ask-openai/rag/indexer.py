@@ -93,7 +93,7 @@ class IncrementalRAGIndexer:
             # FYI if someone deletes the vectors file... this won't recreate it if stat still exists...
 
         new_chunks: list[Chunk] = []
-        new_faiss_ids = []
+        new_faiss_ids: list[int] = []
         for file_chunks in updated_chunks_by_file.values():
             for chunk in file_chunks:
                 new_chunks.append(chunk)
