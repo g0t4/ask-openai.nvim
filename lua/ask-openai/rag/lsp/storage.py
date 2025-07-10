@@ -138,6 +138,9 @@ class Datasets:
         with logger.timer("Add new_chunk vectors to index"):
             dataset.index.add_with_ids(vecs_np, faiss_ids_np)
 
+        # * update file's list of chunks
+        dataset.chunks_by_file[file_path_str] = new_chunks
+
         # # * updates for cache in  _chunks_by_faiss_id
         # for prior_id in prior_faiss_ids:
         #     del self._chunks_by_faiss_id[prior_id]
