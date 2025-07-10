@@ -97,6 +97,10 @@ def update_one_file_from_disk(file_path: str):
     logger.info(f"Updating {file_path}")
     logger.pp_info("prior_chunks", prior_chunks)
 
+    # TODO! use server.workspace.get_document instead of reading file from disk?
+    # document = server.workspace.get_document(params.text_document.uri)
+    # current_line = document.lines[params.position.line].strip()
+
     hash = get_file_hash(file_path)
     new_chunks = build_file_chunks(file_path, hash)
     logger.pp_info("new_chunks", new_chunks)
