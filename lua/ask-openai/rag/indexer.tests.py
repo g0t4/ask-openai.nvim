@@ -15,7 +15,7 @@ class TestBuildIndex(unittest.TestCase):
         super().__init__(*args, **kwargs)
         self.dot_rag_dir = Path(__file__).parent / "tests/.rag"
         self.dot_rag_dir.mkdir(exist_ok=True, parents=True)
-        self.indexer_src_dir = Path(__file__).parent / "tests" / "indexer_source_code"
+        self.indexer_src_dir = Path(__file__).parent / "tests" / "indexer_src"
         self.tmp_source_code_dir = Path(__file__).parent / "tests" / "tmp_source_code"
         self.test_cases = Path(__file__).parent / "tests" / "test_cases"
 
