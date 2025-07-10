@@ -14,10 +14,10 @@ logger = get_logger(__name__)
 
 datasets: Datasets
 
-def load_model_and_indexes(root_fs_path: Path):
+def load_model_and_indexes(rag_dir: Path):
     global datasets
     # PRN add a dataset_wrapper like model_wrapper and let it handle lazy load and be reusable across entire process (any imports are both lazy loaded and still singleton)
-    datasets = load_all_datasets(root_fs_path / ".rag")
+    datasets = load_all_datasets(rag_dir)
     model_wrapper.ensure_model_loaded()  # now I want to trigger the eager load, not at module import time but when I am ready here
 
 # PRN make top_k configurable (or other params)

@@ -217,11 +217,12 @@ class TestBuildIndex(unittest.TestCase):
 
     def test_update_one_from_language_server(self):
         from lsp import rag
+        rag.load_model_and_indexes(self.rag_dir)
+
         # TODO
         # FYI I want to move much of the functionality into build.py module like indexer uses too...
         #  should not be LSP specific, needs to attach to RAGDataset really
         pass
-
 
 if __name__ == "__main__":
     unittest.main()

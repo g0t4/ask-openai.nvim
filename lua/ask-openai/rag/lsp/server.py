@@ -19,7 +19,7 @@ server = LanguageServer("ask_language_server", "v0.1")
 
 @server.feature(types.INITIALIZE)
 def on_initialize(_: LanguageServer, params: types.InitializeParams):
-    global root_fs_path
+    global rag_dir
     root_uri = params.root_uri  # ., root_uri='file:///Users/wesdemos/repos/github/g0t4/ask-openai.nvim'
     if root_uri is None:
         logger.error(f"aborting on_initialize b/c missing client workspace root_uri {root_uri}")
@@ -29,8 +29,8 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
     if fs_path is None:
         logger.error(f"aborting on_initialize b/c missing client workspace fspath {fs_path}")
         raise ValueError("fspath is None")
-    root_fs_path = Path(fs_path)
-    logger.info(f"fspath {root_fs_path}")
+    rag_dir = Path(fs_path) / ".rag"
+    logger.info(f"fspath {rag_dir}")
 
 @server.feature(types.INITIALIZED)
 def on_initialized(_: LanguageServer, _params: types.InitializedParams):
@@ -40,7 +40,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #  then, client sends initialized (this) request => waits for completion
     #    does not send other requests until initialized is done
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
-    rag.load_model_and_indexes(root_fs_path)
+    rag.load_model_and_indexes(rag_dir)
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 def doc_saved(params: types.DidSaveTextDocumentParams):
