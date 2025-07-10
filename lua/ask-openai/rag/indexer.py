@@ -77,6 +77,12 @@ class IncrementalRAGIndexer:
 
         return FilesDiff(changed_paths, deleted_path_strs, unchanged_path_strs)
 
+    def get_shape(self) -> None:
+        sample_text = "passage: sample"
+        sample_vec = model_wrapper._encode_text(sample_text)
+        shape = sample_vec.shape[1]
+        return shape
+
     def update_faiss_index_incrementally(
         self,
         index: Optional[faiss.Index],
@@ -93,9 +99,8 @@ class IncrementalRAGIndexer:
             print("Creating new FAISS index")
             # Create a dummy vector to get dimensions
 
-            sample_text = "passage: sample"
-            sample_vec = model_wrapper._encode_text(sample_text)
-            shape = sample_vec.shape[1]
+            shape = self.get_shape()
+
             print(f"{shape=}")
 
             base_index = faiss.IndexFlatIP(shape)
