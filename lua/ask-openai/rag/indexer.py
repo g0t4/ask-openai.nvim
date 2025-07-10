@@ -85,7 +85,7 @@ class IncrementalRAGIndexer:
     ) -> faiss.Index:
         """Update FAISS index incrementally using IndexIDMap"""
 
-        # TODO where to call this? or just on first encode?
+        # TODO! KEEP? MOVE? REMOVE?
         model_wrapper.ensure_model_loaded()
 
         # Create base index if it doesn't exist
@@ -93,7 +93,6 @@ class IncrementalRAGIndexer:
             print("Creating new FAISS index")
             shape = model_wrapper.get_shape()
             print(f"{shape=}")
-
             base_index = faiss.IndexFlatIP(shape)
             index = faiss.IndexIDMap(base_index)
             # FYI if someone deletes the vectors file... this won't recreate it if stat still exists...
