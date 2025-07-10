@@ -13,10 +13,10 @@ from lsp.storage import FileStat, chunk_id_to_faiss_id, load_prior_data
 from lsp.build import build_file_chunks, get_file_stat
 from lsp.model import model_wrapper
 
-from lsp.logs import get_logger
+from lsp.logs import get_logger, use_console, use_lang_server_logs
 
 logger = get_logger(__name__)
-# TODO! swap in diff handler for CLI tests to GO RIGHT TO CONSOLE!
+use_lang_server_logs()
 
 #
 # constants for subprocess.run for readability
