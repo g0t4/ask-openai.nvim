@@ -9,7 +9,7 @@ import numpy as np
 
 import fs
 from pydants import write_json
-from lsp.storage import Chunk, FileStat, chunk_id_to_faiss_id, load_prior_data
+from lsp.storage import Chunk, FileStat, load_prior_data
 from lsp.build import build_file_chunks, get_file_stat
 from lsp.model import model_wrapper
 
@@ -97,14 +97,14 @@ class IncrementalRAGIndexer:
         for file_chunks in updated_chunks_by_file.values():
             for chunk in file_chunks:
                 new_chunks.append(chunk)
-                new_faiss_ids.append(chunk_id_to_faiss_id(chunk.id))
+                new_faiss_ids.append(chunk.faiss_id())
 
         with logger.timer("Remove old vectors"):
             # TODO need to pass holdovers too
             keep_ids = new_faiss_ids.copy()
             for _, file_chunks in unchanged_chunks_by_file.items():
                 for chunk in file_chunks:
-                    keep_ids.append(chunk_id_to_faiss_id(chunk.id))
+                    keep_ids.append(chunk.faiss_id())
 
             logger.pp_info("keep_ids", keep_ids)
 
