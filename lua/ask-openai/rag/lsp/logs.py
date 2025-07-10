@@ -12,15 +12,10 @@ logging.getLogger("pygls.protocol.language_server").setLevel(logging.WARN)  # se
 logging.getLogger("pygls.feature_manager").setLevel(logging.WARN)  # what features are registered/detected
 logging.getLogger("pygls.server").setLevel(logging.WARN)  # mostly Content length messages (headers IIAC)
 
-# TODO use verbose flag to toggle on DEBUG/INFO messages?
-# does nvim have a setting that is used across LS's that I can somehow have passed besides obviously just adding to my own config somewhere?
-
 log_file_path = os.path.expanduser("~/.local/share/ask-openai/language.server.log")
 log_file = open(log_file_path, "w", encoding="utf-8")
-# logging.basicConfig(filename=log_file, level=logging.DEBUG)
 console = Console(file=log_file, force_terminal=True, width=150)
-# TODO how can I get rich to not add wraps on long lines... width=None still wraps
-hand = RichHandler(
+rich_handler = RichHandler(
     markup=True,  # i.e. [bold], [red]
     rich_tracebacks=True,
     console=console,
@@ -29,12 +24,11 @@ hand = RichHandler(
 )
 
 format = "%(asctime)s %(name)s: %(message)s"
-# %(asctime)s
 logging.basicConfig(
     level="NOTSET",
     format=format,
     datefmt="[%X]",
-    handlers=[hand],
+    handlers=[rich_handler],
 )
 
 class Logger(logging.Logger):
