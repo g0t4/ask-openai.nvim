@@ -15,13 +15,14 @@ from timing import Timer
 import timing
 from lsp.storage import FileStat, chunk_id_to_faiss_id, load_prior_data
 from lsp.build import build_file_chunks, get_file_stat
+from lsp.model import model_wrapper
 
 #
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False
 STOP_ON_FAILURE = True
 
-# TODO! all prints and progress must be redirected to a log once I run this INSIDE the LSP
+# TODO switch all prints to use logging fwk just like LSP so I can interchangeably extract common components and/or run this in LS
 
 @dataclass
 class FilesDiff:
@@ -83,15 +84,21 @@ class IncrementalRAGIndexer:
         updated_chunks_by_file,
     ) -> faiss.Index:
         """Update FAISS index incrementally using IndexIDMap"""
-        from lsp.model import model
+
+        # TODO where to call this? or just on first encode?
+        model_wrapper.ensure_model_loaded()
 
         # Create base index if it doesn't exist
         if index is None:
             print("Creating new FAISS index")
             # Create a dummy vector to get dimensions
+
             sample_text = "passage: sample"
-            sample_vec = model.encode([sample_text], normalize_embeddings=True)
-            base_index = faiss.IndexFlatIP(sample_vec.shape[1])
+            sample_vec = model_wrapper._encode_text(sample_text)
+            shape = sample_vec.shape[1]
+            print(f"{shape=}")
+
+            base_index = faiss.IndexFlatIP(shape)
             index = faiss.IndexIDMap(base_index)
             # FYI if someone deletes the vectors file... this won't recreate it if stat still exists...
 

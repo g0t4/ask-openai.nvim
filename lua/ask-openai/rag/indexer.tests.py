@@ -109,8 +109,8 @@ class TestBuildIndex(unittest.TestCase):
 
     def test_encode_and_search_index(self):
         # FYI! SLOW TEST, change name to disable
-        from lsp.model import model
-        q = model.encode(["hello"], normalize_embeddings=True)
+        from lsp.model import model_wrapper
+        q = model_wrapper._encode_text("hello")
         print(f'{q.shape=}')
         # currently hard coded model:
         # https://huggingface.co/intfloat/e5-base-v2

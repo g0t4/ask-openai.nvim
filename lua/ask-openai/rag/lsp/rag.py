@@ -4,6 +4,7 @@ from pathlib import Path
 from .build import build_file_chunks, get_file_hash
 from .logs import get_logger
 from .storage import Chunk, Datasets, load_all_datasets
+from .model import model_wrapper
 
 # avoid checking for model files every time you load the model...
 #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
@@ -14,20 +15,18 @@ logger = get_logger(__name__)
 datasets: Datasets
 
 def load_model_and_indexes(root_fs_path: Path):
-    global model, datasets
-    from .model import model
+    global datasets
+    # PRN add a dataset_wrapper like model_wrapper and let it handle lazy load and be reusable across entire process (any imports are both lazy loaded and still singleton)
     datasets = load_all_datasets(root_fs_path / ".rag")
+    model_wrapper.ensure_model_loaded()  # now I want to trigger the eager load, not at module import time but when I am ready here
 
 # PRN make top_k configurable (or other params)
 def handle_query(message, top_k=3):
-    if model is None:
-        logger.info("MISSING MODEL, CANNOT query it")
-        return
 
-    text = message.get("text")  # PRN rename to query? instead of text?
+    text = message.get("text")
     if text is None or len(text) == 0:
-        logger.info("[red bold][ERROR] No query text provided")
-        return {"failed": True, "error": "No query text provided"}
+        logger.info("[red bold][ERROR] No text provided")
+        return {"failed": True, "error": "No text provided"}
 
     current_file_abs = message.get("current_file_absolute_path")
     dataset = datasets.for_file(current_file_abs)
@@ -37,9 +36,8 @@ def handle_query(message, top_k=3):
 
     logger.pp_info("[blue bold]RAG[/blue bold] query", message)
 
-    # query: prefix is what the model was trained on (and the documents have passage: prefix)
-    # PRN make model wrapper and have it encode both query and passage/document (that was it is model specific, too)
-    q_vec = model.encode([f"query: {text}"], normalize_embeddings=True).astype("float32")
+    # TODO rename model_wrapper back to just model when done inserting it into all usages
+    q_vec = model_wrapper.encode_query(text)
     # FAISS search (GIL released)
     scores, ids = dataset.index.search(q_vec, top_k)
     # logger.info(f'{scores=}')
