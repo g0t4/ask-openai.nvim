@@ -7,6 +7,7 @@ from typing import List, Optional
 import faiss
 from pydantic import BaseModel
 from .logs import get_logger
+from .model import model_wrapper
 
 logger = get_logger(__name__)
 
@@ -123,26 +124,18 @@ class Datasets:
         logger.pp_info("prior_faiss_ids", prior_faiss_ids)
 
         with logger.timer("Remove prior vectors"):
-
             prior_selector = faiss.IDSelectorArray(np.array(prior_faiss_ids, dtype="int64"))
             dataset.index.remove_ids(prior_selector)
 
-        if new_chunks:
-            logger.info(f"Adding {len(new_chunks)} new vectors for changed files")
+        with logger.timer("Encode new vectors"):
+            passages = [chunk.text for chunk in new_chunks]
+            vecs = model_wrapper.encode_passages(passages, show_progress_bar=True)
 
-            logger.info(f"{new_faiss_ids=}")
+        vecs_np = np.array(vecs).astype("float32")
+        faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
 
-            with logger.timer("Encode new vectors"):
-                passages = [chunk.text for chunk in new_chunks]
-                vecs = model_wrapper.encode_passages(passages, show_progress_bar=True)
-
-            # PRN move these np.array transforms into encode* funcs?
-            #  TODO IIRC  model.encode has a numpy param for this purpose!
-            vecs_np = np.array(vecs).astype("float32")
-            faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
-
-            with logger.timer("Add new vectors to index"):
-                dataset.index.add_with_ids(vecs_np, faiss_ids_np)
+        with logger.timer("Add new_chunk vectors to index"):
+            dataset.index.add_with_ids(vecs_np, faiss_ids_np)
 
         # ***! TODO update cache by faiss ID
 
