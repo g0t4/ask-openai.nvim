@@ -1,10 +1,15 @@
-from dataclasses import dataclass
+import os
+
 from .logs import get_logger
 
 logger = get_logger(__name__)
 
 with logger.timer("importing sentence transformers"):
     from sentence_transformers import SentenceTransformer
+
+# avoid checking for model files every time you load the model...
+#   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 class ModelWrapper:
     model: SentenceTransformer

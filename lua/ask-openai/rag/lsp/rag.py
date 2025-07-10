@@ -6,10 +6,6 @@ from .logs import get_logger
 from .storage import Chunk, Datasets, load_all_datasets
 from .model import model_wrapper
 
-# avoid checking for model files every time you load the model...
-#   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
-os.environ["TRANSFORMERS_OFFLINE"] = "1"
-
 logger = get_logger(__name__)
 
 datasets: Datasets
