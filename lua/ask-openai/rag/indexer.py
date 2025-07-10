@@ -211,10 +211,12 @@ def trash_indexes(dot_rag_dir, language_extension="lua"):
     subprocess.run(["trash", index_path], check=IGNORE_FAILURE)
 
 if __name__ == "__main__":
+    from lsp.logs import use_console
+
     verbose = "--verbose" in sys.argv
-    if not verbose:
-        pass
-        # TODO disable handler in this case?
+    if verbose:
+        use_console()
+        # FYI won't log w/o this call, not from logging fwk
 
     with logger.timer("Total indexing time"):
         # yup, can turn this into a command that uses git repo of CWD
