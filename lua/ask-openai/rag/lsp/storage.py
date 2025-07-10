@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import List, Optional
 
 import faiss
+import numpy as np
 from pydantic import BaseModel
+
 from .logs import get_logger
 from .model import model_wrapper
 
