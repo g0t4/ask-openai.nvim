@@ -118,8 +118,7 @@ class Datasets:
         logger.info(f"Updating {file_path_str}")
         logger.pp_info("prior_chunks", prior_chunks)
 
-        # * TODO RECONCILE copied code from indexer for FAISS UPDATES:
-
+        # * FAISS UPDATES:
         new_faiss_ids = [c.faiss_id() for c in new_chunks]
         logger.pp_info("new_faiss_ids", new_faiss_ids)
         prior_faiss_ids = [c.faiss_id() for c in prior_chunks]
