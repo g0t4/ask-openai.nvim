@@ -74,12 +74,9 @@ def handle_query(message, top_k=3):
 
     return {"matches": matches}
 
-def update_one_file_from_disk(file_path: str):
-
-    dataset = datasets.for_file(file_path)
-    if dataset is None:
-        logger.info(f"No dataset for path: {file_path}")
-        return
+def update_one_file_from_disk(file_path: str | Path):
+    file_path = Path(file_path)
+    # FYI! this is the first test that will use logging heavily instead of print, so check the langauge server logs!
 
     # * build new chunks
     # TODO! use server.workspace.get_document instead of reading file from disk?
@@ -92,4 +89,4 @@ def update_one_file_from_disk(file_path: str):
     new_chunks = build_file_chunks(file_path, file_hash)
     logger.pp_info("new_chunks", new_chunks)
 
-    dataset.update_file(file_path, file_hash, new_chunks)
+    datasets.update_file(file_path, file_hash, new_chunks)

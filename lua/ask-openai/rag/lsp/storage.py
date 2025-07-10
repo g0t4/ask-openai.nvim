@@ -80,6 +80,11 @@ class Datasets:
     #     pass
 
     def update_file(self, file_path: str | Path, file_hash: str, new_chunks: List[Chunk]):
+        dataset = self.for_file(file_path)
+        if dataset is None:
+            logger.info(f"No dataset for path: {file_path}")
+            return
+
         # TODO pass or hardcode chunk_type?
         # TODO do I need to pass file_hash? IIAC I won't
         # FYI first pass is ONLY to get this to work for LS client...
@@ -92,7 +97,7 @@ class Datasets:
         # TODO move all this logic into dataset or a helper in the build.py module
         prior_chunks = None
         if file_path in dataset.chunks_by_file:
-            prior_chunks = dataset.chunks_by_file[file_path]
+            prior_chunks = dataset.chunks_by_file[str(file_path)]
 
         if not prior_chunks:
             logger.info(f"No prior_chunks")
@@ -158,6 +163,6 @@ def load_all_datasets(dot_rag_dir: str | Path) -> Datasets:
         language_extension = dir_path.name
         dataset = load_prior_data(language_extension, dir_path)
         datasets[language_extension] = dataset
-        logger.info(f"[green]Loaded {language_extension} with {len(dataset.chunks_by_file)} chunks")
+        logger.info(f"[green]Loaded {language_extension} with {len(dataset.chunks_by_file)} files")
 
     return Datasets(datasets)

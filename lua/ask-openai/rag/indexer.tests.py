@@ -235,8 +235,8 @@ class TestBuildIndex(unittest.TestCase):
         rag.load_model_and_indexes(self.dot_rag_dir)
         #
 
-        # TODO what file?
-        # rag.update_one_file_from_disk()
+        copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 4 chunks
+        rag.update_one_file_from_disk(self.tmp_source_code_dir / "numbers.lua")
 
         # TODO
         # FYI I want to move much of the functionality into build.py module like indexer uses too...
