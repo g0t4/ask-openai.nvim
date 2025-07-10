@@ -124,7 +124,7 @@ class IncrementalRAGIndexer:
             print(f"{new_faiss_ids=}")
 
             with Timer("Encode new vectors"):
-                vecs = model.encode(texts, normalize_embeddings=True, show_progress_bar=True)
+                vecs = model_wrapper.encode(texts, normalize_embeddings=True, show_progress_bar=True)
 
             vecs_np = np.array(vecs).astype("float32")
             faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
