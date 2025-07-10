@@ -87,7 +87,7 @@ class IncrementalRAGIndexer:
         if index is None:
             logger.info("Creating new FAISS index")
             shape = model_wrapper.get_shape()
-            logger.info(f"{shape=}")
+            logger.info(f"{shape=}")  # 768 for current model
             base_index = faiss.IndexFlatIP(shape)
             index = faiss.IndexIDMap(base_index)
             # FYI if someone deletes the vectors file... this won't recreate it if stat still exists...
