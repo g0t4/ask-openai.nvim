@@ -156,7 +156,7 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(index.ntotal, 4)
 
         # * update a file and rebuild
-        copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 4 chunks (starts = 1-20, 16-35, 31-50)
+        copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks (starts = 1-20, 16-35, 31-50)
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir)  # BTW recreate so no shared state (i.e. if cache added)
         indexer.build_index(language_extension="lua")
 
@@ -227,20 +227,34 @@ class TestBuildIndex(unittest.TestCase):
         # * build initial index
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir)
         indexer.build_index(language_extension="lua")
-        #  TODO test interaction b/w indexer and update_file
-        #    also update_file => update_file
-        #    and update_file => indexer
 
         from lsp import rag
         rag.load_model_and_indexes(self.dot_rag_dir)
-        #
 
-        copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 4 chunks
+        copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks
         rag.update_one_file_from_disk(self.tmp_source_code_dir / "numbers.lua")
 
-        # TODO
-        # FYI I want to move much of the functionality into build.py module like indexer uses too...
-        #  should not be LSP specific, needs to attach to RAGDataset really
+        # * check counts
+        chunks_by_file = self.get_chunks_by_file()
+        files = self.get_files()
+        index = self.get_vector_index()
+        #
+        self.assertEqual(len(files), 2)
+        #
+        self.assertEqual(len(chunks_by_file), 2)  # 2 files
+        first_file_chunks = chunks_by_file[str(self.tmp_source_code_dir / "numbers.lua")]
+        second_file_chunks = chunks_by_file[str(self.tmp_source_code_dir / "unchanged.lua")]
+        self.assertEqual(len(first_file_chunks), 3)
+        self.assertEqual(len(second_file_chunks), 2)
+        #
+        self.assertEqual(index.ntotal, 5)
+
+        #
+        #
+        #
+        # ? test interaction b/w indexer and update_file
+        # ?   also update_file => update_file
+        # ?   and update_file => indexer
 
 if __name__ == "__main__":
     unittest.main()
