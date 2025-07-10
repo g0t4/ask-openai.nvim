@@ -257,7 +257,7 @@ class TestBuildIndex(unittest.TestCase):
 
         #
         # * assert vectors updated ...
-        # TODO!!! CHECK values?
+        # TODO!!! CHECK ID values
         self.assertEqual(ds.index.ntotal, 5)
         #
         # * check global dict updated by faissid to new chunks
