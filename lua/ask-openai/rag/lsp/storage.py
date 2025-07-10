@@ -144,8 +144,8 @@ class Datasets:
         # # * updates for cache in  _chunks_by_faiss_id
         # for prior_id in prior_faiss_ids:
         #     del self._chunks_by_faiss_id[prior_id]
-        # for new_chunk in new_chunks:
-        #     self._chunks_by_faiss_id[new_chunk.faiss_id()] = new_chunk
+        for new_chunk in new_chunks:
+            self._chunks_by_faiss_id[new_chunk.faiss_id()] = new_chunk
 
 def load_chunks(chunks_json_path: Path):
     with open(chunks_json_path, 'r') as f:
