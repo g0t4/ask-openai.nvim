@@ -94,7 +94,6 @@ class Datasets:
         # TODO call self._delete_file?
 
         # * find prior chunks (if any)
-        # TODO move all this logic into dataset or a helper in the build.py module
         prior_chunks = None
         if file_path in dataset.chunks_by_file:
             prior_chunks = dataset.chunks_by_file[str(file_path)]
@@ -105,8 +104,6 @@ class Datasets:
         logger.info(f"Updating {file_path}")
         logger.pp_info("prior_chunks", prior_chunks)
 
-        # TODO add something to Datasets/RAGDataset to have it handle the update
-        #  infact should this function exist elsewhere at some point?
         # dataset.chunks_by_file[path] = new_chunks
 
 def load_chunks(chunks_json_path: Path):
