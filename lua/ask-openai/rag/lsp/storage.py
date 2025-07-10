@@ -109,10 +109,7 @@ class Datasets:
 
         # * TODO RECONCILE copied code from indexer for FAISS UPDATES:
 
-        new_faiss_ids: list[int] = []
-        for file_chunks in updated_chunks_by_file.values():
-            for chunk in file_chunks:
-                new_faiss_ids.append(chunk.faiss_id())
+        new_faiss_ids = [c.faiss_id() for c in new_chunks]
 
         with logger.timer("Remove old vectors"):
             # TODO need to pass holdovers too
