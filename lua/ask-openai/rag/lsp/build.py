@@ -13,6 +13,13 @@ def get_file_hash(file_path: Path | str) -> str:
             hasher.update(chunk)
     return hasher.hexdigest()
 
+def get_file_hash_from_lines(lines: list[str]) -> str:
+    hasher = hashlib.sha256()
+    # FYI lines have \n on end from LSP... so don't need to join w/ that between lines
+    for line in lines:
+        hasher.update(line.encode())
+    return hasher.hexdigest()
+
 def get_file_stat(file_path: Path | str) -> FileStat:
     file_path = Path(file_path)
 
