@@ -97,14 +97,14 @@ class IncrementalRAGIndexer:
         for file_chunks in updated_chunks_by_file.values():
             for chunk in file_chunks:
                 new_chunks.append(chunk)
-                new_faiss_ids.append(chunk.faiss_id())
+                new_faiss_ids.append(chunk.faiss_id)
 
         with logger.timer("Remove old vectors"):
             # TODO need to pass holdovers too
             keep_ids = new_faiss_ids.copy()
             for _, file_chunks in unchanged_chunks_by_file.items():
                 for chunk in file_chunks:
-                    keep_ids.append(chunk.faiss_id())
+                    keep_ids.append(chunk.faiss_id)
 
             logger.pp_info("keep_ids", keep_ids)
 

@@ -41,6 +41,7 @@ class Chunk(BaseModel):
     type: str
     file_hash: str
 
+    @property
     def faiss_id(self):
         # TODO any issues with this?
         # return int(self.id_int)
@@ -64,7 +65,7 @@ class Datasets:
         for dataset in self.all_datasets.values():
             for _, chunks in dataset.chunks_by_file.items():
                 for chunk in chunks:
-                    faiss_id = chunk.faiss_id()
+                    faiss_id = chunk.faiss_id
                     self._chunks_by_faiss_id[faiss_id] = chunk
 
     def get_chunk_by_faiss_id(self, faiss_id) -> Optional[Chunk]:
@@ -119,9 +120,9 @@ class Datasets:
         logger.pp_info("prior_chunks", prior_chunks)
 
         # * FAISS UPDATES:
-        new_faiss_ids = [c.faiss_id() for c in new_chunks]
+        new_faiss_ids = [c.faiss_id for c in new_chunks]
         logger.pp_info("new_faiss_ids", new_faiss_ids)
-        prior_faiss_ids = [c.faiss_id() for c in prior_chunks]
+        prior_faiss_ids = [c.faiss_id for c in prior_chunks]
         logger.pp_info("prior_faiss_ids", prior_faiss_ids)
 
         with logger.timer("Remove prior vectors"):
@@ -145,7 +146,7 @@ class Datasets:
         for prior_id in prior_faiss_ids:
             del self._chunks_by_faiss_id[prior_id]
         for new_chunk in new_chunks:
-            self._chunks_by_faiss_id[new_chunk.faiss_id()] = new_chunk
+            self._chunks_by_faiss_id[new_chunk.faiss_id] = new_chunk
 
 def load_chunks(chunks_json_path: Path):
     with open(chunks_json_path, 'r') as f:
