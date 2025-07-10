@@ -113,6 +113,10 @@ def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):
     print("SIGKILL myself")
     os.kill(os.getpid(), signal.SIGKILL)
 
+# TODO how can I detect if client disconnects?
+#   if I start nvim before server is initialized then it gets orphaned (have to kill it)
+#
+
 signal.signal(signal.SIGINT, sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS)
 
 server.start_io()
