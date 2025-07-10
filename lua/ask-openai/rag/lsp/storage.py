@@ -82,7 +82,7 @@ class Datasets:
     #     # TODO! with update_file
     #     pass
 
-    def update_file(self, file_path_str: str | Path, file_hash: str, new_chunks: List[Chunk]):
+    def update_file(self, file_path_str: str | Path, new_chunks: List[Chunk]):
         file_path_str = str(file_path_str)  # must be str, just let people pass either
 
         dataset = self.for_file(file_path_str)

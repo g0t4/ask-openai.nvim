@@ -85,8 +85,8 @@ def update_one_file_from_disk(file_path: str | Path):
     # document = server.workspace.get_document(params.text_document.uri)
     # current_line = document.lines[params.position.line].strip()
 
-    file_hash = get_file_hash(file_path)
-    new_chunks = build_file_chunks(file_path, file_hash)
+    hash = get_file_hash(file_path)
+    new_chunks = build_file_chunks(file_path, hash)
     logger.pp_info("new_chunks", new_chunks)
 
-    datasets.update_file(file_path, file_hash, new_chunks)
+    datasets.update_file(file_path, new_chunks)
