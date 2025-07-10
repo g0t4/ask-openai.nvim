@@ -215,5 +215,13 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(len(files), 2)
         self.assertEqual(index.ntotal, 4)
 
+    def test_update_one_from_language_server(self):
+        from lsp import rag
+        # TODO
+        # FYI I want to move much of the functionality into build.py module like indexer uses too...
+        #  should not be LSP specific, needs to attach to RAGDataset really
+        pass
+
+
 if __name__ == "__main__":
     unittest.main()
