@@ -93,7 +93,6 @@ class Datasets:
             # TODO should I be creating it in this case?
             #    ADD TESTS FOR THIS
             return
-        index = dataset.index
 
         # TODO pass or hardcode chunk_type?
         # TODO do I need to pass file_hash? IIAC I won't
@@ -143,11 +142,9 @@ class Datasets:
             faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
 
             with logger.timer("Add new vectors to index"):
-                index.add_with_ids(vecs_np, faiss_ids_np)
+                dataset.index.add_with_ids(vecs_np, faiss_ids_np)
 
-        return index
-
-        # dataset.chunks_by_file[path] = new_chunks
+        # ***! TODO update cache by faiss ID
 
 def load_chunks(chunks_json_path: Path):
     with open(chunks_json_path, 'r') as f:
