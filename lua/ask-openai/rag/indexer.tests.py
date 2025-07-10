@@ -249,6 +249,12 @@ class TestBuildIndex(unittest.TestCase):
         second_file_chunks = ds.chunks_by_file[str(self.tmp_source_code_dir / "unchanged.lua")]
         self.assertEqual(len(first_file_chunks), 3)
         self.assertEqual(len(second_file_chunks), 2)
+        hash_50nums = "02d36ee22aefffbb3eac4f90f703dd0be636851031144132b43af85384a2afcd"
+        hash_30nums = "4becb4afc4bbb0706eb8df24e32b8924925961ef48a2ac0e4a95cd7da10e97a5"
+        hash_unchanged = "aee2416e86cecb08a0b4e48a461d95a5d6d061e690145938a772ec62261653fc"
+        for c in first_file_chunks:
+            self.assertEqual(c.file_hash, hash_50nums)
+
         #
         # * assert vectors updated ...
         # TODO!!! CHECK values?
@@ -256,9 +262,10 @@ class TestBuildIndex(unittest.TestCase):
         #
         # * check global dict updated by faissid to new chunks
         self.assertEqual(len(datasets._chunks_by_faiss_id), 5)
+        should_be_chunks = first_file_chunks.copy()
+        should_be_chunks.extend(second_file_chunks)
+        self.assertEqual(len(should_be_chunks), 5)
 
-        #
-        #
         #
         # ? test interaction b/w indexer and update_file
         # ?   also update_file => update_file
