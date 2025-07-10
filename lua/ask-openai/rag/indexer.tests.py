@@ -8,10 +8,9 @@ import numpy as np
 from rich import print
 
 from indexer import IncrementalRAGIndexer
-from lsp.logs import use_console, use_lang_server_logs
+from lsp.logs import use_console
 
 use_console()
-# use_lang_server_logs()
 
 class TestBuildIndex(unittest.TestCase):
 
