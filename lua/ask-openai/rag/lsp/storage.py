@@ -71,7 +71,7 @@ class Datasets:
         # PRN might wanna move this to the dataset level to update it on updates to a doc in a dataset
         return self._chunks_by_faiss_id.get(faiss_id)
 
-    def for_file(self, file_path: str):
+    def for_file(self, file_path: str | Path):
         language_extension = Path(file_path).suffix.removeprefix('.')
         return self.all_datasets.get(language_extension)
 

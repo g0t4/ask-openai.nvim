@@ -24,8 +24,6 @@ def handle_query(message, top_k=3):
         logger.info("MISSING MODEL, CANNOT query it")
         return
 
-    logger.info("[blue bold]RAG[/blue bold] query: %s", message)
-
     text = message.get("text")  # PRN rename to query? instead of text?
     if text is None or len(text) == 0:
         logger.info("[red bold][ERROR] No query text provided")
@@ -36,6 +34,8 @@ def handle_query(message, top_k=3):
     if dataset is None:
         logger.info(f"No dataset")
         return {"failed": True, "error": f"No dataset for {current_file_abs}"}
+
+    logger.pp_info("[blue bold]RAG[/blue bold] query", message)
 
     # query: prefix is what the model was trained on (and the documents have passage: prefix)
     # PRN make model wrapper and have it encode both query and passage/document (that was it is model specific, too)
