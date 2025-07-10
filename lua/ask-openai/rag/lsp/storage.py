@@ -96,13 +96,14 @@ class Datasets:
         # TODO call self._delete_file?
 
         # * find prior chunks (if any)
-        prior_chunks = None
+        prior_chunks: list[Chunk] | None = None
         if file_path_str in dataset.chunks_by_file:
             logger.info(f"Prior chunks exist for {file_path_str}")
             prior_chunks = dataset.chunks_by_file[file_path_str]
 
         if not prior_chunks:
             logger.info(f"No prior_chunks")
+            prior_chunks = []
 
         logger.info(f"Updating {file_path_str}")
         logger.pp_info("prior_chunks", prior_chunks)
@@ -110,9 +111,9 @@ class Datasets:
         # * TODO RECONCILE copied code from indexer for FAISS UPDATES:
 
         new_faiss_ids = [c.faiss_id() for c in new_chunks]
+        prior_faiss_ids = [c.faiss_id() for c in prior_chunks]
 
         with logger.timer("Remove old vectors"):
-            # TODO need to pass holdovers too
             keep_ids = new_faiss_ids.copy()
             for _, file_chunks in unchanged_chunks_by_file.items():
                 for chunk in file_chunks:
