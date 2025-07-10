@@ -111,15 +111,11 @@ class Datasets:
         # * TODO RECONCILE copied code from indexer for FAISS UPDATES:
 
         new_faiss_ids = [c.faiss_id() for c in new_chunks]
+        logger.pp_info("new_faiss_ids", new_faiss_ids)
         prior_faiss_ids = [c.faiss_id() for c in prior_chunks]
+        logger.pp_info("prior_faiss_ids", prior_faiss_ids)
 
-        with logger.timer("Remove old vectors"):
-            keep_ids = new_faiss_ids.copy()
-            for _, file_chunks in unchanged_chunks_by_file.items():
-                for chunk in file_chunks:
-                    keep_ids.append(chunk.faiss_id())
-
-            logger.pp_info("keep_ids", keep_ids)
+        with logger.timer("Remove prior vectors"):
 
             keep_selector = faiss.IDSelectorArray(np.array(keep_ids, dtype="int64"))
             not_keep_selector = faiss.IDSelectorNot(keep_selector)
