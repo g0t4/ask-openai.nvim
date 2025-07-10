@@ -52,7 +52,7 @@ def update_rag_file_chunks(text_doc_uri: str):
     # logger.info(f'{doc.path=}')
     # logger.info(f'{doc.language_id=}')
     # logger.info(f'{doc.uri=}')
-    rag.update_one_file_from_disk(doc)
+    rag.update_file_from_pygls_doc(doc)
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 def doc_saved(params: types.DidSaveTextDocumentParams):

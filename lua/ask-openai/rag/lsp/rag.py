@@ -72,15 +72,20 @@ def handle_query(message, top_k=3):
 
     return {"matches": matches}
 
-def update_one_file_from_disk(doc: TextDocument):
+def update_file_from_disk(file_path):
+    # FYI right now exists for integration testing as I don't know if I can use document type from pygls in that test (yet?)
+    file_path = Path(file_path)
+
+    hash = get_file_hash(file_path)
+    new_chunks = build_file_chunks(file_path, hash)
+
+    logger.pp_info("new_chunks", new_chunks)
+
+    datasets.update_file(file_path, new_chunks)
+
+def update_file_from_pygls_doc(doc: TextDocument):
     file_path = Path(doc.path)
 
-    # * read directly from disk (update_one_file_from_disk)
-    # PRN add a separate overload to read from disk if that is useful in another scenario
-    # hash = get_file_hash(file_path)
-    # new_chunks = build_file_chunks(file_path, lines_hash)
-
-    # * use pygls workspace docs
     lines_hash = get_file_hash_from_lines(doc.lines)
     new_chunks = build_from_lines(file_path, lines_hash, doc.lines)
 
