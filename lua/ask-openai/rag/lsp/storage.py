@@ -79,10 +79,12 @@ class Datasets:
     #     # TODO! with update_file
     #     pass
 
-    def update_file(self, file_path: str | Path, file_hash: str, new_chunks: List[Chunk]):
-        dataset = self.for_file(file_path)
+    def update_file(self, file_path_str: str | Path, file_hash: str, new_chunks: List[Chunk]):
+        file_path_str = str(file_path_str)  # must be str, just let people pass either
+
+        dataset = self.for_file(file_path_str)
         if dataset is None:
-            logger.info(f"No dataset for path: {file_path}")
+            logger.info(f"No dataset for path: {file_path_str}")
             return
 
         # TODO pass or hardcode chunk_type?
@@ -95,13 +97,14 @@ class Datasets:
 
         # * find prior chunks (if any)
         prior_chunks = None
-        if file_path in dataset.chunks_by_file:
-            prior_chunks = dataset.chunks_by_file[str(file_path)]
+        if file_path_str in dataset.chunks_by_file:
+            logger.info(f"Prior chunks exist for {file_path_str}")
+            prior_chunks = dataset.chunks_by_file[file_path_str]
 
         if not prior_chunks:
             logger.info(f"No prior_chunks")
 
-        logger.info(f"Updating {file_path}")
+        logger.info(f"Updating {file_path_str}")
         logger.pp_info("prior_chunks", prior_chunks)
 
         # dataset.chunks_by_file[path] = new_chunks
