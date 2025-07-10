@@ -262,9 +262,13 @@ class TestBuildIndex(unittest.TestCase):
         #
         # * check global dict updated by faissid to new chunks
         self.assertEqual(len(datasets._chunks_by_faiss_id), 5)
-        should_be_chunks = first_file_chunks.copy()
-        should_be_chunks.extend(second_file_chunks)
+        #
+        # I hate the following... only alternative might be to compute and hardcode the ids?
+        should_be_chunks = sorted(first_file_chunks.copy() + second_file_chunks.copy(), key=lambda x: x.id_int)
+        actual_chunks_in_faiss_id_dict = sorted(list(datasets._chunks_by_faiss_id.copy().values()), key=lambda x: x.id_int)
         self.assertEqual(len(should_be_chunks), 5)
+        self.assertEqual(len(actual_chunks_in_faiss_id_dict), 5)
+        self.assertEqual(should_be_chunks, actual_chunks_in_faiss_id_dict)
 
         #
         # ? test interaction b/w indexer and update_file
