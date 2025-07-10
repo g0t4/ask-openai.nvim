@@ -4,12 +4,13 @@ from .logs import get_logger
 
 logger = get_logger(__name__)
 
-with logger.timer("importing sentence transformers"):
-    from sentence_transformers import SentenceTransformer
 
-# avoid checking for model files every time you load the model...
-#   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
-os.environ["TRANSFORMERS_OFFLINE"] = "1"
+with logger.timer("importing sentence transformers"):
+    # avoid checking for model files every time you load the model...
+    #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
+    # FYI must be set BEFORE importing SentenceTransformer, setting after (even if before model load) doesn't work
+    os.environ["TRANSFORMERS_OFFLINE"] = "1"
+    from sentence_transformers import SentenceTransformer
 
 class ModelWrapper:
     model: SentenceTransformer
