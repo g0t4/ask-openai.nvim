@@ -107,7 +107,7 @@ class TestBuildIndex(unittest.TestCase):
             print(i)
             # PRN verify vectors too?
 
-    def test_slow__encode_and_search_index(self):
+    def test_encode_and_search_index(self):
         from lsp.model import model_wrapper
         q = model_wrapper._encode_text("hello")
         print(f'{q.shape=}')
@@ -124,7 +124,7 @@ class TestBuildIndex(unittest.TestCase):
         expected = np.array([[5737032561938488959, 7876391420168697139, 2711563645975913899]])
         np.testing.assert_array_equal(indices, expected)
 
-    def test_slow__update_index_removed_file(self):
+    def test_update_index_removed_file(self):
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
