@@ -224,6 +224,13 @@ class TestBuildIndex(unittest.TestCase):
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
+        # * build initial index
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir)
+        indexer.build_index(language_extension="lua")
+        #  TODO test interaction b/w indexer and update_file
+        #    also update_file => update_file
+        #    and update_file => indexer
+
         from lsp import rag
         rag.load_model_and_indexes(self.dot_rag_dir)
         #
