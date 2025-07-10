@@ -91,10 +91,7 @@ class IncrementalRAGIndexer:
         # Create base index if it doesn't exist
         if index is None:
             print("Creating new FAISS index")
-            # Create a dummy vector to get dimensions
-
-            shape = self.get_shape()
-
+            shape = model_wrapper.get_shape()
             print(f"{shape=}")
 
             base_index = faiss.IndexFlatIP(shape)

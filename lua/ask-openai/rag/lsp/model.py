@@ -38,8 +38,9 @@ class ModelWrapper:
         ).astype("float32")
 
     def get_shape(self) -> None:
+        # Create a dummy vector to get dimensions
         sample_text = "passage: sample"
-        sample_vec = model_wrapper._encode_text(sample_text)
+        sample_vec = self._encode_text(sample_text)
         shape = sample_vec.shape[1]
         return shape
 
