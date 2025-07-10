@@ -142,17 +142,17 @@ def load_prior_data(language_extension: str, language_dir: Path) -> RAGDataset:
 
     return RAGDataset(language_extension, chunks_by_file, files_by_path, index)
 
-def find_language_dirs(rag_dir: str | Path):
-    rag_dir = Path(rag_dir)
-    if not rag_dir.exists():
-        raise ValueError(f"{rag_dir=} does not exist")
-    if not rag_dir.is_dir():
-        raise ValueError(f"{rag_dir=} is not a directory")
+def find_language_dirs(dot_rag_dir: str | Path):
+    dot_rag_dir = Path(dot_rag_dir)
+    if not dot_rag_dir.exists():
+        raise ValueError(f"{dot_rag_dir=} does not exist")
+    if not dot_rag_dir.is_dir():
+        raise ValueError(f"{dot_rag_dir=} is not a directory")
 
-    return [p for p in Path(rag_dir).glob("*") if p.is_dir()]
+    return [p for p in Path(dot_rag_dir).glob("*") if p.is_dir()]
 
-def load_all_datasets(rag_dir: str | Path) -> Datasets:
-    dirs = find_language_dirs(rag_dir)
+def load_all_datasets(dot_rag_dir: str | Path) -> Datasets:
+    dirs = find_language_dirs(dot_rag_dir)
     datasets = {}
     for dir_path in dirs:
         language_extension = dir_path.name

@@ -33,8 +33,8 @@ class FilesDiff:
 
 class IncrementalRAGIndexer:
 
-    def __init__(self, rag_dir, source_code_dir):
-        self.rag_dir = Path(rag_dir)
+    def __init__(self, dot_rag_dir, source_code_dir):
+        self.dot_rag_dir = Path(dot_rag_dir)
         self.source_code_dir = Path(source_code_dir)
 
     def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
@@ -139,7 +139,7 @@ class IncrementalRAGIndexer:
         """Build or update the RAG index incrementally"""
         print(f"[bold]Building/updating {language_extension} RAG index:")
 
-        prior = load_prior_data(language_extension, self.rag_dir)
+        prior = load_prior_data(language_extension, self.dot_rag_dir)
 
         with Timer("Find current files"):
             paths = self.get_files_diff(language_extension, prior.stat_by_path)
@@ -187,7 +187,7 @@ class IncrementalRAGIndexer:
             return
 
         # Save everything
-        index_dir = self.rag_dir / language_extension
+        index_dir = self.dot_rag_dir / language_extension
         index_dir.mkdir(exist_ok=True, parents=True)
 
         with Timer("Save FAISS index"):
@@ -210,9 +210,9 @@ class IncrementalRAGIndexer:
         if paths.deleted:
             print(f"[green]Removed {len(paths.deleted)} deleted files")
 
-def trash_indexes(rag_dir, language_extension="lua"):
+def trash_indexes(dot_rag_dir, language_extension="lua"):
     """Remove index for a specific language"""
-    index_path = Path(rag_dir, language_extension)
+    index_path = Path(dot_rag_dir, language_extension)
     subprocess.run(["trash", index_path], check=IGNORE_FAILURE)
 
 def pretty_print(message, data):
@@ -233,10 +233,10 @@ if __name__ == "__main__":
         if not root_directory:
             print("[red]No Git repository found in current working directory, cannot build RAG index.")
             sys.exit(1)
-        rag_dir = root_directory / ".rag"
+        dot_rag_dir = root_directory / ".rag"
         source_code_dir = "."
-        print(f"[bold]RAG directory: {rag_dir}")
-        indexer = IncrementalRAGIndexer(rag_dir, source_code_dir)
+        print(f"[bold]RAG directory: {dot_rag_dir}")
+        indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir)
         indexer.build_index(language_extension="lua")
         indexer.build_index(language_extension="py")
         indexer.build_index(language_extension="fish")
