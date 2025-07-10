@@ -33,16 +33,16 @@ class FilesDiff:
 
 class IncrementalRAGIndexer:
 
-    def __init__(self, rag_dir, source_dir):
+    def __init__(self, rag_dir, source_code_dir):
         self.rag_dir = Path(rag_dir)
-        self.source_dir = Path(source_dir)
+        self.source_code_dir = Path(source_code_dir)
 
     def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Split files into: changed (added/updated), unchagned, deleted"""
 
         # * current files
         result = subprocess.run(
-            ["fd", f".*\\.{language_extension}$", str(self.source_dir), "--absolute-path", "--type", "f"],
+            ["fd", f".*\\.{language_extension}$", str(self.source_code_dir), "--absolute-path", "--type", "f"],
             stdout=subprocess.PIPE,
             text=True,
             check=True,
