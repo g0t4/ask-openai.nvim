@@ -75,7 +75,7 @@ def handle_query(message, top_k=3):
 def update_one_file_from_disk(doc: TextDocument):
     file_path = Path(doc.path)
 
-    # * read directly from disk
+    # * read directly from disk (update_one_file_from_disk)
     # PRN add a separate overload to read from disk if that is useful in another scenario
     # hash = get_file_hash(file_path)
     # new_chunks = build_file_chunks(file_path, lines_hash)
