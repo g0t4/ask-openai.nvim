@@ -12,42 +12,30 @@ logging.getLogger("pygls.protocol.language_server").setLevel(logging.WARN)  # se
 logging.getLogger("pygls.feature_manager").setLevel(logging.WARN)  # what features are registered/detected
 logging.getLogger("pygls.server").setLevel(logging.WARN)  # mostly Content length messages (headers IIAC)
 
+rich_handler = RichHandler(
+    markup=True,  # i.e. [bold], [red]
+    rich_tracebacks=True,
+    show_path=False,
+    show_time=False,
+)
+
+format = "%(asctime)s %(name)s: %(message)s"
+logging.basicConfig(
+    level="NOTSET",
+    format=format,
+    datefmt="[%X]",
+    handlers=[rich_handler],
+)
+
 def use_lang_server_logs():
     log_file_path = os.path.expanduser("~/.local/share/ask-openai/language.server.log")
     log_file = open(log_file_path, "w", encoding="utf-8")
     console = Console(file=log_file, force_terminal=True, width=150)
-    rich_handler = RichHandler(
-        markup=True,  # i.e. [bold], [red]
-        rich_tracebacks=True,
-        console=console,
-        show_path=False,
-        show_time=False,
-    )
-
-    format = "%(asctime)s %(name)s: %(message)s"
-    logging.basicConfig(
-        level="NOTSET",
-        format=format,
-        datefmt="[%X]",
-        handlers=[rich_handler],
-    )
+    rich_handler.console = console
 
 def use_console():
     console = Console()
-    rich_handler = RichHandler(
-        markup=True,  # i.e. [bold], [red]
-        rich_tracebacks=True,
-        console=console,
-        show_path=False,
-        show_time=False,
-    )
-    format = "%(asctime)s %(name)s: %(message)s"
-    logging.basicConfig(
-        level="NOTSET",
-        format=format,
-        datefmt="[%X]",
-        handlers=[rich_handler],
-    )
+    rich_handler.console = console
 
 class Logger(logging.Logger):
 

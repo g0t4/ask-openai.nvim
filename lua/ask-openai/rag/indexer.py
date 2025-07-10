@@ -13,10 +13,8 @@ from lsp.storage import FileStat, chunk_id_to_faiss_id, load_prior_data
 from lsp.build import build_file_chunks, get_file_stat
 from lsp.model import model_wrapper
 
-from lsp.logs import get_logger, use_console, use_lang_server_logs
+from lsp.logs import get_logger
 
-use_console()
-# use_lang_server_logs()
 logger = get_logger(__name__)
 
 #
