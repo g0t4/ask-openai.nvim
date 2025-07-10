@@ -107,11 +107,9 @@ class Datasets:
         logger.info(f"Updating {file_path_str}")
         logger.pp_info("prior_chunks", prior_chunks)
 
-        new_chunks: list[Chunk] = []
         new_faiss_ids: list[int] = []
         for file_chunks in updated_chunks_by_file.values():
             for chunk in file_chunks:
-                new_chunks.append(chunk)
                 new_faiss_ids.append(chunk.faiss_id())
 
         with logger.timer("Remove old vectors"):
