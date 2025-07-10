@@ -3,10 +3,10 @@ from pathlib import Path
 import signal
 
 import lsprotocol.types as types
-from pygls import uris
+from pygls import uris, workspace
 from pygls.server import LanguageServer
 
-from lsp import rag, imports
+from lsp import imports, rag
 
 from .logs import get_logger, use_lang_server_logs
 
@@ -84,7 +84,7 @@ def doc_changed(params: types.DidChangeTextDocumentParams):
 def completions(params: types.CompletionParams):
     # FYI this is just for initial testing, ok to nuke as I have no plans for completions support
     items = []
-    document = server.workspace.get_document(params.text_document.uri)
+    document: workspace.TextDocument = server.workspace.get_document(params.text_document.uri)
     current_line = document.lines[params.position.line].strip()
     # if current_line.endswith("hello."):
     items = [
