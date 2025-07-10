@@ -85,7 +85,15 @@ class Datasets:
         dataset = self.for_file(file_path_str)
         if dataset is None:
             logger.info(f"No dataset for path: {file_path_str}")
+            # TODO should I create it then (from scratch) as first file?
             return
+
+        if dataset.index is None:
+            logger.error(f"Dataset {dataset.language_extension} has no index")
+            # TODO should I be creating it in this case?
+            #    ADD TESTS FOR THIS
+            return
+        index = dataset.index
 
         # TODO pass or hardcode chunk_type?
         # TODO do I need to pass file_hash? IIAC I won't
@@ -117,9 +125,8 @@ class Datasets:
 
         with logger.timer("Remove prior vectors"):
 
-            keep_selector = faiss.IDSelectorArray(np.array(keep_ids, dtype="int64"))
-            not_keep_selector = faiss.IDSelectorNot(keep_selector)
-            index.remove_ids(not_keep_selector)
+            prior_selector = faiss.IDSelectorArray(np.array(prior_faiss_ids, dtype="int64"))
+            dataset.index.remove_ids(prior_selector)
 
         if new_chunks:
             logger.info(f"Adding {len(new_chunks)} new vectors for changed files")
