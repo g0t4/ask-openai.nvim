@@ -21,8 +21,20 @@ class ModelWrapper:
         with logger.timer(f"Load model {model_name}"):
             self.model = SentenceTransformer(model_name)
 
-    def encode_passage(self, text: str):
-        return self._encode_text(f"passage: {text}")
+    def encode_passages(self, passages: list[str], show_progress_bar=False):
+        texts = [f"passage: {p}" for p in passages]
+
+        # FYI can split out later, this is only usage of multi-encode
+        self.ensure_model_loaded()
+        return self.model.encode(
+            texts,
+            normalize_embeddings=True,
+            #
+            # FYI CANNOT DO THIS IN LS! ok in standalone indexer (hence make it explicit as arg)
+            show_progress_bar=show_progress_bar,
+            #
+            # device="cpu", # TODO should I set this or no?
+        ).astype("float32")
 
     def encode_query(self, text: str):
         # "query: text" is the training query format

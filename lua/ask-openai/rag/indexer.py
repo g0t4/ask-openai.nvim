@@ -120,12 +120,13 @@ class IncrementalRAGIndexer:
         if new_chunks:
             print(f"Adding {len(new_chunks)} new vectors for changed files")
 
-            texts = [f"passage: {chunk.text}" for chunk in new_chunks]
             print(f"{new_faiss_ids=}")
 
             with Timer("Encode new vectors"):
-                vecs = model_wrapper.encode(texts, normalize_embeddings=True, show_progress_bar=True)
+                passages = [chunk.text for chunk in new_chunks]
+                vecs = model_wrapper.encode_passages(passages, show_progress_bar=True)
 
+            # PRN move these np.array transforms into encode* funcs?
             vecs_np = np.array(vecs).astype("float32")
             faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
 
