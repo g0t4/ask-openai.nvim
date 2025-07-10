@@ -244,12 +244,18 @@ class TestBuildIndex(unittest.TestCase):
         assert ds != None
 
         self.assertEqual(len(ds.chunks_by_file), 2)
+        # * assert the list of chunks was updated for the file
         first_file_chunks = ds.chunks_by_file[str(self.tmp_source_code_dir / "numbers.lua")]
         second_file_chunks = ds.chunks_by_file[str(self.tmp_source_code_dir / "unchanged.lua")]
         self.assertEqual(len(first_file_chunks), 3)
         self.assertEqual(len(second_file_chunks), 2)
         #
+        # * assert vectors updated ...
+        # TODO!!! CHECK values?
         self.assertEqual(ds.index.ntotal, 5)
+        #
+        # * check global dict updated by faissid to new chunks
+        self.assertEqual(len(datasets._chunks_by_faiss_id), 5)
 
         #
         #
