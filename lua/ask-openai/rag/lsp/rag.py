@@ -98,6 +98,8 @@ def update_one_file_from_disk(file_path: str):
     logger.pp_info("prior_chunks", prior_chunks)
 
     # TODO! use server.workspace.get_document instead of reading file from disk?
+    #   FYI I don't think I need to worry about file stat(metadata)... i.e. mod time, if I am not writing index back to disk!
+    #    right now index on disk can be created by git commit or external process, and then I can just do updates for changes that aren't committed yet
     # document = server.workspace.get_document(params.text_document.uri)
     # current_line = document.lines[params.position.line].strip()
 
