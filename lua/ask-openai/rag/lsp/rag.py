@@ -83,20 +83,7 @@ def update_one_file_from_disk(file_path: str):
         logger.info(f"No dataset for path: {file_path}")
         return
 
-    if file_path not in dataset.chunks_by_file:
-        logger.info(f"No chunks for {file_path}")
-        # TODO BUILD NEW?
-        return
-
-    prior_chunks = dataset.chunks_by_file[file_path]
-    if not prior_chunks:
-        logger.info(f"Nothing to update for {file_path}")
-        # TODO BUILD NEW?
-        return
-
-    logger.info(f"Updating {file_path}")
-    logger.pp_info("prior_chunks", prior_chunks)
-
+    # * build new chunks
     # TODO! use server.workspace.get_document instead of reading file from disk?
     #   FYI I don't think I need to worry about file stat(metadata)... i.e. mod time, if I am not writing index back to disk!
     #    right now index on disk can be created by git commit or external process, and then I can just do updates for changes that aren't committed yet
@@ -106,6 +93,18 @@ def update_one_file_from_disk(file_path: str):
     hash = get_file_hash(file_path)
     new_chunks = build_file_chunks(file_path, hash)
     logger.pp_info("new_chunks", new_chunks)
+
+    # * find prior chunks (if any)
+    # TODO move all this logic into dataset or a helper in the build.py module
+    prior_chunks = None
+    if file_path in dataset.chunks_by_file:
+        prior_chunks = dataset.chunks_by_file[file_path]
+
+    if not prior_chunks:
+        logger.info(f"No prior_chunks")
+
+    logger.info(f"Updating {file_path}")
+    logger.pp_info("prior_chunks", prior_chunks)
 
     # TODO add something to Datasets/RAGDataset to have it handle the update
     #  infact should this function exist elsewhere at some point?
