@@ -125,9 +125,7 @@ class TestBuildIndex(unittest.TestCase):
         np.testing.assert_array_equal(indices, expected)
 
     def test_slow__update_index_removed_file(self):
-        # * clear rag_dir
         self.trash_path(self.dot_rag_dir)
-
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
         self.tmp_source_code_dir.mkdir(exist_ok=True, parents=True)
@@ -215,7 +213,6 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(index.ntotal, 4)
 
     def test_update_one_from_language_server(self):
-        # * clear rag_dir
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
