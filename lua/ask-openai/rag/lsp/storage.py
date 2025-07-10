@@ -138,7 +138,11 @@ class Datasets:
         with logger.timer("Add new_chunk vectors to index"):
             dataset.index.add_with_ids(vecs_np, faiss_ids_np)
 
-        # ***! TODO update cache by faiss ID
+        # * updates for cache in  _chunks_by_faiss_id
+        for prior_id in prior_faiss_ids:
+            del self._chunks_by_faiss_id[prior_id]
+        for new_chunk in new_chunks:
+            self._chunks_by_faiss_id[new_chunk.faiss_id()] = new_chunk
 
 def load_chunks(chunks_json_path: Path):
     with open(chunks_json_path, 'r') as f:
