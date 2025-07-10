@@ -85,9 +85,6 @@ class IncrementalRAGIndexer:
     ) -> faiss.Index:
         """Update FAISS index incrementally using IndexIDMap"""
 
-        # TODO! KEEP? MOVE? REMOVE?
-        model_wrapper.ensure_model_loaded()
-
         # Create base index if it doesn't exist
         if index is None:
             print("Creating new FAISS index")
