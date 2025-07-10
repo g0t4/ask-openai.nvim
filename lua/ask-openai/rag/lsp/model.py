@@ -38,7 +38,7 @@ class ModelWrapper:
             # FYI CANNOT DO THIS IN LS! ok in standalone indexer (hence make it explicit as arg)
             show_progress_bar=show_progress_bar,
             #
-            # device="cpu", # TODO should I set this or no?
+            # device="cpu", # PRN do some testing of perf differences, left alone it is selecting mps (per logs)
         ).astype("float32")
 
     def encode_query(self, text: str):
@@ -51,7 +51,7 @@ class ModelWrapper:
         return self.model.encode(
             [text],
             normalize_embeddings=True,
-            # device="cpu", # TODO should I set this or no?
+            # device="cpu",
         ).astype("float32")
 
     def get_shape(self) -> None:
