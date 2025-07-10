@@ -107,6 +107,45 @@ class Datasets:
         logger.info(f"Updating {file_path_str}")
         logger.pp_info("prior_chunks", prior_chunks)
 
+        new_chunks: list[Chunk] = []
+        new_faiss_ids: list[int] = []
+        for file_chunks in updated_chunks_by_file.values():
+            for chunk in file_chunks:
+                new_chunks.append(chunk)
+                new_faiss_ids.append(chunk.faiss_id())
+
+        with logger.timer("Remove old vectors"):
+            # TODO need to pass holdovers too
+            keep_ids = new_faiss_ids.copy()
+            for _, file_chunks in unchanged_chunks_by_file.items():
+                for chunk in file_chunks:
+                    keep_ids.append(chunk.faiss_id())
+
+            logger.pp_info("keep_ids", keep_ids)
+
+            keep_selector = faiss.IDSelectorArray(np.array(keep_ids, dtype="int64"))
+            not_keep_selector = faiss.IDSelectorNot(keep_selector)
+            index.remove_ids(not_keep_selector)
+
+        if new_chunks:
+            logger.info(f"Adding {len(new_chunks)} new vectors for changed files")
+
+            logger.info(f"{new_faiss_ids=}")
+
+            with logger.timer("Encode new vectors"):
+                passages = [chunk.text for chunk in new_chunks]
+                vecs = model_wrapper.encode_passages(passages, show_progress_bar=True)
+
+            # PRN move these np.array transforms into encode* funcs?
+            #  TODO IIRC  model.encode has a numpy param for this purpose!
+            vecs_np = np.array(vecs).astype("float32")
+            faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
+
+            with logger.timer("Add new vectors to index"):
+                index.add_with_ids(vecs_np, faiss_ids_np)
+
+        return index
+
         # dataset.chunks_by_file[path] = new_chunks
 
 def load_chunks(chunks_json_path: Path):
