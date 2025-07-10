@@ -15,9 +15,9 @@ from lsp.model import model_wrapper
 
 from lsp.logs import get_logger, use_console, use_lang_server_logs
 
-logger = get_logger(__name__)
-# use_lang_server_logs()
 use_console()
+# use_lang_server_logs()
+logger = get_logger(__name__)
 
 #
 # constants for subprocess.run for readability
