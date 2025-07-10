@@ -241,9 +241,10 @@ class TestBuildIndex(unittest.TestCase):
         # * check counts
         datasets = rag.datasets
         ds = datasets.for_file(target_file_path)
-        self.assertIsNotNone(ds)
+        assert ds != None
         #
-        # self.assertEqual(len(files), 2)
+        self.assertEqual(len(ds.chunks_by_file), 2)
+
         # #
         # self.assertEqual(len(chunks_by_file), 2)  # 2 files
         # first_file_chunks = chunks_by_file[str(self.tmp_source_code_dir / "numbers.lua")]
