@@ -75,6 +75,35 @@ class Datasets:
         language_extension = Path(file_path).suffix.removeprefix('.')
         return self.all_datasets.get(language_extension)
 
+    # def _delete_file(self, file_path: str | Path):
+    #     # TODO! with update_file
+    #     pass
+
+    def update_file(self, file_path: str | Path, file_hash: str, new_chunks: List[Chunk]):
+        # TODO pass or hardcode chunk_type?
+        # TODO do I need to pass file_hash? IIAC I won't
+        # FYI first pass is ONLY to get this to work for LS client...
+        #    FYI NOT to prepare to port indexer to use this!
+        #    make this specific to just the use case of LS update_file
+        #    that means no need for stat (stat only used by indexer to see what changed between its bulk updates)
+        # TODO call self._delete_file?
+
+        # * find prior chunks (if any)
+        # TODO move all this logic into dataset or a helper in the build.py module
+        prior_chunks = None
+        if file_path in dataset.chunks_by_file:
+            prior_chunks = dataset.chunks_by_file[file_path]
+
+        if not prior_chunks:
+            logger.info(f"No prior_chunks")
+
+        logger.info(f"Updating {file_path}")
+        logger.pp_info("prior_chunks", prior_chunks)
+
+        # TODO add something to Datasets/RAGDataset to have it handle the update
+        #  infact should this function exist elsewhere at some point?
+        # dataset.chunks_by_file[path] = new_chunks
+
 def load_chunks(chunks_json_path: Path):
     with open(chunks_json_path, 'r') as f:
         chunks_by_file = {k: [Chunk(**v) for v in v] for k, v in json.load(f).items()}

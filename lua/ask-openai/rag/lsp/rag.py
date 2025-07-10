@@ -88,22 +88,8 @@ def update_one_file_from_disk(file_path: str):
     # document = server.workspace.get_document(params.text_document.uri)
     # current_line = document.lines[params.position.line].strip()
 
-    hash = get_file_hash(file_path)
-    new_chunks = build_file_chunks(file_path, hash)
+    file_hash = get_file_hash(file_path)
+    new_chunks = build_file_chunks(file_path, file_hash)
     logger.pp_info("new_chunks", new_chunks)
 
-    # * find prior chunks (if any)
-    # TODO move all this logic into dataset or a helper in the build.py module
-    prior_chunks = None
-    if file_path in dataset.chunks_by_file:
-        prior_chunks = dataset.chunks_by_file[file_path]
-
-    if not prior_chunks:
-        logger.info(f"No prior_chunks")
-
-    logger.info(f"Updating {file_path}")
-    logger.pp_info("prior_chunks", prior_chunks)
-
-    # TODO add something to Datasets/RAGDataset to have it handle the update
-    #  infact should this function exist elsewhere at some point?
-    # dataset.chunks_by_file[path] = new_chunks
+    dataset.update_file(file_path, file_hash, new_chunks)
