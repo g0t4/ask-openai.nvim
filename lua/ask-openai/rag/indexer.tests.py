@@ -242,17 +242,14 @@ class TestBuildIndex(unittest.TestCase):
         datasets = rag.datasets
         ds = datasets.for_file(target_file_path)
         assert ds != None
-        #
-        self.assertEqual(len(ds.chunks_by_file), 2)
 
-        # #
-        # self.assertEqual(len(chunks_by_file), 2)  # 2 files
-        # first_file_chunks = chunks_by_file[str(self.tmp_source_code_dir / "numbers.lua")]
-        # second_file_chunks = chunks_by_file[str(self.tmp_source_code_dir / "unchanged.lua")]
-        # self.assertEqual(len(first_file_chunks), 3)
-        # self.assertEqual(len(second_file_chunks), 2)
-        # #
-        # self.assertEqual(index.ntotal, 5)
+        self.assertEqual(len(ds.chunks_by_file), 2)
+        first_file_chunks = ds.chunks_by_file[str(self.tmp_source_code_dir / "numbers.lua")]
+        second_file_chunks = ds.chunks_by_file[str(self.tmp_source_code_dir / "unchanged.lua")]
+        self.assertEqual(len(first_file_chunks), 3)
+        self.assertEqual(len(second_file_chunks), 2)
+        #
+        self.assertEqual(ds.index.ntotal, 5)
 
         #
         #
