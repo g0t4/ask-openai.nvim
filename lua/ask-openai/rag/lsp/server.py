@@ -6,7 +6,7 @@ import lsprotocol.types as types
 from pygls import uris, workspace
 from pygls.server import LanguageServer
 
-from lsp import imports, rag
+from lsp import imports, rag, ignores
 from .logs import get_logger, use_lang_server_logs
 
 # BTW, cd to `rag` dir and => `python3 -m lsp.server` to test this w/o nvim, make sure it starts up at least
@@ -34,6 +34,8 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
 
     dot_rag_dir = Path(root_path) / ".rag"
     logger.info(f"{dot_rag_dir=}")
+
+    ignores.use_pygls_workspace(root_path)
 
 @server.feature(types.INITIALIZED)
 def on_initialized(_: LanguageServer, _params: types.InitializedParams):

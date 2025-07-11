@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+# * -s == show print() output on success too
+# -s == --capture=no
+ptw lsp/ignores_tests.py lsp/ignores.py  -- -s
+# ptw lsp/ignores_tests.py -- -o log_cli=true -s
