@@ -89,6 +89,6 @@ def update_file_from_pygls_doc(doc: TextDocument):
     lines_hash = get_file_hash_from_lines(doc.lines)
     new_chunks = build_from_lines(file_path, lines_hash, doc.lines)
 
-    logger.pp_info("new_chunks", new_chunks)
+    # logger.pp_info("new_chunks", new_chunks)
 
     datasets.update_file(file_path, new_chunks)

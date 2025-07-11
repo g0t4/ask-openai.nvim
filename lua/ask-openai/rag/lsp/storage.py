@@ -115,12 +115,12 @@ class Datasets:
             logger.info(f"No prior_chunks")
             prior_chunks = []
 
-        logger.info(f"Updating {file_path_str}")
-        logger.pp_info("prior_chunks", prior_chunks)
+        # logger.info(f"Updating {file_path_str}")
+        # logger.pp_info("prior_chunks", prior_chunks)
 
         # * FAISS UPDATES:
         new_faiss_ids = [c.faiss_id for c in new_chunks]
-        logger.pp_info("new_faiss_ids", new_faiss_ids)
+        # logger.pp_info("new_faiss_ids", new_faiss_ids)
         prior_faiss_ids = [c.faiss_id for c in prior_chunks]
         logger.pp_info("prior_faiss_ids", prior_faiss_ids)
 

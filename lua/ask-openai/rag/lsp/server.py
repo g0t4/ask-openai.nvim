@@ -81,7 +81,7 @@ def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
 # UNREGISTER WHILE NOT USING:
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 def doc_opened(params: types.DidOpenTextDocumentParams):
-    logger.pp_info("didOpen", params)
+    # logger.pp_info("didOpen", params)
 
     # imports.on_open(params) # WIP
 
