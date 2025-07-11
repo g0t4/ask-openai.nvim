@@ -7,13 +7,11 @@ local messages = require("devtools.messages")
 
 local M = {}
 
-M.trace_enabled = false
-function M.toggle_trace_context()
-    M.trace_enabled = not M.trace_enabled
-end
+M.tracing = false
 
 local function dump_yank_event()
-    if not M.trace_enabled then
+    -- in the case of yanks, knowing when a new yank happens gives a good trace, else I can dump full list anytime too
+    if not M.tracing then
         return
     end
 

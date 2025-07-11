@@ -6,6 +6,7 @@ local git_diff = require("ask-openai.prediction.context.git_diff")
 local matching_ctags = require("ask-openai.prediction.context.matching_ctags")
 local prompts = require("ask-openai.prediction.context.prompts")
 local project = require("ask-openai.prediction.context.project")
+local messages = require("devtools.messages")
 
 ---@alias IncludeToggles {
 ---  yanks: boolean,
@@ -62,12 +63,26 @@ function CurrentContext:items(prompt, always_include)
 end
 
 function CurrentContext.toggle_trace_context(prompt)
-    yanks.toggle_trace_context()
+    CurrentContext.tracing = not CurrentContext.tracing
+
+    yanks.tracing = CurrentContext.tracing
+    git_diff.tracing = CurrentContext.tracing
+    ctags.tracing = CurrentContext.tracing
+    matching_ctags.tracing = CurrentContext.tracing
+    project.tracing = CurrentContext.tracing
+    -- PRN others
+
+    if CurrentContext.tracing then
+        messages.ensure_open()
+    else
+        messages.ensure_closed()
+    end
 end
 
 function CurrentContext.setup()
     yanks.setup()
     git_diff.setup()
+    -- TODO git outstanding changes == edits! let LS handle that? then encode and query it too?
     ctags.setup()
     matching_ctags.setup()
     project.setup()

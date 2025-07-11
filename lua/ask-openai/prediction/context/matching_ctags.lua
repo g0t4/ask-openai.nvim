@@ -78,7 +78,14 @@ function M.get_context_item_for(word, language)
     end
 
     local reassembled_content = ctags.reassemble_tags(matches, file_name_transformer)
-    return ContextItem:new(reassembled_content, "tags")
+    local result = ContextItem:new(reassembled_content, "tags")
+
+    if M.tracing then
+        messages.header("Matching Ctags")
+        messages.append(result.content)
+    end
+
+    return result
 end
 
 function M.dump_this()
