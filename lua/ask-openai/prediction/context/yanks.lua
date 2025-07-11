@@ -37,12 +37,12 @@ function M.on_yank()
     -- dump_yank_event()
     -- ignore if empty
     event = vim.v.event
-    name_of_current_file = vim.fn.expand('%')
+    current_file_relative_to_workspace_root = vim.fn.expand('%')
 
     vim.schedule(function()
         messages.ensure_open()
         messages.header("Yanking")
-        messages.append(name_of_current_file)
+        messages.append(current_file_relative_to_workspace_root)
         messages.append(vim.inspect(event))
     end)
 
@@ -56,7 +56,7 @@ function M.on_yank()
     end
     local yank = {
         -- PRN can I capture line range? or even just current line ... would it help to track operation too (delete vs yank) and pass that along?
-        file = name_of_current_file,
+        file = current_file_relative_to_workspace_root,
         content = vim.v.event.regcontents
     }
     table.insert(M.yanks, yank)
