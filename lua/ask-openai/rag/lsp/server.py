@@ -55,7 +55,7 @@ def update_rag_for_text_doc(doc_uri: str):
     if doc_path == None:
         logger.warning(f"abort update rag... to_fs_path returned {doc_path=}")
         return
-    if ignores.is_ignored(doc_path):
+    if ignores.is_ignored(doc_path, server):
         logger.info(f"rag ignored doc: {doc_path=}")
         return
 

@@ -1,8 +1,9 @@
 from pathlib import Path
 
+from lsprotocol.types import MessageType
 from pathspec import PathSpec
 from pathspec.patterns.gitwildmatch import GitWildMatchPattern
-from rich import print
+from pygls.server import LanguageServer
 
 from lsp.logs import get_logger
 
@@ -40,15 +41,24 @@ def use_gitignore(root_path: Path | str) -> PathSpec:
 
 warned_missing_spec = False
 
-def is_ignored(file_path: str | Path):
+def warn_client(server: LanguageServer | None = None):
+    global warned_missing_spec
+
+    if server is None:
+        return
+
+    if warned_missing_spec:
+        return
+
+    server.show_message("Warning: No gitignore spec setup, allowing all files!", MessageType.Warning)
+    logger.warning("No gitignore spec setup, allowing all files!")
+    warned_missing_spec = True
+
+def is_ignored(file_path: str | Path, server: LanguageServer | None = None):
     file_path = Path(file_path)
-    global warned_missing_spec  # FYI put globals at top to make it clear they apply to entire code block / scope
 
     if spec is None or root_path is None:
-        if not warned_missing_spec:
-            # TODO send custom notification workspace/configIssue or otherwise, setup client to alert user
-            logger.error("No gitignore spec setup, allowing all files!")
-            warned_missing_spec = True
+        warn_client(server)
         return False
 
     if not file_path.is_relative_to(root_path):
