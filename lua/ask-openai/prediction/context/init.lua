@@ -7,6 +7,7 @@ local matching_ctags = require("ask-openai.prediction.context.matching_ctags")
 local prompts = require("ask-openai.prediction.context.prompts")
 local project = require("ask-openai.prediction.context.project")
 local messages = require("devtools.messages")
+local cmds = require("ask-openai.prediction.context.cmds")
 
 ---@alias IncludeToggles {
 ---  yanks: boolean,
