@@ -62,7 +62,7 @@ def handle_query(message, top_k=3):
             continue
         logger.info(f"matched {chunk.file}:L{chunk.start_line}-{chunk.end_line}")
 
-        matches.append({
+        match = {
             "score": float(scores[0][rank]),
             "text": chunk.text,
             "file": chunk.file,
@@ -70,7 +70,10 @@ def handle_query(message, top_k=3):
             "end_line": chunk.end_line,
             "type": chunk.type,
             "rank": rank + 1,
-        })
+        }
+
+        matches.append(match)
+
     if len(matches) == 0:
         # warn if this happens, that all were basically the same doc
         logger.warning(f"No matches found for {current_file_abs=}")
