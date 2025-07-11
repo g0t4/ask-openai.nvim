@@ -67,13 +67,18 @@ def handle_query(message, top_k=3):
         logger.info(f"matched {chunk.file}:L{chunk.start_line}-{chunk.end_line}")
 
         @dataclass
-        class ContextChunk:
-            score: float
+        class BaseContextChunk:
             text: str
             file: str
             start_line: int
             end_line: int
             type: str
+            score: float
+            rank: int
+
+        @dataclass
+        class ContextChunk(BaseContextChunk):
+            score: float
             rank: int
 
         match = ContextChunk(
