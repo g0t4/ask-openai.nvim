@@ -135,7 +135,7 @@ class Datasets:
 
         with logger.timer("Encode new vectors"):
             passages = [chunk.text for chunk in new_chunks]
-            vecs = model_wrapper.encode_passages(passages, show_progress_bar=True)
+            vecs = model_wrapper.encode_passages(passages, show_progress_bar=False)
 
         vecs_np = np.array(vecs).astype("float32")
         faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
