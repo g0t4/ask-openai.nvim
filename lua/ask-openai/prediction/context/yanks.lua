@@ -8,10 +8,18 @@ local messages = require("devtools.messages")
 local M = {}
 
 local function dump_yank_event()
-    log:info("yanked: " .. vim.inspect(vim.v.event))
+    local event = vim.v.event
+
+    vim.schedule(function()
+        messages.ensure_open()
+        messages.header("Yanking")
+        messages.append(current_file_relative_to_workspace_root)
+        messages.append(vim.inspect(event))
+    end)
+
     -- yanked: {
-    --   inclusive = false,
-    --   operator = "y",
+    --   inclusive = false, -- use this w/ marks '[ and ]' to find precise location
+    --   operator = "y", -- 'd', 'c',
     --   regcontents = { '    print("yanked: " .. vim.inspect(vim.v.event))' },
     --   regname = "",
     --   regtype = "V",
@@ -27,37 +35,42 @@ function M.dump_yanks()
     end
     log:info("yanks:\n" .. yanks.content)
     messages.ensure_open()
-    messages.header("Recent Yanks")
+    messages.header("Yanks: " .. #M.yanks .. " items")
     messages.append(yanks.content)
 end
 
 local MAX_YANKS = 10
 M.yanks = {}
 function M.on_yank()
-    -- dump_yank_event()
     -- ignore if empty
-    event = vim.v.event
     current_file_relative_to_workspace_root = vim.fn.expand('%')
-
-    vim.schedule(function()
-        messages.ensure_open()
-        messages.header("Yanking")
-        messages.append(current_file_relative_to_workspace_root)
-        messages.append(vim.inspect(event))
-    end)
 
     if vim.v.event.regcontents == nil or #vim.v.event.regcontents == 0 then
         -- TODO what does 0 mean for regcontents?
         -- ignore empty yanks
         return
     end
+    if vim.v.event.operator ~= "y" then
+        -- "d", "c" for delete/change
+        -- PRN do I wanna ignore the others too?
+        --  I might want "d" for delete?
+        --   or "big" deletes? big changes?
+        -- alternative might be to only accept large yanks, not small word replaces or what not
+        -- ignore anything other than EXPLICIT yank
+        return
+    end
+
+    dump_yank_event()
+
     if #M.yanks >= MAX_YANKS then
         table.remove(M.yanks, 1)
     end
     local yank = {
         -- PRN can I capture line range? or even just current line ... would it help to track operation too (delete vs yank) and pass that along?
         file = current_file_relative_to_workspace_root,
-        content = vim.v.event.regcontents
+        content = vim.v.event.regcontents,
+        operator = vim.v.event.operator,
+
     }
     table.insert(M.yanks, yank)
 end
