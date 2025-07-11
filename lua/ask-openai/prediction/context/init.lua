@@ -61,6 +61,10 @@ function CurrentContext:items(prompt, always_include)
     return items
 end
 
+function CurrentContext.toggle_trace_context(prompt)
+    yanks.toggle_trace_context()
+end
+
 function CurrentContext.setup()
     yanks.setup()
     git_diff.setup()
@@ -69,6 +73,7 @@ function CurrentContext.setup()
     project.setup()
     -- changelists.setup()
     -- cocs.setup()
+    vim.api.nvim_create_user_command("AskDumpTraceContext", CurrentContext.toggle_trace_context, {})
 end
 
 return CurrentContext

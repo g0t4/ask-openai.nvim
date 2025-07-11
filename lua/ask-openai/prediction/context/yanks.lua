@@ -7,7 +7,16 @@ local messages = require("devtools.messages")
 
 local M = {}
 
+M.trace_enabled = false
+function M.toggle_trace_context()
+    M.trace_enabled = not M.trace_enabled
+end
+
 local function dump_yank_event()
+    if not M.trace_enabled then
+        return
+    end
+
     local event = vim.v.event
 
     vim.schedule(function()
