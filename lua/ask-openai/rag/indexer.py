@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import logging
 from pathlib import Path
 import subprocess
 import sys
@@ -220,9 +221,9 @@ if __name__ == "__main__":
     from lsp.logs import use_console
 
     verbose = "--verbose" in sys.argv
-    if verbose:
-        use_console()
-        # FYI won't log w/o this call, not from logging fwk
+    level = logging.DEBUG if verbose else logging.WARN
+    use_console(level)
+    # FYI won't log w/o this call, not from logging fwk
 
     with logger.timer("Total indexing time"):
         # yup, can turn this into a command that uses git repo of CWD

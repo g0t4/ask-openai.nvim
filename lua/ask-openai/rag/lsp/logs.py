@@ -60,9 +60,9 @@ def use_lang_server_logs(level):
 
     setup_logging(console, level)
 
-def use_console():
+def use_console(level):
     console = Console()
-    setup_logging(console)
+    setup_logging(console, level)
 
 class Logger(logging.Logger):
 

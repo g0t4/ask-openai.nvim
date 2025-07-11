@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 import subprocess
 import unittest
@@ -10,7 +11,7 @@ from rich import print
 from indexer import IncrementalRAGIndexer
 from lsp.logs import use_console
 
-use_console()
+use_console(logging.WARN)
 
 class TestBuildIndex(unittest.TestCase):
 
