@@ -61,10 +61,6 @@ def update_rag_for_text_doc(doc_uri: str):
     if doc is None:
         logger.error(f"abort... doc not found {doc_uri}")
         return
-    # logger.info(f'{doc.filename=}')
-    # logger.info(f'{doc.path=}')
-    # logger.info(f'{doc.language_id=}')
-    # logger.info(f'{doc.uri=}')
     rag.update_file_from_pygls_doc(doc)
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
@@ -82,7 +78,7 @@ def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
 # UNREGISTER WHILE NOT USING:
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 def doc_opened(params: types.DidOpenTextDocumentParams):
-    # logger.pp_info("didOpen", params)
+    logger.pp_debug("didOpen", params)
 
     # imports.on_open(params) # WIP
 

@@ -72,6 +72,9 @@ class Logger(logging.Logger):
     def pp_info(self, message, obj):
         self.info(f"{message}: %s", self.pp(obj))
 
+    def pp_debug(self, message, obj):
+        self.debug(f"{message}: %s", self.pp(obj))
+
     def timer(self, finished_message=""):
         return LogTimer(finished_message, logger=self)
 
