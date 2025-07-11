@@ -33,7 +33,7 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
         raise ValueError("root_uri is None")
 
     dot_rag_dir = Path(root_path) / ".rag"
-    logger.info(f"{dot_rag_dir=}")
+    logger.debug(f"{dot_rag_dir=}")
 
     ignores.use_pygls_workspace(root_path)
 
