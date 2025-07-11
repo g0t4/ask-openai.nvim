@@ -26,9 +26,9 @@ function M.dump_yanks()
         return
     end
     log:info("yanks:\n" .. yanks.content)
-    messages:ensure_open()
-    messages:header("Recent Yanks")
-    messages:append(yanks.content)
+    messages.ensure_open()
+    messages.header("Recent Yanks")
+    messages.append(yanks.content)
 end
 
 local MAX_YANKS = 10
@@ -36,6 +36,16 @@ M.yanks = {}
 function M.on_yank()
     -- dump_yank_event()
     -- ignore if empty
+    event = vim.v.event
+    name_of_current_file = vim.fn.expand('%')
+
+    vim.schedule(function()
+        messages.ensure_open()
+        messages.header("Yanking")
+        messages.append(name_of_current_file)
+        messages.append(vim.inspect(event))
+    end)
+
     if vim.v.event.regcontents == nil or #vim.v.event.regcontents == 0 then
         -- TODO what does 0 mean for regcontents?
         -- ignore empty yanks
@@ -44,7 +54,12 @@ function M.on_yank()
     if #M.yanks >= MAX_YANKS then
         table.remove(M.yanks, 1)
     end
-    table.insert(M.yanks, vim.v.event.regcontents)
+    local yank = {
+        -- PRN can I capture line range? or even just current line ... would it help to track operation too (delete vs yank) and pass that along?
+        file = name_of_current_file,
+        content = vim.v.event.regcontents
+    }
+    table.insert(M.yanks, yank)
 end
 
 --- @return ContextItem?
@@ -56,7 +71,10 @@ function M.get_context_item()
     -- PRN should yanks be grouped by file or otherwise?
     local content = "## Recent yanks across all files in the project:\n"
     for _, yank in ipairs(M.yanks) do
-        content = content .. table.concat(yank, '\n') .. '\n\n'
+        -- TODO! pass back chunk objects and let fim builder do this
+        content = content ..
+            ".. yanked from " .. yank.file .. ":\n" ..
+            table.concat(yank.content, '\n') .. '\n\n'
     end
     return ContextItem:new(content, "nvim-recent-yanks.txt")
 end
