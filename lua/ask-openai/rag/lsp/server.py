@@ -36,9 +36,13 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
     if not dot_rag_dir.exists():
         # TODO allow building the index from scratch?
         logger.info(f"STOP on_initialize b/c no {dot_rag_dir=}")
+        # DO NOT notify yet, that has to come after server responds to initialize request
         return types.InitializeResult(capabilities=types.ServerCapabilities())
 
     ignores.use_pygls_workspace(root_path)
+
+def tell_client_to_shut_that_shit_down_now():
+    server.send_notification("fuu/no_dot_rag__do_the_right_thing_wink")
 
 @server.feature(types.INITIALIZED)
 def on_initialized(_: LanguageServer, _params: types.InitializedParams):
@@ -54,7 +58,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     if not dot_rag_dir.exists():
         # TODO allow building the index from scratch?
         logger.error(f"STOP on_initialized b/c no {dot_rag_dir=}")
-        server.show_message_log("you do not have a .rag directory, there's nothing the ask LS can do at this time")
+        tell_client_to_shut_that_shit_down_now()
         return
 
     rag.load_model_and_indexes(dot_rag_dir)
