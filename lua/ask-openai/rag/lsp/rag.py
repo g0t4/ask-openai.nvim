@@ -73,8 +73,6 @@ def handle_query(message, top_k=3):
             start_line: int
             end_line: int
             type: str
-            score: float
-            rank: int
 
         @dataclass
         class ContextChunk(BaseContextChunk):
@@ -82,12 +80,12 @@ def handle_query(message, top_k=3):
             rank: int
 
         match = ContextChunk(
-            score=float(scores[0][rank]),
             text=chunk.text,
             file=chunk.file,
             start_line=chunk.start_line,
             end_line=chunk.end_line,
             type=chunk.type,
+            score=float(scores[0][rank]),
             rank=rank + 1,
         )
 
