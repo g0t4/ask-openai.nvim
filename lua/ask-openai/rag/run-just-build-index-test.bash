@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-python3 indexer.tests.py TestBuildIndex.test_building_rag_index_from_scratch
+python3 indexer_tests.py TestBuildIndex.test_building_rag_index_from_scratch

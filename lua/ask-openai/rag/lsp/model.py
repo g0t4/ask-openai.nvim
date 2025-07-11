@@ -16,7 +16,7 @@ class ModelWrapper:
     model: SentenceTransformer
 
     # FYI there is a test case to validate encoding:
-    #   python3 indexer.tests.py  TestBuildIndex.test_encode_and_search_index
+    #   python3 indexer_tests.py  TestBuildIndex.test_encode_and_search_index
 
     def ensure_model_loaded(self):
         if hasattr(self, "model"):
