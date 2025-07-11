@@ -122,7 +122,12 @@ class Datasets:
         new_faiss_ids = [c.faiss_id for c in new_chunks]
         # logger.pp_info("new_faiss_ids", new_faiss_ids)
         prior_faiss_ids = [c.faiss_id for c in prior_chunks]
-        logger.pp_info("prior_faiss_ids", prior_faiss_ids)
+        # logger.pp_info("prior_faiss_ids", prior_faiss_ids)
+
+        # * YES! if chunks match, skip encoding which is most expensive part!
+        if prior_faiss_ids == new_faiss_ids:
+            logger.info(f"prior_chunks match new_chunks, SKIP re-encoding!")
+            return
 
         with logger.timer("Remove prior vectors"):
             prior_selector = faiss.IDSelectorArray(np.array(prior_faiss_ids, dtype="int64"))
