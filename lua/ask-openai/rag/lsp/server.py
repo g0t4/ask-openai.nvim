@@ -7,7 +7,6 @@ from pygls import uris, workspace
 from pygls.server import LanguageServer
 
 from lsp import imports, rag
-
 from .logs import get_logger, use_lang_server_logs
 
 # BTW, cd to `rag` dir and => `python3 -m lsp.server` to test this w/o nvim, make sure it starts up at least
@@ -21,17 +20,20 @@ server = LanguageServer("ask_language_server", "v0.1")
 @server.feature(types.INITIALIZE)
 def on_initialize(_: LanguageServer, params: types.InitializeParams):
     global dot_rag_dir
-    root_uri = params.root_uri  # ., root_uri='file:///Users/wesdemos/repos/github/g0t4/ask-openai.nvim'
-    if root_uri is None:
-        logger.error(f"aborting on_initialize b/c missing client workspace root_uri {root_uri}")
+
+    # # PRN use workspace folders if multi-workspace ...
+    # #   not sure I'll use this but never know
+    # logger.info(f"{params.workspace_folders=}")
+    # server.workspace.folders
+
+    root_path = params.root_path  # ., root_uri='file:///Users/wesdemos/repos/github/g0t4/ask-openai.nvim'
+    logger.info(f"workspace {root_path=}")
+    if root_path is None:
+        logger.error(f"aborting on_initialize b/c missing client workspace root_uri {root_path}")
         raise ValueError("root_uri is None")
-    logger.info(f"root_uri {root_uri}")
-    fs_path = uris.to_fs_path(root_uri)
-    if fs_path is None:
-        logger.error(f"aborting on_initialize b/c missing client workspace fspath {fs_path}")
-        raise ValueError("fspath is None")
-    dot_rag_dir = Path(fs_path) / ".rag"
-    logger.info(f"fspath {dot_rag_dir}")
+
+    dot_rag_dir = Path(root_path) / ".rag"
+    logger.info(f"{dot_rag_dir=}")
 
 @server.feature(types.INITIALIZED)
 def on_initialized(_: LanguageServer, _params: types.InitializedParams):
