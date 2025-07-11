@@ -31,7 +31,15 @@ function Logger:ensure_file_is_open()
             error("Failed to open log file: " .. path)
         end
 
+        -- this isn't as reliable as you might think plus doesn't fix scrollback in iTerm so NO for now :)
+        --  also makes it hard to cat the file!
         -- write header/blank lines so anyone tailing the file sees a separator
+        local clear_for_tailers = "\27[2J\27[H"
+        self.file:write(clear_for_tailers)
+        self.file:flush()
+
+        -- FYI this is only called on FIRST LOG... not on reboot unless reboot has a log call
+        --  so it will reset after the first log is written which is fine, just keep in mind
         local header = "\n\n\n============================= NEW NVIM INSTANCE ===========================================\n\n\n"
         self.file:write(header)
     end
@@ -55,6 +63,7 @@ local function log_level_string(level)
 
     return lookup[level]
 end
+
 
 local function build_entry(level, ...)
     -- CAREFUL with how you use arg table, it's fine to do but it messes up sequential tables (arg is a table)...
