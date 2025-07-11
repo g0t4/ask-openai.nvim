@@ -12,7 +12,7 @@ logging.getLogger("pygls.protocol.language_server").setLevel(logging.WARN)  # se
 logging.getLogger("pygls.feature_manager").setLevel(logging.WARN)  # what features are registered/detected
 logging.getLogger("pygls.server").setLevel(logging.WARN)  # mostly Content length messages (headers IIAC)
 
-def setup_logging(console: Console, level="INFO"):
+def setup_logging(console: Console, level=logging.WARN):
     rich_handler = RichHandler(
         markup=True,  # i.e. [bold], [red]
         rich_tracebacks=True,

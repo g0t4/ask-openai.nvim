@@ -14,7 +14,7 @@ from .logs import get_logger, use_lang_server_logs
 # logger_name = __name__ if __name__ != "__main__" else "lsp-server" # PRN don't use __main__?
 import logging
 
-use_lang_server_logs(logging.DEBUG)
+use_lang_server_logs(logging.WARN)
 logger = get_logger(__name__)
 
 server = LanguageServer("ask_language_server", "v0.1")
