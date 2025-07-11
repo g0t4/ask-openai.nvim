@@ -38,6 +38,11 @@ class IncrementalRAGIndexer:
     def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Split files into: changed (added/updated), unchagned, deleted"""
 
+        # PRN add in gitignore detection, right now I am using fd so I s/b mostly fine, still might want explicit checks here too
+        #   use whatever I come up with from LS's text document events to filter... i.e. files in a .venv that I open (F12)
+        #    though that again isn't an issue for this part of indexing
+        # PRN add .ask.config or similar w/ ignore section to block things like manual_prompting folder! in ask-openai repo!
+
         # * current files
         result = subprocess.run(
             ["fd", f".*\\.{language_extension}$", str(self.source_code_dir), "--absolute-path", "--type", "f"],
