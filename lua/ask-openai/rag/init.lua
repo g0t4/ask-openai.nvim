@@ -39,7 +39,9 @@ function M.setup()
                     messages.append("client handler fuu/no_dot_rag__do_the_right_thing_wink")
                     messages.append(vim.inspect(result))
                     -- ask server to shutdown, so I don't ask for more stuff it cannot do!
-                    vim.lsp.stop_client(client)
+                    -- WHY THE F does this not request SHUTDOWN!?
+                    -- vim.lsp.stop_client(client)
+                    -- vim.lsp.stop_client(client)
                 end,
 
 

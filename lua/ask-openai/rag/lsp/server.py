@@ -139,6 +139,18 @@ def rag_query(_: LanguageServer, params: types.ExecuteCommandParams):
     message = params[0]
     return rag.handle_query(message)
 
+# how can I intercept shutdown from client?
+#
+# @server.feature(types.SHUTDOWN)
+# def on_shutdown(_: LanguageServer):
+#     logger.info(f"shutting down")
+#     # os._exit(0)
+#
+# @server.feature(types.EXIT)
+# def on_exit(_: LanguageServer):
+#     logger.info(f"exiting")
+#     # os._exit(0)
+
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):
     print("SIGKILL myself")
     os.kill(os.getpid(), signal.SIGKILL)
