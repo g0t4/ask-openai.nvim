@@ -74,7 +74,7 @@ function M.get_context_item_for(word, language)
     -- TODO require equivalents for other languages? (i.e. python imports)
     local file_name_transformer = M._require_for_file_path
     if language ~= "lua" then
-        file_name_transformer = nil
+        file_name_transformer = function() end
     end
 
     local reassembled_content = ctags.reassemble_tags(matches, file_name_transformer)
@@ -84,6 +84,7 @@ end
 function M.dump_this()
     local context = M.get_context_item()
     messages.ensure_open()
+    messages.header("Matching Ctags")
     messages.append(context.content)
 end
 
