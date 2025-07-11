@@ -63,6 +63,16 @@ def handle_query(message, top_k=3):
             continue
         logger.info(f"matched {chunk.file}:L{chunk.start_line}-{chunk.end_line}")
 
+        @dataclass
+        class Match:
+            score: float
+            text: str
+            file: str
+            start_line: int
+            end_line: int
+            type: str
+            rank: int
+
         match = Match(
             score=float(scores[0][rank]),
             text=chunk.text,
