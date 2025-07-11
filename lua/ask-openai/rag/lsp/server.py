@@ -33,6 +33,9 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
 
     dot_rag_dir = Path(root_path) / ".rag"
     logger.debug(f"{dot_rag_dir=}")
+    if not dot_rag_dir.exists():
+        logger.info(f"STOP on_initialize b/c no {dot_rag_dir=}")
+        return types.InitializeResult(capabilities=types.ServerCapabilities())
 
     ignores.use_pygls_workspace(root_path)
 
@@ -47,6 +50,10 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
 
     # server.show_message(f"server message foo", types.MessageType.Warning)
     # server.show_message_log("server log message bar", types.MessageType.Error)
+    if not dot_rag_dir.exists():
+        logger.error(f"STOP on_initialized b/c no {dot_rag_dir=}")
+        server.show_message_log("you do not have a .rag directory, there's nothing the ask LS can do at this time")
+        return
 
     rag.load_model_and_indexes(dot_rag_dir)
 
@@ -67,11 +74,16 @@ def update_rag_for_text_doc(doc_uri: str):
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 def doc_saved(params: types.DidSaveTextDocumentParams):
+    if not dot_rag_dir.exists():
+        return
+
     logger.pp_info("didSave", params)
     update_rag_for_text_doc(params.text_document.uri)
 
 @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
 def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
+    if not dot_rag_dir.exists():
+        return
     #   workspace/didChangeWatchedFiles # when files changed outside of editor... i.e. nvim will detect someone else edited a file in the workspace (another nvim instance, maybe CLI tool, etc)
     logger.info(f"didChangeWatchedFiles: {params}")
     # TODO is this one or more events? do I need to uniqify?
@@ -80,6 +92,8 @@ def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
 # UNREGISTER WHILE NOT USING:
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 def doc_opened(params: types.DidOpenTextDocumentParams):
+    if not dot_rag_dir.exists():
+        return
     logger.pp_debug("didOpen", params)
 
     #  ! on didOpen track open files, didClose track closed... so you always KNOW WHAT IS OPEN!!!
@@ -92,31 +106,24 @@ def doc_opened(params: types.DidOpenTextDocumentParams):
 
 @server.feature(types.TEXT_DOCUMENT_DID_CLOSE)
 def doc_closed(params: types.DidCloseTextDocumentParams):
+    if not dot_rag_dir.exists():
+        return
     logger.pp_info("didClose", params)
     # TODO
 
 # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 def doc_changed(params: types.DidChangeTextDocumentParams):
+    if not dot_rag_dir.exists():
+        return
     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
     logger.pp_info("didChange", params)
     # FYI would use this to invalidate internal caches and rebuild for a given file, i.e. imports, RAG vectors, etc
     #   rebuild on git commit + incremental updates s/b super fast?
 
-# @server.feature(types.TEXT_DOCUMENT_COMPLETION)
-def completions(params: types.CompletionParams):
-    # FYI this is just for initial testing, ok to nuke as I have no plans for completions support
-    items = []
-    document: workspace.TextDocument = server.workspace.get_document(params.text_document.uri)
-    current_line = document.lines[params.position.line].strip()
-    # if current_line.endswith("hello."):
-    items = [
-        types.CompletionItem(label="world"),
-        types.CompletionItem(label="friend"),
-    ]
-    return types.CompletionList(is_incomplete=False, items=items)
-
 @server.command("context.fim.query")
 def rag_query(_: LanguageServer, params: types.ExecuteCommandParams):
+    if not dot_rag_dir.exists():
+        return
 
     if params is None or params[0] is None:
         logger.error(f"aborting ask.rag.fim.query b/c missing params {params}")
