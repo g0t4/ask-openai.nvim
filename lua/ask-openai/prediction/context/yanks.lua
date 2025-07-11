@@ -5,6 +5,15 @@ local messages = require("devtools.messages")
 -- for now, don't try to track external clipboard copies
 -- yanked text is way more likely to be relevant
 
+-- FYI could also have registers as context?
+-- - that might enable me to organize my yanks
+-- - also, restore across restarts
+-- - hrm... how about "neovim command" output as a context item!
+--   I could add these to a file and they get run every time
+--   or the file is linked to cases to run it.. interesting
+--   then could make one do `:registers` and then bam registers context
+--   could toggle these on/off too (one off push :registers command onto the "stack" of these and pop when I'm done with it
+
 local M = {}
 
 M.tracing = false
