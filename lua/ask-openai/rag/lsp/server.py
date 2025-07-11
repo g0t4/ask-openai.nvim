@@ -34,6 +34,7 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
     dot_rag_dir = Path(root_path) / ".rag"
     logger.debug(f"{dot_rag_dir=}")
     if not dot_rag_dir.exists():
+        # TODO allow building the index from scratch?
         logger.info(f"STOP on_initialize b/c no {dot_rag_dir=}")
         return types.InitializeResult(capabilities=types.ServerCapabilities())
 
@@ -51,6 +52,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     # server.show_message(f"server message foo", types.MessageType.Warning)
     # server.show_message_log("server log message bar", types.MessageType.Error)
     if not dot_rag_dir.exists():
+        # TODO allow building the index from scratch?
         logger.error(f"STOP on_initialized b/c no {dot_rag_dir=}")
         server.show_message_log("you do not have a .rag directory, there's nothing the ask LS can do at this time")
         return
@@ -75,6 +77,7 @@ def update_rag_for_text_doc(doc_uri: str):
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 def doc_saved(params: types.DidSaveTextDocumentParams):
     if not dot_rag_dir.exists():
+        # TODO check langauge_extension too? for all handlers that work with doc uri? or let it fail normally in processing the request?
         return
 
     logger.pp_info("didSave", params)
