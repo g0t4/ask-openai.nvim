@@ -86,7 +86,8 @@ function M.qwen25coder.get_fim_prompt(request)
     --- @param context_item ContextItem
     local function append_file_non_fim(context_item)
         -- <file_sep>filepath0\ncode0
-        local non_fim_file = tokens.file_sep .. context_item.filename .. "\n" .. context_item.content
+        local non_fim_file = tokens.file_sep .. context_item.filename .. "\n"
+            .. context_item.content
         prompt = prompt .. non_fim_file
     end
 
