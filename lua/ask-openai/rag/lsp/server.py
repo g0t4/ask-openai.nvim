@@ -47,10 +47,18 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
     rag.load_model_and_indexes(dot_rag_dir)
 
-def update_rag_file_chunks(text_doc_uri: str):
-    doc = server.workspace.get_document(text_doc_uri)
+def update_rag_for_text_doc(doc_uri: str):
+    doc_path = uris.to_fs_path(doc_uri)
+    if doc_path == None:
+        logger.warning(f"abort update rag... to_fs_path returned {doc_path=}")
+        return
+    if ignores.is_ignored(doc_path):
+        logger.info(f"rag ignored doc: {doc_path=}")
+        return
+
+    doc = server.workspace.get_document(doc_uri)
     if doc is None:
-        logger.error(f"abort update_rag_file_chunks... doc not found {text_doc_uri}")
+        logger.error(f"abort... doc not found {doc_uri}")
         return
     # logger.info(f'{doc.filename=}')
     # logger.info(f'{doc.path=}')
@@ -61,7 +69,7 @@ def update_rag_file_chunks(text_doc_uri: str):
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 def doc_saved(params: types.DidSaveTextDocumentParams):
     logger.pp_info("didSave", params)
-    update_rag_file_chunks(params.text_document.uri)
+    update_rag_for_text_doc(params.text_document.uri)
 
 @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
 def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
@@ -79,7 +87,7 @@ def doc_opened(params: types.DidOpenTextDocumentParams):
 
     # * FYI this was just for quick testing to avoid needing a save or otherwise (just restart nvim)
     # ONLY do this b/c right now I don't rebuild the entire dataset until manually (eventually git commit, later can update here to disk)
-    update_rag_file_chunks(params.text_document.uri)
+    update_rag_for_text_doc(params.text_document.uri)
 
 # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 def doc_changed(params: types.DidChangeTextDocumentParams):
