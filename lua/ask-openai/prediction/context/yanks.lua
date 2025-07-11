@@ -51,6 +51,12 @@ end
 local MAX_YANKS = 10
 M.yanks = {}
 function M.on_yank()
+    -- PRN send to LS to PURIFY?
+    --   AND let it encode the yanks, keep 100 and take top 10 or smth like that?
+    --   ALSO, can eliminate similar yanks
+    --   AND small ones
+    --   etc?
+
     -- ignore if empty
     current_file_relative_to_workspace_root = vim.fn.expand('%')
 
