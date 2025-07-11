@@ -26,16 +26,26 @@ function Logger:ensure_file_is_open()
         -- data => ~/.local/share/nvim usually
         local path = vim.fn.stdpath("data") .. "/" .. "ask-openai/" .. self.filename
         ensure_directory_exists(path)
-        self.file = io.open(path, "w")
+        self.file = io.open(path, "a")
         if not self.file then
             error("Failed to open log file: " .. path)
         end
 
-        -- this isn't as reliable as you might think plus doesn't fix scrollback in iTerm so NO for now :)
-        --  also makes it hard to cat the file!
-        -- write header/blank lines so anyone tailing the file sees a separator
-        local clear_for_tailers = "\27[2J\27[H"
-        self.file:write(clear_for_tailers)
+
+
+        -- * help tail'ers... send clear signal
+        --
+        -- ctrl+L through the log file works, but leaves scrollback (obviously)
+        -- local clear_for_tailers = "\27[2J\27[H"
+        -- self.file:write(clear_for_tailers)
+        -- self.file:flush()
+        --
+        -- * YES iTerm2 scrollback clear:
+        --  AND cat works on the file still, it just beeps and shows in every spot it was used (if [a]ppending to file):
+        --   38;2;229;192;123m50;ClearScrollback
+        --   which means I can still cat to analyze older logs if needed (rare) while still getting a focused log!
+        local clear_iterm_scrolback = "\x1b]50;ClearScrollback\a"
+        self.file:write(clear_iterm_scrolback)
         self.file:flush()
 
         -- FYI this is only called on FIRST LOG... not on reboot unless reboot has a log call
