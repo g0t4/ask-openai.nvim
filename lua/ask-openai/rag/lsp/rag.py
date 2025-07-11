@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import os
 from pathlib import Path
 
@@ -62,15 +63,15 @@ def handle_query(message, top_k=3):
             continue
         logger.info(f"matched {chunk.file}:L{chunk.start_line}-{chunk.end_line}")
 
-        match = {
-            "score": float(scores[0][rank]),
-            "text": chunk.text,
-            "file": chunk.file,
-            "start_line": chunk.start_line,
-            "end_line": chunk.end_line,
-            "type": chunk.type,
-            "rank": rank + 1,
-        }
+        match = Match(
+            score=float(scores[0][rank]),
+            text=chunk.text,
+            file=chunk.file,
+            start_line=chunk.start_line,
+            end_line=chunk.end_line,
+            type=chunk.type,
+            rank=rank + 1,
+        )
 
         matches.append(match)
 
