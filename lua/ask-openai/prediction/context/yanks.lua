@@ -1,5 +1,6 @@
 local ContextItem = require("ask-openai.prediction.context.item")
 local log = require('ask-openai.prediction.logger').predictions()
+local messages = require("devtools.messages")
 
 -- for now, don't try to track external clipboard copies
 -- yanked text is way more likely to be relevant
@@ -18,14 +19,16 @@ local function dump_yank_event()
     -- }
 end
 
-function M.print_yanks()
+function M.dump_yanks()
     local yanks = M.get_context_item()
     if not yanks then
         vim.print("nothing yanked")
         return
     end
     log:info("yanks:\n" .. yanks.content)
-    vim.print(yanks.content)
+    messages:ensure_open()
+    messages:header("Recent Yanks")
+    messages:append(yanks.content)
 end
 
 local MAX_YANKS = 10
@@ -85,7 +88,7 @@ function M.setup()
         group = 'ContextYank',
         desc = 'Prediction context yanks'
     })
-    vim.api.nvim_create_user_command("AskDumpYanks", M.print_yanks, {})
+    vim.api.nvim_create_user_command("AskDumpYanks", M.dump_yanks, {})
 end
 
 return M
