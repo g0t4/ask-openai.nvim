@@ -44,9 +44,11 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #  then, client sends initialized (this) request => waits for completion
     #    does not send other requests until initialized is done
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
-    server.show_message(f"server message foo", types.MessageType.Warning)
+
+    # server.show_message(f"server message foo", types.MessageType.Warning)
+    # server.show_message_log("server log message bar", types.MessageType.Error)
+
     rag.load_model_and_indexes(dot_rag_dir)
-    server.show_message_log("server log message bar", types.MessageType.Error)
 
 def update_rag_for_text_doc(doc_uri: str):
     doc_path = uris.to_fs_path(doc_uri)
