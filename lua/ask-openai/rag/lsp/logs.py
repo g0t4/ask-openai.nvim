@@ -35,6 +35,17 @@ def use_lang_server_logs():
     log_file_path = os.path.expanduser("~/.local/share/ask-openai/language.server.log")
     log_file = open(log_file_path, "w", encoding="utf-8")
     console = Console(file=log_file, force_terminal=True, width=150)
+
+    # FYI some imports take time and will delay this happening for a few seconds (i.e. model load on import)
+    # * clear iTerm scrollback/screen!
+    clear_iterm_scrolback = "\x1b]50;ClearScrollback\a"
+    log_file.write(clear_iterm_scrolback)
+    log_file.flush()
+    #
+    # * clear just current screen using rich (through log works):
+    # console.clear()  # NOTE: not scrollback in iTerm (obviously)
+    # TODO does console have a clear scrollback too that blasts all possible clears? or that I can specific which term to do it for?
+
     setup_logging(console)
 
 def use_console():
