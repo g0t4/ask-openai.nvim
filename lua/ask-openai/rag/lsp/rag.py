@@ -15,8 +15,11 @@ datasets: Datasets
 
 class ContextResult:
 
-    def __init__(self, matches):
-        self.matches = matches
+    def __init__(self):
+        self.matches = []
+
+    def add(self, match):
+        self.matches.append(match)
 
 def load_model_and_indexes(dot_rag_dir: Path):
     global datasets
@@ -47,7 +50,7 @@ def handle_query(message, top_k=3):
     # logger.info(f'{scores=}')
     # logger.info(f'{ids=}')
 
-    matches = []
+    matches = ContextResult()
     for rank, idx in enumerate(ids[0]):
         chunk = datasets.get_chunk_by_faiss_id(idx)
         if chunk is None:
@@ -83,13 +86,13 @@ def handle_query(message, top_k=3):
             rank=rank + 1,
         )
 
-        matches.append(match)
+        matches.add(match)
 
-    if len(matches) == 0:
+    if len(matches.matches) == 0:
         # warn if this happens, that all were basically the same doc
         logger.warning(f"No matches found for {current_file_abs=}")
 
-    return ContextResult(matches)
+    return matches
 
 def update_file_from_disk(file_path):
     # FYI right now exists for integration testing as I don't know if I can use document type from pygls in that test (yet?)
