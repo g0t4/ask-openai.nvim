@@ -11,7 +11,7 @@ from lsp import ignores, imports, rag
 
 from .logs import get_logger, use_lang_server_logs
 
-use_lang_server_logs(logging.WARN)
+use_lang_server_logs(logging.INFO)
 logger = get_logger(__name__)
 
 server = LanguageServer("ask_language_server", "v0.1")
