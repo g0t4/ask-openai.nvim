@@ -12,6 +12,11 @@ logger = get_logger(__name__)
 
 datasets: Datasets
 
+class ContextResult:
+
+    def __init__(self, matches):
+        self.matches = matches
+
 def load_model_and_indexes(dot_rag_dir: Path):
     global datasets
     # PRN add a dataset_wrapper like model_wrapper and let it handle lazy load and be reusable across entire process (any imports are both lazy loaded and still singleton)
@@ -70,7 +75,7 @@ def handle_query(message, top_k=3):
         # warn if this happens, that all were basically the same doc
         logger.warning(f"No matches found for {current_file_abs=}")
 
-    return {"matches": matches}
+    return ContextResult(matches)
 
 def update_file_from_disk(file_path):
     # FYI right now exists for integration testing as I don't know if I can use document type from pygls in that test (yet?)
