@@ -82,11 +82,18 @@ def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
 def doc_opened(params: types.DidOpenTextDocumentParams):
     logger.pp_debug("didOpen", params)
 
+    #  ! on didOpen track open files, didClose track closed... so you always KNOW WHAT IS OPEN!!!
+
     # imports.on_open(params) # WIP
 
     # * FYI this was just for quick testing to avoid needing a save or otherwise (just restart nvim)
     # ONLY do this b/c right now I don't rebuild the entire dataset until manually (eventually git commit, later can update here to disk)
     update_rag_for_text_doc(params.text_document.uri)
+
+@server.feature(types.TEXT_DOCUMENT_DID_CLOSE)
+def doc_closed(params: types.DidCloseTextDocumentParams):
+    logger.pp_info("didClose", params)
+    # TODO
 
 # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 def doc_changed(params: types.DidChangeTextDocumentParams):
@@ -108,22 +115,9 @@ def completions(params: types.CompletionParams):
     ]
     return types.CompletionList(is_incomplete=False, items=items)
 
-# !!!  MAKE THIS A CONTEXT LS... NOT JUST RAG!!!!
-@server.command("ask.context.query")
-def context_query(params: types.ExecuteCommandParams):
-    #  ! on didOpen and didChange => hunt imports! (if changed) and cache the list for this file
-    #  ! on didOpen track open files, didClose track closed... so you always KNOW WHAT IS OPEN!!!
-    #
-    # if params is None or params[0] is None:
-    #     logger.error(f"aborting ask.context.query b/c missing params {params}")
-    #     return
-    # args = params[0]
-    logger.info("ask.context.query: %s", params)
-    # return rag.handle_query(args)
-    raise RuntimeError("Not Implemented!")
-
-@server.command("ask.rag.fim.query")
+@server.command("context.fim.query")
 def rag_query(_: LanguageServer, params: types.ExecuteCommandParams):
+
     if params is None or params[0] is None:
         logger.error(f"aborting ask.rag.fim.query b/c missing params {params}")
         return
