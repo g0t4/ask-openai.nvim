@@ -33,7 +33,7 @@ class FileStat(BaseModel):
 
 class Chunk(BaseModel):
     id: str
-    id_int: str  # mostly store this for comparing manually
+    id_int: str  # mostly store this for comparing manually (when reviewing the files themselves)
     text: str
     file: str
     start_line: int
@@ -43,7 +43,6 @@ class Chunk(BaseModel):
 
     @property
     def faiss_id(self):
-        # TODO any issues with this?
         # return int(self.id_int)
         # for now just recompute and skip id_int:
         return chunk_id_to_faiss_id(self.id)
