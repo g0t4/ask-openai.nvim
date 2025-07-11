@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 import signal
@@ -6,12 +7,9 @@ import lsprotocol.types as types
 from pygls import uris, workspace
 from pygls.server import LanguageServer
 
-from lsp import imports, rag, ignores
+from lsp import ignores, imports, rag
+
 from .logs import get_logger, use_lang_server_logs
-
-# BTW, cd to `rag` dir and => `python3 -m lsp.server` to test this w/o nvim, make sure it starts up at least
-
-import logging
 
 use_lang_server_logs(logging.WARN)
 logger = get_logger(__name__)
