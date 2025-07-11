@@ -24,32 +24,31 @@ function M.setup()
         }
     end
 
-    vim.lsp.handlers["window/showMessage"] = function(err, result, ctx, config)
-        messages.append("global handler window/showMessage")
-        messages.append(vim.inspect(result))
-    end
+    -- vim.lsp.handlers["window/showMessage"] = function(err, result, ctx, config)
+    --     messages.append("global handler window/showMessage")
+    --     messages.append(vim.inspect(result))
+    -- end
 
     lspconfig.ask_language_server.setup({
         on_attach = function(client, bufnr)
-            messages.append(client.name .. " is now attached to buffer: " .. bufnr)
-            messages.ensure_open()
-            -- messages.append(vim.inspect(client))
-            client.handlers = {
-                ["window/showMessage"] = function(err, result, ctx, config)
-                    messages.append("client handler window/showMessage")
-                    messages.append(vim.inspect(result))
-                end,
-                ["window/showMessageRequest"] = function(err, result, ctx, config)
-                    messages.append("client handler window/showMessageRequest")
-                    messages.append(vim.inspect(result))
-                end,
-                ["window/logMessage"] = function(err, result, ctx, config)
-                    messages.append("client handler window/logMessage")
-                    messages.append(vim.inspect(result))
-                end,
-            }
+            -- messages.append(client.name .. " is now attached to buffer: " .. bufnr)
+            -- messages.ensure_open()
+            -- -- messages.append(vim.inspect(client))
+            -- client.handlers = {
+            --     ["window/showMessage"] = function(err, result, ctx, config)
+            --         messages.append("client handler window/showMessage")
+            --         messages.append(vim.inspect(result))
+            --     end,
+            --     ["window/showMessageRequest"] = function(err, result, ctx, config)
+            --         messages.append("client handler window/showMessageRequest")
+            --         messages.append(vim.inspect(result))
+            --     end,
+            --     ["window/logMessage"] = function(err, result, ctx, config)
+            --         messages.append("client handler window/logMessage")
+            --         messages.append(vim.inspect(result))
+            --     end,
+            -- }
         end,
-
     })
 end
 
