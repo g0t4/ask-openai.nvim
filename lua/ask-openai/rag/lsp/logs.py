@@ -12,7 +12,7 @@ logging.getLogger("pygls.protocol.language_server").setLevel(logging.WARN)  # se
 logging.getLogger("pygls.feature_manager").setLevel(logging.WARN)  # what features are registered/detected
 logging.getLogger("pygls.server").setLevel(logging.WARN)  # mostly Content length messages (headers IIAC)
 
-def setup_logging(console: Console, level: str = "INFO"):
+def setup_logging(console: Console, level="INFO"):
     rich_handler = RichHandler(
         markup=True,  # i.e. [bold], [red]
         rich_tracebacks=True,
@@ -50,7 +50,7 @@ def clear_iterm_scrollback(log_file):
     # console.clear()  # NOTE: not scrollback in iTerm (obviously)
     # TODO does console have a clear scrollback too that blasts all possible clears? or that I can specific which term to do it for?
 
-def use_lang_server_logs():
+def use_lang_server_logs(level):
 
     log_file_path = os.path.expanduser("~/.local/share/ask-openai/language.server.log")
     log_file = open(log_file_path, "w", encoding="utf-8")
@@ -58,7 +58,7 @@ def use_lang_server_logs():
 
     clear_iterm_scrollback(log_file)
 
-    setup_logging(console)
+    setup_logging(console, level)
 
 def use_console():
     console = Console()

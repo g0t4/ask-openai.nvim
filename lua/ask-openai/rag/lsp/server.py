@@ -12,7 +12,9 @@ from .logs import get_logger, use_lang_server_logs
 # BTW, cd to `rag` dir and => `python3 -m lsp.server` to test this w/o nvim, make sure it starts up at least
 
 # logger_name = __name__ if __name__ != "__main__" else "lsp-server" # PRN don't use __main__?
-use_lang_server_logs()
+import logging
+
+use_lang_server_logs(logging.DEBUG)
 logger = get_logger(__name__)
 
 server = LanguageServer("ask_language_server", "v0.1")
