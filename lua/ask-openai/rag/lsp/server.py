@@ -59,7 +59,7 @@ def update_rag_for_text_doc(doc_uri: str):
         logger.info(f"rag ignored doc: {doc_path=}")
         return
 
-    doc = server.workspace.get_document(doc_uri)
+    doc = server.workspace.get_text_document(doc_uri)
     if doc is None:
         logger.error(f"abort... doc not found {doc_uri}")
         return
