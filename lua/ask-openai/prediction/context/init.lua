@@ -43,9 +43,9 @@ function CurrentContext:items(prompt, always_include)
     if includes.yanks then
         items.yanks = yanks.get_context_item()
     end
-    if includes.commits then
-        -- items.commits = git_diff.get_context_items()
-    end
+    -- if includes.commits then
+    --     items.commits = git_diff.get_context_items()
+    -- end
     -- if includes.ctags then
     --     items.ctags = ctags.get_context_items()
     -- end
