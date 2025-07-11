@@ -21,6 +21,23 @@ local function ensure_directory_exists(path)
     end
 end
 
+function clear_iterm_scrollback(file)
+    -- * YES iTerm2 scrollback clear:
+    --  AND cat works on the file still, it just beeps and shows in every spot it was used (if [a]ppending to file):
+    --   38;2;229;192;123m1337;ClearScrollback
+    --   which means I can still cat to analyze older logs if needed (rare) while still getting a focused log!
+    --   FYI 50 works instead of 1337 too, in my testing
+    local clear_iterm_scrolback = "\x1b]1337;ClearScrollback\a"
+    file:write(clear_iterm_scrolback)
+    file:flush()
+
+    -- * ctrl+L through log
+    -- but leaves scrollback (obviously)
+    -- local clear_for_tailers = "\27[2J\27[H"
+    -- self.file:write(clear_for_tailers)
+    -- self.file:flush()
+end
+
 function Logger:ensure_file_is_open()
     if not self.file then
         -- data => ~/.local/share/nvim usually
@@ -31,22 +48,7 @@ function Logger:ensure_file_is_open()
             error("Failed to open log file: " .. path)
         end
 
-
-
-        -- * help tail'ers... send clear signal
-        --
-        -- ctrl+L through the log file works, but leaves scrollback (obviously)
-        -- local clear_for_tailers = "\27[2J\27[H"
-        -- self.file:write(clear_for_tailers)
-        -- self.file:flush()
-        --
-        -- * YES iTerm2 scrollback clear:
-        --  AND cat works on the file still, it just beeps and shows in every spot it was used (if [a]ppending to file):
-        --   38;2;229;192;123m50;ClearScrollback
-        --   which means I can still cat to analyze older logs if needed (rare) while still getting a focused log!
-        local clear_iterm_scrolback = "\x1b]50;ClearScrollback\a"
-        self.file:write(clear_iterm_scrolback)
-        self.file:flush()
+        clear_iterm_scrollback(self.file)
 
         -- FYI this is only called on FIRST LOG... not on reboot unless reboot has a log call
         --  so it will reset after the first log is written which is fine, just keep in mind

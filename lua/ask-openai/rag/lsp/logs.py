@@ -30,21 +30,33 @@ def setup_logging(console: Console):
         handlers=handlers,
     )
 
-def use_lang_server_logs():
-
-    log_file_path = os.path.expanduser("~/.local/share/ask-openai/language.server.log")
-    log_file = open(log_file_path, "w", encoding="utf-8")
-    console = Console(file=log_file, force_terminal=True, width=150)
-
+def clear_iterm_scrollback(log_file):
     # FYI some imports take time and will delay this happening for a few seconds (i.e. model load on import)
     # * clear iTerm scrollback/screen!
-    clear_iterm_scrolback = "\x1b]50;ClearScrollback\a"
+    #   \x1b = ESC (ansi escape sequence start)
+    #   ESC] = Operating System Command
+    #   50 and 1337 both work
+    #     iTerm docs recommend 1337 to avoid conflicts w/ xterm (origin of many of these commands)
+    #
+    # https://iterm2.com/documentation-escape-codes.html
+
+    # see: https://apple.stackexchange.com/a/382057/53333
+    # clear_iterm_scrolback = "\x1b]50;ClearScrollback\a"
+    clear_iterm_scrolback = "\x1b]1337;ClearScrollback\a"
     log_file.write(clear_iterm_scrolback)
     log_file.flush()
     #
     # * clear just current screen using rich (through log works):
     # console.clear()  # NOTE: not scrollback in iTerm (obviously)
     # TODO does console have a clear scrollback too that blasts all possible clears? or that I can specific which term to do it for?
+
+def use_lang_server_logs():
+
+    log_file_path = os.path.expanduser("~/.local/share/ask-openai/language.server.log")
+    log_file = open(log_file_path, "w", encoding="utf-8")
+    console = Console(file=log_file, force_terminal=True, width=150)
+
+    clear_iterm_scrollback(log_file)
 
     setup_logging(console)
 
