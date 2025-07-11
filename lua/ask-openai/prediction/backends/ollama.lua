@@ -193,7 +193,7 @@ function OllamaFimBackend:body_for()
 
     local body_json = vim.json.encode(body)
 
-    log:trace("body", body_json)
+    -- log:trace("body", body_json)
 
     return body_json
 end
