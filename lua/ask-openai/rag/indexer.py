@@ -36,7 +36,23 @@ class IncrementalRAGIndexer:
         self.dot_rag_dir = Path(dot_rag_dir)
         self.source_code_dir = Path(source_code_dir)
 
-    def warn_about_other_languages(self, index_languages: list[str]):
+    def main(self):
+        exts = self.get_included_extensions()
+        for ext in exts:
+            self.build_index(ext)
+        self.warn_about_other_extensions(exts)
+
+    def get_included_extensions(self):
+        rag_yaml = self.source_code_dir / ".rag.yaml"
+        if not rag_yaml.exists():
+            return ["lua", "py", "fish"]
+        import yaml
+        with open(rag_yaml, "r") as f:
+            config = yaml.safe_load(f)
+            logger.pp_info(f"found rag config: {rag_yaml}", config)
+            return config["include"]
+
+    def warn_about_other_extensions(self, index_languages: list[str]):
 
         result = subprocess.run(
             ["fish", "-c", f"fd {self.source_code_dir} --exclude='\\.ctags\\.d' --exclude='\\.rag' --exec basename"],
@@ -271,10 +287,7 @@ def main():
         source_code_dir = "."  # TODO make this root_directory always? has been nice to test a subset of files by cd to nested dir
         logger.info(f"[bold]RAG directory: {dot_rag_dir}")
         indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir)
-        index_languages = ["lua", "py", "fish"]
-        for lang in index_languages:
-            indexer.build_index(lang)
-        indexer.warn_about_other_languages(index_languages)
+        indexer.main()
 
 if __name__ == "__main__":
     main()
