@@ -39,16 +39,20 @@ class IncrementalRAGIndexer:
     def warn_about_other_languages(self, index_languages: list[str]):
 
         result = subprocess.run(
-            ["fish", "-c", f"fd {self.source_code_dir} --exec basename"],
+            ["fish", "-c", f"fd {self.source_code_dir} --exclude='\\.ctags\\.d' --exclude='\\.rag' --exec basename"],
             stdout=subprocess.PIPE,
             text=True,
             check=STOP_ON_FAILURE,
         )
         basenames = result.stdout.strip().splitlines()
 
+        ignore_files = ["ctags", "ctags.d"]
+
         extensions = [basename.split(".")[-1] \
             for basename in basenames \
-            if basename and "." in basename]
+            if basename and "." in basename \
+            and basename not in ignore_files
+        ]
 
         import itertools
         unindexed_extensions = [(ext, len(list(group))) \
@@ -58,9 +62,16 @@ class IncrementalRAGIndexer:
 
         # TODO pair with an ignore style file for what not to index in a given repo
 
-        if unindexed_extensions:
-            msg = [f"{ext}={count}" for ext, count in unindexed_extensions]
-            logger.warning(f"Found unindexed extensions: {' '.join(msg)}")
+        # require at least 2 of a file before warning
+        #   within one file you don't need RAG for context :)
+        noteworthy_extensions = [ \
+            f"{ext}={count}" \
+            for ext, count in unindexed_extensions \
+            if count > 1
+        ]
+
+        if noteworthy_extensions:
+            logger.warning(f"Found unindexed extensions: {' '.join(noteworthy_extensions)}")
 
     def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Split files into: changed (added/updated), unchagned, deleted"""
