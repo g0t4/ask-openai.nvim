@@ -217,7 +217,7 @@ def trash_indexes(dot_rag_dir, language_extension="lua"):
     index_path = Path(dot_rag_dir, language_extension)
     subprocess.run(["trash", index_path], check=IGNORE_FAILURE)
 
-if __name__ == "__main__":
+def main():
     from lsp.logs import use_console
 
     verbose = "--verbose" in sys.argv
@@ -238,3 +238,6 @@ if __name__ == "__main__":
         indexer.build_index(language_extension="lua")
         indexer.build_index(language_extension="py")
         indexer.build_index(language_extension="fish")
+
+if __name__ == "__main__":
+    main()
