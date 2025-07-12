@@ -36,6 +36,32 @@ class IncrementalRAGIndexer:
         self.dot_rag_dir = Path(dot_rag_dir)
         self.source_code_dir = Path(source_code_dir)
 
+    def warn_about_other_languages(self, index_languages: list[str]):
+
+        result = subprocess.run(
+            ["fish", "-c", f"fd {self.source_code_dir} --exec basename"],
+            stdout=subprocess.PIPE,
+            text=True,
+            check=STOP_ON_FAILURE,
+        )
+        basenames = result.stdout.strip().splitlines()
+
+        extensions = [basename.split(".")[-1] \
+            for basename in basenames \
+            if basename and "." in basename]
+
+        import itertools
+        unindexed_extensions = [(ext, len(list(group))) \
+            for ext, group in itertools.groupby(sorted(extensions)) \
+            if ext not in index_languages
+        ]
+
+        # TODO pair with an ignore style file for what not to index in a given repo
+
+        if unindexed_extensions:
+            msg = [f"{ext}={count}" for ext, count in unindexed_extensions]
+            logger.warning(f"Found unindexed extensions: {' '.join(msg)}")
+
     def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Split files into: changed (added/updated), unchagned, deleted"""
 
@@ -231,12 +257,13 @@ def main():
             logger.info("[red]No Git repository found in current working directory, cannot build RAG index.")
             sys.exit(1)
         dot_rag_dir = root_directory / ".rag"
-        source_code_dir = "."
+        source_code_dir = "."  # TODO make this root_directory always? has been nice to test a subset of files by cd to nested dir
         logger.info(f"[bold]RAG directory: {dot_rag_dir}")
         indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir)
-        indexer.build_index(language_extension="lua")
-        indexer.build_index(language_extension="py")
-        indexer.build_index(language_extension="fish")
+        index_languages = ["lua", "py", "fish"]
+        for lang in index_languages:
+            indexer.build_index(lang)
+        indexer.warn_about_other_languages(index_languages)
 
 if __name__ == "__main__":
     main()
