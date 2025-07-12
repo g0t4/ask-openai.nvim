@@ -45,6 +45,7 @@ class IncrementalRAGIndexer:
     def get_included_extensions(self):
         rag_yaml = self.source_code_dir / ".rag.yaml"
         if not rag_yaml.exists():
+            logger.info(f"no rag config found {rag_yaml}, using default config")
             return ["lua", "py", "fish"]
         import yaml
         with open(rag_yaml, "r") as f:
