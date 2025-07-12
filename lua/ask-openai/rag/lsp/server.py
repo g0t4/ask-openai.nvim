@@ -9,9 +9,9 @@ from pygls.server import LanguageServer
 
 from lsp import ignores, imports, rag
 
-from .logs import get_logger, use_lang_server_logs
+from .logs import get_logger, logging_fwk_to_language_server_log_file
 
-use_lang_server_logs(logging.INFO)
+logging_fwk_to_language_server_log_file(logging.INFO)
 logger = get_logger(__name__)
 
 server = LanguageServer("ask_language_server", "v0.1")

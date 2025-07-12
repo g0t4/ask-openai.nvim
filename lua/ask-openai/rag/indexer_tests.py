@@ -9,9 +9,9 @@ import numpy as np
 from rich import print
 
 from indexer import IncrementalRAGIndexer
-from lsp.logs import use_console
+from lsp.logs import logging_fwk_to_console
 
-use_console(logging.WARN)
+logging_fwk_to_console(logging.WARN)
 
 class TestBuildIndex(unittest.TestCase):
 

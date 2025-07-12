@@ -50,7 +50,7 @@ def clear_iterm_scrollback(log_file):
     # console.clear()  # NOTE: not scrollback in iTerm (obviously)
     # TODO does console have a clear scrollback too that blasts all possible clears? or that I can specific which term to do it for?
 
-def use_lang_server_logs(level):
+def logging_fwk_to_language_server_log_file(level):
 
     log_file_path = os.path.expanduser("~/.local/share/ask-openai/language.server.log")
     log_file = open(log_file_path, "w", encoding="utf-8")
@@ -60,7 +60,7 @@ def use_lang_server_logs(level):
 
     setup_logging(console, level)
 
-def use_console(level):
+def logging_fwk_to_console(level):
     console = Console()
     setup_logging(console, level)
 
