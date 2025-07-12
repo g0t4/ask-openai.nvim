@@ -15,11 +15,14 @@ class ModelWrapper:
             return self._model
 
         with logger.timer("importing sentence transformers"):
-            # avoid checking for model files every time you load the model...
+
+            # do not check hugging face for newer version, use offline cache only
             #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
             # FYI must be set BEFORE importing SentenceTransformer, setting after (even if before model load) doesn't work
             os.environ["TRANSFORMERS_OFFLINE"] = "1"
-            from sentence_transformers import SentenceTransformer
+
+            from sentence_transformers import SentenceTransformer  # ! 2+ seconds to import!
+            # why do I need the long startup here? this is insance for imports to take 2 seconds
 
         # TODO try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
         model_name = "intfloat/e5-base-v2"
