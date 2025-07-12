@@ -1,12 +1,11 @@
 from dataclasses import dataclass
-import os
 from pathlib import Path
 
 from pygls.workspace import TextDocument
 
 from .build import build_file_chunks, build_from_lines, get_file_hash, get_file_hash_from_lines
 from .logs import get_logger
-from .storage import Chunk, Datasets, load_all_datasets
+from .storage import Datasets, load_all_datasets
 from .model import model_wrapper
 
 logger = get_logger(__name__)

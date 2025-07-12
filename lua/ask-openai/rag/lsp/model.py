@@ -5,14 +5,14 @@ from .logs import get_logger
 logger = get_logger(__name__)
 
 class ModelWrapper:
-    model: "SentenceTransformer"
 
     # FYI there is a test case to validate encoding:
     #   python3 indexer_tests.py  TestBuildIndex.test_encode_and_search_index
 
-    def ensure_model_loaded(self):
-        if hasattr(self, "model"):
-            return
+    @property
+    def model(self):
+        if hasattr(self, "_model"):
+            return self._model
 
         with logger.timer("importing sentence transformers"):
             # avoid checking for model files every time you load the model...
@@ -24,13 +24,17 @@ class ModelWrapper:
         # TODO try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
         model_name = "intfloat/e5-base-v2"
         with logger.timer(f"Load model {model_name}"):
-            self.model = SentenceTransformer(model_name)
+            self._model = SentenceTransformer(model_name)
+
+        return self._model
+
+    def ensure_model_loaded(self):
+        self.model  # access model to trigger load
 
     def encode_passages(self, passages: list[str], show_progress_bar=False):
         texts = [f"passage: {p}" for p in passages]
 
         # FYI can split out later, this is only usage of multi-encode
-        self.ensure_model_loaded()
         return self.model.encode(
             texts,
             normalize_embeddings=True,
@@ -47,7 +51,6 @@ class ModelWrapper:
         return self._encode_text(f"query: {text}")
 
     def _encode_text(self, text: str):
-        self.ensure_model_loaded()
         return self.model.encode(
             [text],
             normalize_embeddings=True,
