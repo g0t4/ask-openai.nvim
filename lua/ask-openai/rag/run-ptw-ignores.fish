@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env fish
 
 # * -s == show print() output on success too
 # -s == --capture=no
