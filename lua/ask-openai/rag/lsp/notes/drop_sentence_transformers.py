@@ -7,8 +7,8 @@ from lsp.logs import get_logger, logging_fwk_to_console, LogTimer
 logger = get_logger("drop_ST")
 logging_fwk_to_console(logging.DEBUG)
 
-import torch.nn.functional as F
-from rich import print
+with LogTimer("import torch.nn.functional as F", logger):
+    import torch.nn.functional as F
 
 # from torch import Tensor # only needed for type hints... so not really needed
 
