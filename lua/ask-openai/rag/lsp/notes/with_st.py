@@ -15,10 +15,14 @@ with LogTimer("import torch.nn.functional as F", logger):
 # unfortunately, at best this saves 100ms of 2300ms total on import timing...
 #   this is most useful to understand how embeddings are calculated using last_hidden, etc.
 
-with LogTimer("import BertModel/Tokenizer", logger):
-    # must come before import so it doesn't check model load on HF later
+with logger.timer("importing sentence transformers"):
+
+    # do not check hugging face for newer version, use offline cache only
+    #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
+    # FYI must be set BEFORE importing SentenceTransformer, setting after (even if before model load) doesn't work
     os.environ["TRANSFORMERS_OFFLINE"] = "1"
-    from transformers import BertModel, BertTokenizer
+
+    from sentence_transformers import SentenceTransformer  # 2+ seconds to import (mostly torch/transformer deps that even if I use BertModel directly, I cannot avoid the import timing)
 
 def average_pool(last_hidden_states: "Tensor", attention_mask: "Tensor") -> "Tensor":
     last_hidden = last_hidden_states.masked_fill(~attention_mask[..., None].bool(), 0.0)
@@ -34,8 +38,8 @@ input_texts = [
 ]
 
 with LogTimer("load model/tokenizer", logger):
-    model = BertModel.from_pretrained("intfloat/e5-base-v2")
-    tokenizer = BertTokenizer.from_pretrained("intfloat/e5-base-v2")
+    model_name = "intfloat/e5-base-v2"
+    model = SentenceTransformer(model_name)
 
 # Tokenize the input texts
 batch_dict = tokenizer(input_texts, max_length=512, padding=True, truncation=True, return_tensors='pt')
