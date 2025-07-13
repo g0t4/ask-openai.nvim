@@ -68,16 +68,17 @@ function M.list_entries(path)
     local has_more = true
 
     while has_more do
-        local result = vim.uv.fs_readdir(dir)
-        if not result then
+        -- fs_readdir returns # entries (at a time) specified in fs_opendir
+        local batch_of_entries = vim.uv.fs_readdir(dir)
+        if not batch_of_entries then
             break
         end
 
-        for _, entry in ipairs(result) do
+        for _, entry in ipairs(batch_of_entries) do
             table.insert(entries, entry)
         end
 
-        has_more = #result > 0
+        has_more = #batch_of_entries > 0
     end
 
     return entries
