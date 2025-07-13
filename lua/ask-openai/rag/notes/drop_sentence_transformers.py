@@ -2,6 +2,9 @@ import torch.nn.functional as F
 
 from torch import Tensor
 
+# unfortunately, at best this saves 100ms of 2300ms total on import timing...
+#   this is most useful to understand how embeddings are calculated using last_hidden, etc.
+
 from transformers import BertModel, BertTokenizer
 
 def average_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tensor:
