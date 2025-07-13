@@ -1,7 +1,7 @@
 import os
 
 # ! TERRIBLE encode performance (30 sec for this ask-openai repo) vs 22s with model_st ...
-# YOU NEED PERF tests and a real reason to even try this again... stop wasting your time
+# ** YOU NEED PERF tests and a REAL REASON to even try this again... stop wasting your time
 #  part of this issue is no doubt all the damn data conversions and making sure the right device is used...
 #  know what you are optimizing first and honestly 100ms for re-encode is not justifiably terrible, esp if I end up WORSE with _direct!
 
