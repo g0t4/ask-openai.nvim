@@ -2,19 +2,39 @@ local log = require("ask-openai.prediction.logger").predictions()
 local files = require("ask-openai.helpers.files")
 local M = {}
 
-local cwd = vim.fn.getcwd()
--- only testing ask-openai project currently
-local is_rag_indexed_workspace = cwd:find("ask-openai", 1, true) ~= nil
+-- * check if rag is supported
+local function check_supported_dirs()
+    local cwd = vim.fn.getcwd()
+    dot_rag_dir = cwd .. "/.rag"
+
+    M.is_rag_indexed_workspace = files.exists(dot_rag_dir)
+
+    if not M.is_rag_indexed_workspace then
+        log:info("RAG is disabled b/c there is NO .rag dir: " .. dot_rag_dir)
+        return
+    end
+
+    M.rag_dirs = files.list_directories(dot_rag_dir)
+    log:info("RAG is enabled: " .. vim.inspect(M.rag_dirs))
+end
+check_supported_dirs()
 
 function M.is_rag_supported()
-    local current_file = files.get_current_file_relative_path()
-    local is_lua = current_file:match("%.lua$")
-    if not is_lua then
-        log:info("skipping RAG for non-lua files: " .. current_file)
+    if not M.is_rag_indexed_workspace then
         return false
     end
 
-    return is_rag_indexed_workspace
+
+
+
+    -- local current_file = files.get_current_file_relative_path()
+    -- local is_lua = current_file:match("%.lua$")
+    -- if not is_lua then
+    --     log:info("skipping RAG for non-lua files: " .. current_file)
+    --     return false
+    -- end
+
+    return M.is_rag_indexed_workspace
 end
 
 local function fim_concat(prefix, suffix, limit)

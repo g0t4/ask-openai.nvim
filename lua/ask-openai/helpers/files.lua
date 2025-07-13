@@ -38,4 +38,35 @@ function M.get_current_file_absolute_path()
     return vim.fn.expand("%:p")
 end
 
+function M.exists(path)
+    local stat = vim.uv.fs_stat(path)
+    return stat ~= nil
+end
+
+function M.list_directories(path)
+    if not vim.fn.isdirectory(path) then
+        return {}
+    end
+
+    -- last param is # entries (default 1) to return at a time...
+    --   set to 1000 to effectively get all
+    --   otherwise, have to call fs_readdir multiple times! ouch!
+    local dir = vim.uv.fs_opendir(path, nil, 1)
+    if dir == nil then
+        return {}
+    end
+    local entries = vim.uv.fs_readdir(dir)
+    if not entries then
+        return {}
+    end
+    log:info(vim.inspect(entries))
+
+    local dirs = vim.iter(entries)
+        :filter(function(entry) return entry.type == "directory" end)
+        :map(function(entry) return entry.name end)
+        :totable()
+
+    return dirs
+end
+
 return M
