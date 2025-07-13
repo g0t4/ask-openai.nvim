@@ -1,3 +1,2 @@
-#!/usr/bin/env fish
 
 python3 indexer_tests.py TestBuildIndex.test_building_rag_index_from_scratch
