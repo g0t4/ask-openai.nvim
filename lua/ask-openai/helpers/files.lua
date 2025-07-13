@@ -48,18 +48,26 @@ function M.list_directories(path)
         return {}
     end
 
-    -- last param is # entries (default 1) to return at a time...
-    --   set to 1000 to effectively get all
-    --   otherwise, have to call fs_readdir multiple times! ouch!
     local dir = vim.uv.fs_opendir(path, nil, 1)
     if dir == nil then
         return {}
     end
-    local entries = vim.uv.fs_readdir(dir)
-    if not entries then
-        return {}
+
+    local entries = {}
+    local has_more = true
+
+    while has_more do
+        local result = vim.uv.fs_readdir(dir)
+        if not result then
+            break
+        end
+
+        for _, entry in ipairs(result) do
+            table.insert(entries, entry)
+        end
+
+        has_more = #result > 0
     end
-    log:info(vim.inspect(entries))
 
     local dirs = vim.iter(entries)
         :filter(function(entry) return entry.type == "directory" end)
@@ -67,6 +75,35 @@ function M.list_directories(path)
         :totable()
 
     return dirs
+end
+
+function M.list_entries(path)
+    if not vim.fn.isdirectory(path) then
+        return {}
+    end
+
+    local dir = vim.uv.fs_opendir(path, nil, 1)
+    if dir == nil then
+        return {}
+    end
+
+    local entries = {}
+    local has_more = true
+
+    while has_more do
+        local result = vim.uv.fs_readdir(dir)
+        if not result then
+            break
+        end
+
+        for _, entry in ipairs(result) do
+            table.insert(entries, entry)
+        end
+
+        has_more = #result > 0
+    end
+
+    return entries
 end
 
 return M
