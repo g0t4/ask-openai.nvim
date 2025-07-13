@@ -1,4 +1,11 @@
+import logging
+from lsp.logs import get_logger, logging_fwk_to_console
+
+logger = get_logger("drop_ST")
+logging_fwk_to_console(logging.DEBUG)
+
 import torch.nn.functional as F
+from rich import print
 
 # from torch import Tensor # only needed for type hints... so not really needed
 
@@ -25,11 +32,20 @@ tokenizer = BertTokenizer.from_pretrained("intfloat/e5-base-v2")
 
 # Tokenize the input texts
 batch_dict = tokenizer(input_texts, max_length=512, padding=True, truncation=True, return_tensors='pt')
+logger.info(f'{batch_dict=}')
 
 outputs = model(**batch_dict)
+logger.info(f'{outputs=}')
+logger.info(f'{outputs.last_hidden_state.shape=}')
+logger.info(f'{outputs.last_hidden_state=}')
+logger.info(f'{batch_dict["attention_mask"].shape=}')
+
 embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
+logger.info(f'{embeddings=}')
 
 # normalize embeddings
 embeddings = F.normalize(embeddings, p=2, dim=1)
+logger.info(f'{embeddings=}')
+
 scores = (embeddings[:2] @ embeddings[2:].T) * 100
-print(scores.tolist())
+logger.info(f'{scores=}')
