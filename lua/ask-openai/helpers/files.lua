@@ -59,7 +59,7 @@ function M.list_entries(path)
         return {}
     end
 
-    local dir = vim.uv.fs_opendir(path, nil, 1)
+    local dir = vim.uv.fs_opendir(path, nil, 100)
     if dir == nil then
         return {}
     end
