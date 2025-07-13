@@ -26,21 +26,14 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
     # logger.info(f"{params.workspace_folders=}")
     # server.workspace.folders
 
-    root_path = params.root_path  # ., root_uri='file:///Users/wesdemos/repos/github/g0t4/ask-openai.nvim'
-    fs.set_root_dir(root_path)
-    if root_path is None:
-        logger.error(f"aborting on_initialize b/c missing client workspace root_uri {root_path}")
-        raise ValueError("root_uri is None")
+    fs.set_root_dir(params.root_path)
 
-    dot_rag_dir = Path(root_path) / ".rag"
-    logger.debug(f"{dot_rag_dir=}")
-    if not dot_rag_dir.exists():
+    if fs.is_no_rag_dir():
         # TODO allow building the index from scratch?
-        logger.info(f"STOP on_initialize b/c no {dot_rag_dir=}")
         # DO NOT notify yet, that has to come after server responds to initialize request
         return types.InitializeResult(capabilities=types.ServerCapabilities())
 
-    ignores.use_pygls_workspace(root_path)
+    ignores.use_pygls_workspace(fs.root_path)
 
 def tell_client_to_shut_that_shit_down_now():
     server.send_notification("fuu/no_dot_rag__do_the_right_thing_wink")
@@ -56,13 +49,13 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
 
     # server.show_message(f"server message foo", types.MessageType.Warning)
     # server.show_message_log("server log message bar", types.MessageType.Error)
-    if not dot_rag_dir.exists():
+    if fs.is_no_rag_dir():
         # TODO allow building the index from scratch?
-        logger.error(f"STOP on_initialized b/c no {dot_rag_dir=}")
+        logger.error(f"STOP on_initialize[d] b/c no .rag dir")
         tell_client_to_shut_that_shit_down_now()
         return
 
-    rag.load_model_and_indexes(dot_rag_dir)
+    rag.load_model_and_indexes(fs.dot_rag_dir)
 
 def update_rag_for_text_doc(doc_uri: str):
     doc_path = uris.to_fs_path(doc_uri)
@@ -81,7 +74,7 @@ def update_rag_for_text_doc(doc_uri: str):
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 def doc_saved(params: types.DidSaveTextDocumentParams):
-    if not dot_rag_dir.exists():
+    if fs.is_no_rag_dir():
         # TODO check langauge_extension too? for all handlers that work with doc uri? or let it fail normally in processing the request?
         return
 
@@ -90,7 +83,7 @@ def doc_saved(params: types.DidSaveTextDocumentParams):
 
 @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
 def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
-    if not dot_rag_dir.exists():
+    if fs.is_no_rag_dir():
         return
     #   workspace/didChangeWatchedFiles # when files changed outside of editor... i.e. nvim will detect someone else edited a file in the workspace (another nvim instance, maybe CLI tool, etc)
     logger.info(f"didChangeWatchedFiles: {params}")
@@ -100,7 +93,7 @@ def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
 # UNREGISTER WHILE NOT USING:
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 def doc_opened(params: types.DidOpenTextDocumentParams):
-    if not dot_rag_dir.exists():
+    if fs.is_no_rag_dir():
         return
     logger.pp_debug("didOpen", params)
 
@@ -114,14 +107,14 @@ def doc_opened(params: types.DidOpenTextDocumentParams):
 
 @server.feature(types.TEXT_DOCUMENT_DID_CLOSE)
 def doc_closed(params: types.DidCloseTextDocumentParams):
-    if not dot_rag_dir.exists():
+    if fs.is_no_rag_dir():
         return
     logger.pp_info("didClose", params)
     # TODO
 
 # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 def doc_changed(params: types.DidChangeTextDocumentParams):
-    if not dot_rag_dir.exists():
+    if fs.is_no_rag_dir():
         return
     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
     logger.pp_info("didChange", params)
@@ -130,7 +123,7 @@ def doc_changed(params: types.DidChangeTextDocumentParams):
 
 @server.command("context.fim.query")
 def rag_query(_: LanguageServer, params: types.ExecuteCommandParams):
-    if not dot_rag_dir.exists():
+    if fs.is_no_rag_dir():
         return
 
     if params is None or params[0] is None:

@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from .logs import get_logger
 from .model_st import model_wrapper
+from lsp import fs
 
 logger = get_logger(__name__)
 
@@ -108,7 +109,7 @@ class Datasets:
         # * find prior chunks (if any)
         prior_chunks: list[Chunk] | None = None
         if file_path_str in dataset.chunks_by_file:
-            logger.info(f"Prior chunks exist for {file_path_str}")
+            logger.info(f"Prior chunks exist for {fs.get_loggable_path(file_path_str)}")
             prior_chunks = dataset.chunks_by_file[file_path_str]
 
         if not prior_chunks:

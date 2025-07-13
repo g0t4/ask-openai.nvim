@@ -7,6 +7,7 @@ from .build import build_file_chunks, build_from_lines, get_file_hash, get_file_
 from .logs import get_logger
 from .storage import Datasets, load_all_datasets
 from .model_st import model_wrapper
+from lsp import fs
 
 logger = get_logger(__name__)
 
@@ -112,7 +113,7 @@ def update_file_from_pygls_doc(doc: TextDocument):
 
     lines_hash = get_file_hash_from_lines(doc.lines)
 
-    with logger.timer(f"build_file_chunks {file_path}"):
+    with logger.timer(f"build_file_chunks {fs.get_loggable_path(file_path)}"):
         new_chunks = build_from_lines(file_path, lines_hash, doc.lines)
 
     # logger.pp_info("new_chunks", new_chunks)
