@@ -24,10 +24,6 @@ with logger.timer("importing sentence transformers"):
 
     from sentence_transformers import SentenceTransformer  # 2+ seconds to import (mostly torch/transformer deps that even if I use BertModel directly, I cannot avoid the import timing)
 
-def average_pool(last_hidden_states: "Tensor", attention_mask: "Tensor") -> "Tensor":
-    last_hidden = last_hidden_states.masked_fill(~attention_mask[..., None].bool(), 0.0)
-    return last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
-
 # Each input text should start with "query: " or "passage: ".
 # For tasks other than retrieval, you can simply use the "query: " prefix.
 input_texts = [
@@ -41,16 +37,21 @@ with LogTimer("load model/tokenizer", logger):
     model_name = "intfloat/e5-base-v2"
     model = SentenceTransformer(model_name)
 
-logger.info(f"loaded on device: {next(model.parameters()).device}")
+logger.info(f"loaded on device: {model.device=}")
 
 with LogTimer("encode", logger):
     embeddings = model.encode(
         input_texts,
         normalize_embeddings=True,
+        convert_to_numpy=True,
+        # convert_to_tensor=True,
+        # device = "cpu",
         # device="cpu", # TODO! verify timing differences (if any) are not due to device selection
-    ).astype("float32")
+    )
 
+    print(type(embeddings))
     scores = (embeddings[:2] @ embeddings[2:].T) * 100
 
+logger.info(f"loaded on device: {next(model.parameters()).device}")
 logger.info(f'{embeddings=}')
 logger.info(f'{scores=}')

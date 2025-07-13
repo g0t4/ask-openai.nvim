@@ -2,6 +2,8 @@
 
 import logging
 import os
+
+import torch
 from lsp.logs import get_logger, logging_fwk_to_console, LogTimer
 
 logger = get_logger("drop_ST")
@@ -33,23 +35,47 @@ input_texts = [
     "passage: Definition of summit for English Language Learners. : 1  the highest point of a mountain : the top of a mountain. : 2  the highest level. : 3  a meeting or series of meetings between the leaders of two or more governments.",
 ]
 
+# use_device = "cpu"
+use_device = "mps"
+
 with LogTimer("load model/tokenizer", logger):
-    model = BertModel.from_pretrained("intfloat/e5-base-v2")
+    model = BertModel.from_pretrained("intfloat/e5-base-v2").to(use_device)
     tokenizer = BertTokenizer.from_pretrained("intfloat/e5-base-v2")
 
-logger.info(f"loaded on device: {next(model.parameters()).device}")
+logger.info(f"loaded on device: {model.device=}")
 
-with LogTimer("encode", logger):
+with LogTimer("encode-direct", logger):
 
-    batch_dict = tokenizer(input_texts, max_length=512, padding=True, truncation=True, return_tensors='pt')
+    inputs = tokenizer(
+        input_texts,
+        padding=True,
+        truncation=True,
+        return_tensors='pt',
+    ).to(use_device)
 
-    outputs = model(**batch_dict)
-
-    embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
-
-    # normalize embeddings
-    embeddings = F.normalize(embeddings, p=2, dim=1)
-
+    with torch.no_grad():
+        outputs = model(**inputs)
+        embeddings = outputs.last_hidden_state[:, 0]
+        embeddings = F.normalize(embeddings, p=2, dim=1)
+# with LogTimer("encode", logger):
+#
+#     batch_dict_pre = tokenizer(
+#         input_texts,
+#         max_length=512,
+#         padding=True,
+#         truncation=True,
+#         return_tensors='pt',
+#     )
+#     batch_dict = {k: v.to(model.device) for k, v in batch_dict_pre.items()}
+#
+#     outputs = model(**batch_dict)
+#
+#     embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
+#
+#     # normalize embeddings
+#     embeddings = F.normalize(embeddings, p=2, dim=1)
+#
+#
     scores = (embeddings[:2] @ embeddings[2:].T) * 100
 
 # logger.info(f'{batch_dict=}')
@@ -58,5 +84,9 @@ with LogTimer("encode", logger):
 # logger.info(f'{outputs.last_hidden_state=}')
 # logger.info(f'{batch_dict["attention_mask"].shape=}')
 # logger.info(f'{embeddings_before_norm=}')
-logger.info(f'{embeddings=}')
-logger.info(f'{scores=}')
+# for k, v in batch_dict.items():
+#     logger.info(f'{k} {v.device=} {v.dtype=} {v.shape=}')
+#
+logger.info(f'{embeddings=} {embeddings.device=} {embeddings.dtype=} {embeddings.shape=}')
+
+logger.info(f'{scores=} {scores.device=} {scores.dtype=} {scores.shape=}')
