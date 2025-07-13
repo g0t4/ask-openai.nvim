@@ -1,0 +1,71 @@
+import os
+
+from .logs import get_logger
+
+logger = get_logger(__name__)
+
+class ModelWrapper:
+
+    # FYI there is a test case to validate encoding:
+    #   python3 indexer_tests.py  TestBuildIndex.test_encode_and_search_index
+
+    @property
+    def model(self):
+        if hasattr(self, "_model"):
+            return self._model
+
+        with logger.timer("importing sentence transformers"):
+
+            # do not check hugging face for newer version, use offline cache only
+            #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
+            # FYI must be set BEFORE importing SentenceTransformer, setting after (even if before model load) doesn't work
+            os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
+            from sentence_transformers import SentenceTransformer  # 2+ seconds to import (mostly torch/transformer deps that even if I use BertModel directly, I cannot avoid the import timing)
+
+        # TODO try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
+        model_name = "intfloat/e5-base-v2"
+        with logger.timer(f"Load model {model_name}"):
+            self._model = SentenceTransformer(model_name)
+
+        return self._model
+
+    def ensure_model_loaded(self):
+        self.model  # access model to trigger load
+
+    def encode_passages(self, passages: list[str], show_progress_bar=False):
+        texts = [f"passage: {p}" for p in passages]
+
+        # FYI can split out later, this is only usage of multi-encode
+        return self.model.encode(
+            texts,
+            normalize_embeddings=True,
+            #
+            # FYI CANNOT DO THIS IN LS! ok in standalone indexer (hence make it explicit as arg)
+            show_progress_bar=show_progress_bar,
+            #
+            # device="cpu", # PRN do some testing of perf differences, left alone it is selecting mps (per logs)
+        ).astype("float32")
+
+    def encode_query(self, text: str):
+        # "query: text" is the training query format
+        # "passage: text" is the training document format
+        return self._encode_text(f"query: {text}")
+
+    def _encode_text(self, text: str):
+        return self.model.encode(
+            [text],
+            normalize_embeddings=True,
+            # device="cpu",
+        ).astype("float32")
+
+    def get_shape(self) -> None:
+        # Create a dummy vector to get dimensions
+        # TODO! is this the best way to get this?
+        #  should I just hardcode for now? (per model?)
+        sample_text = "passage: sample"
+        sample_vec = self._encode_text(sample_text)
+        shape = sample_vec.shape[1]
+        return shape
+
+model_wrapper = ModelWrapper()
