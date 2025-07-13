@@ -114,10 +114,12 @@ class Datasets:
             return
 
         # * useful troubleshooting when rebuilding (won't need this if chunks match)
-        logger.pp_debug("prior_chunks", prior_chunks)
-        logger.pp_debug("new_chunks", new_chunks)
-        logger.pp_debug("new_faiss_ids", new_faiss_ids)
-        logger.pp_debug("prior_faiss_ids", prior_faiss_ids)
+        # wow almost 2ms to call pp_debug when log level is INFO?! OUCH
+        # with logger.timer("how long does it take to log to debug when info level"):
+        #     logger.pp_debug("prior_chunks", prior_chunks)
+        #     logger.pp_debug("new_chunks", new_chunks)
+        #     logger.pp_debug("new_faiss_ids", new_faiss_ids)
+        #     logger.pp_debug("prior_faiss_ids", prior_faiss_ids)
 
         with logger.timer("Remove prior vectors"):
             prior_selector = faiss.IDSelectorArray(np.array(prior_faiss_ids, dtype="int64"))
