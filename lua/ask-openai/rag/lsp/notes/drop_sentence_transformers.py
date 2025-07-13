@@ -33,8 +33,9 @@ input_texts = [
     "passage: Definition of summit for English Language Learners. : 1  the highest point of a mountain : the top of a mountain. : 2  the highest level. : 3  a meeting or series of meetings between the leaders of two or more governments.",
 ]
 
-model = BertModel.from_pretrained("intfloat/e5-base-v2")
-tokenizer = BertTokenizer.from_pretrained("intfloat/e5-base-v2")
+with LogTimer("load model/tokenizer", logger):
+    model = BertModel.from_pretrained("intfloat/e5-base-v2")
+    tokenizer = BertTokenizer.from_pretrained("intfloat/e5-base-v2")
 
 # Tokenize the input texts
 batch_dict = tokenizer(input_texts, max_length=512, padding=True, truncation=True, return_tensors='pt')
