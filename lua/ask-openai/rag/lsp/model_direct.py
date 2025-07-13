@@ -78,7 +78,7 @@ class ModelWrapper:
                 embeddings = summed / counts  # average pooling
 
                 embeddings = F.normalize(embeddings, p=2, dim=1)
-                vectors = embeddings.numpy() # would it make more sense to use numpy earlier in chain? i.e. before avg pooling?
+                vectors = embeddings.cpu().numpy() # would it make more sense to use numpy earlier in chain? i.e. before avg pooling?
                 return vectors
 
     def ensure_model_loaded(self):
