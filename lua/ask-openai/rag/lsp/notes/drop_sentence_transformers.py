@@ -1,3 +1,5 @@
+#!/usr/bin/env python3 -m lsp.notes.drop_sentence_transformers
+
 import logging
 from lsp.logs import get_logger, logging_fwk_to_console
 
