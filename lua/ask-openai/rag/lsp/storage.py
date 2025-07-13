@@ -9,7 +9,7 @@ import numpy as np
 from pydantic import BaseModel
 
 from .logs import get_logger
-from .model_direct import model_wrapper
+from .model_st import model_wrapper
 
 logger = get_logger(__name__)
 
