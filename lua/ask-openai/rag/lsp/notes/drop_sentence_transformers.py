@@ -37,6 +37,8 @@ with LogTimer("load model/tokenizer", logger):
     model = BertModel.from_pretrained("intfloat/e5-base-v2")
     tokenizer = BertTokenizer.from_pretrained("intfloat/e5-base-v2")
 
+logger.info(f"loaded on device: {next(model.parameters()).device}")
+
 with LogTimer("encode", logger):
 
     batch_dict = tokenizer(input_texts, max_length=512, padding=True, truncation=True, return_tensors='pt')
@@ -58,4 +60,3 @@ with LogTimer("encode", logger):
 # logger.info(f'{embeddings_before_norm=}')
 logger.info(f'{embeddings=}')
 logger.info(f'{scores=}')
-

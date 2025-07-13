@@ -41,13 +41,14 @@ with LogTimer("load model/tokenizer", logger):
     model_name = "intfloat/e5-base-v2"
     model = SentenceTransformer(model_name)
 
+logger.info(f"loaded on device: {next(model.parameters()).device}")
+
 with LogTimer("encode", logger):
     embeddings = model.encode(
         input_texts,
         normalize_embeddings=True,
         # device="cpu", # TODO! verify timing differences (if any) are not due to device selection
     ).astype("float32")
-
 
     scores = (embeddings[:2] @ embeddings[2:].T) * 100
 
