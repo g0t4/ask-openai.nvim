@@ -72,6 +72,8 @@ function M.on_yank()
         -- ignore empty yanks
         return
     end
+    -- TODO! keep both y and d/c BUT weight y higher than d/c, IOTW when full remove d/cs all first?
+    --   or have a recency calculation too?
     if vim.v.event.operator ~= "y" then
         -- "d", "c" for delete/change
         -- PRN do I wanna ignore the others too?
