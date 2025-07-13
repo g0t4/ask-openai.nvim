@@ -40,16 +40,12 @@ class ModelWrapper:
     def _encode(self, texts):
         import numpy as np
 
-        vecs = self.model.encode(
+        vecs_np = self.model.encode(
             texts,
             normalize_embeddings=True,
             # device="cpu",
         ).astype("float32")
-        # FYI I haven't tested model_st since moving the vecs_np conversion here..
-        #  it s/b fine but then I do wonder if I eve need the conversion?
-        #  seems redundant on float32 at least
-        #  make sure to update other usage if change this:
-        vecs_np = np.array(vecs).astype("float32")
+
         return vecs_np
 
     def encode_passages(self, passages: list[str]):
