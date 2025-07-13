@@ -41,24 +41,15 @@ with LogTimer("load model/tokenizer", logger):
     model_name = "intfloat/e5-base-v2"
     model = SentenceTransformer(model_name)
 
-exit()
+with LogTimer("encode", logger):
+    embeddings = model.encode(
+        input_texts,
+        normalize_embeddings=True,
+        # device="cpu", # TODO! verify timing differences (if any) are not due to device selection
+    ).astype("float32")
 
-# Tokenize the input texts
-batch_dict = tokenizer(input_texts, max_length=512, padding=True, truncation=True, return_tensors='pt')
-logger.info(f'{batch_dict=}')
 
-outputs = model(**batch_dict)
-logger.info(f'{outputs=}')
-logger.info(f'{outputs.last_hidden_state.shape=}')
-logger.info(f'{outputs.last_hidden_state=}')
-logger.info(f'{batch_dict["attention_mask"].shape=}')
+    scores = (embeddings[:2] @ embeddings[2:].T) * 100
 
-embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
 logger.info(f'{embeddings=}')
-
-# normalize embeddings
-embeddings = F.normalize(embeddings, p=2, dim=1)
-logger.info(f'{embeddings=}')
-
-scores = (embeddings[:2] @ embeddings[2:].T) * 100
 logger.info(f'{scores=}')

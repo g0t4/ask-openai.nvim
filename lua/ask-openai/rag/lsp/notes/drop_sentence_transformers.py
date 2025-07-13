@@ -37,22 +37,25 @@ with LogTimer("load model/tokenizer", logger):
     model = BertModel.from_pretrained("intfloat/e5-base-v2")
     tokenizer = BertTokenizer.from_pretrained("intfloat/e5-base-v2")
 
-# Tokenize the input texts
-batch_dict = tokenizer(input_texts, max_length=512, padding=True, truncation=True, return_tensors='pt')
-logger.info(f'{batch_dict=}')
+with LogTimer("encode", logger):
 
-outputs = model(**batch_dict)
-logger.info(f'{outputs=}')
-logger.info(f'{outputs.last_hidden_state.shape=}')
-logger.info(f'{outputs.last_hidden_state=}')
-logger.info(f'{batch_dict["attention_mask"].shape=}')
+    batch_dict = tokenizer(input_texts, max_length=512, padding=True, truncation=True, return_tensors='pt')
 
-embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
+    outputs = model(**batch_dict)
+
+    embeddings = average_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
+
+    # normalize embeddings
+    embeddings = F.normalize(embeddings, p=2, dim=1)
+
+    scores = (embeddings[:2] @ embeddings[2:].T) * 100
+
+# logger.info(f'{batch_dict=}')
+# logger.info(f'{outputs=}')
+# logger.info(f'{outputs.last_hidden_state.shape=}')
+# logger.info(f'{outputs.last_hidden_state=}')
+# logger.info(f'{batch_dict["attention_mask"].shape=}')
+# logger.info(f'{embeddings_before_norm=}')
 logger.info(f'{embeddings=}')
-
-# normalize embeddings
-embeddings = F.normalize(embeddings, p=2, dim=1)
-logger.info(f'{embeddings=}')
-
-scores = (embeddings[:2] @ embeddings[2:].T) * 100
 logger.info(f'{scores=}')
+
