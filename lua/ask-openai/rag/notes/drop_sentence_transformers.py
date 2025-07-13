@@ -1,13 +1,13 @@
 import torch.nn.functional as F
 
-from torch import Tensor
+# from torch import Tensor # only needed for type hints... so not really needed
 
 # unfortunately, at best this saves 100ms of 2300ms total on import timing...
 #   this is most useful to understand how embeddings are calculated using last_hidden, etc.
 
 from transformers import BertModel, BertTokenizer
 
-def average_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tensor:
+def average_pool(last_hidden_states: "Tensor", attention_mask: "Tensor") -> "Tensor":
     last_hidden = last_hidden_states.masked_fill(~attention_mask[..., None].bool(), 0.0)
     return last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
 
