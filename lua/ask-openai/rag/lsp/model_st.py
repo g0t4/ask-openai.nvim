@@ -14,6 +14,10 @@ class ModelWrapper:
         if hasattr(self, "_model"):
             return self._model
 
+        with logger.timer("import numpy"):
+            # FYI pre-load so timing is never skewed on encode
+            import numpy as np
+
         with logger.timer("importing sentence transformers"):
 
             # do not check hugging face for newer version, use offline cache only
@@ -33,14 +37,25 @@ class ModelWrapper:
     def ensure_model_loaded(self):
         self.model  # access model to trigger load
 
-    def encode_passages(self, passages: list[str]):
-        texts = [f"passage: {p}" for p in passages]
+    def _encode(self, texts):
+        import numpy as np
 
-        # FYI can split out later, this is only usage of multi-encode
-        return self.model.encode(
+        vecs = self.model.encode(
             texts,
             normalize_embeddings=True,
+            # device="cpu",
         ).astype("float32")
+        # FYI I haven't tested model_st since moving the vecs_np conversion here..
+        #  it s/b fine but then I do wonder if I eve need the conversion?
+        #  seems redundant on float32 at least
+        #  make sure to update other usage if change this:
+        vecs_np = np.array(vecs).astype("float32")
+        return vecs_np
+
+    def encode_passages(self, passages: list[str]):
+        texts = [f"passage: {p}" for p in passages]
+        # TODO test refactored _encode() shared method:
+        return self._encode(texts)
 
     def encode_query(self, text: str):
         # "query: text" is the training query format
@@ -48,11 +63,9 @@ class ModelWrapper:
         return self._encode_text(f"query: {text}")
 
     def _encode_text(self, text: str):
-        return self.model.encode(
-            [text],
-            normalize_embeddings=True,
-            # device="cpu",
-        ).astype("float32")
+        # FYI model.encode will encode a list of texts, so just encode a single text
+        # TODO test refactored _encode() shared method:
+        return self._encode([text])
 
     def get_shape(self) -> None:
         # Create a dummy vector to get dimensions

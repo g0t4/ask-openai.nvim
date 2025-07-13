@@ -11,12 +11,11 @@ class ModelWrapper:
         if hasattr(self, "_model"):
             return self._model
 
-        with logger.timer("import torch"):
+        with logger.timer("import torch/numpy"):
             # FYI leave F import here so its front loaded for timing comparisons even though I only need it at encode time
             import torch.nn.functional as F
             import torch
-
-        # from torch import Tensor # only needed for type hints... so not really needed
+            import numpy as np
 
         with logger.timer("import BertModel/Tokenizer"):
             # must come before import so it doesn't check model load on HF later
@@ -47,9 +46,10 @@ class ModelWrapper:
         return self._tokenizer
 
     def encode(self, texts):
-        with logger.timer("imports again for torch, s/b 0 time b/c already imported in model load"):
-            import torch.nn.functional as F
-            import torch
+        # re-imports just so they don't run when module loads, these also are already imported on model load so should be 0 time here
+        import torch.nn.functional as F
+        import torch
+        import numpy as np
 
         with logger.timer("encode-direct"):
 
@@ -72,7 +72,8 @@ class ModelWrapper:
                 embeddings = summed / counts  # average pooling
 
                 embeddings = F.normalize(embeddings, p=2, dim=1)
-                return embeddings
+                vectors = embeddings.detach().cpu().numpy()
+                return vectors
 
     def ensure_model_loaded(self):
         self.model  # access model to trigger load
