@@ -21,8 +21,7 @@ class ModelWrapper:
             # FYI must be set BEFORE importing SentenceTransformer, setting after (even if before model load) doesn't work
             os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
-            from sentence_transformers import SentenceTransformer  # ! 2+ seconds to import!
-            # why do I need the long startup here? this is insance for imports to take 2 seconds
+            from sentence_transformers import SentenceTransformer  # 2+ seconds to import (mostly torch/transformer deps that even if I use BertModel directly, I cannot avoid the import timing)
 
         # TODO try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
         model_name = "intfloat/e5-base-v2"
