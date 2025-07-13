@@ -35,7 +35,7 @@ class ModelWrapper:
         )
 
         with logger.timer("load model/tokenizer"):
-            # !!! model load is < 100ms, huge improvement over the 500ms for SentenceTransformer
+            # ! model load is < 100ms, huge improvement over the 500ms for SentenceTransformer
             model_name = "intfloat/e5-base-v2"
             self._model = BertModel.from_pretrained(model_name).to(device)
             self._tokenizer = BertTokenizer.from_pretrained(model_name)
