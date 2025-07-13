@@ -73,6 +73,7 @@ class Logger(logging.Logger):
         self.info(f"{message}: %s", self.pp(obj))
 
     def pp_debug(self, message, obj):
+        # TODO check level before self.pp/debug here... takes nearly 0.5ms in some cases even if level would exclude the entry
         self.debug(f"{message}: %s", self.pp(obj))
 
     def timer(self, finished_message=""):
