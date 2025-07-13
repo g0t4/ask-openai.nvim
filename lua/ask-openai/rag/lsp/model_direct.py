@@ -41,6 +41,11 @@ class ModelWrapper:
 
         return self._model
 
+    @property
+    def tokenizer(self):
+        self.model  # ensure model and tokenizer are loaded
+        return self._tokenizer
+
     def encode(self, texts):
         with logger.timer("imports again for torch, s/b 0 time b/c already imported in model load"):
             import torch.nn.functional as F
@@ -48,15 +53,15 @@ class ModelWrapper:
 
         with logger.timer("encode-direct"):
 
-            inputs = self._tokenizer(
+            inputs = self.tokenizer(
                 texts,
                 padding=True,
                 truncation=True,
                 return_tensors='pt',
-            ).to(self._model.device)
+            ).to(self.model.device)
 
             with torch.no_grad():
-                outputs = self._model(**inputs)
+                outputs = self.model(**inputs)
                 token_embeddings = outputs.last_hidden_state  # (batch, seq_len, hidden)
 
                 attention_mask = inputs['attention_mask'].unsqueeze(-1)  # (batch, seq_len, 1)
