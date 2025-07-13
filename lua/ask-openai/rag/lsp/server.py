@@ -8,6 +8,7 @@ from pygls import uris, workspace
 from pygls.server import LanguageServer
 
 from lsp import ignores, imports, rag
+from lsp import fs
 
 from .logs import get_logger, logging_fwk_to_language_server_log_file
 
@@ -38,6 +39,8 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
         logger.info(f"STOP on_initialize b/c no {dot_rag_dir=}")
         # DO NOT notify yet, that has to come after server responds to initialize request
         return types.InitializeResult(capabilities=types.ServerCapabilities())
+
+    fs.set_root_dir(dot_rag_dir)
 
     ignores.use_pygls_workspace(root_path)
 
