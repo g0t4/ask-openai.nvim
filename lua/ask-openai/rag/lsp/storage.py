@@ -79,10 +79,6 @@ class Datasets:
         language_extension = Path(file_path).suffix.removeprefix('.')
         return self.all_datasets.get(language_extension)
 
-    # def _delete_file(self, file_path: str | Path):
-    #     # TODO! with update_file
-    #     pass
-
     def update_file(self, file_path_str: str | Path, new_chunks: List[Chunk]):
         file_path_str = str(file_path_str)  # must be str, just let people pass either
 
@@ -97,14 +93,6 @@ class Datasets:
             # TODO should I be creating it in this case?
             #    ADD TESTS FOR THIS
             return
-
-        # TODO pass or hardcode chunk_type?
-        # TODO do I need to pass file_hash? IIAC I won't
-        # FYI first pass is ONLY to get this to work for LS client...
-        #    FYI NOT to prepare to port indexer to use this!
-        #    make this specific to just the use case of LS update_file
-        #    that means no need for stat (stat only used by indexer to see what changed between its bulk updates)
-        # TODO call self._delete_file?
 
         # * find prior chunks (if any)
         prior_chunks: list[Chunk] | None = None
