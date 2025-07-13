@@ -104,8 +104,6 @@ def update_file_from_disk(file_path):
     hash = get_file_hash(file_path)
     new_chunks = build_file_chunks(file_path, hash)
 
-    logger.pp_info("new_chunks", new_chunks)
-
     datasets.update_file(file_path, new_chunks)
 
 def update_file_from_pygls_doc(doc: TextDocument):
@@ -115,7 +113,5 @@ def update_file_from_pygls_doc(doc: TextDocument):
 
     with logger.timer(f"build_file_chunks {fs.get_loggable_path(file_path)}"):
         new_chunks = build_from_lines(file_path, lines_hash, doc.lines)
-
-    # logger.pp_info("new_chunks", new_chunks)
 
     datasets.update_file(file_path, new_chunks)

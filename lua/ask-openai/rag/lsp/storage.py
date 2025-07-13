@@ -104,19 +104,20 @@ class Datasets:
             logger.info(f"No prior_chunks")
             prior_chunks = []
 
-        # logger.info(f"Updating {file_path_str}")
-        # logger.pp_info("prior_chunks", prior_chunks)
-
         # * FAISS UPDATES:
         new_faiss_ids = [c.faiss_id for c in new_chunks]
-        # logger.pp_info("new_faiss_ids", new_faiss_ids)
         prior_faiss_ids = [c.faiss_id for c in prior_chunks]
-        # logger.pp_info("prior_faiss_ids", prior_faiss_ids)
 
         # * YES! if chunks match, skip encoding which is most expensive part!
         if prior_faiss_ids == new_faiss_ids:
             logger.info(f"prior_chunks match new_chunks, SKIP re-encoding!")
             return
+
+        # * useful troubleshooting when rebuilding (won't need this if chunks match)
+        logger.pp_info("prior_chunks", prior_chunks)
+        logger.pp_info("new_chunks", new_chunks)
+        logger.pp_info("new_faiss_ids", new_faiss_ids)
+        logger.pp_info("prior_faiss_ids", prior_faiss_ids)
 
         with logger.timer("Remove prior vectors"):
             prior_selector = faiss.IDSelectorArray(np.array(prior_faiss_ids, dtype="int64"))
