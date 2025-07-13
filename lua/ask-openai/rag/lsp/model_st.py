@@ -33,18 +33,13 @@ class ModelWrapper:
     def ensure_model_loaded(self):
         self.model  # access model to trigger load
 
-    def encode_passages(self, passages: list[str], show_progress_bar=False):
+    def encode_passages(self, passages: list[str]):
         texts = [f"passage: {p}" for p in passages]
 
         # FYI can split out later, this is only usage of multi-encode
         return self.model.encode(
             texts,
             normalize_embeddings=True,
-            #
-            # FYI CANNOT DO THIS IN LS! ok in standalone indexer (hence make it explicit as arg)
-            show_progress_bar=show_progress_bar,
-            #
-            # device="cpu", # PRN do some testing of perf differences, left alone it is selecting mps (per logs)
         ).astype("float32")
 
     def encode_query(self, text: str):

@@ -179,7 +179,7 @@ class IncrementalRAGIndexer:
 
             with logger.timer("Encode new vectors"):
                 passages = [chunk.text for chunk in new_chunks]
-                vecs = model_wrapper.encode_passages(passages, show_progress_bar=True)
+                vecs = model_wrapper.encode_passages(passages)
 
             # PRN move these np.array transforms into encode* funcs?
             #  TODO IIRC  model.encode has a numpy param for this purpose!
