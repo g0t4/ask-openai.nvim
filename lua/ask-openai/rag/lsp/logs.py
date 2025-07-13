@@ -66,15 +66,18 @@ def logging_fwk_to_console(level):
 
 class Logger(logging.Logger):
 
-    def pp(self, obj):
+    def _pp(self, obj):
         return pretty_repr(obj, indent_size=2)
 
     def pp_info(self, message, obj):
-        self.info(f"{message}: %s", self.pp(obj))
+        if not self.isEnabledFor(logging.INFO):
+            return
+        self.info(f"{message}: %s", self._pp(obj))
 
     def pp_debug(self, message, obj):
-        # TODO check level before self.pp/debug here... takes nearly 0.5ms in some cases even if level would exclude the entry
-        self.debug(f"{message}: %s", self.pp(obj))
+        if not self.isEnabledFor(logging.DEBUG):
+            return
+        self.debug(f"{message}: %s", self._pp(obj))
 
     def timer(self, finished_message=""):
         return LogTimer(finished_message, logger=self)
