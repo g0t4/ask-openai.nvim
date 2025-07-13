@@ -1,7 +1,8 @@
 #!/usr/bin/env python3 -m lsp.notes.drop_sentence_transformers
 
 import logging
-from lsp.logs import get_logger, logging_fwk_to_console
+import os
+from lsp.logs import get_logger, logging_fwk_to_console, LogTimer
 
 logger = get_logger("drop_ST")
 logging_fwk_to_console(logging.DEBUG)
@@ -14,7 +15,10 @@ from rich import print
 # unfortunately, at best this saves 100ms of 2300ms total on import timing...
 #   this is most useful to understand how embeddings are calculated using last_hidden, etc.
 
-from transformers import BertModel, BertTokenizer
+with LogTimer("import BertModel/Tokenizer", logger):
+    # must come before import so it doesn't check model load on HF later
+    os.environ["TRANSFORMERS_OFFLINE"] = "1"
+    from transformers import BertModel, BertTokenizer
 
 def average_pool(last_hidden_states: "Tensor", attention_mask: "Tensor") -> "Tensor":
     last_hidden = last_hidden_states.masked_fill(~attention_mask[..., None].bool(), 0.0)
