@@ -3,28 +3,21 @@
 import logging
 import os
 
-import torch
-from lsp.logs import get_logger, logging_fwk_to_console, LogTimer
+from lsp.logs import get_logger, logging_fwk_to_console
 
 logger = get_logger("drop_ST")
 logging_fwk_to_console(logging.DEBUG)
 
-with LogTimer("import torch.nn.functional as F", logger):
+with logger.timer("import torch.nn.functional as F"):
     import torch.nn.functional as F
+    import torch
 
 # from torch import Tensor # only needed for type hints... so not really needed
 
-# unfortunately, at best this saves 100ms of 2300ms total on import timing...
-#   this is most useful to understand how embeddings are calculated using last_hidden, etc.
-
-with LogTimer("import BertModel/Tokenizer", logger):
+with logger.timer("import BertModel/Tokenizer"):
     # must come before import so it doesn't check model load on HF later
     os.environ["TRANSFORMERS_OFFLINE"] = "1"
     from transformers import BertModel, BertTokenizer
-
-def average_pool(last_hidden_states: "Tensor", attention_mask: "Tensor") -> "Tensor":
-    last_hidden = last_hidden_states.masked_fill(~attention_mask[..., None].bool(), 0.0)
-    return last_hidden.sum(dim=1) / attention_mask.sum(dim=1)[..., None]
 
 # Each input text should start with "query: " or "passage: ".
 # For tasks other than retrieval, you can simply use the "query: " prefix.
@@ -41,20 +34,21 @@ device = torch.device(
     'cpu'
 )
 
-with LogTimer("load model/tokenizer", logger):
-    model = BertModel.from_pretrained("intfloat/e5-base-v2").to(use_device)
+with logger.timer("load model/tokenizer"):
+    # !!! model load is < 100ms, huge improvement over the 500ms for SentenceTransformer
+    model = BertModel.from_pretrained("intfloat/e5-base-v2").to(device)
     tokenizer = BertTokenizer.from_pretrained("intfloat/e5-base-v2")
 
 logger.info(f"loaded on device: {model.device=}")
 
-with LogTimer("encode-direct", logger):
+with logger.timer("encode-direct"):
 
     inputs = tokenizer(
         input_texts,
         padding=True,
         truncation=True,
         return_tensors='pt',
-    ).to(use_device)
+    ).to(model.device)
 
     with torch.no_grad():
         outputs = model(**inputs)
@@ -67,7 +61,7 @@ with LogTimer("encode-direct", logger):
         counts = attention_mask.sum(dim=1)
         embeddings = summed / counts  # average pooling
 
-        embeddings = torch.nn.functional.normalize(embeddings, p=2, dim=1)
+        embeddings = F.normalize(embeddings, p=2, dim=1)
 
 #
 #     batch_dict_pre = tokenizer(

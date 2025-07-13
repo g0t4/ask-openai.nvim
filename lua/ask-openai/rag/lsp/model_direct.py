@@ -6,46 +6,75 @@ logger = get_logger(__name__)
 
 class ModelWrapper:
 
-    # FYI there is a test case to validate encoding:
-    #   python3 indexer_tests.py  TestBuildIndex.test_encode_and_search_index
-
     @property
     def model(self):
         if hasattr(self, "_model"):
             return self._model
 
-        with logger.timer("importing sentence transformers"):
+        with logger.timer("import torch"):
+            # FYI leave F import here so its front loaded for timing comparisons even though I only need it at encode time
+            import torch.nn.functional as F
+            import torch
 
-            # do not check hugging face for newer version, use offline cache only
-            #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
-            # FYI must be set BEFORE importing SentenceTransformer, setting after (even if before model load) doesn't work
+        # from torch import Tensor # only needed for type hints... so not really needed
+
+        with logger.timer("import BertModel/Tokenizer"):
+            # must come before import so it doesn't check model load on HF later
             os.environ["TRANSFORMERS_OFFLINE"] = "1"
+            from transformers import BertModel, BertTokenizer
 
-            from sentence_transformers import SentenceTransformer  # 2+ seconds to import (mostly torch/transformer deps that even if I use BertModel directly, I cannot avoid the import timing)
+        device = torch.device(
+            'cuda' if torch.cuda.is_available() else \
+            'mps' if torch.backends.mps.is_available() else \
+            'cpu'
+        )
 
-        # TODO try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
-        model_name = "intfloat/e5-base-v2"
-        with logger.timer(f"Load model {model_name}"):
-            self._model = SentenceTransformer(model_name)
+        with logger.timer("load model/tokenizer"):
+            # !!! model load is < 100ms, huge improvement over the 500ms for SentenceTransformer
+            model_name = "intfloat/e5-base-v2"
+            self._model = BertModel.from_pretrained(model_name).to(device)
+            self._tokenizer = BertTokenizer.from_pretrained(model_name)
+            #
+            # TODO try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
+
+        logger.info(f"loaded on device: {self._model.device=}")
 
         return self._model
+
+    def encode(self, texts):
+        with logger.timer("imports again for torch, s/b 0 time b/c already imported in model load"):
+            import torch.nn.functional as F
+            import torch
+
+        with logger.timer("encode-direct"):
+
+            inputs = self._tokenizer(
+                texts,
+                padding=True,
+                truncation=True,
+                return_tensors='pt',
+            ).to(self._model.device)
+
+            with torch.no_grad():
+                outputs = self._model(**inputs)
+                token_embeddings = outputs.last_hidden_state  # (batch, seq_len, hidden)
+
+                attention_mask = inputs['attention_mask'].unsqueeze(-1)  # (batch, seq_len, 1)
+                masked_embeddings = token_embeddings * attention_mask
+
+                summed = masked_embeddings.sum(dim=1)
+                counts = attention_mask.sum(dim=1)
+                embeddings = summed / counts  # average pooling
+
+                embeddings = F.normalize(embeddings, p=2, dim=1)
+                return embeddings
 
     def ensure_model_loaded(self):
         self.model  # access model to trigger load
 
-    def encode_passages(self, passages: list[str], show_progress_bar=False):
+    def encode_passages(self, passages: list[str]):
         texts = [f"passage: {p}" for p in passages]
-
-        # FYI can split out later, this is only usage of multi-encode
-        return self.model.encode(
-            texts,
-            normalize_embeddings=True,
-            #
-            # FYI CANNOT DO THIS IN LS! ok in standalone indexer (hence make it explicit as arg)
-            show_progress_bar=show_progress_bar,
-            #
-            # device="cpu", # PRN do some testing of perf differences, left alone it is selecting mps (per logs)
-        ).astype("float32")
+        return self.encode(texts)
 
     def encode_query(self, text: str):
         # "query: text" is the training query format
@@ -53,13 +82,9 @@ class ModelWrapper:
         return self._encode_text(f"query: {text}")
 
     def _encode_text(self, text: str):
-        return self.model.encode(
-            [text],
-            normalize_embeddings=True,
-            # device="cpu",
-        ).astype("float32")
+        return self.encode([text])
 
-    def get_shape(self) -> None:
+    def get_shape(self) -> int:
         # Create a dummy vector to get dimensions
         # TODO! is this the best way to get this?
         #  should I just hardcode for now? (per model?)
