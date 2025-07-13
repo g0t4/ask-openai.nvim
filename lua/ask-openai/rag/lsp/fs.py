@@ -1,4 +1,6 @@
 from pathlib import Path
+from .logs import get_logger
+logger = get_logger(__name__)
 
 root_path: Path | None = None
 
