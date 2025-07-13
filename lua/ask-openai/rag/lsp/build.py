@@ -39,9 +39,9 @@ def build_file_chunks(path: Path | str, file_hash: str, lines_per_chunk: int = 2
         return build_from_lines(path, file_hash, lines, lines_per_chunk, overlap)
 
 def build_from_lines(path: Path, file_hash: str, lines: List[str], \
-                     lines_per_chunk: int = 20, overlap: int = 4)  -> List[Chunk]:
+                     lines_per_chunk: int = 20, overlap: int = 5)  -> List[Chunk]:
 
-    def iter_chunks(lines, lines_per_chunk=20, overlap=4, min_chunk_size=10):
+    def iter_chunks(lines, lines_per_chunk=20, overlap=5, min_chunk_size=10):
         n_lines = len(lines)
         step = lines_per_chunk - overlap
         for idx, i in enumerate(range(0, n_lines, step)):
