@@ -35,8 +35,11 @@ input_texts = [
     "passage: Definition of summit for English Language Learners. : 1  the highest point of a mountain : the top of a mountain. : 2  the highest level. : 3  a meeting or series of meetings between the leaders of two or more governments.",
 ]
 
-# use_device = "cpu"
-use_device = "mps"
+device = torch.device(
+    'cuda' if torch.cuda.is_available() else \
+    'mps' if torch.backends.mps.is_available() else \
+    'cpu'
+)
 
 with LogTimer("load model/tokenizer", logger):
     model = BertModel.from_pretrained("intfloat/e5-base-v2").to(use_device)
@@ -55,9 +58,17 @@ with LogTimer("encode-direct", logger):
 
     with torch.no_grad():
         outputs = model(**inputs)
-        embeddings = outputs.last_hidden_state[:, 0]
-        embeddings = F.normalize(embeddings, p=2, dim=1)
-# with LogTimer("encode", logger):
+        token_embeddings = outputs.last_hidden_state  # (batch, seq_len, hidden)
+
+        attention_mask = inputs['attention_mask'].unsqueeze(-1)  # (batch, seq_len, 1)
+        masked_embeddings = token_embeddings * attention_mask
+
+        summed = masked_embeddings.sum(dim=1)
+        counts = attention_mask.sum(dim=1)
+        embeddings = summed / counts  # average pooling
+
+        embeddings = torch.nn.functional.normalize(embeddings, p=2, dim=1)
+
 #
 #     batch_dict_pre = tokenizer(
 #         input_texts,
