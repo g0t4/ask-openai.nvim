@@ -31,17 +31,20 @@ def get_file_stat(file_path: Path | str) -> FileStat:
         path=str(file_path)  # for serializing and reading by LSP
     )
 
-def build_file_chunks(path: Path | str, file_hash: str, lines_per_chunk: int = 20, overlap: int = 5) -> List[Chunk]:
+def build_file_chunks(path: Path | str, file_hash: str) -> List[Chunk]:
     path = Path(path)
 
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         lines = f.readlines()
-        return build_from_lines(path, file_hash, lines, lines_per_chunk, overlap)
+        return build_from_lines(path, file_hash, lines)
 
-def build_from_lines(path: Path, file_hash: str, lines: List[str], \
-                     lines_per_chunk: int = 20, overlap: int = 5)  -> List[Chunk]:
+def build_from_lines(path: Path, file_hash: str, lines: List[str]) -> List[Chunk]:
 
-    def iter_chunks(lines, lines_per_chunk=20, overlap=5, min_chunk_size=10):
+    # when the time comes, figure out how to alter these:
+    lines_per_chunk = 20
+    overlap = 5
+
+    def iter_chunks(lines, min_chunk_size=10):
         n_lines = len(lines)
         step = lines_per_chunk - overlap
         for idx, i in enumerate(range(0, n_lines, step)):
@@ -65,7 +68,7 @@ def build_from_lines(path: Path, file_hash: str, lines: List[str], \
             )
 
     chunks = []
-    for _, chunk in enumerate(iter_chunks(lines, lines_per_chunk, overlap)):
+    for _, chunk in enumerate(iter_chunks(lines)):
         chunks.append(chunk)
 
     return chunks
