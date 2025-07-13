@@ -114,10 +114,10 @@ class Datasets:
             return
 
         # * useful troubleshooting when rebuilding (won't need this if chunks match)
-        logger.pp_info("prior_chunks", prior_chunks)
-        logger.pp_info("new_chunks", new_chunks)
-        logger.pp_info("new_faiss_ids", new_faiss_ids)
-        logger.pp_info("prior_faiss_ids", prior_faiss_ids)
+        logger.pp_debug("prior_chunks", prior_chunks)
+        logger.pp_debug("new_chunks", new_chunks)
+        logger.pp_debug("new_faiss_ids", new_faiss_ids)
+        logger.pp_debug("prior_faiss_ids", prior_faiss_ids)
 
         with logger.timer("Remove prior vectors"):
             prior_selector = faiss.IDSelectorArray(np.array(prior_faiss_ids, dtype="int64"))
