@@ -44,30 +44,7 @@ function M.exists(path)
 end
 
 function M.list_directories(path)
-    if not vim.fn.isdirectory(path) then
-        return {}
-    end
-
-    local dir = vim.uv.fs_opendir(path, nil, 1)
-    if dir == nil then
-        return {}
-    end
-
-    local entries = {}
-    local has_more = true
-
-    while has_more do
-        local result = vim.uv.fs_readdir(dir)
-        if not result then
-            break
-        end
-
-        for _, entry in ipairs(result) do
-            table.insert(entries, entry)
-        end
-
-        has_more = #result > 0
-    end
+    local entries = M.list_entries(path)
 
     local dirs = vim.iter(entries)
         :filter(function(entry) return entry.type == "directory" end)
