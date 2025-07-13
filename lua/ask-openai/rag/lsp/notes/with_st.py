@@ -1,4 +1,4 @@
-#!/usr/bin/env python3 -m lsp.notes.drop_sentence_transformers
+#!/usr/bin/env python3 -m lsp.notes.with_st
 
 import logging
 import os
@@ -40,6 +40,8 @@ input_texts = [
 with LogTimer("load model/tokenizer", logger):
     model_name = "intfloat/e5-base-v2"
     model = SentenceTransformer(model_name)
+
+exit()
 
 # Tokenize the input texts
 batch_dict = tokenizer(input_texts, max_length=512, padding=True, truncation=True, return_tensors='pt')
