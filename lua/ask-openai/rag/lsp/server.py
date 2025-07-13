@@ -27,7 +27,7 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
     # server.workspace.folders
 
     root_path = params.root_path  # ., root_uri='file:///Users/wesdemos/repos/github/g0t4/ask-openai.nvim'
-    logger.info(f"workspace {root_path=}")
+    fs.set_root_dir(root_path)
     if root_path is None:
         logger.error(f"aborting on_initialize b/c missing client workspace root_uri {root_path}")
         raise ValueError("root_uri is None")
@@ -39,8 +39,6 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
         logger.info(f"STOP on_initialize b/c no {dot_rag_dir=}")
         # DO NOT notify yet, that has to come after server responds to initialize request
         return types.InitializeResult(capabilities=types.ServerCapabilities())
-
-    fs.set_root_dir(dot_rag_dir)
 
     ignores.use_pygls_workspace(root_path)
 

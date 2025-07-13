@@ -2,9 +2,10 @@ from pathlib import Path
 
 root_path: Path | None = None
 
-def set_root_dir(dir: Path | None):
+def set_root_dir(root: Path | None):
     global root_path
-    root_path = dir
+    root_path = root
+    logger.info(f"workspace {root_path=}")
 
 def relative_to_workspace(path: Path | str) -> Path:
     path = Path(path)
