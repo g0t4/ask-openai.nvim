@@ -147,7 +147,8 @@ class IncrementalRAGIndexer:
         if index is None:
             logger.info("Creating new FAISS index")
             shape = model_wrapper.get_shape()
-            logger.info(f"{shape=}")  # 768 for current model
+            # 768 for "intfloat/e5-base-v2"
+            # 1024 for Qwen3
             base_index = faiss.IndexFlatIP(shape)
             index = faiss.IndexIDMap(base_index)
             # FYI if someone deletes the vectors file... this won't recreate it if stat still exists...
@@ -159,12 +160,11 @@ class IncrementalRAGIndexer:
                 new_chunks.append(chunk)
                 new_faiss_ids.append(chunk.faiss_id)
 
-        with logger.timer("Remove old vectors"):
-            # TODO need to pass holdovers too
-            keep_ids = new_faiss_ids.copy()
-            for _, file_chunks in unchanged_chunks_by_file.items():
-                for chunk in file_chunks:
-                    keep_ids.append(chunk.faiss_id)
+        # TODO need to pass holdovers too
+        keep_ids = new_faiss_ids.copy()
+        for _, file_chunks in unchanged_chunks_by_file.items():
+            for chunk in file_chunks:
+                keep_ids.append(chunk.faiss_id)
 
             logger.pp_info("keep_ids", keep_ids)
 
