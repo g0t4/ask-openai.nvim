@@ -83,8 +83,6 @@ while a >= -1 and outer_count_limit < 1000:
         print(f"  {a_proposed_diff=}")
         a_diff = a_proposed_diff
 
-        # %%
-
     a_next = a - a_diff
     _a_next_sq = math.pow(a_next, 2)
     if _a_next_sq > 1:
