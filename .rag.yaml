@@ -4,4 +4,5 @@ include:
   fish:
   md:
   txt:
-
+ignores:
+  - "notes/"
