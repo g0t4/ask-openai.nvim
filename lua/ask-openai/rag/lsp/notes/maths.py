@@ -129,6 +129,8 @@ ax2.set_aspect("equal")  # that way if window aspect ratio isn't 1:1 it won't sk
 plt.ion()
 plt.show()
 
+scatter_x, scatter_y = [], []
+
 a_s = np.arange(1, -1.01, -0.05)
 arr = None
 for a in a_s:
@@ -140,13 +142,10 @@ for a in a_s:
         )
     print(a, b)
     arr = ax1.arrow(0, 0, a, b, head_width=0.05, head_length=0.1, length_includes_head=True)
-    break
-    plt.pause(0.02)
 
-scatter_x, scatter_y = [], []
-
-for i in range(10):
-    scatter_x.append(i)
-    scatter_y.append((i * i) % 10)
+    # first up, a vs b over time... draw the circle!
+    scatter_x.append(a)
+    scatter_y.append(b)
     ax2.scatter(scatter_x[-1], scatter_y[-1], color='red')
-    plt.pause(0.5)
+
+    plt.pause(0.02)
