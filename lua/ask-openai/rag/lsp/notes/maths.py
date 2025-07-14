@@ -113,19 +113,21 @@ assert_that(math.pow(mag, 2)).is_equal_to(dot_prod)
 import numpy as np
 import matplotlib.pyplot as plt
 # from matplotlib.animation import FuncAnimation
-# a = 1
-# a_s = np.arange(1,0,0.01)
+import math
 
 fig, ax = plt.subplots()
 fixed_view = 1.5
 ax.set_xlim(-fixed_view, fixed_view)
 ax.set_ylim(-fixed_view, fixed_view)
 
-arr = ax.arrow(0, 0, 1, 0, head_width=0.05, head_length=0.1, length_includes_head=True)
-
-# plt.show()
 plt.ion()
-plt.pause(0.25)
-# arr.set_xy([(0, 0), (-1, 0)])
-arr.remove()
-arr = ax.arrow(0, 0, 0, 1, head_width=0.05, head_length=0.1, length_includes_head=True)
+# plt.show()
+# arr = ax.arrow(0, 0, 0, 1, head_width=0.05, head_length=0.1, length_includes_head=True)
+
+a_s = np.arange(1, 0, -0.05)
+for a in a_s:
+    b = math.sqrt(1 - math.pow(a, 2))
+    print(a, b)
+    arr = ax.arrow(0, 0, a, b, head_width=0.05, head_length=0.1, length_includes_head=True)
+    plt.pause(0.1)
+    arr.remove()
