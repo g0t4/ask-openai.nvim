@@ -1,10 +1,23 @@
 # this smells like PI time :)... but, I am going to do this step by step and not jump yet
 
+# !!! ok this was a fun exercise to get points evenly spaced and it at least appears close to spaced out! based on initial step size of a then all subsequents steps are set so that a_diff^2 + b_diff^2 == c_diff^2 such that c_diff^2 is constant across all points
+# as you take this to zero, you would get a concept of theta then
+# c_diff^2 is the lenght of the line between consecutive points, so it IS NOT the arc but it is an approximation
+#   and as c_diff => 0 then it becomes the arc  and you can then sum that to get the circumference
+#   I think... I am still playing with this new way of thinking about this and need some more tinkering
+
+
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from matplotlib.patches import FancyArrow
 import numpy as np
 import matplotlib.pyplot as plt
 # from matplotlib.animation import FuncAnimation
 import math
 
+fig: "Figure"
+ax1: "Axes"
+ax2: "Axes"
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
 fixed_view = 1.5
 ax1.set_xlim(-fixed_view, fixed_view)
@@ -21,53 +34,89 @@ plt.show()
 
 scatter_x, scatter_y = [], []
 
-a_s = np.arange(1, -1.01, -0.05)
-arr = None
-for a in a_s:
-    if arr:
+first = True
+arr: FancyArrow
+a = 1
+b = 0
+a_diff = None
+outer_count_limit = 0 # just in case set count max so you can troubleshoot
+while a >= -1 and outer_count_limit < 1000:
+    outer_count_limit += 1
+    if a_diff == None:
+        # first_step:
+        a_diff = 0.05 # !!!! ADJUST THIS to get diff set of similarly spaced points
+        # !!! as a_diff's initial values => 0 then you get points spaced evenly around the circumference of the circle
+    else:
         arr.remove()
-    b = math.sqrt(
-            1 - \
-            np.clip(math.pow(a, 2), 0, 1) \
-        )
-    print(a, b)
-    arr = ax1.arrow(0, 0, a, b, head_width=0.05, head_length=0.1, length_includes_head=True)
+        a_proposed_diff = a_diff
+        inner_count_limit = 0
+        while inner_count_limit < 9000:
+            inner_count_limit += 1
+            # print(f" loop")
+            a_proposed = a - a_proposed_diff
+            _a_prop_sq = math.pow(a_proposed, 2)
+            if np.round(_a_prop_sq, 6) > 1:
+                print(f'  {_a_prop_sq=}')
+                # TODO stop outer loop too, do not plot!
+                break
+            b_proposed = math.sqrt(1 - _a_prop_sq)
+            # print(f"  {a_proposed},{b_proposed}")
+            a_proposed_diff_sq = math.pow(a_proposed_diff, 2)
+            b_proposed_diff_sq = math.pow(b_proposed - b, 2)
+            c_proposed_diff_sq = a_proposed_diff_sq + b_proposed_diff_sq
+            if (c_proposed_diff_sq > (c_diff_sq + 0.0001)):
+                a_proposed_diff = a_proposed_diff - 0.001
+            elif (c_proposed_diff_sq < (c_diff_sq - 0.0001)):
+                # decrease 1_proposed_difff slightly (small enough I can ignore overcorrections mostly)
+                a_proposed_diff = a_proposed_diff + 0.001
+            else:
+                print("  break")
+                break
+        print(f"  {a_proposed_diff=}")
+        a_diff = a_proposed_diff
+
+        # %%
+
+    a_next = a - a_diff
+    _a_next_sq = math.pow(a_next, 2)
+    if _a_next_sq > 1:
+        print(f"clipped: {_a_next_sq}")
+        break
+    b_next = math.sqrt(1 - _a_next_sq)
+    a_diff_sq = math.pow(a_diff, 2)
+    b_diff_sq = math.pow(b_next - b, 2)
+    c_diff_sq = a_diff_sq + b_diff_sq
+
+    print(f"  {c_diff_sq=}")
+    print(f"{a_next},{b_next}")
+    arr = ax1.arrow(0, 0, a_next, b_next, head_width=0.05, head_length=0.1, length_includes_head=True)
 
     # first up, a vs b over time... draw the circle!
-    scatter_x.append(a)
-    scatter_y.append(b)
+    scatter_x.append(a_next)
+    scatter_y.append(b_next)
     ax2.scatter(scatter_x[-1], scatter_y[-1], color='red')
 
     plt.pause(0.02)
+    a = a_next
+    b = b_next
 
-# * ok unique observation here is that by varying a linearly  (1 => 0 => -1)
-#   by fixed step 0.01
-#   the tip of the unit vector drawn are unevenly distributed
-#   right away there's a big jump up and then the spacing of points falls off from there
-#   as a gets to 0 the points become densly clustered!
-#   this means something
-# * THEN, I also notice that I need to define b different to capture the bottom half of the circle if you will
-#   as -1 => a => 1 ... then I need b inverted
-#   this is nothing special, just the convention of expressing the unit vector
-#   BUT, I am having trouble then defining an infinite sequence that would allow me to
-#      let the animation run in perpituity
-#      I could solve this with a loop over two loops.. I will add that change next
-
-
-a_s = np.arange(-1, 1.01, 0.05)
-for a in a_s:
-    if arr:
-        arr.remove()
-    b = -math.sqrt(
-            1 - \
-            np.clip(math.pow(a, 2), 0, 1) \
-        )
-    print(a, b)
-    arr = ax1.arrow(0, 0, a, b, head_width=0.05, head_length=0.1, length_includes_head=True)
-
-    # first up, a vs b over time... draw the circle!
-    scatter_x.append(a)
-    scatter_y.append(b)
-    ax2.scatter(scatter_x[-1], scatter_y[-1], color='red')
-
-    plt.pause(0.02)
+print()
+# # exit()
+#
+# a_s = np.arange(-1, 1.01, 0.05)
+# for a in a_s:
+#     if arr:
+#         arr.remove()
+#     b = -math.sqrt(
+#             1 - \
+#             np.clip(math.pow(a, 2), 0, 1) \
+#         )
+#     print(a, b)
+#     arr = ax1.arrow(0, 0, a, b, head_width=0.05, head_length=0.1, length_includes_head=True)
+#
+#     # first up, a vs b over time... draw the circle!
+#     scatter_x.append(a)
+#     scatter_y.append(b)
+#     ax2.scatter(scatter_x[-1], scatter_y[-1], color='red')
+#
+#     plt.pause(0.02)
