@@ -217,9 +217,9 @@ class IncrementalRAGIndexer:
                 chunks = build_file_chunks(file_path, stat.hash)
                 updated_chunks_by_file[file_path_str] = chunks
 
-        logger.pp_info("Deleted chunks", paths.deleted)
-        logger.pp_info("Updated chunks", updated_chunks_by_file)
-        logger.pp_info("Unchanged chunks", unchanged_chunks_by_file)
+        logger.pp_debug("Deleted chunks", paths.deleted)
+        logger.pp_debug("Updated chunks", updated_chunks_by_file)
+        logger.pp_debug("Unchanged chunks", unchanged_chunks_by_file)
 
         # * Incrementally update the FAISS index
         if paths.changed or paths.deleted:
@@ -238,8 +238,7 @@ class IncrementalRAGIndexer:
         index_dir = self.dot_rag_dir / language_extension
         index_dir.mkdir(exist_ok=True, parents=True)
 
-        with logger.timer("Save FAISS index"):
-            faiss.write_index(index, str(index_dir / "vectors.index"))
+        faiss.write_index(index, str(index_dir / "vectors.index"))
 
         with logger.timer("Save chunks"):
             all_chunks_by_file = unchanged_chunks_by_file.copy()
