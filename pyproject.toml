@@ -6,6 +6,7 @@ dependencies = [
     "asyncio>=3.4.3",
     "faiss-cpu>=1.11.0",
     "ipykernel>=6.29.5",
+    "matplotlib>=3.10.3",
     "numpy>=2.3.0",
     "pathspec>=0.12.1",
     "pydantic>=2.11.7",
