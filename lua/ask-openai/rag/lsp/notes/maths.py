@@ -24,6 +24,39 @@ print(mag)
 # mag^2 == dot_prod
 assert_that(math.pow(mag, 2)).is_equal_to(dot_prod)
 
+
+# %%
+
+# cos(θ) = adjacent/hypotenuse
+
+# take two unit vectors
+# theta (angle between)
+
+# θ = 0 degrees = full overlap
+#  => 1
+
+# 45 degrees
+# a^2 + b^2 = c^2
+# a = b => 2a^2 = c^2 => a^2 = c^2/2 => a = sqrt(c^2/2) => a = c/sqrt(2)
+# => a/c = 1/sqrt(2) = cos(theta) => ~0.71
+
+# FYI maybe use
+# a^2 + b^2 = c^2
+# =>   a = adjacent, b = opposite, c = hypotenuse
+# a^2 + o^2 = h^2
+
+# 90 degrees = no overlap
+#  => 0
+
+# 180 degrees = inverted overlap (fully)
+#  => -1
+
+# 270 degrees = no overlap
+#  => 0
+
+# 360 == 0 => full overlap
+#  => 1
+
 # %%
 
 import matplotlib.pyplot as plt
