@@ -52,3 +52,23 @@ for a in a_s:
 #   BUT, I am having trouble then defining an infinite sequence that would allow me to
 #      let the animation run in perpituity
 #      I could solve this with a loop over two loops.. I will add that change next
+
+
+a_s = np.arange(1, -1.01, -0.05)
+arr = None
+for a in a_s:
+    if arr:
+        arr.remove()
+    b = math.sqrt(
+            1 - \
+            np.clip(math.pow(a, 2), 0, 1) \
+        )
+    print(a, b)
+    arr = ax1.arrow(0, 0, a, b, head_width=0.05, head_length=0.1, length_includes_head=True)
+
+    # first up, a vs b over time... draw the circle!
+    scatter_x.append(a)
+    scatter_y.append(b)
+    ax2.scatter(scatter_x[-1], scatter_y[-1], color='red')
+
+    plt.pause(0.02)
