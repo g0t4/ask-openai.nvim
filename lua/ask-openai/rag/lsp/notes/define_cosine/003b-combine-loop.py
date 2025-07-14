@@ -43,9 +43,14 @@ outer_count_limit = 0 # just in case set count max so you can troubleshoot
 while a >= -1 and outer_count_limit < 1000:
     outer_count_limit += 1
     if a_diff == None:
-        # first_step:
-        a_diff = 0.05 # !!!! ADJUST THIS to get diff set of similarly spaced points
+        # first step size:
         # !!! as a_diff's initial values => 0 then you get points spaced evenly around the circumference of the circle
+        # TRY THESE VALUES:
+        # a_diff = 0.05  # !!!! ADJUST THIS to get diff set of similarly spaced points
+        a_diff = 0.02
+        # a_diff = 0.01
+        # a_diff = 0.005
+        # a_diff = 0.002
     else:
         arr.remove()
         a_proposed_diff = a_diff
@@ -64,6 +69,9 @@ while a >= -1 and outer_count_limit < 1000:
             a_proposed_diff_sq = math.pow(a_proposed_diff, 2)
             b_proposed_diff_sq = math.pow(b_proposed - b, 2)
             c_proposed_diff_sq = a_proposed_diff_sq + b_proposed_diff_sq
+            # SOLVING THIS SUCH THAT
+            # c_diff_sq[previous] == c_diff_sq[proposed]
+            # ! draw out first unit vector (1,0) then second one (a[1],b[1]) and then look at how you would calculate the length of the line between the two points (tips of unit vector)... that is how you get to c_diff^2 = a_diff^2 + b_diff^2
             if (c_proposed_diff_sq > (c_diff_sq + 0.0001)):
                 a_proposed_diff = a_proposed_diff - 0.001
             elif (c_proposed_diff_sq < (c_diff_sq - 0.0001)):
