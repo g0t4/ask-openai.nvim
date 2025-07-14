@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def on_open(params: types.DidOpenTextDocumentParams):
     if params.text_document.language_id != 'python':
         return
-    logger.info(f"analyzing imports from {params.text_document.uri}")
+    logger.debug(f"analyzing imports from {params.text_document.uri}")
 
     text = params.text_document.text.encode()
     tree = parser.parse(text)
@@ -40,7 +40,7 @@ def on_open(params: types.DidOpenTextDocumentParams):
 
     def visit(node, level: int):
         level_indent = "  " * level
-        # logger.info(f"{level_indent}visiting {node.type}: {text[node.start_byte:node.end_byte].decode()}")
+        # logger.debug(f"{level_indent}visiting {node.type}: {text[node.start_byte:node.end_byte].decode()}")
 
         if node.type == "import_statement":
             # import a.b.c
@@ -49,12 +49,12 @@ def on_open(params: types.DidOpenTextDocumentParams):
                     for child2 in child.children:
                         if child2.type == "dotted_name":
                             my_text = text[child2.start_byte:child2.end_byte].decode()
-                            logger.info(f"{level_indent}** aliased import => dotted_name: {my_text}")
+                            logger.debug(f"{level_indent}** aliased import => dotted_name: {my_text}")
                             modules.append(my_text)
                             break  # stop on first
                 if child.type == "dotted_name":
                     my_text = text[child.start_byte:child.end_byte].decode()
-                    logger.info(f"{level_indent}** dotted name: {text[child.start_byte:child.end_byte].decode()}")
+                    logger.debug(f"{level_indent}** dotted name: {text[child.start_byte:child.end_byte].decode()}")
                     modules.append(my_text)
                     break  # stop on first (else from foo import bar... gets to both foo and bar.. they're both dotted_names)
         elif node.type == "import_from_statement":
@@ -62,7 +62,7 @@ def on_open(params: types.DidOpenTextDocumentParams):
             for child in node.children:
                 if child.type == "dotted_name":
                     my_text = text[child.start_byte:child.end_byte].decode()
-                    logger.info(f"{level_indent}** dotted name: {text[child.start_byte:child.end_byte].decode()}")
+                    logger.debug(f"{level_indent}** dotted name: {text[child.start_byte:child.end_byte].decode()}")
                     modules.append(my_text)
                     break  # stop on first
                 # elif child.type == "relative_import":
@@ -79,8 +79,8 @@ def on_open(params: types.DidOpenTextDocumentParams):
     for m in modules:
         resolved = module_to_paths(m, get_search_paths(params.text_document.uri))
         resolved_modules.extend(resolved)
-    logger.info(f"Imports in {params.text_document.uri}:\n" + '\n'.join(modules))
-    logger.info(f"Resolved imports in {params.text_document.uri}:\n" + '\n'.join(resolved_modules))
+    logger.debug(f"Imports in {params.text_document.uri}:\n" + '\n'.join(modules))
+    logger.debug(f"Resolved imports in {params.text_document.uri}:\n" + '\n'.join(resolved_modules))
 
     # TODO! include as context!
 

@@ -45,12 +45,12 @@ class IncrementalRAGIndexer:
     def get_included_extensions(self):
         rag_yaml = self.source_code_dir / ".rag.yaml"
         if not rag_yaml.exists():
-            logger.info(f"no rag config found {rag_yaml}, using default config")
+            logger.debug(f"no rag config found {rag_yaml}, using default config")
             return ["lua", "py", "fish"]
         import yaml
         with open(rag_yaml, "r") as f:
             config = yaml.safe_load(f)
-            logger.pp_info(f"found rag config: {rag_yaml}", config)
+            logger.pp_debug(f"found rag config: {rag_yaml}", config)
             return config["include"]
 
     def warn_about_other_extensions(self, index_languages: list[str]):
@@ -114,20 +114,20 @@ class IncrementalRAGIndexer:
             is_new_file = file_path_str not in prior_stat_by_path
             if is_new_file:
                 changed_paths.add(file_path)
-                logger.info(f"[green]New file: {file_path}")
+                logger.debug(f"[green]New file: {file_path}")
             else:
                 current_mod_time = file_path.stat().st_mtime
                 prior_mod_time = prior_stat_by_path[file_path_str].mtime
                 if current_mod_time > prior_mod_time:
                     changed_paths.add(file_path)
-                    logger.info(f"[blue]Modified file: {file_path}")
+                    logger.debug(f"[blue]Modified file: {file_path}")
 
         prior_path_strs: Set[str] = set(prior_stat_by_path.keys())
 
         # * deleted
         deleted_path_strs = prior_path_strs - current_path_strs
         for deleted_file in deleted_path_strs:
-            logger.info(f"[red]Deleted file: {deleted_file}")
+            logger.debug(f"[red]Deleted file: {deleted_file}")
 
         # * unchanged
         changed_path_strs = set(str(f) for f in changed_paths)
@@ -145,7 +145,6 @@ class IncrementalRAGIndexer:
 
         # Create base index if it doesn't exist
         if index is None:
-            logger.info("Creating new FAISS index")
             shape = model_wrapper.get_shape()
             # 768 for "intfloat/e5-base-v2"
             # 1024 for Qwen3
@@ -195,10 +194,8 @@ class IncrementalRAGIndexer:
         # TODO add test to assert delete last file is fine and wipes the data set
 
         if not paths.changed and not paths.deleted:
-            logger.info("[green]No changes detected, index is up to date!")
+            logger.debug("[green]No changes detected, index is up to date!")
             return
-
-        logger.debug(f"Processing {len(paths.changed)} changed files")
 
         all_stat_by_path = {path_str: prior.stat_by_path[path_str] for path_str in paths.unchanged}
         unchanged_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.unchanged}
@@ -240,7 +237,7 @@ class IncrementalRAGIndexer:
         with logger.timer("Save chunks"):
             all_chunks_by_file = unchanged_chunks_by_file.copy()
             all_chunks_by_file.update(updated_chunks_by_file)
-            logger.pp_info("all_chunks_by_file", all_chunks_by_file)
+            logger.pp_debug("all_chunks_by_file", all_chunks_by_file)
 
         with logger.timer("Save chunks"):
             write_json(all_chunks_by_file, index_dir / "chunks.json")
@@ -248,11 +245,11 @@ class IncrementalRAGIndexer:
         with logger.timer("Save file stats"):
             write_json(all_stat_by_path, index_dir / "files.json")
 
-        logger.info(f"[green]Index updated successfully!")
+        logger.debug(f"[green]Index updated successfully!")
         if paths.changed:
-            logger.info(f"[green]Processed {len(paths.changed)} changed files")
+            logger.debug(f"[green]Processed {len(paths.changed)} changed files")
         if paths.deleted:
-            logger.info(f"[green]Removed {len(paths.deleted)} deleted files")
+            logger.debug(f"[green]Removed {len(paths.deleted)} deleted files")
 
 def trash_indexes(dot_rag_dir, language_extension="lua"):
     """Remove index for a specific language"""
@@ -270,11 +267,11 @@ def main():
         # yup, can turn this into a command that uses git repo of CWD
         root_directory = fs.get_cwd_repo_root()
         if not root_directory:
-            logger.info("[red]No Git repository found in current working directory, cannot build RAG index.")
+            logger.error("[red]No Git repository found in current working directory, cannot build RAG index.")
             sys.exit(1)
         dot_rag_dir = root_directory / ".rag"
         source_code_dir = "."  # TODO make this root_directory always? has been nice to test a subset of files by cd to nested dir
-        logger.info(f"[bold]RAG directory: {dot_rag_dir}")
+        logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
         indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir)
         indexer.main()
 

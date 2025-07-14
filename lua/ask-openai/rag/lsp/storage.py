@@ -84,7 +84,7 @@ class Datasets:
 
         dataset = self.for_file(file_path_str)
         if dataset is None:
-            logger.info(f"No dataset for path: {file_path_str}")
+            logger.error(f"No dataset for path: {file_path_str}")
             # TODO should I create it then (from scratch) as first file?
             return
 
@@ -97,11 +97,11 @@ class Datasets:
         # * find prior chunks (if any)
         prior_chunks: list[Chunk] | None = None
         if file_path_str in dataset.chunks_by_file:
-            logger.info(f"Prior chunks exist for {fs.get_loggable_path(file_path_str)}")
+            logger.debug(f"Prior chunks exist for {fs.get_loggable_path(file_path_str)}")
             prior_chunks = dataset.chunks_by_file[file_path_str]
 
         if not prior_chunks:
-            logger.info(f"No prior_chunks")
+            logger.debug(f"No prior_chunks")
             prior_chunks = []
 
         # * FAISS UPDATES:
@@ -110,7 +110,7 @@ class Datasets:
 
         # * YES! if chunks match, skip encoding which is most expensive part!
         if prior_faiss_ids == new_faiss_ids:
-            logger.info(f"prior_chunks match new_chunks, SKIP re-encoding!")
+            logger.debug(f"prior_chunks match new_chunks, SKIP re-encoding!")
             return
 
         # * useful troubleshooting when rebuilding (won't need this if chunks match)
@@ -119,9 +119,8 @@ class Datasets:
         logger.pp_debug("new_faiss_ids", new_faiss_ids)
         logger.pp_debug("prior_faiss_ids", prior_faiss_ids)
 
-        with logger.timer("Remove prior vectors"):
-            prior_selector = faiss.IDSelectorArray(np.array(prior_faiss_ids, dtype="int64"))
-            dataset.index.remove_ids(prior_selector)
+        prior_selector = faiss.IDSelectorArray(np.array(prior_faiss_ids, dtype="int64"))
+        dataset.index.remove_ids(prior_selector)
 
         with logger.timer("Encode new vectors"):
             passages = [chunk.text for chunk in new_chunks]
@@ -129,8 +128,7 @@ class Datasets:
 
         faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
 
-        with logger.timer("Add new_chunk vectors to index"):
-            dataset.index.add_with_ids(vecs_np, faiss_ids_np)
+        dataset.index.add_with_ids(vecs_np, faiss_ids_np)
 
         # * update file's list of chunks
         dataset.chunks_by_file[file_path_str] = new_chunks
@@ -195,6 +193,6 @@ def load_all_datasets(dot_rag_dir: str | Path) -> Datasets:
         language_extension = dir_path.name
         dataset = load_prior_data(language_extension, dir_path)
         datasets[language_extension] = dataset
-        logger.info(f"[green]Loaded {language_extension} with {len(dataset.chunks_by_file)} files")
+        logger.debug(f"[green]Loaded {language_extension} with {len(dataset.chunks_by_file)} files")
 
     return Datasets(datasets)

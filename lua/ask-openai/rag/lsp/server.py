@@ -23,7 +23,7 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
 
     # # PRN use workspace folders if multi-workspace ...
     # #   not sure I'll use this but never know
-    # logger.info(f"{params.workspace_folders=}")
+    # logger.debug(f"{params.workspace_folders=}")
     # server.workspace.folders
 
     fs.set_root_dir(params.root_path)
@@ -63,7 +63,7 @@ def update_rag_for_text_doc(doc_uri: str):
         logger.warning(f"abort update rag... to_fs_path returned {doc_path=}")
         return
     if ignores.is_ignored(doc_path, server):
-        logger.info(f"rag ignored doc: {doc_path=}")
+        logger.debug(f"rag ignored doc: {doc_path=}")
         return
 
     doc = server.workspace.get_text_document(doc_uri)
@@ -78,7 +78,7 @@ def doc_saved(params: types.DidSaveTextDocumentParams):
         # TODO check langauge_extension too? for all handlers that work with doc uri? or let it fail normally in processing the request?
         return
 
-    logger.pp_info("didSave", params)
+    logger.pp_debug("didSave", params)
     update_rag_for_text_doc(params.text_document.uri)
 
 @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
@@ -86,7 +86,7 @@ def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
     if fs.is_no_rag_dir():
         return
     #   workspace/didChangeWatchedFiles # when files changed outside of editor... i.e. nvim will detect someone else edited a file in the workspace (another nvim instance, maybe CLI tool, etc)
-    logger.info(f"didChangeWatchedFiles: {params}")
+    logger.debug(f"didChangeWatchedFiles: {params}")
     # TODO is this one or more events? do I need to uniqify?
     # update_rag_file_chunks(params.changes[0].uri)
 
@@ -109,7 +109,7 @@ def doc_opened(params: types.DidOpenTextDocumentParams):
 def doc_closed(params: types.DidCloseTextDocumentParams):
     if fs.is_no_rag_dir():
         return
-    logger.pp_info("didClose", params)
+    logger.pp_debug("didClose", params)
     # TODO
 
 # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
@@ -117,7 +117,7 @@ def doc_changed(params: types.DidChangeTextDocumentParams):
     if fs.is_no_rag_dir():
         return
     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
-    logger.pp_info("didChange", params)
+    logger.pp_debug("didChange", params)
     # FYI would use this to invalidate internal caches and rebuild for a given file, i.e. imports, RAG vectors, etc
     #   rebuild on git commit + incremental updates s/b super fast?
 
@@ -137,12 +137,12 @@ def rag_query(_: LanguageServer, params: types.ExecuteCommandParams):
 #
 # @server.feature(types.SHUTDOWN)
 # def on_shutdown(_: LanguageServer):
-#     logger.info(f"shutting down")
+#     logger.debug(f"shutting down")
 #     # os._exit(0)
 #
 # @server.feature(types.EXIT)
 # def on_exit(_: LanguageServer):
-#     logger.info(f"exiting")
+#     logger.debug(f"exiting")
 #     # os._exit(0)
 
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):

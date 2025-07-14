@@ -32,23 +32,23 @@ def handle_query(message, top_k=3):
 
     text = message.get("text")
     if text is None or len(text) == 0:
-        logger.info("[red bold][ERROR] No text provided")
+        logger.error("[red bold][ERROR] No text provided")
         return {"failed": True, "error": "No text provided"}
 
     current_file_abs = message.get("current_file_absolute_path")
     dataset = datasets.for_file(current_file_abs)
     if dataset is None:
-        logger.info(f"No dataset")
+        logger.error(f"No dataset")
         return {"failed": True, "error": f"No dataset for {current_file_abs}"}
 
-    logger.pp_info("[blue bold]RAG[/blue bold] query", message)
+    logger.pp_debug("[blue bold]RAG[/blue bold] query", message)
 
     # TODO rename model_wrapper back to just model when done inserting it into all usages
     q_vec = model_wrapper.encode_query(text)
     # FAISS search (GIL released)
     scores, ids = dataset.index.search(q_vec, top_k)
-    # logger.info(f'{scores=}')
-    # logger.info(f'{ids=}')
+    # logger.debug(f'{scores=}')
+    # logger.debug(f'{ids=}')
 
     matches = ContextResult()
     for rank, idx in enumerate(ids[0]):
@@ -64,7 +64,7 @@ def handle_query(message, top_k=3):
             logger.warning(f"Skip match in same file")
             # PRN could filter too high of similarity instead? or somem other rerank or ?
             continue
-        logger.info(f"matched {chunk.file}:L{chunk.start_line}-{chunk.end_line}")
+        logger.debug(f"matched {chunk.file}:L{chunk.start_line}-{chunk.end_line}")
 
         @dataclass
         class BaseContextChunk:

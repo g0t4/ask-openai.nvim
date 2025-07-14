@@ -24,7 +24,7 @@ def set_root_dir(root: str | None):
         raise ValueError("root_uri is None")
 
     root_path = Path(root)
-    logger.info(f"{root_path=}")
+    logger.debug(f"{root_path=}")
 
     dot_rag_dir = Path(root_path) / ".rag"
     if is_no_rag_dir():
