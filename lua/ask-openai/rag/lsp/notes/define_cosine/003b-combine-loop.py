@@ -6,7 +6,6 @@
 #   and as c_diff => 0 then it becomes the arc  and you can then sum that to get the circumference
 #   I think... I am still playing with this new way of thinking about this and need some more tinkering
 
-
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.patches import FancyArrow
@@ -39,7 +38,8 @@ arr: FancyArrow
 a = 1
 b = 0
 a_diff = None
-outer_count_limit = 0 # just in case set count max so you can troubleshoot
+outer_count_limit = 0  # just in case set count max so you can troubleshoot
+circumference = 0
 while a >= -1 and outer_count_limit < 1000:
     outer_count_limit += 1
     if a_diff == None:
@@ -94,6 +94,7 @@ while a >= -1 and outer_count_limit < 1000:
     a_diff_sq = math.pow(a_diff, 2)
     b_diff_sq = math.pow(b_next - b, 2)
     c_diff_sq = a_diff_sq + b_diff_sq
+    circumference += math.sqrt(c_diff_sq)
 
     print(f"  {c_diff_sq=}")
     print(f"{a_next},{b_next}")
@@ -109,6 +110,8 @@ while a >= -1 and outer_count_limit < 1000:
     b = b_next
 
 print()
+print(f"{circumference=}")
+
 # # exit()
 #
 # a_s = np.arange(-1, 1.01, 0.05)
