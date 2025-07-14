@@ -229,6 +229,10 @@ local ignore_filetypes = {
     "NvimTree",
     "DressingInput", -- pickers from nui (IIRC) => in nvim tree add a file => the file name box is one of these
     -- TODO make sure only check this on enter buffer first time? not on every event (cursormoved,etc)
+    -- TODO allow rename file, start w/o keeping original name in FIM prompt (every time) think of almost as instructions - rename-instructions.txt?
+    --    provide full path too
+    --    AND, provide file contents too in a separate file_sep object?
+    --    ALSO yank context (might be stop gap to make this work the best w/o the above)
 }
 
 local ignore_buftypes = {
