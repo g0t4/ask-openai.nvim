@@ -112,7 +112,7 @@ def update_file_from_pygls_doc(doc: TextDocument):
 
     lines_hash = get_file_hash_from_lines(doc.lines)
 
-    with logger.timer(f"build_file_chunks {fs.get_loggable_path(file_path)}"):
-        new_chunks = build_from_lines(file_path, lines_hash, doc.lines)
+    new_chunks = build_from_lines(file_path, lines_hash, doc.lines)
 
-    datasets.update_file(file_path, new_chunks)
+    with logger.timer(f"update_file {fs.get_loggable_path(file_path)}"):
+        datasets.update_file(file_path, new_chunks)
