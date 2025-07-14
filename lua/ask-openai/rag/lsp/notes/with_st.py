@@ -50,13 +50,13 @@ with LogTimer("encode", logger):
         # device="cpu", # TODO! verify timing differences (if any) are not due to device selection
     )
 
-    print(type(embeddings))
     two_queries = embeddings[:2]
-    logger.info(f"{two_queries=}")
     two_passages = embeddings[2:]
-    logger.info(f"{two_passages=}")
     scores = (two_queries @ two_passages.T) * 100
 
+print(type(embeddings))
+logger.info(f"{two_queries=}")
+logger.info(f"{two_passages=}")
 logger.info(f"loaded on device: {next(model.parameters()).device}")
 logger.info(f'{embeddings=}')
 logger.info(f'{scores=}')
