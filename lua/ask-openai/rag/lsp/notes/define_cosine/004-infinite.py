@@ -25,7 +25,7 @@ arr = None
 for i in np.arange(0, 10, 0.05):
 
     # a_s = np.arange(1, -1.01, -0.05)
-    a = i % 2 - 1
+    a = i % 4 - 1
     if arr:
         arr.remove()
     b = math.sqrt(
