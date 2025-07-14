@@ -5,7 +5,6 @@ local CurrentContext = require("ask-openai.prediction.context")
 local ansi = require("ask-openai.prediction.ansi")
 local rag = require("ask-openai.rag.fim")
 
-
 local OllamaFimBackend = require("ask-openai.prediction.backends.ollama")
 -- TODO rewrite other backends to use new builder pattern (not a big change):
 --    TODO add :new, rearrange to self: methods
@@ -229,11 +228,30 @@ local ignore_filetypes = {
     "NvimTree",
     "DressingInput", -- pickers from nui (IIRC) => in nvim tree add a file => the file name box is one of these
     -- TODO make sure only check this on enter buffer first time? not on every event (cursormoved,etc)
-    -- TODO allow rename file, start w/o keeping original name in FIM prompt (every time) think of almost as instructions - rename-instructions.txt?
-    --    provide full path too
-    --    AND, provide file contents too in a separate file_sep object?
-    --    ALSO yank context (might be stop gap to make this work the best w/o the above)
 }
+local function is_rename_window()
+    if vim.bo.buftype ~= "nofile"
+        or vim.bo.filetype ~= "DressingInput" then
+        return false
+    end
+    local win_id = vim.api.nvim_get_current_win()
+    local win_config = vim.api.nvim_win_get_config(win_id)
+    -- messages.append(win_config)
+    if not win_config then
+        -- shouldn't happen AFAICT
+        return false
+    end
+
+    -- win_config.title => { { " Rename to " } }
+    is_rename = win_config.title[1][1] == " Rename to "
+    -- TODO! ok now set smth somewhere to specify "detected file type" is "rename" for FILE rename... do I need to do any further filtering to determine that?
+    --   ... vs say a variable rename?
+    --   then, use that in FIM prompt builder to provide custom FIM instructions:
+    --   - provide full path
+    --   - provide file contents too? in a separate file_sep object?
+    --   - ALSO yank context (might be stop gap to make this work the best w/o the above)
+    return is_rename
+end
 
 local ignore_buftypes = {
     -- FYI with yank history and edits... rename window should be brought back b/c it will suggest good names for files
@@ -274,7 +292,11 @@ function M.cursor_moved_in_insert_mode()
 
     if vim.tbl_contains(ignore_buftypes, vim.bo.buftype)
         or vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
-        return
+        -- this would be a good spot to expand and catch other file types too, rework is_rename_window to share get config
+        if not is_rename_window() then
+            return
+        end
+        -- allow renames to continue
     end
 
     keypresses:onNext({})
