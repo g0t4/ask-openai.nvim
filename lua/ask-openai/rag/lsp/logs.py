@@ -2,6 +2,7 @@ import logging
 import os
 import time
 from typing import cast
+from pathlib import Path
 
 from rich.console import Console
 from rich.logging import RichHandler
@@ -52,7 +53,9 @@ def clear_iterm_scrollback(log_file):
 
 def logging_fwk_to_language_server_log_file(level):
 
-    log_file_path = os.path.expanduser("~/.local/share/ask-openai/language.server.log")
+    log_file_path = Path("~/.local/share/ask-openai/language.server.log").expanduser()
+    log_file_path.parent.mkdir(parents=True, exist_ok=True)
+
     log_file = open(log_file_path, "w", encoding="utf-8")
     console = Console(file=log_file, force_terminal=True, width=150)
 
