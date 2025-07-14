@@ -53,6 +53,8 @@ with LogTimer("encode", logger):
     two_queries = embeddings[:2]
     two_passages = embeddings[2:]
     scores = (two_queries @ two_passages.T) * 100
+    # FOR FUN:
+    scores2 = (two_passages @ two_queries.T) * 100
 
 print(type(embeddings))
 logger.info(f"{two_queries=}")
@@ -60,3 +62,6 @@ logger.info(f"{two_passages=}")
 logger.info(f"loaded on device: {next(model.parameters()).device}")
 logger.info(f'{embeddings=}')
 logger.info(f'{scores=}')
+logger.info(f'{scores2=}') # transpose of scores
+# Btw scores and scores2 are transposes
+logger.info(f'{scores2.T=}')
