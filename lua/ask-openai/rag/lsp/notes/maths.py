@@ -119,17 +119,22 @@ fig, ax = plt.subplots()
 fixed_view = 1.5
 ax.set_xlim(-fixed_view, fixed_view)
 ax.set_ylim(-fixed_view, fixed_view)
-ax.set_aspect("equal") # that way if window aspect ratio isn't 1:1 it won't skew the axes
+ax.set_aspect("equal")  # that way if window aspect ratio isn't 1:1 it won't skew the axes
 
 plt.ion()
 plt.show()
 # arr = ax.arrow(0, 0, 0, 1, head_width=0.05, head_length=0.1, length_includes_head=True)
 
 a_s = np.arange(1, -1.01, -0.05)
+arr = None
 for a in a_s:
-    b = math.sqrt(1 - math.pow(a, 2))
+    if arr:
+        arr.remove()
+    b = math.sqrt(
+            1 - \
+            np.clip(math.pow(a, 2), 0, 1) \
+        )
     print(a, b)
     arr = ax.arrow(0, 0, a, b, head_width=0.05, head_length=0.1, length_includes_head=True)
     # break
     plt.pause(0.02)
-    arr.remove()
