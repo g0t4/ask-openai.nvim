@@ -25,18 +25,21 @@ arr = None
 for i in np.arange(0, 10, 0.05):
 
     # a_s = np.arange(1, -1.01, -0.05)
-    a = i % 4 - 1
+    a_4 = i % 4 - 1
+    a_2 = i % 2 - 1
     if arr:
         arr.remove()
     b = math.sqrt(
             1 - \
-            np.clip(math.pow(a, 2), 0, 1) \
+            np.clip(math.pow(a_2, 2), 0, 1) \
         )
-    print(a, b)
-    arr = ax1.arrow(0, 0, a, b, head_width=0.05, head_length=0.1, length_includes_head=True)
+    if a_4 > 1:
+        b = -b
+    print(a_2, b)
+    arr = ax1.arrow(0, 0, a_2, b, head_width=0.05, head_length=0.1, length_includes_head=True)
 
     # first up, a vs b over time... draw the circle!
-    scatter_x.append(a)
+    scatter_x.append(a_2)
     scatter_y.append(b)
     ax2.scatter(scatter_x[-1], scatter_y[-1], color='red')
 
