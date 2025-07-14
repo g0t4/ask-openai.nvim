@@ -54,12 +54,11 @@ for a in a_s:
 #      I could solve this with a loop over two loops.. I will add that change next
 
 
-a_s = np.arange(1, -1.01, -0.05)
-arr = None
+a_s = np.arange(-1, 1.01, 0.05)
 for a in a_s:
     if arr:
         arr.remove()
-    b = math.sqrt(
+    b = -math.sqrt(
             1 - \
             np.clip(math.pow(a, 2), 0, 1) \
         )
