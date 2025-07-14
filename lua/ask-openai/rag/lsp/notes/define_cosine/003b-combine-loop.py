@@ -72,11 +72,11 @@ while a >= -1 and outer_count_limit < 1000:
             # SOLVING THIS SUCH THAT
             # c_diff_sq[previous] == c_diff_sq[proposed]
             # ! draw out first unit vector (1,0) then second one (a[1],b[1]) and then look at how you would calculate the length of the line between the two points (tips of unit vector)... that is how you get to c_diff^2 = a_diff^2 + b_diff^2
-            if (c_proposed_diff_sq > (c_diff_sq + 0.00001)):
-                a_proposed_diff = a_proposed_diff - 0.0001
-            elif (c_proposed_diff_sq < (c_diff_sq - 0.00001)):
+            if (c_proposed_diff_sq > (c_diff_sq + 0.0000001)):
+                a_proposed_diff = a_proposed_diff - 0.000001
+            elif (c_proposed_diff_sq < (c_diff_sq - 0.0000001)):
                 # decrease 1_proposed_difff slightly (small enough I can ignore overcorrections mostly)
-                a_proposed_diff = a_proposed_diff + 0.0001
+                a_proposed_diff = a_proposed_diff + 0.000001
             else:
                 print("  break")
                 break
