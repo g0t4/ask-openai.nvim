@@ -68,6 +68,6 @@ logger.info(f'{scores2.T=}')
 
 from assertpy import assert_that
 
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_equal
 logger.info("about to assert equal")
-assert_array_almost_equal(scores, scores2.T)
+assert_array_equal(scores, scores2.T)
