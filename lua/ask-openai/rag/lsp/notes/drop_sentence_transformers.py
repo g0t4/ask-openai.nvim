@@ -36,8 +36,10 @@ device = torch.device(
 
 with logger.timer("load model/tokenizer"):
     # !!! model load is < 100ms, huge improvement over the 500ms for SentenceTransformer
-    model = BertModel.from_pretrained("intfloat/e5-base-v2").to(device)
-    tokenizer = BertTokenizer.from_pretrained("intfloat/e5-base-v2")
+    # model_name = "intfloat/e5-base-v2"
+    model_name = "Qwen/Qwen3-Embedding-0.6B"
+    model = BertModel.from_pretrained(model_name).to(device)
+    tokenizer = BertTokenizer.from_pretrained(model_name)
 
 logger.info(f"loaded on device: {model.device=}")
 

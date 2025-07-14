@@ -34,7 +34,8 @@ input_texts = [
 ]
 
 with LogTimer("load model/tokenizer", logger):
-    model_name = "intfloat/e5-base-v2"
+    # model_name = "intfloat/e5-base-v2"
+    model_name = "Qwen/Qwen3-Embedding-0.6B"
     model = SentenceTransformer(model_name)
 
 logger.info(f"loaded on device: {model.device=}")
