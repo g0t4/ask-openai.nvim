@@ -204,18 +204,15 @@ class IncrementalRAGIndexer:
         unchanged_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.unchanged}
 
         updated_chunks_by_file: dict[str, list[Chunk]] = {}
-        with logger.timer("Process changed files"):
-            for i, file_path in enumerate(paths.changed):
-                file_path_str = str(file_path)
-                if i % 10 == 0 and i > 0:
-                    logger.info(f"Processed {i}/{len(paths.changed)} changed files...")
+        for file_path in paths.changed:
+            file_path_str = str(file_path)
 
-                stat = get_file_stat(file_path)
-                all_stat_by_path[file_path_str] = stat
+            stat = get_file_stat(file_path)
+            all_stat_by_path[file_path_str] = stat
 
-                # Create new chunks for this file
-                chunks = build_file_chunks(file_path, stat.hash)
-                updated_chunks_by_file[file_path_str] = chunks
+            # Create new chunks for this file
+            chunks = build_file_chunks(file_path, stat.hash)
+            updated_chunks_by_file[file_path_str] = chunks
 
         logger.pp_debug("Deleted chunks", paths.deleted)
         logger.pp_debug("Updated chunks", updated_chunks_by_file)
