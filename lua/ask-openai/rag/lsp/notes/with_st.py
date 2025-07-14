@@ -51,11 +51,11 @@ with LogTimer("encode", logger):
     )
 
     print(type(embeddings))
-    queries = embeddings[:2]
-    logger.info(f"{queries=}")
-    passages = embeddings[2:]
-    logger.info(f"{passages=}")
-    scores = (queries @ passages.T) * 100
+    two_queries = embeddings[:2]
+    logger.info(f"{two_queries=}")
+    two_passages = embeddings[2:]
+    logger.info(f"{two_passages=}")
+    scores = (two_queries @ two_passages.T) * 100
 
 logger.info(f"loaded on device: {next(model.parameters()).device}")
 logger.info(f'{embeddings=}')
