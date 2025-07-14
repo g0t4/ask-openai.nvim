@@ -5,6 +5,7 @@ import subprocess
 import sys
 from typing import Dict, Optional, Set
 
+import torch # MUST be imported BEFORE FAISS else Qwen3 will explode on model import
 import faiss
 import numpy as np
 
