@@ -24,15 +24,66 @@ print(mag)
 # mag^2 == dot_prod
 assert_that(math.pow(mag, 2)).is_equal_to(dot_prod)
 
-
 # %%
 
-# cos(θ) = adjacent/hypotenuse
+# definitionally:
+#   cos(θ) = adjacent/hypotenuse
+# and:
+#   a^2 + b^2 = c^2
+#   ==> c = sqrt(a^2 + b^2)
+# then, restate:
+#   a == adjacent, c = hypotenuse
+#
+#   ==> cos(θ) = a / c
+# therefore:
+#   cos(θ) = a / c  = a/sqrt(a^2+b^2)
+#
+# take two unit vectors that start out fully overlapping
+#   --->
+#   start at origin, point right only
+#   magnitude 1 for both
+#   all in a/x component
+#
+#   throughout this exercise, they will both remain unit vectors (magnitued = 1)
+#   I want to slowly rotate one around origin, until it gets to a right angle where it has no x-axis component, and y=1 for its y component (b/c its always a unit vector)
+#   just thinking about this w/o any math yet
+#   - when right angle with one unit vector pointing up or down, fully... (all in the y component) then there is NO OVERLAP (0)
+#     θ=90 => cos(90°) = 0
+#     θ=270 => cos(270°) = 0
+#   - when fully overlap => overlap is 1
+#     θ=0 => cos(0°) = 1
+#   - when one left (fully, no y component) then the overlap == -1
+#     θ=180 => cos(180°) = -1
+#
+# to do this, I will plot it as taking the a (x-axis) component and decreasing it
+#   which means its b has to increase as its a decreases, to match a magnitude of 1
+#   using this formula:
+#     a/sqrt(a^2+b^2)
+#     aka:
+#     x/sqrt(x^2+y^2)
+#
+# ok now
+#   a^2 + b^2 = c^2 (c is hypotenuse or mag... == 1)
+#   a^2 + b^2 = 1
+#   b = sqrt(1-a^2)
+#   a starts at 1, b = 0
+#   eventually a => 0, b => 1
+#   then a => -1 while b => 0
+#   then a => 0 while b => -1
+#   finally a => 1 while b => 0
+#
+#
+# if I plot a vs b => turns into a circle
+#
+# if I plot cos(θ) => I then need to vary b as a function of a:
+#    b = sqrt(1-a^2)
+#    and then I plot
+#    a/sqrt(a^2+b^2)
 
 # take two unit vectors
 # theta (angle between)
 
-# θ = 0 degrees = full overlap
+# θ = 0° = full overlap
 #  => 1
 
 # 45 degrees
@@ -59,10 +110,22 @@ assert_that(math.pow(mag, 2)).is_equal_to(dot_prod)
 
 # %%
 
+import numpy as np
 import matplotlib.pyplot as plt
+# from matplotlib.animation import FuncAnimation
+# a = 1
+# a_s = np.arange(1,0,0.01)
 
-plt.quiver(0, 0, 1, 2, angles='xy', scale_units='xy', scale=1)
-plt.xlim(-1, 3)
-plt.ylim(-1, 3)
-plt.grid()
-plt.show()
+fig, ax = plt.subplots()
+fixed_view = 1.5
+ax.set_xlim(-fixed_view, fixed_view)
+ax.set_ylim(-fixed_view, fixed_view)
+
+arr = ax.arrow(0, 0, 1, 0, head_width=0.05, head_length=0.1, length_includes_head=True)
+
+# plt.show()
+plt.ion()
+plt.pause(0.25)
+# arr.set_xy([(0, 0), (-1, 0)])
+arr.remove()
+arr = ax.arrow(0, 0, 0, 1, head_width=0.05, head_length=0.1, length_includes_head=True)
