@@ -50,7 +50,8 @@ while a >= -1 and outer_count_limit < 1000:
         a_diff = 0.02
         # a_diff = 0.01
         # a_diff = 0.005
-        a_diff = 0.002
+        # a_diff = 0.002
+        a_diff = 0.0001 # circumference = 3.1196 (estimate this is not accurate, due to clippping and initial step this can be slightly off)
     else:
         arr.remove()
         a_proposed_diff = a_diff
