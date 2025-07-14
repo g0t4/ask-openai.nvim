@@ -62,6 +62,12 @@ logger.info(f"{two_passages=}")
 logger.info(f"loaded on device: {next(model.parameters()).device}")
 logger.info(f'{embeddings=}')
 logger.info(f'{scores=}')
-logger.info(f'{scores2=}') # transpose of scores
+logger.info(f'{scores2=}')  # transpose of scores
 # Btw scores and scores2 are transposes
 logger.info(f'{scores2.T=}')
+
+from assertpy import assert_that
+
+from numpy.testing import assert_array_almost_equal
+logger.info("about to assert equal")
+assert_array_almost_equal(scores, scores2.T)
