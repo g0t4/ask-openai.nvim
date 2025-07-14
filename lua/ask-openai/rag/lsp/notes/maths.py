@@ -128,8 +128,8 @@ plt.show()
 a_s = np.arange(1, -1.01, -0.05)
 for a in a_s:
     b = math.sqrt(1 - math.pow(a, 2))
-    print(a, b, math.sqrt(math.pow(a,2)+math.pow(b,2)))
+    print(a, b)
     arr = ax.arrow(0, 0, a, b, head_width=0.05, head_length=0.1, length_includes_head=True)
     # break
-    plt.pause(0.1)
+    plt.pause(0.02)
     arr.remove()
