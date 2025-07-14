@@ -166,16 +166,14 @@ class IncrementalRAGIndexer:
             for chunk in file_chunks:
                 keep_ids.append(chunk.faiss_id)
 
-            logger.pp_info("keep_ids", keep_ids)
+        logger.pp_debug("keep_ids", keep_ids)
 
-            keep_selector = faiss.IDSelectorArray(np.array(keep_ids, dtype="int64"))
-            not_keep_selector = faiss.IDSelectorNot(keep_selector)
-            index.remove_ids(not_keep_selector)
+        keep_selector = faiss.IDSelectorArray(np.array(keep_ids, dtype="int64"))
+        not_keep_selector = faiss.IDSelectorNot(keep_selector)
+        index.remove_ids(not_keep_selector)
 
         if new_chunks:
-            logger.info(f"Adding {len(new_chunks)} new vectors for changed files")
-
-            logger.info(f"{new_faiss_ids=}")
+            logger.pp_debug("new_faiss_ids", new_faiss_ids)
 
             with logger.timer("Encode new vectors"):
                 passages = [chunk.text for chunk in new_chunks]
@@ -183,19 +181,16 @@ class IncrementalRAGIndexer:
 
             faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
 
-            with logger.timer("Add new vectors to index"):
-                index.add_with_ids(vecs_np, faiss_ids_np)
+            index.add_with_ids(vecs_np, faiss_ids_np)
 
         return index
 
     def build_index(self, language_extension: str = "lua"):
         """Build or update the RAG index incrementally"""
-        logger.info(f"[bold]Building/updating {language_extension} RAG index:")
 
         prior = load_prior_data(language_extension, self.dot_rag_dir)
 
-        with logger.timer("Find current files"):
-            paths = self.get_files_diff(language_extension, prior.stat_by_path)
+        paths = self.get_files_diff(language_extension, prior.stat_by_path)
 
         # TODO add test to assert delete last file is fine and wipes the data set
 
@@ -203,7 +198,7 @@ class IncrementalRAGIndexer:
             logger.info("[green]No changes detected, index is up to date!")
             return
 
-        logger.info(f"Processing {len(paths.changed)} changed files")
+        logger.debug(f"Processing {len(paths.changed)} changed files")
 
         all_stat_by_path = {path_str: prior.stat_by_path[path_str] for path_str in paths.unchanged}
         unchanged_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.unchanged}
