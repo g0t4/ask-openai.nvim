@@ -16,8 +16,8 @@ def encode(text):
         embeddings = model(**inputs).last_hidden_state.mean(dim=1)
     return embeddings[0].tolist()
 
-server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-server.bind("/tmp/embed.sock")
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(("0.0.0.0", 8015))
 server.listen()
 
 # sigint
@@ -26,10 +26,7 @@ import signal
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
     server.close()
-    import os
-    import sys
-    os.remove("/tmp/embed.sock")
-    sys.exit(0)
+    exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
 
