@@ -31,7 +31,7 @@ class ModelWrapper:
         # TODO try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
         # model_name = "intfloat/e5-base-v2"
         model_name = "Qwen/Qwen3-Embedding-0.6B"
-        with logger.timer(f"Load model {model_name}"):
+        with logger.timer(f"Load model done {model_name}"):
             self._model = SentenceTransformer(model_name)
 
         return self._model
