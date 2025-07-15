@@ -36,17 +36,6 @@ model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B')
 
 
 
-queries = [
-    get_detailed_instruct(task, 'What is the capital of China?'),
-    get_detailed_instruct(task, 'Explain gravity')
-]
-# No need to add instruction for retrieval documents
-documents = [
-    "The capital of China is Beijing.",
-    "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun."
-]
-input_texts = queries + documents
-
 
 
 
@@ -65,6 +54,17 @@ def encode(input_texts):
     return F.normalize(embeddings, p=2, dim=1)
 
 
+
+queries = [
+    get_detailed_instruct(task, 'What is the capital of China?'),
+    get_detailed_instruct(task, 'Explain gravity')
+]
+# No need to add instruction for retrieval documents
+documents = [
+    "The capital of China is Beijing.",
+    "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun."
+]
+input_texts = queries + documents
 
 
 embeddings = encode(input_texts)
