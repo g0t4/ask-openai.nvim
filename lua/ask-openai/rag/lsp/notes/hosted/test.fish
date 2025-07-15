@@ -2,5 +2,5 @@
 
 # http http://ollama:8013/embedding input='["foo the bar"]'
 curl -X POST -H "Content-Type: application/json" \
-     -d '{"input": ["foo the bar"]}' \
+     -d '{"input": ["Hello world"]}' \
      http://ollama:8013/embedding
