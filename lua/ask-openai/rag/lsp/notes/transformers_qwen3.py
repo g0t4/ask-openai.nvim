@@ -33,7 +33,7 @@ model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B')
 # We recommend enabling flash_attention_2 for better acceleration and memory saving.
 # model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', attn_implementation="flash_attention_2", torch_dtype=torch.float16).cuda()
 
-max_length = 8192
+
 
 
 queries = [
@@ -51,7 +51,7 @@ batch_dict = tokenizer(
     input_texts,
     padding=True,
     truncation=True,
-    max_length=max_length,
+    max_length=8192,
     return_tensors="pt",
 )
 batch_dict.to(model.device)
