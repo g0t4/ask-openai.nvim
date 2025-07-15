@@ -23,16 +23,20 @@ with logger.timer("Send embedding to server"):
     # qwen3-embedding-0.6B full precision
     #   local sockets => 50ms! not bad at all (small query doc)
     #   remote
+    #   18-20ms with "hello world"
+    #   then my chunk (below)... holy F 21ms?! qwen3 full precision!
     #
 
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # client.connect(("localhost", 8015))
     client.connect(("ollama", 8015))
 
-    payload = msgpack.packb({'text': "Hello world"}, use_bin_type=True)
+    chunk = "local M = {}\nlocal init = require(\"ask-openai\")\nlocal config = require(\"ask-openai.config\")\n\n-- FYI uses can add commands if that's what they want, they have the API to do so:\n\nfunction M.enable_predictions()\n    config.local_share.set_predictions_enabled()\n    init.start_predictions()\nend\n\nfunction M.disable_predictions()\n    config.local_share.set_predictions_disabled()\n    init.stop_predictions()\nend\n\nfunction M.toggle_predictions()\n    if config.local_share.are_predictions_enabled() then\n        M.disable_predictions()\n    else"
+    hello = "Hello world"
+    payload = msgpack.packb({'text': chunk}, use_bin_type=True)
     client.sendall(payload)
 
     data = client.recv(65536)
     result = msgpack.unpackb(data, raw=False)
 
-# print(result['embedding'])
+print(len(result['embedding'][0]))
