@@ -21,6 +21,7 @@ def last_token_pool(last_hidden_states: Tensor,
 
 
 def get_detailed_instruct(task_description: str, query: str) -> str:
+    # *** INSTRUCTION!
     return f'Instruct: {task_description}\nQuery:{query}'
 
 # Each query must come with a one-sentence instruction that describes the task
