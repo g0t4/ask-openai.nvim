@@ -4,7 +4,11 @@ import msgpack
 from transformers import AutoModel, AutoTokenizer
 import torch
 
-from lsp.notes.transformers_qwen3 import encode
+from lsp.notes import transformers_qwen3
+
+def encode(texts: list[str]):
+    vec = transformers_qwen3.encode(texts)
+    return vec.cpu().numpy().tolist()
 
 # time python3 -m lsp.notes.hosted.sockets.server
 
