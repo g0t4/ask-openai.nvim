@@ -32,9 +32,10 @@ def main():
     logging_fwk_to_console("INFO")
     with logger.timer("/embeddings RT"):
         embeddings = encode([
+            # one document is 90ms R/T that is awesome
             "This is a test.",
-            "This is another test.",
-            "This is a third test.",
+            # "This is another test.",
+            # "This is a third test.",
         ])
     # print(embeddings)
 
