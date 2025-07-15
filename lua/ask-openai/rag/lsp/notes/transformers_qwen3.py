@@ -56,6 +56,8 @@ documents = [
 input_texts = queries + documents
 
 embeddings = encode(input_texts)
-scores = (embeddings[:2] @ embeddings[2:].T)
+query_embeddings = embeddings[:2]
+passage_embeddings = embeddings[2:]
+scores = (query_embeddings @ passage_embeddings.T)
 print(scores.tolist())
 # [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
