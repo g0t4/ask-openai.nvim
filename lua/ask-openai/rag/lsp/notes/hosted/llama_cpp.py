@@ -31,7 +31,11 @@ def encode(input_texts: list[str]):
 def main():
     logging_fwk_to_console("INFO")
     with logger.timer("/embeddings RT"):
-        embeddings = encode(["This is a test.", "This is another test.", "This is a third test."])
+        embeddings = encode([
+            "This is a test.",
+            "This is another test.",
+            "This is a third test.",
+        ])
     # print(embeddings)
 
 if __name__ == "__main__":
