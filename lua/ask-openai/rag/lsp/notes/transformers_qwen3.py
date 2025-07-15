@@ -51,17 +51,17 @@ input_texts = queries + documents
 
 
 
-# Tokenize the input texts
-batch_dict = tokenizer(
-    input_texts,
-    padding=True,
-    truncation=True,
-    max_length=8192,
-    return_tensors="pt",
-)
-batch_dict.to(model.device)
-outputs = model(**batch_dict)
-embeddings = last_token_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
+    # Tokenize the input texts
+    batch_dict = tokenizer(
+        input_texts,
+        padding=True,
+        truncation=True,
+        max_length=8192,
+        return_tensors="pt",
+    )
+    batch_dict.to(model.device)
+    outputs = model(**batch_dict)
+    embeddings = last_token_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
 
 
 
