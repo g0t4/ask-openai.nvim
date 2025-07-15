@@ -3,6 +3,8 @@ import msgpack
 from transformers import AutoModel, AutoTokenizer
 import torch
 
+# time python3 -m lsp.notes.hosted.sockets.server
+
 MODEL_NAME = "intfloat/e5-base-v2"
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
