@@ -9,6 +9,7 @@ from lsp.notes.hosted.sockets.comms import recv_exact
 
 logging_fwk_to_console("INFO")
 logger = get_logger(__name__)
+# TODO measure all logging/prints and remove/threshold any that are unacceptable (i.e. > 10ms?)
 
 def encode(texts: list[str]):
     # print(f"encode w/ {type(transformers_qwen3.model)}")
