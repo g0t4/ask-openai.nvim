@@ -9,7 +9,7 @@ import numpy as np
 from pydantic import BaseModel
 
 from .logs import get_logger
-from .model_qwen3 import model_wrapper
+from .model_st import model_wrapper
 from lsp import fs
 
 logger = get_logger(__name__)
