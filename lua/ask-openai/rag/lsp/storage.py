@@ -5,8 +5,17 @@ from pathlib import Path
 from typing import List, Optional
 
 # * TORCH BEFORE FAISS (even if don't need torch here/yet)
-import torch  # MUST be imported BEFORE FAISS else Qwen3 will explode on model import (can happen to other models too)
+# model_qwen3/model_st (REMINDER when I go to rearrange again)
+# import torch  # MUST be imported BEFORE FAISS else Qwen3 will explode on model import (can happen to other models too)
 import faiss
+# TODO OK SO ... the torch "fix" fubars the LS... GAH... get this print warning:
+#   [START][2025-07-15 05:18:11] LSP logging initiated
+# [ERROR][2025-07-15 05:18:11] ...p/_transport.lua:36	"rpc"	"/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/.venv/bin/python"	"stderr"	"/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/multiprocessing/resource_tracker.py:301: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/loky-62322-yvt4wtp_'}\n  warnings.warn(\n"
+#  CAN I GET THE GODDAMN THING TO STOP PRINTING MESSAGES? why does it have a lot and still print?
+#   is it the print that kills this OR is that print just happening after the actual issue
+#   FUUUU MULTITASKING... smth
+#    LATER!
+#     I SUGGEST LOOK AT THE REAL ISSUE WITH FAISS/TORCH import order ... smells like BS that I should have to put one ahead of the other
 
 import numpy as np
 from pydantic import BaseModel
