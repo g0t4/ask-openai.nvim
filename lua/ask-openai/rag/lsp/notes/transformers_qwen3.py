@@ -51,7 +51,7 @@ input_texts = queries + documents
 
 
 def encode(input_texts):
-    # Tokenize the input texts
+
     batch_dict = tokenizer(
         input_texts,
         padding=True,
@@ -62,14 +62,13 @@ def encode(input_texts):
     batch_dict.to(model.device)
     outputs = model(**batch_dict)
     embeddings = last_token_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
+    embeddings = F.normalize(embeddings, p=2, dim=1)
     return embeddings
 
 
 
 
 
-# normalize embeddings
-embeddings = F.normalize(embeddings, p=2, dim=1)
 scores = (embeddings[:2] @ embeddings[2:].T)
 print(scores.tolist())
 # [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
