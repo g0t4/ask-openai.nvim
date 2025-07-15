@@ -4,18 +4,20 @@ import msgpack
 from transformers import AutoModel, AutoTokenizer
 import torch
 
+from lsp.notes.transformers_qwen3 import encode
+
 # time python3 -m lsp.notes.hosted.sockets.server
 
-MODEL_NAME = "intfloat/e5-base-v2"
-
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModel.from_pretrained(MODEL_NAME).eval()
-
-def encode(text):
-    inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
-    with torch.no_grad():
-        embeddings = model(**inputs).last_hidden_state.mean(dim=1)
-    return embeddings[0].tolist()
+# MODEL_NAME = "intfloat/e5-base-v2"
+#
+# tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+# model = AutoModel.from_pretrained(MODEL_NAME).eval()
+#
+# def encode(text):
+#     inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+#     with torch.no_grad():
+#         embeddings = model(**inputs).last_hidden_state.mean(dim=1)
+#     return embeddings[0].tolist()
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(("0.0.0.0", 8015))
