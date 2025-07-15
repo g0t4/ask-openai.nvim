@@ -50,7 +50,7 @@ input_texts = queries + documents
 
 
 
-
+def encode(input_texts):
     # Tokenize the input texts
     batch_dict = tokenizer(
         input_texts,
