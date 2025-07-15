@@ -32,17 +32,18 @@ model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B')
 
 def encode(input_texts):
 
-    batch_args = tokenizer(
-        input_texts,
-        padding=True,
-        truncation=True,
-        max_length=8192,
-        return_tensors="pt",
-    )
-    batch_args.to(model.device)
-    outputs = model(**batch_args)
-    embeddings = last_token_pool(outputs.last_hidden_state, batch_args['attention_mask'])
-    return F.normalize(embeddings, p=2, dim=1)
+    with torch.no_grad():
+        batch_args = tokenizer(
+            input_texts,
+            padding=True,
+            truncation=True,
+            max_length=8192,
+            return_tensors="pt",
+        )
+        batch_args.to(model.device)
+        outputs = model(**batch_args)
+        embeddings = last_token_pool(outputs.last_hidden_state, batch_args['attention_mask'])
+        return F.normalize(embeddings, p=2, dim=1)
 
 queries = [
     get_detailed_instruct(task, 'What is the capital of China?'),
