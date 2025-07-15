@@ -6,9 +6,19 @@ def get_detailed_instruct(task_description: str, query: str) -> str:
     # *** INSTRUCTION!
     return f'Instruct: {task_description}\nQuery:{query}'
 
+import httpx
+
 def encode(input_texts):
-    pass
-    #
+    payload = {'texts': input_texts}
+    response = httpx.post('http://ollama:8013/embedding', json=payload)
+    embeddings = response.json()
+    normalized_embeddings = []
+    for vec in embeddings:
+        norm = sum(x**2 for x in vec)**0.5
+        normalized = [x / norm for x in vec]
+        normalized_embeddings.append(normalized)
+    return normalized_embeddings
+
     # with torch.no_grad():
     #     batch_args = tokenizer(
     #         input_texts,
