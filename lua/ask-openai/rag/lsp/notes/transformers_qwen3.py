@@ -32,7 +32,7 @@ device = torch.device(
 )
 
 tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-Embedding-0.6B', padding_side='left')
-model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B').to(device)
+model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B')# .to(device)
 
 logger.info(f"{model.device=}")
 
@@ -72,11 +72,12 @@ def main():
     print(embeddings)
     query_embeddings = embeddings[:2]  # first two are queries
     passage_embeddings = embeddings[2:]  # last two are documents
-    scores = (query_embeddings @ passage_embeddings.T)
-    print(f'{scores=}')
+    actual_scores = (query_embeddings @ passage_embeddings.T)
+    print(f'{actual_scores=}')
     from numpy.testing import assert_array_almost_equal
     expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
-    assert_array_almost_equal(scores.cpu(), expected_scores, decimal=6)
+    assert_array_almost_equal(actual_scores.cpu(), expected_scores, decimal=6)
+    print(f'{expected_scores=}')
 
 if __name__ == "__main__":
     main()
