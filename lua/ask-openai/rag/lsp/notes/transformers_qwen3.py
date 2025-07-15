@@ -59,5 +59,9 @@ embeddings = encode(input_texts)
 query_embeddings = embeddings[:2]  # first two are queries
 passage_embeddings = embeddings[2:]  # last two are documents
 scores = (query_embeddings @ passage_embeddings.T)
-print(scores.tolist())
-# [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
+print(f'{scores=}')
+
+from numpy.testing import assert_array_almost_equal
+# TODO fix for need to detach b/c of grad:
+expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
+assert_array_almost_equal(scores.detach().numpy(), expected_scores, decimal=6)
