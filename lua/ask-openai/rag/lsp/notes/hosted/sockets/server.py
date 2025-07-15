@@ -12,11 +12,10 @@ logger = get_logger(__name__)
 # TODO measure all logging/prints and remove/threshold any that are unacceptable (i.e. > 10ms?)
 
 def encode(texts: list[str]):
-    # print(f"encode w/ {type(transformers_qwen3.model)}")
-    print(texts)
+    # logger.debug(texts)
     vec = transformers_qwen3.encode(texts)
     vec_list = vec.cpu().numpy().tolist()
-    print(vec_list)
+    # logger.debug(vec_list)
     return vec_list
 
 # time python3 -m lsp.notes.hosted.sockets.server
@@ -52,11 +51,9 @@ while True:
         continue
 
     rx_text = rx_msg['texts']
-    print()
 
     embedding = encode(rx_text)
 
-    print("transmitting...")
     tx_msg = {'embedding': embedding}
     send_len_then_msg(conn, tx_msg)
     conn.close()

@@ -26,7 +26,6 @@ documents = [
     "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
 ]
 scoring_texts = queries + documents
-print(f'{scoring_texts=}')
 
 # all_ever_scores = []
 # for _ in range(1, 100):
@@ -34,7 +33,7 @@ print(f'{scoring_texts=}')
 #     query_embeddings = embeddings[:2]  # first two are queries
 #     passage_embeddings = embeddings[2:]  # last two are documents
 #     scores = (query_embeddings @ passage_embeddings.T)
-#     print(f'{scores=}')
+#     logger.debug(f'{scores=}')
 #     all_ever_scores.append(scores)
 #     from numpy.testing import assert_array_almost_equal
 #     expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
@@ -64,24 +63,22 @@ with logger.timer("Send embedding to server"):
     # client.connect(("localhost", 8015))
     conn.connect(("ollama", 8015))
 
-    print("transmitting...")
     chunk = "local M = {}\nlocal init = require(\"ask-openai\")\nlocal config = require(\"ask-openai.config\")\n\n-- FYI uses can add commands if that's what they want, they have the API to do so:\n\nfunction M.enable_predictions()\n    config.local_share.set_predictions_enabled()\n    init.start_predictions()\nend\n\nfunction M.disable_predictions()\n    config.local_share.set_predictions_disabled()\n    init.stop_predictions()\nend\n\nfunction M.toggle_predictions()\n    if config.local_share.are_predictions_enabled() then\n        M.disable_predictions()\n    else"
     hello = "Hello world"
     tx_msg = {'texts': tx_texts}
 
     send_len_then_msg(conn, tx_msg)
-    print()
 
     rx_msg = recv_len_then_msg(conn)
 
     conn.close()
 
 if not rx_msg:
-    print(f'unexpected empty response: {rx_msg=}')
+    logger.debug(f'unexpected empty response: {rx_msg=}')
     exit(-1)
 
 rx_embedding = rx_msg['embedding']
 
-print(f"Received {len(rx_embedding)} embeddings:")
+logger.debug(f"Received {len(rx_embedding)} embeddings:")
 for e in rx_embedding:
-    print(f"  {e}")
+    logger.debug(f"  {e}")
