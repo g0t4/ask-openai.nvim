@@ -48,9 +48,9 @@ test_inputs = {'texts': scoring_texts}
 
 class EmbedClient():
 
-    def __init__(self):
+    def __init__(self, addy=("ollama.lan", 8015)):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.conn.connect(("ollama.lan", 8015))
+        self.addy = addy
 
     def encode(self, inputs):
         send_len_then_msg(self.conn, inputs)
@@ -63,6 +63,13 @@ class EmbedClient():
 
     def close(self):
         self.conn.close()
+
+    def __enter__(self):
+        self.conn.connect(self.addy)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
 
 with logger.timer("Send embedding to server"):
     # intfloat/e5-base-v2 model timing:
@@ -82,8 +89,8 @@ with logger.timer("Send embedding to server"):
     #   18-20ms with "hello world"
     #   then my chunk (below)... holy F 21ms?! qwen3 full precision!
     #
-    client = EmbedClient()
-    rx_embedding = client.encode(test_inputs)
+    with EmbedClient() as client:
+        rx_embedding = client.encode(test_inputs)
 
 if not rx_embedding:
     exit(-1)
