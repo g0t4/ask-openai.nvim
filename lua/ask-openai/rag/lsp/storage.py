@@ -4,7 +4,10 @@ import json
 from pathlib import Path
 from typing import List, Optional
 
+# * TORCH BEFORE FAISS (even if don't need torch here/yet)
+import torch  # MUST be imported BEFORE FAISS else Qwen3 will explode on model import (can happen to other models too)
 import faiss
+
 import numpy as np
 from pydantic import BaseModel
 
