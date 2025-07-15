@@ -39,6 +39,10 @@ scoring_texts = queries + documents
 #     expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
 #     assert_array_almost_equal(scores.detach().numpy(), expected_scores, decimal=6)
 
+file_chunk = "local M = {}\nlocal init = require(\"ask-openai\")\nlocal config = require(\"ask-openai.config\")\n\n-- FYI uses can add commands if that's what they want, they have the API to do so:\n\nfunction M.enable_predictions()\n    config.local_share.set_predictions_enabled()\n    init.start_predictions()\nend\n\nfunction M.disable_predictions()\n    config.local_share.set_predictions_disabled()\n    init.stop_predictions()\nend\n\nfunction M.toggle_predictions()\n    if config.local_share.are_predictions_enabled() then\n        M.disable_predictions()\n    else"
+hello_world = "Hello world"
+tx_msg = {'texts': scoring_texts}
+
 with logger.timer("Send embedding to server"):
     # intfloat/e5-base-v2 model timing:
     #   input: [{'text': "Hello world"}]
@@ -57,18 +61,11 @@ with logger.timer("Send embedding to server"):
     #   18-20ms with "hello world"
     #   then my chunk (below)... holy F 21ms?! qwen3 full precision!
     #
-    tx_texts = scoring_texts
-
     conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # client.connect(("localhost", 8015))
     conn.connect(("ollama", 8015))
 
-    chunk = "local M = {}\nlocal init = require(\"ask-openai\")\nlocal config = require(\"ask-openai.config\")\n\n-- FYI uses can add commands if that's what they want, they have the API to do so:\n\nfunction M.enable_predictions()\n    config.local_share.set_predictions_enabled()\n    init.start_predictions()\nend\n\nfunction M.disable_predictions()\n    config.local_share.set_predictions_disabled()\n    init.stop_predictions()\nend\n\nfunction M.toggle_predictions()\n    if config.local_share.are_predictions_enabled() then\n        M.disable_predictions()\n    else"
-    hello = "Hello world"
-    tx_msg = {'texts': tx_texts}
-
     send_len_then_msg(conn, tx_msg)
-
     rx_msg = recv_len_then_msg(conn)
 
     conn.close()
