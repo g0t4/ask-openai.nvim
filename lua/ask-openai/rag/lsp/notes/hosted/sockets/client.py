@@ -1,3 +1,4 @@
+import struct
 from lsp.logs import get_logger, logging_fwk_to_console
 
 import socket
@@ -7,6 +8,38 @@ import msgpack
 
 logging_fwk_to_console("INFO")
 logger = get_logger(__name__)
+
+def get_detailed_instruct(task_description: str, query: str) -> str:
+    # *** INSTRUCTION!
+    return f'Instruct: {task_description}\nQuery:{query}'
+
+# Each query must come with a one-sentence instruction that describes the task
+task = 'Given a web search query, retrieve relevant passages that answer the query'
+queries = [
+    get_detailed_instruct(task, 'What is the capital of China?'),
+    get_detailed_instruct(task, 'Explain gravity'),
+]
+# No need to add instruction for retrieval documents
+documents = [
+    "The capital of China is Beijing.",
+    "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
+]
+scoring_texts = queries + documents
+print(f'{scoring_texts=}')
+
+# all_ever_scores = []
+# for _ in range(1, 100):
+#     embeddings = encode(input_texts)
+#     query_embeddings = embeddings[:2]  # first two are queries
+#     passage_embeddings = embeddings[2:]  # last two are documents
+#     scores = (query_embeddings @ passage_embeddings.T)
+#     print(f'{scores=}')
+#     all_ever_scores.append(scores)
+#     from numpy.testing import assert_array_almost_equal
+#     expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
+#     assert_array_almost_equal(scores.detach().numpy(), expected_scores, decimal=6)
+
+from lsp.notes.hosted.sockets.comms import recv_exact
 
 with logger.timer("Send embedding to server"):
     # intfloat/e5-base-v2 model timing:
@@ -26,18 +59,34 @@ with logger.timer("Send embedding to server"):
     #   18-20ms with "hello world"
     #   then my chunk (below)... holy F 21ms?! qwen3 full precision!
     #
+    tx_texts = scoring_texts
 
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # client.connect(("localhost", 8015))
-    client.connect(("ollama", 8015))
+    conn.connect(("ollama", 8015))
 
+    print("transmitting...")
     chunk = "local M = {}\nlocal init = require(\"ask-openai\")\nlocal config = require(\"ask-openai.config\")\n\n-- FYI uses can add commands if that's what they want, they have the API to do so:\n\nfunction M.enable_predictions()\n    config.local_share.set_predictions_enabled()\n    init.start_predictions()\nend\n\nfunction M.disable_predictions()\n    config.local_share.set_predictions_disabled()\n    init.stop_predictions()\nend\n\nfunction M.toggle_predictions()\n    if config.local_share.are_predictions_enabled() then\n        M.disable_predictions()\n    else"
     hello = "Hello world"
-    use_text = hello
-    payload = msgpack.packb({'text': use_text}, use_bin_type=True)
-    client.sendall(payload)
+    tx_msg = {'texts': tx_texts}
+    tx_msg_packed = msgpack.packb(tx_msg, use_bin_type=True)
+    tx_msg_len = len(tx_msg_packed)
+    print(f'{tx_msg_len=}')
+    tx_msg_len_packed = struct.pack('!I', tx_msg_len)  # 4-byte network byte order
+    print(f'{tx_msg_len_packed=}')
+    conn.sendall(tx_msg_len_packed + tx_msg_packed)
+    print()
 
-    data = client.recv(65536)
-    result = msgpack.unpackb(data, raw=False)
+    print("receiving...")
+    rx_msg_len_packed = recv_exact(conn, 4)
+    print(f'{rx_msg_len_packed=}')
+    rx_msg_len = struct.unpack('!I', rx_msg_len_packed)[0]
+    print(f'{rx_msg_len=}')
 
-print(len(result['embedding'][0]))
+    rx_msg_packed = recv_exact(conn, rx_msg_len)
+    rx_msg = msgpack.unpackb(rx_msg_packed, raw=False)
+    rx_embedding = rx_msg['embedding']
+
+print(f"Received {len(rx_embedding)} embeddings:")
+for e in rx_embedding:
+    print(f"  {e}")
