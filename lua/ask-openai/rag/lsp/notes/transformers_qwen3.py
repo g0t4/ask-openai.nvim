@@ -9,6 +9,7 @@ from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
 
 from lsp.logs import get_logger
+
 logger = get_logger(__name__)
 
 def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tensor:
@@ -67,17 +68,14 @@ def main():
     ]
     input_texts = queries + documents
 
-    all_ever_scores = []
-    for _ in range(1, 100):
-        embeddings = encode(input_texts)
-        query_embeddings = embeddings[:2]  # first two are queries
-        passage_embeddings = embeddings[2:]  # last two are documents
-        scores = (query_embeddings @ passage_embeddings.T)
-        print(f'{scores=}')
-        all_ever_scores.append(scores)
-        from numpy.testing import assert_array_almost_equal
-        expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
-        assert_array_almost_equal(scores.detach().numpy(), expected_scores, decimal=6)
+    embeddings = encode(input_texts)
+    query_embeddings = embeddings[:2]  # first two are queries
+    passage_embeddings = embeddings[2:]  # last two are documents
+    scores = (query_embeddings @ passage_embeddings.T)
+    print(f'{scores=}')
+    from numpy.testing import assert_array_almost_equal
+    expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
+    assert_array_almost_equal(scores.detach().numpy(), expected_scores, decimal=6)
 
 if __name__ == "__main__":
     main()
