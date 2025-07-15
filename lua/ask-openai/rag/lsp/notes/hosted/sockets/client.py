@@ -69,4 +69,5 @@ if not rx_embedding:
 # prints here are ok b/c the intent is a one-off test of get embeddings, so show them!
 print(f"Received {len(rx_embedding)} embeddings:")
 for e in rx_embedding:
-    print(f"  {e}")
+    # print(f"  {e}")
+    print(f"  {len(e)}")
