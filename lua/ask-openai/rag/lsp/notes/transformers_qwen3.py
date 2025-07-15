@@ -45,26 +45,29 @@ def encode(input_texts):
         embeddings = last_token_pool(outputs.last_hidden_state, batch_args['attention_mask'])
         return F.normalize(embeddings, p=2, dim=1)
 
-queries = [
-    get_detailed_instruct(task, 'What is the capital of China?'),
-    get_detailed_instruct(task, 'Explain gravity'),
-]
-# No need to add instruction for retrieval documents
-documents = [
-    "The capital of China is Beijing.",
-    "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
-]
-input_texts = queries + documents
+def main():
+    queries = [
+        get_detailed_instruct(task, 'What is the capital of China?'),
+        get_detailed_instruct(task, 'Explain gravity'),
+    ]
+    # No need to add instruction for retrieval documents
+    documents = [
+        "The capital of China is Beijing.",
+        "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
+    ]
+    input_texts = queries + documents
 
-all_ever_scores = []
-for i in range(1, 100):
-    embeddings = encode(input_texts)
-    query_embeddings = embeddings[:2]  # first two are queries
-    passage_embeddings = embeddings[2:]  # last two are documents
-    scores = (query_embeddings @ passage_embeddings.T)
-    print(f'{scores=}')
-    all_ever_scores.append(scores)
-    from numpy.testing import assert_array_almost_equal
-    # TODO fix for need to detach b/c of grad:
-    expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
-    assert_array_almost_equal(scores.detach().numpy(), expected_scores, decimal=6)
+    all_ever_scores = []
+    for _ in range(1, 100):
+        embeddings = encode(input_texts)
+        query_embeddings = embeddings[:2]  # first two are queries
+        passage_embeddings = embeddings[2:]  # last two are documents
+        scores = (query_embeddings @ passage_embeddings.T)
+        print(f'{scores=}')
+        all_ever_scores.append(scores)
+        from numpy.testing import assert_array_almost_equal
+        expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
+        assert_array_almost_equal(scores.detach().numpy(), expected_scores, decimal=6)
+
+if __name__ == "__main__":
+    main()
