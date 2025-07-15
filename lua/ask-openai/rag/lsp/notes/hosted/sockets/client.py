@@ -44,7 +44,25 @@ scoring_texts = queries + documents
 
 file_chunk = "local M = {}\nlocal init = require(\"ask-openai\")\nlocal config = require(\"ask-openai.config\")\n\n-- FYI uses can add commands if that's what they want, they have the API to do so:\n\nfunction M.enable_predictions()\n    config.local_share.set_predictions_enabled()\n    init.start_predictions()\nend\n\nfunction M.disable_predictions()\n    config.local_share.set_predictions_disabled()\n    init.stop_predictions()\nend\n\nfunction M.toggle_predictions()\n    if config.local_share.are_predictions_enabled() then\n        M.disable_predictions()\n    else"
 hello_world = "Hello world"
-tx_msg = {'texts': scoring_texts}
+test_inputs = {'texts': scoring_texts}
+
+class EmbedClient():
+
+    def __init__(self):
+        self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.conn.connect(("ollama.lan", 8015))
+
+    def encode(self, inputs):
+        send_len_then_msg(self.conn, inputs)
+        rx_msg = recv_len_then_msg(self.conn)
+        if rx_msg is None:
+            logger.warning(f"missing {rx_msg=}")
+            return None
+
+        return rx_msg['embeddings']
+
+    def close(self):
+        self.conn.close()
 
 with logger.timer("Send embedding to server"):
     # intfloat/e5-base-v2 model timing:
@@ -64,20 +82,11 @@ with logger.timer("Send embedding to server"):
     #   18-20ms with "hello world"
     #   then my chunk (below)... holy F 21ms?! qwen3 full precision!
     #
-    conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # client.connect(("localhost", 8015))
-    conn.connect(("ollama", 8015))
+    client = EmbedClient()
+    rx_embedding = client.encode(test_inputs)
 
-    send_len_then_msg(conn, tx_msg)
-    rx_msg = recv_len_then_msg(conn)
-
-    conn.close()
-
-if not rx_msg:
-    logger.debug(f'unexpected empty response: {rx_msg=}')
+if not rx_embedding:
     exit(-1)
-
-rx_embedding = rx_msg['embedding']
 
 # prints here are ok b/c the intent is a one-off test of get embeddings, so show them!
 print(f"Received {len(rx_embedding)} embeddings:")

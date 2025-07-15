@@ -56,6 +56,6 @@ while True:
 
     embedding = encode(rx_text)
 
-    tx_msg = {'embedding': embedding}
+    tx_msg = {'embeddings': embedding}
     send_len_then_msg(conn, tx_msg)
     conn.close()
