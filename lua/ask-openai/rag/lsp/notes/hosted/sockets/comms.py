@@ -23,9 +23,9 @@ def recv_len_then_msg(conn):
     msg_packed = recv_exact(conn, msg_len)
     return msgpack.unpackb(msg_packed, raw=False)
 
-def send_len_then_msg(conn, tx_msg):
-    tx_msg_packed = msgpack.packb(tx_msg, use_bin_type=True)
-    tx_msg_len = len(tx_msg_packed)
-    logger.debug(f'{tx_msg_len=}')
-    tx_msg_len_packed = struct.pack('!I', tx_msg_len)  # 4-byte network byte order
-    conn.sendall(tx_msg_len_packed + tx_msg_packed)
+def send_len_then_msg(conn, msg):
+    msg_packed = msgpack.packb(msg, use_bin_type=True)
+    msg_len = len(msg_packed)
+    logger.debug(f'{msg_len=}')
+    msg_len_packed = struct.pack('!I', msg_len)  # 4-byte network byte order
+    conn.sendall(msg_len_packed + msg_packed)
