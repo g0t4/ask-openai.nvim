@@ -23,18 +23,14 @@ class ModelWrapper:
 
             from lsp.notes import transformers_qwen3
 
+        self._model = transformers_qwen3
+        return self._model
+
     def ensure_model_loaded(self):
         self.model  # access model to trigger load
 
     def _encode(self, texts):
-        import numpy as np
-
-        vecs_np = self.model.encode(
-            texts,
-            normalize_embeddings=True,
-            # device="cpu",
-        ).astype("float32")
-
+        vecs_np = self.model.encode(texts)
         return vecs_np
 
     def encode_passages(self, passages: list[str]):
@@ -52,10 +48,8 @@ class ModelWrapper:
         # TODO test refactored _encode() shared method:
         return self._encode([text])
 
-    def get_shape(self) -> None:
+    def get_shape(self) -> int:
         # Create a dummy vector to get dimensions
-        # TODO! is this the best way to get this?
-        #  should I just hardcode for now? (per model?)
         sample_text = "passage: sample"
         sample_vec = self._encode_text(sample_text)
         shape = sample_vec.shape[1]
