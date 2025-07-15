@@ -7,8 +7,10 @@ from lsp.notes.hosted.sockets.comms import *
 
 # time python3 -m lsp.notes.hosted.sockets.client
 
-# logging_fwk_to_console("INFO")
-logging_fwk_to_console("DEBUG")
+# logging_fwk_to_console("WARN")
+logging_fwk_to_console("INFO")
+# logging_fwk_to_console("DEBUG")
+
 logger = get_logger(__name__)
 
 def get_detailed_instruct(task_description: str, query: str) -> str:
@@ -77,6 +79,7 @@ if not rx_msg:
 
 rx_embedding = rx_msg['embedding']
 
-logger.debug(f"Received {len(rx_embedding)} embeddings:")
+# prints here are ok b/c the intent is a one-off test of get embeddings, so show them!
+print(f"Received {len(rx_embedding)} embeddings:")
 for e in rx_embedding:
-    logger.debug(f"  {e}")
+    print(f"  {e}")
