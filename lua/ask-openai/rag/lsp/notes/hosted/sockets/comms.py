@@ -17,7 +17,6 @@ def recv_exact(sock, content_size):
 def recv_len_then_msg(conn):
     msg_len_packed = recv_exact(conn, 4)
     msg_len = struct.unpack('!I', msg_len_packed)[0]
-    logger.info(f'{msg_len=}')
     if not msg_len:
         return
 
@@ -27,7 +26,6 @@ def recv_len_then_msg(conn):
 def send_len_then_msg(conn, msg):
     msg_packed = msgpack.packb(msg, use_bin_type=True)
     msg_len = len(msg_packed)
-    logger.info(f'{msg_len=}')
     msg_len_packed = struct.pack('!I', msg_len)  # 4-byte network byte order
     conn.sendall(msg_len_packed + msg_packed)
 
