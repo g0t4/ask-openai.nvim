@@ -1,4 +1,4 @@
-from lsp.logs import get_logger
+from lsp.logs import get_logger, logging_fwk_to_console
 
 logger = get_logger(__name__)
 
@@ -29,9 +29,10 @@ def encode(input_texts: list[str]):
     #     return F.normalize(embeddings, p=2, dim=1)
 
 def main():
-    embeddings = encode(["This is a test.", "This is another test.", "This is a third test."])
-    from rich import print
-    print(embeddings)
+    logging_fwk_to_console("INFO")
+    with logger.timer("/embeddings RT"):
+        embeddings = encode(["This is a test.", "This is another test.", "This is a third test."])
+    # print(embeddings)
 
 if __name__ == "__main__":
     main()
