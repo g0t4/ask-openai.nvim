@@ -7,7 +7,8 @@ import torch
 from lsp.notes import transformers_qwen3
 
 def encode(texts: list[str]):
-    print(f"encode w/ {transformers_qwen3.model}")
+    print(f"encode w/ {type(transformers_qwen3.model)}")
+    print(texts)
     vec = transformers_qwen3.encode(texts)
     return vec.cpu().numpy().tolist()
 
