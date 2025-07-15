@@ -21,9 +21,7 @@ def recv_len_then_msg(conn):
         return
 
     msg_packed = recv_exact(conn, msg_len)
-    msg = msgpack.unpackb(msg_packed, raw=False)
-
-    return msg
+    return msgpack.unpackb(msg_packed, raw=False)
 
 def send_len_then_msg(conn, tx_msg):
     tx_msg_packed = msgpack.packb(tx_msg, use_bin_type=True)
