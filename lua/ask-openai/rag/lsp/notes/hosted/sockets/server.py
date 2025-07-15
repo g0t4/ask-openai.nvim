@@ -1,4 +1,5 @@
 import socket
+import signal
 import msgpack
 from transformers import AutoModel, AutoTokenizer
 import torch
@@ -19,9 +20,6 @@ def encode(text):
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(("0.0.0.0", 8015))
 server.listen()
-
-# sigint
-import signal
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
