@@ -1,7 +1,3 @@
-import struct
-import socket
-import msgpack
-
 from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.notes.hosted.sockets.comms import *
 
@@ -45,31 +41,6 @@ scoring_texts = queries + documents
 file_chunk = "local M = {}\nlocal init = require(\"ask-openai\")\nlocal config = require(\"ask-openai.config\")\n\n-- FYI uses can add commands if that's what they want, they have the API to do so:\n\nfunction M.enable_predictions()\n    config.local_share.set_predictions_enabled()\n    init.start_predictions()\nend\n\nfunction M.disable_predictions()\n    config.local_share.set_predictions_disabled()\n    init.stop_predictions()\nend\n\nfunction M.toggle_predictions()\n    if config.local_share.are_predictions_enabled() then\n        M.disable_predictions()\n    else"
 hello_world = "Hello world"
 test_inputs = {'texts': scoring_texts}
-
-class EmbedClient():
-
-    def __init__(self, addy=("ollama.lan", 8015)):
-        self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.addy = addy
-
-    def encode(self, inputs):
-        send_len_then_msg(self.conn, inputs)
-        rx_msg = recv_len_then_msg(self.conn)
-        if rx_msg is None:
-            logger.warning(f"missing {rx_msg=}")
-            return None
-
-        return rx_msg['embeddings']
-
-    def close(self):
-        self.conn.close()
-
-    def __enter__(self):
-        self.conn.connect(self.addy)
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.close()
 
 with logger.timer("Send embedding to server"):
     # intfloat/e5-base-v2 model timing:
