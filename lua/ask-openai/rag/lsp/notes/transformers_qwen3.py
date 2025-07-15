@@ -46,6 +46,11 @@ documents = [
     "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun."
 ]
 input_texts = queries + documents
+
+
+
+
+
 # Tokenize the input texts
 batch_dict = tokenizer(
     input_texts,
@@ -57,6 +62,10 @@ batch_dict = tokenizer(
 batch_dict.to(model.device)
 outputs = model(**batch_dict)
 embeddings = last_token_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
+
+
+
+
 
 # normalize embeddings
 embeddings = F.normalize(embeddings, p=2, dim=1)
