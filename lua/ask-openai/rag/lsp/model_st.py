@@ -1,3 +1,4 @@
+import torch
 import os
 
 from .logs import get_logger
@@ -28,8 +29,8 @@ class ModelWrapper:
             from sentence_transformers import SentenceTransformer  # 2+ seconds to import (mostly torch/transformer deps that even if I use BertModel directly, I cannot avoid the import timing)
 
         # TODO try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
-        model_name = "intfloat/e5-base-v2"
-        # model_name = "Qwen/Qwen3-Embedding-0.6B"
+        # model_name = "intfloat/e5-base-v2"
+        model_name = "Qwen/Qwen3-Embedding-0.6B"
         with logger.timer(f"Load model {model_name}"):
             self._model = SentenceTransformer(model_name)
 
@@ -38,6 +39,7 @@ class ModelWrapper:
     def ensure_model_loaded(self):
         self.model  # access model to trigger load
 
+    @torch.no_grad()
     def _encode(self, texts):
         import numpy as np
 
