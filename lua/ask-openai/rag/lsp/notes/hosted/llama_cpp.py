@@ -8,8 +8,8 @@ def get_detailed_instruct(task_description: str, query: str) -> str:
 
 import httpx
 
-def encode(input_texts):
-    payload = {'texts': input_texts}
+def encode(input_texts: list[str]):
+    payload = {'input': input_texts}
     response = httpx.post('http://ollama:8013/embedding', json=payload)
     embeddings = response.json()
     normalized_embeddings = []
@@ -33,7 +33,7 @@ def encode(input_texts):
     #     return F.normalize(embeddings, p=2, dim=1)
 
 def main():
-    pass
+    encode(["This is a test.", "This is another test.", "This is a third test."])
 
 if __name__ == "__main__":
     main()
