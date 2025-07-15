@@ -6,10 +6,6 @@ def get_detailed_instruct(task_description: str, query: str) -> str:
     # *** INSTRUCTION!
     return f'Instruct: {task_description}\nQuery:{query}'
 
-# *** todo try these options when hosting:
-# We recommend enabling flash_attention_2 for better acceleration and memory saving.
-# model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', attn_implementation="flash_attention_2", torch_dtype=torch.float16).cuda()
-
 def encode(input_texts):
     pass
     #
