@@ -8,9 +8,7 @@ import torch.nn.functional as F
 from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
 
-
-def last_token_pool(last_hidden_states: Tensor,
-                 attention_mask: Tensor) -> Tensor:
+def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tensor:
     left_padding = (attention_mask[:, -1].sum() == attention_mask.shape[0])
     if left_padding:
         return last_hidden_states[:, -1]
@@ -18,7 +16,6 @@ def last_token_pool(last_hidden_states: Tensor,
         sequence_lengths = attention_mask.sum(dim=1) - 1
         batch_size = last_hidden_states.shape[0]
         return last_hidden_states[torch.arange(batch_size, device=last_hidden_states.device), sequence_lengths]
-
 
 def get_detailed_instruct(task_description: str, query: str) -> str:
     # *** INSTRUCTION!
@@ -32,12 +29,6 @@ model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B')
 
 # We recommend enabling flash_attention_2 for better acceleration and memory saving.
 # model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', attn_implementation="flash_attention_2", torch_dtype=torch.float16).cuda()
-
-
-
-
-
-
 
 def encode(input_texts):
 
@@ -53,22 +44,18 @@ def encode(input_texts):
     embeddings = last_token_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
     return F.normalize(embeddings, p=2, dim=1)
 
-
-
 queries = [
     get_detailed_instruct(task, 'What is the capital of China?'),
-    get_detailed_instruct(task, 'Explain gravity')
+    get_detailed_instruct(task, 'Explain gravity'),
 ]
 # No need to add instruction for retrieval documents
 documents = [
     "The capital of China is Beijing.",
-    "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun."
+    "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
 ]
 input_texts = queries + documents
-
 
 embeddings = encode(input_texts)
 scores = (embeddings[:2] @ embeddings[2:].T)
 print(scores.tolist())
 # [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
-
