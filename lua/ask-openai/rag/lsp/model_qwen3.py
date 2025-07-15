@@ -34,7 +34,7 @@ class ModelWrapper:
 
         # set batch_size high to disable batching if that is better perf on the 5090s
         #   added batching to investigate issues w/ qwen3 on mac w/ ST and the memory explosion (even after disable autograd!)
-        def batched_encode(model, texts, batch_size=64):
+        def batched_encode(model, texts, batch_size=8):
             all_vecs = []
             with torch.no_grad():
                 total = len(texts)
@@ -46,7 +46,7 @@ class ModelWrapper:
 
             return torch.cat(all_vecs, dim=0)
 
-        vecs_np = batched_encode(self.model, texts, batch_size=64)
+        vecs_np = batched_encode(self.model, texts)
         return vecs_np
 
     def encode_passages(self, passages: list[str]):
