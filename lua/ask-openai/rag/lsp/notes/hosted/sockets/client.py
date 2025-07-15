@@ -26,10 +26,9 @@ documents = [
 ]
 scoring_texts = queries + documents
 
-
 file_chunk = "local M = {}\nlocal init = require(\"ask-openai\")\nlocal config = require(\"ask-openai.config\")\n\n-- FYI uses can add commands if that's what they want, they have the API to do so:\n\nfunction M.enable_predictions()\n    config.local_share.set_predictions_enabled()\n    init.start_predictions()\nend\n\nfunction M.disable_predictions()\n    config.local_share.set_predictions_disabled()\n    init.stop_predictions()\nend\n\nfunction M.toggle_predictions()\n    if config.local_share.are_predictions_enabled() then\n        M.disable_predictions()\n    else"
 hello_world = "Hello world"
-test_inputs = {'texts': file_chunk}
+test_inputs = {'texts': scoring_texts}
 
 with logger.timer("Send embedding to server"):
     # intfloat/e5-base-v2 model timing:
@@ -50,25 +49,27 @@ with logger.timer("Send embedding to server"):
     #   then my chunk (below)... holy F 21ms?! qwen3 full precision!
     #
     with EmbedClient() as client:
-        rx_embedding = client.encode(test_inputs)
+        rx_embeddings = client.encode(test_inputs)
 
-if not rx_embedding:
+if not rx_embeddings:
     exit(-1)
 
 # prints here are ok b/c the intent is a one-off test of get embeddings, so show them!
-print(f"Received {len(rx_embedding)} embeddings:")
-for e in rx_embedding:
+print(f"Received {len(rx_embeddings)} embeddings:")
+for e in rx_embeddings:
     # print(f"  {e}")
     print(f"  {len(e)}")
 
-# all_ever_scores = []
-# for _ in range(1, 100):
-#     embeddings = encode(input_texts)
-#     query_embeddings = embeddings[:2]  # first two are queries
-#     passage_embeddings = embeddings[2:]  # last two are documents
-#     scores = (query_embeddings @ passage_embeddings.T)
-#     logger.debug(f'{scores=}')
-#     all_ever_scores.append(scores)
-#     from numpy.testing import assert_array_almost_equal
-#     expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
-#     assert_array_almost_equal(scores.detach().numpy(), expected_scores, decimal=6)
+# ** validate scores
+
+import numpy as np
+from numpy.testing import assert_array_almost_equal
+
+np_embeddings = np.array(rx_embeddings)
+query_embeddings = np_embeddings[:2]  # first two are queries
+passage_embeddings = np_embeddings[2:]  # last two are documents
+scores = (query_embeddings @ passage_embeddings.T)
+logger.debug(f'{scores=}')
+
+expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
+assert_array_almost_equal(scores, expected_scores, decimal=6)
