@@ -78,6 +78,8 @@ with logger.timer("Send embedding to server"):
 
     rx_msg = recv_len_then_msg(conn)
 
+    conn.close()
+
 if not rx_msg:
     print(f'unexpected empty response: {rx_msg=}')
     exit(-1)
