@@ -67,7 +67,7 @@ def encode(input_texts):
 
 
 
-
+embeddings = encode(input_texts)
 scores = (embeddings[:2] @ embeddings[2:].T)
 print(scores.tolist())
 # [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
