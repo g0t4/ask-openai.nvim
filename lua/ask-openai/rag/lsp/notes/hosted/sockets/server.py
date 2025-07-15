@@ -2,10 +2,13 @@ import socket
 import signal
 import struct
 import msgpack
-from transformers import AutoModel, AutoTokenizer
-import torch
 
 from lsp.notes import transformers_qwen3
+from lsp.logs import get_logger, logging_fwk_to_console
+from lsp.notes.hosted.sockets.comms import recv_exact
+
+logging_fwk_to_console("INFO")
+logger = get_logger(__name__)
 
 def encode(texts: list[str]):
     # print(f"encode w/ {type(transformers_qwen3.model)}")

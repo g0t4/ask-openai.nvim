@@ -1,8 +1,9 @@
 import struct
-from lsp.logs import get_logger, logging_fwk_to_console
-
 import socket
 import msgpack
+
+from lsp.logs import get_logger, logging_fwk_to_console
+from lsp.notes.hosted.sockets.comms import recv_exact
 
 # time python3 -m lsp.notes.hosted.sockets.client
 
@@ -38,8 +39,6 @@ print(f'{scoring_texts=}')
 #     from numpy.testing import assert_array_almost_equal
 #     expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
 #     assert_array_almost_equal(scores.detach().numpy(), expected_scores, decimal=6)
-
-from lsp.notes.hosted.sockets.comms import recv_exact
 
 with logger.timer("Send embedding to server"):
     # intfloat/e5-base-v2 model timing:
