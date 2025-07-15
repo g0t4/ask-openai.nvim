@@ -10,10 +10,14 @@ logger = get_logger(__name__)
 
 with logger.timer("Send embedding to server"):
     # local timing w/ intfloat/e5-base-v2 model
+    #   input: [{'text': "Hello world"}]
     #   60ms initial
     #   50ms second
     #   40ms 3+ (mostly)
     #   both with AF_UNIX and AF_INET sockets
+    #
+    #   remote: 50ms => 18-20ms on 3+!
+    #
 
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client.connect(("ollama", 8015))
