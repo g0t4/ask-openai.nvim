@@ -1,7 +1,5 @@
 import socket
 import signal
-import struct
-import msgpack
 
 from lsp.notes import transformers_qwen3
 from lsp.logs import get_logger, logging_fwk_to_console
