@@ -151,9 +151,9 @@ def load_prior_data(language_extension: str, language_dir: Path) -> RAGDataset:
     if vectors_index_path.exists():
         try:
             index = faiss.read_index(str(vectors_index_path))
-            print(f"Loaded existing FAISS index with {index.ntotal} vectors")
+            logger.debug(f"Loaded existing FAISS index with {index.ntotal} vectors")
         except Exception as e:
-            print(f"[yellow]Warning: Could not load existing index: {e}")
+            logger.exception("Warning: Could not load existing index")
 
     chunks_json_path = language_dir / "chunks.json"
     chunks_by_file: dict[str, List[Chunk]] = {}
@@ -161,9 +161,9 @@ def load_prior_data(language_extension: str, language_dir: Path) -> RAGDataset:
     if chunks_json_path.exists():
         try:
             chunks_by_file = load_chunks(chunks_json_path)
-            print(f"Loaded {len(chunks_by_file)} existing chunks")
+            logger.debug(f"Loaded {len(chunks_by_file)} existing chunks")
         except Exception as e:
-            print(f"[yellow]Warning: Could not load existing chunks: {e}")
+            logger.exception(f"Warning: Could not load existing chunks: {e}")
 
     files_json_path = language_dir / "files.json"
     files_by_path = {}
@@ -171,9 +171,9 @@ def load_prior_data(language_extension: str, language_dir: Path) -> RAGDataset:
         try:
             with open(files_json_path, 'r') as f:
                 files_by_path = {k: FileStat(**v) for k, v in json.load(f).items()}
-            print(f"Loaded stats for {len(files_by_path)} files")
+            logger.debug(f"Loaded stats for {len(files_by_path)} files")
         except Exception as e:
-            print(f"[yellow]Warning: Could not load file stats {e}")
+            logger.exception(f"Warning: Could not load file stats {e}")
 
     return RAGDataset(language_extension, chunks_by_file, files_by_path, index)
 
