@@ -16,7 +16,7 @@ with logger.timer("Send embedding to server"):
     #   both with AF_UNIX and AF_INET sockets
 
     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(("0.0.0.0", 8015))
+    client.connect(("ollama", 8015))
 
     payload = msgpack.packb({'text': "Hello world"}, use_bin_type=True)
     client.sendall(payload)
