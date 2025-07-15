@@ -12,12 +12,8 @@ def encode(input_texts: list[str]):
     payload = {'input': input_texts}
     response = httpx.post('http://ollama:8013/embedding', json=payload)
     embeddings = response.json()
-    normalized_embeddings = []
-    for vec in embeddings:
-        norm = sum(x**2 for x in vec)**0.5
-        normalized = [x / norm for x in vec]
-        normalized_embeddings.append(normalized)
-    return normalized_embeddings
+
+    return embeddings
 
     # with torch.no_grad():
     #     batch_args = tokenizer(
@@ -33,7 +29,9 @@ def encode(input_texts: list[str]):
     #     return F.normalize(embeddings, p=2, dim=1)
 
 def main():
-    encode(["This is a test.", "This is another test.", "This is a third test."])
+    embeddings = encode(["This is a test.", "This is another test.", "This is a third test."])
+    from rich import print
+    print(embeddings)
 
 if __name__ == "__main__":
     main()
