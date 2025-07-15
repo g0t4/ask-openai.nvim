@@ -85,6 +85,13 @@ class Logger(logging.Logger):
     def timer(self, finished_message=""):
         return LogTimer(finished_message, logger=self)
 
+    def isEnabledForDebug(self):
+        # for when the calling code is unavoidably expensive
+        return self.isEnabledFor(logging.DEBUG)
+
+    def isEnabledForInfo(self):
+        return self.isEnabledFor(logging.INFO)
+
 def get_logger(name) -> Logger:
     logging.setLoggerClass(Logger)
     logger = cast(Logger, logging.getLogger(name))

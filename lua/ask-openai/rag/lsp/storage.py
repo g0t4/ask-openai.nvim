@@ -161,7 +161,9 @@ def load_prior_data(language_extension: str, language_dir: Path) -> RAGDataset:
     if chunks_json_path.exists():
         try:
             chunks_by_file = load_chunks(chunks_json_path)
-            logger.debug(f"Loaded {len(chunks_by_file)} existing chunks")
+            if logger.isEnabledForDebug():
+                num_chunks = sum(len(v) for v in chunks_by_file.values())
+                logger.debug(f"Loaded {num_chunks} existing chunks")
         except Exception as e:
             logger.exception(f"Warning: Could not load existing chunks: {e}")
 
