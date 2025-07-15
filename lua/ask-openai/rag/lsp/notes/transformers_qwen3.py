@@ -27,6 +27,15 @@ def get_detailed_instruct(task_description: str, query: str) -> str:
 # Each query must come with a one-sentence instruction that describes the task
 task = 'Given a web search query, retrieve relevant passages that answer the query'
 
+tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-Embedding-0.6B', padding_side='left')
+model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B')
+
+# We recommend enabling flash_attention_2 for better acceleration and memory saving.
+# model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', attn_implementation="flash_attention_2", torch_dtype=torch.float16).cuda()
+
+max_length = 8192
+
+
 queries = [
     get_detailed_instruct(task, 'What is the capital of China?'),
     get_detailed_instruct(task, 'Explain gravity')
@@ -37,15 +46,6 @@ documents = [
     "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun."
 ]
 input_texts = queries + documents
-
-tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-Embedding-0.6B', padding_side='left')
-model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B')
-
-# We recommend enabling flash_attention_2 for better acceleration and memory saving.
-# model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', attn_implementation="flash_attention_2", torch_dtype=torch.float16).cuda()
-
-max_length = 8192
-
 # Tokenize the input texts
 batch_dict = tokenizer(
     input_texts,
