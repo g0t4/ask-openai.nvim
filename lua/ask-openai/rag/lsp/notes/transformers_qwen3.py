@@ -21,9 +21,6 @@ def get_detailed_instruct(task_description: str, query: str) -> str:
     # *** INSTRUCTION!
     return f'Instruct: {task_description}\nQuery:{query}'
 
-# Each query must come with a one-sentence instruction that describes the task
-task = 'Given a web search query, retrieve relevant passages that answer the query'
-
 tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-Embedding-0.6B', padding_side='left')
 model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B')
 
@@ -46,6 +43,8 @@ def encode(input_texts):
         return F.normalize(embeddings, p=2, dim=1)
 
 def main():
+    # Each query must come with a one-sentence instruction that describes the task
+    task = 'Given a web search query, retrieve relevant passages that answer the query'
     queries = [
         get_detailed_instruct(task, 'What is the capital of China?'),
         get_detailed_instruct(task, 'Explain gravity'),
