@@ -62,6 +62,7 @@ def encode(input_texts):
     batch_dict.to(model.device)
     outputs = model(**batch_dict)
     embeddings = last_token_pool(outputs.last_hidden_state, batch_dict['attention_mask'])
+    return embeddings
 
 
 
