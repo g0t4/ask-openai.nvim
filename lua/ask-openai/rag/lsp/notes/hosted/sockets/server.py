@@ -5,8 +5,8 @@ from lsp.notes import transformers_qwen3
 from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.notes.hosted.sockets.comms import *
 
-# logging_fwk_to_console("WARN")
-logging_fwk_to_console("INFO")
+logging_fwk_to_console("WARN")
+# logging_fwk_to_console("INFO")
 # logging_fwk_to_console("DEBUG")
 logger = get_logger(__name__)
 # TODO measure all logging/prints and remove/threshold any that are unacceptable (i.e. > 10ms?)

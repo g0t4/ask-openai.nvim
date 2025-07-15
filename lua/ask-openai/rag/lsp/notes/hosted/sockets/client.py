@@ -3,8 +3,8 @@ from lsp.notes.hosted.sockets.comms import *
 
 # time python3 -m lsp.notes.hosted.sockets.client
 
-# logging_fwk_to_console("WARN")
-logging_fwk_to_console("INFO")
+logging_fwk_to_console("WARN")
+# logging_fwk_to_console("INFO")
 # logging_fwk_to_console("DEBUG")
 
 logger = get_logger(__name__)
