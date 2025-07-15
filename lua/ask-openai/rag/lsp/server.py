@@ -13,6 +13,7 @@ from lsp import fs
 from .logs import get_logger, logging_fwk_to_language_server_log_file
 
 logging_fwk_to_language_server_log_file(logging.INFO)
+# logging_fwk_to_language_server_log_file(logging.DEBUG)
 logger = get_logger(__name__)
 
 server = LanguageServer("ask_language_server", "v0.1")
