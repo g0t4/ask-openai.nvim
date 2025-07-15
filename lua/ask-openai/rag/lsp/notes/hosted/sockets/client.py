@@ -7,7 +7,8 @@ from lsp.notes.hosted.sockets.comms import *
 
 # time python3 -m lsp.notes.hosted.sockets.client
 
-logging_fwk_to_console("INFO")
+# logging_fwk_to_console("INFO")
+logging_fwk_to_console("DEBUG")
 logger = get_logger(__name__)
 
 def get_detailed_instruct(task_description: str, query: str) -> str:
