@@ -14,26 +14,14 @@ class ModelWrapper:
         if hasattr(self, "_model"):
             return self._model
 
-        with logger.timer("import numpy"):
-            # FYI pre-load so timing is never skewed on encode
-            import numpy as np
-
-        with logger.timer("importing sentence transformers"):
+        with logger.timer("import transformers qwen3"):
 
             # do not check hugging face for newer version, use offline cache only
             #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
             # FYI must be set BEFORE importing SentenceTransformer, setting after (even if before model load) doesn't work
             os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
-            from sentence_transformers import SentenceTransformer  # 2+ seconds to import (mostly torch/transformer deps that even if I use BertModel directly, I cannot avoid the import timing)
-
-        # TODO try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
-        model_name = "intfloat/e5-base-v2"
-        # model_name = "Qwen/Qwen3-Embedding-0.6B"
-        with logger.timer(f"Load model {model_name}"):
-            self._model = SentenceTransformer(model_name)
-
-        return self._model
+            from lsp.notes import transformers_qwen3
 
     def ensure_model_loaded(self):
         self.model  # access model to trigger load
