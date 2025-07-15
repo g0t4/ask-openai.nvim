@@ -8,9 +8,11 @@ from lsp.notes import transformers_qwen3
 
 def encode(texts: list[str]):
     # print(f"encode w/ {type(transformers_qwen3.model)}")
-    # print(texts)
+    print(texts)
     vec = transformers_qwen3.encode(texts)
-    return vec.cpu().numpy().tolist()
+    vec_list = vec.cpu().numpy().tolist()
+    print(vec_list)
+    return vec_list
 
 # time python3 -m lsp.notes.hosted.sockets.server
 
