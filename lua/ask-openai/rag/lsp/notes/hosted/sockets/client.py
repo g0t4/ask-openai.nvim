@@ -3,7 +3,7 @@ import socket
 import msgpack
 
 from lsp.logs import get_logger, logging_fwk_to_console
-from lsp.notes.hosted.sockets.comms import recv_exact
+from lsp.notes.hosted.sockets.comms import *
 
 # time python3 -m lsp.notes.hosted.sockets.client
 
@@ -76,15 +76,13 @@ with logger.timer("Send embedding to server"):
     conn.sendall(tx_msg_len_packed + tx_msg_packed)
     print()
 
-    print("receiving...")
-    rx_msg_len_packed = recv_exact(conn, 4)
-    print(f'{rx_msg_len_packed=}')
-    rx_msg_len = struct.unpack('!I', rx_msg_len_packed)[0]
-    print(f'{rx_msg_len=}')
+    rx_msg = recv_len_then_msg(conn)
 
-    rx_msg_packed = recv_exact(conn, rx_msg_len)
-    rx_msg = msgpack.unpackb(rx_msg_packed, raw=False)
-    rx_embedding = rx_msg['embedding']
+if not rx_msg:
+    print(f'unexpected empty response: {rx_msg=}')
+    exit(-1)
+
+rx_embedding = rx_msg['embedding']
 
 print(f"Received {len(rx_embedding)} embeddings:")
 for e in rx_embedding:

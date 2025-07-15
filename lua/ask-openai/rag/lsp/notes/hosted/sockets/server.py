@@ -5,7 +5,7 @@ import msgpack
 
 from lsp.notes import transformers_qwen3
 from lsp.logs import get_logger, logging_fwk_to_console
-from lsp.notes.hosted.sockets.comms import recv_exact
+from lsp.notes.hosted.sockets.comms import *
 
 logging_fwk_to_console("INFO")
 logger = get_logger(__name__)
@@ -46,18 +46,11 @@ signal.signal(signal.SIGINT, signal_handler)
 while True:
     conn, _ = server.accept()
 
-    print("receiving...")
-    rx_msg_len_packed = recv_exact(conn, 4)
-    print(f'{rx_msg_len_packed=}')
-    rx_msg_len = struct.unpack('!I', rx_msg_len_packed)[0]
-    print(f'{rx_msg_len=}')
-    if not rx_msg_len:
-        # PRN what checks?
+    rx_msg = recv_len_then_msg(conn)
+    if not rx_msg:
         conn.close()
         continue
-    rx_msg_packed = recv_exact(conn, rx_msg_len)
 
-    rx_msg = msgpack.unpackb(rx_msg_packed, raw=False)
     rx_text = rx_msg['texts']
     print()
 
