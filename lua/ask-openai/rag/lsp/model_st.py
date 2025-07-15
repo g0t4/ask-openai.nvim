@@ -39,15 +39,35 @@ class ModelWrapper:
     def ensure_model_loaded(self):
         self.model  # access model to trigger load
 
-    @torch.no_grad()
     def _encode(self, texts):
         import numpy as np
 
-        vecs_np = self.model.encode(
-            texts,
-            normalize_embeddings=True,
-            # device="cpu",
-        ).astype("float32")
+        # from pympler import asizeof
+        # texts_bytes = asizeof.asizeof(texts)
+
+        # set batch_size high to disable batching if that is better perf on the 5090s
+        #   added batching to investigate issues w/ qwen3 on mac w/ ST and the memory explosion (even after disable autograd!)
+        def batched_encode(model, texts, batch_size=64):
+            all_vecs = []
+            with torch.no_grad():
+                total = len(texts)
+                for i in range(0, total, batch_size):
+                    logger.info(f"    batch {i}-{i+batch_size} of {total}")
+                    batch = texts[i:i + batch_size]
+                    vecs = model.encode(
+                        batch,
+                        normalize_embeddings=True,
+                        show_progress_bar=False,
+                        convert_to_tensor=True,
+                    )
+                    all_vecs.append(vecs.cpu())  # move to CPU to free GPU/MPS memory, s/b sub 1ms overhead
+
+            return torch.cat(all_vecs, dim=0)
+
+        vecs_np = batched_encode(self.model, texts, batch_size=64)
+
+        # size_bytes = asizeof.asizeof(vecs_np)
+        logger.info(f"  done encoding")  #  - {type(vecs_np)=} size_bytes={size_bytes} {vecs_np.shape=}")
 
         return vecs_np
 
