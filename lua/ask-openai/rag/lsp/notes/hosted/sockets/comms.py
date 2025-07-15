@@ -14,16 +14,16 @@ def recv_exact(sock, content_size):
     return buf
 
 def recv_len_then_msg(conn):
-    rx_msg_len_packed = recv_exact(conn, 4)
-    rx_msg_len = struct.unpack('!I', rx_msg_len_packed)[0]
-    logger.debug(f'{rx_msg_len=}')
-    if not rx_msg_len:
+    msg_len_packed = recv_exact(conn, 4)
+    msg_len = struct.unpack('!I', msg_len_packed)[0]
+    logger.debug(f'{msg_len=}')
+    if not msg_len:
         return
 
-    rx_msg_packed = recv_exact(conn, rx_msg_len)
-    rx_msg = msgpack.unpackb(rx_msg_packed, raw=False)
+    msg_packed = recv_exact(conn, msg_len)
+    msg = msgpack.unpackb(msg_packed, raw=False)
 
-    return rx_msg
+    return msg
 
 def send_len_then_msg(conn, tx_msg):
     tx_msg_packed = msgpack.packb(tx_msg, use_bin_type=True)
