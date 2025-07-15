@@ -5,7 +5,7 @@ import subprocess
 import sys
 from typing import Dict, Optional, Set
 
-import torch # MUST be imported BEFORE FAISS else Qwen3 will explode on model import
+import torch  # MUST be imported BEFORE FAISS else Qwen3 will explode on model import
 import faiss
 import numpy as np
 
@@ -200,6 +200,7 @@ class IncrementalRAGIndexer:
 
         all_stat_by_path = {path_str: prior.stat_by_path[path_str] for path_str in paths.unchanged}
         unchanged_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.unchanged}
+        logger.info(f'{len(paths.changed)} changed, {len(paths.deleted)} deleted')
 
         updated_chunks_by_file: dict[str, list[Chunk]] = {}
         for file_path in paths.changed:
@@ -260,8 +261,10 @@ def trash_indexes(dot_rag_dir, language_extension="lua"):
 def main():
     from lsp.logs import logging_fwk_to_console
 
-    verbose = "--verbose" in sys.argv
-    level = logging.DEBUG if verbose else logging.WARN
+    verbose = "--verbose" in sys.argv or "--debug" in sys.argv
+    info = "--info" in sys.argv
+    level = logging.DEBUG if verbose else (logging.INFO if info else logging.WARNING)
+
     logging_fwk_to_console(level)
 
     with logger.timer("Total indexing time"):
