@@ -18,6 +18,19 @@ server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 server.bind("/tmp/embed.sock")
 server.listen()
 
+# sigint
+import signal
+
+def signal_handler(sig, frame):
+    print('You pressed Ctrl+C!')
+    server.close()
+    import os
+    import sys
+    os.remove("/tmp/embed.sock")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+
 while True:
     conn, _ = server.accept()
     data = conn.recv(4096)
@@ -31,4 +44,3 @@ while True:
     packed = msgpack.packb({'embedding': embedding}, use_bin_type=True)
     conn.sendall(packed)
     conn.close()
-
