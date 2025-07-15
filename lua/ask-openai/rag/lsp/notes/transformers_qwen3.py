@@ -8,6 +8,9 @@ import torch.nn.functional as F
 from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
 
+from lsp.logs import get_logger
+logger = get_logger(__name__)
+
 def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tensor:
     left_padding = (attention_mask[:, -1].sum() == attention_mask.shape[0])
     if left_padding:
@@ -21,8 +24,16 @@ def get_detailed_instruct(task_description: str, query: str) -> str:
     # *** INSTRUCTION!
     return f'Instruct: {task_description}\nQuery:{query}'
 
+device = torch.device(
+    'cuda' if torch.cuda.is_available() else \
+    'mps' if torch.backends.mps.is_available() else \
+    'cpu'
+)
+
 tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-Embedding-0.6B', padding_side='left')
-model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B')
+model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B').to(device)
+
+logger.info(f"{model.device=}")
 
 # We recommend enabling flash_attention_2 for better acceleration and memory saving.
 # model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', attn_implementation="flash_attention_2", torch_dtype=torch.float16).cuda()
