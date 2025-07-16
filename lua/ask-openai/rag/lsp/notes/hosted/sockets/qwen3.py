@@ -24,10 +24,6 @@ def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tenso
         batch_size = last_hidden_states.shape[0]
         return last_hidden_states[torch.arange(batch_size, device=last_hidden_states.device), sequence_lengths]
 
-def get_detailed_instruct(task_description: str, query: str) -> str:
-    # *** INSTRUCTION!
-    return f'Instruct: {task_description}\nQuery:{query}'
-
 tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-Embedding-0.6B', padding_side='left')
 
 device = auto_device()
@@ -61,6 +57,10 @@ def encode(input_texts):
         embeddings = last_token_pool(outputs.last_hidden_state, batch_args['attention_mask'])
         norm = F.normalize(embeddings, p=2, dim=1).cpu().numpy()
         return norm
+
+def get_detailed_instruct(task_description: str, query: str) -> str:
+    # *** INSTRUCTION!
+    return f'Instruct: {task_description}\nQuery:{query}'
 
 def test_known_embeddings():
 
