@@ -30,15 +30,27 @@ device = torch.device(
     'mps' if torch.backends.mps.is_available() else \
     'cpu'
 )
-
 # FYI padding_style is w.r.t. the longest sequence in the batch, the rest are padded (right by default) or to the left if specified here:
+# FFS on MPS: left padding fails, but right padding works...
+#     on CUDA: both left and right padding work?!
+#     as in include/remove the padding_side="left"
 tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-Embedding-0.6B', padding_side='left')
-model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B').to(device)
+
+if device.type == 'mps':
+    model_kwargs = dict(torch_dtype=torch.float16, )
+elif device.type == 'cuda':
+    # TODO would bfloat16 work better on 5090s?
+    model_kwargs = dict(
+        torch_dtype=torch.float16,
+        attn_implementation="flash_attention_2",  # cuda only
+        device_map="auto",
+    )
+else:
+    raise ValueError("DEVICE should be CUDA/MPS... but is {device.type}")
+
+model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', **model_kwargs).to(device)
 
 logger.info(f"{model.device=}")
-
-# We recommend enabling flash_attention_2 for better acceleration and memory saving.
-# model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', attn_implementation="flash_attention_2", torch_dtype=torch.float16).cuda()
 
 def encode(input_texts):
 
