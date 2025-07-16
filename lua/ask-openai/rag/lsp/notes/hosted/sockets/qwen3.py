@@ -1,7 +1,3 @@
-#
-# FYI! this is designed ONLY for cuda/5090s for socket server (remote embeddings)
-#
-
 import torch
 import torch.nn.functional as F
 
@@ -11,6 +7,10 @@ from transformers import AutoTokenizer, AutoModel
 from lsp.logs import get_logger
 
 logger = get_logger(__name__)
+
+#
+# FYI! this is designed ONLY for cuda/5090s for socket server (remote embeddings)
+#
 
 def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tensor:
 
