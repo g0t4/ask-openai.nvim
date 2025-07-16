@@ -15,9 +15,8 @@ logger = get_logger(__name__)
 def encode(texts: list[str]):
     # logger.debug(texts)
     vec = qwen3.encode(texts)
-    vec_list = vec.cpu().numpy().tolist()
-    # logger.debug(vec_list)
-    return vec_list
+    logger.debug(vec)
+    return vec.tolist()
 
 # time python3 -m lsp.notes.hosted.sockets.server
 
