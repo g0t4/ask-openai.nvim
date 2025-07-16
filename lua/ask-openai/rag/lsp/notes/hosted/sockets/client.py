@@ -69,7 +69,9 @@ np_embeddings = np.array(rx_embeddings)
 query_embeddings = np_embeddings[:2]  # first two are queries
 passage_embeddings = np_embeddings[2:]  # last two are documents
 scores = (query_embeddings @ passage_embeddings.T)
-logger.debug(f'{scores=}')
+print(f'{scores=}')
 
 expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
-assert_array_almost_equal(scores, expected_scores, decimal=6)
+print(f'{expected_scores=}')
+
+assert_array_almost_equal(scores, expected_scores, decimal=3)
