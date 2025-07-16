@@ -5,7 +5,7 @@ from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
 
 from lsp.helpers import auto_device
-from lsp.logs import get_logger
+from lsp.logs import get_logger, logging_fwk_to_console
 
 logger = get_logger(__name__)
 
@@ -63,6 +63,9 @@ def encode(input_texts):
         return norm
 
 def test_known_embeddings():
+
+    logging_fwk_to_console("INFO")
+
     # ! test the model config above produces correct embeddings for pre-canned examples
     # ! taken from the Qwen3 README (had published values)
     # TODO! can I find more published examples for a test suite to validate my config is correct?
