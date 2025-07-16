@@ -18,7 +18,11 @@ local function mkdir_p(path)
 end
 
 local function load_config()
-    local default = { predictions = { enabled = true } }
+    local default = {
+        predictions = { enabled = true },
+        verbose_logs = false,
+        rag = { enabled = true },
+    }
 
     if file_exists(config_path) then
         local content = io.open(config_path, 'r'):read('*a')
@@ -54,6 +58,8 @@ local function save()
     end
 end
 
+
+-- * predictions *
 function M.set_predictions_enabled()
     local cfg = get()
     cfg.predictions.enabled = true
@@ -89,7 +95,17 @@ function M.toggle_verbose_logs()
     return cfg.verbose_logs
 end
 
--- * end verbose logs *
+-- * rag *
+function M.is_rag_enabled()
+    return get().rag.enabled
+end
+
+function M.toggle_rag()
+    local cfg = get()
+    cfg.rag.enabled = not cfg.rag.enabled
+    save()
+    return cfg.rag.enabled
+end
 
 function M.setup()
 end

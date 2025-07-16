@@ -219,14 +219,20 @@ end
 function M.lualine()
     -- FYI this is an example, copy and modify it to your liking!
     -- reference: "󰼇" "󰼈"
-    --  ''            󰨰
+    --  ''            󰨰   (test/debug)
+    --  󰵉  󱐎  󰵕  search axis/arrow
+    --     󰕡 (search vector)
+
     return {
         function()
-            local icons = '󰼇'
+            local icons = { '󰼇' }
             if local_share.are_verbose_logs_enabled() then
-                icons = icons .. '  '
+                table.insert(icons, '')
             end
-            return icons
+            if local_share.is_rag_enabled() then
+                table.insert(icons, '󰵉')
+            end
+            return table.concat(icons, ' ')
         end,
         color = function()
             local fg_color = ''
