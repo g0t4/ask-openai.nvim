@@ -1,5 +1,6 @@
 import socket
 import signal
+import rich
 
 from lsp.notes.hosted.sockets import qwen3
 from lsp.logs import get_logger, logging_fwk_to_console
@@ -32,6 +33,9 @@ def encode(texts: list[str]):
 #     return embeddings[0].tolist()
 
 qwen3.test_known_embeddings()
+
+print()
+rich.print("[green bold]SERVER READY")
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(("0.0.0.0", 8015))
