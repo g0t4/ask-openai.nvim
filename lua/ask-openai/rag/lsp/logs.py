@@ -12,6 +12,7 @@ logging.getLogger("pygls.protocol.json_rpc").setLevel(logging.WARN)  # DEBUG mes
 logging.getLogger("pygls.protocol.language_server").setLevel(logging.WARN)  # server capabilities on startup
 logging.getLogger("pygls.feature_manager").setLevel(logging.WARN)  # what features are registered/detected
 logging.getLogger("pygls.server").setLevel(logging.WARN)  # mostly Content length messages (headers IIAC)
+logging.getLogger("asyncio").setLevel(logging.WARN)  # mostly Content length messages (headers IIAC)
 
 def setup_logging(console: Console, level=logging.WARN):
     rich_handler = RichHandler(
