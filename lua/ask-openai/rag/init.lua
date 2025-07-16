@@ -9,7 +9,7 @@ function M.setup()
     -- TMP disable, i.e. when working on lsp itself :)
     --  HRMm wont be easy to enable/disable this though, will have to restart if LSP wasn't started and rag is toggled?
     if not api.is_rag_enabled() then
-        log:info("RAG is NOT enabled, skipping lspconfig.ask_language_server setup")
+        log:info("NOT starting LSP (b/c RAG is disabled)")
         return
     end
 
