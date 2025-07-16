@@ -93,6 +93,15 @@ class Logger(logging.Logger):
     def isEnabledForInfo(self):
         return self.isEnabledFor(logging.INFO)
 
+    def dump_sentence_transformers_model(self, model: "SentenceTransformer"):
+        if not self.isEnabledFor(logging.DEBUG):
+            return
+
+        self.debug(f'Modules: %r', model.modules)
+        auto_model = model._first_module().auto_model
+        self.debug(f"auto_model: %r", auto_model)
+        self.debug(f"auto_model.dtype: [bold red]%s", auto_model.dtype)
+
 def get_logger(name) -> Logger:
     logging.setLoggerClass(Logger)
     logger = cast(Logger, logging.getLogger(name))
