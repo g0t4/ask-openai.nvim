@@ -4,6 +4,7 @@ local Prediction = require("ask-openai.prediction.prediction")
 local CurrentContext = require("ask-openai.prediction.context")
 local ansi = require("ask-openai.prediction.ansi")
 local rag = require("ask-openai.rag.fim")
+local api = require("ask-openai.api")
 
 local OllamaFimBackend = require("ask-openai.prediction.backends.ollama")
 -- TODO rewrite other backends to use new builder pattern (not a big change):
@@ -105,9 +106,10 @@ local function get_prefix_suffix()
     return document_prefix, document_suffix
 end
 
+
 function M.ask_for_prediction()
     M.cancel_current_prediction()
-    local enable_rag = true
+    local enable_rag = api.is_rag_enabled()
 
     local document_prefix, document_suffix = get_prefix_suffix()
 

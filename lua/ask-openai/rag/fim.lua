@@ -14,7 +14,7 @@ local function check_supported_dirs()
     end
 
     M.rag_extensions = files.list_directories(dot_rag_dir)
-    log:info("RAG is enabled: " .. vim.inspect(M.rag_extensions))
+    log:info("RAG is supported for: " .. vim.inspect(M.rag_extensions))
 end
 check_supported_dirs()
 
