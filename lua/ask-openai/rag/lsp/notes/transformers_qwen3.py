@@ -1,6 +1,6 @@
-# testing this b/c on my mac, memory explodes when using sentence transformers to access qwen3 model for encoding
 #
-# Requires transformers>=4.51.0
+# FYI! this is intended for testing only, take code out for real use cases
+#
 
 import torch
 import torch.nn.functional as F
