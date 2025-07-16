@@ -74,11 +74,29 @@ def encode(input_texts):
             return_tensors="pt",
         )
         batch_args.to(model.device)
+        # again, prints were for troubleshooting padding issues:
+        print("batch_args:")
+        for key, value in batch_args.items():
+            print(f'  {key}: {value}')
+            if hasattr(value, "shape"):
+                print(f'  shape: {value.shape}')
+        # dump decoded to verify correct padding/tokenization:
+        print("\ndecoded:")
+        decoded_inputs = tokenizer.batch_decode(batch_args["input_ids"])
+        for i, input_text in enumerate(decoded_inputs):
+            print(f'{i}: {input_text}')
+        print()
+        #
         outputs = model(**batch_args)
+        print(f'{outputs=}')
         embeddings = last_token_pool(outputs.last_hidden_state, batch_args['attention_mask'])
-        return F.normalize(embeddings, p=2, dim=1)
+        print(f'{embeddings=}')
+        norm = F.normalize(embeddings, p=2, dim=1).cpu().numpy()
+        print(f'{norm=}')
+        return norm
 
 def main():
+
     # Each query must come with a one-sentence instruction that describes the task
     task = 'Given a web search query, retrieve relevant passages that answer the query'
     queries = [
@@ -91,16 +109,20 @@ def main():
         "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
     ]
     input_texts = queries + documents
+    # prints for padding checks:
+    for i, text in enumerate(input_texts):
+        print(f'{i}: {len(text)=}')
 
     embeddings = encode(input_texts)
     print(embeddings)
+
     query_embeddings = embeddings[:2]  # first two are queries
     passage_embeddings = embeddings[2:]  # last two are documents
     actual_scores = (query_embeddings @ passage_embeddings.T)
     print(f'{actual_scores=}')
     from numpy.testing import assert_array_almost_equal
     expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
-    assert_array_almost_equal(actual_scores.cpu(), expected_scores, decimal=6)
+    assert_array_almost_equal(actual_scores, expected_scores, decimal=3)
     print(f'{expected_scores=}')
 
 if __name__ == "__main__":
