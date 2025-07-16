@@ -186,7 +186,8 @@ def load_prior_data(language_extension: str, language_dir: Path) -> RAGDataset:
 
     if logger.isEnabledForDebug():
         num_chunks = sum(len(v) for v in chunks_by_file.values())
-        logger.debug(f"Loaded {language_extension} - {len(files_by_path)} file stats, {index.ntotal} FAISS vectors, {num_chunks} chunks")
+        log_num_vectors = index.ntotal if index is not None else None
+        logger.debug(f"Loaded {language_extension} - {len(files_by_path)} file stats, {log_num_vectors} FAISS vectors, {num_chunks} chunks")
 
     return RAGDataset(language_extension, chunks_by_file, files_by_path, index)
 
