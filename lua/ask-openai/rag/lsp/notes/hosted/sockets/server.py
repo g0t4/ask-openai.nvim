@@ -1,7 +1,7 @@
 import socket
 import signal
 
-from lsp.notes import transformers_qwen3
+from lsp.notes.hosted.sockets import qwen3
 from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.notes.hosted.sockets.comms import *
 
@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 
 def encode(texts: list[str]):
     # logger.debug(texts)
-    vec = transformers_qwen3.encode(texts)
+    vec = qwen3.encode(texts)
     vec_list = vec.cpu().numpy().tolist()
     # logger.debug(vec_list)
     return vec_list
