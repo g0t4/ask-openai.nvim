@@ -38,12 +38,12 @@ elif device.type == 'cuda':
     model_kwargs = dict(
         torch_dtype=torch.float16,
         attn_implementation="flash_attention_2",  # cuda only
-        device_map="auto",
+        device_map="auto", # DO NOT also call model.to(device) too!, must let accelerate handle placement
     )
 else:
     raise ValueError("DEVICE should be CUDA/MPS... but is {device.type}")
 
-model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', **model_kwargs).to(device)
+model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', **model_kwargs)
 
 logger.info(f"{model.device=}")
 
