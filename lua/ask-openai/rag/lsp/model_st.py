@@ -1,4 +1,3 @@
-import torch
 import os
 
 from .logs import get_logger
@@ -15,9 +14,9 @@ class ModelWrapper:
         if hasattr(self, "_model"):
             return self._model
 
-        with logger.timer("import numpy"):
+        with logger.timer("import torch"):
             # FYI pre-load so timing is never skewed on encode
-            import numpy as np
+            import torch
 
         with logger.timer("importing sentence transformers"):
 
@@ -40,7 +39,7 @@ class ModelWrapper:
         self.model  # access model to trigger load
 
     def _encode(self, texts):
-        import numpy as np
+        import torch
 
         # from pympler import asizeof
         # texts_bytes = asizeof.asizeof(texts)
