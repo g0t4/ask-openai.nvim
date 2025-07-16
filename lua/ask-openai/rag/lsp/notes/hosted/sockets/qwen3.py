@@ -8,7 +8,8 @@ from lsp.helpers import auto_device
 from lsp.logs import get_logger, logging_fwk_to_console
 
 logger = get_logger(__name__)
-
+if __name__ == '__main__':
+    logging_fwk_to_console("INFO")
 #
 # FYI! this is designed ONLY for cuda/5090s for socket server (remote embeddings)
 #
@@ -40,7 +41,8 @@ else:
 
 model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', **model_kwargs)
 
-logger.info(f'{model.hf_device_map=} - {model.device=}')
+logger.debug(f'{model.hf_device_map=}')
+logger.info(f'[red bold] %s', model.device)
 
 def encode(input_texts):
 
@@ -63,8 +65,6 @@ def get_detailed_instruct(task_description: str, query: str) -> str:
     return f'Instruct: {task_description}\nQuery:{query}'
 
 def test_known_embeddings():
-
-    logging_fwk_to_console("INFO")
 
     # ! test the model config above produces correct embeddings for pre-canned examples
     # ! taken from the Qwen3 README (had published values)
