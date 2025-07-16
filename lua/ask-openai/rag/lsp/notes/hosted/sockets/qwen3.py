@@ -1,5 +1,5 @@
 #
-# FYI! this is intended for testing only, take code out for real use cases
+# FYI! this is designed ONLY for cuda/5090s for socket server (remote embeddings)
 #
 
 import torch
