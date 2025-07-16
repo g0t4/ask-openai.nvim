@@ -102,10 +102,8 @@ class ModelWrapper:
         # TODO test refactored _encode() shared method:
         return self._encode([text])
 
-    def get_shape(self) -> None:
+    def get_shape(self) -> int:
         # Create a dummy vector to get dimensions
-        # TODO! is this the best way to get this?
-        #  should I just hardcode for now? (per model?)
         sample_text = "passage: sample"
         sample_vec = self._encode_text(sample_text)
         shape = sample_vec.shape[1]
