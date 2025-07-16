@@ -40,7 +40,10 @@ class ModelWrapper:
             # PRN add startup validation of embeddings calculations and params from auto model
             return SentenceTransformer(
                 "Qwen/Qwen3-Embedding-0.6B",
-                model_kwargs={"torch_dtype": "float16"},  # else float32 which RUINs perf and outputs! on both CUDA and MPS backends
+                model_kwargs={
+                    "torch_dtype": "float16",
+                    # "device_map": "auto", # for sharding
+                },  # else float32 which RUINs perf and outputs! on both CUDA and MPS backends
             )
 
         with logger.timer(f"Loaded model"):
