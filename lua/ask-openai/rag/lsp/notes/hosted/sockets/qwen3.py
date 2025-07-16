@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
 
+from lsp.helpers import auto_device
 from lsp.logs import get_logger
 
 logger = get_logger(__name__)
@@ -27,17 +28,9 @@ def get_detailed_instruct(task_description: str, query: str) -> str:
     # *** INSTRUCTION!
     return f'Instruct: {task_description}\nQuery:{query}'
 
-device = torch.device(
-    'cuda' if torch.cuda.is_available() else \
-    'mps' if torch.backends.mps.is_available() else \
-    'cpu'
-)
-# FYI padding_style is w.r.t. the longest sequence in the batch, the rest are padded (right by default) or to the left if specified here:
-# FFS on MPS: left padding fails, but right padding works...
-#     on CUDA: both left and right padding work?!
-#     as in include/remove the padding_side="left"
 tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-Embedding-0.6B', padding_side='left')
 
+device = auto_device()
 if device.type == 'mps':
     model_kwargs = dict(torch_dtype=torch.float16, )
 elif device.type == 'cuda':

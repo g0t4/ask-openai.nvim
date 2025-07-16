@@ -3,6 +3,7 @@
 import logging
 import os
 
+from lsp.helpers import auto_device
 from lsp.logs import get_logger, logging_fwk_to_console
 
 logger = get_logger("drop_ST")
@@ -28,11 +29,7 @@ input_texts = [
     "passage: Definition of summit for English Language Learners. : 1  the highest point of a mountain : the top of a mountain. : 2  the highest level. : 3  a meeting or series of meetings between the leaders of two or more governments.",
 ]
 
-device = torch.device(
-    'cuda' if torch.cuda.is_available() else \
-    'mps' if torch.backends.mps.is_available() else \
-    'cpu'
-)
+device = auto_device()
 
 with logger.timer("load model/tokenizer"):
     # !!! model load is < 100ms, huge improvement over the 500ms for SentenceTransformer
