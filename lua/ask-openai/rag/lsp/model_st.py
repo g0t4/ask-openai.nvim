@@ -28,15 +28,26 @@ class ModelWrapper:
             from sentence_transformers import SentenceTransformer  # 2+ seconds to import (mostly torch/transformer deps that even if I use BertModel directly, I cannot avoid the import timing)
 
         # TODO try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
-        # model_name = "intfloat/e5-base-v2"
-        model_name = "Qwen/Qwen3-Embedding-0.6B"
-        with logger.timer(f"Load model done {model_name}"):
-            self._model = SentenceTransformer(
-                model_name,
-                # TODO is dtype auto a problem for intfloat? should this be qwen only?
+        def use_intfloat_e5_base():
+            # TODO find some test data to validate embeddings are properly calculated!
+            model_name = "intfloat/e5-base-v2"
+            return SentenceTransformer(model_name,
+                                       # TODO set dtype auto/float16/etc?
+                                       # model_kwargs={"torch_dtype": "float16"},
+                                       )
+
+        def use_qwen3():
+            # PRN add startup validation of embeddings calculations and params from auto model
+            return SentenceTransformer(
+                "Qwen/Qwen3-Embedding-0.6B",
                 model_kwargs={"torch_dtype": "float16"},  # else float32 which RUINs perf and outputs! on both CUDA and MPS backends
             )
-            logger.dump_sentence_transformers_model(self._model)
+
+        with logger.timer(f"Loaded model"):
+            # self._model = use_intfloat_e5_base()
+            self._model = use_qwen3()
+
+        logger.dump_sentence_transformers_model(self._model)
 
         return self._model
 
