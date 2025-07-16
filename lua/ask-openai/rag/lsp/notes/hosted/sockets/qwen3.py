@@ -65,6 +65,8 @@ def get_detailed_instruct(task_description: str, query: str) -> str:
     return f'Instruct: {task_description}\nQuery:{query}'
 
 def test_known_embeddings():
+    from rich import print
+    print("TESTING known embeddings from Qwen3 README...")
 
     # ! test the model config above produces correct embeddings for pre-canned examples
     # ! taken from the Qwen3 README (had published values)
@@ -92,8 +94,10 @@ def test_known_embeddings():
     from numpy.testing import assert_array_almost_equal
     expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
     assert_array_almost_equal(actual_scores, expected_scores, decimal=3)
-    print(f'{actual_scores=}')
-    print(f'{expected_scores=}')
+
+    print(f'  {actual_scores=}')
+    print(f'  {expected_scores=}')
+    print(f"  [green bold]SCORES LOOK OK")
 
 if __name__ == "__main__":
     test_known_embeddings()

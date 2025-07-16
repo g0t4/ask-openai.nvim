@@ -31,6 +31,8 @@ def encode(texts: list[str]):
 #         embeddings = model(**inputs).last_hidden_state.mean(dim=1)
 #     return embeddings[0].tolist()
 
+qwen3.test_known_embeddings()
+
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(("0.0.0.0", 8015))
 server.listen()
