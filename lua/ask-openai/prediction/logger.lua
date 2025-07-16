@@ -178,14 +178,14 @@ function Logger:json_info(message, json, pretty)
     vim.fn.chanclose(job_id, "stdin")
 end
 
-local verbose = require("ask-openai.config").get_options().verbose
+local_share = require("ask-openai.config.local_share")
 
 function Logger.is_verbose_enabled()
-    return verbose or false
+    return local_share.are_verbose_logs_enabled() or false
 end
 
 function Logger:log(level, ...)
-    if not verbose and level < 2 then
+    if not local_share.are_verbose_logs_enabled() and level < 2 then
         return
     end
 

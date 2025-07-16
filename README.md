@@ -171,9 +171,18 @@ opts = {
 Enable verbose logging:
 
 ```lua
-opts = {
-    verbose = true,
-}
+-- WIP verbose logs feature, mostly for predictions and new ask chat features
+-- saves in ~/.local/share/nvim/ask-openai/config.json and persists across nvim restarts
+require("ask-openai.api").toggle_verbose_logs()
+```
+
+```sh
+# when verbose logs are enabled, lots of predictions logs here:
+cat ~/.local/share/nvim/ask-openai/ask-predictions.log
+tail -F ~/.local/share/nvim/ask-openai/ask-predictions.log
+# this file is wiped each time nvim starts, it uses `w` to open the file thus wiping history
+# so this file won't grow unreasonably large
+# meant for session based troubleshooting, not long-term
 ```
 
 Then, make a request, then check messages for verbose logs:

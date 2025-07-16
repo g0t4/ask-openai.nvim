@@ -77,6 +77,20 @@ function M.toggle_predictions()
     return cfg.predictions.enabled
 end
 
+-- * verbose logs *
+function M.are_verbose_logs_enabled()
+    return get().verbose_logs
+end
+
+function M.toggle_verbose_logs()
+    local cfg = get()
+    cfg.verbose_logs = not cfg.verbose_logs
+    save()
+    return cfg.verbose_logs
+end
+
+-- * end verbose logs *
+
 function M.setup()
 end
 

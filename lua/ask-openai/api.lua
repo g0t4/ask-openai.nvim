@@ -1,6 +1,7 @@
 local M = {}
 local init = require("ask-openai")
 local config = require("ask-openai.config")
+local logger = require("ask-openai.prediction.logger")
 
 -- FYI uses can add commands if that's what they want, they have the API to do so:
 
@@ -24,6 +25,14 @@ end
 
 function M.are_predictions_enabled()
     return config.local_share.are_predictions_enabled()
+end
+
+function M.toggle_verbose_logs()
+    config.local_share.toggle_verbose_logs()
+end
+
+function M.are_verbose_logs_enabled()
+    return config.local_share.are_verbose_logs_enabled()
 end
 
 return M

@@ -11,7 +11,6 @@ local M = {}
 --- @field model string
 --- @field provider string
 --- @field copilot CopilotOptions
---- @field verbose boolean
 --- @field api_url string|nil
 local default_options = {
 
@@ -32,8 +31,6 @@ local default_options = {
         proxy = nil,
         insecure = false,
     },
-
-    verbose = false, -- troubleshooting
 
     --- must be set to full endpoint URL, e.g. https://api.openai.com/v1/chat/completions
     api_url = nil,
@@ -69,8 +66,6 @@ local default_options = {
 
             provider = "keyless", -- TODO set to ? by default
 
-            verbose = true, -- TODO default to false
-
             api_url = nil,
             use_api_ollama = false,
             use_api_groq = false,
@@ -96,7 +91,8 @@ function M.get_options()
 end
 
 function M.print_verbose(msg, ...)
-    if not cached_options.verbose then
+    -- ?? move this to logger, or?
+    if not local_share.are_verbose_logs_enabled() then
         return
     end
     print(msg, ...)
@@ -192,7 +188,7 @@ function M.check()
         vim.health.error("bearer_token is empty")
     else
         vim.health.ok("bearer_token retrieved")
-        if M.get_options().verbose then
+        if local_share.are_verbose_logs_enabled() then
             -- TODO extract mask function and test it, try to submit to plenary? or does plenary have one?
             local len = string.len(bearer_token)
             local num = math.min(5, math.floor(len * 0.07)) -- first and last 7%, max of 5 chars

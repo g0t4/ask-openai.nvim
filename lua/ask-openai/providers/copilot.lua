@@ -156,7 +156,7 @@ local function check()
         return
     end
 
-    if require("ask-openai.config").get_options().verbose then
+    if require("ask-openai.config.local_share").are_verbose_logs_enabled() then
         -- if verbose then show copilot_internal/v2/token response
         local masked = vim.deepcopy(config)
         masked.token = "***" -- mask all of token
