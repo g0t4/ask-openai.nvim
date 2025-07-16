@@ -31,9 +31,7 @@ def get_detailed_instruct(task_description: str, query: str) -> str:
 tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-Embedding-0.6B', padding_side='left')
 
 device = auto_device()
-if device.type == 'mps':
-    model_kwargs = dict(torch_dtype=torch.float16, )
-elif device.type == 'cuda':
+if device.type == 'cuda':
     # TODO would bfloat16 work better on 5090s?
     model_kwargs = dict(
         torch_dtype=torch.float16,
@@ -42,11 +40,11 @@ elif device.type == 'cuda':
     )
     # TODO test timing of shared vs not sharded (w/ device_map="auto") on dual 5090s... I doubt it helps materially, if not maybe just go with model.to("cuda") to use one only?
 else:
-    raise ValueError("DEVICE should be CUDA/MPS... but is {device.type}")
+    raise ValueError("ONLY setup for CUDA device")
 
 model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', **model_kwargs)
 
-logger.info(f"{model.device=}")
+logger.info(f'{model.hf_device_map=} - {model.device=}')
 
 def encode(input_texts):
 
