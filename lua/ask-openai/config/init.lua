@@ -218,10 +218,15 @@ end
 
 function M.lualine()
     -- FYI this is an example, copy and modify it to your liking!
+    -- reference: "󰼇" "󰼈"
+    --  ''            󰨰
     return {
         function()
-            -- reference: "󰼇" "󰼈"
-            return '󰼇'
+            local icons = '󰼇'
+            if local_share.are_verbose_logs_enabled() then
+                icons = icons .. '  '
+            end
+            return icons
         end,
         color = function()
             local fg_color = ''
