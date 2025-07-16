@@ -1,9 +1,19 @@
 local messages = require("devtools.messages")
+local api = require("ask-openai.api")
+local log = require("ask-openai.prediction.logger").predictions()
+
 
 local M = {}
 
 function M.setup()
-    -- do return end
+    -- TMP disable, i.e. when working on lsp itself :)
+    --  HRMm wont be easy to enable/disable this though, will have to restart if LSP wasn't started and rag is toggled?
+    if not api.is_rag_enabled() then
+        log:info("RAG is NOT enabled, skipping lspconfig.ask_language_server setup")
+        return
+    end
+
+
     local lspconfig = require("lspconfig")
     local configs = require("lspconfig.configs")
 

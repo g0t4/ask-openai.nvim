@@ -37,6 +37,13 @@ end
 -- * rag *
 function M.toggle_rag()
     config.local_share.toggle_rag()
+    -- FOR NOW LSP won't be stopped/started on toggling RAG flag
+    --  and actually, it may not ever make sense to stop it given if RAG is disabled then it won't be used for queries
+    if M.is_rag_enabled() then
+        print("restart nvim to ensure LSP is stopped")
+    else
+        print("restart nvim to ensure LSP is running")
+    end
 end
 
 function M.is_rag_enabled()
