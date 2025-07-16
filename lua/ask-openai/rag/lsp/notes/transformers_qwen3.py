@@ -13,10 +13,21 @@ from lsp.logs import get_logger
 logger = get_logger(__name__)
 
 def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tensor:
+
     left_padding = (attention_mask[:, -1].sum() == attention_mask.shape[0])
+    # prints are for checking left/right padding for what might be going wrong on MPS:
+    print(f'{attention_mask[:, -1]=}')
+    print(f'{attention_mask[:, -1].sum()=}')
+    print(f'{attention_mask.shape=}')
+    print(f'{attention_mask.shape[0]=}')
+    print(f'{left_padding=}')
     if left_padding:
-        return last_hidden_states[:, -1]
+        print("LEFT")
+        result = last_hidden_states[:, -1]
+        print(f'{result=}')
+        return result
     else:
+        print("NOT LEFT")
         sequence_lengths = attention_mask.sum(dim=1) - 1
         batch_size = last_hidden_states.shape[0]
         return last_hidden_states[torch.arange(batch_size, device=last_hidden_states.device), sequence_lengths]
