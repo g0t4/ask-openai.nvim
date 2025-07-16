@@ -32,6 +32,7 @@ class ModelWrapper:
         # model_name = "Qwen/Qwen3-Embedding-0.6B"
         with logger.timer(f"Load model done {model_name}"):
             self._model = SentenceTransformer(model_name)
+            logger.dump_sentence_transformers_model(self._model)
 
         return self._model
 
