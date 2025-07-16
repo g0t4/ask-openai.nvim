@@ -31,8 +31,9 @@ device = torch.device(
     'cpu'
 )
 
+# FYI padding_style is w.r.t. the longest sequence in the batch, the rest are padded (right by default) or to the left if specified here:
 tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-Embedding-0.6B', padding_side='left')
-model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B')# .to(device)
+model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B').to(device)
 
 logger.info(f"{model.device=}")
 
