@@ -38,8 +38,9 @@ elif device.type == 'cuda':
     model_kwargs = dict(
         torch_dtype=torch.float16,
         attn_implementation="flash_attention_2",  # cuda only
-        device_map="auto", # DO NOT also call model.to(device) too!, must let accelerate handle placement
+        device_map="auto",  # DO NOT also call model.to(device) too!, must let accelerate handle placement
     )
+    # TODO test timing of shared vs not sharded (w/ device_map="auto") on dual 5090s... I doubt it helps materially, if not maybe just go with model.to("cuda") to use one only?
 else:
     raise ValueError("DEVICE should be CUDA/MPS... but is {device.type}")
 
