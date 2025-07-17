@@ -1,4 +1,4 @@
-from lsp.qwen3.known import get_known_inputs
+from lsp.qwen3.known import get_known_inputs, validate_embeddings
 from ..logs import get_logger, logging_fwk_to_console
 from .comms import *
 
@@ -47,17 +47,5 @@ for e in rx_embeddings:
     print(f"  {len(e)}")
 
 # ** validate scores
-
 import numpy as np
-from numpy.testing import assert_array_almost_equal
-
-np_embeddings = np.array(rx_embeddings)
-query_embeddings = np_embeddings[:2]  # first two are queries
-passage_embeddings = np_embeddings[2:]  # last two are documents
-scores = (query_embeddings @ passage_embeddings.T)
-print(f'{scores=}')
-
-expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
-print(f'{expected_scores=}')
-
-assert_array_almost_equal(scores, expected_scores, decimal=3)
+validate_embeddings(np.array(rx_embeddings))
