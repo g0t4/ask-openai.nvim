@@ -58,4 +58,4 @@ while True:
     send_len_then_msg(conn, tx_msg)
     conn.close()
 
-    rich.print(f"[blue]encoded {input_ids.shape} tokens in {encode_timer.elapsed_ms():.3f} ms")
+    rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_timer.elapsed_ms():.3f} ms")
