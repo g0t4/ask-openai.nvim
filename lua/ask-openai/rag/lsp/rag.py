@@ -32,8 +32,10 @@ def handle_query(message, model_wrapper, top_k=3):
         logger.error("[red bold][ERROR] No text provided")
         return {"failed": True, "error": "No text provided"}
 
+    vim_filetype = message.get("vim_filetype")
+
     current_file_abs = message.get("current_file_absolute_path")
-    dataset = datasets.for_file(current_file_abs)
+    dataset = datasets.for_file(current_file_abs, vim_filetype=vim_filetype)
     if dataset is None:
         logger.error(f"No dataset")
         return {"failed": True, "error": f"No dataset for {current_file_abs}"}

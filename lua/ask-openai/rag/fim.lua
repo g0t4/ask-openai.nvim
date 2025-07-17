@@ -43,6 +43,7 @@ function M.query_rag_via_lsp(document_prefix, document_suffix, callback)
     local message = {
         text = query,
         current_file_absolute_path = files.get_current_file_absolute_path(),
+        vim_filetype = vim.bo.filetype,
     }
 
     local _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", {
