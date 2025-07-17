@@ -6,7 +6,6 @@ from pygls.workspace import TextDocument
 from .build import build_file_chunks, build_from_lines, get_file_hash, get_file_hash_from_lines
 from .logs import get_logger
 from .storage import Datasets, load_all_datasets
-from lsp import model_st as model_wrapper
 from lsp import fs
 
 logger = get_logger(__name__)
@@ -21,15 +20,13 @@ class ContextResult:
     def add(self, match):
         self.matches.append(match)
 
-def load_model_and_indexes(dot_rag_dir: Path):
+def load_model_and_indexes(dot_rag_dir: Path, model_wrapper):
     global datasets
-    # PRN add a dataset_wrapper like model_wrapper and let it handle lazy load and be reusable across entire process (any imports are both lazy loaded and still singleton)
     datasets = load_all_datasets(dot_rag_dir)
-    model_wrapper.ensure_model_loaded()  # now I want to trigger the eager load, not at module import time but when I am ready here
+    model_wrapper.ensure_model_loaded()
 
 # PRN make top_k configurable (or other params)
-def handle_query(message, top_k=3):
-
+def handle_query(message, model_wrapper, top_k=3):
     text = message.get("text")
     if text is None or len(text) == 0:
         logger.error("[red bold][ERROR] No text provided")
@@ -96,7 +93,7 @@ def handle_query(message, top_k=3):
 
     return matches
 
-def update_file_from_disk(file_path):
+def update_file_from_disk(file_path, model_wrapper):
     # FYI right now exists for integration testing as I don't know if I can use document type from pygls in that test (yet?)
     file_path = Path(file_path)
 
@@ -104,9 +101,9 @@ def update_file_from_disk(file_path):
     with logger.timer(f"build_file_chunks {fs.get_loggable_path(file_path)}"):
         new_chunks = build_file_chunks(file_path, hash)
 
-    datasets.update_file(file_path, new_chunks)
+    datasets.update_file(file_path, new_chunks, model_wrapper)
 
-def update_file_from_pygls_doc(doc: TextDocument):
+def update_file_from_pygls_doc(doc: TextDocument, model_wrapper):
     file_path = Path(doc.path)
 
     lines_hash = get_file_hash_from_lines(doc.lines)
@@ -114,4 +111,4 @@ def update_file_from_pygls_doc(doc: TextDocument):
     new_chunks = build_from_lines(file_path, lines_hash, doc.lines)
 
     with logger.timer(f"update_file {fs.get_loggable_path(file_path)}"):
-        datasets.update_file(file_path, new_chunks)
+        datasets.update_file(file_path, new_chunks, model_wrapper)

@@ -21,7 +21,6 @@ import numpy as np
 from pydantic import BaseModel
 
 from .logs import get_logger
-from lsp import model_st as model_wrapper
 from lsp import fs
 
 logger = get_logger(__name__)
@@ -91,7 +90,7 @@ class Datasets:
         language_extension = Path(file_path).suffix.removeprefix('.')
         return self.all_datasets.get(language_extension)
 
-    def update_file(self, file_path_str: str | Path, new_chunks: List[Chunk]):
+    def update_file(self, file_path_str: str | Path, new_chunks: List[Chunk], model_wrapper):
         file_path_str = str(file_path_str)  # must be str, just let people pass either
 
         dataset = self.for_file(file_path_str)

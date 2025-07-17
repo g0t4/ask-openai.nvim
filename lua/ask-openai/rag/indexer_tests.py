@@ -9,13 +9,7 @@ import numpy as np
 from rich import print
 
 from indexer import IncrementalRAGIndexer
-import indexer
-# FYI! change to model_st + intfloat model that assertions were hardcoded for
-#   BTW if I go back to ST and use diff model I need to make the model name pluggable too in model_st
-#   TODO! how about an explicit method to set the model_wrapper "provider"?
-from lsp import model_st
-#
-indexer.model_wrapper = model_st
+from lsp import model_st as model_wrapper
 
 from lsp.logs import logging_fwk_to_console
 
@@ -53,7 +47,7 @@ class TestBuildIndex(unittest.TestCase):
         # FYI! slow to recreate index, so do it once and comment this out to quickly run assertions
         # * recreate index
         self.trash_path(self.dot_rag_dir)
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, model_wrapper)
         indexer.build_index(language_extension="lua")
 
         # * chunks
@@ -123,10 +117,9 @@ class TestBuildIndex(unittest.TestCase):
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
         self.trash_path(self.dot_rag_dir)
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, model_wrapper)
         indexer.build_index(language_extension="lua")
 
-        from lsp import model_st as model_wrapper
         q = model_wrapper._encode_text("hello")
         self.assertEqual(q.shape, (1, 768))
 
@@ -151,7 +144,7 @@ class TestBuildIndex(unittest.TestCase):
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, model_wrapper)
         indexer.build_index(language_extension="lua")
 
         # * check counts
@@ -171,7 +164,7 @@ class TestBuildIndex(unittest.TestCase):
 
         # * update a file and rebuild
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks (starts = 1-20, 16-35, 31-50)
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir)  # BTW recreate so no shared state (i.e. if cache added)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, model_wrapper)  # BTW recreate so no shared state (i.e. if cache added)
         indexer.build_index(language_extension="lua")
 
         # * check counts
@@ -191,7 +184,7 @@ class TestBuildIndex(unittest.TestCase):
 
         # * delete a file and rebuild
         (self.tmp_source_code_dir / "numbers.lua").unlink()
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, model_wrapper)
         indexer.build_index(language_extension="lua")
         #
         chunks_by_file = self.get_chunks_by_file()
@@ -209,7 +202,7 @@ class TestBuildIndex(unittest.TestCase):
         # * add a file
         # FYI car.lua.txt was designed to catch issues with overlap (32 lines => 0 to 20, 15 to 35, but NOT 30 to 50 b/c only overlap exists so the next chunk has nothing unique in its non-overlapping segment) so maybe use a diff input file... if this causes issues here (move car.lua to a new test then)
         copy_file("car.lua.txt", "car.lua")
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, model_wrapper)
         indexer.build_index(language_extension="lua")
         #
         chunks_by_file = self.get_chunks_by_file()
@@ -239,15 +232,15 @@ class TestBuildIndex(unittest.TestCase):
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, model_wrapper)
         indexer.build_index(language_extension="lua")
 
         from lsp import rag
-        rag.load_model_and_indexes(self.dot_rag_dir)
+        rag.load_model_and_indexes(self.dot_rag_dir, model_wrapper)
 
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks
         target_file_path = self.tmp_source_code_dir / "numbers.lua"
-        rag.update_file_from_disk(target_file_path)
+        rag.update_file_from_disk(target_file_path, model_wrapper)
         #! TODO update to use pygls document instead of reading from disk?
 
         # * check counts

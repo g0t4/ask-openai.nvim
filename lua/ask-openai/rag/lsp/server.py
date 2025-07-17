@@ -9,7 +9,7 @@ from pygls.server import LanguageServer
 
 from lsp import ignores, imports, rag
 from lsp import fs
-
+from lsp import model_qwen3_remote as model_wrapper
 from .logs import get_logger, logging_fwk_to_language_server_log_file
 
 logging_fwk_to_language_server_log_file(logging.INFO)
@@ -56,7 +56,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
         tell_client_to_shut_that_shit_down_now()
         return
 
-    rag.load_model_and_indexes(fs.dot_rag_dir)
+    rag.load_model_and_indexes(fs.dot_rag_dir, model_wrapper)
 
 def update_rag_for_text_doc(doc_uri: str):
     doc_path = uris.to_fs_path(doc_uri)
@@ -71,7 +71,7 @@ def update_rag_for_text_doc(doc_uri: str):
     if doc is None:
         logger.error(f"abort... doc not found {doc_uri}")
         return
-    rag.update_file_from_pygls_doc(doc)
+    rag.update_file_from_pygls_doc(doc, model_wrapper)
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 def doc_saved(params: types.DidSaveTextDocumentParams):
@@ -132,7 +132,8 @@ def rag_query(_: LanguageServer, params: types.ExecuteCommandParams):
         return
 
     message = params[0]
-    return rag.handle_query(message)
+    return rag.handle_query(message, model_wrapper)
+
 
 # how can I intercept shutdown from client?
 #

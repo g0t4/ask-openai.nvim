@@ -14,8 +14,6 @@ import fs
 from pydants import write_json
 from lsp.storage import Chunk, FileStat, load_prior_data
 from lsp.build import build_file_chunks, get_file_stat
-# from lsp import model_st as model_wrapper
-from lsp import model_qwen3_remote as model_wrapper
 
 from lsp.logs import get_logger
 
@@ -35,9 +33,10 @@ class FilesDiff:
 
 class IncrementalRAGIndexer:
 
-    def __init__(self, dot_rag_dir, source_code_dir):
+    def __init__(self, dot_rag_dir, source_code_dir, model_wrapper):
         self.dot_rag_dir = Path(dot_rag_dir)
         self.source_code_dir = Path(source_code_dir)
+        self.model_wrapper = model_wrapper
 
     def main(self):
         exts = self.get_included_extensions()
@@ -148,7 +147,7 @@ class IncrementalRAGIndexer:
 
         # Create base index if it doesn't exist
         if index is None:
-            shape = model_wrapper.get_shape()
+            shape = self.model_wrapper.get_shape()
             # 768 for "intfloat/e5-base-v2"
             # 1024 for Qwen3
             base_index = faiss.IndexFlatIP(shape)
@@ -179,7 +178,7 @@ class IncrementalRAGIndexer:
 
             with logger.timer("Encode new vectors"):
                 passages = [chunk.text for chunk in new_chunks]
-                vecs_np = model_wrapper.encode_passages(passages)
+                vecs_np = self.model_wrapper.encode_passages(passages)
 
             faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
 
@@ -263,6 +262,7 @@ def trash_dot_rag(dot_rag_dir):
 
 def main():
     from lsp.logs import logging_fwk_to_console
+    from lsp import model_qwen3_remote as model_wrapper
 
     # * command line args
     verbose = "--verbose" in sys.argv or "--debug" in sys.argv
@@ -283,7 +283,7 @@ def main():
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
         if rebuild:
             trash_dot_rag(dot_rag_dir)
-        indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir)
+        indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, model_wrapper)
         indexer.main()
 
 if __name__ == "__main__":
