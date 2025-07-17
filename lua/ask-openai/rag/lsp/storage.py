@@ -201,11 +201,11 @@ def find_language_dirs(dot_rag_dir: str | Path):
     return [p for p in Path(dot_rag_dir).glob("*") if p.is_dir()]
 
 def load_all_datasets(dot_rag_dir: str | Path) -> Datasets:
-    dirs = find_language_dirs(dot_rag_dir)
+    language_dirs = find_language_dirs(dot_rag_dir)
     datasets = {}
-    for dir_path in dirs:
-        language_extension = dir_path.name
-        dataset = load_prior_data(language_extension, dir_path)
+    for lang_dir in language_dirs:
+        language_extension = lang_dir.name
+        dataset = load_prior_data(language_extension, lang_dir)
         datasets[language_extension] = dataset
 
     return Datasets(datasets)
