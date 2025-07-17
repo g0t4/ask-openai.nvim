@@ -2,17 +2,17 @@ import os
 
 from .logs import get_logger
 
-
 logger = get_logger(__name__)
-
 
 # FYI there is a test case to validate encoding:
 #   python3 indexer_tests.py  TestBuildIndex.test_encode_and_search_index
 
-@property
-def model(self):
-    if hasattr(self, "_model"):
-        return self._model
+_model = None
+
+def model():
+    global _model
+    if _model:
+        return _model
 
     with logger.timer("import transformers qwen3"):
 
@@ -23,13 +23,13 @@ def model(self):
 
         from lsp.notes import transformers_qwen3
 
-    self._model = transformers_qwen3
-    return self._model
+    _model = transformers_qwen3
+    return _model
 
-def ensure_model_loaded(self):
-    self.model  # access model to trigger load
+def ensure_model_loaded():
+    model()
 
-def _encode(self, texts):
+def _encode(texts):
     import torch
 
     # set batch_size high to disable batching if that is better perf on the 5090s
@@ -46,29 +46,27 @@ def _encode(self, texts):
 
         return torch.cat(all_vecs, dim=0)
 
-    vecs_np = batched_encode(self.model, texts)
+    vecs_np = batched_encode(_model, texts)
     return vecs_np
 
-def encode_passages(self, passages: list[str]):
+def encode_passages(passages: list[str]):
     texts = [f"passage: {p}" for p in passages]
     # TODO test refactored _encode() shared method:
-    return self._encode(texts)
+    return _encode(texts)
 
-def encode_query(self, text: str):
+def encode_query(text: str):
     # "query: text" is the training query format
     # "passage: text" is the training document format
-    return self._encode_text(f"query: {text}")
+    return _encode_text(f"query: {text}")
 
-def _encode_text(self, text: str):
+def _encode_text(text: str):
     # FYI model.encode will encode a list of texts, so just encode a single text
     # TODO test refactored _encode() shared method:
-    return self._encode([text])
+    return _encode([text])
 
-def get_shape(self) -> int:
+def get_shape() -> int:
     # Create a dummy vector to get dimensions
     sample_text = "passage: sample"
-    sample_vec = self._encode_text(sample_text)
+    sample_vec = _encode_text(sample_text)
     shape = sample_vec.shape[1]
     return shape
-
-model_wrapper = ModelWrapper()

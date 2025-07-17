@@ -43,7 +43,6 @@ def handle_query(message, top_k=3):
 
     logger.pp_debug("[blue bold]RAG[/blue bold] query", message)
 
-    # TODO rename model_wrapper back to just model when done inserting it into all usages
     q_vec = model_wrapper.encode_query(text)
     # FAISS search (GIL released)
     scores, ids = dataset.index.search(q_vec, top_k)

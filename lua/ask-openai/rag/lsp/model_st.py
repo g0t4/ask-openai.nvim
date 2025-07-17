@@ -4,14 +4,15 @@ from .logs import get_logger
 
 logger = get_logger(__name__)
 
-
 # FYI there is a test case to validate encoding:
 #   python3 indexer_tests.py  TestBuildIndex.test_encode_and_search_index
 
-@property
-def model(self):
-    if hasattr(self, "_model"):
-        return self._model
+_model = None
+
+def model():
+    global _model
+    if _model:
+        return _model
 
     with logger.timer("import torch"):
         # FYI pre-load so timing is never skewed on encode
@@ -30,10 +31,11 @@ def model(self):
     def use_intfloat_e5_base():
         # TODO find some test data to validate embeddings are properly calculated!
         model_name = "intfloat/e5-base-v2"
-        return SentenceTransformer(model_name,
-                                   # TODO set dtype auto/float16/etc?
-                                   # model_kwargs={"torch_dtype": "float16"},
-                                   )
+        _model = SentenceTransformer(model_name,
+                                     # TODO set dtype auto/float16/etc?
+                                     # model_kwargs={"torch_dtype": "float16"},
+                                     )
+        return _model
 
     def use_qwen3():
         # PRN add startup validation of embeddings calculations and params from auto model
@@ -46,17 +48,17 @@ def model(self):
         )
 
     with logger.timer(f"Loaded model"):
-        # self._model = use_intfloat_e5_base()
-        self._model = use_qwen3()
+        _model = use_intfloat_e5_base()
+        # _model = use_qwen3()
 
-    logger.dump_sentence_transformers_model(self._model)
+    logger.dump_sentence_transformers_model(_model)
 
-    return self._model
+    return _model
 
-def ensure_model_loaded(self):
-    self.model  # access model to trigger load
+def ensure_model_loaded():
+    model()  # access model to trigger load
 
-def _encode(self, texts):
+def _encode(texts):
     import torch
 
     # from pympler import asizeof
@@ -82,33 +84,31 @@ def _encode(self, texts):
 
         return torch.cat(all_vecs, dim=0)
 
-    vecs_np = batched_encode(self.model, texts)
+    vecs_np = batched_encode(model, texts)
 
     # size_bytes = asizeof.asizeof(vecs_np)
     logger.info(f"  done encoding")  #  - {type(vecs_np)=} size_bytes={size_bytes} {vecs_np.shape=}")
 
     return vecs_np
 
-def encode_passages(self, passages: list[str]):
+def encode_passages(passages: list[str]):
     texts = [f"passage: {p}" for p in passages]
     # TODO test refactored _encode() shared method:
-    return self._encode(texts)
+    return _encode(texts)
 
-def encode_query(self, text: str):
+def encode_query(text: str):
     # "query: text" is the training query format
     # "passage: text" is the training document format
-    return self._encode_text(f"query: {text}")
+    return _encode_text(f"query: {text}")
 
-def _encode_text(self, text: str):
+def _encode_text(text: str):
     # FYI model.encode will encode a list of texts, so just encode a single text
     # TODO test refactored _encode() shared method:
-    return self._encode([text])
+    return _encode([text])
 
-def get_shape(self) -> int:
+def get_shape() -> int:
     # Create a dummy vector to get dimensions
     sample_text = "passage: sample"
-    sample_vec = self._encode_text(sample_text)
+    sample_vec = _encode_text(sample_text)
     shape = sample_vec.shape[1]
     return shape
-
-model_wrapper = ModelWrapper()
