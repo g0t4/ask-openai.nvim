@@ -57,10 +57,10 @@ def handle():
         conn.close()
         return
 
-    rx_text = rx_msg['texts']
+    rx_texts = rx_msg['texts']
 
     with Timer() as encode_timer:
-        embeddings, input_ids = qwen3.encode(rx_text)
+        embeddings, input_ids = qwen3.encode(rx_texts)
 
     tx_msg = {'embeddings': embeddings.tolist()}
     send_len_then_msg(conn, tx_msg)
@@ -68,7 +68,11 @@ def handle():
 
     rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_timer.elapsed_ms():.3f} ms")
     if logger.isEnabledFor(logging.DEBUG):
-        logger.debug(f"input_ids={input_ids.tolist()}")
+        for t in rx_texts:
+            num = len(t)
+            rich.print(f"  {num}: {t}")
+
+        logger.debug(f"  input_ids={input_ids.tolist()}")
 
 while True:
     try:
