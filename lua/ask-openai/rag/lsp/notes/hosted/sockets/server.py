@@ -45,7 +45,6 @@ signal.signal(signal.SIGINT, signal_handler)
 # listener.settimeout(60) # PRN for timeout on listener.accept(), but I don't need that if all I do is wait for a single connection
 
 def handle():
-    conn, _ = listener.accept()
     conn.settimeout(10)  # give client 10 seconds max to send/recv its data
 
     rx_msg = recv_len_then_msg(conn)
@@ -66,9 +65,20 @@ def handle():
 
 while True:
     try:
+        conn, _ = listener.accept()
+    except socket.timeout:
+        # FYI can do periodic work here, differentiates socket(listener) level timeout vs connection (handled below)
+        continue
+    except Exception:
+        logger.exception("accept() failed")
+        continue
+
+    try:
         handle()
     except socket.timeout:
         # FYI can do periodic work here too (i.e. could unload model if not used in last X minutes) => would need to call listener.settimeout
-        logger.warning("connection or socket timeout")
+        logger.warning("connection (i.e. recv/send) timeout")
     except Exception:
         logger.exception("handle() unhandled exception")
+    finally:
+        conn.close()
