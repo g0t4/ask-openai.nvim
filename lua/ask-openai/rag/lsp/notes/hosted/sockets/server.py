@@ -24,12 +24,12 @@ qwen3.test_known_embeddings()
 
 print('opening socket')
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+listener = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # set REUSEADDR so TIME-WAIT ports don't block restarting server, else wait upwards of a minute
-server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-server.bind(("0.0.0.0", 8015))
-server.listen()
+listener.bind(("0.0.0.0", 8015))
+listener.listen()
 
 clear_iterm_scrolback = "\x1b]1337;ClearScrollback\a"
 print(clear_iterm_scrolback)
@@ -37,15 +37,15 @@ rich.print("[green bold]Server ready...")
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
-    server.close()
+    listener.close()
     exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
 
-# server.settimeout(60) # PRN for timeout on server.accept(), but I don't need that if all I do is wait for a single connection
+# listener.settimeout(60) # PRN for timeout on listener.accept(), but I don't need that if all I do is wait for a single connection
 
 def handle():
-    conn, _ = server.accept()
+    conn, _ = listener.accept()
     conn.settimeout(10)  # give client 10 seconds max to send/recv its data
 
     rx_msg = recv_len_then_msg(conn)
@@ -68,7 +68,7 @@ while True:
     try:
         handle()
     except socket.timeout:
-        # FYI can do periodic work here too (i.e. could unload model if not used in last X minutes)
+        # FYI can do periodic work here too (i.e. could unload model if not used in last X minutes) => would need to call listener.settimeout
         logger.warning("connection or socket timeout")
     except Exception:
         logger.exception("handle() unhandled exception")
