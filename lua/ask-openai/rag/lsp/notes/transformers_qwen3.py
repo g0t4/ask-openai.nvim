@@ -10,7 +10,7 @@ from transformers import AutoTokenizer, AutoModel
 
 from lsp.helpers import auto_device
 from lsp.logs import get_logger
-from lsp.qwen3.known import get_known_inputs, validate_embeddings
+from lsp.qwen3.known import get_known_inputs, verify_known_embeddings
 
 logger = get_logger(__name__)
 
@@ -93,7 +93,7 @@ def encode(input_texts):
 def main():
     input_texts = get_known_inputs()
     embeddings = encode(input_texts)
-    validate_embeddings(embeddings)
+    verify_known_embeddings(embeddings)
 
 if __name__ == "__main__":
     main()

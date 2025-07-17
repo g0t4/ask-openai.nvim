@@ -64,7 +64,7 @@ def get_detailed_instruct(task_description: str, query: str) -> str:
 def test_known_embeddings():
     input_texts = known.get_known_inputs()
     embeddings = _encode(input_texts)
-    known.validate_embeddings(embeddings)
+    known.verify_known_embeddings(embeddings)
 
 if __name__ == "__main__":
     ensure_model_loaded()

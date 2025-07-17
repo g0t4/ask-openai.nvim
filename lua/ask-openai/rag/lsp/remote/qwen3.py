@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
 
-from lsp.qwen3.known import get_known_inputs, validate_embeddings
+from lsp.qwen3.known import get_known_inputs, verify_known_embeddings
 
 from ..helpers import auto_device
 from ..logs import get_logger, logging_fwk_to_console
@@ -69,7 +69,7 @@ def test_known_embeddings():
     print("TESTING known embeddings from Qwen3 README...")
     input_texts = get_known_inputs()
     embeddings, _ = encode(input_texts)
-    validate_embeddings(embeddings)
+    verify_known_embeddings(embeddings)
 
 if __name__ == "__main__":
     test_known_embeddings()

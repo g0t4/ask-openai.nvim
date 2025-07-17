@@ -1,4 +1,4 @@
-from lsp.qwen3.known import get_known_inputs, validate_embeddings
+from lsp.qwen3.known import get_known_inputs, verify_known_embeddings
 from ..logs import get_logger, logging_fwk_to_console
 from .comms import *
 
@@ -49,4 +49,4 @@ for e in rx_embeddings:
 # ** validate scores
 import numpy as np
 
-validate_embeddings(np.array(rx_embeddings))
+verify_known_embeddings(np.array(rx_embeddings))

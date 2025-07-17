@@ -20,7 +20,7 @@ def get_known_inputs():
         print(f'{i}: {len(text)=}')
     return input_texts
 
-def validate_embeddings(embeddings):
+def verify_known_embeddings(embeddings):
 
     query_embeddings = embeddings[:2]  # first two are queries
     passage_embeddings = embeddings[2:]  # last two are documents
