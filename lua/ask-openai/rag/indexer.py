@@ -91,7 +91,7 @@ class IncrementalRAGIndexer:
         ]
 
         if noteworthy_extensions:
-            logger.warning(f"Found unindexed extensions: {' '.join(noteworthy_extensions)}")
+            logger.debug(f"Found unindexed extensions: {' '.join(noteworthy_extensions)}")
 
     def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Split files into: changed (added/updated), unchagned, deleted"""
