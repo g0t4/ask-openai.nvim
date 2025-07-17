@@ -63,18 +63,8 @@ def get_detailed_instruct(task_description: str, query: str) -> str:
 
 def test_known_embeddings():
     input_texts = known.get_known_inputs()
-
     embeddings = _encode(input_texts)
-    print(embeddings)
-
-    query_embeddings = embeddings[:2]  # first two are queries
-    passage_embeddings = embeddings[2:]  # last two are documents
-    actual_scores = (query_embeddings @ passage_embeddings.T)
-    print(f'{actual_scores=}')
-    from numpy.testing import assert_array_almost_equal
-    expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
-    assert_array_almost_equal(actual_scores, expected_scores, decimal=3)
-    print(f'{expected_scores=}')
+    known.validate_embeddings(embeddings)
 
 if __name__ == "__main__":
     ensure_model_loaded()
