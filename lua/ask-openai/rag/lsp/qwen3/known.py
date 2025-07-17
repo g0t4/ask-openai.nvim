@@ -1,0 +1,20 @@
+def get_known_inputs():
+
+    def get_detailed_instruct(task_description: str, query: str) -> str:
+        return f'Instruct: {task_description}\nQuery:{query}'
+
+    task = 'Given a web search query, retrieve relevant passages that answer the query'
+    queries = [
+        get_detailed_instruct(task, 'What is the capital of China?'),
+        get_detailed_instruct(task, 'Explain gravity'),
+    ]
+    # No need to add instruction for retrieval documents
+    documents = [
+        "The capital of China is Beijing.",
+        "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
+    ]
+    input_texts = queries + documents
+    # prints for padding checks:
+    for i, text in enumerate(input_texts):
+        print(f'{i}: {len(text)=}')
+    return input_texts
