@@ -10,7 +10,7 @@ from transformers import AutoTokenizer, AutoModel
 
 from lsp.helpers import auto_device
 from lsp.logs import get_logger
-from lsp.qwen3.known import get_known_inputs
+from lsp.qwen3.known import get_known_inputs, validate_embeddings
 
 logger = get_logger(__name__)
 
@@ -91,23 +91,9 @@ def encode(input_texts):
         return norm
 
 def main():
-
     input_texts = get_known_inputs()
-    # prints for padding checks:
-    for i, text in enumerate(input_texts):
-        print(f'{i}: {len(text)=}')
-
     embeddings = encode(input_texts)
-    print(embeddings)
-
-    query_embeddings = embeddings[:2]  # first two are queries
-    passage_embeddings = embeddings[2:]  # last two are documents
-    actual_scores = (query_embeddings @ passage_embeddings.T)
-    print(f'{actual_scores=}')
-    from numpy.testing import assert_array_almost_equal
-    expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
-    assert_array_almost_equal(actual_scores, expected_scores, decimal=3)
-    print(f'{expected_scores=}')
+    validate_embeddings(embeddings)
 
 if __name__ == "__main__":
     main()
