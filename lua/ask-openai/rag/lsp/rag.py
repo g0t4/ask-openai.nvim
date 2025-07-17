@@ -62,7 +62,6 @@ def handle_query(message, model_wrapper, top_k=3):
     matches = ContextResult()
     for rank, idx in enumerate(ids[0]):
         if len(matches) >= top_k:
-
             break
 
         chunk = datasets.get_chunk_by_faiss_id(idx)
@@ -73,12 +72,11 @@ def handle_query(message, model_wrapper, top_k=3):
         score = scores[0][rank]
         logger.pp_debug(f"chunk {score}", chunk)
 
-        # TODO capture absolute path in indexer! that way I dont have to rebuild absolute path here?
+        # PRN capture absolute path in indexer! that way I dont have to rebuild absolute path here?
         chunk_file_abs = chunk.file  # capture abs path, already works
         same_file = current_file_abs == chunk_file_abs
         if same_file:
             logger.warning(f"Skip match in same file")
-            # PRN could filter too high of similarity instead? or somem other rerank or ?
             continue
         logger.debug(f"matched {chunk.file}:L{chunk.start_line}-{chunk.end_line}")
 
@@ -108,6 +106,7 @@ def handle_query(message, model_wrapper, top_k=3):
         matches.add(match)
 
     if len(matches) == 0:
+        # TODO go back and query next X?
         # warn if this happens, that all were basically the same doc
         logger.warning(f"No matches found for {current_file_abs=}")
 
