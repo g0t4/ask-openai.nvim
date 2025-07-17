@@ -112,6 +112,12 @@ class TestBuildIndex(unittest.TestCase):
             # PRN verify vectors too?
 
     def test_encode_and_search_index(self):
+        # * setup same index as in the first test
+        #   FYI updater tests will alter the index and break this test
+        self.trash_path(self.dot_rag_dir)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir)
+        indexer.build_index(language_extension="lua")
+
         # !!! TODO fix this test or? its been borked for a while now
         from lsp import model_st as model_wrapper
         q = model_wrapper._encode_text("hello")
