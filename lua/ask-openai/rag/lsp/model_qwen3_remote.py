@@ -2,32 +2,31 @@ from .logs import get_logger
 
 logger = get_logger(__name__)
 
-_model = None
-
 def ensure_model_loaded():
-    global _model
-    if _model:
-        return _model
 
     with logger.timer("imports for qwen3 remote EmbedClient"):
         import numpy as np
-        from lsp.remote.comms import EmbedClient
 
     # FYI client opens a socket so still useful to defer until needed
-    _model = EmbedClient()
-    return _model
 
 def _encode(texts):
     import numpy as np
+    from lsp.remote.comms import EmbedClient
 
+    # TODO! Batchsize
     def batched_encode(texts, batch_size=8):
+        # for now, let's open a new client PER batch
+        #  can add long-lived connection if need be but lets asssume this is plenty fast
+        #   would require server to handle more than one at a time too
         all_vecs = []
         total = len(texts)
         for i in range(0, total, batch_size):
-            logger.info(f"    batch {i}-{i+batch_size} of {total}")
-            batch = texts[i:i + batch_size]
-            vecs = ensure_model_loaded().encode(batch)
-            all_vecs.append(vecs)
+            # TODO allow multiple encodes per connection! right now server closes!
+            with EmbedClient() as client:
+                logger.info(f"    batch {i}-{i+batch_size} of {total}")
+                batch = texts[i:i + batch_size]
+                vecs = client.encode({"texts": batch})
+                all_vecs.append(vecs)
 
         return np.concatenate(all_vecs)
 
