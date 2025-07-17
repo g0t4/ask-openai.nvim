@@ -9,7 +9,7 @@ logger = get_logger(__name__)
 
 _model = None
 
-def model():
+def ensure_model_loaded():
     global _model
     if _model:
         return _model
@@ -55,9 +55,6 @@ def model():
 
     return _model
 
-def ensure_model_loaded():
-    model()  # access model to trigger load
-
 def _encode(texts):
     import torch
 
@@ -66,7 +63,7 @@ def _encode(texts):
 
     # set batch_size high to disable batching if that is better perf on the 5090s
     #   added batching to investigate issues w/ qwen3 on mac w/ ST and the memory explosion (even after disable autograd!)
-    def batched_encode(model, texts, batch_size=8):
+    def batched_encode(texts, batch_size=8):
         # FYI! qwen3 works fine now with ST! with small batch size too!
         all_vecs = []
         with torch.no_grad():
@@ -74,7 +71,7 @@ def _encode(texts):
             for i in range(0, total, batch_size):
                 logger.info(f"    batch {i}-{i+batch_size} of {total}")
                 batch = texts[i:i + batch_size]
-                vecs = model.encode(
+                vecs = ensure_model_loaded().encode(
                     batch,
                     normalize_embeddings=True,
                     show_progress_bar=False,
@@ -84,7 +81,7 @@ def _encode(texts):
 
         return torch.cat(all_vecs, dim=0)
 
-    vecs_np = batched_encode(model, texts)
+    vecs_np = batched_encode(texts)
 
     # size_bytes = asizeof.asizeof(vecs_np)
     logger.info(f"  done encoding")  #  - {type(vecs_np)=} size_bytes={size_bytes} {vecs_np.shape=}")

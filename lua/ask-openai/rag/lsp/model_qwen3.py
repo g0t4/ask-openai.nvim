@@ -9,7 +9,7 @@ logger = get_logger(__name__)
 
 _model = None
 
-def model():
+def ensure_model_loaded():
     global _model
     if _model:
         return _model
@@ -26,9 +26,6 @@ def model():
     _model = transformers_qwen3
     return _model
 
-def ensure_model_loaded():
-    model()
-
 def _encode(texts):
     import torch
 
@@ -41,7 +38,7 @@ def _encode(texts):
             for i in range(0, total, batch_size):
                 logger.info(f"    batch {i}-{i+batch_size} of {total}")
                 batch = texts[i:i + batch_size]
-                vecs = model.encode(batch)
+                vecs = ensure_model_loaded().encode(batch)
                 all_vecs.append(vecs.cpu())  # move to CPU to free GPU/MPS memory, s/b sub 1ms overhead
 
         return torch.cat(all_vecs, dim=0)
