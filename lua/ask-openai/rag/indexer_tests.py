@@ -112,6 +112,7 @@ class TestBuildIndex(unittest.TestCase):
             # PRN verify vectors too?
 
     def test_encode_and_search_index(self):
+        # !!! TODO fix this test or? its been borked for a while now
         from lsp import model_st as model_wrapper
         q = model_wrapper._encode_text("hello")
         print(f'{q.shape=}')
