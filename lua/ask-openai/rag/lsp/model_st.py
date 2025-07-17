@@ -4,7 +4,6 @@ from .logs import get_logger
 
 logger = get_logger(__name__)
 
-class ModelWrapper:
 
     # FYI there is a test case to validate encoding:
     #   python3 indexer_tests.py  TestBuildIndex.test_encode_and_search_index
