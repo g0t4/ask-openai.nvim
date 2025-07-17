@@ -63,15 +63,13 @@ def encode(input_texts):
         norm = F.normalize(embeddings, p=2, dim=1).cpu().numpy()
         return norm, batch_args['input_ids']
 
-def get_detailed_instruct(task_description: str, query: str) -> str:
-    # *** INSTRUCTION!
-    return f'Instruct: {task_description}\nQuery:{query}'
-
 def test_known_embeddings():
     from rich import print
-    print("TESTING known embeddings from Qwen3 README...")
 
+    print("TESTING known embeddings from Qwen3 README...")
     input_texts = get_known_inputs()
+
+    # TODO consolidate validation logic too!: into known.py
 
     embeddings, _ = encode(input_texts)
 
