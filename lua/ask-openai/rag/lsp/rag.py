@@ -42,6 +42,12 @@ def handle_query(message, model_wrapper, top_k=3):
 
     logger.pp_debug("[blue bold]RAG[/blue bold] query", message)
 
+    # TODO query more than top 3 and then remove same file matches
+    #   stop gap can I just take highest scores for now from embeddings only?
+    #   AHH MAN... skip match in same file is dominating results!
+    #     can I limit initial query to skip by id of chunks in same file?
+    #  PRN later, add RE-RANK!
+
     q_vec = model_wrapper.encode_query(text)
     # FAISS search (GIL released)
     scores, ids = dataset.index.search(q_vec, top_k)
