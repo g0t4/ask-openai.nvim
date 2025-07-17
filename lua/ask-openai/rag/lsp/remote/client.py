@@ -48,4 +48,5 @@ for e in rx_embeddings:
 
 # ** validate scores
 import numpy as np
+
 validate_embeddings(np.array(rx_embeddings))

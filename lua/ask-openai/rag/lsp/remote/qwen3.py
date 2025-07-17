@@ -68,9 +68,7 @@ def test_known_embeddings():
 
     print("TESTING known embeddings from Qwen3 README...")
     input_texts = get_known_inputs()
-
     embeddings, _ = encode(input_texts)
-
     validate_embeddings(embeddings)
 
 if __name__ == "__main__":
