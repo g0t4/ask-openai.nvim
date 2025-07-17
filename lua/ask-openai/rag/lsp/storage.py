@@ -156,7 +156,8 @@ def load_chunks(chunks_json_path: Path):
         chunks_by_file = {k: [Chunk(**v) for v in v] for k, v in json.load(f).items()}
     return chunks_by_file
 
-def load_prior_data(language_extension: str, language_dir: Path) -> RAGDataset:
+def load_prior_data(dot_rag_dir: Path, language_extension: str) -> RAGDataset:
+    language_dir = dot_rag_dir / language_extension
 
     vectors_index_path = language_dir / "vectors.index"
     index = None
@@ -197,7 +198,7 @@ def load_prior_data(language_extension: str, language_dir: Path) -> RAGDataset:
 
     return RAGDataset(language_extension, chunks_by_file, files_by_path, index)
 
-def find_language_dirs(dot_rag_dir: str | Path):
+def find_language_dirs(dot_rag_dir: Path) -> List[Path]:
     dot_rag_dir = Path(dot_rag_dir)
     if not dot_rag_dir.exists():
         raise ValueError(f"{dot_rag_dir=} does not exist")
@@ -206,12 +207,13 @@ def find_language_dirs(dot_rag_dir: str | Path):
 
     return [p for p in Path(dot_rag_dir).glob("*") if p.is_dir()]
 
-def load_all_datasets(dot_rag_dir: str | Path) -> Datasets:
+def load_all_datasets(dot_rag_dir: Path) -> Datasets:
+    dot_rag_dir = Path(dot_rag_dir)
     language_dirs = find_language_dirs(dot_rag_dir)
     datasets = {}
     for lang_dir in language_dirs:
         language_extension = lang_dir.name
-        dataset = load_prior_data(language_extension, lang_dir)
+        dataset = load_prior_data(dot_rag_dir, language_extension)
         datasets[language_extension] = dataset
 
     return Datasets(datasets)

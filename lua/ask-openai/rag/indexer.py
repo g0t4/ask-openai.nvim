@@ -190,7 +190,7 @@ class IncrementalRAGIndexer:
     def build_index(self, language_extension: str = "lua"):
         """Build or update the RAG index incrementally"""
 
-        prior = load_prior_data(language_extension, self.dot_rag_dir)
+        prior = load_prior_data(self.dot_rag_dir, language_extension)
 
         paths = self.get_files_diff(language_extension, prior.stat_by_path)
 
