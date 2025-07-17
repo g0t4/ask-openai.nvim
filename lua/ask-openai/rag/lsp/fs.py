@@ -3,8 +3,8 @@ from .logs import get_logger
 
 logger = get_logger(__name__)
 
-root_path: Path
-dot_rag_dir: Path
+root_path: Path | None = None
+dot_rag_dir: Path | None = None
 
 # *** by the way I am not 100% certain I like this module... but lets see how it goes
 #   I need a simple way to get a path relative to the workspace dir
