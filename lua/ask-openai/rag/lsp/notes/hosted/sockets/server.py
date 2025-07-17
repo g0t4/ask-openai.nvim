@@ -10,7 +10,6 @@ logging_fwk_to_console("WARN")
 # logging_fwk_to_console("INFO")
 # logging_fwk_to_console("DEBUG")
 logger = get_logger(__name__)
-# TODO measure all logging/prints and remove/threshold any that are unacceptable (i.e. > 10ms?)
 
 def encode(texts: list[str]):
     # logger.debug(texts)
@@ -18,18 +17,8 @@ def encode(texts: list[str]):
     logger.debug(vec)
     return vec.tolist()
 
+# z rag
 # time python3 -m lsp.notes.hosted.sockets.server
-
-# MODEL_NAME = "intfloat/e5-base-v2"
-#
-# tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-# model = AutoModel.from_pretrained(MODEL_NAME).eval()
-#
-# def encode(text):
-#     inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
-#     with torch.no_grad():
-#         embeddings = model(**inputs).last_hidden_state.mean(dim=1)
-#     return embeddings[0].tolist()
 
 qwen3.test_known_embeddings()
 
