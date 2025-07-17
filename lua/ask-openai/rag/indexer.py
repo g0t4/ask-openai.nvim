@@ -14,8 +14,8 @@ import fs
 from pydants import write_json
 from lsp.storage import Chunk, FileStat, load_prior_data
 from lsp.build import build_file_chunks, get_file_stat
-from lsp import model_st as model_wrapper
-# from lsp import model_qwen3 as model_wrapper
+# from lsp import model_st as model_wrapper
+from lsp import model_qwen3_remote as model_wrapper
 
 from lsp.logs import get_logger
 
