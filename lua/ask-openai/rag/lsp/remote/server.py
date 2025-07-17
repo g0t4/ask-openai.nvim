@@ -4,8 +4,10 @@
 
 print('imports...')
 
+import logging
 import socket
 import signal
+import sys
 import rich
 
 from . import qwen3
@@ -14,9 +16,12 @@ from .comms import *
 
 print('imports done')
 
-logging_fwk_to_console("WARN")
-# logging_fwk_to_console("INFO")
-# logging_fwk_to_console("DEBUG")
+# * command line args
+verbose = "--verbose" in sys.argv or "--debug" in sys.argv
+info = "--info" in sys.argv
+
+level = logging.DEBUG if verbose else (logging.INFO if info else logging.WARNING)
+logging_fwk_to_console(level)
 logger = get_logger(__name__)
 
 print('testing known embeddings...')
