@@ -9,7 +9,7 @@ import signal
 import rich
 
 from lsp.notes.hosted.sockets import qwen3
-from lsp.logs import get_logger, logging_fwk_to_console
+from lsp.logs import Timer, get_logger, logging_fwk_to_console
 from lsp.notes.hosted.sockets.comms import *
 
 print('imports done')
@@ -57,8 +57,11 @@ while True:
         continue
     rx_text = rx_msg['texts']
 
-    embedding = encode(rx_text)
+    with Timer() as encode_timer:
+        embedding = encode(rx_text)
 
     tx_msg = {'embeddings': embedding}
     send_len_then_msg(conn, tx_msg)
     conn.close()
+
+    rich.print(f"[blue]encoded {len(rx_text)} in {encode_timer.elapsed_ms():.3f} ms")
