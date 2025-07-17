@@ -1,3 +1,4 @@
+from lsp.qwen3.known import get_known_inputs
 from ..logs import get_logger, logging_fwk_to_console
 from .comms import *
 
@@ -9,22 +10,7 @@ logging_fwk_to_console("INFO")
 
 logger = get_logger(__name__)
 
-def get_detailed_instruct(task_description: str, query: str) -> str:
-    # *** INSTRUCTION!
-    return f'Instruct: {task_description}\nQuery:{query}'
-
-# Each query must come with a one-sentence instruction that describes the task
-task = 'Given a web search query, retrieve relevant passages that answer the query'
-queries = [
-    get_detailed_instruct(task, 'What is the capital of China?'),
-    get_detailed_instruct(task, 'Explain gravity'),
-]
-# No need to add instruction for retrieval documents
-documents = [
-    "The capital of China is Beijing.",
-    "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
-]
-scoring_texts = queries + documents
+scoring_texts = get_known_inputs()
 
 file_chunk = "local M = {}\nlocal init = require(\"ask-openai\")\nlocal config = require(\"ask-openai.config\")\n\n-- FYI uses can add commands if that's what they want, they have the API to do so:\n\nfunction M.enable_predictions()\n    config.local_share.set_predictions_enabled()\n    init.start_predictions()\nend\n\nfunction M.disable_predictions()\n    config.local_share.set_predictions_disabled()\n    init.stop_predictions()\nend\n\nfunction M.toggle_predictions()\n    if config.local_share.are_predictions_enabled() then\n        M.disable_predictions()\n    else"
 hello_world = "Hello world"
