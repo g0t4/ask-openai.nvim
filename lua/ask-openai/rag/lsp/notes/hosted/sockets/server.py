@@ -26,6 +26,9 @@ print()
 rich.print("[green bold]SERVER READY")
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# set REUSEADDR so TIME-WAIT ports don't block restarting server, else wait upwards of a minute
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
 server.bind(("0.0.0.0", 8015))
 server.listen()
 
