@@ -1,5 +1,3 @@
-import os
-
 from .logs import get_logger
 
 logger = get_logger(__name__)
@@ -11,33 +9,25 @@ def ensure_model_loaded():
     if _model:
         return _model
 
-    with logger.timer("import transformers qwen3"):
+    with logger.timer("imports for qwen3 remote EmbedClient"):
+        import numpy as np
+        from lsp.remote.comms import EmbedClient
 
-        # do not check hugging face for newer version, use offline cache only
-        #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
-        # FYI must be set BEFORE importing SentenceTransformer, setting after (even if before model load) doesn't work
-        os.environ["TRANSFORMERS_OFFLINE"] = "1"
-
-        from lsp.notes import transformers_qwen3
-
-    _model = transformers_qwen3
+    # FYI client opens a socket so still useful to defer until needed
+    _model = EmbedClient()
     return _model
 
 def _encode(texts):
-    import torch
     import numpy as np
 
-    # set batch_size high to disable batching if that is better perf on the 5090s
-    #   added batching to investigate issues w/ qwen3 on mac w/ ST and the memory explosion (even after disable autograd!)
     def batched_encode(texts, batch_size=8):
         all_vecs = []
-        with torch.no_grad():
-            total = len(texts)
-            for i in range(0, total, batch_size):
-                logger.info(f"    batch {i}-{i+batch_size} of {total}")
-                batch = texts[i:i + batch_size]
-                vecs = ensure_model_loaded().encode(batch)
-                all_vecs.append(vecs)
+        total = len(texts)
+        for i in range(0, total, batch_size):
+            logger.info(f"    batch {i}-{i+batch_size} of {total}")
+            batch = texts[i:i + batch_size]
+            vecs = ensure_model_loaded().encode(batch)
+            all_vecs.append(vecs)
 
         return np.concatenate(all_vecs)
 
