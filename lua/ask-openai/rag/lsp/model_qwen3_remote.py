@@ -55,3 +55,7 @@ def get_shape() -> int:
     sample_vec = _encode_text(sample_text)
     shape = sample_vec.shape[1]
     return shape
+
+def test_known_embeddings():
+    # TODO
+    pass
