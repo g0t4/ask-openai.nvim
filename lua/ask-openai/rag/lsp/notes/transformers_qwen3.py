@@ -10,6 +10,7 @@ from transformers import AutoTokenizer, AutoModel
 
 from lsp.helpers import auto_device
 from lsp.logs import get_logger
+from lsp.qwen3.known import get_known_inputs
 
 logger = get_logger(__name__)
 
@@ -32,10 +33,6 @@ def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tenso
         sequence_lengths = attention_mask.sum(dim=1) - 1
         batch_size = last_hidden_states.shape[0]
         return last_hidden_states[torch.arange(batch_size, device=last_hidden_states.device), sequence_lengths]
-
-def get_detailed_instruct(task_description: str, query: str) -> str:
-    # *** INSTRUCTION!
-    return f'Instruct: {task_description}\nQuery:{query}'
 
 # FYI padding_style is w.r.t. the longest sequence in the batch, the rest are padded (right by default) or to the left if specified here:
 # FFS on MPS: left padding fails, but right padding works...
@@ -95,18 +92,7 @@ def encode(input_texts):
 
 def main():
 
-    # Each query must come with a one-sentence instruction that describes the task
-    task = 'Given a web search query, retrieve relevant passages that answer the query'
-    queries = [
-        get_detailed_instruct(task, 'What is the capital of China?'),
-        get_detailed_instruct(task, 'Explain gravity'),
-    ]
-    # No need to add instruction for retrieval documents
-    documents = [
-        "The capital of China is Beijing.",
-        "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
-    ]
-    input_texts = queries + documents
+    input_texts = get_known_inputs()
     # prints for padding checks:
     for i, text in enumerate(input_texts):
         print(f'{i}: {len(text)=}')
