@@ -1,2 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env fish
+
+echo "$(status current-filename) $argv"
+
+# TODO skip for start of rebase (before changes) - TODO verify this but IIRC that was the condition I needed to cover
+
 make clean && make tags
+rag_indexer --githook
