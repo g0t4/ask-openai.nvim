@@ -125,3 +125,18 @@ class LogTimer:
         elapsed_ns = self.end_ns - self.start_ns
         elapsed_ms = elapsed_ns / 1000000
         self.logger.info(f"{self.finished_message}: {elapsed_ms:,.2f} ms")
+
+class Timer:
+
+    def __enter__(self):
+        self.start_ns = time.time_ns()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.end_ns = time.time_ns()
+
+    def elapsed_ns(self):
+        return self.end_ns - self.start_ns
+
+    def elapsed_ms(self):
+        return self.elapsed_ns() / 1000000
