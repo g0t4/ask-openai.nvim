@@ -118,13 +118,8 @@ class TestBuildIndex(unittest.TestCase):
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir)
         indexer.build_index(language_extension="lua")
 
-        # !!! TODO fix this test or? its been borked for a while now
         from lsp import model_st as model_wrapper
         q = model_wrapper._encode_text("hello")
-        print(f'{q.shape=}')
-        # currently hard coded model:
-        # https://huggingface.co/intfloat/e5-base-v2
-        # This model has 12 layers and the embedding size is 768.
         self.assertEqual(q.shape, (1, 768))
 
         index = self.get_vector_index()
