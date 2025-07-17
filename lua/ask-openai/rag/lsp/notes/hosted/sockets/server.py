@@ -19,12 +19,6 @@ logging_fwk_to_console("WARN")
 # logging_fwk_to_console("DEBUG")
 logger = get_logger(__name__)
 
-def encode(texts: list[str]):
-    # logger.debug(texts)
-    vec = qwen3.encode(texts)
-    logger.debug(vec)
-    return vec.tolist()
-
 print('testing known embeddings...')
 qwen3.test_known_embeddings()
 
@@ -58,10 +52,10 @@ while True:
     rx_text = rx_msg['texts']
 
     with Timer() as encode_timer:
-        embedding = encode(rx_text)
+        embeddings, input_ids = qwen3.encode(rx_text)
 
-    tx_msg = {'embeddings': embedding}
+    tx_msg = {'embeddings': embeddings.tolist()}
     send_len_then_msg(conn, tx_msg)
     conn.close()
 
-    rich.print(f"[blue]encoded {len(rx_text)} in {encode_timer.elapsed_ms():.3f} ms")
+    rich.print(f"[blue]encoded {input_ids.shape} tokens in {encode_timer.elapsed_ms():.3f} ms")

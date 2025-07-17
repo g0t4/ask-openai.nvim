@@ -54,11 +54,12 @@ def encode(input_texts):
             max_length=8192,
             return_tensors="pt",
         )
+
         batch_args.to(model.device)
         outputs = model(**batch_args)
         embeddings = last_token_pool(outputs.last_hidden_state, batch_args['attention_mask'])
         norm = F.normalize(embeddings, p=2, dim=1).cpu().numpy()
-        return norm
+        return norm, batch_args['input_ids']
 
 def get_detailed_instruct(task_description: str, query: str) -> str:
     # *** INSTRUCTION!
@@ -86,7 +87,7 @@ def test_known_embeddings():
     ]
     input_texts = queries + documents
 
-    embeddings = encode(input_texts)
+    embeddings, _ = encode(input_texts)
 
     query_embeddings = embeddings[:2]  # first two are queries
     passage_embeddings = embeddings[2:]  # last two are documents
