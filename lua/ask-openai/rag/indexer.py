@@ -255,17 +255,20 @@ class IncrementalRAGIndexer:
         if paths.deleted:
             logger.debug(f"[green]Removed {len(paths.deleted)} deleted files")
 
-def trash_indexes(dot_rag_dir, language_extension="lua"):
-    """Remove index for a specific language"""
-    index_path = Path(dot_rag_dir, language_extension)
-    subprocess.run(["trash", index_path], check=IGNORE_FAILURE)
+def trash_dot_rag(dot_rag_dir):
+    dot_rag_dir = Path(dot_rag_dir)
+    if not dot_rag_dir.exists():
+        return
+    subprocess.run(["trash", dot_rag_dir], check=IGNORE_FAILURE)
 
 def main():
     from lsp.logs import logging_fwk_to_console
 
+    # * command line args
     verbose = "--verbose" in sys.argv or "--debug" in sys.argv
     info = "--info" in sys.argv
     level = logging.DEBUG if verbose else (logging.INFO if info else logging.WARNING)
+    rebuild = "--rebuild" in sys.argv
 
     logging_fwk_to_console(level)
 
@@ -278,6 +281,8 @@ def main():
         dot_rag_dir = root_directory / ".rag"
         source_code_dir = "."  # TODO make this root_directory always? has been nice to test a subset of files by cd to nested dir
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
+        if rebuild:
+            trash_dot_rag(dot_rag_dir)
         indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir)
         indexer.main()
 
