@@ -61,10 +61,18 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
 def update_rag_for_text_doc(doc_uri: str):
     doc_path = uris.to_fs_path(doc_uri)
     if doc_path == None:
-        logger.warning(f"abort update rag... to_fs_path returned {doc_path=}")
+        logger.warning(f"abort update rag... to_fs_path returned {doc_path}")
         return
     if ignores.is_ignored(doc_path, server):
-        logger.debug(f"rag ignored doc: {doc_path=}")
+        logger.debug(f"rag ignored doc: {doc_path}")
+        return
+    if Path(doc_path).suffix == "":
+        #  i.e. githooks
+        # currently I don't index extensionless anwyways, so skip for now in updates
+        # would need to pass vim_filetype from client (like I do for FIM queries within them)
+        #   alternatively I could parse shebang?
+        # but, I want to avoid extensionless so lets not make it possible to use them easily :)
+        logger.info(f"skip extensionless files {doc_path}")
         return
 
     doc = server.workspace.get_text_document(doc_uri)
@@ -133,7 +141,6 @@ def rag_query(_: LanguageServer, params: types.ExecuteCommandParams):
 
     message = params[0]
     return rag.handle_query(message, model_wrapper)
-
 
 # how can I intercept shutdown from client?
 #

@@ -97,9 +97,6 @@ class Datasets:
     def update_file(self, file_path_str: str | Path, new_chunks: List[Chunk], model_wrapper):
         file_path_str = str(file_path_str)  # must be str, just let people pass either
 
-        # FYI currently update_file only called by didOpen/didSave LSP events...
-        #  so there's no vim_filetype attached (yet? I don't know if I can add that client side?)
-        #  BUT, I don't index extensionless files anyways so NBD, I only allow FIM queries within them to other extension-ful docs of same vim_filetype
         dataset = self.for_file(file_path_str)
         if dataset is None:
             logger.error(f"No dataset for path: {file_path_str}")
