@@ -9,6 +9,14 @@ import numpy as np
 from rich import print
 
 from indexer import IncrementalRAGIndexer
+import indexer
+# FYI! change to model_st + intfloat model that assertions were hardcoded for
+#   BTW if I go back to ST and use diff model I need to make the model name pluggable too in model_st
+#   TODO! how about an explicit method to set the model_wrapper "provider"?
+from lsp import model_st
+#
+indexer.model_wrapper = model_st
+
 from lsp.logs import logging_fwk_to_console
 
 logging_fwk_to_console(logging.WARN)
