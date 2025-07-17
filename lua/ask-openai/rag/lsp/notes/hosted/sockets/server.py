@@ -42,13 +42,13 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
-while True:
+def handle():
     conn, _ = server.accept()
-
     rx_msg = recv_len_then_msg(conn)
     if not rx_msg:
         conn.close()
-        continue
+        return
+
     rx_text = rx_msg['texts']
 
     with Timer() as encode_timer:
@@ -59,3 +59,9 @@ while True:
     conn.close()
 
     rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_timer.elapsed_ms():.3f} ms")
+
+while True:
+    try:
+        handle()
+    except Exception:
+        logger.exception("handle() threw unhandled exception")
