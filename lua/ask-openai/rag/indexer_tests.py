@@ -111,7 +111,7 @@ class TestBuildIndex(unittest.TestCase):
             print(i)
             # PRN verify vectors too?
 
-    def test_encode_and_search_index(self):
+    def test_search_index(self):
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
         self.trash_path(self.dot_rag_dir)
