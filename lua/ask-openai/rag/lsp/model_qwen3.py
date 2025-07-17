@@ -28,10 +28,11 @@ def ensure_model_loaded():
 
 def _encode(texts):
     import torch
+    import numpy as np
 
     # set batch_size high to disable batching if that is better perf on the 5090s
     #   added batching to investigate issues w/ qwen3 on mac w/ ST and the memory explosion (even after disable autograd!)
-    def batched_encode(model, texts, batch_size=8):
+    def batched_encode(texts, batch_size=8):
         all_vecs = []
         with torch.no_grad():
             total = len(texts)
@@ -39,11 +40,11 @@ def _encode(texts):
                 logger.info(f"    batch {i}-{i+batch_size} of {total}")
                 batch = texts[i:i + batch_size]
                 vecs = ensure_model_loaded().encode(batch)
-                all_vecs.append(vecs.cpu())  # move to CPU to free GPU/MPS memory, s/b sub 1ms overhead
+                all_vecs.append(vecs)
 
-        return torch.cat(all_vecs, dim=0)
+        return np.concatenate(all_vecs)
 
-    vecs_np = batched_encode(_model, texts)
+    vecs_np = batched_encode(texts)
     return vecs_np
 
 def encode_passages(passages: list[str]):
