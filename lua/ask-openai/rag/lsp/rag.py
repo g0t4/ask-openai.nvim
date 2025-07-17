@@ -55,18 +55,23 @@ def handle_query(message, model_wrapper, top_k=3):
     # FAISS search (GIL released)
     top_k_padded = top_k * 3
     scores, ids = dataset.index.search(q_vec, top_k_padded)
-    # logger.debug(f'{scores=}')
-    # logger.debug(f'{ids=}')
+
+    logger.pp_debug('scores', scores)
+    logger.pp_debug('ids', ids)
 
     matches = ContextResult()
     for rank, idx in enumerate(ids[0]):
         if len(matches) >= top_k:
+
             break
 
         chunk = datasets.get_chunk_by_faiss_id(idx)
         if chunk is None:
             logger.error(f"Missing chunk for id: {idx}")
             continue
+
+        score = scores[0][rank]
+        logger.pp_debug(f"chunk {score}", chunk)
 
         # TODO capture absolute path in indexer! that way I dont have to rebuild absolute path here?
         chunk_file_abs = chunk.file  # capture abs path, already works
