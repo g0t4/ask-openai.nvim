@@ -191,7 +191,7 @@ def load_prior_data(dot_rag_dir: Path, language_extension: str) -> RAGDataset:
     else:
         logger.info(f"No files.json: {files_json_path}")
 
-    if logger.isEnabledForDebug():
+    if logger.isEnabledForInfo():
         num_chunks = sum(len(v) for v in chunks_by_file.values())
         log_num_vectors = index.ntotal if index is not None else None
         logger.debug(f"Loaded {language_extension} - {len(files_by_path)} file stats, {log_num_vectors} FAISS vectors, {num_chunks} chunks")
