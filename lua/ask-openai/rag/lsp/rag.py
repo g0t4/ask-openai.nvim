@@ -20,6 +20,9 @@ class ContextResult:
     def add(self, match):
         self.matches.append(match)
 
+    def __len__(self):
+        return len(self.matches)
+
 def load_model_and_indexes(dot_rag_dir: Path, model_wrapper):
     global datasets
     datasets = load_all_datasets(dot_rag_dir)
@@ -50,12 +53,16 @@ def handle_query(message, model_wrapper, top_k=3):
 
     q_vec = model_wrapper.encode_query(text)
     # FAISS search (GIL released)
-    scores, ids = dataset.index.search(q_vec, top_k)
+    top_k_padded = top_k * 3
+    scores, ids = dataset.index.search(q_vec, top_k_padded)
     # logger.debug(f'{scores=}')
     # logger.debug(f'{ids=}')
 
     matches = ContextResult()
     for rank, idx in enumerate(ids[0]):
+        if len(matches) >= top_k:
+            break
+
         chunk = datasets.get_chunk_by_faiss_id(idx)
         if chunk is None:
             logger.error(f"Missing chunk for id: {idx}")
@@ -95,7 +102,7 @@ def handle_query(message, model_wrapper, top_k=3):
 
         matches.add(match)
 
-    if len(matches.matches) == 0:
+    if len(matches) == 0:
         # warn if this happens, that all were basically the same doc
         logger.warning(f"No matches found for {current_file_abs=}")
 
