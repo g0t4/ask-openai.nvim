@@ -269,6 +269,11 @@ def main():
     info = "--info" in sys.argv
     level = logging.DEBUG if verbose else (logging.INFO if info else logging.WARNING)
     rebuild = "--rebuild" in sys.argv
+    in_githook = "--githook" in sys.argv
+    if in_githook:
+        # for now bump level to INFO until I get the hooks stabilized (i.e. not running indexer twice)
+        level = logging.INFO
+
 
     logging_fwk_to_console(level)
 
