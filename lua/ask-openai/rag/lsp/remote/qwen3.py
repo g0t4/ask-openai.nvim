@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
 
-from lsp.qwen3.known import get_known_inputs
+from lsp.qwen3.known import get_known_inputs, validate_embeddings
 
 from ..helpers import auto_device
 from ..logs import get_logger, logging_fwk_to_console
@@ -69,20 +69,9 @@ def test_known_embeddings():
     print("TESTING known embeddings from Qwen3 README...")
     input_texts = get_known_inputs()
 
-    # TODO consolidate validation logic too!: into known.py
-
     embeddings, _ = encode(input_texts)
 
-    query_embeddings = embeddings[:2]  # first two are queries
-    passage_embeddings = embeddings[2:]  # last two are documents
-    actual_scores = (query_embeddings @ passage_embeddings.T)
-    from numpy.testing import assert_array_almost_equal
-    expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
-    assert_array_almost_equal(actual_scores, expected_scores, decimal=3)
-
-    print(f'  {actual_scores=}')
-    print(f'  {expected_scores=}')
-    print(f"  [green bold]SCORES LOOK OK")
+    validate_embeddings(embeddings)
 
 if __name__ == "__main__":
     test_known_embeddings()

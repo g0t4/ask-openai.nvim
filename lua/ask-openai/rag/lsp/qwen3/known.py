@@ -19,3 +19,16 @@ def get_known_inputs():
     for i, text in enumerate(input_texts):
         print(f'{i}: {len(text)=}')
     return input_texts
+
+def validate_embeddings(embeddings):
+
+    query_embeddings = embeddings[:2]  # first two are queries
+    passage_embeddings = embeddings[2:]  # last two are documents
+    actual_scores = (query_embeddings @ passage_embeddings.T)
+    from numpy.testing import assert_array_almost_equal
+    expected_scores = [[0.7645568251609802, 0.14142508804798126], [0.13549736142158508, 0.5999549627304077]]
+    assert_array_almost_equal(actual_scores, expected_scores, decimal=3)
+
+    print(f'  {actual_scores=}')
+    print(f'  {expected_scores=}')
+    print(f"  [green bold]SCORES LOOK OK")
