@@ -1,7 +1,7 @@
 import socket
 import msgpack
 import struct
-from lsp.logs import get_logger
+from ..logs import get_logger
 
 logger = get_logger(__name__)
 

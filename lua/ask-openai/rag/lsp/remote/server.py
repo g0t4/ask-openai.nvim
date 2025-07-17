@@ -8,9 +8,9 @@ import socket
 import signal
 import rich
 
-from lsp.notes.hosted.sockets import qwen3
+from . import qwen3
 from lsp.logs import Timer, get_logger, logging_fwk_to_console
-from lsp.notes.hosted.sockets.comms import *
+from .comms import *
 
 print('imports done')
 

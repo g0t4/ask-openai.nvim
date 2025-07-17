@@ -4,8 +4,8 @@ import torch.nn.functional as F
 from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
 
-from lsp.helpers import auto_device
-from lsp.logs import get_logger, logging_fwk_to_console
+from ..helpers import auto_device
+from ..logs import get_logger, logging_fwk_to_console
 
 logger = get_logger(__name__)
 if __name__ == '__main__':

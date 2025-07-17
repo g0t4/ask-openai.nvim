@@ -1,5 +1,5 @@
-from lsp.logs import get_logger, logging_fwk_to_console
-from lsp.notes.hosted.sockets.comms import *
+from ..logs import get_logger, logging_fwk_to_console
+from .comms import *
 
 # time python3 -m lsp.notes.hosted.sockets.client
 
