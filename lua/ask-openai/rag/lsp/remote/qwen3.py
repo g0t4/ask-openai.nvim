@@ -4,6 +4,8 @@ import torch.nn.functional as F
 from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
 
+from lsp.qwen3.known import get_known_inputs
+
 from ..helpers import auto_device
 from ..logs import get_logger, logging_fwk_to_console
 
@@ -69,23 +71,7 @@ def test_known_embeddings():
     from rich import print
     print("TESTING known embeddings from Qwen3 README...")
 
-    # ! test the model config above produces correct embeddings for pre-canned examples
-    # ! taken from the Qwen3 README (had published values)
-    # TODO! can I find more published examples for a test suite to validate my config is correct?
-    # TODO! on startup run some of these tests?
-
-    # Each query must come with a one-sentence instruction that describes the task
-    task = 'Given a web search query, retrieve relevant passages that answer the query'
-    queries = [
-        get_detailed_instruct(task, 'What is the capital of China?'),
-        get_detailed_instruct(task, 'Explain gravity'),
-    ]
-    # No need to add instruction for retrieval documents
-    documents = [
-        "The capital of China is Beijing.",
-        "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
-    ]
-    input_texts = queries + documents
+    input_texts = get_known_inputs()
 
     embeddings, _ = encode(input_texts)
 
