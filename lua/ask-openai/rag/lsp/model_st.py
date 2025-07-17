@@ -87,7 +87,6 @@ def _encode(texts):
 
 def encode_passages(passages: list[str]):
     texts = [f"passage: {p}" for p in passages]
-    # TODO test refactored _encode() shared method:
     return _encode(texts)
 
 def encode_query(text: str):
@@ -96,8 +95,6 @@ def encode_query(text: str):
     return _encode_text(f"query: {text}")
 
 def _encode_text(text: str):
-    # FYI model.encode will encode a list of texts, so just encode a single text
-    # TODO test refactored _encode() shared method:
     return _encode([text])
 
 def get_shape() -> int:
