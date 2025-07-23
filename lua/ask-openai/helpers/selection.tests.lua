@@ -1,7 +1,8 @@
 require('ask-openai.helpers.testing')
 local Selection = require('ask-openai.helpers.selection')
 local should = require('devtools.tests.should')
-local log = require("ask-openai.prediction.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
 
 local test_buffer_number = 0
 local function load_lines(lines)

@@ -1,4 +1,5 @@
-local log = require("ask-openai.prediction.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
 ---@class BufferController
 ---@field buffer_number number
 local BufferController = {}

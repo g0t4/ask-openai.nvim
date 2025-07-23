@@ -1,4 +1,5 @@
-local log = require("ask-openai.prediction.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
 local LastRequest = require("ask-openai.backends.last_request")
 local uv = vim.uv
 

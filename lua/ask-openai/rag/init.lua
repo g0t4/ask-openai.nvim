@@ -1,6 +1,7 @@
 local messages = require("devtools.messages")
 local api = require("ask-openai.api")
-local log = require("ask-openai.prediction.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
 
 
 local M = {}

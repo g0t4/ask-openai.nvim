@@ -10,7 +10,8 @@ function M.get_imports()
     -- and/or take top lines until first blank, up to 10 lines per file?
 
     -- FOR EXAMPLE:
-    --  local log = require("ask-openai.prediction.logger").predictions()
+    --  local log = require("ask-openai.logs.logger").predictions()
+    --  local log = require("ask-openai.logs.logger").predictions()
     -- FYI could just grep files and find a way to flag them as parsed until changed
     -- add some thing like ctags to do this, maybe even use ctags plugins/extension?
 end

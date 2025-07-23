@@ -1,5 +1,6 @@
 local curl = require("ask-openai.backends.curl_streaming")
-local log = require("ask-openai.prediction.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
 
 -- aka "legacy" completions endpoint
 -- no chat history concept

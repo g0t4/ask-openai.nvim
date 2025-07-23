@@ -1,5 +1,6 @@
 local M = {}
-local log = require("ask-openai.prediction.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
 local curl = require("ask-openai.backends.curl_streaming")
 
 -- FYI this is intended for use w/ instruct models

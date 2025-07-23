@@ -1,5 +1,6 @@
 local buffers = require("ask-openai.helpers.buffers")
-local log = require("ask-openai.prediction.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
 local mcp = require("ask-openai.tools.mcp")
 local backend = require("ask-openai.backends.oai_chat")
 local agentica = require("ask-openai.backends.models.agentica")

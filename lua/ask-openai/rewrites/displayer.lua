@@ -1,4 +1,5 @@
-local log = require("ask-openai.prediction.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").predictions()
 local combined = require("devtools.diff.combined")
 local ExtmarksSet = require("ask-openai.rewrites.ExtmarksSet")
 local WindowController = require("ask-openai.rewrites.WindowController")
