@@ -1,4 +1,5 @@
-local log = require('ask-openai.prediction.logger').predictions()
+local log = require('ask-openai.logs.logger').predictions()
+local log = require('ask-openai.logs.logger').predictions()
 
 -- @class ChatThread
 -- @see https://platform.openai.com/docs/api-reference/chat/create
