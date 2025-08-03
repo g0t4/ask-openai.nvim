@@ -27,7 +27,10 @@ def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tenso
         batch_size = last_hidden_states.shape[0]
         return last_hidden_states[torch.arange(batch_size, device=last_hidden_states.device), sequence_lengths]
 
-tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-Embedding-0.6B', padding_side='left')
+# sizes: 0.6B (remember this is big for embeddings), also 4B and 8B
+model_path = 'Qwen/Qwen3-Embedding-0.6B'
+tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side='left')
+
 
 device = auto_device()
 if device.type == 'cuda':
@@ -41,7 +44,7 @@ if device.type == 'cuda':
 else:
     raise ValueError("ONLY setup for CUDA device")
 
-model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', **model_kwargs)
+model = AutoModel.from_pretrained(model_path, **model_kwargs)
 
 logger.debug(f'{model.hf_device_map=}')
 logger.info(f'[red bold] %s', model.device)
