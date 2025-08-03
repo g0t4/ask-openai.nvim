@@ -90,8 +90,13 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
         -- model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :) -- instruct works at random... seems to be a discrepency in published template and what it was actually trained with? (for tool calls)
         -- model = "devstral:24b-small-2505-q4_K_M",
         -- model = "devstral:24b-small-2505-q8_0",
-        -- model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base" # * doing very well
-        model = "huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M",
+        --
+        -- * qwen3 related
+        -- model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base" # VERY HAPPY WITH THIS MODEL FOR CODING TOO!
+        model = "qwen3-coder:30b-a3b-q4_K_M",
+        -- model = "qwen3-coder:30b-a3b-q8_0",
+        -- model = "huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M",
+        --
         -- model = "gemma3:12b-it-q8_0", -- btw -base- does terrible here :)
         -- temperature = 0.2, -- TODO what temp?
         -- PRN limit num_predict?
