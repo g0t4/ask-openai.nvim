@@ -280,12 +280,12 @@ class TestBuildIndex(unittest.TestCase):
         # ?   also update_file => update_file
         # ?   and update_file => indexer
 
-    def tests_update_file_does_not_re_encode_unchanged_chunks():
-        # TODO is this worth the time?
+    def PRN_tests_update_file_does_not_re_encode_unchanged_chunks(self):
+        # PRN? is this worth the time?
         # would be nice not to re-encode them... that is the expensive part
         pass
 
-    def test_timing_of_batch_vs_individual_chunk_encoding():
+    def PRN_test_timing_of_batch_vs_individual_chunk_encoding(self):
         # I suspect batching is a big boost in perf, but I need to understand more before I commit to designs one way or another
         pass
 
