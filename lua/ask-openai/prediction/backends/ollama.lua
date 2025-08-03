@@ -160,7 +160,7 @@ function OllamaFimBackend:body_for()
         builder = function()
             return fim.starcoder2.get_fim_prompt(self)
         end
-    elseif string.find(body.model, "Qwen3-Coder", nil, true) then
+    elseif string.find(body.model, "qwen3-coder", nil, true) then
         -- TODO! verify this is compatible with Qwen2.5-Coder FIM tokens, I believe it is
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
