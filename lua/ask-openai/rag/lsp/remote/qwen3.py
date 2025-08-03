@@ -47,7 +47,7 @@ model_path = 'Qwen/Qwen3-Embedding-0.6B'
 #     raise ValueError("ONLY setup for CUDA device")
 
 # model = AutoModel.from_pretrained(model_path, **model_kwargs)
-llm = Llama.from_pretrained(
+llm06B_f16 = Llama.from_pretrained(
     #
     # * 4B-GGUF:
     # https://huggingface.co/Qwen/Qwen3-Embedding-4B-GGUF/tree/main
@@ -60,8 +60,8 @@ llm = Llama.from_pretrained(
     #
     # * 0.6B-GGUF:
     repo_id="Qwen/Qwen3-Embedding-0.6B-GGUF",
-    # filename="*f16.gguf",  # WORKS!
-    filename="*Q8_0.gguf",  # WORKS! smallest is int8
+    filename="*f16.gguf",  # WORKS!
+    # filename="*Q8_0.gguf",  # WORKS! smallest is int8
     #
     #
     embedding=True,
@@ -70,15 +70,21 @@ llm = Llama.from_pretrained(
     n_gpu_layers=-1,  # put all layers on GPU if built with cuBLAS
     verbose=False,
 )
-
-# FYI use cosine similarity to gauge accuracy of quantized models
-# from sklearn.metrics.pairwise import cosine_similarity
-# cosine_similarity([embedding_orig], [embedding_quant])
+llm06B_q8 = Llama.from_pretrained(
+    repo_id="Qwen/Qwen3-Embedding-0.6B-GGUF",
+    filename="*Q8_0.gguf",  # not quite a match (4B and 8B)
+    #
+    embedding=True,
+    n_ctx=8192,
+    # n_threads=16,
+    n_gpu_layers=-1,  # put all layers on GPU if built with cuBLAS
+    verbose=False,
+)
 
 # logger.debug(f'{model.hf_device_map=}')
 # logger.info(f'[red bold] %s', model.device)
 
-def encode(input_texts):
+def encode(input_texts, model):
 
     # * one at a time, not batched... WORKING
     # vectors = []
@@ -97,7 +103,7 @@ def encode(input_texts):
     # * batched: WORKING ***! BUT under the hood it is NOT batched, it is one at a time AFAICT:
     # FYI! I would need to do perf testing to see impact, and most likely I need batching to make this comparable in performance for even f16
     # https://github.com/abetlen/llama-cpp-python/blob/main/llama_cpp/llama.py#L1077C4-L1081C42
-    vectors = [np.array(llm.embed(text)) for text in input_texts]
+    vectors = [np.array(model.embed(text)) for text in input_texts]
     final = []
     for v in vectors:
         result = v
@@ -126,14 +132,37 @@ def encode(input_texts):
     #     norm = F.normalize(embeddings, p=2, dim=1).cpu().numpy()
     #     return norm, batch_args['input_ids']
 
+from sklearn.metrics.pairwise import cosine_similarity
+
+def check_cosine_similarity():
+    # TODO! use cosine similarity to gauge accuracy of quantized models
+
+    input_texts = get_known_inputs()
+    embeddings_06B_f16, _ = encode(input_texts, llm06B_f16)
+    embeddings06B_q8, _ = encode(input_texts, llm06B_q8)
+
+    zipped_embeddings = list(zip(embeddings_06B_f16, embeddings06B_q8))
+
+    # Example: Compute cosine similarity for each pair
+    from sklearn.metrics.pairwise import cosine_similarity
+    import numpy as np
+
+    for i, (emb1, emb2) in enumerate(zipped_embeddings):
+        # Reshape to 2D arrays for cosine_similarity
+        emb1_2d = np.array(emb1).reshape(1, -1)
+        emb2_2d = np.array(emb2).reshape(1, -1)
+
+        similarity = cosine_similarity(emb1_2d, emb2_2d)[0][0]
+        print(f"Pair {i}: Cosine Similarity = {similarity:.4f}")
+
 def test_known_embeddings():
     from rich import print
 
     print("TESTING known embeddings from Qwen3 README...")
-    input_texts = get_known_inputs()
-    embeddings, _ = encode(input_texts)
-    verify_known_embeddings(embeddings)
-    llm.__del__()  # else unhandled exception during shutdown
+    # verify_known_embeddings(embeddings)
+    check_cosine_similarity()
+    llm06B_q8.__del__()  # else unhandled exception during shutdown
+    llm06B_f16.__del__()  # else unhandled exception during shutdown
 
 if __name__ == "__main__":
     test_known_embeddings()
