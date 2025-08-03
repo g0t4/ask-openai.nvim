@@ -51,17 +51,17 @@ llm = Llama.from_pretrained(
     #
     # * 4B-GGUF:
     # https://huggingface.co/Qwen/Qwen3-Embedding-4B-GGUF/tree/main
-    repo_id="Qwen/Qwen3-Embedding-4B-GGUF",
-    filename="*f16.gguf",  # not quite a match (4B)
+    # repo_id="Qwen/Qwen3-Embedding-4B-GGUF",
+    # filename="*f16.gguf",  # not quite a match (4B)
     # filename="*Q8_0.gguf",  # not quite a match (4B and 8B)
     #  also Q5_0, Q5_K_M, Q6_K
     # filename="*Q4_K_M.gguf",  # TODO not yet tested
     #
     #
     # * 0.6B-GGUF:
-    # repo_id="Qwen/Qwen3-Embedding-0.6B-GGUF",
-    # # filename="*f16.gguf",  # WORKS!
-    # filename="*Q8_0.gguf",  # WORKS! smallest is int8
+    repo_id="Qwen/Qwen3-Embedding-0.6B-GGUF",
+    # filename="*f16.gguf",  # WORKS!
+    filename="*Q8_0.gguf",  # WORKS! smallest is int8
     #
     #
     embedding=True,
