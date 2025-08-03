@@ -51,7 +51,8 @@ llm = Llama.from_pretrained(
     repo_id="Qwen/Qwen3-Embedding-0.6B-GGUF",
     # TODO later test q8 if fp16 has passing tests
     # only q8 and f16
-    filename="*f16.gguf",  # try fp16 first to minimize chance of precision losses in tests
+    # filename="*f16.gguf",  # WORKS!
+    filename="*Q8_0.gguf",  # WORKS!
     embedding=True,
     n_ctx=8192,
     # n_threads=16,
@@ -83,6 +84,7 @@ def encode(input_texts):
     # return np.stack(vectors), None
 
     # * batched: WORKING ***! BUT under the hood it is NOT batched, it is one at a time AFAICT:
+    # FYI! I would need to do perf testing to see impact, and most likely I need batching to make this comparable in performance for even f16
     # https://github.com/abetlen/llama-cpp-python/blob/main/llama_cpp/llama.py#L1077C4-L1081C42
     vectors = [np.array(llm.embed(text)) for text in input_texts]
     final = []
