@@ -30,7 +30,8 @@ def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tenso
 # sizes: 0.6B (remember this is big for embeddings), also 4B and 8B
 model_path = 'Qwen/Qwen3-Embedding-0.6B'
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side='left')
-
+# 'Qwen/Qwen3-Embedding-0.6B-GGUF'  # use w/ llama-cpp-python? instead of transformers?
+#  NOTE right now you are doing fine w/ 0.6B full precision ... stick with it for now
 
 device = auto_device()
 if device.type == 'cuda':
