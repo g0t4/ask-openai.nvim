@@ -48,11 +48,22 @@ model_path = 'Qwen/Qwen3-Embedding-0.6B'
 
 # model = AutoModel.from_pretrained(model_path, **model_kwargs)
 llm = Llama.from_pretrained(
-    repo_id="Qwen/Qwen3-Embedding-0.6B-GGUF",
-    # TODO later test q8 if fp16 has passing tests
-    # only q8 and f16
-    # filename="*f16.gguf",  # WORKS!
-    filename="*Q8_0.gguf",  # WORKS!
+    #
+    # * 4B-GGUF:
+    # https://huggingface.co/Qwen/Qwen3-Embedding-4B-GGUF/tree/main
+    repo_id="Qwen/Qwen3-Embedding-4B-GGUF",
+    filename="*f16.gguf",  # not quite a match (4B)
+    # filename="*Q8_0.gguf",  # not quite a match (4B and 8B)
+    #  also Q5_0, Q5_K_M, Q6_K
+    # filename="*Q4_K_M.gguf",  # TODO not yet tested
+    #
+    #
+    # * 0.6B-GGUF:
+    # repo_id="Qwen/Qwen3-Embedding-0.6B-GGUF",
+    # # filename="*f16.gguf",  # WORKS!
+    # filename="*Q8_0.gguf",  # WORKS! smallest is int8
+    #
+    #
     embedding=True,
     n_ctx=8192,
     # n_threads=16,
@@ -122,7 +133,7 @@ def test_known_embeddings():
     input_texts = get_known_inputs()
     embeddings, _ = encode(input_texts)
     verify_known_embeddings(embeddings)
-    llm.__del__() # else unhandled exception during shutdown
+    llm.__del__()  # else unhandled exception during shutdown
 
 if __name__ == "__main__":
     test_known_embeddings()
