@@ -1,7 +1,6 @@
 local messages = require("devtools.messages")
 local ctags = require("ask-openai.prediction.context.ctags")
 local log = require("ask-openai.logs.logger").predictions()
-local log = require("ask-openai.logs.logger").predictions()
 local ContextItem = require("ask-openai.prediction.context.item")
 
 -- TODO what about context based on the current statement/expression...

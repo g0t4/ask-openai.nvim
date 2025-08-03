@@ -11,7 +11,6 @@ function M.get_imports()
 
     -- FOR EXAMPLE:
     --  local log = require("ask-openai.logs.logger").predictions()
-    --  local log = require("ask-openai.logs.logger").predictions()
     -- FYI could just grep files and find a way to flag them as parsed until changed
     -- add some thing like ctags to do this, maybe even use ctags plugins/extension?
 end

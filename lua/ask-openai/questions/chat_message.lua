@@ -1,5 +1,4 @@
 local log = require('ask-openai.logs.logger').predictions()
-local log = require('ask-openai.logs.logger').predictions()
 local ansi = require('ask-openai.prediction.ansi')
 
 ---@class ChatMessage

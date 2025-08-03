@@ -1,5 +1,4 @@
 local log = require("ask-openai.logs.logger").predictions()
-local log = require("ask-openai.logs.logger").predictions()
 
 ---This entire class operates on 0-indexed row and column positions
 ---   or if that seems wrong I'll go to all 1-indexed

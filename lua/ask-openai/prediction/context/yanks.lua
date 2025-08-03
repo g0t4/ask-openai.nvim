@@ -1,6 +1,5 @@
 local ContextItem = require("ask-openai.prediction.context.item")
 local log = require('ask-openai.logs.logger').predictions()
-local log = require('ask-openai.logs.logger').predictions()
 local messages = require("devtools.messages")
 
 -- for now, don't try to track external clipboard copies

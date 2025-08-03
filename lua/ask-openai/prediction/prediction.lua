@@ -2,7 +2,6 @@ local Prediction = {}
 local uv = vim.uv
 
 local log = require("ask-openai.logs.logger").predictions()
-local log = require("ask-openai.logs.logger").predictions()
 
 local hlgroup = "AskPrediction"
 

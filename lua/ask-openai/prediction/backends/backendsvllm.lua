@@ -1,6 +1,5 @@
 local M = {}
 local log = require("ask-openai.logs.logger").predictions()
-local log = require("ask-openai.logs.logger").predictions()
 
 local function body_for(prefix, suffix, _recent_edits)
     local body = {

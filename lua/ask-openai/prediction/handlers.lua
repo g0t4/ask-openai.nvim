@@ -18,8 +18,6 @@ M.current_prediction = nil -- set on module for now, just so I can inspect it ea
 -- FYI useful to observe what is happening under hood, run in pane below nvim (don't need to esc and look at :messages)
 --    tail -f /Users/wesdemos/.local/share/nvim/ask-openai/ask-predictions.log
 local log = require("ask-openai.logs.logger").predictions()
-local log = require("ask-openai.logs.logger").predictions()
-
 
 function M.get_line_range(current_row, allow_lines, total_lines_in_doc)
     -- FYI do not adjust for 0/1-indexed, assume all of these are in same 0/1-index

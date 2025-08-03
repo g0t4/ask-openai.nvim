@@ -1,5 +1,4 @@
 local log = require("ask-openai.logs.logger").predictions()
-local log = require("ask-openai.logs.logger").predictions()
 local uv = vim.uv
 
 local M = {}
