@@ -1,6 +1,6 @@
 from pathlib import Path
 import sys
-from indexer import load_prior_data
+from lsp.storage import load_prior_data, load_all_datasets
 from lsp.logs import get_logger, logging_fwk_to_console
 import faiss
 import numpy as np
@@ -12,29 +12,38 @@ logger = get_logger(__name__)
 logging_fwk_to_console(level="DEBUG")
 
 rag_dir = Path(sys.argv[1])
-dataset = load_prior_data(rag_dir, "py")
+datasets = load_all_datasets(rag_dir)
 
-print(f"{dataset.index.ntotal=}")
-# print(f"{dataset.chunks_by_file.keys()=}")
-# print(f"{dataset.stat_by_path.keys()=}")
+def error_duplicate_id(id):
+    logger.error(f"Duplicate ID found: {id}")
+    # chunk =
 
-ids = faiss.vector_to_array(dataset.index.id_map)
+    sys.exit(1)
 
-# * test for duplicate IDs
-# test duplicate logic:
-#   ids = np.append(ids, ids[-1])
-#
-duplicates = set()
-for id in sorted(ids):
-    if id in duplicates:
-        logger.error(f"ERROR - FOUND DUPLICATE ID {id}")
-        break
-    duplicates.add(id)
+for dataset in datasets.all_datasets.values():
+    # print(f"{dataset=}")
 
-# * compare # vectors to # IDs
-if len(ids) != dataset.index.ntotal:
-    print(f"{len(ids)=}")
     print(f"{dataset.index.ntotal=}")
-    logger.error(f"ERROR - VECTORS COUNT DOES NOT MATCH ID COUNTS")
+    # print(f"{dataset.chunks_by_file.keys()=}")
+    # print(f"{dataset.stat_by_path.keys()=}")
 
-# TODO find a way to verify the vectors "make sense"... relative to ID map...
+    ids = faiss.vector_to_array(dataset.index.id_map)
+
+    # * test for duplicate IDs
+    # test duplicate logic:
+    #   ids = np.append(ids, ids[-1])
+    #
+    duplicates = set()
+    for id in sorted(ids):
+        if id in duplicates:
+            error_duplicate_id(id)
+            break
+        duplicates.add(id)
+
+    # * compare # vectors to # IDs
+    if len(ids) != dataset.index.ntotal:
+        print(f"{len(ids)=}")
+        print(f"{dataset.index.ntotal=}")
+        logger.error(f"ERROR - VECTORS COUNT DOES NOT MATCH ID COUNTS")
+
+    # TODO find a way to verify the vectors "make sense"... relative to ID map...
