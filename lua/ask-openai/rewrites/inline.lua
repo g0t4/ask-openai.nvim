@@ -235,6 +235,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
                 end)
         end
         if enable_rag and rag_matches ~= nil and rag_matches.count > 0 then
+            -- TODO how should this be presented?
             rag_message_parts = {}
             if rag_matches.count == 1 then
                 heading = "# RAG query match: \n"
