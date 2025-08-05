@@ -166,6 +166,8 @@ end
 
 function M.stream_from_ollama(user_prompt, code, file_name)
     M.abort_last_request()
+
+    -- local enable_rag = false
     local enable_rag = api.is_rag_enabled()
 
     -- TODO if markdown is file type then strip out the markdown prohibition?
