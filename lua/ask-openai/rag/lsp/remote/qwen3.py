@@ -28,7 +28,7 @@ def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tenso
         return last_hidden_states[torch.arange(batch_size, device=last_hidden_states.device), sequence_lengths]
 
 # sizes: 0.6B (remember this is big for embeddings), also 4B and 8B
-model_path = 'Qwen/Qwen3-Embedding-8B'
+model_path = 'Qwen/Qwen3-Embedding-4B'
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side='left')
 
 
