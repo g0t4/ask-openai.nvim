@@ -2,6 +2,8 @@ from pathlib import Path
 import sys
 from indexer import load_prior_data
 from lsp.logs import get_logger, logging_fwk_to_console
+import faiss
+import numpy as np
 
 # usage:
 #   python3 -m index.inspecter $(_repo_root)/.rag
@@ -16,3 +18,15 @@ print(f"{dataset.index.ntotal=}")
 print(f"{dataset.chunks_by_file.keys()=}")
 print(f"{dataset.stat_by_path.keys()=}")
 
+ids = faiss.vector_to_array(dataset.index.id_map)
+
+# * test for duplicate IDs
+# test duplicate logic:
+#   ids = np.append(ids, ids[-1])
+#
+duplicates = set()
+for id in sorted(ids):
+    if id in duplicates:
+        logger.error(f"ERROR - FOUND DUPLICATE ID {id}")
+        break
+    duplicates.add(id)
