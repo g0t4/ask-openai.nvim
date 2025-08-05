@@ -234,6 +234,27 @@ function M.stream_from_ollama(user_prompt, code, file_name)
                     table.insert(messages, ChatMessage:user(value.content))
                 end)
         end
+        if enable_rag and rag_matches ~= nil and rag_matches.count > 0 then
+            rag_message_parts = {}
+            if rag_matches.count == 1 then
+                heading = "# RAG query match: \n"
+            elseif rag_matches.count > 1 then
+                heading = "# RAG query matches: " .. rag_matches.count .. "\n"
+            end
+            table.insert(rag_message_parts, heading)
+            vim.iter(rag_matches)
+                :each(function(chunk)
+                    -- FYI this comes from embeddings query results... so the structure is different than other context providers
+                    -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
+                    local file = chunk.file .. ":" .. chunk.start_line .. "-" .. chunk.end_line
+                    local code_chunk = chunk.text
+                    table.insert(rag_message_parts,
+                        "## " .. file .. "\n"
+                        .. code_chunk .. "\n"
+                    )
+                end)
+            table.insert(messages, ChatMessage:user(table.concat(rag_message_parts, "\n")))
+        end
 
         table.insert(messages, ChatMessage:user(user_message_with_code))
 
