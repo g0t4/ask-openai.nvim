@@ -214,67 +214,67 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         -- TODO move all message building in here OR insert the messages into body.messages
         -- body.messages ...
 
-    local messages = {
-        { role = "system", content = system_prompt }
-    }
+        local messages = {
+            { role = "system", content = system_prompt }
+        }
 
-    -- PRN should I just have all of this in a single user message?
-    --  are models trained on multiple user messages at a time?
-    if context.includes.yanks and context.yanks then
-        table.insert(messages, ChatMessage:user(context.yanks.content))
-    end
-    if context.includes.commits and context.commits then
-        for _, commit in pairs(context.commits) do
-            table.insert(messages, ChatMessage:user(commit.content))
+        -- PRN should I just have all of this in a single user message?
+        --  are models trained on multiple user messages at a time?
+        if context.includes.yanks and context.yanks then
+            table.insert(messages, ChatMessage:user(context.yanks.content))
         end
-    end
-    if context.includes.project and context.project then
-        vim.iter(context.project)
-            :each(function(value)
-                table.insert(messages, ChatMessage:user(value.content))
-            end)
-    end
+        if context.includes.commits and context.commits then
+            for _, commit in pairs(context.commits) do
+                table.insert(messages, ChatMessage:user(commit.content))
+            end
+        end
+        if context.includes.project and context.project then
+            vim.iter(context.project)
+                :each(function(value)
+                    table.insert(messages, ChatMessage:user(value.content))
+                end)
+        end
 
-    table.insert(messages, ChatMessage:user(user_message_with_code))
+        table.insert(messages, ChatMessage:user(user_message_with_code))
 
-    local qwen_chat_body = {
-        messages = messages,
-        --
-        -- model = "qwen2.5-coder:7b-instruct-q8_0",
-        --
-        -- * qwen3 related
-        -- model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base" # VERY HAPPY WITH THIS MODEL FOR CODING TOO!
-        model = "qwen3-coder:30b-a3b-q4_K_M",
-        -- model = "qwen3-coder:30b-a3b-q8_0",
-        -- model = "huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M",
-        --
-        -- model = "deepseek-r1:8b-0528-qwen3-q8_0", -- /nothink doesn't work :(
-        --
-        -- model = "gemma3:12b-it-q8_0",
-        max_tokens = 8192, -- TODO set high if using /think only?
-        temperature = 0.2,
-        -- ?? do I need num_ctx (can't recall why I set it - check predicitons code)
-        -- options = {
-        --     num_ctx = 8192
+        local qwen_chat_body = {
+            messages = messages,
+            --
+            -- model = "qwen2.5-coder:7b-instruct-q8_0",
+            --
+            -- * qwen3 related
+            -- model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base" # VERY HAPPY WITH THIS MODEL FOR CODING TOO!
+            model = "qwen3-coder:30b-a3b-q4_K_M",
+            -- model = "qwen3-coder:30b-a3b-q8_0",
+            -- model = "huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M",
+            --
+            -- model = "deepseek-r1:8b-0528-qwen3-q8_0", -- /nothink doesn't work :(
+            --
+            -- model = "gemma3:12b-it-q8_0",
+            max_tokens = 8192, -- TODO set high if using /think only?
+            temperature = 0.2,
+            -- ?? do I need num_ctx (can't recall why I set it - check predicitons code)
+            -- options = {
+            --     num_ctx = 8192
+            -- }
+        }
+
+        -- local qwen_legacy_body = {
+        --     model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
+        --     prompt = system_prompt .. "\n" .. user_message,
+        --     temperature = 0.2,
         -- }
-    }
 
-    -- local qwen_legacy_body = {
-    --     model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
-    --     prompt = system_prompt .. "\n" .. user_message,
-    --     temperature = 0.2,
-    -- }
+        -- /v1/chat/completions
+        -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
+        local body = qwen_chat_body
 
-    -- /v1/chat/completions
-    -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
-    local body = qwen_chat_body
+        -- /v1/completions
+        -- local body = qwen_legacy_body
 
-    -- /v1/completions
-    -- local body = qwen_legacy_body
-
-    -- vllm or ollama:
-    -- local base_url = "http://build21:8000"
-    local base_url = "http://ollama:11434"
+        -- vllm or ollama:
+        -- local base_url = "http://build21:8000"
+        local base_url = "http://ollama:11434"
 
 
         M.last_request = backend.curl_for(body, base_url, M)
