@@ -38,7 +38,8 @@ def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tenso
 # FFS on MPS: left padding fails, but right padding works...
 #     on CUDA: both left and right padding work?!
 #     as in include/remove the padding_side="left"
-tokenizer = AutoTokenizer.from_pretrained('Qwen/Qwen3-Embedding-0.6B', padding_side='left')
+model_path = 'Qwen/Qwen3-Embedding-0.6B'
+tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side='left')
 
 device = auto_device()
 
@@ -54,7 +55,7 @@ elif device.type == 'cuda':
 else:
     raise ValueError("DEVICE should be CUDA/MPS... but is {device.type}")
 
-model = AutoModel.from_pretrained('Qwen/Qwen3-Embedding-0.6B', **model_kwargs).to(device)
+model = AutoModel.from_pretrained(model_path, **model_kwargs).to(device)
 
 logger.info(f"{model.device=}")
 
