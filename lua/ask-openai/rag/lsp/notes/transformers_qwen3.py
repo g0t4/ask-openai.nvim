@@ -94,7 +94,7 @@ def encode(input_texts):
 def main():
     input_texts = get_known_inputs()
     embeddings = encode(input_texts)
-    verify_known_embeddings(embeddings)
+    verify_known_embeddings(embeddings, model_path)
 
 if __name__ == "__main__":
     main()

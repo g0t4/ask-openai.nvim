@@ -49,4 +49,4 @@ for e in rx_embeddings:
 # ** validate scores
 import numpy as np
 
-verify_known_embeddings(np.array(rx_embeddings))
+verify_known_embeddings(np.array(rx_embeddings), "Qwen/Qwen3-Embedding-0.6B")
