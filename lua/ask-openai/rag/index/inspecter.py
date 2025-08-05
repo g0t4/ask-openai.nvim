@@ -3,6 +3,9 @@ import sys
 from indexer import load_prior_data
 from lsp.logs import get_logger, logging_fwk_to_console
 
+# usage:
+#   python3 -m index.inspecter $(_repo_root)/.rag
+
 logger = get_logger(__name__)
 logging_fwk_to_console(level="DEBUG")
 
