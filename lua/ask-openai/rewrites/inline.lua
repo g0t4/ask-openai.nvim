@@ -203,6 +203,17 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     user_message_with_code = user_prompt .. "\n" .. code_context
     log:info("user_message_with_code: '" .. user_message_with_code .. "'")
 
+    local function send_rewrite(rag_matches)
+        -- TODO wire up canceling of RAG if user cancels request
+        if enable_rag and rag_matches ~= nil and M.rag_cancel == nil then
+            log:error("rag_cancel is nil, assuming RAG was canceled") -- should be rare, but possible
+            return
+        end
+
+        -- TODO add in parsing of RAG matches and then call rewrite like normal:
+        -- TODO move all message building in here OR insert the messages into body.messages
+        -- body.messages ...
+
     local messages = {
         { role = "system", content = system_prompt }
     }
@@ -265,8 +276,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     -- local base_url = "http://build21:8000"
     local base_url = "http://ollama:11434"
 
-    local function send_rewrite()
-        -- TODO add in parsing of RAG matches and then call rewrite like normal:
+
         M.last_request = backend.curl_for(body, base_url, M)
     end
 
@@ -278,6 +288,8 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         log:trace("RAG request ids: ", vim.inspect(request_ids))
         log:trace("RAG cancel: ", cancel)
     else
+        M.rag_cancel = nil
+        M.rag_request_ids = nil
         -- PRN add a promise fwk in here
         send_rewrite()
     end
