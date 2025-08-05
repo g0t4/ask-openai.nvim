@@ -266,7 +266,8 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     local base_url = "http://ollama:11434"
 
     local function send_rewrite()
-        -- M.last_request = backend.curl_for(body, base_url, M)
+        -- TODO add in parsing of RAG matches and then call rewrite like normal:
+        M.last_request = backend.curl_for(body, base_url, M)
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
