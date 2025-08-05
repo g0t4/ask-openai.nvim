@@ -1,7 +1,7 @@
 # Branches
 
-- https://github.com/g0t4/ask-openai.nvim/tree/feat-predictions is where all the magic is happening for predictions, inline rewrites, tool use, RAG, etc
-- https://github.com/g0t4/ask-openai.nvim/tree/master (this branch) is the original ask a question in vim's cmdline feature
+- [feat-predictions](https://github.com/g0t4/ask-openai.nvim/tree/feat-predictions) is where all the magic is happening for predictions, inline rewrites, tool use, RAG, etc
+- [master](https://github.com/g0t4/ask-openai.nvim/tree/master) (this branch) is the original ask a question in vim's cmdline feature
 
 # Ask a Question Feature docs:
 https://github.com/user-attachments/assets/aa03e773-dcef-4e8d-9c94-e341f4f3f7fc
