@@ -34,7 +34,7 @@ local function fim_concat(prefix, suffix, limit)
     local short_prefix = prefix:sub(-half)
     local short_suffix = suffix:sub(1, half)
 
-    return short_prefix .. "\n<<<FIM>>>\n" .. short_suffix
+    return short_prefix .. "<<<FIM>>>" .. short_suffix
 end
 
 function M.context_query_rewrites(user_prompt, code_context, callback)
