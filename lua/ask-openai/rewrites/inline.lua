@@ -195,7 +195,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     local user_prompt = context.cleaned_prompt
     local code_context = ""
     if code ~= nil and code ~= "" then
-        code_context = "\n Here is my code from " .. file_name
+        code_context = "Here is my code from " .. file_name
             .. ":\n" .. code
     else
         code_context = "I am working on this file: " .. file_name
