@@ -30,3 +30,11 @@ for id in sorted(ids):
         logger.error(f"ERROR - FOUND DUPLICATE ID {id}")
         break
     duplicates.add(id)
+
+# * compare # vectors to # IDs
+if len(ids) != dataset.index.ntotal:
+    print(f"{len(ids)=}")
+    print(f"{dataset.index.ntotal=}")
+    logger.error(f"ERROR - VECTORS COUNT DOES NOT MATCH ID COUNTS")
+
+# TODO find a way to verify the vectors "make sense"... relative to ID map...
