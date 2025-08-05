@@ -3,7 +3,7 @@ local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
 local CurrentContext = require("ask-openai.prediction.context")
 local ansi = require("ask-openai.prediction.ansi")
-local rag = require("ask-openai.rag.fim")
+local rag_client = require("ask-openai.rag.client")
 local api = require("ask-openai.api")
 
 local OllamaFimBackend = require("ask-openai.prediction.backends.ollama")
@@ -182,9 +182,9 @@ function M.ask_for_prediction()
         uv.read_start(stderr, spawn_curl_options.on_stderr)
     end
 
-    if enable_rag and rag.is_rag_supported() then
+    if enable_rag and rag_client.is_rag_supported_in_current_file() then
         local request_ids, cancel =
-            rag.query_rag_via_lsp(document_prefix, document_suffix, send_fim)
+            rag_client.context_query_fim(document_prefix, document_suffix, send_fim)
         M.rag_cancel = cancel
         M.rag_request_ids = request_ids
         log:trace("RAG request ids: ", vim.inspect(request_ids))

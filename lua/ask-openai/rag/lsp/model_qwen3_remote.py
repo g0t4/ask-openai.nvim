@@ -1,6 +1,8 @@
 from .logs import get_logger
 from .qwen3 import known
 
+# FYI! IIRC this is the most recent alterantive to model_qwen3 in-process and model_st w/ intfloat/qwen3 via SentenceTransformers
+
 logger = get_logger(__name__)
 
 def ensure_model_loaded():
@@ -10,7 +12,7 @@ def ensure_model_loaded():
 
     # FYI client opens a socket so still useful to defer until needed
 
-def _encode(texts):
+def _encode_multiple(texts):
     import numpy as np
     from lsp.remote.comms import EmbedClient
 
@@ -39,31 +41,30 @@ def _encode(texts):
     return vecs_np
 
 def encode_passages(passages: list[str]):
-    texts = [f"passage: {p}" for p in passages]
-    return _encode(texts)
+    # FYI Qwen3 has NO passage/document label, only query side has Query:/Instruct:
+    return _encode_multiple(passages)
 
-def encode_query(text: str):
-    # "query: text" is the training query format
-    # "passage: text" is the training document format
-    return _encode_text(f"query: {text}")
+def encode_query(text: str, instruct: str):
+    return _encode_one_text(qwen3_format_query(text, instruct))
 
-def _encode_text(text: str):
-    return _encode([text])
+def _encode_one_text(text: str):
+    return _encode_multiple([text])
+
+def qwen3_format_query(text: str, instruct: str) -> str:
+    if instruct:
+        return f'Instruct: {instruct}\nQuery:{text}'
+    return f"Query: {text}"
 
 def get_shape() -> int:
     # Create a dummy vector to get dimensions
     sample_text = "passage: sample"
-    sample_vec = _encode_text(sample_text)
+    sample_vec = _encode_one_text(sample_text)
     shape = sample_vec.shape[1]
     return shape
 
-def get_detailed_instruct(task_description: str, query: str) -> str:
-    # *** INSTRUCTION!
-    return f'Instruct: {task_description}\nQuery:{query}'
-
 def test_known_embeddings():
     input_texts = known.get_known_inputs()
-    embeddings = _encode(input_texts)
+    embeddings = _encode_multiple(input_texts)
     known.verify_known_embeddings(embeddings, "Qwen/Qwen3-Embedding-0.6B")
 
 if __name__ == "__main__":

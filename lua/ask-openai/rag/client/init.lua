@@ -18,7 +18,7 @@ local function check_supported_dirs()
 end
 check_supported_dirs()
 
-function M.is_rag_supported()
+function M.is_rag_supported_in_current_file()
     if not M.is_rag_indexed_workspace then
         return false
     end
@@ -37,17 +37,30 @@ local function fim_concat(prefix, suffix, limit)
     return short_prefix .. "\n<<<FIM>>>\n" .. short_suffix
 end
 
-function M.query_rag_via_lsp(document_prefix, document_suffix, callback)
-    local query = fim_concat(document_prefix, document_suffix)
+function M.context_query_rewrites(user_prompt, code_context, callback)
+    -- FYI use user message for now as Instruct and selected code as the Query
+    -- local rewrite_instruct = "Modify the code as requested"
+    local query = code_context
+    local instruct = user_prompt
+    return M._context_query(query, instruct, callback)
+end
 
+function M.context_query_fim(document_prefix, document_suffix, callback)
+    local fim_specific_instruct = "Complete the missing portion of code (FIM) based on the surrounding context (Fill-in-the-middle)"
+    local query = fim_concat(document_prefix, document_suffix)
+    return M._context_query(query, fim_specific_instruct, callback)
+end
+
+function M._context_query(query, instruct, callback)
     local message = {
         text = query,
+        instruct = instruct, -- let the server side handle whether or not to include instructions and errors
         current_file_absolute_path = files.get_current_file_absolute_path(),
         vim_filetype = vim.bo.filetype,
     }
 
     local _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", {
-        command = "context.fim.query",
+        command = "context.query",
         -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
         arguments = { message },
     }, function(err, result)

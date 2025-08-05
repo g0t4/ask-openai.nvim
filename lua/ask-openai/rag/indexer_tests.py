@@ -120,7 +120,7 @@ class TestBuildIndex(unittest.TestCase):
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, model_wrapper)
         indexer.build_index(language_extension="lua")
 
-        q = model_wrapper._encode_text("hello")
+        q = model_wrapper._encode_one_text("hello")
         self.assertEqual(q.shape, (1, 768))
 
         index = self.get_vector_index()

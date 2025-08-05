@@ -10,6 +10,9 @@ local Displayer = require("ask-openai.rewrites.displayer")
 local CurrentContext = require("ask-openai.prediction.context")
 local ChatMessage = require("ask-openai.questions.chat_message")
 local files = require("ask-openai.helpers.files")
+local api = require("ask-openai.api")
+local rag_client = require("ask-openai.rag.client")
+
 
 local M = {}
 
@@ -163,6 +166,7 @@ end
 
 function M.stream_from_ollama(user_prompt, code, file_name)
     M.abort_last_request()
+    local enable_rag = api.is_rag_enabled()
 
     -- TODO if markdown is file type then strip out the markdown prohibition?
     local markdown_exclusion = "You DO NOT wrap answers in markdown code blocks. "
@@ -188,18 +192,16 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     -- log:info("includes: '" .. vim.inspect(context.includes) .. "'")
 
     -- make sure to remove slash commands like /yanks (hence cleaned_prompt)
-    local user_message = context.cleaned_prompt
+    local user_prompt = context.cleaned_prompt
+    local code_context = ""
     if code ~= nil and code ~= "" then
-        user_message = user_message
-            -- PRN move code selection to the CurrentContext type?
-            .. "\n Here is my code from " .. file_name
+        code_context = "\n Here is my code from " .. file_name
             .. ":\n" .. code
-        log:info("user_message: '" .. user_message .. "'")
     else
-        -- PRN detect if punctuation on end of user_message
-        user_message = user_message
-            .. "\n I am working on this file: " .. file_name
+        code_context = "I am working on this file: " .. file_name
     end
+    user_message_with_code = user_prompt .. "\n" .. code_context
+    log:info("user_message_with_code: '" .. user_message_with_code .. "'")
 
     local messages = {
         { role = "system", content = system_prompt }
@@ -222,7 +224,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             end)
     end
 
-    table.insert(messages, ChatMessage:user(user_message))
+    table.insert(messages, ChatMessage:user(user_message_with_code))
 
     local qwen_chat_body = {
         messages = messages,
@@ -263,7 +265,21 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     -- local base_url = "http://build21:8000"
     local base_url = "http://ollama:11434"
 
-    M.last_request = backend.curl_for(body, base_url, M)
+    local function send_rewrite()
+        -- M.last_request = backend.curl_for(body, base_url, M)
+    end
+
+    if enable_rag and rag_client.is_rag_supported_in_current_file() then
+        local request_ids, cancel =
+            rag_client.context_query_rewrites(user_prompt, code_context, send_rewrite)
+        M.rag_cancel = cancel
+        M.rag_request_ids = request_ids
+        log:trace("RAG request ids: ", vim.inspect(request_ids))
+        log:trace("RAG cancel: ", cancel)
+    else
+        -- PRN add a promise fwk in here
+        send_rewrite()
+    end
 end
 
 M.stop_streaming = false

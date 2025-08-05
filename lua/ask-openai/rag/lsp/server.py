@@ -130,13 +130,13 @@ def doc_changed(params: types.DidChangeTextDocumentParams):
     # FYI would use this to invalidate internal caches and rebuild for a given file, i.e. imports, RAG vectors, etc
     #   rebuild on git commit + incremental updates s/b super fast?
 
-@server.command("context.fim.query")
+@server.command("context.query")
 def rag_query(_: LanguageServer, params: types.ExecuteCommandParams):
     if fs.is_no_rag_dir():
         return
 
     if params is None or params[0] is None:
-        logger.error(f"aborting ask.rag.fim.query b/c missing params {params}")
+        logger.error(f"aborting context.query b/c missing params {params}")
         return
 
     message = params[0]

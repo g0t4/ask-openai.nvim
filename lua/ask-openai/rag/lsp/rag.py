@@ -51,7 +51,9 @@ def handle_query(message, model_wrapper, top_k=3):
     #     can I limit initial query to skip by id of chunks in same file?
     #  PRN later, add RE-RANK!
 
-    q_vec = model_wrapper.encode_query(text)
+    instruct = message.get("instruct")
+
+    q_vec = model_wrapper.encode_query(text, instruct)
     # FAISS search (GIL released)
     top_k_padded = top_k * 3
     scores, ids = dataset.index.search(q_vec, top_k_padded)

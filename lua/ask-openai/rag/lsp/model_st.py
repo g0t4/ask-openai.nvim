@@ -1,13 +1,19 @@
 import os
 
+# FYI! this was prior to remote qwen3 AND also prior to not using SenteceTransformers
+#  I cannot recall but I might need ST for intfloat/e5-base-v2... not sure
+# for now I want to use Qwen3 and remote
+# so I am retiring this file, especially b/c its not imported anywhere
+
 from .logs import get_logger
 
 logger = get_logger(__name__)
 
 _model = None
+_model_name = ""  # only meant for reading internally
 
 def ensure_model_loaded():
-    global _model
+    global _model, _model_name
     if _model:
         return _model
 
@@ -27,8 +33,8 @@ def ensure_model_loaded():
     # TODO try Alibaba-NLP/gte-base-en-v1.5 ...  for the embeddings model
     def use_intfloat_e5_base():
         # TODO find some test data to validate embeddings are properly calculated!
-        model_name = "intfloat/e5-base-v2"
-        _model = SentenceTransformer(model_name,
+        _model_name = "intfloat/e5-base-v2"
+        _model = SentenceTransformer(_model_name,
                                      # TODO set dtype auto/float16/etc?
                                      # model_kwargs={"torch_dtype": "float16"},
                                      )
@@ -36,8 +42,9 @@ def ensure_model_loaded():
 
     def use_qwen3():
         # PRN add startup validation of embeddings calculations and params from auto model
+        _model_name = "Qwen/Qwen3-Embedding-0.6B"
         return SentenceTransformer(
-            "Qwen/Qwen3-Embedding-0.6B",
+            _model_name,
             model_kwargs={
                 "torch_dtype": "float16",
                 # "device_map": "auto", # for sharding
@@ -52,7 +59,7 @@ def ensure_model_loaded():
 
     return _model
 
-def _encode(texts):
+def _encode_multiple(texts):
     import torch
 
     # from pympler import asizeof
@@ -87,19 +94,26 @@ def _encode(texts):
 
 def encode_passages(passages: list[str]):
     texts = [f"passage: {p}" for p in passages]
-    return _encode(texts)
+    return _encode_multiple(texts)
 
-def encode_query(text: str):
+def encode_query(text: str, instruct: str):
+    # if not Qwen3 then raise if instructions passed
+    if instruct is not None and instruct != "":
+        if not _model_name.startswith("Qwen/Qwen3-Embedding"):
+            raise ValueError("Qwen3 is required for econding instructions into embeddings query")
+        # see impl in model_Qwen3 alternatives...
+        raise NotImplementedError("TODO I am not planning to use Qwen3 with in-process SentenceTransformers, you'll have to set this up if you want it")
+
     # "query: text" is the training query format
     # "passage: text" is the training document format
-    return _encode_text(f"query: {text}")
+    return _encode_one_text(f"query: {text}")
 
-def _encode_text(text: str):
-    return _encode([text])
+def _encode_one_text(text: str):
+    return _encode_multiple([text])
 
 def get_shape() -> int:
     # Create a dummy vector to get dimensions
     sample_text = "passage: sample"
-    sample_vec = _encode_text(sample_text)
+    sample_vec = _encode_one_text(sample_text)
     shape = sample_vec.shape[1]
     return shape

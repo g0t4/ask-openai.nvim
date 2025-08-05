@@ -1,5 +1,7 @@
 import os
 
+# FYI! AFAICT this has been replaced with model_qwen3_remote
+
 from .logs import get_logger
 
 logger = get_logger(__name__)
@@ -23,7 +25,7 @@ def ensure_model_loaded():
     _model = transformers_qwen3
     return _model
 
-def _encode(texts):
+def _encode_multiple(texts):
     import torch
     import numpy as np
 
@@ -45,20 +47,18 @@ def _encode(texts):
     return vecs_np
 
 def encode_passages(passages: list[str]):
-    texts = [f"passage: {p}" for p in passages]
-    return _encode(texts)
+    # FYI Qwen3 has NO passage/document label, only query side has Query:/Instruct:
+    return _encode_multiple(passages)
 
-def encode_query(text: str):
-    # "query: text" is the training query format
-    # "passage: text" is the training document format
-    return _encode_text(f"query: {text}")
+def encode_query(text: str, instruct: str):
+    return _encode_one_text(f"Query: {text}")
 
-def _encode_text(text: str):
-    return _encode([text])
+def _encode_one_text(text: str):
+    return _encode_multiple([text])
 
 def get_shape() -> int:
     # Create a dummy vector to get dimensions
     sample_text = "passage: sample"
-    sample_vec = _encode_text(sample_text)
+    sample_vec = _encode_one_text(sample_text)
     shape = sample_vec.shape[1]
     return shape

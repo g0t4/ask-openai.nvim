@@ -2,10 +2,6 @@ from lsp.logs import get_logger, logging_fwk_to_console
 
 logger = get_logger(__name__)
 
-def get_detailed_instruct(task_description: str, query: str) -> str:
-    # *** INSTRUCTION!
-    return f'Instruct: {task_description}\nQuery:{query}'
-
 import httpx
 
 def encode(input_texts: list[str]):
