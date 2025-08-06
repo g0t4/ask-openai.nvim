@@ -70,11 +70,11 @@ function OllamaFimBackend:body_for()
         -- qwen2.5-coder:7b-base-q8_0  -- ** shorter responses, more "EOF" focused
         -- qwen2.5-coder:14b-base-q8_0 -- ** shorter responses, more "EOF" focused
         -- qwen2.5-coder:7b-instruct-q8_0 -- DO NOT USE instruct
-        -- model = "qwen2.5-coder:7b-base-q8_0", -- ** favorite
+        model = "qwen2.5-coder:7b-base-q8_0", -- ** favorite
         --
         -- model is NOT ACTUALLY USED when hosting llama-server
         -- model = "huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M",
-        model = "qwen3-coder:30b-a3b-fp16",
+        -- model = "qwen3-coder:30b-a3b-fp16", -- ** TODO TRY THIS ONE
         -- # TODO optimal params? any new updates for llama-server that would help?
         -- llama-server -hf unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M --host 0.0.0.0 --port 8012 --batch-size 2048 --ubatch-size 2048 --flash-attn --n-gpu-layers 99
         -- TODO params.n_ctx = 0;
