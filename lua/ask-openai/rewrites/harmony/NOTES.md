@@ -38,10 +38,10 @@ However, <|end|> and <|return|> are both stripped by llama-server
 
 - no idea why touch it at all if you are leaving most of it?!
 
-TLDR:
-
+## * TLDR parse as think tags idea:
 - treat this sequence as the "<think>" tag
   <|channel|>analysis<|message|>
 - treat this sequence as the "</think>" tag
   <|start|>assistant<|channel|>final<|message|>
-````
+- FYI seems like llama-cpp's chat app does this too:
+    https://github.com/ggml-org/llama.cpp/blob/3db4da56/common/chat.cpp#L1323
