@@ -274,11 +274,10 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             -- }
         }
 
-        local gptoss_chat_body = {
+        local gptoss_chat_body_llama_server_chat_completions = {
             messages = messages,
             model = "gpt-oss:20b",
-
-
+            temperature = 0.3, -- 0.3 to 0.6?
         }
 
         -- /v1/chat/completions
