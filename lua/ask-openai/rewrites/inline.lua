@@ -263,19 +263,10 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
         local qwen_chat_body = {
             messages = messages,
-            --
-            -- model = "qwen2.5-coder:7b-instruct-q8_0",
-            --
-            -- * qwen3 related
+            -- * current models only
             -- model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base" # VERY HAPPY WITH THIS MODEL FOR CODING TOO!
-            model = "qwen3-coder:30b-a3b-q4_K_M",
-            -- model = "qwen3-coder:30b-a3b-q8_0",
-            -- model = "huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M",
-            --
-            -- model = "deepseek-r1:8b-0528-qwen3-q8_0", -- /nothink doesn't work :(
-            --
-            -- model = "gemma3:12b-it-q8_0",
-            max_tokens = 8192, -- TODO set high if using /think only?
+            -- model = "qwen3-coder:30b-a3b-q8_0", # q4_K_M
+            max_tokens = 8192, -- PRN set high if using /think only?
             temperature = 0.2,
             -- ?? do I need num_ctx (can't recall why I set it - check predicitons code)
             -- options = {
@@ -283,23 +274,17 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             -- }
         }
 
-        -- local qwen_legacy_body = {
-        --     model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :)
-        --     prompt = system_prompt .. "\n" .. user_message,
-        --     temperature = 0.2,
-        -- }
+        local gptoss_chat_body = {
+            messages = messages,
+            model = "gpt-oss:20b",
+
+
+        }
 
         -- /v1/chat/completions
-        -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
         local body = qwen_chat_body
 
-        -- /v1/completions
-        -- local body = qwen_legacy_body
-
-        -- vllm or ollama:
-        -- local base_url = "http://build21:8000"
         local base_url = "http://ollama:11434"
-
 
         M.last_request = backend.curl_for(body, base_url, M)
     end
