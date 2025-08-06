@@ -31,6 +31,7 @@ for dataset in datasets.all_datasets.values():
 
     logger.info(f"{num_vectors_based_on_ntotal=}")
 
+    any_problem_with_this_dataset = False
     ids = dataset.index_view.ids
     # print_type(ids)
 
@@ -50,21 +51,26 @@ for dataset in datasets.all_datasets.values():
     for id, count in duplicate_ids:
         if count <= 1:
             continue
-        detected_a_problem_overall = True
+        any_problem_with_this_dataset = True
         chunk = datasets.get_chunk_by_faiss_id(id)
         if chunk is None:
             logger.error(f"Duplicate ID found: {id} - {count}x - missing chunk too")
         else:
             logger.error(f"Duplicate ID found: {id} with {count}x - {chunk.file} L{chunk.start_line}-{chunk.end_line}")
 
-    # look for mismatch in datasets (i.e. missing chunks or vectors for old chunks)
-    print(f'{num_vectors_based_on_ids=} {num_ids_based_on_ids=}')
-    print(f'{num_chunks_based_on_chunks=}')
     if num_ids_based_on_ids != num_chunks_based_on_chunks:
-        print(f"chunk count mismatch: {num_ids_based_on_ids=} != {num_chunks_based_on_chunks=}")
+        any_problem_with_this_dataset = True
+        logger.error(f"chunk count mismatch: {num_ids_based_on_ids=} != {num_chunks_based_on_chunks=}")
     if num_vectors_based_on_ntotal != num_vectors_based_on_ids:
-        print(f"vectors count mismatch: {num_vectors_based_on_ntotal=} != {num_vectors_based_on_ids=}")
+        any_problem_with_this_dataset = True
+        logger.error(f"vectors count mismatch: {num_vectors_based_on_ntotal=} != {num_vectors_based_on_ids=}")
 
+    if any_problem_with_this_dataset:
+        # look for mismatch in datasets (i.e. missing chunks or vectors for old chunks)
+        logger.info(f'{num_vectors_based_on_ids=} {num_ids_based_on_ids=}')
+        logger.info(f'{num_chunks_based_on_chunks=}')
+
+    detected_a_problem_overall = detected_a_problem_overall or any_problem_with_this_dataset
     # TODO find a way to verify the vectors "make sense"... relative to ID map...
 
 if detected_a_problem_overall:
