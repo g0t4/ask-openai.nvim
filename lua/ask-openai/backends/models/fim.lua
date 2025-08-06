@@ -8,6 +8,8 @@ local M = {}
 --   but lets collect them under fim for now
 --   really these are the fim related special tokens
 
+M.gpt_oss_chat = {
+}
 
 
 M.qwen25coder = {

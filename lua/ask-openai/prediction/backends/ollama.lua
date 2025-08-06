@@ -80,6 +80,8 @@ function OllamaFimBackend:body_for()
         -- TODO params.n_ctx = 0;
         -- REMEMBER just host the model in llama-server, it only runs one
 
+        model = "gpt-oss:20b",
+
         -- starcoder2:15b-instruct-v0.1-q8_0                      a11b58c111d9    16 GB     6 weeks ago
         -- starcoder2:15b-q8_0                                    95f55571067f    16 GB     6 weeks ago
         -- starcoder2:7b-fp16                                     f0643097e171    14 GB     6 weeks ago
@@ -164,12 +166,21 @@ function OllamaFimBackend:body_for()
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
+        -- TODO! stop token isn't set! should I just remove this... I have them commented out in the other file linked here:
         body.options.stop = fim.qwen25coder.sentinel_tokens.fim_stop_tokens
+        log:error("stop token: " .. vim.inspect(body.options.stop))
     elseif string.find(body.model, "qwen2.5-coder", nil, true) then
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
+        -- TODO! stop token isn't set! should I just remove this... I have them commented out in the other file linked here:
         body.options.stop = fim.qwen25coder.sentinel_tokens.fim_stop_tokens
+        log:error("stop token: " .. vim.inspect(body.options.stop))
+    elseif string.find(body.model, "gpt-oss", nil, true) then
+        builder = function()
+            return fim.gpt_oss.get_fim_prompt(self)
+        end
+        -- body.options.stop = fim.gpt_oss.sentinel_tokens.fim_stop_tokens
     elseif string.find(body.model, "codestral", nil, true) then
         builder = function()
             return fim.codestral.get_fim_prompt(self)
