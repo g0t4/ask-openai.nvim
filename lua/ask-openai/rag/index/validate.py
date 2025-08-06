@@ -22,8 +22,6 @@ def error_duplicate_id(duplicate_ids):
         logger.error(f"Duplicate ID found: {id}")
     # chunk =
 
-    sys.exit(1)
-
 def print_type(what):
     if type(what) is np.ndarray:
         print(f'{type(what)} shape: {what.shape} {what.dtype}')
