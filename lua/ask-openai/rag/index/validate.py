@@ -31,17 +31,15 @@ for dataset in datasets.all_datasets.values():
     # print(f"{dataset.stat_by_path.keys()=}")
 
     ids = dataset.index_view.ids
+    print(type(ids))
 
     # * test for duplicate IDs
     # test duplicate logic:
     #   ids = np.append(ids, ids[-1])
     #
-    duplicates = set()
-    for id in sorted(ids):
-        if id in duplicates:
-            error_duplicate_id(id)
-            break
-        duplicates.add(id)
+    duplicate_ids = dataset.index_view.check_for_duplicate_ids()
+    for id in duplicate_ids:
+        error_duplicate_id(id)
 
     # * compare # vectors to # IDs
     if len(ids) != num_vectors:

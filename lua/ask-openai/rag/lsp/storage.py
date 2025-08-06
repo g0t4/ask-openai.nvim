@@ -85,6 +85,12 @@ class FaissIndexView:
     def ids(self):
         return faiss.vector_to_array(self._id_map)
 
+    def check_for_duplicate_ids(self):
+        duplicates = set()
+        for id in sorted(self.ids):
+            duplicates.add(id)
+        return duplicates
+
 @dataclass
 class RAGDataset:
 
