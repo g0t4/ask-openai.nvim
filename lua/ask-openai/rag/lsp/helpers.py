@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 
 def auto_device():
@@ -7,3 +8,10 @@ def auto_device():
         'cpu'
     )
     return device
+
+def print_type(what):
+    if type(what) is np.ndarray:
+        print(f'{type(what)} shape: {what.shape} {what.dtype}')
+        return
+
+    print(type(what))
