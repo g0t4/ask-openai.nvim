@@ -1,8 +1,7 @@
 from pathlib import Path
 import sys
-from lsp.storage import load_prior_data, load_all_datasets
+from lsp.storage import load_all_datasets
 from lsp.logs import get_logger, logging_fwk_to_console
-import faiss
 import numpy as np
 
 # usage:
