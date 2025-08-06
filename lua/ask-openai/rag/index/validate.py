@@ -20,6 +20,13 @@ def error_duplicate_id(id):
 
     sys.exit(1)
 
+def print_type(what):
+    if type(what) is np.ndarray:
+        print(f'{type(what)} shape: {what.shape} {what.dtype}')
+        return
+
+    print(type(what))
+
 for dataset in datasets.all_datasets.values():
     # print(f"{dataset=}")
     # PRN consider moving this onto the RAGDataset type or into an auxillary type for reuse on LSP startup, elsewhere
@@ -31,7 +38,7 @@ for dataset in datasets.all_datasets.values():
     # print(f"{dataset.stat_by_path.keys()=}")
 
     ids = dataset.index_view.ids
-    print(type(ids))
+    print_type(ids)
 
     # * test for duplicate IDs
     # test duplicate logic:
