@@ -14,14 +14,6 @@ logging_fwk_to_console(level="DEBUG")
 rag_dir = Path(sys.argv[1])
 datasets = load_all_datasets(rag_dir)
 
-def error_duplicate_id(duplicate_ids):
-    if not any(duplicate_ids):
-        return
-
-    for id in duplicate_ids:
-        logger.error(f"Duplicate ID found: {id}")
-    # chunk =
-
 def print_type(what):
     if type(what) is np.ndarray:
         print(f'{type(what)} shape: {what.shape} {what.dtype}')
@@ -48,7 +40,9 @@ for dataset in datasets.all_datasets.values():
     #
     duplicate_ids = dataset.index_view._check_for_duplicate_ids()
     # PRN turn into an index_view.exit_if_duplicates()?
-    error_duplicate_id(duplicate_ids)
+    for id in duplicate_ids:
+        logger.error(f"Duplicate ID found: {id}")
+    # chunk =
 
     # * compare # vectors to # IDs
     if len(ids) != num_vectors:
