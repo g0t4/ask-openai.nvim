@@ -14,8 +14,12 @@ logging_fwk_to_console(level="DEBUG")
 rag_dir = Path(sys.argv[1])
 datasets = load_all_datasets(rag_dir)
 
-def error_duplicate_id(id):
-    logger.error(f"Duplicate ID found: {id}")
+def error_duplicate_id(duplicate_ids):
+    if not any(duplicate_ids):
+        return
+
+    for id in duplicate_ids:
+        logger.error(f"Duplicate ID found: {id}")
     # chunk =
 
     sys.exit(1)
@@ -46,8 +50,7 @@ for dataset in datasets.all_datasets.values():
     #
     duplicate_ids = dataset.index_view._check_for_duplicate_ids()
     # PRN turn into an index_view.exit_if_duplicates()?
-    for id in duplicate_ids:
-        error_duplicate_id(id)
+    error_duplicate_id(duplicate_ids)
 
     # * compare # vectors to # IDs
     if len(ids) != num_vectors:
