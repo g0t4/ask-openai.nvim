@@ -281,9 +281,10 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         }
 
         -- /v1/chat/completions
-        local body = qwen_chat_body
+        -- local body = qwen_chat_body
+        local body = gptoss_chat_body_llama_server_chat_completions
 
-        local base_url = "http://ollama:11434"
+        local base_url = "http://ollama:8013"
 
         M.last_request = backend.curl_for(body, base_url, M)
     end
