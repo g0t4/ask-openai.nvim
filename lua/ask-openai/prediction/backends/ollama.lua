@@ -252,6 +252,8 @@ function OllamaFimBackend.process_sse(data)
         local success, parsed = pcall(vim.json.decode, event_json)
 
         if success and parsed then
+            -- vim.print(parsed)
+            local parsed_chunk
             if use_llama_server_completions then
                 parsed_chunk, done, done_reason = parse_llama_cpp_server(parsed)
             elseif use_openaicompat_chat_completions then
