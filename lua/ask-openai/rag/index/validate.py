@@ -21,7 +21,7 @@ def print_type(what):
 
     print(type(what))
 
-detected_a_problem = False
+detected_a_problem_overall = False
 
 for dataset in datasets.all_datasets.values():
     # print(f"{dataset=}")
@@ -50,7 +50,7 @@ for dataset in datasets.all_datasets.values():
     for id, count in duplicate_ids:
         if count <= 1:
             continue
-        detected_a_problem = True
+        detected_a_problem_overall = True
         chunk = datasets.get_chunk_by_faiss_id(id)
         if chunk is None:
             logger.error(f"Duplicate ID found: {id} - {count}x - missing chunk too")
@@ -67,7 +67,7 @@ for dataset in datasets.all_datasets.values():
 
     # TODO find a way to verify the vectors "make sense"... relative to ID map...
 
-if detected_a_problem:
+if detected_a_problem_overall:
     logger.error("[bold red]AT LEAST ONE PROBLEM DISCOVERED")
     sys.exit(1)
 else:
