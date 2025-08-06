@@ -80,7 +80,7 @@ function OllamaFimBackend:body_for()
         -- TODO params.n_ctx = 0;
         -- REMEMBER just host the model in llama-server, it only runs one
 
-        model = "gpt-oss:20b",
+        -- model = "gpt-oss:20b",
 
         -- starcoder2:15b-instruct-v0.1-q8_0                      a11b58c111d9    16 GB     6 weeks ago
         -- starcoder2:15b-q8_0                                    95f55571067f    16 GB     6 weeks ago

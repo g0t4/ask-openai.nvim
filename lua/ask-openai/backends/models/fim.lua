@@ -36,6 +36,8 @@ function M.gpt_oss_chat.get_fim_prompt(request)
         current_file_relative_path = ""
     end
 
+    local messages = {}
+
     --- @param context_item ContextItem
     local function append_file_non_fim(context_item)
         -- <file_sep>filepath0\ncode0
@@ -104,8 +106,6 @@ function M.gpt_oss_chat.get_fim_prompt(request)
 
     return prompt .. fim_file_contents
 end
-
-
 
 M.qwen25coder = {
     sentinel_tokens = {
