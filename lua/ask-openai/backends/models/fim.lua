@@ -47,46 +47,27 @@ function M.gpt_oss_chat.get_fim_prompt(request)
     end
 
     if request.context.includes.yanks and request.context.yanks then
-        -- TODO! capture some EVAL examples with yanks in real completions that were useful
         append_file_non_fim(request.context.yanks)
     end
 
     if request.context.includes.matching_ctags and request.context.matching_ctags then
-        -- TODO! capture some EVAL examples with matching_ctags too
         append_file_non_fim(request.context.matching_ctags)
     end
 
     if request.context.includes.project and request.context.project then
-        -- TODO! capture some EVAL examples with project in real completions that were useful
         vim.iter(request.context.project)
             :each(append_file_non_fim)
     end
 
     if request.rag_matches then
-        -- FYI if you want to test rag_matches in prompt, then add a test seam for getting absolute path like relative path
-        local current_file_path_absolute = files.get_current_file_absolute_path()
-
         vim.iter(request.rag_matches)
             :each(function(chunk)
-                -- FYI this comes from embeddings query results... so the structure is different than other context providers
-                -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
                 local file_name = chunk.file .. ":" .. chunk.start_line .. "-" .. chunk.end_line
                 local non_fim_file = tokens.file_sep .. file_name .. "\n" .. chunk.text
                 prompt = prompt .. non_fim_file
             end)
     end
 
-    -- * recent edits
-    -- local recent_changes = "Here are some recent lines that were edited by the user: "
-    -- for _, change in pairs(context.edits) do
-    --     local str = string.format("Line %d, Column %d: %s", change.lnum, change.col, change.line)
-    --     -- todo include line/col or not?
-    --     -- todo include file?
-    --     recent_changes = recent_changes .. "\n" .. str
-    -- end
-    -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
-
-    --
     -- TODO ESCAPE presence of any sentinel tokens? i.e. should be rare but if someone is working on LLM code it may not be!
     --
     -- FYI carefully observe the format:
@@ -162,7 +143,7 @@ function M.qwen25coder.get_fim_prompt(request)
     -- FYI! see fim.md for extensive FIM notes
     local tokens = M.qwen25coder.sentinel_tokens
 
-    -- TODO! confirm qwen2.5coder has trailing \n after repo_name
+    -- TODO confirm qwen2.5coder has trailing \n after repo_name
     --   I see this in the example files: https://github.com/QwenLM/Qwen2.5-Coder/blob/f20915b77910de5ba8463547e7654beb056ec7d0/examples/Qwen2.5-Coder-repolevel-fim.py
     --   it might not matter?
     local repo_name = request:get_repo_name()
@@ -189,29 +170,21 @@ function M.qwen25coder.get_fim_prompt(request)
     end
 
     if request.context.includes.yanks and request.context.yanks then
-        -- TODO! capture some EVAL examples with yanks in real completions that were useful
         append_file_non_fim(request.context.yanks)
     end
 
     if request.context.includes.matching_ctags and request.context.matching_ctags then
-        -- TODO! capture some EVAL examples with matching_ctags too
         append_file_non_fim(request.context.matching_ctags)
     end
 
     if request.context.includes.project and request.context.project then
-        -- TODO! capture some EVAL examples with project in real completions that were useful
         vim.iter(request.context.project)
             :each(append_file_non_fim)
     end
 
     if request.rag_matches then
-        -- FYI if you want to test rag_matches in prompt, then add a test seam for getting absolute path like relative path
-        local current_file_path_absolute = files.get_current_file_absolute_path()
-
         vim.iter(request.rag_matches)
             :each(function(chunk)
-                -- FYI this comes from embeddings query results... so the structure is different than other context providers
-                -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
                 local file_name = chunk.file .. ":" .. chunk.start_line .. "-" .. chunk.end_line
                 local non_fim_file = tokens.file_sep .. file_name .. "\n" .. chunk.text
                 prompt = prompt .. non_fim_file
@@ -242,7 +215,6 @@ function M.qwen25coder.get_fim_prompt(request)
         .. tokens.fim_suffix
         .. request.suffix
         .. tokens.fim_middle
-
 
     -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
 
