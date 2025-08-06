@@ -38,8 +38,20 @@ for dataset in datasets.all_datasets.values():
     # test duplicate logic:
     #   ids = np.append(ids, ids[-1])
     #
-    duplicate_ids = dataset.index_view._check_for_duplicate_ids()
+    duplicate_ids = list(dataset.index_view._check_for_duplicate_ids())
     # PRN turn into an index_view.exit_if_duplicates()?
+    num_vectors_based_on_ids = sum([count for _, count in duplicate_ids])
+    num_ids_based_on_ids = len(duplicate_ids)
+    num_chunks_based_on_chunks = sum([len(file) for file in dataset.chunks_by_file.values()])
+
+    # look for mismatch in datasets (i.e. missing chunks or vectors for old chunks)
+    print(f'{num_vectors_based_on_ids=} {num_ids_based_on_ids=}')
+    print(f'{num_chunks_based_on_chunks=}')
+    if num_ids_based_on_ids != num_chunks_based_on_chunks:
+        print(f"chunk count mismatch: {num_ids_based_on_ids=} != {num_chunks_based_on_chunks=}")
+    if num_vectors != num_vectors_based_on_ids:
+        print(f"vectors count mismatch: {num_vectors=} != {num_vectors_based_on_ids=}")
+
     for id, count in duplicate_ids:
         if count <= 1:
             continue
