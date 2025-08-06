@@ -24,7 +24,6 @@ def print_type(what):
 detected_a_problem_overall = False
 
 for dataset in datasets.all_datasets.values():
-    # print(f"{dataset=}")
     # PRN consider moving this onto the RAGDataset type or into an auxillary type for reuse on LSP startup, elsewhere
 
     num_vectors_based_on_ntotal = dataset.index_view.num_vectors()
@@ -33,7 +32,6 @@ for dataset in datasets.all_datasets.values():
 
     any_problem_with_this_dataset = False
     ids = dataset.index_view.ids
-    # print_type(ids)
 
     # * compare # vectors to # IDs
     if len(ids) != num_vectors_based_on_ntotal:
