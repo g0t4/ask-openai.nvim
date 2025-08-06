@@ -325,6 +325,12 @@ and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
     local rewritten_text = optional_thinking_text .. M.selection.original_text .. "\nSTREAMING w/ THINKING CONTENT"
     -- local rewritten_text = M.selection.original_text .. "\nSTREAMING NEW CONTENT\nthis is fun"
 
+    local harmony_gptoss_example =
+    [[<|channel|>analysis<|message|>User wrote "test". Likely just a test message. They might want ChatGPT to respond? We should respond politely. Maybe just say "Hello! How can I help?"<|start|>assistant<|channel|>final<|message|>Hello! 👋 How can I assist you today?]]
+    local rewritten_text = harmony_gptoss_example .. M.selection.original_text .. "\nSIMULATED HARMONY EXAMPLE"
+    -- local rewritten_text = M.selection.original_text .. "\nSIMULATED HARMONY EXAMPLE"
+
+
     -- FYI can split on new line to simulate streaming lines instead of words
     local all_words = vim.split(rewritten_text, " ")
 
