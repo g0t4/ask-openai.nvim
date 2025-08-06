@@ -4,8 +4,10 @@ local fim = require("ask-openai.backends.models.fim")
 local meta = require("ask-openai.backends.models.meta")
 local files = require("ask-openai.helpers.files")
 
-local use_llama_cpp_server = false
 
+-- FYI! ONLY ONE AT A TIME or NONE for api/generate in ollama:
+local use_llama_cpp_server = false
+local use_ollama_chat = true
 
 ---@class OllamaFimBackend
 ---@field prefix string
@@ -40,6 +42,8 @@ function OllamaFimBackend:request_options()
     local url = "http://ollama:11434/api/generate" -- ollama serve
     if use_llama_cpp_server then
         url = "http://ollama:8012/completions" -- llama-server
+    elseif use_ollama_chat then
+        url = "http://ollama:11434/api/chat" -- TODO OR /chat/completions? for gpt-oss
     end
     local options = {
         command = "curl",
@@ -70,7 +74,7 @@ function OllamaFimBackend:body_for()
         -- qwen2.5-coder:7b-base-q8_0  -- ** shorter responses, more "EOF" focused
         -- qwen2.5-coder:14b-base-q8_0 -- ** shorter responses, more "EOF" focused
         -- qwen2.5-coder:7b-instruct-q8_0 -- DO NOT USE instruct
-        model = "qwen2.5-coder:7b-base-q8_0", -- ** favorite
+        -- model = "qwen2.5-coder:7b-base-q8_0", -- ** favorite
         --
         -- model is NOT ACTUALLY USED when hosting llama-server
         -- model = "huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M",
@@ -80,7 +84,8 @@ function OllamaFimBackend:body_for()
         -- TODO params.n_ctx = 0;
         -- REMEMBER just host the model in llama-server, it only runs one
 
-        -- model = "gpt-oss:20b",
+
+        model = "gpt-oss:20b",
 
         -- starcoder2:15b-instruct-v0.1-q8_0                      a11b58c111d9    16 GB     6 weeks ago
         -- starcoder2:15b-q8_0                                    95f55571067f    16 GB     6 weeks ago
@@ -122,11 +127,6 @@ function OllamaFimBackend:body_for()
             num_ctx = 8192,
         }
     }
-
-    -- defaults to Qwen2.5-Coder (that may work fine with many other models)
-    local builder = function()
-        error("missing fim prompt builder for " .. body.model)
-    end
 
     -- FYI some models have a bundled (or in ollama Modelfile, IIRC) prompt template that will handle the format, if you set raw=false
 
@@ -177,9 +177,8 @@ function OllamaFimBackend:body_for()
         body.options.stop = fim.qwen25coder.sentinel_tokens.fim_stop_tokens
         log:error("stop token: " .. vim.inspect(body.options.stop))
     elseif string.find(body.model, "gpt-oss", nil, true) then
-        builder = function()
-            return fim.gpt_oss.get_fim_prompt(self)
-        end
+        body.messages = fim.gpt_oss.get_fim_chat_messages(self)
+        body.raw = false -- not used in chat -- FYI hacky
         -- body.options.stop = fim.gpt_oss.sentinel_tokens.fim_stop_tokens
     elseif string.find(body.model, "codestral", nil, true) then
         builder = function()
@@ -208,9 +207,11 @@ function OllamaFimBackend:body_for()
         return
     end
 
-    -- ?? for qwen2.5-coder should I use file level context ever? or always repo level?
-    -- body.prompt = M.get_file_level_fim_prompt()
-    body.prompt = builder()
+    if builder then
+        body.prompt = builder()
+    elseif body.messages == nil then
+        error("you must define either the prompt builder OR messages for chat like FIM for: " .. body.model)
+    end
     log:trace('body.prompt', body.prompt)
 
     return vim.json.encode(body)
@@ -250,6 +251,8 @@ function OllamaFimBackend.process_sse(data)
         if success and parsed then
             if use_llama_cpp_server then
                 parsed_chunk, done, done_reason = parse_llama_cpp_server(parsed)
+            elseif use_ollama_chat then
+                parsed_chunk, done, done_reason = parse_sse_ollama_chat(parsed)
             else
                 parsed_chunk, done, done_reason = parse_ollama_api_generate(parsed)
             end
@@ -260,6 +263,27 @@ function OllamaFimBackend.process_sse(data)
     end
     -- TODO test passing back finish_reason (i.e. for an empty prediction log entry)
     return chunk, done, done_reason
+end
+
+function parse_sse_ollama_chat(sse)
+    -- vim.print(sse)
+    --   created_at = "2025-08-06T03:41:18.754207861Z",
+    --   done = true,
+    --   done_reason = "load",
+    --   message = {
+    --     content = "",
+    --     role = "assistant"
+    --   },
+
+    -- it has "thinking"!
+    -- gpt-oss:
+    --   "message":{"role":"assistant","content":"","thinking":"   "},"done":false}
+
+    message = ""
+    if sse.message then
+        message = sse.message.content
+    end
+    return message, sse.done, sse.done_reason
 end
 
 function parse_llama_cpp_server(sse)

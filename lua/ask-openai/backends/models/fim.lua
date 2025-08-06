@@ -1,6 +1,8 @@
 local log = require("ask-openai.logs.logger").predictions()
 local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.prediction.ansi")
+local ChatThread = require("ask-openai.questions.chat_thread")
+local ChatMessage = require("ask-openai.questions.chat_message")
 
 local M = {}
 
@@ -8,84 +10,82 @@ local M = {}
 --   but lets collect them under fim for now
 --   really these are the fim related special tokens
 
-M.gpt_oss_chat = {
+M.gpt_oss = {
     sentinel_tokens = {
         -- fim_stop_tokens = [] -- TODO?
     }
 }
 
-function M.gpt_oss_chat.get_fim_prompt(request)
-    -- FYI! see fim.md for extensive FIM notes
-    local tokens = M.qwen25coder.sentinel_tokens
+function M.gpt_oss.get_fim_chat_messages(request)
+    local system_prompt = "Your response will be used for code completion in neovim"
+        .. ", in a FIM (fill-in-the-middle) pluging that genrates code as the user types"
 
-    -- TODO! confirm qwen2.5coder has trailing \n after repo_name
-    --   I see this in the example files: https://github.com/QwenLM/Qwen2.5-Coder/blob/f20915b77910de5ba8463547e7654beb056ec7d0/examples/Qwen2.5-Coder-repolevel-fim.py
-    --   it might not matter?
-    local repo_name = request:get_repo_name()
-    local prompt = tokens.repo_name .. repo_name .. "\n"
+    local messages = {
+        { role = "system", content = system_prompt }
+    }
+
+    -- -- * CONTEXT
+    -- local context = request.context
+    -- -- FYI uncomment this when READY, it's all patched up:
+    -- if context.includes.yanks and context.yanks then
+    --     table.insert(messages, ChatMessage:user(context.yanks.content))
+    -- end
+    -- if request.context.includes.matching_ctags and request.context.matching_ctags then
+    --     table.insert(messages, ChatMessage:user(request.context.matching_ctags))
+    -- end
+    -- if context.includes.project and context.project then
+    --     vim.iter(context.project)
+    --         :each(function(value)
+    --             table.insert(messages, ChatMessage:user(value.content))
+    --         end)
+    -- end
+    -- local rag_matches = request.rag_matches
+    -- if rag_matches ~= nil and rag_matches.countt > 0 then
+    --     rag_message_parts = {}
+    --     if rag_matches.count == 1 then
+    --         heading = "# RAG query match: \n"
+    --     elseif rag_matches.count > 1 then
+    --         heading = "# RAG query matches: " .. rag_matches.count .. "\n"
+    --     end
+    --     table.insert(rag_message_parts, heading)
+    --     vim.iter(rag_matches)
+    --         :each(function(chunk)
+    --             -- FYI this comes from embeddings query results... so the structure is different than other context providers
+    --             -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
+    --             local file = chunk.file .. ":" .. chunk.start_line .. "-" .. chunk.end_line
+    --             local code_chunk = chunk.text
+    --             table.insert(rag_message_parts,
+    --                 "## " .. file .. "\n"
+    --                 .. code_chunk .. "\n"
+    --             )
+    --         end)
+    --     table.insert(messages, ChatMessage:user(table.concat(rag_message_parts, "\n")))
+    -- end
 
     -- * FIM file
     local current_file_relative_path = request.inject_file_path_test_seam()
     if current_file_relative_path == nil then
-        -- i.e. if :new and before first :w (save)
-        -- for now just leave filename blank?
-        --  or, maybe mark it as new?
-        --   can I deterine filetype using some heuristic or other metadata?
-        --   should I mark it "new"
         log:warn("current_file_name is nil")
         current_file_relative_path = ""
     end
 
-    local messages = {}
+    -- TODO add repo name to prompt?
+    local fim_message = ""
+    local repo_name = request:get_repo_name()
 
-    --- @param context_item ContextItem
-    local function append_file_non_fim(context_item)
-        -- <file_sep>filepath0\ncode0
-        local non_fim_file = tokens.file_sep .. context_item.filename .. "\n"
-            .. context_item.content
-        prompt = prompt .. non_fim_file
-    end
-
-    if request.context.includes.yanks and request.context.yanks then
-        append_file_non_fim(request.context.yanks)
-    end
-
-    if request.context.includes.matching_ctags and request.context.matching_ctags then
-        append_file_non_fim(request.context.matching_ctags)
-    end
-
-    if request.context.includes.project and request.context.project then
-        vim.iter(request.context.project)
-            :each(append_file_non_fim)
-    end
-
-    if request.rag_matches then
-        vim.iter(request.rag_matches)
-            :each(function(chunk)
-                local file_name = chunk.file .. ":" .. chunk.start_line .. "-" .. chunk.end_line
-                local non_fim_file = tokens.file_sep .. file_name .. "\n" .. chunk.text
-                prompt = prompt .. non_fim_file
-            end)
-    end
-
-    -- TODO ESCAPE presence of any sentinel tokens? i.e. should be rare but if someone is working on LLM code it may not be!
-    --
-    -- FYI carefully observe the format:
-    --   <file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid
-    --   <fim_prefix> comes BEFORE filepath!
-    local fim_file_contents = tokens.file_sep
-        .. current_file_relative_path
-        .. "\n"
-        .. tokens.fim_prefix
+    fim_message = fim_message .. "Background info:"
+        .. "\nrepository: " .. repo_name
+        .. "\nfile: " .. current_file_relative_path
+        .. "\n\nPlase complete the middle of the following example (do not return anything beyond the code for <<<FIM>>>):"
+        .. "\n\n"
+        -- NOTE I am not (yet) labeling sections, just put it together as a block and ask for the <<<FIM>>> part!
         .. request.prefix
-        .. tokens.fim_suffix
+        .. "<<<FIM>>>"
         .. request.suffix
-        .. tokens.fim_middle
 
+    table.insert(messages, ChatMessage:user(fim_message))
 
-    -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
-
-    return prompt .. fim_file_contents
+    return messages
 end
 
 M.qwen25coder = {
