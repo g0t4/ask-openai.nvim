@@ -240,6 +240,8 @@ def load_prior_data(dot_rag_dir: Path, language_extension: str) -> RAGDataset:
         num_chunks = sum(len(v) for v in chunks_by_file.values())
         log_num_vectors = index.ntotal if index is not None else None
         logger.info(f"Loaded {language_extension} - {len(files_by_path)} file stats, {log_num_vectors} FAISS vectors, {num_chunks} chunks")
+        if num_chunks != log_num_vectors:
+            logger.error(f"Num chunks ({num_chunks}) != Num vectors ({log_num_vectors}) which suggests problems with FAISS index vectors or otherwise")
 
     return RAGDataset(language_extension, chunks_by_file, files_by_path, index)
 
