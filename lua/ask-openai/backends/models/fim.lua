@@ -43,12 +43,12 @@ function M.gpt_oss.get_fim_chat_messages(request)
     --         end)
     -- end
     -- local rag_matches = request.rag_matches
-    -- if rag_matches ~= nil and rag_matches.countt > 0 then
+    -- if enable_rag and rag_matches ~= nil and #rag_matches > 0 then
     --     rag_message_parts = {}
-    --     if rag_matches.count == 1 then
+    --     if #rag_matches == 1 then
     --         heading = "# RAG query match: \n"
-    --     elseif rag_matches.count > 1 then
-    --         heading = "# RAG query matches: " .. rag_matches.count .. "\n"
+    --     elseif #rag_matches > 1 then
+    --         heading = "# RAG query matches: " .. #rag_matches .. "\n"
     --     end
     --     table.insert(rag_message_parts, heading)
     --     vim.iter(rag_matches)
