@@ -76,9 +76,14 @@ class FaissIndexView:
         return self.dataset.index.ntotal
 
     @property
-    def id_map(self) -> Int64VectorIndex:
+    def _id_map(self) -> Int64VectorIndex:
         # under the hood: <class 'faiss.swigfaiss.Int64Vector'>
+        # PRN can I hide this and just rely on ids?
         return self.dataset.index.id_map
+
+    @property
+    def ids(self):
+        return faiss.vector_to_array(self._id_map)
 
 @dataclass
 class RAGDataset:

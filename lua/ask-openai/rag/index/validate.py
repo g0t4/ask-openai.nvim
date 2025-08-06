@@ -30,7 +30,7 @@ for dataset in datasets.all_datasets.values():
     # print(f"{dataset.chunks_by_file.keys()=}")
     # print(f"{dataset.stat_by_path.keys()=}")
 
-    ids = faiss.vector_to_array(dataset.index_view.id_map)
+    ids = dataset.index_view.ids
 
     # * test for duplicate IDs
     # test duplicate logic:
