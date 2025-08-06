@@ -6,6 +6,7 @@ from pygls.workspace import TextDocument
 from .build import build_file_chunks, build_from_lines, get_file_hash, get_file_hash_from_lines
 from .logs import get_logger
 from .storage import Datasets, load_all_datasets
+from index.validate import DatasetsValidator
 from lsp import fs
 
 logger = get_logger(__name__)
@@ -27,6 +28,10 @@ def load_model_and_indexes(dot_rag_dir: Path, model_wrapper):
     global datasets
     datasets = load_all_datasets(dot_rag_dir)
     model_wrapper.ensure_model_loaded()
+
+def validate_rag_indexes():
+    validator = DatasetsValidator(datasets)
+    validator.validate()
 
 # PRN make top_k configurable (or other params)
 def handle_query(message, model_wrapper, top_k=3):

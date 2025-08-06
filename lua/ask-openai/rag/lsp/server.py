@@ -57,6 +57,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
         return
 
     rag.load_model_and_indexes(fs.dot_rag_dir, model_wrapper)
+    rag.validate_rag_indexes()
 
 def update_rag_for_text_doc(doc_uri: str):
     doc_path = uris.to_fs_path(doc_uri)
