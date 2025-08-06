@@ -60,7 +60,7 @@ class DatasetsValidator:
         if self.any_problems:
             logger.error("[bold red]AT LEAST ONE PROBLEM DISCOVERED")
         else:
-            logger.info("[bold green]ALL CHECKS PASS!")
+            logger.debug("[bold green]ALL CHECKS PASS!")
 
 if __name__ == "__main__":
     # usage:
