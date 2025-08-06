@@ -3,6 +3,17 @@
 - Obviously, short files do really well
     - Long files can be a challenge to get the right context
 
+## Chat Based FIM with gpt-oss
+
+"prompt": "You are a concise assistant. Do not preface your response with 'Thinking...' or other filler.",
+
+FYI this worked:
+"model": "gpt-oss:20b",
+"prompt": "I need you to fill-in-the-middle of the following code (FIM)... do not generate anything but the code at <GAP> def fib(n):\n    \"\"\"Return the nth Fibonacci number.\"\"\"\n    # <GAP>\n    return\n",
+"temperature": 0.0,
+"max_tokens": 128,
+"stop": ["\n", "\n\n"]
+
 ## TODOs
 
 - Provide recent edits to current code 100% will improve suggestions when making changes
