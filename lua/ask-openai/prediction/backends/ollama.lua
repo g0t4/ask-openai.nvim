@@ -10,13 +10,14 @@ local use_llama_server_completions = false -- qwen2.5-coder (w/ spec dec!)
 local use_ollama_api_completions = false
 local use_openaicompat_chat_completions = true
 
+
 -- * llama-server (llama-cpp)
 -- local url = "http://ollama:8012/completions" -- qwen2.5-coder w/ raw prompt uses this
-local url = "http://ollama:8012/chat/completions"
+-- local url = "http://ollama:8012/chat/completions"
 -- * ollama
 -- local url = "http://ollama:11434/api/generate" -- ollama serve
 -- local url = "http://ollama:11434/api/chat"
--- local url = "http://ollama:11434/v1/chat/completions"
+local url = "http://ollama:11434/v1/chat/completions"
 
 ---@class OllamaFimBackend
 ---@field prefix string
@@ -276,10 +277,17 @@ function parse_sse_oai_chat_completions(sse)
     content = ""
     if sse.choices and sse.choices[1] then
         content = sse.choices[1].delta.content
+        if content == vim.NIL then
+            -- TODO fix llama-server + gpt-oss on chat/completions
+            --   streaming response streams low level tokens including channel!
+            --   and the first response's content is vim.NIL (seems to indicate the template issue too)
+            error("content: " .. tostring(content) .. " is vim.NIL, WHY?!")
+            content = ""
+        end
         reasoning = sse.choices[1].delta.reasoning
         -- TODO SHOW THINKING!!!?
     end
-    done = sse.finish_reason ~= nil -- or "null"?
+    done = sse.finish_reason ~= nil -- or "null"? or vim.NIL
     finish_reason = sse.finish_reason
     return content, done, finish_reason, reasoning
 
