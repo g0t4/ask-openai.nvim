@@ -44,7 +44,7 @@ for dataset in datasets.all_datasets.values():
     # test duplicate logic:
     #   ids = np.append(ids, ids[-1])
     #
-    duplicate_ids = dataset.index_view.check_for_duplicate_ids()
+    duplicate_ids = dataset.index_view._check_for_duplicate_ids()
     for id in duplicate_ids:
         error_duplicate_id(id)
 
