@@ -18,6 +18,7 @@ import faiss
 #     I SUGGEST LOOK AT THE REAL ISSUE WITH FAISS/TORCH import order ... smells like BS that I should have to put one ahead of the other
 
 import numpy as np
+from numpy.typing import NDArray
 from pydantic import BaseModel
 
 from .logs import get_logger
@@ -66,6 +67,8 @@ class Int64VectorIndex(Protocol):
     def __len__(self) -> int:
         ...
 
+Int64Vector = NDArray[np.int64]
+
 class FaissIndexView:
     """ Concrete wrapper around faiss index type, provide better typing AND hide inner workings"""
 
@@ -82,7 +85,7 @@ class FaissIndexView:
         return self.dataset.index.id_map
 
     @property
-    def ids(self):
+    def ids(self) -> Int64Vector:
         return faiss.vector_to_array(self._id_map)
 
     def check_for_duplicate_ids(self):
