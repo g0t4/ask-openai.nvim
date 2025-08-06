@@ -6,7 +6,7 @@ local ansi = require("ask-openai.prediction.ansi")
 local rag_client = require("ask-openai.rag.client")
 local api = require("ask-openai.api")
 
-local OllamaFimBackend = require("ask-openai.prediction.backends.ollama")
+local OllamaFimBackend = require("ask-openai.prediction.backends.llama")
 -- TODO rewrite other backends to use new builder pattern (not a big change):
 --    TODO add :new, rearrange to self: methods
 --    TODO only do this if and when I switch to another backend...
