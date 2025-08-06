@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 import hashlib
 import json
 from pathlib import Path
-from typing import List, Optional, Protocol, cast
+from typing import List, Optional, Protocol, cast, Iterable
 
 # * TORCH BEFORE FAISS (even if don't need torch here/yet)
 # model_qwen3/model_st (REMINDER when I go to rearrange again)
@@ -82,11 +82,14 @@ class FaissIndexView:
     def ids(self) -> Int64Vector:
         return cast(Int64Vector, faiss.vector_to_array(self.dataset.index.id_map))
 
-    def _check_for_duplicate_ids(self):
+    def _check_for_duplicate_ids(self) -> Iterable[tuple[np.int64, int]]:
         """ NOTE: there should NOT be any duplicates """
-        unique, counts = np.unique(self.ids, return_counts=True)
-        duplicates = unique[counts > 1]
-        return duplicates
+        ids, counts = np.unique(self.ids, return_counts=True)
+        for index, id in enumerate(ids):
+            # FUCK THE SHIT YOU HAVE TO DO TO GET PYRIGHT TO STFU about everything being an NDArray[NDArray[]] when elements are ALWAYS SCALARS
+            id = ids[index]
+            count = int(counts[index])
+            yield (id, count)
 
 @dataclass
 class RAGDataset:
