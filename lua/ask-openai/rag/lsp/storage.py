@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 import hashlib
 import json
 from pathlib import Path
-from typing import List, Optional, Protocol
+from typing import List, Optional, Protocol, cast
 
 # * TORCH BEFORE FAISS (even if don't need torch here/yet)
 # model_qwen3/model_st (REMINDER when I go to rearrange again)
@@ -79,14 +79,8 @@ class FaissIndexView:
         return self.dataset.index.ntotal
 
     @property
-    def _id_map(self) -> Int64VectorIndex:
-        # under the hood: <class 'faiss.swigfaiss.Int64Vector'>
-        # PRN can I hide this and just rely on ids?
-        return self.dataset.index.id_map
-
-    @property
     def ids(self) -> Int64Vector:
-        return faiss.vector_to_array(self._id_map)
+        return cast(Int64Vector, faiss.vector_to_array(self.dataset.index.id_map))
 
     def check_for_duplicate_ids(self):
         duplicates = set()
