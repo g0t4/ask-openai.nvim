@@ -59,12 +59,30 @@ class Chunk(BaseModel):
         # for now just recompute and skip id_int:
         return chunk_id_to_faiss_id(self.id)
 
+class FaissIndexView:
+    """ wrapper around faiss index type, provide better typing and discovery """
+
+    def __init__(self, dataset: "RAGDataset"):
+        self.dataset = dataset
+
+    def num_vectors(self) -> int:
+        return self.dataset.index.ntotal
+
 @dataclass
 class RAGDataset:
+
+    def __init__(self, language_extension, chunks_by_file, files_by_path, index):
+        self.language_extension = language_extension
+        self.chunks_by_file = chunks_by_file
+        self.stat_by_path = files_by_path
+        self.index = index
+        self.index_view = FaissIndexView(self)
+
     language_extension: str
     chunks_by_file: dict[str, List[Chunk]]
     stat_by_path: dict[str, FileStat]
-    index: Optional[faiss.Index] = None
+    index: faiss.Index
+    index_view: FaissIndexView
 
 @dataclass
 class Datasets:

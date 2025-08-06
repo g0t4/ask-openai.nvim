@@ -23,7 +23,9 @@ def error_duplicate_id(id):
 for dataset in datasets.all_datasets.values():
     # print(f"{dataset=}")
 
-    print(f"{dataset.index.ntotal=}")
+    num_vectors = dataset.index_view.num_vectors()
+
+    logger.info(f"{num_vectors=}")
     # print(f"{dataset.chunks_by_file.keys()=}")
     # print(f"{dataset.stat_by_path.keys()=}")
 
