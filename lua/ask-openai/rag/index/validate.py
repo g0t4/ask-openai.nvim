@@ -25,9 +25,9 @@ for dataset in datasets.all_datasets.values():
     # print(f"{dataset=}")
     # PRN consider moving this onto the RAGDataset type or into an auxillary type for reuse on LSP startup, elsewhere
 
-    num_vectors = dataset.index_view.num_vectors()
+    num_vectors_based_on_ntotal = dataset.index_view.num_vectors()
 
-    logger.info(f"{num_vectors=}")
+    logger.info(f"{num_vectors_based_on_ntotal=}")
     # print(f"{dataset.chunks_by_file.keys()=}")
     # print(f"{dataset.stat_by_path.keys()=}")
 
@@ -49,8 +49,8 @@ for dataset in datasets.all_datasets.values():
     print(f'{num_chunks_based_on_chunks=}')
     if num_ids_based_on_ids != num_chunks_based_on_chunks:
         print(f"chunk count mismatch: {num_ids_based_on_ids=} != {num_chunks_based_on_chunks=}")
-    if num_vectors != num_vectors_based_on_ids:
-        print(f"vectors count mismatch: {num_vectors=} != {num_vectors_based_on_ids=}")
+    if num_vectors_based_on_ntotal != num_vectors_based_on_ids:
+        print(f"vectors count mismatch: {num_vectors_based_on_ntotal=} != {num_vectors_based_on_ids=}")
 
     for id, count in duplicate_ids:
         if count <= 1:
@@ -63,9 +63,9 @@ for dataset in datasets.all_datasets.values():
             print(chunk.file)
 
     # * compare # vectors to # IDs
-    if len(ids) != num_vectors:
+    if len(ids) != num_vectors_based_on_ntotal:
         logger.info(f"{len(ids)=}")
-        logger.info(f"{num_vectors=}")
-        logger.error(f"{len(ids)=} should match {num_vectors} number of vectors in faiss index, but does not.")
+        logger.info(f"{num_vectors_based_on_ntotal=}")
+        logger.error(f"{len(ids)=} should match {num_vectors_based_on_ntotal} number of vectors in faiss index, but does not.")
 
     # TODO find a way to verify the vectors "make sense"... relative to ID map...
