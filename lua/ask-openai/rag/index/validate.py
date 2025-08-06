@@ -40,9 +40,15 @@ for dataset in datasets.all_datasets.values():
     #
     duplicate_ids = dataset.index_view._check_for_duplicate_ids()
     # PRN turn into an index_view.exit_if_duplicates()?
-    for id in duplicate_ids:
-        logger.error(f"Duplicate ID found: {id}")
-    # chunk =
+    for id, count in duplicate_ids:
+        if count <= 1:
+            continue
+        logger.error(f"Duplicate ID found: {id} with {count}x")
+        chunk = datasets.get_chunk_by_faiss_id(id)
+        if chunk is None:
+            print("NO CHUNK")
+        else:
+            print(chunk.file)
 
     # * compare # vectors to # IDs
     if len(ids) != num_vectors:
