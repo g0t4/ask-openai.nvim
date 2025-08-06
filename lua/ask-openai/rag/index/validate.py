@@ -45,6 +45,7 @@ for dataset in datasets.all_datasets.values():
     #   ids = np.append(ids, ids[-1])
     #
     duplicate_ids = dataset.index_view._check_for_duplicate_ids()
+    # PRN turn into an index_view.exit_if_duplicates()?
     for id in duplicate_ids:
         error_duplicate_id(id)
 
