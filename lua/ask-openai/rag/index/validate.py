@@ -20,7 +20,7 @@ def print_type(what):
 
     print(type(what))
 
-detected_a_problem_overall = False
+any_problems = False
 
 for dataset in datasets.all_datasets.values():
     # PRN consider moving this onto the RAGDataset type or into an auxillary type for reuse on LSP startup, elsewhere
@@ -67,10 +67,10 @@ for dataset in datasets.all_datasets.values():
         logger.info(f'{num_vectors_based_on_ids=} {num_ids_based_on_ids=}')
         logger.info(f'{num_chunks_based_on_chunks=}')
 
-    detected_a_problem_overall = detected_a_problem_overall or any_problem_with_this_dataset
+    any_problems = any_problems or any_problem_with_this_dataset
     # TODO find a way to verify the vectors "make sense"... relative to ID map...
 
-if detected_a_problem_overall:
+if any_problems:
     logger.error("[bold red]AT LEAST ONE PROBLEM DISCOVERED")
     sys.exit(1)
 else:
