@@ -5,10 +5,10 @@ local meta = require("ask-openai.backends.models.meta")
 local files = require("ask-openai.helpers.files")
 
 
--- FYI! ONLY ONE AT A TIME or NONE for api/generate in ollama:
-local use_llama_cpp_server = false
+-- FYI! ONLY ONE AT A TIME (all false == /api/generate)
+local use_llama_cpp_server = true
 local use_ollama_chat = false
-local use_ollama_chat_completions = true
+local use_ollama_chat_completions = false
 
 ---@class OllamaFimBackend
 ---@field prefix string
