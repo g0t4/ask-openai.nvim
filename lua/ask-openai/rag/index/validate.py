@@ -21,6 +21,8 @@ def print_type(what):
 
     print(type(what))
 
+detected_a_problem = False
+
 for dataset in datasets.all_datasets.values():
     # print(f"{dataset=}")
     # PRN consider moving this onto the RAGDataset type or into an auxillary type for reuse on LSP startup, elsewhere
@@ -28,21 +30,32 @@ for dataset in datasets.all_datasets.values():
     num_vectors_based_on_ntotal = dataset.index_view.num_vectors()
 
     logger.info(f"{num_vectors_based_on_ntotal=}")
-    # print(f"{dataset.chunks_by_file.keys()=}")
-    # print(f"{dataset.stat_by_path.keys()=}")
 
     ids = dataset.index_view.ids
-    print_type(ids)
+    # print_type(ids)
+
+    # * compare # vectors to # IDs
+    if len(ids) != num_vectors_based_on_ntotal:
+        logger.info(f"{len(ids)=}")
+        logger.info(f"{num_vectors_based_on_ntotal=}")
+        logger.error(f"{len(ids)=} should match {num_vectors_based_on_ntotal} number of vectors in faiss index, but does not.")
 
     # * test for duplicate IDs
-    # test duplicate logic:
-    #   ids = np.append(ids, ids[-1])
-    #
     duplicate_ids = list(dataset.index_view._check_for_duplicate_ids())
     # PRN turn into an index_view.exit_if_duplicates()?
     num_vectors_based_on_ids = sum([count for _, count in duplicate_ids])
     num_ids_based_on_ids = len(duplicate_ids)
     num_chunks_based_on_chunks = sum([len(file) for file in dataset.chunks_by_file.values()])
+
+    for id, count in duplicate_ids:
+        if count <= 1:
+            continue
+        detected_a_problem = True
+        chunk = datasets.get_chunk_by_faiss_id(id)
+        if chunk is None:
+            logger.error(f"Duplicate ID found: {id} - {count}x - missing chunk too")
+        else:
+            logger.error(f"Duplicate ID found: {id} with {count}x - {chunk.file} L{chunk.start_line}-{chunk.end_line}")
 
     # look for mismatch in datasets (i.e. missing chunks or vectors for old chunks)
     print(f'{num_vectors_based_on_ids=} {num_ids_based_on_ids=}')
@@ -52,19 +65,10 @@ for dataset in datasets.all_datasets.values():
     if num_vectors_based_on_ntotal != num_vectors_based_on_ids:
         print(f"vectors count mismatch: {num_vectors_based_on_ntotal=} != {num_vectors_based_on_ids=}")
 
-    for id, count in duplicate_ids:
-        if count <= 1:
-            continue
-        chunk = datasets.get_chunk_by_faiss_id(id)
-        if chunk is None:
-            logger.error(f"Duplicate ID found: {id} - {count}x - missing chunk too")
-        else:
-            logger.error(f"Duplicate ID found: {id} with {count}x - {chunk.file} L{chunk.start_line}-{chunk.end_line}")
-
-    # * compare # vectors to # IDs
-    if len(ids) != num_vectors_based_on_ntotal:
-        logger.info(f"{len(ids)=}")
-        logger.info(f"{num_vectors_based_on_ntotal=}")
-        logger.error(f"{len(ids)=} should match {num_vectors_based_on_ntotal} number of vectors in faiss index, but does not.")
-
     # TODO find a way to verify the vectors "make sense"... relative to ID map...
+
+if detected_a_problem:
+    logger.error("[bold red]AT LEAST ONE PROBLEM DISCOVERED")
+    sys.exit(1)
+else:
+    logger.info("[bold green]ALL CHECKS PASS!")
