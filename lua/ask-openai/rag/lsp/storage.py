@@ -2,7 +2,7 @@ from dataclasses import dataclass, field
 import hashlib
 import json
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Protocol
 
 # * TORCH BEFORE FAISS (even if don't need torch here/yet)
 # model_qwen3/model_st (REMINDER when I go to rearrange again)
@@ -59,14 +59,26 @@ class Chunk(BaseModel):
         # for now just recompute and skip id_int:
         return chunk_id_to_faiss_id(self.id)
 
+# * FAISS type hint wrappers
+class Int64VectorIndex(Protocol):
+    """ Type hint wrapper for FAISS/swigfaiss runtime types so I can get some decent completions in dev """
+
+    def __len__(self) -> int:
+        ...
+
 class FaissIndexView:
-    """ wrapper around faiss index type, provide better typing and discovery """
+    """ Concrete wrapper around faiss index type, provide better typing AND hide inner workings"""
 
     def __init__(self, dataset: "RAGDataset"):
         self.dataset = dataset
 
     def num_vectors(self) -> int:
         return self.dataset.index.ntotal
+
+    @property
+    def id_map(self) -> Int64VectorIndex:
+        # under the hood: <class 'faiss.swigfaiss.Int64Vector'>
+        return self.dataset.index.id_map
 
 @dataclass
 class RAGDataset:
