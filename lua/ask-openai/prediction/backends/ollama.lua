@@ -6,9 +6,17 @@ local files = require("ask-openai.helpers.files")
 
 
 -- FYI! ONLY ONE AT A TIME (all false == /api/generate)
-local use_llama_cpp_server = true
-local use_ollama_chat = false
-local use_ollama_chat_completions = false
+local use_llama_server_completions = false -- qwen2.5-coder (w/ spec dec!)
+local use_ollama_api_completions = false
+local use_openaicompat_chat_completions = true
+
+-- * llama-server (llama-cpp)
+-- local url = "http://ollama:8012/completions" -- qwen2.5-coder w/ raw prompt uses this
+local url = "http://ollama:8012/chat/completions"
+-- * ollama
+-- local url = "http://ollama:11434/api/generate" -- ollama serve
+-- local url = "http://ollama:11434/api/chat"
+-- local url = "http://ollama:11434/v1/chat/completions"
 
 ---@class OllamaFimBackend
 ---@field prefix string
@@ -40,15 +48,6 @@ function OllamaFimBackend:new(prefix, suffix, rag_matches)
 end
 
 function OllamaFimBackend:request_options()
-    local url = "http://ollama:11434/api/generate" -- ollama serve
-    if use_llama_cpp_server then
-        url = "http://ollama:8012/completions" -- llama-server
-    elseif use_ollama_chat then
-        url = "http://ollama:11434/api/chat" -- TODO OR /chat/completions? for gpt-oss
-    elseif use_ollama_chat_completions then
-        url = "http://ollama:11434/v1/chat/completions" -- TODO OR /chat/completions? for gpt-oss
-    end
-
     local options = {
         command = "curl",
         args = {
@@ -253,11 +252,11 @@ function OllamaFimBackend.process_sse(data)
         local success, parsed = pcall(vim.json.decode, event_json)
 
         if success and parsed then
-            if use_llama_cpp_server then
+            if use_llama_server_completions then
                 parsed_chunk, done, done_reason = parse_llama_cpp_server(parsed)
-            elseif use_ollama_chat_completions then
+            elseif use_openaicompat_chat_completions then
                 parsed_chunk, done, done_reason, thinking = parse_sse_oai_chat_completions(parsed)
-            elseif use_ollama_chat then
+            elseif use_ollama_api_completions then
                 parsed_chunk, done, done_reason = parse_sse_ollama_chat(parsed)
             else
                 parsed_chunk, done, done_reason = parse_ollama_api_generate(parsed)
