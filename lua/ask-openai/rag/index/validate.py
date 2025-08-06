@@ -55,12 +55,11 @@ for dataset in datasets.all_datasets.values():
     for id, count in duplicate_ids:
         if count <= 1:
             continue
-        logger.error(f"Duplicate ID found: {id} with {count}x")
         chunk = datasets.get_chunk_by_faiss_id(id)
         if chunk is None:
-            print("NO CHUNK")
+            logger.error(f"Duplicate ID found: {id} - {count}x - missing chunk too")
         else:
-            print(chunk.file)
+            logger.error(f"Duplicate ID found: {id} with {count}x - {chunk.file} L{chunk.start_line}-{chunk.end_line}")
 
     # * compare # vectors to # IDs
     if len(ids) != num_vectors_based_on_ntotal:
