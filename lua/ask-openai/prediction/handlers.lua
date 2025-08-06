@@ -112,11 +112,6 @@ function M.ask_for_prediction()
 
     local document_prefix, document_suffix = get_prefix_suffix()
 
-    function send_chat_fim(rag_matches)
-        -- TODO try gpt-oss with chat prompt for FIM
-        -- see notes in NOTES.md
-    end
-
     function send_fim(rag_matches)
         -- use rag_matches ~= nil b/c hot mess of other calls here when rag not used -- TODO CLEANUP NONSENSE WES
         if enable_rag and rag_matches ~= nil and M.rag_cancel == nil then
