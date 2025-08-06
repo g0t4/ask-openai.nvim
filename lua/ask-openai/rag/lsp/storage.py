@@ -83,9 +83,8 @@ class FaissIndexView:
         return cast(Int64Vector, faiss.vector_to_array(self.dataset.index.id_map))
 
     def check_for_duplicate_ids(self):
-        duplicates = set()
-        for id in sorted(self.ids):
-            duplicates.add(id)
+        unique, counts = np.unique(self.ids, return_counts=True)
+        duplicates = unique[counts > 1]
         return duplicates
 
 @dataclass
