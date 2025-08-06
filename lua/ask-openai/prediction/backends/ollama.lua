@@ -4,7 +4,7 @@ local fim = require("ask-openai.backends.models.fim")
 local meta = require("ask-openai.backends.models.meta")
 local files = require("ask-openai.helpers.files")
 
-local use_llama_cpp_server = true
+local use_llama_cpp_server = false
 
 
 ---@class OllamaFimBackend
