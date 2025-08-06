@@ -174,10 +174,15 @@ function M.on_delta(choice, frontend, request)
     end
 
     if choice.delta.content ~= nil then
-        message.content = (message.content or "") .. choice.delta.content
+        if choice.delta.content == vim.NIL then
+            log:error("TODO FIND OUT IF THIS MATTERS - my guess is NO but still check - content is null (in json) or vim.NIL in parsed on first delta (when using llama-server + gpt-oss)?", vim.inspect(choice))
+        else
+            message.content = (message.content or "") .. choice.delta.content
+        end
     end
 
     if choice.finish_reason ~= nil then
+        -- FYI this is vim.NIL on first too
         -- TODO is finish_reason per message OR the entire request!?
         -- PRN throw if finish_reason already set?
         message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
