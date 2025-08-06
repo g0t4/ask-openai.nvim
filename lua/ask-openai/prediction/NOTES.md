@@ -5,14 +5,14 @@
 
 ## Chat Based FIM with gpt-oss
 
-"prompt": "You are a concise assistant. Do not preface your response with 'Thinking...' or other filler.",
+- Reasoning effort:
+  - described in: https://cdn.openai.com/pdf/419b6906-9da6-406c-a19d-1bb078ac7637/oai_gpt-oss_model_card.pdf
+  - add to System Prompt with "Reasoning: high" (high medium low)
+  - FYI seems to be tied to complexity of the code you are FIM'ing too... went faster for shorter code inputs (not b/c of input processing time but literally I watched thinking time take longer)
 
-FYI this worked:
-"model": "gpt-oss:20b",
 "prompt": "I need you to fill-in-the-middle of the following code (FIM)... do not generate anything but the code at <GAP> def fib(n):\n    \"\"\"Return the nth Fibonacci number.\"\"\"\n    # <GAP>\n    return\n",
 "temperature": 0.0,
 "max_tokens": 128,
-"stop": ["\n", "\n\n"]
 
 ## TODOs
 

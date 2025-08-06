@@ -7,7 +7,8 @@ local files = require("ask-openai.helpers.files")
 
 -- FYI! ONLY ONE AT A TIME or NONE for api/generate in ollama:
 local use_llama_cpp_server = false
-local use_ollama_chat = true
+local use_ollama_chat = false
+local use_ollama_chat_completions = true
 
 ---@class OllamaFimBackend
 ---@field prefix string
@@ -44,7 +45,10 @@ function OllamaFimBackend:request_options()
         url = "http://ollama:8012/completions" -- llama-server
     elseif use_ollama_chat then
         url = "http://ollama:11434/api/chat" -- TODO OR /chat/completions? for gpt-oss
+    elseif use_ollama_chat_completions then
+        url = "http://ollama:11434/v1/chat/completions" -- TODO OR /chat/completions? for gpt-oss
     end
+
     local options = {
         command = "curl",
         args = {
@@ -251,6 +255,8 @@ function OllamaFimBackend.process_sse(data)
         if success and parsed then
             if use_llama_cpp_server then
                 parsed_chunk, done, done_reason = parse_llama_cpp_server(parsed)
+            elseif use_ollama_chat_completions then
+                parsed_chunk, done, done_reason, thinking = parse_sse_oai_chat_completions(parsed)
             elseif use_ollama_chat then
                 parsed_chunk, done, done_reason = parse_sse_ollama_chat(parsed)
             else
@@ -263,6 +269,26 @@ function OllamaFimBackend.process_sse(data)
     end
     -- TODO test passing back finish_reason (i.e. for an empty prediction log entry)
     return chunk, done, done_reason
+end
+
+function parse_sse_oai_chat_completions(sse)
+    content = ""
+    if sse.choices and sse.choices[1] then
+        content = sse.choices[1].delta.content
+        reasoning = sse.choices[1].delta.reasoning
+        -- TODO SHOW THINKING!!!?
+    end
+    done = sse.finish_reason ~= nil -- or "null"?
+    finish_reason = sse.finish_reason
+    return content, done, finish_reason, reasoning
+
+    -- * gpt-oss:20b chat/completions ollama example:
+    -- reasoning/thinking content (full message, all fields):
+    --   {"id":"chatcmpl-900","object":"chat.completion.chunk","created":1754453131,"model":"gpt-oss:20b","system_fingerprint":"fp_ollama",
+    --     "choices":[{"index":0,"delta":{"role":"assistant","content":"","reasoning":"?"},"finish_reason":null}]}
+    -- content:
+    --   "choices":[{"index":0,"delta":{"role":"assistant","content":" }"},"finish_reason":null}]}
+    --   "choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop"}]}
 end
 
 function parse_sse_ollama_chat(sse)

@@ -18,7 +18,10 @@ M.gpt_oss = {
 
 function M.gpt_oss.get_fim_chat_messages(request)
     local system_prompt = "Your response will be used for code completion in neovim"
-        .. ", in a FIM (fill-in-the-middle) pluging that genrates code as the user types"
+        .. ", in a FIM (fill-in-the-middle) pluging that genrates code as the user types. \n"
+        .. "Reasoning: low"
+    -- .. "\nReasoning: high"
+    -- .. "Reasoning: medium"
 
     local messages = {
         { role = "system", content = system_prompt }
