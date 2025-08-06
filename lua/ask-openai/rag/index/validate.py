@@ -14,24 +14,17 @@ class DatasetsValidator:
     def validate(self):
 
         for dataset in self.datasets.all_datasets.values():
-
-            num_vectors_based_on_ntotal = dataset.index_view.num_vectors()
-
-            logger.info(f"{num_vectors_based_on_ntotal=}")
-
             any_problem_with_this_dataset = False
-            ids = dataset.index_view.ids
 
             # * compare # vectors to # IDs
+            num_vectors_based_on_ntotal = dataset.index_view.num_vectors()
+            ids = dataset.index_view.ids
             if len(ids) != num_vectors_based_on_ntotal:
-                logger.info(f"{len(ids)=}")
-                logger.info(f"{num_vectors_based_on_ntotal=}")
-                logger.error(f"{len(ids)=} should match {num_vectors_based_on_ntotal} number of vectors in faiss index, but does not.")
+                logger.error(f"{len(ids)=} != {num_vectors_based_on_ntotal=}")
                 any_problem_with_this_dataset = True
 
             # * test for duplicate IDs
             duplicate_ids = list(dataset.index_view._check_for_duplicate_ids())
-
             for id, count in duplicate_ids:
                 if count <= 1:
                     continue
@@ -56,6 +49,8 @@ class DatasetsValidator:
                 logger.error(f"vectors count mismatch: {num_vectors_based_on_ntotal=} != {num_vectors_based_on_ids=}")
 
             if any_problem_with_this_dataset:
+                logger.info(f"{num_vectors_based_on_ntotal=}")
+
                 # look for mismatch in datasets (i.e. missing chunks or vectors for old chunks)
                 logger.info(f'{num_vectors_based_on_ids=} {num_unique_ids_based_on_ids=}')
                 logger.info(f'{num_chunks_based_on_chunks=}')
