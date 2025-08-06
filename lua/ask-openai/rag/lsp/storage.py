@@ -86,7 +86,7 @@ class FaissIndexView:
         """ NOTE: there should NOT be any duplicates """
         ids, counts = np.unique(self.ids, return_counts=True)
         for index, id in enumerate(ids):
-            # FUCK THE SHIT YOU HAVE TO DO TO GET PYRIGHT TO STFU about everything being an NDArray[NDArray[]] when elements are ALWAYS SCALARS
+            # this yucky approach to zip was just to shut up pyright without a bunch of other BS casts
             id = ids[index]
             count = int(counts[index])
             yield (id, count)
