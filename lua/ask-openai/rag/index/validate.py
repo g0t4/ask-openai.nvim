@@ -42,8 +42,8 @@ for dataset in datasets.all_datasets.values():
 
     # * compare # vectors to # IDs
     if len(ids) != dataset.index.ntotal:
-        print(f"{len(ids)=}")
-        print(f"{dataset.index.ntotal=}")
+        logger.info(f"{len(ids)=}")
+        logger.info(f"{dataset.index.ntotal=}")
         logger.error(f"ERROR - VECTORS COUNT DOES NOT MATCH ID COUNTS")
 
     # TODO find a way to verify the vectors "make sense"... relative to ID map...
