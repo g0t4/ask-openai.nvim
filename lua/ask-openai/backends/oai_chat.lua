@@ -10,7 +10,7 @@ end
 M.terminate = curl.terminate
 
 function M.parse_choice(choice)
-    -- TODO PUSH this entire class out into rewrites (only spot used)
+    -- ??? PUSH this entire class out into rewrites (only spot used)
     --  above is just a URL contant  (and body is chat/completions specific too so this is all DUMB, nothing is swappable)
     --  two primary points of difference:
     --    body/url of request
