@@ -113,6 +113,12 @@ function M.process_chunk(chunk, sse)
             local line_above_0based = row_1based - 1
             if line_above_0based < 0 then line_above_0based = 0 end
 
+            -- clear any previous stats extmarks in this namespace
+            vim.api.nvim_buf_clear_namespace(0, stats_ns, 0, -1)
+
+            -- debug: log the tokens per second and predicted token count
+            vim.notify(string.format("Debug: Tokens/sec=%.1f, predicted_n=%d", pps, sse.timings.predicted_n), vim.log.levels.INFO)
+
             vim.api.nvim_buf_set_extmark(0, stats_ns, line_above_0based, 0, {
                 virt_text = { {
                     string.format("Tokens/sec: %.1f predicted n: %d", pps, sse.timings.predicted_n),
