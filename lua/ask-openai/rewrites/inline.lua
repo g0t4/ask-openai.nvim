@@ -109,11 +109,11 @@ function M.process_chunk(chunk, sse)
             local stats_ns = vim.api.nvim_create_namespace("ask-prediction-stats")
 
             -- get current cursor row (1-indexed)
-            local row, _ = unpack(vim.api.nvim_win_get_cursor(0))
-            local line_above = row - 1
-            if line_above < 1 then line_above = 1 end
+            local row_1based, _ = unpack(vim.api.nvim_win_get_cursor(0))
+            local line_above_0based = row_1based - 1
+            if line_above_0based < 0 then line_above_0based = 0 end
 
-            vim.api.nvim_buf_set_extmark(0, stats_ns, line_above - 1, 0, {
+            vim.api.nvim_buf_set_extmark(0, stats_ns, line_above_0based, 0, {
                 virt_text = { {
                     string.format("Tokens/sec: %.1f predicted n: %d", pps, sse.timings.predicted_n),
                     "AskPrediction",
