@@ -111,7 +111,8 @@ M.on_chunk = function(data, parse_choice, frontend, request)
         if success and parsed and parsed.choices and parsed.choices[1] then
             local first_choice = parsed.choices[1]
 
-            M.on_delta_update_message_history(first_choice, frontend, request) -- IIUC message history only used by ask
+            -- IIUC this is just message history related
+            M.on_delta_update_message_history(first_choice, frontend, request)
             frontend.handle_messages_updated()
 
             -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
@@ -175,7 +176,9 @@ function M.on_delta_update_message_history(choice, frontend, request)
 
     if choice.delta.content ~= nil then
         if choice.delta.content == vim.NIL then
-            log:error("TODO FIND OUT IF THIS MATTERS - my guess is NO but still check - content is null (in json) or vim.NIL in parsed on first delta (when using llama-server + gpt-oss)?", vim.inspect(choice))
+            log:error("TODO FIND OUT IF THIS MATTERS - my guess is NO but still check - content is null (in json) or vim.NIL in parsed on first delta (when using llama-server + gpt-oss)?",
+                vim.inspect(choice))
+            -- TODO return?
         else
             message.content = (message.content or "") .. choice.delta.content
         end

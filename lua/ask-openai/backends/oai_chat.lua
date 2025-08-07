@@ -97,7 +97,10 @@ M.terminate = curl.terminate
 
 -- * differs vs /v1/completions endpoint
 function M.parse_choice(choice)
-    if choice.delta == nil then
+    -- TODO reasoning if already extracted?
+    -- choice.delta.reasoning?/thinking? ollama splits this out, IIUC LM Studio does too... won't work if using harmony format with gpt-oss and its not parsed
+
+    if choice.delta == nil or choice.delta.content == nil or choice.delta.content == vim.NIL then
         log:warn("WARN - unexpected, no delta in completion choice, what gives?!")
         return ""
     end
