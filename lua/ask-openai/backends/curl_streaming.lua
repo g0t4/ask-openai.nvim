@@ -71,7 +71,34 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
         end
 
         -- TODO catch exception and terminate response me thinks
-        M.on_line_or_lines(data, parse_choice, frontend, request)
+        local success, result = xpcall(function()
+            M.on_line_or_lines(data, parse_choice, frontend, request)
+        end, function(e)
+            return debug.traceback(e, 2)
+        end)
+
+        if not success then
+            -- FAIL EARLY, accept NO unexpected exceptions in completion parsing
+            log:error("Terminating curl_streaming due to unhandled exception", result)
+
+            local function print_error(message)
+                -- replace literal \n with new line, tabs too so traceback is pretty printed (readable)
+                message = tostring(message):gsub("\\n", "\n"):gsub("\\t", "\t")
+
+                -- with traceback lines... this will trigger hit-enter mode
+                --  therefore the error will not disappear into message history!
+                -- ErrorMsg makes it red
+                vim.api.nvim_echo({ { message, "ErrorMsg" } }, true, {})
+            end
+
+            vim.schedule(function()
+                -- vim.api.nvim_err_writeln("Terminating curl_streaming due to unhandled exception" .. vim.inspect(result))
+                -- vim.api.nvim_err_writeln(result)
+                -- vim.notify("Terminating curl_streaming due to unhandled exception" .. vim.inspect(result), vim.log.levels.ERROR)
+                print_error("Terminating curl_streaming due to unhandled exception" .. vim.inspect(result))
+            end)
+            M.terminate(request)
+        end
     end
     uv.read_start(stdout, options.on_stdout)
 
