@@ -70,6 +70,7 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
             return
         end
 
+        -- TODO catch exception and terminate response me thinks
         M.on_chunk(data, parse_choice, frontend, request)
     end
     uv.read_start(stdout, options.on_stdout)
