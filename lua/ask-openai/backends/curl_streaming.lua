@@ -71,7 +71,7 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
         end
 
         -- TODO catch exception and terminate response me thinks
-        M.on_chunk(data, parse_choice, frontend, request)
+        M.on_line_or_lines(data, parse_choice, frontend, request)
     end
     uv.read_start(stdout, options.on_stdout)
 
@@ -93,7 +93,7 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
     return request
 end
 
-M.on_chunk = function(data, parse_choice, frontend, request)
+M.on_line_or_lines = function(data, parse_choice, frontend, request)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
