@@ -39,7 +39,6 @@ listener.listen()
 clear_iterm_scrolback = "\x1b]1337;ClearScrollback\a"
 print(clear_iterm_scrolback)
 rich.print("[green bold]Server ready...")
-rich.print(f'[red bold]', qwen3.model.device)
 
 def signal_handler(sig, frame):
     print('You pressed Ctrl+C!')
