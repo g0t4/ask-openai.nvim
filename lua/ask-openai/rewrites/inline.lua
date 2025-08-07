@@ -106,7 +106,7 @@ function M.process_chunk(chunk, sse)
             -- TODO move into Displayer and clear on accept
 
             local current_cursor_row_1based, _ = unpack(vim.api.nvim_win_get_cursor(0))
-            local current_cursor_row_0based = current_cursor_row_1based - 1
+            local current_cursor_row_0based = current_cursor_row_1based - 2
             if current_cursor_row_0based < 0 then current_cursor_row_0based = 0 end
 
             vim.api.nvim_buf_set_extmark(0, M.displayer.marks.namespace_id, current_cursor_row_0based, 0, {
