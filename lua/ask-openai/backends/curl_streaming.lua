@@ -149,8 +149,9 @@ M.on_line_or_lines = function(data, parse_choice, frontend, request)
             -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
             local chunk = parse_choice(first_choice)
             if chunk and frontend.process_chunk then
-                frontend.process_chunk(chunk)
+                frontend.process_chunk(chunk, parsed)
             end
+
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
