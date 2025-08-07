@@ -97,7 +97,9 @@ function M.process_chunk(chunk, sse)
         M.displayer:on_response(M.selection, lines)
     end)
     if sse.timings then
-        print("tokens/sec", sse.timings.predicted_per_second)
+        local pps = math.floor(sse.timings.predicted_per_second * 10 + 0.5) / 10
+        print("tokens/sec", pps, "predicted_n", sse.timings.predicted_n)
+        log:info("Tokens/sec: ", pps, " predicted n: ", sse.timings.predicted_n)
     end
 end
 
