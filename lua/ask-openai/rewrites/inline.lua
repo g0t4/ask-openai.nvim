@@ -96,6 +96,9 @@ function M.process_chunk(chunk, sse)
     vim.schedule(function()
         M.displayer:on_response(M.selection, lines)
     end)
+    if sse.timings then
+        print("tokens/sec", sse.timings.predicted_per_second)
+    end
 end
 
 function M.handle_request_completed()
