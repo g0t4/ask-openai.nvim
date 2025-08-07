@@ -97,6 +97,10 @@ M.on_chunk = function(data, parse_choice, frontend, request)
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
     for ss_event in data:gmatch("[^\r\n]+") do
+        -- TODO! FIX for any exception when multiple SSEs and the remainder are lost... perhaps I should stop on a first failure? I would need to terminate somehow
+        --  catch and absorb OR raise out of here somehow?
+        -- log:trace("ss_event2" ss_event)
+
         if ss_event:match("^data:%s*%[DONE%]$") then
             goto ignore_done
         end
