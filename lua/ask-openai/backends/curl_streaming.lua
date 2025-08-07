@@ -70,21 +70,25 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
             return
         end
 
-        -- TODO catch exception and terminate response me thinks
+        -- TODO extract error handling: both the xpcall + traceback, and the print_error func below
         local success, result = xpcall(function()
             M.on_line_or_lines(data, parse_choice, frontend, request)
         end, function(e)
-            return debug.traceback(e, 2)
+            -- otherwise only get one line from the traceback (frame that exception was thrown)
+            return debug.traceback(e, 3)
         end)
 
         if not success then
+            M.terminate(request)
+
             -- FAIL EARLY, accept NO unexpected exceptions in completion parsing
+            -- by the way the request will go a bit longer but it will stop ASAP
+            -- important part is to alert me
             log:error("Terminating curl_streaming due to unhandled exception", result)
 
             local function print_error(message)
-                -- replace literal \n with new line, tabs too so traceback is pretty printed (readable)
+                -- replace literals so traceback is pretty printed (readable)
                 message = tostring(message):gsub("\\n", "\n"):gsub("\\t", "\t")
-
                 -- with traceback lines... this will trigger hit-enter mode
                 --  therefore the error will not disappear into message history!
                 -- ErrorMsg makes it red
@@ -92,12 +96,8 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
             end
 
             vim.schedule(function()
-                -- vim.api.nvim_err_writeln("Terminating curl_streaming due to unhandled exception" .. vim.inspect(result))
-                -- vim.api.nvim_err_writeln(result)
-                -- vim.notify("Terminating curl_streaming due to unhandled exception" .. vim.inspect(result), vim.log.levels.ERROR)
-                print_error("Terminating curl_streaming due to unhandled exception" .. vim.inspect(result))
+                print_error("Terminating curl_streaming due to unhandled exception" .. tostring(result))
             end)
-            M.terminate(request)
         end
     end
     uv.read_start(stdout, options.on_stdout)
