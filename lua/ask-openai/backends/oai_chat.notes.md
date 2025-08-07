@@ -1,0 +1,22 @@
+-- docs:
+--   https://platform.openai.com/docs/api-reference/chat
+--   https://docs.vllm.ai/en/stable/serving/openai_compatible_server.html#chat-api
+--   https://github.com/ollama/ollama/blob/main/docs/openai.md#v1chatcompletions
+--
+-- *** input parameters supported /v1/chat/completions
+--
+-- messages[]
+-- model
+-- max_tokens (deprecated, really just doesn't work with reasoning models, doesn't work for o1 models... why did they do this? theyliterally renamed the option and made new models not work with old one?!)
+--    max_completion_tokens (set max tokens including reasoning tokens)
+--
+-- stop
+-- seed, temperature, top_p, n, frequency_penalty, presence_penalty
+-- reasoning_effort
+-- response_format
+-- prediction { content, type } -- for spec decoding IIAC
+--
+-- parallel_tool_calls: default true
+-- tool_choice (none, auto, required) -- whether or not the model can/should use tools
+-- tools
+
