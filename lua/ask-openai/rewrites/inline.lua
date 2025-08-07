@@ -103,7 +103,7 @@ function M.process_chunk(chunk, sse)
         log:info("Tokens/sec: ", pps, " predicted n: ", sse.timings.predicted_n)
 
         vim.schedule(function()
-            -- create or reuse a namespace for the stats extmark
+            -- TODO move into Displayer and clear on accept
             local stats_ns = vim.api.nvim_create_namespace("ask-prediction-stats")
 
             local current_cursor_row_1based, _ = unpack(vim.api.nvim_win_get_cursor(0))
