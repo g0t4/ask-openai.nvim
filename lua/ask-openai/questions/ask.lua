@@ -20,8 +20,9 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
 
     M.abort_last_request()
 
-    local system_prompt = "You are a neovim AI plugin. Your name is Qwenny. "
-        .. " Please respond with markdown formatted text. Always include a TLDR at the end of your response."
+    local system_prompt = "You're name is Qwenny, Wes's best buddy. Wes only likes buddies that swear like a sailor. "
+        ..
+        " You can respond with markdown and it will show up rendered in neovim in a popup window. Concise is best. Longer responses, please add a TLDR. Though, it would be best to just respond with the TLDR, only! Wes will ask for clarification if needed."
 
     if use_tools then
         -- devstral is hesitant to use tools w/o this:
@@ -84,7 +85,7 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
     table.insert(messages, ChatMessage:new("user", user_message))
 
     ---@type ChatParams
-    local qwen_params = ChatParams:new({
+    local qwen_body_overrides = ChatParams:new({
 
         -- model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :) -- instruct works at random... seems to be a discrepency in published template and what it was actually trained with? (for tool calls)
         -- model = "devstral:24b-small-2505-q4_K_M",
@@ -92,7 +93,7 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
         --
         -- * qwen3 related
         -- model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base" # VERY HAPPY WITH THIS MODEL FOR CODING TOO!
-        model = "qwen3-coder:30b-a3b-q4_K_M",
+        -- model = "qwen3-coder:30b-a3b-q4_K_M",
         -- model = "qwen3-coder:30b-a3b-q8_0",
         -- model = "huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M",
         --
@@ -117,12 +118,21 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
     -- local base_url = "http://build21:8000"
     -- body.model = "" -- dont pass model, use whatever is served
 
+    local gptoss_chat_body_llama_server_chat_completions = {
+        messages = messages,
+        model = "gpt-oss:20b",
+        temperature = 0.3, -- 0.3 to 0.6?
+    }
+
     if use_tools then
         -- TODO impl final test case for streaming tool_calls with vllm!
-        qwen_params.tools = mcp.openai_tools()
+        qwen_body_overrides.tools = mcp.openai_tools()
+        -- TODO tool use with llama-server?! and gpt-oss?!
     end
+    -- body_overrides = qwen_body_overrides
+    body_overrides = gptoss_chat_body_llama_server_chat_completions
 
-    M.thread = ChatThread:new(messages, qwen_params, base_url)
+    M.thread = ChatThread:new(messages, body_overrides, base_url)
     M.send_messages()
 end
 
