@@ -108,11 +108,21 @@ function M.process_chunk(chunk, sse)
             local current_cursor_row_0based = current_cursor_row_1based - 2
             if current_cursor_row_0based < 0 then current_cursor_row_0based = 0 end
 
-            vim.api.nvim_buf_set_extmark(0, M.displayer.marks.namespace_id, current_cursor_row_0based, 0, {
-                virt_text = { {
-                    string.format("Tokens/sec: %.1f predicted n: %d", pps, sse.timings.predicted_n),
+            local virt_text = {
+                {
+                    string.format(
+                        "Tokens/sec: %.1f predicted n: %d | Prompt Tokens/sec: %.1f prompt n: %d",
+                        pps,
+                        sse.timings.predicted_n,
+                        sse.timings.prompt_per_second,
+                        sse.timings.prompt_n
+                    ),
                     "AskPrediction",
-                } },
+                },
+            }
+
+            vim.api.nvim_buf_set_extmark(0, M.displayer.marks.namespace_id, current_cursor_row_0based, 0, {
+                virt_text = virt_text,
                 virt_text_pos = "eol",
                 hl_mode = "combine",
             })
