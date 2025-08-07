@@ -72,7 +72,7 @@ function M.handle_messages_updated()
     --   do smth in the normalizer for that or still have a sep pathway per delta (no chunkin though?)
 end
 
-function M.process_chunk(chunk)
+function M.process_chunk(chunk, sse)
     if not chunk then return end
 
     M.accumulated_chunks = M.accumulated_chunks .. chunk
