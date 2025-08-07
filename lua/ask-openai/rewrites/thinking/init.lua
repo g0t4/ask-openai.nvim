@@ -25,18 +25,23 @@ M.ThinkingStatus = {
 ---@return string[] stripped_lines, ThinkingStatus status
 function M.strip_thinking_tags(lines)
     local text = table.concat(lines, "\n")
-    -- local open_start, open_end = text:find("^%s*<" .. M.thinking_tag .. ">") -- <think> approach
-    local open_start, open_end = text:find("^<|channel|>analysis<|message|>")
+
+    -- * allow either <think> or harmony!
+    local open_start, open_end = text:find("^%s*<" .. M.thinking_tag .. ">") -- <think> approach
     if open_start == nil then
-        -- TODO! REMOVE ONCE SSE FIXED
-        open_start, open_end = text:find("^analysis<|message|>")
+        open_start, open_end = text:find("^<|channel|>analysis<|message|>")
     end
     -- log:trace("combined_text", text)
     if not open_start then
         return lines, M.ThinkingStatus.NoThinkingTags
     end
-    -- local close_start, close_end = text:find("</" .. M.thinking_tag .. ">", open_end + 1) -- </think>
-    local close_start, close_end = text:find("<|start|>assistant<|channel|>final<|message|>", open_end + 1)
+
+    -- * allow either </think> or harmony!
+    local close_start, close_end = text:find("</" .. M.thinking_tag .. ">", open_end + 1) -- </think>
+    if not close_start then
+        close_start, close_end = text:find("<|start|>assistant<|channel|>final<|message|>", open_end + 1)
+    end
+
     if not close_start then
         return lines, M.ThinkingStatus.Thinking
     end
