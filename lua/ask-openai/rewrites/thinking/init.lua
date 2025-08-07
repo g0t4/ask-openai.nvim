@@ -31,6 +31,7 @@ function M.strip_thinking_tags(lines)
         -- TODO! REMOVE ONCE SSE FIXED
         open_start, open_end = text:find("^analysis<|message|>")
     end
+    -- log:trace("combined_text", text)
     if not open_start then
         return lines, M.ThinkingStatus.NoThinkingTags
     end
