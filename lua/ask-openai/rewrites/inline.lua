@@ -103,8 +103,7 @@ function M.process_chunk(chunk, sse)
         log:info("Tokens/sec: ", pps, " predicted n: ", sse.timings.predicted_n)
 
         vim.schedule(function()
-            -- TODO move into Displayer and clear on accept
-
+            -- PRN move into dispatcher where this belongs w/ diff preview
             local current_cursor_row_1based, _ = unpack(vim.api.nvim_win_get_cursor(0))
             local current_cursor_row_0based = current_cursor_row_1based - 2
             if current_cursor_row_0based < 0 then current_cursor_row_0based = 0 end
