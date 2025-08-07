@@ -10,17 +10,19 @@ function M.curl_for(body, base_url, frontend)
         return
     end
 
-    return curl.reusable_curl_seam(body, url, frontend, M.parse_choice, M)
+    local function parse_choice(choice)
+        if choice.text == nil then
+            log:warn("WARN - unexpected, no choice in completion, do you need to add special logic to handle this?")
+            return ""
+        end
+        return choice.text
+    end
+
+    return curl.reusable_curl_seam(body, url, frontend, parse_choice, M)
 end
 
 M.terminate = curl.terminate
 
-function M.parse_choice(choice)
-    if choice.text == nil then
-        log:warn("WARN - unexpected, no choice in completion, do you need to add special logic to handle this?")
-        return ""
-    end
-    return choice.text
-end
+
 
 return M
