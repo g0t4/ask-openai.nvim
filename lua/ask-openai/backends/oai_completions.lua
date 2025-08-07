@@ -20,7 +20,6 @@ function M.parse_choice(choice)
         log:warn("WARN - unexpected, no choice in completion, do you need to add special logic to handle this?")
         return ""
     end
-    -- no tool calls in /v1/completions (so just pass nil)
     return choice.text
 end
 
