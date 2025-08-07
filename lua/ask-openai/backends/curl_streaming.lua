@@ -71,6 +71,7 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
         end
 
         -- TODO extract error handling: both the xpcall + traceback, and the print_error func below
+        -- FYI good test case is to comment out: choice.delta.content == vim.NIL in parse_choice
         local success, result = xpcall(function()
             M.on_line_or_lines(data, parse_choice, frontend, request)
         end, function(e)
