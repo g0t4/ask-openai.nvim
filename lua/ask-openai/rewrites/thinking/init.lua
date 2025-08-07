@@ -36,6 +36,9 @@ function M.strip_thinking_tags(lines)
         return lines, M.ThinkingStatus.NoThinkingTags
     end
 
+
+    -- PRN ensure same ending type as start type, NBD unless talking to <think> model about harmony :)
+
     -- * allow either </think> or harmony!
     local close_start, close_end = text:find("</" .. M.thinking_tag .. ">", open_end + 1) -- </think>
     if not close_start then
