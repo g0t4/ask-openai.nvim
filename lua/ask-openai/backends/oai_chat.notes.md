@@ -1,3 +1,5 @@
+## OpenAI compatible /v1/chat/completions endpoint
+
 -- docs:
 --   https://platform.openai.com/docs/api-reference/chat
 --   https://docs.vllm.ai/en/stable/serving/openai_compatible_server.html#chat-api
