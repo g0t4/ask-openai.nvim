@@ -97,27 +97,21 @@ function M.process_chunk(chunk, sse)
         M.displayer:on_response(M.selection, lines)
     end)
 
-    -- after printing the stats
     if sse.timings then
         local pps = math.floor(sse.timings.predicted_per_second * 10 + 0.5) / 10
         print("tokens/sec", pps, "predicted_n", sse.timings.predicted_n)
         log:info("Tokens/sec: ", pps, " predicted n: ", sse.timings.predicted_n)
 
-        -- schedule extmark update so it shows immediately
         vim.schedule(function()
             -- create or reuse a namespace for the stats extmark
             local stats_ns = vim.api.nvim_create_namespace("ask-prediction-stats")
 
-            -- get current cursor row (1-indexed)
-            local row_1based, _ = unpack(vim.api.nvim_win_get_cursor(0))
-            local line_above_0based = row_1based - 1
+            local current_cursor_row_1based, _ = unpack(vim.api.nvim_win_get_cursor(0))
+            local line_above_0based = current_cursor_row_1based - 1
             if line_above_0based < 0 then line_above_0based = 0 end
 
             -- clear any previous stats extmarks in this namespace
             vim.api.nvim_buf_clear_namespace(0, stats_ns, 0, -1)
-
-            -- debug: log the tokens per second and predicted token count
-            vim.notify(string.format("Debug: Tokens/sec=%.1f, predicted_n=%d", pps, sse.timings.predicted_n), vim.log.levels.INFO)
 
             vim.api.nvim_buf_set_extmark(0, stats_ns, line_above_0based, 0, {
                 virt_text = { {
