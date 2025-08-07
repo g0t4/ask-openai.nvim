@@ -112,7 +112,8 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
     -- PRN split agentica into messages and params
 
     -- ollama:
-    local base_url = "http://ollama:11434"
+    -- local base_url = "http://ollama:11434"
+    local base_url = "http://build21:8013"
     --
     -- vllm:
     -- local base_url = "http://build21:8000"
