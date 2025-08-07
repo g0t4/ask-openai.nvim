@@ -45,3 +45,11 @@ However, <|end|> and <|return|> are both stripped by llama-server
   <|start|>assistant<|channel|>final<|message|>
 - FYI seems like llama-cpp's chat app does this too:
     https://github.com/ggml-org/llama.cpp/blob/3db4da56/common/chat.cpp#L1323
+
+## * gpt-oss:20b first stdout has two SSEs and first is only one parsed
+
+[TRACE] on_stdout data: data: {"choices":[{"finish_reason":null,"index":0,"delta":{"role":"assistant","content":null}}],"created":1754544631,"id":"chatcmpl-5cW7mFM6xD9ZRdrIZBhnCZo8QvLru6aj","model":"gpt-oss:20b","system_fingerprint":"b6103-3db4da56","object":"chat.completion.chunk"}
+
+data: {"choices":[{"finish_reason":null,"index":0,"delta":{"content":"<|channel|>"}}],"created":1754544631,"id":"chatcmpl-5cW7mFM6xD9ZRdrIZBhnCZo8QvLru6aj","model":"gpt-oss:20b","system_fingerprint":"b6103-3db4da56","object":"chat.completion.chunk"}
+
+
