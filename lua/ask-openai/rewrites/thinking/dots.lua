@@ -2,11 +2,6 @@ local M = {}
 
 M.count = 0
 M.dots = ""
-M.start_time = nil
-
-function M.set_start_time(self)
-    self.start_time = os.time()
-end
 
 local function human_readable(seconds)
     local hrs = math.floor(seconds / 3600)
@@ -19,7 +14,7 @@ local function human_readable(seconds)
     return table.concat(parts, " ")
 end
 
-function M.get_still_thinking_message(self)
+function M.get_still_thinking_message(self, start_time)
     self.count = self.count + 1
     if self.count % 4 == 0 then
         self.dots = self.dots .. "."
@@ -29,8 +24,8 @@ function M.get_still_thinking_message(self)
         self.count = 0
     end
     local duration = ""
-    if self.start_time then
-        duration = human_readable(os.time() - self.start_time)
+    if start_time then
+        duration = human_readable(os.time() - start_time)
     end
     return "thinking: " .. duration .. " ⏳" .. M.dots
 end

@@ -19,6 +19,7 @@ function LastRequest:new(body)
     self.pid = nil
     self.thread = nil -- TODO pass thread in ctor?
     self.messages = {}
+    self.start_time = os.time()
     return self
 end
 

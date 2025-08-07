@@ -81,7 +81,7 @@ function M.process_chunk(chunk)
     local thinking_status = nil
     lines, thinking_status = thinking.strip_thinking_tags(lines)
     if thinking_status == thinking.ThinkingStatus.Thinking then
-        lines = { thinking.dots:get_still_thinking_message() }
+        lines = { thinking.dots:get_still_thinking_message(M.last_request.start_time) }
         -- while thinking, we show the green text w/ ....
         vim.schedule(function() M.displayer:show_green_preview_text(M.selection, lines) end)
         return
