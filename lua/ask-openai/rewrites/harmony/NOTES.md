@@ -52,4 +52,31 @@ However, <|end|> and <|return|> are both stripped by llama-server
 
 data: {"choices":[{"finish_reason":null,"index":0,"delta":{"content":"<|channel|>"}}],"created":1754544631,"id":"chatcmpl-5cW7mFM6xD9ZRdrIZBhnCZo8QvLru6aj","model":"gpt-oss:20b","system_fingerprint":"b6103-3db4da56","object":"chat.completion.chunk"}
 
+## * llama-server stats on last delta
+
+```json
+{
+    "choices": [{ "finish_reason": "stop", "index": 0, "delta": {} }],
+    "created": 1754585743,
+    "id": "chatcmpl-2OrYcv4nD14KsYEcjDsTBuDAd6bEDOT2",
+    "model": "gpt-oss:20b",
+    "system_fingerprint": "b6103-3db4da56",
+    "object": "chat.completion.chunk",
+    "usage": {
+        "completion_tokens": 332,
+        "prompt_tokens": 892,
+        "total_tokens": 1224
+    },
+    "timings": {
+        "prompt_n": 721,
+        "prompt_ms": 136.23,
+        "prompt_per_token_ms": 0.18894590846047155,
+        "prompt_per_second": 5292.520002936211,
+        "predicted_n": 332,
+        "predicted_ms": 1253.787,
+        "predicted_per_token_ms": 3.7764668674698796,
+        "predicted_per_second": 264.79776868000704
+    }
+}
+```
 
