@@ -111,7 +111,7 @@ M.on_chunk = function(data, parse_choice, frontend, request)
         if success and parsed and parsed.choices and parsed.choices[1] then
             local first_choice = parsed.choices[1]
 
-            M.on_delta(first_choice, frontend, request)
+            M.on_delta_update_message_history(first_choice, frontend, request) -- IIUC message history only used by ask
             frontend.handle_messages_updated()
 
             -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
@@ -127,7 +127,7 @@ M.on_chunk = function(data, parse_choice, frontend, request)
     end
 end
 
-function M.on_delta(choice, frontend, request)
+function M.on_delta_update_message_history(choice, frontend, request)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
     -- rebuilds message as if sent `stream: false`
     -- for message history / follow up
