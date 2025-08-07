@@ -31,7 +31,6 @@ def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tenso
 model_path = 'Qwen/Qwen3-Embedding-0.6B'
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side='left')
 
-
 device = auto_device()
 if device.type == 'cuda':
     # TODO would bfloat16 work better on 5090s?
@@ -41,12 +40,22 @@ if device.type == 'cuda':
         device_map="auto",  # DO NOT also call model.to(device) too!, must let accelerate handle placement
     )
     # TODO test timing of shared vs not sharded (w/ device_map="auto") on dual 5090s... I doubt it helps materially, if not maybe just go with model.to("cuda") to use one only?
+elif device.type == 'cpu':
+    # CPU PERF SO FAR IS TERRIBLE!!!
+    # FYI IT WOULD BE OK TO RIP THIS OUT unless you find a different way b/c GPU is 20ms vs 2 sec timing per 8 item batch!
+    model_kwargs = dict(
+        # torch_dtype=torch.float32 # 4 sec per 8 item batch
+        # no torch_dtype set => ~2 sec
+        # float16 =>  13sec
+        device_map=None  # or omit it entirely
+    )
 else:
     raise ValueError("ONLY setup for CUDA device")
 
 model = AutoModel.from_pretrained(model_path, **model_kwargs)
 
-logger.debug(f'{model.hf_device_map=}')
+if hasattr(model, "hf_device_map"):
+    logger.debug(f'{model.hf_device_map=}')
 logger.info(f'[red bold] %s', model.device)
 
 def encode(input_texts):
