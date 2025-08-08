@@ -80,3 +80,10 @@ data: {"choices":[{"finish_reason":null,"index":0,"delta":{"content":"<|channel|
 }
 ```
 
+
+## * tool use
+
+```harmony
+srv  update_chat_: Parsing chat message: <|channel|>analysis<|message|>We need to run a command to get current directory. Use 'pwd'. Use the run_command tool.<|start|>assistant<|channel|>commentary to=functions.run_command json<|message|>{"command":"pwd"}
+Parsing input with format GPT-OSS: <|channel|>analysis<|message|>We need to run a command to get current directory. Use 'pwd'. Use the run_command tool.<|start|>assistant<|channel|>commentary to=functions.run_command json<|message|>{"command":"pwd"}
+```

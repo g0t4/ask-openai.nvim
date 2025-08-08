@@ -125,13 +125,16 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
         temperature = 0.3, -- 0.3 to 0.6?
     }
 
-    if use_tools then
-        -- TODO impl final test case for streaming tool_calls with vllm!
-        qwen_body_overrides.tools = mcp.openai_tools()
-        -- TODO tool use with llama-server?! and gpt-oss?!
-    end
     -- body_overrides = qwen_body_overrides
     body_overrides = gptoss_chat_body_llama_server_chat_completions
+
+    if use_tools then
+        log:info("USING TOOLS")
+        -- TODO impl final test case for streaming tool_calls with vllm!
+        qwen_body_overrides.tools = mcp.openai_tools()
+        -- TODO tool use with llama-server?!
+        body_overrides.tools = qwen_body_overrides.tools
+    end
 
     M.thread = ChatThread:new(messages, body_overrides, base_url)
     M.send_messages()
