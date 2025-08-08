@@ -103,6 +103,7 @@ function M.process_chunk(chunk, sse)
         log:info("Tokens/sec: ", pps, " predicted n: ", sse.timings.predicted_n)
 
         vim.schedule(function()
+
             -- PRN move into dispatcher where this belongs w/ diff preview
             local current_cursor_row_1based, _ = unpack(vim.api.nvim_win_get_cursor(0))
             local current_cursor_row_0based = current_cursor_row_1based - 2
@@ -117,7 +118,7 @@ function M.process_chunk(chunk, sse)
                         sse.timings.prompt_per_second,
                         sse.timings.prompt_n
                     ),
-                    "AskPrediction",
+                    "AskStats",
                 },
             }
 

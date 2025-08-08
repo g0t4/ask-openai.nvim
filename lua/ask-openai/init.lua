@@ -92,6 +92,11 @@ function M.start_predictions()
     -- SETUP hlgroup
     -- TODO make this configurable
     vim.api.nvim_set_hl(0, "AskPrediction", { italic = true, fg = "#dddddd" }) -- FYI can call repeatedly and no errors
+    vim.api.nvim_set_hl(0, "AskStats", {
+        fg = "#FFFF00",
+        bg = "NONE",
+        -- bold = true
+    })
 
     are_predictions_running = true
 end
