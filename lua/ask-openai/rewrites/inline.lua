@@ -205,8 +205,8 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     local enable_rag = api.is_rag_enabled()
 
     -- TODO if markdown is file type then strip out the markdown prohibition?
-    local markdown_exclusion = "You DO NOT wrap answers in markdown code blocks. "
-        .. "That means no triple backticks nor single backtick. "
+    local markdown_exclusion = "DO NOT wrap answers in markdown code blocks, which"
+        .. " means no triple backticks like ``` nor single backtick like ` ."
     if file_name:match(".*.md$") then
         markdown_exclusion = ""
     end
