@@ -1,5 +1,6 @@
 local log = require("ask-openai.logs.logger").predictions()
 local combined = require("devtools.diff.combined")
+local splitter = require("devtools.diff.splitter")
 local ExtmarksSet = require("ask-openai.rewrites.ExtmarksSet")
 local WindowController = require("ask-openai.rewrites.WindowController")
 local inspect = require("devtools.inspect")
@@ -85,7 +86,7 @@ end
 ---@param selection Selection
 function Displayer:on_response(selection, lines)
     local lines_text = table.concat(lines, "\n")
-    local diff = combined.combined_diff(selection.original_text, lines_text)
+    local diff = combined.combined_diff(selection.original_text, lines_text, splitter.split_code_into_words)
     -- log:info("diff:\n" .. inspect_diff(diff))
 
     local extmark_lines = vim.iter(diff):fold({ {} }, function(accum, chunk)
