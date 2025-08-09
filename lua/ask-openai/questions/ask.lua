@@ -112,8 +112,8 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
     -- PRN split agentica into messages and params
 
     -- ollama:
-    local base_url = "http://ollama:11434"
-    -- local base_url = "http://build21:8013"
+    -- local base_url = "http://ollama:11434"
+    local base_url = "http://build21:8013"
     --
     -- vllm:
     -- local base_url = "http://build21:8000"
@@ -122,7 +122,7 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
     local gptoss_chat_body_llama_server_chat_completions = {
         messages = messages,
         model = "gpt-oss:20b",
-        temperature = 0.3, -- TODO! dial in? 0.3 to 0.6? or diff?
+        temperature = 0.3, -- 0.3 to 0.6?
     }
 
     -- body_overrides = qwen_body_overrides
