@@ -164,23 +164,41 @@ function M.ask_for_prediction()
                 -- vim.notify("stats: gen_tps=" .. sse_result.stats.predicted_tokens_per_second)
                 -- OR vim.print would probably be equally useful and somewhat annoying too
                 -- TODO or extmarks in this mode?! or else branch with extmarks?
-                local message = "FIM Stats\n"
+                local messages = {}
+                table.insert(messages, "FIM Stats")
                 local stats = sse_result.stats
-                message = message .. "\nin: " .. stats.prompt_tokens .. " tokens @ " .. stats.prompt_tokens_per_second .. " tokens/sec"
-                message = message .. "\nout: " .. stats.predicted_tokens .. " tokens @ " .. stats.predicted_tokens_per_second .. " tokens/sec"
+                table.insert(messages, string.format("\nin: %d tokens @ %d tokens/sec", stats.prompt_tokens, stats.prompt_tokens_per_second))
+                table.insert(messages, string.format("\nout: %d tokens @ %d tokens/sec", stats.predicted_tokens, stats.predicted_tokens_per_second))
 
                 if stats.cached_tokens ~= nil then
-                    message = message .. "\ncached: " .. stats.cached_tokens .. " tokens"
+                    table.insert(messages, string.format("\ncached: %d tokens", stats.cached_tokens))
                 end
 
                 if stats.draft_tokens ~= nil then
-                    message = message .. "\ndraft: " .. stats.draft_tokens .. " tokens, " .. stats.draft_tokens_accepted .. " accepted"
+                    table.insert(messages, string.format("\ndraft: %d tokens, %d accepted", stats.draft_tokens, stats.draft_tokens_accepted))
                 end
 
                 if stats.truncated_warning ~= nil then
-                    message = message .. "\ntruncated: " .. stats.truncated_warning
+                    table.insert(messages, string.format("\ntruncated: %s", stats.truncated_warning))
                 end
 
+
+                -- lets report back some generation settings so I can see values used (defaults)
+                local parsed_sse = stats.parsed_sse
+                if parsed_sse.generation_settings then
+                    -- for now just go directly to generation settings, I am fine with that until I settle on what I want...
+                    --  and actually, until I parse other backends for these values (if/when I get those setup)
+                    local gen = parsed_sse.generation_settings
+                    table.insert(messages, "") -- blank line to split out gen inputs
+                    -- temperature
+                    table.insert(messages, string.format("\ntemperature: %f", gen.temperature))
+                    -- top_p
+                    table.insert(messages, string.format("\ntop_p: %f", gen.top_p))
+                    -- max_tokens
+                    table.insert(messages, string.format("\nmax_tokens: %d", gen.max_tokens))
+                end
+
+                local message = table.concat(messages)
                 vim.notify(message)
             end
 

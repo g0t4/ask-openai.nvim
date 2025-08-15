@@ -258,9 +258,9 @@ end
 --- @field timings table?  -- llama-server timings object (for quick tests)
 SSEStats = {}
 
-function SSEStats:new(timings)
+function SSEStats:new(parsed_sse)
     self = setmetatable({}, { __index = SSEStats })
-    self.timings = timings
+    self.parsed_sse = parsed_sse
     return self
 end
 
@@ -273,7 +273,7 @@ function parse_llamacpp_stats(parsed_sse)
     end
 
     local timings = parsed_sse.timings
-    local stats = SSEStats:new(timings)
+    local stats = SSEStats:new(parsed_sse)
 
     -- commented out data is from example SSE
     -- "tokens_predicted": 7,
