@@ -167,19 +167,19 @@ function M.ask_for_prediction()
                 local messages = {}
                 table.insert(messages, "FIM Stats")
                 local stats = sse_result.stats
-                table.insert(messages, string.format("\nin: %d tokens @ %d tokens/sec", stats.prompt_tokens, stats.prompt_tokens_per_second))
-                table.insert(messages, string.format("\nout: %d tokens @ %d tokens/sec", stats.predicted_tokens, stats.predicted_tokens_per_second))
+                table.insert(messages, string.format("in: %d tokens @ %d tokens/sec", stats.prompt_tokens, stats.prompt_tokens_per_second))
+                table.insert(messages, string.format("out: %d tokens @ %d tokens/sec", stats.predicted_tokens, stats.predicted_tokens_per_second))
 
                 if stats.cached_tokens ~= nil then
-                    table.insert(messages, string.format("\ncached: %d tokens", stats.cached_tokens))
+                    table.insert(messages, string.format("cached: %d tokens", stats.cached_tokens))
                 end
 
                 if stats.draft_tokens ~= nil then
-                    table.insert(messages, string.format("\ndraft: %d tokens, %d accepted", stats.draft_tokens, stats.draft_tokens_accepted))
+                    table.insert(messages, string.format("draft: %d tokens, %d accepted", stats.draft_tokens, stats.draft_tokens_accepted))
                 end
 
                 if stats.truncated_warning ~= nil then
-                    table.insert(messages, string.format("\ntruncated: %s", stats.truncated_warning))
+                    table.insert(messages, string.format("truncated: %s", stats.truncated_warning))
                 end
 
 
@@ -191,14 +191,14 @@ function M.ask_for_prediction()
                     local gen = parsed_sse.generation_settings
                     table.insert(messages, "") -- blank line to split out gen inputs
                     -- temperature
-                    table.insert(messages, string.format("\ntemperature: %f", gen.temperature))
+                    table.insert(messages, string.format("temperature: %f", gen.temperature))
                     -- top_p
-                    table.insert(messages, string.format("\ntop_p: %f", gen.top_p))
+                    table.insert(messages, string.format("top_p: %f", gen.top_p))
                     -- max_tokens
-                    table.insert(messages, string.format("\nmax_tokens: %d", gen.max_tokens))
+                    table.insert(messages, string.format("max_tokens: %d", gen.max_tokens))
                 end
 
-                local message = table.concat(messages)
+                local message = table.concat(messages, "\n")
                 vim.notify(message)
             end
 
