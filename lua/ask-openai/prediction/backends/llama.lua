@@ -283,7 +283,7 @@ function parse_llamacpp_stats(parsed_sse)
     stats.truncated = parsed_sse.truncated
     -- * warn about truncated input
     if parsed_sse.truncated then
-        local message = "FIM Input Truncated!!!\n"
+        local warning = "FIM Input Truncated!!!\n"
 
         local gen = parsed_sse.generation_settings
         if gen then
@@ -291,17 +291,18 @@ function parse_llamacpp_stats(parsed_sse)
             --   "n_keep": 0,
             --   "n_discard": 0,
             if gen.n_keep ~= nil then
-                message = message .. "\n  n_keep = " .. gen.n_keep
+                warning = warning .. "\n  n_keep = " .. gen.n_keep
             end
             if gen.n_discard ~= nil then
-                message = message .. "\n  n_discard = " .. gen.n_discard
+                warning = warning .. "\n  n_discard = " .. gen.n_discard
             end
         end
 
         if timings.prompt_n then
-            message = message .. "\n  timings.prompt_n = " .. timings.prompt_n
+            warning = warning .. "\n  timings.prompt_n = " .. timings.prompt_n
         end
-        vim.notify(message, vim.log.levels.WARN)
+        stats.truncated_warning = warning
+        vim.notify(warning, vim.log.levels.WARN)
     end
     --
     -- "stop_type": "eos",

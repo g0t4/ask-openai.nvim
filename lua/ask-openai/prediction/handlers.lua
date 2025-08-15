@@ -172,7 +172,7 @@ function M.ask_for_prediction()
                 if stats.cached_tokens ~= nil then
                     message = message .. "\ncached: " .. stats.cached_tokens .. " tokens"
                 end
-                if stats.draft_tokens_accepted ~= nil then
+                if stats.draft_tokens ~= nil then
                     message = message .. "\ndraft: " .. stats.draft_tokens .. " tokens, " .. stats.draft_tokens_accepted .. " accepted"
                 end
 
