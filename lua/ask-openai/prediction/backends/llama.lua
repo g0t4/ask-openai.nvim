@@ -328,10 +328,6 @@ function parse_llamacpp_stats(parsed_sse)
     stats.draft_tokens_accepted = timings.draft_n_accepted
     -- }
 
-    -- FYI stats already in output, don't log again... except when troubleshooting
-    -- log:info("llama-server parsed_sse: ", vim.inspect(parsed_sse))
-    log:info("llama-server stats: ", vim.inspect(stats))
-
     return stats
 end
 

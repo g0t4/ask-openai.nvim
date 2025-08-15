@@ -174,6 +174,9 @@ function M.ask_for_prediction()
                         end
                         this_prediction:mark_generation_finished()
                     end
+                    if sse_result.stats then
+                        -- TODO show extmarks?
+                    end
                 end)
             end
         end
