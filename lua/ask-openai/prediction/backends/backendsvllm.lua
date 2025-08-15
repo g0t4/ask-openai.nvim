@@ -158,7 +158,9 @@ function M.build_request(prefix, suffix, recent_edits)
     return options
 end
 
-function M.process_sse(data)
+---@param lines string
+---@returns SSEResult
+function M.process_sse(lines)
     -- TODO! use new return type in ollama backend
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
@@ -169,7 +171,7 @@ function M.process_sse(data)
     local chunk = nil -- combine all chunks into one string and check for done
     local done = false
     local finish_reason = nil
-    for ss_event in data:gmatch("[^\r\n]+") do
+    for ss_event in lines:gmatch("[^\r\n]+") do
         if ss_event:match("^data:%s*%[DONE%]$") then
             -- done, courtesy last event... mostly ignore b/c finish_reason already comes on the prior SSE
             return chunk, true
