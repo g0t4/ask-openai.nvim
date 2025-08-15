@@ -1,6 +1,6 @@
 from lsp.qwen3.known import get_known_inputs, verify_known_embeddings
-from ..logs import get_logger, logging_fwk_to_console
-from .comms import *
+from lsp.logs import get_logger, logging_fwk_to_console
+from lsp.remote.comms import *
 
 # time python3 -m lsp.notes.hosted.sockets.client
 
