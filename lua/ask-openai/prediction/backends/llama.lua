@@ -205,7 +205,8 @@ function SSEResult:new(chunk, done, done_reason)
     return self
 end
 
-function OllamaFimBackend.process_sse(data)
+---@param lines string
+function OllamaFimBackend.process_sse(lines)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
@@ -213,7 +214,7 @@ function OllamaFimBackend.process_sse(data)
     local chunk = nil -- combine all chunks into one string and check for done
     local done = false
     local done_reason = nil
-    for ss_event in data:gmatch("[^\r\n]+") do
+    for ss_event in lines:gmatch("[^\r\n]+") do
         if ss_event:match("^data:%s*%[DONE%]$") then
             -- done, courtesy last event... mostly ignore b/c finish_reason already comes on the prior SSE
             return chunk, true
