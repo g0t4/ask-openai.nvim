@@ -195,6 +195,8 @@ class IncrementalRAGIndexer:
 
         # TODO add test to assert delete last file is fine and wipes the data set
 
+        logger.pp_debug("paths", paths)
+
         if not paths.changed and not paths.deleted:
             logger.debug("[green]No changes detected, index is up to date!")
             return
@@ -237,10 +239,13 @@ class IncrementalRAGIndexer:
 
         faiss.write_index(index, str(index_dir / "vectors.index"))
 
+        logger.pp_debug("ids: ", prior.index_view.ids)
+
         with logger.timer("Save chunks"):
             all_chunks_by_file = unchanged_chunks_by_file.copy()
             all_chunks_by_file.update(updated_chunks_by_file)
             logger.pp_debug("all_chunks_by_file", all_chunks_by_file)
+            logger.pp_debug("all_stat_by_path", all_stat_by_path)
 
         with logger.timer("Save chunks"):
             write_json(all_chunks_by_file, index_dir / "chunks.json")
