@@ -194,3 +194,106 @@
 - how does RoPE scaling factor (for positional embeddings using tuned theta) into n_ctx?
    - ollama has n_ctx_train = 32K (is this actually the size or is it 128K?)
 
+
+## llama-server final SSE differences
+
+- includes stats, input params
+
+{
+  "index": 0,
+  "content": "",
+  "tokens": [],
+  "id_slot": 0,
+  "stop": true,
+  "model": "qwen2.5-coder:7b-instruct-q8_0",
+
+  "tokens_predicted": 7,
+  "tokens_evaluated": 53,
+
+  "generation_settings": {
+    "n_predict": -1,
+    "seed": 4294967295,
+    "temperature": 0.800000011920929,
+    "dynatemp_range": 0.0,
+    "dynatemp_exponent": 1.0,
+    "top_k": 40,
+    "top_p": 0.949999988079071,
+    "min_p": 0.05000000074505806,
+    "top_n_sigma": -1.0,
+    "xtc_probability": 0.0,
+    "xtc_threshold": 0.10000000149011612,
+    "typical_p": 1.0,
+    "repeat_last_n": 64,
+    "repeat_penalty": 1.0,
+    "presence_penalty": 0.0,
+    "frequency_penalty": 0.0,
+    "dry_multiplier": 0.0,
+    "dry_base": 1.75,
+    "dry_allowed_length": 2,
+    "dry_penalty_last_n": 32768,
+    "dry_sequence_breakers": [
+      "\n",
+      ":",
+      "\"",
+      "*"
+    ],
+    "mirostat": 0,
+    "mirostat_tau": 5.0,
+    "mirostat_eta": 0.10000000149011612,
+    "stop": [],
+    "max_tokens": -1,
+    "n_keep": 0,
+    "n_discard": 0,
+    "ignore_eos": false,
+    "stream": true,
+    "logit_bias": [],
+    "n_probs": 0,
+    "min_keep": 0,
+    "grammar": "",
+    "grammar_lazy": false,
+    "grammar_triggers": [],
+    "preserved_tokens": [],
+    "chat_format": "Content-only",
+    "reasoning_format": "auto",
+    "reasoning_in_content": false,
+    "thinking_forced_open": false,
+    "samplers": [
+      "penalties",
+      "dry",
+      "top_n_sigma",
+      "top_k",
+      "typ_p",
+      "top_p",
+      "min_p",
+      "xtc",
+      "temperature"
+    ],
+    "speculative.n_max": 16,
+    "speculative.n_min": 0,
+    "speculative.p_min": 0.75,
+    "timings_per_token": false,
+    "post_sampling_probs": false,
+    "lora": []
+  },
+  "prompt": "<|repo_name|>ask-openai.nvim\n<|file_sep|>.ask.context\n\n<|file_sep|>lua/ask-openai/prediction/tests/calc/calc.lua\n<|fim_prefix|>local M = {}\n\nfunction M.add(a, b)\n    <|fim_suffix|>\n    return a + b\nend\n\n\n\nreturn M<|fim_middle|>",
+  "has_new_line": false,
+  "truncated": false,
+  "stop_type": "eos",
+  "stopping_word": "",
+  "tokens_cached": 59,
+
+  "timings": {
+    "prompt_n": 52,
+    "prompt_ms": 33.474,
+    "prompt_per_token_ms": 0.6437307692307692,
+    "prompt_per_second": 1553.4444643603993,
+    "predicted_n": 7,
+    "predicted_ms": 51.669,
+    "predicted_per_token_ms": 7.381285714285714,
+    "predicted_per_second": 135.47775261762374,
+    "draft_n": 3,
+    "draft_n_accepted": 1
+  }
+
+}
+
