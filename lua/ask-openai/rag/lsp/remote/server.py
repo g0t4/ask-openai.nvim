@@ -10,7 +10,7 @@ import signal
 import sys
 import rich
 
-from . import qwen3
+from lsp.remote import qwen3
 from lsp.logs import Timer, get_logger, logging_fwk_to_console
 from .comms import *
 
