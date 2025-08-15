@@ -160,7 +160,10 @@ function M.ask_for_prediction()
             end
             if data then
                 vim.schedule(function()
-                    local chunk, generation_done, done_reason = backend.process_sse(data)
+                    local sse_result = backend.process_sse(data)
+                    local chunk = sse_result.chunk
+                    local generation_done = sse_result.done
+                    local done_reason = sse_result.done_reason
                     if chunk then
                         this_prediction:add_chunk_to_prediction(chunk)
                     end

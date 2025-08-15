@@ -159,6 +159,7 @@ function M.build_request(prefix, suffix, recent_edits)
 end
 
 function M.process_sse(data)
+    -- TODO! use new return type in ollama backend
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
