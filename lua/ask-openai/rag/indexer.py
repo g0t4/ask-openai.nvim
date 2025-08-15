@@ -161,14 +161,18 @@ class IncrementalRAGIndexer:
                 new_chunks.append(chunk)
                 new_faiss_ids.append(chunk.faiss_id)
 
-        # TODO need to pass holdovers too
-        keep_ids = new_faiss_ids.copy()
+        # FYI FIX THE updated check logic... don't try to work around it here
+        #  fix it so a chunk that is VERBATIM same content is NOT marked updated just b/c another part of the file is... OR just b/c timestamp on file changes!
+        keep_ids = []  # why was I keeping things that are marked updated?!
+        logger.pp_debug("keep_ids - before", keep_ids)
         for _, file_chunks in not_changed_chunks_by_file.items():
             for chunk in file_chunks:
                 keep_ids.append(chunk.faiss_id)
+        logger.pp_debug("keep_ids - after", keep_ids)
 
-        logger.pp_debug("keep_ids", keep_ids)
-
+        # BUG: currently updated files, the chunks that don't change (or entire thing if just msec updated)...
+        #   these chunks IDs are put into keep_ids AND chunks go into new_chunks
+        #   and so we insert them again (double them up)
         keep_selector = faiss.IDSelectorArray(np.array(keep_ids, dtype="int64"))
         not_keep_selector = faiss.IDSelectorNot(keep_selector)
         index.remove_ids(not_keep_selector)
@@ -278,7 +282,6 @@ def main():
     if in_githook:
         # for now bump level to INFO until I get the hooks stabilized (i.e. not running indexer twice)
         level = logging.INFO
-
 
     logging_fwk_to_console(level)
 
