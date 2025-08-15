@@ -219,7 +219,7 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(len(files), 2)
         self.assertEqual(index.ntotal, 4)
 
-    def test_update_reproduce_duplicated_vector_IDs(self):
+    def test_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index(self):
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
