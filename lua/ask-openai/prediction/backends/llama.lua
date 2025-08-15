@@ -195,13 +195,15 @@ end
 --- @field chunk string?  -- text delta
 --- @field done boolean   -- true if the stream is finished
 --- @field done_reason string?  -- reason for completion, if any
+--- @field parsed table?  -- parsed SSE
 local SSEResult = {}
 
-function SSEResult:new(chunk, done, done_reason)
+function SSEResult:new(chunk, done, done_reason, parsed)
     self = setmetatable({}, { __index = SSEResult })
     self.chunk = chunk
     self.done = done
     self.done_reason = done_reason
+    self.parsed = parsed
     return self
 end
 
@@ -248,7 +250,7 @@ function OllamaFimBackend.process_sse(lines)
         end
     end
     -- TODO test passing back finish_reason (i.e. for an empty prediction log entry)
-    return SSEResult:new(chunk, done, done_reason)
+    return SSEResult:new(chunk, done, done_reason, parsed)
 end
 
 return OllamaFimBackend
