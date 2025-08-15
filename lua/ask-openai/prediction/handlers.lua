@@ -175,7 +175,8 @@ function M.ask_for_prediction()
                         this_prediction:mark_generation_finished()
                     end
                     if sse_result.stats then
-                        -- TODO show extmarks?
+                        -- TODO show extmarks? toggle on/off
+                        vim.print("stats: gen_tps=" .. sse_result.stats.predicted_tokens_per_second)
                     end
                 end)
             end
