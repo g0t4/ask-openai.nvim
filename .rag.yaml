@@ -2,7 +2,6 @@ include:
   lua:
   py:
   fish:
-  md:
   txt:
 ignores:
   - "notes/"
