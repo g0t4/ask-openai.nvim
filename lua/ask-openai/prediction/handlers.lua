@@ -175,8 +175,12 @@ function M.ask_for_prediction()
                         this_prediction:mark_generation_finished()
                     end
                     if sse_result.stats then
-                        -- TODO show extmarks? toggle on/off
-                        vim.print("stats: gen_tps=" .. sse_result.stats.predicted_tokens_per_second)
+                        if api.are_verbose_logs_enabled() then
+                            -- yes! this will help me remember to shut off debug logs when I don't need them!
+                            vim.notify("stats: gen_tps=" .. sse_result.stats.predicted_tokens_per_second)
+                        else
+                            -- TODO show extmarks? toggle on/off
+                        end
                     end
                 end)
             end
