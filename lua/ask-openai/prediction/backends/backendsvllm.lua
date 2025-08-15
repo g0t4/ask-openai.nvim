@@ -170,7 +170,7 @@ function M.process_sse(lines)
     local chunk = nil -- combine all chunks into one string and check for done
     local done = false
     local finish_reason = nil
-    local last_parsed = nil
+    local last_parsed_sse = nil
     for ss_event in lines:gmatch("[^\r\n]+") do
         if ss_event:match("^data:%s*%[DONE%]$") then
             -- shouldn't land here b/c finish_reason is usually on prior SSE
@@ -184,7 +184,7 @@ function M.process_sse(lines)
             event_json = ss_event:sub(7)
         end
         local success, parsed = pcall(vim.json.decode, event_json)
-        last_parsed = parsed
+        last_parsed_sse = parsed
 
         -- *** examples /api/generate:
         --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.1915236Z","response":"\n","done":false}
@@ -238,7 +238,7 @@ function M.process_sse(lines)
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
     end
-    return SSEResult:new(chunk, done, finish_reason, last_parsed)
+    return SSEResult:new(chunk, done, finish_reason, last_parsed_sse)
 end
 
 return M

@@ -195,15 +195,16 @@ end
 --- @field chunk string?  -- text delta
 --- @field done boolean   -- true if the stream is finished
 --- @field done_reason string?  -- reason for completion, if any
---- @field parsed table?  -- parsed SSE
+--- @field last_sse table?  -- parsed SSE
 SSEResult = {}
 
-function SSEResult:new(chunk, done, done_reason, parsed)
+function SSEResult:new(chunk, done, done_reason, last_sse)
     self = setmetatable({}, { __index = SSEResult })
     self.chunk = chunk
     self.done = done
     self.done_reason = done_reason
-    self.parsed = parsed
+    -- TODO perhaps what I really want is to extract stats instead of passing this back
+    self.last_sse = last_sse
     return self
 end
 
@@ -217,7 +218,7 @@ function OllamaFimBackend.process_sse(lines)
     local chunk = nil -- combine all chunks into one string and check for done
     local done = false
     local done_reason = nil
-    local last_parsed = nil
+    local last_parsed_sse = nil
     for ss_event in lines:gmatch("[^\r\n]+") do
         if ss_event:match("^data:%s*%[DONE%]$") then
             -- shouldn't land here b/c finish_reason is usually on prior SSE
@@ -231,7 +232,7 @@ function OllamaFimBackend.process_sse(lines)
             event_json = ss_event:sub(7)
         end
         local success, parsed = pcall(vim.json.decode, event_json)
-        last_parsed = parsed
+        last_parsed_sse = parsed
 
         if success and parsed then
             -- vim.print(parsed)
@@ -250,7 +251,7 @@ function OllamaFimBackend.process_sse(lines)
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
     end
-    return SSEResult:new(chunk, done, done_reason, last_parsed)
+    return SSEResult:new(chunk, done, done_reason, last_parsed_sse)
 end
 
 return OllamaFimBackend
