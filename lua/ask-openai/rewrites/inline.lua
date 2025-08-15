@@ -97,7 +97,7 @@ function M.process_chunk(chunk, sse)
         M.displayer:on_response(M.selection, lines)
     end)
 
-    if sse.timings then
+    if sse and sse.timings then
         local pps = math.floor(sse.timings.predicted_per_second * 10 + 0.5) / 10
         print("tokens/sec", pps, "predicted_n", sse.timings.predicted_n)
         log:info("Tokens/sec: ", pps, " predicted n: ", sse.timings.predicted_n)
@@ -385,7 +385,9 @@ and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
             -- put back the space
             cur_word = cur_word .. " "
         end
-        M.process_chunk(cur_word)
+        -- TODO simulate sse too so I can get timings on last one?
+        local simulated_sse = nil
+        M.process_chunk(cur_word, simulated_sse)
         -- delay and do next
         -- FYI can adjust interval to visually slow down and see what is happening with each chunk, s/b especially helpful with streaming diff
         vim.defer_fn(function() stream_words(remaining_words) end, fast_ms)
@@ -404,8 +406,8 @@ local function simulate_rewrite_instant_one_chunk(opts)
     M.displayer:set_keymaps()
 
     local full_rewrite = M.selection.original_text .. "\nINSTANT NEW LINE"
-    M.process_chunk(full_rewrite)
-    -- FYI could call display method here and bypass M.process_chunk (mostly... need to set M.accumulated_chunks too)
+    local simulated_sse = nil
+    M.process_chunk(full_rewrite, simulated_sse)
 end
 
 local function ask_and_stream_from_ollama(opts)
