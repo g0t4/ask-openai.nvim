@@ -100,7 +100,6 @@ function M.process_chunk(chunk, sse)
     if sse and sse.timings then
         local t = sse.timings
         local pps = math.floor(t.predicted_per_second * 10 + 0.5) / 10
-        print("tokens/sec", pps, "predicted_n", t.predicted_n)
         log:info("Tokens/sec: ", pps, " predicted n: ", t.predicted_n)
 
         vim.schedule(function()
