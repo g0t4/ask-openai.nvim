@@ -140,7 +140,7 @@ class IncrementalRAGIndexer:
     def update_faiss_index_incrementally(
         self,
         index: Optional[faiss.Index],
-        unchanged_chunks_by_file: dict[str, list[Chunk]],
+        not_changed_chunks_by_file: dict[str, list[Chunk]],
         updated_chunks_by_file: dict[str, list[Chunk]],
     ) -> faiss.Index:
         """Update FAISS index incrementally using IndexIDMap"""
@@ -163,7 +163,7 @@ class IncrementalRAGIndexer:
 
         # TODO need to pass holdovers too
         keep_ids = new_faiss_ids.copy()
-        for _, file_chunks in unchanged_chunks_by_file.items():
+        for _, file_chunks in not_changed_chunks_by_file.items():
             for chunk in file_chunks:
                 keep_ids.append(chunk.faiss_id)
 
