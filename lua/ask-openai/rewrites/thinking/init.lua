@@ -42,7 +42,7 @@ function M.strip_thinking_tags(lines)
     -- * allow either </think> or harmony!
     local close_start, close_end = text:find("</" .. M.thinking_tag .. ">", open_end + 1) -- </think>
     if not close_start then
-        close_start, close_end = text:find("<|start|>assistant<|channel|>final<|message|>", open_end + 1)
+        close_start, close_end = text:find("<|end|>", open_end + 1)
     end
 
     if not close_start then
