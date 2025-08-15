@@ -29,7 +29,7 @@ class FilesDiff:
     # FYI type mismatch IS FINE with type hints... LEAVE IT!
     changed: Set[Path]
     deleted: Set[str]
-    unchanged: Set[str]
+    not_changed: Set[str]
 
 class IncrementalRAGIndexer:
 
@@ -131,11 +131,11 @@ class IncrementalRAGIndexer:
         for deleted_file in deleted_path_strs:
             logger.debug(f"[red]Deleted file: {deleted_file}")
 
-        # * unchanged
+        # * not changed
         changed_path_strs = set(str(f) for f in changed_paths)
-        unchanged_path_strs = prior_path_strs - changed_path_strs - deleted_path_strs
+        not_changed_path_strs = prior_path_strs - changed_path_strs - deleted_path_strs
 
-        return FilesDiff(changed_paths, deleted_path_strs, unchanged_path_strs)
+        return FilesDiff(changed_paths, deleted_path_strs, not_changed_path_strs)
 
     def update_faiss_index_incrementally(
         self,
@@ -201,8 +201,8 @@ class IncrementalRAGIndexer:
             logger.debug("[green]No changes detected, index is up to date!")
             return
 
-        all_stat_by_path = {path_str: prior.stat_by_path[path_str] for path_str in paths.unchanged}
-        not_changed_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.unchanged}
+        all_stat_by_path = {path_str: prior.stat_by_path[path_str] for path_str in paths.not_changed}
+        not_changed_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.not_changed}
         logger.info(f'{len(paths.changed)} changed, {len(paths.deleted)} deleted')
 
         updated_chunks_by_file: dict[str, list[Chunk]] = {}
