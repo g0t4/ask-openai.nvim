@@ -79,12 +79,23 @@ class FaissIndexView:
         return self.dataset.index.ntotal
 
     @property
-    def ids(self) -> Int64Vector:
-        return cast(Int64Vector, faiss.vector_to_array(self.dataset.index.id_map))
+    def ids(self) -> Int64Vector | None:
+        if hasattr(self.dataset.index, 'id_map'):
+            return cast(Int64Vector, faiss.vector_to_array(self.dataset.index.id_map))
+        else:
+            # TODO does this happen when creating a brand new index (not loading from file)
+            #  if so, how do I want to handle this? return empty?
+            #  AND, is this ever set? or is id_map tied to the loaded file and not what I add in memory?!
+            return None
 
     def _check_for_duplicate_ids(self) -> Iterable[tuple[np.int64, int]]:
         """ NOTE: there should NOT be any duplicates """
-        ids, counts = np.unique(self.ids, return_counts=True)
+        _ids = self.ids
+        if _ids is None:
+            # TODO throw or warn? or use empty list?
+            return
+
+        ids, counts = np.unique(_ids, return_counts=True)
         for index, id in enumerate(ids):
             # this yucky approach to zip was just to shut up pyright without a bunch of other BS casts
             id = ids[index]
