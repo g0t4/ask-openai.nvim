@@ -202,7 +202,7 @@ class IncrementalRAGIndexer:
             return
 
         all_stat_by_path = {path_str: prior.stat_by_path[path_str] for path_str in paths.unchanged}
-        unchanged_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.unchanged}
+        not_changed_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.unchanged}
         logger.info(f'{len(paths.changed)} changed, {len(paths.deleted)} deleted')
 
         updated_chunks_by_file: dict[str, list[Chunk]] = {}
@@ -218,13 +218,13 @@ class IncrementalRAGIndexer:
 
         logger.pp_debug("Deleted chunks", paths.deleted)
         logger.pp_debug("Updated chunks", updated_chunks_by_file)
-        logger.pp_debug("Unchanged chunks", unchanged_chunks_by_file)
+        logger.pp_debug("NOT changed chunks", not_changed_chunks_by_file)
 
         # * Incrementally update the FAISS index
         if paths.changed or paths.deleted:
             index = self.update_faiss_index_incrementally(
                 prior.index,
-                unchanged_chunks_by_file,
+                not_changed_chunks_by_file,
                 updated_chunks_by_file,
             )
         else:
@@ -242,7 +242,7 @@ class IncrementalRAGIndexer:
         logger.pp_debug("ids: ", prior.index_view.ids)
 
         with logger.timer("Save chunks"):
-            all_chunks_by_file = unchanged_chunks_by_file.copy()
+            all_chunks_by_file = not_changed_chunks_by_file.copy()
             all_chunks_by_file.update(updated_chunks_by_file)
             logger.pp_debug("all_chunks_by_file", all_chunks_by_file)
             logger.pp_debug("all_stat_by_path", all_stat_by_path)
