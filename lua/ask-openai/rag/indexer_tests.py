@@ -250,7 +250,7 @@ class TestBuildIndex(unittest.TestCase):
         #
         self.assertEqual(index.ntotal, 2, "index.ntotal (num vectors) should be 1")
 
-        copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
+        copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks (starts = 1-20, 16-35, 31-50)
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, model_wrapper)
         indexer.build_index(language_extension="lua")
 
@@ -262,7 +262,7 @@ class TestBuildIndex(unittest.TestCase):
         #
         self.assertEqual(len(files), 1)
 
-        self.assertEqual(index.ntotal, 2, "index.ntotal (num vectors) should be 1")
+        self.assertEqual(index.ntotal, 3, "index.ntotal (num vectors) should be 1")
         return
 
         # * update a file and rebuild
