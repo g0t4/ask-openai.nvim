@@ -175,7 +175,11 @@ function M.ask_for_prediction()
                 end
 
                 if stats.draft_tokens ~= nil then
-                    table.insert(messages, string.format("draft: %d tokens, %d accepted", stats.draft_tokens, stats.draft_tokens_accepted))
+                    local pct = 0
+                    if stats.draft_tokens > 0 then
+                        pct = (stats.draft_tokens_accepted / stats.draft_tokens) * 100
+                    end
+                    table.insert(messages, string.format("draft: %d tokens, %d accepted (%.2f%%)", stats.draft_tokens, stats.draft_tokens_accepted, pct))
                 end
 
                 if stats.truncated_warning ~= nil then
