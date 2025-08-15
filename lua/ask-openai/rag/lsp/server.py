@@ -131,8 +131,24 @@ def doc_changed(params: types.DidChangeTextDocumentParams):
     # FYI would use this to invalidate internal caches and rebuild for a given file, i.e. imports, RAG vectors, etc
     #   rebuild on git commit + incremental updates s/b super fast?
 
+@server.command("context.related")
+def rag_command_context_related(_: LanguageServer, params: types.ExecuteCommandParams):
+    if fs.is_no_rag_dir():
+        return
+
+    if params is None or params[0] is None:
+        logger.error(f"aborting context.related b/c missing params {params}")
+        return
+
+    message = params[0]
+    # TODO! implement searching for related code...
+    # * also useful to anecdotally test how well the current embedings work!
+    #  take current line / nearby code and use it to find related code via embeddings!
+    #  then client side show it as a picker in telescope!
+    # return rag.handle_query(message, model_wrapper)
+
 @server.command("context.query")
-def rag_query(_: LanguageServer, params: types.ExecuteCommandParams):
+def rag_command_context_query(_: LanguageServer, params: types.ExecuteCommandParams):
     if fs.is_no_rag_dir():
         return
 
