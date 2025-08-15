@@ -158,6 +158,27 @@ function M.ask_for_prediction()
                 this_prediction:mark_generation_failed()
                 return
             end
+
+            local function show_stats(sse_result)
+                -- yes! this will help me remember to shut off debug logs when I don't need them!
+                -- vim.notify("stats: gen_tps=" .. sse_result.stats.predicted_tokens_per_second)
+                -- OR vim.print would probably be equally useful and somewhat annoying too
+                -- TODO or extmarks in this mode?! or else branch with extmarks?
+                local message = "FIM Stats\n"
+                local stats = sse_result.stats
+                message = message .. "\nin: " .. stats.prompt_tokens .. " tokens @ " .. stats.prompt_tokens_per_second .. " tokens/sec"
+                message = message .. "\nout: " .. stats.predicted_tokens .. " tokens @ " .. stats.predicted_tokens_per_second .. " tokens/sec"
+
+                if stats.cached_tokens ~= nil then
+                    message = message .. "\ncached: " .. stats.cached_tokens .. " tokens"
+                end
+                if stats.draft_tokens_accepted ~= nil then
+                    message = message .. "\ndraft: " .. stats.draft_tokens .. " tokens, " .. stats.draft_tokens_accepted .. " accepted"
+                end
+
+                vim.notify(message)
+            end
+
             if data then
                 vim.schedule(function()
                     local sse_result = backend.process_sse(data)
@@ -176,23 +197,7 @@ function M.ask_for_prediction()
                     end
                     if sse_result.stats then
                         if api.are_verbose_logs_enabled() then
-                            -- yes! this will help me remember to shut off debug logs when I don't need them!
-                            -- vim.notify("stats: gen_tps=" .. sse_result.stats.predicted_tokens_per_second)
-                            -- OR vim.print would probably be equally useful and somewhat annoying too
-                            -- TODO or extmarks in this mode?! or else branch with extmarks?
-                            local message = "FIM Stats\n"
-                            local stats = sse_result.stats
-                            message = message .. "\nin: " .. stats.prompt_tokens .. " tokens @ " .. stats.prompt_tokens_per_second .. " tokens/sec"
-                            message = message .. "\nout: " .. stats.predicted_tokens .. " tokens @ " .. stats.predicted_tokens_per_second .. " tokens/sec"
-
-                            if stats.cached_tokens ~= nil then
-                                message = message .. "\ncached: " .. stats.cached_tokens .. " tokens"
-                            end
-                            if stats.draft_tokens_accepted ~= nil then
-                                message = message .. "\ndraft: " .. stats.draft_tokens .. " tokens, " .. stats.draft_tokens_accepted .. " accepted"
-                            end
-
-                            vim.notify(message)
+                            show_stats(sse_result)
                         end
                     end
                 end)
