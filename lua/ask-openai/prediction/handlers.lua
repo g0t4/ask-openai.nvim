@@ -167,8 +167,8 @@ function M.ask_for_prediction()
                 local messages = {}
                 table.insert(messages, "FIM Stats")
                 local stats = sse_result.stats
-                table.insert(messages, string.format("in: %d tokens @ %d tokens/sec", stats.prompt_tokens, stats.prompt_tokens_per_second))
-                table.insert(messages, string.format("out: %d tokens @ %d tokens/sec", stats.predicted_tokens, stats.predicted_tokens_per_second))
+                table.insert(messages, string.format("in: %d tokens @ %.2f tokens/sec", stats.prompt_tokens, stats.prompt_tokens_per_second))
+                table.insert(messages, string.format("out: %d tokens @ %.2f tokens/sec", stats.predicted_tokens, stats.predicted_tokens_per_second))
 
                 if stats.cached_tokens ~= nil then
                     table.insert(messages, string.format("cached: %d tokens", stats.cached_tokens))
@@ -191,14 +191,15 @@ function M.ask_for_prediction()
                     local gen = parsed_sse.generation_settings
                     table.insert(messages, "") -- blank line to split out gen inputs
                     -- temperature
-                    table.insert(messages, string.format("temperature: %f", gen.temperature))
+                    table.insert(messages, string.format("temperature: %.2f", gen.temperature))
                     -- top_p
-                    table.insert(messages, string.format("top_p: %f", gen.top_p))
+                    table.insert(messages, string.format("top_p: %.2f", gen.top_p))
                     -- max_tokens
                     table.insert(messages, string.format("max_tokens: %d", gen.max_tokens))
                 end
 
                 local message = table.concat(messages, "\n")
+
                 vim.notify(message)
             end
 
