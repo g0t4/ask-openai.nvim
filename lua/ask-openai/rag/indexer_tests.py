@@ -271,6 +271,12 @@ class TestBuildIndex(unittest.TestCase):
 
         self.assertEqual(index.ntotal, 2, "index.ntotal (num vectors) should be 1")
 
+    def TODO_test__file_timestamp_changed__all_chunks_still_the_same__does_not_insert_chunk_into_updated_chunks(self):
+        pass
+        # ***! TODO FIX LOGIC TO DETECT CHANGED FILES/CHUNKS...
+        #   if a chunk is the SAME it should be NOT marked updated!
+        #   i.e. if file modified timestamp is updated but none of the contents are different!
+
     def test_update_file_from_language_server(self):
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
