@@ -161,7 +161,6 @@ end
 ---@param lines string
 ---@returns SSEResult
 function M.process_sse(lines)
-    -- TODO! use new return type in ollama backend
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
@@ -171,10 +170,11 @@ function M.process_sse(lines)
     local chunk = nil -- combine all chunks into one string and check for done
     local done = false
     local finish_reason = nil
+    local last_parsed = nil
     for ss_event in lines:gmatch("[^\r\n]+") do
         if ss_event:match("^data:%s*%[DONE%]$") then
-            -- done, courtesy last event... mostly ignore b/c finish_reason already comes on the prior SSE
-            return chunk, true
+            -- shouldn't land here b/c finish_reason is usually on prior SSE
+            return SSEResult:new(chunk, true)
         end
 
         --  strip leading "data: " (if present)
@@ -184,6 +184,7 @@ function M.process_sse(lines)
             event_json = ss_event:sub(7)
         end
         local success, parsed = pcall(vim.json.decode, event_json)
+        last_parsed = parsed
 
         -- *** examples /api/generate:
         --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.1915236Z","response":"\n","done":false}
@@ -217,6 +218,8 @@ function M.process_sse(lines)
         -- log:info("choices:", vim.inspect(parsed))
         -- log:info("choices:", vim.inspect(parsed.choices))
         if success and parsed and parsed.choices and parsed.choices[1] then
+            -- TODO! need to update this to match changes made in backends/llama.lua
+            -- TODO! OR just ditch this one and merge any vllm specific parsing concerns into another case in other backend
             local first_choice = parsed.choices[1]
             finish_reason = first_choice.finish_reason
             if finish_reason ~= nil and finish_reason ~= vim.NIL then
@@ -235,8 +238,7 @@ function M.process_sse(lines)
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
     end
-    -- TODO test passing back finish_reason (i.e. for an empty prediction log entry)
-    return chunk, done, finish_reason
+    return SSEResult:new(chunk, done, finish_reason, last_parsed)
 end
 
 return M

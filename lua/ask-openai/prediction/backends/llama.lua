@@ -196,7 +196,7 @@ end
 --- @field done boolean   -- true if the stream is finished
 --- @field done_reason string?  -- reason for completion, if any
 --- @field parsed table?  -- parsed SSE
-local SSEResult = {}
+SSEResult = {}
 
 function SSEResult:new(chunk, done, done_reason, parsed)
     self = setmetatable({}, { __index = SSEResult })
@@ -217,9 +217,9 @@ function OllamaFimBackend.process_sse(lines)
     local chunk = nil -- combine all chunks into one string and check for done
     local done = false
     local done_reason = nil
+    local last_parsed = nil
     for ss_event in lines:gmatch("[^\r\n]+") do
         if ss_event:match("^data:%s*%[DONE%]$") then
-            -- done, courtesy last SSE...
             -- shouldn't land here b/c finish_reason is usually on prior SSE
             return SSEResult:new(chunk, true)
         end
@@ -231,6 +231,7 @@ function OllamaFimBackend.process_sse(lines)
             event_json = ss_event:sub(7)
         end
         local success, parsed = pcall(vim.json.decode, event_json)
+        last_parsed = parsed
 
         if success and parsed then
             -- vim.print(parsed)
@@ -249,8 +250,7 @@ function OllamaFimBackend.process_sse(lines)
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
     end
-    -- TODO test passing back finish_reason (i.e. for an empty prediction log entry)
-    return SSEResult:new(chunk, done, done_reason, parsed)
+    return SSEResult:new(chunk, done, done_reason, last_parsed)
 end
 
 return OllamaFimBackend
