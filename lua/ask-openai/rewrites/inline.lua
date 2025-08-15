@@ -98,6 +98,7 @@ function M.process_chunk(chunk, sse)
     end)
 
     if sse and sse.timings then
+        -- llama-server timing/stats on final SSE
         local t = sse.timings
         local pps = math.floor(t.predicted_per_second * 10 + 0.5) / 10
         log:info("Tokens/sec: ", pps, " predicted n: ", t.predicted_n)
@@ -380,13 +381,22 @@ and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
         -- take out first word
         local cur_word = remaining_words[1]
         table.remove(remaining_words, 1) -- insert current word in middle of line
+        local simulated_sse = {}
         if #remaining_words > 0 then
             -- put back the space
             cur_word = cur_word .. " "
+        else
+            simulated_sse = {
+                timings = {
+                    predicted_per_second = 120,
+                    predicted_n = 100,
+                    prompt_per_second = 200,
+                    prompt_n = 400,
+                }
+            }
         end
-        -- TODO simulate sse too so I can get timings on last one?
-        local simulated_sse = nil
         M.process_chunk(cur_word, simulated_sse)
+
         -- delay and do next
         -- FYI can adjust interval to visually slow down and see what is happening with each chunk, s/b especially helpful with streaming diff
         vim.defer_fn(function() stream_words(remaining_words) end, fast_ms)
@@ -405,7 +415,14 @@ local function simulate_rewrite_instant_one_chunk(opts)
     M.displayer:set_keymaps()
 
     local full_rewrite = M.selection.original_text .. "\nINSTANT NEW LINE"
-    local simulated_sse = nil
+    local simulated_sse = {
+        timings = {
+            predicted_per_second = 120,
+            predicted_n = 100,
+            prompt_per_second = 200,
+            prompt_n = 400,
+        }
+    }
     M.process_chunk(full_rewrite, simulated_sse)
 end
 
