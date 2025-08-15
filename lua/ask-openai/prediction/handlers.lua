@@ -142,10 +142,13 @@ function M.ask_for_prediction()
             stderr:close()
         end
 
-        M.handle, M.pid = uv.spawn(spawn_curl_options.command, {
-            args = spawn_curl_options.args,
-            stdio = { nil, stdout, stderr },
-        }, spawn_curl_options.on_exit)
+        M.handle, M.pid = uv.spawn(spawn_curl_options.command,
+            ---@diagnostic disable-next-line: missing-fields
+            {
+                args = spawn_curl_options.args,
+                stdio = { nil, stdout, stderr },
+            },
+            spawn_curl_options.on_exit)
 
         spawn_curl_options.on_stdout = function(err, data)
             log:trace("on_stdout chunk: ", data)
