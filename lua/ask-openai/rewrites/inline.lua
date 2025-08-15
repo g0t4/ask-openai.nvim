@@ -98,12 +98,12 @@ function M.process_chunk(chunk, sse)
     end)
 
     if sse and sse.timings then
-        local pps = math.floor(sse.timings.predicted_per_second * 10 + 0.5) / 10
-        print("tokens/sec", pps, "predicted_n", sse.timings.predicted_n)
-        log:info("Tokens/sec: ", pps, " predicted n: ", sse.timings.predicted_n)
+        local t = sse.timings
+        local pps = math.floor(t.predicted_per_second * 10 + 0.5) / 10
+        print("tokens/sec", pps, "predicted_n", t.predicted_n)
+        log:info("Tokens/sec: ", pps, " predicted n: ", t.predicted_n)
 
         vim.schedule(function()
-
             -- PRN move into dispatcher where this belongs w/ diff preview
             local current_cursor_row_1based, _ = unpack(vim.api.nvim_win_get_cursor(0))
             local current_cursor_row_0based = current_cursor_row_1based - 2
@@ -114,9 +114,9 @@ function M.process_chunk(chunk, sse)
                     string.format(
                         "Tokens/sec: %.1f predicted n: %d | Prompt Tokens/sec: %.1f prompt n: %d",
                         pps,
-                        sse.timings.predicted_n,
-                        sse.timings.prompt_per_second,
-                        sse.timings.prompt_n
+                        t.predicted_n,
+                        t.prompt_per_second,
+                        t.prompt_n
                     ),
                     "AskStats",
                 },
