@@ -6,7 +6,7 @@ import unittest
 
 import faiss
 import numpy as np
-from rich import print
+import rich
 
 from indexer import IncrementalRAGIndexer
 from lsp import model_st as model_wrapper
@@ -58,7 +58,7 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(chunks_by_file.keys(), {str(sample_lua_path)})
         chunks = chunks_by_file[str(sample_lua_path)]
         self.assertEqual(len(chunks), 3)
-        print(f'{sample_lua_path=}')
+        rich.print(f'{sample_lua_path=}')
         for c in chunks:
             self.assertEqual(c["file"], str(sample_lua_path))
             self.assertEqual(c["type"], "lines")
@@ -105,12 +105,12 @@ class TestBuildIndex(unittest.TestCase):
 
         self.assertEqual(index.ntotal, 3)
         self.assertEqual(index.d, 768)
-        print(f'{index=}')
-        # print(f'{index.metric_type=}')
-        # print(f'{index.metric_arg=}')
-        # print(f'{index.is_trained=}')
+        rich.print(f'{index=}')
+        # rich.print(f'{index.metric_type=}')
+        # rich.print(f'{index.metric_arg=}')
+        # rich.print(f'{index.is_trained=}')
         for i in range(index.ntotal):
-            print(i)
+            rich.print(i)
             # PRN verify vectors too?
 
     def test_search_index(self):
@@ -125,8 +125,8 @@ class TestBuildIndex(unittest.TestCase):
 
         index = self.get_vector_index()
         distances, indices = index.search(q, 3)
-        print(f"{distances=}")
-        print(f"{indices=}")
+        rich.print(f"{distances=}")
+        rich.print(f"{indices=}")
         # first two id_ints here have the hello world, last doesn't
         expected = np.array([[5737032561938488959, 7876391420168697139, 2711563645975913899]])
         np.testing.assert_array_equal(indices, expected)
