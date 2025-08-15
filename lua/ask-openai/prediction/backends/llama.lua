@@ -195,16 +195,15 @@ end
 --- @field chunk string?  -- text delta
 --- @field done boolean   -- true if the stream is finished
 --- @field done_reason string?  -- reason for completion, if any
---- @field last_sse table?  -- parsed SSE
+--- @field stats table?  -- parsed SSE
 SSEResult = {}
 
-function SSEResult:new(chunk, done, done_reason, last_sse)
+function SSEResult:new(chunk, done, done_reason, stats)
     self = setmetatable({}, { __index = SSEResult })
     self.chunk = chunk
     self.done = done
     self.done_reason = done_reason
-    -- TODO perhaps what I really want is to extract stats instead of passing this back
-    self.last_sse = last_sse
+    self.stats = stats
     return self
 end
 
@@ -218,7 +217,7 @@ function OllamaFimBackend.process_sse(lines)
     local chunk = nil -- combine all chunks into one string and check for done
     local done = false
     local done_reason = nil
-    local last_parsed_sse = nil
+    local stats = nil
     for ss_event in lines:gmatch("[^\r\n]+") do
         if ss_event:match("^data:%s*%[DONE%]$") then
             -- shouldn't land here b/c finish_reason is usually on prior SSE
@@ -232,10 +231,8 @@ function OllamaFimBackend.process_sse(lines)
             event_json = ss_event:sub(7)
         end
         local success, parsed = pcall(vim.json.decode, event_json)
-        last_parsed_sse = parsed
 
         if success and parsed then
-            -- vim.print(parsed)
             local parsed_chunk
             if endpoint_llama_server_proprietary_completions then
                 parsed_chunk, done, done_reason = parse_llama_cpp_server(parsed)
@@ -247,11 +244,95 @@ function OllamaFimBackend.process_sse(lines)
                 parsed_chunk, done, done_reason = parse_ollama_api_generate(parsed)
             end
             chunk = (chunk or "") .. parsed_chunk
+            if parsed.timings then
+                stats = parse_llamacpp_stats(parsed)
+            end
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
     end
-    return SSEResult:new(chunk, done, done_reason, last_parsed_sse)
+    return SSEResult:new(chunk, done, done_reason, stats)
+end
+
+---@class SSEStats
+--- @field timings table?  -- llama-server timings object (for quick tests)
+SSEStats = {}
+
+function SSEStats:new(timings)
+    self = setmetatable({}, { __index = SSEStats })
+    self.timings = timings
+    return self
+end
+
+--- @param parsed_sse table
+--- @returns SSEStats?
+function parse_llamacpp_stats(parsed_sse)
+    -- *** currently only llama-server stats from its last SSE
+    if not parsed_sse or not parsed_sse.timings then
+        return
+    end
+
+    local timings = parsed_sse.timings
+    local stats = SSEStats:new(timings)
+
+    -- commented out data is from example SSE
+    -- "tokens_predicted": 7,
+    -- "tokens_evaluated": 53,
+    -- "has_new_line": false,
+    -- "truncate": false,
+    stats.truncated = parsed_sse.truncated
+    -- * warn about truncated input
+    if parsed_sse.truncated then
+        local message = "FIM Input Truncated!!!\n"
+
+        local gen = parsed_sse.generation_settings
+        if gen then
+            -- "generation_settings": {
+            --   "n_keep": 0,
+            --   "n_discard": 0,
+            if gen.n_keep ~= nil then
+                message = message .. "\n  n_keep = " .. gen.n_keep
+            end
+            if gen.n_discard ~= nil then
+                message = message .. "\n  n_discard = " .. gen.n_discard
+            end
+        end
+
+        if timings.prompt_n then
+            message = message .. "\n  timings.prompt_n = " .. timings.prompt_n
+        end
+        vim.notify(message, vim.log.levels.WARN)
+    end
+    --
+    -- "stop_type": "eos",
+    -- "stopping_word": "",
+    -- "tokens_cached": 59,
+    stats.cached_tokens = timings.tokens_cached
+    --
+    -- "timings": {
+    --   "prompt_n": 52,
+    --   "prompt_ms": 33.474,
+    --   "prompt_per_token_ms": 0.6437307692307692,
+    --   "prompt_per_second": 1553.4444643603993,
+    stats.prompt_tokens = timings.prompt_n
+    stats.prompt_tokens_per_second = timings.prompt_per_second
+    --   "predicted_n": 7,
+    --   "predicted_ms": 51.669,
+    --   "predicted_per_token_ms": 7.381285714285714,
+    --   "predicted_per_second": 135.47775261762374,
+    stats.predicted_tokens = timings.predicted_n
+    stats.predicted_tokens_per_second = timings.predicted_per_second
+    --   "draft_n": 3,
+    --   "draft_n_accepted": 1
+    stats.draft_tokens = timings.draft_n
+    stats.draft_tokens_accepted = timings.draft_n_accepted
+    -- }
+
+    -- FYI stats already in output, don't log again... except when troubleshooting
+    -- log:info("llama-server parsed_sse: ", vim.inspect(parsed_sse))
+    log:info("llama-server stats: ", vim.inspect(stats))
+
+    return stats
 end
 
 return OllamaFimBackend
