@@ -191,6 +191,20 @@ function OllamaFimBackend:get_repo_name()
     return vim.fn.getcwd():match("([^/]+)$")
 end
 
+--- @class SSEResult
+--- @field chunk string?  -- text delta
+--- @field done boolean   -- true if the stream is finished
+--- @field done_reason string?  -- reason for completion, if any
+local SSEResult = {}
+
+function SSEResult:new(chunk, done, done_reason)
+    self = setmetatable({}, { __index = SSEResult })
+    self.chunk = chunk
+    self.done = done
+    self.done_reason = done_reason
+    return self
+end
+
 function OllamaFimBackend.process_sse(data)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
