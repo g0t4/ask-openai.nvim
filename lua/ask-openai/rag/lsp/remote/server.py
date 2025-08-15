@@ -10,7 +10,7 @@ import signal
 import sys
 import rich
 
-from lsp.remote import qwen3
+from lsp.remote import qwen3_embeddings
 from lsp.logs import Timer, get_logger, logging_fwk_to_console
 from .comms import *
 
@@ -25,7 +25,7 @@ logging_fwk_to_console(level)
 logger = get_logger(__name__)
 
 print('testing known embeddings...')
-qwen3.test_known_embeddings()
+qwen3_embeddings.test_known_embeddings()
 
 print('opening socket')
 
@@ -60,7 +60,7 @@ def handle():
     rx_texts = rx_msg['texts']
 
     with Timer() as encode_timer:
-        embeddings, input_ids = qwen3.encode(rx_texts)
+        embeddings, input_ids = qwen3_embeddings.encode(rx_texts)
 
     tx_msg = {'embeddings': embeddings.tolist()}
     send_len_then_msg(conn, tx_msg)
