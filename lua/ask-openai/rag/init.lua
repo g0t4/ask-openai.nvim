@@ -75,6 +75,10 @@ end
 
 function M.setup_telescope_picker()
     require("telescope").load_extension("ask_semantic_grep")
+
+    vim.keymap.set('n', '<leader>ag', ':<Cmd>Telescope ask_semantic_grep<CR>',
+        { noremap = true, silent = true, desc = 'Ask semantic grep (RAG test)' }
+    )
 end
 
 return M
