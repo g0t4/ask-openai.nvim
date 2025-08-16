@@ -43,6 +43,6 @@ local function all_pickers(opts)
     }):find()
 end
 
-vim.api.nvim_create_user_command("TelescopeAll", function()
-    all_pickers()
-end, {})
+return require('telescope').register_extension {
+    exports = { all_pickers = all_pickers },
+}
