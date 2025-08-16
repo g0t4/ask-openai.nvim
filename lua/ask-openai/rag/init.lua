@@ -69,6 +69,12 @@ function M.setup()
             }
         end,
     })
+
+    M.setup_telescope_picker()
+end
+
+function M.setup_telescope_picker()
+    require("telescope").load_extension("ask_semantic_grep")
 end
 
 return M
