@@ -5,6 +5,8 @@ local log = require("ask-openai.logs.logger").predictions()
 local M = {}
 
 function M.setup()
+    M.setup_telescope_picker() -- allow testing queries always
+
     -- TMP disable, i.e. when working on lsp itself :)
     --  HRMm wont be easy to enable/disable this though, will have to restart if LSP wasn't started and rag is toggled?
     if not api.is_rag_enabled() then
@@ -69,8 +71,6 @@ function M.setup()
             }
         end,
     })
-
-    M.setup_telescope_picker()
 end
 
 function M.setup_telescope_picker()
