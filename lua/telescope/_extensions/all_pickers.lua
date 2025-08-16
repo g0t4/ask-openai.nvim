@@ -23,7 +23,7 @@ local function all_pickers(opts)
     end
 
     pickers.new(opts, {
-        prompt_title = "👃 Nose Picker (All Pickers)",
+        prompt_title = "One Picker to Rule them All, the 👃 knows Picker!",
         finder = finders.new_table { results = results },
         sorter = conf.generic_sorter(opts),
         attach_mappings = function(bufnr, _)
