@@ -5,7 +5,7 @@ local conf = require("telescope.config").values
 local actions = require("telescope.actions")
 local action_state = require("telescope.actions.state")
 
-local function all_pickers(opts)
+local function picker_picker(opts)
     opts = opts or {}
 
     -- collect builtin pickers
@@ -44,5 +44,5 @@ local function all_pickers(opts)
 end
 
 return require('telescope').register_extension {
-    exports = { all_pickers = all_pickers },
+    exports = { picker_picker = picker_picker },
 }
