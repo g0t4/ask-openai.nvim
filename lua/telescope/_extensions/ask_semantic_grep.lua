@@ -33,5 +33,8 @@ local function picker(open_url)
 end
 
 return require('telescope').register_extension {
-    exports = { ask_semantic_grep = picker },
+    exports = {
+        ask_semantic_grep = picker,
+        -- PRN other pickers!
+    },
 }
