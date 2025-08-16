@@ -13,7 +13,7 @@ from lsp import model_st as model_wrapper
 
 from lsp.logs import logging_fwk_to_console
 
-logging_fwk_to_console(logging.WARN)
+logging_fwk_to_console(logging.DEBUG)
 
 class TestBuildIndex(unittest.TestCase):
 
@@ -348,4 +348,6 @@ class TestBuildIndex(unittest.TestCase):
         pass
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+    test = TestBuildIndex()
+    test.test_update_reproduce_duplicated_vector_IDs()
