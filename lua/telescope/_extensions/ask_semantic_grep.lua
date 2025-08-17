@@ -60,6 +60,31 @@ function _context_query_sync(message, lsp_buffer_number)
     return results[1].result.matches or {}
 end
 
+-- latest-only helper (works for LSP and external jobs)
+local Latest = { gen = 0, proc = nil, lsp = nil, req = nil }
+
+function Latest:start_job(cmd, on_done)
+    self.gen = self.gen + 1
+    local gen = self.gen
+    if self.proc and not self.proc:is_closing() then pcall(self.proc.kill, self.proc, 2) end -- SIGINT
+    self.proc = vim.system(cmd, { text = true }, function(res)
+        if gen ~= self.gen then return end -- drop stale result
+        on_done(res)
+    end)
+end
+
+function Latest:start_lsp(client, method, params, on_done)
+    self.gen = self.gen + 1
+    local gen = self.gen
+    if self.lsp and self.req then pcall(self.lsp.cancel_request, self.lsp, self.req) end
+    self.lsp = client
+    local ok, req = client.request(method, params, function(err, result)
+        if gen ~= self.gen then return end -- drop stale result
+        on_done(err, result)
+    end)
+    if ok then self.req = req end
+end
+
 local termopen_previewer_bat = previewers.new_termopen_previewer({
     get_command = function(entry)
         match = entry.match
