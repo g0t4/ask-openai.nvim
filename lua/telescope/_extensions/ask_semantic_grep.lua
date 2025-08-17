@@ -81,34 +81,47 @@ local terminfo_previewer_bat = previewers.new_termopen_previewer({
 })
 
 local ns = vim.api.nvim_create_namespace("rag_preview")
+-- -- I want my own highlight style (not Search)
+local hlgroup = "RagLineRange"
+vim.api.nvim_set_hl(0, hlgroup, {
+    -- bg = "#50fa7b",
+    -- fg = "#44475a",
+    bg = "#414858",
+    bold = true,
+    -- standout = true,
+})
 
 local custom_buffer_previewer = previewers.new_buffer_previewer({
     define_preview = function(self, entry)
-        local f = entry.path or entry.filename
-        vim.api.nvim_buf_set_option(self.state.bufnr, "modifiable", true)
-        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, vim.fn.readfile(f))
-        vim.api.nvim_buf_set_option(self.state.bufnr, "modifiable", false)
+        local filename = entry.path or entry.filename
+        local winid = self.state.winid
+        local bufnr = self.state.bufnr
 
-        -- dump # lines
-        local num_lines = vim.api.nvim_buf_line_count(self.state.bufnr)
-        messages.append("file: " .. f .. ", num_lines: " .. num_lines)
+        vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.fn.readfile(filename))
+        vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
+
+        local num_lines = vim.api.nvim_buf_line_count(bufnr)
+        messages.append("file: " .. filename .. ", num_lines: " .. num_lines)
         messages.append("entry: " .. vim.inspect(entry))
 
-
-
-        vim.api.nvim_buf_clear_namespace(self.state.bufnr, ns, 0, -1)
+        vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
         local start_line, end_line = entry.match.start_line, entry.match.end_line -- 1-based
         messages.append("start_line, e: " .. start_line .. ", " .. end_line)
-        messages.append("winid = " .. self.state.winid)
+        messages.append("winid = " .. winid)
 
         for l = start_line - 1, end_line - 1 do
-            vim.api.nvim_buf_add_highlight(self.state.bufnr, ns, "Search", l, 0, -1)
+            vim.api.nvim_buf_add_highlight(bufnr, ns, "RagLineRange", l, 0, -1)
         end
 
+        local ft = vim.filetype.match({ filename = filename }) or "text"
+        vim.bo[bufnr].filetype = ft -- triggers FileType autocommands
+        vim.bo[bufnr].syntax = "" -- avoid regex syntax if you only want TS
+        -- require('telescope.previewers.utils').highlighter(bufnr, ft)
 
         vim.schedule(function()
-            if not vim.api.nvim_win_is_valid(self.state.winid) then return end
-            vim.api.nvim_win_call(self.state.winid, function()
+            if not vim.api.nvim_win_is_valid(winid) then return end
+            vim.api.nvim_win_call(winid, function()
                 pcall(vim.api.nvim_win_set_cursor, 0, { start_line, 0 })
                 vim.cmd('normal! zz') -- center like `zz`
             end)
