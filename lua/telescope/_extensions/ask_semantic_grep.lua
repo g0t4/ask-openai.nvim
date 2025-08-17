@@ -35,7 +35,7 @@ function _context_query_sync(message, lsp_buffer_number)
     lsp_buffer_number = lsp_buffer_number or 0
 
 
-    message.text = "setmantic_grep" -- TODO remove later
+    -- message.text = "setmantic_grep" -- TODO remove later
     -- TODO refine instructions
     message.instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
     -- current_file_absolute_path  -- PRN default?
@@ -60,7 +60,7 @@ function _context_query_sync(message, lsp_buffer_number)
     return results[1].result.matches or {}
 end
 
-local terminfo_previewer_bat = previewers.new_termopen_previewer({
+local termopen_previewer_bat = previewers.new_termopen_previewer({
     get_command = function(entry)
         match = entry.match
         messages.append("entry: " .. vim.inspect(match))
@@ -201,8 +201,8 @@ local function semantic_grep_current_filetype_picker(opts)
 
         -- :h telescope.previewers
         -- previewer = require('telescope.config').values.grep_previewer(opts_previewer), -- show filename/path + jump to lnum
-        -- previewer = terminfo_previewer_bat,
-        previewer = custom_buffer_previewer,
+        previewer = termopen_previewer_bat,
+        -- previewer = custom_buffer_previewer,
 
         sorter = sorters.get_generic_fuzzy_sorter(),
         attach_mappings = function(prompt_bufnr, keymap)
