@@ -52,7 +52,58 @@ function Latest:start_lsp(client, method, params, on_done)
     if ok then self.req = req end
 end
 
-function _context_query_sync(message, lsp_buffer_number)
+local _telescope_find_callable_obj = function()
+    local obj = {}
+
+    obj.__index = obj
+    obj.__call = function(t, ...)
+        return t:_find(...)
+    end
+
+    obj.close = function() end
+
+    return obj
+end
+
+local AsyncDynamicFinder = _telescope_find_callable_obj()
+
+function AsyncDynamicFinder:new(opts)
+    opts = opts or {}
+
+    assert(not opts.results, "`results` should be used with finder.new_table")
+    assert(not opts.static, "`static` should be used with finder.new_oneshot_job")
+
+    local obj = setmetatable({
+        curr_buf = opts.curr_buf,
+        fn = opts.fn,
+        entry_maker = opts.entry_maker or make_entry.gen_from_string(opts),
+    }, self)
+
+    return obj
+end
+
+function AsyncDynamicFinder:_find(prompt, process_result, process_complete)
+    messages.append("prompt:" .. vim.inspect(prompt))
+
+    -- I adapted this from DyanmicFinder... all of this is so stupidly named
+    self.fn(prompt, process_result, process_complete, self.entry_maker)
+
+    -- local result_num = 0
+    -- for _, result in ipairs(results) do
+    --     result_num = result_num + 1
+    --     local entry = self.entry_maker(result)
+    --     if entry then
+    --         entry.index = result_num
+    --     end
+    --     if process_result(entry) then
+    --         return
+    --     end
+    -- end
+    --
+    -- process_complete()
+end
+
+function _context_query_sync(message, lsp_buffer_number, process_result, process_complete, entry_maker)
     messages.header("context query")
     messages.append("message" .. vim.inspect(message))
     messages.append("lsp_buffer_number" .. lsp_buffer_number)
@@ -75,13 +126,22 @@ function _context_query_sync(message, lsp_buffer_number)
         command = "context.query",
         arguments = { message },
     })
-    -- messages.append("results: " .. vim.inspect(results))
+    messages.append("results: " .. vim.inspect(results))
     if not results then
         messages.append("failed to get results")
         return {}
     end
+    local matches = results[1].result.matches or {}
+    messages.append("matches: " .. vim.inspect(matches))
+    messages.append("#matches: " .. #matches)
+    for i, result in ipairs(matches) do
+        messages.append("result: " .. vim.inspect(result))
+        local entry = entry_maker(result)
+        entry.index = i -- NOTE this is different than normal telescope!
+        process_result(entry)
+    end
 
-    return results[1].result.matches or {}
+    process_complete()
 end
 
 local termopen_previewer_bat = previewers.new_termopen_previewer({
@@ -144,10 +204,23 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         vim.bo[bufnr].syntax = "" -- avoid regex syntax if you only want TS
         -- require('telescope.previewers.utils').highlighter(bufnr, ft)
 
+        Latest.gen = Latest.gen + 1
+        local gen = Latest.gen
         vim.schedule(function()
-            if not vim.api.nvim_win_is_valid(winid) then return end
+            if gen ~= Latest.gen then
+                return
+            end
+            if not vim.api.nvim_win_is_valid(winid) then
+                return
+            end
+            if not vim.api.nvim_buf_is_loaded(bufnr) then
+                -- if no buffer found or not loaded, then abort
+                return
+            end
+            -- messages.append("winid = " .. winid .. ", bufnr = " .. bufnr .. ", ns = " .. ns .. ", lnum = " .. lnum)
+
             vim.api.nvim_win_call(winid, function()
-                pcall(vim.api.nvim_win_set_cursor, 0, { start_line, 0 })
+                pcall(vim.api.nvim_win_set_cursor, winid, { start_line, 0 })
                 vim.cmd('normal! zz') -- center like `zz`
             end)
         end)
@@ -177,12 +250,21 @@ local function semantic_grep_current_filetype_picker(opts)
     opts_previewer = {}
     pickers.new({ opts }, {
         prompt_title = 'semantic grep - for testing RAG queries',
-        finder = finders.new_dynamic({
-            fn = function(prompt)
+
+
+        finder = AsyncDynamicFinder:new({
+            fn = function(prompt, process_result, process_complete, entry_maker)
+                messages.append("process_result: " .. vim.inspect(process_result))
+                messages.append("process_complete: " .. vim.inspect(process_complete))
+                messages.append("prompt_AsyncDynamicFinder: " .. prompt)
+                if not prompt or prompt == '' then
+                    return {}
+                end
+
                 -- function is called each time the user changes the prompt (text in the Telescope Picker)
                 query_args.text = prompt
                 -- TODO make async query instead using buf_request instead of buf_request_sync
-                return _context_query_sync(query_args, lsp_buffer_number)
+                return _context_query_sync(query_args, lsp_buffer_number, process_result, process_complete, entry_maker)
             end,
             entry_maker = function(match)
                 -- FYI `:h telescope.make_entry`
@@ -229,6 +311,7 @@ local function semantic_grep_current_filetype_picker(opts)
         -- previewer = require('telescope.config').values.grep_previewer(opts_previewer), -- show filename/path + jump to lnum
         -- previewer = termopen_previewer_bat,
         previewer = custom_buffer_previewer,
+        -- previewer = false, -- no preview
 
         sorter = sorters.get_generic_fuzzy_sorter(),
         attach_mappings = function(prompt_bufnr, keymap)
