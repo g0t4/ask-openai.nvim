@@ -80,6 +80,43 @@ local terminfo_previewer_bat = previewers.new_termopen_previewer({
     end,
 })
 
+local ns = vim.api.nvim_create_namespace("rag_preview")
+
+local custom_buffer_previewer = previewers.new_buffer_previewer({
+    define_preview = function(self, entry)
+        local f = entry.path or entry.filename
+        vim.api.nvim_buf_set_option(self.state.bufnr, "modifiable", true)
+        vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, vim.fn.readfile(f))
+        vim.api.nvim_buf_set_option(self.state.bufnr, "modifiable", false)
+
+        -- dump # lines
+        local num_lines = vim.api.nvim_buf_line_count(self.state.bufnr)
+        messages.append("file: " .. f .. ", num_lines: " .. num_lines)
+        messages.append("entry: " .. vim.inspect(entry))
+
+
+
+        vim.api.nvim_buf_clear_namespace(self.state.bufnr, ns, 0, -1)
+        local start_line, end_line = entry.match.start_line, entry.match.end_line -- 1-based
+        messages.append("start_line, e: " .. start_line .. ", " .. end_line)
+        messages.append("winid = " .. self.state.winid)
+
+        for l = start_line - 1, end_line - 1 do
+            vim.api.nvim_buf_add_highlight(self.state.bufnr, ns, "Search", l, 0, -1)
+        end
+
+
+        vim.schedule(function()
+            if not vim.api.nvim_win_is_valid(self.state.winid) then return end
+            vim.api.nvim_win_call(self.state.winid, function()
+                pcall(vim.api.nvim_win_set_cursor, 0, { start_line, 0 })
+                vim.cmd('normal! zz') -- center like `zz`
+            end)
+        end)
+    end,
+})
+
+
 local function semantic_grep_current_filetype_picker(opts)
     -- GOOD examples (multiple pickers in one nvim plugin):
     --  https://gitlab.com/davvid/telescope-git-grep.nvim/-/blob/main/lua/git_grep/init.lua?ref_type=heads
@@ -149,7 +186,8 @@ local function semantic_grep_current_filetype_picker(opts)
 
         -- :h telescope.previewers
         -- previewer = require('telescope.config').values.grep_previewer(opts_previewer), -- show filename/path + jump to lnum
-        previewer = terminfo_previewer_bat,
+        -- previewer = terminfo_previewer_bat,
+        previewer = custom_buffer_previewer,
 
         sorter = sorters.get_generic_fuzzy_sorter(),
         attach_mappings = function(prompt_bufnr, keymap)
