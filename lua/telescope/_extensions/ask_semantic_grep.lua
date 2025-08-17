@@ -85,9 +85,8 @@ local ns = vim.api.nvim_create_namespace("rag_preview")
 local hlgroup = "RagLineRange"
 vim.api.nvim_set_hl(0, hlgroup, {
     -- bg = "#50fa7b",
-    -- fg = "#44475a",
     bg = "#414858",
-    bold = true,
+    -- bold = true,
     -- standout = true,
 })
 
