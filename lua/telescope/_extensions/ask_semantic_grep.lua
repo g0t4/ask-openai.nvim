@@ -86,6 +86,7 @@ function Latest:start_lsp(client, method, params, on_done)
 end
 
 local termopen_previewer_bat = previewers.new_termopen_previewer({
+    -- FYI this will have race condition issues on setting cursor position too...
     get_command = function(entry)
         match = entry.match
         messages.append("entry: " .. vim.inspect(match))
