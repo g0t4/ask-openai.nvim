@@ -133,6 +133,9 @@ local function semantic_grep_current_filetype_picker(opts)
     -- GOOD examples (multiple pickers in one nvim plugin):
     --  https://gitlab.com/davvid/telescope-git-grep.nvim/-/blob/main/lua/git_grep/init.lua?ref_type=heads
 
+    -- TODO! show columns, with score too... basename on file? or some util to truncate?
+    -- TODO! cancel previous queries? async too so not locking up UI?
+
     -- * this runs before picker opens, so you can gather context, i.e. current filetype, its LSP, etc
     messages.append("opts" .. vim.inspect(opts))
     local query_args = {
