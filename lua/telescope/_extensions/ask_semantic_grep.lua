@@ -228,8 +228,8 @@ local function semantic_grep_current_filetype_picker(opts)
 
         -- :h telescope.previewers
         -- previewer = require('telescope.config').values.grep_previewer(opts_previewer), -- show filename/path + jump to lnum
-        previewer = termopen_previewer_bat,
-        -- previewer = custom_buffer_previewer,
+        -- previewer = termopen_previewer_bat,
+        previewer = custom_buffer_previewer,
 
         sorter = sorters.get_generic_fuzzy_sorter(),
         attach_mappings = function(prompt_bufnr, keymap)
