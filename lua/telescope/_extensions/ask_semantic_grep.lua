@@ -66,7 +66,7 @@ local termopen_previewer_bat = previewers.new_termopen_previewer({
         messages.append("entry: " .. vim.inspect(match))
 
         local f = match.file
-        return {
+        local cmd = {
             "bat",
             "--paging=never",
             "--color=always",
@@ -77,6 +77,7 @@ local termopen_previewer_bat = previewers.new_termopen_previewer({
             "--highlight-line", string.format("%d:%d", match.start_line, match.end_line),
             f,
         }
+        return cmd
     end,
 })
 
