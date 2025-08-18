@@ -155,7 +155,7 @@ local function semantic_grep_current_filetype_picker(opts)
         -- `:h telescope.pickers.entry_display`
         separator = " ",
         items = {
-            { width = 4 },
+            { width = 5 },
             { width = widths.file },
             { width = widths.contents },
         },
@@ -164,8 +164,12 @@ local function semantic_grep_current_filetype_picker(opts)
     local make_display = function(entry)
         -- FYI hl groups
         -- ~/.local/share/nvim/lazy/telescope.nvim/plugin/telescope.lua:11-92 i.e. TelescopeResultsIdentifier
+
+        local score_percent = string.format("%.1f%%", entry.score * 100)
+        -- use percent_str where needed, e.g. in the display text
+
         return displayer {
-            {},
+            { score_percent, },
             { entry.cols.contents },
             -- { entry.filename,     "TelescopeResultsIdentifier" },
             { utils.transform_path(opts, entry.filename), "TelescopeResultsIdentifier" },
@@ -222,6 +226,7 @@ local function semantic_grep_current_filetype_picker(opts)
                     -- col = 0
 
                     match = match,
+                    score = match.score,
 
                     cols = {
                         file = match.file,
