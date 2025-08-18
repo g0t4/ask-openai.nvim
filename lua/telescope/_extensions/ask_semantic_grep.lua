@@ -190,13 +190,11 @@ local function semantic_grep_current_filetype_picker(opts)
         -- use percent_str where needed, e.g. in the display text
         local icon, icon_hlgroup = utils.get_devicons(entry.filename, false)
         local coordinates = ":"
-        if not disable_coordinates then
-            if entry.lnum then
-                if entry.col then
-                    coordinates = string.format(":%s:%s:", entry.lnum, entry.col)
-                else
-                    coordinates = string.format(":%s:", entry.lnum)
-                end
+        if entry.lnum then
+            if entry.col then
+                coordinates = string.format(":%s:%s:", entry.lnum, entry.col)
+            else
+                coordinates = string.format(":%s:", entry.lnum)
             end
         end
         local path_display = path_abs(entry.filename)
