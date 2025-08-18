@@ -167,7 +167,7 @@ local function semantic_grep_current_filetype_picker(opts)
     opts_previewer = {}
     picker = pickers:new({
         prompt_title = 'semantic grep - for testing RAG queries',
-        -- sorting_strategy = 'ascending',
+        sorting_strategy = 'ascending',
 
 
 
