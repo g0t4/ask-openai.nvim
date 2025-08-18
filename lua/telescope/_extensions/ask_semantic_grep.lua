@@ -15,7 +15,7 @@ local AsyncDynamicFinder = require('telescope._extensions.ask_semantic_grep.asyn
 local latest_query_num = 0
 
 local client_request_ids, cancel_all_requests
-function _context_query_sync(message, lsp_buffer_number, process_result, process_complete, entry_maker)
+function _semantic_grep(message, lsp_buffer_number, process_result, process_complete, entry_maker)
     if cancel_all_requests then
         logs:info("canceling previous request")
         cancel_all_requests()
@@ -27,20 +27,20 @@ function _context_query_sync(message, lsp_buffer_number, process_result, process
     message.instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
 
     client_request_ids, cancel_all_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
-            command = "context.query",
+            command = "semantic_grep",
             arguments = { message },
         },
         function(err, result, ctx)
-            logs:info("context query complete: " .. vim.inspect({ err = err, result = result, ctx = ctx }))
+            logs:info("semantic_grep callback: " .. vim.inspect({ err = err, result = result, ctx = ctx }))
 
             if err then
-                logs:error("context query failed: " .. err.message)
+                logs:error("semantic_grep failed: " .. err.message)
                 return {}
             end
 
             -- logs:info("result: " .. vim.inspect(result))
             if not result then
-                logs:error("failed to get results")
+                logs:error("semantic_grep failed to get results")
                 return {}
             end
             local matches = result.matches or {}
@@ -171,7 +171,7 @@ local function semantic_grep_current_filetype_picker(opts)
                 -- function is called each time the user changes the prompt (text in the Telescope Picker)
                 query_args.text = prompt
                 -- TODO make async query instead using buf_request instead of buf_request_sync
-                return _context_query_sync(query_args, lsp_buffer_number, process_result, process_complete, entry_maker)
+                return _semantic_grep(query_args, lsp_buffer_number, process_result, process_complete, entry_maker)
             end,
             entry_maker = function(match)
                 -- FYI `:h telescope.make_entry`
