@@ -129,6 +129,7 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
 })
 
 local sort_by_score = sorters.Sorter:new {
+    -- core Sorter logic: ~/.local/share/nvim/lazy/telescope.nvim/lua/telescope/sorters.lua:122-160
 
     scoring_function = function(_self, prompt, ordinal, entry, cb_add, cb_filter)
         -- 0 <= score <= 1
@@ -174,6 +175,7 @@ local function semantic_grep_current_filetype_picker(opts)
         -- `:h telescope.pickers.entry_display`
         separator = " ",
         items = {
+            { width = 1 },
             { width = 5 },
             { width = widths.file },
             { width = widths.contents },
@@ -186,8 +188,10 @@ local function semantic_grep_current_filetype_picker(opts)
 
         local score_percent = string.format("%.1f%%", entry.score * 100)
         -- use percent_str where needed, e.g. in the display text
+        local icon, hl_group = utils.get_devicons(entry.filename, false)
 
         return displayer {
+            { icon,                                       hl_group },
             { score_percent,                              "TelescopeResultsNumber" },
             { utils.transform_path(opts, entry.filename), "TelescopeResultsIdentifier" },
             { entry.match.text,                           "TelescopeResultsLine" },
