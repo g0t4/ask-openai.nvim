@@ -51,7 +51,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
         first_chunk = chunks[0]
         self.assertEqual(first_chunk.text, "1\n2\n3\n\n")
 
-class TestChunkBuilding(unittest.TestCase):
+class TestLinesChunker(unittest.TestCase):
 
     def setUp(self):
         # create temp directory
