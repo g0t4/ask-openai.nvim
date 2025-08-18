@@ -46,6 +46,7 @@ function _semantic_grep(message, lsp_buffer_number, process_result, process_comp
                 logs:error("semantic_grep failed to get results")
                 return {}
             end
+            -- PRN try using re-ranking with 30-50 matches? does that improve utility/accuracy?
             local matches = result.matches or {}
             for i, match in ipairs(matches) do
                 -- logs:info("match: " .. vim.inspect(match))
@@ -246,7 +247,6 @@ local function semantic_grep_current_filetype_picker(opts)
 
                 -- function is called each time the user changes the prompt (text in the Telescope Picker)
                 query_args.text = prompt
-                -- TODO make async query instead using buf_request instead of buf_request_sync
                 return _semantic_grep(query_args, lsp_buffer_number, process_result, process_complete, entry_maker)
             end,
             entry_maker = function(match)
