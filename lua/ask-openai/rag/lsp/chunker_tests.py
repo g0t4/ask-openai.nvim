@@ -97,3 +97,16 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         second_chunk = chunks[1]
         expected_func2_chunk_text = "def func2():\n    return 2"
         self.assertEqual(second_chunk.text, expected_func2_chunk_text)
+
+    def test_nested_functions_py(self):
+        test_file = self.test_cases / "nested_functions.py"
+        chunks = build_ts_chunks(test_file, "fake_hash")
+        self.assertEqual(len(chunks), 2)
+
+        first_chunk = chunks[0]
+        expected_first_chunk = "def f():\n\n    def g():\n        return 42"
+        self.assertEqual(first_chunk.text, expected_first_chunk)
+
+        second_chunk = chunks[1]
+        expected_second_chunk = "def g():\n        return 42"
+        self.assertEqual(second_chunk.text, expected_second_chunk)
