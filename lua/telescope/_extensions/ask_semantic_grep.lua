@@ -64,26 +64,6 @@ function _semantic_grep(message, lsp_buffer_number, process_result, process_comp
     )
 end
 
--- local termopen_previewer_bat = previewers.new_termopen_previewer({
---     -- FYI this will have race condition issues on setting cursor position too...
---     get_command = function(entry)
---         match = entry.match
---         local f = match.file
---         local cmd = {
---             "bat",
---             "--paging=never",
---             "--color=always",
---             -- "--style=plain",
---             "--number",
---             "--line-range", string.format("%d:%d", math.max(1, match.start_line - 10), math.max(1, match.end_line + 10)), -- context
---             -- "--line-range", string.format("%d:%d", 1, 10),
---             "--highlight-line", string.format("%d:%d", match.start_line, match.end_line),
---             f,
---         }
---         return cmd
---     end,
--- })
-
 local ns = vim.api.nvim_create_namespace("rag_preview")
 -- -- I want my own highlight style (not Search)
 local hlgroup = "RagLineRange"
@@ -222,7 +202,6 @@ local function semantic_grep_current_filetype_picker(opts)
 
         -- :h telescope.previewers
         -- previewer = require('telescope.config').values.grep_previewer(opts_previewer), -- show filename/path + jump to lnum
-        -- previewer = termopen_previewer_bat,
         previewer = custom_buffer_previewer,
         -- previewer = false, -- no preview
 
