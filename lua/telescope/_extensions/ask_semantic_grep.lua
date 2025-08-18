@@ -128,7 +128,7 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
     end,
 })
 
-local my_custom_sorter = sorters.Sorter:new {
+local sort_by_score = sorters.Sorter:new {
 
     scoring_function = function(_self, prompt, ordinal, entry, cb_add, cb_filter)
         -- 0 <= score <= 1
@@ -257,7 +257,7 @@ local function semantic_grep_current_filetype_picker(opts)
         -- :h telescope.previewers
         previewer = custom_buffer_previewer,
 
-        sorter = my_custom_sorter,
+        sorter = sort_by_score,
         -- sorter = sorters.get_generic_fuzzy_sorter(),
         attach_mappings = function(prompt_bufnr, keymap)
             -- actions.select_default:replace(function()
