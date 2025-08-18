@@ -15,11 +15,9 @@ logging_fwk_to_console(logging.DEBUG)
 class TestReadingFilesAndNewLines(unittest.TestCase):
 
     def setUp(self):
-        # create temp directory
         self.test_cases = Path(__file__).parent / ".." / "tests" / "test_cases"
 
     def _readlines(self, test_file):
-        # verify file is as expected, and I understand how readlines works
         with open(test_file, "r", encoding="utf-8", errors="ignore") as f:
             return f.readlines()
 
