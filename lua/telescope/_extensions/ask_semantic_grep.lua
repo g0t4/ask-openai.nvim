@@ -169,10 +169,9 @@ local function semantic_grep_current_filetype_picker(opts)
         -- use percent_str where needed, e.g. in the display text
 
         return displayer {
-            { score_percent, },
-            { entry.cols.contents },
-            -- { entry.filename,     "TelescopeResultsIdentifier" },
+            { score_percent,                              "TelescopeResultsNumber" },
             { utils.transform_path(opts, entry.filename), "TelescopeResultsIdentifier" },
+            { entry.match.text,                           "TelescopeResultsLine" },
         }
     end
 
@@ -242,7 +241,7 @@ local function semantic_grep_current_filetype_picker(opts)
         -- :h telescope.previewers
         previewer = custom_buffer_previewer,
 
-        sorter = sorters.get_generic_fuzzy_sorter(),
+        -- sorter = sorters.get_generic_fuzzy_sorter(),
         attach_mappings = function(prompt_bufnr, keymap)
             -- actions.select_default:replace(function()
             --     -- actions.close(prompt_bufnr)
