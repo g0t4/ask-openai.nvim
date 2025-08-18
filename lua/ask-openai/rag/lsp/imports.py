@@ -89,10 +89,13 @@ def sync_kind(*_):
     return types.TextDocumentSyncKind.Full
 
 if __name__ == '__main__':
+    # z rag
+    # python3 -m lsp.imports
+
     logging_fwk_to_console(level=logging.DEBUG)
     on_open(types.DidOpenTextDocumentParams(**{'text_document': types.TextDocumentItem(**{
         'language_id': 'python',
         'uri': 'file:///tmp/test.py',
         'version': 1,
-        'text': 'import foo\nfrom foo import bar',
+        'text': 'import lsp.logs\nfrom lsp.chunker import *',
     })}))
