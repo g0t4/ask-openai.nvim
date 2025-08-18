@@ -103,7 +103,12 @@ function AsyncDynamicFinder:_find(prompt, process_result, process_complete)
     -- process_complete()
 end
 
+local client_request_ids, cancel_all_requests
 function _context_query_sync(message, lsp_buffer_number, process_result, process_complete, entry_maker)
+    if cancel_all_requests then
+        cancel_all_requests()
+    end
+
     messages.header("context query")
     messages.append("message" .. vim.inspect(message))
     messages.append("lsp_buffer_number" .. lsp_buffer_number)
@@ -122,26 +127,31 @@ function _context_query_sync(message, lsp_buffer_number, process_result, process
     -- in telescope can I have the user type in a prompt and decide when to execute it?
     --  or is it live search only?
 
-    local results = vim.lsp.buf_request_sync(lsp_buffer_number, "workspace/executeCommand", {
-        command = "context.query",
-        arguments = { message },
-    })
-    messages.append("results: " .. vim.inspect(results))
-    if not results then
-        messages.append("failed to get results")
-        return {}
-    end
-    local matches = results[1].result.matches or {}
-    messages.append("matches: " .. vim.inspect(matches))
-    messages.append("#matches: " .. #matches)
-    for i, result in ipairs(matches) do
-        messages.append("result: " .. vim.inspect(result))
-        local entry = entry_maker(result)
-        entry.index = i -- NOTE this is different than normal telescope!
-        process_result(entry)
-    end
+    client_request_ids, cancel_all_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
+            command = "context.query",
+            arguments = { message },
+        },
+        function(err, result, ctx)
+            if err then
+                messages.append("context query failed: " .. err.message)
+                return {}
+            end
 
-    process_complete()
+            messages.append("result: " .. vim.inspect(result))
+            if not result then
+                messages.append("failed to get results")
+                return {}
+            end
+            local matches = result.matches or {}
+            for i, match in ipairs(matches) do
+                messages.append("match: " .. vim.inspect(match))
+                local entry = entry_maker(match)
+                entry.index = i -- NOTE this is different than normal telescope!
+                process_result(entry)
+            end
+            process_complete()
+        end
+    )
 end
 
 local termopen_previewer_bat = previewers.new_termopen_previewer({
