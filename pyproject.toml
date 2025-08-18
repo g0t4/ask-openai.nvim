@@ -23,8 +23,7 @@ dependencies = [
     "rich>=14.0.0",
     "sentence-transformers>=4.1.0",
     "setuptools>=80.9.0",
-    "tree-sitter>=0.24.0",
-    "tree-sitter-lua>=0.2.0",
-    "tree-sitter-python>=0.23.6",
+    "tree-sitter==0.20.*",
+    "tree-sitter-languages==1.10.*",
     "yapf>=0.43.0",
 ]
