@@ -18,12 +18,15 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
         # create temp directory
         self.test_cases = Path(__file__).parent / ".." / "tests" / "test_cases"
 
-    def test_readlines_final_line_not_empty_without_newline(self):
-        test_file = self.test_cases / "readlines" / "final_line_not_empty_without_newline.txt"
+    def _verify_readlines(self, test_file):
         # verify file is as expected, and I understand how readlines works
         with open(test_file, "r", encoding="utf-8", errors="ignore") as f:
-            lines = f.readlines()
-            self.assertEqual(lines, ["1\n", "2\n", "3"])
+            return f.readlines()
+
+    def test_readlines_final_line_not_empty_without_newline(self):
+        test_file = self.test_cases / "readlines" / "final_line_not_empty_without_newline.txt"
+        lines = self._verify_readlines(test_file)
+        self.assertEqual(lines, ["1\n", "2\n", "3"])
 
         chunks = build_file_chunks(test_file, "fake_hash")
         first_chunk = chunks[0]
@@ -31,10 +34,8 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
 
     def test_readlines_final_line_not_empty_with_newline(self):
         test_file = self.test_cases / "readlines" / "final_line_not_empty_with_newline.txt"
-        # verify file is as expected, and I understand how readlines works
-        with open(test_file, "r", encoding="utf-8", errors="ignore") as f:
-            lines = f.readlines()
-            self.assertEqual(lines, ["1\n", "2\n", "3\n"])
+        lines = self._verify_readlines(test_file)
+        self.assertEqual(lines, ["1\n", "2\n", "3\n"])
 
         chunks = build_file_chunks(test_file, "fake_hash")
         first_chunk = chunks[0]
@@ -42,10 +43,8 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
 
     def test_readlines_final_line_empty_with_newline(self):
         test_file = self.test_cases / "readlines" / "final_line_empty_with_newline.txt"
-        # verify file is as expected, and I understand how readlines works
-        with open(test_file, "r", encoding="utf-8", errors="ignore") as f:
-            lines = f.readlines()
-            self.assertEqual(lines, ["1\n", "2\n", "3\n", "\n"])
+        lines = self._verify_readlines(test_file)
+        self.assertEqual(lines, ["1\n", "2\n", "3\n", "\n"])
 
         chunks = build_file_chunks(test_file, "fake_hash")
         first_chunk = chunks[0]
