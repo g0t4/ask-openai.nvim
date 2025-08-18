@@ -175,8 +175,8 @@ local function semantic_grep_current_filetype_picker(opts)
         -- `:h telescope.pickers.entry_display`
         separator = " ",
         items = {
-            { width = 1 },
             { width = 5 },
+            { width = 1 },
             { width = widths.file },
             { width = widths.contents },
         },
@@ -191,8 +191,8 @@ local function semantic_grep_current_filetype_picker(opts)
         local icon, hl_group = utils.get_devicons(entry.filename, false)
 
         return displayer {
-            { icon,                                       hl_group },
             { score_percent,                              "TelescopeResultsNumber" },
+            { icon,                                       hl_group },
             { utils.transform_path(opts, entry.filename), "TelescopeResultsIdentifier" },
             { entry.match.text,                           "TelescopeResultsLine" },
         }
