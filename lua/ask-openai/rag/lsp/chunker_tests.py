@@ -76,5 +76,6 @@ class TestChunkBuilding(unittest.TestCase):
         expected_first_chunk_text = "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline 13\nline 14\nline 15\nline 16\nline 17\nline 18\nline 19\nline 20\n"
         self.assertEqual(first_chunk.text, expected_first_chunk_text)
 
-        # self.assertEqual(first_chunk
-        # second_chunk = chunks[1]
+        second_chunk = chunks[1]
+        expected_second_chunk_text = "line 16\nline 17\nline 18\nline 19\nline 20\nline 21\nline 22\nline 23\nline 24\nline 25\nline 26\nline 27\nline 28\nline 29\n"
+        self.assertEqual(second_chunk.text, expected_second_chunk_text)
