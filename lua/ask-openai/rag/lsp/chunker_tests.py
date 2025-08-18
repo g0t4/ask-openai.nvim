@@ -38,7 +38,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
 
         chunks = build_file_chunks(test_file, "fake_hash")
         first_chunk = chunks[0]
-        self.assertEqual(first_chunk.text, "1\n2\n3\n")  # TODO! should I preserve final newline? IF SO ADD IT BACK HERE ONLY
+        self.assertEqual(first_chunk.text, "1\n2\n3\n")
 
     def test_readlines_final_line_empty_with_newline(self):
         test_file = self.test_cases / "readlines" / "final_line_empty_with_newline.txt"
@@ -49,7 +49,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
 
         chunks = build_file_chunks(test_file, "fake_hash")
         first_chunk = chunks[0]
-        self.assertEqual(first_chunk.text, "1\n2\n3\n\n")  # TODO! preserve final empty line + new line... right now I strip the entire thing ... yikes
+        self.assertEqual(first_chunk.text, "1\n2\n3\n\n")
 
 class TestChunkBuilding(unittest.TestCase):
 
