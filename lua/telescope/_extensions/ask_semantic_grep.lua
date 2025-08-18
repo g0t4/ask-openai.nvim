@@ -4,7 +4,6 @@ local finders = require('telescope.finders')
 local pickers = require('telescope.pickers')
 local sorters = require('telescope.sorters')
 local previewers = require('telescope.previewers')
-local messages = require('devtools.messages')
 local telescope_config = require('telescope.config').values
 local make_entry = require('telescope.make_entry')
 local state = require('telescope.actions.state')
@@ -12,46 +11,7 @@ local state = require('telescope.actions.state')
 local files = require("ask-openai.helpers.files")
 local logs = require('ask-openai.logs.logger').predictions()
 
-local even_sorter = sorters.Sorter:new {
-    scoring_function = function(_, prompt, entry)
-        messages.ensure_open()
-        messages.append("called sorter: " .. vim.inspect(prompt))
-        messages.append("called sorter: " .. vim.inspect(entry))
-        -- Always keep every entry, score doesn't matter
-        return 1
-    end,
-    highlighter = function(_, prompt, display)
-        messages.ensure_open()
-        messages.append("called highlighter: " .. vim.inspect(prompt))
-        messages.append("called highlighter: " .. vim.inspect(display))
-        -- No highlights
-        return {}
-    end,
-}
-
 local Latest = { gen = 0, proc = nil, lsp = nil, req = nil }
-
-function Latest:start_job(cmd, on_done)
-    self.gen = self.gen + 1
-    local gen = self.gen
-    if self.proc and not self.proc:is_closing() then pcall(self.proc.kill, self.proc, 2) end -- SIGINT
-    self.proc = vim.system(cmd, { text = true }, function(res)
-        if gen ~= self.gen then return end -- drop stale result
-        on_done(res)
-    end)
-end
-
-function Latest:start_lsp(client, method, params, on_done)
-    self.gen = self.gen + 1
-    local gen = self.gen
-    if self.lsp and self.req then pcall(self.lsp.cancel_request, self.lsp, self.req) end
-    self.lsp = client
-    local ok, req = client.request(method, params, function(err, result)
-        if gen ~= self.gen then return end -- drop stale result
-        on_done(err, result)
-    end)
-    if ok then self.req = req end
-end
 
 local _telescope_find_callable_obj = function()
     local obj = {}
@@ -71,9 +31,6 @@ local AsyncDynamicFinder = _telescope_find_callable_obj()
 function AsyncDynamicFinder:new(opts)
     opts = opts or {}
 
-    assert(not opts.results, "`results` should be used with finder.new_table")
-    assert(not opts.static, "`static` should be used with finder.new_oneshot_job")
-
     local obj = setmetatable({
         curr_buf = opts.curr_buf,
         fn = opts.fn,
@@ -84,22 +41,7 @@ function AsyncDynamicFinder:new(opts)
 end
 
 function AsyncDynamicFinder:_find(prompt, process_result, process_complete)
-    -- I adapted this from DyanmicFinder... all of this is so stupidly named
     self.fn(prompt, process_result, process_complete, self.entry_maker)
-
-    -- local result_num = 0
-    -- for _, result in ipairs(results) do
-    --     result_num = result_num + 1
-    --     local entry = self.entry_maker(result)
-    --     if entry then
-    --         entry.index = result_num
-    --     end
-    --     if process_result(entry) then
-    --         return
-    --     end
-    -- end
-    --
-    -- process_complete()
 end
 
 local client_request_ids, cancel_all_requests
@@ -109,23 +51,10 @@ function _context_query_sync(message, lsp_buffer_number, process_result, process
         cancel_all_requests()
     end
 
-    messages.header("context query")
-    -- messages.append("message" .. vim.inspect(message))
-    -- messages.append("lsp_buffer_number" .. lsp_buffer_number)
     lsp_buffer_number = lsp_buffer_number or 0
 
-
-    -- message.text = "setmantic_grep" -- TODO remove later
     -- TODO refine instructions
     message.instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
-    -- current_file_absolute_path  -- PRN default?
-    -- vim_filetype  -- PRN default?
-
-    -- TODO see my _context_query for ASYNC example once I am done w/ sync testing
-    -- I should be able to stream in results
-    -- TODO handle canceling previous query on next one!
-    -- in telescope can I have the user type in a prompt and decide when to execute it?
-    --  or is it live search only?
 
     client_request_ids, cancel_all_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
             command = "context.query",
@@ -135,18 +64,18 @@ function _context_query_sync(message, lsp_buffer_number, process_result, process
             logs:info("context query complete: " .. vim.inspect({ err = err, result = result, ctx = ctx }))
 
             if err then
-                messages.append("context query failed: " .. err.message)
+                logs:error("context query failed: " .. err.message)
                 return {}
             end
 
-            -- messages.append("result: " .. vim.inspect(result))
+            -- logs:info("result: " .. vim.inspect(result))
             if not result then
-                messages.append("failed to get results")
+                logs:error("failed to get results")
                 return {}
             end
             local matches = result.matches or {}
             for i, match in ipairs(matches) do
-                -- messages.append("match: " .. vim.inspect(match))
+                -- logs:info("match: " .. vim.inspect(match))
                 local entry = entry_maker(match)
                 entry.index = i -- NOTE this is different than normal telescope!
                 process_result(entry)
@@ -162,8 +91,6 @@ local termopen_previewer_bat = previewers.new_termopen_previewer({
     -- FYI this will have race condition issues on setting cursor position too...
     get_command = function(entry)
         match = entry.match
-        -- messages.append("entry: " .. vim.inspect(match))
-
         local f = match.file
         local cmd = {
             "bat",
@@ -201,13 +128,9 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
 
         local num_lines = vim.api.nvim_buf_line_count(bufnr)
-        -- messages.append("file: " .. filename .. ", num_lines: " .. num_lines)
-        -- messages.append("entry: " .. vim.inspect(entry))
 
         vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
         local start_line, end_line = entry.match.start_line, entry.match.end_line -- 1-based
-        -- messages.append("start_line, e: " .. start_line .. ", " .. end_line)
-        -- messages.append("winid = " .. winid)
 
         for l = start_line - 1, end_line - 1 do
             vim.api.nvim_buf_add_highlight(bufnr, ns, "RagLineRange", l, 0, -1)
@@ -228,14 +151,12 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
                 return
             end
             if not vim.api.nvim_buf_is_loaded(bufnr) then
-                -- if no buffer found or not loaded, then abort
                 return
             end
-            -- messages.append("winid = " .. winid .. ", bufnr = " .. bufnr .. ", ns = " .. ns .. ", lnum = " .. lnum)
 
             vim.api.nvim_win_call(winid, function()
                 pcall(vim.api.nvim_win_set_cursor, winid, { start_line, 0 })
-                vim.cmd('normal! zz') -- center like `zz`
+                vim.cmd('normal! zz')
             end)
         end)
     end,
@@ -250,7 +171,6 @@ local function semantic_grep_current_filetype_picker(opts)
     -- TODO! cancel previous queries? async too so not locking up UI?
 
     -- * this runs before picker opens, so you can gather context, i.e. current filetype, its LSP, etc
-    -- messages.append("opts" .. vim.inspect(opts))
     local query_args = {
         -- TODO should I have one picker that is specific to current file type only
         --  and then another that searches code across all filetypes?
@@ -258,7 +178,6 @@ local function semantic_grep_current_filetype_picker(opts)
         filetype = vim.o.filetype,
         current_file_absolute_path = files.get_current_file_absolute_path(),
     }
-    -- messages.append("query_args:", vim.inspect(query_args))
     local lsp_buffer_number = vim.api.nvim_get_current_buf()
 
     opts_previewer = {}
