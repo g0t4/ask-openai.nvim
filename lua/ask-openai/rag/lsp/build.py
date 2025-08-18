@@ -35,6 +35,7 @@ def build_file_chunks(path: Path | str, file_hash: str) -> List[Chunk]:
     path = Path(path)
 
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
+        # each line has trailing newline (it is not stripped out)
         lines = f.readlines()
         return build_from_lines(path, file_hash, lines)
 
