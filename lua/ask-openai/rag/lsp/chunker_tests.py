@@ -13,6 +13,9 @@ logging_fwk_to_console(logging.DEBUG)
 # ptw lsp/chunker_tests.py -- --capture=tee-sys
 
 class TestReadingFilesAndNewLines(unittest.TestCase):
+    """ purpose is to test that readlines is behaving the way I expect
+        and that I carefully document newline behaviors (i.e. not stripping them)
+    """
 
     def setUp(self):
         self.test_cases = Path(__file__).parent / ".." / "tests" / "test_cases"
