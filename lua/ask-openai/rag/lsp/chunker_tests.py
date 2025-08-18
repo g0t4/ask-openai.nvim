@@ -110,3 +110,9 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         second_chunk = chunks[1]
         expected_second_chunk = "def g():\n        return 42"
         self.assertEqual(second_chunk.text, expected_second_chunk)
+        # TODO how do I want to handle nesting? maybe all in one if its under a token count?
+        # and/or index nested too?
+
+    def test_classes_py(self):
+        # TODO
+        pass
