@@ -79,3 +79,10 @@ class TestLinesChunker(unittest.TestCase):
         second_chunk = chunks[1]
         expected_second_chunk_text = "line 16\nline 17\nline 18\nline 19\nline 20\nline 21\nline 22\nline 23\nline 24\nline 25\nline 26\nline 27\nline 28\nline 29\n"
         self.assertEqual(second_chunk.text, expected_second_chunk_text)
+
+class TestTreesitterPythonChunker(unittest.TestCase):
+
+    def setUp(self):
+        self.test_cases = Path(__file__).parent / ".." / "tests" / "test_cases" / "ts"
+
+
