@@ -27,7 +27,8 @@ function _semantic_grep(message, lsp_buffer_number, process_result, process_comp
     lsp_buffer_number = lsp_buffer_number or 0
 
     -- TODO refine instructions
-    message.instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
+    message.instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope" -- performs best vs:
+    -- message.instruct = "Help the user find code and navigate the codebase, via a semantic grep telescope picker in neovim"
 
     client_request_ids, cancel_all_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
             command = "semantic_grep",
