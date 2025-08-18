@@ -83,8 +83,6 @@ function AsyncDynamicFinder:new(opts)
 end
 
 function AsyncDynamicFinder:_find(prompt, process_result, process_complete)
-    messages.append("prompt:" .. vim.inspect(prompt))
-
     -- I adapted this from DyanmicFinder... all of this is so stupidly named
     self.fn(prompt, process_result, process_complete, self.entry_maker)
 
@@ -110,8 +108,8 @@ function _context_query_sync(message, lsp_buffer_number, process_result, process
     end
 
     messages.header("context query")
-    messages.append("message" .. vim.inspect(message))
-    messages.append("lsp_buffer_number" .. lsp_buffer_number)
+    -- messages.append("message" .. vim.inspect(message))
+    -- messages.append("lsp_buffer_number" .. lsp_buffer_number)
     lsp_buffer_number = lsp_buffer_number or 0
 
 
@@ -137,14 +135,14 @@ function _context_query_sync(message, lsp_buffer_number, process_result, process
                 return {}
             end
 
-            messages.append("result: " .. vim.inspect(result))
+            -- messages.append("result: " .. vim.inspect(result))
             if not result then
                 messages.append("failed to get results")
                 return {}
             end
             local matches = result.matches or {}
             for i, match in ipairs(matches) do
-                messages.append("match: " .. vim.inspect(match))
+                -- messages.append("match: " .. vim.inspect(match))
                 local entry = entry_maker(match)
                 entry.index = i -- NOTE this is different than normal telescope!
                 process_result(entry)
@@ -158,7 +156,7 @@ local termopen_previewer_bat = previewers.new_termopen_previewer({
     -- FYI this will have race condition issues on setting cursor position too...
     get_command = function(entry)
         match = entry.match
-        messages.append("entry: " .. vim.inspect(match))
+        -- messages.append("entry: " .. vim.inspect(match))
 
         local f = match.file
         local cmd = {
@@ -197,13 +195,13 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
 
         local num_lines = vim.api.nvim_buf_line_count(bufnr)
-        messages.append("file: " .. filename .. ", num_lines: " .. num_lines)
-        messages.append("entry: " .. vim.inspect(entry))
+        -- messages.append("file: " .. filename .. ", num_lines: " .. num_lines)
+        -- messages.append("entry: " .. vim.inspect(entry))
 
         vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
         local start_line, end_line = entry.match.start_line, entry.match.end_line -- 1-based
-        messages.append("start_line, e: " .. start_line .. ", " .. end_line)
-        messages.append("winid = " .. winid)
+        -- messages.append("start_line, e: " .. start_line .. ", " .. end_line)
+        -- messages.append("winid = " .. winid)
 
         for l = start_line - 1, end_line - 1 do
             vim.api.nvim_buf_add_highlight(bufnr, ns, "RagLineRange", l, 0, -1)
@@ -246,7 +244,7 @@ local function semantic_grep_current_filetype_picker(opts)
     -- TODO! cancel previous queries? async too so not locking up UI?
 
     -- * this runs before picker opens, so you can gather context, i.e. current filetype, its LSP, etc
-    messages.append("opts" .. vim.inspect(opts))
+    -- messages.append("opts" .. vim.inspect(opts))
     local query_args = {
         -- TODO should I have one picker that is specific to current file type only
         --  and then another that searches code across all filetypes?
@@ -254,7 +252,7 @@ local function semantic_grep_current_filetype_picker(opts)
         filetype = vim.o.filetype,
         current_file_absolute_path = files.get_current_file_absolute_path(),
     }
-    messages.append("query_args:", vim.inspect(query_args))
+    -- messages.append("query_args:", vim.inspect(query_args))
     local lsp_buffer_number = vim.api.nvim_get_current_buf()
 
     opts_previewer = {}
@@ -264,9 +262,6 @@ local function semantic_grep_current_filetype_picker(opts)
 
         finder = AsyncDynamicFinder:new({
             fn = function(prompt, process_result, process_complete, entry_maker)
-                messages.append("process_result: " .. vim.inspect(process_result))
-                messages.append("process_complete: " .. vim.inspect(process_complete))
-                messages.append("prompt_AsyncDynamicFinder: " .. prompt)
                 if not prompt or prompt == '' then
                     return {}
                 end
@@ -292,7 +287,6 @@ local function semantic_grep_current_filetype_picker(opts)
                 -- FYI would really be cool if I start to use treesitter for RAG chunking cuz then likely the first line will have the name of a function or otherwise!
                 -- lift out first function nameoanywhere in lines?
                 -- fallback to first line/last line parts
-                -- messages.append("match: " .. vim.inspect(match))
                 display_first_line = match.text.sub(match.text, 1, 20)
                 display_last_line = match.text.sub(match.text, -20, -1)
                 display = display_first_line .. "..." .. display_last_line
@@ -330,7 +324,6 @@ local function semantic_grep_current_filetype_picker(opts)
             --     local selection = state.get_selected_entry()
             --     -- TODO jump to start line of match
             --     -- vim.api.nvim_command('vsplit ' .. link)
-            --     -- messages.append("selected entry: " .. vim.inspect(selection))
             -- end)
             -- keymap({ 'n' }, 'c', function()
             --     -- add to context
