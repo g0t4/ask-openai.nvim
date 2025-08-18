@@ -178,7 +178,8 @@ local function semantic_grep_current_filetype_picker(opts)
         items = {
             { width = 5 },
             { width = 1 },
-            { width = 100 },
+            { width = 60 },
+            { width = 40 },
         },
     }
 
@@ -201,16 +202,20 @@ local function semantic_grep_current_filetype_picker(opts)
         -- TODO use ratio of window width to figure out limits?
         if #path_display > 60 then
             -- path_display = utils.path_smart(entry.filename)
-            path_display = "..." .. path_display.sub(path_display, -55)
+            path_display = "..." .. path_display:sub(-55)
         end
 
-        local line = path_display .. coordinates .. " " .. entry.match.text
+        local line = path_display .. coordinates -- .. " " .. entry.match.text
+
+        local contents = entry.match.text:sub(1, 30)
+        -- show \n in text for new lines for now...
+        contents = string.gsub(contents, "\n", "\\n") --  else telescope replaces new line with a | which then screws up icon color
 
         return displayer {
             { score_percent, "TelescopeResultsNumber" },
             { icon,          icon_hlgroup },
             { line },
-            -- { entry.match.text,                           "TelescopeResultsLine" },
+            { contents,      "TelescopeResultsLine" },
         }
     end
 
