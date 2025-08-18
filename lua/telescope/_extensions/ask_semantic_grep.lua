@@ -207,9 +207,23 @@ local function semantic_grep_current_filetype_picker(opts)
 
         local line = path_display .. coordinates -- .. " " .. entry.match.text
 
-        local contents = entry.match.text:sub(1, 30)
-        -- show \n in text for new lines for now...
-        contents = string.gsub(contents, "\n", "\\n") --  else telescope replaces new line with a | which then screws up icon color
+        local contents = ""
+
+        -- regex to match for a function name and extract if available
+        local function_name = ""
+        if string.find(entry.match.text, "%sfunction%s") then
+            -- match first function definition and extract that (only works in lua, so far... could work fish too if parens at end
+            function_name = string.match(entry.match.text, "(function [^%)]+%))")
+        end
+        if function_name ~= "" then
+            contents = function_name
+        else
+            -- TODO make this a setting
+            -- show first line only
+            contents = entry.match.text:sub(1, 30)
+            -- show \n in text for new lines for now...
+            contents = string.gsub(contents, "\n", "\\n") --  else telescope replaces new line with a | which then screws up icon color
+        end
 
         return displayer {
             { score_percent, "TelescopeResultsNumber" },
