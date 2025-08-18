@@ -332,11 +332,11 @@ local function semantic_grep_current_filetype_picker(opts)
             --     -- vim.api.nvim_command('vsplit ' .. link)
             --     -- messages.append("selected entry: " .. vim.inspect(selection))
             -- end)
-            keymap({ 'i', 'n' }, 'c', function()
-                -- add to context
-                -- TODO add action for adding to an explicit context!
-                -- TODO it would also be useful to have add to explicit context on a regular rg file search
-            end)
+            -- keymap({ 'n' }, 'c', function()
+            --     -- add to context
+            --     -- TODO add action for adding to an explicit context!
+            --     -- TODO it would also be useful to have add to explicit context on a regular rg file search
+            -- end)
             return true
         end,
     }):find()
