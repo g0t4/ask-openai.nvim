@@ -63,13 +63,72 @@ def build_from_lines(path: Path, file_hash: str, lines: List[str]) -> List[Chunk
                 text="".join(lines[start:end_line]),
                 file=str(path),
                 start_line=start_line,
+                start_column=0, # always the first column for line ranges
                 end_line=end_line,
+                end_column=None,
                 type=chunk_type,
                 file_hash=file_hash,
             )
 
     chunks = []
     for _, chunk in enumerate(iter_chunks(lines)):
+        chunks.append(chunk)
+
+    return chunks
+
+def build_ts_chunks(path: Path, file_hash: str) -> List[Chunk]:
+    """
+    Build chunks from a Python file using tree‑sitter.
+    Each chunk corresponds to a top‑level function definition.
+    """
+
+    from tree_sitter_languages import get_language, get_parser
+
+    language = get_language('python')
+    parser = get_parser('python')
+
+    with open(path, 'rb') as file:
+        source = file.read()
+
+    tree = parser.parse(source)
+    root_node = tree.root_node
+
+    print("Root node type:", root_node.type)
+
+    def collect_functions(node):
+        functions = []
+        if node.type == "function_definition":
+            functions.append(node)
+        for child in node.children:
+            functions.extend(collect_functions(child))
+        return functions
+
+    function_nodes = collect_functions(root_node)
+
+    chunks = []
+    for fn in function_nodes:
+        # print(f'{fn=}')
+
+        start_line = fn.start_point[0]
+        end_line = fn.end_point[0]
+        # Extract the lines belonging to this function
+
+        chunk_type = ""
+        # TODO include start/end column in chunk_id too?
+        chunk_id = chunk_id_for(path, chunk_type, start_line, end_line, file_hash)
+        chunk = Chunk(
+            id=chunk_id,
+            id_int=str(chunk_id_to_faiss_id(chunk_id)),
+            text=fn.text.decode('utf-8'),
+            file=str(path),
+            start_line=start_line,
+            start_column=fn.start_point[1],
+            end_line=end_line,
+            end_column=fn.end_point[1],
+            type=chunk_type,
+            file_hash=file_hash,
+        )
+
         chunks.append(chunk)
 
     return chunks

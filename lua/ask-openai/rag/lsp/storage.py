@@ -50,7 +50,9 @@ class Chunk(BaseModel):
     text: str
     file: str
     start_line: int
+    start_column: int
     end_line: int
+    end_column: Optional[int]  # None means last column of end_line (i.e. line based chunking)
     type: str
     file_hash: str
 

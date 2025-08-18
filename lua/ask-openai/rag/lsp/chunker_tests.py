@@ -91,9 +91,9 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         self.assertEqual(len(chunks), 2)
 
         first_chunk = chunks[0]
-        expected_func1_chunk_text = "def func1():\n    return 1\n"  # TODO new line between two funcs? how about skip that?
+        expected_func1_chunk_text = "def func1():\n    return 1"  # TODO new line between two funcs? how about skip that?
         self.assertEqual(first_chunk.text, expected_func1_chunk_text)
 
         second_chunk = chunks[1]
-        expected_func2_chunk_text = "def func2():\n    return 2\n"
+        expected_func2_chunk_text = "def func2():\n    return 2"
         self.assertEqual(second_chunk.text, expected_func2_chunk_text)
