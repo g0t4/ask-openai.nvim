@@ -13,7 +13,7 @@ import numpy as np
 import fs
 from pydants import write_json
 from lsp.storage import Chunk, FileStat, load_prior_data
-from lsp.build import build_file_chunks, get_file_stat
+from lsp.chunker import build_file_chunks, get_file_stat
 
 from lsp.logs import get_logger
 

@@ -4,13 +4,13 @@ import json
 import logging
 import unittest
 
-from lsp.build import build_from_lines, build_file_chunks
+from lsp.chunker import build_from_lines, build_file_chunks
 from lsp.logs import logging_fwk_to_console
 
 logging_fwk_to_console(logging.DEBUG)
 
 # z rag
-# ptw lsp/build_tests.py -- --capture=tee-sys
+# ptw lsp/chunker_tests.py -- --capture=tee-sys
 
 class TestChunkBuilding(unittest.TestCase):
 
