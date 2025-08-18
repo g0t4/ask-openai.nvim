@@ -126,6 +126,8 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
             if not vim.api.nvim_buf_is_loaded(bufnr) then
                 return
             end
+            vim.api.nvim_set_option_value("number", true, { win = winid })
+            vim.api.nvim_set_option_value("relativenumber", false, { win = winid })
 
             vim.api.nvim_win_call(winid, function()
                 pcall(vim.api.nvim_win_set_cursor, winid, { start_line, 0 })
