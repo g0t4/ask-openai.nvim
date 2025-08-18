@@ -10,39 +10,9 @@ local state = require('telescope.actions.state')
 -- non-telescope deps:
 local files = require("ask-openai.helpers.files")
 local logs = require('ask-openai.logs.logger').predictions()
+local AsyncDynamicFinder = require('telescope._extensions.ask_semantic_grep.async_dynamic_finder')
 
-local Latest = { gen = 0, proc = nil, lsp = nil, req = nil }
-
-local _telescope_find_callable_obj = function()
-    local obj = {}
-
-    obj.__index = obj
-    obj.__call = function(t, ...)
-        return t:_find(...)
-    end
-
-    obj.close = function() end
-
-    return obj
-end
-
-local AsyncDynamicFinder = _telescope_find_callable_obj()
-
-function AsyncDynamicFinder:new(opts)
-    opts = opts or {}
-
-    local obj = setmetatable({
-        curr_buf = opts.curr_buf,
-        fn = opts.fn,
-        entry_maker = opts.entry_maker or make_entry.gen_from_string(opts),
-    }, self)
-
-    return obj
-end
-
-function AsyncDynamicFinder:_find(prompt, process_result, process_complete)
-    self.fn(prompt, process_result, process_complete, self.entry_maker)
-end
+Latest = { gen = 0, proc = nil, lsp = nil, req = nil }
 
 local client_request_ids, cancel_all_requests
 function _context_query_sync(message, lsp_buffer_number, process_result, process_complete, entry_maker)
