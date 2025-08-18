@@ -167,9 +167,7 @@ local function semantic_grep_current_filetype_picker(opts)
     opts_previewer = {}
     picker = pickers:new({
         prompt_title = 'semantic grep - for testing RAG queries',
-        sorting_strategy = 'ascending',
-
-
+        sorting_strategy = 'ascending', -- default descending doesn't work right now due to bug with setting cursor position in results window
 
         finder = AsyncDynamicFinder:new({
             fn = function(prompt, process_result, process_complete, entry_maker)
