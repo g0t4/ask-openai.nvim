@@ -148,6 +148,12 @@ local sort_by_score = sorters.Sorter:new {
         return fzy.positions(prompt, display)
     end,
 }
+local Path = require "plenary.path"
+cwd = vim.loop.cwd()
+local path_abs = function(path)
+    return Path:new(path):make_relative(cwd)
+end
+
 
 local function semantic_grep_current_filetype_picker(opts)
     -- GOOD examples (multiple pickers in one nvim plugin):
@@ -166,19 +172,12 @@ local function semantic_grep_current_filetype_picker(opts)
     }
     local lsp_buffer_number = vim.api.nvim_get_current_buf()
 
-    local widths = {
-        -- TODO test if these are ratios?
-        file = 50,
-        contents = 50,
-    }
     local displayer = entry_display.create {
         -- `:h telescope.pickers.entry_display`
         separator = " ",
         items = {
             { width = 5 },
-            { width = 1 },
-            { width = widths.file },
-            { width = widths.contents },
+            { width = 100 },
         },
     }
 
@@ -189,12 +188,29 @@ local function semantic_grep_current_filetype_picker(opts)
         local score_percent = string.format("%.1f%%", entry.score * 100)
         -- use percent_str where needed, e.g. in the display text
         local icon, hl_group = utils.get_devicons(entry.filename, false)
+        local coordinates = ":"
+        if not disable_coordinates then
+            if entry.lnum then
+                if entry.col then
+                    coordinates = string.format(":%s:%s:", entry.lnum, entry.col)
+                else
+                    coordinates = string.format(":%s:", entry.lnum)
+                end
+            end
+        end
+        local path_display = path_abs(entry.filename)
+        -- TODO use ratio of window width to figure out limits?
+        if #path_display > 60 then
+            -- path_display = utils.path_smart(entry.filename)
+            path_display = "..." .. path_display.sub(path_display, -55)
+        end
+
+        local line = icon .. " " .. path_display .. coordinates .. " " .. entry.match.text
 
         return displayer {
-            { score_percent,                              "TelescopeResultsNumber" },
-            { icon,                                       hl_group },
-            { utils.transform_path(opts, entry.filename), "TelescopeResultsIdentifier" },
-            { entry.match.text,                           "TelescopeResultsLine" },
+            { score_percent, "TelescopeResultsNumber" },
+            { line },
+            -- { entry.match.text,                           "TelescopeResultsLine" },
         }
     end
 
