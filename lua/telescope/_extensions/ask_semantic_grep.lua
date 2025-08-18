@@ -93,19 +93,20 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         local winid = self.state.winid
         local bufnr = self.state.bufnr
 
-        -- vim.bo.modifiable = false
         vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.fn.readfile(filename))
 
-        local num_lines = vim.api.nvim_buf_line_count(bufnr)
+        -- local num_lines = vim.api.nvim_buf_line_count(bufnr)
 
         vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
         local start_line, end_line = entry.match.start_line, entry.match.end_line -- 1-based
+        logs:info("start_line: " .. start_line)
+        logs:info("end_line: " .. end_line)
 
-        for l = start_line - 1, end_line - 1 do
-            vim.api.nvim_buf_add_highlight(bufnr, ns, "RagLineRange", l, 0, -1)
-        end
+        -- TODO is end_line inclusive?
+        vim.hl.range(bufnr, ns, "RagLineRange", { start_line, 0 }, { end_line, 0 }, {})
 
         local ft = vim.filetype.match({ filename = filename }) or "text"
+
         vim.bo[bufnr].filetype = ft -- triggers FileType autocommands
         vim.bo[bufnr].syntax = "" -- avoid regex syntax if you only want TS
         -- require('telescope.previewers.utils').highlighter(bufnr, ft)
