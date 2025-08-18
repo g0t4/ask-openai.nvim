@@ -183,11 +183,35 @@ local function semantic_grep_current_filetype_picker(opts)
         },
     }
 
+    -- discrete bands
+    vim.api.nvim_set_hl(0, "AskSemanticGrepStrong", { fg = "#2FBF71", bold = true }) -- ≥ 0.85
+    vim.api.nvim_set_hl(0, "AskSemanticGrepGood", { fg = "#A3D65C", bold = true }) -- 0.75–0.85
+    vim.api.nvim_set_hl(0, "AskSemanticGrepMeh", { fg = "#F2B94B", bold = true }) -- 0.65–0.75
+    vim.api.nvim_set_hl(0, "AskSemanticGrepWeak", { fg = "#E07A5F", bold = true }) -- 0.55–0.65
+    vim.api.nvim_set_hl(0, "AskSemanticGrepPoor", { fg = "#6B7280", bold = true }) -- < 0.55 (de-emphasize)
+
+    local score_hl = function(s)
+        if s >= 0.85 then
+            return "AskSemanticGrepStrong"
+        elseif s >= 0.75 then
+            return "AskSemanticGrepGood"
+        elseif s >= 0.65 then
+            return "AskSemanticGrepMeh"
+        elseif s >= 0.55 then
+            return "AskSemanticGrepWeak"
+        else
+            return "AskSemanticGrepPoor"
+        end
+    end
+
     local make_display = function(entry)
-        -- FYI hl groups
         -- ~/.local/share/nvim/lazy/telescope.nvim/plugin/telescope.lua:11-92 i.e. TelescopeResultsIdentifier
 
         local score_percent = string.format("%.1f%%", entry.score * 100)
+        local score_hlgroup = score_hl(entry.score)
+
+        -- debug
+        print("Score: " .. entry.score .. " hlgroup: " .. score_hlgroup)
         -- use percent_str where needed, e.g. in the display text
         local icon, icon_hlgroup = utils.get_devicons(entry.filename, false)
         local coordinates = ":"
@@ -212,7 +236,8 @@ local function semantic_grep_current_filetype_picker(opts)
         contents = string.gsub(contents, "\n", "\\n") --  else telescope replaces new line with a | which then screws up icon color
 
         return displayer {
-            { score_percent, "TelescopeResultsNumber" },
+            -- { score_percent, "TelescopeResultsNumber" },
+            { score_percent, score_hlgroup },
             { icon,          icon_hlgroup },
             { line },
             { contents,      "TelescopeResultsLine" },
