@@ -66,10 +66,15 @@ class TestBuildIndex(unittest.TestCase):
         first_chunk = [c for c in chunks if c["start_line"] == 1][0]
         self.assertEqual(first_chunk["start_line"], 1)
         self.assertEqual(first_chunk["end_line"], 20)
-        self.assertEqual(len(first_chunk["text"].split("\n")), 18)
-        start = "local TestRunner = {}"
+
+        # * print(f'{first_chunk=}')
+        # FYI there are new lines before and then trailing new line causes there to be 21 lines just b/c of trailing new line is all... all s/b fine as is
+        # PRN if this is a hassle I could remove these blank lines in this example and move any tests of blanks to some other spot so it isn't overlapping with the rest of this test's purpose
+        # FTR I already have some testing of empty/new lines in readlines tests
+        self.assertEqual(len(first_chunk["text"].split("\n")), 21)
+        start = "\n\nlocal TestRunner = {}"
         self.assertEqual(first_chunk["text"].startswith(start), True)
-        end = "table.insert(self.results, {status = \"fail\", message = \"Test failed: expected \" .. tostring(test.expected) .. \", got \" .. tostring(result)})"
+        end = "table.insert(self.results, {status = \"fail\", message = \"Test failed: expected \" .. tostring(test.expected) .. \", got \" .. tostring(result)})\n"
         self.assertEqual(first_chunk["text"].endswith(end), True)
         # manually computed when running on my machine... so maybe warn if not same path
         # echo -n "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag/tests/indexer_src/sample.lua:lines:1-20:b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b" | sha256sum | head -c16
