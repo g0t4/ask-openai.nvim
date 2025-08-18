@@ -10,6 +10,7 @@ local make_entry = require('telescope.make_entry')
 local state = require('telescope.actions.state')
 -- non-telescope deps:
 local files = require("ask-openai.helpers.files")
+local logs = require('ask-openai.logs.logger').predictions()
 
 local even_sorter = sorters.Sorter:new {
     scoring_function = function(_, prompt, entry)
@@ -104,6 +105,7 @@ end
 local client_request_ids, cancel_all_requests
 function _context_query_sync(message, lsp_buffer_number, process_result, process_complete, entry_maker)
     if cancel_all_requests then
+        logs:info("canceling previous request")
         cancel_all_requests()
     end
 
@@ -130,6 +132,8 @@ function _context_query_sync(message, lsp_buffer_number, process_result, process
             arguments = { message },
         },
         function(err, result, ctx)
+            logs:info("context query complete: " .. vim.inspect({ err = err, result = result, ctx = ctx }))
+
             if err then
                 messages.append("context query failed: " .. err.message)
                 return {}
@@ -148,6 +152,8 @@ function _context_query_sync(message, lsp_buffer_number, process_result, process
                 process_result(entry)
             end
             process_complete()
+            cancel_all_requests = nil
+            client_request_ids = nil
         end
     )
 end
