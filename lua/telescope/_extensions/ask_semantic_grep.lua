@@ -102,8 +102,10 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         logs:info("start_line: " .. start_line)
         logs:info("end_line: " .. end_line)
 
-        -- TODO is end_line inclusive?
-        vim.hl.range(bufnr, ns, "RagLineRange", { start_line, 0 }, { end_line, 0 }, {})
+        local last_col = -1
+        vim.hl.range(bufnr, ns, "RagLineRange", { start_line, 0 }, { end_line, last_col }, {})
+        -- TODO remove logs later after some vetting
+        logs:info("text: " .. entry.match.text)
 
         local ft = vim.filetype.match({ filename = filename }) or "text"
 
