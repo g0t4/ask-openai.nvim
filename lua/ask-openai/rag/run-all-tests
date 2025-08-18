@@ -1,0 +1,3 @@
+#!/usr/bin/env fish
+
+ptw **/*_tests.py -- --capture=tee-sys
