@@ -63,7 +63,7 @@ def build_from_lines(path: Path, file_hash: str, lines: List[str]) -> List[Chunk
                 text="".join(lines[start:end_line]),
                 file=str(path),
                 start_line=start_line,
-                start_column=0, # always the first column for line ranges
+                start_column=0,  # always the first column for line ranges
                 end_line=end_line,
                 end_column=None,
                 type=chunk_type,
@@ -84,7 +84,7 @@ def build_ts_chunks(path: Path, file_hash: str) -> List[Chunk]:
 
     from tree_sitter_languages import get_language, get_parser
 
-    language = get_language('python')
+    # language = get_language('python')
     parser = get_parser('python')
 
     with open(path, 'rb') as file:
