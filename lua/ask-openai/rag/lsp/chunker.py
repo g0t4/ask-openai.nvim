@@ -60,7 +60,7 @@ def build_from_lines(path: Path, file_hash: str, lines: List[str]) -> List[Chunk
             yield Chunk(
                 id=chunk_id,
                 id_int=str(chunk_id_to_faiss_id(chunk_id)),
-                text="".join(lines[start:end_line]).strip(),
+                text="".join(lines[start:end_line]),
                 file=str(path),
                 start_line=start_line,
                 end_line=end_line,
