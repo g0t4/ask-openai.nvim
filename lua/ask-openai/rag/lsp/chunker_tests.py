@@ -12,6 +12,43 @@ logging_fwk_to_console(logging.DEBUG)
 # z rag
 # ptw lsp/chunker_tests.py -- --capture=tee-sys
 
+class TestReadingFilesAndNewLines(unittest.TestCase):
+
+    def setUp(self):
+        # create temp directory
+        self.test_cases = Path(__file__).parent / ".." / "tests" / "test_cases"
+
+    def test_readlines_final_line_not_empty_without_newline(self):
+        test_file = self.test_cases / "readlines" / "final_line_not_empty_without_newline.txt"
+        with open(test_file, "r", encoding="utf-8", errors="ignore") as f:
+            lines = f.readlines()
+            self.assertEqual(lines, ["1\n", "2\n", "3"])
+
+        chunks = build_file_chunks(test_file, "fake_hash")
+        first_chunk = chunks[0]
+        self.assertEqual(first_chunk.text, "1\n2\n3")  # NO final \n
+
+    def test_readlines_final_line_not_empty_with_newline(self):
+        test_file = self.test_cases / "readlines" / "final_line_not_empty_with_newline.txt"
+        with open(test_file, "r", encoding="utf-8", errors="ignore") as f:
+            lines = f.readlines()
+            self.assertEqual(lines, ["1\n", "2\n", "3\n"])
+
+        chunks = build_file_chunks(test_file, "fake_hash")
+        first_chunk = chunks[0]
+        self.assertEqual(first_chunk.text, "1\n2\n3\n")  # TODO! should I preserve final newline? IF SO ADD IT BACK HERE ONLY
+
+    def test_readlines_final_line_empty_with_newline(self):
+        test_file = self.test_cases / "readlines" / "final_line_empty_with_newline.txt"
+        # read lines test:
+        with open(test_file, "r", encoding="utf-8", errors="ignore") as f:
+            lines = f.readlines()
+            self.assertEqual(lines, ["1\n", "2\n", "3\n", "\n"])
+
+        chunks = build_file_chunks(test_file, "fake_hash")
+        first_chunk = chunks[0]
+        self.assertEqual(first_chunk.text, "1\n2\n3\n\n")  # TODO! preserve final empty line + new line... right now I strip the entire thing ... yikes
+
 class TestChunkBuilding(unittest.TestCase):
 
     def setUp(self):
