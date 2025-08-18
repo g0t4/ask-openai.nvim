@@ -13,6 +13,7 @@ local logs = require('ask-openai.logs.logger').predictions()
 local AsyncDynamicFinder = require('telescope._extensions.ask_semantic_grep.async_dynamic_finder')
 
 local latest_query_num = 0
+local picker
 
 local client_request_ids, cancel_all_requests
 function _semantic_grep(message, lsp_buffer_number, process_result, process_complete, entry_maker)
@@ -50,32 +51,38 @@ function _semantic_grep(message, lsp_buffer_number, process_result, process_comp
                 entry.index = i -- NOTE this is different than normal telescope!
                 process_result(entry)
             end
+            logs:info("picker: " .. vim.inspect(picker))
+
+            logs:info("before process_complete")
+            -- picker.max_results = 10
             process_complete()
+            logs:info("after process_complete")
+
             cancel_all_requests = nil
             client_request_ids = nil
         end
     )
 end
 
-local termopen_previewer_bat = previewers.new_termopen_previewer({
-    -- FYI this will have race condition issues on setting cursor position too...
-    get_command = function(entry)
-        match = entry.match
-        local f = match.file
-        local cmd = {
-            "bat",
-            "--paging=never",
-            "--color=always",
-            -- "--style=plain",
-            "--number",
-            "--line-range", string.format("%d:%d", math.max(1, match.start_line - 10), math.max(1, match.end_line + 10)), -- context
-            -- "--line-range", string.format("%d:%d", 1, 10),
-            "--highlight-line", string.format("%d:%d", match.start_line, match.end_line),
-            f,
-        }
-        return cmd
-    end,
-})
+-- local termopen_previewer_bat = previewers.new_termopen_previewer({
+--     -- FYI this will have race condition issues on setting cursor position too...
+--     get_command = function(entry)
+--         match = entry.match
+--         local f = match.file
+--         local cmd = {
+--             "bat",
+--             "--paging=never",
+--             "--color=always",
+--             -- "--style=plain",
+--             "--number",
+--             "--line-range", string.format("%d:%d", math.max(1, match.start_line - 10), math.max(1, match.end_line + 10)), -- context
+--             -- "--line-range", string.format("%d:%d", 1, 10),
+--             "--highlight-line", string.format("%d:%d", match.start_line, match.end_line),
+--             f,
+--         }
+--         return cmd
+--     end,
+-- })
 
 local ns = vim.api.nvim_create_namespace("rag_preview")
 -- -- I want my own highlight style (not Search)
@@ -158,8 +165,10 @@ local function semantic_grep_current_filetype_picker(opts)
     local lsp_buffer_number = vim.api.nvim_get_current_buf()
 
     opts_previewer = {}
-    pickers.new({ opts }, {
+    picker = pickers:new({
         prompt_title = 'semantic grep - for testing RAG queries',
+        -- sorting_strategy = 'ascending',
+
 
 
         finder = AsyncDynamicFinder:new({
@@ -234,7 +243,8 @@ local function semantic_grep_current_filetype_picker(opts)
             -- end)
             return true
         end,
-    }):find()
+    })
+    picker:find()
 end
 
 return require('telescope').register_extension {
