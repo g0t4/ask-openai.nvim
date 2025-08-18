@@ -4,7 +4,7 @@ import json
 import logging
 import unittest
 
-from lsp.chunker import build_from_lines, build_file_chunks
+from lsp.chunker import build_from_lines, build_file_chunks, build_ts_chunks
 from lsp.logs import logging_fwk_to_console
 
 logging_fwk_to_console(logging.DEBUG)
@@ -85,4 +85,15 @@ class TestTreesitterPythonChunker(unittest.TestCase):
     def setUp(self):
         self.test_cases = Path(__file__).parent / ".." / "tests" / "test_cases" / "ts"
 
+    def test_two_functions_py(self):
+        test_file = self.test_cases / "two_functions.py"
+        chunks = build_ts_chunks(test_file, "fake_hash")
+        self.assertEqual(len(chunks), 2)
 
+        first_chunk = chunks[0]
+        expected_func1_chunk_text = "def func1():\n    return 1\n"  # TODO new line between two funcs? how about skip that?
+        self.assertEqual(first_chunk.text, expected_func1_chunk_text)
+
+        second_chunk = chunks[1]
+        expected_func2_chunk_text = "def func2():\n    return 2\n"
+        self.assertEqual(second_chunk.text, expected_func2_chunk_text)
