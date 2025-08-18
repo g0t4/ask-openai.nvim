@@ -243,7 +243,9 @@ local function semantic_grep_current_filetype_picker(opts)
         finder = AsyncDynamicFinder:new({
             fn = function(prompt, process_result, process_complete, entry_maker)
                 if not prompt or prompt == '' then
-                    return {}
+                    -- this is necessary to clear the list, i.e. when you clear the prompt
+                    process_complete()
+                    return
                 end
 
                 -- function is called each time the user changes the prompt (text in the Telescope Picker)
