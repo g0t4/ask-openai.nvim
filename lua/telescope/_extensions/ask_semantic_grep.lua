@@ -93,9 +93,8 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         local winid = self.state.winid
         local bufnr = self.state.bufnr
 
-        vim.api.nvim_buf_set_option(bufnr, "modifiable", true)
+        -- vim.bo.modifiable = false
         vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.fn.readfile(filename))
-        vim.api.nvim_buf_set_option(bufnr, "modifiable", false)
 
         local num_lines = vim.api.nvim_buf_line_count(bufnr)
 
