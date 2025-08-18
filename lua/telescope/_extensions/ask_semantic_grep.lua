@@ -2,6 +2,8 @@
 local actions = require('telescope.actions')
 local finders = require('telescope.finders')
 local pickers = require('telescope.pickers')
+local entry_display = require "telescope.pickers.entry_display"
+local utils = require('telescope.utils') -- to use as a dependency, see https://github.com/nvim-telescope/telescope.nvim/blob/271832a170502dbd92b29fc67755098d8b09838a/lua/telescope/utils.lua#L235
 local sorters = require('telescope.sorters')
 local previewers = require('telescope.previewers')
 local telescope_config = require('telescope.config').values
@@ -144,6 +146,32 @@ local function semantic_grep_current_filetype_picker(opts)
     }
     local lsp_buffer_number = vim.api.nvim_get_current_buf()
 
+    local widths = {
+        -- TODO test if these are ratios?
+        file = 50,
+        contents = 50,
+    }
+    local displayer = entry_display.create {
+        -- `:h telescope.pickers.entry_display`
+        separator = " ",
+        items = {
+            { width = 4 },
+            { width = widths.file },
+            { width = widths.contents },
+        },
+    }
+
+    local make_display = function(entry)
+        -- FYI hl groups
+        -- ~/.local/share/nvim/lazy/telescope.nvim/plugin/telescope.lua:11-92 i.e. TelescopeResultsIdentifier
+        return displayer {
+            {},
+            { entry.cols.contents },
+            -- { entry.filename,     "TelescopeResultsIdentifier" },
+            { utils.transform_path(opts, entry.filename), "TelescopeResultsIdentifier" },
+        }
+    end
+
     opts_previewer = {}
     picker = pickers:new({
         prompt_title = 'semantic grep - for testing RAG queries',
@@ -162,7 +190,6 @@ local function semantic_grep_current_filetype_picker(opts)
             end,
             entry_maker = function(match)
                 -- FYI `:h telescope.make_entry`
-                -- `:h telescope.pickers.entry_display` -- TODO?
 
                 -- * match example
                 --     end_line = 87,
@@ -178,7 +205,7 @@ local function semantic_grep_current_filetype_picker(opts)
                 -- fallback to first line/last line parts
                 display_first_line = match.text.sub(match.text, 1, 20)
                 display_last_line = match.text.sub(match.text, -20, -1)
-                display = display_first_line .. "..." .. display_last_line
+                contents = display_first_line .. "..." .. display_last_line
 
                 ordinal = match.text
                 -- ordinal = match.score -- TODO can I use numeric score?
@@ -186,7 +213,7 @@ local function semantic_grep_current_filetype_picker(opts)
                 return {
                     value = match,
                     -- valid = false -- hide it (also can return nil for entire object)
-                    display = display, -- string|function
+                    display = make_display, -- string|function
                     ordinal = ordinal, -- for filtering
 
                     -- default action uses these to jump to file location
@@ -194,16 +221,21 @@ local function semantic_grep_current_filetype_picker(opts)
                     lnum = match.start_line,
                     -- col = 0
 
-                    match = match, -- TODO can I add extra details?
+                    match = match,
+
+                    cols = {
+                        file = match.file,
+                        contents = contents,
+                        rank = match.rank,
+                        type = match.type,
+                    }
                 }
                 -- optional second return value
             end,
         }),
 
         -- :h telescope.previewers
-        -- previewer = require('telescope.config').values.grep_previewer(opts_previewer), -- show filename/path + jump to lnum
         previewer = custom_buffer_previewer,
-        -- previewer = false, -- no preview
 
         sorter = sorters.get_generic_fuzzy_sorter(),
         attach_mappings = function(prompt_bufnr, keymap)
