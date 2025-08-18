@@ -177,6 +177,7 @@ local function semantic_grep_current_filetype_picker(opts)
         separator = " ",
         items = {
             { width = 5 },
+            { width = 1 },
             { width = 100 },
         },
     }
@@ -187,7 +188,7 @@ local function semantic_grep_current_filetype_picker(opts)
 
         local score_percent = string.format("%.1f%%", entry.score * 100)
         -- use percent_str where needed, e.g. in the display text
-        local icon, hl_group = utils.get_devicons(entry.filename, false)
+        local icon, icon_hlgroup = utils.get_devicons(entry.filename, false)
         local coordinates = ":"
         if not disable_coordinates then
             if entry.lnum then
@@ -205,10 +206,11 @@ local function semantic_grep_current_filetype_picker(opts)
             path_display = "..." .. path_display.sub(path_display, -55)
         end
 
-        local line = icon .. " " .. path_display .. coordinates .. " " .. entry.match.text
+        local line = path_display .. coordinates .. " " .. entry.match.text
 
         return displayer {
             { score_percent, "TelescopeResultsNumber" },
+            { icon,          icon_hlgroup },
             { line },
             -- { entry.match.text,                           "TelescopeResultsLine" },
         }
