@@ -128,6 +128,25 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
     end,
 })
 
+local my_custom_sorter = sorters.Sorter:new {
+
+    scoring_function = function(_self, prompt, ordinal, entry, cb_add, cb_filter)
+        -- 0 <= score <= 1
+        -- print("prompt: " .. vim.inspect(prompt))
+        -- print("ordinal: " .. vim.inspect(ordinal))
+        -- print("entry: " .. vim.inspect(entry))
+        -- print("cb_add: " .. vim.inspect(cb_add))
+        -- print("cb_filter: " .. vim.inspect(cb_filter))
+
+        -- reverse order with 1-... IIUC this is in part b/c I have to use ascending sorting_strategy to workaround that bug with default (descending)
+        return (1 - entry.score)
+    end,
+
+    highlighter = function(_, prompt, display)
+        fzy = require "telescope.algos.fzy"
+        return fzy.positions(prompt, display)
+    end,
+}
 
 local function semantic_grep_current_filetype_picker(opts)
     -- GOOD examples (multiple pickers in one nvim plugin):
@@ -210,14 +229,11 @@ local function semantic_grep_current_filetype_picker(opts)
                 display_last_line = match.text.sub(match.text, -20, -1)
                 contents = display_first_line .. "..." .. display_last_line
 
-                ordinal = match.text
-                -- ordinal = match.score -- TODO can I use numeric score?
-
                 return {
                     value = match,
                     -- valid = false -- hide it (also can return nil for entire object)
                     display = make_display, -- string|function
-                    ordinal = ordinal, -- for filtering
+                    ordinal = match.text, -- for filtering? how so?
 
                     -- default action uses these to jump to file location
                     filename = match.file,
@@ -241,6 +257,7 @@ local function semantic_grep_current_filetype_picker(opts)
         -- :h telescope.previewers
         previewer = custom_buffer_previewer,
 
+        sorter = my_custom_sorter,
         -- sorter = sorters.get_generic_fuzzy_sorter(),
         attach_mappings = function(prompt_bufnr, keymap)
             -- actions.select_default:replace(function()
