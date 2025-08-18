@@ -1,13 +1,12 @@
 import sys
 import os
 import logging
-
 import lsprotocol.types as types
-from tree_sitter import Language, Parser
-import tree_sitter_python as tspython
+from tree_sitter_languages import get_language, get_parser
 
-PY_LANGUAGE = Language(tspython.language())
-parser = Parser(PY_LANGUAGE)
+from lsp.logs import logging_fwk_to_console
+
+parser = get_parser('python')
 
 logger = logging.getLogger(__name__)
 
@@ -88,3 +87,12 @@ def on_open(params: types.DidOpenTextDocumentParams):
 # @ls.feature('textDocument/sync')
 def sync_kind(*_):
     return types.TextDocumentSyncKind.Full
+
+if __name__ == '__main__':
+    logging_fwk_to_console(level=logging.DEBUG)
+    on_open(types.DidOpenTextDocumentParams(**{'text_document': types.TextDocumentItem(**{
+        'language_id': 'python',
+        'uri': 'file:///tmp/test.py',
+        'version': 1,
+        'text': 'import foo\nfrom foo import bar',
+    })}))
