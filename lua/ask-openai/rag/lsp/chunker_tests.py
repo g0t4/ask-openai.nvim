@@ -156,7 +156,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         self.assertEqual(chunks[4].text, """def __str__(self):
         return f'Person({self.first_name}, {self.last_name}, {self.dob})'""")
 
-    def test_ts_toplevel_query_py(self):
+    def WIP_test_ts_toplevel_query_py(self):
         from tree_sitter_languages import get_parser, get_language
         parser = get_parser("python")
         language = get_language("python")
@@ -170,3 +170,29 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         captures = query.captures(tree.root_node)
         for node, name in captures:
             print(name, node.type, node.start_point, node.end_point)
+
+    def test_ts_toplevel_funcs_py(self):
+        query_str = "(module (function_definition) @toplevel.func)"
+        from tree_sitter_languages import get_parser, get_language
+        parser = get_parser("python")
+        language = get_language("python")
+        source_code = read_bytes(self.test_cases / "class_with_functions.py")
+
+        tree = parser.parse(source_code)
+
+        query = language.query(query_str)
+
+        captures = query.captures(tree.root_node)
+        for node, name in captures:
+            print(name, node.type, node.start_point, node.end_point)
+            relpath = node.start_point
+            code_block = node.text.decode("utf-8")
+
+            doc = f"""FILE: {relpath}
+FUNC: {scope_path}
+SIG : {sig_str}
+CODE:
+{code_block}
+"""
+            print(doc)
+            # DOC : {first_docline or ""}
