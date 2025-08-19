@@ -1,4 +1,4 @@
 # pass pytest args after --
 # make sure the args work with pytest directly
 # pytest ____
-ptw --  lsp/chunker_tests.py::TestTreesitterPythonChunker::test_ts_toplevel_funcs_py
+ptw --  lsp/chunker_tests.py::TestTreesitterPythonChunker::test_ts_toplevel_funcs_py --capture=tee-sys
