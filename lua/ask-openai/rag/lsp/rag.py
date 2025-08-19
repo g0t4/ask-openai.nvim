@@ -128,9 +128,10 @@ def update_file_from_pygls_doc(lsp_doc: TextDocument, model_wrapper, enable_ts_c
 
     hash = get_file_hash_from_lines(lsp_doc.lines)
 
-    #  TODO cleanup duplication with test above and test this method directly, don't test indirectly with above testing_only*!!
+    # TODO merge this lines and/or ts chunking logic into the chunker
     new_chunks = build_from_lines(file_path, hash, lsp_doc.lines)
     if enable_ts_chunks:
+        # TODO add indexer test that includes ts chunking (maybe even disable line range chunking)
         source_bytes = ''.join(lsp_doc.lines).encode(encoding='utf-8')
         ts_chunks = build_ts_chunks(file_path, hash)
         new_chunks.extend(ts_chunks)
