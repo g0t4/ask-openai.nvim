@@ -4,8 +4,9 @@ from pathlib import Path
 from rich import print as rich_print
 
 from lsp.fs import *
-from lsp.chunker import build_line_range_chunks_from_lines, build_chunks_from_file, build_ts_chunks_from_file
+from lsp.chunker import build_line_range_chunks_from_lines, build_chunks_from_file, build_ts_chunks_from_source_bytes
 from lsp.chunks.ts import *
+from lsp.storage import Chunk
 
 # * set root dir for relative paths
 repo_root = Path(__file__).parent.parent.parent.parent.parent
@@ -13,6 +14,13 @@ set_root_dir(repo_root)
 
 # z rag
 # ptw lsp/chunker_tests.py -- --capture=tee-sys
+def build_ts_chunks_from_file(path: Path, file_hash: str) -> list[Chunk]:
+
+    with open(path, 'rb') as file:
+        # TODO! don't reload file, load once with build_file_chunks
+        source_bytes = file.read()
+
+    return build_ts_chunks_from_source_bytes(path, file_hash, source_bytes)
 
 class TestReadingFilesAndNewLines(unittest.TestCase):
     """ purpose is to test that readlines is behaving the way I expect

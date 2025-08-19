@@ -56,6 +56,7 @@ def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], enable
         chunks.extend(build_line_range_chunks_from_lines(path, file_hash, lines))
 
     if enable_ts_chunks:
+        # TODO add indexer tests that include ts_chunking (maybe even disable line range chunking)
         source_bytes = "".join(lines).encode("utf-8")
         chunks.extend(build_ts_chunks_from_source_bytes(path, file_hash, source_bytes))
 
@@ -132,14 +133,6 @@ def get_cached_parser_for_path(path):
         return None
 
     return get_cached_parser(language)
-
-def build_ts_chunks_from_file(path: Path, file_hash: str) -> list[Chunk]:
-
-    with open(path, 'rb') as file:
-        # TODO! don't reload file, load once with build_file_chunks
-        source_bytes = file.read()
-
-    return build_ts_chunks_from_source_bytes(path, file_hash, source_bytes)
 
 def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: bytes) -> list[Chunk]:
 
