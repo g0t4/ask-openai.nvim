@@ -5,6 +5,7 @@ import unittest
 
 import faiss
 import numpy as np
+from pygls.workspace import TextDocument
 import rich
 
 from indexer import IncrementalRAGIndexer
@@ -298,7 +299,14 @@ class TestBuildIndex(unittest.TestCase):
 
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks
         target_file_path = self.tmp_source_code_dir / "numbers.lua"
-        rag.testing_only_update_file_from_disk(target_file_path, model_wrapper, enable_ts_chunks=False)
+        fake_lsp_doc = TextDocument(
+            uri=f"file://{target_file_path}",
+            language_id="lua",
+            version=2,
+            source=target_file_path.read_text(encoding="utf-8"),
+        )
+        # print("fake_lsp_doc:", fake_lsp_doc.lines)
+        rag.update_file_from_pygls_doc(fake_lsp_doc, model_wrapper, enable_ts_chunks=False)
         #! TODO update to use pygls document instead of reading from disk?
 
         # * check counts
