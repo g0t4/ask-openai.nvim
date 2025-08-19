@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pygls.workspace import TextDocument
 
-from .chunker import build_chunks_from_lines, build_ts_chunks_from_source_bytes, get_file_hash_from_lines
+from .chunker import build_chunks_from_lines, get_file_hash_from_lines
 from .logs import get_logger
 from .storage import Datasets, load_all_datasets
 from index.validate import DatasetsValidator
