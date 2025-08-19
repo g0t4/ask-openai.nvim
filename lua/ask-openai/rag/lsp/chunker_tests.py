@@ -111,5 +111,6 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         # and/or index nested too?
 
     def test_classes_py(self):
-        # TODO
-        pass
+        test_file = self.test_cases / "classes.py"
+        chunks = build_ts_chunks(self.test_cases / "classes.py", "fake_hash")
+        self.assertEqual(len(chunks), 1)

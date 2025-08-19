@@ -95,15 +95,18 @@ def build_ts_chunks(path: Path, file_hash: str) -> List[Chunk]:
 
     print("Root node type:", root_node.type)
 
-    def collect_functions(node):
-        functions = []
+    def collect_key_nodes(node):
+        nodes = []
         if node.type == "function_definition":
-            functions.append(node)
-        for child in node.children:
-            functions.extend(collect_functions(child))
-        return functions
+            nodes.append(node)
+        if node.type == "class_definition":
+            nodes.append(node)
 
-    function_nodes = collect_functions(root_node)
+        for child in node.children:
+            nodes.extend(collect_key_nodes(child))
+        return nodes
+
+    function_nodes = collect_key_nodes(root_node)
 
     chunks = []
     for fn in function_nodes:
