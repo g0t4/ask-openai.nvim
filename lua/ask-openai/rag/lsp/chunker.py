@@ -10,7 +10,7 @@ from lsp.logs import get_logger
 logger = get_logger(__name__)
 
 @dataclass
-class RAGIndexerOptions:
+class RAGChunkerOptions:
     enable_ts_chunks: bool = False
     enable_line_range_chunks: bool = True
 
@@ -41,7 +41,7 @@ def get_file_stat(file_path: Path | str) -> FileStat:
         path=str(file_path)  # for serializing and reading by LSP
     )
 
-def build_chunks_from_file(path: Path | str, file_hash: str, options: RAGIndexerOptions) -> list[Chunk]:
+def build_chunks_from_file(path: Path | str, file_hash: str, options: RAGChunkerOptions) -> list[Chunk]:
     path = Path(path)
 
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
@@ -49,7 +49,7 @@ def build_chunks_from_file(path: Path | str, file_hash: str, options: RAGIndexer
         lines = f.readlines()
         return build_chunks_from_lines(path, file_hash, lines, options)
 
-def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], options: RAGIndexerOptions):
+def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], options: RAGChunkerOptions):
     """ use lines as the source to build all chunks
         DOES NOT READ FILE at path
         path is just for building chunk results

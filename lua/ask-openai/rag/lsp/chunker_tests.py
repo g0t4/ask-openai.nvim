@@ -31,7 +31,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
         lines = read_text_lines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3"])
 
-        chunks = build_chunks_from_file(test_file, "fake_hash", RAGIndexerOptions(enable_ts_chunks=False))
+        chunks = build_chunks_from_file(test_file, "fake_hash", RAGChunkerOptions(enable_ts_chunks=False))
         first_chunk = chunks[0]
         self.assertEqual(first_chunk.text, "1\n2\n3")  # NO final \n
 
@@ -40,7 +40,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
         lines = read_text_lines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3\n"])
 
-        chunks = build_chunks_from_file(test_file, "fake_hash", RAGIndexerOptions(enable_ts_chunks=False))
+        chunks = build_chunks_from_file(test_file, "fake_hash", RAGChunkerOptions(enable_ts_chunks=False))
         first_chunk = chunks[0]
         self.assertEqual(first_chunk.text, "1\n2\n3\n")
 
@@ -49,7 +49,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
         lines = read_text_lines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3\n", "\n"])
 
-        chunks = build_chunks_from_file(test_file, "fake_hash", RAGIndexerOptions(enable_ts_chunks=False))
+        chunks = build_chunks_from_file(test_file, "fake_hash", RAGChunkerOptions(enable_ts_chunks=False))
         first_chunk = chunks[0]
         self.assertEqual(first_chunk.text, "1\n2\n3\n\n")
 
@@ -61,7 +61,7 @@ class TestLinesChunker(unittest.TestCase):
 
     def test_build_file_chunks_has_new_lines_on_end_of_lines(self):
         # largely to document how I am using readlines + build_from_lines
-        chunks = build_chunks_from_file(self.test_cases / "numbers.30.txt", "fake_hash", RAGIndexerOptions(enable_ts_chunks=False))
+        chunks = build_chunks_from_file(self.test_cases / "numbers.30.txt", "fake_hash", RAGChunkerOptions(enable_ts_chunks=False))
         self.assertEqual(len(chunks), 2)
         first_chunk = chunks[0]
         expected_first_chunk_text = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n"

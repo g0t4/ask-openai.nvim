@@ -13,7 +13,7 @@ import numpy as np
 import fs
 from pydants import write_json
 from lsp.storage import Chunk, FileStat, load_prior_data
-from lsp.chunker import RAGIndexerOptions, build_chunks_from_file, get_file_stat
+from lsp.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
 
 from lsp.logs import get_logger
 
@@ -36,7 +36,7 @@ from pathlib import Path
 
 class IncrementalRAGIndexer:
 
-    def __init__(self, dot_rag_dir, source_code_dir, model_wrapper, options: RAGIndexerOptions):
+    def __init__(self, dot_rag_dir, source_code_dir, model_wrapper, options: RAGChunkerOptions):
         self.options = options
         self.dot_rag_dir = Path(dot_rag_dir)
         self.source_code_dir = Path(source_code_dir)
@@ -300,7 +300,7 @@ def main():
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
         if rebuild:
             trash_dot_rag(dot_rag_dir)
-        options = RAGIndexerOptions(enable_ts_chunks=True)
+        options = RAGChunkerOptions(enable_ts_chunks=True)
         indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, model_wrapper, options)
         indexer.main()
 

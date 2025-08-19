@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pygls.workspace import TextDocument
 
-from .chunker import build_chunks_from_lines, get_file_hash_from_lines, RAGIndexerOptions
+from .chunker import build_chunks_from_lines, get_file_hash_from_lines, RAGChunkerOptions
 from .logs import get_logger
 from .storage import Datasets, load_all_datasets
 from index.validate import DatasetsValidator
@@ -123,7 +123,7 @@ def handle_query(message, model_wrapper, top_k=3):
 
     return matches
 
-def update_file_from_pygls_doc(lsp_doc: TextDocument, model_wrapper, options: RAGIndexerOptions):
+def update_file_from_pygls_doc(lsp_doc: TextDocument, model_wrapper, options: RAGChunkerOptions):
     file_path = Path(lsp_doc.path)
 
     hash = get_file_hash_from_lines(lsp_doc.lines)
