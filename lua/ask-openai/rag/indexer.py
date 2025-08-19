@@ -13,7 +13,7 @@ import numpy as np
 import fs
 from pydants import write_json
 from lsp.storage import Chunk, FileStat, load_prior_data
-from lsp.chunker import build_file_chunks, build_ts_chunks, get_file_stat
+from lsp.chunker import build_chunks_from_file, build_ts_chunks, get_file_stat
 
 from lsp.logs import get_logger
 
@@ -218,7 +218,7 @@ class IncrementalRAGIndexer:
             all_stat_by_path[file_path_str] = stat
 
             # Create new chunks for this file
-            chunks = build_file_chunks(file_path, stat.hash)
+            chunks = build_chunks_from_file(file_path, stat.hash)
             if self.enable_ts_chunks:
                 ts_chunks = build_ts_chunks(file_path, stat.hash)
                 chunks.extend(ts_chunks)

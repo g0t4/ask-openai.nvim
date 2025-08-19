@@ -4,7 +4,7 @@ from pathlib import Path
 from rich import print as rich_print
 
 from lsp.fs import *
-from lsp.chunker import build_from_lines, build_file_chunks, build_ts_chunks
+from lsp.chunker import build_from_lines, build_chunks_from_file, build_ts_chunks
 from lsp.chunks.ts import *
 
 # * set root dir for relative paths
@@ -27,7 +27,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
         lines = read_text_lines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3"])
 
-        chunks = build_file_chunks(test_file, "fake_hash")
+        chunks = build_chunks_from_file(test_file, "fake_hash")
         first_chunk = chunks[0]
         self.assertEqual(first_chunk.text, "1\n2\n3")  # NO final \n
 
@@ -36,7 +36,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
         lines = read_text_lines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3\n"])
 
-        chunks = build_file_chunks(test_file, "fake_hash")
+        chunks = build_chunks_from_file(test_file, "fake_hash")
         first_chunk = chunks[0]
         self.assertEqual(first_chunk.text, "1\n2\n3\n")
 
@@ -45,7 +45,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
         lines = read_text_lines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3\n", "\n"])
 
-        chunks = build_file_chunks(test_file, "fake_hash")
+        chunks = build_chunks_from_file(test_file, "fake_hash")
         first_chunk = chunks[0]
         self.assertEqual(first_chunk.text, "1\n2\n3\n\n")
 
@@ -57,7 +57,7 @@ class TestLinesChunker(unittest.TestCase):
 
     def test_build_file_chunks_has_new_lines_on_end_of_lines(self):
         # largely to document how I am using readlines + build_from_lines
-        chunks = build_file_chunks(self.test_cases / "numbers.30.txt", "fake_hash")
+        chunks = build_chunks_from_file(self.test_cases / "numbers.30.txt", "fake_hash")
         self.assertEqual(len(chunks), 2)
         first_chunk = chunks[0]
         expected_first_chunk_text = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n"

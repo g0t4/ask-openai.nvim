@@ -35,7 +35,7 @@ def get_file_stat(file_path: Path | str) -> FileStat:
         path=str(file_path)  # for serializing and reading by LSP
     )
 
-def build_file_chunks(path: Path | str, file_hash: str) -> list[Chunk]:
+def build_chunks_from_file(path: Path | str, file_hash: str) -> list[Chunk]:
     path = Path(path)
 
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
