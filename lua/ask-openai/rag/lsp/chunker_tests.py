@@ -12,6 +12,10 @@ logging_fwk_to_console(logging.DEBUG)
 # z rag
 # ptw lsp/chunker_tests.py -- --capture=tee-sys
 
+def _readlines(test_file):
+    with open(test_file, "r", encoding="utf-8", errors="ignore") as f:
+        return f.readlines()
+
 class TestReadingFilesAndNewLines(unittest.TestCase):
     """ purpose is to test that readlines is behaving the way I expect
         and that I carefully document newline behaviors (i.e. not stripping them)
@@ -20,13 +24,9 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
     def setUp(self):
         self.test_cases = Path(__file__).parent / ".." / "tests" / "test_cases"
 
-    def _readlines(self, test_file):
-        with open(test_file, "r", encoding="utf-8", errors="ignore") as f:
-            return f.readlines()
-
     def test_readlines_final_line_not_empty_without_newline(self):
         test_file = self.test_cases / "readlines" / "final_line_not_empty_without_newline.txt"
-        lines = self._readlines(test_file)
+        lines = _readlines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3"])
 
         chunks = build_file_chunks(test_file, "fake_hash")
@@ -35,7 +35,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
 
     def test_readlines_final_line_not_empty_with_newline(self):
         test_file = self.test_cases / "readlines" / "final_line_not_empty_with_newline.txt"
-        lines = self._readlines(test_file)
+        lines = _readlines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3\n"])
 
         chunks = build_file_chunks(test_file, "fake_hash")
@@ -44,7 +44,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
 
     def test_readlines_final_line_empty_with_newline(self):
         test_file = self.test_cases / "readlines" / "final_line_empty_with_newline.txt"
-        lines = self._readlines(test_file)
+        lines = _readlines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3\n", "\n"])
 
         chunks = build_file_chunks(test_file, "fake_hash")
