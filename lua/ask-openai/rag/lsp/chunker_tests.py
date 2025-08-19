@@ -114,3 +114,14 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         test_file = self.test_cases / "classes.py"
         chunks = build_ts_chunks(self.test_cases / "classes.py", "fake_hash")
         self.assertEqual(len(chunks), 1)
+
+        first_chunk = chunks[0]
+        class_text = """class Customer():
+    id: int
+    name: str
+    email: str
+    phone: str
+    address: str
+    created_at: datetime
+    updated_at: datetime"""
+        self.assertEqual(first_chunk.text, class_text)
