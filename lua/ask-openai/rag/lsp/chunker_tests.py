@@ -4,7 +4,7 @@ from pathlib import Path
 from rich import print as rich_print
 
 from lsp.fs import *
-from lsp.chunker import build_line_range_chunks_from_lines, build_chunks_from_file, build_ts_chunks
+from lsp.chunker import build_line_range_chunks_from_lines, build_chunks_from_file, build_ts_chunks_from_file
 from lsp.chunks.ts import *
 
 # * set root dir for relative paths
@@ -84,7 +84,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         self.mydir = Path(__file__).parent
 
     def test_two_functions_py(self):
-        chunks = build_ts_chunks(self.test_cases / "two_functions.py", "fake_hash")
+        chunks = build_ts_chunks_from_file(self.test_cases / "two_functions.py", "fake_hash")
         self.assertEqual(len(chunks), 2)
 
         first_chunk = chunks[0]
@@ -96,7 +96,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         self.assertEqual(second_chunk.text, expected_func2_chunk_text)
 
     def test_nested_functions_py(self):
-        chunks = build_ts_chunks(self.test_cases / "nested_functions.py", "fake_hash")
+        chunks = build_ts_chunks_from_file(self.test_cases / "nested_functions.py", "fake_hash")
         self.assertEqual(len(chunks), 2)
 
         first_chunk = chunks[0]
@@ -110,7 +110,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         # and/or index nested too?
 
     def test_dataclass_py(self):
-        chunks = build_ts_chunks(self.test_cases / "dataclass.py", "fake_hash")
+        chunks = build_ts_chunks_from_file(self.test_cases / "dataclass.py", "fake_hash")
         self.assertEqual(len(chunks), 1)
 
         first_chunk = chunks[0]
@@ -121,7 +121,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         self.assertEqual(first_chunk.text, class_text)
 
     def test_class_with_functions_py(self):
-        chunks = build_ts_chunks(self.test_cases / "class_with_functions.py", "fake_hash")
+        chunks = build_ts_chunks_from_file(self.test_cases / "class_with_functions.py", "fake_hash")
         self.assertEqual(len(chunks), 5)
         self.maxDiff = None
 

@@ -123,7 +123,7 @@ def get_cached_parser_for_path(path):
 
     return get_cached_parser(language)
 
-def build_ts_chunks(path: Path, file_hash: str) -> list[Chunk]:
+def build_ts_chunks_from_file(path: Path, file_hash: str) -> list[Chunk]:
     """
     Build chunks from a Python file using tree‑sitter.
     Each chunk corresponds to a top‑level function definition.
