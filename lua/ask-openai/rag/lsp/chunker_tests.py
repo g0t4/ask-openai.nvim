@@ -1,4 +1,3 @@
-import logging
 import unittest
 from pathlib import Path
 
@@ -6,10 +5,7 @@ from rich import print as rich_print
 
 from lsp.fs import *
 from lsp.chunker import build_from_lines, build_file_chunks, build_ts_chunks
-from lsp.logs import logging_fwk_to_console
 from lsp.chunks.ts import *
-
-logging_fwk_to_console(logging.DEBUG)
 
 # * set root dir for relative paths
 repo_root = Path(__file__).parent.parent.parent.parent.parent
