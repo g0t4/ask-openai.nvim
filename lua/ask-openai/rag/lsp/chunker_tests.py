@@ -59,8 +59,7 @@ class TestLinesChunker(unittest.TestCase):
 
     def test_build_file_chunks_has_new_lines_on_end_of_lines(self):
         # largely to document how I am using readlines + build_from_lines
-        numbers30 = self.test_cases / "numbers.30.txt"
-        chunks = build_file_chunks(numbers30, "fake_hash")
+        chunks = build_file_chunks(self.test_cases / "numbers.30.txt", "fake_hash")
         self.assertEqual(len(chunks), 2)
         first_chunk = chunks[0]
         expected_first_chunk_text = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n"
@@ -86,8 +85,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         self.test_cases = Path(__file__).parent / ".." / "tests" / "test_cases" / "ts"
 
     def test_two_functions_py(self):
-        test_file = self.test_cases / "two_functions.py"
-        chunks = build_ts_chunks(test_file, "fake_hash")
+        chunks = build_ts_chunks(self.test_cases / "two_functions.py", "fake_hash")
         self.assertEqual(len(chunks), 2)
 
         first_chunk = chunks[0]
@@ -99,8 +97,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         self.assertEqual(second_chunk.text, expected_func2_chunk_text)
 
     def test_nested_functions_py(self):
-        test_file = self.test_cases / "nested_functions.py"
-        chunks = build_ts_chunks(test_file, "fake_hash")
+        chunks = build_ts_chunks(self.test_cases / "nested_functions.py", "fake_hash")
         self.assertEqual(len(chunks), 2)
 
         first_chunk = chunks[0]
