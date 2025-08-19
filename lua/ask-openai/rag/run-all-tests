@@ -1,3 +1,4 @@
 #!/usr/bin/env fish
 
-ptw **/*_tests.py -- --capture=tee-sys
+# use --capture=no to let logs through, plus rich handler colors work
+ptw **/*_tests.py -- --capture=no
