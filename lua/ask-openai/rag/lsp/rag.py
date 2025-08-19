@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pygls.workspace import TextDocument
 
-from .chunker import build_chunks_from_lines, get_file_hash_from_lines
+from .chunker import build_chunks_from_lines, get_file_hash_from_lines, RAGIndexerOptions
 from .logs import get_logger
 from .storage import Datasets, load_all_datasets
 from index.validate import DatasetsValidator
@@ -123,12 +123,12 @@ def handle_query(message, model_wrapper, top_k=3):
 
     return matches
 
-def update_file_from_pygls_doc(lsp_doc: TextDocument, model_wrapper, enable_ts_chunks):
+def update_file_from_pygls_doc(lsp_doc: TextDocument, model_wrapper, options: RAGIndexerOptions):
     file_path = Path(lsp_doc.path)
 
     hash = get_file_hash_from_lines(lsp_doc.lines)
 
-    new_chunks = build_chunks_from_lines(file_path, hash, lsp_doc.lines, enable_line_range_chunks=True, enable_ts_chunks=enable_ts_chunks)
+    new_chunks = build_chunks_from_lines(file_path, hash, lsp_doc.lines, options)
 
     with logger.timer(f"update_file {fs.get_loggable_path(file_path)}"):
         datasets.update_file(file_path, new_chunks, model_wrapper)

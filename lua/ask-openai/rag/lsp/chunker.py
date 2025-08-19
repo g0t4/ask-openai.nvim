@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import hashlib
 from pathlib import Path
 from tree_sitter import Node
@@ -7,6 +8,11 @@ from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id, chu
 from lsp.logs import get_logger
 
 logger = get_logger(__name__)
+
+@dataclass
+class RAGIndexerOptions:
+    enable_ts_chunks: bool = False
+    enable_line_range_chunks: bool = True
 
 def get_file_hash(file_path: Path | str) -> str:
     file_path = Path(file_path)
@@ -35,15 +41,15 @@ def get_file_stat(file_path: Path | str) -> FileStat:
         path=str(file_path)  # for serializing and reading by LSP
     )
 
-def build_chunks_from_file(path: Path | str, file_hash: str, enable_line_range_chunks, enable_ts_chunks) -> list[Chunk]:
+def build_chunks_from_file(path: Path | str, file_hash: str, options: RAGIndexerOptions) -> list[Chunk]:
     path = Path(path)
 
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         # each line has trailing newline (it is not stripped out)
         lines = f.readlines()
-        return build_chunks_from_lines(path, file_hash, lines, enable_line_range_chunks, enable_ts_chunks)
+        return build_chunks_from_lines(path, file_hash, lines, options)
 
-def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], enable_line_range_chunks, enable_ts_chunks):
+def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], options: RAGIndexerOptions):
     """ use lines as the source to build all chunks
         DOES NOT READ FILE at path
         path is just for building chunk results
@@ -52,10 +58,10 @@ def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], enable
     #  and I was already using readlines() in when building from files on disk (indexer)
     chunks = []
 
-    if enable_line_range_chunks:
+    if options.enable_line_range_chunks:
         chunks.extend(build_line_range_chunks_from_lines(path, file_hash, lines))
 
-    if enable_ts_chunks:
+    if options.enable_ts_chunks:
         # TODO add indexer tests that include ts_chunking (maybe even disable line range chunking)
         source_bytes = "".join(lines).encode("utf-8")
         chunks.extend(build_ts_chunks_from_source_bytes(path, file_hash, source_bytes))

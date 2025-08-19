@@ -13,7 +13,7 @@ import numpy as np
 import fs
 from pydants import write_json
 from lsp.storage import Chunk, FileStat, load_prior_data
-from lsp.chunker import build_chunks_from_file, get_file_stat
+from lsp.chunker import RAGIndexerOptions, build_chunks_from_file, get_file_stat
 
 from lsp.logs import get_logger
 
@@ -31,11 +31,13 @@ class FilesDiff:
     deleted: Set[str]
     not_changed: Set[str]
 
+from dataclasses import dataclass
+from pathlib import Path
+
 class IncrementalRAGIndexer:
 
-    def __init__(self, dot_rag_dir, source_code_dir, model_wrapper, enable_ts_chunks):
-        self.enable_ts_chunks = enable_ts_chunks
-        self.enable_line_range_chunks = True  # TODO make into an arg?
+    def __init__(self, dot_rag_dir, source_code_dir, model_wrapper, options: RAGIndexerOptions):
+        self.options = options
         self.dot_rag_dir = Path(dot_rag_dir)
         self.source_code_dir = Path(source_code_dir)
         self.model_wrapper = model_wrapper
@@ -219,7 +221,7 @@ class IncrementalRAGIndexer:
             all_stat_by_path[file_path_str] = stat
 
             # Create new chunks for this file
-            chunks = build_chunks_from_file(file_path, stat.hash, self.enable_line_range_chunks, self.enable_ts_chunks)
+            chunks = build_chunks_from_file(file_path, stat.hash, self.options)
             updated_chunks_by_file[file_path_str] = chunks
 
         logger.pp_debug("Deleted chunks", paths.deleted)
@@ -298,7 +300,8 @@ def main():
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
         if rebuild:
             trash_dot_rag(dot_rag_dir)
-        indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, model_wrapper, enable_ts_chunks=True)
+        options = RAGIndexerOptions(enable_ts_chunks=True)
+        indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, model_wrapper, options)
         indexer.main()
 
 if __name__ == "__main__":
