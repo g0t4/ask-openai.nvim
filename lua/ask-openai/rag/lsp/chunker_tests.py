@@ -17,7 +17,6 @@ set_root_dir(repo_root)
 def _build_ts_chunks_from_file(path: Path, file_hash: str) -> list[Chunk]:
 
     with open(path, 'rb') as file:
-        # TODO! don't reload file, load once with build_file_chunks
         source_bytes = file.read()
 
     return build_ts_chunks_from_source_bytes(path, file_hash, source_bytes)
