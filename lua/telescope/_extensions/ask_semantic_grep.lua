@@ -81,9 +81,18 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         local filename = entry.path or entry.filename
         local winid = self.state.winid
         local bufnr = self.state.bufnr
+        local ft = vim.filetype.match({ filename = filename }) or "text"
 
-        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.fn.readfile(filename))
+        file_contents = vim.fn.readfile(filename)
+        file_contents_lines = file_contents
+        local basename = vim.fn.fnamemodify(filename, ":t")
+        table.insert(file_contents_lines, 1, "```" .. basename)
+        table.insert(file_contents_lines, "```")
 
+        entry_preview_lines = vim.split("```entry.json\n" .. vim.inspect(entry) .. "```\n\n```match.text\n" .. entry.match.text .. "```\n", "\n")
+        entry_offset = #entry_preview_lines + 1 -- 1 is for ```ft before the file contents
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, entry_preview_lines) -- insert entry at top
+        vim.api.nvim_buf_set_lines(bufnr, entry_offset, -1, false, file_contents_lines) -- insert at end
         -- local num_lines = vim.api.nvim_buf_line_count(bufnr)
 
         vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
@@ -92,14 +101,13 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         -- TODO use start_column and end_column (1-based IIUC by the way ... yeah FML)
         --  and fix start/end columns to make sense (i.e. use 1 based on that too  b/c that is intuitive to users AND visible in picker results win after line #)
         local last_col = -1
-        local start_line_0based = start_line_1based - 1
-        local end_line_0based = end_line_1based - 1
+        local start_line_0based = start_line_1based - 1 + entry_offset
+        local end_line_0based = end_line_1based - 1 + entry_offset
         vim.hl.range(bufnr, ns, "RagLineRange", { start_line_0based, 0 }, { end_line_0based, last_col }, {})
         logs:info("text: " .. entry.match.text)
 
-        local ft = vim.filetype.match({ filename = filename }) or "text"
 
-        vim.bo[bufnr].filetype = ft -- triggers FileType autocommands
+        vim.bo[bufnr].filetype = "markdown" -- triggers FileType autocommands
         vim.bo[bufnr].syntax = "" -- avoid regex syntax if you only want TS
         -- require('telescope.previewers.utils').highlighter(bufnr, ft)
 
@@ -122,7 +130,8 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
             vim.api.nvim_set_option_value("relativenumber", false, { win = winid })
 
             vim.api.nvim_win_call(winid, function()
-                pcall(vim.api.nvim_win_set_cursor, winid, { start_line_1based, 0 })
+                -- PRN check if full range fits in window and if so the center in the hl range so it all is in view
+                pcall(vim.api.nvim_win_set_cursor, winid, { start_line_0based, 0 })
                 vim.cmd('normal! zz')
             end)
         end)
