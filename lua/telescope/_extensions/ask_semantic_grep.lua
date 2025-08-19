@@ -218,20 +218,9 @@ local function semantic_grep_current_filetype_picker(opts)
 
         local contents = ""
 
-        -- TODO remove this once I migrate fully to exclusviely treesitter chunking for functions... I will skip line ranges that are covered by a func node
-        -- regex to match for a function name and extract if available
-        local function_name = ""
-        if string.find(entry.match.text, "%sfunction%s") then
-            -- match first function definition and extract that (only works in lua, so far... could work fish too if parens at end
-            function_name = string.match(entry.match.text, "(function [^%)]+%))")
-        end
-        if function_name ~= "" then
-            contents = function_name
-        else
-            -- show first line only
-            contents = entry.match.text:sub(1, 30)
-            -- show \n in text for new lines for now...
-        end
+        -- TODO use SIG when you get that going!
+        contents = entry.match.text:sub(1, 30)
+        -- show \n in text for new lines for now...
         contents = string.gsub(contents, "\n", "\\n") --  else telescope replaces new line with a | which then screws up icon color
 
         local chunk_type = get_icon_for_chunk_type(entry.match.type)
