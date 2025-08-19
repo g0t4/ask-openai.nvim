@@ -234,8 +234,8 @@ local function semantic_grep_current_filetype_picker(opts)
             -- show first line only
             contents = entry.match.text:sub(1, 30)
             -- show \n in text for new lines for now...
-            contents = string.gsub(contents, "\n", "\\n") --  else telescope replaces new line with a | which then screws up icon color
         end
+        contents = string.gsub(contents, "\n", "\\n") --  else telescope replaces new line with a | which then screws up icon color
 
         local chunk_type = get_icon_for_chunk_type(entry.match.type)
 
@@ -317,6 +317,22 @@ local function semantic_grep_current_filetype_picker(opts)
             --     -- TODO add action for adding to an explicit context!
             --     -- TODO it would also be useful to have add to explicit context on a regular rg file search
             -- end)
+            keymap({ 'n' }, '<leader>d', function()
+                -- SHOW chunk details... i.e. text so I can compare to what is selected in previewer
+                --  and to troubleshoot why matches happen!
+                local messages = require("devtools.messages")
+                vim.schedule(function()
+                    messages.ensure_open() -- unfortunately this fails when in picker
+                    -- for now just open this before open picker when troubleshooting... until I can get in a fix
+
+                    local selection = state.get_selected_entry()
+                    messages.header("ENTRY")
+                    messages.append(selection)
+                    messages.header("MATCH TEXT")
+                    messages.append(selection.match.text)
+                end)
+            end)
+
             return true
         end,
     })
