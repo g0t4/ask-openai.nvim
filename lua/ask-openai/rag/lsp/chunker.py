@@ -1,6 +1,7 @@
 import hashlib
 from pathlib import Path
-from typing import Dict, List
+from tree_sitter import Node
+from tree_sitter_languages import get_language, get_parser
 
 from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id
 
@@ -31,7 +32,7 @@ def get_file_stat(file_path: Path | str) -> FileStat:
         path=str(file_path)  # for serializing and reading by LSP
     )
 
-def build_file_chunks(path: Path | str, file_hash: str) -> List[Chunk]:
+def build_file_chunks(path: Path | str, file_hash: str) -> list[Chunk]:
     path = Path(path)
 
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
@@ -39,7 +40,7 @@ def build_file_chunks(path: Path | str, file_hash: str) -> List[Chunk]:
         lines = f.readlines()
         return build_from_lines(path, file_hash, lines)
 
-def build_from_lines(path: Path, file_hash: str, lines: List[str]) -> List[Chunk]:
+def build_from_lines(path: Path, file_hash: str, lines: list[str]) -> list[Chunk]:
 
     # when the time comes, figure out how to alter these:
     lines_per_chunk = 20
@@ -76,13 +77,11 @@ def build_from_lines(path: Path, file_hash: str, lines: List[str]) -> List[Chunk
 
     return chunks
 
-def build_ts_chunks(path: Path, file_hash: str) -> List[Chunk]:
+def build_ts_chunks(path: Path, file_hash: str) -> list[Chunk]:
     """
     Build chunks from a Python file using tree‑sitter.
     Each chunk corresponds to a top‑level function definition.
     """
-
-    from tree_sitter_languages import get_language, get_parser
 
     # language = get_language('python')
     parser = get_parser('python')
@@ -92,8 +91,8 @@ def build_ts_chunks(path: Path, file_hash: str) -> List[Chunk]:
 
     tree = parser.parse(source)
 
-    def collect_key_nodes(node):
-        nodes = []
+    def collect_key_nodes(node: Node) -> list[Node]:
+        nodes: list[Node] = []
         if node.type == "function_definition":
             nodes.append(node)
         if node.type == "class_definition":
@@ -113,7 +112,7 @@ def build_ts_chunks(path: Path, file_hash: str) -> List[Chunk]:
         end_line = fn.end_point[0]
         # Extract the lines belonging to this function
 
-        chunk_type = ""
+        chunk_type = "ts"  # PRN and/or set node type?
         # TODO include start/end column in chunk_id too?
         chunk_id = chunk_id_for(path, chunk_type, start_line, end_line, file_hash)
         chunk = Chunk(
