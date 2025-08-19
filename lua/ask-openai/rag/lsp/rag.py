@@ -137,15 +137,15 @@ def testing_only_update_file_from_disk(file_path, model_wrapper, enable_ts_chunk
 
     datasets.update_file(file_path, new_chunks, model_wrapper)
 
-def update_file_from_pygls_doc(doc: TextDocument, model_wrapper, enable_ts_chunks):
-    file_path = Path(doc.path)
+def update_file_from_pygls_doc(lsp_doc: TextDocument, model_wrapper, enable_ts_chunks):
+    file_path = Path(lsp_doc.path)
 
-    hash = get_file_hash_from_lines(doc.lines)
+    hash = get_file_hash_from_lines(lsp_doc.lines)
 
     #  TODO cleanup duplication with test above and test this method directly, don't test indirectly with above testing_only*!!
-    new_chunks = build_from_lines(file_path, hash, doc.lines)
+    new_chunks = build_from_lines(file_path, hash, lsp_doc.lines)
     if enable_ts_chunks:
-        source_bytes = ''.join(doc.lines).encode(encoding='utf-8')
+        source_bytes = ''.join(lsp_doc.lines).encode(encoding='utf-8')
         ts_chunks = build_ts_chunks(file_path, hash)
         new_chunks.extend(ts_chunks)
 
