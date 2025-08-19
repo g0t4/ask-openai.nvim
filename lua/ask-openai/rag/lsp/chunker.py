@@ -4,6 +4,9 @@ from tree_sitter import Node
 from tree_sitter_languages import get_language, get_parser
 
 from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
+from lsp.logs import get_logger
+
+logger = get_logger(__name__)
 
 def get_file_hash(file_path: Path | str) -> str:
     file_path = Path(file_path)
@@ -77,6 +80,40 @@ def build_from_lines(path: Path, file_hash: str, lines: list[str]) -> list[Chunk
 
     return chunks
 
+parsers_by_language = {}
+
+def get_cached_parser(language):
+    if language in parsers_by_language:
+        return parsers_by_language[language]
+
+    with logger.timer('get_parser' + language):
+        parser = get_parser(language)
+        parsers_by_language[language] = parser
+    return parser
+
+def get_cached_parser_for_path(path):
+    language = path.suffix[1:]
+    if language is None:
+        return None
+    elif language == "txt":
+        # no need to log... just skip txt files
+        return None
+    elif language == "py":
+        language = "python"
+    elif language == "sh":
+        language = "bash"
+    # elif language == "fish":
+    #     language = "fish"
+    elif language == "lua":
+        language = "lua"
+    elif language == "js":
+        language = "javascript"
+    else:
+        logger.warning(f'language not supported for tree_sitter chunker: {language=}')
+        return None
+
+    return get_cached_parser(language)
+
 def build_ts_chunks(path: Path, file_hash: str) -> list[Chunk]:
     """
     Build chunks from a Python file using tree‑sitter.
@@ -84,12 +121,17 @@ def build_ts_chunks(path: Path, file_hash: str) -> list[Chunk]:
     """
 
     # language = get_language('python')
-    parser = get_parser('python')
+
+    parser = get_cached_parser_for_path(path)
+    if parser is None:
+        return []
 
     with open(path, 'rb') as file:
+        # TODO don't reload file, load once with build_file_chunks
         source = file.read()
 
-    tree = parser.parse(source)
+    with logger.timer('parse_ts ' + str(path)):
+        tree = parser.parse(source)
 
     def collect_key_nodes(node: Node) -> list[Node]:
         nodes: list[Node] = []
