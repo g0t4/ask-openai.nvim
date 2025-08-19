@@ -87,10 +87,14 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         -- local num_lines = vim.api.nvim_buf_line_count(bufnr)
 
         vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
-        local start_line, end_line = entry.match.start_line, entry.match.end_line -- 1-based
+        local start_line_1based, end_line_1based = entry.match.start_line, entry.match.end_line -- 1-based
 
+        -- TODO use start_column and end_column (1-based IIUC by the way ... yeah FML)
+        --  and fix start/end columns to make sense (i.e. use 1 based on that too  b/c that is intuitive to users AND visible in picker results win after line #)
         local last_col = -1
-        vim.hl.range(bufnr, ns, "RagLineRange", { start_line, 0 }, { end_line, last_col }, {})
+        local start_line_0based = start_line_1based - 1
+        local end_line_0based = end_line_1based - 1
+        vim.hl.range(bufnr, ns, "RagLineRange", { start_line_0based, 0 }, { end_line_0based, last_col }, {})
         logs:info("text: " .. entry.match.text)
 
         local ft = vim.filetype.match({ filename = filename }) or "text"
@@ -118,7 +122,7 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
             vim.api.nvim_set_option_value("relativenumber", false, { win = winid })
 
             vim.api.nvim_win_call(winid, function()
-                pcall(vim.api.nvim_win_set_cursor, winid, { start_line, 0 })
+                pcall(vim.api.nvim_win_set_cursor, winid, { start_line_1based, 0 })
                 vim.cmd('normal! zz')
             end)
         end)
