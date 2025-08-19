@@ -300,7 +300,7 @@ def main():
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
         if rebuild:
             trash_dot_rag(dot_rag_dir)
-        options = RAGChunkerOptions(enable_ts_chunks=True)
+        options = RAGChunkerOptions.ProductionOptions()
         indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, model_wrapper, options)
         indexer.main()
 

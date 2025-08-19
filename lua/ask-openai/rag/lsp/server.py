@@ -81,7 +81,7 @@ def update_rag_for_text_doc(doc_uri: str):
     if doc is None:
         logger.error(f"abort... doc not found {doc_uri}")
         return
-    rag.update_file_from_pygls_doc(doc, model_wrapper, RAGChunkerOptions(enable_ts_chunks=True))
+    rag.update_file_from_pygls_doc(doc, model_wrapper, RAGChunkerOptions.ProductionOptions())
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 def doc_saved(params: types.DidSaveTextDocumentParams):

@@ -14,6 +14,18 @@ class RAGChunkerOptions:
     enable_ts_chunks: bool = False
     enable_line_range_chunks: bool = True
 
+    @staticmethod
+    def OnlyLineRangeChunks():
+        return RAGChunkerOptions(enable_line_range_chunks=True, enable_ts_chunks=False)
+
+    @staticmethod
+    def OnlyTsChunks():
+        return RAGChunkerOptions(enable_line_range_chunks=False, enable_ts_chunks=True)
+
+    @staticmethod
+    def ProductionOptions():
+        return RAGChunkerOptions(enable_line_range_chunks=True, enable_ts_chunks=True)
+
 def get_file_hash(file_path: Path | str) -> str:
     file_path = Path(file_path)
     # PRN is this slow? or ok?
