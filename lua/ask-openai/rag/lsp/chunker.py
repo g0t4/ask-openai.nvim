@@ -117,6 +117,7 @@ def build_ts_chunks(path: Path, file_hash: str) -> list[Chunk]:
         chunk_id = chunk_id_with_columns_for(path, chunk_type, start_line, start_column, end_line, end_column, file_hash)
         text = fn.text.decode('utf-8')
         # TODO logic to split up if over a certain size (tokens)
+        # TODO plug in new SIG/FUNC/etc tag header info like in test case
         chunk = Chunk(
             id=chunk_id,
             id_int=str(chunk_id_to_faiss_id(chunk_id)),

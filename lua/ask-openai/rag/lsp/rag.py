@@ -126,6 +126,7 @@ def update_file_from_disk(file_path, model_wrapper):
     hash = get_file_hash(file_path)
     with logger.timer(f"build_file_chunks {fs.get_loggable_path(file_path)}"):
         new_chunks = build_file_chunks(file_path, hash)
+        # TODO new ts_chunks too (see indexer)
 
     datasets.update_file(file_path, new_chunks, model_wrapper)
 
