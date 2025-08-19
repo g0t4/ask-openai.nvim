@@ -1,5 +1,4 @@
 import json
-import logging
 from pathlib import Path
 import subprocess
 import unittest
@@ -10,10 +9,6 @@ import rich
 
 from indexer import IncrementalRAGIndexer
 from lsp import model_st as model_wrapper
-
-from lsp.logs import logging_fwk_to_console
-
-logging_fwk_to_console(logging.DEBUG)
 
 class TestBuildIndex(unittest.TestCase):
 
