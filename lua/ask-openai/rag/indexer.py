@@ -300,7 +300,7 @@ def main():
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
         if rebuild:
             trash_dot_rag(dot_rag_dir)
-        indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, model_wrapper)
+        indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, model_wrapper, enable_ts_chunks=True)
         indexer.main()
 
 if __name__ == "__main__":
