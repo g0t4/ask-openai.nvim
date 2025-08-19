@@ -129,15 +129,15 @@ def build_ts_chunks_from_file(path: Path, file_hash: str) -> list[Chunk]:
     Each chunk corresponds to a top‑level function definition.
     """
 
+    with open(path, 'rb') as file:
+        # TODO! don't reload file, load once with build_file_chunks
+        source = file.read()
+
     # language = get_language('python')
 
     parser = get_cached_parser_for_path(path)
     if parser is None:
         return []
-
-    with open(path, 'rb') as file:
-        # TODO don't reload file, load once with build_file_chunks
-        source = file.read()
 
     with logger.timer('parse_ts ' + str(path)):
         tree = parser.parse(source)
