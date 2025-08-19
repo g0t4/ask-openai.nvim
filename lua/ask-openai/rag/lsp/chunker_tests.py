@@ -1,9 +1,8 @@
-from pathlib import Path
-
-import json
 import logging
 import unittest
+from pathlib import Path
 
+from lsp.fs import *
 from lsp.chunker import build_from_lines, build_file_chunks, build_ts_chunks
 from lsp.logs import logging_fwk_to_console
 
@@ -11,10 +10,6 @@ logging_fwk_to_console(logging.DEBUG)
 
 # z rag
 # ptw lsp/chunker_tests.py -- --capture=tee-sys
-
-def _readlines(test_file):
-    with open(test_file, "r", encoding="utf-8", errors="ignore") as f:
-        return f.readlines()
 
 class TestReadingFilesAndNewLines(unittest.TestCase):
     """ purpose is to test that readlines is behaving the way I expect
@@ -26,7 +21,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
 
     def test_readlines_final_line_not_empty_without_newline(self):
         test_file = self.test_cases / "readlines" / "final_line_not_empty_without_newline.txt"
-        lines = _readlines(test_file)
+        lines = read_text_lines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3"])
 
         chunks = build_file_chunks(test_file, "fake_hash")
@@ -35,7 +30,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
 
     def test_readlines_final_line_not_empty_with_newline(self):
         test_file = self.test_cases / "readlines" / "final_line_not_empty_with_newline.txt"
-        lines = _readlines(test_file)
+        lines = read_text_lines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3\n"])
 
         chunks = build_file_chunks(test_file, "fake_hash")
@@ -44,7 +39,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
 
     def test_readlines_final_line_empty_with_newline(self):
         test_file = self.test_cases / "readlines" / "final_line_empty_with_newline.txt"
-        lines = _readlines(test_file)
+        lines = read_text_lines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3\n", "\n"])
 
         chunks = build_file_chunks(test_file, "fake_hash")
@@ -163,7 +158,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
     def test_ts_toplevel_query_py(self):
         from tree_sitter_languages import get_parser
         parser = get_parser("python")
-        source_code = _readlines(self.test_cases / "class_with_functions.py")
+        source_code = read_text_lines(self.test_cases / "class_with_functions.py")
         #
         # tree = parser.parse(source_code.encode())
         #

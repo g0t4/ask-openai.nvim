@@ -50,3 +50,19 @@ def get_loggable_path(path: Path | str) -> str:
     if root_path is None:
         return path
     return f"[bold]{relative_to_workspace(path)}[/bold]"
+
+def read_text_lines(path: Path, encoding="utf-8") -> list[str]:
+    with open(path, "r", encoding=encoding) as f:
+        return f.readlines()
+
+def read_bytes_lines(path: Path) -> list[bytes]:
+    with open(path, "rb") as f:
+        return f.readlines()
+
+def read_text(path: Path, encoding="utf-8") -> str:
+    with open(path, "r", encoding=encoding) as f:
+        return f.read()
+
+def read_bytes(path: Path) -> bytes:
+    with open(path, "rb") as f:
+        return f.read()
