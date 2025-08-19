@@ -62,6 +62,7 @@ def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], enable
     return chunks
 
 def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[str]) -> list[Chunk]:
+    """ only builder for line range chunks (thus denominated in lines only)"""
 
     # when the time comes, figure out how to alter these:
     lines_per_chunk = 20

@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pygls.workspace import TextDocument
 
-from .chunker import build_chunks_from_file, build_line_range_chunks_from_lines, build_ts_chunks_from_file, get_file_hash, get_file_hash_from_lines
+from .chunker import build_line_range_chunks_from_lines, build_ts_chunks_from_source_bytes, get_file_hash_from_lines
 from .logs import get_logger
 from .storage import Datasets, load_all_datasets
 from index.validate import DatasetsValidator
@@ -133,7 +133,7 @@ def update_file_from_pygls_doc(lsp_doc: TextDocument, model_wrapper, enable_ts_c
     if enable_ts_chunks:
         # TODO add indexer test that includes ts chunking (maybe even disable line range chunking)
         source_bytes = ''.join(lsp_doc.lines).encode(encoding='utf-8')
-        ts_chunks = build_ts_chunks_from_file(file_path, hash)
+        ts_chunks = build_ts_chunks_from_source_bytes(file_path, hash, source_bytes)
         new_chunks.extend(ts_chunks)
 
     with logger.timer(f"update_file {fs.get_loggable_path(file_path)}"):
