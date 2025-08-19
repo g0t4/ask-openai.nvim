@@ -130,12 +130,12 @@ def testing_only_update_file_from_disk(file_path, model_wrapper, enable_ts_chunk
 
     hash = get_file_hash(file_path)
     with logger.timer(f"build_file_chunks {fs.get_loggable_path(file_path)}"):
-        chunks = build_file_chunks(file_path, hash)
+        new_chunks = build_file_chunks(file_path, hash)
         if enable_ts_chunks:
             ts_chunks = build_ts_chunks(file_path, hash)
-            chunks.extend(ts_chunks)
+            new_chunks.extend(ts_chunks)
 
-    datasets.update_file(file_path, chunks, model_wrapper)
+    datasets.update_file(file_path, new_chunks, model_wrapper)
 
 def update_file_from_pygls_doc(doc: TextDocument, model_wrapper, enable_ts_chunks=True):
     file_path = Path(doc.path)
