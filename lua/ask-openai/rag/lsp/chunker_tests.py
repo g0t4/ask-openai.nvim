@@ -15,8 +15,8 @@ set_root_dir(repo_root)
 # z rag
 # ptw lsp/chunker_tests.py -- --capture=tee-sys
 def _build_ts_chunks_from_file(path: Path, file_hash: str) -> list[Chunk]:
-    source_bytes = path.read_bytes()
-    return build_ts_chunks_from_source_bytes(path, file_hash, source_bytes)
+
+    return build_ts_chunks_from_source_bytes(path, file_hash, path.read_bytes())
 
 class TestReadingFilesAndNewLines(unittest.TestCase):
     """ purpose is to test that readlines is behaving the way I expect
