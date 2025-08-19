@@ -16,8 +16,7 @@ set_root_dir(repo_root)
 # ptw lsp/chunker_tests.py -- --capture=tee-sys
 def _build_ts_chunks_from_file(path: Path, file_hash: str) -> list[Chunk]:
 
-    with open(path, 'rb') as file:
-        source_bytes = file.read()
+    source_bytes = open(path, 'rb').read()
 
     return build_ts_chunks_from_source_bytes(path, file_hash, source_bytes)
 
