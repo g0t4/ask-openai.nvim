@@ -33,8 +33,8 @@ class FilesDiff:
 
 class IncrementalRAGIndexer:
 
-    def __init__(self, dot_rag_dir, source_code_dir, model_wrapper, include_ts_chunks=True):
-        self.include_ts_chunks = include_ts_chunks
+    def __init__(self, dot_rag_dir, source_code_dir, model_wrapper, enable_ts_chunks=True):
+        self.enable_ts_chunks = enable_ts_chunks
         self.dot_rag_dir = Path(dot_rag_dir)
         self.source_code_dir = Path(source_code_dir)
         self.model_wrapper = model_wrapper
@@ -219,7 +219,7 @@ class IncrementalRAGIndexer:
 
             # Create new chunks for this file
             chunks = build_file_chunks(file_path, stat.hash)
-            if self.include_ts_chunks:
+            if self.enable_ts_chunks:
                 ts_chunks = build_ts_chunks(file_path, stat.hash)
                 chunks.extend(ts_chunks)
             updated_chunks_by_file[file_path_str] = chunks

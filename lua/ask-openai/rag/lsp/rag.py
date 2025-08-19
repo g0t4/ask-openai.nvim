@@ -140,12 +140,13 @@ def testing_only_update_file_from_disk(file_path, model_wrapper, enable_ts_chunk
 def update_file_from_pygls_doc(doc: TextDocument, model_wrapper, enable_ts_chunks=True):
     file_path = Path(doc.path)
 
-    lines_hash = get_file_hash_from_lines(doc.lines)
+    hash = get_file_hash_from_lines(doc.lines)
 
-    #  TODO AND make a combined function to do both so I use the same thing everywhere
-    new_chunks = build_from_lines(file_path, lines_hash, doc.lines)
+    #  TODO cleanup duplication with test above and test this method directly, don't test indirectly with above testing_only*!!
+    new_chunks = build_from_lines(file_path, hash, doc.lines)
     if enable_ts_chunks:
-        ts_chunks = build_ts_chunks(file_path, lines_hash)
+        source_bytes = ''.join(doc.lines).encode(encoding='utf-8')
+        ts_chunks = build_ts_chunks(file_path, hash)
         new_chunks.extend(ts_chunks)
 
     with logger.timer(f"update_file {fs.get_loggable_path(file_path)}"):

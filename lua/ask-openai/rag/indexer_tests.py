@@ -298,7 +298,7 @@ class TestBuildIndex(unittest.TestCase):
 
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks
         target_file_path = self.tmp_source_code_dir / "numbers.lua"
-        rag.testing_only_update_file_from_disk(target_file_path, model_wrapper)
+        rag.testing_only_update_file_from_disk(target_file_path, model_wrapper, enable_ts_chunks=False)
         #! TODO update to use pygls document instead of reading from disk?
 
         # * check counts
