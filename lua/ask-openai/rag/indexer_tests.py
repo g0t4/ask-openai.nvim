@@ -301,13 +301,11 @@ class TestBuildIndex(unittest.TestCase):
         target_file_path = self.tmp_source_code_dir / "numbers.lua"
         fake_lsp_doc = TextDocument(
             uri=f"file://{target_file_path}",
-            language_id="lua",
-            version=2,
+            # language_id="lua",
+            # version=2,
             source=target_file_path.read_text(encoding="utf-8"),
         )
-        # print("fake_lsp_doc:", fake_lsp_doc.lines)
         rag.update_file_from_pygls_doc(fake_lsp_doc, model_wrapper, enable_ts_chunks=False)
-        #! TODO update to use pygls document instead of reading from disk?
 
         # * check counts
         datasets = rag.datasets
