@@ -78,6 +78,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
 
     def setUp(self):
         self.test_cases = Path(__file__).parent / ".." / "tests" / "test_cases" / "ts"
+        self.mydir = Path(__file__).parent
 
     def test_two_functions_py(self):
         chunks = build_ts_chunks(self.test_cases / "two_functions.py", "fake_hash")
@@ -156,17 +157,16 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         return f'Person({self.first_name}, {self.last_name}, {self.dob})'""")
 
     def test_ts_toplevel_query_py(self):
-        from tree_sitter_languages import get_parser
+        from tree_sitter_languages import get_parser, get_language
         parser = get_parser("python")
-        source_code = read_text_lines(self.test_cases / "class_with_functions.py")
-        #
-        # tree = parser.parse(source_code.encode())
-        #
-        # # load query
-        # query_str = open("queries/python/functions.scm").read()
-        # query = Query(LANGUAGE, query_str)
-        #
-        # # execute
-        # captures = query.captures(tree.root_node)
-        # for node, name in captures:
-        #     print(name, node.type, node.start_point, node.end_point)
+        language = get_language("python")
+        source_code = read_bytes(self.test_cases / "class_with_functions.py")
+
+        tree = parser.parse(source_code)
+
+        query_str = open(self.mydir / "chunker/queries/py/toplevel.scm").read()
+        query = language.query(query_str)
+
+        captures = query.captures(tree.root_node)
+        for node, name in captures:
+            print(name, node.type, node.start_point, node.end_point)
