@@ -123,19 +123,17 @@ def handle_query(message, model_wrapper, top_k=3):
 
     return matches
 
-def update_file_from_disk(file_path, model_wrapper):
+def update_file_from_disk(file_path, model_wrapper, enable_ts_chunks=True):
     # FYI right now exists for integration testing as I don't know if I can use document type from pygls in that test (yet?)
+    # TODO can I switch to other update_file now? (below IIAC)... make fake TextDocument
     file_path = Path(file_path)
 
     hash = get_file_hash(file_path)
     with logger.timer(f"build_file_chunks {fs.get_loggable_path(file_path)}"):
         chunks = build_file_chunks(file_path, hash)
-        enable_ts_chunks = True
         if enable_ts_chunks:
             ts_chunks = build_ts_chunks(file_path, hash)
             chunks.extend(ts_chunks)
-
-        # TODO new ts_chunks too (see indexer)
 
     datasets.update_file(file_path, chunks, model_wrapper)
 
