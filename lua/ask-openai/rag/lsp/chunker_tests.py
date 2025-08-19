@@ -2,11 +2,18 @@ import logging
 import unittest
 from pathlib import Path
 
+from rich import print as rich_print
+
 from lsp.fs import *
 from lsp.chunker import build_from_lines, build_file_chunks, build_ts_chunks
 from lsp.logs import logging_fwk_to_console
+from lsp.chunks.ts import *
 
 logging_fwk_to_console(logging.DEBUG)
+
+# * set root dir for relative paths
+repo_root = Path(__file__).parent.parent.parent.parent.parent
+set_root_dir(repo_root)
 
 # z rag
 # ptw lsp/chunker_tests.py -- --capture=tee-sys
@@ -176,18 +183,30 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         from tree_sitter_languages import get_parser, get_language
         parser = get_parser("python")
         language = get_language("python")
-        source_code = read_bytes(self.test_cases / "class_with_functions.py")
+        file = self.test_cases / "two_functions.py"
+        relpath = relative_to_workspace(file)
+
+        source_code = read_bytes(file)
 
         tree = parser.parse(source_code)
 
         query = language.query(query_str)
 
         captures = query.captures(tree.root_node)
+        print()  # blank line
         for node, name in captures:
             print(name, node.type, node.start_point, node.end_point)
-            relpath = node.start_point
             code_block = node.text.decode("utf-8")
+            scope_path = func_name(node)
+            sig_str = func_sig(node, source_code)
 
+            rich_print(node.sexp())
+            # BTW
+            #  SIG: is two fold:
+            #  - allows me to easily parse the key information about this chunk (i.e. if matched I can show that in UI)
+            #    - without this you'd have to attempt to parse code again and that might not go well
+            #  - PLUS it adds normalized context that the embeddings model can use
+            #
             doc = f"""FILE: {relpath}
 FUNC: {scope_path}
 SIG : {sig_str}
@@ -195,4 +214,5 @@ CODE:
 {code_block}
 """
             print(doc)
-            # DOC : {first_docline or ""}
+
+# DOC : {first_docline or ""}

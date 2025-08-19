@@ -16,7 +16,7 @@ def is_no_rag_dir() -> bool:
         return False
     return not dot_rag_dir.exists()
 
-def set_root_dir(root: str | None):
+def set_root_dir(root: str | Path | None):
     global root_path, dot_rag_dir
 
     if root is None:
