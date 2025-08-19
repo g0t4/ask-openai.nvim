@@ -110,9 +110,8 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         # TODO how do I want to handle nesting? maybe all in one if its under a token count?
         # and/or index nested too?
 
-    def test_classes_py(self):
-        test_file = self.test_cases / "classes.py"
-        chunks = build_ts_chunks(self.test_cases / "classes.py", "fake_hash")
+    def test_dataclass_py(self):
+        chunks = build_ts_chunks(self.test_cases / "dataclass.py", "fake_hash")
         self.assertEqual(len(chunks), 1)
 
         first_chunk = chunks[0]
@@ -120,4 +119,29 @@ class TestTreesitterPythonChunker(unittest.TestCase):
     id: int
     name: str
     email: str"""
+        self.assertEqual(first_chunk.text, class_text)
+
+
+    def test_class_with_functions_py(self):
+        chunks = build_ts_chunks(self.test_cases / "class_with_functions.py", "fake_hash")
+        self.assertEqual(len(chunks), 5)
+        self.maxDiff = None
+
+        first_chunk = chunks[0]
+        class_text = """class Person():
+
+    def __init__(self, first_name, last_name, dob):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.dob = dob
+
+    def say_hi(self):
+        return f"Hi, {self.first_name} {self.last_name}!"
+
+    def is_of_age(self):
+        current_year = datetime.now().year
+        return (current_year - self.dob.year) >= 18
+
+    def __str__(self):
+        return f'Person({self.first_name}, {self.last_name}, {self.dob})'"""
         self.assertEqual(first_chunk.text, class_text)
