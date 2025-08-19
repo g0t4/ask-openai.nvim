@@ -91,9 +91,6 @@ def build_ts_chunks(path: Path, file_hash: str) -> List[Chunk]:
         source = file.read()
 
     tree = parser.parse(source)
-    root_node = tree.root_node
-
-    print("Root node type:", root_node.type)
 
     def collect_key_nodes(node):
         nodes = []
@@ -106,10 +103,10 @@ def build_ts_chunks(path: Path, file_hash: str) -> List[Chunk]:
             nodes.extend(collect_key_nodes(child))
         return nodes
 
-    function_nodes = collect_key_nodes(root_node)
+    nodes = collect_key_nodes(tree.root_node)
 
     chunks = []
-    for fn in function_nodes:
+    for fn in nodes:
         # print(f'{fn=}')
 
         start_line = fn.start_point[0]
