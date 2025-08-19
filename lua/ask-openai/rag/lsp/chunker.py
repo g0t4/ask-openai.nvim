@@ -115,10 +115,12 @@ def build_ts_chunks(path: Path, file_hash: str) -> list[Chunk]:
 
         chunk_type = "ts"  # PRN and/or set node type?
         chunk_id = chunk_id_with_columns_for(path, chunk_type, start_line, start_column, end_line, end_column, file_hash)
+        text = fn.text.decode('utf-8')
+        # TODO logic to split up if over a certain size (tokens)
         chunk = Chunk(
             id=chunk_id,
             id_int=str(chunk_id_to_faiss_id(chunk_id)),
-            text=fn.text.decode('utf-8'),
+            text=text,
             file=str(path),
             start_line=start_line,
             start_column=start_column,
