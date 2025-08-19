@@ -30,6 +30,7 @@ def setup_logging(console: Console, level=logging.WARN):
         format=format,
         datefmt="[%X]",
         handlers=handlers,
+        force=True  # force override root logger, in part to undo pytest hijacking root logger
     )
 
 def clear_iterm_scrollback(log_file):
