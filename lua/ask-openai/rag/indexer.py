@@ -35,7 +35,7 @@ class IncrementalRAGIndexer:
 
     def __init__(self, dot_rag_dir, source_code_dir, model_wrapper, enable_ts_chunks):
         self.enable_ts_chunks = enable_ts_chunks
-        self.enable_line_ranges_chunks = True  # TODO make into an arg?
+        self.enable_line_range_chunks = True  # TODO make into an arg?
         self.dot_rag_dir = Path(dot_rag_dir)
         self.source_code_dir = Path(source_code_dir)
         self.model_wrapper = model_wrapper
@@ -219,7 +219,7 @@ class IncrementalRAGIndexer:
             all_stat_by_path[file_path_str] = stat
 
             # Create new chunks for this file
-            chunks = build_chunks_from_file(file_path, stat.hash, self.enable_line_ranges_chunks, self.enable_ts_chunks)
+            chunks = build_chunks_from_file(file_path, stat.hash, self.enable_line_range_chunks, self.enable_ts_chunks)
             if self.enable_ts_chunks:
                 ts_chunks = build_ts_chunks_from_file(file_path, stat.hash)
                 chunks.extend(ts_chunks)
