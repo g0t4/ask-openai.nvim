@@ -92,7 +92,9 @@ def handle_query(message, model_wrapper, top_k=3):
             text: str
             file: str
             start_line: int
+            start_column: int
             end_line: int
+            end_column: int | None
             type: str
 
         @dataclass
@@ -104,7 +106,9 @@ def handle_query(message, model_wrapper, top_k=3):
             text=chunk.text,
             file=chunk.file,
             start_line=chunk.start_line,
+            start_column=chunk.start_column,
             end_line=chunk.end_line,
+            end_column=chunk.end_column,
             type=chunk.type,
             score=float(scores[0][rank]),
             rank=rank + 1,

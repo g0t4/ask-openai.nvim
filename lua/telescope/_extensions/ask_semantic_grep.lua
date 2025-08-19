@@ -90,8 +90,6 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
 
         vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
         local start_line, end_line = entry.match.start_line, entry.match.end_line -- 1-based
-        logs:info("start_line: " .. start_line)
-        logs:info("end_line: " .. end_line)
 
         local last_col = -1
         vim.hl.range(bufnr, ns, "RagLineRange", { start_line, 0 }, { end_line, last_col }, {})
