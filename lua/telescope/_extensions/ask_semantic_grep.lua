@@ -200,11 +200,14 @@ local function semantic_grep_current_filetype_picker(opts)
         -- use percent_str where needed, e.g. in the display text
         local icon, icon_hlgroup = utils.get_devicons(entry.filename, false)
         local coordinates = ":"
-        if entry.lnum then
-            if entry.col then
-                coordinates = string.format(":%s:%s:", entry.lnum, entry.col)
+        local match = entry.match
+        if match.start_line then
+            local start_column_0indexed = match.start_column
+            if start_column_0indexed then
+                local start_column_1indexed = start_column_0indexed + 1
+                coordinates = string.format(":%s:%s:", match.start_line, start_column_1indexed)
             else
-                coordinates = string.format(":%s:", entry.lnum)
+                coordinates = string.format(":%s:", match.start_line)
             end
         end
         local path_display = path_abs(entry.filename)
@@ -289,8 +292,6 @@ local function semantic_grep_current_filetype_picker(opts)
 
                     -- default action uses these to jump to file location
                     filename = match.file,
-                    lnum = match.start_line,
-                    -- col = 0
 
                     match = match,
                     score = match.score,
