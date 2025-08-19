@@ -8,7 +8,7 @@ class Person():
         self.dob = dob
 
     def say_hi(self):
-        return f"Hi, {self.first_name} {self.last_name}!"
+        return f'Hi, {self.first_name} {self.last_name}!'
 
     def is_of_age(self):
         current_year = datetime.now().year

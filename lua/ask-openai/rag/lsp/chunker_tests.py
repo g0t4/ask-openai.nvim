@@ -121,7 +121,6 @@ class TestTreesitterPythonChunker(unittest.TestCase):
     email: str"""
         self.assertEqual(first_chunk.text, class_text)
 
-
     def test_class_with_functions_py(self):
         chunks = build_ts_chunks(self.test_cases / "class_with_functions.py", "fake_hash")
         self.assertEqual(len(chunks), 5)
@@ -136,7 +135,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         self.dob = dob
 
     def say_hi(self):
-        return f"Hi, {self.first_name} {self.last_name}!"
+        return f'Hi, {self.first_name} {self.last_name}!'
 
     def is_of_age(self):
         current_year = datetime.now().year
@@ -145,3 +144,20 @@ class TestTreesitterPythonChunker(unittest.TestCase):
     def __str__(self):
         return f'Person({self.first_name}, {self.last_name}, {self.dob})'"""
         self.assertEqual(first_chunk.text, class_text)
+
+        self.assertEqual(chunks[1].text, """def __init__(self, first_name, last_name, dob):
+        self.first_name = first_name
+        self.last_name = last_name
+        self.dob = dob""")
+
+        self.assertEqual(chunks[2].text, """def say_hi(self):
+        return f'Hi, {self.first_name} {self.last_name}!'""")
+
+        self.assertEqual(chunks[3].text, """def is_of_age(self):
+        current_year = datetime.now().year
+        return (current_year - self.dob.year) >= 18""")
+
+        self.assertEqual(chunks[4].text, """def __str__(self):
+        return f'Person({self.first_name}, {self.last_name}, {self.dob})'""")
+
+
