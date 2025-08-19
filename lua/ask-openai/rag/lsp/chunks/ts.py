@@ -20,8 +20,8 @@ def func_sig(func_node, source_bytes: bytes) -> str:
     ret = func_node.child_by_field_name("return_type")
     if ret:
         ret_text = source_bytes[ret.start_byte:ret.end_byte].decode("utf-8")
-        sig = f"def {name_text}{params_text} -> {ret_text}"
+        sig = f"def {name_text}{params_text} -> {ret_text}:"
     else:
-        sig = f"def {name_text}{params_text}"
+        sig = f"def {name_text}{params_text}:"
 
     return sig
