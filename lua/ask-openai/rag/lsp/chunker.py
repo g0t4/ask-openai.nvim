@@ -41,9 +41,9 @@ def build_chunks_from_file(path: Path | str, file_hash: str, enable_line_ranges_
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         # each line has trailing newline (it is not stripped out)
         lines = f.readlines()
-        return build_all_chunks_from_lines(path, file_hash, lines, enable_line_ranges_chunks, enable_ts_chunks)
+        return build_chunks_from_lines(path, file_hash, lines, enable_line_ranges_chunks, enable_ts_chunks)
 
-def build_all_chunks_from_lines(path: Path, file_hash: str, lines: list[str], enable_line_ranges_chunks, enable_ts_chunks):
+def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], enable_line_ranges_chunks, enable_ts_chunks):
     """ use lines as the source to build all chunks
         DOES NOT READ FILE at path
         path is just for building chunk results
