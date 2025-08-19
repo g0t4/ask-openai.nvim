@@ -123,7 +123,7 @@ def handle_query(message, model_wrapper, top_k=3):
 
     return matches
 
-def testing_only_update_file_from_disk(file_path, model_wrapper, enable_ts_chunks=True):
+def testing_only_update_file_from_disk(file_path, model_wrapper, enable_ts_chunks):
     # FYI right now exists for integration testing as I don't know if I can use document type from pygls in that test (yet?)
     # TODO can I switch to other update_file now? (below IIAC)... make fake TextDocument
     file_path = Path(file_path)
@@ -137,7 +137,7 @@ def testing_only_update_file_from_disk(file_path, model_wrapper, enable_ts_chunk
 
     datasets.update_file(file_path, new_chunks, model_wrapper)
 
-def update_file_from_pygls_doc(doc: TextDocument, model_wrapper, enable_ts_chunks=True):
+def update_file_from_pygls_doc(doc: TextDocument, model_wrapper, enable_ts_chunks):
     file_path = Path(doc.path)
 
     hash = get_file_hash_from_lines(doc.lines)

@@ -33,7 +33,7 @@ class FilesDiff:
 
 class IncrementalRAGIndexer:
 
-    def __init__(self, dot_rag_dir, source_code_dir, model_wrapper, enable_ts_chunks=True):
+    def __init__(self, dot_rag_dir, source_code_dir, model_wrapper, enable_ts_chunks):
         self.enable_ts_chunks = enable_ts_chunks
         self.dot_rag_dir = Path(dot_rag_dir)
         self.source_code_dir = Path(source_code_dir)
