@@ -221,6 +221,7 @@ local function semantic_grep_current_filetype_picker(opts)
 
         local contents = ""
 
+        -- TODO remove this once I migrate fully to exclusviely treesitter chunking for functions... I will skip line ranges that are covered by a func node
         -- regex to match for a function name and extract if available
         local function_name = ""
         if string.find(entry.match.text, "%sfunction%s") then
@@ -230,7 +231,6 @@ local function semantic_grep_current_filetype_picker(opts)
         if function_name ~= "" then
             contents = function_name
         else
-            -- TODO make this a setting
             -- show first line only
             contents = entry.match.text:sub(1, 30)
             -- show \n in text for new lines for now...
