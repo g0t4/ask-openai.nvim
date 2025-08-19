@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pygls.workspace import TextDocument
 
-from .chunker import build_file_chunks, build_from_lines, get_file_hash, get_file_hash_from_lines
+from .chunker import build_file_chunks, build_from_lines, build_ts_chunks, get_file_hash, get_file_hash_from_lines
 from .logs import get_logger
 from .storage import Datasets, load_all_datasets
 from index.validate import DatasetsValidator
@@ -129,10 +129,15 @@ def update_file_from_disk(file_path, model_wrapper):
 
     hash = get_file_hash(file_path)
     with logger.timer(f"build_file_chunks {fs.get_loggable_path(file_path)}"):
-        new_chunks = build_file_chunks(file_path, hash)
+        chunks = build_file_chunks(file_path, hash)
+        enable_ts_chunks = True
+        if enable_ts_chunks:
+            ts_chunks = build_ts_chunks(file_path, hash)
+            chunks.extend(ts_chunks)
+
         # TODO new ts_chunks too (see indexer)
 
-    datasets.update_file(file_path, new_chunks, model_wrapper)
+    datasets.update_file(file_path, chunks, model_wrapper)
 
 def update_file_from_pygls_doc(doc: TextDocument, model_wrapper):
     file_path = Path(doc.path)
