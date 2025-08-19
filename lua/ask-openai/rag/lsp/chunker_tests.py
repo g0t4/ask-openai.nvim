@@ -160,4 +160,18 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         self.assertEqual(chunks[4].text, """def __str__(self):
         return f'Person({self.first_name}, {self.last_name}, {self.dob})'""")
 
-
+    def test_ts_toplevel_query_py(self):
+        from tree_sitter_languages import get_parser
+        parser = get_parser("python")
+        source_code = _readlines(self.test_cases / "class_with_functions.py")
+        #
+        # tree = parser.parse(source_code.encode())
+        #
+        # # load query
+        # query_str = open("queries/python/functions.scm").read()
+        # query = Query(LANGUAGE, query_str)
+        #
+        # # execute
+        # captures = query.captures(tree.root_node)
+        # for node, name in captures:
+        #     print(name, node.type, node.start_point, node.end_point)
