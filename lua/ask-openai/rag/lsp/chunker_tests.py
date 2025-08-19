@@ -14,7 +14,7 @@ set_root_dir(repo_root)
 
 # z rag
 # ptw lsp/chunker_tests.py -- --capture=tee-sys
-def build_ts_chunks_from_file(path: Path, file_hash: str) -> list[Chunk]:
+def _build_ts_chunks_from_file(path: Path, file_hash: str) -> list[Chunk]:
 
     with open(path, 'rb') as file:
         # TODO! don't reload file, load once with build_file_chunks
@@ -92,7 +92,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         self.mydir = Path(__file__).parent
 
     def test_two_functions_py(self):
-        chunks = build_ts_chunks_from_file(self.test_cases / "two_functions.py", "fake_hash")
+        chunks = _build_ts_chunks_from_file(self.test_cases / "two_functions.py", "fake_hash")
         self.assertEqual(len(chunks), 2)
 
         first_chunk = chunks[0]
@@ -104,7 +104,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         self.assertEqual(second_chunk.text, expected_func2_chunk_text)
 
     def test_nested_functions_py(self):
-        chunks = build_ts_chunks_from_file(self.test_cases / "nested_functions.py", "fake_hash")
+        chunks = _build_ts_chunks_from_file(self.test_cases / "nested_functions.py", "fake_hash")
         self.assertEqual(len(chunks), 2)
 
         first_chunk = chunks[0]
@@ -118,7 +118,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         # and/or index nested too?
 
     def test_dataclass_py(self):
-        chunks = build_ts_chunks_from_file(self.test_cases / "dataclass.py", "fake_hash")
+        chunks = _build_ts_chunks_from_file(self.test_cases / "dataclass.py", "fake_hash")
         self.assertEqual(len(chunks), 1)
 
         first_chunk = chunks[0]
@@ -129,7 +129,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         self.assertEqual(first_chunk.text, class_text)
 
     def test_class_with_functions_py(self):
-        chunks = build_ts_chunks_from_file(self.test_cases / "class_with_functions.py", "fake_hash")
+        chunks = _build_ts_chunks_from_file(self.test_cases / "class_with_functions.py", "fake_hash")
         self.assertEqual(len(chunks), 5)
         self.maxDiff = None
 
