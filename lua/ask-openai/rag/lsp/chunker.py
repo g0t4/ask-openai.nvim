@@ -41,7 +41,16 @@ def build_file_chunks(path: Path | str, file_hash: str) -> list[Chunk]:
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         # each line has trailing newline (it is not stripped out)
         lines = f.readlines()
-        return build_from_lines(path, file_hash, lines)
+        return build_all_chunks_from_lines(path, file_hash, lines)
+
+def build_all_chunks_from_lines(path: Path, file_hash: str, lines: list[str]):
+    """ use lines as the source to build all chunks
+        DOES NOT READ FILE at path
+        path is just for building chunk results
+    """
+    # lines is the common denominator between Language Server (TextDocument.lines)
+    #  and I was already using readlines() in when building from files on disk (indexer)
+    return build_from_lines(path, file_hash, lines)
 
 def build_from_lines(path: Path, file_hash: str, lines: list[str]) -> list[Chunk]:
 
