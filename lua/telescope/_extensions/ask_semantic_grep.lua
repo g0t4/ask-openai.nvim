@@ -177,6 +177,7 @@ local function semantic_grep_current_filetype_picker(opts)
         separator = " ",
         items = {
             { width = 5 },
+            { width = 5 },
             { width = 1 },
             { width = 60 },
             { width = 40 },
@@ -225,8 +226,11 @@ local function semantic_grep_current_filetype_picker(opts)
             contents = string.gsub(contents, "\n", "\\n") --  else telescope replaces new line with a | which then screws up icon color
         end
 
+        local chunk_type = entry.match.type
+
         return displayer {
             { score_percent, "TelescopeResultsNumber" },
+            { chunk_type },
             { icon,          icon_hlgroup },
             { line },
             { contents,      "TelescopeResultsLine" },
@@ -282,13 +286,6 @@ local function semantic_grep_current_filetype_picker(opts)
 
                     match = match,
                     score = match.score,
-
-                    cols = {
-                        file = match.file,
-                        contents = contents,
-                        rank = match.rank,
-                        type = match.type,
-                    }
                 }
                 -- optional second return value
             end,
