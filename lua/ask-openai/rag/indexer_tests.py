@@ -42,7 +42,7 @@ class TestBuildIndex(unittest.TestCase):
         # FYI! slow to recreate index, so do it once and comment this out to quickly run assertions
         # * recreate index
         self.trash_path(self.dot_rag_dir)
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, model_wrapper)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, model_wrapper, enable_ts_chunks=False)
         indexer.build_index(language_extension="lua")
 
         # * chunks
@@ -117,7 +117,7 @@ class TestBuildIndex(unittest.TestCase):
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
         self.trash_path(self.dot_rag_dir)
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, model_wrapper)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, model_wrapper, enable_ts_chunks=False)
         indexer.build_index(language_extension="lua")
 
         q = model_wrapper._encode_one_text("hello")
@@ -144,7 +144,7 @@ class TestBuildIndex(unittest.TestCase):
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, model_wrapper)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, model_wrapper, enable_ts_chunks=False)
         indexer.build_index(language_extension="lua")
 
         # * check counts
@@ -290,7 +290,7 @@ class TestBuildIndex(unittest.TestCase):
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, model_wrapper)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, model_wrapper, enable_ts_chunks=False)
         indexer.build_index(language_extension="lua")
 
         from lsp import rag
