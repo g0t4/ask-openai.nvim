@@ -315,20 +315,21 @@ local function semantic_grep_current_filetype_picker(opts)
             --     -- TODO it would also be useful to have add to explicit context on a regular rg file search
             -- end)
             keymap({ 'n' }, '<leader>d', function()
+                local selection = state.get_selected_entry()
+                -- I actually like seeing it in cmdline... works well to quick check w/o closing the picker
+
+                -- FYI for now have to open messages before to see these, that's fine as its a fallback
                 -- SHOW chunk details... i.e. text so I can compare to what is selected in previewer
                 --  and to troubleshoot why matches happen!
-                local messages = require("devtools.messages")
-                vim.schedule(function()
-                    messages.ensure_open() -- unfortunately this fails when in picker
-                    -- for now just open this before open picker when troubleshooting... until I can get in a fix
+                -- messages.ensure_open() -- unfortunately this fails b/c can't switch back to picker b/c it closes when opening messages buffer...
+                -- for now just open this before open picker when troubleshooting... until I can get in a fix
+                logs:jsonify_info("selection:", selection.match)
+                logs:info("selection.text:", selection.match.text)
 
-                    local selection = state.get_selected_entry()
-                    messages.header("ENTRY")
-                    messages.append(selection)
-                    messages.header("MATCH TEXT")
-                    messages.append(selection.match.text)
-                end)
+                -- still blocks logs from updating, FYI...NBD
+                vim.print(selection)
             end)
+
 
             return true
         end,
