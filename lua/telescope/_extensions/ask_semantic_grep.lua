@@ -154,6 +154,14 @@ local path_abs = function(path)
     return Path:new(path):make_relative(cwd)
 end
 
+local get_icon_for_chunk_type = function(chunk_type)
+    if chunk_type == "ts" then
+        return "󱘎"
+    elseif chunk_type == "lines" then
+        return ""
+    end
+    -- TODO sub type the treesitter matches into functions, classes, etc ... and show icon to help? or is that overkill given SIG will clearly show what is what, most likely
+end
 
 local function semantic_grep_current_filetype_picker(opts)
     -- GOOD examples (multiple pickers in one nvim plugin):
@@ -177,9 +185,9 @@ local function semantic_grep_current_filetype_picker(opts)
         separator = " ",
         items = {
             { width = 5 },
-            { width = 5 },
             { width = 1 },
             { width = 60 },
+            { width = 1 },
             { width = 40 },
         },
     }
@@ -226,13 +234,13 @@ local function semantic_grep_current_filetype_picker(opts)
             contents = string.gsub(contents, "\n", "\\n") --  else telescope replaces new line with a | which then screws up icon color
         end
 
-        local chunk_type = entry.match.type
+        local chunk_type = get_icon_for_chunk_type(entry.match.type)
 
         return displayer {
             { score_percent, "TelescopeResultsNumber" },
-            { chunk_type },
             { icon,          icon_hlgroup },
             { line },
+            { chunk_type },
             { contents,      "TelescopeResultsLine" },
         }
     end
