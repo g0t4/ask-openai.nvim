@@ -4,7 +4,7 @@ from pathlib import Path
 from rich import print as rich_print
 
 from lsp.fs import *
-from lsp.chunker import build_from_lines, build_chunks_from_file, build_ts_chunks
+from lsp.chunker import build_line_range_chunks_from_lines, build_chunks_from_file, build_ts_chunks
 from lsp.chunks.ts import *
 
 # * set root dir for relative paths
@@ -67,7 +67,7 @@ class TestLinesChunker(unittest.TestCase):
         # FYI this test overlaps with integration tests in indexer_tests.py
         #  but I want these documented because I will add other chunking strategies into build[er].py
         lines = ["line " + str(x) + "\n" for x in range(1, 30)]
-        chunks = build_from_lines(Path("foo.txt"), "fake_hash", lines)
+        chunks = build_line_range_chunks_from_lines(Path("foo.txt"), "fake_hash", lines)
         self.assertEqual(len(chunks), 2)
         first_chunk = chunks[0]
         expected_first_chunk_text = "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline 13\nline 14\nline 15\nline 16\nline 17\nline 18\nline 19\nline 20\n"

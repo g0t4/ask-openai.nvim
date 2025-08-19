@@ -50,9 +50,9 @@ def build_all_chunks_from_lines(path: Path, file_hash: str, lines: list[str]):
     """
     # lines is the common denominator between Language Server (TextDocument.lines)
     #  and I was already using readlines() in when building from files on disk (indexer)
-    return build_from_lines(path, file_hash, lines)
+    return build_line_range_chunks_from_lines(path, file_hash, lines)
 
-def build_from_lines(path: Path, file_hash: str, lines: list[str]) -> list[Chunk]:
+def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[str]) -> list[Chunk]:
 
     # when the time comes, figure out how to alter these:
     lines_per_chunk = 20
