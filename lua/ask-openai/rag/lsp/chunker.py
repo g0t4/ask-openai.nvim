@@ -3,7 +3,7 @@ from pathlib import Path
 from tree_sitter import Node
 from tree_sitter_languages import get_language, get_parser
 
-from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id
+from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
 
 def get_file_hash(file_path: Path | str) -> str:
     file_path = Path(file_path)
@@ -110,20 +110,20 @@ def build_ts_chunks(path: Path, file_hash: str) -> list[Chunk]:
 
         start_line = fn.start_point[0]
         end_line = fn.end_point[0]
-        # Extract the lines belonging to this function
+        start_column = fn.start_point[1]
+        end_column = fn.end_point[1]
 
         chunk_type = "ts"  # PRN and/or set node type?
-        # TODO include start/end column in chunk_id too?
-        chunk_id = chunk_id_for(path, chunk_type, start_line, end_line, file_hash)
+        chunk_id = chunk_id_with_columns_for(path, chunk_type, start_line, start_column, end_line, end_column, file_hash)
         chunk = Chunk(
             id=chunk_id,
             id_int=str(chunk_id_to_faiss_id(chunk_id)),
             text=fn.text.decode('utf-8'),
             file=str(path),
             start_line=start_line,
-            start_column=fn.start_point[1],
+            start_column=start_column,
             end_line=end_line,
-            end_column=fn.end_point[1],
+            end_column=end_column,
             type=chunk_type,
             file_hash=file_hash,
         )
