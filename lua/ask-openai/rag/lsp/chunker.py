@@ -131,7 +131,7 @@ def build_ts_chunks_from_file(path: Path, file_hash: str) -> list[Chunk]:
 
     with open(path, 'rb') as file:
         # TODO! don't reload file, load once with build_file_chunks
-        source = file.read()
+        source_bytes = file.read()
 
     # language = get_language('python')
 
@@ -140,7 +140,7 @@ def build_ts_chunks_from_file(path: Path, file_hash: str) -> list[Chunk]:
         return []
 
     with logger.timer('parse_ts ' + str(path)):
-        tree = parser.parse(source)
+        tree = parser.parse(source_bytes)
 
     def collect_key_nodes(node: Node) -> list[Node]:
         nodes: list[Node] = []
