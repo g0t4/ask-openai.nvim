@@ -43,14 +43,21 @@ def build_chunks_from_file(path: Path | str, file_hash: str) -> list[Chunk]:
         lines = f.readlines()
         return build_all_chunks_from_lines(path, file_hash, lines)
 
-def build_all_chunks_from_lines(path: Path, file_hash: str, lines: list[str]):
+def build_all_chunks_from_lines(path: Path, file_hash: str, lines: list[str], enable_line_ranges_chunks, enable_ts_chunks):
     """ use lines as the source to build all chunks
         DOES NOT READ FILE at path
         path is just for building chunk results
     """
     # lines is the common denominator between Language Server (TextDocument.lines)
     #  and I was already using readlines() in when building from files on disk (indexer)
-    return build_line_range_chunks_from_lines(path, file_hash, lines)
+    chunks = []
+    if enable_line_ranges_chunks:
+        chunks.extend(build_line_range_chunks_from_lines(path, file_hash, lines))
+    if enable_ts_chunks:
+        source_bytes = "".join(lines).encode("utf-8")
+        chunks.extend(build_ts_chunks_from_source_bytes(path, file_hash, source_bytes))
+
+    return chunks
 
 def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[str]) -> list[Chunk]:
 
