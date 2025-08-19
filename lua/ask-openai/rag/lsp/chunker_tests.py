@@ -119,9 +119,5 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         class_text = """class Customer():
     id: int
     name: str
-    email: str
-    phone: str
-    address: str
-    created_at: datetime
-    updated_at: datetime"""
+    email: str"""
         self.assertEqual(first_chunk.text, class_text)

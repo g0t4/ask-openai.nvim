@@ -6,7 +6,3 @@ class Customer():
     id: int
     name: str
     email: str
-    phone: str
-    address: str
-    created_at: datetime
-    updated_at: datetime
