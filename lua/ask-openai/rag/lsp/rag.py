@@ -143,6 +143,8 @@ def update_file_from_pygls_doc(doc: TextDocument, model_wrapper):
     lines_hash = get_file_hash_from_lines(doc.lines)
 
     new_chunks = build_from_lines(file_path, lines_hash, doc.lines)
+    # TODO add ts_chunks here too!
+    #  TODO AND make a combined function to do both so I use the same thing everywhere
 
     with logger.timer(f"update_file {fs.get_loggable_path(file_path)}"):
         datasets.update_file(file_path, new_chunks, model_wrapper)
