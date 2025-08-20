@@ -13,19 +13,14 @@ logger = get_logger(__name__)
 class RAGChunkerOptions:
     enable_ts_chunks: bool = False
     enable_line_range_chunks: bool = True
-    enable_sigs: bool = False
 
     @staticmethod
     def OnlyLineRangeChunks():
-        return RAGChunkerOptions(enable_line_range_chunks=True, enable_ts_chunks=False, enable_sigs=False)
+        return RAGChunkerOptions(enable_line_range_chunks=True, enable_ts_chunks=False)
 
     @staticmethod
     def OnlyTsChunks():
-        return RAGChunkerOptions(enable_line_range_chunks=False, enable_ts_chunks=True, enable_sigs=False)
-
-    @staticmethod
-    def OnlyTsChunksWithSigs():
-        return RAGChunkerOptions(enable_line_range_chunks=False, enable_ts_chunks=True, enable_sigs=True)
+        return RAGChunkerOptions(enable_line_range_chunks=False, enable_ts_chunks=True)
 
     @staticmethod
     def ProductionOptions():
