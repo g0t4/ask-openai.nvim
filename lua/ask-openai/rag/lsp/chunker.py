@@ -169,10 +169,22 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
     def collect_key_nodes(node: Node) -> list[Node]:
         nodes: list[Node] = []
+
+        # TODO should I have a set per language that I keep?
         if node.type == "function_definition":
+            # lua: anonymous functions
+            # python: named functions
             nodes.append(node)
-        if node.type == "class_definition":
+        elif node.type == "function_definition_statement":
+            # lua: named functions
             nodes.append(node)
+        elif node.type == "class_definition":
+            # python
+            nodes.append(node)
+        else:
+            print(f'node type not handled: {node.type}')
+            print(node.text)
+            print()
 
         for child in node.children:
             nodes.extend(collect_key_nodes(child))
