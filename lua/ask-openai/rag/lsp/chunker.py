@@ -13,14 +13,19 @@ logger = get_logger(__name__)
 class RAGChunkerOptions:
     enable_ts_chunks: bool = False
     enable_line_range_chunks: bool = True
+    enable_sigs: bool = False
 
     @staticmethod
     def OnlyLineRangeChunks():
-        return RAGChunkerOptions(enable_line_range_chunks=True, enable_ts_chunks=False)
+        return RAGChunkerOptions(enable_line_range_chunks=True, enable_ts_chunks=False, enable_sigs=False)
 
     @staticmethod
     def OnlyTsChunks():
-        return RAGChunkerOptions(enable_line_range_chunks=False, enable_ts_chunks=True)
+        return RAGChunkerOptions(enable_line_range_chunks=False, enable_ts_chunks=True, enable_sigs=False)
+
+    @staticmethod
+    def OnlyTsChunksWithSigs():
+        return RAGChunkerOptions(enable_line_range_chunks=False, enable_ts_chunks=True, enable_sigs=True)
 
     @staticmethod
     def ProductionOptions():
@@ -76,7 +81,7 @@ def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], option
     if options.enable_ts_chunks:
         # TODO add indexer tests that include ts_chunking (maybe even disable line range chunking)
         source_bytes = "".join(lines).encode("utf-8")
-        chunks.extend(build_ts_chunks_from_source_bytes(path, file_hash, source_bytes))
+        chunks.extend(build_ts_chunks_from_source_bytes(path, file_hash, source_bytes, options))
 
     return chunks
 
@@ -152,7 +157,7 @@ def get_cached_parser_for_path(path):
 
     return get_cached_parser(language)
 
-def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: bytes) -> list[Chunk]:
+def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: bytes, options: RAGChunkerOptions) -> list[Chunk]:
 
     # language = get_language('python')
 
