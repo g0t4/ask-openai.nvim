@@ -85,30 +85,29 @@ def handle_query(message, model_wrapper, top_k=3):
         if same_file:
             logger.warning(f"Skip match in same file")
             continue
-        logger.debug(f"matched {chunk.file}:L{chunk.start_line}-{chunk.end_line}")
+        logger.debug(f"matched {chunk.file}:base0-L{chunk.base0.start_line}-{chunk.base0.end_line}")
 
         @dataclass
-        class BaseContextChunk:
+        class LSPContextChunk:
             text: str
             file: str
-            start_line: int
-            start_column: int
-            end_line: int
-            end_column: int | None
+            # using _base0 b/c this is serialized to clients so it must be clear as base0, clients can wrap and add .base0.start_line or .base1.start_line if desired
+            # also server side I am not doing much with this, mostly just serialize responses to client so I don't need easy access to base1 on this type
+            start_line_base0: int
+            start_column_base0: int
+            end_line_base0: int
+            end_column_base0: int | None
             type: str
-
-        @dataclass
-        class ContextChunk(BaseContextChunk):
             score: float
             rank: int
 
-        match = ContextChunk(
+        match = LSPContextChunk(
             text=chunk.text,
             file=chunk.file,
-            start_line=chunk.start_line,
-            start_column=chunk.start_column,
-            end_line=chunk.end_line,
-            end_column=chunk.end_column,
+            start_line_base0=chunk.base0.start_line,
+            start_column_base0=chunk.base0.start_column,
+            end_line_base0=chunk.base0.end_line,
+            end_column_base0=chunk.base0.end_column,
             type=chunk.type,
             score=float(scores[0][rank]),
             rank=rank + 1,

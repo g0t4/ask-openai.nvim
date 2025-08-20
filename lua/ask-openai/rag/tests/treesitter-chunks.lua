@@ -27,8 +27,8 @@ local function extract_lua_chunks(bufnr)
         local start_row, _, end_row, _ = node:range()
         table.insert(chunks, {
             type = type,
-            start_line = start_row + 1,
-            end_line = end_row + 1,
+            start_line_base0 = start_row,
+            end_line_base0 = end_row,
             text = ts.get_node_text(node, bufnr),
         })
     end
@@ -44,7 +44,7 @@ function M.setup()
         local chunks = extract_lua_chunks()
         for _, c in ipairs(chunks) do
             messages.divider()
-            messages.append(string.format("[%s] %d-%d:\n%s\n", c.type, c.start_line, c.end_line, c.text))
+            messages.append(string.format("[%s] %d-%d:\n%s\n", c.type, c.start_line_base0, c.end_line_base0, c.text))
         end
     end, {})
 end

@@ -18,7 +18,14 @@ local latest_query_num = 0
 local picker
 
 local client_request_ids, cancel_all_requests
-function _semantic_grep(message, lsp_buffer_number, process_result, process_complete, entry_maker)
+
+
+---@param lsp_query_message_args LSPRagQueryMessage
+---@param lsp_buffer_number integer
+---@param process_result fun(entry: SemanticGrepTelescopeEntryMatch)
+---@param process_complete fun()
+---@param entry_maker fun(match: LSPContextChunk): SemanticGrepTelescopeEntryMatch
+function _semantic_grep(lsp_query_message_args, lsp_buffer_number, process_result, process_complete, entry_maker)
     if cancel_all_requests then
         logs:info("canceling previous request")
         cancel_all_requests()
@@ -27,13 +34,14 @@ function _semantic_grep(message, lsp_buffer_number, process_result, process_comp
     lsp_buffer_number = lsp_buffer_number or 0
 
     -- TODO refine instructions
-    message.instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope" -- performs best vs:
+    lsp_query_message_args.instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope" -- performs best vs:
     -- message.instruct = "Help the user find code and navigate the codebase, via a semantic grep telescope picker in neovim"
 
     client_request_ids, cancel_all_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
             command = "semantic_grep",
-            arguments = { message },
+            arguments = { lsp_query_message_args },
         },
+        ---@param result LSPRagQueryResult
         function(err, result, ctx)
             -- logs:info("semantic_grep callback: " .. vim.inspect({ err = err, result = result, ctx = ctx }))
 
@@ -47,6 +55,7 @@ function _semantic_grep(message, lsp_buffer_number, process_result, process_comp
                 logs:error("semantic_grep failed to get results")
                 return {}
             end
+
             -- PRN try using re-ranking with 30-50 matches? does that improve utility/accuracy?
             local matches = result.matches or {}
             for i, match in ipairs(matches) do
@@ -77,8 +86,10 @@ vim.api.nvim_set_hl(0, hlgroup, {
 })
 
 local custom_buffer_previewer = previewers.new_buffer_previewer({
+
+    ---@param entry SemanticGrepTelescopeEntryMatch
     define_preview = function(self, entry)
-        local filename = entry.path or entry.filename
+        local filename = entry.filename
         local winid = self.state.winid
         local bufnr = self.state.bufnr
 
@@ -87,14 +98,13 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         -- local num_lines = vim.api.nvim_buf_line_count(bufnr)
 
         vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
-        local start_line_1based, end_line_1based = entry.match.start_line, entry.match.end_line -- 1-based
+        local start_line_base0 = entry.match.start_line_base0
+        local end_line_base0 = entry.match.end_line_base0
 
-        -- TODO use start_column and end_column (1-based IIUC by the way ... yeah FML)
-        --  and fix start/end columns to make sense (i.e. use 1 based on that too  b/c that is intuitive to users AND visible in picker results win after line #)
+        -- TODO use start_column and end_column (base 0)
         local last_col = -1
-        local start_line_0based = start_line_1based - 1
-        local end_line_0based = end_line_1based - 1
-        vim.hl.range(bufnr, ns, "RagLineRange", { start_line_0based, 0 }, { end_line_0based, last_col }, {})
+        -- TODO confirm hl.range is base0 for both line/col values on start and end
+        vim.hl.range(bufnr, ns, "RagLineRange", { start_line_base0, 0 }, { end_line_base0, last_col }, {})
         logs:info("text: " .. entry.match.text)
 
         local ft = vim.filetype.match({ filename = filename }) or "text"
@@ -123,15 +133,15 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
 
             vim.api.nvim_win_call(winid, function()
                 local window_height = vim.api.nvim_win_get_height(winid)
-                local num_highlight_lines = end_line_0based - start_line_0based
+                local num_highlight_lines = end_line_base0 - start_line_base0
                 if num_highlight_lines <= window_height then
                     -- center it since it all fits
-                    local center_line_0based = start_line_0based + math.floor((num_highlight_lines) / 2)
+                    local center_line_0based = start_line_base0 + math.floor((num_highlight_lines) / 2)
                     pcall(vim.api.nvim_win_set_cursor, winid, { center_line_0based, 0 })
                     vim.cmd('normal! zz')
                 else
                     -- doesn't all fit, so start on top line
-                    vim.fn.winrestview({ topline = start_line_0based })
+                    vim.fn.winrestview({ topline = start_line_base0 })
                 end
             end)
         end)
@@ -141,6 +151,7 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
 local sort_by_score = sorters.Sorter:new {
     -- core Sorter logic: ~/.local/share/nvim/lazy/telescope.nvim/lua/telescope/sorters.lua:122-160
 
+    ---@param entry SemanticGrepTelescopeEntryMatch
     scoring_function = function(_self, prompt, ordinal, entry, cb_add, cb_filter)
         -- 0 <= score <= 1
         -- print("prompt: " .. vim.inspect(prompt))
@@ -181,11 +192,11 @@ local function semantic_grep_current_filetype_picker(opts)
     -- TODO! cancel previous queries? async too so not locking up UI?
 
     -- * this runs before picker opens, so you can gather context, i.e. current filetype, its LSP, etc
-    local query_args = {
-        -- TODO should I have one picker that is specific to current file type only
-        --  and then another that searches code across all filetypes?
-        --  use re-ranker in latter case!
-        filetype = vim.o.filetype,
+    ---@type LSPRagQueryMessage
+    local lsp_query_message_args = {
+        text = "",
+        instruct = "",
+        vim_filetype = vim.o.filetype,
         current_file_absolute_path = files.get_current_file_absolute_path(),
     }
     local lsp_buffer_number = vim.api.nvim_get_current_buf()
@@ -202,7 +213,8 @@ local function semantic_grep_current_filetype_picker(opts)
         },
     }
 
-    local make_display = function(entry)
+    ---@param entry SemanticGrepTelescopeEntryMatch
+    local function make_display(entry)
         -- FYI hl groups
         -- ~/.local/share/nvim/lazy/telescope.nvim/plugin/telescope.lua:11-92 i.e. TelescopeResultsIdentifier
 
@@ -211,13 +223,14 @@ local function semantic_grep_current_filetype_picker(opts)
         local icon, icon_hlgroup = utils.get_devicons(entry.filename, false)
         local coordinates = ":"
         local match = entry.match
-        if match.start_line then
-            local start_column_0indexed = match.start_column
-            if start_column_0indexed then
-                local start_column_1indexed = start_column_0indexed + 1
-                coordinates = string.format(":%s:%s:", match.start_line, start_column_1indexed)
+        if match.start_line_base0 then
+            -- show base1 for humans
+            local start_line_base1 = match.start_line_base0 + 1
+            if match.start_column_base0 then
+                local start_column_base1 = match.start_column_base0 + 1
+                coordinates = string.format(":%s:%s:", start_line_base1, start_column_base1)
             else
-                coordinates = string.format(":%s:", match.start_line)
+                coordinates = string.format(":%s:", start_line_base1)
             end
         end
         local path_display = path_abs(entry.filename)
@@ -253,6 +266,10 @@ local function semantic_grep_current_filetype_picker(opts)
         sorting_strategy = 'ascending', -- default descending doesn't work right now due to bug with setting cursor position in results window
 
         finder = AsyncDynamicFinder:new({
+            ---@param prompt string
+            ---@param process_result fun(entry: SemanticGrepTelescopeEntryMatch)
+            ---@param process_complete fun()
+            ---@param entry_maker fun(match: LSPContextChunk): SemanticGrepTelescopeEntryMatch
             fn = function(prompt, process_result, process_complete, entry_maker)
                 if not prompt or prompt == '' then
                     -- this is necessary to clear the list, i.e. when you clear the prompt
@@ -261,9 +278,12 @@ local function semantic_grep_current_filetype_picker(opts)
                 end
 
                 -- function is called each time the user changes the prompt (text in the Telescope Picker)
-                query_args.text = prompt
-                return _semantic_grep(query_args, lsp_buffer_number, process_result, process_complete, entry_maker)
+                lsp_query_message_args.text = prompt
+                return _semantic_grep(lsp_query_message_args, lsp_buffer_number, process_result, process_complete, entry_maker)
             end,
+
+            ---@param match LSPContextChunk
+            ---@return SemanticGrepTelescopeEntryMatch
             entry_maker = function(match)
                 -- FYI `:h telescope.make_entry`
 
@@ -283,11 +303,22 @@ local function semantic_grep_current_filetype_picker(opts)
                 display_last_line = match.text.sub(match.text, -20, -1)
                 contents = display_first_line .. "..." .. display_last_line
 
-                return {
+                ---@class SemanticGrepTelescopeEntryMatch
+                ---@field match LSPContextChunk
+                ---@field value LSPContextChunk
+                ---@field display function|string -- use to create display text for picker
+                ---@field filename string
+                ---@field score number
+                ---@field index number
+                ---@field ordinal string -- for filtering? how so?
+                local entry = {
+                    -- required:
                     value = match,
-                    -- valid = false -- hide it (also can return nil for entire object)
                     display = make_display, -- string|function
                     ordinal = match.text, -- for filtering? how so?
+
+                    -- optional:
+                    -- valid = false -- hide it (also can return nil for entire object)
 
                     -- default action uses these to jump to file location
                     filename = match.file,
@@ -295,8 +326,10 @@ local function semantic_grep_current_filetype_picker(opts)
                     match = match,
                     score = match.score,
                 }
+                return entry
                 -- optional second return value
             end,
+
         }),
 
         -- :h telescope.previewers
@@ -317,6 +350,7 @@ local function semantic_grep_current_filetype_picker(opts)
             --     -- TODO it would also be useful to have add to explicit context on a regular rg file search
             -- end)
             keymap({ 'n' }, '<leader>d', function()
+                ---@type SemanticGrepTelescopeEntryMatch
                 local selection = state.get_selected_entry()
                 -- I actually like seeing it in cmdline... works well to quick check w/o closing the picker
 

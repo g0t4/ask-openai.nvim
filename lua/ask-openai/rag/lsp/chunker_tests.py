@@ -53,33 +53,74 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
         first_chunk = chunks[0]
         self.assertEqual(first_chunk.text, "1\n2\n3\n\n")
 
-class TestLinesChunker(unittest.TestCase):
+class TestLowLevel_LinesChunker(unittest.TestCase):
+    """
+    FYI this overlaps with tests in indexer_tests...
+    - these tests are intended to be lower level to compliment indexer_tests
+    """
+
+    # TODO move some of the low level assertions out of indexer and into here by the way
+    # ... i.e. intra chunk assertions should reside here
 
     def setUp(self):
         # create temp directory
         self.test_cases = Path(__file__).parent / ".." / "tests" / "test_cases"
 
-    def test_build_file_chunks_has_new_lines_on_end_of_lines(self):
-        # largely to document how I am using readlines + build_from_lines
-        chunks = build_chunks_from_file(self.test_cases / "numbers.30.txt", "fake_hash", RAGChunkerOptions.OnlyLineRangeChunks())
-        self.assertEqual(len(chunks), 2)
-        first_chunk = chunks[0]
-        expected_first_chunk_text = "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n20\n"
-        self.assertEqual(first_chunk.text, expected_first_chunk_text)
-
     def test_build_line_range_chunks(self):
-        # FYI this test overlaps with integration tests in indexer_tests.py
-        #  but I want these documented because I will add other chunking strategies into build[er].py
-        lines = ["line " + str(x) + "\n" for x in range(1, 30)]
+        lines = [str(x) + "\n" for x in range(0, 30)]  # 0\n1\n ... 29\n
+        self.assertEqual(len(lines), 30)  # FYI mostly as reminder range is not inclusive :)
         chunks = build_line_range_chunks_from_lines(Path("foo.txt"), "fake_hash", lines)
         self.assertEqual(len(chunks), 2)
-        first_chunk = chunks[0]
-        expected_first_chunk_text = "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10\nline 11\nline 12\nline 13\nline 14\nline 15\nline 16\nline 17\nline 18\nline 19\nline 20\n"
-        self.assertEqual(first_chunk.text, expected_first_chunk_text)
+        chunk1 = chunks[0]
+        expected_text1 = "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\n13\n14\n15\n16\n17\n18\n19\n"
+        self.assertEqual(chunk1.text, expected_text1)
+        self.assertEqual(chunk1.start_line0, 0)
+        self.assertEqual(chunk1.end_line0, 19)
+        self.assertEqual(chunk1.start_column0, 0)
+        self.assertEqual(chunk1.end_column0, None)
+        self.assertEqual(chunk1.file, "foo.txt")
+        # chunk_id
+        #   echo -n "foo.txt:lines:0-19:fake_hash" | sha256sum | cut -c -16
+        self.assertEqual(chunk1.id, "fc78caf765f98c08")
+        #   bitmaths "0xfc78caf765f98c08 & 0x7FFFFFFFFFFFFFFF"
+        #      FYI this case id_int the high bits are truncated
+        self.assertEqual(chunk1.id_int, "8969141821824928776")
+        self.assertEqual(chunk1.type, "lines")
+        self.assertEqual(chunk1.file_hash, "fake_hash")
 
-        second_chunk = chunks[1]
-        expected_second_chunk_text = "line 16\nline 17\nline 18\nline 19\nline 20\nline 21\nline 22\nline 23\nline 24\nline 25\nline 26\nline 27\nline 28\nline 29\n"
-        self.assertEqual(second_chunk.text, expected_second_chunk_text)
+        chunk2 = chunks[1]
+        expected_text2 = "15\n16\n17\n18\n19\n20\n21\n22\n23\n24\n25\n26\n27\n28\n29\n"
+        self.assertEqual(chunk2.text, expected_text2)
+        self.assertEqual(chunk2.start_line0, 15)
+        self.assertEqual(chunk2.end_line0, 29)  # 30 lines total, last has line 29 which is on file line 28
+        self.assertEqual(chunk2.start_column0, 0)
+        self.assertEqual(chunk2.end_column0, None)
+        self.assertEqual(chunk2.file, "foo.txt")
+        # chunk_id
+        #   echo -n "foo.txt:lines:15-29:fake_hash" | sha256sum | cut -c -16
+        self.assertEqual(chunk2.id, "5f0546bff37a52e6")
+        #   bitmaths "0x5f0546bff37a52e6 & 0x7FFFFFFFFFFFFFFF"
+        #     FYI no high_bits to truncate in this case
+        self.assertEqual(chunk2.id_int, "6846956598724285158")
+        self.assertEqual(chunk2.type, "lines")
+        self.assertEqual(chunk2.file_hash, "fake_hash")
+
+    def test_last_chunk_has_one_line_past_overlap__thus_is_kept(self):
+        #   chunk1: 0=>19
+        #   chunk2: 15=>20 # has one line past overlap, so keep chunk
+        lines = [str(x) + "\n" for x in range(0, 21)]  # 0\n1\n ... 20\n
+        self.assertEqual(len(lines), 21)
+        chunks = build_line_range_chunks_from_lines(Path("foo.txt"), "fake_hash", lines)
+        assert [(c.start_line0, c.end_line0) for c in chunks] == [(0, 19), (15, 20)]
+
+    def test_last_chunk_would_only_be_overlap_so_it_is_skipped_due_to_min_chunk_size(self):
+        # last chunk is only the 5 lines of overlap with first chunks, so its skipped
+        #   chunk1: 0=>19
+        #   chunk2: 15=>19 # skip as its only overlap
+        lines = [str(x) + "\n" for x in range(0, 20)]  # 0\n1\n ... 19\n
+        self.assertEqual(len(lines), 20)
+        chunks = build_line_range_chunks_from_lines(Path("foo.txt"), "fake_hash", lines)
+        assert [(c.start_line0, c.end_line0) for c in chunks] == [(0, 19)]
 
 class TestTreesitterPythonChunker(unittest.TestCase):
 

@@ -11,6 +11,7 @@ import rich
 from indexer import IncrementalRAGIndexer
 from lsp.chunker import RAGChunkerOptions
 from lsp import model_st as model_wrapper
+from lsp.storage import load_chunks_by_file, load_file_stats_by_file
 
 class TestBuildIndex(unittest.TestCase):
 
@@ -32,16 +33,17 @@ class TestBuildIndex(unittest.TestCase):
         return index
 
     def get_chunks_by_file(self):
-        chunks_json_path = self.dot_rag_dir / "lua" / "chunks.json"
-        return json.loads(chunks_json_path.read_text())
+        return load_chunks_by_file(self.dot_rag_dir / "lua/chunks.json")
 
     def get_files(self):
-        files_json_path = self.dot_rag_dir / "lua" / "files.json"
-        return json.loads(files_json_path.read_text())
+        return load_file_stats_by_file(self.dot_rag_dir / "lua" / "files.json")
 
     def test_building_rag_index_from_scratch(self):
 
-        # FYI! slow to recreate index, so do it once and comment this out to quickly run assertions
+        # FYI! this duplicates some low level line range chunking tests but I want to keep it to include the end to end picture
+        #   i.e. for computing chunk id which relies on path to file
+        #   here I am testing end to end chunking outputs even if most logic is shared with low level tests, still valuable
+
         # * recreate index
         self.trash_path(self.dot_rag_dir)
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, model_wrapper, RAGChunkerOptions.OnlyLineRangeChunks())
@@ -49,43 +51,37 @@ class TestBuildIndex(unittest.TestCase):
 
         # * chunks
         chunks_by_file = self.get_chunks_by_file()
-        self.assertEqual(len(chunks_by_file), 1)  # only one test file
         # 41 lines currently, 5 overlap + 20 per chunk
         sample_lua_path = (self.indexer_src_dir / "sample.lua").absolute()
-        self.assertEqual(chunks_by_file.keys(), {str(sample_lua_path)})
+        self.assertEqual(len(chunks_by_file), 1)  # one file
         chunks = chunks_by_file[str(sample_lua_path)]
         self.assertEqual(len(chunks), 3)
-        rich.print(f'{sample_lua_path=}')
+        # rich.print(f'{sample_lua_path=}')
         for c in chunks:
-            self.assertEqual(c["file"], str(sample_lua_path))
-            self.assertEqual(c["type"], "lines")
+            self.assertEqual(c.file, str(sample_lua_path))
+            self.assertEqual(c.type, "lines")
 
-        first_chunk = [c for c in chunks if c["start_line"] == 1][0]
-        self.assertEqual(first_chunk["start_line"], 1)
-        self.assertEqual(first_chunk["end_line"], 20)
+        first_chunk = [c for c in chunks if c.start_line0 == 0][0]
+        self.assertEqual(first_chunk.start_line0, 0)
+        self.assertEqual(first_chunk.end_line0, 19)
 
-        # * print(f'{first_chunk=}')
-        # FYI there are new lines before and then trailing new line causes there to be 21 lines just b/c of trailing new line is all... all s/b fine as is
-        # PRN if this is a hassle I could remove these blank lines in this example and move any tests of blanks to some other spot so it isn't overlapping with the rest of this test's purpose
-        # FTR I already have some testing of empty/new lines in readlines tests
-        self.assertEqual(len(first_chunk["text"].split("\n")), 21)
         start = "\n\nlocal TestRunner = {}"
-        self.assertEqual(first_chunk["text"].startswith(start), True)
+        self.assertEqual(first_chunk.text.startswith(start), True)
         end = "table.insert(self.results, {status = \"fail\", message = \"Test failed: expected \" .. tostring(test.expected) .. \", got \" .. tostring(result)})\n"
-        self.assertEqual(first_chunk["text"].endswith(end), True)
+        self.assertEqual(first_chunk.text.endswith(end), True)
         # manually computed when running on my machine... so maybe warn if not same path
-        # echo -n "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag/tests/indexer_src/sample.lua:lines:1-20:b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b" | sha256sum | head -c16
-        self.assertEqual(first_chunk["id"], "a5a168c50041e5ab")
-        # bitmaths 0xa5a168c50041e5ab # but then  have to drop 64th bit (if set)=> bitmath => wc = do again if 64th was set and then use that value (last 63 bits of int64)
-        self.assertEqual(first_chunk["id_int"], "2711563645975913899")
+        # echo -n "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag/tests/indexer_src/sample.lua:lines:0-19:b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b" | sha256sum | head -c16
+        self.assertEqual(first_chunk.id, "e2d1d29ec4960e8f")
+        # bitmaths "0xe2d1d29ec4960e8f & 0x7FFFFFFFFFFFFFFF"
+        self.assertEqual(first_chunk.id_int, "7120704065194299023")
 
-        second_chunk = [c for c in chunks if c["start_line"] == 16][0]
-        self.assertEqual(second_chunk["start_line"], 16)
-        self.assertEqual(second_chunk["end_line"], 35)
+        second_chunk = [c for c in chunks if c.start_line0 == 15][0]
+        self.assertEqual(second_chunk.start_line0, 15)
+        self.assertEqual(second_chunk.end_line0, 34)
 
-        third_chunk = [c for c in chunks if c["start_line"] == 31][0]
-        self.assertEqual(third_chunk["start_line"], 31)
-        self.assertEqual(third_chunk["end_line"], 41)
+        third_chunk = [c for c in chunks if c.start_line0 == 30][0]
+        self.assertEqual(third_chunk.start_line0, 30)
+        self.assertEqual(third_chunk.end_line0, 40)
 
         # * files
         files = self.get_files()
@@ -93,13 +89,13 @@ class TestBuildIndex(unittest.TestCase):
         file_meta = files[str(sample_lua_path)]
 
         # sha256sum /Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag/tests/indexer_src/sample.lua | cut -d ' ' -f1
-        self.assertEqual(file_meta["hash"], "b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b")
+        self.assertEqual(file_meta.hash, "b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b")
         # PRN get rid of redundancy in path? already key
-        self.assertEqual(file_meta["path"], str(sample_lua_path))
+        self.assertEqual(file_meta.path, str(sample_lua_path))
         # how do I assert the timestamp is at least reasonable?
-        self.assertTrue(file_meta["mtime"] > 1735711201)  # Jan 1 2025 00:00:00 UTC - before this code existed :)
+        self.assertTrue(file_meta.mtime > 1735711201)  # Jan 1 2025 00:00:00 UTC - before this code existed :)
         # cat tests/indexer_src/sample.lua | wc -c
-        self.assertEqual(file_meta["size"], 1_173)
+        self.assertEqual(file_meta.size, 1_173)
 
         # * vectors
         # https://faiss.ai/cpp_api/struct/structfaiss_1_1IndexFlatIP.html
@@ -107,13 +103,12 @@ class TestBuildIndex(unittest.TestCase):
 
         self.assertEqual(index.ntotal, 3)
         self.assertEqual(index.d, 768)
-        rich.print(f'{index=}')
+        # rich.print(f'{index=}')
         # rich.print(f'{index.metric_type=}')
         # rich.print(f'{index.metric_arg=}')
         # rich.print(f'{index.is_trained=}')
-        for i in range(index.ntotal):
-            rich.print(i)
-            # PRN verify vectors too?
+        # for i in range(index.ntotal):
+        #     rich.print(i)
 
     def test_search_index(self):
         # * setup same index as in the first test
@@ -122,15 +117,26 @@ class TestBuildIndex(unittest.TestCase):
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, model_wrapper, RAGChunkerOptions.OnlyLineRangeChunks())
         indexer.build_index(language_extension="lua")
 
+        chunks_by_file = load_chunks_by_file(self.dot_rag_dir / "lua/chunks.json")
+        self.assertEqual(len(chunks_by_file), 1)
+        chunks = next(iter(chunks_by_file.values()))
+        # I do not to replicate tests of building id/id_int and hard coding the values so...
+        #   I am getting each chunk by its line range and I know which is which for the search results below
+        #   that way if I ever change calculation for id_int I don't have to rewrite this test which is solely
+        #   about search order and testing search works (get IDs back from faiss)
+        chunk0 = [c for c in chunks if c.base0.start_line == 0][0]  # does not have hello in it and s/b last in search results
+        chunk1 = [c for c in chunks if c.base0.start_line == 15][0]  # has hello
+        chunk2 = [c for c in chunks if c.base0.start_line == 30][0]  # has hello
+
         q = model_wrapper._encode_one_text("hello")
         self.assertEqual(q.shape, (1, 768))
 
         index = self.get_vector_index()
         distances, indices = index.search(q, 3)
-        rich.print(f"{distances=}")
-        rich.print(f"{indices=}")
-        # first two id_ints here have the hello world, last doesn't
-        expected = np.array([[5737032561938488959, 7876391420168697139, 2711563645975913899]])
+        # rich.print(f"{distances=}")
+        # rich.print(f"{indices=}")
+
+        expected = np.array([[int(chunk2.id_int), int(chunk1.id_int), int(chunk0.id_int)]])
         np.testing.assert_array_equal(indices, expected)
 
     def test_update_index_removed_file(self):

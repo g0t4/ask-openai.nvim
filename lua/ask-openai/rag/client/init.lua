@@ -51,6 +51,35 @@ local function fim_concat(prefix, suffix, limit)
     return short_prefix .. "<<<FIM>>>" .. short_suffix
 end
 
+---@class LSPRagQueryMessage
+---@field text string
+---@field vim_filetype string
+---@field current_file_absolute_path string
+---@field instruct string
+_G.LSPRagQueryMessage = {}
+
+
+---@class LSPRagQueryResult
+---@field matches LSPContextChunk[]
+_G.LSPRagQueryResult = {}
+
+
+-- TODO MAYBE RENAME to LSPContextChunkMatch (here on client and server side too)
+---@class LSPContextChunk
+---@field text string
+---@field file string
+---@field start_line_base0 integer
+---@field start_column_base0 integer
+---@field end_line_base0 integer
+---@field end_column_base0 integer|nil
+---@field type string
+---@field score number
+---@field rank integer
+_G.LSPContextChunk = {}
+
+---@param user_prompt string
+---@param code_context string
+---@param callback fun(matches: LSPContextChunk[])
 function M.context_query_rewrites(user_prompt, code_context, callback)
     -- FYI use user message for now as Instruct and selected code as the Query
     -- local rewrite_instruct = "Modify the code as requested"
@@ -59,13 +88,20 @@ function M.context_query_rewrites(user_prompt, code_context, callback)
     return M._context_query(query, instruct, callback)
 end
 
+---@param document_prefix string
+---@param document_suffix string
+---@param callback fun(matches: LSPContextChunk[])
 function M.context_query_fim(document_prefix, document_suffix, callback)
     local fim_specific_instruct = "Complete the missing portion of code (FIM) based on the surrounding context (Fill-in-the-middle)"
     local query = fim_concat(document_prefix, document_suffix)
     return M._context_query(query, fim_specific_instruct, callback)
 end
 
+---@param query string
+---@param instruct string
+---@param callback fun(matches: LSPContextChunk[])
 function M._context_query(query, instruct, callback)
+    ---@type LSPRagQueryMessage
     local message = {
         text = query,
         instruct = instruct, -- let the server side handle whether or not to include instructions and errors
@@ -74,19 +110,21 @@ function M._context_query(query, instruct, callback)
     }
 
     local _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", {
-        command = "context.query",
-        -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
-        arguments = { message },
-    }, function(err, result)
-        if err then
-            vim.notify("RAG query failed: " .. err.message, vim.log.levels.ERROR)
-            return
-        end
+            command = "context.query",
+            -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
+            arguments = { message },
+        },
+        ---@param result LSPRagQueryResult
+        function(err, result)
+            if err then
+                vim.notify("RAG query failed: " .. err.message, vim.log.levels.ERROR)
+                return
+            end
 
-        log:info("RAG matches (client):", vim.inspect(result))
-        local rag_matches = result.matches or {}
-        callback(rag_matches)
-    end)
+            log:info("RAG matches (client):", vim.inspect(result))
+            local rag_matches = result.matches or {}
+            callback(rag_matches)
+        end)
     return _client_request_ids, _cancel_all_requests
 end
 

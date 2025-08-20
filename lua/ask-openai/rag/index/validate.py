@@ -33,7 +33,7 @@ class DatasetsValidator:
                 if chunk is None:
                     logger.error(f"Duplicate ID found: {id} - {count}x - missing chunk too")
                 else:
-                    logger.error(f"Duplicate ID found: {id} with {count}x - {chunk.file} L{chunk.start_line}-{chunk.end_line}")
+                    logger.error(f"Duplicate ID found: {id} with {count}x - {chunk.file} L{chunk.base0.start_line}-{chunk.base0.end_line}")
 
             # * compare chunk counts vs ID counts
             num_unique_ids_based_on_ids = len(duplicate_ids)

@@ -239,6 +239,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     user_message_with_code = user_prompt .. "\n" .. code_context
     log:info("user_message_with_code: '" .. user_message_with_code .. "'")
 
+    ---@param rag_matches LSPContextChunk[]
     local function send_rewrite(rag_matches)
         -- TODO wire up canceling of RAG if user cancels request
         if enable_rag and rag_matches ~= nil and M.rag_cancel == nil then
@@ -246,16 +247,10 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             return
         end
 
-        -- TODO add in parsing of RAG matches and then call rewrite like normal:
-        -- TODO move all message building in here OR insert the messages into body.messages
-        -- body.messages ...
-
         local messages = {
             { role = "system", content = system_prompt }
         }
 
-        -- PRN should I just have all of this in a single user message?
-        --  are models trained on multiple user messages at a time?
         if context.includes.yanks and context.yanks then
             table.insert(messages, ChatMessage:user(context.yanks.content))
         end
@@ -271,7 +266,6 @@ function M.stream_from_ollama(user_prompt, code, file_name)
                 end)
         end
         if enable_rag and rag_matches ~= nil and #rag_matches > 0 then
-            -- TODO how should this be presented?
             rag_message_parts = {}
             if #rag_matches == 1 then
                 heading = "# RAG query match: \n"
@@ -281,9 +275,11 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             table.insert(rag_message_parts, heading)
             vim.iter(rag_matches)
                 :each(function(chunk)
+                    ---@cast chunk LSPContextChunk
                     -- FYI this comes from embeddings query results... so the structure is different than other context providers
                     -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
-                    local file = chunk.file .. ":" .. chunk.start_line .. "-" .. chunk.end_line
+                    -- FYI I am feeding the LLM with base0 line numbers, shouldn't matter
+                    local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
                     local code_chunk = chunk.text
                     table.insert(rag_message_parts,
                         "## " .. file .. "\n"

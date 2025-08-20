@@ -138,14 +138,10 @@ def rag_command_context_related(_: LanguageServer, params: types.ExecuteCommandP
         return
 
     if params is None or params[0] is None:
-        logger.error(f"aborting context.related b/c missing params {params}")
+        logger.error(f"aborting semantic_grep b/c missing params {params}")
         return
 
     message = params[0]
-    # TODO! implement searching for related code...
-    # * also useful to anecdotally test how well the current embedings work!
-    #  take current line / nearby code and use it to find related code via embeddings!
-    #  then client side show it as a picker in telescope!
     return rag.handle_query(message, model_wrapper, 10)
 
 @server.command("context.query")

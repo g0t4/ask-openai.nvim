@@ -86,37 +86,41 @@ def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[s
     # when the time comes, figure out how to alter these:
     lines_per_chunk = 20
     overlap = 5
+    step = lines_per_chunk - overlap
 
-    def iter_chunks(lines, min_chunk_size=10):
-        n_lines = len(lines)
-        step = lines_per_chunk - overlap
-        for idx, i in enumerate(range(0, n_lines, step)):
-            start = i
-            end_line = min(i + lines_per_chunk, n_lines)
-            if (end_line - start) < min_chunk_size and idx > 0:
+    # assertions so I can alter these params
+    assert lines_per_chunk > 0, "lines_per_chunk must be > 0"
+    assert 0 <= overlap < lines_per_chunk, "overlap must be in [0, lines_per_chunk)"
+    assert 0 < step
+
+    num_lines = len(lines)
+
+    def iter_chunks():
+
+        for idx, start_line_base0 in enumerate(range(0, num_lines, step)):
+            end_line_exclusive_base0 = min(start_line_base0 + lines_per_chunk, num_lines)  # line after last line (saves from +-1 footgun)
+            num_lines_in_this_chunk = end_line_exclusive_base0 - start_line_base0
+            if num_lines_in_this_chunk <= overlap and idx > 0:
+                # skip if chunk is only the overlap with prior chunk
                 break
 
+            end_line_base0 = end_line_exclusive_base0 - 1
             chunk_type = "lines"
-            start_line = start + 1
-            chunk_id = chunk_id_for(path, chunk_type, start_line, end_line, file_hash)
+            chunk_id = chunk_id_for(path, chunk_type, start_line_base0, end_line_base0, file_hash)
             yield Chunk(
                 id=chunk_id,
                 id_int=str(chunk_id_to_faiss_id(chunk_id)),
-                text="".join(lines[start:end_line]),
+                text="".join(lines[start_line_base0:end_line_exclusive_base0]),  # slice is not end-inclusive
                 file=str(path),
-                start_line=start_line,
-                start_column=0,  # always the first column for line ranges
-                end_line=end_line,
-                end_column=None,
+                start_line0=start_line_base0,
+                start_column0=0,  # always the first column for line ranges
+                end_line0=end_line_base0,
+                end_column0=None,
                 type=chunk_type,
                 file_hash=file_hash,
             )
 
-    chunks = []
-    for _, chunk in enumerate(iter_chunks(lines)):
-        chunks.append(chunk)
-
-    return chunks
+    return list(iter_chunks())
 
 parsers_by_language = {}
 
@@ -180,13 +184,13 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     for fn in nodes:
         # print(f'{fn=}')
 
-        start_line = fn.start_point[0]
-        end_line = fn.end_point[0]
-        start_column = fn.start_point[1]
-        end_column = fn.end_point[1]
+        start_line_base0 = fn.start_point[0]
+        end_line_base0 = fn.end_point[0]
+        start_column_base0 = fn.start_point[1]
+        end_column_base0 = fn.end_point[1]
 
         chunk_type = "ts"  # PRN and/or set node type?
-        chunk_id = chunk_id_with_columns_for(path, chunk_type, start_line, start_column, end_line, end_column, file_hash)
+        chunk_id = chunk_id_with_columns_for(path, chunk_type, start_line_base0, start_column_base0, end_line_base0, end_column_base0, file_hash)
         text = fn.text.decode('utf-8')
         # TODO logic to split up if over a certain size (tokens)
         # TODO plug in new SIG/FUNC/etc tag header info like in test case
@@ -195,10 +199,10 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             id_int=str(chunk_id_to_faiss_id(chunk_id)),
             text=text,
             file=str(path),
-            start_line=start_line,
-            start_column=start_column,
-            end_line=end_line,
-            end_column=end_column,
+            start_line0=start_line_base0,
+            start_column0=start_column_base0,
+            end_line0=end_line_base0,
+            end_column0=end_column_base0,
             type=chunk_type,
             file_hash=file_hash,
         )

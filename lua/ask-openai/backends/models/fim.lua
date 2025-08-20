@@ -42,6 +42,7 @@ function M.gpt_oss.get_fim_chat_messages(request)
     --             table.insert(messages, ChatMessage:user(value.content))
     --         end)
     -- end
+    -- TODO! review the following for changes to other usages of rag_matches before adding it back... I did update this for base0 but there might other differences since commenting it out
     -- local rag_matches = request.rag_matches
     -- if enable_rag and rag_matches ~= nil and #rag_matches > 0 then
     --     rag_message_parts = {}
@@ -55,7 +56,8 @@ function M.gpt_oss.get_fim_chat_messages(request)
     --         :each(function(chunk)
     --             -- FYI this comes from embeddings query results... so the structure is different than other context providers
     --             -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
-    --             local file = chunk.file .. ":" .. chunk.start_line .. "-" .. chunk.end_line
+    --             ---@cast chunk LSPContextChunk
+    --             local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
     --             local code_chunk = chunk.text
     --             table.insert(rag_message_parts,
     --                 "## " .. file .. "\n"
@@ -142,6 +144,7 @@ M.qwen25coder = {
 --     M.qwen25coder.sentinel_tokens.file_sep,
 -- }
 
+---@param request OllamaFimBackend
 function M.qwen25coder.get_fim_prompt(request)
     -- FYI! see fim.md for extensive FIM notes
     local tokens = M.qwen25coder.sentinel_tokens
@@ -188,7 +191,8 @@ function M.qwen25coder.get_fim_prompt(request)
     if request.rag_matches then
         vim.iter(request.rag_matches)
             :each(function(chunk)
-                local file_name = chunk.file .. ":" .. chunk.start_line .. "-" .. chunk.end_line
+                ---@cast chunk LSPContextChunk
+                local file_name = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
                 local non_fim_file = tokens.file_sep .. file_name .. "\n" .. chunk.text
                 prompt = prompt .. non_fim_file
             end)

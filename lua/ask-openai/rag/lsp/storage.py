@@ -26,20 +26,20 @@ from lsp import fs
 
 logger = get_logger(__name__)
 
-def chunk_id_for(file_path: Path, chunk_type: str, start_line: int, end_line: int, file_hash: str) -> str:
+def chunk_id_for(file_path: Path, chunk_type: str, start_line_base0: int, end_line_base0: int, file_hash: str) -> str:
     """Generate unique chunk ID based on file path, chunk index, and file hash"""
-    chunk_str = f"{file_path}:{chunk_type}:{start_line}-{end_line}:{file_hash}"
+    chunk_str = f"{file_path}:{chunk_type}:{start_line_base0}-{end_line_base0}:{file_hash}"
     return hashlib.sha256(chunk_str.encode()).hexdigest()[:16]
 
-def chunk_id_with_columns_for(file_path: Path, chunk_type: str, start_line: int, start_column: int, end_line: int, end_column: Optional[int], file_hash: str) -> str:
+def chunk_id_with_columns_for(file_path: Path, chunk_type: str, start_line_base0: int, start_column_base0: int, end_line_base0: int, end_column_base0: Optional[int], file_hash: str) -> str:
     """Generate unique chunk ID based on file path, chunk index, and file hash"""
-    chunk_str = f"{file_path}:{chunk_type}:{start_line},{start_column}:{end_line},{end_column}:{file_hash}"
+    chunk_str = f"{file_path}:{chunk_type}:{start_line_base0},{start_column_base0}:{end_line_base0},{end_column_base0}:{file_hash}"
     return hashlib.sha256(chunk_str.encode()).hexdigest()[:16]
 
 def chunk_id_to_faiss_id(chunk_id: str) -> int:
     """Convert chunk ID to FAISS ID (signed int64)"""
     # Convert hex string directly to int and mask for signed int64
-    hash_int = int(chunk_id, 16)
+    hash_int = int(chunk_id, 16)  # hex => int
     # Mask to fit in signed int64 (0x7FFFFFFFFFFFFFFF = 2^63 - 1)
     return hash_int & 0x7FFFFFFFFFFFFFFF
 
@@ -54,10 +54,13 @@ class Chunk(BaseModel):
     id_int: str  # mostly store this for comparing manually (when reviewing the files themselves)
     text: str
     file: str
-    start_line: int
-    start_column: int
-    end_line: int
-    end_column: Optional[int]  # None means last column of end_line (i.e. line based chunking)
+
+    # explicit storage of 0 indexed positions
+    start_line0: int
+    start_column0: int
+    end_line0: int
+    end_column0: Optional[int]  # None means last column of end_line (i.e. line based chunking)
+
     type: str
     file_hash: str
 
@@ -66,6 +69,38 @@ class Chunk(BaseModel):
         # return int(self.id_int)
         # for now just recompute and skip id_int:
         return chunk_id_to_faiss_id(self.id)
+
+    # Position views
+    @property
+    def base0(self) -> "_Pos":
+        return _Pos(self, 0)  # 0-based
+
+    @property
+    def base1(self) -> "_Pos":
+        return _Pos(self, 1)  # 1-based
+
+@dataclass(frozen=True, slots=True)
+class _Pos:
+    _chunk: Chunk
+    base: int  # 0 or 1
+
+    @property
+    def start_line(self) -> int:
+        return self._chunk.start_line0 + self.base
+
+    @property
+    def end_line(self) -> int:
+        return self._chunk.end_line0 + self.base
+
+    @property
+    def start_column(self) -> int:
+        return self._chunk.start_column0 + self.base
+
+    @property
+    def end_column(self) -> int | None:
+        if self._chunk.end_column0 is None:
+            return None
+        return self._chunk.end_column0 + self.base
 
 # * FAISS type hint wrappers
 class Int64VectorIndex(Protocol):
@@ -213,10 +248,15 @@ class Datasets:
         for new_chunk in new_chunks:
             self._chunks_by_faiss_id[new_chunk.faiss_id] = new_chunk
 
-def load_chunks(chunks_json_path: Path):
+def load_chunks_by_file(chunks_json_path: Path) -> dict[str, list[Chunk]]:
     with open(chunks_json_path, 'r') as f:
         chunks_by_file = {k: [Chunk(**v) for v in v] for k, v in json.load(f).items()}
     return chunks_by_file
+
+def load_file_stats_by_file(files_json_path: Path):
+    with open(files_json_path, 'r') as f:
+        files_by_path = {k: FileStat(**v) for k, v in json.load(f).items()}
+        return files_by_path
 
 def load_prior_data(dot_rag_dir: Path, language_extension: str) -> RAGDataset:
     language_dir = dot_rag_dir / language_extension
@@ -236,7 +276,7 @@ def load_prior_data(dot_rag_dir: Path, language_extension: str) -> RAGDataset:
 
     if chunks_json_path.exists():
         try:
-            chunks_by_file = load_chunks(chunks_json_path)
+            chunks_by_file = load_chunks_by_file(chunks_json_path)
         except Exception as e:
             logger.exception(f"Warning: Could not load existing chunks: {e}")
     else:
@@ -246,8 +286,7 @@ def load_prior_data(dot_rag_dir: Path, language_extension: str) -> RAGDataset:
     files_by_path = {}
     if files_json_path.exists():
         try:
-            with open(files_json_path, 'r') as f:
-                files_by_path = {k: FileStat(**v) for k, v in json.load(f).items()}
+            files_by_path = load_file_stats_by_file(files_json_path)
         except Exception as e:
             logger.exception(f"Warning: Could not load file stats {e}")
     else:

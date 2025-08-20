@@ -28,13 +28,14 @@ local endpoint_openaicompat_chat_completions = string.match(url, "v1/chat/comple
 ---@class OllamaFimBackend
 ---@field prefix string
 ---@field suffix string
+---@field rag_matches LSPContextChunk[]
 ---@field context CurrentContext
 local OllamaFimBackend = {}
 OllamaFimBackend.__index = OllamaFimBackend
 
 ---@param prefix string
 ---@param suffix string
----@param rag_matches table
+---@param rag_matches LSPContextChunk[]
 ---@return OllamaFimBackend
 function OllamaFimBackend:new(prefix, suffix, rag_matches)
     local always_include = {
