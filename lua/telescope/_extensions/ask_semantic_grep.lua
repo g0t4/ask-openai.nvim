@@ -288,11 +288,11 @@ local function semantic_grep_current_filetype_picker(opts)
                 -- FYI `:h telescope.make_entry`
 
                 -- * match example
-                --     end_line = 87,
+                --     end_line0 = 87,
                 --     file = "<ABS PATH>"
                 --     rank = 2,
                 --     score = 0.71245551109314,
-                --     start_line = 76,
+                --     start_line0 = 76,
                 --     text = "\nfunction M.setup_telescope_picker()\n...",
                 --     type = "lines"
 
