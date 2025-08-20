@@ -167,7 +167,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     with logger.timer('parse_ts ' + str(path)):
         tree = parser.parse(source_bytes)
 
-    def collect_key_nodes(node: Node) -> list[Node]:
+    def collect_key_nodes(node: Node, collected_parent: bool = False) -> list[Node]:
         nodes: list[Node] = []
 
         # TODO should I have a set per language that I keep?
@@ -175,19 +175,24 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # lua: anonymous functions
             # python: named functions
             nodes.append(node)
+            collected_parent = True
         elif node.type == "function_definition_statement":
             # lua: named functions
             nodes.append(node)
+            collected_parent = True
         elif node.type == "class_definition":
             # python
             nodes.append(node)
-        else:
+            collected_parent = True
+        elif not collected_parent:
+            # only dump if a parent hasn't been collected
+            # for example, lines from a function shouldn't show up as skipped
             print(f'node type not handled: {node.type}')
             print(node.text)
             print()
 
         for child in node.children:
-            nodes.extend(collect_key_nodes(child))
+            nodes.extend(collect_key_nodes(child, collected_parent))
         return nodes
 
     nodes = collect_key_nodes(tree.root_node)
