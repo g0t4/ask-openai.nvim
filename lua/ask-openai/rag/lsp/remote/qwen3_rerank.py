@@ -10,9 +10,9 @@ from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM
 
 def format_rerank_instruction(instruction, query, doc):
     if instruction is None:
-        instruction = 'Given a web search query, retrieve relevant passages that answer the query'
-    output = "<Instruct>: {instruction}\n<Query>: {query}\n<Document>: {doc}".format(instruction=instruction,query=query, doc=doc)
-    return output
+        instruction = 'Given a user query and a document, determine if the document contains an answer to the query.'
+    # NOTE layout is optimized for cache reuse! instruction/query are constant across a batch of documents
+    return f"<Instruct>: {instruction}\n<Query>: {query}\n<Document>: {doc}"
 
 def process_inputs(pairs):
     inputs = tokenizer(
