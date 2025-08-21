@@ -58,13 +58,13 @@ def handle_query(message, model_wrapper, top_k=3, skip_same_file=False):
 
     instruct = message.get("instruct")
 
-    q_vec = model_wrapper.encode_query(text, instruct)
+    query_vector = model_wrapper.encode_query(text, instruct)
     if skip_same_file:
         # grab 3x the docs so you can skip same file matches
         top_k_padded = top_k * 3
     else:
         top_k_padded = top_k
-    scores, ids = dataset.index.search(q_vec, top_k_padded)
+    scores, ids = dataset.index.search(query_vector, top_k_padded)
 
     logger.pp_debug('scores', scores)
     logger.pp_debug('ids', ids)
