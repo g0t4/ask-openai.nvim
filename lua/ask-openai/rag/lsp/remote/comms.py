@@ -64,9 +64,9 @@ class EmbedClient():
         # inner list is hidden dimension (vector size) of float - i.e. 1024 with Qwen3-Embedding-0.6B
         return response['embeddings']
 
-    def rerank(self, inputs: RerankRequest) -> list[float] | None:
-        inputs.type = 'rerank'
-        send_len_then_msg(self.conn, asdict(inputs))
+    def rerank(self, request: RerankRequest) -> list[float] | None:
+        request.type = 'rerank'
+        send_len_then_msg(self.conn, asdict(request))
         response = recv_len_then_msg(self.conn)
         if response is None:
             logger.warning(f"missing {response=}")
