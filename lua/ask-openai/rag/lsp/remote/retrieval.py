@@ -16,6 +16,29 @@ class RankedMatch:
     embed_position: int = -1
     rerank_position: int = -1
 
+# TODO rename to LSPRankedMatch
+# TODO client side rename too
+@dataclass
+class LSPContextChunk:
+    text: str
+    file: str
+    # using _base0 b/c this is serialized to clients so it must be clear as base0, clients can wrap and add .base0.start_line or .base1.start_line if desired
+    # also server side I am not doing much with this, mostly just serialize responses to client so I don't need easy access to base1 on this type
+    start_line_base0: int
+    start_column_base0: int
+    end_line_base0: int
+    end_column_base0: int | None
+    type: str
+    signature: str
+
+    # score from 0 to 1
+    embed_score: float = -1
+    rerank_score: float = -1
+
+    # order relative to other matches
+    embed_position: int = -1
+    rerank_position: int = -1
+
 def semantic_grep(query: str, instruct: str | None = None) -> list[RankedMatch]:
     if instruct is None:
         instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
