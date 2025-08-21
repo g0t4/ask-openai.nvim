@@ -32,26 +32,39 @@ if __name__ == "__main__":
     scores, ids = dataset.index.search(query_vector, top_k)
     ids = ids[0]
     scores = scores[0]
+
+    # first gather all chunks and their initial scores
+    chunk_objs = []
     for id, embed_score in zip(ids, scores):
-        print(f'{id}/{embed_score}')
-        # TODO! batch the rerank, for now lets start w/ just one at a time
-        # TODO! SORT TOO
-        # TODO! SHOW ORDER BEFORE and AFTER compare on each
         chunk = datasets.get_chunk_by_faiss_id(id)
         if chunk is None:
             raise Exception("missing chunk?!" + id)
+        chunk_objs.append({"chunk": chunk, "embed_score": embed_score})
 
-        with EmbedClient() as client:  # TODO reuse?
-            # TODO inject SIG for better re-ranking?
-            docs = [chunk.text]
+    # sort by length of chunk.text
+    chunk_objs.sort(key=lambda x: len(x["chunk"].text))
 
+    # batch size for EmbedClient
+    BATCH_SIZE = 8
+
+    # iterate over batches
+    for i in range(0, len(chunk_objs), BATCH_SIZE):
+        batch = chunk_objs[i:i + BATCH_SIZE]
+        docs = [obj["chunk"].text for obj in batch]
+
+        with EmbedClient() as client:
             msg = {"instruct": instruct, "query": query, "docs": docs}
             scores = client.rerank(msg)
-            rich.print(f'RR {scores=}')
-            assert scores
-            embed_score = scores[0]
-            # if score > 0.99:
-            print(chunk.text)
+            if not scores:
+                raise Exception("rerank returned no scores")
+            # assign new scores back to objects
+            for obj, new_score in zip(batch, scores):
+                obj["embed_score"] = new_score
+
+    # after reranking, you can print or process sorted results
+    for obj in chunk_objs:
+        print(f'{obj["chunk"].id}/{obj["embed_score"]}')
+        print(obj["chunk"].text)
 
 #     # TODO rerank results
 #
