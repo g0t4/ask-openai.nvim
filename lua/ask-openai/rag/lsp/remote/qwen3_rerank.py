@@ -44,6 +44,8 @@ def move_to_gpu(tensors, device):
     return tensors
 
 def tokenize_docs(_instruct: str, _query: str, _documents: list[str]):
+    print(f"{instruct=}")
+
     if _instruct is None or _instruct.strip() == "":
         raise ValueError("instruct must be provided")
         # TODO! move to my calling code or a func below
