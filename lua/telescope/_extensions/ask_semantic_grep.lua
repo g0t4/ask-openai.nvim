@@ -33,9 +33,13 @@ function _semantic_grep(lsp_query_message_args, lsp_buffer_number, process_resul
 
     lsp_buffer_number = lsp_buffer_number or 0
 
-    -- TODO refine instructions
-    lsp_query_message_args.instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope" -- performs best vs:
-    -- message.instruct = "Help the user find code and navigate the codebase, via a semantic grep telescope picker in neovim"
+    -- * instruct
+    -- FYI! sync any changes to instruct to the respective python re-ranking code
+    lsp_query_message_args.instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope" -- * first instruct, well performing with embeddings alone!
+    --
+    -- TODO try this instead after I geet a feel for re-rank with my original instruct:
+    --   instruct_aka_task = "Given a user Query to find code in a repository, retrieve the most relevant Documents"
+    --   PRN tweak/evaluate performance of different instruct/task descriptions?
 
     client_request_ids, cancel_all_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
             command = "semantic_grep",

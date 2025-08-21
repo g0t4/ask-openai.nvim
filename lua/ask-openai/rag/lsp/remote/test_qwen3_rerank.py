@@ -23,12 +23,10 @@ if __name__ == "__main__":
         with EmbedClient() as client:
             rx_embeddings = client.encode({'texts': query})
 
-    # TODO! I think I need a better instruct? does this convey yes/no?
-    # TODO! centralize instructs and query text so I always use the same on encode and rerank
-    # instruct = 'Does the document answer the user query?'
-    instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
+    # FYI! sync any changes to instruct to the respective python re-ranking code
+    instruct_aka_task = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
 
-    query_vector = encode_query(query, instruct)
+    query_vector = encode_query(query, instruct_aka_task)
 
     # * load datasets
     dot_rag_dir = Path("~/repos/github/g0t4/ask-openai.nvim/.rag").expanduser().absolute()
@@ -61,7 +59,7 @@ if __name__ == "__main__":
         docs = [c["chunk"].text for c in batch]
 
         with EmbedClient() as client:
-            msg = {"instruct": instruct, "query": query, "docs": docs}
+            msg = {"instruct": instruct_aka_task, "query": query, "docs": docs}
             scores = client.rerank(msg)
             if not scores:
                 raise Exception("rerank returned no scores")
