@@ -91,7 +91,7 @@ def handle_query(message, model_wrapper, top_k=3, skip_same_file=False):
             continue
         logger.debug(f"matched {chunk.file}:base0-L{chunk.base0.start_line}-{chunk.base0.end_line}")
 
-        match = LSPContextChunk(
+        match = LSPRankedMatch(
             text=chunk.text,
             file=chunk.file,
             start_line_base0=chunk.base0.start_line,

@@ -16,10 +16,8 @@ class RankedMatch:
     embed_rank: int = -1
     rerank_rank: int = -1
 
-# TODO rename to LSPRankedMatch
-# TODO client side rename too
 @dataclass
-class LSPContextChunk:
+class LSPRankedMatch:
     text: str
     file: str
     # using _base0 b/c this is serialized to clients so it must be clear as base0, clients can wrap and add .base0.start_line or .base1.start_line if desired
