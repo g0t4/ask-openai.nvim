@@ -36,15 +36,17 @@ def validate_rag_indexes():
 # PRN make top_k configurable (or other params)
 def handle_query(message, model_wrapper, top_k=3, skip_same_file=False):
 
-    # * validate fields
+    # * parse and validate request parameters
     query = message.get("query")
     if query is None or len(query) == 0:
         logger.error("[red bold][ERROR] No query provided")
         return {"failed": True, "error": "No query provided"}
     vim_filetype: str | None = message.get("vim_filetype")
     current_file_abs: str = message.get("current_file_absolute_path")
+    instruct = message.get("instruct")
 
-    semantic_grep(query=query, current_file_abs=current_file_abs, vim_filetype=vim_filetype)
+    # * NEW SEMANTIC GREP PIPELINE
+    semantic_grep(query=query, instruct=instruct, current_file_abs=current_file_abs, vim_filetype=vim_filetype)
 
     # * load dataset
     dataset = datasets.for_file(current_file_abs, vim_filetype=vim_filetype)
@@ -59,8 +61,6 @@ def handle_query(message, model_wrapper, top_k=3, skip_same_file=False):
     #   AHH MAN... skip match in same file is dominating results!
     #     can I limit initial query to skip by id of chunks in same file?
     #  PRN later, add RE-RANK!
-
-    instruct = message.get("instruct")
 
     query_vector = model_wrapper.encode_query(query, instruct)
     if skip_same_file:
