@@ -14,6 +14,12 @@ def recv_exact(sock, content_size):
         buf += chunk
     return buf
 
+# https://docs.python.org/3/library/struct.html#format-characters
+#   I = unsigned int (4 bytes)
+#   c = char (1 byte)
+# https://docs.python.org/3/library/struct.html#struct-alignment
+#   ! = network order
+
 def recv_len_then_msg(conn):
     msg_len_packed = recv_exact(conn, 4)
     msg_len = struct.unpack('!I', msg_len_packed)[0]
