@@ -65,11 +65,12 @@ documents = [
     "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
 ]
 
-pairs = [format_rerank_instruction(task, query, doc) for query, doc in zip(queries, documents)]
+def rerank(_task: str, _query: str, documents: list[str]) -> list[float]:
+    # for now assume task and query are constant for all documents, if I need mixed batching then I can address that later...
+    # and actually I should encourage batching for same task/query else cache will be invalidated when task/query change
+    prompts = [format_rerank_instruction(_task, _query, doc) for doc in documents]
 
-# Tokenize the input texts
-inputs = process_inputs(pairs)
-scores = compute_logits(inputs)
+    inputs = tokenize(prompts)
+    scores = compute_logits(inputs)
 
 print("scores: ", scores)
-
