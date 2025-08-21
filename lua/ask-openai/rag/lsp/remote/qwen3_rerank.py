@@ -52,9 +52,8 @@ def tokenize_docs(_instruct: str, _query: str, _documents: list[str]):
     common_prefix_tokens = tokenizer.encode(common_prefix, add_special_tokens=False)
 
     # NOTE layout is optimized for cache reuse! instruction/query are constant across a batch of documents
-    messages = [common_prefix + doc for doc in _documents]
     messages_tokens = tokenizer(
-        messages,
+        _documents,
         padding=False,
         truncation='longest_first',
         return_attention_mask=False,
