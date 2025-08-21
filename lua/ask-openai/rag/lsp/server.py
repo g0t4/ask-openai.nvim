@@ -41,6 +41,13 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
 def tell_client_to_shut_that_shit_down_now():
     server.send_notification("fuu/no_dot_rag__do_the_right_thing_wink")
 
+@server.feature(types.CANCEL_REQUEST)
+def on_request_cancel(_: LanguageServer, _params: types.CancelParams):
+    # TODO need async handlers to receive this else GIL blocked by model inference...
+    # but it would be nice if between inference runs, if all other canceled requests are actually canceled that are still pending
+    # that way when I type in the prompt it doesn't queue up all previous chars... I want those all stopped and right now it seems to hold a queue of all previous requests and processes them in order
+    logger.error(f"CANCEL REQUESTED for {_params.id=}")
+
 @server.feature(types.INITIALIZED)
 def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #  FYI server is managed by the client!
