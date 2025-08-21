@@ -51,6 +51,10 @@ class EmbedClient():
 
         return rx_msg['embeddings']
 
+    def rerank(self, inputs: dict[str, str]):
+        inputs['type'] = 'rerank'
+        pass
+
     def close(self):
         self.conn.close()
 
