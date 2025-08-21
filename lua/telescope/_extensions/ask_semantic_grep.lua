@@ -198,6 +198,9 @@ local function semantic_grep_current_filetype_picker(opts)
         separator = " ",
         items = {
             { width = 5 },
+            { width = 5 },
+            { width = 5 },
+            { width = 5 },
             { width = 1 },
             { width = 60 },
             { width = 1 },
@@ -210,7 +213,8 @@ local function semantic_grep_current_filetype_picker(opts)
         -- FYI hl groups
         -- ~/.local/share/nvim/lazy/telescope.nvim/plugin/telescope.lua:11-92 i.e. TelescopeResultsIdentifier
 
-        local score_percent = string.format("%.1f%%", entry.match.embed_score * 100)
+        local embed_score_percent = string.format("%.1f%%", entry.match.embed_score * 100)
+        local rerank_score_percent = string.format("%.1f%%", entry.match.rerank_score * 100)
         -- use percent_str where needed, e.g. in the display text
         local icon, icon_hlgroup = utils.get_devicons(entry.filename, false)
         local coordinates = ":"
@@ -246,11 +250,14 @@ local function semantic_grep_current_filetype_picker(opts)
         local chunk_type = get_icon_for_chunk_type(entry.match.type)
 
         return displayer {
-            { score_percent, "TelescopeResultsNumber" },
-            { icon,          icon_hlgroup },
+            { rerank_score_percent, "TelescopeResultsNumber" },
+            { match.rerank_rank,          "TelescopeResultsNumber" },
+            { embed_score_percent,  "TelescopeResultsNumber" },
+            { match.embed_rank,           "TelescopeResultsNumber" },
+            { icon,                 icon_hlgroup },
             { line },
             { chunk_type },
-            { contents,      "TelescopeResultsLine" },
+            { contents,             "TelescopeResultsLine" },
         }
     end
 
