@@ -65,7 +65,6 @@ class EmbedClient():
         return response['embeddings']
 
     def rerank(self, request: RerankRequest) -> list[float] | None:
-        request.type = 'rerank'
         send_len_then_msg(self.conn, asdict(request))
         response = recv_len_then_msg(self.conn)
         if response is None:
