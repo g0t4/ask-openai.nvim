@@ -176,29 +176,67 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # python: named functions
             nodes.append(node)
             collected_parent = True
-        elif node.type == "function_definition_statement":
-            # lua: named functions
+        elif node.type == "local_function_definition_statement" \
+            or node.type == "function_definition_statement":
+            # lua: named functions (local vs global)
+            # FOR lua functions, grab --- triple dash comments before function (until blank line)
             nodes.append(node)
             collected_parent = True
         elif node.type == "class_definition":
             # python
             nodes.append(node)
             collected_parent = True
-        elif not collected_parent:
+        elif not collected_parent and node.type.find('function') >= 0:
             # only dump if a parent hasn't been collected
             # for example, lines from a function shouldn't show up as skipped
             print(f'node type not handled: {node.type}')
-            print(node.text)
+            print(str(node.text).replace("\\n", "\n"))
             print()
 
         for child in node.children:
             nodes.extend(collect_key_nodes(child, collected_parent))
         return nodes
 
-    nodes = collect_key_nodes(tree.root_node)
+    def debug_uncovered_lines(tree, source_bytes, key_nodes):
+        """
+        Given a tree-sitter tree and the raw source bytes, print any lines that are not
+        covered by any node returned by collect_key_nodes(tree.root_node).
+        """
+
+        # Build a set of line numbers that are covered by any node.
+        covered = set()
+        for node in key_nodes:
+            start_line = node.start_point[0]
+            end_line = node.end_point[0]  # inclusive
+            for ln in range(start_line, end_line + 1):
+                covered.add(ln)
+
+        source_lines = source_bytes.splitlines()
+
+        uncovered = [ln for ln in range(len(source_lines)) if ln not in covered]
+
+        if uncovered:
+            print("Uncovered lines:")
+            last_ln = -1
+            for ln in uncovered:
+                if ln - last_ln > 1:
+                    print()  # divide non-contiguous ranges
+
+                # Show line number (1‑based) and content
+                print(f"{ln+1:4d}: {source_lines[ln].decode('utf-8', errors='replace')}")
+                last_ln = ln
+
+        else:
+            print("All lines are covered by key nodes.")
+
+    key_nodes = collect_key_nodes(tree.root_node)
+    debug_uncovered_lines(tree, source_bytes, key_nodes)
+
+    # This will list every line that does not fall inside any of the key nodes,
+    # which is handy for inspecting stray or unparsed sections of the file.
 
     chunks = []
-    for fn in nodes:
+    for fn in key_nodes:
         # print(f'{fn=}')
 
         start_line_base0 = fn.start_point[0]
