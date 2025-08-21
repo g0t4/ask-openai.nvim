@@ -5,13 +5,16 @@ from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM
 def format_instruction(instruction, query, doc):
     if instruction is None:
         instruction = 'Given a web search query, retrieve relevant passages that answer the query'
-    output = "<Instruct>: {instruction}\n<Query>: {query}\n<Document>: {doc}".format(instruction=instruction,query=query, doc=doc)
+    output = "<Instruct>: {instruction}\n<Query>: {query}\n<Document>: {doc}".format(instruction=instruction, query=query, doc=doc)
     return output
 
 def process_inputs(pairs):
     inputs = tokenizer(
-        pairs, padding=False, truncation='longest_first',
-        return_attention_mask=False, max_length=max_length - len(prefix_tokens) - len(suffix_tokens)
+        pairs,
+        padding=False,
+        truncation='longest_first',
+        return_attention_mask=False,
+        max_length=max_length - len(prefix_tokens) - len(suffix_tokens),
     )
     for i, ele in enumerate(inputs['input_ids']):
         inputs['input_ids'][i] = prefix_tokens + ele + suffix_tokens
@@ -45,7 +48,8 @@ suffix_tokens = tokenizer.encode(suffix, add_special_tokens=False)
 
 task = 'Given a web search query, retrieve relevant passages that answer the query'
 
-queries = ["What is the capital of China?",
+queries = [
+    "What is the capital of China?",
     "Explain gravity",
 ]
 
@@ -61,4 +65,3 @@ inputs = process_inputs(pairs)
 scores = compute_logits(inputs)
 
 print("scores: ", scores)
-
