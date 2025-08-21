@@ -35,6 +35,8 @@ if __name__ == "__main__":
     for id, score in zip(ids, scores):
         print(f'{id}/{score}')
         # TODO! batch the rerank, for now lets start w/ just one at a time
+        # TODO! SORT TOO
+        # TODO! SHOW ORDER BEFORE and AFTER compare on each
         chunk = datasets.get_chunk_by_faiss_id(id)
         if chunk is None:
             raise Exception("missing chunk?!" + id)
