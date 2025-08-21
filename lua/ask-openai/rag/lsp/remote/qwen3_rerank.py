@@ -35,19 +35,19 @@ def move_to_gpu(tensors, device):
         tensors[key] = tensors[key].to(device)
     return tensors
 
-def tokenize(user_message):
-    user_message_tokens = tokenizer(
-        user_message,
+def tokenize(messages):
+    messages_tokens = tokenizer(
+        messages,
         padding=False,
         truncation='longest_first',
         return_attention_mask=False,
         max_length=max_user_tokens,
     )
-    for i, message_tokens in enumerate(user_message_tokens['input_ids']):
+    for i, message_tokens in enumerate(messages_tokens['input_ids']):
         # insert user message contents into the chat thread template (this way I don't have to tokenize the constant parts repeatedly
-        user_message_tokens['input_ids'][i] = chat_thread_prefix_tokens + message_tokens + chat_thread_suffix_tokens
-    user_message_tokens = tokenizer.pad(user_message_tokens, padding=True, return_tensors="pt", max_length=max_length)
-    return move_to_gpu(user_message_tokens, model.device)
+        messages_tokens['input_ids'][i] = chat_thread_prefix_tokens + message_tokens + chat_thread_suffix_tokens
+    messages_tokens = tokenizer.pad(messages_tokens, padding=True, return_tensors="pt", max_length=max_length)
+    return move_to_gpu(messages_tokens, model.device)
 
 @torch.no_grad()
 def compute_logits(inputs, **kwargs):
@@ -74,9 +74,10 @@ def rerank(_task: str, _query: str, documents: list[str]) -> list[float]:
     # TODO don't tokenize query every time! just one time
     #   probably combine format into tokenize and let that all happen in there
     messages = [format_rerank_instruction(_task, _query, doc) for doc in documents]
-    chat_thread_tokens = tokenize(messages)
+    threads_tokens = tokenize(messages)
 
-    scores = compute_logits(chat_thread_tokens)
+    scores = compute_logits(threads_tokens)
+
     return scores
 
 scores = rerank(task, query1, documents)
