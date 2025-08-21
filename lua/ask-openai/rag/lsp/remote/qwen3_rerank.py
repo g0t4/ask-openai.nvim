@@ -57,10 +57,8 @@ suffix_tokens = tokenizer.encode(suffix, add_special_tokens=False)
 
 task = 'Given a web search query, retrieve relevant passages that answer the query'
 
-queries = [
-    "What is the capital of China?",
-    "Explain gravity",
-]
+query1 = "What is the capital of China?"
+query2 = "Explain gravity"
 
 documents = [
     "The capital of China is Beijing.",
@@ -74,5 +72,8 @@ def rerank(_task: str, _query: str, documents: list[str]) -> list[float]:
 
     inputs = tokenize(prompts)
     scores = compute_logits(inputs)
+    return scores
 
+scores = rerank(task, query1, documents)
+scores = rerank(task, query2, documents)
 print("scores: ", scores)
