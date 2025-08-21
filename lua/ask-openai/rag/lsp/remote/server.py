@@ -78,7 +78,7 @@ def handle():
             response = {'scores': scores}
 
             def after_send():
-                rich.print(f"[blue]encoded {docs.shape[0]} docs of TODO ____ tokens in {encode_elapsed_ms:.3f} ms")
+                rich.print(f"[blue]encoded {len(docs)} docs of TODO ____ tokens in {encode_elapsed_ms:.3f} ms")
 
         else:
             raise ValueError(f'unsupported {request_type=}')
