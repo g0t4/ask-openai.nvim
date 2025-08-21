@@ -27,11 +27,23 @@ def process_inputs(pairs):
 @torch.no_grad()
 def compute_logits(inputs, **kwargs):
     batch_scores = model(**inputs).logits[:, -1, :]
+    print(f"\nbatch_scores: {batch_scores}")
+    print(f'  {type(batch_scores)=} {batch_scores.shape} {batch_scores.dtype}')
     true_vector = batch_scores[:, token_true_id]
+    print(f"\ntrue_vector: {true_vector}")
+    print(f'  {type(true_vector)=} {true_vector.shape} {true_vector.dtype}')
     false_vector = batch_scores[:, token_false_id]
+    print(f"\nfalse_vector: {false_vector}")
+    print(f'  {type(false_vector)=} {false_vector.shape} {false_vector.dtype}')
     batch_scores = torch.stack([false_vector, true_vector], dim=1)
-    batch_scores = torch.nn.functional.log_softmax(batch_scores, dim=1)
-    scores = batch_scores[:, 1].exp().tolist()
+    print(f"\nbatch_scores (stacked): {batch_scores}")
+    print(f'  {type(batch_scores)=} {batch_scores.shape} {batch_scores.dtype}')
+    batch_scores_softmax = torch.nn.functional.log_softmax(batch_scores, dim=1)
+    print(f"\nbatch_scores_softmax: {batch_scores_softmax}")
+    print(f'  {type(batch_scores_softmax)=} {batch_scores_softmax.shape} {batch_scores_softmax.dtype}')
+    scores = batch_scores_softmax[:, 1].exp().tolist()
+    print(f"\nscores: {scores}")
+    print(f'  {type(scores)=} {type(scores[0])}')
     return scores
 
 tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-Reranker-0.6B", padding_side='left')
@@ -65,6 +77,17 @@ pairs = [format_instruction(task, query, doc) for query, doc in zip(queries, doc
 rev_pairs = [format_instruction(task, query, doc) for query, doc in zip(reversed(queries), documents)]
 pairs += rev_pairs
 print("pairs", pairs)
+
+# pairs = [format_instruction(
+#     task,
+#     "What are the odds of flipping a coin?",
+#     "50% heads and 50% tails",
+# )]
+# pairs += [format_instruction(
+#     task,
+#     "What are the odds of flipping a coin?",
+#     "1% heads and 99% tails",
+# )]
 
 # Tokenize the input texts
 inputs = process_inputs(pairs)
