@@ -22,6 +22,6 @@ if __name__ == "__main__":
 
     # * dump details
     for idx, c in enumerate(chunks):
-        rich.print(f'#{c.rerank_position} / {c.chunk.id}: rerank={format_score_percent(c.rerank_score)} embed={format_score_percent(c.embed_score)}/#{c.embed_position}')
+        rich.print(f'#{c.rerank_rank} / {c.chunk.id}: rerank={format_score_percent(c.rerank_score)} embed={format_score_percent(c.embed_score)}/#{c.embed_rank}')
         if logger.isEnabledForDebug():
             print(c.chunk.text)

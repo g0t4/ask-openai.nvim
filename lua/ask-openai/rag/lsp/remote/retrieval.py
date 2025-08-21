@@ -13,8 +13,8 @@ class RankedMatch:
     rerank_score: float = -1
 
     # order relative to other matches
-    embed_position: int = -1
-    rerank_position: int = -1
+    embed_rank: int = -1
+    rerank_rank: int = -1
 
 # TODO rename to LSPRankedMatch
 # TODO client side rename too
@@ -36,8 +36,8 @@ class LSPContextChunk:
     rerank_score: float = -1
 
     # order relative to other matches
-    embed_position: int = -1
-    rerank_position: int = -1
+    embed_rank: int = -1
+    rerank_rank: int = -1
 
 def semantic_grep(query: str, instruct: str | None = None) -> list[RankedMatch]:
     if instruct is None:
@@ -68,8 +68,9 @@ def semantic_grep(query: str, instruct: str | None = None) -> list[RankedMatch]:
         chunks.append(RankedMatch(
             chunk=chunk,
             embed_score=embed_score,
-            embed_position=idx,
+            embed_rank=idx,
         ))
+    # TODO! do I need to sort by embed_score first? IIRC these are sorted in order BUT DOUBLE CHEK
 
     # * sort len(chunk.text)
     # so similar lengths are batched together given longest text (in tokens) dictates sequence length
@@ -93,9 +94,9 @@ def semantic_grep(query: str, instruct: str | None = None) -> list[RankedMatch]:
     # * sort by rerank score
     chunks.sort(key=lambda c: c.rerank_score, reverse=True)
 
-    # * set rerank_positions
-    # FYI sort by rerank_score BEFORE computing rerank_position
+    # * set rerank_ranks
+    # FYI sort by rerank_score BEFORE computing rerank_rank
     for idx, c in enumerate(chunks):
-        c.rerank_position = idx
+        c.rerank_rank = idx
 
     return chunks
