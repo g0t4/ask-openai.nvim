@@ -118,6 +118,7 @@ def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[s
                 end_column0=None,
                 type=chunk_type,
                 file_hash=file_hash,
+                signature="", # TODO
             )
 
     return list(iter_chunks())
@@ -266,6 +267,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             end_column0=end_column_base0,
             type=chunk_type,
             file_hash=file_hash,
+            signature="",
         )
 
         chunks.append(chunk)

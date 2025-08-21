@@ -64,6 +64,10 @@ class Chunk(BaseModel):
     type: str
     file_hash: str
 
+    # sig is two-fold: for re-ranker and for telescope picker results list
+    # prefer one-liner
+    signature: str | None = None
+
     @property
     def faiss_id(self):
         # return int(self.id_int)
