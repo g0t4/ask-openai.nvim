@@ -2,16 +2,29 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
+from lsp.helpers import auto_device
+
 # FYI links:
 #   Qwen3 paper w.r.t. Embedding and Reranking: https://arxiv.org/pdf/2506.05176
 #   hf repos:
 #      0.6B: https://huggingface.co/Qwen/Qwen3-Reranker-0.6B
 #      0.6B: https://huggingface.co/Qwen/Qwen3-Embedding-0.6B
 
+device = auto_device()
+if device.type == 'cuda':
+    # TODO would bfloat16 work better on 5090s?
+    model_kwargs = dict(
+        torch_dtype=torch.float16,
+        attn_implementation="flash_attention_2",  # cuda only
+        device_map="auto",  # DO NOT also call model.to(device) too!, must let accelerate handle placement
+    )
+    # TODO test timing of shared vs not sharded (w/ device_map="auto") on dual 5090s... I doubt it helps materially, if not maybe just go with model.to("cuda") to use one only?
+else:
+    raise ValueError("ONLY setup for CUDA device")
+
 tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-Reranker-0.6B", padding_side='left')
-# model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-Reranker-0.6B").eval()
 # We recommend enabling flash_attention_2 for better acceleration and memory saving.
-model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-Reranker-0.6B", torch_dtype=torch.float16, attn_implementation="flash_attention_2").cuda().eval()
+model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-Reranker-0.6B", **model_kwargs).cuda().eval()
 token_false_id = tokenizer.convert_tokens_to_ids("no")
 token_true_id = tokenizer.convert_tokens_to_ids("yes")
 #
