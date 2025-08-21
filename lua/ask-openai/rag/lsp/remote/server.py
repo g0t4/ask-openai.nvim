@@ -67,7 +67,7 @@ def handle():
             response = {'embeddings': embeddings.tolist()}
 
             def after_send():
-                rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_timer.elapsed_ms():.3f} ms")
+                rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_elapsed_ms:.3f} ms")
                 dump_token_details(input_ids, texts)
 
         elif request_type == 'rerank':
@@ -78,10 +78,12 @@ def handle():
             response = {'scores': scores}
 
             def after_send():
-                pass
+                rich.print(f"[blue]encoded {docs.shape[0]} docs of TODO ____ tokens in {encode_elapsed_ms:.3f} ms")
 
         else:
             raise ValueError(f'unsupported {request_type=}')
+
+    encode_elapsed_ms = encode_timer.elapsed_ms()
 
     send_len_then_msg(conn, response)
     conn.close()
