@@ -20,7 +20,7 @@ def recv_exact(sock, content_size):
 # https://docs.python.org/3/library/struct.html#struct-alignment
 #   ! = network order
 
-def recv_len_then_msg(conn):
+def recv_len_then_msg(conn: socket.socket) -> dict[str, str]:
     msg_len_packed = recv_exact(conn, 4)
     msg_len = struct.unpack('!I', msg_len_packed)[0]
     if not msg_len:
@@ -29,7 +29,7 @@ def recv_len_then_msg(conn):
     msg_packed = recv_exact(conn, msg_len)
     return msgpack.unpackb(msg_packed, raw=False)
 
-def send_len_then_msg(conn, msg):
+def send_len_then_msg(conn: socket.socket, msg: dict[str, str]):
     msg_packed = msgpack.packb(msg, use_bin_type=True)
     msg_len = len(msg_packed)
     msg_len_packed = struct.pack('!I', msg_len)  # 4-byte network byte order
@@ -41,7 +41,7 @@ class EmbedClient():
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.addy = addy
 
-    def encode(self, inputs):
+    def encode(self, inputs: dict[str, str]):
         send_len_then_msg(self.conn, inputs)
         rx_msg = recv_len_then_msg(self.conn)
         if rx_msg is None:
