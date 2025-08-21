@@ -73,12 +73,14 @@ def rerank(_task: str, _query: str, documents: list[str]) -> list[float]:
 
     # TODO don't tokenize query every time! just one time
     #   probably combine format into tokenize and let that all happen in there
-    messages = [format_rerank_instruction(_task, _query, doc) for doc in documents]
-    threads_tokens = tokenize(messages)
+    def tokenize_outer(_task, _query, documents):
+        messages = [format_rerank_instruction(_task, _query, doc) for doc in documents]
+        threads_tokens = tokenize(messages)
 
-    scores = compute_logits(threads_tokens)
+        scores = compute_logits(threads_tokens)
+        return scores
 
-    return scores
+    return tokenize_outer(_task, _query, documents)
 
 scores = rerank(task, query1, documents)
 scores = rerank(task, query2, documents)
