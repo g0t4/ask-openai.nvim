@@ -86,6 +86,7 @@ function M.context_query_rewrites(user_prompt, code_context, callback)
     -- FYI use user message for now as Instruct and selected code as the Query
     -- local rewrite_instruct = "Modify the code as requested"
     local query = code_context
+    -- TODO is this how I want rewrites to work? for the RAG query? might be fine actually
     local instruct = user_prompt
     return M._context_query(query, instruct, callback)
 end
@@ -106,7 +107,7 @@ function M._context_query(query, instruct, callback)
     ---@type LSPRagQueryRequest
     local lsp_rag_request = {
         query = query,
-        instruct = instruct, -- let the server side handle whether or not to include instructions and errors
+        instruct = instruct,
         current_file_absolute_path = files.get_current_file_absolute_path(),
         vim_filetype = vim.bo.filetype,
     }

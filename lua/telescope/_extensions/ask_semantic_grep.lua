@@ -186,6 +186,7 @@ local function semantic_grep_current_filetype_picker(opts)
     -- * this runs before picker opens, so you can gather context, i.e. current filetype, its LSP, etc
     ---@type LSPRagQueryRequest
     local lsp_rag_request = {
+        -- instruct => let server set the Instruct for semantic_grep (would be "Semantic grep of relevant code ...")
         query = "",
         vim_filetype = vim.o.filetype,
         current_file_absolute_path = files.get_current_file_absolute_path(),
