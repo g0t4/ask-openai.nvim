@@ -86,7 +86,7 @@ def rerank(_instruct: str, _query: str, _documents: list[str]) -> list[float]:
     tokenized_threads = tokenize_docs(_instruct, _query, _documents)
     return compute_relevance_scores(tokenized_threads)
 
-if __name__ == "__main__":
+def main():
     from numpy.testing import assert_array_almost_equal
 
     # * test data
@@ -110,3 +110,6 @@ if __name__ == "__main__":
     expected_scores2 = [4.947185516357422e-05, 0.99951171875]
     assert_array_almost_equal(actual_scores2, expected_scores2, decimal=3)
     print("All tests passed")
+
+if __name__ == "__main__":
+    main()
