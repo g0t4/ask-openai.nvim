@@ -10,6 +10,9 @@ from lsp.helpers import auto_device
 #      0.6B: https://huggingface.co/Qwen/Qwen3-Reranker-0.6B
 #      0.6B: https://huggingface.co/Qwen/Qwen3-Embedding-0.6B
 
+model_path = "Qwen/Qwen3-Reranker-0.6B"
+tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side='left')
+
 device = auto_device()
 if device.type == 'cuda':
     # TODO would bfloat16 work better on 5090s?
@@ -22,8 +25,6 @@ if device.type == 'cuda':
 else:
     raise ValueError("ONLY setup for CUDA device")
 
-model_path = "Qwen/Qwen3-Reranker-0.6B"
-tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side='left')
 # We recommend enabling flash_attention_2 for better acceleration and memory saving.
 model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs).cuda().eval()
 token_false_id = tokenizer.convert_tokens_to_ids("no")
