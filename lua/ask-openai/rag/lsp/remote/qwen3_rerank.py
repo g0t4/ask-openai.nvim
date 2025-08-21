@@ -8,7 +8,7 @@ from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM
 #      0.6B: https://huggingface.co/Qwen/Qwen3-Reranker-0.6B
 #      0.6B: https://huggingface.co/Qwen/Qwen3-Embedding-0.6B
 
-def format_instruction(instruction, query, doc):
+def format_rerank_instruction(instruction, query, doc):
     if instruction is None:
         instruction = 'Given a web search query, retrieve relevant passages that answer the query'
     output = "<Instruct>: {instruction}\n<Query>: {query}\n<Document>: {doc}".format(instruction=instruction,query=query, doc=doc)
@@ -60,7 +60,7 @@ documents = [
     "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
 ]
 
-pairs = [format_instruction(task, query, doc) for query, doc in zip(queries, documents)]
+pairs = [format_rerank_instruction(task, query, doc) for query, doc in zip(queries, documents)]
 
 # Tokenize the input texts
 inputs = process_inputs(pairs)
