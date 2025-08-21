@@ -14,12 +14,13 @@ tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-Reranker-0.6B", padding_si
 model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-Reranker-0.6B", torch_dtype=torch.float16, attn_implementation="flash_attention_2").cuda().eval()
 token_false_id = tokenizer.convert_tokens_to_ids("no")
 token_true_id = tokenizer.convert_tokens_to_ids("yes")
+#
+chat_thread_prefix = "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n"
+chat_thread_suffix = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+chat_thread_prefix_tokens = tokenizer.encode(chat_thread_prefix, add_special_tokens=False)
+chat_thread_suffix_tokens = tokenizer.encode(chat_thread_suffix, add_special_tokens=False)
 max_length = 8192
-
-prefix = "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n"
-suffix = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
-prefix_tokens = tokenizer.encode(prefix, add_special_tokens=False)
-suffix_tokens = tokenizer.encode(suffix, add_special_tokens=False)
+max_user_tokens = max_length - len(chat_thread_prefix_tokens) - len(chat_thread_suffix_tokens)
 
 task = 'Given a web search query, retrieve relevant passages that answer the query'
 
@@ -40,10 +41,10 @@ def tokenize(pairs):
         padding=False,
         truncation='longest_first',
         return_attention_mask=False,
-        max_length=max_length - len(prefix_tokens) - len(suffix_tokens),
+        max_length=max_user_tokens,
     )
     for i, ele in enumerate(inputs['input_ids']):
-        inputs['input_ids'][i] = prefix_tokens + ele + suffix_tokens
+        inputs['input_ids'][i] = chat_thread_prefix_tokens + ele + chat_thread_suffix_tokens
     inputs = tokenizer.pad(inputs, padding=True, return_tensors="pt", max_length=max_length)
     return move_to_gpu(inputs, model.device)
 
