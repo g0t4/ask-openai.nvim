@@ -50,7 +50,9 @@ def move_to_gpu(tensors, device):
 
 # TODO don't tokenize query every time! just one time
 #   probably combine format into tokenize and let that all happen in there
-def tokenize_outer(_task, _query, _documents):
+def rerank(_task: str, _query: str, _documents: list[str]) -> list[float]:
+    # for now assume task and query are constant for all documents, if I need mixed batching then I can address that later...
+    # and actually I should encourage batching for same task/query else cache will be invalidated when task/query change
     messages = [format_rerank_instruction(_task, _query, doc) for doc in _documents]
     tokenized_threads = tokenize(messages)
     return compute_relevance(tokenized_threads)
@@ -86,12 +88,6 @@ documents = [
     "The capital of China is Beijing.",
     "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
 ]
-
-def rerank(_task: str, _query: str, _documents: list[str]) -> list[float]:
-    # for now assume task and query are constant for all documents, if I need mixed batching then I can address that later...
-    # and actually I should encourage batching for same task/query else cache will be invalidated when task/query change
-
-    return tokenize_outer(_task, _query, _documents)
 
 if __name__ == "__main__":
     actual_scores1 = rerank(task, query1, documents)
