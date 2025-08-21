@@ -46,8 +46,10 @@ def move_to_gpu(tensors, device):
 def tokenize_docs(_instruct: str, _query: str, _documents: list[str]):
     if _instruct is None or _instruct.strip() == "":
         raise ValueError("instruct must be provided")
-        # TODO! move to my calling code or a func below _instruct = 'Given a user query and a document, determine if the document contains an answer to the query.'
+        # TODO! move to my calling code or a func below
+        #     _instruct = 'Given a user query and a document, determine if the document contains an answer to the query.'
 
+    # tokenize common prefix once:
     instruct_query = f"<Instruct>: {_instruct}\n<Query>: {_query}\n<Document>: "
     instruct_query_tokens = tokenizer.encode(instruct_query, add_special_tokens=False)
 
