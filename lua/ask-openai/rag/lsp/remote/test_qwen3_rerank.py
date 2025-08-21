@@ -32,9 +32,9 @@ if __name__ == "__main__":
     # * instruct / task
     # FYI! sync any changes to instruct to the respective python re-ranking code
     instruct_aka_task = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
+    query = "where did I set the top_k for semantic grep?"
 
     # * encode query vector
-    query = "where did I set the top_k for semantic grep?"
     with logger.timer("encoding query"):
         query_vector = encode_query(query, instruct_aka_task)
 
