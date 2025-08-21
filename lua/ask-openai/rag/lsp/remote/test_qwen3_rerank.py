@@ -15,7 +15,7 @@ if __name__ == "__main__":
     logger = get_logger(__name__)
 
     test_query = "where did I set the top_k for semantic grep?"
-    chunks = semantic_grep(test_query)
+    chunks = semantic_grep(query=test_query, current_file_abs="test.py", vim_filetype="py")
 
     # * dump details
     for idx, c in enumerate(chunks):

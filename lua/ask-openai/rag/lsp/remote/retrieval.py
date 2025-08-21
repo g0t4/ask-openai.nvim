@@ -38,7 +38,7 @@ class LSPRankedMatch:
     embed_rank: int = -1
     rerank_rank: int = -1
 
-def semantic_grep(query: str, instruct: str | None = None) -> list[LSPRankedMatch]:
+def semantic_grep(query: str, current_file_abs: str | Path, vim_filetype: str | None = None, instruct: str | None = None) -> list[LSPRankedMatch]:
     if instruct is None:
         instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
 
@@ -49,7 +49,7 @@ def semantic_grep(query: str, instruct: str | None = None) -> list[LSPRankedMatc
     # * load datasets
     dot_rag_dir = Path("~/repos/github/g0t4/ask-openai.nvim/.rag").expanduser().absolute()
     datasets = load_all_datasets(dot_rag_dir)
-    dataset = datasets.for_file("test.py", vim_filetype="py")
+    dataset = datasets.for_file(current_file_abs, vim_filetype=vim_filetype)
     assert dataset
 
     # * search embeddings

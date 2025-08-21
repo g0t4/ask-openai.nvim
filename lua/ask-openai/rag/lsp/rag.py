@@ -42,8 +42,11 @@ def handle_query(message, model_wrapper, top_k=3, skip_same_file=False):
     if text is None or len(text) == 0:
         logger.error("[red bold][ERROR] No text provided")
         return {"failed": True, "error": "No text provided"}
-    vim_filetype = message.get("vim_filetype")
-    current_file_abs = message.get("current_file_absolute_path")
+    vim_filetype: str | None = message.get("vim_filetype")
+    current_file_abs: str = message.get("current_file_absolute_path")
+
+    # TODO! review what is passed in text, ... any cases where it has instruct or more than just the query?
+    semantic_grep(query=text, current_file_abs=current_file_abs, vim_filetype=vim_filetype)
 
     # * load dataset
     dataset = datasets.for_file(current_file_abs, vim_filetype=vim_filetype)
