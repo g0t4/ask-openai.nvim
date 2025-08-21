@@ -93,7 +93,7 @@ def semantic_grep(
             signature=chunk.signature,
 
             # capture idx as rank before any sorting (i.e. text len below)
-            embed_score=embed_score,
+            embed_score=embed_score.item(), # numpy.float32 not serializable, use .item()
             embed_rank=idx,
         )
 
