@@ -28,15 +28,15 @@ else:
 model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs).eval()
 #
 # FYI reranker uses probabilities from yes/no tokens for relevance score
-token_false_id = tokenizer.convert_tokens_to_ids("no")
-token_true_id = tokenizer.convert_tokens_to_ids("yes")
+token_id_no = tokenizer.convert_tokens_to_ids("no")
+token_id_true = tokenizer.convert_tokens_to_ids("yes")
 #
-chat_thread_prefix = "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n"
-chat_thread_suffix = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
-chat_thread_prefix_tokens = tokenizer.encode(chat_thread_prefix, add_special_tokens=False)
-chat_thread_suffix_tokens = tokenizer.encode(chat_thread_suffix, add_special_tokens=False)
+thread_prefix = "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n"
+thread_suffix = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+thread_prefix_tokens = tokenizer.encode(thread_prefix, add_special_tokens=False)
+thread_suffix_tokens = tokenizer.encode(thread_suffix, add_special_tokens=False)
 max_length = 8192
-max_user_tokens = max_length - len(chat_thread_prefix_tokens) - len(chat_thread_suffix_tokens)
+max_user_tokens = max_length - len(thread_prefix_tokens) - len(thread_suffix_tokens)
 
 def move_to_gpu(tensors, device):
     for key in tensors:
@@ -63,15 +63,15 @@ def tokenize_docs(instruct: str, query: str, documents: list[str]):
     )
     for i, doc_tokens in enumerate(documents_tokens['input_ids']):
         # insert user message contents into the chat thread template (this way I don't have to tokenize the constant parts repeatedly
-        documents_tokens['input_ids'][i] = chat_thread_prefix_tokens + instruct_query_tokens + doc_tokens + chat_thread_suffix_tokens
+        documents_tokens['input_ids'][i] = thread_prefix_tokens + instruct_query_tokens + doc_tokens + thread_suffix_tokens
     documents_tokens = tokenizer.pad(documents_tokens, padding=True, return_tensors="pt", max_length=max_length)
     return move_to_gpu(documents_tokens, model.device)
 
 def compute_relevance_scores(tokenized_threads):
     with torch.no_grad():
         logits = model(**tokenized_threads).logits[:, -1, :]
-        true_vector = logits[:, token_true_id]
-        false_vector = logits[:, token_false_id]
+        true_vector = logits[:, token_id_true]
+        false_vector = logits[:, token_id_no]
         logits_no_and_yes = torch.stack([false_vector, true_vector], dim=1)
         # calculation to turn yes/no token logits into relevance score overall (per document)
         softmax_scores = torch.nn.functional.log_softmax(logits_no_and_yes, dim=1)
