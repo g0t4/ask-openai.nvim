@@ -17,6 +17,7 @@ if __name__ == "__main__":
     # logging_fwk_to_console("DEBUG")
     logger = get_logger(__name__)
 
+    # * encode query vector
     query = "where did I set the top_k for semantic grep?"
     with logger.timer("Send embedding to server"):
         with EmbedClient() as client:
@@ -32,15 +33,16 @@ if __name__ == "__main__":
     # * load datasets
     dot_rag_dir = Path("~/repos/github/g0t4/ask-openai.nvim/.rag").expanduser().absolute()
     datasets = load_all_datasets(dot_rag_dir)
-
     dataset = datasets.for_file("test.py", vim_filetype="py")
     assert dataset
 
+    # * search embeddings
     top_k = 10  # TODO! 50
     scores, ids = dataset.index.search(query_vector, top_k)
     ids = ids[0]
     scores = scores[0]
 
+    # * lookup matching chunks
     chunks = []
     for id, embed_score in zip(ids, scores):
         chunk = datasets.get_chunk_by_faiss_id(id)
@@ -48,11 +50,12 @@ if __name__ == "__main__":
             raise Exception("missing chunk?!" + id)
         chunks.append({"chunk": chunk, "embed_score": embed_score})
 
-    # sort len(chunk.text) so similar lengths are batched together given longest text (in tokens) dictates sequence length
+    # * sort len(chunk.text)
+    # so similar lengths are batched together given longest text (in tokens) dictates sequence length
     chunks.sort(key=lambda c: len(c["chunk"].text))
 
+    # * rerank batches
     BATCH_SIZE = 8
-
     for batch_num in range(0, len(chunks), BATCH_SIZE):
         batch = chunks[batch_num:batch_num + BATCH_SIZE]
         docs = [c["chunk"].text for c in batch]
@@ -66,9 +69,10 @@ if __name__ == "__main__":
             for c, rerank_score in zip(batch, scores):
                 c["rerank_score"] = rerank_score
 
-    # sort by rerank score
+    # * sort by rerank score
     chunks.sort(key=lambda c: c["rerank_score"], reverse=True)
 
+    # * dump details
     for i, c in enumerate(chunks):
         rich.print(f'{i} / {c["chunk"].id}: rerank={format_score(c["rerank_score"])} embed={format_score(c["embed_score"])}')
         rich.print(c["chunk"].text)
