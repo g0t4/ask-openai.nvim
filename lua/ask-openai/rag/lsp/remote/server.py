@@ -52,41 +52,41 @@ signal.signal(signal.SIGINT, signal_handler)
 def handle():
     conn.settimeout(10)  # give client 10 seconds max to send/recv its data
 
-    rx_msg = recv_len_then_msg(conn)
-    if not rx_msg:
+    request = recv_len_then_msg(conn)
+    if not request:
         conn.close()
         return
 
-    rx_type = rx_msg['type']
-    rich.print(rx_msg)
+    request_type = request['type']
+    rich.print(request)
 
     with Timer() as encode_timer:
-        if rx_type == 'embed':
-            texts = rx_msg['texts']
+        if request_type == 'embed':
+            texts = request['texts']
             embeddings, input_ids = qwen3_embeddings.encode(texts)
-            tx_msg = {'embeddings': embeddings.tolist()}
+            response = {'embeddings': embeddings.tolist()}
 
             def after_send():
                 rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_timer.elapsed_ms():.3f} ms")
                 dump_token_details(input_ids, texts)
 
-        elif rx_type == 'rerank':
-            instruct = rx_msg['instruct']
-            query = rx_msg['query']
-            docs = rx_msg['docs']
+        elif request_type == 'rerank':
+            instruct = request['instruct']
+            query = request['query']
+            docs = request['docs']
             scores = qwen3_rerank.rerank(instruct, query, docs)
-            tx_msg = {'scores': scores}
+            response = {'scores': scores}
 
             def after_send():
                 pass
 
         else:
-            raise ValueError(f'unsupported {rx_type=}')
+            raise ValueError(f'unsupported {request_type=}')
 
-    send_len_then_msg(conn, tx_msg)
+    send_len_then_msg(conn, response)
     conn.close()
 
-    if rx_type == 'embed':
+    if request_type == 'embed':
         after_send()
 
 def dump_token_details(input_ids, input_texts):
