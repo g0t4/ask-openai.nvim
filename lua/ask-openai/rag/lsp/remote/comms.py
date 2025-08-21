@@ -1,4 +1,5 @@
 import socket
+from typing import Any
 import msgpack
 import struct
 from ..logs import get_logger
@@ -20,7 +21,7 @@ def recv_exact(sock, content_size):
 # https://docs.python.org/3/library/struct.html#struct-alignment
 #   ! = network order
 
-def recv_len_then_msg(conn: socket.socket) -> dict[str, str]:
+def recv_len_then_msg(conn: socket.socket) -> dict[str, Any]:
     msg_len_packed = recv_exact(conn, 4)
     msg_len = struct.unpack('!I', msg_len_packed)[0]
     if not msg_len:
@@ -29,7 +30,7 @@ def recv_len_then_msg(conn: socket.socket) -> dict[str, str]:
     msg_packed = recv_exact(conn, msg_len)
     return msgpack.unpackb(msg_packed, raw=False)
 
-def send_len_then_msg(conn: socket.socket, msg: dict[str, str]):
+def send_len_then_msg(conn: socket.socket, msg: dict[str, Any]):
     msg_packed = msgpack.packb(msg, use_bin_type=True)
     msg_len = len(msg_packed)
     msg_len_packed = struct.pack('!I', msg_len)  # 4-byte network byte order
@@ -41,7 +42,7 @@ class EmbedClient():
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.addy = addy
 
-    def encode(self, inputs: dict[str, str]):
+    def encode(self, inputs: dict[str, str]) -> list[list[float]] | None:
         inputs['type'] = 'embed'
         send_len_then_msg(self.conn, inputs)
         rx_msg = recv_len_then_msg(self.conn)
@@ -49,6 +50,8 @@ class EmbedClient():
             logger.warning(f"missing {rx_msg=}")
             return None
 
+        # outer list is batch size
+        # inner list is hidden dimension (vector size) of float - i.e. 1024 with Qwen3-Embedding-0.6B
         return rx_msg['embeddings']
 
     def rerank(self, inputs: dict[str, str]):
