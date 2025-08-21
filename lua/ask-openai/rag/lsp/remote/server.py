@@ -64,11 +64,21 @@ def handle():
             rx_texts = rx_msg['texts']
             embeddings, input_ids = qwen3_embeddings.encode(rx_texts)
             tx_msg = {'embeddings': embeddings.tolist()}
+
+            def after_send():
+                rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_timer.elapsed_ms():.3f} ms")
+                rx_texts = rx_msg['texts']
+                dump_token_details(input_ids, rx_texts)
+
         elif rx_type == 'rerank':
             query = rx_msg['query']
             docs = rx_msg['docs']
             scores = qwen3_rerank.rerank_semantic_grep(query, docs)
             tx_msg = {'scores': scores}
+
+            def after_send():
+                pass
+
         else:
             raise ValueError(f'unsupported {rx_type=}')
 
@@ -76,9 +86,7 @@ def handle():
     conn.close()
 
     if rx_type == 'embed':
-        rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_timer.elapsed_ms():.3f} ms")
-        rx_texts = rx_msg['texts']
-        dump_token_details(input_ids, rx_texts)
+        after_send()
 
 def dump_token_details(input_ids, rx_texts):
     if not logger.isEnabledFor(logging.DEBUG):
