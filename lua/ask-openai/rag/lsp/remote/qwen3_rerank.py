@@ -83,5 +83,10 @@ def rerank(_task: str, _query: str, documents: list[str]) -> list[float]:
     return tokenize_outer(_task, _query, documents)
 
 scores = rerank(task, query1, documents)
+print("scores: ", scores)
 scores = rerank(task, query2, documents)
 print("scores: ", scores)
+# FYI s/b ~= [ [1, 0],
+#             [0, 1] ]
+# #scores:  [0.99951171875, 5.066394805908203e-06]
+# scores:  [4.947185516357422e-05, 0.99951171875
