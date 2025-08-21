@@ -14,6 +14,11 @@ def format_rerank_instruction(instruction, query, doc):
     # NOTE layout is optimized for cache reuse! instruction/query are constant across a batch of documents
     return f"<Instruct>: {instruction}\n<Query>: {query}\n<Document>: {doc}"
 
+def move_to_device(tensors, device):
+    for key in tensors:
+        tensors[key] = tensors[key].to(device)
+    return tensors
+
 def tokenize(pairs):
     inputs = tokenizer(
         pairs,
@@ -25,9 +30,7 @@ def tokenize(pairs):
     for i, ele in enumerate(inputs['input_ids']):
         inputs['input_ids'][i] = prefix_tokens + ele + suffix_tokens
     inputs = tokenizer.pad(inputs, padding=True, return_tensors="pt", max_length=max_length)
-    for key in inputs:
-        # move to same device as model
-        inputs[key] = inputs[key].to(model.device)
+    inputs = move_to_device(inputs, model.device)
     return inputs
 
 @torch.no_grad()
