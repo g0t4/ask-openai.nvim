@@ -42,6 +42,7 @@ class EmbedClient():
         self.addy = addy
 
     def encode(self, inputs: dict[str, str]):
+        inputs['type'] = 'embed'
         send_len_then_msg(self.conn, inputs)
         rx_msg = recv_len_then_msg(self.conn)
         if rx_msg is None:
