@@ -61,13 +61,13 @@ def handle():
 
     with Timer() as encode_timer:
         if rx_type == 'embed':
-            rx_texts = rx_msg['texts']
-            embeddings, input_ids = qwen3_embeddings.encode(rx_texts)
+            texts = rx_msg['texts']
+            embeddings, input_ids = qwen3_embeddings.encode(texts)
             tx_msg = {'embeddings': embeddings.tolist()}
 
             def after_send():
                 rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_timer.elapsed_ms():.3f} ms")
-                dump_token_details(input_ids, rx_texts)
+                dump_token_details(input_ids, texts)
 
         elif rx_type == 'rerank':
             query = rx_msg['query']
@@ -87,20 +87,20 @@ def handle():
     if rx_type == 'embed':
         after_send()
 
-def dump_token_details(input_ids, rx_texts):
+def dump_token_details(input_ids, input_texts):
     if not logger.isEnabledFor(logging.DEBUG):
         return
 
     total_actual_tokens = 0
     biggest = 0
-    for t in rx_texts:
+    for t in input_texts:
         current = len(t)
         total_actual_tokens += current
         if current > biggest:
             biggest = current
         rich.print(f"  {current}: {t}")
 
-    avg_tokens = total_actual_tokens / len(rx_texts)
+    avg_tokens = total_actual_tokens / len(input_texts)
     rich.print(f"  avg_tokens={avg_tokens:.2f} longest={biggest}")
 
     # PRN move this into encoder logic and validate the numbers using attention mask
