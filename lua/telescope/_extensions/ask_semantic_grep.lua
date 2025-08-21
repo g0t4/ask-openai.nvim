@@ -165,7 +165,7 @@ local sort_by_score = sorters.Sorter:new {
         -- print("cb_filter: " .. vim.inspect(cb_filter))
 
         -- reverse order with 1-... IIUC this is in part b/c I have to use ascending sorting_strategy to workaround that bug with default (descending)
-        return (1 - entry.score)
+        return (1 - entry.embed_score)
     end,
 
     highlighter = function(_, prompt, display)
@@ -222,7 +222,7 @@ local function semantic_grep_current_filetype_picker(opts)
         -- FYI hl groups
         -- ~/.local/share/nvim/lazy/telescope.nvim/plugin/telescope.lua:11-92 i.e. TelescopeResultsIdentifier
 
-        local score_percent = string.format("%.1f%%", entry.score * 100)
+        local score_percent = string.format("%.1f%%", entry.embed_score * 100)
         -- use percent_str where needed, e.g. in the display text
         local icon, icon_hlgroup = utils.get_devicons(entry.filename, false)
         local coordinates = ":"
@@ -316,7 +316,7 @@ local function semantic_grep_current_filetype_picker(opts)
                 ---@field value LSPRankedMatch
                 ---@field display function|string -- use to create display text for picker
                 ---@field filename string
-                ---@field score number
+                ---@field embed_score number
                 ---@field index number
                 ---@field ordinal string -- for filtering? how so?
                 local entry = {
@@ -332,7 +332,7 @@ local function semantic_grep_current_filetype_picker(opts)
                     filename = match.file,
 
                     match = match,
-                    score = match.score,
+                    embed_score = match.score,
                 }
                 return entry
                 -- optional second return value
