@@ -7,7 +7,7 @@ from lsp.model_qwen3_remote import encode_query
 from lsp.storage import Chunk, load_all_datasets
 import rich
 
-def format_score(score: float) -> str:
+def format_score_decimal(score: float) -> str:
     """score rounded to nearest 4 decimals"""
     return f'{score:.4f}'
     # TODO to shared spot
@@ -88,6 +88,6 @@ if __name__ == "__main__":
     # * dump details
     for idx, c in enumerate(chunks):
         c.rerank_position = idx
-        rich.print(f'#{c.rerank_position} / {c.chunk.id}: rerank={format_score(c.rerank_score)} embed={format_score(c.embed_score)}/#{c.embed_position}')
+        rich.print(f'#{c.rerank_position} / {c.chunk.id}: rerank={format_score_decimal(c.rerank_score)} embed={format_score_decimal(c.embed_score)}/#{c.embed_position}')
         if logger.isEnabledForDebug():
             print(c.chunk.text)
