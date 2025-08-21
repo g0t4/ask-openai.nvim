@@ -32,8 +32,8 @@ if __name__ == "__main__":
     scores, ids = dataset.index.search(query_vector, top_k)
     ids = ids[0]
     scores = scores[0]
-    for id, score in zip(ids, scores):
-        print(f'{id}/{score}')
+    for id, embed_score in zip(ids, scores):
+        print(f'{id}/{embed_score}')
         # TODO! batch the rerank, for now lets start w/ just one at a time
         # TODO! SORT TOO
         # TODO! SHOW ORDER BEFORE and AFTER compare on each
@@ -49,7 +49,7 @@ if __name__ == "__main__":
             scores = client.rerank(msg)
             rich.print(f'RR {scores=}')
             assert scores
-            score = scores[0]
+            embed_score = scores[0]
             # if score > 0.99:
             print(chunk.text)
 
