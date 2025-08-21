@@ -83,11 +83,13 @@ def rerank(_task: str, _query: str, documents: list[str]) -> list[float]:
     return tokenize_outer(_task, _query, documents)
 
 if __name__ == "__main__":
-    scores = rerank(task, query1, documents)
-    print("scores: ", scores)
-    scores = rerank(task, query2, documents)
-    print("scores: ", scores)
-    # FYI s/b ~= [ [1, 0],
-    #             [0, 1] ]
-    # #scores:  [0.99951171875, 5.066394805908203e-06]
-    # scores:  [4.947185516357422e-05, 0.99951171875
+    actual_scores1 = rerank(task, query1, documents)
+    print("scores1: ", actual_scores1)
+    expected_scores1 = [0.99951171875, 5.066394805908203e-06]
+    from numpy.testing import assert_array_almost_equal
+    assert_array_almost_equal(actual_scores1, expected_scores1, decimal=3)
+    actual_scores2 = rerank(task, query2, documents)
+    print("scores2: ", actual_scores2)
+    expected_scores2 = [4.947185516357422e-05, 0.99951171875]
+    assert_array_almost_equal(actual_scores2, expected_scores2, decimal=3)
+    print("All tests passed")
