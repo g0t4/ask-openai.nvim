@@ -58,13 +58,13 @@ def handle():
         return
 
     rx_type = rx_msg['type']
+    rich.print(rx_msg)
 
     with Timer() as encode_timer:
         if rx_type == 'embed':
             texts = rx_msg['texts']
             embeddings, input_ids = qwen3_embeddings.encode(texts)
             tx_msg = {'embeddings': embeddings.tolist()}
-            print(texts)
 
             def after_send():
                 rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_timer.elapsed_ms():.3f} ms")
@@ -74,7 +74,6 @@ def handle():
             instruct = rx_msg['instruct']
             query = rx_msg['query']
             docs = rx_msg['docs']
-            print(rx_msg)
             scores = qwen3_rerank.rerank(instruct, query, docs)
             tx_msg = {'scores': scores}
 
