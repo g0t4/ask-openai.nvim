@@ -1,7 +1,9 @@
+from pathlib import Path
 from lsp.qwen3.known import get_known_inputs, verify_known_embeddings
 from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.remote.comms import *
 from lsp.model_qwen3_remote import encode_query
+from lsp.storage import load_all_datasets
 
 if __name__ == "__main__":
 
@@ -17,6 +19,12 @@ if __name__ == "__main__":
     # TODO de-duplicate instruct
     instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
     query_vector = encode_query(query, instruct)
+
+    # * load datasets
+    def load_model_and_indexes(dot_rag_dir: Path, model_wrapper):
+        global datasets
+        datasets = load_all_datasets(dot_rag_dir)
+        model_wrapper.ensure_model_loaded()
 
 #     # TODO query embeddings (matching docs)
 #
