@@ -67,7 +67,7 @@ def tokenize_docs(_instruct: str, _query: str, _documents: list[str]):
     documents_tokens = tokenizer.pad(documents_tokens, padding=True, return_tensors="pt", max_length=max_length)
     return move_to_gpu(documents_tokens, model.device)
 
-def compute_relevance(inputs, **kwargs):
+def compute_relevance_scores(inputs, **kwargs):
     with torch.no_grad():
         batch_scores = model(**inputs).logits[:, -1, :]
         true_vector = batch_scores[:, token_true_id]
@@ -82,7 +82,7 @@ def rerank(_instruct: str, _query: str, _documents: list[str]) -> list[float]:
     # for now assume instruct and query are constant for all documents, if I need mixed batching then I can address that later...
     # and actually I should encourage batching for same instruct/query else cache will be invalidated when instruct/query change
     tokenized_threads = tokenize_docs(_instruct, _query, _documents)
-    return compute_relevance(tokenized_threads)
+    return compute_relevance_scores(tokenized_threads)
 
 if __name__ == "__main__":
     from numpy.testing import assert_array_almost_equal
