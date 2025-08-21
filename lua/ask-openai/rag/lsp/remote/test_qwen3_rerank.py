@@ -21,13 +21,14 @@ if __name__ == "__main__":
     query_vector = encode_query(query, instruct)
 
     # * load datasets
-    def load_model_and_indexes(dot_rag_dir: Path, model_wrapper):
-        global datasets
-        datasets = load_all_datasets(dot_rag_dir)
-        model_wrapper.ensure_model_loaded()
+    dot_rag_dir = Path("~/repos/github/g0t4/ask-openai.nvim/.rag").expanduser().absolute()
+    datasets = load_all_datasets(dot_rag_dir)
 
-#     # TODO query embeddings (matching docs)
-#
+    dataset = datasets.for_file("test.py", vim_filetype="py")
+    assert dataset
+
+    scores, ids = dataset.index.search(query_vector, top_k=10)  # TODO! 50
+
 #     # TODO rerank results
 #
 #     if not rx_embeddings:
