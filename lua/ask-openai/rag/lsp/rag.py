@@ -34,7 +34,7 @@ def validate_rag_indexes():
     validator.validate()
 
 # PRN make top_k configurable (or other params)
-def handle_query(message, model_wrapper, top_k=3):
+def handle_query(message, model_wrapper, top_k=3, skip_same_file=False):
     text = message.get("text")
     if text is None or len(text) == 0:
         logger.error("[red bold][ERROR] No text provided")
@@ -59,8 +59,11 @@ def handle_query(message, model_wrapper, top_k=3):
     instruct = message.get("instruct")
 
     q_vec = model_wrapper.encode_query(text, instruct)
-    # FAISS search (GIL released)
-    top_k_padded = top_k * 3
+    if skip_same_file:
+        # grab 3x the docs so you can skip same file matches
+        top_k_padded = top_k * 3
+    else:
+        top_k_padded = top_k
     scores, ids = dataset.index.search(q_vec, top_k_padded)
 
     logger.pp_debug('scores', scores)
@@ -81,8 +84,8 @@ def handle_query(message, model_wrapper, top_k=3):
 
         # PRN capture absolute path in indexer! that way I dont have to rebuild absolute path here?
         chunk_file_abs = chunk.file  # capture abs path, already works
-        same_file = current_file_abs == chunk_file_abs
-        if same_file:
+        is_same_file = current_file_abs == chunk_file_abs
+        if skip_same_file and is_same_file:
             logger.warning(f"Skip match in same file")
             continue
         logger.debug(f"matched {chunk.file}:base0-L{chunk.base0.start_line}-{chunk.base0.end_line}")

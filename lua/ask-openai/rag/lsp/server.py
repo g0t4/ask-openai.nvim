@@ -142,7 +142,7 @@ def rag_command_context_related(_: LanguageServer, params: types.ExecuteCommandP
         return
 
     message = params[0]
-    return rag.handle_query(message, model_wrapper, 10)
+    return rag.handle_query(message, model_wrapper, 10, skip_same_file=False)
 
 @server.command("context.query")
 def rag_command_context_query(_: LanguageServer, params: types.ExecuteCommandParams):
@@ -154,7 +154,7 @@ def rag_command_context_query(_: LanguageServer, params: types.ExecuteCommandPar
         return
 
     message = params[0]
-    return rag.handle_query(message, model_wrapper)
+    return rag.handle_query(message, model_wrapper, skip_same_file=True)
 
 # how can I intercept shutdown from client?
 #
