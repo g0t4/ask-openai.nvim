@@ -64,6 +64,7 @@ def handle():
             texts = rx_msg['texts']
             embeddings, input_ids = qwen3_embeddings.encode(texts)
             tx_msg = {'embeddings': embeddings.tolist()}
+            print(texts)
 
             def after_send():
                 rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_timer.elapsed_ms():.3f} ms")

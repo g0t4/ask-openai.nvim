@@ -1,6 +1,7 @@
 from lsp.qwen3.known import get_known_inputs, verify_known_embeddings
 from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.remote.comms import *
+from lsp.model_qwen3_remote import encode_query
 
 if __name__ == "__main__":
 
@@ -8,15 +9,16 @@ if __name__ == "__main__":
     # logging_fwk_to_console("DEBUG")
     logger = get_logger(__name__)
 
-    query_text = "where did I set the top_k for semantic grep?"
+    query = "where did I set the top_k for semantic grep?"
     with logger.timer("Send embedding to server"):
         with EmbedClient() as client:
-            rx_embeddings = client.encode({'texts': query_text})
+            rx_embeddings = client.encode({'texts': query})
 
-    print(rx_embeddings)
+    # TODO de-duplicate instruct
+    instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
+    query_vector = encode_query(query, instruct)
 
-#
-#     # TODO query vectors
+#     # TODO query embeddings (matching docs)
 #
 #     # TODO rerank results
 #
