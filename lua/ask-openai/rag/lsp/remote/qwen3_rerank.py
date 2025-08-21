@@ -67,9 +67,9 @@ def tokenize_docs(instruct: str, query: str, documents: list[str]):
 
 def compute_relevance_scores(tokenized_inputs):
     with torch.no_grad():
-        logits = model(**tokenized_inputs).logits[:, -1, :]
-        yes_logits = logits[:, token_id_yes]
-        no_logits = logits[:, token_id_no]
+        output_logits = model(**tokenized_inputs).logits[:, -1, :]
+        yes_logits = output_logits[:, token_id_yes]
+        no_logits = output_logits[:, token_id_no]
         logits_no_and_yes = torch.stack([no_logits, yes_logits], dim=1)
         # calculation to turn yes/no token logits into relevance score overall (per document)
         log_softmax = torch.nn.functional.log_softmax(logits_no_and_yes, dim=1)
