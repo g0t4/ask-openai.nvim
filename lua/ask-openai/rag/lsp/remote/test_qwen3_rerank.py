@@ -37,7 +37,7 @@ if __name__ == "__main__":
     assert dataset
 
     # * search embeddings
-    top_k = 10  # TODO! 50
+    top_k = 50
     scores, ids = dataset.index.search(query_vector, top_k)
     ids = ids[0]
     scores = scores[0]
