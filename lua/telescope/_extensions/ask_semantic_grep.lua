@@ -65,6 +65,7 @@ function _semantic_grep(lsp_query_message_args, lsp_buffer_number, process_resul
             for i, match in ipairs(matches) do
                 -- logs:info("match: " .. vim.inspect(match))
                 local entry = entry_maker(match)
+                -- TODO use embed_rank instead of index now?
                 entry.index = i -- NOTE this is different than normal telescope!
                 process_result(entry)
             end
@@ -317,7 +318,7 @@ local function semantic_grep_current_filetype_picker(opts)
                 ---@field display function|string -- use to create display text for picker
                 ---@field filename string
                 ---@field embed_score number
-                ---@field index number
+                ---@field index number  -- TODO use embed_rank instead of index now?
                 ---@field ordinal string -- for filtering? how so?
                 local entry = {
                     -- required:
