@@ -67,7 +67,7 @@ def tokenize_docs(_instruct: str, _query: str, _documents: list[str]):
     documents_tokens = tokenizer.pad(documents_tokens, padding=True, return_tensors="pt", max_length=max_length)
     return move_to_gpu(documents_tokens, model.device)
 
-def compute_relevance_scores(tokenized_threads, **kwargs):
+def compute_relevance_scores(tokenized_threads):
     with torch.no_grad():
         logits = model(**tokenized_threads).logits[:, -1, :]
         true_vector = logits[:, token_true_id]
