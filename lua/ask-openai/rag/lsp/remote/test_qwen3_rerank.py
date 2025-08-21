@@ -23,18 +23,6 @@ class ChunkRanking:
     embed_position: int = -1
     rerank_position: int = -1
 
-if __name__ == "__main__":
-
-    logging_fwk_to_console("INFO")
-    # logging_fwk_to_console("DEBUG")
-    logger = get_logger(__name__)
-
-    # * instruct / task
-    # FYI! sync any changes to instruct to the respective python re-ranking code
-    query = "where did I set the top_k for semantic grep?"
-
-    semantic_grep(query)
-
 def semantic_grep(query: str, instruct: str | None = None) -> list[ChunkRanking]:
     if instruct is None:
         instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
@@ -89,11 +77,26 @@ def semantic_grep(query: str, instruct: str | None = None) -> list[ChunkRanking]
     # * sort by rerank score
     chunks.sort(key=lambda c: c.rerank_score, reverse=True)
 
-    # * dump details
+    # * set rerank_positions
     for idx, c in enumerate(chunks):
         c.rerank_position = idx
+
+    return chunks
+
+if __name__ == "__main__":
+
+    logging_fwk_to_console("INFO")
+    # logging_fwk_to_console("DEBUG")
+    logger = get_logger(__name__)
+
+    # * instruct / task
+    # FYI! sync any changes to instruct to the respective python re-ranking code
+    query = "where did I set the top_k for semantic grep?"
+
+    chunks = semantic_grep(query)
+
+    # * dump details
+    for idx, c in enumerate(chunks):
         rich.print(f'#{c.rerank_position} / {c.chunk.id}: rerank={format_score_percent(c.rerank_score)} embed={format_score_percent(c.embed_score)}/#{c.embed_position}')
         if logger.isEnabledForDebug():
             print(c.chunk.text)
-
-    return chunks
