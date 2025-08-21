@@ -80,7 +80,9 @@ def rerank(instruct: str, query: str, documents: list[str]) -> tuple[list[float]
     # for now assume instruct and query are constant for all documents, if I need mixed batching then I can address that later...
     # and actually I should encourage batching for same instruct/query else cache will be invalidated when instruct/query change
 
+    # TODO check for cancelation
     tokenized_threads = tokenize_docs(instruct, query, documents)
+    # TODO check for cancellation before rerank
     return compute_relevance_scores(tokenized_threads), tokenized_threads.input_ids.tolist()
 
 def main():
