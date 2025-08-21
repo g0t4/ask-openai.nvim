@@ -31,6 +31,8 @@ function _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, proc
 
     lsp_buffer_number = lsp_buffer_number or 0
 
+    -- TODO how can I cancel prior requests? my socket might be the issue :).. no cancelation mechanism :)
+    -- TODO debounce/throttle requests!!
     client_request_ids, cancel_all_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
             command = "semantic_grep",
             arguments = { lsp_rag_request },
@@ -251,9 +253,9 @@ local function semantic_grep_current_filetype_picker(opts)
 
         return displayer {
             { rerank_score_percent, "TelescopeResultsNumber" },
-            { match.rerank_rank,          "TelescopeResultsNumber" },
+            { match.rerank_rank,    "TelescopeResultsNumber" },
             { embed_score_percent,  "TelescopeResultsNumber" },
-            { match.embed_rank,           "TelescopeResultsNumber" },
+            { match.embed_rank,     "TelescopeResultsNumber" },
             { icon,                 icon_hlgroup },
             { line },
             { chunk_type },
