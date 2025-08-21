@@ -35,7 +35,7 @@ def semantic_grep(
     instruct: str | None = None,
     skip_same_file=False,
     top_k: int = 50,
-    # TODO fix datasets to not be so yucky
+    # TODO! fix datasets to not be so yucky
     datasets: Datasets | None = None,
 ) -> list[LSPRankedMatch]:
     if instruct is None:
