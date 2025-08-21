@@ -22,9 +22,10 @@ if device.type == 'cuda':
 else:
     raise ValueError("ONLY setup for CUDA device")
 
-tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-Reranker-0.6B", padding_side='left')
+model_path = "Qwen/Qwen3-Reranker-0.6B"
+tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side='left')
 # We recommend enabling flash_attention_2 for better acceleration and memory saving.
-model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-Reranker-0.6B", **model_kwargs).cuda().eval()
+model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs).cuda().eval()
 token_false_id = tokenizer.convert_tokens_to_ids("no")
 token_true_id = tokenizer.convert_tokens_to_ids("yes")
 #
