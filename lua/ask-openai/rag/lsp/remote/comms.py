@@ -21,11 +21,11 @@ def recv_exact(sock, content_size):
 # https://docs.python.org/3/library/struct.html#struct-alignment
 #   ! = network order
 
-def recv_len_then_msg(conn: socket.socket) -> dict[str, Any]:
+def recv_len_then_msg(conn: socket.socket) -> dict[str, Any] | None:
     msg_len_packed = recv_exact(conn, 4)
     msg_len = struct.unpack('!I', msg_len_packed)[0]
     if not msg_len:
-        return
+        return None
 
     msg_packed = recv_exact(conn, msg_len)
     return msgpack.unpackb(msg_packed, raw=False)
