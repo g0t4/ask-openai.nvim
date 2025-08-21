@@ -88,7 +88,7 @@ def handle():
     send_len_then_msg(conn, response)
     conn.close()
 
-    if request_type == 'embed':
+    if after_send:
         after_send()
 
 def dump_token_details(input_ids, input_texts):
