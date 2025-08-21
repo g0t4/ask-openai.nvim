@@ -70,9 +70,10 @@ def handle():
                 dump_token_details(input_ids, texts)
 
         elif rx_type == 'rerank':
+            instruct = rx_msg['instruct']
             query = rx_msg['query']
             docs = rx_msg['docs']
-            scores = qwen3_rerank.rerank_semantic_grep(query, docs)
+            scores = qwen3_rerank.rerank(instruct, query, docs)
             tx_msg = {'scores': scores}
 
             def after_send():
