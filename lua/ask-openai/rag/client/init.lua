@@ -51,12 +51,12 @@ local function fim_concat(prefix, suffix, limit)
     return short_prefix .. "<<<FIM>>>" .. short_suffix
 end
 
----@class LSPRagQueryMessage
----@field text string
+---@class LSPRagQueryRequest
+---@field query string
 ---@field vim_filetype string
 ---@field current_file_absolute_path string
 ---@field instruct string
-_G.LSPRagQueryMessage = {}
+_G.LSPRagQueryRequest = {}
 
 
 ---@class LSPRagQueryResult
@@ -99,13 +99,13 @@ function M.context_query_fim(document_prefix, document_suffix, callback)
     return M._context_query(query, fim_specific_instruct, callback)
 end
 
----@param query string
----@param instruct string
+---@param query string # Query section only, no Instruct/Document
+---@param instruct string # Instruct section only
 ---@param callback fun(matches: LSPRankedMatch[])
 function M._context_query(query, instruct, callback)
-    ---@type LSPRagQueryMessage
-    local message = {
-        text = query,
+    ---@type LSPRagQueryRequest
+    local lsp_rag_request = {
+        query = query,
         instruct = instruct, -- let the server side handle whether or not to include instructions and errors
         current_file_absolute_path = files.get_current_file_absolute_path(),
         vim_filetype = vim.bo.filetype,
@@ -114,7 +114,7 @@ function M._context_query(query, instruct, callback)
     local _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", {
             command = "context.query",
             -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
-            arguments = { message },
+            arguments = { lsp_rag_request },
         },
         ---@param result LSPRagQueryResult
         function(err, result)

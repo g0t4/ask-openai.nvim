@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from pathlib import Path
 
 from pygls.workspace import TextDocument
@@ -38,15 +37,14 @@ def validate_rag_indexes():
 def handle_query(message, model_wrapper, top_k=3, skip_same_file=False):
 
     # * validate fields
-    text = message.get("text")
-    if text is None or len(text) == 0:
-        logger.error("[red bold][ERROR] No text provided")
-        return {"failed": True, "error": "No text provided"}
+    query = message.get("query")
+    if query is None or len(query) == 0:
+        logger.error("[red bold][ERROR] No query provided")
+        return {"failed": True, "error": "No query provided"}
     vim_filetype: str | None = message.get("vim_filetype")
     current_file_abs: str = message.get("current_file_absolute_path")
 
-    # TODO! review what is passed in text, ... any cases where it has instruct or more than just the query?
-    semantic_grep(query=text, current_file_abs=current_file_abs, vim_filetype=vim_filetype)
+    semantic_grep(query=query, current_file_abs=current_file_abs, vim_filetype=vim_filetype)
 
     # * load dataset
     dataset = datasets.for_file(current_file_abs, vim_filetype=vim_filetype)
@@ -64,7 +62,7 @@ def handle_query(message, model_wrapper, top_k=3, skip_same_file=False):
 
     instruct = message.get("instruct")
 
-    query_vector = model_wrapper.encode_query(text, instruct)
+    query_vector = model_wrapper.encode_query(query, instruct)
     if skip_same_file:
         # grab 3x the docs so you can skip same file matches
         top_k_padded = top_k * 3

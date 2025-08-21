@@ -18,12 +18,12 @@ local picker
 local client_request_ids, cancel_all_requests
 
 
----@param lsp_query_message_args LSPRagQueryMessage
+---@param lsp_rag_request LSPRagQueryRequest
 ---@param lsp_buffer_number integer
 ---@param process_result fun(entry: SemanticGrepTelescopeEntryMatch)
 ---@param process_complete fun()
 ---@param entry_maker fun(match: LSPRankedMatch): SemanticGrepTelescopeEntryMatch
-function _semantic_grep(lsp_query_message_args, lsp_buffer_number, process_result, process_complete, entry_maker)
+function _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, process_complete, entry_maker)
     if cancel_all_requests then
         logs:info("canceling previous request")
         cancel_all_requests()
@@ -33,7 +33,7 @@ function _semantic_grep(lsp_query_message_args, lsp_buffer_number, process_resul
 
     -- * instruct
     -- FYI! sync any changes to instruct to the respective python re-ranking code
-    lsp_query_message_args.instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope" -- * first instruct, well performing with embeddings alone!
+    lsp_rag_request.instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope" -- * first instruct, well performing with embeddings alone!
     --
     -- TODO try this instead after I geet a feel for re-rank with my original instruct:
     --   instruct_aka_task = "Given a user Query to find code in a repository, retrieve the most relevant Documents"
@@ -41,7 +41,7 @@ function _semantic_grep(lsp_query_message_args, lsp_buffer_number, process_resul
 
     client_request_ids, cancel_all_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
             command = "semantic_grep",
-            arguments = { lsp_query_message_args },
+            arguments = { lsp_rag_request },
         },
         ---@param result LSPRagQueryResult
         function(err, result, ctx)
@@ -192,9 +192,9 @@ local function semantic_grep_current_filetype_picker(opts)
     -- TODO! cancel previous queries? async too so not locking up UI?
 
     -- * this runs before picker opens, so you can gather context, i.e. current filetype, its LSP, etc
-    ---@type LSPRagQueryMessage
-    local lsp_query_message_args = {
-        text = "",
+    ---@type LSPRagQueryRequest
+    local lsp_rag_request = {
+        query = "",
         instruct = "",
         vim_filetype = vim.o.filetype,
         current_file_absolute_path = files.get_current_file_absolute_path(),
@@ -279,8 +279,8 @@ local function semantic_grep_current_filetype_picker(opts)
                     return
                 end
                 -- function is called each time the user changes the prompt (text in the Telescope Picker)
-                lsp_query_message_args.text = prompt
-                return _semantic_grep(lsp_query_message_args, lsp_buffer_number, process_result, process_complete, entry_maker)
+                lsp_rag_request.query = prompt
+                return _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, process_complete, entry_maker)
             end,
 
             ---@param match LSPRankedMatch
