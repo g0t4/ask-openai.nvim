@@ -315,10 +315,10 @@ local function semantic_grep_current_filetype_picker(opts)
                 ---@field value LSPRankedMatch
                 ---@field display function|string -- use to create display text for picker
                 ---@field filename string
-                ---@field embed_score number
-                ---@field embed_rank integer
-                ---@field rerank_score number
-                ---@field rerank_rank integer
+                ---@field embed_score number TODO use entry.match.embed_score (instead of duplicating all of them here!)
+                ---@field embed_rank integer TODO use entry.match.embed_rank
+                ---@field rerank_score number TODO use entry.match.rerank_score
+                ---@field rerank_rank integer TODO use entry.match.rerank_rank
                 ---@field ordinal string -- for filtering? how so?
                 local entry = {
                     -- required:
