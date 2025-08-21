@@ -244,9 +244,13 @@ local function semantic_grep_current_filetype_picker(opts)
 
         local contents = ""
 
-        -- TODO use SIG when you get that going!
-        contents = entry.match.text:sub(1, 30)
-        -- show \n in text for new lines for now...
+        if match.signature and match.signature ~= "" then
+            contents = entry.match.signature
+        else
+            contents = entry.match.text:sub(1, 30)
+        end
+
+        -- replace newlines with backslash n => \n shows
         contents = string.gsub(contents, "\n", "\\n") --  else telescope replaces new line with a | which then screws up icon color
 
         local chunk_type = get_icon_for_chunk_type(entry.match.type)
