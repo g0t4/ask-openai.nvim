@@ -41,6 +41,9 @@ class LSPRankedMatch:
 def semantic_grep(query: str, current_file_abs: str | Path, vim_filetype: str | None = None, instruct: str | None = None) -> list[LSPRankedMatch]:
     if instruct is None:
         instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
+        # TODO try this instead after I geet a feel for re-rank with my original instruct:
+        #   instruct_aka_task = "Given a user Query to find code in a repository, retrieve the most relevant Documents"
+        #   PRN tweak/evaluate performance of different instruct/task descriptions?
 
     # * encode query vector
     with logger.timer("encoding query"):
