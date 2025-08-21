@@ -68,9 +68,9 @@ documents = [
 def rerank(_task: str, _query: str, documents: list[str]) -> list[float]:
     # for now assume task and query are constant for all documents, if I need mixed batching then I can address that later...
     # and actually I should encourage batching for same task/query else cache will be invalidated when task/query change
-    prompts = [format_rerank_instruction(_task, _query, doc) for doc in documents]
+    messages = [format_rerank_instruction(_task, _query, doc) for doc in documents]
 
-    inputs = tokenize(prompts)
+    inputs = tokenize(messages)
     scores = compute_logits(inputs)
     return scores
 
