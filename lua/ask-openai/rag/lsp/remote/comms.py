@@ -45,14 +45,14 @@ class EmbedClient():
     def encode(self, inputs: dict[str, str]) -> list[list[float]] | None:
         inputs['type'] = 'embed'
         send_len_then_msg(self.conn, inputs)
-        rx_msg = recv_len_then_msg(self.conn)
-        if rx_msg is None:
-            logger.warning(f"missing {rx_msg=}")
+        response = recv_len_then_msg(self.conn)
+        if response is None:
+            logger.warning(f"missing {response=}")
             return None
 
         # outer list is batch size
         # inner list is hidden dimension (vector size) of float - i.e. 1024 with Qwen3-Embedding-0.6B
-        return rx_msg['embeddings']
+        return response['embeddings']
 
     def rerank(self, inputs: dict[str, str]):
         inputs['type'] = 'rerank'
