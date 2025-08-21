@@ -62,15 +62,15 @@ def tokenize(messages):
     messages_tokens = tokenizer.pad(messages_tokens, padding=True, return_tensors="pt", max_length=max_length)
     return move_to_gpu(messages_tokens, model.device)
 
-@torch.no_grad()
-def compute_logits(inputs, **kwargs):
-    batch_scores = model(**inputs).logits[:, -1, :]
-    true_vector = batch_scores[:, token_true_id]
-    false_vector = batch_scores[:, token_false_id]
-    batch_scores = torch.stack([false_vector, true_vector], dim=1)
-    batch_scores = torch.nn.functional.log_softmax(batch_scores, dim=1)
-    scores = batch_scores[:, 1].exp().tolist()
-    return scores
+def compute_relevance(inputs, **kwargs):
+    with torch.no_grad():
+        batch_scores = model(**inputs).logits[:, -1, :]
+        true_vector = batch_scores[:, token_true_id]
+        false_vector = batch_scores[:, token_false_id]
+        batch_scores = torch.stack([false_vector, true_vector], dim=1)
+        batch_scores = torch.nn.functional.log_softmax(batch_scores, dim=1)
+        scores = batch_scores[:, 1].exp().tolist()
+        return scores
 
 query1 = "What is the capital of China?"
 query2 = "Explain gravity"
@@ -90,7 +90,7 @@ def rerank(_task: str, _query: str, documents: list[str]) -> list[float]:
         messages = [format_rerank_instruction(_task, _query, doc) for doc in documents]
         threads_tokens = tokenize(messages)
 
-        scores = compute_logits(threads_tokens)
+        scores = compute_relevance(threads_tokens)
         return scores
 
     return tokenize_outer(_task, _query, documents)
