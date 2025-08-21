@@ -52,18 +52,18 @@ def tokenize_docs(_instruct: str, _query: str, _documents: list[str]):
     common_prefix_tokens = tokenizer.encode(common_prefix, add_special_tokens=False)
 
     # NOTE layout is optimized for cache reuse! instruction/query are constant across a batch of documents
-    messages_tokens = tokenizer(
+    documents_tokens = tokenizer(
         _documents,
         padding=False,
         truncation='longest_first',
         return_attention_mask=False,
         max_length=max_user_tokens,
     )
-    for i, message_tokens in enumerate(messages_tokens['input_ids']):
+    for i, message_tokens in enumerate(documents_tokens['input_ids']):
         # insert user message contents into the chat thread template (this way I don't have to tokenize the constant parts repeatedly
-        messages_tokens['input_ids'][i] = chat_thread_prefix_tokens + message_tokens + chat_thread_suffix_tokens
-    messages_tokens = tokenizer.pad(messages_tokens, padding=True, return_tensors="pt", max_length=max_length)
-    return move_to_gpu(messages_tokens, model.device)
+        documents_tokens['input_ids'][i] = chat_thread_prefix_tokens + message_tokens + chat_thread_suffix_tokens
+    documents_tokens = tokenizer.pad(documents_tokens, padding=True, return_tensors="pt", max_length=max_length)
+    return move_to_gpu(documents_tokens, model.device)
 
 def compute_relevance(inputs, **kwargs):
     with torch.no_grad():
