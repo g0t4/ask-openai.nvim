@@ -27,7 +27,8 @@ if __name__ == "__main__":
     dataset = datasets.for_file("test.py", vim_filetype="py")
     assert dataset
 
-    scores, ids = dataset.index.search(query_vector, top_k=10)  # TODO! 50
+    top_k = 10 # TODO! 50
+    scores, ids = dataset.index.search(query_vector, top_k)
 
 #     # TODO rerank results
 #
