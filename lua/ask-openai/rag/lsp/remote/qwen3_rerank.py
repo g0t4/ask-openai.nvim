@@ -46,8 +46,6 @@ def move_to_gpu(tensors, device):
 def tokenize_docs(instruct: str, query: str, documents: list[str]):
     if instruct is None or instruct.strip() == "":
         raise ValueError("instruct must be provided")
-        # TODO! move to my calling code or a func below
-        #     instruct = 'Given a user query and a document, determine if the document contains an answer to the query.'
 
     # tokenize common prefix once:
     instruct_query = f"<Instruct>: {instruct}\n<Query>: {query}\n<Document>: "
@@ -83,6 +81,11 @@ def rerank(instruct: str, query: str, documents: list[str]) -> list[float]:
     # and actually I should encourage batching for same instruct/query else cache will be invalidated when instruct/query change
     tokenized_threads = tokenize_docs(instruct, query, documents)
     return compute_relevance_scores(tokenized_threads)
+
+def rerank_semantic_grep(query: str, documents: list[str]) -> list[float]:
+    # TODO do I want this here or push out into the client?
+    instruct = 'Does the document answer the user query?'
+    return rerank(instruct, query, documents)
 
 def main():
     from numpy.testing import assert_array_almost_equal
