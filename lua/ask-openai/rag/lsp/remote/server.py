@@ -58,16 +58,23 @@ def handle():
         return
 
     rx_texts = rx_msg['texts']
+    rx_type = rx_msg['type']
 
     with Timer() as encode_timer:
-        embeddings, input_ids = qwen3_embeddings.encode(rx_texts)
+        if rx_type == 'embed':
+            embeddings, input_ids = qwen3_embeddings.encode(rx_texts)
+            tx_msg = {'embeddings': embeddings.tolist()}
+        elif rx_type == 'rerank':
+            raise NotImplementedError(f'todo {rx_type=}')
+        else:
+            raise ValueError(f'unsupported {rx_type=}')
 
-    tx_msg = {'embeddings': embeddings.tolist()}
     send_len_then_msg(conn, tx_msg)
     conn.close()
 
-    rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_timer.elapsed_ms():.3f} ms")
-    dump_token_details(input_ids, rx_texts)
+    if rx_type == 'embed':
+        rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_timer.elapsed_ms():.3f} ms")
+        dump_token_details(input_ids, rx_texts)
 
 def dump_token_details(input_ids, rx_texts):
     if not logger.isEnabledFor(logging.DEBUG):
