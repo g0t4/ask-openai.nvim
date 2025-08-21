@@ -88,8 +88,8 @@ def rerank(_task: str, _query: str, documents: list[str]) -> list[float]:
     #   probably combine format into tokenize and let that all happen in there
     def tokenize_outer(_task, _query, documents):
         messages = [format_rerank_instruction(_task, _query, doc) for doc in documents]
-        threads_tokens = tokenize(messages)
-        return compute_relevance(threads_tokens)
+        tokenized_threads = tokenize(messages)
+        return compute_relevance(tokenized_threads)
 
     return tokenize_outer(_task, _query, documents)
 
