@@ -67,15 +67,15 @@ def tokenize_docs(_instruct: str, _query: str, _documents: list[str]):
     documents_tokens = tokenizer.pad(documents_tokens, padding=True, return_tensors="pt", max_length=max_length)
     return move_to_gpu(documents_tokens, model.device)
 
-def compute_relevance_scores(inputs, **kwargs):
+def compute_relevance_scores(tokenized_threads, **kwargs):
     with torch.no_grad():
-        batch_scores = model(**inputs).logits[:, -1, :]
-        true_vector = batch_scores[:, token_true_id]
-        false_vector = batch_scores[:, token_false_id]
-        batch_scores = torch.stack([false_vector, true_vector], dim=1)
+        logits = model(**tokenized_threads).logits[:, -1, :]
+        true_vector = logits[:, token_true_id]
+        false_vector = logits[:, token_false_id]
+        logits_no_and_yes = torch.stack([false_vector, true_vector], dim=1)
         # calculation to turn yes/no token logits into relevance score overall (per document)
-        batch_scores = torch.nn.functional.log_softmax(batch_scores, dim=1)
-        scores = batch_scores[:, 1].exp().tolist()
+        softmax_scores = torch.nn.functional.log_softmax(logits_no_and_yes, dim=1)
+        scores = softmax_scores[:, 1].exp().tolist()
         return scores
 
 def rerank(_instruct: str, _query: str, _documents: list[str]) -> list[float]:
