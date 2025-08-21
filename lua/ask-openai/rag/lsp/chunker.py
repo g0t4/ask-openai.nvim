@@ -186,18 +186,19 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # python
             nodes.append(node)
             collected_parent = True
-        elif not collected_parent and node.type.find('function') >= 0:
-            # only dump if a parent hasn't been collected
-            # for example, lines from a function shouldn't show up as skipped
-            print(f'node type not handled: {node.type}')
-            print(str(node.text).replace("\\n", "\n"))
-            print()
+        elif logger.isEnabledForDebug():
+            if not collected_parent and node.type.find('function') >= 0:
+                # only dump if a parent hasn't been collected
+                # for example, lines from a function shouldn't show up as skipped
+                print(f'node type not handled: {node.type}')
+                print(str(node.text).replace("\\n", "\n"))
+                print()
 
         for child in node.children:
             nodes.extend(collect_key_nodes(child, collected_parent))
         return nodes
 
-    def debug_uncovered_lines(tree, source_bytes, key_nodes):
+    def debug_uncovered_lines(source_bytes, key_nodes):
         """
         Given a tree-sitter tree and the raw source bytes, print any lines that are not
         covered by any node returned by collect_key_nodes(tree.root_node).
@@ -230,7 +231,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             print("All lines are covered by key nodes.")
 
     key_nodes = collect_key_nodes(tree.root_node)
-    debug_uncovered_lines(tree, source_bytes, key_nodes)
+    if logger.isEnabledForDebug():
+        debug_uncovered_lines(source_bytes, key_nodes)
 
     # This will list every line that does not fall inside any of the key nodes,
     # which is handy for inspecting stray or unparsed sections of the file.
