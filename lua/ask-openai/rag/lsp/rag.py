@@ -42,6 +42,7 @@ def handle_query(message, top_k=3, skip_same_file=False):
         vim_filetype=vim_filetype,
         skip_same_file=skip_same_file,
         top_k=top_k,
+        datasets=datasets,
     )
 
 def update_file_from_pygls_doc(lsp_doc: TextDocument, model_wrapper, options: RAGChunkerOptions):

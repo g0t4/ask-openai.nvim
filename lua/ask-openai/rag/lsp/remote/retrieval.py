@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from lsp.remote.comms import *
 from lsp.model_qwen3_remote import encode_query
-from lsp.storage import Chunk, load_all_datasets
+from lsp.storage import Chunk, Datasets, load_all_datasets
 
 @dataclass
 class LSPRankedMatch:
@@ -35,6 +35,8 @@ def semantic_grep(
     instruct: str | None = None,
     skip_same_file=False,
     top_k: int = 50,
+    # TODO fix datasets to not be so yucky
+    datasets: Datasets | None = None,
 ) -> list[LSPRankedMatch]:
     if instruct is None:
         instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
@@ -46,9 +48,10 @@ def semantic_grep(
     with logger.timer("encoding query"):
         query_vector = encode_query(query, instruct)
 
-    # * load datasets
-    dot_rag_dir = Path("~/repos/github/g0t4/ask-openai.nvim/.rag").expanduser().absolute()
-    datasets = load_all_datasets(dot_rag_dir)
+    if datasets is None:
+        logger.error("DATASETS must be loaded and passed")
+        raise Exception("MISSING DATASET(S) PLURAL")
+
     dataset = datasets.for_file(current_file_abs, vim_filetype=vim_filetype)
     if dataset is None:
         logger.error(f"No dataset")
@@ -93,7 +96,7 @@ def semantic_grep(
             signature=chunk.signature,
 
             # capture idx as rank before any sorting (i.e. text len below)
-            embed_score=embed_score.item(), # numpy.float32 not serializable, use .item()
+            embed_score=embed_score.item(),  # numpy.float32 not serializable, use .item()
             embed_rank=idx,
         )
 

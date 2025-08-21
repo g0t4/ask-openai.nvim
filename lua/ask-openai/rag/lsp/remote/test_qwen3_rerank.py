@@ -14,6 +14,10 @@ if __name__ == "__main__":
     # logging_fwk_to_console("DEBUG")
     logger = get_logger(__name__)
 
+    # TODO load datasets
+    dot_rag_dir = Path("~/repos/github/g0t4/ask-openai.nvim/.rag").expanduser().absolute()
+    datasets = load_all_datasets(dot_rag_dir)
+
     test_query = "where did I set the top_k for semantic grep?"
     ranked_matches = semantic_grep(
         query=test_query,
@@ -22,6 +26,7 @@ if __name__ == "__main__":
         instruct=None,  # intentionally blank
         skip_same_file=False,
         top_k=20,
+        datasets=datasets,
     )
 
     # * dump details
