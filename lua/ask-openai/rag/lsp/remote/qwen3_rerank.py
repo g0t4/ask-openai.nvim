@@ -8,6 +8,22 @@ from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM
 #      0.6B: https://huggingface.co/Qwen/Qwen3-Reranker-0.6B
 #      0.6B: https://huggingface.co/Qwen/Qwen3-Embedding-0.6B
 
+tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-Reranker-0.6B", padding_side='left')
+# model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-Reranker-0.6B").eval()
+# We recommend enabling flash_attention_2 for better acceleration and memory saving.
+model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-Reranker-0.6B", torch_dtype=torch.float16, attn_implementation="flash_attention_2").cuda().eval()
+token_false_id = tokenizer.convert_tokens_to_ids("no")
+token_true_id = tokenizer.convert_tokens_to_ids("yes")
+max_length = 8192
+
+prefix = "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n"
+suffix = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+prefix_tokens = tokenizer.encode(prefix, add_special_tokens=False)
+suffix_tokens = tokenizer.encode(suffix, add_special_tokens=False)
+
+task = 'Given a web search query, retrieve relevant passages that answer the query'
+
+
 def format_rerank_instruction(instruction, query, doc):
     if instruction is None:
         instruction = 'Given a user query and a document, determine if the document contains an answer to the query.'
@@ -41,21 +57,6 @@ def compute_logits(inputs, **kwargs):
     batch_scores = torch.nn.functional.log_softmax(batch_scores, dim=1)
     scores = batch_scores[:, 1].exp().tolist()
     return scores
-
-tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-Reranker-0.6B", padding_side='left')
-# model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-Reranker-0.6B").eval()
-# We recommend enabling flash_attention_2 for better acceleration and memory saving.
-model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen3-Reranker-0.6B", torch_dtype=torch.float16, attn_implementation="flash_attention_2").cuda().eval()
-token_false_id = tokenizer.convert_tokens_to_ids("no")
-token_true_id = tokenizer.convert_tokens_to_ids("yes")
-max_length = 8192
-
-prefix = "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n"
-suffix = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
-prefix_tokens = tokenizer.encode(prefix, add_special_tokens=False)
-suffix_tokens = tokenizer.encode(suffix, add_special_tokens=False)
-
-task = 'Given a web search query, retrieve relevant passages that answer the query'
 
 query1 = "What is the capital of China?"
 query2 = "Explain gravity"
