@@ -48,8 +48,8 @@ def tokenize_docs(_instruct: str, _query: str, _documents: list[str]):
         raise ValueError("instruct must be provided")
         # TODO! move to my calling code or a func below _instruct = 'Given a user query and a document, determine if the document contains an answer to the query.'
 
-    common_prefix = f"<Instruct>: {_instruct}\n<Query>: {_query}\n<Document>: "
-    common_prefix_tokens = tokenizer.encode(common_prefix, add_special_tokens=False)
+    instruct_query = f"<Instruct>: {_instruct}\n<Query>: {_query}\n<Document>: "
+    instruct_query_tokens = tokenizer.encode(instruct_query, add_special_tokens=False)
 
     # NOTE layout is optimized for cache reuse! instruction/query are constant across a batch of documents
     documents_tokens = tokenizer(
@@ -61,7 +61,7 @@ def tokenize_docs(_instruct: str, _query: str, _documents: list[str]):
     )
     for i, doc_tokens in enumerate(documents_tokens['input_ids']):
         # insert user message contents into the chat thread template (this way I don't have to tokenize the constant parts repeatedly
-        documents_tokens['input_ids'][i] = chat_thread_prefix_tokens + common_prefix_tokens + doc_tokens + chat_thread_suffix_tokens
+        documents_tokens['input_ids'][i] = chat_thread_prefix_tokens + instruct_query_tokens + doc_tokens + chat_thread_suffix_tokens
     documents_tokens = tokenizer.pad(documents_tokens, padding=True, return_tensors="pt", max_length=max_length)
     return move_to_gpu(documents_tokens, model.device)
 
