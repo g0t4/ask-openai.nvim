@@ -40,7 +40,8 @@ max_user_tokens = max_length - len(chat_thread_prefix_tokens) - len(chat_thread_
 
 def format_rerank_instruction(_instruct, query, doc):
     if _instruct is None:
-        _instruct = 'Given a user query and a document, determine if the document contains an answer to the query.'
+        raise ValueError("instruct must be provided")
+        # _instruct = 'Given a user query and a document, determine if the document contains an answer to the query.'
     # NOTE layout is optimized for cache reuse! instruction/query are constant across a batch of documents
     return f"<Instruct>: {_instruct}\n<Query>: {query}\n<Document>: {doc}"
 
