@@ -72,9 +72,9 @@ def compute_relevance_scores(tokenized_inputs):
         no_logits = logits[:, token_id_no]
         logits_no_and_yes = torch.stack([no_logits, yes_logits], dim=1)
         # calculation to turn yes/no token logits into relevance score overall (per document)
-        softmax_scores = torch.nn.functional.log_softmax(logits_no_and_yes, dim=1)
-        scores = softmax_scores[:, 1].exp().tolist()
-        return scores
+        log_softmax = torch.nn.functional.log_softmax(logits_no_and_yes, dim=1)
+        relevance_scores = log_softmax[:, 1].exp().tolist()
+        return relevance_scores
 
 def rerank(instruct: str, query: str, documents: list[str]) -> list[float]:
     # for now assume instruct and query are constant for all documents, if I need mixed batching then I can address that later...
