@@ -3,13 +3,9 @@ from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.remote.comms import *
 
 if __name__ == "__main__":
-    # ONLY intended for testing remote embeddings server... hence __main__ check here
-    # time python3 -m lsp.notes.hosted.sockets.client
 
-    # logging_fwk_to_console("WARN")
     logging_fwk_to_console("INFO")
     # logging_fwk_to_console("DEBUG")
-
     logger = get_logger(__name__)
 
     scoring_texts = get_known_inputs()
