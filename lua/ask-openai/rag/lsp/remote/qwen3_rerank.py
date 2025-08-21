@@ -43,19 +43,19 @@ def move_to_gpu(tensors, device):
         tensors[key] = tensors[key].to(device)
     return tensors
 
-def tokenize_docs(_instruct: str, _query: str, _documents: list[str]):
-    if _instruct is None or _instruct.strip() == "":
+def tokenize_docs(instruct: str, query: str, documents: list[str]):
+    if instruct is None or instruct.strip() == "":
         raise ValueError("instruct must be provided")
         # TODO! move to my calling code or a func below
-        #     _instruct = 'Given a user query and a document, determine if the document contains an answer to the query.'
+        #     instruct = 'Given a user query and a document, determine if the document contains an answer to the query.'
 
     # tokenize common prefix once:
-    instruct_query = f"<Instruct>: {_instruct}\n<Query>: {_query}\n<Document>: "
+    instruct_query = f"<Instruct>: {instruct}\n<Query>: {query}\n<Document>: "
     instruct_query_tokens = tokenizer.encode(instruct_query, add_special_tokens=False)
 
     # NOTE layout is optimized for cache reuse! instruction/query are constant across a batch of documents
     documents_tokens = tokenizer(
-        _documents,
+        documents,
         padding=False,
         truncation='longest_first',
         return_attention_mask=False,
@@ -78,10 +78,10 @@ def compute_relevance_scores(tokenized_threads):
         scores = softmax_scores[:, 1].exp().tolist()
         return scores
 
-def rerank(_instruct: str, _query: str, _documents: list[str]) -> list[float]:
+def rerank(instruct: str, query: str, documents: list[str]) -> list[float]:
     # for now assume instruct and query are constant for all documents, if I need mixed batching then I can address that later...
     # and actually I should encourage batching for same instruct/query else cache will be invalidated when instruct/query change
-    tokenized_threads = tokenize_docs(_instruct, _query, _documents)
+    tokenized_threads = tokenize_docs(instruct, query, documents)
     return compute_relevance_scores(tokenized_threads)
 
 def main():
