@@ -1,5 +1,6 @@
 # Requires transformers>=4.51.0
 import torch
+from rich import print
 from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM
 
 def format_instruction(instruction, query, doc):
@@ -59,6 +60,9 @@ documents = [
 ]
 
 pairs = [format_instruction(task, query, doc) for query, doc in zip(queries, documents)]
+rev_pairs = [format_instruction(task, query, doc) for query, doc in zip(reversed(queries), documents)]
+pairs += rev_pairs
+print("pairs", pairs)
 
 # Tokenize the input texts
 inputs = process_inputs(pairs)
