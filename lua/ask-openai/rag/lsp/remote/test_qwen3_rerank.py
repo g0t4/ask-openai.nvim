@@ -17,8 +17,11 @@ if __name__ == "__main__":
         with EmbedClient() as client:
             rx_embeddings = client.encode({'texts': query})
 
-    # TODO de-duplicate instruct
+    # TODO! I think I need a better instruct? does this convey yes/no?
+    # TODO! centralize instructs and query text so I always use the same on encode and rerank
+    # instruct = 'Does the document answer the user query?'
     instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
+
     query_vector = encode_query(query, instruct)
 
     # * load datasets
@@ -33,24 +36,21 @@ if __name__ == "__main__":
     ids = ids[0]
     scores = scores[0]
 
-    # first gather all chunks and their initial scores
-    chunk_objs = []
+    chunks = []
     for id, embed_score in zip(ids, scores):
         chunk = datasets.get_chunk_by_faiss_id(id)
         if chunk is None:
             raise Exception("missing chunk?!" + id)
-        chunk_objs.append({"chunk": chunk, "embed_score": embed_score})
+        chunks.append({"chunk": chunk, "embed_score": embed_score})
 
-    # sort by length of chunk.text
-    chunk_objs.sort(key=lambda x: len(x["chunk"].text))
+    # sort len(chunk.text) so similar lengths are batched together given longest text (in tokens) dictates sequence length
+    chunks.sort(key=lambda c: len(c["chunk"].text))
 
-    # batch size for EmbedClient
     BATCH_SIZE = 8
 
-    # iterate over batches
-    for i in range(0, len(chunk_objs), BATCH_SIZE):
-        batch = chunk_objs[i:i + BATCH_SIZE]
-        docs = [obj["chunk"].text for obj in batch]
+    for batch_num in range(0, len(chunks), BATCH_SIZE):
+        batch = chunks[batch_num:batch_num + BATCH_SIZE]
+        docs = [c["chunk"].text for c in batch]
 
         with EmbedClient() as client:
             msg = {"instruct": instruct, "query": query, "docs": docs}
@@ -58,31 +58,12 @@ if __name__ == "__main__":
             if not scores:
                 raise Exception("rerank returned no scores")
             # assign new scores back to objects
-            for obj, new_score in zip(batch, scores):
-                obj["embed_score"] = new_score
+            for c, rerank_score in zip(batch, scores):
+                c["rerank_score"] = rerank_score
 
-    # after reranking, you can print or process sorted results
-    for obj in chunk_objs:
-        print(f'{obj["chunk"].id}/{obj["embed_score"]}')
-        print(obj["chunk"].text)
+    # sort by rerank score
+    chunks.sort(key=lambda c: c["rerank_score"], reverse=True)
 
-#     # TODO rerank results
-#
-#     if not rx_embeddings:
-#         exit(-1)
-#
-#     # prints here are ok b/c the intent is a one-off test of get embeddings, so show them!
-#     print(f"Received {len(rx_embeddings)} embeddings:")
-#     for e in rx_embeddings:
-#         # print(f"  {e}")
-#         print(f"  {len(e)}")
-#
-#     # ** validate scores
-#     import numpy as np
-#
-#     verify_known_embeddings(np.array(rx_embeddings), "Qwen/Qwen3-Embedding-0.6B")
-#
-# def rerank_semantic_grep(query: str, documents: list[str]) -> list[float]:
-#     # TODO do I want this here or push out into the client?
-#     instruct = 'Does the document answer the user query?'
-#     return rerank(instruct, query, documents)
+    for i, c in enumerate(chunks):
+        rich.print(f'{i} / {c["chunk"].id}: rerank={c["rerank_score"]} embed={c["embed_score"]}')
+        rich.print(c["chunk"].text)
