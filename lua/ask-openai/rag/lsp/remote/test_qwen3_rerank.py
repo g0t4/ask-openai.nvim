@@ -29,8 +29,10 @@ if __name__ == "__main__":
 
     top_k = 10  # TODO! 50
     scores, ids = dataset.index.search(query_vector, top_k)
-    print(f'{ids=}')
-    print(f'{scores=}')
+    ids = ids[0]
+    scores = scores[0]
+    for id, score in zip(ids, scores):
+        print(f'{id}/{score}')
 
 #     # TODO rerank results
 #
