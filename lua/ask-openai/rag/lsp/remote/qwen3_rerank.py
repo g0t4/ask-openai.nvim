@@ -48,13 +48,7 @@ def move_to_gpu(tensors, device):
         tensors[key] = tensors[key].to(device)
     return tensors
 
-def rerank(_task: str, _query: str, _documents: list[str]) -> list[float]:
-    # for now assume task and query are constant for all documents, if I need mixed batching then I can address that later...
-    # and actually I should encourage batching for same task/query else cache will be invalidated when task/query change
-    tokenized_threads = tokenize(_task, _query, _documents)
-    return compute_relevance(tokenized_threads)
-
-def tokenize(_task: str, _query: str, _documents: list[str]):
+def tokenize_docs(_task: str, _query: str, _documents: list[str]):
     messages = [format_rerank_instruction(_task, _query, doc) for doc in _documents]
     messages_tokens = tokenizer(
         messages,
@@ -78,6 +72,12 @@ def compute_relevance(inputs, **kwargs):
         batch_scores = torch.nn.functional.log_softmax(batch_scores, dim=1)
         scores = batch_scores[:, 1].exp().tolist()
         return scores
+
+def rerank(_task: str, _query: str, _documents: list[str]) -> list[float]:
+    # for now assume task and query are constant for all documents, if I need mixed batching then I can address that later...
+    # and actually I should encourage batching for same task/query else cache will be invalidated when task/query change
+    tokenized_threads = tokenize_docs(_task, _query, _documents)
+    return compute_relevance(tokenized_threads)
 
 query1 = "What is the capital of China?"
 query2 = "Explain gravity"
