@@ -99,9 +99,10 @@ def handle_query(message, model_wrapper, top_k=3, skip_same_file=False):
             end_line_base0=chunk.base0.end_line,
             end_column_base0=chunk.base0.end_column,
             type=chunk.type,
-            score=float(scores[0][rank]),
-            rank=rank + 1,
             signature=chunk.signature,
+
+            embed_score=float(scores[0][rank]),
+            embed_rank=rank + 1,
         )
 
         matches.add(match)
