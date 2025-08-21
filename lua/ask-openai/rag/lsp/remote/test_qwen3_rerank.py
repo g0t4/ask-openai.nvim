@@ -71,4 +71,5 @@ if __name__ == "__main__":
     # * dump details
     for i, c in enumerate(chunks):
         rich.print(f'{i} / {c["chunk"].id}: rerank={format_score(c["rerank_score"])} embed={format_score(c["embed_score"])}')
-        rich.print(c["chunk"].text)
+        if logger.isEnabledForDebug():
+            print(c["chunk"].text)
