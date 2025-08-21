@@ -56,7 +56,13 @@ class EmbedClient():
 
     def rerank(self, inputs: dict[str, str]):
         inputs['type'] = 'rerank'
-        pass
+        send_len_then_msg(self.conn, inputs)
+        response = recv_len_then_msg(self.conn)
+        if response is None:
+            logger.warning(f"missing {response=}")
+            return None
+
+        return response['scores']
 
     def close(self):
         self.conn.close()

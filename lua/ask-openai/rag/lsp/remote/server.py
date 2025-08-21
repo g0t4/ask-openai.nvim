@@ -74,6 +74,7 @@ def handle():
             instruct = rx_msg['instruct']
             query = rx_msg['query']
             docs = rx_msg['docs']
+            print(rx_msg)
             scores = qwen3_rerank.rerank(instruct, query, docs)
             tx_msg = {'scores': scores}
 

@@ -33,6 +33,18 @@ if __name__ == "__main__":
     scores = scores[0]
     for id, score in zip(ids, scores):
         print(f'{id}/{score}')
+        # TODO batch the rerank, for now lets start w/ just one at a time
+        chunk = datasets.get_chunk_by_faiss_id(id)
+        if chunk is None:
+            raise Exception("missing chunk?!" + id)
+
+        with EmbedClient() as client:  # TODO reuse?
+            # TODO inject SIG for better re-ranking?
+            docs = [chunk.text]
+
+            msg = {"instruct": instruct, "query": query, "docs": docs}
+            scores = client.rerank(msg)
+            print(f'RR {scores=}')
 
 #     # TODO rerank results
 #
