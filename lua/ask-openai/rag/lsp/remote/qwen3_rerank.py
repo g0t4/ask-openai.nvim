@@ -24,7 +24,7 @@ else:
     raise ValueError("ONLY setup for CUDA device")
 
 # We recommend enabling flash_attention_2 for better acceleration and memory saving.
-model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs).cuda().eval()
+model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs).eval()
 token_false_id = tokenizer.convert_tokens_to_ids("no")
 token_true_id = tokenizer.convert_tokens_to_ids("yes")
 #
