@@ -75,6 +75,7 @@ _G.LSPRagQueryResult = {}
 ---@field type string
 ---@field score number
 ---@field rank integer
+---@field signature string
 _G.LSPContextChunk = {}
 
 ---@param user_prompt string

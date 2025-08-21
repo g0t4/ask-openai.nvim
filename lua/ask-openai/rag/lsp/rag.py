@@ -100,6 +100,7 @@ def handle_query(message, model_wrapper, top_k=3):
             type: str
             score: float
             rank: int
+            signature: str
 
         match = LSPContextChunk(
             text=chunk.text,
@@ -111,6 +112,7 @@ def handle_query(message, model_wrapper, top_k=3):
             type=chunk.type,
             score=float(scores[0][rank]),
             rank=rank + 1,
+            signature=chunk.signature,
         )
 
         matches.add(match)

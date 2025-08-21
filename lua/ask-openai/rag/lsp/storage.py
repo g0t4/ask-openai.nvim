@@ -66,7 +66,7 @@ class Chunk(BaseModel):
 
     # sig is two-fold: for re-ranker and for telescope picker results list
     # prefer one-liner
-    signature: str | None = None
+    signature: str = ""
 
     @property
     def faiss_id(self):
