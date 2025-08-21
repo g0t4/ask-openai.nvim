@@ -5,19 +5,6 @@ from lsp.model_qwen3_remote import encode_query
 from lsp.storage import Chunk, load_all_datasets
 
 @dataclass
-class RankedMatch:
-    # TODO nuke this version now that I use LSPRankedMatch
-    chunk: Chunk
-
-    # score from 0 to 1
-    embed_score: float = -1
-    rerank_score: float = -1
-
-    # order relative to other matches
-    embed_rank: int = -1
-    rerank_rank: int = -1
-
-@dataclass
 class LSPRankedMatch:
     id: str
     id_int: str
