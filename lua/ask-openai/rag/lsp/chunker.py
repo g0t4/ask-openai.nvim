@@ -175,12 +175,20 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         # * dump signature
         if node.type.find("function_definition") >= 0:
             # take until first block (top level)
-            sig = ""
+            block = None
             for child in node.children:
                 # for functions, in lua, block is a top-level child so we can dump all direct children up to the block
                 if child.type == "block":
+                    block = child
                     break
-                sig += str(child.text).replace("\\n", "\n")
+
+            if block is not None:
+                # stop at block
+                sig = source_bytes[node.start_byte:block.start_byte].decode("utf-8", errors="replace").strip()
+            else:
+                sig = "Can't find block to use as signature end for a function"
+
+            # PRN strip 2+ lines that are purely comments
 
             print("sig: ", sig)
 
