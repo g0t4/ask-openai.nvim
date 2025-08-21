@@ -187,7 +187,6 @@ local function semantic_grep_current_filetype_picker(opts)
     ---@type LSPRagQueryRequest
     local lsp_rag_request = {
         query = "",
-        instruct = "",
         vim_filetype = vim.o.filetype,
         current_file_absolute_path = files.get_current_file_absolute_path(),
     }
