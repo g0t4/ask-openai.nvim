@@ -49,6 +49,15 @@ signal.signal(signal.SIGINT, signal_handler)
 
 # listener.settimeout(60) # PRN for timeout on listener.accept(), but I don't need that if all I do is wait for a single connection
 
+def colorful_ms(ms: float) -> str:
+    if ms < 20:
+        color = "green"
+    elif ms > 100:
+        color = "red"
+    else:
+        color = "yellow"
+    return f"[{color}]{ms:.2f} ms[/]"
+
 def handle():
     conn.settimeout(10)  # give client 10 seconds max to send/recv its data
 
@@ -69,7 +78,7 @@ def handle():
             def after_send():
                 num_sequences = input_ids.shape[0]
                 num_tokens = input_ids.shape[1]
-                rich.print(f"[blue]embedded {num_sequences} sequences of {num_tokens} tokens in {encode_elapsed_ms:.3f} ms")
+                rich.print(f"[blue]embedded {num_sequences} sequences of {num_tokens} tokens in {colorful_ms(encode_elapsed_ms)} ms")
                 dump_token_details(input_ids, texts)
 
         elif request_type == 'rerank':
@@ -82,7 +91,7 @@ def handle():
             def after_send():
                 num_docs = len(docs)
                 num_tokens = len(input_ids[0])
-                rich.print(f"[blue]re-ranked {num_docs} docs of {num_tokens=} tokens in {encode_elapsed_ms:.3f} ms")
+                rich.print(f"[blue]re-ranked {num_docs} docs of {num_tokens=} tokens in {colorful_ms(encode_elapsed_ms)} ms")
 
         else:
             raise ValueError(f'unsupported {request_type=}')
