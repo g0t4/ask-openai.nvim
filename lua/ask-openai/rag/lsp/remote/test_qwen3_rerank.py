@@ -4,6 +4,7 @@ from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.remote.comms import *
 from lsp.model_qwen3_remote import encode_query
 from lsp.storage import load_all_datasets
+import rich
 
 if __name__ == "__main__":
 
@@ -33,7 +34,7 @@ if __name__ == "__main__":
     scores = scores[0]
     for id, score in zip(ids, scores):
         print(f'{id}/{score}')
-        # TODO batch the rerank, for now lets start w/ just one at a time
+        # TODO! batch the rerank, for now lets start w/ just one at a time
         chunk = datasets.get_chunk_by_faiss_id(id)
         if chunk is None:
             raise Exception("missing chunk?!" + id)
@@ -44,7 +45,11 @@ if __name__ == "__main__":
 
             msg = {"instruct": instruct, "query": query, "docs": docs}
             scores = client.rerank(msg)
-            print(f'RR {scores=}')
+            rich.print(f'RR {scores=}')
+            assert scores
+            score = scores[0]
+            # if score > 0.99:
+            print(chunk.text)
 
 #     # TODO rerank results
 #
