@@ -10,6 +10,7 @@ from pygls.server import LanguageServer
 from lsp.chunker import RAGChunkerOptions
 from lsp import ignores, imports, rag
 from lsp import fs
+# TODO! remove model_wrapper now that I settle on it being remote and am very happy with that, I won't be running in process anytime soon
 from lsp import model_qwen3_remote as model_wrapper
 from .logs import get_logger, logging_fwk_to_language_server_log_file
 
@@ -142,7 +143,7 @@ def rag_command_context_related(_: LanguageServer, params: types.ExecuteCommandP
         return
 
     message = params[0]
-    return rag.handle_query(message, model_wrapper, 10, skip_same_file=False)
+    return rag.handle_query(message, 10, skip_same_file=False)
 
 @server.command("context.query")
 def rag_command_context_query(_: LanguageServer, params: types.ExecuteCommandParams):
@@ -154,7 +155,7 @@ def rag_command_context_query(_: LanguageServer, params: types.ExecuteCommandPar
         return
 
     message = params[0]
-    return rag.handle_query(message, model_wrapper, skip_same_file=True)
+    return rag.handle_query(message, skip_same_file=True)
 
 # how can I intercept shutdown from client?
 #

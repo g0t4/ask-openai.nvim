@@ -15,10 +15,17 @@ if __name__ == "__main__":
     logger = get_logger(__name__)
 
     test_query = "where did I set the top_k for semantic grep?"
-    chunks = semantic_grep(query=test_query, current_file_abs="test.py", vim_filetype="py")
+    ranked_matches = semantic_grep(
+        query=test_query,
+        current_file_abs="test.py",
+        vim_filetype="py",
+        instruct=None,  # intentionally blank
+        skip_same_file=False,
+        top_k=20,
+    )
 
     # * dump details
-    for idx, c in enumerate(chunks):
-        rich.print(f'#{c.rerank_rank} / {c.chunk.id}: rerank={format_score_percent(c.rerank_score)} embed={format_score_percent(c.embed_score)}/#{c.embed_rank}')
+    for idx, m in enumerate(ranked_matches):
+        rich.print(f'#{m.rerank_rank} / {m.id}: rerank={format_score_percent(m.rerank_score)} embed={format_score_percent(m.embed_score)}/#{m.embed_rank}')
         if logger.isEnabledForDebug():
-            print(c.chunk.text)
+            print(m.text)

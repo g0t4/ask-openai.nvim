@@ -13,17 +13,6 @@ logger = get_logger(__name__)
 
 datasets: Datasets
 
-class ContextResult:
-
-    def __init__(self):
-        self.matches = []
-
-    def add(self, match):
-        self.matches.append(match)
-
-    def __len__(self):
-        return len(self.matches)
-
 def load_model_and_indexes(dot_rag_dir: Path, model_wrapper):
     global datasets
     datasets = load_all_datasets(dot_rag_dir)
@@ -34,7 +23,7 @@ def validate_rag_indexes():
     validator.validate()
 
 # PRN make top_k configurable (or other params)
-def handle_query(message, model_wrapper, top_k=3, skip_same_file=False):
+def handle_query(message, top_k=3, skip_same_file=False):
 
     # * parse and validate request parameters
     query = message.get("query")
@@ -46,75 +35,14 @@ def handle_query(message, model_wrapper, top_k=3, skip_same_file=False):
     instruct = message.get("instruct")
 
     # * NEW SEMANTIC GREP PIPELINE
-    semantic_grep(query=query, instruct=instruct, current_file_abs=current_file_abs, vim_filetype=vim_filetype)
-
-    # * load dataset
-    dataset = datasets.for_file(current_file_abs, vim_filetype=vim_filetype)
-    if dataset is None:
-        logger.error(f"No dataset")
-        return {"failed": True, "error": f"No dataset for {current_file_abs}"}
-
-    logger.pp_debug("[blue bold]RAG[/blue bold] query", message)
-
-    # TODO query more than top 3 and then remove same file matches
-    #   stop gap can I just take highest scores for now from embeddings only?
-    #   AHH MAN... skip match in same file is dominating results!
-    #     can I limit initial query to skip by id of chunks in same file?
-    #  PRN later, add RE-RANK!
-
-    query_vector = model_wrapper.encode_query(query, instruct)
-    if skip_same_file:
-        # grab 3x the docs so you can skip same file matches
-        top_k_padded = top_k * 3
-    else:
-        top_k_padded = top_k
-    scores, ids = dataset.index.search(query_vector, top_k_padded)
-
-    logger.pp_debug('scores', scores)
-    logger.pp_debug('ids', ids)
-
-    matches = ContextResult()
-    for rank, idx in enumerate(ids[0]):
-        if len(matches) >= top_k:
-            break
-
-        chunk = datasets.get_chunk_by_faiss_id(idx)
-        if chunk is None:
-            logger.error(f"Missing chunk for id: {idx}")
-            continue
-
-        score = scores[0][rank]
-        logger.pp_debug(f"chunk {score}", chunk)
-
-        # PRN capture absolute path in indexer! that way I dont have to rebuild absolute path here?
-        chunk_file_abs = chunk.file  # capture abs path, already works
-        is_same_file = current_file_abs == chunk_file_abs
-        if skip_same_file and is_same_file:
-            logger.warning(f"Skip match in same file")
-            continue
-        logger.debug(f"matched {chunk.file}:base0-L{chunk.base0.start_line}-{chunk.base0.end_line}")
-
-        match = LSPRankedMatch(
-            text=chunk.text,
-            file=chunk.file,
-            start_line_base0=chunk.base0.start_line,
-            start_column_base0=chunk.base0.start_column,
-            end_line_base0=chunk.base0.end_line,
-            end_column_base0=chunk.base0.end_column,
-            type=chunk.type,
-            signature=chunk.signature,
-            embed_score=float(scores[0][rank]),
-            embed_rank=rank + 1,
-        )
-
-        matches.add(match)
-
-    if len(matches) == 0:
-        # TODO go back and query next X?
-        # warn if this happens, that all were basically the same doc
-        logger.warning(f"No matches found for {current_file_abs=}")
-
-    return matches
+    return semantic_grep(
+        query=query,
+        instruct=instruct,
+        current_file_abs=current_file_abs,
+        vim_filetype=vim_filetype,
+        skip_same_file=skip_same_file,
+        top_k=top_k,
+    )
 
 def update_file_from_pygls_doc(lsp_doc: TextDocument, model_wrapper, options: RAGChunkerOptions):
     file_path = Path(lsp_doc.path)
