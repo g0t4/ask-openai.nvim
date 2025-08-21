@@ -48,8 +48,8 @@ def tokenize_docs(_instruct: str, _query: str, _documents: list[str]):
         raise ValueError("instruct must be provided")
         # TODO! move to my calling code or a func below _instruct = 'Given a user query and a document, determine if the document contains an answer to the query.'
 
-    # TODO tokenize once:
     common_prefix = f"<Instruct>: {_instruct}\n<Query>: {_query}\n<Document>: "
+    common_prefix_tokens = tokenizer.encode(common_prefix, add_special_tokens=False)
 
     # NOTE layout is optimized for cache reuse! instruction/query are constant across a batch of documents
     messages = [common_prefix + doc for doc in _documents]
