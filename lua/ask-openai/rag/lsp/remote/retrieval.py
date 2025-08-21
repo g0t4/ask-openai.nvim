@@ -71,6 +71,7 @@ def semantic_grep(query: str, instruct: str | None = None) -> list[ChunkRanking]
     chunks.sort(key=lambda c: c.rerank_score, reverse=True)
 
     # * set rerank_positions
+    # FYI sort by rerank_score BEFORE computing rerank_position
     for idx, c in enumerate(chunks):
         c.rerank_position = idx
 
