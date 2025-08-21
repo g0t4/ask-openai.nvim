@@ -5,7 +5,7 @@ from lsp.model_qwen3_remote import encode_query
 from lsp.storage import Chunk, load_all_datasets
 
 @dataclass
-class ChunkRanking:
+class RankedMatch:
     chunk: Chunk
 
     # score from 0 to 1
@@ -16,7 +16,7 @@ class ChunkRanking:
     embed_position: int = -1
     rerank_position: int = -1
 
-def semantic_grep(query: str, instruct: str | None = None) -> list[ChunkRanking]:
+def semantic_grep(query: str, instruct: str | None = None) -> list[RankedMatch]:
     if instruct is None:
         instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
 
@@ -37,12 +37,12 @@ def semantic_grep(query: str, instruct: str | None = None) -> list[ChunkRanking]
     scores = scores[0]
 
     # * lookup matching chunks
-    chunks: list[ChunkRanking] = []
+    chunks: list[RankedMatch] = []
     for idx, (id, embed_score) in enumerate(zip(ids, scores)):
         chunk = datasets.get_chunk_by_faiss_id(id)
         if chunk is None:
             raise Exception("missing chunk?!" + id)
-        chunks.append(ChunkRanking(
+        chunks.append(RankedMatch(
             chunk=chunk,
             embed_score=embed_score,
             embed_position=idx,
