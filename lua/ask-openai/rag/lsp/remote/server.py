@@ -76,15 +76,15 @@ def handle():
             response = {'embeddings': embeddings.tolist()}
 
             def after_send():
-                num_sequences = input_ids.shape[0]
-                num_tokens = input_ids.shape[1]
+                num_sequences = len(input_ids)
+                num_tokens = len(input_ids[0])
                 rich.print(f"[blue]embedded {num_sequences} sequences of {num_tokens} tokens in {colorful_ms(encode_elapsed_ms)} ms")
                 dump_token_details(input_ids, texts)
 
         elif request_type == 'rerank':
-            instruct = request['instruct']
-            query = request['query']
-            docs = request['docs']
+            instruct: str = request['instruct']
+            query: str = request['query']
+            docs: list[str] = request['docs']
             scores, input_ids = qwen3_rerank.rerank(instruct, query, docs)
             response = {'scores': scores}
 

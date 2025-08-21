@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+import numpy as np
 
 from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
@@ -48,7 +49,7 @@ model = AutoModel.from_pretrained(model_path, **model_kwargs)
 logger.debug(f'{model.hf_device_map=}')
 logger.info(f'[red bold] %s', model.device)
 
-def encode(input_texts):
+def encode(input_texts) -> tuple[np.ndarray, list[list[np.int64]]]:
 
     with torch.no_grad():
         batch_args = tokenizer(
@@ -62,8 +63,11 @@ def encode(input_texts):
         batch_args.to(model.device)
         outputs = model(**batch_args)
         embeddings = last_token_pool(outputs.last_hidden_state, batch_args['attention_mask'])
-        norm = F.normalize(embeddings, p=2, dim=1).cpu().numpy()
-        return norm, batch_args['input_ids']
+        norm: np.ndarray = F.normalize(embeddings, p=2, dim=1).cpu().numpy()
+
+        # norm is ndarray (SEQ,EMBEDDING DIMENSION) => fix usage of matrix multi in verify_qwen3_known_embeddings so I can do norm.tolist() here too
+        # batch_args is a Tensor
+        return norm, batch_args['input_ids'].tolist()
 
 def test_known_embeddings():
     from rich import print
