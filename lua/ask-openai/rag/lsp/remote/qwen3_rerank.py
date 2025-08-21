@@ -59,9 +59,9 @@ def tokenize_docs(_instruct: str, _query: str, _documents: list[str]):
         return_attention_mask=False,
         max_length=max_user_tokens,
     )
-    for i, message_tokens in enumerate(documents_tokens['input_ids']):
+    for i, doc_tokens in enumerate(documents_tokens['input_ids']):
         # insert user message contents into the chat thread template (this way I don't have to tokenize the constant parts repeatedly
-        documents_tokens['input_ids'][i] = chat_thread_prefix_tokens + message_tokens + chat_thread_suffix_tokens
+        documents_tokens['input_ids'][i] = chat_thread_prefix_tokens + doc_tokens + chat_thread_suffix_tokens
     documents_tokens = tokenizer.pad(documents_tokens, padding=True, return_tensors="pt", max_length=max_length)
     return move_to_gpu(documents_tokens, model.device)
 
