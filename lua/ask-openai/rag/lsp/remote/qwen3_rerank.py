@@ -38,20 +38,18 @@ chat_thread_suffix_tokens = tokenizer.encode(chat_thread_suffix, add_special_tok
 max_length = 8192
 max_user_tokens = max_length - len(chat_thread_prefix_tokens) - len(chat_thread_suffix_tokens)
 
-def format_rerank_instruction(_instruct, query, doc):
-    if _instruct is None:
-        raise ValueError("instruct must be provided")
-        # _instruct = 'Given a user query and a document, determine if the document contains an answer to the query.'
-    # NOTE layout is optimized for cache reuse! instruction/query are constant across a batch of documents
-    return f"<Instruct>: {_instruct}\n<Query>: {query}\n<Document>: {doc}"
-
 def move_to_gpu(tensors, device):
     for key in tensors:
         tensors[key] = tensors[key].to(device)
     return tensors
 
 def tokenize_docs(_instruct: str, _query: str, _documents: list[str]):
-    messages = [format_rerank_instruction(_instruct, _query, doc) for doc in _documents]
+    if _instruct is None or _instruct.strip() == "":
+        raise ValueError("instruct must be provided")
+        # TODO! move to my calling code or a func below _instruct = 'Given a user query and a document, determine if the document contains an answer to the query.'
+
+    # NOTE layout is optimized for cache reuse! instruction/query are constant across a batch of documents
+    messages = [f"<Instruct>: {_instruct}\n<Query>: {query}\n<Document>: {doc}" for doc in _documents]
     messages_tokens = tokenizer(
         messages,
         padding=False,
