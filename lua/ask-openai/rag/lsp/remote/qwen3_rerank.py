@@ -38,21 +38,21 @@ chat_thread_suffix_tokens = tokenizer.encode(chat_thread_suffix, add_special_tok
 max_length = 8192
 max_user_tokens = max_length - len(chat_thread_prefix_tokens) - len(chat_thread_suffix_tokens)
 
-task = 'Given a web search query, retrieve relevant passages that answer the query'
+instruct = 'Given a web search query, retrieve relevant passages that answer the query'
 
-def format_rerank_instruction(instruction, query, doc):
-    if instruction is None:
-        instruction = 'Given a user query and a document, determine if the document contains an answer to the query.'
+def format_rerank_instruction(_instruct, query, doc):
+    if _instruct is None:
+        _instruct = 'Given a user query and a document, determine if the document contains an answer to the query.'
     # NOTE layout is optimized for cache reuse! instruction/query are constant across a batch of documents
-    return f"<Instruct>: {instruction}\n<Query>: {query}\n<Document>: {doc}"
+    return f"<Instruct>: {_instruct}\n<Query>: {query}\n<Document>: {doc}"
 
 def move_to_gpu(tensors, device):
     for key in tensors:
         tensors[key] = tensors[key].to(device)
     return tensors
 
-def tokenize_docs(_task: str, _query: str, _documents: list[str]):
-    messages = [format_rerank_instruction(_task, _query, doc) for doc in _documents]
+def tokenize_docs(_instruct: str, _query: str, _documents: list[str]):
+    messages = [format_rerank_instruction(_instruct, _query, doc) for doc in _documents]
     messages_tokens = tokenizer(
         messages,
         padding=False,
@@ -77,10 +77,10 @@ def compute_relevance(inputs, **kwargs):
         scores = batch_scores[:, 1].exp().tolist()
         return scores
 
-def rerank(_task: str, _query: str, _documents: list[str]) -> list[float]:
-    # for now assume task and query are constant for all documents, if I need mixed batching then I can address that later...
-    # and actually I should encourage batching for same task/query else cache will be invalidated when task/query change
-    tokenized_threads = tokenize_docs(_task, _query, _documents)
+def rerank(_instruct: str, _query: str, _documents: list[str]) -> list[float]:
+    # for now assume instruct and query are constant for all documents, if I need mixed batching then I can address that later...
+    # and actually I should encourage batching for same instruct/query else cache will be invalidated when instruct/query change
+    tokenized_threads = tokenize_docs(_instruct, _query, _documents)
     return compute_relevance(tokenized_threads)
 
 query1 = "What is the capital of China?"
@@ -92,12 +92,16 @@ documents = [
 ]
 
 if __name__ == "__main__":
-    actual_scores1 = rerank(task, query1, documents)
+    from numpy.testing import assert_array_almost_equal
+
+    # * query1
+    actual_scores1 = rerank(instruct, query1, documents)
     print("scores1: ", actual_scores1)
     expected_scores1 = [0.99951171875, 5.066394805908203e-06]
-    from numpy.testing import assert_array_almost_equal
     assert_array_almost_equal(actual_scores1, expected_scores1, decimal=3)
-    actual_scores2 = rerank(task, query2, documents)
+
+    # * query2
+    actual_scores2 = rerank(instruct, query2, documents)
     print("scores2: ", actual_scores2)
     expected_scores2 = [4.947185516357422e-05, 0.99951171875]
     assert_array_almost_equal(actual_scores2, expected_scores2, decimal=3)
