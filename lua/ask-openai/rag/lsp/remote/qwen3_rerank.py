@@ -2,6 +2,12 @@
 import torch
 from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM
 
+# FYI links:
+#   Qwen3 paper w.r.t. Embedding and Reranking: https://arxiv.org/pdf/2506.05176
+#   hf repos:
+#      0.6B: https://huggingface.co/Qwen/Qwen3-Reranker-0.6B
+#      0.6B: https://huggingface.co/Qwen/Qwen3-Embedding-0.6B
+
 def format_instruction(instruction, query, doc):
     if instruction is None:
         instruction = 'Given a web search query, retrieve relevant passages that answer the query'
