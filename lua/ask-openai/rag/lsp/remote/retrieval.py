@@ -59,9 +59,8 @@ def semantic_grep(query: str, instruct: str | None = None) -> list[ChunkRanking]
         docs = [c.chunk.text for c in batch]
 
         with EmbedClient() as client:
-            # TODO dataclass
-            msg = {"instruct": instruct, "query": query, "docs": docs}
-            scores = client.rerank(msg)
+            request = RerankRequest(instruct=instruct, query=query, docs=docs)
+            scores = client.rerank(request)
             if not scores:
                 raise Exception("rerank returned no scores")
             # assign new scores back to objects

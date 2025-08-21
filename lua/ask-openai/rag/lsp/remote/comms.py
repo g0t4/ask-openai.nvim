@@ -1,7 +1,9 @@
+from dataclasses import asdict, dataclass
 import socket
 from typing import Any
 import msgpack
 import struct
+
 from ..logs import get_logger
 
 logger = get_logger(__name__)
@@ -36,6 +38,13 @@ def send_len_then_msg(conn: socket.socket, msg: dict[str, Any]):
     msg_len_packed = struct.pack('!I', msg_len)  # 4-byte network byte order
     conn.sendall(msg_len_packed + msg_packed)
 
+@dataclass
+class RerankRequest:
+    instruct: str
+    query: str
+    docs: list[str]
+    type: str = "rerank"
+
 class EmbedClient():
 
     def __init__(self, addy=("ollama.lan", 8015)):
@@ -43,6 +52,7 @@ class EmbedClient():
         self.addy = addy
 
     def encode(self, inputs: dict[str, str]) -> list[list[float]] | None:
+        # PRN add dataclass like rerank below
         inputs['type'] = 'embed'
         send_len_then_msg(self.conn, inputs)
         response = recv_len_then_msg(self.conn)
@@ -54,9 +64,9 @@ class EmbedClient():
         # inner list is hidden dimension (vector size) of float - i.e. 1024 with Qwen3-Embedding-0.6B
         return response['embeddings']
 
-    def rerank(self, inputs: dict[str, str]):
-        inputs['type'] = 'rerank'
-        send_len_then_msg(self.conn, inputs)
+    def rerank(self, inputs: RerankRequest) -> list[float] | None:
+        inputs.type = 'rerank'
+        send_len_then_msg(self.conn, asdict(inputs))
         response = recv_len_then_msg(self.conn)
         if response is None:
             logger.warning(f"missing {response=}")
