@@ -6,8 +6,6 @@ local entry_display = require "telescope.pickers.entry_display"
 local utils = require('telescope.utils') -- to use as a dependency, see https://github.com/nvim-telescope/telescope.nvim/blob/271832a170502dbd92b29fc67755098d8b09838a/lua/telescope/utils.lua#L235
 local sorters = require('telescope.sorters')
 local previewers = require('telescope.previewers')
-local telescope_config = require('telescope.config').values
-local make_entry = require('telescope.make_entry')
 local state = require('telescope.actions.state')
 -- non-telescope deps:
 local files = require("ask-openai.helpers.files")
@@ -60,7 +58,6 @@ function _semantic_grep(lsp_query_message_args, lsp_buffer_number, process_resul
                 return {}
             end
 
-            -- PRN try using re-ranking with 30-50 matches? does that improve utility/accuracy?
             local matches = result.matches or {}
             for i, match in ipairs(matches) do
                 -- logs:info("match: " .. vim.inspect(match))
@@ -164,7 +161,7 @@ local sort_by_score = sorters.Sorter:new {
         -- print("cb_filter: " .. vim.inspect(cb_filter))
 
         -- reverse order with 1-... IIUC this is in part b/c I have to use ascending sorting_strategy to workaround that bug with default (descending)
-        return (1 - entry.embed_score)
+        return entry.match.rerank_rank
     end,
 
     highlighter = function(_, prompt, display)
@@ -221,7 +218,7 @@ local function semantic_grep_current_filetype_picker(opts)
         -- FYI hl groups
         -- ~/.local/share/nvim/lazy/telescope.nvim/plugin/telescope.lua:11-92 i.e. TelescopeResultsIdentifier
 
-        local score_percent = string.format("%.1f%%", entry.embed_score * 100)
+        local score_percent = string.format("%.1f%%", entry.match.embed_score * 100)
         -- use percent_str where needed, e.g. in the display text
         local icon, icon_hlgroup = utils.get_devicons(entry.filename, false)
         local coordinates = ":"
@@ -246,13 +243,11 @@ local function semantic_grep_current_filetype_picker(opts)
         local line = path_display .. coordinates -- .. " " .. entry.match.text
 
         local contents = ""
-
         if match.signature and match.signature ~= "" then
             contents = entry.match.signature
         else
             contents = entry.match.text:sub(1, 30)
         end
-
         -- replace newlines with backslash n => \n shows
         contents = string.gsub(contents, "\n", "\\n") --  else telescope replaces new line with a | which then screws up icon color
 
@@ -283,7 +278,6 @@ local function semantic_grep_current_filetype_picker(opts)
                     process_complete()
                     return
                 end
-
                 -- function is called each time the user changes the prompt (text in the Telescope Picker)
                 lsp_query_message_args.text = prompt
                 return _semantic_grep(lsp_query_message_args, lsp_buffer_number, process_result, process_complete, entry_maker)
@@ -292,60 +286,29 @@ local function semantic_grep_current_filetype_picker(opts)
             ---@param match LSPRankedMatch
             ---@return SemanticGrepTelescopeEntryMatch
             entry_maker = function(match)
-                -- FYI `:h telescope.make_entry`
-
-                -- * match example
-                --     end_line0 = 87,
-                --     file = "<ABS PATH>"
-                --     rank = 2,
-                --     score = 0.71245551109314,
-                --     start_line0 = 76,
-                --     text = "\nfunction M.setup_telescope_picker()\n...",
-                --     type = "lines"
-
-                -- FYI would really be cool if I start to use treesitter for RAG chunking cuz then likely the first line will have the name of a function or otherwise!
-                -- lift out first function nameoanywhere in lines?
-                -- fallback to first line/last line parts
-                display_first_line = match.text.sub(match.text, 1, 20)
-                display_last_line = match.text.sub(match.text, -20, -1)
-                contents = display_first_line .. "..." .. display_last_line
-
                 ---@class SemanticGrepTelescopeEntryMatch
                 ---@field match LSPRankedMatch
                 ---@field value LSPRankedMatch
                 ---@field display function|string -- use to create display text for picker
                 ---@field filename string
-                ---@field embed_score number TODO use entry.match.embed_score (instead of duplicating all of them here!)
-                ---@field embed_rank integer TODO use entry.match.embed_rank
-                ---@field rerank_score number TODO use entry.match.rerank_score
-                ---@field rerank_rank integer TODO use entry.match.rerank_rank
                 ---@field ordinal string -- for filtering? how so?
                 local entry = {
                     -- required:
-                    value = match,
-                    display = make_display, -- string|function
-                    ordinal = match.text, -- for filtering? how so?
+                    display = make_display, -- required, string|function
+                    ordinal = match.text, -- required, for filtering? how so?
+                    value = match, -- required, IIRC for getting selection (returns match).. though shouldn't it return the whole entry?!
 
-                    -- optional:
-                    -- valid = false -- hide it (also can return nil for entire object)
-
-                    -- default action uses these to jump to file location
-                    filename = match.file,
-
-                    match = match,
-                    embed_score = match.score,
+                    match = match, -- PREFER THIS now that I have type hints
+                    filename = match.file, -- default action uses these to jump to file location
+                    -- valid = false -- true = hide this entry (or return nil for entire entry)
                 }
                 return entry
                 -- optional second return value
             end,
-
         }),
 
-        -- :h telescope.previewers
         previewer = custom_buffer_previewer,
-
         sorter = sort_by_score,
-        -- sorter = sorters.get_generic_fuzzy_sorter(),
         attach_mappings = function(prompt_bufnr, keymap)
             -- actions.select_default:replace(function()
             --     -- actions.close(prompt_bufnr)
@@ -361,21 +324,14 @@ local function semantic_grep_current_filetype_picker(opts)
             keymap({ 'n' }, '<leader>d', function()
                 ---@type SemanticGrepTelescopeEntryMatch
                 local selection = state.get_selected_entry()
-                -- I actually like seeing it in cmdline... works well to quick check w/o closing the picker
 
-                -- FYI for now have to open messages before to see these, that's fine as its a fallback
-                -- SHOW chunk details... i.e. text so I can compare to what is selected in previewer
-                --  and to troubleshoot why matches happen!
-                -- messages.ensure_open() -- unfortunately this fails b/c can't switch back to picker b/c it closes when opening messages buffer...
-                -- for now just open this before open picker when troubleshooting... until I can get in a fix
+                -- SHOW chunk details... i.e. compare to highlights in previewer
                 logs:jsonify_info("selection:", selection.match)
                 logs:info("selection.text:", selection.match.text)
 
                 -- still blocks logs from updating, FYI...NBD
                 vim.print(selection)
             end)
-
-
             return true
         end,
     })
@@ -383,9 +339,7 @@ local function semantic_grep_current_filetype_picker(opts)
 end
 
 return require('telescope').register_extension {
-    -- PRN setup
     exports = {
         ask_semantic_grep = semantic_grep_current_filetype_picker,
-        -- PRN other pickers!
     },
 }

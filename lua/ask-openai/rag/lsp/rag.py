@@ -36,14 +36,16 @@ def validate_rag_indexes():
 
 # PRN make top_k configurable (or other params)
 def handle_query(message, model_wrapper, top_k=3, skip_same_file=False):
+
+    # * validate fields
     text = message.get("text")
     if text is None or len(text) == 0:
         logger.error("[red bold][ERROR] No text provided")
         return {"failed": True, "error": "No text provided"}
-
     vim_filetype = message.get("vim_filetype")
-
     current_file_abs = message.get("current_file_absolute_path")
+
+    # * load dataset
     dataset = datasets.for_file(current_file_abs, vim_filetype=vim_filetype)
     if dataset is None:
         logger.error(f"No dataset")
@@ -100,7 +102,6 @@ def handle_query(message, model_wrapper, top_k=3, skip_same_file=False):
             end_column_base0=chunk.base0.end_column,
             type=chunk.type,
             signature=chunk.signature,
-
             embed_score=float(scores[0][rank]),
             embed_rank=rank + 1,
         )

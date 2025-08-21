@@ -6,6 +6,7 @@ from lsp.storage import Chunk, load_all_datasets
 
 @dataclass
 class RankedMatch:
+    # TODO nuke this version now that I use LSPRankedMatch
     chunk: Chunk
 
     # score from 0 to 1
@@ -37,7 +38,7 @@ class LSPRankedMatch:
     embed_rank: int = -1
     rerank_rank: int = -1
 
-def semantic_grep(query: str, instruct: str | None = None) -> list[RankedMatch]:
+def semantic_grep(query: str, instruct: str | None = None) -> list[LSPRankedMatch]:
     if instruct is None:
         instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
 
@@ -58,16 +59,29 @@ def semantic_grep(query: str, instruct: str | None = None) -> list[RankedMatch]:
     scores = scores[0]
 
     # * lookup matching chunks
-    chunks: list[RankedMatch] = []
+    chunks: list[LSPRankedMatch] = []
     for idx, (id, embed_score) in enumerate(zip(ids, scores)):
         chunk = datasets.get_chunk_by_faiss_id(id)
         if chunk is None:
-            raise Exception("missing chunk?!" + id)
-        chunks.append(RankedMatch(
-            chunk=chunk,
+            logger.warning("skipping missing chunk for id: %s", id)
+            continue
+        match = LSPRankedMatch(
+            text=chunk.text,
+            file=chunk.file,
+            start_line_base0=chunk.base0.start_line,
+            start_column_base0=chunk.base0.start_column,
+            end_line_base0=chunk.base0.end_line,
+            end_column_base0=chunk.base0.end_column,
+            type=chunk.type,
+            signature=chunk.signature,
+
+            # TODO are these correct for embed score/rank?
             embed_score=embed_score,
             embed_rank=idx,
-        ))
+        )
+
+        matches.append(match)
+
     # TODO! do I need to sort by embed_score first? IIRC these are sorted in order BUT DOUBLE CHEK
 
     # * sort len(chunk.text)
