@@ -168,11 +168,10 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     with logger.timer('parse_ts ' + str(path)):
         tree = parser.parse(source_bytes)
 
-    def debug_dump_children_and_sig(node):
-        if not logger.isEnabledForDebug():
-            return
+    def get_signature(node):
 
         # * dump signature
+        sig = None
         if node.type.find("function_definition") >= 0:
             # take until first block (top level)
             block = None
@@ -190,43 +189,48 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
             # PRN strip 2+ lines that are purely comments
 
-            print("sig: ", sig)
+        if logger.isEnabledForDebug():
+            # * print for debug purposes
+            logger.debug("sig: ", sig)
 
-        # * dump node hierarchy
-        def dump(node, prefix):
-            print(prefix + node.type)
-            prefix = prefix + "  "
-            for child in node.children:
-                dump(child, prefix)
+            # * dump node hierarchy
+            def dump(node, prefix):
+                logger.debug(prefix + node.type)
+                prefix = prefix + "  "
+                for child in node.children:
+                    dump(child, prefix)
 
-        dump(node, "")
+            dump(node, "")
+
+        return sig
 
     def debug_uncollected_node(node):
         # use node type filter to find specific nodes
         if node.type.find('function') <= 0:
             return
 
-        print(f'node type not handled: {node.type}')
-        print(str(node.text).replace("\\n", "\n"))
-        print()
+        logger.debug(f'node type not handled: {node.type}')
+        logger.debug(str(node.text).replace("\\n", "\n"))
+        logger.debug("")
 
-    def collect_key_nodes(node: Node, collected_parent: bool = False) -> list[Node]:
+    def collect_key_nodes(node: Node, collected_parent: bool = False) -> tuple[list[Node], dict[Node, str]]:
         nodes: list[Node] = []
+        sigs_by_node: dict[Node, str] = {}
 
         # TODO should I have a set per language that I keep?
-        if node.type == "function_definition":
-            # lua: anonymous functions
-            # python: named functions
-            nodes.append(node)
-            collected_parent = True
-            debug_dump_children_and_sig(node)
-        elif node.type == "local_function_definition_statement" \
+        if node.type == "function_definition" \
+            or node.type == "local_function_definition_statement" \
             or node.type == "function_definition_statement":
-            # lua: named functions (local vs global)
+            # lua: function_definition == anonymous functions
+            # python: function_definition == named functions
+            # lua: named functions (local_function_definition_statement/local vs function_definition_statement/global)
             # FOR lua functions, grab --- triple dash comments before function (until blank line)
             nodes.append(node)
             collected_parent = True
-            debug_dump_children_and_sig(node)
+            # TODO track sig with node
+            sig = get_signature(node)
+            if sig is not None:
+                sigs_by_node[node] = sig
         elif node.type == "class_definition":
             # python
             nodes.append(node)
@@ -235,8 +239,11 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             debug_uncollected_node(node)
 
         for child in node.children:
-            nodes.extend(collect_key_nodes(child, collected_parent))
-        return nodes
+            _nodes, _sigs_by_node = collect_key_nodes(child, collected_parent)
+            nodes.extend(_nodes)
+            sigs_by_node.update(_sigs_by_node)
+
+        return nodes, sigs_by_node
 
     def debug_uncovered_lines(source_bytes, key_nodes):
         """
@@ -257,20 +264,20 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         uncovered = [ln for ln in range(len(source_lines)) if ln not in covered]
 
         if uncovered:
-            print("Uncovered lines:")
+            logger.debug("Uncovered lines:")
             last_ln = -1
             for ln in uncovered:
                 if ln - last_ln > 1:
-                    print()  # divide non-contiguous ranges
+                    logger.debug()  # divide non-contiguous ranges
 
                 # Show line number (1‑based) and content
-                print(f"{ln+1:4d}: {source_lines[ln].decode('utf-8', errors='replace')}")
+                logger.debug(f"{ln+1:4d}: {source_lines[ln].decode('utf-8', errors='replace')}")
                 last_ln = ln
 
         else:
-            print("All lines are covered by key nodes.")
+            logger.debug("All lines are covered by key nodes.")
 
-    key_nodes = collect_key_nodes(tree.root_node)
+    key_nodes, sigs_by_node = collect_key_nodes(tree.root_node)
     if logger.isEnabledForDebug():
         debug_uncovered_lines(source_bytes, key_nodes)
 
@@ -279,7 +286,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
     chunks = []
     for fn in key_nodes:
-        # print(f'{fn=}')
+        # logger.debug(f'{fn=}')
 
         start_line_base0 = fn.start_point[0]
         end_line_base0 = fn.end_point[0]
@@ -291,6 +298,12 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         text = fn.text.decode('utf-8')
         # TODO logic to split up if over a certain size (tokens)
         # TODO plug in new SIG/FUNC/etc tag header info like in test case
+
+        if sigs_by_node.get(fn) is not None:
+            sig = sigs_by_node[fn]
+        else:
+            sig = ""
+
         chunk = Chunk(
             id=chunk_id,
             id_int=str(chunk_id_to_faiss_id(chunk_id)),
@@ -302,7 +315,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             end_column0=end_column_base0,
             type=chunk_type,
             file_hash=file_hash,
-            signature="",
+            signature=sig,
         )
 
         chunks.append(chunk)
