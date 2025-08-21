@@ -59,7 +59,9 @@ documents = [
     "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
 ]
 
+# FYI score ~1 for both (cuz they match)
 pairs = [format_instruction(task, query, doc) for query, doc in zip(queries, documents)]
+# I added rev_pairs to see how score turns out with not matching query/doc, indeed score is ~0 for both!
 rev_pairs = [format_instruction(task, query, doc) for query, doc in zip(reversed(queries), documents)]
 pairs += rev_pairs
 print("pairs", pairs)
