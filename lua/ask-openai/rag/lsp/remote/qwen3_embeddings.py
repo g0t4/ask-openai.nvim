@@ -31,7 +31,6 @@ def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tenso
 model_path = 'Qwen/Qwen3-Embedding-0.6B'
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side='left')
 
-
 device = auto_device()
 if device.type == 'cuda':
     # TODO would bfloat16 work better on 5090s?
