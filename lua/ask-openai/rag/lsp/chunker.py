@@ -168,9 +168,23 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     with logger.timer('parse_ts ' + str(path)):
         tree = parser.parse(source_bytes)
 
-    def debug_dump_children(node):
-        # print all nodes for specific
+    def debug_dump_children_and_sig(node):
+        if not logger.isEnabledForDebug():
+            return
 
+        # * dump signature
+        if node.type.find("function_definition") >= 0:
+            # take until first block (top level)
+            sig = ""
+            for child in node.children:
+                # for functions, in lua, block is a top-level child so we can dump all direct children up to the block
+                if child.type == "block":
+                    break
+                sig += str(child.text).replace("\\n", "\n")
+
+            print("sig: ", sig)
+
+        # * dump node hierarchy
         def dump(node, prefix):
             print(prefix + node.type)
             prefix = prefix + "  "
@@ -197,13 +211,14 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # python: named functions
             nodes.append(node)
             collected_parent = True
+            debug_dump_children_and_sig(node)
         elif node.type == "local_function_definition_statement" \
             or node.type == "function_definition_statement":
             # lua: named functions (local vs global)
             # FOR lua functions, grab --- triple dash comments before function (until blank line)
             nodes.append(node)
             collected_parent = True
-            debug_dump_children(node)
+            debug_dump_children_and_sig(node)
         elif node.type == "class_definition":
             # python
             nodes.append(node)
