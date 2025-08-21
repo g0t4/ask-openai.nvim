@@ -67,18 +67,22 @@ def handle():
             response = {'embeddings': embeddings.tolist()}
 
             def after_send():
-                rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_elapsed_ms:.3f} ms")
+                num_sequences = input_ids.shape[0]
+                num_tokens = input_ids.shape[1]
+                rich.print(f"[blue]embedded {num_sequences} sequences of {num_tokens} tokens in {encode_elapsed_ms:.3f} ms")
                 dump_token_details(input_ids, texts)
 
         elif request_type == 'rerank':
             instruct = request['instruct']
             query = request['query']
             docs = request['docs']
-            scores = qwen3_rerank.rerank(instruct, query, docs)
+            scores, input_ids = qwen3_rerank.rerank(instruct, query, docs)
             response = {'scores': scores}
 
             def after_send():
-                rich.print(f"[blue]encoded {len(docs)} docs of TODO ____ tokens in {encode_elapsed_ms:.3f} ms")
+                num_docs = len(docs)
+                num_tokens = len(input_ids[0])
+                rich.print(f"[blue]re-ranked {num_docs} docs of {num_tokens=} tokens in {encode_elapsed_ms:.3f} ms")
 
         else:
             raise ValueError(f'unsupported {request_type=}')

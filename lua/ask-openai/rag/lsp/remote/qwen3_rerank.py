@@ -1,7 +1,6 @@
-# Requires transformers>=4.51.0
 import torch
+import numpy as np
 from transformers import AutoTokenizer, AutoModelForCausalLM
-
 from lsp.helpers import auto_device
 
 # FYI links:
@@ -76,11 +75,13 @@ def compute_relevance_scores(tokenized_inputs):
         relevance_scores = log_softmax[:, 1].exp().tolist()
         return relevance_scores
 
-def rerank(instruct: str, query: str, documents: list[str]) -> list[float]:
+def rerank(instruct: str, query: str, documents: list[str]) -> tuple[list[float], list[list[np.int64]]]:
+
     # for now assume instruct and query are constant for all documents, if I need mixed batching then I can address that later...
     # and actually I should encourage batching for same instruct/query else cache will be invalidated when instruct/query change
+
     tokenized_threads = tokenize_docs(instruct, query, documents)
-    return compute_relevance_scores(tokenized_threads)
+    return compute_relevance_scores(tokenized_threads), tokenized_threads.input_ids.tolist()
 
 def main():
     from numpy.testing import assert_array_almost_equal
@@ -95,13 +96,13 @@ def main():
     instruct = 'Given a web search query, retrieve relevant passages that answer the query'
 
     # * query1
-    actual_scores1 = rerank(instruct, query1, documents)
+    actual_scores1, _ = rerank(instruct, query1, documents)
     print("scores1: ", actual_scores1)
     expected_scores1 = [0.99951171875, 5.066394805908203e-06]
     assert_array_almost_equal(actual_scores1, expected_scores1, decimal=3)
 
     # * query2
-    actual_scores2 = rerank(instruct, query2, documents)
+    actual_scores2, _ = rerank(instruct, query2, documents)
     print("scores2: ", actual_scores2)
     expected_scores2 = [4.947185516357422e-05, 0.99951171875]
     assert_array_almost_equal(actual_scores2, expected_scores2, decimal=3)
