@@ -143,7 +143,7 @@ def rag_command_context_related(_: LanguageServer, params: types.ExecuteCommandP
         return
 
     message = params[0]
-    return rag.handle_query(message, 10, skip_same_file=False)
+    return rag.handle_query(message, 30, skip_same_file=False)
 
 @server.command("context.query")
 def rag_command_context_query(_: LanguageServer, params: types.ExecuteCommandParams):
