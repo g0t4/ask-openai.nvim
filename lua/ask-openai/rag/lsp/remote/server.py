@@ -10,7 +10,7 @@ import signal
 import sys
 import rich
 
-from lsp.remote import qwen3_embeddings
+from lsp.remote import qwen3_embeddings, qwen3_rerank
 from lsp.logs import Timer, get_logger, logging_fwk_to_console
 from .comms import *
 
@@ -57,15 +57,18 @@ def handle():
         conn.close()
         return
 
-    rx_texts = rx_msg['texts']
     rx_type = rx_msg['type']
 
     with Timer() as encode_timer:
         if rx_type == 'embed':
+            rx_texts = rx_msg['texts']
             embeddings, input_ids = qwen3_embeddings.encode(rx_texts)
             tx_msg = {'embeddings': embeddings.tolist()}
         elif rx_type == 'rerank':
-            raise NotImplementedError(f'todo {rx_type=}')
+            query = rx_msg['query']
+            docs = rx_msg['docs']
+            scores = qwen3_rerank.rerank_semantic_grep(query, docs)
+            tx_msg = {'scores': scores}
         else:
             raise ValueError(f'unsupported {rx_type=}')
 
@@ -74,6 +77,7 @@ def handle():
 
     if rx_type == 'embed':
         rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_timer.elapsed_ms():.3f} ms")
+        rx_texts = rx_msg['texts']
         dump_token_details(input_ids, rx_texts)
 
 def dump_token_details(input_ids, rx_texts):
