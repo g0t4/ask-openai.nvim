@@ -1,6 +1,6 @@
 # Requires transformers>=4.51.0
 import torch
-from transformers import AutoModel, AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # FYI links:
 #   Qwen3 paper w.r.t. Embedding and Reranking: https://arxiv.org/pdf/2506.05176
@@ -22,7 +22,6 @@ prefix_tokens = tokenizer.encode(prefix, add_special_tokens=False)
 suffix_tokens = tokenizer.encode(suffix, add_special_tokens=False)
 
 task = 'Given a web search query, retrieve relevant passages that answer the query'
-
 
 def format_rerank_instruction(instruction, query, doc):
     if instruction is None:
