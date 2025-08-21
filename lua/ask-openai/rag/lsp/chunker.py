@@ -167,6 +167,15 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     with logger.timer('parse_ts ' + str(path)):
         tree = parser.parse(source_bytes)
 
+    def debug_uncollected_node(node):
+        # use node type filter to find specific nodes
+        if node.type.find('function') <= 0:
+            return
+
+        print(f'node type not handled: {node.type}')
+        print(str(node.text).replace("\\n", "\n"))
+        print()
+
     def collect_key_nodes(node: Node, collected_parent: bool = False) -> list[Node]:
         nodes: list[Node] = []
 
@@ -186,13 +195,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # python
             nodes.append(node)
             collected_parent = True
-        elif logger.isEnabledForDebug():
-            if not collected_parent and node.type.find('function') >= 0:
-                # only dump if a parent hasn't been collected
-                # for example, lines from a function shouldn't show up as skipped
-                print(f'node type not handled: {node.type}')
-                print(str(node.text).replace("\\n", "\n"))
-                print()
+        elif logger.isEnabledForDebug() and not collected_parent:
+            debug_uncollected_node(node)
 
         for child in node.children:
             nodes.extend(collect_key_nodes(child, collected_parent))
