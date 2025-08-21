@@ -38,8 +38,6 @@ chat_thread_suffix_tokens = tokenizer.encode(chat_thread_suffix, add_special_tok
 max_length = 8192
 max_user_tokens = max_length - len(chat_thread_prefix_tokens) - len(chat_thread_suffix_tokens)
 
-instruct = 'Given a web search query, retrieve relevant passages that answer the query'
-
 def format_rerank_instruction(_instruct, query, doc):
     if _instruct is None:
         _instruct = 'Given a user query and a document, determine if the document contains an answer to the query.'
@@ -83,16 +81,17 @@ def rerank(_instruct: str, _query: str, _documents: list[str]) -> list[float]:
     tokenized_threads = tokenize_docs(_instruct, _query, _documents)
     return compute_relevance(tokenized_threads)
 
-query1 = "What is the capital of China?"
-query2 = "Explain gravity"
-
-documents = [
-    "The capital of China is Beijing.",
-    "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
-]
-
 if __name__ == "__main__":
     from numpy.testing import assert_array_almost_equal
+
+    # * test data
+    query1 = "What is the capital of China?"
+    query2 = "Explain gravity"
+    documents = [
+        "The capital of China is Beijing.",
+        "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
+    ]
+    instruct = 'Given a web search query, retrieve relevant passages that answer the query'
 
     # * query1
     actual_scores1 = rerank(instruct, query1, documents)
