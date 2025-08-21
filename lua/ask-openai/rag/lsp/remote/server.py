@@ -67,7 +67,6 @@ def handle():
 
             def after_send():
                 rich.print(f"[blue]encoded {input_ids.shape[0]} sequences of {input_ids.shape[1]} tokens in {encode_timer.elapsed_ms():.3f} ms")
-                rx_texts = rx_msg['texts']
                 dump_token_details(input_ids, rx_texts)
 
         elif rx_type == 'rerank':
