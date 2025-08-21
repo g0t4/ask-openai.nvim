@@ -60,12 +60,11 @@ _G.LSPRagQueryMessage = {}
 
 
 ---@class LSPRagQueryResult
----@field matches LSPContextChunk[]
+---@field matches LSPRankedMatch[]
 _G.LSPRagQueryResult = {}
 
 
--- TODO MAYBE RENAME to LSPContextChunkMatch (here on client and server side too)
----@class LSPContextChunk
+---@class LSPRankedMatch
 ---@field text string
 ---@field file string
 ---@field start_line_base0 integer
@@ -76,11 +75,11 @@ _G.LSPRagQueryResult = {}
 ---@field score number
 ---@field rank integer
 ---@field signature string
-_G.LSPContextChunk = {}
+_G.LSPRankedMatch = {}
 
 ---@param user_prompt string
 ---@param code_context string
----@param callback fun(matches: LSPContextChunk[])
+---@param callback fun(matches: LSPRankedMatch[])
 function M.context_query_rewrites(user_prompt, code_context, callback)
     -- FYI use user message for now as Instruct and selected code as the Query
     -- local rewrite_instruct = "Modify the code as requested"
@@ -91,7 +90,7 @@ end
 
 ---@param document_prefix string
 ---@param document_suffix string
----@param callback fun(matches: LSPContextChunk[])
+---@param callback fun(matches: LSPRankedMatch[])
 function M.context_query_fim(document_prefix, document_suffix, callback)
     local fim_specific_instruct = "Complete the missing portion of code (FIM) based on the surrounding context (Fill-in-the-middle)"
     local query = fim_concat(document_prefix, document_suffix)
@@ -100,7 +99,7 @@ end
 
 ---@param query string
 ---@param instruct string
----@param callback fun(matches: LSPContextChunk[])
+---@param callback fun(matches: LSPRankedMatch[])
 function M._context_query(query, instruct, callback)
     ---@type LSPRagQueryMessage
     local message = {

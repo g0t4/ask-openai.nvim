@@ -239,7 +239,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     user_message_with_code = user_prompt .. "\n" .. code_context
     log:info("user_message_with_code: '" .. user_message_with_code .. "'")
 
-    ---@param rag_matches LSPContextChunk[]
+    ---@param rag_matches LSPRankedMatch[]
     local function send_rewrite(rag_matches)
         -- TODO wire up canceling of RAG if user cancels request
         if enable_rag and rag_matches ~= nil and M.rag_cancel == nil then
@@ -275,7 +275,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             table.insert(rag_message_parts, heading)
             vim.iter(rag_matches)
                 :each(function(chunk)
-                    ---@cast chunk LSPContextChunk
+                    ---@cast chunk LSPRankedMatch
                     -- FYI this comes from embeddings query results... so the structure is different than other context providers
                     -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
                     -- FYI I am feeding the LLM with base0 line numbers, shouldn't matter

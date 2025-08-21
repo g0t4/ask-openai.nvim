@@ -24,7 +24,7 @@ local client_request_ids, cancel_all_requests
 ---@param lsp_buffer_number integer
 ---@param process_result fun(entry: SemanticGrepTelescopeEntryMatch)
 ---@param process_complete fun()
----@param entry_maker fun(match: LSPContextChunk): SemanticGrepTelescopeEntryMatch
+---@param entry_maker fun(match: LSPRankedMatch): SemanticGrepTelescopeEntryMatch
 function _semantic_grep(lsp_query_message_args, lsp_buffer_number, process_result, process_complete, entry_maker)
     if cancel_all_requests then
         logs:info("canceling previous request")
@@ -277,7 +277,7 @@ local function semantic_grep_current_filetype_picker(opts)
             ---@param prompt string
             ---@param process_result fun(entry: SemanticGrepTelescopeEntryMatch)
             ---@param process_complete fun()
-            ---@param entry_maker fun(match: LSPContextChunk): SemanticGrepTelescopeEntryMatch
+            ---@param entry_maker fun(match: LSPRankedMatch): SemanticGrepTelescopeEntryMatch
             fn = function(prompt, process_result, process_complete, entry_maker)
                 if not prompt or prompt == '' then
                     -- this is necessary to clear the list, i.e. when you clear the prompt
@@ -290,7 +290,7 @@ local function semantic_grep_current_filetype_picker(opts)
                 return _semantic_grep(lsp_query_message_args, lsp_buffer_number, process_result, process_complete, entry_maker)
             end,
 
-            ---@param match LSPContextChunk
+            ---@param match LSPRankedMatch
             ---@return SemanticGrepTelescopeEntryMatch
             entry_maker = function(match)
                 -- FYI `:h telescope.make_entry`
@@ -312,8 +312,8 @@ local function semantic_grep_current_filetype_picker(opts)
                 contents = display_first_line .. "..." .. display_last_line
 
                 ---@class SemanticGrepTelescopeEntryMatch
-                ---@field match LSPContextChunk
-                ---@field value LSPContextChunk
+                ---@field match LSPRankedMatch
+                ---@field value LSPRankedMatch
                 ---@field display function|string -- use to create display text for picker
                 ---@field filename string
                 ---@field score number

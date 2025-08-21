@@ -112,7 +112,7 @@ function M.ask_for_prediction()
 
     local document_prefix, document_suffix = get_prefix_suffix()
 
-    ---@param rag_matches LSPContextChunk[]
+    ---@param rag_matches LSPRankedMatch[]
     function send_fim(rag_matches)
         -- use rag_matches ~= nil b/c hot mess of other calls here when rag not used -- TODO CLEANUP NONSENSE WES
         if enable_rag and rag_matches ~= nil and M.rag_cancel == nil then

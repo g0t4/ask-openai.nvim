@@ -56,7 +56,7 @@ function M.gpt_oss.get_fim_chat_messages(request)
     --         :each(function(chunk)
     --             -- FYI this comes from embeddings query results... so the structure is different than other context providers
     --             -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
-    --             ---@cast chunk LSPContextChunk
+    --             ---@cast chunk LSPRankedMatch
     --             local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
     --             local code_chunk = chunk.text
     --             table.insert(rag_message_parts,
@@ -191,7 +191,7 @@ function M.qwen25coder.get_fim_prompt(request)
     if request.rag_matches then
         vim.iter(request.rag_matches)
             :each(function(chunk)
-                ---@cast chunk LSPContextChunk
+                ---@cast chunk LSPRankedMatch
                 local file_name = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
                 local non_fim_file = tokens.file_sep .. file_name .. "\n" .. chunk.text
                 prompt = prompt .. non_fim_file
