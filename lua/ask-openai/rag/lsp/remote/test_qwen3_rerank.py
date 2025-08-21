@@ -31,12 +31,17 @@ if __name__ == "__main__":
 
     # * instruct / task
     # FYI! sync any changes to instruct to the respective python re-ranking code
-    instruct_aka_task = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
     query = "where did I set the top_k for semantic grep?"
+
+    semantic_grep(query)
+
+def semantic_grep(query: str, instruct: str | None = None) -> list[ChunkRanking]:
+    if instruct is None:
+        instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
 
     # * encode query vector
     with logger.timer("encoding query"):
-        query_vector = encode_query(query, instruct_aka_task)
+        query_vector = encode_query(query, instruct)
 
     # * load datasets
     dot_rag_dir = Path("~/repos/github/g0t4/ask-openai.nvim/.rag").expanduser().absolute()
@@ -73,7 +78,7 @@ if __name__ == "__main__":
         docs = [c.chunk.text for c in batch]
 
         with EmbedClient() as client:
-            msg = {"instruct": instruct_aka_task, "query": query, "docs": docs}
+            msg = {"instruct": instruct, "query": query, "docs": docs}
             scores = client.rerank(msg)
             if not scores:
                 raise Exception("rerank returned no scores")
@@ -90,3 +95,5 @@ if __name__ == "__main__":
         rich.print(f'#{c.rerank_position} / {c.chunk.id}: rerank={format_score_percent(c.rerank_score)} embed={format_score_percent(c.embed_score)}/#{c.embed_position}')
         if logger.isEnabledForDebug():
             print(c.chunk.text)
+
+    return chunks
