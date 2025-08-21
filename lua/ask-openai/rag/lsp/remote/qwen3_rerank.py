@@ -14,15 +14,19 @@ def format_rerank_instruction(instruction, query, doc):
     # NOTE layout is optimized for cache reuse! instruction/query are constant across a batch of documents
     return f"<Instruct>: {instruction}\n<Query>: {query}\n<Document>: {doc}"
 
-def process_inputs(pairs):
+def tokenize(pairs):
     inputs = tokenizer(
-        pairs, padding=False, truncation='longest_first',
-        return_attention_mask=False, max_length=max_length - len(prefix_tokens) - len(suffix_tokens)
+        pairs,
+        padding=False,
+        truncation='longest_first',
+        return_attention_mask=False,
+        max_length=max_length - len(prefix_tokens) - len(suffix_tokens),
     )
     for i, ele in enumerate(inputs['input_ids']):
         inputs['input_ids'][i] = prefix_tokens + ele + suffix_tokens
     inputs = tokenizer.pad(inputs, padding=True, return_tensors="pt", max_length=max_length)
     for key in inputs:
+        # move to same device as model
         inputs[key] = inputs[key].to(model.device)
     return inputs
 
@@ -51,7 +55,8 @@ suffix_tokens = tokenizer.encode(suffix, add_special_tokens=False)
 
 task = 'Given a web search query, retrieve relevant passages that answer the query'
 
-queries = ["What is the capital of China?",
+queries = [
+    "What is the capital of China?",
     "Explain gravity",
 ]
 
