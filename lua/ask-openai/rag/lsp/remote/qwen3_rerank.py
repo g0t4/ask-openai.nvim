@@ -29,7 +29,7 @@ model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs).eval()
 #
 # FYI reranker uses probabilities from yes/no tokens for relevance score
 token_id_no = tokenizer.convert_tokens_to_ids("no")
-token_id_true = tokenizer.convert_tokens_to_ids("yes")
+token_id_yes = tokenizer.convert_tokens_to_ids("yes")
 #
 thread_prefix = "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be \"yes\" or \"no\".<|im_end|>\n<|im_start|>user\n"
 thread_suffix = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
@@ -65,12 +65,12 @@ def tokenize_docs(instruct: str, query: str, documents: list[str]):
     documents_tokens = tokenizer.pad(documents_tokens, padding=True, return_tensors="pt", max_length=max_length)
     return move_to_gpu(documents_tokens, model.device)
 
-def compute_relevance_scores(tokenized_threads):
+def compute_relevance_scores(tokenized_inputs):
     with torch.no_grad():
-        logits = model(**tokenized_threads).logits[:, -1, :]
-        true_vector = logits[:, token_id_true]
-        false_vector = logits[:, token_id_no]
-        logits_no_and_yes = torch.stack([false_vector, true_vector], dim=1)
+        logits = model(**tokenized_inputs).logits[:, -1, :]
+        yes_logits = logits[:, token_id_yes]
+        no_logits = logits[:, token_id_no]
+        logits_no_and_yes = torch.stack([no_logits, yes_logits], dim=1)
         # calculation to turn yes/no token logits into relevance score overall (per document)
         softmax_scores = torch.nn.functional.log_softmax(logits_no_and_yes, dim=1)
         scores = softmax_scores[:, 1].exp().tolist()
