@@ -12,6 +12,8 @@ from lsp.helpers import auto_device
 
 model_path = "Qwen/Qwen3-Reranker-0.6B"
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side='left')
+# TODO - You're using a Qwen2TokenizerFast tokenizer. Please note that with a fast tokenizer, using the `__call__` method is faster than using a method to encode the text followed by a call to the `pad` method to get a padded encoding.
+# TODO - .venv/lib/python3.13/site-packages/transformers/tokenization_utils_base.py:2696: UserWarning: `max_length` is ignored when `padding`=`True` and there is no truncation strategy. To pad to max length, use `padding='max_length'`.
 
 device = auto_device()
 if device.type == 'cuda':
