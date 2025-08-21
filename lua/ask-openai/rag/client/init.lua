@@ -72,8 +72,8 @@ _G.LSPRagQueryResult = {}
 ---@field end_line_base0 integer
 ---@field end_column_base0 integer|nil
 ---@field type string
----@field score number
----@field rank integer
+---@field embed_score number
+---@field embed_rank integer
 ---@field signature string
 _G.LSPRankedMatch = {}
 
