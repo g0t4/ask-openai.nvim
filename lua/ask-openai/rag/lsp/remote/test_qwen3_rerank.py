@@ -17,16 +17,14 @@ if __name__ == "__main__":
     # logging_fwk_to_console("DEBUG")
     logger = get_logger(__name__)
 
-    # * encode query vector
-    query = "where did I set the top_k for semantic grep?"
-    with logger.timer("Send embedding to server"):
-        with EmbedClient() as client:
-            rx_embeddings = client.encode({'texts': query})
-
+    # * instruct / task
     # FYI! sync any changes to instruct to the respective python re-ranking code
     instruct_aka_task = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
 
-    query_vector = encode_query(query, instruct_aka_task)
+    # * encode query vector
+    query = "where did I set the top_k for semantic grep?"
+    with logger.timer("encoding query"):
+        query_vector = encode_query(query, instruct_aka_task)
 
     # * load datasets
     dot_rag_dir = Path("~/repos/github/g0t4/ask-openai.nvim/.rag").expanduser().absolute()
