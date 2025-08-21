@@ -64,8 +64,6 @@ def encode(input_texts):
         outputs = model(**batch_args)
         embeddings = last_token_pool(outputs.last_hidden_state, batch_args['attention_mask'])
         norm = F.normalize(embeddings, p=2, dim=1).cpu().numpy()
-        print(f'{norm=}')
-        print(f'{batch_args['input_ids']=}')
         return norm, batch_args['input_ids']
 
 def test_known_embeddings():
