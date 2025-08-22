@@ -154,7 +154,7 @@ async def rag_command_context_related(_: LanguageServer, params: types.ExecuteCo
     # TODO!ASYNC
 
     message = params[0]
-    return rag.handle_query(message, 50, skip_same_file=False)
+    return await rag.handle_query(message, 50, skip_same_file=False)
 
 @server.command("context.query")
 async def rag_command_context_query(_: LanguageServer, params: types.ExecuteCommandParams):
@@ -167,7 +167,7 @@ async def rag_command_context_query(_: LanguageServer, params: types.ExecuteComm
     # TODO!ASYNC
 
     message = params[0]
-    return rag.handle_query(message, skip_same_file=True)
+    return await rag.handle_query(message, skip_same_file=True)
 
 # how can I intercept shutdown from client?
 #

@@ -3,8 +3,8 @@ import rich
 from pathlib import Path
 
 from lsp.logs import get_logger, logging_fwk_to_console
-from lsp.remote.comms import *
-from lsp.remote.retrieval import *
+from lsp.storage import load_all_datasets
+from lsp.inference.retrieval import *
 
 def format_score_percent(score: float) -> str:
     """score as percentage rounded to nearest 4 decimals"""

@@ -10,9 +10,9 @@ import signal
 import sys
 import rich
 
-from lsp.remote import qwen3_embeddings, qwen3_rerank
+from . import qwen3_embeddings, qwen3_rerank
 from lsp.logs import Timer, get_logger, logging_fwk_to_console
-from .comms import *
+from lsp.inference.comms import *
 
 print('imports done')
 

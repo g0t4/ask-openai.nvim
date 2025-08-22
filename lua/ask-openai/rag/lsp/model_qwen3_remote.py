@@ -7,14 +7,14 @@ logger = get_logger(__name__)
 
 def ensure_model_loaded():
 
-    with logger.timer("imports for qwen3 remote EmbedClient"):
+    with logger.timer("imports for qwen3 remote InferenceClient"):
         import numpy as np
 
     # FYI client opens a socket so still useful to defer until needed
 
 def _encode_multiple(texts):
     import numpy as np
-    from lsp.remote.comms import EmbedClient
+    from lsp.inference.client import InferenceClient
 
     # FYI for now lets leave batch_size at 8?
     # TODO capture some sequence length distribution data so I can see how variable it is
@@ -29,7 +29,7 @@ def _encode_multiple(texts):
         total = len(texts)
         for i in range(0, total, batch_size):
             # FYI right now this is a new connection PER batch
-            with EmbedClient() as client:
+            with InferenceClient() as client:
                 logger.info(f"    batch {i}-{i+batch_size} of {total}")
                 batch = texts[i:i + batch_size]
                 vecs = client.encode({"texts": batch})

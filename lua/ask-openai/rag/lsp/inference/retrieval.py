@@ -1,8 +1,9 @@
 from dataclasses import dataclass
 from pathlib import Path
-from lsp.remote.comms import *
 from lsp.model_qwen3_remote import encode_query
-from lsp.storage import Chunk, Datasets, load_all_datasets
+from lsp.storage import Datasets
+from lsp.inference.comms import *
+from lsp.inference.client import *
 
 @dataclass
 class LSPRankedMatch:
@@ -115,7 +116,7 @@ async def semantic_grep(
         batch = matches[batch_num:batch_num + BATCH_SIZE]
         docs = [c.text for c in batch]
 
-        with EmbedClient() as client:
+        with InferenceClient() as client:
             request = RerankRequest(instruct=instruct, query=query, docs=docs)
             scores = client.rerank(request)
             if not scores:
