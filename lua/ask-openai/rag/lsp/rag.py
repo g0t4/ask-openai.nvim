@@ -16,7 +16,7 @@ datasets: Datasets
 def load_model_and_indexes(dot_rag_dir: Path, model_wrapper):
     global datasets
     datasets = load_all_datasets(dot_rag_dir)
-    model_wrapper.ensure_model_loaded()
+    model_wrapper.todo_remove_this_eager_load_imports()
 
 def validate_rag_indexes():
     validator = DatasetsValidator(datasets)

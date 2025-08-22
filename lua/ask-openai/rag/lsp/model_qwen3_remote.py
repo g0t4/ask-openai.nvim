@@ -5,7 +5,7 @@ from .qwen3 import known
 
 logger = get_logger(__name__)
 
-def ensure_model_loaded():
+def todo_remove_this_eager_load_imports():
 
     with logger.timer("imports for qwen3 remote InferenceClient"):
         import numpy as np
