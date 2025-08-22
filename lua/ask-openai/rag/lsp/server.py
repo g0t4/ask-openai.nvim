@@ -65,6 +65,13 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
         return
 
     rag.load_model_and_indexes(fs.dot_rag_dir)
+
+    # FYI I took out the part that preloads numpy when LSP starts up... I am going to leave it off for now... just reminder when you asyncify startup too
+    #   that you should consider optimizing startup (i.e. imports) on startup for fastest user experience
+    #   that might mean pre-loading some deps that are going to be used so they're ready for users that don't initially need anything but later want fast first LSP request experience
+    #   for users that want immediate LSP requests... it won't matter if its in initialize (here) or just when their first request comes in
+    # import numpy   # used to happen in model_wrapper back when I had that for diff models.. this was all that was left after moving the rest to inference server
+
     rag.validate_rag_indexes()
 
 def update_rag_for_text_doc(doc_uri: str):
