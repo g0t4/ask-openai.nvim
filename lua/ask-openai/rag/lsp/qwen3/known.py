@@ -43,7 +43,3 @@ def verify_qwen3_known_embeddings(embeddings, model_path: str):
     print(f'  {actual_scores=}')
     print(f'  {expected_scores=}')
     print(f"  [green bold]SCORES LOOK OK")
-
-def verify_known_embeddings(embeddings, model_path: str):
-    # FYI make it clear here that this is only designed for Qwen3 models currently
-    verify_qwen3_known_embeddings(embeddings, model_path)
