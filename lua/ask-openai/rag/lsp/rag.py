@@ -8,7 +8,6 @@ from lsp.storage import Datasets, load_all_datasets
 from lsp.inference.client.retrieval import *
 from index.validate import DatasetsValidator
 from lsp import fs
-from lsp.inference.client.embedder import todo_remove_this_eager_load_imports
 
 logger = get_logger(__name__)
 
@@ -17,7 +16,6 @@ datasets: Datasets
 def load_model_and_indexes(dot_rag_dir: Path):
     global datasets
     datasets = load_all_datasets(dot_rag_dir)
-    todo_remove_this_eager_load_imports()
 
 def validate_rag_indexes():
     validator = DatasetsValidator(datasets)

@@ -1,15 +1,6 @@
 from lsp.logs import get_logger
 
-# FYI! IIRC this is the most recent alterantive to model_qwen3 in-process and model_st w/ intfloat/qwen3 via SentenceTransformers
-
 logger = get_logger(__name__)
-
-def todo_remove_this_eager_load_imports():
-
-    with logger.timer("imports for qwen3 remote InferenceClient"):
-        import numpy as np
-
-    # FYI client opens a socket so still useful to defer until needed
 
 def _encode_multiple(texts):
     import numpy as np
