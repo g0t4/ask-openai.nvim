@@ -1,6 +1,5 @@
 from lsp.inference.qwen3.known import get_known_inputs, verify_qwen3_known_embeddings
 from lsp.logs import get_logger, logging_fwk_to_console
-from lsp.inference.comms import *
 from lsp.inference.client import *
 
 if __name__ == "__main__":

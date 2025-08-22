@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from lsp.model_qwen3_remote import encode_query
 from lsp.storage import Datasets
-from lsp.inference.comms import *
 from lsp.inference.client import *
 
 @dataclass
