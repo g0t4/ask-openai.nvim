@@ -53,8 +53,8 @@ end
 
 ---@class LSPRagQueryRequest
 ---@field query string
----@field vim_filetype string
----@field current_file_absolute_path string
+---@field vimFiletype string
+---@field currentFileAbsolutePath string
 ---@field instruct? string
 _G.LSPRagQueryRequest = {}
 
@@ -108,8 +108,8 @@ function M._context_query(query, instruct, callback)
     local lsp_rag_request = {
         query = query,
         instruct = instruct,
-        current_file_absolute_path = files.get_current_file_absolute_path(),
-        vim_filetype = vim.bo.filetype,
+        currentFileAbsolutePath = files.get_current_file_absolute_path(),
+        vimFiletype = vim.bo.filetype,
     }
 
     local _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", {

@@ -190,8 +190,8 @@ local function semantic_grep_current_filetype_picker(opts)
     local lsp_rag_request = {
         -- instruct => let server set the Instruct for semantic_grep (would be "Semantic grep of relevant code ...")
         query = "",
-        vim_filetype = vim.o.filetype,
-        current_file_absolute_path = files.get_current_file_absolute_path(),
+        vimFiletype = vim.o.filetype,
+        currentFileAbsolutePath = files.get_current_file_absolute_path(),
     }
     local lsp_buffer_number = vim.api.nvim_get_current_buf()
 

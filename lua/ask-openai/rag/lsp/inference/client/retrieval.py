@@ -30,7 +30,7 @@ class LSPRankedMatch:
 
 async def semantic_grep(
     query: str,
-    current_file_abs: str | Path,
+    current_file_abs: str | None,
     vim_filetype: str | None = None,
     instruct: str | None = None,
     skip_same_file=False,

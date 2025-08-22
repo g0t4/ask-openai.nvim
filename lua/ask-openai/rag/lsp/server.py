@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import signal
 
+import attrs
 import lsprotocol.types as types
 from pygls import uris, workspace
 from pygls.lsp.server import LanguageServer
@@ -12,7 +13,7 @@ from lsp import ignores, rag
 from lsp import fs
 from lsp.context.imports import imports
 from lsp.logs import get_logger, logging_fwk_to_language_server_log_file
-from typing import Any
+from typing import Any, Optional
 
 logging_fwk_to_language_server_log_file(logging.INFO)
 # logging_fwk_to_language_server_log_file(logging.DEBUG)
@@ -173,31 +174,22 @@ def doc_opened(params: types.DidOpenTextDocumentParams):
 #     #   rebuild on git commit + incremental updates s/b super fast?
 
 @server.command("semantic_grep")
-async def rag_command_context_related(_: LanguageServer, params: types.ExecuteCommandParams):
+async def rag_command_context_related(_: LanguageServer, args: rag.PyGLSCommandSemanticGrepArgs):
     if fs.is_no_rag_dir():
-        return
-
-    if params is None or params[0] is None:
-        logger.error(f"aborting semantic_grep b/c missing params {params}")
         return
     # TODO!ASYNC
 
-    message = params[0]
     logger.info("semantic_grep handler")
-    return await rag.handle_query(message, 50, skip_same_file=False)
+    return await rag.handle_query(args, 50, skip_same_file=False)
 
 @server.command("context.query")
-async def rag_command_context_query(_: LanguageServer, params: types.ExecuteCommandParams):
+async def rag_command_context_query(_: LanguageServer, args: rag.PyGLSCommandSemanticGrepArgs):
     if fs.is_no_rag_dir():
         return
-
-    if params is None or params[0] is None:
-        logger.error(f"aborting context.query b/c missing params {params}")
-        return
     # TODO!ASYNC
+    logger.info(args)
 
-    message = params[0]
-    return await rag.handle_query(message, skip_same_file=True)
+    return await rag.handle_query(args, skip_same_file=True)
 
 # how can I intercept shutdown from client?
 #

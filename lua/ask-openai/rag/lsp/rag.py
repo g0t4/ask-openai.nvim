@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import attrs
 from pygls.workspace import TextDocument
 
 from lsp.chunks.chunker import build_chunks_from_lines, get_file_hash_from_lines, RAGChunkerOptions
@@ -21,18 +22,27 @@ def validate_rag_indexes():
     validator = DatasetsValidator(datasets)
     validator.validate()
 
+# FYI v2 pygls supports databinding args... but I had issues with j
+@attrs.define
+class PyGLSCommandSemanticGrepArgs:
+    query: str
+    # MAKE SURE TO GIVE DEFAULT VALUES IF NOT REQUIRED
+    currentFileAbsolutePath: str | None = None
+    vimFiletype: str | None = None
+    instruct: str | None = None
+
 # PRN make top_k configurable (or other params)
-async def handle_query(message, top_k=3, skip_same_file=False):
+async def handle_query(args: "PyGLSCommandSemanticGrepArgs", top_k=3, skip_same_file=False):
     # TODO!ASYNC
 
     # * parse and validate request parameters
-    query = message.get("query")
+    query = args.query
     if query is None or len(query) == 0:
         logger.error("[red bold][ERROR] No query provided")
         return {"failed": True, "error": "No query provided"}
-    vim_filetype: str | None = message.get("vim_filetype")
-    current_file_abs: str = message.get("current_file_absolute_path")
-    instruct = message.get("instruct")
+    vim_filetype = args.vimFiletype
+    current_file_abs = args.currentFileAbsolutePath
+    instruct = args.instruct
 
     # * NEW SEMANTIC GREP PIPELINE
     matches = await semantic_grep(
