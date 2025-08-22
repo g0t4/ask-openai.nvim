@@ -1,9 +1,13 @@
+from lsp.logs import get_logger
+
+logger = get_logger(__name__)
+
 from dataclasses import dataclass
 import logging
 from pathlib import Path
 import subprocess
 import sys
-from typing import Dict, Optional, Set
+from typing import Optional, Set
 
 # * TORCH BEFORE FAISS (even if don't need torch here/yet)
 import torch  # MUST be imported BEFORE FAISS else Qwen3 will explode on model import
@@ -14,10 +18,6 @@ import fs
 from pydants import write_json
 from lsp.storage import Chunk, FileStat, load_prior_data
 from lsp.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
-
-from lsp.logs import get_logger
-
-logger = get_logger(__name__)
 
 #
 # constants for subprocess.run for readability

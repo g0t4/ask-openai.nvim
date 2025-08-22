@@ -1,16 +1,22 @@
+from lsp.logs import get_logger, logging_fwk_to_console
+
+logger = get_logger(__name__)
+# logging_fwk_to_console("INFO") # start info level to capture timing logs (add with logger.timer to below)
+
 from pathlib import Path
 import subprocess
 import unittest
 
 import faiss
 import numpy as np
-from pygls.workspace import TextDocument
 import rich
 
 from indexer import IncrementalRAGIndexer
 from lsp.chunker import RAGChunkerOptions
 from lsp import model_qwen3_remote as model_wrapper2
 from lsp.storage import load_chunks_by_file, load_file_stats_by_file
+
+# logging_fwk_to_console("WARN") # stop INFO logs after timing captured
 
 class TestBuildIndex(unittest.TestCase):
 
@@ -330,6 +336,8 @@ class TestBuildIndex(unittest.TestCase):
 
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks
         target_file_path = self.tmp_source_code_dir / "numbers.lua"
+
+        from pygls.workspace import TextDocument  # 130ms so leave it here
         fake_lsp_doc = TextDocument(
             uri=f"file://{target_file_path}",
             # language_id="lua",
