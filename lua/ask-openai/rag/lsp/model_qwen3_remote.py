@@ -1,5 +1,4 @@
 from .logs import get_logger
-from .qwen3 import known
 
 # FYI! IIRC this is the most recent alterantive to model_qwen3 in-process and model_st w/ intfloat/qwen3 via SentenceTransformers
 
