@@ -20,23 +20,23 @@ logger = get_logger(__name__)
 
 server = LanguageServer("ask_language_server", "v0.1")
 
-original_handle_notification = server.lsp._handle_notification
-original_handle_request = server.lsp._handle_request
-
-def _handle_request(msg_id, method_name, params):
-    logger.info(f'request id: {msg_id}')
-    original_handle_request(msg_id, method_name, params)
-
-def _handle_notification(method_name: str, params: Any):
-    id = params.id if hasattr(params, "id") else "noid"
-    logger.info(f'notification {method_name} {id=}')
-    # if method_name == CANCEL_REQUEST:
-    # self._handle_cancel_notification(params.id)
-    original_handle_notification(method_name, params)
-
-logger.info(server.lsp._handle_notification)
-server.lsp._handle_notification = _handle_notification
-server.lsp._handle_request = _handle_request
+# original_handle_notification = server.lsp._handle_notification
+# original_handle_request = server.lsp._handle_request
+#
+# def _handle_request(msg_id, method_name, params):
+#     logger.info(f'request id: {msg_id}')
+#     original_handle_request(msg_id, method_name, params)
+#
+# def _handle_notification(method_name: str, params: Any):
+#     id = params.id if hasattr(params, "id") else "noid"
+#     logger.info(f'notification {method_name} {id=}')
+#     # if method_name == CANCEL_REQUEST:
+#     # self._handle_cancel_notification(params.id)
+#     original_handle_notification(method_name, params)
+#
+# logger.info(server.lsp._handle_notification)
+# server.lsp._handle_notification = _handle_notification
+# server.lsp._handle_request = _handle_request
 
 @server.feature(types.INITIALIZE)
 def on_initialize(_: LanguageServer, params: types.InitializeParams):
