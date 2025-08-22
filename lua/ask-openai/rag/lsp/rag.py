@@ -8,7 +8,7 @@ from lsp.storage import Datasets, load_all_datasets
 from lsp.inference.client.retrieval import *
 from index.validate import DatasetsValidator
 from lsp import fs
-from lsp.inference.client.model_qwen3_remote import todo_remove_this_eager_load_imports
+from lsp.inference.client.embedder import todo_remove_this_eager_load_imports
 
 logger = get_logger(__name__)
 

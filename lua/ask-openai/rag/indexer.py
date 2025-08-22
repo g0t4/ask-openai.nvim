@@ -1,5 +1,5 @@
 from lsp.logs import get_logger
-from lsp.inference.client.model_qwen3_remote import get_shape, encode_passages
+from lsp.inference.client.embedder import get_shape, encode_passages
 
 logger = get_logger(__name__)
 

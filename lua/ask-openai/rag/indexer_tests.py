@@ -13,7 +13,7 @@ import rich
 
 from indexer import IncrementalRAGIndexer
 from lsp.chunker import RAGChunkerOptions
-from lsp.inference.client.model_qwen3_remote import encode_query
+from lsp.inference.client.embedder import encode_query
 from lsp.storage import load_chunks_by_file, load_file_stats_by_file
 
 # logging_fwk_to_console("WARN") # stop INFO logs after timing captured
