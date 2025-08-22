@@ -1,19 +1,19 @@
 import logging
 import os
-from pathlib import Path
 import signal
+from pathlib import Path
+from typing import Any
 
-import attrs
 import lsprotocol.types as types
-from pygls import uris, workspace
+from pygls import uris
 from pygls.lsp.server import LanguageServer
+from pygls.protocol.json_rpc import MsgId
 
 from lsp.chunks.chunker import RAGChunkerOptions
 from lsp import ignores, rag
 from lsp import fs
 from lsp.context.imports import imports
 from lsp.logs import get_logger, logging_fwk_to_language_server_log_file
-from typing import Any, Optional
 
 logging_fwk_to_language_server_log_file(logging.INFO)
 # logging_fwk_to_language_server_log_file(logging.DEBUG)
@@ -21,23 +21,23 @@ logger = get_logger(__name__)
 
 server = LanguageServer("ask_language_server", "v0.1")
 
-# original_handle_notification = server.lsp._handle_notification
-# original_handle_request = server.lsp._handle_request
-#
-# def _handle_request(msg_id, method_name, params):
-#     logger.info(f'request id: {msg_id}')
-#     original_handle_request(msg_id, method_name, params)
-#
-# def _handle_notification(method_name: str, params: Any):
-#     id = params.id if hasattr(params, "id") else "noid"
-#     logger.info(f'notification {method_name} {id=}')
-#     # if method_name == CANCEL_REQUEST:
-#     # self._handle_cancel_notification(params.id)
-#     original_handle_notification(method_name, params)
-#
-# logger.info(server.lsp._handle_notification)
-# server.lsp._handle_notification = _handle_notification
-# server.lsp._handle_request = _handle_request
+original_handle_notification = server.protocol._handle_notification
+original_handle_request = server.protocol._handle_request
+
+def _intercept_handle_request(msg_id: MsgId, method_name: str, params: Any):
+    logger.info(f'request id: {msg_id}')
+    original_handle_request(msg_id, method_name, params)
+
+def _intercept_handle_notification(method_name: str, params: Any):
+    id = params.id if hasattr(params, "id") else "noid"
+    logger.info(f'notification {method_name} {id=}')
+    # if method_name == CANCEL_REQUEST:
+    # self._handle_cancel_notification(params.id)
+    original_handle_notification(method_name, params)
+
+logger.info(server.protocol._handle_notification)
+server.protocol._handle_notification = _intercept_handle_notification
+server.protocol._handle_request = _intercept_handle_request
 
 @server.feature(types.INITIALIZE)
 def on_initialize(_: LanguageServer, params: types.InitializeParams):
