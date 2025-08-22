@@ -6,7 +6,7 @@ from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
 
 from lsp.qwen3.known import get_known_inputs, verify_known_embeddings
-from lsp.helpers import auto_device
+from lsp.inference.server.helpers import auto_device
 from lsp.logs import get_logger, logging_fwk_to_console
 
 logger = get_logger(__name__)

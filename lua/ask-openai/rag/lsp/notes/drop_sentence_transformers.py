@@ -3,7 +3,7 @@
 import logging
 import os
 
-from lsp.helpers import auto_device
+from lsp.inference.server.helpers import auto_device
 from lsp.logs import get_logger, logging_fwk_to_console
 
 logger = get_logger("drop_ST")

@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from lsp.helpers import auto_device
+from lsp.inference.server.helpers import auto_device
 
 # FYI links:
 #   Qwen3 paper w.r.t. Embedding and Reranking: https://arxiv.org/pdf/2506.05176
