@@ -34,11 +34,11 @@ def encode_passages(passages: list[str]):
     # FYI Qwen3 has NO passage/document label, only query side has Query:/Instruct:
     return _encode_multiple(passages)
 
-def encode_query(text: str, instruct: str):
-    return _encode_one_text(qwen3_format_query(text, instruct))
-
 def _encode_one_text(text: str):
     return _encode_multiple([text])
+
+def encode_query(text: str, instruct: str):
+    return _encode_one_text(qwen3_format_query(text, instruct))
 
 def qwen3_format_query(text: str, instruct: str) -> str:
     if instruct:
