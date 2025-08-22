@@ -46,7 +46,8 @@ def qwen3_format_query(text: str, instruct: str) -> str:
     return f"Query: {text}"
 
 def get_shape() -> int:
-    # Create a dummy vector to get dimensions
+    # create a dummy vector to get dimensions (1024 for Qwen3-Embedding-0.6B)...
+    # only used when first creating an index so NBD to leave it this way
     sample_text = "passage: sample"
     sample_vec = _encode_one_text(sample_text)
     shape = sample_vec.shape[1]
