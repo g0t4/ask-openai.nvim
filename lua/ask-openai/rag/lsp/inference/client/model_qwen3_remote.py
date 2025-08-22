@@ -1,4 +1,4 @@
-from .logs import get_logger
+from lsp.logs import get_logger
 
 # FYI! IIRC this is the most recent alterantive to model_qwen3 in-process and model_st w/ intfloat/qwen3 via SentenceTransformers
 

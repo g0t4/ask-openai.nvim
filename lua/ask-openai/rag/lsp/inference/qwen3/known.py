@@ -1,4 +1,4 @@
-from lsp.model_qwen3_remote import qwen3_format_query
+from lsp.inference.client.model_qwen3_remote import qwen3_format_query
 
 def get_known_inputs():
 

@@ -273,7 +273,7 @@ def trash_dot_rag(dot_rag_dir):
 
 def main():
     from lsp.logs import logging_fwk_to_console
-    from lsp import model_qwen3_remote as model_wrapper
+    from lsp.inference.client import model_qwen3_remote as model_wrapper
 
     # * command line args
     verbose = "--verbose" in sys.argv or "--debug" in sys.argv

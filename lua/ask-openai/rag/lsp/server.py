@@ -11,7 +11,7 @@ from lsp.chunker import RAGChunkerOptions
 from lsp import ignores, imports, rag
 from lsp import fs
 # TODO! remove model_wrapper now that I settle on it being remote and am very happy with that, I won't be running in process anytime soon
-from lsp import model_qwen3_remote as model_wrapper
+from lsp.inference.client import model_qwen3_remote as model_wrapper
 from lsp.logs import get_logger, logging_fwk_to_language_server_log_file
 
 logging_fwk_to_language_server_log_file(logging.INFO)
