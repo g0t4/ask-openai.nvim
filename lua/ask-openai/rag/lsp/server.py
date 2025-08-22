@@ -61,12 +61,6 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
 def tell_client_to_shut_that_shit_down_now():
     server.protocol.notify("fuu/no_dot_rag__do_the_right_thing_wink")
 
-# @server.feature(types.CANCEL_REQUEST)
-# async def on_request_cancel(_: LanguageServer, _params: types.CancelParams):
-#     # I am not sure I even need this.. pygls should handle canceling non-started work
-#     #  + it should help cooperatively stop in progress, async tasks
-#     logger.error(f"CANCEL REQUESTED for {_params.id=}")
-
 @server.feature(types.INITIALIZED)
 def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #  FYI server is managed by the client!
