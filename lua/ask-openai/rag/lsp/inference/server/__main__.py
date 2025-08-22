@@ -25,7 +25,7 @@ logging_fwk_to_console(level)
 logger = get_logger(__name__)
 
 print('testing known embeddings...')
-qwen3_embeddings.test_known_embeddings()
+qwen3_embeddings.test_known_embeddings_in_process()
 
 print('opening socket')
 

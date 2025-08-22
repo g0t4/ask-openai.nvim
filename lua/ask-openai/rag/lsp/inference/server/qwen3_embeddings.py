@@ -68,7 +68,7 @@ def encode(input_texts) -> tuple[np.ndarray, list[list[np.int64]]]:
         # batch_args is a Tensor
         return norm, batch_args['input_ids'].tolist()
 
-def test_known_embeddings():
+def test_known_embeddings_in_process():
     from rich import print
 
     print("TESTING known embeddings from Qwen3 README...")
@@ -77,4 +77,4 @@ def test_known_embeddings():
     verify_known_embeddings(embeddings, model_path)
 
 if __name__ == "__main__":
-    test_known_embeddings()
+    test_known_embeddings_in_process()
