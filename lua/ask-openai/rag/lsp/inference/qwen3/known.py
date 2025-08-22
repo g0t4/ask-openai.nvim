@@ -1,13 +1,12 @@
+from lsp.model_qwen3_remote import qwen3_format_query
+
 def get_known_inputs():
 
-    def _get_detailed_instruct(task_description: str, query: str) -> str:
-        return f'Instruct: {task_description}\nQuery:{query}'
-
     # Each query must come with a one-sentence instruction that describes the task
-    task = 'Given a web search query, retrieve relevant passages that answer the query'
+    instruct = 'Given a web search query, retrieve relevant passages that answer the query'
     queries = [
-        _get_detailed_instruct(task, 'What is the capital of China?'),
-        _get_detailed_instruct(task, 'Explain gravity'),
+        qwen3_format_query('What is the capital of China?', instruct),
+        qwen3_format_query('Explain gravity', instruct),
     ]
     # No need to add instruction for retrieval documents
     documents = [
