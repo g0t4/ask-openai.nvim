@@ -34,9 +34,6 @@ def encode_passages(passages: list[str]):
     # FYI Qwen3 has NO passage/document label, only query side has Query:/Instruct:
     return _encode_batch(passages)
 
-def _encode_one_text(text: str):
-    return _encode_batch([text])
-
 def encode_query(text: str, instruct: str):
     return _encode_batch([
         qwen3_format_query(text, instruct),
@@ -51,6 +48,8 @@ def get_shape() -> int:
     # create a dummy vector to get dimensions (1024 for Qwen3-Embedding-0.6B)...
     # only used when first creating an index so NBD to leave it this way
     sample_text = "passage: sample"
-    sample_vec = _encode_one_text(sample_text)
+    sample_vec = _encode_batch([
+        sample_text,
+    ])
     shape = sample_vec.shape[1]
     return shape
