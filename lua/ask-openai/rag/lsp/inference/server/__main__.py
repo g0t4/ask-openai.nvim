@@ -67,8 +67,6 @@ def handle():
         return
 
     request_type = request['type']
-    # TODO remove once done merging in re-ranker
-    rich.print(request)
 
     with Timer() as encode_timer:
         if request_type == 'embed':
