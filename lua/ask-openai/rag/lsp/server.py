@@ -8,8 +8,9 @@ from pygls import uris, workspace
 from pygls.server import LanguageServer
 
 from lsp.chunker import RAGChunkerOptions
-from lsp import ignores, imports, rag
+from lsp import ignores, rag
 from lsp import fs
+from lsp.context.imports import imports
 from lsp.logs import get_logger, logging_fwk_to_language_server_log_file
 
 logging_fwk_to_language_server_log_file(logging.INFO)
