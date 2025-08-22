@@ -110,7 +110,7 @@ class TestBuildIndex(unittest.TestCase):
         # for i in range(index.ntotal):
         #     rich.print(i)
 
-    def test_search_index(self):
+    def test_search_index_to_trigger_OpenMP_error(self):
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
         self.trash_path(self.dot_rag_dir)
@@ -132,10 +132,31 @@ class TestBuildIndex(unittest.TestCase):
         # for i, c in enumerate(chunks):
         #     rich.print(f"\nchunk {i}\n  {c.id_int}\n\n{c.text}")
 
+        # ***! TODO USE THIS TO FIX OpenMP issue
+        #
+        # run this test ignoring OpenMP error (shows test works fine otherwise):
+        #    KMP_DUPLICATE_LIB_OK=TRUE ptw indexer_tests.py -- --verbose --capture=no indexer_tests.py::TestBuildIndex::test_search_index_to_trigger_OpenMP_error
+        #    * drop the KMP_DUPLICATE_LIB_OK to get the exception again
+        #    make sure to include --capture=no else pytest swallows Error text
+        #
+        #    indexer_tests.py::TestBuildIndex::test_search_index OMP: Error #15: Initializing libomp.dylib, but found libomp.dylib already initialized.
+        #    OMP: Hint This means that multiple copies of the OpenMP runtime have been linked into the program. That is dangerous, since it can degrade performance or cause incorrect results. The best thing to do is to ensure that only a single OpenMP runtime is linked into the process, e.g. by avoiding static linking of the OpenMP runtime in any library. As an unsafe, unsupported, undocumented workaround you can set the environment variable KMP_DUPLICATE_LIB_OK=TRUE to allow the program to continue to execute, but that may cause crashes or silently produce incorrect results. For more information, please see http://openmp.llvm.org/
+        #    Fatal Python error: Aborted       #
+        #
+        # by the way, the code that triggers this is the index.search below
+        #   my guess is smth to do with load order of torch/numpy/faiss
+        #   though, everything works fine until I try to search
+        #   FYI I also tried using semantic_grep which also uses faiss.search here instead and got same error
+        #
+        # BTW I do not need this test, I already have search covered in other tests
+        #   this was just the very first search I tried with faiss and so it lingers
+        #   that said, good test case now! and then maybe keep this and rename it!
+
         q = model_wrapper2.encode_query(text="hello world", instruct="find code that uses + operator")
         self.assertEqual(q.shape, (1, 1024))
 
         index = self.get_vector_index()
+        # FYI this causes OMP OpenMP error:
         distances, indices = index.search(q, 3)
         # rich.print(f"{distances=}")
         # rich.print(f"{indices=}")
