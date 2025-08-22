@@ -1,4 +1,3 @@
-from dataclasses import asdict, dataclass
 import socket
 from typing import Any
 import msgpack
@@ -8,7 +7,7 @@ from ..logs import get_logger
 
 logger = get_logger(__name__)
 
-def recv_exact(sock, content_size):
+def _recv_exact(sock, content_size):
     buf = b''
     while len(buf) < content_size:
         chunk = sock.recv(content_size - len(buf))
@@ -24,12 +23,12 @@ def recv_exact(sock, content_size):
 #   ! = network order
 
 def recv_len_then_msg(conn: socket.socket) -> dict[str, Any] | None:
-    msg_len_packed = recv_exact(conn, 4)
+    msg_len_packed = _recv_exact(conn, 4)
     msg_len = struct.unpack('!I', msg_len_packed)[0]
     if not msg_len:
         return None
 
-    msg_packed = recv_exact(conn, msg_len)
+    msg_packed = _recv_exact(conn, msg_len)
     return msgpack.unpackb(msg_packed, raw=False)
 
 def send_len_then_msg(conn: socket.socket, msg: dict[str, Any]):
