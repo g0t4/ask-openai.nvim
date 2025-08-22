@@ -1,6 +1,6 @@
 from lsp.inference.qwen3.known import get_known_inputs, verify_qwen3_known_embeddings
 from lsp.logs import get_logger, logging_fwk_to_console
-from lsp.inference.client import InferenceClient
+from lsp.inference.client import embedder
 
 if __name__ == "__main__":
 
@@ -31,10 +31,9 @@ if __name__ == "__main__":
         #   18-20ms with "hello world"
         #   then my chunk (below)... holy F 21ms?! qwen3 full precision!
         #
-        with InferenceClient() as client:
-            rx_embeddings = client.encode({'texts': scoring_texts})
+        rx_embeddings = embedder._encode_batch(scoring_texts)
 
-    if not rx_embeddings:
+    if rx_embeddings is None:
         exit(-1)
 
     # prints here are ok b/c the intent is a one-off test of get embeddings, so show them!
