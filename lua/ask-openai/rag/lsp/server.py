@@ -12,7 +12,7 @@ from lsp import ignores, imports, rag
 from lsp import fs
 # TODO! remove model_wrapper now that I settle on it being remote and am very happy with that, I won't be running in process anytime soon
 from lsp import model_qwen3_remote as model_wrapper
-from .logs import get_logger, logging_fwk_to_language_server_log_file
+from lsp.logs import get_logger, logging_fwk_to_language_server_log_file
 
 logging_fwk_to_language_server_log_file(logging.INFO)
 # logging_fwk_to_language_server_log_file(logging.DEBUG)
@@ -23,6 +23,7 @@ server = LanguageServer("ask_language_server", "v0.1")
 @server.feature(types.INITIALIZE)
 def on_initialize(_: LanguageServer, params: types.InitializeParams):
     global dot_rag_dir
+    # TODO!ASYNC
 
     # # PRN use workspace folders if multi-workspace ...
     # #   not sure I'll use this but never know
@@ -41,12 +42,11 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
 def tell_client_to_shut_that_shit_down_now():
     server.send_notification("fuu/no_dot_rag__do_the_right_thing_wink")
 
-@server.feature(types.CANCEL_REQUEST)
-def on_request_cancel(_: LanguageServer, _params: types.CancelParams):
-    # TODO need async handlers to receive this else GIL blocked by model inference...
-    # but it would be nice if between inference runs, if all other canceled requests are actually canceled that are still pending
-    # that way when I type in the prompt it doesn't queue up all previous chars... I want those all stopped and right now it seems to hold a queue of all previous requests and processes them in order
-    logger.error(f"CANCEL REQUESTED for {_params.id=}")
+# @server.feature(types.CANCEL_REQUEST)
+# async def on_request_cancel(_: LanguageServer, _params: types.CancelParams):
+#     # I am not sure I even need this.. pygls should handle canceling non-started work
+#     #  + it should help cooperatively stop in progress, async tasks
+#     logger.error(f"CANCEL REQUESTED for {_params.id=}")
 
 @server.feature(types.INITIALIZED)
 def on_initialized(_: LanguageServer, _params: types.InitializedParams):
@@ -56,6 +56,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #  then, client sends initialized (this) request => waits for completion
     #    does not send other requests until initialized is done
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
+    # TODO!ASYNC to avoid blocking initial requests that don't depend on what I am initializing here
 
     # server.show_message(f"server message foo", types.MessageType.Warning)
     # server.show_message_log("server log message bar", types.MessageType.Error)
@@ -69,6 +70,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     rag.validate_rag_indexes()
 
 def update_rag_for_text_doc(doc_uri: str):
+    # TODO!ASYNC
     doc_path = uris.to_fs_path(doc_uri)
     if doc_path == None:
         logger.warning(f"abort update rag... to_fs_path returned {doc_path}")
@@ -96,18 +98,19 @@ def doc_saved(params: types.DidSaveTextDocumentParams):
     if fs.is_no_rag_dir():
         # TODO check langauge_extension too? for all handlers that work with doc uri? or let it fail normally in processing the request?
         return
+    # TODO!ASYNC
 
     logger.pp_debug("didSave", params)
     update_rag_for_text_doc(params.text_document.uri)
 
-@server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
-def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
-    if fs.is_no_rag_dir():
-        return
-    #   workspace/didChangeWatchedFiles # when files changed outside of editor... i.e. nvim will detect someone else edited a file in the workspace (another nvim instance, maybe CLI tool, etc)
-    logger.debug(f"didChangeWatchedFiles: {params}")
-    # TODO is this one or more events? do I need to uniqify?
-    # update_rag_file_chunks(params.changes[0].uri)
+# @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
+# async def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
+#     if fs.is_no_rag_dir():
+#         return
+#     #   workspace/didChangeWatchedFiles # when files changed outside of editor... i.e. nvim will detect someone else edited a file in the workspace (another nvim instance, maybe CLI tool, etc)
+#     logger.debug(f"didChangeWatchedFiles: {params}")
+#     # TODO is this one or more events? do I need to uniqify?
+#     # update_rag_file_chunks(params.changes[0].uri)
 
 # UNREGISTER WHILE NOT USING:
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
@@ -119,47 +122,49 @@ def doc_opened(params: types.DidOpenTextDocumentParams):
     #  ! on didOpen track open files, didClose track closed... so you always KNOW WHAT IS OPEN!!!
 
     # imports.on_open(params) # WIP
+    # TODO!ASYNC
 
     # * FYI this was just for quick testing to avoid needing a save or otherwise (just restart nvim)
     # ONLY do this b/c right now I don't rebuild the entire dataset until manually (eventually git commit, later can update here to disk)
     update_rag_for_text_doc(params.text_document.uri)
 
-@server.feature(types.TEXT_DOCUMENT_DID_CLOSE)
-def doc_closed(params: types.DidCloseTextDocumentParams):
-    if fs.is_no_rag_dir():
-        return
-    logger.pp_debug("didClose", params)
-    # TODO
-
+# @server.feature(types.TEXT_DOCUMENT_DID_CLOSE)
+# async def doc_closed(params: types.DidCloseTextDocumentParams):
+#     if fs.is_no_rag_dir():
+#         return
+#     logger.pp_debug("didClose", params)
+#
 # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
-def doc_changed(params: types.DidChangeTextDocumentParams):
-    if fs.is_no_rag_dir():
-        return
-    # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
-    logger.pp_debug("didChange", params)
-    # FYI would use this to invalidate internal caches and rebuild for a given file, i.e. imports, RAG vectors, etc
-    #   rebuild on git commit + incremental updates s/b super fast?
+# async def doc_changed(params: types.DidChangeTextDocumentParams):
+#     if fs.is_no_rag_dir():
+#         return
+#     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
+#     logger.pp_debug("didChange", params)
+#     # FYI would use this to invalidate internal caches and rebuild for a given file, i.e. imports, RAG vectors, etc
+#     #   rebuild on git commit + incremental updates s/b super fast?
 
 @server.command("semantic_grep")
-def rag_command_context_related(_: LanguageServer, params: types.ExecuteCommandParams):
+async def rag_command_context_related(_: LanguageServer, params: types.ExecuteCommandParams):
     if fs.is_no_rag_dir():
         return
 
     if params is None or params[0] is None:
         logger.error(f"aborting semantic_grep b/c missing params {params}")
         return
+    # TODO!ASYNC
 
     message = params[0]
     return rag.handle_query(message, 50, skip_same_file=False)
 
 @server.command("context.query")
-def rag_command_context_query(_: LanguageServer, params: types.ExecuteCommandParams):
+async def rag_command_context_query(_: LanguageServer, params: types.ExecuteCommandParams):
     if fs.is_no_rag_dir():
         return
 
     if params is None or params[0] is None:
         logger.error(f"aborting context.query b/c missing params {params}")
         return
+    # TODO!ASYNC
 
     message = params[0]
     return rag.handle_query(message, skip_same_file=True)

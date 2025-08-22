@@ -23,7 +23,8 @@ def validate_rag_indexes():
     validator.validate()
 
 # PRN make top_k configurable (or other params)
-def handle_query(message, top_k=3, skip_same_file=False):
+async def handle_query(message, top_k=3, skip_same_file=False):
+    # TODO!ASYNC
 
     # * parse and validate request parameters
     query = message.get("query")
@@ -35,7 +36,7 @@ def handle_query(message, top_k=3, skip_same_file=False):
     instruct = message.get("instruct")
 
     # * NEW SEMANTIC GREP PIPELINE
-    matches = semantic_grep(
+    matches = await semantic_grep(
         query=query,
         instruct=instruct,
         current_file_abs=current_file_abs,

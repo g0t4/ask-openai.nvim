@@ -28,7 +28,7 @@ class LSPRankedMatch:
     embed_rank: int = -1
     rerank_rank: int = -1
 
-def semantic_grep(
+async def semantic_grep(
     query: str,
     current_file_abs: str | Path,
     vim_filetype: str | None = None,
