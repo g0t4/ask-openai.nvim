@@ -2,7 +2,7 @@ from lsp.logs import get_logger
 
 logger = get_logger(__name__)
 
-def _encode_multiple(texts):
+def _encode_batch(texts):
     import numpy as np
     from lsp.inference.client import InferenceClient
 
@@ -32,10 +32,10 @@ def _encode_multiple(texts):
 
 def encode_passages(passages: list[str]):
     # FYI Qwen3 has NO passage/document label, only query side has Query:/Instruct:
-    return _encode_multiple(passages)
+    return _encode_batch(passages)
 
 def _encode_one_text(text: str):
-    return _encode_multiple([text])
+    return _encode_batch([text])
 
 def encode_query(text: str, instruct: str):
     return _encode_one_text(qwen3_format_query(text, instruct))
