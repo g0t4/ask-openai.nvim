@@ -8,15 +8,16 @@ from lsp.storage import Datasets, load_all_datasets
 from lsp.inference.client.retrieval import *
 from index.validate import DatasetsValidator
 from lsp import fs
+from lsp.inference.client.model_qwen3_remote import todo_remove_this_eager_load_imports
 
 logger = get_logger(__name__)
 
 datasets: Datasets
 
-def load_model_and_indexes(dot_rag_dir: Path, model_wrapper):
+def load_model_and_indexes(dot_rag_dir: Path):
     global datasets
     datasets = load_all_datasets(dot_rag_dir)
-    model_wrapper.todo_remove_this_eager_load_imports()
+    todo_remove_this_eager_load_imports()
 
 def validate_rag_indexes():
     validator = DatasetsValidator(datasets)
@@ -49,7 +50,7 @@ async def handle_query(message, top_k=3, skip_same_file=False):
         "matches": matches,
     }
 
-def update_file_from_pygls_doc(lsp_doc: TextDocument, model_wrapper, options: RAGChunkerOptions):
+def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions):
     file_path = Path(lsp_doc.path)
 
     hash = get_file_hash_from_lines(lsp_doc.lines)
@@ -57,4 +58,4 @@ def update_file_from_pygls_doc(lsp_doc: TextDocument, model_wrapper, options: RA
     new_chunks = build_chunks_from_lines(file_path, hash, lsp_doc.lines, options)
 
     with logger.timer(f"update_file {fs.get_loggable_path(file_path)}"):
-        datasets.update_file(file_path, new_chunks, model_wrapper)
+        datasets.update_file(file_path, new_chunks)

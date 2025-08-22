@@ -10,8 +10,6 @@ from pygls.server import LanguageServer
 from lsp.chunker import RAGChunkerOptions
 from lsp import ignores, imports, rag
 from lsp import fs
-# TODO! remove model_wrapper now that I settle on it being remote and am very happy with that, I won't be running in process anytime soon
-from lsp.inference.client import model_qwen3_remote as model_wrapper
 from lsp.logs import get_logger, logging_fwk_to_language_server_log_file
 
 logging_fwk_to_language_server_log_file(logging.INFO)
@@ -66,7 +64,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
         tell_client_to_shut_that_shit_down_now()
         return
 
-    rag.load_model_and_indexes(fs.dot_rag_dir, model_wrapper)
+    rag.load_model_and_indexes(fs.dot_rag_dir)
     rag.validate_rag_indexes()
 
 def update_rag_for_text_doc(doc_uri: str):
@@ -91,7 +89,7 @@ def update_rag_for_text_doc(doc_uri: str):
     if doc is None:
         logger.error(f"abort... doc not found {doc_uri}")
         return
-    rag.update_file_from_pygls_doc(doc, model_wrapper, RAGChunkerOptions.ProductionOptions())
+    rag.update_file_from_pygls_doc(doc, RAGChunkerOptions.ProductionOptions())
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 def doc_saved(params: types.DidSaveTextDocumentParams):
