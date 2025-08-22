@@ -11,6 +11,8 @@ from lsp.storage import Chunk
 # * set root dir for relative paths
 repo_root = Path(__file__).parent.parent.parent.parent.parent.parent
 my_dir = Path(__file__).parent.parent
+test_cases = my_dir / "../tests/test_cases"
+test_cases_ts = my_dir / "../tests/test_cases/ts"
 set_root_dir(repo_root)
 
 # z rag
@@ -24,11 +26,8 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
         and that I carefully document newline behaviors (i.e. not stripping them)
     """
 
-    def setUp(self):
-        self.test_cases = my_dir / ".." / "tests" / "test_cases"
-
     def test_readlines_final_line_not_empty_without_newline(self):
-        test_file = self.test_cases / "readlines" / "final_line_not_empty_without_newline.txt"
+        test_file = test_cases / "readlines" / "final_line_not_empty_without_newline.txt"
         lines = read_text_lines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3"])
 
@@ -37,7 +36,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
         self.assertEqual(first_chunk.text, "1\n2\n3")  # NO final \n
 
     def test_readlines_final_line_not_empty_with_newline(self):
-        test_file = self.test_cases / "readlines" / "final_line_not_empty_with_newline.txt"
+        test_file = test_cases / "readlines" / "final_line_not_empty_with_newline.txt"
         lines = read_text_lines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3\n"])
 
@@ -46,7 +45,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
         self.assertEqual(first_chunk.text, "1\n2\n3\n")
 
     def test_readlines_final_line_empty_with_newline(self):
-        test_file = self.test_cases / "readlines" / "final_line_empty_with_newline.txt"
+        test_file = test_cases / "readlines" / "final_line_empty_with_newline.txt"
         lines = read_text_lines(test_file)
         self.assertEqual(lines, ["1\n", "2\n", "3\n", "\n"])
 
@@ -62,10 +61,6 @@ class TestLowLevel_LinesChunker(unittest.TestCase):
 
     # TODO move some of the low level assertions out of indexer and into here by the way
     # ... i.e. intra chunk assertions should reside here
-
-    def setUp(self):
-        # create temp directory
-        self.test_cases = my_dir / ".." / "tests" / "test_cases"
 
     def test_build_line_range_chunks(self):
         lines = [str(x) + "\n" for x in range(0, 30)]  # 0\n1\n ... 29\n
@@ -125,11 +120,8 @@ class TestLowLevel_LinesChunker(unittest.TestCase):
 
 class TestTreesitterPythonChunker(unittest.TestCase):
 
-    def setUp(self):
-        self.test_cases = my_dir / ".." / "tests" / "test_cases" / "ts"
-
     def test_two_functions_py(self):
-        chunks = _ts_chunks_from_file_with_fake_hash(self.test_cases / "two_functions.py", RAGChunkerOptions.OnlyTsChunks())
+        chunks = _ts_chunks_from_file_with_fake_hash(test_cases_ts / "two_functions.py", RAGChunkerOptions.OnlyTsChunks())
         self.assertEqual(len(chunks), 2)
 
         first_chunk = chunks[0]
@@ -141,7 +133,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         self.assertEqual(second_chunk.text, expected_func2_chunk_text)
 
     def test_nested_functions_py(self):
-        chunks = _ts_chunks_from_file_with_fake_hash(self.test_cases / "nested_functions.py", RAGChunkerOptions.OnlyTsChunks())
+        chunks = _ts_chunks_from_file_with_fake_hash(test_cases_ts / "nested_functions.py", RAGChunkerOptions.OnlyTsChunks())
         self.assertEqual(len(chunks), 2)
 
         first_chunk = chunks[0]
@@ -155,7 +147,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         # and/or index nested too?
 
     def test_dataclass_py(self):
-        chunks = _ts_chunks_from_file_with_fake_hash(self.test_cases / "dataclass.py", RAGChunkerOptions.OnlyTsChunks())
+        chunks = _ts_chunks_from_file_with_fake_hash(test_cases_ts / "dataclass.py", RAGChunkerOptions.OnlyTsChunks())
         self.assertEqual(len(chunks), 1)
 
         first_chunk = chunks[0]
@@ -166,7 +158,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         self.assertEqual(first_chunk.text, class_text)
 
     def test_class_with_functions_py(self):
-        chunks = _ts_chunks_from_file_with_fake_hash(self.test_cases / "class_with_functions.py", RAGChunkerOptions.OnlyTsChunks())
+        chunks = _ts_chunks_from_file_with_fake_hash(test_cases_ts / "class_with_functions.py", RAGChunkerOptions.OnlyTsChunks())
 
         self.assertEqual(len(chunks), 5)
         self.maxDiff = None
@@ -209,7 +201,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
     #     from tree_sitter_languages import get_parser, get_language
     #     parser = get_parser("python")
     #     language = get_language("python")
-    #     source_code = read_bytes(self.test_cases / "class_with_functions.py")
+    #     source_code = read_bytes(test_cases_ts / "class_with_functions.py")
     #
     #     tree = parser.parse(source_code)
     #
@@ -225,7 +217,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
         from tree_sitter_languages import get_parser, get_language
         parser = get_parser("python")
         language = get_language("python")
-        file = self.test_cases / "two_functions.py"
+        file = test_cases_ts / "two_functions.py"
         relpath = relative_to_workspace(file)
 
         source_code = read_bytes(file)
