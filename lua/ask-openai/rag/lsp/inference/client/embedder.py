@@ -34,15 +34,15 @@ def encode_passages(passages: list[str]):
     # FYI Qwen3 has NO passage/document label, only query side has Query:/Instruct:
     return _encode_batch(passages)
 
-def encode_query(text: str, instruct: str):
-    return _encode_batch([
-        qwen3_format_query(text, instruct),
-    ])
-
 def qwen3_format_query(text: str, instruct: str) -> str:
     if instruct:
         return f'Instruct: {instruct}\nQuery:{text}'
     return f"Query: {text}"
+
+def encode_query(text: str, instruct: str):
+    return _encode_batch([
+        qwen3_format_query(text, instruct),
+    ])
 
 def get_shape() -> int:
     # create a dummy vector to get dimensions (1024 for Qwen3-Embedding-0.6B)...
