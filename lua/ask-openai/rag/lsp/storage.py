@@ -4,9 +4,6 @@ import json
 from pathlib import Path
 from typing import List, Optional, Protocol, cast, Iterable
 
-# * TORCH BEFORE FAISS (even if don't need torch here/yet)
-# model_qwen3/model_st (REMINDER when I go to rearrange again)
-# import torch  # MUST be imported BEFORE FAISS else Qwen3 will explode on model import (can happen to other models too)
 import faiss
 # TODO OK SO ... the torch "fix" fubars the LS... GAH... get this print warning:
 #   [START][2025-07-15 05:18:11] LSP logging initiated
