@@ -47,7 +47,7 @@ def encode_query(text: str, instruct: str):
 def get_shape() -> int:
     # create a dummy vector to get dimensions (1024 for Qwen3-Embedding-0.6B)...
     # only used when first creating an index so NBD to leave it this way
-    sample_text = "passage: sample"
+    sample_text = "sample"
     sample_vec = _encode_batch([
         sample_text,
     ])
