@@ -38,7 +38,9 @@ def _encode_one_text(text: str):
     return _encode_batch([text])
 
 def encode_query(text: str, instruct: str):
-    return _encode_one_text(qwen3_format_query(text, instruct))
+    return _encode_batch([
+        qwen3_format_query(text, instruct),
+    ])
 
 def qwen3_format_query(text: str, instruct: str) -> str:
     if instruct:
