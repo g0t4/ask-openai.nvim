@@ -62,11 +62,11 @@ def get_shape() -> int:
     shape = sample_vec.shape[1]
     return shape
 
-def test_known_embeddings():
+def test_known_embeddings_remote_from_inference_client():
     input_texts = known.get_known_inputs()
     embeddings = _encode_multiple(input_texts)
     known.verify_known_embeddings(embeddings, "Qwen/Qwen3-Embedding-0.6B")
 
 if __name__ == "__main__":
     ensure_model_loaded()
-    test_known_embeddings()
+    test_known_embeddings_remote_from_inference_client()
