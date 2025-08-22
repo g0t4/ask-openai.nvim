@@ -5,7 +5,7 @@ import signal
 
 import lsprotocol.types as types
 from pygls import uris, workspace
-from pygls.server import LanguageServer
+from pygls.lsp.server import LanguageServer
 
 from lsp.chunks.chunker import RAGChunkerOptions
 from lsp import ignores, rag
@@ -58,7 +58,7 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
     ignores.use_pygls_workspace(fs.root_path)
 
 def tell_client_to_shut_that_shit_down_now():
-    server.send_notification("fuu/no_dot_rag__do_the_right_thing_wink")
+    server.protocol.notify("fuu/no_dot_rag__do_the_right_thing_wink")
 
 # @server.feature(types.CANCEL_REQUEST)
 # async def on_request_cancel(_: LanguageServer, _params: types.CancelParams):
@@ -76,8 +76,6 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
     # TODO!ASYNC to avoid blocking initial requests that don't depend on what I am initializing here
 
-    # server.show_message(f"server message foo", types.MessageType.Warning)
-    # server.show_message_log("server log message bar", types.MessageType.Error)
     if fs.is_no_rag_dir():
         # TODO allow building the index from scratch?
         logger.error(f"STOP on_initialize[d] b/c no .rag dir")
@@ -124,6 +122,12 @@ def doc_saved(params: types.DidSaveTextDocumentParams):
         # TODO check langauge_extension too? for all handlers that work with doc uri? or let it fail normally in processing the request?
         return
     # TODO!ASYNC
+
+    # FYI can send messages to client!
+    # server.window_show_message(types.ShowMessageParams(
+    #     types.MessageType.Error,
+    #     "server log message bar",
+    # ))
 
     logger.pp_debug("didSave", params)
     update_rag_for_text_doc(params.text_document.uri)

@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from lsprotocol.types import MessageType
+from lsprotocol.types import MessageType, ShowMessageParams
 from pathspec import PathSpec
 from pathspec.patterns.gitwildmatch import GitWildMatchPattern
-from pygls.server import LanguageServer
+from pygls.lsp.server import LanguageServer
 
 from lsp.logs import get_logger
 
@@ -50,7 +50,10 @@ def warn_client(server: LanguageServer | None = None):
     if warned_missing_spec:
         return
 
-    server.show_message("Warning: No gitignore spec setup, allowing all files!", MessageType.Warning)
+    server.window_show_message(ShowMessageParams(
+        MessageType.Warning,
+        "Warning: No gitignore spec setup, allowing all files!",
+    ))
     logger.warning("No gitignore spec setup, allowing all files!")
     warned_missing_spec = True
 
