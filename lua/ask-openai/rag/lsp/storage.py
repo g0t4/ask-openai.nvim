@@ -1,24 +1,18 @@
-from dataclasses import dataclass, field
 import hashlib
 import json
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional, Protocol, cast, Iterable
+from typing import Optional, Protocol, cast, Iterable
 
+# FYI if you go back to inference in the same process as FAISS, then torch has to be imported before FAISS (issue w/ qwen3 model load blowing up)
+#   also might be related to OpenMP error
 import faiss
-# TODO OK SO ... the torch "fix" fubars the LS... GAH... get this print warning:
-#   [START][2025-07-15 05:18:11] LSP logging initiated
-# [ERROR][2025-07-15 05:18:11] ...p/_transport.lua:36	"rpc"	"/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/.venv/bin/python"	"stderr"	"/opt/homebrew/Cellar/python@3.13/3.13.5/Frameworks/Python.framework/Versions/3.13/lib/python3.13/multiprocessing/resource_tracker.py:301: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/loky-62322-yvt4wtp_'}\n  warnings.warn(\n"
-#  CAN I GET THE GODDAMN THING TO STOP PRINTING MESSAGES? why does it have a lot and still print?
-#   is it the print that kills this OR is that print just happening after the actual issue
-#   FUUUU MULTITASKING... smth
-#    LATER!
-#     I SUGGEST LOOK AT THE REAL ISSUE WITH FAISS/TORCH import order ... smells like BS that I should have to put one ahead of the other
 
 import numpy as np
 from numpy.typing import NDArray
 from pydantic import BaseModel
 
-from .logs import get_logger
+from lsp.logs import get_logger
 from lsp import fs
 
 logger = get_logger(__name__)
@@ -156,7 +150,7 @@ class RAGDataset:
         self.index_view = FaissIndexView(self)
 
     language_extension: str
-    chunks_by_file: dict[str, List[Chunk]]
+    chunks_by_file: dict[str, list[Chunk]]
     stat_by_path: dict[str, FileStat]
     index: faiss.Index
     index_view: FaissIndexView
@@ -189,7 +183,7 @@ class Datasets:
 
         return self.all_datasets.get(language_extension)
 
-    def update_file(self, file_path_str: str | Path, new_chunks: List[Chunk], model_wrapper):
+    def update_file(self, file_path_str: str | Path, new_chunks: list[Chunk], model_wrapper):
         file_path_str = str(file_path_str)  # must be str, just let people pass either
 
         dataset = self.for_file(file_path_str)
@@ -273,7 +267,7 @@ def load_prior_data(dot_rag_dir: Path, language_extension: str) -> RAGDataset:
         logger.info(f"No vectors.index: {vectors_index_path}")
 
     chunks_json_path = language_dir / "chunks.json"
-    chunks_by_file: dict[str, List[Chunk]] = {}
+    chunks_by_file: dict[str, list[Chunk]] = {}
 
     if chunks_json_path.exists():
         try:
@@ -301,7 +295,7 @@ def load_prior_data(dot_rag_dir: Path, language_extension: str) -> RAGDataset:
 
     return RAGDataset(language_extension, chunks_by_file, files_by_path, index)
 
-def find_language_dirs(dot_rag_dir: Path) -> List[Path]:
+def find_language_dirs(dot_rag_dir: Path) -> list[Path]:
     dot_rag_dir = Path(dot_rag_dir)
     if not dot_rag_dir.exists():
         raise ValueError(f"{dot_rag_dir=} does not exist")
