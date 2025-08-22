@@ -10,7 +10,6 @@ import rich
 
 from indexer import IncrementalRAGIndexer
 from lsp.chunker import RAGChunkerOptions
-from lsp import model_st as model_wrapper
 from lsp import model_qwen3_remote as model_wrapper2
 from lsp.storage import load_chunks_by_file, load_file_stats_by_file
 
@@ -115,7 +114,7 @@ class TestBuildIndex(unittest.TestCase):
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
         self.trash_path(self.dot_rag_dir)
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, model_wrapper, RAGChunkerOptions.OnlyLineRangeChunks())
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, model_wrapper2, RAGChunkerOptions.OnlyLineRangeChunks())
         indexer.build_index(language_extension="lua")
 
         chunks_by_file = load_chunks_by_file(self.dot_rag_dir / "lua/chunks.json")
@@ -128,9 +127,13 @@ class TestBuildIndex(unittest.TestCase):
         chunk0 = [c for c in chunks if c.base0.start_line == 0][0]  # does not have hello in it and s/b last in search results
         chunk1 = [c for c in chunks if c.base0.start_line == 15][0]  # has hello
         chunk2 = [c for c in chunks if c.base0.start_line == 30][0]  # has hello
+        #
+        # # troubleshooting:
+        # for i, c in enumerate(chunks):
+        #     rich.print(f"\nchunk {i}\n  {c.id_int}\n\n{c.text}")
 
-        q = model_wrapper._encode_one_text("hello")
-        self.assertEqual(q.shape, (1, 768))
+        q = model_wrapper2.encode_query(text="hello world", instruct="find code that uses + operator")
+        self.assertEqual(q.shape, (1, 1024))
 
         index = self.get_vector_index()
         distances, indices = index.search(q, 3)
