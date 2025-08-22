@@ -12,7 +12,7 @@ import numpy as np
 import rich
 
 from indexer import IncrementalRAGIndexer
-from lsp.chunker import RAGChunkerOptions
+from lsp.chunks.chunker import RAGChunkerOptions
 from lsp.inference.client.embedder import encode_query
 from lsp.storage import load_chunks_by_file, load_file_stats_by_file
 

@@ -17,7 +17,7 @@ from pydants import write_json
 
 import fs
 from lsp.storage import Chunk, FileStat, load_prior_data
-from lsp.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
+from lsp.chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
 
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False

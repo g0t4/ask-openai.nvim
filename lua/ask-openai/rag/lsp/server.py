@@ -7,7 +7,7 @@ import lsprotocol.types as types
 from pygls import uris, workspace
 from pygls.server import LanguageServer
 
-from lsp.chunker import RAGChunkerOptions
+from lsp.chunks.chunker import RAGChunkerOptions
 from lsp import ignores, rag
 from lsp import fs
 from lsp.context.imports import imports

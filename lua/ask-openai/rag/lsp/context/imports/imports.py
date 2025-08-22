@@ -97,5 +97,5 @@ if __name__ == '__main__':
         'language_id': 'python',
         'uri': 'file:///tmp/test.py',
         'version': 1,
-        'text': 'import lsp.logs\nfrom lsp.chunker import *',
+        'text': 'import lsp.logs\nfrom lsp.chunks.chunker import *',
     })}))

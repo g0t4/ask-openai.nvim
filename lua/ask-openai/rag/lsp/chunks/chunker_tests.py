@@ -4,12 +4,13 @@ from pathlib import Path
 from rich import print as rich_print
 
 from lsp.fs import *
-from lsp.chunker import *
+from lsp.chunks.chunker import *
 from lsp.chunks.ts import *
 from lsp.storage import Chunk
 
 # * set root dir for relative paths
-repo_root = Path(__file__).parent.parent.parent.parent.parent
+repo_root = Path(__file__).parent.parent.parent.parent.parent.parent
+my_dir = Path(__file__).parent.parent
 set_root_dir(repo_root)
 
 # z rag
@@ -24,7 +25,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
     """
 
     def setUp(self):
-        self.test_cases = Path(__file__).parent / ".." / "tests" / "test_cases"
+        self.test_cases = my_dir / ".." / "tests" / "test_cases"
 
     def test_readlines_final_line_not_empty_without_newline(self):
         test_file = self.test_cases / "readlines" / "final_line_not_empty_without_newline.txt"
@@ -64,7 +65,7 @@ class TestLowLevel_LinesChunker(unittest.TestCase):
 
     def setUp(self):
         # create temp directory
-        self.test_cases = Path(__file__).parent / ".." / "tests" / "test_cases"
+        self.test_cases = my_dir / ".." / "tests" / "test_cases"
 
     def test_build_line_range_chunks(self):
         lines = [str(x) + "\n" for x in range(0, 30)]  # 0\n1\n ... 29\n
@@ -125,8 +126,7 @@ class TestLowLevel_LinesChunker(unittest.TestCase):
 class TestTreesitterPythonChunker(unittest.TestCase):
 
     def setUp(self):
-        self.test_cases = Path(__file__).parent / ".." / "tests" / "test_cases" / "ts"
-        self.mydir = Path(__file__).parent
+        self.test_cases = my_dir / ".." / "tests" / "test_cases" / "ts"
 
     def test_two_functions_py(self):
         chunks = _ts_chunks_from_file_with_fake_hash(self.test_cases / "two_functions.py", RAGChunkerOptions.OnlyTsChunks())
@@ -213,7 +213,7 @@ class TestTreesitterPythonChunker(unittest.TestCase):
 
         tree = parser.parse(source_code)
 
-        query_str = open(self.mydir / "chunker/queries/py/toplevel.scm").read()
+        query_str = open(my_dir / "chunker/queries/py/toplevel.scm").read()
         query = language.query(query_str)
 
         captures = query.captures(tree.root_node)
