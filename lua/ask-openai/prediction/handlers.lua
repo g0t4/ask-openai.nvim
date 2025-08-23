@@ -369,7 +369,7 @@ function M.leaving_insert_mode()
 end
 
 function M.entering_insert_mode()
-    log:trace("function M.entering_insert_mode()")
+    -- log:trace("function M.entering_insert_mode()")
     M.cursor_moved_in_insert_mode()
 end
 

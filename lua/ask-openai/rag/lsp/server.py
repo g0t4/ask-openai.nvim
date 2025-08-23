@@ -31,24 +31,25 @@ def _fix_handle_cancel_notification(msg_id: MsgId):
     # I basically rewrote pop to use get_name to find the future (Task) for msg_id
     #   once cancel is called, if the task was running (marked pending)
     #   then it will throw CancelledError inside (wrap awaits in try/catch and then gracefully stop)
+    logger.info(f"attempt cancel {msg_id}")
 
     for key, future in server.protocol._request_futures.items():
         if hasattr(future, "get_name"):
             name = future.get_name()
-            logger.info(f'Found matching task by name: {name} {key=}')
+            # logger.info(f'Found matching task by name: {msg_id=} {name} {key=}')
             # TODO does task name consistently match msg_id or did I just get "lucky" (not lucky) in my testing?
             if name == f"Task-{msg_id}":
-                logger.info(f'Killing the real task: {future}')
+                # logger.debug(f'Killing the real task: {msg_id=} {future}')
                 if future.cancel():
-                    logger.info(f'[bold green]TASK CANCEL RETURNED SUCCESS {future}')
+                    logger.info(f'[bold green]TASK CANCEL RETURNED SUCCESS {msg_id=} {future}')
                 # FYI original _handle_cancel_notification's pop doesn't appear to remove my task, so I am leaving it
                 #  also, _send_handler_result is called after cancel... and _send_handler_result calls pop too
                 #    logger.error(f"_send_handler_result {msg_id=} passed_future:{future}")
                 return  # if task found, by name, skip calling original__handle_cancel_notification... in fact it might mess up something else that it cancels instead!!
-        else:
-            logger.info(f"not targeted task: {key=} {future}")
+        # else:
+        # logger.debug(f"not targeted task: {key=} {future}")
 
-    logger.info(f"fallback to original__handle_cancel_notification")
+    logger.error(f"fallback to original__handle_cancel_notification {msg_id}")
     original__handle_cancel_notification(msg_id)
 
 server.protocol._handle_cancel_notification = _fix_handle_cancel_notification
