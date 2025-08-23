@@ -40,7 +40,7 @@ def _fix_handle_cancel_notification(msg_id: MsgId):
             if name == f"Task-{msg_id}":
                 logger.info(f'Killing the real task: {future}')
                 if future.cancel():
-                    logger.info(f'Task cancel returned success {future}')
+                    logger.info(f'[bold green]TASK CANCEL RETURNED SUCCESS {future}')
                 # FYI original _handle_cancel_notification's pop doesn't appear to remove my task, so I am leaving it
                 #  also, _send_handler_result is called after cancel... and _send_handler_result calls pop too
                 #    logger.error(f"_send_handler_result {msg_id=} passed_future:{future}")

@@ -80,7 +80,7 @@ function M.setup_lsp()
                 }, function(err, res)
                     log:error("DONE", vim.inspect(err or res))
                 end)
-                vim.defer_fn(function() cancel0() end, 500)
+                vim.defer_fn(function() cancel0() end, 0)
 
                 local req_id1, cancel1 = vim.lsp.buf_request(0, "workspace/executeCommand", {
                     command = "SLEEPY",
