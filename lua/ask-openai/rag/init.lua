@@ -72,6 +72,32 @@ function M.setup_lsp()
                 --     messages.append(vim.inspect(result))
                 -- end,
             }
+
+            vim.defer_fn(function()
+                local req_id0, cancel0 = vim.lsp.buf_request(0, "workspace/executeCommand", {
+                    command = "SLEEPY",
+                    arguments = { {} }, -- MUST have empty arguments in pygls v2... or set values inside arguments = { { seconds = 10 } },
+                }, function(err, res)
+                    log:error("DONE", vim.inspect(err or res))
+                end)
+                vim.defer_fn(function() cancel0() end, 500)
+
+                -- local req_id1, cancel1 = vim.lsp.buf_request(0, "workspace/executeCommand", {
+                --     command = "SLEEPY",
+                --     arguments = { { seconds = 10 } },
+                -- }, function(err, res)
+                --     print("done", vim.inspect(err or res))
+                -- end)
+                -- vim.defer_fn(function() cancel1() end, 0)
+                --
+                -- local req_id2, cancel2 = vim.lsp.buf_request(0, "workspace/executeCommand", {
+                --     command = "SLEEPY",
+                --     arguments = { { seconds = 10 } },
+                -- }, function(err, res)
+                --     print("done", vim.inspect(err or res))
+                -- end)
+                -- vim.defer_fn(function() cancel2() end, 0)
+            end, 500)
         end,
     })
 end

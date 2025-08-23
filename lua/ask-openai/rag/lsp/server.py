@@ -1,8 +1,8 @@
+import asyncio
 import logging
 import os
 import signal
 from pathlib import Path
-from typing import Any
 
 import lsprotocol.types as types
 from pygls import uris
@@ -21,23 +21,37 @@ logger = get_logger(__name__)
 
 server = LanguageServer("ask_language_server", "v0.1")
 
-original_handle_notification = server.protocol._handle_notification
-original_handle_request = server.protocol._handle_request
+original__handle_cancel_notification = server.protocol._handle_cancel_notification
 
-def _intercept_handle_request(msg_id: MsgId, method_name: str, params: Any):
-    logger.info(f'request id: {msg_id}')
-    original_handle_request(msg_id, method_name, params)
+def _fix_handle_cancel_notification(msg_id: MsgId):
+    """FIXES cancel logic to look at task name to cancel correct future!"""
+    # TODO make a PR once you figure out the reason the pop doesn't work in pygls
+    #   BUG is this line AFAICT pop is failing:
+    #   https://github.com/g0t4/ask-openai.nvim/blob/9ce9d9a8/.venv/lib/python3.12/site-packages/pygls/protocol/json_rpc.py#L344
+    # I basically rewrote pop to use get_name to find the future (Task) for msg_id
+    #   once cancel is called, if the task was running (marked pending)
+    #   then it will throw CancelledError inside (wrap awaits in try/catch and then gracefully stop)
 
-def _intercept_handle_notification(method_name: str, params: Any):
-    id = params.id if hasattr(params, "id") else "noid"
-    logger.info(f'notification {method_name} {id=}')
-    # if method_name == CANCEL_REQUEST:
-    # self._handle_cancel_notification(params.id)
-    original_handle_notification(method_name, params)
+    for key, future in server.protocol._request_futures.items():
+        if hasattr(future, "get_name"):
+            name = future.get_name()
+            logger.info(f'Found matching task by name: {name} {key=}')
+            # TODO does task name consistently match msg_id or did I just get "lucky" (not lucky) in my testing?
+            if name == f"Task-{msg_id}":
+                logger.info(f'Killing the real task: {future}')
+                if future.cancel():
+                    logger.info(f'Task cancel returned success {future}')
+                # FYI original _handle_cancel_notification's pop doesn't appear to remove my task, so I am leaving it
+                #  also, _send_handler_result is called after cancel... and _send_handler_result calls pop too
+                #    logger.error(f"_send_handler_result {msg_id=} passed_future:{future}")
+                return  # if task found, by name, skip calling original__handle_cancel_notification... in fact it might mess up something else that it cancels instead!!
+        else:
+            logger.info(f"not targeted task: {key=} {future}")
 
-logger.info(server.protocol._handle_notification)
-server.protocol._handle_notification = _intercept_handle_notification
-server.protocol._handle_request = _intercept_handle_request
+    logger.info(f"fallback to original__handle_cancel_notification")
+    original__handle_cancel_notification(msg_id)
+
+server.protocol._handle_cancel_notification = _fix_handle_cancel_notification
 
 @server.feature(types.INITIALIZE)
 def on_initialize(_: LanguageServer, params: types.InitializeParams):
@@ -166,6 +180,20 @@ def doc_opened(params: types.DidOpenTextDocumentParams):
 #     logger.pp_debug("didChange", params)
 #     # FYI would use this to invalidate internal caches and rebuild for a given file, i.e. imports, RAG vectors, etc
 #     #   rebuild on git commit + incremental updates s/b super fast?
+
+@server.command("SLEEPY")
+async def do_long_job(_ls: LanguageServer, args: dict):
+    logger.info("long job started")
+    # logger.info(f'{_ls.protocol.msg_id=}') # just FYI you can get this anytime
+
+    try:
+        for i in range(10):
+            await asyncio.sleep(1)
+            logger.info(f"ping {i}")
+
+        return {"status": "done"}
+    except asyncio.CancelledError as e:
+        logger.error("GAHHHH YOU KILLED SLEEPY")
 
 @server.command("semantic_grep")
 async def rag_command_context_related(_: LanguageServer, args: rag.PyGLSCommandSemanticGrepArgs):
