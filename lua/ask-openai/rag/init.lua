@@ -80,7 +80,8 @@ function M.setup_lsp()
                 }, function(err, result)
                     log:error("DONE error: " .. vim.inspect(err) .. " res:" .. vim.inspect(result))
                 end)
-                vim.defer_fn(function() cancel0() end, 500)
+                -- vim.defer_fn(cancel0, 0) -- works fine to cancel all immediately and it does so VERY fast
+                vim.defer_fn(cancel0, 500)
 
                 local req_id1, cancel1 = vim.lsp.buf_request(0, "workspace/executeCommand", {
                     command = "SLEEPY",
@@ -88,7 +89,7 @@ function M.setup_lsp()
                 }, function(err, result)
                     log:error("DONE error: " .. vim.inspect(err) .. " res:" .. vim.inspect(result))
                 end)
-                vim.defer_fn(function() cancel1() end, 0)
+                vim.defer_fn(cancel1, 0)
 
                 local req_id2, cancel2 = vim.lsp.buf_request(0, "workspace/executeCommand", {
                     command = "SLEEPY",
@@ -96,7 +97,7 @@ function M.setup_lsp()
                 }, function(err, result)
                     log:error("DONE error: " .. vim.inspect(err) .. " res:" .. vim.inspect(result))
                 end)
-                vim.defer_fn(function() cancel2() end, 0)
+                vim.defer_fn(cancel2, 0)
             end, 500)
         end,
     })
