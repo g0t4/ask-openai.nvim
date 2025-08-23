@@ -298,9 +298,13 @@ local function semantic_grep_current_filetype_picker(opts)
                     display = make_display, -- required, string|function
                     ordinal = match.text, -- required, for filtering? how so?
                     value = match, -- required, IIRC for getting selection (returns match).. though shouldn't it return the whole entry?!
-
                     match = match, -- PREFER THIS now that I have type hints
+
+                    -- default action uses these to open to file + location
                     filename = match.file, -- default action uses these to jump to file location
+                    lnum = match.start_line_base0 + 1,
+                    col = match.start_column_base0 + 1,
+
                     -- valid = false -- true = hide this entry (or return nil for entire entry)
                 }
                 return entry
