@@ -16,6 +16,7 @@ dependencies = [
     "pydantic>=2.11.7",
     "pygls==2.0.0a6",
     "pympler>=1.1",
+    "pyright>=1.1.404",
     "pytest>=8.4.1",
     "pytest-watch>=4.2.0",
     "rank-bm25>=0.2.2",
@@ -27,3 +28,11 @@ dependencies = [
     "tree-sitter-languages==1.10.*",
     "yapf>=0.43.0",
 ]
+
+[tool.pyright]
+# reportUnusedVariable = false
+# reportUnusedExpression = false
+# reportUnusedParameter = false
+# THERE must be a bug in pyright b/c it flags variables that are unused as unused even when I tell it NOT to and by default it shouldn't...
+#  and on the warning it doesn't list a rule so I can't figure out WTF is going on
+#  just look at any unused variable or parameter, with leading underscore, and it bitches
