@@ -25,7 +25,7 @@ local client_request_ids, cancel_all_requests
 ---@param entry_maker fun(match: LSPRankedMatch): SemanticGrepTelescopeEntryMatch
 function _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, process_complete, entry_maker)
     if cancel_all_requests then
-        logs:info("canceling previous request")
+        logs:error("canceling previous request")
         cancel_all_requests()
     end
 

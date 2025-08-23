@@ -39,12 +39,14 @@ def _fix_handle_cancel_notification(msg_id: MsgId):
             # logger.info(f'Found matching task by name: {msg_id=} {name} {key=}')
             # TODO does task name consistently match msg_id or did I just get "lucky" (not lucky) in my testing?
             if name == f"Task-{msg_id}":
+                # TODO! check state of task if finished? and don't try cancel if so
                 # logger.debug(f'Killing the real task: {msg_id=} {future}')
                 if future.cancel():
                     logger.info(f'[bold green]TASK CANCEL RETURNED SUCCESS {msg_id=} {future}')
+                    return
                 # FYI original _handle_cancel_notification's pop doesn't appear to remove my task, so I am leaving it
                 #  also, _send_handler_result is called after cancel... and _send_handler_result calls pop too
-                #    logger.error(f"_send_handler_result {msg_id=} passed_future:{future}")
+                logger.error(f"[bold red] TASK CANCEL NOT SUCCESSFUL  {msg_id=} passed_future:{future}")
                 return  # if task found, by name, skip calling original__handle_cancel_notification... in fact it might mess up something else that it cancels instead!!
         # else:
         # logger.debug(f"not targeted task: {key=} {future}")
