@@ -194,6 +194,7 @@ async def do_long_job(_ls: LanguageServer, args: dict):
         return {"status": "done"}
     except asyncio.CancelledError as e:
         logger.error("GAHHHH YOU KILLED SLEEPY")
+        return {"status": "canelled"}
 
 @server.command("semantic_grep")
 async def rag_command_context_related(_: LanguageServer, args: rag.PyGLSCommandSemanticGrepArgs):
