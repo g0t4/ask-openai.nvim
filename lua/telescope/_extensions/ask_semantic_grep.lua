@@ -81,6 +81,18 @@ vim.api.nvim_set_hl(0, hlgroup, {
 
 local custom_buffer_previewer = previewers.new_buffer_previewer({
 
+    title = "Semantic Grep", -- static title when no entry selected
+    dyn_title = function(_, entry)
+        if entry then
+            local path = vim.fn.fnamemodify(entry.filename, ":~:.") -- . == relative to CWD => fallback to ~ for relative to home dir
+            if entry.lnum then
+                return path .. ":" .. entry.lnum
+            end
+            return path
+        end
+        return "Semantic Grep - No matches" -- unsure this ever happens, I think static is used when no results
+    end,
+
     ---@param entry SemanticGrepTelescopeEntryMatch
     define_preview = function(self, entry)
         local filename = entry.filename
