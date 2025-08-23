@@ -15,9 +15,9 @@ class RerankRequest:
 
 class InferenceClient():
 
-    def __init__(self, addy=("ollama.lan", 8015)):
+    def __init__(self):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.addy = addy
+        self.addy = ("ollama.lan", 8015)
 
     def encode(self, inputs: dict[str, str]) -> list[list[float]] | None:
         # PRN add dataclass like rerank below
