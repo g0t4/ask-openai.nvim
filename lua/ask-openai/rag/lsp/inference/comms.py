@@ -1,3 +1,4 @@
+from asyncio import StreamReader, StreamWriter
 import socket
 from typing import Any
 import msgpack
@@ -36,3 +37,34 @@ def send_len_then_msg(conn: socket.socket, msg: dict[str, Any]):
     msg_len = len(msg_packed)
     msg_len_packed = struct.pack('!I', msg_len)  # 4-byte network byte order
     conn.sendall(msg_len_packed + msg_packed)
+
+# *** ASYNC:
+
+async def _recv_exact_async(reader: StreamReader, content_size) -> bytes | None:
+    # does readexactly result in CancelledError bubbling up due to internal awaits?
+    # PRN? timeout?
+    return await reader.readexactly(content_size)
+
+async def recv_len_then_msg_async(reader: StreamReader) -> dict[str, Any] | None:
+    msg_len_packed = await _recv_exact_async(reader, 4)
+    if msg_len_packed is None:
+        logger.warn("recv_len_then_msg_async: msg_len_packed is None")
+        return None
+    msg_len = struct.unpack('!I', msg_len_packed)[0]
+    if msg_len is None:
+        logger.warn("recv_len_then_msg_async: msg_len is None")
+        return None
+
+    msg_packed = await _recv_exact_async(reader, msg_len)
+    if msg_packed is None:
+        logger.warn("recv_len_then_msg_async: msg_packed is None")
+        return None
+    return msgpack.unpackb(msg_packed, raw=False)
+
+async def send_len_then_msg_async(writer: StreamWriter, msg: dict[str, Any]):
+    msg_packed = msgpack.packb(msg, use_bin_type=True)
+    msg_len = len(msg_packed)
+    msg_len_packed = struct.pack('!I', msg_len)  # 4-byte network byte order
+    # conn.sendall(msg_len_packed + msg_packed)
+    writer.write(msg_len_packed + msg_packed)
+    await writer.drain()  # TODO right way to wait?
