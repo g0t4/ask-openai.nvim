@@ -29,6 +29,14 @@ dependencies = [
     "yapf>=0.43.0",
 ]
 
+[project.optional-dependencies]
+build21 = [
+    "flash-attn==2.8.3",
+    "einops==0.8.1",
+    # "faiss-gpu", # py 3.10 is newest ... do I really need this? faiss-cpu is probably fine for my needs (i.e. running nvim locally).... remember faiss is not used by inference server (obviously)
+    # torch cuda 12.8?
+]
+
 [tool.pyright]
 # reportUnusedVariable = false
 # reportUnusedExpression = false
