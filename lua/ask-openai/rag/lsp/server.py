@@ -42,8 +42,7 @@ async def sleepy(_ls: LanguageServer, args: dict):
 
     try:
         for i in range(10):
-            if stopper.is_set():
-                raise asyncio.CancelledError(f"cooperative cancel {msg_id=}")
+            stopper.throw_if_stopped()
 
             async with asyncio.TaskGroup() as tg:
                 job = tg.create_task(asyncio.sleep(3))
@@ -54,7 +53,8 @@ async def sleepy(_ls: LanguageServer, args: dict):
                 )
                 if stop_requested in done:
                     # Raising inside the TG cancels/awaits other tasks
-                    raise asyncio.CancelledError(f"cooperative cancel {msg_id=}")
+                    stopper.throw_if_stopped()
+
                 stop_requested.cancel()  # cleanup
 
             logger.info(f"ping {msg_id=} {i}")
