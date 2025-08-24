@@ -14,7 +14,7 @@ from lsp import ignores, rag
 from lsp import fs
 from lsp.context.imports import imports
 from lsp.logs import get_logger, logging_fwk_to_language_server_log_file
-from lsp.cooperative import request_stop, add_stopper, remove_stopper
+from lsp.stoppers import request_stop, add_stopper, remove_stopper
 
 logging_fwk_to_language_server_log_file(logging.INFO)
 # logging_fwk_to_language_server_log_file(logging.DEBUG)
