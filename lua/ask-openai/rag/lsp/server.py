@@ -188,9 +188,8 @@ async def rag_command_context_related(_: LanguageServer, args: rag.LSPRagQueryRe
     try:
         return await rag.handle_query(args, top_k=50, skip_same_file=False)
     except asyncio.CancelledError as e:
-        logger.info("Client cancelled query", exc_info=e)
-        # IIAC the client cancelled the request so they don't need any fancy status
-        # PRN add result types that auto-serialize and strongly type responses
+        # avoid leaving on in logs b/c takes up a ton of space for stack trace
+        # logger.info("Client cancelled query", exc_info=e) # uncomment to see where error is raised
         return rag.LSPRagQueryResult(error=rag.LSPResponseErrors.CANCELLED)
 
 @server.command("context.query")
@@ -198,7 +197,6 @@ async def rag_command_context_query(_: LanguageServer, args: rag.LSPRagQueryRequ
     try:
         return await rag.handle_query(args, skip_same_file=True)
     except asyncio.CancelledError as e:
-        logger.info("Client cancelled query", exc_info=e)
         return rag.LSPRagQueryResult(error=rag.LSPResponseErrors.CANCELLED)
 
 # how can I intercept shutdown from client?
