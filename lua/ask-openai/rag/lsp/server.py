@@ -183,21 +183,6 @@ async def doc_opened(params: types.DidOpenTextDocumentParams):
 #     # FYI would use this to invalidate internal caches and rebuild for a given file, i.e. imports, RAG vectors, etc
 #     #   rebuild on git commit + incremental updates s/b super fast?
 
-@server.command("SLEEPY")
-async def do_long_job(_ls: LanguageServer, args: dict):
-    logger.info("long job started")
-    msg_id = _ls.protocol.msg_id  # workaround to load msg_id via contextvars
-
-    try:
-        for i in range(10):
-            await asyncio.sleep(1)
-            logger.info(f"ping {i}")
-
-        return {"status": "done", "msg_id": msg_id}
-    except asyncio.CancelledError as e:
-        logger.error("GAHHHH YOU KILLED SLEEPY")
-        return {"status": "canelled", "msg_id": msg_id}
-
 @server.command("semantic_grep")
 async def rag_command_context_related(_: LanguageServer, args: rag.LSPRagQueryRequest) -> rag.LSPRagQueryResult:
     try:
