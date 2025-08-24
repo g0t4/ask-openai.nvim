@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 from lsp.inference.client.embedder import encode_query
+from lsp.stoppers import Stopper
 from lsp.storage import Datasets
 from lsp.inference.client import *
 
@@ -28,6 +29,8 @@ class LSPRankedMatch:
     embed_rank: int = -1
     rerank_rank: int = -1
 
+FAKE_STOPPER = Stopper("fake")
+
 async def semantic_grep(
     query: str,
     current_file_abs: str | None,
@@ -38,6 +41,7 @@ async def semantic_grep(
     # TODO! fix datasets to not be so yucky
     datasets: Datasets | None = None,
     msg_id: str | None = None,
+    stopper: Stopper = FAKE_STOPPER,
 ) -> list[LSPRankedMatch]:
     if instruct is None:
         instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
@@ -45,9 +49,11 @@ async def semantic_grep(
         #   instruct_aka_task = "Given a user Query to find code in a repository, retrieve the most relevant Documents"
         #   PRN tweak/evaluate performance of different instruct/task descriptions?
 
+    stopper.throw_if_stopped()
     # * encode query vector
     with logger.timer("encoding query"):
         query_vector = await encode_query(query, instruct)
+        stopper.throw_if_stopped()  # PRN add in cancel/stop logic... won't matter though if the real task isn't cancellable (and just keeps running to completion)
 
     if datasets is None:
         logger.error("DATASETS must be loaded and passed")
@@ -113,6 +119,7 @@ async def semantic_grep(
     # * rerank batches
     BATCH_SIZE = 8
     for batch_num in range(0, len(matches), BATCH_SIZE):
+        stopper.throw_if_stopped()
         batch = matches[batch_num:batch_num + BATCH_SIZE]
         docs = [c.text for c in batch]
         logger.info(f"{msg_id} re-rank batch {batch_num} len={len(batch)}")
@@ -125,6 +132,8 @@ async def semantic_grep(
             # assign new scores back to objects
             for c, rerank_score in zip(batch, scores):
                 c.rerank_score = rerank_score
+
+    stopper.throw_if_stopped()
 
     # * sort score => then mark ranks
     matches.sort(key=lambda c: c.rerank_score, reverse=True)
