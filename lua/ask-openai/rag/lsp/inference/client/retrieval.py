@@ -40,10 +40,11 @@ class LSPRagQueryRequest:
     currentFileAbsolutePath: str | None = None
     vimFiletype: str | None = None
     instruct: str | None = None
-    msg_id: str = ""
+    msg_id: str = ""  # cannot bind underscores... this is not a bound param (LS handler sets it)
     languages: str = ""
     skipSameFile: bool = False
     topK: int = 50
+    embedTopK: int | None = None
     # MAKE SURE TO GIVE DEFAULT VALUES IF NOT REQUIRED
 
 async def semantic_grep(
@@ -53,6 +54,8 @@ async def semantic_grep(
     stopper: Stopper = FAKE_STOPPER,
 ) -> list[LSPRankedMatch]:
     all_languages = args.languages == "ALL"
+
+    embed_top_k = args.embedTopK or args.topK
 
     instruct = args.instruct
     if instruct is None:
@@ -77,7 +80,7 @@ async def semantic_grep(
         ids = []
         for str, ds in datasets.all_datasets.items():
             logger.warn(f"searching {str} index")
-            _topk = round(args.topK / len(datasets.all_datasets))
+            _topk = round(embed_top_k / len(datasets.all_datasets))
             _scores, _ids = ds.index.search(query_vector, _topk)
             scores.extend(_scores[0])
             ids.extend(_ids[0])
@@ -92,7 +95,7 @@ async def semantic_grep(
         # TODO how to approach multi-language? split up top_k? or maybe do 1/2 of top_k regardless # languages
         # TODO get .rag.yaml for list of languages to use for all languages
 
-        scores, ids = dataset.index.search(query_vector, args.topK)
+        scores, ids = dataset.index.search(query_vector, embed_top_k)
         ids = ids[0]
         scores = scores[0]
 
@@ -104,9 +107,6 @@ async def semantic_grep(
     # * lookup matching chunks (filter any exclusions on metadata)
     matches: list[LSPRankedMatch] = []
     for idx, (id, embed_score) in enumerate(zip(ids, scores)):
-        # print(id, embed_score) # nice way to verify initial sort (indeed is descending by embed_score)
-        # if len(matches) >= args.topK:
-        #     break
 
         chunk = datasets.get_chunk_by_faiss_id(id)
         if chunk is None:
@@ -139,6 +139,10 @@ async def semantic_grep(
         )
 
         matches.append(match)
+
+    if embed_top_k > args.topK:
+        logger.warn(f"Embedding topK {embed_top_k} is higher than user topK {args.topK}... truncating")
+        matches = matches[:args.topK]
 
     if len(matches) == 0:
         logger.warning(f"No matches found for {args.currentFileAbsolutePath=}")

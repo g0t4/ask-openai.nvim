@@ -25,6 +25,7 @@ async def main():
         instruct=None,  # intentionally blank
         skipSameFile=False,
         topK=20,
+        embedTopK=20,
         languages="ALL",  # test search across languages
     )
 

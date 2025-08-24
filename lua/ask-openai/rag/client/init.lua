@@ -59,6 +59,7 @@ end
 ---@field languages? string
 ---@field skipSameFile? boolean
 ---@field topK? integer
+---@field embedTopK? integer
 _G.LSPRagQueryRequest = {}
 
 
