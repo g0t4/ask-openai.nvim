@@ -22,9 +22,10 @@ async def main():
         query="where did I set the top_k for semantic grep?",
         currentFileAbsolutePath="test.py",
         vimFiletype="py",
-        instruct=None,
+        instruct=None,  # intentionally blank
         skipSameFile=False,
         topK=20,
+        languages="ALL",  # test search across languages
     )
 
     ranked_matches = await semantic_grep(
