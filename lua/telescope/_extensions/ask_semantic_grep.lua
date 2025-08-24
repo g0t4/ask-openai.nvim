@@ -33,17 +33,27 @@ function _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, proc
 
     lsp_buffer_number = lsp_buffer_number or 0
 
-
     logs:warn("requesting semantic_grep, last_msg_id: " .. vim.inspect(last_msg_id))
     -- TODO how can I cancel prior requests? my socket might be the issue :).. no cancelation mechanism :)
     -- TODO debounce/throttle requests!!
-    local msg_id, cancel_my_request = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
+    local msg_id, cancel_my_request
+    msg_id, cancel_my_request = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
             command = "semantic_grep",
             arguments = { lsp_rag_request },
         },
         ---@param result LSPRagQueryResult
         function(err, result, ctx)
-            -- logs:info("semantic_grep callback: " .. vim.inspect({ err = err, result = result, ctx = ctx }))
+            -- logs:warn("semantic_grep callback: " .. vim.inspect({ err = err, result = result, ctx = ctx }))
+            if last_msg_id ~= msg_id then
+                -- only the last request should update the picker!
+                -- prior requests may complete but are still cancelled
+                return
+            end
+
+            -- because last request is this same request's response... then clear the cancel handler
+            --   nothing left to cancel
+            --   and IIUC this is going to run to completion before anything else can start anyways
+            cancel_last_requests = nil -- no reason to cancel
 
             if err then
                 logs:error("semantic_grep failed: " .. err.message)
@@ -66,9 +76,6 @@ function _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, proc
 
             -- picker.max_results = 10
             process_complete()
-
-            -- TODO how about look at the last_msg_id and if its the same as this request's then clear the cancel_last_requests function?
-            --   that said, lang server seems to handle cancel on finished requests w/o a problem so I can ignore this for now
         end
     )
     cancel_last_requests = cancel_my_request
