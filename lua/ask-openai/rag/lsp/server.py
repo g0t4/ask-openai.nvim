@@ -24,7 +24,7 @@ server = LanguageServer("ask_language_server", "v0.1")
 
 original__handle_cancel_notification = server.protocol._handle_cancel_notification
 
-def _fix_handle_cancel_notification(msg_id: MsgId):
+def _trigger_stopper_on_cancel(msg_id: MsgId):
     """FIXES cancel logic to look at task name to cancel correct future!"""
     # TODO make a PR once you figure out the reason the pop doesn't work in pygls
     #   BUG is this line AFAICT pop is failing:
@@ -71,7 +71,7 @@ def _fix_handle_cancel_notification(msg_id: MsgId):
     logger.error(f"fallback to original__handle_cancel_notification {msg_id}")
     original__handle_cancel_notification(msg_id)
 
-server.protocol._handle_cancel_notification = _fix_handle_cancel_notification
+server.protocol._handle_cancel_notification = _trigger_stopper_on_cancel
 
 @server.command("SLEEPY")
 async def do_long_job(_ls: LanguageServer, args: dict):
