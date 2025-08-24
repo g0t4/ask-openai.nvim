@@ -18,15 +18,15 @@ from lsp.storage import load_chunks_by_file, load_file_stats_by_file
 
 # logging_fwk_to_console("WARN") # stop INFO logs after timing captured
 
-class TestBuildIndex():
+class TestBuildIndex:
 
-    def setUp(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.dot_rag_dir = Path(__file__).parent / "tests/.rag"
-        self.dot_rag_dir.mkdir(exist_ok=True, parents=True)
-        self.indexer_src_dir = Path(__file__).parent / "tests" / "indexer_src"
-        self.tmp_source_code_dir = Path(__file__).parent / "tests" / "tmp_source_code"
-        self.test_cases = Path(__file__).parent / "tests" / "test_cases"
+    @classmethod
+    def setup_class(cls):  # runs once before *all* tests in this class
+        cls.dot_rag_dir = Path(__file__).parent / "tests/.rag"
+        cls.dot_rag_dir.mkdir(exist_ok=True, parents=True)
+        cls.indexer_src_dir = Path(__file__).parent / "tests" / "indexer_src"
+        cls.tmp_source_code_dir = Path(__file__).parent / "tests" / "tmp_source_code"
+        cls.test_cases = Path(__file__).parent / "tests" / "test_cases"
 
     def trash_path(self, dir):
         if dir.exists():
@@ -44,7 +44,7 @@ class TestBuildIndex():
         return load_file_stats_by_file(self.dot_rag_dir / "lua" / "files.json")
 
     @pytest.mark.asyncio
-    async def test_building_rag_index_from_scratch():
+    async def test_building_rag_index_from_scratch(self):
 
         # FYI! this duplicates some low level line range chunking tests but I want to keep it to include the end to end picture
         #   i.e. for computing chunk id which relies on path to file
@@ -117,7 +117,7 @@ class TestBuildIndex():
         #     rich.print(i)
 
     @pytest.mark.asyncio
-    async def test_search_index_to_trigger_OpenMP_error():
+    async def test_search_index_to_trigger_OpenMP_error(self):
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
         self.trash_path(self.dot_rag_dir)
@@ -172,7 +172,7 @@ class TestBuildIndex():
         np.testing.assert_array_equal(indices, expected)
 
     @pytest.mark.asyncio
-    async def test_update_index_removed_file():
+    async def test_update_index_removed_file(self):
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
@@ -259,7 +259,7 @@ class TestBuildIndex():
         assert index.ntotal == 4
 
     @pytest.mark.asyncio
-    async def test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index():
+    async def test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index(self):
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
@@ -312,14 +312,14 @@ class TestBuildIndex():
         assert index.ntotal == 2, "index.ntotal (num vectors) should be 1"
 
     # @pytest.mark.asyncio
-    async def TODO_test__file_timestamp_changed__all_chunks_still_the_same__does_not_insert_chunk_into_updated_chunks():
+    async def TODO_test__file_timestamp_changed__all_chunks_still_the_same__does_not_insert_chunk_into_updated_chunks(self):
         pass
         # ***! TODO FIX LOGIC TO DETECT CHANGED FILES/CHUNKS...
         #   if a chunk is the SAME it should be NOT marked updated!
         #   i.e. if file modified timestamp is updated but none of the contents are different!
 
     @pytest.mark.asyncio
-    async def test_update_file_from_language_server():
+    async def test_update_file_from_language_server(self):
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
