@@ -33,6 +33,7 @@ def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tenso
         sequence_lengths = attention_mask.sum(dim=1) - 1
         batch_size = last_hidden_states.shape[0]
         return last_hidden_states[torch.arange(batch_size, device=last_hidden_states.device), sequence_lengths]
+        # FYI ok to use device here b/c forward pass already placed onto device so keep on that one
 
 # sizes: 0.6B (remember this is big for embeddings), also 4B and 8B
 model_path = 'Qwen/Qwen3-Embedding-0.6B'
@@ -46,7 +47,6 @@ if device.type == 'cuda':
         attn_implementation="flash_attention_2",  # cuda only
         device_map="auto",  # DO NOT also call model.to(device) too!, must let accelerate handle placement
     )
-    # TODO test timing of shared vs not sharded (w/ device_map="auto") on dual 5090s... I doubt it helps materially, if not maybe just go with model.to("cuda") to use one only?
 else:
     raise ValueError("ONLY setup for CUDA device")
 
@@ -66,7 +66,7 @@ def encode(input_texts) -> tuple[np.ndarray, list[list[np.int64]]]:
             return_tensors="pt",
         )
 
-        batch_args.to(model.device)
+        # batch_args.to(model.device) # not needed with device_map='auto', right?
         outputs = model(**batch_args)
         embeddings = last_token_pool(outputs.last_hidden_state, batch_args['attention_mask'])
         norm: np.ndarray = F.normalize(embeddings, p=2, dim=1).cpu().numpy()
