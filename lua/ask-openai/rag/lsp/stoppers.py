@@ -29,7 +29,7 @@ def request_stop(msg_id) -> bool:
     if stopper is None:
         return False
 
-    stopper.set()
+    stopper.request_stop()
     return True
 
 def remove_stopper(msg_id):
