@@ -14,7 +14,7 @@ from lsp import ignores, rag
 from lsp import fs
 from lsp.context.imports import imports
 from lsp.logs import get_logger, logging_fwk_to_language_server_log_file
-from lsp.stoppers import request_stop, add_stopper, remove_stopper
+from lsp.stoppers import request_stop, create_stopper, remove_stopper
 
 logging_fwk_to_language_server_log_file(logging.INFO)
 # logging_fwk_to_language_server_log_file(logging.DEBUG)
@@ -38,7 +38,7 @@ server.protocol._handle_cancel_notification = _trigger_stopper_on_cancel
 async def sleepy(_ls: LanguageServer, args: dict):
     msg_id = _ls.protocol.msg_id  # workaround to load msg_id via contextvars
     logger.info(f"sleepy started {msg_id=}")
-    stopper = add_stopper(msg_id)
+    stopper = create_stopper(msg_id)
 
     try:
         for i in range(10):

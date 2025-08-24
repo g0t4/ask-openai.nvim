@@ -19,7 +19,7 @@ class Stopper(asyncio.Event):
 
 stoppers: dict[MsgId, Stopper] = {}
 
-def add_stopper(msg_id) -> Stopper:
+def create_stopper(msg_id) -> Stopper:
     stopper = Stopper(msg_id)
     stoppers[msg_id] = stopper
     return stopper
