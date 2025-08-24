@@ -35,16 +35,19 @@ def _trigger_stopper_on_cancel(msg_id: MsgId):
 server.protocol._handle_cancel_notification = _trigger_stopper_on_cancel
 
 @server.command("SLEEPY")
-async def do_long_job(_ls: LanguageServer, args: dict):
+async def sleepy(_ls: LanguageServer, args: dict):
     msg_id = _ls.protocol.msg_id  # workaround to load msg_id via contextvars
-    logger.info(f"long job started {msg_id=}")
+    logger.info(f"sleepy started {msg_id=}")
     stopper = add_stopper(msg_id)
 
     try:
         for i in range(10):
             if stopper.is_set():
                 raise asyncio.CancelledError(f"cooperative cancel {msg_id=}")
-            await asyncio.sleep(3)
+            job = asyncio.create_task(asyncio.sleep(3))
+            wait_until_stop_requested = asyncio.create_task(stopper.wait())
+            await asyncio.wait([job, wait_until_stop_requested], return_when=asyncio.FIRST_COMPLETED)
+
             logger.info(f"ping {msg_id=} {i}")
 
         return {"status": "done", "msg_id": msg_id}
