@@ -21,7 +21,7 @@ set_root_dir(repo_root)
 def _ts_chunks_from_file_with_fake_hash(path: Path, options: RAGChunkerOptions) -> list[Chunk]:
     return build_ts_chunks_from_source_bytes(path, "fake_hash", path.read_bytes(), options)
 
-class TestReadingFilesAndNewLines(unittest.TestCase):
+class TestReadingFilesAndNewLines:
     """ purpose is to test that readlines is behaving the way I expect
         and that I carefully document newline behaviors (i.e. not stripping them)
     """
@@ -53,7 +53,7 @@ class TestReadingFilesAndNewLines(unittest.TestCase):
         first_chunk = chunks[0]
         self.assertEqual(first_chunk.text, "1\n2\n3\n\n")
 
-class TestLowLevel_LinesChunker(unittest.TestCase):
+class TestLowLevel_LinesChunker:
     """
     FYI this overlaps with tests in indexer_tests...
     - these tests are intended to be lower level to compliment indexer_tests
@@ -118,7 +118,7 @@ class TestLowLevel_LinesChunker(unittest.TestCase):
         chunks = build_line_range_chunks_from_lines(Path("foo.txt"), "fake_hash", lines)
         assert [(c.start_line0, c.end_line0) for c in chunks] == [(0, 19)]
 
-class TestTreesitterPythonChunker(unittest.TestCase):
+class TestTreesitterPythonChunker:
 
     def test_two_functions_py(self):
         chunks = _ts_chunks_from_file_with_fake_hash(test_cases_ts / "two_functions.py", RAGChunkerOptions.OnlyTsChunks())
