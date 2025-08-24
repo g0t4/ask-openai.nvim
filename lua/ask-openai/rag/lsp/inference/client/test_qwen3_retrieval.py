@@ -18,13 +18,17 @@ async def main():
     dot_rag_dir = Path("~/repos/github/g0t4/ask-openai.nvim/.rag").expanduser().absolute()
     datasets = load_all_datasets(dot_rag_dir)
 
-    ranked_matches = await semantic_grep(
+    args = LSPRagQueryRequest(
         query="where did I set the top_k for semantic grep?",
-        current_file_abs="test.py",
-        vim_filetype="py",
-        instruct=None,  # intentionally blank
-        skip_same_file=False,
-        top_k=20,
+        currentFileAbsolutePath="test.py",
+        vimFiletype="py",
+        instruct=None,
+        skipSameFile=False,
+        topK=20,
+    )
+
+    ranked_matches = await semantic_grep(
+        args=args,
         datasets=datasets,
     )
 
