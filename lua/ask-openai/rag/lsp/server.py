@@ -152,20 +152,16 @@ async def doc_saved(params: types.DidSaveTextDocumentParams):
 #     # TODO is this one or more events? do I need to uniqify?
 #     # update_rag_file_chunks(params.changes[0].uri)
 
-# UNREGISTER WHILE NOT USING:
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 async def doc_opened(params: types.DidOpenTextDocumentParams):
     if fs.is_no_rag_dir():
         return
     logger.pp_debug("didOpen", params)
-
-    #  ! on didOpen track open files, didClose track closed... so you always KNOW WHAT IS OPEN!!!
-
+    # PRN on didOpen track open files, didClose track closed... use for auto-context!
     # imports.on_open(params) # WIP
-    # TODO!ASYNC
 
-    # * FYI this was just for quick testing to avoid needing a save or otherwise (just restart nvim)
-    # ONLY do this b/c right now I don't rebuild the entire dataset until manually (eventually git commit, later can update here to disk)
+    # only rebuild index on commit (or manually)... so when open file make sure its updated
+    # FYI this doesn't update .rag dir... it's in memory only
     await update_rag_for_text_doc(params.text_document.uri)
 
 # @server.feature(types.TEXT_DOCUMENT_DID_CLOSE)
