@@ -47,6 +47,9 @@ async def sleepy(_ls: LanguageServer, args: dict):
             job = asyncio.create_task(asyncio.sleep(3))
             wait_until_stop_requested = asyncio.create_task(stopper.wait())
             await asyncio.wait([job, wait_until_stop_requested], return_when=asyncio.FIRST_COMPLETED)
+            if stopper.is_set():
+                job.cancel()
+                raise asyncio.CancelledError(f"cooperative cancel {msg_id=}")
 
             logger.info(f"ping {msg_id=} {i}")
 
