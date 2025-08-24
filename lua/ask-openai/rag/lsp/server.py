@@ -33,7 +33,7 @@ def _fix_handle_cancel_notification(msg_id: MsgId):
     #   then it will throw CancelledError inside (wrap awaits in try/catch and then gracefully stop)
     logger.info(f"attempt cancel {msg_id}")
 
-    for key, future in server.protocol._request_futures.items():
+    for _key, future in server.protocol._request_futures.copy().items():
         if hasattr(future, "get_name"):
             name = future.get_name()
             # logger.info(f'Found matching task by name: {msg_id=} {name} {key=}')
