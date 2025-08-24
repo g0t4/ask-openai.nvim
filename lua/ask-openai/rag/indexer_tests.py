@@ -59,35 +59,35 @@ class TestBuildIndex():
         chunks_by_file = self.get_chunks_by_file()
         # 41 lines currently, 5 overlap + 20 per chunk
         sample_lua_path = (self.indexer_src_dir / "sample.lua").absolute()
-        self.assertEqual(len(chunks_by_file), 1)  # one file
+        assert len(chunks_by_file) == 1  # one file
         chunks = chunks_by_file[str(sample_lua_path)]
-        self.assertEqual(len(chunks), 3)
+        assert len(chunks) == 3
         # rich.print(f'{sample_lua_path=}')
         for c in chunks:
-            self.assertEqual(c.file, str(sample_lua_path))
-            self.assertEqual(c.type, "lines")
+            assert c.file == str(sample_lua_path)
+            assert c.type == "lines"
 
         first_chunk = [c for c in chunks if c.start_line0 == 0][0]
-        self.assertEqual(first_chunk.start_line0, 0)
-        self.assertEqual(first_chunk.end_line0, 19)
+        assert first_chunk.start_line0 == 0
+        assert first_chunk.end_line0 == 19
 
         start = "\n\nlocal TestRunner = {}"
-        self.assertEqual(first_chunk.text.startswith(start), True)
+        assert first_chunk.text.startswith(start) == True
         end = "table.insert(self.results, {status = \"fail\", message = \"Test failed: expected \" .. tostring(test.expected) .. \", got \" .. tostring(result)})\n"
-        self.assertEqual(first_chunk.text.endswith(end), True)
+        assert first_chunk.text.endswith(end) == True
         # manually computed when running on my machine... so maybe warn if not same path
         # echo -n "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag/tests/indexer_src/sample.lua:lines:0-19:b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b" | sha256sum | head -c16
-        self.assertEqual(first_chunk.id, "e2d1d29ec4960e8f")
+        assert first_chunk.id == "e2d1d29ec4960e8f"
         # bitmaths "0xe2d1d29ec4960e8f & 0x7FFFFFFFFFFFFFFF"
-        self.assertEqual(first_chunk.id_int, "7120704065194299023")
+        assert first_chunk.id_int == "7120704065194299023"
 
         second_chunk = [c for c in chunks if c.start_line0 == 15][0]
-        self.assertEqual(second_chunk.start_line0, 15)
-        self.assertEqual(second_chunk.end_line0, 34)
+        assert second_chunk.start_line0 == 15
+        assert second_chunk.end_line0 == 34
 
         third_chunk = [c for c in chunks if c.start_line0 == 30][0]
-        self.assertEqual(third_chunk.start_line0, 30)
-        self.assertEqual(third_chunk.end_line0, 40)
+        assert third_chunk.start_line0 == 30
+        assert third_chunk.end_line0 == 40
 
         # * files
         files = self.get_files()
@@ -95,20 +95,20 @@ class TestBuildIndex():
         file_meta = files[str(sample_lua_path)]
 
         # sha256sum /Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag/tests/indexer_src/sample.lua | cut -d ' ' -f1
-        self.assertEqual(file_meta.hash, "b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b")
+        assert file_meta.hash == "b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b"
         # PRN get rid of redundancy in path? already key
-        self.assertEqual(file_meta.path, str(sample_lua_path))
+        assert file_meta.path == str(sample_lua_path)
         # how do I assert the timestamp is at least reasonable?
-        self.assertTrue(file_meta.mtime > 1735711201)  # Jan 1 2025 00:00:00 UTC - before this code existed :)
+        assert file_meta.mtime > 1735711201  # Jan 1 2025 00:00:00 UTC - before this code existed :)
         # cat tests/indexer_src/sample.lua | wc -c
-        self.assertEqual(file_meta.size, 1_173)
+        assert file_meta.size == 1_173
 
         # * vectors
         # https://faiss.ai/cpp_api/struct/structfaiss_1_1IndexFlatIP.html
         index = self.get_vector_index()
 
-        self.assertEqual(index.ntotal, 3)
-        self.assertEqual(index.d, 1024)
+        assert index.ntotal == 3
+        assert index.d == 1024
         # rich.print(f'{index=}')
         # rich.print(f'{index.metric_type=}')
         # rich.print(f'{index.metric_arg=}')
@@ -125,7 +125,7 @@ class TestBuildIndex():
         await indexer.build_index(language_extension="lua")
 
         chunks_by_file = load_chunks_by_file(self.dot_rag_dir / "lua/chunks.json")
-        self.assertEqual(len(chunks_by_file), 1)
+        assert len(chunks_by_file) == 1
         chunks = next(iter(chunks_by_file.values()))
         # I do not to replicate tests of building id/id_int and hard coding the values so...
         #   I am getting each chunk by its line range and I know which is which for the search results below
@@ -160,7 +160,7 @@ class TestBuildIndex():
         #   that said, good test case now! and then maybe keep this and rename it!
 
         q = await encode_query(text="hello world", instruct="find code that uses + operator")
-        self.assertEqual(q.shape, (1, 1024))
+        assert q.shape == (1, 1024)
 
         index = self.get_vector_index()
         # FYI this causes OMP OpenMP error:
@@ -193,15 +193,15 @@ class TestBuildIndex():
         files = self.get_files()
         index = self.get_vector_index()
         #
-        self.assertEqual(len(files), 2)
+        assert len(files) == 2
         #
-        self.assertEqual(len(chunks_by_file), 2)  # 2 files
+        assert len(chunks_by_file) == 2  # 2 files
         first_file_chunks = chunks_by_file[str(self.tmp_source_code_dir / "numbers.lua")]
         second_file_chunks = chunks_by_file[str(self.tmp_source_code_dir / "unchanged.lua")]
-        self.assertEqual(len(first_file_chunks), 2)  # 2 chunks
-        self.assertEqual(len(second_file_chunks), 2)
+        assert len(first_file_chunks) == 2  # 2 chunks
+        assert len(second_file_chunks) == 2
         #
-        self.assertEqual(index.ntotal, 4)
+        assert index.ntotal == 4
 
         # * update a file and rebuild
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks (starts = 1-20, 16-35, 31-50)
@@ -213,15 +213,14 @@ class TestBuildIndex():
         files = self.get_files()
         index = self.get_vector_index()
         #
-        self.assertEqual(len(chunks_by_file), 2)
+        assert len(chunks_by_file) == 2
         #
         first_file_chunks = chunks_by_file[str(self.tmp_source_code_dir / "numbers.lua")]
         second_file_chunks = chunks_by_file[str(self.tmp_source_code_dir / "unchanged.lua")]
-        self.assertEqual(len(first_file_chunks), 3)
-        self.assertEqual(len(second_file_chunks), 2)
-        #
-        self.assertEqual(len(files), 2)
-        self.assertEqual(index.ntotal, 5)
+        assert len(first_file_chunks) == 3
+        assert len(second_file_chunks) == 2
+        assert len(files) == 2
+        assert index.ntotal == 5
 
         # * delete a file and rebuild
         (self.tmp_source_code_dir / "numbers.lua").unlink()
@@ -232,13 +231,12 @@ class TestBuildIndex():
         files = self.get_files()
         index = self.get_vector_index()
         #
-        self.assertEqual(len(chunks_by_file), 1)
+        assert len(chunks_by_file) == 1
         #
         only_file_chunks = chunks_by_file[str(self.tmp_source_code_dir / "unchanged.lua")]
-        self.assertEqual(len(only_file_chunks), 2)
-        #
-        self.assertEqual(len(files), 1)
-        self.assertEqual(index.ntotal, 2)
+        assert len(only_file_chunks) == 2
+        assert len(files) == 1
+        assert index.ntotal == 2
 
         # * add a file
         # FYI car.lua.txt was designed to catch issues with overlap (32 lines => 0 to 20, 15 to 35, but NOT 30 to 50 b/c only overlap exists so the next chunk has nothing unique in its non-overlapping segment) so maybe use a diff input file... if this causes issues here (move car.lua to a new test then)
@@ -250,15 +248,15 @@ class TestBuildIndex():
         files = self.get_files()
         index = self.get_vector_index()
         #
-        self.assertEqual(len(chunks_by_file), 2)
+        assert len(chunks_by_file) == 2
         #
         first_file_chunks = chunks_by_file[str(self.tmp_source_code_dir / "unchanged.lua")]
         second_file_chunks = chunks_by_file[str(self.tmp_source_code_dir / "car.lua")]
-        self.assertEqual(len(first_file_chunks), 2)
-        self.assertEqual(len(second_file_chunks), 2)
+        assert len(first_file_chunks) == 2
+        assert len(second_file_chunks) == 2
         #
-        self.assertEqual(len(files), 2)
-        self.assertEqual(index.ntotal, 4)
+        assert len(files) == 2
+        assert index.ntotal == 4
 
     @pytest.mark.asyncio
     async def test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index():
@@ -282,15 +280,15 @@ class TestBuildIndex():
         files = self.get_files()
         index = self.get_vector_index()
         #
-        self.assertEqual(len(files), 1)
+        assert len(files) == 1
         #
-        self.assertEqual(len(chunks_by_file), 1)  # 2 files
+        assert len(chunks_by_file) == 1  # 2 files
         first_file_chunks = chunks_by_file[str(self.tmp_source_code_dir / "numbers.lua")]
         # second_file_chunks = chunks_by_file[str(self.tmp_source_code_dir / "unchanged.lua")]
-        self.assertEqual(len(first_file_chunks), 2)  # 2 chunks
-        # self.assertEqual(len(second_file_chunks), 2)
+        assert len(first_file_chunks) == 2  # 2 chunks
+        # assert len(second_file_chunks) == 2
         #
-        self.assertEqual(index.ntotal, 2, "index.ntotal (num vectors) should be 1")
+        assert index.ntotal == 2, "index.ntotal (num vectors) should be 1"
 
         copy_file("numbers.30.txt", "numbers.lua")
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
@@ -301,17 +299,17 @@ class TestBuildIndex():
         files = self.get_files()
         index = self.get_vector_index()
         #
-        self.assertEqual(len(files), 1)
+        assert len(files) == 1
         #
         # this fails too but I am disabling it so I can run the 3rd indexing
-        # self.assertEqual(index.ntotal, 2, "index.ntotal (num vectors) should be 1")
+        # assert index.ntotal == 2, "index.ntotal (num vectors) should be 1"
 
         # * 3rd rebuild - useful for compare new index 1 (new index), index 2 and index 3
         #  don't really need this to validate problem but I find it helpful to diff the logs
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
         await indexer.build_index(language_extension="lua")
 
-        self.assertEqual(index.ntotal, 2, "index.ntotal (num vectors) should be 1")
+        assert index.ntotal == 2, "index.ntotal (num vectors) should be 1"
 
     # @pytest.mark.asyncio
     async def TODO_test__file_timestamp_changed__all_chunks_still_the_same__does_not_insert_chunk_into_updated_chunks():
@@ -357,32 +355,32 @@ class TestBuildIndex():
         ds = datasets.for_file(target_file_path)
         assert ds != None
 
-        self.assertEqual(len(ds.chunks_by_file), 2)
+        assert len(ds.chunks_by_file) == 2
         # * assert the list of chunks was updated for the file
         first_file_chunks = ds.chunks_by_file[str(self.tmp_source_code_dir / "numbers.lua")]
         second_file_chunks = ds.chunks_by_file[str(self.tmp_source_code_dir / "unchanged.lua")]
-        self.assertEqual(len(first_file_chunks), 3)
-        self.assertEqual(len(second_file_chunks), 2)
+        assert len(first_file_chunks) == 3
+        assert len(second_file_chunks) == 2
         hash_50nums = "02d36ee22aefffbb3eac4f90f703dd0be636851031144132b43af85384a2afcd"
         hash_30nums = "4becb4afc4bbb0706eb8df24e32b8924925961ef48a2ac0e4a95cd7da10e97a5"
         hash_unchanged = "aee2416e86cecb08a0b4e48a461d95a5d6d061e690145938a772ec62261653fc"
         for c in first_file_chunks:
-            self.assertEqual(c.file_hash, hash_50nums)
+            assert c.file_hash == hash_50nums
 
         #
         # * assert vectors updated ...
         # TODO!!! CHECK ID values
-        self.assertEqual(ds.index.ntotal, 5)
+        assert ds.index.ntotal == 5
         #
         # * check global dict updated by faissid to new chunks
-        self.assertEqual(len(datasets._chunks_by_faiss_id), 5)
+        assert len(datasets._chunks_by_faiss_id) == 5
         #
         # I hate the following... only alternative might be to compute and hardcode the ids?
         should_be_chunks = sorted(first_file_chunks.copy() + second_file_chunks.copy(), key=lambda x: x.id_int)
         actual_chunks_in_faiss_id_dict = sorted(list(datasets._chunks_by_faiss_id.copy().values()), key=lambda x: x.id_int)
-        self.assertEqual(len(should_be_chunks), 5)
-        self.assertEqual(len(actual_chunks_in_faiss_id_dict), 5)
-        self.assertEqual(should_be_chunks, actual_chunks_in_faiss_id_dict)
+        assert len(should_be_chunks) == 5
+        assert len(actual_chunks_in_faiss_id_dict) == 5
+        assert should_be_chunks == actual_chunks_in_faiss_id_dict
 
         #
         # ? test interaction b/w indexer and update_file
