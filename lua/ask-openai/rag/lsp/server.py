@@ -14,6 +14,7 @@ from lsp import ignores, rag
 from lsp import fs
 from lsp.context.imports import imports
 from lsp.logs import get_logger, logging_fwk_to_language_server_log_file
+from lsp.cooperative import request_stop, add_stopper, remove_stopper
 
 logging_fwk_to_language_server_log_file(logging.INFO)
 # logging_fwk_to_language_server_log_file(logging.DEBUG)
@@ -31,29 +32,66 @@ def _fix_handle_cancel_notification(msg_id: MsgId):
     # I basically rewrote pop to use get_name to find the future (Task) for msg_id
     #   once cancel is called, if the task was running (marked pending)
     #   then it will throw CancelledError inside (wrap awaits in try/catch and then gracefully stop)
-    logger.info(f"attempt cancel {msg_id}")
+    # logger.info(f"_handle_cancel_notification {msg_id}")
 
-    for _key, future in server.protocol._request_futures.copy().items():
+    # msg_id appears to always be the last one?! how does that get sent?
+    #   this might be why cancel doesn't work internally?
+    #   client side, what am I sending? check it
+
+    logger.info(f'cancel {msg_id=}')
+    request_stop(msg_id)
+    return
+
+    for key, future in server.protocol._request_futures.copy().items():
         if hasattr(future, "get_name"):
+            t: asyncio.Task = future
             name = future.get_name()
-            # logger.info(f'Found matching task by name: {msg_id=} {name} {key=}')
             if name == f"Task-{msg_id}":
+                # logger.info(f'Found matching task by name: {msg_id=} {task} {key=}')
                 # TODO! check state of task if finished? and don't try cancel if so
-                # logger.debug(f'Killing the real task: {msg_id=} {future}')
-                if future.cancel():
-                    logger.info(f'[bold green]TASK CANCEL RETURNED SUCCESS {msg_id=} {future}')
+                if t.done():
+                    from asyncio.base_tasks import _task_repr_info
+                    logger.info(f'  already done {msg_id=} {t._state=} {name=}')
+                    return
+                if t.cancel():
+                    logger.info(f'  [underline]CANCELLED[/] {msg_id=} {t._state=} {name=}')
+                    return
+                if t.done():
+                    logger.info(f'  done after cancel failed {msg_id=} {t._state=} {name=}')
                     return
                 # FYI original _handle_cancel_notification's pop doesn't appear to remove my task, so I am leaving it
                 #  also, _send_handler_result is called after cancel... and _send_handler_result calls pop too
-                logger.error(f"[bold red] TASK CANCEL NOT SUCCESSFUL  {msg_id=} passed_future:{future}")
+                logger.error(f"  [bold red] TASK CANCEL NOT SUCCESSFUL  {msg_id=} passed_future:{future} {name=}")
                 return  # if task found, by name, skip calling original__handle_cancel_notification... in fact it might mess up something else that it cancels instead!!
+            else:
+                logger.info(f"    mismatch: {key=} {t._state=} {name=}")
         # else:
-        # logger.debug(f"not targeted task: {key=} {future}")
+        #     logger.info(f"not targeted task: {key=} {future}")
 
     logger.error(f"fallback to original__handle_cancel_notification {msg_id}")
     original__handle_cancel_notification(msg_id)
 
 server.protocol._handle_cancel_notification = _fix_handle_cancel_notification
+
+@server.command("SLEEPY")
+async def do_long_job(_ls: LanguageServer, args: dict):
+    msg_id = _ls.protocol.msg_id  # workaround to load msg_id via contextvars
+    logger.info(f"long job started {msg_id=}")
+    stopper = add_stopper(msg_id)
+
+    try:
+        for i in range(10):
+            if stopper.is_set():
+                raise asyncio.CancelledError(f"cooperative cancel {msg_id=}")
+            await asyncio.sleep(3)
+            logger.info(f"ping {msg_id=} {i}")
+
+        return {"status": "done", "msg_id": msg_id}
+    except asyncio.CancelledError as e:
+        logger.info(f"KILLED {msg_id=}")  #, exc_info=e)
+        return {"status": "canelled", "msg_id": msg_id}
+    finally:
+        remove_stopper(msg_id)
 
 @server.feature(types.INITIALIZE)
 def on_initialize(_: LanguageServer, params: types.InitializeParams):
