@@ -76,6 +76,8 @@ async def semantic_grep(
         logger.error(f"No dataset")
         # return {"failed": True, "error": f"No dataset for {current_file_abs}"} # TODO return failure?
         raise Exception(f"No dataset for {args.currentFileAbsolutePath}")
+    # TODO how to approach multi-language? split up top_k? or maybe do 1/2 of top_k regardless # languages
+    # TODO get .rag.yaml for list of languages to use for all languages
 
     # * search embeddings
     scores, ids = dataset.index.search(query_vector, args.topK)
