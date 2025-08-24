@@ -25,50 +25,11 @@ server = LanguageServer("ask_language_server", "v0.1")
 original__handle_cancel_notification = server.protocol._handle_cancel_notification
 
 def _trigger_stopper_on_cancel(msg_id: MsgId):
-    """FIXES cancel logic to look at task name to cancel correct future!"""
-    # TODO make a PR once you figure out the reason the pop doesn't work in pygls
-    #   BUG is this line AFAICT pop is failing:
-    #   https://github.com/g0t4/ask-openai.nvim/blob/9ce9d9a8/.venv/lib/python3.12/site-packages/pygls/protocol/json_rpc.py#L344
-    # I basically rewrote pop to use get_name to find the future (Task) for msg_id
-    #   once cancel is called, if the task was running (marked pending)
-    #   then it will throw CancelledError inside (wrap awaits in try/catch and then gracefully stop)
-    # logger.info(f"_handle_cancel_notification {msg_id}")
+    if request_stop(msg_id):
+        logger.info(f'triggered stopper {msg_id=}')
+        return
 
-    # msg_id appears to always be the last one?! how does that get sent?
-    #   this might be why cancel doesn't work internally?
-    #   client side, what am I sending? check it
-
-    logger.info(f'cancel {msg_id=}')
-    request_stop(msg_id)
-    return
-
-    for key, future in server.protocol._request_futures.copy().items():
-        if hasattr(future, "get_name"):
-            t: asyncio.Task = future
-            name = future.get_name()
-            if name == f"Task-{msg_id}":
-                # logger.info(f'Found matching task by name: {msg_id=} {task} {key=}')
-                # TODO! check state of task if finished? and don't try cancel if so
-                if t.done():
-                    from asyncio.base_tasks import _task_repr_info
-                    logger.info(f'  already done {msg_id=} {t._state=} {name=}')
-                    return
-                if t.cancel():
-                    logger.info(f'  [underline]CANCELLED[/] {msg_id=} {t._state=} {name=}')
-                    return
-                if t.done():
-                    logger.info(f'  done after cancel failed {msg_id=} {t._state=} {name=}')
-                    return
-                # FYI original _handle_cancel_notification's pop doesn't appear to remove my task, so I am leaving it
-                #  also, _send_handler_result is called after cancel... and _send_handler_result calls pop too
-                logger.error(f"  [bold red] TASK CANCEL NOT SUCCESSFUL  {msg_id=} passed_future:{future} {name=}")
-                return  # if task found, by name, skip calling original__handle_cancel_notification... in fact it might mess up something else that it cancels instead!!
-            else:
-                logger.info(f"    mismatch: {key=} {t._state=} {name=}")
-        # else:
-        #     logger.info(f"not targeted task: {key=} {future}")
-
-    logger.error(f"fallback to original__handle_cancel_notification {msg_id}")
+    # logger.info(f"fallback to original__handle_cancel_notification {msg_id}")
     original__handle_cancel_notification(msg_id)
 
 server.protocol._handle_cancel_notification = _trigger_stopper_on_cancel
