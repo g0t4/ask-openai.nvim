@@ -16,6 +16,13 @@ if __name__ == '__main__':
 # FYI! this is designed ONLY for cuda/5090s for socket server (remote embeddings)
 #
 
+# TODO! I think these are a result of my embed encoding below.. not sure I want to change it as my embedding works but
+#   it might help performance?
+#   reproduce by running inference server on linux and connect with neovim LSP (change a doc and save it) ... during update it will show warning first time
+#   FYI your initial known embeddings test cases might cause this to happen before you clear history and so in that case you might not see this warning.. not sure, just a heads up to maybe disable the clear scrollback if having trouble finding this
+# TODO - You're using a Qwen2TokenizerFast tokenizer. Please note that with a fast tokenizer, using the `__call__` method is faster than using a method to encode the text followed by a call to the `pad` method to get a padded encoding.
+# TODO - .venv/lib/python3.13/site-packages/transformers/tokenization_utils_base.py:2696: UserWarning: `max_length` is ignored when `padding`=`True` and there is no truncation strategy. To pad to max length, use `padding='max_length'`.
+
 def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tensor:
 
     left_padding = (attention_mask[:, -1].sum() == attention_mask.shape[0])
