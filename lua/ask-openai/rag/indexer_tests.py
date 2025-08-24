@@ -5,7 +5,7 @@ logger = get_logger(__name__)
 
 from pathlib import Path
 import subprocess
-import unittest
+import pytest
 
 import faiss
 import numpy as np
@@ -18,9 +18,9 @@ from lsp.storage import load_chunks_by_file, load_file_stats_by_file
 
 # logging_fwk_to_console("WARN") # stop INFO logs after timing captured
 
-class TestBuildIndex(unittest.TestCase):
+class TestBuildIndex():
 
-    def __init__(self, *args, **kwargs):
+    def setUp(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.dot_rag_dir = Path(__file__).parent / "tests/.rag"
         self.dot_rag_dir.mkdir(exist_ok=True, parents=True)
@@ -43,7 +43,8 @@ class TestBuildIndex(unittest.TestCase):
     def get_files(self):
         return load_file_stats_by_file(self.dot_rag_dir / "lua" / "files.json")
 
-    async def test_building_rag_index_from_scratch(self):
+    @pytest.mark.asyncio
+    async def test_building_rag_index_from_scratch():
 
         # FYI! this duplicates some low level line range chunking tests but I want to keep it to include the end to end picture
         #   i.e. for computing chunk id which relies on path to file
@@ -115,7 +116,8 @@ class TestBuildIndex(unittest.TestCase):
         # for i in range(index.ntotal):
         #     rich.print(i)
 
-    async def test_search_index_to_trigger_OpenMP_error(self):
+    @pytest.mark.asyncio
+    async def test_search_index_to_trigger_OpenMP_error():
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
         self.trash_path(self.dot_rag_dir)
@@ -169,7 +171,8 @@ class TestBuildIndex(unittest.TestCase):
         expected = np.array([[int(chunk2.id_int), int(chunk1.id_int), int(chunk0.id_int)]])
         np.testing.assert_array_equal(indices, expected)
 
-    async def test_update_index_removed_file(self):
+    @pytest.mark.asyncio
+    async def test_update_index_removed_file():
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
@@ -257,7 +260,8 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(len(files), 2)
         self.assertEqual(index.ntotal, 4)
 
-    async def test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index(self):
+    @pytest.mark.asyncio
+    async def test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index():
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
@@ -309,13 +313,15 @@ class TestBuildIndex(unittest.TestCase):
 
         self.assertEqual(index.ntotal, 2, "index.ntotal (num vectors) should be 1")
 
-    async def TODO_test__file_timestamp_changed__all_chunks_still_the_same__does_not_insert_chunk_into_updated_chunks(self):
+    # @pytest.mark.asyncio
+    async def TODO_test__file_timestamp_changed__all_chunks_still_the_same__does_not_insert_chunk_into_updated_chunks():
         pass
         # ***! TODO FIX LOGIC TO DETECT CHANGED FILES/CHUNKS...
         #   if a chunk is the SAME it should be NOT marked updated!
         #   i.e. if file modified timestamp is updated but none of the contents are different!
 
-    async def test_update_file_from_language_server(self):
+    @pytest.mark.asyncio
+    async def test_update_file_from_language_server():
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
@@ -383,12 +389,14 @@ class TestBuildIndex(unittest.TestCase):
         # ?   also update_file => update_file
         # ?   and update_file => indexer
 
-    async def PRN_tests_update_file_does_not_re_encode_unchanged_chunks(self):
+    # @pytest.mark.asyncio
+    async def PRN_tests_update_file_does_not_re_encode_unchanged_chunks():
         # PRN? is this worth the time?
         # would be nice not to re-encode them... that is the expensive part
         pass
 
-    async def PRN_test_timing_of_batch_vs_individual_chunk_encoding(self):
+    # @pytest.mark.asyncio
+    async def PRN_test_timing_of_batch_vs_individual_chunk_encoding():
         # I suspect batching is a big boost in perf, but I need to understand more before I commit to designs one way or another
         pass
 
@@ -396,6 +404,5 @@ if __name__ == "__main__":
     # run with:
     #   python3 -m indexer_tests
     # TODO put back all tests when done with the one below
-    unittest.main()
-    # test = TestBuildIndex()
+    test = TestBuildIndex()
     # test.test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index()
