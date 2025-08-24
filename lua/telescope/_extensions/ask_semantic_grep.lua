@@ -38,7 +38,7 @@ function _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, proc
     -- TODO debounce/throttle requests!!
     local msg_id, cancel_my_request
     msg_id, cancel_my_request = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
-            command = "semantic_grep",
+            command = "rag_query",
             arguments = { lsp_rag_request },
         },
         ---@param result LSPRagQueryResult
@@ -216,6 +216,9 @@ function semantic_grep_current_filetype_picker(opts)
         query = "",
         vimFiletype = vim.o.filetype,
         currentFileAbsolutePath = files.get_current_file_absolute_path(),
+        topK = 50,
+        skipSameFile = false,
+        -- PRN other file types?
     }
     if opts.lang then
         -- currently for ALL languages

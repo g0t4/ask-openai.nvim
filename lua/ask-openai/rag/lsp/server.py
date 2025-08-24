@@ -163,24 +163,14 @@ async def doc_opened(params: types.DidOpenTextDocumentParams):
 #     # FYI would use this to invalidate internal caches and rebuild for a given file, i.e. imports, RAG vectors, etc
 #     #   rebuild on git commit + incremental updates s/b super fast?
 
-@server.command("semantic_grep")
+@server.command("rag_query")
 async def rag_command_context_related(_: LanguageServer, args: rag.LSPRagQueryRequest) -> rag.LSPRagQueryResult:
     args.msg_id = server.protocol.msg_id
     try:
-        result = await rag.handle_query(args, top_k=50, skip_same_file=False)  # TODO! ASYNC REVIEW
-        logger.info(f"semantic_grep DONE {args.msg_id=}")
-        return result
+        return await rag.handle_query(args)  # TODO! ASYNC REVIEW
     except asyncio.CancelledError as e:
         # avoid leaving on in logs b/c takes up a ton of space for stack trace
         logger.info(f"Client cancelled query {args.msg_id=}")  #, exc_info=e)  # uncomment to see where error is raised
-        return rag.LSPRagQueryResult(error=rag.LSPResponseErrors.CANCELLED)
-
-@server.command("context.query")
-async def rag_command_context_query(_: LanguageServer, args: rag.LSPRagQueryRequest) -> rag.LSPRagQueryResult:
-    args.msg_id = server.protocol.msg_id
-    try:
-        return await rag.handle_query(args, skip_same_file=True)
-    except asyncio.CancelledError as e:
         return rag.LSPRagQueryResult(error=rag.LSPResponseErrors.CANCELLED)
 
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):

@@ -42,12 +42,12 @@ class LSPRagQueryRequest:
     instruct: str | None = None
     msg_id: str = ""
     languages: str = ""
+    skipSameFile: bool = False
+    topK: int = 50
     # MAKE SURE TO GIVE DEFAULT VALUES IF NOT REQUIRED
 
 async def semantic_grep(
     args: LSPRagQueryRequest,
-    skip_same_file=False,
-    top_k: int = 50,
     # TODO! fix datasets to not be so yucky
     datasets: Datasets | None = None,
     stopper: Stopper = FAKE_STOPPER,
@@ -58,6 +58,8 @@ async def semantic_grep(
     vim_filetype = args.vimFiletype
     msg_id = args.msg_id
     all_languages = args.languages == "ALL"
+    top_k = args.topK
+    skip_same_file = args.skipSameFile
 
     if instruct is None:
         instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"

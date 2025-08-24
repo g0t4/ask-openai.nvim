@@ -33,8 +33,7 @@ class LSPResponseErrors:
     NO_RAG_DIR = "No .rag dir"
     CANCELLED = "Client cancelled query"
 
-# PRN make top_k configurable (or other params)
-async def handle_query(args: LSPRagQueryRequest, top_k=3, skip_same_file=False) -> LSPRagQueryResult:
+async def handle_query(args: LSPRagQueryRequest) -> LSPRagQueryResult:
     stopper = create_stopper(args.msg_id)
     try:
         if fs.is_no_rag_dir():
@@ -51,9 +50,7 @@ async def handle_query(args: LSPRagQueryRequest, top_k=3, skip_same_file=False) 
         stopper.throw_if_stopped()  # before starting expensive work too
 
         matches = await semantic_grep(
-            args = args,
-            skip_same_file=skip_same_file,
-            top_k=top_k,
+            args=args,
             datasets=datasets,
             stopper=stopper,
         )

@@ -57,6 +57,8 @@ end
 ---@field currentFileAbsolutePath string
 ---@field instruct? string
 ---@field languages? string
+---@field skipSameFile? boolean
+---@field topK? integer
 _G.LSPRagQueryRequest = {}
 
 
@@ -112,10 +114,16 @@ function M._context_query(query, instruct, callback)
         instruct = instruct,
         currentFileAbsolutePath = files.get_current_file_absolute_path(),
         vimFiletype = vim.bo.filetype,
+        skip_same_file = true,
+        topK = 3, -- TODO what do I want for FIM vs REWRITE? maybe a dial too?
+        -- FYI some rewrites I might not want ANY RAG... maybe no context too
+        -- PRN other file types? languages=all? knob too?
+        -- actually, this is where RAG based picker action to add to context would be AWESOME
+        --  that way I can quickly review RAG matches, thumbs up what I want and GO
     }
 
     local _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", {
-            command = "context.query",
+            command = "rag_query",
             -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
             arguments = { lsp_rag_request },
         },
