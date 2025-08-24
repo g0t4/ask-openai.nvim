@@ -15,7 +15,7 @@ local AsyncDynamicFinder = require('telescope._extensions.ask_semantic_grep.asyn
 local latest_query_num = 0
 local picker
 
-local client_request_ids, cancel_all_requests
+local last_msg_id, cancel_last_requests
 
 
 ---@param lsp_rag_request LSPRagQueryRequest
@@ -24,16 +24,20 @@ local client_request_ids, cancel_all_requests
 ---@param process_complete fun()
 ---@param entry_maker fun(match: LSPRankedMatch): SemanticGrepTelescopeEntryMatch
 function _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, process_complete, entry_maker)
-    if cancel_all_requests then
-        logs:error("canceling previous request")
-        cancel_all_requests()
+    if cancel_last_requests then
+        logs:error("canceling previous request, last_msg_id: " .. vim.inspect(last_msg_id))
+        cancel_last_requests()
+        cancel_last_requests = nil
+        -- TODO get lsp client and cancel all outstanding requests? or these type?
     end
 
     lsp_buffer_number = lsp_buffer_number or 0
 
+
+    logs:warn("requesting semantic_grep, last_msg_id: " .. vim.inspect(last_msg_id))
     -- TODO how can I cancel prior requests? my socket might be the issue :).. no cancelation mechanism :)
     -- TODO debounce/throttle requests!!
-    client_request_ids, cancel_all_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
+    last_msg_id, cancel_last_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
             command = "semantic_grep",
             arguments = { lsp_rag_request },
         },
@@ -63,10 +67,11 @@ function _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, proc
             -- picker.max_results = 10
             process_complete()
 
-            cancel_all_requests = nil
-            client_request_ids = nil
+            -- TODO how about look at the last_msg_id and if its the same as this request's then clear the cancel_last_requests function?
+            --   that said, lang server seems to handle cancel on finished requests w/o a problem so I can ignore this for now
         end
     )
+    logs:warn("client_request_ids: " .. vim.inspect(last_msg_id))
 end
 
 local ns = vim.api.nvim_create_namespace("rag_preview")
