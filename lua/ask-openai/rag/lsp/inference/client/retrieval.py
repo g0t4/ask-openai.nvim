@@ -52,15 +52,9 @@ async def semantic_grep(
     datasets: Datasets | None = None,
     stopper: Stopper = FAKE_STOPPER,
 ) -> list[LSPRankedMatch]:
-    instruct = args.instruct
-    query = args.query
-    current_file_abs = args.currentFileAbsolutePath
-    vim_filetype = args.vimFiletype
-    msg_id = args.msg_id
     all_languages = args.languages == "ALL"
-    top_k = args.topK
-    skip_same_file = args.skipSameFile
 
+    instruct = args.instruct
     if instruct is None:
         instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
         # TODO try this instead after I geet a feel for re-rank with my original instruct:
@@ -70,21 +64,21 @@ async def semantic_grep(
     stopper.throw_if_stopped()
     # * encode query vector
     with logger.timer("encoding query"):
-        query_vector = await encode_query(query, instruct)
+        query_vector = await encode_query(args.query, instruct)
         stopper.throw_if_stopped()  # PRN add in cancel/stop logic... won't matter though if the real task isn't cancellable (and just keeps running to completion)
 
     if datasets is None:
         logger.error("DATASETS must be loaded and passed")
         raise Exception("MISSING DATASET(S) PLURAL")
 
-    dataset = datasets.for_file(current_file_abs, vim_filetype=vim_filetype)
+    dataset = datasets.for_file(args.currentFileAbsolutePath, vim_filetype=args.vimFiletype)
     if dataset is None:
         logger.error(f"No dataset")
         # return {"failed": True, "error": f"No dataset for {current_file_abs}"} # TODO return failure?
-        raise Exception(f"No dataset for {current_file_abs}")
+        raise Exception(f"No dataset for {args.currentFileAbsolutePath}")
 
     # * search embeddings
-    scores, ids = dataset.index.search(query_vector, top_k)
+    scores, ids = dataset.index.search(query_vector, args.topK)
     ids = ids[0]
     scores = scores[0]
 
@@ -92,7 +86,7 @@ async def semantic_grep(
     matches: list[LSPRankedMatch] = []
     for idx, (id, embed_score) in enumerate(zip(ids, scores)):
         # print(id, embed_score) # nice way to verify initial sort (indeed is descending by embed_score)
-        if len(matches) >= top_k:
+        if len(matches) >= args.topK:
             break
 
         chunk = datasets.get_chunk_by_faiss_id(id)
@@ -101,8 +95,8 @@ async def semantic_grep(
             continue
 
         chunk_file_abs = chunk.file
-        is_same_file = current_file_abs == chunk_file_abs
-        if skip_same_file and is_same_file:
+        is_same_file = args.currentFileAbsolutePath == chunk_file_abs
+        if args.skipSameFile and is_same_file:
             logger.warning(f"Skip match in same file")
             continue
 
@@ -128,7 +122,7 @@ async def semantic_grep(
         matches.append(match)
 
     if len(matches) == 0:
-        logger.warning(f"No matches found for {current_file_abs=}")
+        logger.warning(f"No matches found for {args.currentFileAbsolutePath=}")
 
     # * sort len(chunk.text)
     # so similar lengths are batched together given longest text (in tokens) dictates sequence length
@@ -140,10 +134,10 @@ async def semantic_grep(
         stopper.throw_if_stopped()
         batch = matches[batch_num:batch_num + BATCH_SIZE]
         docs = [c.text for c in batch]
-        logger.info(f"{msg_id} re-rank batch {batch_num} len={len(batch)}")
+        logger.info(f"{args.msg_id} re-rank batch {batch_num} len={len(batch)}")
 
         async with AsyncInferenceClient() as client:
-            request = RerankRequest(instruct=instruct, query=query, docs=docs)
+            request = RerankRequest(instruct=instruct, query=args.query, docs=docs)
             scores = await client.rerank(request)
             if not scores:
                 raise Exception("rerank returned no scores")
