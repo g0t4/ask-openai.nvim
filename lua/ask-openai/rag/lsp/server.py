@@ -48,7 +48,10 @@ async def sleepy(_ls: LanguageServer, args: dict):
             async with asyncio.TaskGroup() as tg:
                 job = tg.create_task(asyncio.sleep(3))
                 stop_requested = tg.create_task(stopper.wait())
-                done, pending = await asyncio.wait([job, stop_requested], return_when=asyncio.FIRST_COMPLETED)
+                done, pending = await asyncio.wait(
+                    [job, stop_requested],
+                    return_when=asyncio.FIRST_COMPLETED,
+                )
                 if stop_requested in done:
                     # Raising inside the TG cancels/awaits other tasks
                     raise asyncio.CancelledError(f"cooperative cancel {msg_id=}")
