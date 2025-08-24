@@ -1,3 +1,4 @@
+import aiofiles
 from pathlib import Path
 from .logs import get_logger
 
@@ -59,9 +60,13 @@ def read_bytes_lines(path: Path) -> list[bytes]:
     with open(path, "rb") as f:
         return f.readlines()
 
-def read_text(path: Path, encoding="utf-8") -> str:
-    with open(path, "r", encoding=encoding) as f:
-        return f.read()
+# TODO unused for sync below b/c I found path.read_text() exists
+#    but now that I want some async file ops... might be useful to revisit this helper as async.
+#    read_text(path) is a nice wrapper
+
+async def read_text(path: Path, encoding="utf-8") -> str:
+    async with aiofiles.open(path, "r", encoding=encoding) as f:
+        return await f.read()
 
 def read_bytes(path: Path) -> bytes:
     with open(path, "rb") as f:
