@@ -61,6 +61,7 @@ _G.LSPRagQueryRequest = {}
 
 ---@class LSPRagQueryResult
 ---@field matches LSPRankedMatch[]
+---@field error? string
 _G.LSPRagQueryResult = {}
 
 

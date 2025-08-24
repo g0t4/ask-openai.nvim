@@ -24,22 +24,36 @@ def validate_rag_indexes():
 
 # FYI v2 pygls supports databinding args... but I had issues with j
 @attrs.define
-class PyGLSCommandSemanticGrepArgs:
+class LSPRagQueryRequest:
     query: str
-    # MAKE SURE TO GIVE DEFAULT VALUES IF NOT REQUIRED
     currentFileAbsolutePath: str | None = None
     vimFiletype: str | None = None
     instruct: str | None = None
+    # MAKE SURE TO GIVE DEFAULT VALUES IF NOT REQUIRED
+
+@attrs.define
+class LSPRagQueryResult:
+    """ Either return matches OR an error string, nothing else matters."""
+    matches: list = []
+    error: str | None = None
+
+class LSPResponseErrors:
+    NO_RAG_DIR = "No .rag dir"
+    CANCELLED = "Client cancelled query"
 
 # PRN make top_k configurable (or other params)
-async def handle_query(args: "PyGLSCommandSemanticGrepArgs", top_k=3, skip_same_file=False):
-    # TODO!ASYNC
+async def handle_query(args: "LSPRagQueryRequest", top_k=3, skip_same_file=False) -> LSPRagQueryResult:
+    if fs.is_no_rag_dir():
+        return LSPRagQueryResult(error=LSPResponseErrors.NO_RAG_DIR)
+
+    # TODO! REVIEW the ASYNC (i.e. for file ops? or other async capable ops)
 
     # * parse and validate request parameters
     query = args.query
     if query is None or len(query) == 0:
-        logger.error("[red bold][ERROR] No query provided")
-        return {"failed": True, "error": "No query provided"}
+        logger.info("No query provided")
+        return LSPRagQueryResult(error="No query provided")
+
     vim_filetype = args.vimFiletype
     current_file_abs = args.currentFileAbsolutePath
     instruct = args.instruct
@@ -54,9 +68,7 @@ async def handle_query(args: "PyGLSCommandSemanticGrepArgs", top_k=3, skip_same_
         top_k=top_k,
         datasets=datasets,
     )
-    return {
-        "matches": matches,
-    }
+    return LSPRagQueryResult(matches=matches)
 
 async def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions):
     file_path = Path(lsp_doc.path)

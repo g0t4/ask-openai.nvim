@@ -37,7 +37,6 @@ def _fix_handle_cancel_notification(msg_id: MsgId):
         if hasattr(future, "get_name"):
             name = future.get_name()
             # logger.info(f'Found matching task by name: {msg_id=} {name} {key=}')
-            # TODO does task name consistently match msg_id or did I just get "lucky" (not lucky) in my testing?
             if name == f"Task-{msg_id}":
                 # TODO! check state of task if finished? and don't try cancel if so
                 # logger.debug(f'Killing the real task: {msg_id=} {future}')
@@ -200,22 +199,22 @@ async def do_long_job(_ls: LanguageServer, args: dict):
         return {"status": "canelled", "msg_id": msg_id}
 
 @server.command("semantic_grep")
-async def rag_command_context_related(_: LanguageServer, args: rag.PyGLSCommandSemanticGrepArgs):
-    if fs.is_no_rag_dir():
-        return
-    # TODO!ASYNC
-
-    logger.info("semantic_grep handler")
-    return await rag.handle_query(args, 50, skip_same_file=False)
+async def rag_command_context_related(_: LanguageServer, args: rag.LSPRagQueryRequest) -> rag.LSPRagQueryResult:
+    try:
+        return await rag.handle_query(args, top_k=50, skip_same_file=False)
+    except asyncio.CancelledError as e:
+        logger.info("Client cancelled query", exc_info=e)
+        # IIAC the client cancelled the request so they don't need any fancy status
+        # PRN add result types that auto-serialize and strongly type responses
+        return rag.LSPRagQueryResult(error=rag.LSPResponseErrors.CANCELLED)
 
 @server.command("context.query")
-async def rag_command_context_query(_: LanguageServer, args: rag.PyGLSCommandSemanticGrepArgs):
-    if fs.is_no_rag_dir():
-        return
-    # TODO!ASYNC
-    logger.info(args)
-
-    return await rag.handle_query(args, skip_same_file=True)
+async def rag_command_context_query(_: LanguageServer, args: rag.LSPRagQueryRequest) -> rag.LSPRagQueryResult:
+    try:
+        return await rag.handle_query(args, skip_same_file=True)
+    except asyncio.CancelledError as e:
+        logger.info("Client cancelled query", exc_info=e)
+        return rag.LSPRagQueryResult(error=rag.LSPResponseErrors.CANCELLED)
 
 # how can I intercept shutdown from client?
 #
