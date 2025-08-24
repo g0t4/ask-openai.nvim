@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
+
+import attrs
 from lsp.inference.client.embedder import encode_query
 from lsp.stoppers import Stopper
 from lsp.storage import Datasets
@@ -31,18 +33,32 @@ class LSPRankedMatch:
 
 FAKE_STOPPER = Stopper("fake")
 
+# FYI v2 pygls supports databinding args... but I had issues with j
+@attrs.define
+class LSPRagQueryRequest:
+    query: str
+    currentFileAbsolutePath: str | None = None
+    vimFiletype: str | None = None
+    instruct: str | None = None
+    msg_id: str = ""
+    languages: str = ""
+    # MAKE SURE TO GIVE DEFAULT VALUES IF NOT REQUIRED
+
 async def semantic_grep(
-    query: str,
-    current_file_abs: str | None,
-    vim_filetype: str | None = None,
-    instruct: str | None = None,
+    args: LSPRagQueryRequest,
     skip_same_file=False,
     top_k: int = 50,
     # TODO! fix datasets to not be so yucky
     datasets: Datasets | None = None,
-    msg_id: str | None = None,
     stopper: Stopper = FAKE_STOPPER,
 ) -> list[LSPRankedMatch]:
+    instruct = args.instruct
+    query = args.query
+    current_file_abs = args.currentFileAbsolutePath
+    vim_filetype = args.vimFiletype
+    msg_id = args.msg_id
+    all_languages = args.languages == "ALL"
+
     if instruct is None:
         instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
         # TODO try this instead after I geet a feel for re-rank with my original instruct:

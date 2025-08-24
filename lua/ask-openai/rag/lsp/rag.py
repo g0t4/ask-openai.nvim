@@ -23,17 +23,6 @@ def validate_rag_indexes():
     validator = DatasetsValidator(datasets)
     validator.validate()
 
-# FYI v2 pygls supports databinding args... but I had issues with j
-@attrs.define
-class LSPRagQueryRequest:
-    query: str
-    currentFileAbsolutePath: str | None = None
-    vimFiletype: str | None = None
-    instruct: str | None = None
-    msg_id: str = ""
-    languages: str = ""
-    # MAKE SURE TO GIVE DEFAULT VALUES IF NOT REQUIRED
-
 @attrs.define
 class LSPRagQueryResult:
     """ Either return matches OR an error string, nothing else matters."""
@@ -59,23 +48,13 @@ async def handle_query(args: LSPRagQueryRequest, top_k=3, skip_same_file=False) 
             logger.info("No query provided")
             return LSPRagQueryResult(error="No query provided")
 
-        vim_filetype = args.vimFiletype
-        current_file_abs = args.currentFileAbsolutePath
-        instruct = args.instruct
-
-        logger.info(f'{args.msg_id=} {query=}: {current_file_abs=} {vim_filetype=} {instruct=}')
-
         stopper.throw_if_stopped()  # before starting expensive work too
 
         matches = await semantic_grep(
-            query=query,
-            instruct=instruct,
-            current_file_abs=current_file_abs,
-            vim_filetype=vim_filetype,
+            args = args,
             skip_same_file=skip_same_file,
             top_k=top_k,
             datasets=datasets,
-            msg_id=args.msg_id,
             stopper=stopper,
         )
 
