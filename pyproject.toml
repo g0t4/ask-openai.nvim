@@ -18,6 +18,7 @@ dependencies = [
     "pympler>=1.1",
     "pyright>=1.1.404",
     "pytest>=8.4.1",
+    "pytest-asyncio>=1.1.0",
     "pytest-watch>=4.2.0",
     "rank-bm25>=0.2.2",
     "requests>=2.32.3",
