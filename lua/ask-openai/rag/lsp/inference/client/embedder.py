@@ -2,14 +2,14 @@ from lsp.logs import get_logger
 
 logger = get_logger(__name__)
 
-def _encode_batch(texts):
+async def _encode_batch(texts):
     import numpy as np
-    from lsp.inference.client import InferenceClient
+    from lsp.inference.client import AsyncInferenceClient
 
     # FYI for now lets leave batch_size at 8?
     # TODO capture some sequence length distribution data so I can see how variable it is
     #   and if small batch size would help to avoid padding for longest sequence in a bigger batch?
-    def batched_encode(texts, batch_size=8):
+    async def batched_encode(texts, batch_size=8):
         # PRN? allow multiple encodes per connection! right now server closes after one!
         # can add longer-lived connection (beyond this batch)
         #   BUT only if timing shows its worthwhile
@@ -19,36 +19,36 @@ def _encode_batch(texts):
         total = len(texts)
         for i in range(0, total, batch_size):
             # FYI right now this is a new connection PER batch
-            with InferenceClient() as client:
+            async with AsyncInferenceClient() as client:
                 logger.info(f"    batch {i}-{i+batch_size} of {total}")
                 batch = texts[i:i + batch_size]
-                vecs = client.encode({"texts": batch})
+                vecs = await client.encode({"texts": batch})
                 all_vecs.append(vecs)
 
         return np.concatenate(all_vecs)
 
-    vecs_np = batched_encode(texts)
+    vecs_np = await batched_encode(texts)
     return vecs_np
 
-def encode_passages(passages: list[str]):
+async def encode_passages(passages: list[str]):
     # FYI Qwen3 has NO passage/document label, only query side has Query:/Instruct:
-    return _encode_batch(passages)
+    return await _encode_batch(passages)
 
 def qwen3_format_query(text: str, instruct: str) -> str:
     if instruct:
         return f'Instruct: {instruct}\nQuery:{text}'
     return f"Query: {text}"
 
-def encode_query(text: str, instruct: str):
-    return _encode_batch([
+async def encode_query(text: str, instruct: str):
+    return await _encode_batch([
         qwen3_format_query(text, instruct),
     ])
 
-def get_shape() -> int:
+async def get_shape() -> int:
     # create a dummy vector to get dimensions (1024 for Qwen3-Embedding-0.6B)...
     # only used when first creating an index so NBD to leave it this way
     sample_text = "sample"
-    sample_vec = _encode_batch([
+    sample_vec = await _encode_batch([
         sample_text,
     ])
     shape = sample_vec.shape[1]

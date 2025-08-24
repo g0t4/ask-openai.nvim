@@ -184,7 +184,7 @@ class Datasets:
 
         return self.all_datasets.get(language_extension)
 
-    def update_file(self, file_path_str: str | Path, new_chunks: list[Chunk]):
+    async def update_file(self, file_path_str: str | Path, new_chunks: list[Chunk]):
         file_path_str = str(file_path_str)  # must be str, just let people pass either
 
         dataset = self.for_file(file_path_str)
@@ -229,7 +229,7 @@ class Datasets:
 
         with logger.timer("Encode new vectors"):
             passages = [chunk.text for chunk in new_chunks]
-            vecs_np = encode_passages(passages)
+            vecs_np = await encode_passages(passages)
 
         faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
 

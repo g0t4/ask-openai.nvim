@@ -58,7 +58,7 @@ async def handle_query(args: "PyGLSCommandSemanticGrepArgs", top_k=3, skip_same_
         "matches": matches,
     }
 
-def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions):
+async def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions):
     file_path = Path(lsp_doc.path)
 
     hash = get_file_hash_from_lines(lsp_doc.lines)
@@ -66,4 +66,4 @@ def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions
     new_chunks = build_chunks_from_lines(file_path, hash, lsp_doc.lines, options)
 
     with logger.timer(f"update_file {fs.get_loggable_path(file_path)}"):
-        datasets.update_file(file_path, new_chunks)
+        await datasets.update_file(file_path, new_chunks)

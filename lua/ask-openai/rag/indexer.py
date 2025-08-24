@@ -1,3 +1,4 @@
+import asyncio
 from lsp.logs import get_logger
 from lsp.inference.client.embedder import get_shape, encode_passages
 
@@ -40,10 +41,10 @@ class IncrementalRAGIndexer:
         self.dot_rag_dir = Path(dot_rag_dir)
         self.source_code_dir = Path(source_code_dir)
 
-    def main(self):
+    async def main(self):
         exts = self.get_included_extensions()
         for ext in exts:
-            self.build_index(ext)
+            await self.build_index(ext)
         self.warn_about_other_extensions(exts)
 
     def get_included_extensions(self):
@@ -139,7 +140,7 @@ class IncrementalRAGIndexer:
 
         return FilesDiff(changed_paths, deleted_path_strs, not_changed_path_strs)
 
-    def update_faiss_index_incrementally(
+    async def update_faiss_index_incrementally(
         self,
         index: Optional[faiss.Index],
         not_changed_chunks_by_file: dict[str, list[Chunk]],
@@ -149,7 +150,7 @@ class IncrementalRAGIndexer:
 
         # Create base index if it doesn't exist
         if index is None:
-            shape = get_shape()
+            shape = await get_shape()
             # 768 for "intfloat/e5-base-v2"
             # 1024 for Qwen3
             base_index = faiss.IndexFlatIP(shape)
@@ -184,7 +185,7 @@ class IncrementalRAGIndexer:
 
             with logger.timer("Encode new vectors"):
                 passages = [chunk.text for chunk in new_chunks]
-                vecs_np = encode_passages(passages)
+                vecs_np = await encode_passages(passages)
 
             faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
 
@@ -192,7 +193,7 @@ class IncrementalRAGIndexer:
 
         return index
 
-    def build_index(self, language_extension: str = "lua"):
+    async def build_index(self, language_extension: str = "lua"):
         """Build or update the RAG index incrementally"""
 
         prior = load_prior_data(self.dot_rag_dir, language_extension)
@@ -228,7 +229,7 @@ class IncrementalRAGIndexer:
 
         # * Incrementally update the FAISS index
         if paths.changed or paths.deleted:
-            index = self.update_faiss_index_incrementally(
+            index = await self.update_faiss_index_incrementally(
                 prior.index,
                 not_changed_chunks_by_file,
                 updated_chunks_by_file,
@@ -271,7 +272,7 @@ def trash_dot_rag(dot_rag_dir):
         return
     subprocess.run(["trash", dot_rag_dir], check=IGNORE_FAILURE)
 
-def main():
+async def main():
     from lsp.logs import logging_fwk_to_console
 
     # * command line args
@@ -299,7 +300,7 @@ def main():
             trash_dot_rag(dot_rag_dir)
         options = RAGChunkerOptions.ProductionOptions()
         indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, options)
-        indexer.main()
+        await indexer.main()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

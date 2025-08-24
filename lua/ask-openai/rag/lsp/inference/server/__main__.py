@@ -79,6 +79,10 @@ def enable_keepalive(writer: asyncio.StreamWriter):
     except AttributeError as e:
         logger.warning(f"Failed to set KEEP ALIVE socket options, will try to set on transport level {e}")
 
+async def disconnect(writer):
+    writer.close()
+    await writer.wait_closed()
+
 async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
     logger.info("client connected")
     # PRN consider longer lived (i.e. all request batches for one round of semantic_grep)
@@ -87,11 +91,9 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
 
     # TODO pass timeout values to read/drain?
     request = await recv_len_then_msg_async(reader)
-    if not request:
+    if request is None:
         logger.warning("empty request, disconnecting")
-        writer.close()
-        await writer.wait_closed()
-        return
+        return await disconnect(writer)
 
     request_type = request['type']
 
@@ -129,15 +131,12 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
 
         else:
             logger.error(f'unsupported {request_type=}')
-            writer.close()
-            await writer.wait_closed()
-            return
+            return await disconnect(writer)
 
     encode_elapsed_ms = encode_timer.elapsed_ms()
 
     await send_len_then_msg_async(writer, response)
-    writer.close()
-    await writer.wait_closed()
+    await disconnect(writer)
 
     after_send()
 

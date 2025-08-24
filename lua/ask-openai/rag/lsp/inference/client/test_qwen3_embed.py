@@ -1,9 +1,9 @@
+import asyncio
 from lsp.inference.qwen3.known import get_known_inputs, verify_qwen3_known_embeddings
 from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.inference.client import embedder
 
-if __name__ == "__main__":
-
+async def main():
     logging_fwk_to_console("INFO")
     # logging_fwk_to_console("DEBUG")
     logger = get_logger(__name__)
@@ -31,7 +31,7 @@ if __name__ == "__main__":
         #   18-20ms with "hello world"
         #   then my chunk (below)... holy F 21ms?! qwen3 full precision!
         #
-        rx_embeddings = embedder._encode_batch(scoring_texts)
+        rx_embeddings = await embedder._encode_batch(scoring_texts)
 
     if rx_embeddings is None:
         exit(-1)
@@ -46,3 +46,6 @@ if __name__ == "__main__":
     import numpy as np
 
     verify_qwen3_known_embeddings(np.array(rx_embeddings), "Qwen/Qwen3-Embedding-0.6B")
+
+if __name__ == "__main__":
+    asyncio.run(main())

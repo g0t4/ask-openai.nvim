@@ -43,7 +43,7 @@ class TestBuildIndex(unittest.TestCase):
     def get_files(self):
         return load_file_stats_by_file(self.dot_rag_dir / "lua" / "files.json")
 
-    def test_building_rag_index_from_scratch(self):
+    async def test_building_rag_index_from_scratch(self):
 
         # FYI! this duplicates some low level line range chunking tests but I want to keep it to include the end to end picture
         #   i.e. for computing chunk id which relies on path to file
@@ -52,7 +52,7 @@ class TestBuildIndex(unittest.TestCase):
         # * recreate index
         self.trash_path(self.dot_rag_dir)
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, RAGChunkerOptions.OnlyLineRangeChunks())
-        indexer.build_index(language_extension="lua")
+        await indexer.build_index(language_extension="lua")
 
         # * chunks
         chunks_by_file = self.get_chunks_by_file()
@@ -115,12 +115,12 @@ class TestBuildIndex(unittest.TestCase):
         # for i in range(index.ntotal):
         #     rich.print(i)
 
-    def test_search_index_to_trigger_OpenMP_error(self):
+    async def test_search_index_to_trigger_OpenMP_error(self):
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
         self.trash_path(self.dot_rag_dir)
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, RAGChunkerOptions.OnlyLineRangeChunks())
-        indexer.build_index(language_extension="lua")
+        await indexer.build_index(language_extension="lua")
 
         chunks_by_file = load_chunks_by_file(self.dot_rag_dir / "lua/chunks.json")
         self.assertEqual(len(chunks_by_file), 1)
@@ -157,7 +157,7 @@ class TestBuildIndex(unittest.TestCase):
         #   this was just the very first search I tried with faiss and so it lingers
         #   that said, good test case now! and then maybe keep this and rename it!
 
-        q = encode_query(text="hello world", instruct="find code that uses + operator")
+        q = await encode_query(text="hello world", instruct="find code that uses + operator")
         self.assertEqual(q.shape, (1, 1024))
 
         index = self.get_vector_index()
@@ -169,7 +169,7 @@ class TestBuildIndex(unittest.TestCase):
         expected = np.array([[int(chunk2.id_int), int(chunk1.id_int), int(chunk0.id_int)]])
         np.testing.assert_array_equal(indices, expected)
 
-    def test_update_index_removed_file(self):
+    async def test_update_index_removed_file(self):
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
@@ -183,7 +183,7 @@ class TestBuildIndex(unittest.TestCase):
 
         # * build initial index
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
-        indexer.build_index(language_extension="lua")
+        await indexer.build_index(language_extension="lua")
 
         # * check counts
         chunks_by_file = self.get_chunks_by_file()
@@ -203,7 +203,7 @@ class TestBuildIndex(unittest.TestCase):
         # * update a file and rebuild
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks (starts = 1-20, 16-35, 31-50)
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())  # BTW recreate so no shared state (i.e. if cache added)
-        indexer.build_index(language_extension="lua")
+        await indexer.build_index(language_extension="lua")
 
         # * check counts
         chunks_by_file = self.get_chunks_by_file()
@@ -223,7 +223,7 @@ class TestBuildIndex(unittest.TestCase):
         # * delete a file and rebuild
         (self.tmp_source_code_dir / "numbers.lua").unlink()
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
-        indexer.build_index(language_extension="lua")
+        await indexer.build_index(language_extension="lua")
         #
         chunks_by_file = self.get_chunks_by_file()
         files = self.get_files()
@@ -241,7 +241,7 @@ class TestBuildIndex(unittest.TestCase):
         # FYI car.lua.txt was designed to catch issues with overlap (32 lines => 0 to 20, 15 to 35, but NOT 30 to 50 b/c only overlap exists so the next chunk has nothing unique in its non-overlapping segment) so maybe use a diff input file... if this causes issues here (move car.lua to a new test then)
         copy_file("car.lua.txt", "car.lua")
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
-        indexer.build_index(language_extension="lua")
+        await indexer.build_index(language_extension="lua")
         #
         chunks_by_file = self.get_chunks_by_file()
         files = self.get_files()
@@ -257,7 +257,7 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(len(files), 2)
         self.assertEqual(index.ntotal, 4)
 
-    def test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index(self):
+    async def test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index(self):
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
@@ -271,7 +271,7 @@ class TestBuildIndex(unittest.TestCase):
 
         # * build initial index
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
-        indexer.build_index(language_extension="lua")
+        await indexer.build_index(language_extension="lua")
 
         # * check counts
         chunks_by_file = self.get_chunks_by_file()
@@ -290,7 +290,7 @@ class TestBuildIndex(unittest.TestCase):
 
         copy_file("numbers.30.txt", "numbers.lua")
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
-        indexer.build_index(language_extension="lua")
+        await indexer.build_index(language_extension="lua")
 
         # * check counts
         chunks_by_file = self.get_chunks_by_file()
@@ -305,17 +305,17 @@ class TestBuildIndex(unittest.TestCase):
         # * 3rd rebuild - useful for compare new index 1 (new index), index 2 and index 3
         #  don't really need this to validate problem but I find it helpful to diff the logs
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
-        indexer.build_index(language_extension="lua")
+        await indexer.build_index(language_extension="lua")
 
         self.assertEqual(index.ntotal, 2, "index.ntotal (num vectors) should be 1")
 
-    def TODO_test__file_timestamp_changed__all_chunks_still_the_same__does_not_insert_chunk_into_updated_chunks(self):
+    async def TODO_test__file_timestamp_changed__all_chunks_still_the_same__does_not_insert_chunk_into_updated_chunks(self):
         pass
         # ***! TODO FIX LOGIC TO DETECT CHANGED FILES/CHUNKS...
         #   if a chunk is the SAME it should be NOT marked updated!
         #   i.e. if file modified timestamp is updated but none of the contents are different!
 
-    def test_update_file_from_language_server(self):
+    async def test_update_file_from_language_server(self):
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
@@ -329,7 +329,7 @@ class TestBuildIndex(unittest.TestCase):
 
         # * build initial index
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
-        indexer.build_index(language_extension="lua")
+        await indexer.build_index(language_extension="lua")
 
         from lsp import rag
         rag.load_model_and_indexes(self.dot_rag_dir)
@@ -344,7 +344,7 @@ class TestBuildIndex(unittest.TestCase):
             # version=2,
             source=target_file_path.read_text(encoding="utf-8"),
         )
-        rag.update_file_from_pygls_doc(fake_lsp_doc, RAGChunkerOptions.OnlyLineRangeChunks())
+        await rag.update_file_from_pygls_doc(fake_lsp_doc, RAGChunkerOptions.OnlyLineRangeChunks())
 
         # * check counts
         datasets = rag.datasets
@@ -383,12 +383,12 @@ class TestBuildIndex(unittest.TestCase):
         # ?   also update_file => update_file
         # ?   and update_file => indexer
 
-    def PRN_tests_update_file_does_not_re_encode_unchanged_chunks(self):
+    async def PRN_tests_update_file_does_not_re_encode_unchanged_chunks(self):
         # PRN? is this worth the time?
         # would be nice not to re-encode them... that is the expensive part
         pass
 
-    def PRN_test_timing_of_batch_vs_individual_chunk_encoding(self):
+    async def PRN_test_timing_of_batch_vs_individual_chunk_encoding(self):
         # I suspect batching is a big boost in perf, but I need to understand more before I commit to designs one way or another
         pass
 

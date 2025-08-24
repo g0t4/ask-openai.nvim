@@ -104,7 +104,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
 
     rag.validate_rag_indexes()
 
-def update_rag_for_text_doc(doc_uri: str):
+async def update_rag_for_text_doc(doc_uri: str):
     # TODO!ASYNC
     doc_path = uris.to_fs_path(doc_uri)
     if doc_path == None:
@@ -126,10 +126,10 @@ def update_rag_for_text_doc(doc_uri: str):
     if doc is None:
         logger.error(f"abort... doc not found {doc_uri}")
         return
-    rag.update_file_from_pygls_doc(doc, RAGChunkerOptions.ProductionOptions())
+    await rag.update_file_from_pygls_doc(doc, RAGChunkerOptions.ProductionOptions())
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
-def doc_saved(params: types.DidSaveTextDocumentParams):
+async def doc_saved(params: types.DidSaveTextDocumentParams):
     if fs.is_no_rag_dir():
         # TODO check langauge_extension too? for all handlers that work with doc uri? or let it fail normally in processing the request?
         return
@@ -142,7 +142,7 @@ def doc_saved(params: types.DidSaveTextDocumentParams):
     # ))
 
     logger.pp_debug("didSave", params)
-    update_rag_for_text_doc(params.text_document.uri)
+    await update_rag_for_text_doc(params.text_document.uri)
 
 # @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
 # async def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
@@ -155,7 +155,7 @@ def doc_saved(params: types.DidSaveTextDocumentParams):
 
 # UNREGISTER WHILE NOT USING:
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
-def doc_opened(params: types.DidOpenTextDocumentParams):
+async def doc_opened(params: types.DidOpenTextDocumentParams):
     if fs.is_no_rag_dir():
         return
     logger.pp_debug("didOpen", params)
@@ -167,7 +167,7 @@ def doc_opened(params: types.DidOpenTextDocumentParams):
 
     # * FYI this was just for quick testing to avoid needing a save or otherwise (just restart nvim)
     # ONLY do this b/c right now I don't rebuild the entire dataset until manually (eventually git commit, later can update here to disk)
-    update_rag_for_text_doc(params.text_document.uri)
+    await update_rag_for_text_doc(params.text_document.uri)
 
 # @server.feature(types.TEXT_DOCUMENT_DID_CLOSE)
 # async def doc_closed(params: types.DidCloseTextDocumentParams):

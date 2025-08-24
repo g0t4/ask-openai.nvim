@@ -46,7 +46,7 @@ async def semantic_grep(
 
     # * encode query vector
     with logger.timer("encoding query"):
-        query_vector = encode_query(query, instruct)
+        query_vector = await encode_query(query, instruct)
 
     if datasets is None:
         logger.error("DATASETS must be loaded and passed")
@@ -115,9 +115,9 @@ async def semantic_grep(
         batch = matches[batch_num:batch_num + BATCH_SIZE]
         docs = [c.text for c in batch]
 
-        with InferenceClient() as client:
+        async with AsyncInferenceClient() as client:
             request = RerankRequest(instruct=instruct, query=query, docs=docs)
-            scores = client.rerank(request)
+            scores = await client.rerank(request)
             if not scores:
                 raise Exception("rerank returned no scores")
             # assign new scores back to objects
