@@ -58,7 +58,6 @@ server.protocol._handle_cancel_notification = _fix_handle_cancel_notification
 @server.feature(types.INITIALIZE)
 def on_initialize(_: LanguageServer, params: types.InitializeParams):
     global dot_rag_dir
-    # TODO!ASYNC
 
     # # PRN use workspace folders if multi-workspace ...
     # #   not sure I'll use this but never know
@@ -68,7 +67,6 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
     fs.set_root_dir(params.root_path)
 
     if fs.is_no_rag_dir():
-        # TODO allow building the index from scratch?
         # DO NOT notify yet, that has to come after server responds to initialize request
         return types.InitializeResult(capabilities=types.ServerCapabilities())
 
@@ -85,7 +83,6 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #  then, client sends initialized (this) request => waits for completion
     #    does not send other requests until initialized is done
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
-    # TODO!ASYNC to avoid blocking initial requests that don't depend on what I am initializing here
 
     if fs.is_no_rag_dir():
         # TODO allow building the index from scratch?
@@ -93,21 +90,13 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
         tell_client_to_shut_that_shit_down_now()
         return
 
-    rag.load_model_and_indexes(fs.dot_rag_dir)
-
-    # FYI I took out the part that preloads numpy when LSP starts up... I am going to leave it off for now... just reminder when you asyncify startup too
-    #   that you should consider optimizing startup (i.e. imports) on startup for fastest user experience
-    #   that might mean pre-loading some deps that are going to be used so they're ready for users that don't initially need anything but later want fast first LSP request experience
-    #   for users that want immediate LSP requests... it won't matter if its in initialize (here) or just when their first request comes in
-    # import numpy   # used to happen in model_wrapper back when I had that for diff models.. this was all that was left after moving the rest to inference server
-
-    rag.validate_rag_indexes()
+    rag.load_model_and_indexes(fs.dot_rag_dir)  # TODO! ASYNC?
+    rag.validate_rag_indexes()  # TODO! ASYNC?
 
 async def update_rag_for_text_doc(doc_uri: str):
     if fs.is_no_rag_dir():
         return
 
-    # TODO!ASYNC
     doc_path = uris.to_fs_path(doc_uri)
     if doc_path == None:
         logger.warning(f"abort update rag... to_fs_path returned {doc_path}")
@@ -124,11 +113,11 @@ async def update_rag_for_text_doc(doc_uri: str):
         logger.info(f"skip extensionless files {doc_path}")
         return
 
-    doc = server.workspace.get_text_document(doc_uri)
+    doc = server.workspace.get_text_document(doc_uri)  # TODO! async
     if doc is None:
         logger.error(f"abort... doc not found {doc_uri}")
         return
-    await rag.update_file_from_pygls_doc(doc, RAGChunkerOptions.ProductionOptions())
+    await rag.update_file_from_pygls_doc(doc, RAGChunkerOptions.ProductionOptions())  # TODO! ASYNC REVIEW
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 async def doc_saved(params: types.DidSaveTextDocumentParams):
@@ -166,7 +155,7 @@ async def doc_opened(params: types.DidOpenTextDocumentParams):
 @server.command("semantic_grep")
 async def rag_command_context_related(_: LanguageServer, args: rag.LSPRagQueryRequest) -> rag.LSPRagQueryResult:
     try:
-        return await rag.handle_query(args, top_k=50, skip_same_file=False)
+        return await rag.handle_query(args, top_k=50, skip_same_file=False)  # TODO! ASYNC REVIEW
     except asyncio.CancelledError as e:
         # avoid leaving on in logs b/c takes up a ton of space for stack trace
         # logger.info("Client cancelled query", exc_info=e) # uncomment to see where error is raised
@@ -179,25 +168,11 @@ async def rag_command_context_query(_: LanguageServer, args: rag.LSPRagQueryRequ
     except asyncio.CancelledError as e:
         return rag.LSPRagQueryResult(error=rag.LSPResponseErrors.CANCELLED)
 
-# how can I intercept shutdown from client?
-#
-# @server.feature(types.SHUTDOWN)
-# def on_shutdown(_: LanguageServer):
-#     logger.debug(f"shutting down")
-#     # os._exit(0)
-#
-# @server.feature(types.EXIT)
-# def on_exit(_: LanguageServer):
-#     logger.debug(f"exiting")
-#     # os._exit(0)
-
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):
     print("SIGKILL myself")
     os.kill(os.getpid(), signal.SIGKILL)
 
-# TODO how can I detect if client disconnects?
-#   if I start nvim before server is initialized then it gets orphaned (have to kill it)
-#
+# TODO detect when LSP disconnects and shutdown self?
 
 signal.signal(signal.SIGINT, sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS)
 
