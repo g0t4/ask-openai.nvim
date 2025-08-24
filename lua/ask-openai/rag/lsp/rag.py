@@ -41,13 +41,12 @@ async def handle_query(args: LSPRagQueryRequest) -> LSPRagQueryResult:
 
         # TODO! REVIEW the ASYNC (i.e. for file ops? or other async capable ops)
 
-        # * parse and validate request parameters
         query = args.query
         if query is None or len(query) == 0:
             logger.info("No query provided")
             return LSPRagQueryResult(error="No query provided")
 
-        stopper.throw_if_stopped()  # before starting expensive work too
+        stopper.throw_if_stopped()
 
         matches = await semantic_grep(
             args=args,

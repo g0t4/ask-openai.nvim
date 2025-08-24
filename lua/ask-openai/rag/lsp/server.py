@@ -164,7 +164,7 @@ async def doc_opened(params: types.DidOpenTextDocumentParams):
 #     #   rebuild on git commit + incremental updates s/b super fast?
 
 @server.command("rag_query")
-async def rag_command_context_related(_: LanguageServer, args: rag.LSPRagQueryRequest) -> rag.LSPRagQueryResult:
+async def rag_query_command(_: LanguageServer, args: rag.LSPRagQueryRequest) -> rag.LSPRagQueryResult:
     args.msg_id = server.protocol.msg_id
     try:
         return await rag.handle_query(args)  # TODO! ASYNC REVIEW
