@@ -31,6 +31,7 @@ class LSPRagQueryRequest:
     vimFiletype: str | None = None
     instruct: str | None = None
     msg_id: str = ""
+    languages: str = ""
     # MAKE SURE TO GIVE DEFAULT VALUES IF NOT REQUIRED
 
 @attrs.define

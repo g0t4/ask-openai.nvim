@@ -205,12 +205,9 @@ local get_icon_for_chunk_type = function(chunk_type)
     -- TODO sub type the treesitter matches into functions, classes, etc ... and show icon to help? or is that overkill given SIG will clearly show what is what, most likely
 end
 
-local function semantic_grep_current_filetype_picker(opts)
-    -- GOOD examples (multiple pickers in one nvim plugin):
-    --  https://gitlab.com/davvid/telescope-git-grep.nvim/-/blob/main/lua/git_grep/init.lua?ref_type=heads
-
-    -- TODO! show columns, with score too... basename on file? or some util to truncate?
-    -- TODO! cancel previous queries? async too so not locking up UI?
+function semantic_grep_current_filetype_picker(opts)
+    -- TODO do I want all languages to be configurable in .rag.yaml?
+    vim.print("opts: " .. vim.inspect(opts))
 
     -- * this runs before picker opens, so you can gather context, i.e. current filetype, its LSP, etc
     ---@type LSPRagQueryRequest
@@ -220,6 +217,10 @@ local function semantic_grep_current_filetype_picker(opts)
         vimFiletype = vim.o.filetype,
         currentFileAbsolutePath = files.get_current_file_absolute_path(),
     }
+    if opts.lang then
+        -- currently for ALL languages
+        lsp_rag_request.languages = opts.languages
+    end
     local lsp_buffer_number = vim.api.nvim_get_current_buf()
 
     local displayer = entry_display.create {

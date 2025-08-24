@@ -56,6 +56,7 @@ end
 ---@field vimFiletype string
 ---@field currentFileAbsolutePath string
 ---@field instruct? string
+---@field languages? string
 _G.LSPRagQueryRequest = {}
 
 
