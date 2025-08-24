@@ -104,6 +104,9 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     rag.validate_rag_indexes()
 
 async def update_rag_for_text_doc(doc_uri: str):
+    if fs.is_no_rag_dir():
+        return
+
     # TODO!ASYNC
     doc_path = uris.to_fs_path(doc_uri)
     if doc_path == None:
@@ -129,30 +132,11 @@ async def update_rag_for_text_doc(doc_uri: str):
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 async def doc_saved(params: types.DidSaveTextDocumentParams):
-    if fs.is_no_rag_dir():
-        # TODO check langauge_extension too? for all handlers that work with doc uri? or let it fail normally in processing the request?
-        return
-    # TODO!ASYNC
-
-    # FYI can send messages to client!
-    # server.window_show_message(types.ShowMessageParams(
-    #     types.MessageType.Error,
-    #     "server log message bar",
-    # ))
-
-    logger.pp_debug("didSave", params)
     await update_rag_for_text_doc(params.text_document.uri)
 
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 async def doc_opened(params: types.DidOpenTextDocumentParams):
-    if fs.is_no_rag_dir():
-        return
-    logger.pp_debug("didOpen", params)
-    # PRN on didOpen track open files, didClose track closed... use for auto-context!
-    # imports.on_open(params) # WIP
-
-    # only rebuild index on commit (or manually)... so when open file make sure its updated
-    # FYI this doesn't update .rag dir... it's in memory only
+    # imports.on_open(params)
     await update_rag_for_text_doc(params.text_document.uri)
 
 # @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
@@ -168,6 +152,7 @@ async def doc_opened(params: types.DidOpenTextDocumentParams):
 #     if fs.is_no_rag_dir():
 #         return
 #     logger.pp_debug("didClose", params)
+#     # PRN on didOpen track open files, didClose track closed... use for auto-context!
 #
 # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
 # async def doc_changed(params: types.DidChangeTextDocumentParams):
