@@ -96,12 +96,17 @@ async def semantic_grep(
         ids = ids[0]
         scores = scores[0]
 
+    logger.warn(f"ids len {len(ids)}")
+    logger.warn(f"scores len {len(scores)}")
+    logger.warn(f'{ids=}')
+    logger.warn(f'{scores=}')
+
     # * lookup matching chunks (filter any exclusions on metadata)
     matches: list[LSPRankedMatch] = []
     for idx, (id, embed_score) in enumerate(zip(ids, scores)):
         # print(id, embed_score) # nice way to verify initial sort (indeed is descending by embed_score)
-        if len(matches) >= args.topK:
-            break
+        # if len(matches) >= args.topK:
+        #     break
 
         chunk = datasets.get_chunk_by_faiss_id(id)
         if chunk is None:
