@@ -1,3 +1,4 @@
+import aiofiles
 import asyncio
 from lsp.logs import get_logger
 from lsp.inference.client.embedder import get_shape, encode_passages
@@ -42,21 +43,22 @@ class IncrementalRAGIndexer:
         self.source_code_dir = Path(source_code_dir)
 
     async def main(self):
-        exts = self.get_included_extensions()
+        exts = await self.get_included_extensions()
         for ext in exts:
             await self.build_index(ext)
         self.warn_about_other_extensions(exts)
 
-    def get_included_extensions(self):
+    async def get_included_extensions(self):
         rag_yaml = self.source_code_dir / ".rag.yaml"
         if not rag_yaml.exists():
             logger.debug(f"no rag config found {rag_yaml}, using default config")
             return ["lua", "py", "fish"]
         import yaml
-        with open(rag_yaml, "r") as f:
-            config = yaml.safe_load(f)
-            logger.pp_debug(f"found rag config: {rag_yaml}", config)
-            return config["include"]
+        async with aiofiles.open(rag_yaml, mode="r") as f:
+            content = await f.read()
+        config = yaml.safe_load(content)
+        logger.pp_debug(f"found rag config: {rag_yaml}", config)
+        return config["include"]
 
     def warn_about_other_extensions(self, index_languages: list[str]):
 
