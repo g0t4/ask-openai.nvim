@@ -56,6 +56,7 @@ async def semantic_grep(
     all_languages = args.languages == "ALL"
 
     embed_top_k = args.embedTopK or args.topK
+    query_embed_top_k = embed_top_k * 3 if args.skipSameFile else embed_top_k
 
     instruct = args.instruct
     if instruct is None:
@@ -80,7 +81,7 @@ async def semantic_grep(
         ids = []
         for str, ds in datasets.all_datasets.items():
             logger.warn(f"searching {str} index")
-            _topk = round(embed_top_k / len(datasets.all_datasets))
+            _topk = round(query_embed_top_k / len(datasets.all_datasets))
             _scores, _ids = ds.index.search(query_vector, _topk)
             scores.extend(_scores[0])
             ids.extend(_ids[0])
@@ -95,7 +96,7 @@ async def semantic_grep(
         # TODO how to approach multi-language? split up top_k? or maybe do 1/2 of top_k regardless # languages
         # TODO get .rag.yaml for list of languages to use for all languages
 
-        scores, ids = dataset.index.search(query_vector, embed_top_k)
+        scores, ids = dataset.index.search(query_vector, query_embed_top_k)
         ids = ids[0]
         scores = scores[0]
 
@@ -106,6 +107,7 @@ async def semantic_grep(
 
     # * lookup matching chunks (filter any exclusions on metadata)
     matches: list[LSPRankedMatch] = []
+    count = 0
     for idx, (id, embed_score) in enumerate(zip(ids, scores)):
 
         chunk = datasets.get_chunk_by_faiss_id(id)
@@ -139,6 +141,12 @@ async def semantic_grep(
         )
 
         matches.append(match)
+        count += 1
+        if count >= embed_top_k:
+            # this is the case when we need to skipSameFile
+            # over query with query_embed_top_k
+            # stop taking embeddings at embed_top_k (often is a multiple too for re-rank to select top_k)
+            break
 
     if embed_top_k > args.topK:
         logger.warn(f"Embedding topK {embed_top_k} is higher than user topK {args.topK}... truncating")
