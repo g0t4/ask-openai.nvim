@@ -24,12 +24,12 @@ if __name__ == '__main__':
 # TODO - .venv/lib/python3.13/site-packages/transformers/tokenization_utils_base.py:2696: UserWarning: `max_length` is ignored when `padding`=`True` and there is no truncation strategy. To pad to max length, use `padding='max_length'`.
 
 def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tensor:
-
     left_padding = (attention_mask[:, -1].sum() == attention_mask.shape[0])
     if left_padding:
         result = last_hidden_states[:, -1]
         return result
     else:
+        raise ValueError("Expected left padding, this code for right padding is carry over from prior example, make sure its correct if you switch to right padding")
         sequence_lengths = attention_mask.sum(dim=1) - 1
         batch_size = last_hidden_states.shape[0]
         return last_hidden_states[torch.arange(batch_size, device=last_hidden_states.device), sequence_lengths]
