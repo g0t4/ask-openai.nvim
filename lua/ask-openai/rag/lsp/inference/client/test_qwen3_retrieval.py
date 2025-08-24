@@ -24,8 +24,8 @@ async def main():
         vimFiletype="py",
         instruct=None,  # intentionally blank
         skipSameFile=False,
-        topK=20,
-        embedTopK=20,
+        topK=4,
+        embedTopK=8,
         languages="ALL",  # test search across languages
     )
 
