@@ -55,6 +55,7 @@ async def semantic_grep(
 ) -> list[LSPRankedMatch]:
     all_languages = args.languages == "ALL"
 
+    rerank_top_k = args.topK
     embed_top_k = args.embedTopK or args.topK
     query_embed_top_k = embed_top_k * 3 if args.skipSameFile else embed_top_k
 
@@ -86,6 +87,7 @@ async def semantic_grep(
             scores.extend(_scores[0])
             ids.extend(_ids[0])
             # logger.warn(f"{_ids}")
+        # TODO get .rag.yaml for list of languages to use for all languages
         # PRN sort scores/ids by score ... nice to have but not critical b/c this only affects embeddings ranking
     else:
         dataset = datasets.for_file(args.currentFileAbsolutePath, vim_filetype=args.vimFiletype)
@@ -93,8 +95,6 @@ async def semantic_grep(
             logger.error(f"No dataset")
             # return {"failed": True, "error": f"No dataset for {current_file_abs}"} # TODO return failure?
             raise Exception(f"No dataset for {args.currentFileAbsolutePath}")
-        # TODO how to approach multi-language? split up top_k? or maybe do 1/2 of top_k regardless # languages
-        # TODO get .rag.yaml for list of languages to use for all languages
 
         scores, ids = dataset.index.search(query_vector, query_embed_top_k)
         ids = ids[0]
@@ -141,16 +141,13 @@ async def semantic_grep(
         )
 
         matches.append(match)
+
         count += 1
         if count >= embed_top_k:
             # this is the case when we need to skipSameFile
             # over query with query_embed_top_k
             # stop taking embeddings at embed_top_k (often is a multiple too for re-rank to select top_k)
             break
-
-    if embed_top_k > args.topK:
-        logger.warn(f"Embedding topK {embed_top_k} is higher than user topK {args.topK}... truncating")
-        matches = matches[:args.topK]
 
     if len(matches) == 0:
         logger.warning(f"No matches found for {args.currentFileAbsolutePath=}")
@@ -182,5 +179,9 @@ async def semantic_grep(
     matches.sort(key=lambda c: c.rerank_score, reverse=True)
     for idx, c in enumerate(matches):
         c.rerank_rank = idx
+
+    if embed_top_k > rerank_top_k:
+        logger.warn(f"{embed_top_k=} > {rerank_top_k=} truncating")
+        matches = matches[:rerank_top_k]
 
     return matches
