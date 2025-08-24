@@ -220,10 +220,8 @@ function semantic_grep_current_filetype_picker(opts)
         skipSameFile = false,
         -- PRN other file types?
     }
-    if opts.lang then
-        -- currently for ALL languages
-        lsp_rag_request.languages = opts.languages
-    end
+    -- currently for ALL languages
+    lsp_rag_request.languages = opts.languages
     local lsp_buffer_number = vim.api.nvim_get_current_buf()
 
     local displayer = entry_display.create {

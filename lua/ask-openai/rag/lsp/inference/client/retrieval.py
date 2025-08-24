@@ -71,18 +71,30 @@ async def semantic_grep(
         logger.error("DATASETS must be loaded and passed")
         raise Exception("MISSING DATASET(S) PLURAL")
 
-    dataset = datasets.for_file(args.currentFileAbsolutePath, vim_filetype=args.vimFiletype)
-    if dataset is None:
-        logger.error(f"No dataset")
-        # return {"failed": True, "error": f"No dataset for {current_file_abs}"} # TODO return failure?
-        raise Exception(f"No dataset for {args.currentFileAbsolutePath}")
-    # TODO how to approach multi-language? split up top_k? or maybe do 1/2 of top_k regardless # languages
-    # TODO get .rag.yaml for list of languages to use for all languages
-
     # * search embeddings
-    scores, ids = dataset.index.search(query_vector, args.topK)
-    ids = ids[0]
-    scores = scores[0]
+    if all_languages:
+        scores = []
+        ids = []
+        for str, ds in datasets.all_datasets.items():
+            logger.warn(f"searching {str} index")
+            _topk = round(args.topK / len(datasets.all_datasets))
+            _scores, _ids = ds.index.search(query_vector, _topk)
+            scores.extend(_scores[0])
+            ids.extend(_ids[0])
+            # logger.warn(f"{_ids}")
+        # PRN sort scores/ids by score ... nice to have but not critical b/c this only affects embeddings ranking
+    else:
+        dataset = datasets.for_file(args.currentFileAbsolutePath, vim_filetype=args.vimFiletype)
+        if dataset is None:
+            logger.error(f"No dataset")
+            # return {"failed": True, "error": f"No dataset for {current_file_abs}"} # TODO return failure?
+            raise Exception(f"No dataset for {args.currentFileAbsolutePath}")
+        # TODO how to approach multi-language? split up top_k? or maybe do 1/2 of top_k regardless # languages
+        # TODO get .rag.yaml for list of languages to use for all languages
+
+        scores, ids = dataset.index.search(query_vector, args.topK)
+        ids = ids[0]
+        scores = scores[0]
 
     # * lookup matching chunks (filter any exclusions on metadata)
     matches: list[LSPRankedMatch] = []
