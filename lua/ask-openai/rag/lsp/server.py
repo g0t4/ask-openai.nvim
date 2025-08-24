@@ -192,15 +192,19 @@ async def doc_opened(params: types.DidOpenTextDocumentParams):
 
 @server.command("semantic_grep")
 async def rag_command_context_related(_: LanguageServer, args: rag.LSPRagQueryRequest) -> rag.LSPRagQueryResult:
+    args.msg_id = server.protocol.msg_id
     try:
-        return await rag.handle_query(args, top_k=50, skip_same_file=False)  # TODO! ASYNC REVIEW
+        result = await rag.handle_query(args, top_k=50, skip_same_file=False)  # TODO! ASYNC REVIEW
+        logger.info(f"semantic_grep DONE {args.msg_id=}")
+        return result
     except asyncio.CancelledError as e:
         # avoid leaving on in logs b/c takes up a ton of space for stack trace
-        # logger.info("Client cancelled query", exc_info=e) # uncomment to see where error is raised
+        logger.info(f"Client cancelled query {args.msg_id=}")  #, exc_info=e)  # uncomment to see where error is raised
         return rag.LSPRagQueryResult(error=rag.LSPResponseErrors.CANCELLED)
 
 @server.command("context.query")
 async def rag_command_context_query(_: LanguageServer, args: rag.LSPRagQueryRequest) -> rag.LSPRagQueryResult:
+    args.msg_id = server.protocol.msg_id
     try:
         return await rag.handle_query(args, skip_same_file=True)
     except asyncio.CancelledError as e:

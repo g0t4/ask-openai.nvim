@@ -29,6 +29,7 @@ class LSPRagQueryRequest:
     currentFileAbsolutePath: str | None = None
     vimFiletype: str | None = None
     instruct: str | None = None
+    msg_id: str = ""
     # MAKE SURE TO GIVE DEFAULT VALUES IF NOT REQUIRED
 
 @attrs.define
@@ -58,6 +59,8 @@ async def handle_query(args: "LSPRagQueryRequest", top_k=3, skip_same_file=False
     current_file_abs = args.currentFileAbsolutePath
     instruct = args.instruct
 
+    logger.info(f'{args.msg_id=} {query=}: {current_file_abs=} {vim_filetype=} {instruct=}')
+
     # * NEW SEMANTIC GREP PIPELINE
     matches = await semantic_grep(
         query=query,
@@ -67,6 +70,7 @@ async def handle_query(args: "LSPRagQueryRequest", top_k=3, skip_same_file=False
         skip_same_file=skip_same_file,
         top_k=top_k,
         datasets=datasets,
+        msg_id=args.msg_id
     )
     return LSPRagQueryResult(matches=matches)
 

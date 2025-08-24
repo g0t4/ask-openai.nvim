@@ -37,6 +37,7 @@ async def semantic_grep(
     top_k: int = 50,
     # TODO! fix datasets to not be so yucky
     datasets: Datasets | None = None,
+    msg_id: str | None = None,
 ) -> list[LSPRankedMatch]:
     if instruct is None:
         instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
@@ -114,6 +115,7 @@ async def semantic_grep(
     for batch_num in range(0, len(matches), BATCH_SIZE):
         batch = matches[batch_num:batch_num + BATCH_SIZE]
         docs = [c.text for c in batch]
+        logger.info(f"{msg_id} re-rank batch {batch_num} len={len(batch)}")
 
         async with AsyncInferenceClient() as client:
             request = RerankRequest(instruct=instruct, query=query, docs=docs)
