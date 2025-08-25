@@ -330,7 +330,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         M.rag_cancel = nil
         M.rag_request_ids = nil
         -- PRN add a promise fwk in here
-        send_rewrite()
+        send_rewrite({})
     end
 end
 
