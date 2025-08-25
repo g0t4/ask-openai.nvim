@@ -292,12 +292,13 @@ function semantic_grep_current_filetype_picker(opts)
     end
 
     opts_previewer = {}
-    local prompt_title = 'semantic grep - filetype: ' .. vim.o.filetype
+    local prompt_title = 'semantic grep 󰕡 ' .. tostring(vim.o.filetype)
     if all_languages then
         prompt_title = 'semantic grep - ALL languages'
     end
     picker = pickers:new({
         prompt_title = prompt_title,
+        prompt_prefix = '󰕡 ',
         sorting_strategy = 'ascending', -- default descending doesn't work right now due to bug with setting cursor position in results window
 
         finder = AsyncDynamicFinder:new({
