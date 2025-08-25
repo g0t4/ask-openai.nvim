@@ -165,12 +165,12 @@ async def doc_opened(params: types.DidOpenTextDocumentParams):
 
 @server.command("rag_query")
 async def rag_query_command(_: LanguageServer, args: rag.LSPRagQueryRequest) -> rag.LSPRagQueryResult:
-    args.msg_id = server.protocol.msg_id
+    args.msgId = server.protocol.msg_id
     try:
         return await rag.handle_query(args)  # TODO! ASYNC REVIEW
     except asyncio.CancelledError as e:
         # avoid leaving on in logs b/c takes up a ton of space for stack trace
-        logger.info(f"Client cancelled query {args.msg_id=}")  #, exc_info=e)  # uncomment to see where error is raised
+        logger.info(f"Client cancelled query {args.msgId=}")  #, exc_info=e)  # uncomment to see where error is raised
         return rag.LSPRagQueryResult(error=rag.LSPResponseErrors.CANCELLED)
 
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):

@@ -41,7 +41,7 @@ class LSPRagQueryRequest:
     currentFileAbsolutePath: str | None = None
     vimFiletype: str | None = None
     instruct: str | None = None
-    msg_id: str = ""  # cannot bind underscores... this is not a bound param (LS handler sets it)
+    msgId: str = ""  # cannot bind underscores... this is not a bound param (LS handler sets it)
     languages: str = ""
     skipSameFile: bool = False
     topK: int = 50
@@ -171,7 +171,7 @@ async def semantic_grep(
         stopper.throw_if_stopped()
         batch = matches[batch_num:batch_num + BATCH_SIZE]
         docs = [rerank_document(c) for c in batch]
-        logger.info(f"{args.msg_id} re-rank batch {batch_num} len={len(batch)}")
+        logger.info(f"{args.msgId} re-rank batch {batch_num} len={len(batch)}")
 
         async with AsyncInferenceClient() as client:
             request = RerankRequest(instruct=instruct, query=args.query, docs=docs)

@@ -34,7 +34,7 @@ class LSPResponseErrors:
     CANCELLED = "Client cancelled query"
 
 async def handle_query(args: LSPRagQueryRequest) -> LSPRagQueryResult:
-    stopper = create_stopper(args.msg_id)
+    stopper = create_stopper(args.msgId)
     try:
         if fs.is_no_rag_dir():
             return LSPRagQueryResult(error=LSPResponseErrors.NO_RAG_DIR)
@@ -56,7 +56,7 @@ async def handle_query(args: LSPRagQueryRequest) -> LSPRagQueryResult:
 
         return LSPRagQueryResult(matches=matches)
     finally:
-        remove_stopper(args.msg_id)
+        remove_stopper(args.msgId)
 
 async def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions):
     file_path = Path(lsp_doc.path)
