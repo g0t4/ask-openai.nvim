@@ -228,6 +228,95 @@ function M.qwen25coder.get_fim_prompt(request)
     return prompt .. fim_file_contents
 end
 
+M.bytedance_seed_coder = {
+    sentinel_tokens = {
+        fim_suffix = "<[fim-suffix]>", --
+        fim_prefix = "<[fim-prefix]>", --
+        fim_middle = "<[fim-middle]>", --
+        --
+        -- -- fim_pad = "<|fim_pad|>", --
+        -- repo_name = "<|repo_name|>", --
+        -- file_sep = "<|file_sep|>", --
+        --
+        -- im_start = "<|im_start|>", --
+        -- im_end = "<|im_end|>", --
+        -- endoftext = "<|endoftext|>", --
+
+        -- * other tokens in logs, consider as needed:
+
+    },
+}
+
+---@param request OllamaFimBackend
+function M.bytedance_seed_coder.get_fim_prompt(request)
+    -- https://github.com/ByteDance-Seed/Seed-Coder
+    -- FYI! see fim.md for extensive FIM notes
+    local tokens = M.bytedance_seed_coder.sentinel_tokens
+
+
+    local prompt = ""
+
+    -- * FIM file
+    local current_file_relative_path = request.inject_file_path_test_seam()
+    if current_file_relative_path == nil then
+        log:warn("current_file_name is nil")
+        current_file_relative_path = ""
+    end
+
+
+    -- others dicussing what has worked for repo level FIM with bytedance seed coder:
+    --   https://github.com/ByteDance-Seed/Seed-Coder/issues/12
+    -- TODO try mutli-file using this format by prepend to prefix, or append to suffix
+    --   <[fim-suffix]>File2suffix, File3, File4<[fim-prefix]>File1,File2prefix<[fim-middle]>
+    --   and do what with filenames? just inject contents?
+    --
+    -- --- @param context_item ContextItem
+    -- local function append_file_non_fim(context_item)
+    --     -- <file_sep>filepath0\ncode0
+    --     local non_fim_file = tokens.file_sep .. context_item.filename .. "\n"
+    --         .. context_item.content
+    --     prompt = prompt .. non_fim_file
+    -- end
+    --
+    -- if request.context.includes.yanks and request.context.yanks then
+    --     append_file_non_fim(request.context.yanks)
+    -- end
+    --
+    -- if request.context.includes.matching_ctags and request.context.matching_ctags then
+    --     append_file_non_fim(request.context.matching_ctags)
+    -- end
+    --
+    -- if request.context.includes.project and request.context.project then
+    --     vim.iter(request.context.project)
+    --         :each(append_file_non_fim)
+    -- end
+    --
+    -- if request.rag_matches then
+    --     vim.iter(request.rag_matches)
+    --         :each(function(chunk)
+    --             ---@cast chunk LSPRankedMatch
+    --             local file_name = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
+    --             local non_fim_file = tokens.file_sep .. file_name .. "\n" .. chunk.text
+    --             prompt = prompt .. non_fim_file
+    --         end)
+    -- end
+
+    -- * SPM (better for prompt caching)
+    -- https://github.com/ByteDance-Seed/Seed-Coder/blob/master/Seed-Coder.pdf
+    -- <[fim-suffix]>SUFFIX<[fim-prefix]>PREFIX<[fim-middle]>MIDDLE
+    local fim_file_contents = ""
+        -- tokens.file_sep
+        -- .. current_file_relative_path
+        -- .. "\n"
+        .. tokens.fim_suffix
+        .. request.suffix
+        .. tokens.fim_prefix
+        .. request.prefix
+        .. tokens.fim_middle
+
+    return prompt .. fim_file_contents
+end
+
 M.mellum = {
     -- https://huggingface.co/JetBrains/Mellum-4b-base/blob/main/special_tokens_map.json
     -- much in common with starcoder2
