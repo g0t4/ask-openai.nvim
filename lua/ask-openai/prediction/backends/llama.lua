@@ -6,8 +6,8 @@ local files = require("ask-openai.helpers.files")
 require("ask-openai.backends.sse")
 
 -- * primary models I am testing (keep notes in MODELS.notes.md)
-local use_model = "qwen2.5-coder:7b-instruct-q8_0"
--- local use_model = "bytedance-seed-coder-8b"
+-- local use_model = "qwen2.5-coder:7b-instruct-q8_0"
+local use_model = "bytedance-seed-coder-8b"
 -- local use_model = "gpt-oss:20b"
 -- local use_model = "qwen3-coder:30b-a3b-q8_0"
 --
@@ -145,10 +145,13 @@ function OllamaFimBackend:body_for()
         log:error("stop token: " .. vim.inspect(body.options.stop))
     elseif string.find(body.model, "bytedance-seed-coder-8b", nil, true) then
         builder = function()
-            return fim.bytedance_seed_coder.get_fim_prompt_file_level_only(self)
+            return fim.qwen25coder.get_fim_prompt(self) -- WORKS FOR repo level using qwen's format entirely! (plus set qwen's stop_tokens to avoid rambles / trailing stop tokens)
+            -- return fim.bytedance_seed_coder.get_fim_prompt_file_level_only(self) -- WORKS well for file level using its own SPM format
             -- return fim.bytedance_seed_coder.get_fim_prompt_repo_level(self)
         end
-        -- body.options.stop = fim.qwen25coder.sentinel_tokens.fim_stop_tokens
+        -- MUST set qwent's tokens as stop tokens too (when using Qwen's repo level fim format)
+        body.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder -- llama-server /completions endpoint uses top-level stop
+        body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
         -- log:error("stop token: " .. vim.inspect(body.options.stop))
     elseif string.find(body.model, "gpt-oss", nil, true) then
         body.messages = fim.gpt_oss.get_fim_chat_messages(self)

@@ -229,6 +229,20 @@ function M.qwen25coder.get_fim_prompt(request)
 end
 
 M.bytedance_seed_coder = {
+    qwen_sentinels = {
+        fim_stop_tokens_from_qwen25_coder = {
+            -- observed these generaeted by Seed-Coder:
+            M.qwen25coder.sentinel_tokens.endoftext, -- stops on this
+            M.qwen25coder.sentinel_tokens.file_sep, -- rambles past this, so a good stop point... rambles b/c of repeating file pattern
+            "<|end|>", -- bytedance_seed_coder stops on this at times too, not sure this is a qwen25coder token...
+
+            -- haven't seen Seed-Coder generate these but they don't hurt to add:
+            M.qwen25coder.sentinel_tokens.im_end,
+            M.qwen25coder.sentinel_tokens.fim_prefix,
+            M.qwen25coder.sentinel_tokens.fim_suffix,
+            M.qwen25coder.sentinel_tokens.repo_name,
+        },
+    },
     sentinel_tokens = {
         fim_suffix = "<[fim-suffix]>", --
         fim_prefix = "<[fim-prefix]>", --
