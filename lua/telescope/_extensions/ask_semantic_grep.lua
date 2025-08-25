@@ -290,7 +290,7 @@ function semantic_grep_current_filetype_picker(opts)
     opts_previewer = {}
     local prompt_title = 'semantic grep 󰕡 ' .. tostring(vim.o.filetype)
     if all_languages then
-        prompt_title = 'semantic grep - ALL languages'
+        prompt_title = 'semantic grep 󰕡 ALL languages'
     end
     picker = pickers:new({
         prompt_title = prompt_title,
