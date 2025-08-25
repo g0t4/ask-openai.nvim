@@ -102,6 +102,8 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
 
     with Timer() as encode_timer:
         # PRN split out this section to a socket agnostic dispatcher
+        # TODO handle OutOfMemoryError: CUDA out of memory. Tried to allocate 4.1 GiB... (replicate and make sure warning gets to LSP client so it shows in neovim)
+        #   add error message to response
         if request_type == 'embed':
             texts = request['texts']
             # PRN async encode?... really all I want async for is in the LSP to cancel pending buf_requests... this server side was just practice for asyncifying socket
