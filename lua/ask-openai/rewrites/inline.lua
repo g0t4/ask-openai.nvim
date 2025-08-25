@@ -276,9 +276,6 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             vim.iter(rag_matches)
                 :each(function(chunk)
                     ---@cast chunk LSPRankedMatch
-                    -- FYI this comes from embeddings query results... so the structure is different than other context providers
-                    -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
-                    -- FYI I am feeding the LLM with base0 line numbers, shouldn't matter
                     local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
                     local code_chunk = chunk.text
                     table.insert(rag_message_parts,
