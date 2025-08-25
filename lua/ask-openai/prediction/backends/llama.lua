@@ -7,7 +7,7 @@ require("ask-openai.backends.sse")
 
 -- * primary models I am testing (keep notes in MODELS.notes.md)
 -- local use_model = "qwen2.5-coder:7b-instruct-q8_0"
-local use_model = "bytedance-seed-coder-8b-base"
+local use_model = "qwen2.5-coder:7b-instruct-q8_0"
 -- local use_model = "gpt-oss:20b"
 -- local use_model = "qwen3-coder:30b-a3b-q8_0"
 --
