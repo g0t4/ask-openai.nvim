@@ -234,12 +234,39 @@ M.bytedance_seed_coder = {
         fim_prefix = "<[fim-prefix]>", --
         fim_middle = "<[fim-middle]>", --
         --
-        -- -- fim_pad = "<|fim_pad|>", --
+        -- TODO update rest from:
+        -- https://huggingface.co/ByteDance-Seed/Seed-Coder-8B-Base/blob/main/tokenizer_config.json
+        -- {'bos_token': '<[begin▁of▁sentence]>', 'eos_token': '<[end▁of▁sentence]>', 'sep_token': '<[SEP▁TOKEN]>', 'pad_token': '<[PAD▁TOKEN]>'}
+        --
+        -- TODO!!!!!! THEIR TECHINCAL PAPER SAYS THEY USED REPO LEVEL training data.... WHAT WAS THE FORMAT!!!! did it have tokens too.. it had to have a filename at least?
+        --   https://arxiv.org/abs/2506.03524
+        --     "repository-level variant preserved the project structure, enabling more coherent long-context learning"
+        --     "Each repository was mapped to a single string sequence"
+        --     "with exceptionally large repositories (e.g., PyTorch) being decomposed into multiple independent subgraphs"
+        --     RepoCoder:
+        --     - Seed-Coder paper refers to a microsoft research project called RepoCoder, which basically has RAG to find relevant code (repo level) and then prepends it commented out
+        --     - https://github.com/microsoft/CodeT/tree/main/RepoCoder
+        --     - PromptBuilder is key part, shows format used for retrieved code samples:
+        --        https://github.com/microsoft/CodeT/blob/35f54d60b152cc31d134b788e702878ad613d9f7/RepoCoder/build_prompt.py#L24-L84
+        --     - by the way RepoCoder primarily tested a two stage retrieve + gen process... whereby the model gets a second pass to generate the code after seeing the first pass
+        --
+        --
         -- repo_name = "<|repo_name|>", --
         -- file_sep = "<|file_sep|>", --
         --
-        -- im_start = "<|im_start|>", --
-        -- im_end = "<|im_end|>", --
+        -- 0: <[begin▁of▁sentence]>
+        -- 1: <[PAD▁TOKEN]>
+        -- 2: <[end▁of▁sentence]>
+        -- 3: <[UNK_never_used_51bce0c785ca2f68081bfa7d91973934]>
+        -- 4: <[CLS_never_used_51bce0c785ca2f68081bfa7d91973934]>
+        -- 5: <[MASK_never_used_51bce0c785ca2f68081bfa7d91973934]>
+        -- 6: <[SEP▁TOKEN]>
+        -- 7: <[PLHD7_never_used_51bce0c785ca2f68081bfa7d91973934]>
+        -- 8: <[PLHD8_never_used_51bce0c785ca2f68081bfa7d91973934]>
+        -- 9: <[PLHD9_never_used_51bce0c785ca2f68081bfa7d91973934]>
+        -- 10: <[PLHD10_never_used_51bce0c785ca2f68081bfa7d91973934]>
+        --
+        --
         -- endoftext = "<|endoftext|>", --
 
         -- * other tokens in logs, consider as needed:
