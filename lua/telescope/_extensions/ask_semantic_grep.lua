@@ -252,12 +252,8 @@ function semantic_grep_current_filetype_picker(opts)
         if match.start_line_base0 then
             -- show base1 for humans
             local start_line_base1 = match.start_line_base0 + 1
-            if match.start_column_base0 then
-                local start_column_base1 = match.start_column_base0 + 1
-                coordinates = string.format(":%s:%s:", start_line_base1, start_column_base1)
-            else
-                coordinates = string.format(":%s:", start_line_base1)
-            end
+            coordinates = string.format(":%s", start_line_base1)
+            -- FYI using :# means I can control+click in iterm to open the result in a new window
         end
         local path_display = path_abs(entry.filename)
         -- TODO use ratio of window width to figure out limits?
