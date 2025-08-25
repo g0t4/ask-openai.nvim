@@ -1,11 +1,37 @@
+from dataclasses import dataclass, field
+from typing import Optional
 import aiofiles
 from pathlib import Path
+
+import yaml
 from .logs import get_logger
 
 logger = get_logger(__name__)
 
+@dataclass
+class Config:
+    ignores: list[str] = field(default_factory=list)
+    include: list[str] = field(default_factory=list)
+    all_languages: list[str] = field(default_factory=list)
+
+    @staticmethod
+    def default() -> "Config":
+        return Config(
+            include=["lua", "py", "fish"],  #
+        )
+
+def load_config(yaml_text: str) -> Config:
+    raw = yaml.safe_load(yaml_text)
+
+    return Config(
+        ignores=raw.get("ignores") or [],
+        include=raw.get("include") or [],
+        all_languages=raw.get("all_languages") or [],
+    )
+
 root_path: Path | None = None
 dot_rag_dir: Path | None = None
+config: Config = Config.default()
 
 # *** by the way I am not 100% certain I like this module... but lets see how it goes
 #   I need a simple way to get a path relative to the workspace dir
@@ -18,7 +44,7 @@ def is_no_rag_dir() -> bool:
     return not dot_rag_dir.exists()
 
 def set_root_dir(root: str | Path | None):
-    global root_path, dot_rag_dir
+    global root_path, dot_rag_dir, config
 
     if root is None:
         logger.error(f"aborting on_initialize b/c missing client workspace dir, {root=}")
@@ -33,6 +59,18 @@ def set_root_dir(root: str | Path | None):
         raise RuntimeError("client does not have .rag dir")
 
     logger.debug(f"{dot_rag_dir=}")
+
+    # * config
+    rag_yaml = root_path / ".rag.yaml"
+    if rag_yaml.exists():
+        config = load_config(rag_yaml.read_text())
+        logger.pp_debug(f"found rag config: {rag_yaml}", config)
+    else:
+        logger.info(f"no rag config found {rag_yaml}, using default config")
+        config = Config.default()
+
+def get_config():
+    return config
 
 def relative_to_workspace(path: Path | str) -> Path:
     path = Path(path)

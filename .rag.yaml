@@ -1,10 +1,10 @@
 include:
-    lua:
-    py:
-    fish:
-    txt:
+    - lua
+    - py
+    - fish
+    - txt
 ignores:
     - "notes/"
 all_languages:
-    lua:
-    py:
+    - lua
+    - py
