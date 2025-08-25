@@ -117,6 +117,7 @@ function M._context_query(query, instruct, callback)
         vimFiletype = vim.bo.filetype,
         skip_same_file = true,
         topK = 3, -- TODO what do I want for FIM vs REWRITE? maybe a dial too?
+        embedTopK = 9,
         -- FYI some rewrites I might not want ANY RAG... maybe no context too
         -- PRN other file types? languages=all? knob too?
         -- actually, this is where RAG based picker action to add to context would be AWESOME
