@@ -5,6 +5,7 @@ from pathlib import Path
 from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.storage import load_all_datasets
 from lsp.inference.client.retrieval import *
+from lsp.fs import set_root_dir
 
 def format_score_percent(score: float) -> str:
     """score as percentage rounded to nearest 4 decimals"""
@@ -16,6 +17,7 @@ async def main():
     logger = get_logger(__name__)
 
     dot_rag_dir = Path("~/repos/github/g0t4/ask-openai.nvim/.rag").expanduser().absolute()
+    set_root_dir(dot_rag_dir.parent)
     datasets = load_all_datasets(dot_rag_dir)
 
     args = LSPRagQueryRequest(
