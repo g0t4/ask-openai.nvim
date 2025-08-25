@@ -161,7 +161,6 @@ async def semantic_grep(
     def rerank_document(chunk: LSPRankedMatch):
         # [file: utils.py | lines 120–145]
         file = relative_to_workspace(chunk.file)
-        logger.warn(f"rerank: {file}")
         start_line_base1 = chunk.start_line_base0 + 1
         end_line_base1 = chunk.end_line_base0 + 1
         return f"[ file: {file} | lines {start_line_base1}-{end_line_base1} ]\n" + chunk.text
