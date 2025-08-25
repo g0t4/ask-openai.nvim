@@ -219,6 +219,8 @@ function semantic_grep_current_filetype_picker(opts)
     }
     -- currently for ALL languages
     lsp_rag_request.languages = opts.languages
+    local all_languages = opts.languages == "ALL"
+
     local lsp_buffer_number = vim.api.nvim_get_current_buf()
 
     local displayer = entry_display.create {
@@ -290,8 +292,12 @@ function semantic_grep_current_filetype_picker(opts)
     end
 
     opts_previewer = {}
+    local prompt_title = 'semantic grep - filetype: ' .. vim.o.filetype
+    if all_languages then
+        prompt_title = 'semantic grep - ALL languages'
+    end
     picker = pickers:new({
-        prompt_title = 'semantic grep - for testing RAG queries',
+        prompt_title = prompt_title,
         sorting_strategy = 'ascending', -- default descending doesn't work right now due to bug with setting cursor position in results window
 
         finder = AsyncDynamicFinder:new({
