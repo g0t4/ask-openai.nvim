@@ -190,6 +190,11 @@ function M.ask_for_prediction()
 
                 -- lets report back some generation settings so I can see values used (defaults)
                 local parsed_sse = stats.parsed_sse
+                local model = parsed_sse.model
+                if model then
+                    table.insert(messages, "model: " .. model)
+                end
+
                 if parsed_sse.generation_settings then
                     -- for now just go directly to generation settings, I am fine with that until I settle on what I want...
                     --  and actually, until I parse other backends for these values (if/when I get those setup)
