@@ -7,7 +7,7 @@ require("ask-openai.backends.sse")
 
 -- * primary models I am testing (keep notes in MODELS.notes.md)
 -- local use_model = "qwen2.5-coder:7b-instruct-q8_0"
-local use_model = "ByteDance-Seed-Coder-8B-Base"
+local use_model = "bytedance-seed-coder-8b-base"
 -- local use_model = "gpt-oss:20b"
 -- local use_model = "qwen3-coder:30b-a3b-q8_0"
 --
@@ -143,7 +143,7 @@ function OllamaFimBackend:body_for()
         -- TODO! stop token isn't set! should I just remove this... I have them commented out in the other file linked here:
         body.options.stop = fim.qwen25coder.sentinel_tokens.fim_stop_tokens
         log:error("stop token: " .. vim.inspect(body.options.stop))
-    elseif string.find(body.model, "ByteDance-Seed-Coder-8B", nil, true) then
+    elseif string.find(body.model, "bytedance-seed-coder-8b", nil, true) then
         builder = function()
             return fim.bytedance_seed_coder.get_fim_prompt(self)
         end

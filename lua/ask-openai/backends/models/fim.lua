@@ -249,6 +249,8 @@ M.bytedance_seed_coder = {
         --     - PromptBuilder is key part, shows format used for retrieved code samples:
         --        https://github.com/microsoft/CodeT/blob/35f54d60b152cc31d134b788e702878ad613d9f7/RepoCoder/build_prompt.py#L24-L84
         --     - by the way RepoCoder primarily tested a two stage retrieve + gen process... whereby the model gets a second pass to generate the code after seeing the first pass
+        --   FYI I put the format below to try out
+        --     - just a hypothesis that Seed-Coder's repo level training data used the same/similar format... or something else amenable b/c they refer to the eval in the SeedCoder paper and link to RepoCoder for that
         --
         --
         -- repo_name = "<|repo_name|>", --
@@ -276,12 +278,72 @@ M.bytedance_seed_coder = {
 
 ---@param request OllamaFimBackend
 function M.bytedance_seed_coder.get_fim_prompt(request)
-    -- https://github.com/ByteDance-Seed/Seed-Coder
-    -- FYI! see fim.md for extensive FIM notes
+    -- FYI! see bytedance_seed_coder_notes.md
     local tokens = M.bytedance_seed_coder.sentinel_tokens
+    -- TLDR => issues with stop_token... rambles endlessly so this format must not be that close too what was trained
+    --   whereas some initial testing with file_sep showed it was stopping (only issue was stop token / text changed a few times but it stopped)
+    --   NEXT UP... go back to qwen25coder format and try that
 
+    local comment = ''
+    if vim.bo.filetype == "python" then
+        comment = '# '
+    elseif vim.bo.filetype == "lua" then
+        comment = '-- '
+    else
+        error(" only lua and python supported for RepoCoder FIM at this time")
+    end
 
-    local prompt = ""
+    local seperator = comment .. ('_'):rep(50) .. '\n'
+    -- it would 100% make sense to have a separator token instead of 50 dashes!
+
+    local any_repo_files = false
+    local repo_files = {
+        -- FYI use explicit \n so there's no mistake on concat
+        comment .. "Here are some relevant code fragments from other files of the repo:\n",
+        seperator,
+    }
+
+    --- @param context_item ContextItem
+    local function append_file_non_fim_RepoCoder(context_item)
+        any_repo_files = true
+        local lines = vim.split(context_item.content, '\n')
+        -- FYI would need to adjust comment format to be language specific!
+        local commented_out_content = vim.iter(lines)
+            :map(function(line)
+                return comment .. line
+            end)
+            :join("\n")
+
+        vim.list_extend(repo_files, {
+            comment .. 'the below code fragment can be found in:\n',
+            comment .. context_item.filename .. "\n",
+            seperator,
+            commented_out_content,
+            seperator,
+
+            -- TODO change to # too?
+        })
+    end
+
+    if request.context.includes.yanks and request.context.yanks then
+        append_file_non_fim_RepoCoder(request.context.yanks)
+    end
+
+    if request.context.includes.matching_ctags and request.context.matching_ctags then
+        append_file_non_fim_RepoCoder(request.context.matching_ctags)
+    end
+
+    if request.rag_matches then
+        vim.iter(request.rag_matches)
+            :each(function(chunk)
+                ---@cast chunk LSPRankedMatch
+                local file_name_with_line_range = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
+                append_file_non_fim_RepoCoder({
+                    filename = file_name_with_line_range,
+                    content = chunk.text
+                })
+            end)
+    end
 
     -- * FIM file
     local current_file_relative_path = request.inject_file_path_test_seam()
@@ -290,58 +352,27 @@ function M.bytedance_seed_coder.get_fim_prompt(request)
         current_file_relative_path = ""
     end
 
-
-    -- others dicussing what has worked for repo level FIM with bytedance seed coder:
-    --   https://github.com/ByteDance-Seed/Seed-Coder/issues/12
-    -- TODO try mutli-file using this format by prepend to prefix, or append to suffix
-    --   <[fim-suffix]>File2suffix, File3, File4<[fim-prefix]>File1,File2prefix<[fim-middle]>
-    --   and do what with filenames? just inject contents?
-    --
-    -- --- @param context_item ContextItem
-    -- local function append_file_non_fim(context_item)
-    --     -- <file_sep>filepath0\ncode0
-    --     local non_fim_file = tokens.file_sep .. context_item.filename .. "\n"
-    --         .. context_item.content
-    --     prompt = prompt .. non_fim_file
-    -- end
-    --
-    -- if request.context.includes.yanks and request.context.yanks then
-    --     append_file_non_fim(request.context.yanks)
-    -- end
-    --
-    -- if request.context.includes.matching_ctags and request.context.matching_ctags then
-    --     append_file_non_fim(request.context.matching_ctags)
-    -- end
-    --
-    -- if request.context.includes.project and request.context.project then
-    --     vim.iter(request.context.project)
-    --         :each(append_file_non_fim)
-    -- end
-    --
-    -- if request.rag_matches then
-    --     vim.iter(request.rag_matches)
-    --         :each(function(chunk)
-    --             ---@cast chunk LSPRankedMatch
-    --             local file_name = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
-    --             local non_fim_file = tokens.file_sep .. file_name .. "\n" .. chunk.text
-    --             prompt = prompt .. non_fim_file
-    --         end)
-    -- end
-
-    -- * SPM (better for prompt caching)
-    -- https://github.com/ByteDance-Seed/Seed-Coder/blob/master/Seed-Coder.pdf
-    -- <[fim-suffix]>SUFFIX<[fim-prefix]>PREFIX<[fim-middle]>MIDDLE
-    local fim_file_contents = ""
+    -- * SPM
+    local fim_file_contents = ''
+        -- PRN show FIM file path commented out?
         -- tokens.file_sep
         -- .. current_file_relative_path
         -- .. "\n"
+        --
+        -- fyi, no newlines
         .. tokens.fim_suffix
         .. request.suffix
         .. tokens.fim_prefix
         .. request.prefix
         .. tokens.fim_middle
 
-    return prompt .. fim_file_contents
+    local prompt_lines = {}
+    if any_repo_files then
+        vim.list_extend(prompt_lines, repo_files)
+        table.insert(prompt_lines, '"""Based on above, complete the following code:"""')
+    end
+    table.insert(prompt_lines, fim_file_contents)
+    return table.concat(prompt_lines, "\n")
 end
 
 M.mellum = {
