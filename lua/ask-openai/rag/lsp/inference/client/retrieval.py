@@ -158,7 +158,11 @@ async def semantic_grep(
     matches.sort(key=lambda c: len(c.text))
 
     def rerank_document(chunk: LSPRankedMatch):
-        return chunk.text
+        # [file: utils.py | lines 120–145]
+        file = Path(chunk.file).relative_to(Path.cwd())
+        start_line_base1 = chunk.start_line_base0 + 1
+        end_line_base1 = chunk.end_line_base0 + 1
+        return f"[ file: {file} | lines {start_line_base1}-{end_line_base1} ]\n" + chunk.text
 
     # * rerank batches
     BATCH_SIZE = 8
