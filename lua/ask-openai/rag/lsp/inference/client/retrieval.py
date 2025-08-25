@@ -51,7 +51,7 @@ class LSPRagQueryRequest:
 async def semantic_grep(
     args: LSPRagQueryRequest,
     # TODO! fix datasets to not be so yucky
-    datasets: Datasets | None = None,
+    datasets: Datasets,
     stopper: Stopper = FAKE_STOPPER,
 ) -> list[LSPRankedMatch]:
     all_languages = args.languages == "ALL"
@@ -72,10 +72,6 @@ async def semantic_grep(
     with logger.timer("encoding query"):
         query_vector = await encode_query(args.query, instruct)
         stopper.throw_if_stopped()  # PRN add in cancel/stop logic... won't matter though if the real task isn't cancellable (and just keeps running to completion)
-
-    if datasets is None:
-        logger.error("DATASETS must be loaded and passed")
-        raise Exception("MISSING DATASET(S) PLURAL")
 
     # * search embeddings
     if all_languages:
