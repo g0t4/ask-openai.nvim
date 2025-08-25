@@ -82,7 +82,8 @@ async def semantic_grep(
         ids = []
         for str, ds in datasets.all_datasets.items():
             logger.warn(f"searching {str} index")
-            _topk = round(query_embed_top_k / len(datasets.all_datasets))
+            # TODO how about actually not quite split evenly? maybe /N*1.5 ?
+            _topk = round(1.5 * query_embed_top_k / len(datasets.all_datasets))
             _scores, _ids = ds.index.search(query_vector, _topk)
             scores.extend(_scores[0])
             ids.extend(_ids[0])
