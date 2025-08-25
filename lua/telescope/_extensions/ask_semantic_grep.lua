@@ -175,13 +175,6 @@ local sort_by_score = sorters.Sorter:new {
     ---@param entry SemanticGrepTelescopeEntryMatch
     scoring_function = function(_self, prompt, ordinal, entry, cb_add, cb_filter)
         -- 0 <= score <= 1
-        -- print("prompt: " .. vim.inspect(prompt))
-        -- print("ordinal: " .. vim.inspect(ordinal))
-        -- print("entry: " .. vim.inspect(entry))
-        -- print("cb_add: " .. vim.inspect(cb_add))
-        -- print("cb_filter: " .. vim.inspect(cb_filter))
-
-        -- reverse order with 1-... IIUC this is in part b/c I have to use ascending sorting_strategy to workaround that bug with default (descending)
         return entry.match.rerank_rank
     end,
 
@@ -202,7 +195,6 @@ local get_icon_for_chunk_type = function(chunk_type)
     elseif chunk_type == "lines" then
         return ""
     end
-    -- TODO sub type the treesitter matches into functions, classes, etc ... and show icon to help? or is that overkill given SIG will clearly show what is what, most likely
 end
 
 function semantic_grep_current_filetype_picker(opts)
