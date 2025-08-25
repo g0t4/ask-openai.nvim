@@ -157,12 +157,15 @@ async def semantic_grep(
     # so similar lengths are batched together given longest text (in tokens) dictates sequence length
     matches.sort(key=lambda c: len(c.text))
 
+    def rerank_document(chunk: LSPRankedMatch):
+        return chunk.text
+
     # * rerank batches
     BATCH_SIZE = 8
     for batch_num in range(0, len(matches), BATCH_SIZE):
         stopper.throw_if_stopped()
         batch = matches[batch_num:batch_num + BATCH_SIZE]
-        docs = [c.text for c in batch]
+        docs = [rerank_document(c) for c in batch]
         logger.info(f"{args.msg_id} re-rank batch {batch_num} len={len(batch)}")
 
         async with AsyncInferenceClient() as client:
