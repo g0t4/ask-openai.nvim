@@ -206,9 +206,6 @@ local get_icon_for_chunk_type = function(chunk_type)
 end
 
 function semantic_grep_current_filetype_picker(opts)
-    -- TODO do I want all languages to be configurable in .rag.yaml?
-    vim.print("opts: " .. vim.inspect(opts))
-
     -- * this runs before picker opens, so you can gather context, i.e. current filetype, its LSP, etc
     ---@type LSPRagQueryRequest
     local lsp_rag_request = {
