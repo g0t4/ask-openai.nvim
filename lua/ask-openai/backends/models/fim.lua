@@ -277,7 +277,32 @@ M.bytedance_seed_coder = {
 }
 
 ---@param request OllamaFimBackend
-function M.bytedance_seed_coder.get_fim_prompt(request)
+function M.bytedance_seed_coder.get_fim_prompt_file_level_only(request)
+    -- FYI file level works well for Seed-Coder
+
+    local tokens = M.bytedance_seed_coder.sentinel_tokens
+    -- * SPM
+    local file_level_prompt_only = ''
+        -- PRN show FIM file path commented out?
+        -- tokens.file_sep
+        -- .. current_file_relative_path
+        -- .. "\n"
+        --
+        -- fyi, no newlines
+        .. tokens.fim_suffix
+        .. request.suffix
+        .. tokens.fim_prefix
+        .. request.prefix
+        .. tokens.fim_middle
+
+    return file_level_prompt_only
+end
+
+---@param request OllamaFimBackend
+function M.bytedance_seed_coder.get_fim_prompt_repo_level(request)
+    -- FYI this is NOT working well! not yet anyways!
+    --    gotta find the format they trained with, for multiple files (repo level training data)
+
     -- FYI! see bytedance_seed_coder_notes.md
     local tokens = M.bytedance_seed_coder.sentinel_tokens
     -- TLDR => issues with stop_token... rambles endlessly so this format must not be that close too what was trained

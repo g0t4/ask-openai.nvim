@@ -145,7 +145,8 @@ function OllamaFimBackend:body_for()
         log:error("stop token: " .. vim.inspect(body.options.stop))
     elseif string.find(body.model, "bytedance-seed-coder-8b", nil, true) then
         builder = function()
-            return fim.bytedance_seed_coder.get_fim_prompt(self)
+            return fim.bytedance_seed_coder.get_fim_prompt_file_level_only(self)
+            -- return fim.bytedance_seed_coder.get_fim_prompt_repo_level(self)
         end
         -- body.options.stop = fim.qwen25coder.sentinel_tokens.fim_stop_tokens
         -- log:error("stop token: " .. vim.inspect(body.options.stop))
