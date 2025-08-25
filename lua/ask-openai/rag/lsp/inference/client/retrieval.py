@@ -109,7 +109,7 @@ async def semantic_grep(
 
     # * lookup matching chunks (filter any exclusions on metadata)
     matches: list[LSPRankedMatch] = []
-    count = 0
+    num_embeds = 0
     for idx, (id, embed_score) in enumerate(zip(ids, scores)):
 
         chunk = datasets.get_chunk_by_faiss_id(id)
@@ -144,8 +144,8 @@ async def semantic_grep(
 
         matches.append(match)
 
-        count += 1
-        if count >= embed_top_k:
+        num_embeds += 1
+        if num_embeds >= embed_top_k:
             # this is the case when we need to skipSameFile
             # over query with query_embed_top_k
             # stop taking embeddings at embed_top_k (often is a multiple too for re-rank to select top_k)
