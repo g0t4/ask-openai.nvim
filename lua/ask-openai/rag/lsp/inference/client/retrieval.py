@@ -6,7 +6,7 @@ from lsp.inference.client.embedder import encode_query
 from lsp.stoppers import Stopper
 from lsp.storage import Datasets
 from lsp.inference.client import *
-from lsp.fs import relative_to_workspace
+from lsp.fs import get_config, relative_to_workspace
 
 @dataclass
 class LSPRankedMatch:
@@ -81,15 +81,35 @@ async def semantic_grep(
     if all_languages:
         scores = []
         ids = []
-        for str, ds in datasets.all_datasets.items():
-            logger.warn(f"searching {str} index")
+
+        # * top_k_per_lang
+        # crude calculations for splitting top_k... these can and will be changed long-term
+        #   consider just configuring how much per language in the all_languages config list (make each a configurable object)
+        config = get_config()
+        filter_languages = config.all_languages and len(config.all_languages) > 0
+        if filter_languages:
+            num_languages = 0
+            for lang in config.all_languages:
+                if lang in datasets.all_datasets:
+                    num_languages += 1
+        else:
+            num_languages = len(datasets.all_datasets)
+        if num_languages == 0:
+            logger.error(f"all_languages={config.all_languages}, but no datasets match")
+            raise Exception(f"all_languages={config.all_languages}, but no datasets match")
+        top_k_per_lang = round(1.5 * query_embed_top_k / num_languages)
+        logger.info(f"{top_k_per_lang=}")
+
+        for lang, ds in datasets.all_datasets.items():
+            if filter_languages and lang not in config.all_languages:
+                logger.debug(f"skipping language: {lang}")
+                continue
+
+            logger.info(f"searching {lang} index")
             # TODO how about actually not quite split evenly? maybe /N*1.5 ?
-            _topk = round(1.5 * query_embed_top_k / len(datasets.all_datasets))
-            _scores, _ids = ds.index.search(query_vector, _topk)
+            _scores, _ids = ds.index.search(query_vector, top_k_per_lang)
             scores.extend(_scores[0])
             ids.extend(_ids[0])
-            # logger.warn(f"{_ids}")
-        # TODO get .rag.yaml for list of languages to use for all languages
         # PRN sort scores/ids by score ... nice to have but not critical b/c this only affects embeddings ranking
     else:
         dataset = datasets.for_file(args.currentFileAbsolutePath, vim_filetype=args.vimFiletype)
@@ -102,10 +122,10 @@ async def semantic_grep(
         ids = ids[0]
         scores = scores[0]
 
-    logger.warn(f"ids len {len(ids)}")
-    logger.warn(f"scores len {len(scores)}")
-    logger.warn(f'{ids=}')
-    logger.warn(f'{scores=}')
+    logger.info(f"ids len {len(ids)}")
+    # logger.info(f"scores len {len(scores)}")
+    # logger.info(f'{ids=}')
+    # logger.info(f'{scores=}')
 
     # * lookup matching chunks (filter any exclusions on metadata)
     matches: list[LSPRankedMatch] = []
