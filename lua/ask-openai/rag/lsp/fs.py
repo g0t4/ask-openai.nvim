@@ -56,7 +56,7 @@ def set_root_dir(root: str | Path | None):
     dot_rag_dir = Path(root_path) / ".rag"
     if is_no_rag_dir():
         logger.error(f"abort on_initialize b/c no .rag dir, {dot_rag_dir=}")
-        raise RuntimeError("client does not have .rag dir")
+        # no need to do anything else, the LS server handles setting no capabilities
 
     logger.debug(f"{dot_rag_dir=}")
 
