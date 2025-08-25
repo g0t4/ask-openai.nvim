@@ -115,7 +115,7 @@ function M._context_query(query, instruct, callback)
         instruct = instruct,
         currentFileAbsolutePath = files.get_current_file_absolute_path(),
         vimFiletype = vim.bo.filetype,
-        skip_same_file = true,
+        skipSameFile = true,
         topK = 3, -- TODO what do I want for FIM vs REWRITE? maybe a dial too?
         embedTopK = 9,
         -- FYI some rewrites I might not want ANY RAG... maybe no context too
