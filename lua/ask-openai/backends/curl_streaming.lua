@@ -158,10 +158,9 @@ M.on_line_or_lines = function(data, parse_choice, frontend, request)
 
                 -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
                 local chunk = parse_choice(first_choice)
-                if chunk and frontend.process_chunk then
-                    -- FYI checks for process_chunk b/c ask doesn't use this interface anymore
-                    -- TODO RENAME process_chunk
-                    frontend.process_chunk(chunk, sse_parsed)
+                if chunk and frontend.on_generated_text then
+                    -- FYI checks for on_generated_text b/c ask doesn't use this interface anymore
+                    frontend.on_generated_text(chunk, sse_parsed)
                 end
             end
             -- FYI not every SSE has to have generated tokens (choices), no need to warn
@@ -182,7 +181,7 @@ function M.on_delta_update_message_history(choice, frontend, request)
     -- rebuilds message as if sent `stream: false`
     -- for message history / follow up
     -- TODO later, use to update the ChatWindow
-    --    == rip out the original pathways that called process_chunk / etc
+    --    == rip out the original pathways that called on_generated_text / etc
     --    KEEP DeltaArrived signal though (refreshes/rebuilds ChatWindow)
 
 

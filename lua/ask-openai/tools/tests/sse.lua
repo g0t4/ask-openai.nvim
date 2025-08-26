@@ -16,15 +16,15 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         -- create a table and attach methods
         local f = setmetatable({}, { __index = self })
 
-        f.process_chunk_calls = {}
+        f.on_generated_text_calls = {}
         f.process_finish_reason_calls = {}
 
         -- if I make actual frontends into a class.. then I can break these out:
         --   but for now I need the closure to get to "self" which is "f" here
         --   b/c I am not calling with ":" and likely wont ever
 
-        function f.process_chunk(chunk)
-            table.insert(f.process_chunk_calls, chunk)
+        function f.on_generated_text(chunk)
+            table.insert(f.on_generated_text_calls, chunk)
         end
 
         function f.process_finish_reason(reason)

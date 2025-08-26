@@ -66,13 +66,13 @@ local function ensure_new_lines_around(code, response_lines)
 end
 
 function M.handle_messages_updated()
-    -- ?? replace process_chunk?...
+    -- ?? replace on_generated_text?...
     --   get entire current refactor from the denormalizer?
     --   OR I can pass the latest chunk still...
     --   do smth in the normalizer for that or still have a sep pathway per delta (no chunkin though?)
 end
 
-function M.process_chunk(chunk)
+function M.on_generated_text(chunk)
     if not chunk then return end
 
     M.accumulated_chunks = M.accumulated_chunks .. chunk
@@ -393,7 +393,7 @@ and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
                 }
             }
         end
-        M.process_chunk(cur_word, simulated_sse)
+        M.on_generated_text(cur_word, simulated_sse)
 
         -- delay and do next
         -- FYI can adjust interval to visually slow down and see what is happening with each chunk, s/b especially helpful with streaming diff
@@ -421,7 +421,7 @@ local function simulate_rewrite_instant_one_chunk(opts)
             prompt_n = 400,
         }
     }
-    M.process_chunk(full_rewrite, simulated_sse)
+    M.on_generated_text(full_rewrite, simulated_sse)
 end
 
 local function ask_and_stream_from_ollama(opts)
@@ -447,13 +447,13 @@ function M.handle_request_failed(code)
     -- this is for AFTER the request completes and curl exits
     vim.schedule(function()
         -- for now just write into buffer is fine
-        M.process_chunk("\nerror: request failed with code: " .. code)
+        M.on_generated_text("\nerror: request failed with code: " .. code)
     end)
 end
 
 function M.on_stderr_data(text)
     vim.schedule(function()
-        M.process_chunk("\n" .. text)
+        M.on_generated_text("\n" .. text)
     end)
 end
 
