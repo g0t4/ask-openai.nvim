@@ -11,8 +11,8 @@ function M.curl_for(body, base_url, frontend)
     end
 
     local function parse_choice(choice)
-        if choice.text == nil then
-            log:warn("WARN - unexpected, no choice in completion, do you need to add special logic to handle this?")
+        if choice == nil or choice.text == nil then
+            -- just skip if no (first) choice or no text on it (i.e. last SSE is often timing only)
             return ""
         end
         return choice.text

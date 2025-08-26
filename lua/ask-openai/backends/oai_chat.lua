@@ -12,8 +12,11 @@ function M.curl_for(body, base_url, frontend)
         -- TODO return reasoning if already extracted?
         -- choice.delta.reasoning?/thinking? ollama splits this out, IIUC LM Studio does too... won't work if using harmony format with gpt-oss and its not parsed
 
-        if choice.delta == nil or choice.delta.content == nil or choice.delta.content == vim.NIL then
-            log:warn("WARN - unexpected, no delta in completion choice, what gives?!")
+        if choice == nil
+            or choice.delta == nil
+            or choice.delta.content == nil
+            or choice.delta.content == vim.NIL
+        then
             return ""
         end
         return choice.delta.content
