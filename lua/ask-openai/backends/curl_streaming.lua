@@ -9,7 +9,7 @@ function M.terminate(request)
     LastRequest.terminate(request)
 end
 
-function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
+function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backend)
     local request = LastRequest:new(body)
 
     body.stream = true
@@ -79,9 +79,9 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
         end
 
         -- TODO extract error handling: both the xpcall + traceback, and the print_error func below
-        -- FYI good test case is to comment out: choice.delta.content == vim.NIL in parse_choice
+        -- FYI good test case is to comment out: choice.delta.content == vim.NIL in extract_generated_text
         local success, result = xpcall(function()
-            M.on_line_or_lines(data, parse_choice, frontend, request)
+            M.on_line_or_lines(data, extract_generated_text, frontend, request)
         end, function(e)
             -- otherwise only get one line from the traceback (frame that exception was thrown)
             return debug.traceback(e, 3)
@@ -129,7 +129,7 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
     return request
 end
 
-M.on_line_or_lines = function(data, parse_choice, frontend, request)
+M.on_line_or_lines = function(data, extract_generated_text, frontend, request)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
@@ -157,11 +157,11 @@ M.on_line_or_lines = function(data, parse_choice, frontend, request)
                 M.on_delta_update_message_history(first_choice, frontend, request)
                 frontend.handle_messages_updated()
 
-                -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
-                local chunk = parse_choice(first_choice)
-                if chunk and frontend.on_generated_text then
+                -- only rewrite uses this... and that may not change (not sure denormalizer makes sense for rewrites)
+                local generated_text = extract_generated_text(first_choice)
+                if generated_text and frontend.on_generated_text then
                     -- FYI checks for on_generated_text b/c ask doesn't use this interface anymore
-                    frontend.on_generated_text(chunk, sse_parsed)
+                    frontend.on_generated_text(generated_text, sse_parsed)
                 end
             end
             -- FYI not every SSE has to have generated tokens (choices), no need to warn

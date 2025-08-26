@@ -10,7 +10,7 @@ function M.curl_for(body, base_url, frontend)
         return
     end
 
-    local function parse_choice(choice)
+    local function extract_generated_text(choice)
         if choice == nil or choice.text == nil then
             -- just skip if no (first) choice or no text on it (i.e. last SSE is often timing only)
             return ""
@@ -18,7 +18,7 @@ function M.curl_for(body, base_url, frontend)
         return choice.text
     end
 
-    return curl.reusable_curl_seam(body, url, frontend, parse_choice, M)
+    return curl.reusable_curl_seam(body, url, frontend, extract_generated_text, M)
 end
 
 M.terminate = curl.terminate
