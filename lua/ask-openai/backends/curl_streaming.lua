@@ -25,6 +25,7 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
             "-X", "POST",
             url,
             "-H", "Content-Type: application/json",
+            "-H", "Authorization: Bearer " .. os.getenv("OPENAI_API_KEY"),
             "-d", json
         },
     }
