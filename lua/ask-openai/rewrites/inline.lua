@@ -303,8 +303,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
         local gptoss_chat_body_llama_server_chat_completions = {
             messages = messages,
-            -- model = "openai/gpt-oss-20b",
-            model = "openai/gpt-oss-120b",
+            model = "", -- irrelevant for llama-server
             temperature = 0.3, -- 0.3 to 0.6?
         }
 
@@ -312,8 +311,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         -- local body = qwen_chat_body
         local body = gptoss_chat_body_llama_server_chat_completions
 
-        -- local base_url = "http://ollama:8013"
-        local base_url = "https://api.groq.com/openai"
+        local base_url = "http://ollama:8013"
 
         M.last_request = backend.curl_for(body, base_url, M)
     end

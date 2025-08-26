@@ -1,3 +1,11 @@
+## groq.com
+
+```lua
+local base_url = "https://api.groq.com/openai"
+model = "openai/gpt-oss-20b", -- 1000 tokens/sec
+model = "openai/gpt-oss-120b", -- 500 tokens/sec
+```
+
 # Model notes for rewrites / questions (not completions)
 
          model = "qwen2.5-coder:7b-instruct-q8_0",
@@ -12,4 +20,3 @@
 
          model = "gemma3:12b-it-q8_0",
         -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
-
