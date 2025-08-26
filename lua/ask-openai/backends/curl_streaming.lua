@@ -25,10 +25,17 @@ function M.reusable_curl_seam(body, url, frontend, parse_choice, backend)
             "-X", "POST",
             url,
             "-H", "Content-Type: application/json",
-            "-H", "Authorization: Bearer " .. os.getenv("OPENAI_API_KEY"),
             "-d", json
         },
     }
+    -- -- PRN use configuration/caching for this (various providers from original cmdline help feature)
+    -- -- for now, just uncomment this when testing:
+    -- api_key = os.getenv("OPENAI_API_KEY")
+    -- if api_key then
+    --     table.insert(options.args, "-H")
+    --     table.insert(options.args, "Authorization: Bearer " .. api_key)
+    -- end
+
     -- PRN could use bat -l sh for this one:
     -- log:warn("curl args: ", table.concat(options.args, " "))
 
