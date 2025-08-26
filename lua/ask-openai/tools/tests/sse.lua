@@ -34,6 +34,9 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         function f.handle_messages_updated()
         end
 
+        function f.on_sse_llama_server_timings(parsed)
+        end
+
         return f
     end
 

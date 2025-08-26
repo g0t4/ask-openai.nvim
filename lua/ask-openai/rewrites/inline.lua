@@ -72,7 +72,7 @@ function M.handle_messages_updated()
     --   do smth in the normalizer for that or still have a sep pathway per delta (no chunkin though?)
 end
 
-function M.process_chunk(chunk, sse)
+function M.process_chunk(chunk)
     if not chunk then return end
 
     M.accumulated_chunks = M.accumulated_chunks .. chunk
@@ -96,39 +96,44 @@ function M.process_chunk(chunk, sse)
     vim.schedule(function()
         M.displayer:on_response(M.selection, lines)
     end)
+end
 
-    if sse and sse.timings then
-        -- llama-server timing/stats on final SSE
-        local t = sse.timings
-        local pps = math.floor(t.predicted_per_second * 10 + 0.5) / 10
-        log:info("Tokens/sec: ", pps, " predicted n: ", t.predicted_n)
-
-        vim.schedule(function()
-            -- PRN move into dispatcher where this belongs w/ diff preview
-            local current_cursor_row_1based, _ = unpack(vim.api.nvim_win_get_cursor(0))
-            local current_cursor_row_0based = current_cursor_row_1based - 2
-            if current_cursor_row_0based < 0 then current_cursor_row_0based = 0 end
-
-            local virt_text = {
-                {
-                    string.format(
-                        "Tokens/sec: %.1f predicted n: %d | Prompt Tokens/sec: %.1f prompt n: %d",
-                        pps,
-                        t.predicted_n,
-                        t.prompt_per_second,
-                        t.prompt_n
-                    ),
-                    "AskStats",
-                },
-            }
-
-            vim.api.nvim_buf_set_extmark(0, M.displayer.marks.namespace_id, current_cursor_row_0based, 0, {
-                virt_text = virt_text,
-                virt_text_pos = "eol",
-                hl_mode = "combine",
-            })
-        end)
+function M.on_sse_llama_server_timings(sse)
+    -- FYI coupled to llama-server timings
+    if sse == nil or sse.timings == nil then
+        return
     end
+
+    -- llama-server timing/stats on final SSErewritein
+    local t = sse.timings
+    local pps = math.floor(t.predicted_per_second * 10 + 0.5) / 10
+    log:info("Tokens/sec: ", pps, " predicted n: ", t.predicted_n)
+
+    vim.schedule(function()
+        -- PRN move into dispatcher where this belongs w/ diff preview
+        local current_cursor_row_1based, _ = unpack(vim.api.nvim_win_get_cursor(0))
+        local current_cursor_row_0based = current_cursor_row_1based - 2
+        if current_cursor_row_0based < 0 then current_cursor_row_0based = 0 end
+
+        local virt_text = {
+            {
+                string.format(
+                    "Tokens/sec: %.1f predicted n: %d | Prompt Tokens/sec: %.1f prompt n: %d",
+                    pps,
+                    t.predicted_n,
+                    t.prompt_per_second,
+                    t.prompt_n
+                ),
+                "AskStats",
+            },
+        }
+
+        vim.api.nvim_buf_set_extmark(0, M.displayer.marks.namespace_id, current_cursor_row_0based, 0, {
+            virt_text = virt_text,
+            virt_text_pos = "eol",
+            hl_mode = "combine",
+        })
+    end)
 end
 
 function M.handle_request_completed()

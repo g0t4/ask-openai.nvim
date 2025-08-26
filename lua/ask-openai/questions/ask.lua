@@ -232,6 +232,10 @@ local function format_role(role)
     return "**" .. (role or "") .. "**"
 end
 
+function M.on_sse_llama_server_timings(sse)
+    -- PRN use this to extract timing like in rewrites
+end
+
 function M.handle_messages_updated()
     -- TODO rename last_request to just request? or current_request?
     if not M.thread.last_request.messages then

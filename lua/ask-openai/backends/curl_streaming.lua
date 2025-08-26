@@ -145,21 +145,30 @@ M.on_line_or_lines = function(data, parse_choice, frontend, request)
         if ss_event:sub(1, 6) == "data: " then
             event_json = ss_event:sub(7)
         end
-        local success, parsed = pcall(vim.json.decode, event_json)
+        local success, sse_parsed = pcall(vim.json.decode, event_json)
 
-        if success and parsed and parsed.choices and parsed.choices[1] then
-            local first_choice = parsed.choices[1]
+        if success and sse_parsed then
+            if sse_parsed.choices and sse_parsed.choices[1] then
+                local first_choice = sse_parsed.choices[1]
+                -- OK if no first_choice
 
-            -- IIUC this is just message history related
-            M.on_delta_update_message_history(first_choice, frontend, request)
-            frontend.handle_messages_updated()
+                -- IIUC this is just message history related
+                M.on_delta_update_message_history(first_choice, frontend, request)
+                frontend.handle_messages_updated()
 
-            -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
-            local chunk = parse_choice(first_choice)
-            if chunk and frontend.process_chunk then
-                frontend.process_chunk(chunk, parsed)
+                -- KEEP THIS FOR rewrite to keep working (until its ported to use denormalizer):
+                local chunk = parse_choice(first_choice)
+                if chunk and frontend.process_chunk then
+                    -- FYI checks for process_chunk b/c ask doesn't use this interface anymore
+                    -- TODO RENAME process_chunk
+                    frontend.process_chunk(chunk, sse_parsed)
+                end
             end
+            -- FYI not every SSE has to have generated tokens (choices), no need to warn
 
+            if sse_parsed.timings then
+                frontend.on_sse_llama_server_timings(sse_parsed)
+            end
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
