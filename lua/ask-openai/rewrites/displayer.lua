@@ -168,6 +168,11 @@ function Displayer:on_response(selection, lines)
 
     -- delete original lines (that way only diff shows in extmarks)
     if not self.removed_original_lines then
+        -- TODO! IIUC there's a bug in this code when selection goes through last line in file
+        --   reproduce with linewise (shift+v) then arrow down through to last line
+        --   trigger rewrite and you will see it doesn't replace the text on that last line
+        --   this also might be a column issue with linewise? I recall funky behavior in nvim APIs with diff selection modes
+
         -- keep in mind, doing this before/after set extmarks matters
         -- ? any issues with going past end of file for this end exclusive scenario?
         local end_line_exclusive_0i = end_line_0i + 1
