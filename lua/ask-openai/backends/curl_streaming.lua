@@ -163,6 +163,8 @@ M.on_line_or_lines = function(data, extract_generated_text, frontend, request)
                     -- FYI checks for on_generated_text b/c ask doesn't use this interface anymore
                     frontend.on_generated_text(generated_text, sse_parsed)
                 end
+
+                -- PRN on_reasoning_text ... choice.delta.reasoning?/thinking? ollama splits this out, IIUC LM Studio does too... won't work if using harmony format with gpt-oss that isnt' parsed
             end
             -- FYI not every SSE has to have generated tokens (choices), no need to warn
 

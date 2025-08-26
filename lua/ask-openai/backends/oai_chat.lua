@@ -8,10 +8,6 @@ function M.curl_for(body, base_url, frontend)
     local function extract_generated_text(choice)
         -- NOW I have access to request (url, body.model, etc) to be able to dynamically swap in the right SSE parser!
         --   I could even add another function that would handle aggregating and transforming the raw response (i.e. for harmony) into aggregate views (i.e. of thinking and final responses), also trigger events that way
-
-        -- TODO return reasoning if already extracted?
-        -- choice.delta.reasoning?/thinking? ollama splits this out, IIUC LM Studio does too... won't work if using harmony format with gpt-oss and its not parsed
-
         if choice == nil
             or choice.delta == nil
             or choice.delta.content == nil
