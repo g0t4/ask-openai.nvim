@@ -152,7 +152,8 @@ M.on_line_or_lines = function(data, parse_choice, frontend, request)
                 local first_choice = sse_parsed.choices[1]
                 -- OK if no first_choice
 
-                -- IIUC this is just message history related
+                -- IIRC this is only ask questions currently
+                --   ? if I don't need this in rewrites, THEN, push this back down into asks via on_generated_text
                 M.on_delta_update_message_history(first_choice, frontend, request)
                 frontend.handle_messages_updated()
 
