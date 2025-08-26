@@ -1,3 +1,4 @@
+require("ask-openai.helpers.test_setup").modify_package_path()
 local rewrites = require("ask-openai.rewrites.inline")
 local assert = require("luassert")
 
@@ -7,7 +8,6 @@ local assert = require("luassert")
 --   right now it breaks on my werkspace plugin needing nvim-tree ... which I don't give a F about in these tests
 
 describe("test model responses", function()
-
     it("should give correct results for simple prompt", function()
         local code = "def add(x, y):"
         local filename = "add.py"
@@ -38,5 +38,4 @@ describe("test model responses", function()
         local hasComment = string.match(response, '# This is a comment')
         assert.is_not_nil(hasComment, 'response does not have original comment')
     end)
-
 end)
