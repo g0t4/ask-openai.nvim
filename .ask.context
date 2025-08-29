@@ -1,1 +1,3 @@
+## code preferences
+- lua: snake_case by default, only PascalCase with classes/modules
 
