@@ -60,7 +60,7 @@ describe("get_visual_selection()", function()
         it("linewise visual mode - selected last two lines thru end of file", function()
             load_lines({ "one", "two", "three", "four", "five" })
 
-            vim.cmd(':4') -- second V exits
+            vim.cmd(':4')
             vim.cmd(':normal! VjV') -- second V exits
             local selection = get_selection()
             should.be_equal("four\nfive", selection.original_text)
@@ -70,7 +70,7 @@ describe("get_visual_selection()", function()
         it("linewise visual mode - selected first two lines - start of file", function()
             load_lines({ "one", "two", "three", "four", "five" })
 
-            vim.cmd(':1') -- second V exits
+            vim.cmd(':1')
             vim.cmd('normal! VjV') -- second V exits
             local selection = get_selection()
             should.be_equal("one\ntwo", selection.original_text)
@@ -80,7 +80,7 @@ describe("get_visual_selection()", function()
         it("linewise visual mode - multiple lines selected in middle of buffer", function()
             load_lines({ "one", "two", "three", "four", "five" })
 
-            vim.cmd(':2') -- second V exits
+            vim.cmd(':2')
             vim.cmd('normal! V2jV') -- second V exits
             local selection = get_selection()
             should.be_equal("two\nthree\nfour", selection.original_text)
