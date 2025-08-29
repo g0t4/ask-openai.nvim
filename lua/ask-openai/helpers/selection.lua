@@ -81,7 +81,14 @@ function Selection._get_visual_selection_for_window_id(window_id)
         elseif last_visualmode == "V" then
             -- TODO
         else
-            -- TODO
+            -- return empty @ current cursor position
+            local row_1indexed, col_0indexed = unpack(vim.api.nvim_win_get_cursor(0))
+            start_line_1indexed = row_1indexed
+            start_col_1indexed = col_0indexed + 1
+            -- copy to end position
+            end_line_1indexed = start_line_1indexed
+            end_col_1indexed = start_col_1indexed
+            return Selection:new({}, start_line_1indexed, start_col_1indexed, end_line_1indexed, end_col_1indexed)
         end
     end
 
@@ -92,19 +99,12 @@ function Selection._get_visual_selection_for_window_id(window_id)
 
     -- getpos returns a byte index, getcharpos() returns a char index
     -- * getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
+    -- CRAP! getcharpos might be an issue.. b/c it is char wise... so if I have a tab it will count as 1 not 4 chars
+    --
     local _, start_line_1indexed, start_col_1indexed, _ = unpack(vim.fn.getcharpos("'<"))
     -- start_line/start_col are 1-indexed (from register value)
     local _, end_line_1indexed, end_col_1indexed, _ = unpack(vim.fn.getcharpos("'>"))
-    if start_line_1indexed == 0 and start_col_1indexed == 0 and end_line_1indexed == 0 and end_col_1indexed == 0 then
-        log:info("no selection, using cursor position with empty selection")
-        local row_1indexed, col_0indexed = unpack(vim.api.nvim_win_get_cursor(0))
-        start_line_1indexed = row_1indexed
-        start_col_1indexed = col_0indexed + 1
-        -- copy to end position
-        end_line_1indexed = start_line_1indexed
-        end_col_1indexed = start_col_1indexed
-        return Selection:new({}, start_line_1indexed, start_col_1indexed, end_line_1indexed, end_col_1indexed)
-    end
+    -- print(vim.inspect({ start_line_1indexed = start_line_1indexed, start_col_1indexed = start_col_1indexed }))
 
     -- end_line/end_col are 1-indexed, end_col appears to be the cursor position at the end of a selection
     --
