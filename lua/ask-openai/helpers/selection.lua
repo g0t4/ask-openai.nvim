@@ -156,6 +156,7 @@ function Selection._get_visual_selection_for_window_id(window_id)
 
     -- getline is 1-indexed, end-inclusive (optional)
     local selected_lines = vim.fn.getline(start_line_1indexed, end_line_1indexed)
+    -- print(vim.inspect({ selected_lines = selected_lines }))
 
     if #selected_lines == 0 then
         log:info("HOW DID WE GET HERE!? this shouldn't happen!")
@@ -164,11 +165,14 @@ function Selection._get_visual_selection_for_window_id(window_id)
 
     -- Truncate the last line to the specified end column
     local last_line = selected_lines[#selected_lines]
+    -- print(vim.inspect({ last_line = last_line }))
     selected_lines[#selected_lines] = string.sub(last_line, 1, end_col_1indexed)
+    -- print(vim.inspect({ selected_lines = selected_lines }))
 
     -- Truncate the first line thru the specified start column
     local first_line = selected_lines[1]
     selected_lines[1] = string.sub(first_line, start_col_1indexed)
+    -- print(vim.inspect({ selected_lines = selected_lines }))
 
     local selection = Selection:new(selected_lines, start_line_1indexed, start_col_1indexed, end_line_1indexed, end_col_1indexed)
     selection:log_info("get_visual_selection():")
