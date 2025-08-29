@@ -67,6 +67,16 @@ describe("get_visual_selection()", function()
             should.be_equal("[r4,c1]-[r5,c4] 1-indexed", selection:range_str())
         end)
 
+        it("linewise visual mode - selected first two lines - start of file", function()
+            load_lines({ "one", "two", "three", "four", "five" })
+
+            vim.cmd(':1') -- second V exits
+            vim.cmd('normal! VjV') -- second V exits
+            local selection = get_selection()
+            should.be_equal("one\ntwo", selection.original_text)
+            should.be_equal("[r1,c1]-[r2,c3] 1-indexed", selection:range_str())
+        end)
+
         it("linewise visual mode - multiple lines selected", function()
             load_lines({ "one", "two", "three", "four", "five" })
 
