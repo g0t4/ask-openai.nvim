@@ -56,8 +56,8 @@ describe("get_visual_selection()", function()
             local selection = get_selection()
             -- TODO!!!! BROKEN TEST, has letter 'f'
             should.be_equal(selection.original_text, '')
-            assert(selection:is_empty())
             should.be_equal("[r1,c1]-[r1,c1] 1-indexed (empty)", selection:range_str())
+            assert(selection:is_empty())
         end)
 
         it("one line selected, only one in buffer", function()
