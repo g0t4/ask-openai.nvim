@@ -74,11 +74,14 @@ function Selection._get_visual_selection_for_window_id(window_id)
     if current_mode == "v" then
         local cursor_pos = vim.fn.getpos(".")
         local other_pos = vim.fn.getpos("v")
-        -- TODO
+        -- TODO col + lines
     elseif current_mode == "V" then
         local cursor_pos = vim.fn.getpos(".")
         local other_pos = vim.fn.getpos("v")
-        -- TODO
+        local line1 = unpack(cursor_pos)[2]
+        local line2 = unpack(other_pos)[2]
+        print(vim.inspect({ line1 = line1, line2 = line2 }))
+        -- TODO lines only
     else
         if last_visualmode == "v" then
             local start_pos = vim.fn.getpos("'<")

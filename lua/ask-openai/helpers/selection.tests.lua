@@ -104,6 +104,29 @@ describe("get_visual_selection()", function()
             should.be_equal("[r2,c1]-[r4,c4] 1-indexed", selection:range_str())
         end)
 
+        it("still in linewise 'V' visual mode", function()
+            load_lines({ "one", "two", "three", "four", "five" })
+            vim.cmd(':2')
+            vim.cmd(':normal! Vj') -- STILL in V mode, so no 2nd V
+            should.be_equal(vim.fn.mode(), "V")
+
+            local selection = get_selection()
+            should.be_equal("two\nthree", selection.original_text)
+            should.be_equal("[r2,c1]-[r3,c5] 1-indexed", selection:range_str())
+        end)
+
+        -- TODO! still in charwise 'v' visual mode
+        -- it("still in char-wise 'v' visual mode", function()
+        --     load_lines({ "one", "two", "three", "four", "five" })
+        --     vim.cmd(':2')
+        --     vim.cmd(':normal! 0vj') -- STILL in v mode, so no 2nd v
+        --     should.be_equal(vim.fn.mode(), "v")
+        --
+        --     local selection = get_selection()
+        --     should.be_equal("two\nt", selection.original_text)
+        --     should.be_equal("[r2,c1]-[r3,c1] 1-indexed", selection:range_str())
+        -- end)
+        --
         it("middle of a line", function()
             vim.cmd('normal! 0wvwv') -- second v completes selection
             -- print_all_lines_troubleshoot()
