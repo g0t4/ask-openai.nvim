@@ -72,13 +72,23 @@ function Selection._get_visual_selection_for_window_id(window_id)
     -- TODO use current_mode (if selection) to simplify getting lines for V (visual linewise), v (charwise), Ctrl-V (blockwise - not supported)
     -- if mode == "v" or "V" currently
     if current_mode == "v" then
+        local cursor_pos = vim.fn.getpos(".")
+        local other_pos = vim.fn.getpos("v")
         -- TODO
     elseif current_mode == "V" then
+        local cursor_pos = vim.fn.getpos(".")
+        local other_pos = vim.fn.getpos("v")
         -- TODO
     else
         if last_visualmode == "v" then
+            local start_pos = vim.fn.getpos("'<")
+            local end_pos = vim.fn.getpos("'>")
+            -- get char/line positions from getpos("'<") and getpos("'>")
             -- TODO
         elseif last_visualmode == "V" then
+            local start_pos = vim.fn.getpos("'<")
+            local end_pos = vim.fn.getpos("'>")
+            -- get lines from getpos("'<") and getpos("'>")
             -- TODO
         else
             -- return empty @ current cursor position
