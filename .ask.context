@@ -1,4 +1,5 @@
 ## code preferences
 - lua: snake_case by default, only PascalCase with classes/modules
+- python: snake_case by default, PascalCase for classes
 - when rewriting code, leave existing comments for unrelated code
 
