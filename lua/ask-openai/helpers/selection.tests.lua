@@ -242,6 +242,18 @@ describe("get_visual_selection()", function()
                 should.be_equal("[r1,c6]-[r3,c12] 1-indexed", resulting_selection:range_str())
             end)
         end)
+
+        -- FYI it is not mission critical to even have failure tests of Ctrl-V, just a keep in mind if it helps later
+        -- describe("Ctrl-V visual blockwise not supported", function()
+        --     it("visual blockwise (Ctrl-V) not supported", function()
+        --         vim.cmd('normal! <C-v>jj<C-v>') -- second v exits
+        --         -- -- by the way, just enabling visual mode selects the current character (under cursor)
+        --         -- \22 == visualmode() ?? why do I see empty then?
+        --         local selection = get_selection()
+        --         should.be_equal(selection.original_text, '')
+        --         should.be_equal("[r1,c1]-[r1,c1] 1-indexed (empty)", selection:range_str())
+        --     end)
+        -- end)
     end)
 end)
 
