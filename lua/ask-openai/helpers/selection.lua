@@ -68,7 +68,7 @@ end
 function Selection._get_visual_selection_for_window_id(window_id)
     local current_mode = vim.fn.mode()
     local last_visualmode = vim.fn.visualmode()
-    print(vim.inspect({ current_mode = current_mode, last_visualmode = last_visualmode }))
+    -- print(vim.inspect({ current_mode = current_mode, last_visualmode = last_visualmode }))
     -- TODO use current_mode (if selection) to simplify getting lines for V (visual linewise), v (charwise), Ctrl-V (blockwise - not supported)
     -- if mode == "v" or "V" currently
     if current_mode == "v" then
