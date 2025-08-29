@@ -78,10 +78,20 @@ function Selection._get_visual_selection_for_window_id(window_id)
     elseif current_mode == "V" then
         local cursor_pos = vim.fn.getpos(".")
         local other_pos = vim.fn.getpos("v")
-        local line1 = unpack(cursor_pos)[2]
-        local line2 = unpack(other_pos)[2]
+        print(vim.inspect({ cursor_pos = cursor_pos, other_pos = other_pos }))
+        local line1 = cursor_pos[2]
+        local line2 = other_pos[2]
+        -- if line1 > line2 then
+        --     TODO test this, don't just write it
+        --     local tmp = other_pos
+        --     other_pos = cursor_pos
+        --     cursor_pos = tmp
+        --     tmp = line1
+        --     line1 = line2
+        --     line2 = line1
+        -- end
         print(vim.inspect({ line1 = line1, line2 = line2 }))
-        -- TODO lines only
+        -- TODO lines only => so? 0/1 for first line, -1 for second? OR maybe have a diff selection that knows types? a selection for lines only vs char positions
     else
         if last_visualmode == "v" then
             local start_pos = vim.fn.getpos("'<")
