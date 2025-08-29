@@ -57,6 +57,15 @@ describe("get_visual_selection()", function()
             should.be_equal("[r1,c1]-[r1,c11] 1-indexed", selection:range_str())
         end)
 
+        it("linewise visual mode - multiple lines selected", function()
+            load_lines({ "one", "two", "three", "four", "five" })
+
+            vim.cmd('normal! V2jV') -- second V exits
+            local selection = get_selection()
+            should.be_equal("one\ntwo\nthree", selection.original_text)
+            should.be_equal("[r1,c1]-[r3,c5] 1-indexed", selection:range_str())
+        end)
+
         it("middle of a line", function()
             vim.cmd('normal! 0wvwv') -- second v completes selection
             -- print_all_lines_troubleshoot()
