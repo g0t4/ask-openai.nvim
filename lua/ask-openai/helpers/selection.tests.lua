@@ -31,7 +31,7 @@ end
 -- baz boo doo
 
 describe("get_visual_selection()", function()
-    describe("edge case hunting - only one line", function()
+    describe("edge case hunting", function()
         ---@diagnostic disable-next-line: unused-function
         local function print_all_lines_troubleshoot()
             -- for testing only
