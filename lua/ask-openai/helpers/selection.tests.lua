@@ -50,14 +50,13 @@ describe("get_visual_selection()", function()
             should.be_equal("[r1,c1]-[r1,c1] 1-indexed (empty)", selection:range_str())
         end)
 
-        it("empty char-wise selection - at first char, first line", function()
+        it("single char-wise selection - minimum selection size is a single char - at first char, first line", function()
             vim.cmd(':0')
             vim.cmd('normal! 0vv') -- second v exits
+            -- by the way, just enabling visual mode selects the current character (under cursor)
             local selection = get_selection()
-            -- TODO!!!! BROKEN TEST, has letter 'f'
-            should.be_equal(selection.original_text, '')
-            should.be_equal("[r1,c1]-[r1,c1] 1-indexed (empty)", selection:range_str())
-            assert(selection:is_empty())
+            should.be_equal(selection.original_text, 'f')
+            should.be_equal("[r1,c1]-[r1,c1] 1-indexed", selection:range_str())
         end)
 
         it("one line selected, only one in buffer", function()
