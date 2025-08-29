@@ -59,6 +59,14 @@ describe("get_visual_selection()", function()
             should.be_equal("[r1,c1]-[r1,c1] 1-indexed", selection:range_str())
         end)
 
+        it("single char-wise selection - end of document, last char of last line", function()
+            vim.cmd('normal! G$vv') -- second v exits
+            -- G = last line, $ end of line, v = enable selection on last char of last line
+            local selection = get_selection()
+            should.be_equal(selection.original_text, 'r')
+            should.be_equal("[r1,c11]-[r1,c11] 1-indexed", selection:range_str())
+        end)
+
         it("one line selected, only one in buffer", function()
             vim.cmd('normal! VV') -- second V exits
             local selection = get_selection()
