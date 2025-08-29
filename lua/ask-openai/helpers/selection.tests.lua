@@ -50,6 +50,16 @@ describe("get_visual_selection()", function()
             should.be_equal("[r1,c1]-[r1,c1] 1-indexed (empty)", selection:range_str())
         end)
 
+        it("empty char-wise selection - at first char, first line", function()
+            vim.cmd(':0')
+            vim.cmd('normal! 0vv') -- second v exits
+            local selection = get_selection()
+            -- TODO!!!! BROKEN TEST, has letter 'f'
+            should.be_equal(selection.original_text, '')
+            assert(selection:is_empty())
+            should.be_equal("[r1,c1]-[r1,c1] 1-indexed (empty)", selection:range_str())
+        end)
+
         it("one line selected, only one in buffer", function()
             vim.cmd('normal! VV') -- second V exits
             local selection = get_selection()
