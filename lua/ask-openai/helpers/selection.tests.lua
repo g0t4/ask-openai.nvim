@@ -57,6 +57,16 @@ describe("get_visual_selection()", function()
             should.be_equal("[r1,c1]-[r1,c11] 1-indexed", selection:range_str())
         end)
 
+        it("linewise visual mode - selected last two lines thru end of file", function()
+            load_lines({ "one", "two", "three", "four", "five" })
+
+            vim.cmd(':4') -- second V exits
+            vim.cmd(':normal! VjV') -- second V exits
+            local selection = get_selection()
+            should.be_equal("four\nfive", selection.original_text)
+            should.be_equal("[r4,c1]-[r5,c4] 1-indexed", selection:range_str())
+        end)
+
         it("linewise visual mode - multiple lines selected", function()
             load_lines({ "one", "two", "three", "four", "five" })
 
