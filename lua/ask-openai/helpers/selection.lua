@@ -72,38 +72,40 @@ function Selection._get_visual_selection_for_window_id(window_id)
     -- TODO use current_mode (if selection) to simplify getting lines for V (visual linewise), v (charwise), Ctrl-V (blockwise - not supported)
     -- if mode == "v" or "V" currently
     if current_mode == "v" then
-        local cursor_pos = vim.fn.getpos(".")
-        local other_pos = vim.fn.getpos("v")
-        -- TODO col + lines
+        -- local cursor_pos = vim.fn.getpos(".")
+        -- local other_pos = vim.fn.getpos("v")
+        -- -- TODO col + lines
     elseif current_mode == "V" then
-        local cursor_pos = vim.fn.getpos(".")
-        local other_pos = vim.fn.getpos("v")
-        print(vim.inspect({ cursor_pos = cursor_pos, other_pos = other_pos }))
-        local line1 = cursor_pos[2]
-        local line2 = other_pos[2]
-        -- if line1 > line2 then
-        --     TODO test this, don't just write it
-        --     local tmp = other_pos
-        --     other_pos = cursor_pos
-        --     cursor_pos = tmp
-        --     tmp = line1
-        --     line1 = line2
-        --     line2 = line1
-        -- end
-        print(vim.inspect({ line1 = line1, line2 = line2 }))
-        -- TODO lines only => so? 0/1 for first line, -1 for second? OR maybe have a diff selection that knows types? a selection for lines only vs char positions
+        -- -- TODO can I reuse this with last_visualmode too and just pass diff "'>" instead of "v" to helper function?
+        -- local cursor_pos = vim.fn.getpos(".")
+        -- local other_pos = vim.fn.getpos("v")
+        -- print(vim.inspect({ cursor_pos = cursor_pos, other_pos = other_pos }))
+        -- local line1 = cursor_pos[2]
+        -- local line2 = other_pos[2]
+        -- -- if line1 > line2 then
+        -- --     TODO test this, don't just write it
+        -- --     local tmp = other_pos
+        -- --     other_pos = cursor_pos
+        -- --     cursor_pos = tmp
+        -- --     tmp = line1
+        -- --     line1 = line2
+        -- --     line2 = line1
+        -- -- end
+        -- print(vim.inspect({ line1 = line1, line2 = line2 }))
+        -- -- TODO lines only => so? 0/1 for first line, -1 for second? OR maybe have a diff selection that knows types? a selection for lines only vs char positions
     else
         if last_visualmode == "v" then
-            local start_pos = vim.fn.getpos("'<")
-            local end_pos = vim.fn.getpos("'>")
-            -- get char/line positions from getpos("'<") and getpos("'>")
-            -- TODO
+            -- local start_pos = vim.fn.getpos("'<")
+            -- local end_pos = vim.fn.getpos("'>")
+            -- -- get char/line positions from getpos("'<") and getpos("'>")
+            -- -- TODO
         elseif last_visualmode == "V" then
-            local start_pos = vim.fn.getpos("'<")
-            local end_pos = vim.fn.getpos("'>")
-            -- get lines from getpos("'<") and getpos("'>")
-            -- TODO
+            -- local start_pos = vim.fn.getpos("'<")
+            -- local end_pos = vim.fn.getpos("'>")
+            -- -- get lines from getpos("'<") and getpos("'>")
+            -- -- TODO
         else
+            -- FYI this is handling empty case now!
             -- return empty @ current cursor position
             local row_1indexed, col_0indexed = unpack(vim.api.nvim_win_get_cursor(0))
             start_line_1indexed = row_1indexed
