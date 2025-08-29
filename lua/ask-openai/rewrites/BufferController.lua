@@ -74,20 +74,29 @@ function BufferController0Indexed:get_node_at_position(row, column)
     --   and convenient (i.e. class tracks buffer number)
 end
 
----@param start_row integer 0-indexed, set start=end to insert new_lines
----@param end_row integer 0-indexed, end-EXCLUSIV
+---@param start_row_base0 integer 0-indexed, set start=end to insert new_lines
+---@param end_row_inclusive_base0 integer 0-indexed, end-EXCLUSIV
 ---@param new_lines string[]
-function BufferController0Indexed:replace_lines(start_row, end_row, new_lines)
-    if end_row >= self:num_lines() then
+function BufferController0Indexed:replace_lines(start_row_base0, end_row_inclusive_base0, new_lines)
+    -- log:info(vim.inspect({ start_row_base0 = start_row_base0, end_row_inclusive_base0 = end_row_inclusive_base0, }))
+    if end_row_inclusive_base0 >= self:num_lines() then
         -- FYI this happens when testing fake prediction if you trigger it near the end of the buffer
         --   and the fake prediction is longer than the rest of the buffer
-        log:info('end_row is past end of buffer, clamping to end of buffer')
-        end_row = self:num_lines() - 1
+        log:error('end_row is past end of buffer, clamping to end of buffer.. should not happen IRL, only in testing')
+        end_row_inclusive_base0 = self:num_lines() - 1
     end
+    -- TODO why not use nvim_buf_set_lines?
+    --   right now I am just replacing lines anyways!
+    -- vim.api.nvim_buf_set_lines(
     vim.api.nvim_buf_set_text(self.buffer_number,
-        start_row, 0,
-        end_row, 0,
+        -- indexing is 0 based
+        start_row_base0, 0, -- 0 means first column
+        end_row_inclusive_base0, -1, -- -1 means through the last column of the end_row
         new_lines)
+    -- PRN tests:
+    -- 1. selection through end of file (last line) => linewise visual mode, also maybe char wise visual mode
+    --    - make sure last line is replaced
+    --    - bug that caused seemingly duplicated last line (b/c not replaced, so regenerated unchanged => duplicates it)
 end
 
 function BufferController0Indexed:num_lines()

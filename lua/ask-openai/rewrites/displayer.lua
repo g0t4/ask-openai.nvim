@@ -174,11 +174,9 @@ function Displayer:on_response(selection, lines)
         --   this also might be a column issue with linewise? I recall funky behavior in nvim APIs with diff selection modes
 
         -- keep in mind, doing this before/after set extmarks matters
-        -- ? any issues with going past end of file for this end exclusive scenario?
-        local end_line_exclusive_0i = end_line_0i + 1
         self.window:buffer():replace_lines(
             start_line_0i,
-            end_line_exclusive_0i, -- exclusive of this line
+            end_line_0i, -- inclusive
             -- insert a blank line, to overlay first_extmark_line, then rest of extmark_lines are below it
             { "", "" })
         self.removed_original_lines = true
