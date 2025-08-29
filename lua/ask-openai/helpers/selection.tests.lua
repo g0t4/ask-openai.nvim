@@ -42,7 +42,7 @@ describe("get_visual_selection()", function()
             load_lines({ "foo the bar" })
         end)
 
-        it("no selection => is empty", function()
+        it("no selections yet, should map to empty selection", function()
             -- nothing to do if its a new buffer/window
             local selection = get_selection()
             assert(selection:is_empty())
