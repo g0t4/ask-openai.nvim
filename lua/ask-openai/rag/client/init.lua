@@ -130,7 +130,12 @@ function M._context_query(query, instruct, callback)
     function on_server_response(err, result)
         if err then
             vim.notify("RAG query failed: " .. err.message, vim.log.levels.ERROR)
-            return
+            return -- TODO! callback with error? consumer might need to abort smth too
+        end
+
+        if result.error ~= nil and result.error ~= "" then
+            log:error("RAG query result has error property set, aborting...:", vim.inspect(result))
+            return -- TODO! callback with error? consumer might need to abort smth too
         end
 
         log:info("RAG matches (client):", vim.inspect(result))
