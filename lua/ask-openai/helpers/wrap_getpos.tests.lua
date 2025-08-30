@@ -71,13 +71,18 @@ describe("GetPos wrappers", function()
                 }, sel)
             end)
 
-            it("cursor was at START OF charwise selection - across two lines", function()
+            it("cursor was at START OF charwise selection - across two lines - start at end of longer line", function()
                 load_lines({ "one", "two", "three", "four", "five" })
                 vim.cmd(':3')
                 vim.cmd(':normal! $vjv') -- 2j = down two lines
                 should.be_equal(vim.fn.mode(), "n")
                 local sel = GetPos.LastSelection()
-
+                should.be_same_diff({
+                    start_line_b1 = 3,
+                    end_line_b1   = 4,
+                    start_col_b1  = 5, -- line 3 has 5 chars (thre[e])
+                    end_col_b1    = 5, -- ?? line 4 only has 4 chars but still b/c I was in col 5 I am still in it on line 4 after down
+                }, sel)
             end)
             it("cursor was at END of charwise selection - across two lines", function()
             end)
