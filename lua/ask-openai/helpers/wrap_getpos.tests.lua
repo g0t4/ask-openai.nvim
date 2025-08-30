@@ -4,8 +4,6 @@ local should = require('devtools.tests.should')
 local log = require("ask-openai.logs.logger").predictions()
 require('ask-openai.helpers.wrap_tests')
 require('ask-openai.helpers.wrap_getpos')
-local combined = require('devtools.diff.combined')
-require('ask-openai.rewrites.displayer')
 
 
 -- TODO split out these tests... I need a new wrapper around the low level methods I really never wanna touch ever again
@@ -34,14 +32,7 @@ describe("GetPos wrappers", function()
                     end_line_b1   = 3,
                     end_col_b1    = 2,
                 }
-                -- should.be_same(expected, actual)
-
-                expected_text = vim.inspect(expected)
-                actual_text = vim.inspect(actual)
-
-                local diff = combined.combined_word_diff(expected_text, actual_text)
-                -- inspect_diff looks GREAT in plenary's float window test results!
-                print("diff:\n" .. inspect_diff(diff))
+                should.be_same_diff(expected, actual)
             end)
 
             it("cursor at start of linewise selection - same as reverse", function()
