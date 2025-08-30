@@ -55,7 +55,9 @@ function CurrentContext:items(prompt, always_include)
         items.matching_ctags = matching_ctags.get_context_item()
     end
     if includes.project then
-        items.project = project.get_context_items()
+        -- PRN do I want "project" static file guidance for predictions or is it enough to let it go off of nearby code?
+        -- for now let's leave this out, I think it's more for major code changes in AskRewrite
+        -- items.project = project.get_context_items()
     end
 
     items.includes = includes
