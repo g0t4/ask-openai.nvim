@@ -39,6 +39,8 @@ describe("GetPos wrappers", function()
                     start_line_b1 = 2,
                     end_line_b1   = 3,
                     start_col_b1  = 1,
+                    -- TODO map to -1 for end col (aka end of line)... in fact that works in many test cases
+                    --   TODO OR map cols to nil when in V visual linewise mode?
                     end_col_b1    = 2147483647, -- this is fine actually... since I am in line wise mode anyways... col is meaningless
                 }, sel)
             end)
