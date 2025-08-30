@@ -25,11 +25,14 @@ describe("GetPos wrappers", function()
                 should.be_equal(1, col_base1)
 
                 local sel = GetPos.SelectionRange_Line1Col1()
-                should.be_equal(2, sel.start_line_b1)
-                should.be_equal(1, sel.start_col_b1)
-                should.be_equal(3, sel.end_line_b1)
-                should.be_equal(1, sel.end_col_b1)
+                should.be_same({
+                    start_line_b1 = 2,
+                    start_col_b1  = 1,
+                    end_line_b1   = 3,
+                    end_col_b1    = 1,
+                }, sel)
             end)
+
             it("cursor at start of linewise selection - same as reverse", function()
                 load_lines({ "one", "two", "three", "four", "five" })
                 vim.cmd(':3')
@@ -37,10 +40,12 @@ describe("GetPos wrappers", function()
                 should.be_equal(vim.fn.mode(), "V")
 
                 local sel = GetPos.SelectionRange_Line1Col1()
-                should.be_equal(2, sel.start_line_b1)
-                should.be_equal(1, sel.start_col_b1)
-                should.be_equal(3, sel.end_line_b1)
-                should.be_equal(1, sel.end_col_b1)
+                should.be_same({
+                    start_line_b1 = 2,
+                    start_col_b1  = 1,
+                    end_line_b1   = 3,
+                    end_col_b1    = 1,
+                }, sel)
             end)
             it("cursor at start of linewise selection - same as reverse", function()
                 load_lines({ "one", "two", "three", "four", "five" })
