@@ -124,23 +124,26 @@ function M._context_query(query, instruct, callback)
         --  that way I can quickly review RAG matches, thumbs up what I want and GO
     }
 
-    local _client_request_ids, _cancel_all_requests -- declare in advance just in case I wanna closure them in callback below
+    local _client_request_ids, _cancel_all_requests -- declare in advance for closure:
+
+    ---@param result LSPRagQueryResult
+    function on_response(err, result)
+        if err then
+            vim.notify("RAG query failed: " .. err.message, vim.log.levels.ERROR)
+            return
+        end
+
+        log:info("RAG matches (client):", vim.inspect(result))
+        local rag_matches = result.matches or {}
+        callback(rag_matches)
+    end
+
     _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", {
             command = "rag_query",
             -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
             arguments = { lsp_rag_request },
         },
-        ---@param result LSPRagQueryResult
-        function(err, result)
-            if err then
-                vim.notify("RAG query failed: " .. err.message, vim.log.levels.ERROR)
-                return
-            end
-
-            log:info("RAG matches (client):", vim.inspect(result))
-            local rag_matches = result.matches or {}
-            callback(rag_matches)
-        end)
+        on_response)
     return _client_request_ids, _cancel_all_requests
 end
 
