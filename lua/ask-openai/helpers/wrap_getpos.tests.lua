@@ -25,14 +25,14 @@ describe("GetPos wrappers", function()
                 should.be_equal(3, line_base1)
                 should.be_equal(1, col_base1)
 
-                local actual = GetPos.SelectionRange_Line1Col1()
+                local sel = GetPos.SelectionRange_Line1Col1()
                 local expected = {
                     start_line_b1 = 2,
                     start_col_b1  = 1,
                     end_line_b1   = 3,
                     end_col_b1    = 2,
                 }
-                should.be_same_diff(expected, actual)
+                should.be_same_diff(expected, sel)
             end)
 
             it("cursor at start of linewise selection - same as reverse", function()
@@ -42,7 +42,7 @@ describe("GetPos wrappers", function()
                 should.be_equal(vim.fn.mode(), "V")
 
                 local sel = GetPos.SelectionRange_Line1Col1()
-                should.be_same({
+                should.be_same_diff({
                     start_line_b1 = 2,
                     start_col_b1  = 1,
                     end_line_b1   = 3,
@@ -57,7 +57,7 @@ describe("GetPos wrappers", function()
 
                 local sel = GetPos.SelectionRange_Line1Col1()
                 -- FYI start_line=end_line, start_col=end_col for single line selection
-                should.be_same({
+                should.be_same_diff({
                     start_line_b1 = 3,
                     start_col_b1  = 1,
                     end_line_b1   = 3,
@@ -73,7 +73,7 @@ describe("GetPos wrappers", function()
                 local sel = GetPos.SelectionRange_Line1Col1()
                 -- FYI start_line=end_line, start_col=end_col for single line selection
                 -- nice thing about be_same and hash => shows sorted keys in output diff view
-                should.be_same({
+                should.be_same_diff({
                     start_line_b1 = 3,
                     end_line_b1 = 4,
                     start_col_b1 = 1,
@@ -83,7 +83,7 @@ describe("GetPos wrappers", function()
                 vim.cmd(":normal! 2l") -- move 2 chars right (only changes col of end position
                 sel = GetPos.SelectionRange_Line1Col1()
                 -- should.be_equal(3, sel.end_col_b1)
-                should.be_same({
+                should.be_same_diff({
                     start_line_b1 = 3,
                     end_line_b1 = 4,
                     start_col_b1 = 1,
