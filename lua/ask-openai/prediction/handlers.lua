@@ -250,7 +250,8 @@ function M.ask_for_prediction()
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
         local this_request_ids, cancel -- declare in advance so closure can access
-        this_request_ids, cancel = rag_client.context_query_fim(document_prefix, document_suffix, function(rag_matches)
+
+        function on_rag_response(rag_matches)
             -- * make sure prior (canceled) rag request doesn't still respond
             if M.rag_request_ids ~= this_request_ids then
                 -- I bet this is why sometimes I get completions that still fire even after cancel b/c the RAG results aren't actually stopped in time on server and so they come back
@@ -260,7 +261,9 @@ function M.ask_for_prediction()
                 return
             end
             send_fim(rag_matches)
-        end)
+        end
+
+        this_request_ids, cancel = rag_client.context_query_fim(document_prefix, document_suffix, on_rag_response)
         M.rag_cancel = cancel
         M.rag_request_ids = this_request_ids
     else
