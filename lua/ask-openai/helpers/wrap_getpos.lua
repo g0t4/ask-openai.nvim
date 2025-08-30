@@ -32,15 +32,22 @@ function GetPos.SelectionRange_Line1Col1()
     local dot_line_base1, dot_col_base1 = GetPos.Line1Col1(".")
     local v_line_base1, v_col_base1 = GetPos.Line1Col1("v")
 
+    local mode = vim.fn.mode()
+    local last_visual_mode = vim.fn.visualmode()
+    local linewise = mode == "V" or (mode ~= "v" and last_visual_mode == "V")
+
     local start_line, start_col, end_line, end_col
     if dot_line_base1 < v_line_base1 or (dot_line_base1 == v_line_base1 and dot_col_base1 <= v_col_base1) then
+        -- do the selection points refer to a linewise range OR charwise
+        -- charwise = opposite linewise
         return {
             start_line_b1    = dot_line_base1,
             start_col_b1     = dot_col_base1,
             end_line_b1      = v_line_base1,
             end_col_b1       = v_col_base1,
-            mode             = vim.fn.mode(),
-            last_visual_mode = vim.fn.visualmode(),
+            mode             = mode,
+            last_visual_mode = last_visual_mode,
+            linewise         = linewise,
         }
     else
         return {
@@ -48,8 +55,9 @@ function GetPos.SelectionRange_Line1Col1()
             start_col_b1     = v_col_base1,
             end_line_b1      = dot_line_base1,
             end_col_b1       = dot_col_base1,
-            mode             = vim.fn.mode(),
-            last_visual_mode = vim.fn.visualmode(),
+            mode             = mode,
+            last_visual_mode = last_visual_mode,
+            linewise         = linewise,
         }
     end
 end
@@ -60,13 +68,17 @@ end
 function GetPos.LastSelection()
     local lt_line_base1, lt_col_base1 = GetPos.Line1Col1("'<")
     local gt_line_base1, gt_col_base1 = GetPos.Line1Col1("'>")
+    local mode = vim.fn.mode()
+    local last_visual_mode = vim.fn.visualmode()
+    local linewise = mode == "V" or (mode ~= "v" and last_visual_mode == "V")
     return {
         start_line_b1 = lt_line_base1,
         start_col_b1 = lt_col_base1,
         end_line_b1 = gt_line_base1,
         end_col_b1 = gt_col_base1,
-        mode = vim.fn.mode(),
-        last_visual_mode = vim.fn.visualmode(),
+        mode = mode,
+        last_visual_mode = last_visual_mode,
+        linewise = linewise,
     }
 end
 
