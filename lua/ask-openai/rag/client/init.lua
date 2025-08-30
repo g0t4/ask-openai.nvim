@@ -126,21 +126,22 @@ function M._context_query(query, instruct, callback)
 
     ---@param result LSPRagQueryResult
     function on_server_response(err, result)
+        -- FYI do your best to log errors here so that code is not duplicated downstream
         if err then
             vim.notify("RAG query failed: " .. err.message, vim.log.levels.ERROR)
-            callback({}, true)
+            callback({}, true) -- still callback w/ no results
             return
         end
 
         if result.error ~= nil and result.error ~= "" then
-            log:error("RAG query result has error property set, aborting...:", vim.inspect(result))
-            callback({}, true)
+            log:error("RAG response error, still calling back: ", vim.inspect(result))
+            -- in the event matches are still returned, process them too... if server returns matches, use them!
+            callback(result.matches or {}, true)
             return
         end
 
         log:info("RAG matches (client):", vim.inspect(result))
-        local rag_matches = result.matches or {}
-        callback(rag_matches, false)
+        callback(result.matches or {}, false)
     end
 
     local params = {
