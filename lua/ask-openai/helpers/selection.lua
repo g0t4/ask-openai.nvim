@@ -70,10 +70,12 @@ function Selection._get_visual_selection_for_window_id(window_id)
     local last_visualmode = vim.fn.visualmode()
     -- print(vim.inspect({ current_mode = current_mode, last_visualmode = last_visualmode }))
     if current_mode == "v" then
+        -- TODO just type another 'v' :) as a stopgap solution? (then can use same code as not in visual mode below)
         -- local cursor_pos = vim.fn.getpos(".")
         -- local other_pos = vim.fn.getpos("v")
         -- -- TODO col + lines
     elseif current_mode == "V" then
+        -- TODO just type another 'V' :) as a stopgap solution? (then can use same code as not in visual mode below)
         -- -- TODO can I reuse this with last_visualmode too and just pass diff "'>" instead of "v" to helper function?
         -- local cursor_pos = vim.fn.getpos(".")
         -- local other_pos = vim.fn.getpos("v")
