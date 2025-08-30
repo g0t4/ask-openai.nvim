@@ -14,7 +14,7 @@ describe("GetPos wrappers", function()
 
     it("LastSelection", function()
         it("selection was closed", function()
-            it("cursor was at end of linewise selection", function()
+            it("cursor was at END of linewise selection", function()
                 load_lines({ "one", "two", "three", "four", "five" })
                 vim.cmd(':2')
                 vim.cmd(':normal! 0VjV') -- select this line and next
@@ -29,7 +29,7 @@ describe("GetPos wrappers", function()
                 }, sel)
             end)
 
-            it("cursor was at start of linewise selection", function()
+            it("cursor was at START of linewise selection", function()
                 load_lines({ "one", "two", "three", "four", "five" })
                 vim.cmd(':3')
                 vim.cmd(':normal! VkV') -- select this line and line above
@@ -41,6 +41,45 @@ describe("GetPos wrappers", function()
                     start_col_b1  = 1,
                     end_col_b1    = 2147483647, -- this is fine actually... since I am in line wise mode anyways... col is meaningless
                 }, sel)
+            end)
+
+
+            it("cursor was at START of charwise selection - on same line", function()
+                load_lines({ "one", "two", "three", "four", "five" })
+                vim.cmd(':2')
+                vim.cmd(':normal! 0v2lv') -- two chars right
+                should.be_equal(vim.fn.mode(), "n")
+                local sel = GetPos.LastSelection()
+                should.be_same_diff({
+                    start_line_b1 = 2,
+                    end_line_b1   = 2,
+                    start_col_b1  = 1,
+                    end_col_b1    = 3,
+                }, sel)
+            end)
+            it("cursor was at END of charwise selection - on same line", function()
+                load_lines({ "one", "two", "three", "four", "five" })
+                vim.cmd(':3')
+                vim.cmd(':normal! $v2hv') -- two chars left (from end of line)
+                should.be_equal(vim.fn.mode(), "n")
+                local sel = GetPos.LastSelection()
+                should.be_same_diff({
+                    start_line_b1 = 3,
+                    end_line_b1   = 3,
+                    start_col_b1  = 3,
+                    end_col_b1    = 5,
+                }, sel)
+            end)
+
+            it("cursor was at START OF charwise selection - across two lines", function()
+                load_lines({ "one", "two", "three", "four", "five" })
+                vim.cmd(':3')
+                vim.cmd(':normal! $vjv') -- 2j = down two lines
+                should.be_equal(vim.fn.mode(), "n")
+                local sel = GetPos.LastSelection()
+
+            end)
+            it("cursor was at END of charwise selection - across two lines", function()
             end)
         end)
     end)
