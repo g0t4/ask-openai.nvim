@@ -28,6 +28,7 @@ describe("GetPos wrappers", function()
                     end_col_b1       = 2147483647,
                     mode             = "n",
                     last_visual_mode = "V",
+                    linewise         = true,
                 }, sel)
             end)
 
@@ -46,6 +47,7 @@ describe("GetPos wrappers", function()
                     end_col_b1       = 2147483647, -- this is fine actually... since I am in line wise mode anyways... col is meaningless
                     mode             = "n",
                     last_visual_mode = "V",
+                    linewise         = true,
                 }, sel)
             end)
 
@@ -63,6 +65,7 @@ describe("GetPos wrappers", function()
                     end_col_b1       = 3,
                     mode             = "n",
                     last_visual_mode = "v",
+                    linewise         = false,
                 }, sel)
             end)
             it("cursor was at END of charwise selection - on same line", function()
@@ -78,6 +81,7 @@ describe("GetPos wrappers", function()
                     end_col_b1       = 5,
                     mode             = "n",
                     last_visual_mode = "v",
+                    linewise         = false,
                 }, sel)
             end)
             it("cursor was at END of charwise selection - across two lines - start at start of first", function()
@@ -93,6 +97,7 @@ describe("GetPos wrappers", function()
                     end_col_b1       = 1, -- started on col 1 so still on it in next row
                     mode             = "n",
                     last_visual_mode = "v",
+                    linewise         = false,
                 }, sel)
             end)
 
@@ -109,6 +114,7 @@ describe("GetPos wrappers", function()
                     end_col_b1       = 5, -- ?? line 4 only has 4 chars but still b/c I was in col 5 I am still in it on line 4 after down
                     mode             = "n",
                     last_visual_mode = "v",
+                    linewise         = false,
                 }, sel)
             end)
 
@@ -139,6 +145,7 @@ describe("GetPos wrappers", function()
                     end_col_b1       = 1,
                     mode             = "V",
                     last_visual_mode = "",
+                    linewise         = true,
                 }
                 should.be_same_diff(expected, sel)
             end)
@@ -157,6 +164,7 @@ describe("GetPos wrappers", function()
                     end_col_b1       = 1,
                     mode             = "V",
                     last_visual_mode = "",
+                    linewise         = true,
                 }, sel)
             end)
             it("cursor at start of linewise selection - same as reverse", function()
@@ -174,6 +182,7 @@ describe("GetPos wrappers", function()
                     end_col_b1       = 1,
                     mode             = "V",
                     last_visual_mode = "",
+                    linewise         = true,
                 }, sel)
             end)
             it("cursor at start of linewise selection - same as reverse", function()
@@ -186,12 +195,13 @@ describe("GetPos wrappers", function()
                 -- FYI start_line=end_line, start_col=end_col for single line selection
                 -- nice thing about be_same and hash => shows sorted keys in output diff view
                 should.be_same_diff({
-                    start_line_b1 = 3,
-                    end_line_b1 = 4,
-                    start_col_b1 = 1,
-                    end_col_b1 = 1,
-                    mode = "V",
+                    start_line_b1    = 3,
+                    end_line_b1      = 4,
+                    start_col_b1     = 1,
+                    end_col_b1       = 1,
+                    mode             = "V",
                     last_visual_mode = "",
+                    linewise         = true,
                 }, sel)
 
                 -- * move 2 chars right on second line, just tests how col works in linewise visual selection
@@ -199,12 +209,13 @@ describe("GetPos wrappers", function()
                 sel = GetPos.SelectionRange_Line1Col1()
                 -- should.be_equal(3, sel.end_col_b1)
                 should.be_same_diff({
-                    start_line_b1 = 3,
-                    end_line_b1 = 4,
-                    start_col_b1 = 1,
-                    end_col_b1 = 3,
-                    mode = "V",
+                    start_line_b1    = 3,
+                    end_line_b1      = 4,
+                    start_col_b1     = 1,
+                    end_col_b1       = 3,
+                    mode             = "V",
                     last_visual_mode = "",
+                    linewise         = true,
                 }, sel)
             end)
         end)
@@ -227,7 +238,7 @@ describe("GetPos wrappers", function()
                     end_col_b1       = 2,
                     mode             = "v", -- currently in a selection
                     last_visual_mode = "V", -- last selection was V... but doesn't  matter b/c we are currently selecting in v! and when its done it'll become last_visualmode
-
+                    linewise         = false,
                 }
                 should.be_same_diff(expected, sel)
             end)
