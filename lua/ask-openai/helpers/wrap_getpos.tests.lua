@@ -26,6 +26,7 @@ describe("GetPos wrappers", function()
                     end_line_b1   = 3,
                     start_col_b1  = 1,
                     end_col_b1    = 2147483647,
+                    mode          = "n",
                 }, sel)
             end)
 
@@ -42,6 +43,7 @@ describe("GetPos wrappers", function()
                     -- TODO map to -1 for end col (aka end of line)... in fact that works in many test cases
                     --   TODO OR map cols to nil when in V visual linewise mode?
                     end_col_b1    = 2147483647, -- this is fine actually... since I am in line wise mode anyways... col is meaningless
+                    mode          = "n",
                 }, sel)
             end)
 
@@ -57,6 +59,7 @@ describe("GetPos wrappers", function()
                     end_line_b1   = 2,
                     start_col_b1  = 1,
                     end_col_b1    = 3,
+                    mode          = "n",
                 }, sel)
             end)
             it("cursor was at END of charwise selection - on same line", function()
@@ -70,6 +73,7 @@ describe("GetPos wrappers", function()
                     end_line_b1   = 3,
                     start_col_b1  = 3,
                     end_col_b1    = 5,
+                    mode          = "n",
                 }, sel)
             end)
             it("cursor was at END of charwise selection - across two lines - start at start of first", function()
@@ -83,6 +87,7 @@ describe("GetPos wrappers", function()
                     end_line_b1   = 4,
                     start_col_b1  = 1,
                     end_col_b1    = 1, -- started on col 1 so still on it in next row
+                    mode          = "n",
                 }, sel)
             end)
 
@@ -97,6 +102,7 @@ describe("GetPos wrappers", function()
                     end_line_b1   = 4,
                     start_col_b1  = 5, -- line 3 has 5 chars (thre[e])
                     end_col_b1    = 5, -- ?? line 4 only has 4 chars but still b/c I was in col 5 I am still in it on line 4 after down
+                    mode          = "n",
                 }, sel)
             end)
 
@@ -125,6 +131,7 @@ describe("GetPos wrappers", function()
                     start_col_b1  = 1,
                     end_line_b1   = 3,
                     end_col_b1    = 1,
+                    mode          = "V",
                 }
                 should.be_same_diff(expected, sel)
             end)
@@ -141,6 +148,7 @@ describe("GetPos wrappers", function()
                     start_col_b1  = 1,
                     end_line_b1   = 3,
                     end_col_b1    = 1,
+                    mode          = "V",
                 }, sel)
             end)
             it("cursor at start of linewise selection - same as reverse", function()
@@ -156,6 +164,7 @@ describe("GetPos wrappers", function()
                     start_col_b1  = 1,
                     end_line_b1   = 3,
                     end_col_b1    = 1,
+                    mode          = "V",
                 }, sel)
             end)
             it("cursor at start of linewise selection - same as reverse", function()
@@ -171,7 +180,8 @@ describe("GetPos wrappers", function()
                     start_line_b1 = 3,
                     end_line_b1 = 4,
                     start_col_b1 = 1,
-                    end_col_b1 = 1
+                    end_col_b1 = 1,
+                    mode = "V",
                 }, sel)
 
                 -- * move 2 chars right on second line, just tests how col works in linewise visual selection
@@ -182,7 +192,8 @@ describe("GetPos wrappers", function()
                     start_line_b1 = 3,
                     end_line_b1 = 4,
                     start_col_b1 = 1,
-                    end_col_b1 = 3
+                    end_col_b1 = 3,
+                    mode = "V",
                 }, sel)
             end)
         end)

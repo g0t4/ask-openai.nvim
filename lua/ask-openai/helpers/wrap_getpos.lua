@@ -39,6 +39,7 @@ function GetPos.SelectionRange_Line1Col1()
             start_col_b1  = dot_col_base1,
             end_line_b1   = v_line_base1,
             end_col_b1    = v_col_base1,
+            mode          = vim.fn.mode()
         }
     else
         return {
@@ -46,6 +47,7 @@ function GetPos.SelectionRange_Line1Col1()
             start_col_b1  = v_col_base1,
             end_line_b1   = dot_line_base1,
             end_col_b1    = dot_col_base1,
+            mode          = vim.fn.mode()
         }
     end
 end
@@ -61,6 +63,7 @@ function GetPos.LastSelection()
         start_col_b1 = lt_col_base1,
         end_line_b1 = gt_line_base1,
         end_col_b1 = gt_col_base1,
+        mode = vim.fn.mode()
     }
 end
 
