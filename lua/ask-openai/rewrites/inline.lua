@@ -246,12 +246,6 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
     ---@param rag_matches LSPRankedMatch[]
     local function send_rewrite(rag_matches)
-        -- TODO wire up canceling of RAG if user cancels request
-        if enable_rag and rag_matches ~= nil and M.rag_cancel == nil then
-            log:error("rag_cancel is nil, assuming RAG was canceled") -- should be rare, but possible
-            return
-        end
-
         local messages = {
             { role = "system", content = system_prompt }
         }
@@ -322,11 +316,29 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
-        local request_ids, cancel =
-            rag_client.context_query_rewrites(user_prompt, code_context, send_rewrite)
+        local this_request_ids, cancel -- declare in advance for closure
+
+        ---@param rag_matches LSPRankedMatch[]
+        ---@param rag_failed boolean?
+        function on_rag_response(rag_matches, rag_failed)
+            -- * make sure prior (canceled) rag request doesn't still respond
+            if M.rag_request_ids ~= this_request_ids then
+                log:trace("possibly stale rag results, skipping: "
+                    .. vim.inspect({ global_rag_request_ids = M.rag_request_ids, this_request_ids = this_request_ids }))
+                return
+            end
+
+            if M.rag_cancel == nil then
+                log:error("rag appears to have been canceled, skipping on_rag_response rag_matches results...")
+                return
+            end
+
+            send_rewrite(rag_matches)
+        end
+
+        this_request_ids, cancel = rag_client.context_query_rewrites(user_prompt, code_context, send_rewrite)
         M.rag_cancel = cancel
-        M.rag_request_ids = request_ids
-        -- TODO!! make RAG cancellable like I did in semantic grep!
+        M.rag_request_ids = this_request_ids
     else
         M.rag_cancel = nil
         M.rag_request_ids = nil

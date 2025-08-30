@@ -86,19 +86,17 @@ _G.LSPRankedMatch = {}
 
 ---@param user_prompt string
 ---@param code_context string
----@param callback fun(matches: LSPRankedMatch[])
+---@param callback fun(matches: LSPRankedMatch[], failed: boolean)
 function M.context_query_rewrites(user_prompt, code_context, callback)
     -- FYI use user message for now as Instruct and selected code as the Query
-    -- local rewrite_instruct = "Modify the code as requested"
     local query = code_context
-    -- TODO is this how I want rewrites to work? for the RAG query? might be fine actually
     local instruct = user_prompt
     return M._context_query(query, instruct, callback)
 end
 
 ---@param document_prefix string
 ---@param document_suffix string
----@param callback fun(matches: LSPRankedMatch[])
+---@param callback fun(matches: LSPRankedMatch[], failed: boolean)
 function M.context_query_fim(document_prefix, document_suffix, callback)
     local fim_specific_instruct = "Complete the missing portion of code (FIM) based on the surrounding context (Fill-in-the-middle)"
     local query = fim_concat(document_prefix, document_suffix)
@@ -107,7 +105,7 @@ end
 
 ---@param query string # Query section only, no Instruct/Document
 ---@param instruct string # Instruct section only
----@param callback fun(matches: LSPRankedMatch[])
+---@param callback fun(matches: LSPRankedMatch[], failed: boolean)
 function M._context_query(query, instruct, callback)
     ---@type LSPRagQueryRequest
     local lsp_rag_request = {
@@ -130,17 +128,19 @@ function M._context_query(query, instruct, callback)
     function on_server_response(err, result)
         if err then
             vim.notify("RAG query failed: " .. err.message, vim.log.levels.ERROR)
-            return -- TODO! callback with error? consumer might need to abort smth too
+            callback({}, true)
+            return
         end
 
         if result.error ~= nil and result.error ~= "" then
             log:error("RAG query result has error property set, aborting...:", vim.inspect(result))
-            return -- TODO! callback with error? consumer might need to abort smth too
+            callback({}, true)
+            return
         end
 
         log:info("RAG matches (client):", vim.inspect(result))
         local rag_matches = result.matches or {}
-        callback(rag_matches)
+        callback(rag_matches, false)
     end
 
     local params = {
