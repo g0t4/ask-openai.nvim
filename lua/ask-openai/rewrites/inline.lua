@@ -326,8 +326,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             rag_client.context_query_rewrites(user_prompt, code_context, send_rewrite)
         M.rag_cancel = cancel
         M.rag_request_ids = request_ids
-        log:trace("RAG request ids: ", vim.inspect(request_ids))
-        log:trace("RAG cancel: ", cancel)
+        -- TODO!! make RAG cancellable like I did in semantic grep!
     else
         M.rag_cancel = nil
         M.rag_request_ids = nil
