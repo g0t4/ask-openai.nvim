@@ -50,6 +50,20 @@ function GetPos.SelectionRange_Line1Col1()
     end
 end
 
+---Returns the current selection in 1‑indexed line/column coordinates.
+---The order is always start → end regardless of cursor direction.
+---@return GetPosSelectionRange
+function GetPos.LastSelection()
+    local lt_line_base1, lt_col_base1 = GetPos.Line1Col1("'<")
+    local gt_line_base1, gt_col_base1 = GetPos.Line1Col1("'>")
+    return {
+        start_line_b1 = lt_line_base1,
+        start_col_b1 = lt_col_base1,
+        end_line_b1 = gt_line_base1,
+        end_col_b1 = gt_col_base1,
+    }
+end
+
 function GetPos.LastLineOfBuffer_Line1Col1()
     return GetPos.Line1Col1("$")
 end

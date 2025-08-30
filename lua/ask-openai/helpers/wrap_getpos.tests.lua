@@ -11,6 +11,40 @@ describe("GetPos wrappers", function()
     -- PRN incorporate settings for obscure details (when the need arises):
     --   :h * selection
     --   :h * virtualedit=all - position cursor past actual characters (i.e. g$ - end of screen line)
+
+    it("LastSelection", function()
+        it("selection was closed", function()
+            it("cursor was at end of linewise selection", function()
+                load_lines({ "one", "two", "three", "four", "five" })
+                vim.cmd(':2')
+                vim.cmd(':normal! 0VjV') -- select this line and next
+                should.be_equal(vim.fn.mode(), "n")
+
+                local sel = GetPos.LastSelection()
+                should.be_same_diff({
+                    start_line_b1 = 2,
+                    end_line_b1   = 3,
+                    start_col_b1  = 1,
+                    end_col_b1    = 1,
+                }, sel)
+            end)
+
+            it("cursor was at start of linewise selection", function()
+                load_lines({ "one", "two", "three", "four", "five" })
+                vim.cmd(':3')
+                vim.cmd(':normal! VkV') -- select this line and line above
+                should.be_equal(vim.fn.mode(), "n")
+                local sel = GetPos.LastSelection()
+                should.be_same_diff({
+                    start_line_b1 = 2,
+                    end_line_b1   = 3,
+                    start_col_b1  = 1,
+                    end_col_b1    = 1,
+                }, sel)
+            end)
+        end)
+    end)
+
     it("SelectionRange_Line1Col1", function()
         it("still selected", function()
             -- FYI this is probably rare to happen... I really should just close the mode and thus capture into '< and '>
