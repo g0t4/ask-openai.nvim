@@ -208,5 +208,29 @@ describe("GetPos wrappers", function()
                 }, sel)
             end)
         end)
+
+        it("still selected after previous selection too", function()
+            it("first is linewise V one line, then charwise two l (2 chars right)", function()
+                load_lines({ "one", "two", "three", "four", "five" })
+                vim.cmd(':2')
+                vim.cmd(':normal! 0VV') -- single linewise, in and out
+                should.be_equal(vim.fn.mode(), "n")
+                vim.cmd(':4')
+                vim.cmd(':normal! 0vl') -- charise, 2 chars
+                should.be_equal(vim.fn.mode(), "v")
+
+                local sel = GetPos.SelectionRange_Line1Col1()
+                local expected = {
+                    start_line_b1    = 4,
+                    start_col_b1     = 1,
+                    end_line_b1      = 4,
+                    end_col_b1       = 2,
+                    mode             = "v", -- currently in a selection
+                    last_visual_mode = "V", -- last selection was V... but doesn't  matter b/c we are currently selecting in v! and when its done it'll become last_visualmode
+
+                }
+                should.be_same_diff(expected, sel)
+            end)
+        end)
     end)
 end)
