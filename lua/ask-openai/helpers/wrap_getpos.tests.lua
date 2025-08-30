@@ -39,7 +39,7 @@ describe("GetPos wrappers", function()
                     start_line_b1 = 2,
                     end_line_b1   = 3,
                     start_col_b1  = 1,
-                    end_col_b1    = 2147483647,
+                    end_col_b1    = 2147483647, -- this is fine actually... since I am in line wise mode anyways... col is meaningless
                 }, sel)
             end)
         end)
