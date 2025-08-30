@@ -40,7 +40,8 @@ describe("GetPos wrappers", function()
                 actual_text = vim.inspect(actual)
 
                 local diff = combined.combined_word_diff(expected_text, actual_text)
-                log:info("diff:\n" .. inspect_diff(diff))
+                -- inspect_diff looks GREAT in plenary's float window test results!
+                print("diff:\n" .. inspect_diff(diff))
             end)
 
             it("cursor at start of linewise selection - same as reverse", function()
