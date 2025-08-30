@@ -143,6 +143,8 @@ describe("get_visual_selection()", function()
         -- I should do some high level tests so I could swap out getcharpos if needed?
     end)
 
+    -- TODO split out these tests... I need a new wrapper around the low level methods I really never wanna touch ever again
+
     describe("still in visual mode", function()
         -- PRN if I want current mode checks, add these tests, though right now I don't think I have a direct need for these other than completeness of selection utility
         -- it("still in linewise 'V' visual mode - cursor position is AFTER other position", function()
