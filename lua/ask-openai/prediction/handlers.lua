@@ -256,9 +256,8 @@ function M.ask_for_prediction()
                 return
             end
 
-            if enable_rag and rag_matches ~= nil and M.rag_cancel == nil then
-                -- PRN I might not need this exact check now that I check this_request_ids above... TBD review
-                log:error("rag_cancel is nil, assuming RAG was canceled") -- should be rare, but possible
+            if M.rag_cancel == nil then
+                log:error("rag appears to have been canceled, skipping on_rag_response rag_matches results...")
                 return
             end
 
