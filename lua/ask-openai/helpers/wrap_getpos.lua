@@ -5,9 +5,9 @@ end, { desc = "Print cursor position (getpos)" })
 
 
 
+--- wrapper for getpos(expr)
 _G.GetPos = {}
 
---- getpos(".")
 function GetPos.CursorPosition_Line1Col1()
     return GetPos.Line1Col1(".")
 end
