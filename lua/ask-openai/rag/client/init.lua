@@ -124,7 +124,8 @@ function M._context_query(query, instruct, callback)
         --  that way I can quickly review RAG matches, thumbs up what I want and GO
     }
 
-    local _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", {
+    local _client_request_ids, _cancel_all_requests -- declare in advance just in case I wanna closure them in callback below
+    _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", {
             command = "rag_query",
             -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
             arguments = { lsp_rag_request },
