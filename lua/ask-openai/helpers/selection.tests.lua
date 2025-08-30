@@ -31,7 +31,7 @@ end
 -- baz boo doo
 
 describe("get_visual_selection()", function()
-    describe("edge case hunting", function()
+    describe("not in visual mode", function()
         ---@diagnostic disable-next-line: unused-function
         local function print_all_lines_troubleshoot()
             -- for testing only
@@ -105,43 +105,6 @@ describe("get_visual_selection()", function()
         end)
 
 
-        -- PRN if I want current mode checks, add these tests, though right now I don't think I have a direct need for these other than completeness of selection utility
-        -- it("still in linewise 'V' visual mode - cursor position is AFTER other position", function()
-        --     load_lines({ "one", "two", "three", "four", "five" })
-        --     vim.cmd(':2')
-        --     vim.cmd(':normal! Vj') -- STILL in V mode, so no 2nd V
-        --     should.be_equal(vim.fn.mode(), "V")
-        --
-        --     local selection = get_selection()
-        --     should.be_equal("two\nthree", selection.original_text)
-        --     should.be_equal("[r2,c1]-[r3,c5] 1-indexed", selection:range_str())
-        -- end)
-        --
-        -- it("still in linewise 'V' visual mode - cursor position is BEFORE other position", function()
-        --     load_lines({ "one", "two", "three", "four", "five" })
-        --     vim.cmd(':2')
-        --     vim.cmd(':normal! Vk') -- STILL in V mode, so no 2nd V
-        --     should.be_equal(vim.fn.mode(), "V")
-        --
-        --     local selection = get_selection()
-        --     should.be_equal("two\nthree", selection.original_text)
-        --     -- TODO should I have a diff selection type that only tracks lines b/c its a linewise selection object? makes more sense to me
-        --     --    or use -1 for col of last line?
-        --     should.be_equal("[11,c1]-[r2,c3] 1-indexed", selection:range_str())
-        -- end)
-        --
-        -- -- TODO! still in charwise 'v' visual mode
-        -- it("still in char-wise 'v' visual mode", function()
-        --     load_lines({ "one", "two", "three", "four", "five" })
-        --     vim.cmd(':2')
-        --     vim.cmd(':normal! 0vj') -- STILL in v mode, so no 2nd v
-        --     should.be_equal(vim.fn.mode(), "v")
-        --
-        --     local selection = get_selection()
-        --     should.be_equal("two\nt", selection.original_text)
-        --     should.be_equal("[r2,c1]-[r3,c1] 1-indexed", selection:range_str())
-        -- end)
-
         it("middle of a line", function()
             vim.cmd('normal! 0wvwv') -- second v completes selection
             -- print_all_lines_troubleshoot()
@@ -179,6 +142,46 @@ describe("get_visual_selection()", function()
         -- * getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
         -- I should do some high level tests so I could swap out getcharpos if needed?
     end)
+
+    describe("still in visual mode", function()
+        -- PRN if I want current mode checks, add these tests, though right now I don't think I have a direct need for these other than completeness of selection utility
+        -- it("still in linewise 'V' visual mode - cursor position is AFTER other position", function()
+        --     load_lines({ "one", "two", "three", "four", "five" })
+        --     vim.cmd(':2')
+        --     vim.cmd(':normal! Vj') -- STILL in V mode, so no 2nd V
+        --     should.be_equal(vim.fn.mode(), "V")
+        --
+        --     local selection = get_selection()
+        --     should.be_equal("two\nthree", selection.original_text)
+        --     should.be_equal("[r2,c1]-[r3,c5] 1-indexed", selection:range_str())
+        -- end)
+        --
+        -- it("still in linewise 'V' visual mode - cursor position is BEFORE other position", function()
+        --     load_lines({ "one", "two", "three", "four", "five" })
+        --     vim.cmd(':2')
+        --     vim.cmd(':normal! Vk') -- STILL in V mode, so no 2nd V
+        --     should.be_equal(vim.fn.mode(), "V")
+        --
+        --     local selection = get_selection()
+        --     should.be_equal("two\nthree", selection.original_text)
+        --     -- TODO should I have a diff selection type that only tracks lines b/c its a linewise selection object? makes more sense to me
+        --     --    or use -1 for col of last line?
+        --     should.be_equal("[11,c1]-[r2,c3] 1-indexed", selection:range_str())
+        -- end)
+        --
+        -- -- TODO! still in charwise 'v' visual mode
+        -- it("still in char-wise 'v' visual mode", function()
+        --     load_lines({ "one", "two", "three", "four", "five" })
+        --     vim.cmd(':2')
+        --     vim.cmd(':normal! 0vj') -- STILL in v mode, so no 2nd v
+        --     should.be_equal(vim.fn.mode(), "v")
+        --
+        --     local selection = get_selection()
+        --     should.be_equal("two\nt", selection.original_text)
+        --     should.be_equal("[r2,c1]-[r3,c1] 1-indexed", selection:range_str())
+        -- end)
+    end)
+
 
     local function move_cursor_to_start_of_doc()
         vim.api.nvim_win_set_cursor(0, { 1, 0 })
