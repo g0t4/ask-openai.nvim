@@ -25,7 +25,7 @@ describe("GetPos wrappers", function()
                     start_line_b1 = 2,
                     end_line_b1   = 3,
                     start_col_b1  = 1,
-                    end_col_b1    = 1,
+                    end_col_b1    = 2147483647,
                 }, sel)
             end)
 
@@ -39,7 +39,7 @@ describe("GetPos wrappers", function()
                     start_line_b1 = 2,
                     end_line_b1   = 3,
                     start_col_b1  = 1,
-                    end_col_b1    = 1,
+                    end_col_b1    = 2147483647,
                 }, sel)
             end)
         end)
