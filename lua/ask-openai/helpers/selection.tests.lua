@@ -2,29 +2,11 @@ require('ask-openai.helpers.testing')
 local Selection = require('ask-openai.helpers.selection')
 local should = require('devtools.tests.should')
 local log = require("ask-openai.logs.logger").predictions()
-
-local test_buffer_number = 0
-local function load_lines(lines)
-    test_buffer_number = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_buf_set_lines(test_buffer_number, 0, -1, false, lines)
-
-    local win = vim.api.nvim_open_win(test_buffer_number, true, {
-        relative = 'editor',
-        width = 80,
-        height = 10,
-        row = 0,
-        col = 0,
-        style = 'minimal',
-    })
-    vim.api.nvim_set_current_win(win)
-    -- TODO do I need to set cursor initially before command?
-    -- vim.api.nvim_win_set_cursor(win, { 1, 0 })
-end
+require('ask-openai.helpers.wrap_tests')
 
 local function get_selection()
     return Selection.get_visual_selection_for_current_window()
 end
-
 
 -- examples for testing selection methods
 --foo the bar
@@ -142,87 +124,6 @@ describe("get_visual_selection()", function()
         -- * getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
         -- I should do some high level tests so I could swap out getcharpos if needed?
     end)
-
-    -- TODO split out these tests... I need a new wrapper around the low level methods I really never wanna touch ever again
-    describe("GetPos wrappers", function()
-        -- PRN incorporate settings for obscure details (when the need arises):
-        --   :h * selection
-        --   :h * virtualedit=all - position cursor past actual characters (i.e. g$ - end of screen line)
-        it("SelectionRange_Line1Col1", function()
-            it("still selected", function()
-                -- FYI this is probably rare to happen... I really should just close the mode and thus capture into '< and '>
-                it("cursor at end of linewise selection - same as reverse", function()
-                    load_lines({ "one", "two", "three", "four", "five" })
-                    vim.cmd(':2')
-                    vim.cmd(':normal! 0Vj') -- 0 = start of line, then V select and j=down a line
-                    should.be_equal(vim.fn.mode(), "V")
-
-                    -- TODO remove this lower level test? should I also remove the API for it
-                    local line_base1, col_base1 = GetPos.CursorPosition_Line1Col1()
-                    should.be_equal(3, line_base1)
-                    should.be_equal(1, col_base1)
-
-                    local sel = GetPos.SelectionRange_Line1Col1()
-                    should.be_equal(2, sel.start_line_b1)
-                    should.be_equal(1, sel.start_col_b1)
-                    should.be_equal(3, sel.end_line_b1)
-                    should.be_equal(1, sel.end_col_b1)
-                end)
-                it("cursor at start of linewise selection - same as reverse", function()
-                    load_lines({ "one", "two", "three", "four", "five" })
-                    vim.cmd(':3')
-                    vim.cmd(':normal! 0Vk')
-                    should.be_equal(vim.fn.mode(), "V")
-
-                    local sel = GetPos.SelectionRange_Line1Col1()
-                    should.be_equal(2, sel.start_line_b1)
-                    should.be_equal(1, sel.start_col_b1)
-                    should.be_equal(3, sel.end_line_b1)
-                    should.be_equal(1, sel.end_col_b1)
-                end)
-                it("cursor at start of linewise selection - same as reverse", function()
-                    load_lines({ "one", "two", "three", "four", "five" })
-                    vim.cmd(':3')
-                    vim.cmd(':normal! 0V')
-                    should.be_equal(vim.fn.mode(), "V")
-
-                    local sel = GetPos.SelectionRange_Line1Col1()
-                    -- FYI start_line=end_line, start_col=end_col for single line selection
-                    should.be_equal(3, sel.start_line_b1)
-                    should.be_equal(1, sel.start_col_b1)
-                    should.be_equal(3, sel.end_line_b1)
-                    should.be_equal(1, sel.end_col_b1)
-                end)
-                it("cursor at start of linewise selection - same as reverse", function()
-                    load_lines({ "one", "two", "three", "four", "five" })
-                    vim.cmd(':3')
-                    vim.cmd(':normal! 0Vj')
-                    should.be_equal(vim.fn.mode(), "V")
-
-                    local sel = GetPos.SelectionRange_Line1Col1()
-                    -- FYI start_line=end_line, start_col=end_col for single line selection
-                    -- nice thing about be_same and hash => shows sorted keys in output diff view
-                    should.be_same({
-                        start_line_b1 = 3,
-                        end_line_b1 = 4,
-                        start_col_b1 = 1,
-                        end_col_b1 = 1
-                    }, sel)
-
-                    vim.cmd(":normal! 2l") -- move 2 chars right (only changes col of end position
-                    sel = GetPos.SelectionRange_Line1Col1()
-                    -- should.be_equal(3, sel.end_col_b1)
-                    should.be_same({
-                        start_line_b1 = 3,
-                        end_line_b1 = 4,
-                        start_col_b1 = 1,
-                        end_col_b1 = 3
-                    }, sel)
-                end)
-            end)
-        end)
-    end)
-
     describe("still in visual mode", function()
         -- PRN if I want current mode checks, add these tests, though right now I don't think I have a direct need for these other than completeness of selection utility
         -- it("still in linewise 'V' visual mode - cursor position is AFTER other position", function()
