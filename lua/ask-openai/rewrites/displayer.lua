@@ -62,7 +62,7 @@ function Displayer:show_green_preview_text(selection, lines)
 end
 
 ---@diagnostic disable-next-line: unused-function
-local function inspect_diff(diff)
+function inspect_diff(diff)
     local lines = {}
     for _, v in ipairs(diff) do
         local type = v[1]
