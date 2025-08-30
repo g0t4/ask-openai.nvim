@@ -127,7 +127,7 @@ function M._context_query(query, instruct, callback)
     local _client_request_ids, _cancel_all_requests -- declare in advance for closure:
 
     ---@param result LSPRagQueryResult
-    function on_response(err, result)
+    function on_server_response(err, result)
         if err then
             vim.notify("RAG query failed: " .. err.message, vim.log.levels.ERROR)
             return
@@ -138,12 +138,13 @@ function M._context_query(query, instruct, callback)
         callback(rag_matches)
     end
 
-    _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", {
-            command = "rag_query",
-            -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
-            arguments = { lsp_rag_request },
-        },
-        on_response)
+    local params = {
+        command = "rag_query",
+        -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
+        arguments = { lsp_rag_request },
+    }
+
+    _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", params, on_server_response)
     return _client_request_ids, _cancel_all_requests
 end
 
