@@ -113,13 +113,6 @@ function M.ask_for_prediction()
 
     ---@param rag_matches LSPRankedMatch[]
     function send_fim(rag_matches)
-        -- use rag_matches ~= nil b/c hot mess of other calls here when rag not used -- TODO CLEANUP NONSENSE WES
-        if enable_rag and rag_matches ~= nil and M.rag_cancel == nil then
-            log:error("rag_cancel is nil, assuming RAG was canceled") -- should be rare, but possible
-            return
-        end
-        -- TODO check response's request_ids vs last RAG request ids (avoid accepting past RAG matches)
-
         local backend = OllamaFimBackend:new(document_prefix, document_suffix, rag_matches)
         local spawn_curl_options = backend:request_options()
 
@@ -252,6 +245,8 @@ function M.ask_for_prediction()
         local this_request_ids, cancel -- declare in advance so closure can access
 
         function on_rag_response(rag_matches)
+            -- FYI unroll all rag specific safeguards here so that logic doesn't live inside send_fim
+
             -- * make sure prior (canceled) rag request doesn't still respond
             if M.rag_request_ids ~= this_request_ids then
                 -- I bet this is why sometimes I get completions that still fire even after cancel b/c the RAG results aren't actually stopped in time on server and so they come back
@@ -260,6 +255,13 @@ function M.ask_for_prediction()
                     .. vim.inspect({ global_rag_request_ids = M.rag_request_ids, this_request_ids = this_request_ids }))
                 return
             end
+
+            if enable_rag and rag_matches ~= nil and M.rag_cancel == nil then
+                -- PRN I might not need this exact check now that I check this_request_ids above... TBD review
+                log:error("rag_cancel is nil, assuming RAG was canceled") -- should be rare, but possible
+                return
+            end
+
             send_fim(rag_matches)
         end
 
