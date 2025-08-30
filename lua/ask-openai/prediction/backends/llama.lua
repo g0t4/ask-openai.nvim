@@ -42,7 +42,7 @@ function OllamaFimBackend:new(prefix, suffix, rag_matches)
     local always_include = {
         yanks = true,
         matching_ctags = true,
-        project = true,
+        project = false, -- for now lets leave this for AskRewrites only
     }
     local instance = {
         prefix = prefix,
