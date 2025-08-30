@@ -80,6 +80,7 @@ describe("GetPos wrappers", function()
                     end_col_b1 = 1
                 }, sel)
 
+                -- * move 2 chars right on second line, just tests how col works in linewise visual selection
                 vim.cmd(":normal! 2l") -- move 2 chars right (only changes col of end position
                 sel = GetPos.SelectionRange_Line1Col1()
                 -- should.be_equal(3, sel.end_col_b1)
