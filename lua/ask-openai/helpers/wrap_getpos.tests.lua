@@ -50,10 +50,12 @@ describe("GetPos wrappers", function()
 
                 local sel = GetPos.SelectionRange_Line1Col1()
                 -- FYI start_line=end_line, start_col=end_col for single line selection
-                should.be_equal(3, sel.start_line_b1)
-                should.be_equal(1, sel.start_col_b1)
-                should.be_equal(3, sel.end_line_b1)
-                should.be_equal(1, sel.end_col_b1)
+                should.be_same({
+                    start_line_b1 = 3,
+                    start_col_b1  = 1,
+                    end_line_b1   = 3,
+                    end_col_b1    = 1,
+                }, sel)
             end)
             it("cursor at start of linewise selection - same as reverse", function()
                 load_lines({ "one", "two", "three", "four", "five" })
