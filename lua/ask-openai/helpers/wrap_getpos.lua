@@ -4,6 +4,8 @@ vim.keymap.set({ 'n', 'v' }, '<leader>b', function()
 end, { desc = "Print cursor position (getpos)" })
 
 
+-- TODO! ! use this with selection logic and class in rewrites  (maybe predictions too)
+
 
 --- wrapper for getpos(expr)
 _G.GetPos = {}
