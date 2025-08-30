@@ -244,7 +244,8 @@ function M.ask_for_prediction()
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
         local this_request_ids, cancel -- declare in advance so closure can access
 
-        function on_rag_response(rag_matches)
+        ---@param rag_failed boolean?
+        function on_rag_response(rag_matches, rag_failed)
             -- FYI unroll all rag specific safeguards here so that logic doesn't live inside send_fim
 
             -- * make sure prior (canceled) rag request doesn't still respond
@@ -259,6 +260,13 @@ function M.ask_for_prediction()
             if M.rag_cancel == nil then
                 log:error("rag appears to have been canceled, skipping on_rag_response rag_matches results...")
                 return
+            end
+
+            if rag_failed then
+                -- BTW, upstream logic logs plenty of errors
+                -- continue call even when RAG fails, without RAG matches
+                -- keep in mind, unlike cancel aborts above, if we get to this point then there's still an outstanding, valid FIM that was requested and can be completed
+                rag_matches = {}
             end
 
             send_fim(rag_matches)
