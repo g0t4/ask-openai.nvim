@@ -22,11 +22,12 @@ describe("GetPos wrappers", function()
 
                 local sel = GetPos.LastSelection()
                 should.be_same_diff({
-                    start_line_b1 = 2,
-                    end_line_b1   = 3,
-                    start_col_b1  = 1,
-                    end_col_b1    = 2147483647,
-                    mode          = "n",
+                    start_line_b1    = 2,
+                    end_line_b1      = 3,
+                    start_col_b1     = 1,
+                    end_col_b1       = 2147483647,
+                    mode             = "n",
+                    last_visual_mode = "V",
                 }, sel)
             end)
 
@@ -37,13 +38,14 @@ describe("GetPos wrappers", function()
                 should.be_equal(vim.fn.mode(), "n")
                 local sel = GetPos.LastSelection()
                 should.be_same_diff({
-                    start_line_b1 = 2,
-                    end_line_b1   = 3,
-                    start_col_b1  = 1,
+                    start_line_b1    = 2,
+                    end_line_b1      = 3,
+                    start_col_b1     = 1,
                     -- TODO map to -1 for end col (aka end of line)... in fact that works in many test cases
                     --   TODO OR map cols to nil when in V visual linewise mode?
-                    end_col_b1    = 2147483647, -- this is fine actually... since I am in line wise mode anyways... col is meaningless
-                    mode          = "n",
+                    end_col_b1       = 2147483647, -- this is fine actually... since I am in line wise mode anyways... col is meaningless
+                    mode             = "n",
+                    last_visual_mode = "V",
                 }, sel)
             end)
 
@@ -55,11 +57,12 @@ describe("GetPos wrappers", function()
                 should.be_equal(vim.fn.mode(), "n")
                 local sel = GetPos.LastSelection()
                 should.be_same_diff({
-                    start_line_b1 = 2,
-                    end_line_b1   = 2,
-                    start_col_b1  = 1,
-                    end_col_b1    = 3,
-                    mode          = "n",
+                    start_line_b1    = 2,
+                    end_line_b1      = 2,
+                    start_col_b1     = 1,
+                    end_col_b1       = 3,
+                    mode             = "n",
+                    last_visual_mode = "v",
                 }, sel)
             end)
             it("cursor was at END of charwise selection - on same line", function()
@@ -69,11 +72,12 @@ describe("GetPos wrappers", function()
                 should.be_equal(vim.fn.mode(), "n")
                 local sel = GetPos.LastSelection()
                 should.be_same_diff({
-                    start_line_b1 = 3,
-                    end_line_b1   = 3,
-                    start_col_b1  = 3,
-                    end_col_b1    = 5,
-                    mode          = "n",
+                    start_line_b1    = 3,
+                    end_line_b1      = 3,
+                    start_col_b1     = 3,
+                    end_col_b1       = 5,
+                    mode             = "n",
+                    last_visual_mode = "v",
                 }, sel)
             end)
             it("cursor was at END of charwise selection - across two lines - start at start of first", function()
@@ -83,11 +87,12 @@ describe("GetPos wrappers", function()
                 should.be_equal(vim.fn.mode(), "n")
                 local sel = GetPos.LastSelection()
                 should.be_same_diff({
-                    start_line_b1 = 3,
-                    end_line_b1   = 4,
-                    start_col_b1  = 1,
-                    end_col_b1    = 1, -- started on col 1 so still on it in next row
-                    mode          = "n",
+                    start_line_b1    = 3,
+                    end_line_b1      = 4,
+                    start_col_b1     = 1,
+                    end_col_b1       = 1, -- started on col 1 so still on it in next row
+                    mode             = "n",
+                    last_visual_mode = "v",
                 }, sel)
             end)
 
@@ -98,11 +103,12 @@ describe("GetPos wrappers", function()
                 should.be_equal(vim.fn.mode(), "n")
                 local sel = GetPos.LastSelection()
                 should.be_same_diff({
-                    start_line_b1 = 3,
-                    end_line_b1   = 4,
-                    start_col_b1  = 5, -- line 3 has 5 chars (thre[e])
-                    end_col_b1    = 5, -- ?? line 4 only has 4 chars but still b/c I was in col 5 I am still in it on line 4 after down
-                    mode          = "n",
+                    start_line_b1    = 3,
+                    end_line_b1      = 4,
+                    start_col_b1     = 5, -- line 3 has 5 chars (thre[e])
+                    end_col_b1       = 5, -- ?? line 4 only has 4 chars but still b/c I was in col 5 I am still in it on line 4 after down
+                    mode             = "n",
+                    last_visual_mode = "v",
                 }, sel)
             end)
 
@@ -127,11 +133,12 @@ describe("GetPos wrappers", function()
 
                 local sel = GetPos.SelectionRange_Line1Col1()
                 local expected = {
-                    start_line_b1 = 2,
-                    start_col_b1  = 1,
-                    end_line_b1   = 3,
-                    end_col_b1    = 1,
-                    mode          = "V",
+                    start_line_b1    = 2,
+                    start_col_b1     = 1,
+                    end_line_b1      = 3,
+                    end_col_b1       = 1,
+                    mode             = "V",
+                    last_visual_mode = "",
                 }
                 should.be_same_diff(expected, sel)
             end)
@@ -144,11 +151,12 @@ describe("GetPos wrappers", function()
 
                 local sel = GetPos.SelectionRange_Line1Col1()
                 should.be_same_diff({
-                    start_line_b1 = 2,
-                    start_col_b1  = 1,
-                    end_line_b1   = 3,
-                    end_col_b1    = 1,
-                    mode          = "V",
+                    start_line_b1    = 2,
+                    start_col_b1     = 1,
+                    end_line_b1      = 3,
+                    end_col_b1       = 1,
+                    mode             = "V",
+                    last_visual_mode = "",
                 }, sel)
             end)
             it("cursor at start of linewise selection - same as reverse", function()
@@ -160,11 +168,12 @@ describe("GetPos wrappers", function()
                 local sel = GetPos.SelectionRange_Line1Col1()
                 -- FYI start_line=end_line, start_col=end_col for single line selection
                 should.be_same_diff({
-                    start_line_b1 = 3,
-                    start_col_b1  = 1,
-                    end_line_b1   = 3,
-                    end_col_b1    = 1,
-                    mode          = "V",
+                    start_line_b1    = 3,
+                    start_col_b1     = 1,
+                    end_line_b1      = 3,
+                    end_col_b1       = 1,
+                    mode             = "V",
+                    last_visual_mode = "",
                 }, sel)
             end)
             it("cursor at start of linewise selection - same as reverse", function()
@@ -182,6 +191,7 @@ describe("GetPos wrappers", function()
                     start_col_b1 = 1,
                     end_col_b1 = 1,
                     mode = "V",
+                    last_visual_mode = "",
                 }, sel)
 
                 -- * move 2 chars right on second line, just tests how col works in linewise visual selection
@@ -194,6 +204,7 @@ describe("GetPos wrappers", function()
                     start_col_b1 = 1,
                     end_col_b1 = 3,
                     mode = "V",
+                    last_visual_mode = "",
                 }, sel)
             end)
         end)

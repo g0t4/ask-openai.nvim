@@ -35,19 +35,21 @@ function GetPos.SelectionRange_Line1Col1()
     local start_line, start_col, end_line, end_col
     if dot_line_base1 < v_line_base1 or (dot_line_base1 == v_line_base1 and dot_col_base1 <= v_col_base1) then
         return {
-            start_line_b1 = dot_line_base1,
-            start_col_b1  = dot_col_base1,
-            end_line_b1   = v_line_base1,
-            end_col_b1    = v_col_base1,
-            mode          = vim.fn.mode()
+            start_line_b1    = dot_line_base1,
+            start_col_b1     = dot_col_base1,
+            end_line_b1      = v_line_base1,
+            end_col_b1       = v_col_base1,
+            mode             = vim.fn.mode(),
+            last_visual_mode = vim.fn.visualmode(),
         }
     else
         return {
-            start_line_b1 = v_line_base1,
-            start_col_b1  = v_col_base1,
-            end_line_b1   = dot_line_base1,
-            end_col_b1    = dot_col_base1,
-            mode          = vim.fn.mode()
+            start_line_b1    = v_line_base1,
+            start_col_b1     = v_col_base1,
+            end_line_b1      = dot_line_base1,
+            end_col_b1       = dot_col_base1,
+            mode             = vim.fn.mode(),
+            last_visual_mode = vim.fn.visualmode(),
         }
     end
 end
@@ -63,7 +65,8 @@ function GetPos.LastSelection()
         start_col_b1 = lt_col_base1,
         end_line_b1 = gt_line_base1,
         end_col_b1 = gt_col_base1,
-        mode = vim.fn.mode()
+        mode = vim.fn.mode(),
+        last_visual_mode = vim.fn.visualmode(),
     }
 end
 
