@@ -1,7 +1,6 @@
 local uv = vim.uv
 local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
-local CurrentContext = require("ask-openai.prediction.context")
 local ansi = require("ask-openai.prediction.ansi")
 local rag_client = require("ask-openai.rag.client")
 local api = require("ask-openai.api")
