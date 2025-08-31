@@ -114,8 +114,8 @@ function M._context_query(query, instruct, callback)
         currentFileAbsolutePath = files.get_current_file_absolute_path(),
         vimFiletype = vim.bo.filetype,
         skipSameFile = true,
-        topK = 9, -- TODO what do I want for FIM vs REWRITE? maybe a dial too?
-        embedTopK = 18,
+        topK = 5, -- TODO what do I want for FIM vs REWRITE? maybe a dial too?
+        embedTopK = 18, -- consider more so that re-ranker picks topK best matches
         -- PRN pass line range for same file RAG to allow outside that range
         -- FYI some rewrites I might not want ANY RAG... maybe no context too
         -- PRN other file types? languages=all? knob too?
