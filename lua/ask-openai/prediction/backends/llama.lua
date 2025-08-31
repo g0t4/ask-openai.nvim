@@ -84,6 +84,18 @@ function OllamaFimBackend:body_for()
         stream = true,
         num_predict = 200, -- aka max_tokens
 
+        -- llama-server /completion endpoint
+        response_fields = {
+            "content", "timings", "truncated", "stop_type", "stopping_word",
+            "generation_settings", -- for last SSE to reflect inputs
+        },
+        -- these seem to be included regardless: "index","content","tokens","stop","id_slot","tokens_predicted","tokens_evaluated"
+        -- PRN disable tokens_predicted/tokens_evaluated on all SSEs (but last)
+        --
+        -- timings_per_token = false, -- default false, shows timings on every SSE, BTW doesn't seem to control tokens_predicted, tokens_evaluated per SSE
+        --
+        -- what is "has_new_line"
+
         -- TODO temperature, top_p,
 
         options = {

@@ -49,11 +49,14 @@ function parse_sse_ollama_chat(sse)
 end
 
 function parse_llama_cpp_server(sse)
+    -- FYI response_fields limits fields per SSE...
+    --    I set it to stop prompt and generation_settings on final SSE
+
     -- {"index":0,"content":"\",","tokens":[497],"stop":false,"id_slot":-1,"tokens_predicted":14,"tokens_evaluated":1963}
     -- stop: true => a few fields (it returns entire prompt too so it's huge!... maybe skip logging the prompt field?)
     -- "truncated": false,
     -- "stop_type": "eos",
-    -- "stopping_word": "",
+    -- "stopping_word": "", -- TODO what is this for?
     return sse.content, sse.content, sse.stop_type
 end
 
