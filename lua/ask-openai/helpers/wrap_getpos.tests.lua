@@ -15,7 +15,7 @@ describe("GetPos wrappers", function()
     it("edge case - no selection yet", function()
         load_lines({ "one", "two", "three", "four", "five" })
         vim.cmd(':1')
-        vim.cmd('normal! 0l')
+        vim.cmd('normal! 0l') -- move one char from start of line
         should.be_equal(vim.fn.mode(), "n")
 
         it("LastSelection is all zeros", function()
@@ -29,6 +29,19 @@ describe("GetPos wrappers", function()
                 last_visual_mode = "",
                 linewise         = false,
             }, selection)
+        end)
+
+        it("SelectionRange returns coords of cursor for both start and end positions", function()
+            local sel = GetPos.SelectionRange_Line1Col1()
+            should.be_same_colorful_diff({
+                start_line_b1    = 1,
+                end_line_b1      = 1,
+                start_col_b1     = 2,
+                end_col_b1       = 2,
+                mode             = "n",
+                last_visual_mode = "",
+                linewise         = false,
+            }, sel)
         end)
     end)
 
