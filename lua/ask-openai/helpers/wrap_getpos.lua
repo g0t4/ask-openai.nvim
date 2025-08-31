@@ -15,6 +15,14 @@ _G.GetPos = {}
 ---@field col_b1 integer
 _G.GetPosPosition = {}
 
+---@param expr string
+---@return GetPosPosition
+function GetPos._line_and_column(expr)
+    -- FYI offset has to do with virtualedit (when cursor is allowed to stop on non-char positions)
+    local bufnr, line_base1, col_base1, offset = unpack(vim.fn.getpos(expr))
+    return { line_b1 = line_base1, col_b1 = col_base1 }
+end
+
 ---@return GetPosPosition
 function GetPos.CursorPosition()
     return GetPos._line_and_column(".")
@@ -104,12 +112,4 @@ end
 ---@return GetPosPosition
 function GetPos.FirstVisibleLine()
     return GetPos._line_and_column("w0")
-end
-
----@param expr string
----@return GetPosPosition
-function GetPos._line_and_column(expr)
-    -- FYI offset has to do with virtualedit (when cursor is allowed to stop on non-char positions)
-    local bufnr, line_base1, col_base1, offset = unpack(vim.fn.getpos(expr))
-    return { line_b1 = line_base1, col_b1 = col_base1 }
 end
