@@ -17,13 +17,13 @@ _G.GetPosPosition = {}
 
 ---@return GetPosPosition
 function GetPos.CursorPosition()
-    return GetPos._Line1Col1(".")
+    return GetPos._line_and_column(".")
 end
 
 ---@return GetPosPosition
 function GetPos.OtherEndOfSelection()
     -- if not in visual mode, this will return CursorPosition (same as ".")
-    return GetPos._Line1Col1("v")
+    return GetPos._line_and_column("v")
 end
 
 ---@class GetPosSelectionRange
@@ -37,8 +37,8 @@ _G.GetPosSelectionRange = {}
 ---The order is always start → end regardless of cursor direction.
 ---@return GetPosSelectionRange
 function GetPos.CurrentSelection()
-    local dot = GetPos._Line1Col1(".")
-    local v = GetPos._Line1Col1("v")
+    local dot = GetPos._line_and_column(".")
+    local v = GetPos._line_and_column("v")
 
     local mode = vim.fn.mode()
     local last_visual_mode = vim.fn.visualmode()
@@ -74,8 +74,8 @@ end
 ---The order is always start → end regardless of cursor direction.
 ---@return GetPosSelectionRange
 function GetPos.LastSelection()
-    local lt = GetPos._Line1Col1("'<")
-    local gt = GetPos._Line1Col1("'>")
+    local lt = GetPos._line_and_column("'<")
+    local gt = GetPos._line_and_column("'>")
 
     local mode = vim.fn.mode()
     local last_visual_mode = vim.fn.visualmode()
@@ -93,22 +93,22 @@ end
 
 ---@return GetPosPosition
 function GetPos.LastLineOfBuffer()
-    return GetPos._Line1Col1("$")
+    return GetPos._line_and_column("$")
 end
 
 ---@return GetPosPosition
 function GetPos.LastVisibleLine()
-    return GetPos._Line1Col1("w$")
+    return GetPos._line_and_column("w$")
 end
 
 ---@return GetPosPosition
 function GetPos.FirstVisibleLine()
-    return GetPos._Line1Col1("w0")
+    return GetPos._line_and_column("w0")
 end
 
 ---@param expr string
 ---@return GetPosPosition
-function GetPos._Line1Col1(expr)
+function GetPos._line_and_column(expr)
     -- FYI offset has to do with virtualedit (when cursor is allowed to stop on non-char positions)
     local bufnr, line_base1, col_base1, offset = unpack(vim.fn.getpos(expr))
     return { line_b1 = line_base1, col_b1 = col_base1 }
