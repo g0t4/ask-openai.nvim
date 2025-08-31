@@ -255,22 +255,22 @@ function OllamaFimBackend.process_sse(lines)
             -- ollama /api/generate doesn't prefix each SSE with 'data: '
             event_json = ss_event:sub(7)
         end
-        local success, parsed = pcall(vim.json.decode, event_json)
+        local success, parsed_sse = pcall(vim.json.decode, event_json)
 
-        if success and parsed then
+        if success and parsed_sse then
             local parsed_chunk
             if endpoint_llama_server_proprietary_completions then
-                parsed_chunk, done, done_reason = parse_llama_cpp_server(parsed)
+                parsed_chunk, done, done_reason = parse_llama_cpp_server(parsed_sse)
             elseif endpoint_openaicompat_chat_completions then
-                parsed_chunk, done, done_reason, thinking = parse_sse_oai_chat_completions(parsed)
+                parsed_chunk, done, done_reason, thinking = parse_sse_oai_chat_completions(parsed_sse)
             elseif endpoint_ollama_api_chat then
-                parsed_chunk, done, done_reason = parse_sse_ollama_chat(parsed)
+                parsed_chunk, done, done_reason = parse_sse_ollama_chat(parsed_sse)
             else
-                parsed_chunk, done, done_reason = parse_ollama_api_generate(parsed)
+                parsed_chunk, done, done_reason = parse_ollama_api_generate(parsed_sse)
             end
             chunk = (chunk or "") .. parsed_chunk
-            if parsed.timings then
-                stats = parse_llamacpp_stats(parsed)
+            if parsed_sse.timings then
+                stats = parse_llamacpp_stats(parsed_sse)
             end
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)

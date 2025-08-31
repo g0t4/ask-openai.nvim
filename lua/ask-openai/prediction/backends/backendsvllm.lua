@@ -183,7 +183,7 @@ function M.process_sse(lines)
             -- ollama /api/generate doesn't prefix each SSE with 'data: '
             event_json = ss_event:sub(7)
         end
-        local success, parsed = pcall(vim.json.decode, event_json)
+        local success, parsed_sse = pcall(vim.json.decode, event_json)
 
         -- *** examples /api/generate:
         --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.1915236Z","response":"\n","done":false}
@@ -216,10 +216,10 @@ function M.process_sse(lines)
         -- log:info("success:", success)
         -- log:info("choices:", vim.inspect(parsed))
         -- log:info("choices:", vim.inspect(parsed.choices))
-        if success and parsed and parsed.choices and parsed.choices[1] then
+        if success and parsed_sse and parsed_sse.choices and parsed_sse.choices[1] then
             -- TODO! need to update this to match changes made in backends/llama.lua
             -- TODO! OR just ditch this one and merge any vllm specific parsing concerns into another case in other backend
-            local first_choice = parsed.choices[1]
+            local first_choice = parsed_sse.choices[1]
             finish_reason = first_choice.finish_reason
             if finish_reason ~= nil and finish_reason ~= vim.NIL then
                 log:info("finsh_reason: ", finish_reason)
@@ -233,8 +233,8 @@ function M.process_sse(lines)
             else
                 chunk = (chunk or "") .. first_choice.text
             end
-            if parsed.timings then
-                stats = parse_llamacpp_stats(parsed)
+            if parsed_sse.timings then
+                stats = parse_llamacpp_stats(parsed_sse)
             end
         else
             log:warn("SSE json parse failed for ss_event: ", ss_event)
