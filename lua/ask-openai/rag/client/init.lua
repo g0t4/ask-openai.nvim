@@ -34,10 +34,13 @@ local function fim_concat(prefix, suffix, limit)
     -- * warnings so I can investigate
     --   FYI I think I will just supress these warnings b/c a limit is fine for RAG that is far less than FIM limits
     --   FYI IT IS OK TO REMOVE THE WARNINGS! OR COMMENT THEM OUT! or set at debug log level
+    local truncated = false
     if prefix:len() > half then
+        truncated = true
         log:warn(string.format("FIM prefix too long for RAG (max %d chars, got %d) – will be truncated", limit, prefix:len()))
     end
     if suffix:len() > half then
+        truncated = true
         log:warn(string.format("FIM suffix too long for RAG (max %d chars, got %d) – will be truncated", limit, suffix:len()))
     end
 
@@ -45,7 +48,9 @@ local function fim_concat(prefix, suffix, limit)
     local short_suffix = suffix:sub(1, half) -- take from the start of the suffix (if over limit)
 
     local query = short_prefix .. "<<<FIM CURSOR HERE>>>" .. short_suffix
-    log:trace("FIM query: ", query)
+    if truncated then
+        log:trace("FIM query: ", query)
+    end
     return query
 end
 
