@@ -1,4 +1,3 @@
-
 from rank_bm25 import BM25Okapi
 
 # %%
@@ -25,3 +24,8 @@ corpus = [
 bm25 = BM25Okapi([doc.split() for doc in corpus])
 
 bm25.get_scores("windy London".split(" "))
+
+bm25.get_scores("windy man".split(" "))
+
+# all zeros b/c neither word/lexem appears in the corpus (docs)
+bm25.get_scores("rainy forecast".split(" "))
