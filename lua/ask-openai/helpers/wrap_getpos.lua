@@ -17,7 +17,7 @@ _G.GetPosPosition = {}
 
 ---@param expr string
 ---@return GetPosPosition
-function GetPos._line_and_column(expr)
+local function _line_and_column(expr)
     -- FYI offset has to do with virtualedit (when cursor is allowed to stop on non-char positions)
     local bufnr, line_base1, col_base1, offset = unpack(vim.fn.getpos(expr))
     return { line_b1 = line_base1, col_b1 = col_base1 }
@@ -25,13 +25,13 @@ end
 
 ---@return GetPosPosition
 function GetPos.CursorPosition()
-    return GetPos._line_and_column(".")
+    return _line_and_column(".")
 end
 
 ---@return GetPosPosition
 function GetPos.OtherEndOfSelection()
     -- if not in visual mode, this will return CursorPosition (same as ".")
-    return GetPos._line_and_column("v")
+    return _line_and_column("v")
 end
 
 ---@class GetPosSelectionRange
@@ -45,8 +45,8 @@ _G.GetPosSelectionRange = {}
 ---The order is always start → end regardless of cursor direction.
 ---@return GetPosSelectionRange
 function GetPos.CurrentSelection()
-    local dot = GetPos._line_and_column(".")
-    local v = GetPos._line_and_column("v")
+    local dot = _line_and_column(".")
+    local v = _line_and_column("v")
 
     local mode = vim.fn.mode()
     local last_visual_mode = vim.fn.visualmode()
@@ -82,8 +82,8 @@ end
 ---The order is always start → end regardless of cursor direction.
 ---@return GetPosSelectionRange
 function GetPos.LastSelection()
-    local lt = GetPos._line_and_column("'<")
-    local gt = GetPos._line_and_column("'>")
+    local lt = _line_and_column("'<")
+    local gt = _line_and_column("'>")
 
     local mode = vim.fn.mode()
     local last_visual_mode = vim.fn.visualmode()
@@ -101,15 +101,15 @@ end
 
 ---@return GetPosPosition
 function GetPos.LastLineOfBuffer()
-    return GetPos._line_and_column("$")
+    return _line_and_column("$")
 end
 
 ---@return GetPosPosition
 function GetPos.LastVisibleLine()
-    return GetPos._line_and_column("w$")
+    return _line_and_column("w$")
 end
 
 ---@return GetPosPosition
 function GetPos.FirstVisibleLine()
-    return GetPos._line_and_column("w0")
+    return _line_and_column("w0")
 end
