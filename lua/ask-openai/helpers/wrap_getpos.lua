@@ -1,6 +1,6 @@
 -- Map <leader>b to print the cursor position.
 vim.keymap.set({ 'n', 'v' }, '<leader>b', function()
-    vim.print(GetPos.SelectionRange_Line1Col1())
+    vim.print(GetPos.CurrentSelection())
 end, { desc = "Print cursor position (getpos)" })
 
 
@@ -30,7 +30,7 @@ _G.GetPosSelectionRange = {}
 ---Returns the selection range in 1‑indexed line/column coordinates.
 ---The order is always start → end regardless of cursor direction.
 ---@return GetPosSelectionRange
-function GetPos.SelectionRange_Line1Col1()
+function GetPos.CurrentSelection()
     local dot_line_base1, dot_col_base1 = GetPos.Line1Col1(".")
     local v_line_base1, v_col_base1 = GetPos.Line1Col1("v")
 

@@ -31,8 +31,8 @@ describe("GetPos wrappers", function()
             }, selection)
         end)
 
-        it("SelectionRange returns coords of cursor for both start and end positions", function()
-            local sel = GetPos.SelectionRange_Line1Col1()
+        it("CurrentSelection() returns coords of cursor for both start and end positions", function()
+            local sel = GetPos.CurrentSelection()
             should.be_same_colorful_diff({
                 start_line_b1    = 1,
                 end_line_b1      = 1,
@@ -156,7 +156,7 @@ describe("GetPos wrappers", function()
         end)
     end)
 
-    it("SelectionRange_Line1Col1", function()
+    it("CurrentSelection", function()
         it("still selected", function()
             -- FYI this is probably rare to happen... I really should just close the mode and thus capture into '< and '>
             it("cursor at end of linewise selection - same as reverse", function()
@@ -170,7 +170,7 @@ describe("GetPos wrappers", function()
                 should.be_equal(3, line_base1)
                 should.be_equal(1, col_base1)
 
-                local sel = GetPos.SelectionRange_Line1Col1()
+                local sel = GetPos.CurrentSelection()
                 local expected = {
                     start_line_b1    = 2,
                     start_col_b1     = 1,
@@ -189,7 +189,7 @@ describe("GetPos wrappers", function()
                 vim.cmd(':normal! 0Vk')
                 should.be_equal(vim.fn.mode(), "V")
 
-                local sel = GetPos.SelectionRange_Line1Col1()
+                local sel = GetPos.CurrentSelection()
                 should.be_same_colorful_diff({
                     start_line_b1    = 2,
                     start_col_b1     = 1,
@@ -206,7 +206,7 @@ describe("GetPos wrappers", function()
                 vim.cmd(':normal! 0V')
                 should.be_equal(vim.fn.mode(), "V")
 
-                local sel = GetPos.SelectionRange_Line1Col1()
+                local sel = GetPos.CurrentSelection()
                 -- FYI start_line=end_line, start_col=end_col for single line selection
                 should.be_same_colorful_diff({
                     start_line_b1    = 3,
@@ -224,7 +224,7 @@ describe("GetPos wrappers", function()
                 vim.cmd(':normal! 0Vj')
                 should.be_equal(vim.fn.mode(), "V")
 
-                local sel = GetPos.SelectionRange_Line1Col1()
+                local sel = GetPos.CurrentSelection()
                 -- FYI start_line=end_line, start_col=end_col for single line selection
                 -- nice thing about be_same and hash => shows sorted keys in output diff view
                 should.be_same_colorful_diff({
@@ -239,7 +239,7 @@ describe("GetPos wrappers", function()
 
                 -- * move 2 chars right on second line, just tests how col works in linewise visual selection
                 vim.cmd(":normal! 2l") -- move 2 chars right (only changes col of end position
-                sel = GetPos.SelectionRange_Line1Col1()
+                sel = GetPos.CurrentSelection()
                 -- should.be_equal(3, sel.end_col_b1)
                 should.be_same_colorful_diff({
                     start_line_b1    = 3,
@@ -263,7 +263,7 @@ describe("GetPos wrappers", function()
                 vim.cmd(':normal! 0vl') -- charise, 2 chars
                 should.be_equal(vim.fn.mode(), "v")
 
-                local sel = GetPos.SelectionRange_Line1Col1()
+                local sel = GetPos.CurrentSelection()
                 local expected = {
                     start_line_b1    = 4,
                     start_col_b1     = 1,
