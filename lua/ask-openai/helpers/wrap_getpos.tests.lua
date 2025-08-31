@@ -12,6 +12,26 @@ describe("GetPos wrappers", function()
     --   :h * selection
     --   :h * virtualedit=all - position cursor past actual characters (i.e. g$ - end of screen line)
 
+    it("edge case - no selection yet", function()
+        load_lines({ "one", "two", "three", "four", "five" })
+        vim.cmd(':1')
+        vim.cmd('normal! 0l')
+        should.be_equal(vim.fn.mode(), "n")
+
+        it("LastSelection is all zeros", function()
+            local selection = GetPos.LastSelection()
+            should.be_same_colorful_diff({
+                start_line_b1    = 0,
+                end_line_b1      = 0,
+                start_col_b1     = 0,
+                end_col_b1       = 0,
+                mode             = "n",
+                last_visual_mode = "",
+                linewise         = false,
+            }, selection)
+        end)
+    end)
+
     it("LastSelection", function()
         it("selection was closed", function()
             it("cursor was at END of linewise selection", function()
