@@ -166,9 +166,12 @@ describe("GetPos wrappers", function()
                 should.be_equal(vim.fn.mode(), "V")
 
                 -- TODO remove this lower level test? should I also remove the API for it
-                local line_base1, col_base1 = GetPos.CursorPosition_Line1Col1()
-                should.be_equal(3, line_base1)
-                should.be_equal(1, col_base1)
+                local cursor_pos = GetPos.CursorPosition()
+                local expected_pos = {
+                    line_b1 = 3,
+                    col_b1  = 1,
+                }
+                should.be_same_colorful_diff(expected_pos, cursor_pos)
 
                 local sel = GetPos.CurrentSelection()
                 local expected = {
