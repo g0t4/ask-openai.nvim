@@ -203,7 +203,22 @@ function M.ask_for_prediction()
 
                 local message = table.concat(messages, "\n")
 
-                vim.notify(message)
+                ---@type integer|nil
+                local last_notify_id = nil
+
+                ---Show a notification, clearing previous if it exists.
+                ---@param message string
+                ---@param level? integer   -- vim.log.levels
+                ---@param opts? table      -- vim.notify options
+                local function notify_once(message, level, opts)
+                    opts = opts or {}
+                    if last_notify_id then
+                        opts.replace = last_notify_id
+                    end
+                    last_notify_id = vim.notify(message, level, opts)
+                end
+
+                notify_once(message)
             end
 
             if data then
