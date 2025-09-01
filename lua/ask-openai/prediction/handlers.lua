@@ -228,7 +228,11 @@ function M.ask_for_prediction()
             if data then
                 perf:token_arrived()
 
-                vim.schedule(function()
+                -- vim.schedule(function()
+                vim.defer_fn(function()
+                    -- TODO ... is scheduling this why I end up getting a prediction frozen on-screen until next prediction triggered?
+                    --   does this happen after clear extmarks?
+                    --   PRN how can I reproduce?
                     local sse_result = backend.process_sse(data)
                     local chunk = sse_result.chunk
                     local generation_done = sse_result.done
@@ -248,7 +252,8 @@ function M.ask_for_prediction()
                             show_stats(sse_result)
                         end
                     end
-                end)
+                    -- end)
+                end, 500)
             end
         end
         uv.read_start(stdout, spawn_curl_options.on_stdout)
