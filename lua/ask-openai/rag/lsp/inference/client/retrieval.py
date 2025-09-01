@@ -93,8 +93,8 @@ async def semantic_grep(
         if num_languages == 0:
             logger.error(f"all_languages={config.all_languages}, but no datasets match")
             raise Exception(f"all_languages={config.all_languages}, but no datasets match")
-        top_k_per_lang = round(1.5 * query_embed_top_k / num_languages) # over sample each language by 50%
-        logger.info(f"{top_k_per_lang=}")
+        top_k_per_lang = round(1.5 * query_embed_top_k / num_languages)  # over sample each language by 50%
+        logger.info(f"{top_k_per_lang=} {config.all_languages=}")
 
         for lang, ds in datasets.all_datasets.items():
             if filter_languages and lang not in config.all_languages:
@@ -102,15 +102,13 @@ async def semantic_grep(
                 continue
 
             logger.info(f"searching {lang} index")
-            # TODO how about actually not quite split evenly? maybe /N*1.5 ?
             _scores, _ids = ds.index.search(query_vector, top_k_per_lang)
             scores.extend(_scores[0])
             ids.extend(_ids[0])
-        # PRN sort scores/ids by score ... nice to have but not critical b/c this only affects embeddings ranking
     else:
         dataset = datasets.for_file(args.currentFileAbsolutePath, vim_filetype=args.vimFiletype)
         if dataset is None:
-            logger.error(f"No dataset")
+            logger.error(f"No dataset for {args.currentFileAbsolutePath}")
             # return {"failed": True, "error": f"No dataset for {current_file_abs}"} # TODO return failure?
             raise Exception(f"No dataset for {args.currentFileAbsolutePath}")
 
