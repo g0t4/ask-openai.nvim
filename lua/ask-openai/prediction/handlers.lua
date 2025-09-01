@@ -229,10 +229,17 @@ function M.ask_for_prediction()
                 perf:token_arrived()
 
                 -- vim.schedule(function()
-                vim.defer_fn(function()
+                vim.defer_fn(function() -- use 500ms to test if abandoned check works below or if you get stuck prediction text that won't go away until next prediction starts!
                     -- TODO ... is scheduling this why I end up getting a prediction frozen on-screen until next prediction triggered?
                     --   does this happen after clear extmarks?
                     --   PRN how can I reproduce?
+
+                    -- ensure prediction isn't canceled
+                    if this_prediction.abandoned then
+                        log:info(ansi.yellow_bold("skipping on_stdout chunk b/c prediction is abandoned"))
+                        return
+                    end
+
                     local sse_result = backend.process_sse(data)
                     local chunk = sse_result.chunk
                     local generation_done = sse_result.done
