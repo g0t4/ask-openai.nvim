@@ -4,6 +4,7 @@ local Prediction = require("ask-openai.prediction.prediction")
 local ansi = require("ask-openai.prediction.ansi")
 local rag_client = require("ask-openai.rag.client")
 local api = require("ask-openai.api")
+require("devtools.performance")
 
 local OllamaFimBackend = require("ask-openai.prediction.backends.llama")
 -- TODO rewrite other backends to use new builder pattern (not a big change):
@@ -112,7 +113,8 @@ function M.ask_for_prediction()
     local document_prefix, document_suffix = get_prefix_suffix()
 
     ---@param rag_matches LSPRankedMatch[]
-    function send_fim(rag_matches)
+    ---@param rag_duration_ms? number
+    function send_fim(rag_matches, rag_duration_ms)
         local backend = OllamaFimBackend:new(document_prefix, document_suffix, rag_matches)
         local spawn_curl_options = backend:request_options()
 
@@ -201,6 +203,10 @@ function M.ask_for_prediction()
                     table.insert(messages, string.format("max_tokens: %d", gen.max_tokens))
                 end
 
+                if rag_duration_ms ~= nil then
+                    table.insert(messages, "RAG Duration: " .. rag_duration_ms .. "ms")
+                end
+
                 local message = table.concat(messages, "\n")
 
                 ---@type integer|nil
@@ -258,11 +264,14 @@ function M.ask_for_prediction()
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
         local this_request_ids, cancel -- declare in advance so closure can access
+        local start_rag = get_time_in_ns()
 
         ---@param rag_matches LSPRankedMatch[]
         ---@param rag_failed boolean?
         function on_rag_response(rag_matches, rag_failed)
             -- FYI unroll all rag specific safeguards here so that logic doesn't live inside send_fim
+            rag_duration_ms = get_elapsed_time_in_rounded_ms(start_rag)
+            log:info("rag_duration_ms", rag_duration_ms)
 
             -- * make sure prior (canceled) rag request doesn't still respond
             if M.rag_request_ids ~= this_request_ids then
@@ -278,7 +287,7 @@ function M.ask_for_prediction()
                 return
             end
 
-            send_fim(rag_matches)
+            send_fim(rag_matches, rag_duration_ms)
         end
 
         this_request_ids, cancel = rag_client.context_query_fim(document_prefix, document_suffix, on_rag_response)
