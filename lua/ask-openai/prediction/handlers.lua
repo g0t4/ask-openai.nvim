@@ -132,12 +132,19 @@ function FIMPerformance:token_arrived()
 end
 
 function FIMPerformance:rag_started()
-    -- TODO
+    if self._rag_start_time_ns ~= nil then
+        error("rag called a second time, aborting...")
+    end
     self._rag_start_time_ns = get_time_in_ns()
 end
 
 function FIMPerformance:rag_done()
-    -- TODO
+    if self.rag_duration_ms ~= nil then
+        error("rag_done called a second time, timings might be wrong, aborting...")
+    end
+    if self._rag_start_time_ns == nil then
+        error("rag_done called before rag_started, aborting...")
+    end
     self.rag_duration_ms = get_elapsed_time_in_rounded_ms(self._rag_start_time_ns)
 end
 
