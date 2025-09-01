@@ -6,19 +6,13 @@ local rag_client = require("ask-openai.rag.client")
 local api = require("ask-openai.api")
 local FIMPerformance = require("ask-openai.prediction.fim_performance")
 require("devtools.performance")
+local log = require("ask-openai.logs.logger").predictions()
 
 local OllamaFimBackend = require("ask-openai.prediction.backends.llama")
--- TODO rewrite other backends to use new builder pattern (not a big change):
---    TODO add :new, rearrange to self: methods
---    TODO only do this if and when I switch to another backend...
 -- local backend = require("ask-openai.prediction.backends.backendsvllm")
 
 -- FYI would need current prediction PER buffer in the future if want multiple buffers to have predictions at same time (not sure I want this feature)
 M.current_prediction = nil -- set on module for now, just so I can inspect it easily
-
--- FYI useful to observe what is happening under hood, run in pane below nvim (don't need to esc and look at :messages)
---    tail -f /Users/wesdemos/.local/share/nvim/ask-openai/ask-predictions.log
-local log = require("ask-openai.logs.logger").predictions()
 
 function M.get_line_range(current_row, allow_lines, total_lines_in_doc)
     -- FYI do not adjust for 0/1-indexed, assume all of these are in same 0/1-index
