@@ -139,7 +139,6 @@ end
 function FIMPerformance:rag_done()
     -- TODO
     self.rag_duration_ms = get_elapsed_time_in_rounded_ms(self._rag_start_time_ns)
-    log:info("rag_duration_ms", self.rag_duration_ms) -- TODO remove?
 end
 
 function FIMPerformance:overall_done()
@@ -147,6 +146,7 @@ function FIMPerformance:overall_done()
         error("completed called a second time, timings might be wrong, aborting...")
     end
     self.total_duration_ms = get_elapsed_time_in_rounded_ms(self._prediction_start_time_ns)
+    log:info("FIMPerformance", vim.inspect(self))
 end
 
 function M.ask_for_prediction()
