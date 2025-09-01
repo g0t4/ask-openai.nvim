@@ -149,9 +149,7 @@ function M.ask_for_prediction()
 
             local function show_stats(sse_result)
                 -- yes! this will help me remember to shut off debug logs when I don't need them!
-                -- vim.notify("stats: gen_tps=" .. sse_result.stats.predicted_tokens_per_second)
-                -- OR vim.print would probably be equally useful and somewhat annoying too
-                -- TODO or extmarks in this mode?! or else branch with extmarks?
+                -- TODO or extmarks in this mode?! or extmarks in both?
                 local messages = {}
                 table.insert(messages, "FIM Stats")
                 local stats = sse_result.stats
@@ -236,6 +234,7 @@ function M.ask_for_prediction()
                         -- then set 500ms delay using defer_fn
                         -- then trigger a prediction and cancel it midway and it'll be stuck!
                         log:info(ansi.yellow_bold("skipping on_stdout chunk b/c prediction is abandoned"))
+
                         return
                     end
 

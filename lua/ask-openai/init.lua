@@ -83,7 +83,7 @@ function M.start_predictions()
     --     callback = handlers.cursor_moved_in_insert_mode
     -- })
     vim.api.nvim_create_autocmd("TextChangedI", {
-        -- do I like this better? is this gonna mess up when I insert text still?
+        -- FYI been using this for a LONG time now and no issues (AFAICT)
         group = augroup,
         pattern = "*",
         callback = handlers.cursor_moved_in_insert_mode,

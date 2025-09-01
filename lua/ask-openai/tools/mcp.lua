@@ -74,7 +74,6 @@ function start_mcp_server(name, on_message)
                 on_message(msg)
             else
                 log:trace("MCP decode error:", line)
-                -- vim.notify("MCP decode error: " .. line, vim.log.levels.ERROR)
             end
         end
     end
