@@ -12,8 +12,8 @@ local use_model = "bytedance-seed-coder-8b"
 -- local use_model = "qwen3-coder:30b-a3b-q8_0"
 --
 -- * llama-server (llama-cpp)
-local url =
-"http://ollama:8012/completions" -- raw prompt: qwen2.5-coder(llama-server) # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
+local url = "http://ollama:8012/completions"
+-- /completions - raw prompt: qwen2.5-coder(llama-server) # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
 -- local url = "http://ollama:8012/chat/completions" -- gpt-oss(llama-server, not working yet)
 -- * ollama
 -- local url = "http://ollama:11434/api/generate" -- raw prompt: qwen2.5-coder(ollama)
