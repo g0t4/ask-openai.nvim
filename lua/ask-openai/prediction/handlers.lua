@@ -156,9 +156,9 @@ function FIMPerformance:overall_done()
 
     local message = string.format(
         "FIMPerformance - %s %s %s",
-        "TTFT: " .. ansi.underline(self.time_to_first_token_ms) .. " ms",
-        "RAG: " .. ansi.underline(self.rag_duration_ms) .. " ms",
-        "TOTAL: " .. ansi.underline(self.total_duration_ms) .. " ms"
+        "TTFT: " .. ansi.underline(self.time_to_first_token_ms .. " ms"),
+        "RAG: " .. ansi.underline(self.rag_duration_ms .. " ms"),
+        "TOTAL: " .. ansi.underline(self.total_duration_ms .. " ms")
     )
     log:info(message)
 
