@@ -134,11 +134,14 @@ function FIMPerformance:token_arrived()
 end
 
 function FIMPerformance:rag_started()
+    -- TODO
     self.rag_start_time_ns = get_time_in_ns()
 end
 
 function FIMPerformance:rag_done()
+    -- TODO
     self.rag_duration_ms = get_elapsed_time_in_rounded_ms(self.rag_start_time_ns)
+    log:info("rag_duration_ms", self.rag_duration_ms) -- TODO remove?
 end
 
 function FIMPerformance:overall_done()
@@ -155,8 +158,7 @@ function M.ask_for_prediction()
     local perf = FIMPerformance:new()
 
     ---@param rag_matches LSPRankedMatch[]
-    ---@param rag_duration_ms? number
-    function send_fim(rag_matches, rag_duration_ms)
+    function send_fim(rag_matches)
         local backend = OllamaFimBackend:new(document_prefix, document_suffix, rag_matches)
         local spawn_curl_options = backend:request_options()
 
@@ -312,16 +314,13 @@ function M.ask_for_prediction()
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
         local this_request_ids, cancel -- declare in advance so closure can access
-        local rag_start_time_ns = get_time_in_ns()
-        -- start_profiler()
+        perf:rag_started()
 
         ---@param rag_matches LSPRankedMatch[]
         ---@param rag_failed boolean?
         function on_rag_response(rag_matches, rag_failed)
             -- FYI unroll all rag specific safeguards here so that logic doesn't live inside send_fim
-            rag_duration_ms = get_elapsed_time_in_rounded_ms(rag_start_time_ns)
-            log:info("rag_duration_ms", rag_duration_ms)
-            -- stop_profiler("where.txt")
+            perf:rag_done()
 
             -- * make sure prior (canceled) rag request doesn't still respond
             if M.rag_request_ids ~= this_request_ids then
@@ -337,7 +336,7 @@ function M.ask_for_prediction()
                 return
             end
 
-            send_fim(rag_matches, rag_duration_ms)
+            send_fim(rag_matches)
         end
 
         this_request_ids, cancel = rag_client.context_query_fim(document_prefix, document_suffix, on_rag_response)
