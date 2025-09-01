@@ -90,10 +90,15 @@ function M.start_predictions()
     })
 
     -- SETUP hlgroup
-    -- TODO make this configurable
+    -- PRN make this configurable
     vim.api.nvim_set_hl(0, "AskPrediction", { italic = true, fg = "#dddddd" }) -- FYI can call repeatedly and no errors
     vim.api.nvim_set_hl(0, "AskStats", {
-        fg = "#FFFF00",
+        -- fg = "#FFFF00", -- Excellent
+        fg = "#FF1493", -- GOOD choice
+        -- fg = "#39FF14", -- GOOD
+        -- fg = "#FF5F1F",
+        -- fg = "#FF073A", -- GOOD choice
+        -- fg = "#BFFF00", -- GOOD choice
         bg = "NONE",
         -- bold = true
     })
