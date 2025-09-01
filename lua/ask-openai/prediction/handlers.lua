@@ -153,7 +153,16 @@ function FIMPerformance:overall_done()
         error("completed called a second time, timings might be wrong, aborting...")
     end
     self.total_duration_ms = get_elapsed_time_in_rounded_ms(self._prediction_start_time_ns)
-    log:info("FIMPerformance", vim.inspect(self))
+
+    local message = string.format(
+        "FIMPerformance - %s %s %s",
+        "TTFT: " .. ansi.underline(self.time_to_first_token_ms) .. " ms",
+        "RAG: " .. ansi.underline(self.rag_duration_ms) .. " ms",
+        "TOTAL: " .. ansi.underline(self.total_duration_ms) .. " ms"
+    )
+    log:info(message)
+
+    return message
 end
 
 function M.ask_for_prediction()
@@ -255,9 +264,9 @@ function M.ask_for_prediction()
                 -- * timing
                 if perf ~= nil then
                     perf:overall_done()
-                    table.insert(messages, "RAG duration: " .. perf.rag_duration_ms .. " ms")
-                    table.insert(messages, "First SSE: " .. perf.time_to_first_token_ms .. " ms")
-                    table.insert(messages, "Total duration: " .. perf.total_duration_ms .. " ms")
+                    table.insert(messages, "RAG: " .. perf.rag_duration_ms .. " ms")
+                    table.insert(messages, "TTFT: " .. perf.time_to_first_token_ms .. " ms")
+                    table.insert(messages, "Total: " .. perf.total_duration_ms .. " ms")
                 end
 
                 local message = table.concat(messages, "\n")
