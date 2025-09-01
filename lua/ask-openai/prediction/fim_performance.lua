@@ -50,12 +50,16 @@ function FIMPerformance:overall_done()
     end
     self.total_duration_ms = get_elapsed_time_in_rounded_ms(self._prediction_start_time_ns)
 
-    local message = string.format(
-        "FIMPerformance - %s %s %s",
-        "TTFT: " .. ansi.underline(self.time_to_first_token_ms .. " ms"),
-        "RAG: " .. ansi.underline(self.rag_duration_ms .. " ms"),
-        "TOTAL: " .. ansi.underline(self.total_duration_ms .. " ms")
-    )
+    local message = "FIMPerformance - "
+    if self.time_to_first_token_ms then
+        message = message .. "TTFT: " .. ansi.underline(self.time_to_first_token_ms .. " ms") .. " "
+    end
+    if self.rag_duration_ms then
+        message = message .. "RAG: " .. ansi.underline(self.rag_duration_ms .. " ms") .. " "
+    end
+    if self.total_duration_ms then
+        message = message .. "TOTAL: " .. ansi.underline(self.total_duration_ms .. " ms")
+    end
     log:info(message)
 
     return message
