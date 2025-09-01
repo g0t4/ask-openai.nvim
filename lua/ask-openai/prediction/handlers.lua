@@ -105,12 +105,54 @@ local function get_prefix_suffix()
     return document_prefix, document_suffix
 end
 
+---@class FIMPerformance
+---@field prediction_start_time_ns number
+---@field time_to_first_token_ms? number
+---@field rag_start_time_ns number
+---@field rag_duration_ms number
+---@field total_duration_ms number
+local FIMPerformance = {}
+FIMPerformance.__index = FIMPerformance
+
+function FIMPerformance:new()
+    self.prediction_start_time_ns = get_time_in_ns()
+
+    self.rag_start_time_ns = nil
+    self.rag_duration_ms = nil
+
+    self.time_to_first_token_ms = nil
+
+    self.total_duration_ms = nil
+    return self
+end
+
+function FIMPerformance:token_arrived()
+    if self.time_to_first_token_ms ~= nil then
+        return
+    end
+    self.time_to_first_token_ms = get_elapsed_time_in_rounded_ms(self.prediction_start_time_ns)
+end
+
+function FIMPerformance:rag_started()
+    self.rag_start_time_ns = get_time_in_ns()
+end
+
+function FIMPerformance:rag_done()
+    self.rag_duration_ms = get_elapsed_time_in_rounded_ms(self.rag_start_time_ns)
+end
+
+function FIMPerformance:overall_done()
+    if self.total_duration_ms ~= nil then
+        error("completed called a second time, timings might be wrong, aborting...")
+    end
+    self.total_duration_ms = get_elapsed_time_in_rounded_ms(self.prediction_start_time_ns)
+end
 
 function M.ask_for_prediction()
     M.cancel_current_prediction()
     local enable_rag = api.is_rag_enabled()
     local document_prefix, document_suffix = get_prefix_suffix()
-    local total_start_time_ns = get_time_in_ns()
+    local perf = FIMPerformance:new()
 
     ---@param rag_matches LSPRankedMatch[]
     ---@param rag_duration_ms? number
@@ -145,7 +187,6 @@ function M.ask_for_prediction()
             },
             spawn_curl_options.on_exit)
 
-        local time_to_first_sse_ms = nil
         spawn_curl_options.on_stdout = function(err, data)
             log:trace("on_stdout chunk: ", data)
 
@@ -205,15 +246,11 @@ function M.ask_for_prediction()
                 end
 
                 -- * timing
-                if rag_duration_ms ~= nil then
-                    table.insert(messages, "RAG duration: " .. rag_duration_ms .. " ms")
-                end
-                if time_to_first_sse_ms then
-                    table.insert(messages, "First SSE: " .. time_to_first_sse_ms .. " ms")
-                end
-                if total_start_time_ns ~= nil then
-                    local total_ms = get_elapsed_time_in_rounded_ms(total_start_time_ns)
-                    table.insert(messages, "Total duration: " .. total_ms .. " ms")
+                if perf ~= nil then
+                    perf:overall_done()
+                    table.insert(messages, "RAG duration: " .. perf.rag_duration_ms .. " ms")
+                    table.insert(messages, "First SSE: " .. perf.time_to_first_token_ms .. " ms")
+                    table.insert(messages, "Total duration: " .. perf.total_duration_ms .. " ms")
                 end
 
                 local message = table.concat(messages, "\n")
@@ -237,9 +274,7 @@ function M.ask_for_prediction()
             end
 
             if data then
-                if not time_to_first_sse_ms then
-                    time_to_first_sse_ms = get_elapsed_time_in_rounded_ms(total_start_time_ns)
-                end
+                perf:token_arrived()
 
                 vim.schedule(function()
                     local sse_result = backend.process_sse(data)
