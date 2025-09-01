@@ -145,6 +145,7 @@ function M.ask_for_prediction()
             },
             spawn_curl_options.on_exit)
 
+        local time_to_first_sse_ms = nil
         spawn_curl_options.on_stdout = function(err, data)
             log:trace("on_stdout chunk: ", data)
 
@@ -203,10 +204,13 @@ function M.ask_for_prediction()
                     table.insert(messages, string.format("max_tokens: %d", gen.max_tokens))
                 end
 
+                -- * timing
                 if rag_duration_ms ~= nil then
                     table.insert(messages, "RAG duration: " .. rag_duration_ms .. " ms")
                 end
-
+                if time_to_first_sse_ms then
+                    table.insert(messages, "First SSE: " .. time_to_first_sse_ms .. " ms")
+                end
                 if total_start_time_ns ~= nil then
                     local total_ms = get_elapsed_time_in_rounded_ms(total_start_time_ns)
                     table.insert(messages, "Total duration: " .. total_ms .. " ms")
@@ -233,6 +237,10 @@ function M.ask_for_prediction()
             end
 
             if data then
+                if not time_to_first_sse_ms then
+                    time_to_first_sse_ms = get_elapsed_time_in_rounded_ms(total_start_time_ns)
+                end
+
                 vim.schedule(function()
                     local sse_result = backend.process_sse(data)
                     local chunk = sse_result.chunk
