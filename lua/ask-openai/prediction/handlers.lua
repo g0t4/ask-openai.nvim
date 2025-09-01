@@ -229,11 +229,7 @@ function M.ask_for_prediction()
                 perf:token_arrived()
 
                 -- vim.schedule(function()
-                vim.defer_fn(function() -- use 500ms to test if abandoned check works below or if you get stuck prediction text that won't go away until next prediction starts!
-                    -- TODO ... is scheduling this why I end up getting a prediction frozen on-screen until next prediction triggered?
-                    --   does this happen after clear extmarks?
-                    --   PRN how can I reproduce?
-
+                vim.defer_fn(function()
                     -- ensure prediction isn't canceled
                     if this_prediction.abandoned then
                         log:info(ansi.yellow_bold("skipping on_stdout chunk b/c prediction is abandoned"))
@@ -260,7 +256,7 @@ function M.ask_for_prediction()
                         end
                     end
                     -- end)
-                end, 500)
+                end, 500) -- 500 ms makes it easy to reproduce "stuck" predictions
             end
         end
         uv.read_start(stdout, spawn_curl_options.on_stdout)
