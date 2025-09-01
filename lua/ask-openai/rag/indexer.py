@@ -52,7 +52,7 @@ class IncrementalRAGIndexer:
         rag_yaml = self.source_code_dir / ".rag.yaml"
         if not rag_yaml.exists():
             logger.debug(f"no rag config found {rag_yaml}, using default config")
-            return ["lua", "py", "fish"]
+            return ["lua", "py", "fish", "zsh", "sh"]
         import yaml
         async with aiofiles.open(rag_yaml, mode="r") as f:
             content = await f.read()
