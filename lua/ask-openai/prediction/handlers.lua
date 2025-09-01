@@ -228,10 +228,13 @@ function M.ask_for_prediction()
             if data then
                 perf:token_arrived()
 
-                -- vim.schedule(function()
-                vim.defer_fn(function()
-                    -- ensure prediction isn't canceled
+                vim.schedule(function()
+                    -- vim.defer_fn(function()
                     if this_prediction.abandoned then
+                        -- DO NOT update prediction text if it's been abandoned!
+                        -- reproduce bug by comment out this check...
+                        -- then set 500ms delay using defer_fn
+                        -- then trigger a prediction and cancel it midway and it'll be stuck!
                         log:info(ansi.yellow_bold("skipping on_stdout chunk b/c prediction is abandoned"))
                         return
                     end
@@ -255,8 +258,8 @@ function M.ask_for_prediction()
                             show_stats(sse_result)
                         end
                     end
-                    -- end)
-                end, 500) -- 500 ms makes it easy to reproduce "stuck" predictions
+                end)
+                -- end, 500) -- 500 ms makes it easy to reproduce "stuck" predictions
             end
         end
         uv.read_start(stdout, spawn_curl_options.on_stdout)
