@@ -93,12 +93,12 @@ async def semantic_grep(
         if num_languages == 0:
             logger.error(f"all_languages={config.all_languages}, but no datasets match")
             raise Exception(f"all_languages={config.all_languages}, but no datasets match")
-        top_k_per_lang = round(1.5 * query_embed_top_k / num_languages)
+        top_k_per_lang = round(1.5 * query_embed_top_k / num_languages) # over sample each language by 50%
         logger.info(f"{top_k_per_lang=}")
 
         for lang, ds in datasets.all_datasets.items():
             if filter_languages and lang not in config.all_languages:
-                logger.debug(f"skipping language: {lang}")
+                logger.warn(f"skipping language: {lang}")
                 continue
 
             logger.info(f"searching {lang} index")
@@ -124,9 +124,21 @@ async def semantic_grep(
     # logger.info(f'{scores=}')
 
     # * lookup matching chunks (filter any exclusions on metadata)
+    id_score_pairs = zip(ids, scores)
+    if all_languages:
+        # cross language lookups need to either:
+        # 1. sample from each language evenly or weighted?
+        # 2. sort by score? see how this works in reality...
+        # FYI use #1 if scores don't really compare well across languages... I suspect they will though
+        #
+        # otherwise later languages (i.e. fish) configured late in all_languages will be skipped almost every time
+        #   b/c I over sample each language in the hopes of not missing a few extra key chunks
+        #   I don't take just top_k/num_languages
+        id_score_pairs = sorted(id_score_pairs, key=lambda x: x[1], reverse=True)
+
     matches: list[LSPRankedMatch] = []
     num_embeds = 0
-    for idx, (id, embed_score) in enumerate(zip(ids, scores)):
+    for idx, (id, embed_score) in enumerate(id_score_pairs):
 
         chunk = datasets.get_chunk_by_faiss_id(id)
         if chunk is None:
@@ -163,8 +175,8 @@ async def semantic_grep(
         num_embeds += 1
         if num_embeds >= embed_top_k:
             # this is the case when we need to skipSameFile
-            # over query with query_embed_top_k
-            # stop taking embeddings at embed_top_k (often is a multiple too for re-rank to select top_k)
+            # - over query with query_embed_top_k
+            # - also over query when doing all_languages (not just top_k/num_languages)
             break
 
     if len(matches) == 0:
