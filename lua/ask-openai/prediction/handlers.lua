@@ -109,8 +109,8 @@ end
 function M.ask_for_prediction()
     M.cancel_current_prediction()
     local enable_rag = api.is_rag_enabled()
-
     local document_prefix, document_suffix = get_prefix_suffix()
+    local total_start_time_ns = get_time_in_ns()
 
     ---@param rag_matches LSPRankedMatch[]
     ---@param rag_duration_ms? number
@@ -204,7 +204,12 @@ function M.ask_for_prediction()
                 end
 
                 if rag_duration_ms ~= nil then
-                    table.insert(messages, "RAG Duration: " .. rag_duration_ms .. "ms")
+                    table.insert(messages, "RAG duration: " .. rag_duration_ms .. " ms")
+                end
+
+                if total_start_time_ns ~= nil then
+                    local total_ms = get_elapsed_time_in_rounded_ms(total_start_time_ns)
+                    table.insert(messages, "Total duration: " .. total_ms .. " ms")
                 end
 
                 local message = table.concat(messages, "\n")
