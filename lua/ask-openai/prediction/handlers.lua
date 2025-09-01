@@ -265,6 +265,7 @@ function M.ask_for_prediction()
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
         local this_request_ids, cancel -- declare in advance so closure can access
         local start_rag = get_time_in_ns()
+        -- start_profiler()
 
         ---@param rag_matches LSPRankedMatch[]
         ---@param rag_failed boolean?
@@ -272,6 +273,7 @@ function M.ask_for_prediction()
             -- FYI unroll all rag specific safeguards here so that logic doesn't live inside send_fim
             rag_duration_ms = get_elapsed_time_in_rounded_ms(start_rag)
             log:info("rag_duration_ms", rag_duration_ms)
+            -- stop_profiler("where.txt")
 
             -- * make sure prior (canceled) rag request doesn't still respond
             if M.rag_request_ids ~= this_request_ids then
