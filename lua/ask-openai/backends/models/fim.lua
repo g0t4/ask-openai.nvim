@@ -175,6 +175,19 @@ function M.qwen25coder.get_fim_prompt(request)
         prompt = prompt .. non_fim_file
     end
 
+    --- TODO test adding FIM instructions?
+    local include_fim_guidance = true
+    if include_fim_guidance then
+        local guidance = "if " .. tokens.fim_middle .. "is on a line that has text before and after it then consider if a small prediction would suffice before suggesting longer"
+        append_file_non_fim({
+            filename = "FIM guidance",
+            content = guidance
+        })
+    end
+
+
+
+
     if request.context.includes.yanks and request.context.yanks then
         append_file_non_fim(request.context.yanks)
     end
