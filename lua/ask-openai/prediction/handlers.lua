@@ -264,7 +264,7 @@ function M.ask_for_prediction()
                 -- * timing
                 if perf ~= nil then
                     perf:overall_done()
-                    table.insert(messages, "RAG: " .. perf.rag_duration_ms .. " ms")
+                    table.insert(messages, "\nRAG: " .. perf.rag_duration_ms .. " ms")
                     table.insert(messages, "TTFT: " .. perf.time_to_first_token_ms .. " ms")
                     table.insert(messages, "Total: " .. perf.total_duration_ms .. " ms")
                 end
