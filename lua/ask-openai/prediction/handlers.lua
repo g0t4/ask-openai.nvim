@@ -106,18 +106,16 @@ local function get_prefix_suffix()
 end
 
 ---@class FIMPerformance
----@field prediction_start_time_ns number
 ---@field time_to_first_token_ms? number
----@field rag_start_time_ns number
----@field rag_duration_ms number
----@field total_duration_ms number
+---@field rag_duration_ms? number
+---@field total_duration_ms? number
 local FIMPerformance = {}
 FIMPerformance.__index = FIMPerformance
 
 function FIMPerformance:new()
-    self.prediction_start_time_ns = get_time_in_ns()
+    self._prediction_start_time_ns = get_time_in_ns()
 
-    self.rag_start_time_ns = nil
+    self._rag_start_time_ns = nil
     self.rag_duration_ms = nil
 
     self.time_to_first_token_ms = nil
@@ -130,17 +128,17 @@ function FIMPerformance:token_arrived()
     if self.time_to_first_token_ms ~= nil then
         return
     end
-    self.time_to_first_token_ms = get_elapsed_time_in_rounded_ms(self.prediction_start_time_ns)
+    self.time_to_first_token_ms = get_elapsed_time_in_rounded_ms(self._prediction_start_time_ns)
 end
 
 function FIMPerformance:rag_started()
     -- TODO
-    self.rag_start_time_ns = get_time_in_ns()
+    self._rag_start_time_ns = get_time_in_ns()
 end
 
 function FIMPerformance:rag_done()
     -- TODO
-    self.rag_duration_ms = get_elapsed_time_in_rounded_ms(self.rag_start_time_ns)
+    self.rag_duration_ms = get_elapsed_time_in_rounded_ms(self._rag_start_time_ns)
     log:info("rag_duration_ms", self.rag_duration_ms) -- TODO remove?
 end
 
@@ -148,7 +146,7 @@ function FIMPerformance:overall_done()
     if self.total_duration_ms ~= nil then
         error("completed called a second time, timings might be wrong, aborting...")
     end
-    self.total_duration_ms = get_elapsed_time_in_rounded_ms(self.prediction_start_time_ns)
+    self.total_duration_ms = get_elapsed_time_in_rounded_ms(self._prediction_start_time_ns)
 end
 
 function M.ask_for_prediction()
