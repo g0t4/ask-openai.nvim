@@ -165,6 +165,16 @@ function FIMPerformance:overall_done()
     return message
 end
 
+function FIMPerformance:TTFT_minus_RAG_ms()
+    if self.time_to_first_token_ms == nil then
+        return nil
+    end
+    if self.rag_duration_ms == nil then
+        return nil
+    end
+    return self.time_to_first_token_ms - self.rag_duration_ms
+end
+
 function M.ask_for_prediction()
     M.cancel_current_prediction()
     local enable_rag = api.is_rag_enabled()
@@ -266,6 +276,7 @@ function M.ask_for_prediction()
                     perf:overall_done()
                     table.insert(messages, "\nRAG: " .. perf.rag_duration_ms .. " ms")
                     table.insert(messages, "TTFT: " .. perf.time_to_first_token_ms .. " ms")
+                    table.insert(messages, "  w/o RAG: " .. perf:TTFT_minus_RAG_ms() .. " ms")
                     table.insert(messages, "Total: " .. perf.total_duration_ms .. " ms")
                 end
 
