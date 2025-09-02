@@ -17,19 +17,19 @@ function M.get_line_range_base0(current_row_b0, take_num_lines_each_way, buffer_
     local last_row_b0 = current_row_b0 + take_num_lines_each_way
     if first_row_b0 < 0 then
         -- first row cannot < 0
-        local extra_rows = -first_row_b0
+        local unused_prefix_rows = -first_row_b0
         first_row_b0 = 0
 
         -- unused lines in prefix, thus expand possible suffix
-        last_row_b0 = last_row_b0 + extra_rows
+        last_row_b0 = last_row_b0 + unused_prefix_rows
     end
     if last_row_b0 > buffer_line_count then
         -- last row cannot be > num_rows_total
-        local extra_rows = last_row_b0 - buffer_line_count
+        local unused_suffix_rows = last_row_b0 - buffer_line_count
         last_row_b0 = buffer_line_count
 
         -- unused lines in suffix, try expanding prefix
-        first_row_b0 = first_row_b0 - extra_rows
+        first_row_b0 = first_row_b0 - unused_suffix_rows
         first_row_b0 = math.max(0, first_row_b0)
         -- todo do I have to ensure > 0 ? for first_row_b0
     end
