@@ -27,7 +27,9 @@ function M.is_rag_supported_in_current_file()
     return vim.tbl_contains(M.rag_extensions, current_file_extension)
 end
 
-local function fim_concat(prefix, suffix, limit)
+---@param ps_chunk PSChunk
+---@param limit? integer -- number of characters before/after cursor position for RAG query document
+local function fim_concat(ps_chunk, limit)
     limit = limit or 1500 -- 2000?
     local half = math.floor(limit / 2)
 
@@ -35,17 +37,17 @@ local function fim_concat(prefix, suffix, limit)
     --   FYI I think I will just supress these warnings b/c a limit is fine for RAG that is far less than FIM limits
     --   FYI IT IS OK TO REMOVE THE WARNINGS! OR COMMENT THEM OUT! or set at debug log level
     local truncated = false
-    if prefix:len() > half then
+    if ps_chunk.prefix:len() > half then
         truncated = true
-        log:warn(string.format("FIM prefix too long for RAG (max %d chars, got %d) – will be truncated", limit, prefix:len()))
+        log:warn(string.format("FIM prefix too long for RAG (max %d chars, got %d) – will be truncated", limit, ps_chunk.prefix:len()))
     end
-    if suffix:len() > half then
+    if ps_chunk.suffix:len() > half then
         truncated = true
-        log:warn(string.format("FIM suffix too long for RAG (max %d chars, got %d) – will be truncated", limit, suffix:len()))
+        log:warn(string.format("FIM suffix too long for RAG (max %d chars, got %d) – will be truncated", limit, ps_chunk.suffix:len()))
     end
 
-    local short_prefix = prefix:sub(-half) -- take from the end of the prefix (if over limit)
-    local short_suffix = suffix:sub(1, half) -- take from the start of the suffix (if over limit)
+    local short_prefix = ps_chunk.prefix:sub(-half) -- take from the end of the prefix (if over limit)
+    local short_suffix = ps_chunk.suffix:sub(1, half) -- take from the start of the suffix (if over limit)
 
     local query = short_prefix .. "<<<FIM CURSOR HERE>>>" .. short_suffix
     if truncated then
@@ -97,12 +99,11 @@ function M.context_query_rewrites(user_prompt, code_context, callback)
     return M._context_query(query, instruct, callback)
 end
 
----@param document_prefix string
----@param document_suffix string
+---@param ps_chunk PSChunk
 ---@param callback fun(matches: LSPRankedMatch[], failed: boolean)
-function M.context_query_fim(document_prefix, document_suffix, callback)
+function M.context_query_fim(ps_chunk, callback)
     local fim_specific_instruct = "Complete the missing portion of code (FIM) based on the surrounding context (Fill-in-the-middle)"
-    local query = fim_concat(document_prefix, document_suffix)
+    local query = fim_concat(ps_chunk) -- TODO map fim_concat
     return M._context_query(query, fim_specific_instruct, callback)
 end
 

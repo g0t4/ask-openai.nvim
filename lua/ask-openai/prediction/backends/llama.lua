@@ -28,26 +28,23 @@ local endpoint_llama_server_proprietary_completions = string.match(url, ":8013/c
 local endpoint_openaicompat_chat_completions = string.match(url, "v1/chat/completions$")
 
 ---@class OllamaFimBackend
----@field prefix string
----@field suffix string
+---@field ps_chunk PSChunk
 ---@field rag_matches LSPRankedMatch[]
 ---@field context CurrentContext
 local OllamaFimBackend = {}
 OllamaFimBackend.__index = OllamaFimBackend
 
----@param prefix string
----@param suffix string
+---@param ps_chunk PSChunk
 ---@param rag_matches LSPRankedMatch[]
 ---@return OllamaFimBackend
-function OllamaFimBackend:new(prefix, suffix, rag_matches)
+function OllamaFimBackend:new(ps_chunk, rag_matches)
     local always_include = {
         yanks = true,
         matching_ctags = true, -- TODO should RAG replace this by default? and just have more RAG matches (FYI RAG can index the ctags file too)
         project = false, -- for now lets leave this for AskRewrites only
     }
     local instance = {
-        prefix = prefix,
-        suffix = suffix,
+        ps_chunk = ps_chunk,
         rag_matches = rag_matches,
         -- FYI gonna limit FIM while I test different sources
         context = CurrentContext:items("", always_include)

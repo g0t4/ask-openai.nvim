@@ -24,7 +24,7 @@ describe("get_prefix_suffix", function()
         local col_base0 = 0 -- cursor in first col
         vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 
-        local ps_chunk = ps.get_prefix_suffix_chunks()
+        local ps_chunk = ps.get_prefix_suffix_chunk()
 
         assert.are_same({
             prefix = "line 1\nline 2\nline 3\n",
@@ -54,7 +54,7 @@ describe("get_prefix_suffix", function()
         vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 
         local take_lines = 2
-        local ps_chunk = ps.get_prefix_suffix_chunks(2)
+        local ps_chunk = ps.get_prefix_suffix_chunk(2)
 
         -- to make this consistent I probably should make line range take 3 to 7 here
         --  like with start of doc, which takes 1 to 5

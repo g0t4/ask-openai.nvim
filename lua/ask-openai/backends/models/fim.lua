@@ -16,6 +16,7 @@ M.gpt_oss = {
     }
 }
 
+---@param request OllamaFimBackend
 function M.gpt_oss.get_fim_chat_messages(request)
     local system_prompt = "Your response will be used for code completion in neovim"
         .. ", in a FIM (fill-in-the-middle) pluging that genrates code as the user types. \n"
@@ -84,9 +85,9 @@ function M.gpt_oss.get_fim_chat_messages(request)
         .. "\n\nPlase complete the middle of the following example (do not return anything beyond the code for <<<FIM>>>):"
         .. "\n\n"
         -- NOTE I am not (yet) labeling sections, just put it together as a block and ask for the <<<FIM>>> part!
-        .. request.prefix
+        .. request.ps_chunk.prefix
         .. "<<<FIM>>>"
-        .. request.suffix
+        .. request.ps_chunk.suffix
 
     table.insert(messages, ChatMessage:user(fim_message))
 
@@ -218,9 +219,9 @@ function M.qwen25coder.get_fim_prompt(request)
         .. current_file_relative_path
         .. "\n"
         .. tokens.fim_prefix
-        .. request.prefix
+        .. request.ps_chunk.prefix
         .. tokens.fim_suffix
-        .. request.suffix
+        .. request.ps_chunk.suffix
         .. tokens.fim_middle
 
     -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
@@ -304,9 +305,9 @@ function M.bytedance_seed_coder.get_fim_prompt_file_level_only(request)
         --
         -- fyi, no newlines
         .. tokens.fim_suffix
-        .. request.suffix
+        .. request.ps_chunk.suffix
         .. tokens.fim_prefix
-        .. request.prefix
+        .. request.ps_chunk.prefix
         .. tokens.fim_middle
 
     return file_level_prompt_only
@@ -400,9 +401,9 @@ function M.bytedance_seed_coder.get_fim_prompt_repo_level(request)
         --
         -- fyi, no newlines
         .. tokens.fim_suffix
-        .. request.suffix
+        .. request.ps_chunk.suffix
         .. tokens.fim_prefix
-        .. request.prefix
+        .. request.ps_chunk.prefix
         .. tokens.fim_middle
 
     local prompt_lines = {}

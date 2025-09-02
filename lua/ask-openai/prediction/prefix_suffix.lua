@@ -50,7 +50,7 @@ end
 
 ---@param take_num_lines_each_way? integer
 ---@return PSChunk ps_chunk
-function M.get_prefix_suffix_chunks(take_num_lines_each_way)
+function M.get_prefix_suffix_chunk(take_num_lines_each_way)
     take_num_lines_each_way = take_num_lines_each_way or 80
     -- presently, this only works with current buffer/window:
     local current_win_id = 0
@@ -108,7 +108,7 @@ function M.get_prefix_suffix_chunks(take_num_lines_each_way)
 end
 
 function M.get_prefix_suffix(take_num_lines_each_way)
-    local ps_chunk = M.get_prefix_suffix_chunks(take_num_lines_each_way)
+    local ps_chunk = M.get_prefix_suffix_chunk(take_num_lines_each_way)
     return ps_chunk.prefix, ps_chunk.suffix
 end
 

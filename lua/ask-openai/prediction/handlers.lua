@@ -19,12 +19,12 @@ M.current_prediction = nil -- set on module for now, just so I can inspect it ea
 function M.ask_for_prediction()
     M.cancel_current_prediction()
     local enable_rag = api.is_rag_enabled()
-    local document_prefix, document_suffix = ps.get_prefix_suffix()
+    local ps_chunk = ps.get_prefix_suffix_chunk()
     local perf = FIMPerformance:new()
 
     ---@param rag_matches LSPRankedMatch[]
     function send_fim(rag_matches)
-        local backend = OllamaFimBackend:new(document_prefix, document_suffix, rag_matches)
+        local backend = OllamaFimBackend:new(ps_chunk, rag_matches)
         local spawn_curl_options = backend:request_options()
 
         -- log:trace("curl", table.concat(spawn_curl_options.args, " "))
@@ -224,7 +224,7 @@ function M.ask_for_prediction()
             send_fim(rag_matches)
         end
 
-        this_request_ids, cancel = rag_client.context_query_fim(document_prefix, document_suffix, on_rag_response)
+        this_request_ids, cancel = rag_client.context_query_fim(ps_chunk, on_rag_response)
         M.rag_cancel = cancel
         M.rag_request_ids = this_request_ids
     else
