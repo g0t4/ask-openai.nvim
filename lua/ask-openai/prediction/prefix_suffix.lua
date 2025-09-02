@@ -9,7 +9,7 @@ local M = {}
 ---@field lines string|string[] -- TODO lines array or text?
 local Chunk = {}
 
-function M.get_line_range(current_row, allow_lines, total_lines_in_doc)
+function M.get_line_range(current_row, allow_lines, buffer_line_count)
     -- FYI do not adjust for 0/1-indexed, assume all of these are in same 0/1-index
     --   only adjust when using nvim's line funcs
 
@@ -23,10 +23,10 @@ function M.get_line_range(current_row, allow_lines, total_lines_in_doc)
         -- expand end of range
         last_row = last_row + extra_rows
     end
-    if last_row > total_lines_in_doc then
+    if last_row > buffer_line_count then
         -- last row cannot be > num_rows_total
-        local extra_rows = last_row - total_lines_in_doc
-        last_row = total_lines_in_doc
+        local extra_rows = last_row - buffer_line_count
+        last_row = buffer_line_count
 
         -- add extra rows to start of range:
         first_row = first_row - extra_rows
@@ -44,9 +44,9 @@ function M.get_prefix_suffix(buffer_number)
     local cursor_line_0indexed = cursor_line_1indexed - 1 -- 0-indexed now
 
     local allow_lines = 80
-    local num_rows_total = vim.api.nvim_buf_line_count(buffer_number)
+    local line_count = vim.api.nvim_buf_line_count(buffer_number)
     -- TODO test for 0indexed vs 1indexed indexing in get_line_range (I know you can get a number past end of document but that works out given get_lines is END-EXCLUSIVE
-    local first_row, last_row = M.get_line_range(cursor_line_0indexed, allow_lines, num_rows_total)
+    local first_row, last_row = M.get_line_range(cursor_line_0indexed, allow_lines, line_count)
     log:trace("first_row", first_row, "last_row", last_row, "cursor_line_0indexed", cursor_line_0indexed, "cursor_col_0indexed", cursor_col_0indexed)
 
     local current_line = vim.api.nvim_buf_get_lines(buffer_number, cursor_line_0indexed, cursor_line_0indexed + 1, IGNORE_BOUNDARIES)[1] -- 0indexed, END-EXCLUSIVE
