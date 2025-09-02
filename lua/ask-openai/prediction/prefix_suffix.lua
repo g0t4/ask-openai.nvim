@@ -45,7 +45,7 @@ end
 
 ---@param take_num_lines_each_way integer
 ---@return Chunk prefix, Chunk suffix
-function M._get_prefix_suffix(take_num_lines_each_way)
+function M.get_prefix_suffix_chunks(take_num_lines_each_way)
     take_num_lines_each_way = take_num_lines_each_way or 80
     -- presently, this only works with current buffer/window:
     local current_win_id = 0
@@ -98,7 +98,7 @@ function M._get_prefix_suffix(take_num_lines_each_way)
 end
 
 function M.get_prefix_suffix(take_num_lines_each_way)
-    return M._get_prefix_suffix(take_num_lines_each_way)
+    return M.get_prefix_suffix_chunks(take_num_lines_each_way)
 end
 
 return M
