@@ -84,8 +84,9 @@ describe("get_prefix_suffix", function()
                 assert.equal("4\nline 5\nline 6", suffix)
             end)
 
-            it("cursor is after last char of line .. not sure this is even a thing but lets see how we handle it", function()
-                -- TODO is this a bug? currently this looks the same as for cursor on (before) last char?
+            it("nvim will place cursor on last char if you set its column past last char in line", function()
+                -- FYI this is a redundant test... really is testing behavior of nvim_win_set_cursor b/c that dictates the outcome here
+                --   unless there's a way to place cursor past the end of the line... which I feel like there is a mode for that... but unsure
                 local bufnr = new_buffer_with_lines(seven_lines)
                 local line_base1 = 4 -- 'line 4'
                 local col_base0 = 6
@@ -94,8 +95,8 @@ describe("get_prefix_suffix", function()
                 local take_lines = 2
                 local prefix, suffix = ps.get_prefix_suffix(take_lines)
 
-                assert.equal("line 2\nline 3\nline 4", prefix)
-                assert.equal("\nline 5\nline 6", suffix)
+                assert.equal("line 2\nline 3\nline ", prefix)
+                assert.equal("4\nline 5\nline 6", suffix)
             end)
         end)
 
