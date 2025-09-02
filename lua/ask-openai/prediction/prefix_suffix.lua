@@ -56,7 +56,7 @@ function M.get_prefix_suffix()
     local line_count = vim.api.nvim_buf_line_count(current_bufnr)
     local take_start_row_base0, take_end_row_base0 = M.determine_line_range_base0(cursor_line_base0, take_num_lines_each_way, line_count)
 
-    local current_line = vim.api.nvim_buf_get_lines(current_bufnr,
+    local cursor_row_text = vim.api.nvim_buf_get_lines(current_bufnr,
         cursor_line_base0,
         cursor_line_base0 + 1, -- end is exclusive, thus + 1
         IGNORE_BOUNDARIES
@@ -64,13 +64,13 @@ function M.get_prefix_suffix()
 
     local before_is_thru_col = cursor_col_base0 -- don't +1 b/c that would include the char under the cursor which goes after any typed/inserted chars
     -- test edge case: enter insert mode 'i' => type/paste char(s) => observe char under cursor position shifts right
-    local current_line_before_split = current_line:sub(1, before_is_thru_col) -- sub is END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
+    local cursor_row_text_before_split = cursor_row_text:sub(1, before_is_thru_col) -- sub is END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
 
     local after_starts_at_char_under_cursor = cursor_col_base0 + 1 -- FYI cursor_col_0indexed, thus +1
-    local current_line_after_split = current_line:sub(after_starts_at_char_under_cursor)
+    local cursor_row_text_after_split = cursor_row_text:sub(after_starts_at_char_under_cursor)
 
     local lines_before_current = vim.api.nvim_buf_get_lines(current_bufnr, take_start_row_base0, cursor_line_base0, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
-    local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_line_before_split
+    local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. cursor_row_text_before_split
 
     -- TODO edge cases for new line at end of current line? is that a concern
     local lines_after_current = vim.api.nvim_buf_get_lines(current_bufnr,
@@ -80,7 +80,7 @@ function M.get_prefix_suffix()
     ) -- 0indexed END-EXCLUSIVE
 
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
-    local document_suffix = current_line_after_split .. "\n" .. table.concat(lines_after_current, "\n")
+    local document_suffix = cursor_row_text_after_split .. "\n" .. table.concat(lines_after_current, "\n")
 
     -- TODO convert to new Chunk type (w/ line #s so I can pass those to LSP to only skip lines in this range with RAG matching)
     return document_prefix, document_suffix
