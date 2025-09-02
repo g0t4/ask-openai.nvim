@@ -67,7 +67,7 @@ function M.get_prefix_suffix()
     local cursor_row_text_before_split = cursor_row_text:sub(1, before_is_thru_col) -- sub is END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
 
     local after_starts_at_char_under_cursor = cursor_col_base0 + 1 -- FYI cursor_col_0indexed, thus +1
-    local cursor_row_text_after_split = cursor_row_text:sub(after_starts_at_char_under_cursor)
+    local cursor_row_text_after_cursor = cursor_row_text:sub(after_starts_at_char_under_cursor)
 
     local lines_before_current = vim.api.nvim_buf_get_lines(current_bufnr, take_start_row_base0, cursor_line_base0, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
     local prefix_text = table.concat(lines_before_current, "\n") .. "\n" .. cursor_row_text_before_split
@@ -80,7 +80,7 @@ function M.get_prefix_suffix()
     ) -- 0indexed END-EXCLUSIVE
 
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
-    local suffix_text = cursor_row_text_after_split
+    local suffix_text = cursor_row_text_after_cursor
         .. "\n" -- TODO! doesn't cursor row have a newline already? why am I adding that here?
         .. table.concat(lines_after_current, "\n")
 
