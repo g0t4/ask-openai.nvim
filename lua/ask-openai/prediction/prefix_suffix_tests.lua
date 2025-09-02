@@ -44,7 +44,7 @@ describe("get_prefix_suffix", function()
     end)
 
     describe("plenty of lines both ways", function()
-        describe("cursor line is empty", function()
+        describe("cursor line is not empty", function()
             it("cursor is at start of line", function()
                 local bufnr = new_buffer_with_lines(seven_lines)
                 local line_base1 = 4 -- 'line 4'
@@ -117,7 +117,7 @@ describe("get_prefix_suffix", function()
             end)
         end)
 
-        describe("cursor line is not empty", function()
+        describe("cursor line is empty", function()
         end)
     end)
 end)
