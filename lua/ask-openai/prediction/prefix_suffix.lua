@@ -28,11 +28,11 @@ function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, b
         take_end_row_b0 = take_end_row_b0 + unused_prefix_rows
     end
 
-    local last_line_b0 = buffer_line_count - 1
-    if take_end_row_b0 > last_line_b0 then
+    local last_row_num_b0 = buffer_line_count - 1
+    if take_end_row_b0 > last_row_num_b0 then
         -- end row cannot be after last line!
         local unused_suffix_rows = take_end_row_b0 - buffer_line_count
-        take_end_row_b0 = last_line_b0
+        take_end_row_b0 = last_row_num_b0
 
         -- unused lines in suffix are added to possible prefix
         take_start_row_b0 = take_start_row_b0 - unused_suffix_rows
