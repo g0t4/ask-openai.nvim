@@ -80,7 +80,9 @@ function M.get_prefix_suffix()
     ) -- 0indexed END-EXCLUSIVE
 
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
-    local suffix_text = cursor_row_text_after_split .. "\n" .. table.concat(lines_after_current, "\n")
+    local suffix_text = cursor_row_text_after_split
+        .. "\n" -- TODO! doesn't cursor row have a newline already? why am I adding that here?
+        .. table.concat(lines_after_current, "\n")
 
     -- TODO convert to new Chunk type (w/ line #s so I can pass those to LSP to only skip lines in this range with RAG matching)
     return prefix_text, suffix_text
