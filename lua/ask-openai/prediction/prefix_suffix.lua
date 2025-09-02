@@ -24,7 +24,7 @@ function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, b
         local unused_prefix_rows = -take_start_row_b0
         take_start_row_b0 = 0
 
-        -- unused lines in prefix, thus expand possible suffix
+        -- unused lines in prefix are added to possible suffix
         take_end_row_b0 = take_end_row_b0 + unused_prefix_rows
     end
 
@@ -34,7 +34,7 @@ function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, b
         local unused_suffix_rows = take_end_row_b0 - buffer_line_count
         take_end_row_b0 = last_line_b0
 
-        -- unused lines in suffix, try expanding prefix
+        -- unused lines in suffix are added to possible prefix
         take_start_row_b0 = take_start_row_b0 - unused_suffix_rows
         take_start_row_b0 = math.max(0, take_start_row_b0)
     end
