@@ -62,7 +62,7 @@ function M.get_prefix_suffix()
         IGNORE_BOUNDARIES
     )[1] -- 0indexed, END-EXCLUSIVE
 
-    -- FYI prefix stops in column before cursor column
+    -- FYI prefix stops with column before cursor column
     local col_before_cursor_base1 = cursor_col_base0
     local cursor_row_text_before_cursor = cursor_row_text:sub(1, col_before_cursor_base1) -- 1-indexed, END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
 
