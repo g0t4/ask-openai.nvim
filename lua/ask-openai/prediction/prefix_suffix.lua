@@ -40,16 +40,16 @@ end
 ---@return Chunk prefix, Chunk suffix
 function M.get_prefix_suffix(buffer_number)
     local current_window_id = 0 -- ONLY if needed, lookup: vim.fn.win_findbuf(bufnr) and take first?
-    local original_row_1indexed, cursor_col_0indexed = unpack(vim.api.nvim_win_get_cursor(current_window_id)) -- (1,0)-indexed
-    local original_row_0indexed = original_row_1indexed - 1 -- 0-indexed now
+    local cursor_line_1indexed, cursor_col_0indexed = unpack(vim.api.nvim_win_get_cursor(current_window_id)) -- (1,0)-indexed
+    local cursor_line_0indexed = cursor_line_1indexed - 1 -- 0-indexed now
 
     local allow_lines = 80
     local num_rows_total = vim.api.nvim_buf_line_count(buffer_number)
     -- TODO test for 0indexed vs 1indexed indexing in get_line_range (I know you can get a number past end of document but that works out given get_lines is END-EXCLUSIVE
-    local first_row, last_row = M.get_line_range(original_row_0indexed, allow_lines, num_rows_total)
-    log:trace("first_row", first_row, "last_row", last_row, "original_row_0indexed", original_row_0indexed, "cursor_col_0indexed", cursor_col_0indexed)
+    local first_row, last_row = M.get_line_range(cursor_line_0indexed, allow_lines, num_rows_total)
+    log:trace("first_row", first_row, "last_row", last_row, "cursor_line_0indexed", cursor_line_0indexed, "cursor_col_0indexed", cursor_col_0indexed)
 
-    local current_line = vim.api.nvim_buf_get_lines(buffer_number, original_row_0indexed, original_row_0indexed + 1, IGNORE_BOUNDARIES)[1]
+    local current_line = vim.api.nvim_buf_get_lines(buffer_number, cursor_line_0indexed, cursor_line_0indexed + 1, IGNORE_BOUNDARIES)[1]
     -- get_lines is END-EXCLUSIVE, 0-indexed
     log:trace("current_line", current_line)
 
@@ -62,11 +62,11 @@ function M.get_prefix_suffix(buffer_number)
     local current_line_after_split = current_line:sub(after_starts_at_char_under_cursor)
     log:trace("current_line_after (" .. after_starts_at_char_under_cursor .. " => end): '" .. current_line_after_split .. "'")
 
-    local lines_before_current = vim.api.nvim_buf_get_lines(buffer_number, first_row, original_row_0indexed, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
+    local lines_before_current = vim.api.nvim_buf_get_lines(buffer_number, first_row, cursor_line_0indexed, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
     local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_line_before_split
 
     -- TODO edge cases for new line at end of current line? is that a concern
-    local lines_after_current = vim.api.nvim_buf_get_lines(buffer_number, original_row_0indexed + 1, last_row, IGNORE_BOUNDARIES) -- 0indexed END-EXCLUSIVE
+    local lines_after_current = vim.api.nvim_buf_get_lines(buffer_number, cursor_line_0indexed + 1, last_row, IGNORE_BOUNDARIES) -- 0indexed END-EXCLUSIVE
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local document_suffix = current_line_after_split .. "\n" .. table.concat(lines_after_current, "\n")
 

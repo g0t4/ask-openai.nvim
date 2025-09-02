@@ -187,6 +187,7 @@ function Prediction:accept_first_word()
     -- strip first_word:
     lines[1] = lines[1]:sub(word_end + 1) or "" -- shouldn't need `or ""`
 
+    -- TODO adopt renamings based on what I did with get_prefix_suffix after extracing and testing it: original_row => cursor_line, original_col => cursor_col
     -- insert first word into document
     local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0)-indexed #s... aka original_row starts at 1, original_col starts at 0
     local original_row = original_row_1indexed - 1 -- 0-indexed now
