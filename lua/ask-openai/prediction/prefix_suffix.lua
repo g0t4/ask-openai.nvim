@@ -23,10 +23,12 @@ function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, b
         -- unused lines in prefix, thus expand possible suffix
         take_last_row_b0 = take_last_row_b0 + unused_prefix_rows
     end
-    if take_last_row_b0 > buffer_line_count then
+
+    local last_line_base0 = buffer_line_count - 1
+    if take_last_row_b0 > last_line_base0 then
         -- last row cannot be > num_rows_total
         local unused_suffix_rows = take_last_row_b0 - buffer_line_count
-        take_last_row_b0 = buffer_line_count
+        take_last_row_b0 = last_line_base0
 
         -- unused lines in suffix, try expanding prefix
         take_first_row_b0 = take_first_row_b0 - unused_suffix_rows
