@@ -45,7 +45,6 @@ function M.get_prefix_suffix(buffer_number)
 
     local allow_lines = 80
     local line_count = vim.api.nvim_buf_line_count(buffer_number)
-    -- TODO test for 0indexed vs 1indexed indexing in get_line_range (I know you can get a number past end of document but that works out given get_lines is END-EXCLUSIVE
     local first_row, last_row = M.get_line_range(cursor_line_0indexed, allow_lines, line_count)
     log:trace("first_row", first_row, "last_row", last_row, "cursor_line_0indexed", cursor_line_0indexed, "cursor_col_0indexed", cursor_col_0indexed)
 
