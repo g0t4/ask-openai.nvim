@@ -31,7 +31,7 @@ function M.get_line_range_base0(current_row_base0, take_num_lines_each_way, buff
         -- add extra rows to start of range:
         first_row_b0 = first_row_b0 - extra_rows
         first_row_b0 = math.max(0, first_row_b0)
-        -- todo do I have to ensure > 0 ? for first_row
+        -- todo do I have to ensure > 0 ? for first_row_b0
     end
     return first_row_b0, last_row_b0
 end
@@ -47,8 +47,8 @@ function M.get_prefix_suffix()
 
     local take_num_lines_each_way = 80
     local line_count = vim.api.nvim_buf_line_count(current_bufnr)
-    local first_row, last_row = M.get_line_range_base0(cursor_line_0indexed, take_num_lines_each_way, line_count)
-    log:trace("first_row", first_row, "last_row", last_row, "cursor_line_0indexed", cursor_line_0indexed, "cursor_col_0indexed", cursor_col_0indexed)
+    local first_row_base0, last_row = M.get_line_range_base0(cursor_line_0indexed, take_num_lines_each_way, line_count)
+    log:trace("first_row_base0", first_row_base0, "last_row", last_row, "cursor_line_0indexed", cursor_line_0indexed, "cursor_col_0indexed", cursor_col_0indexed)
 
     local current_line = vim.api.nvim_buf_get_lines(current_bufnr, cursor_line_0indexed, cursor_line_0indexed + 1, IGNORE_BOUNDARIES)[1] -- 0indexed, END-EXCLUSIVE
     log:trace("current_line", current_line)
@@ -62,7 +62,7 @@ function M.get_prefix_suffix()
     local current_line_after_split = current_line:sub(after_starts_at_char_under_cursor)
     log:trace("current_line_after (" .. after_starts_at_char_under_cursor .. " => end): '" .. current_line_after_split .. "'")
 
-    local lines_before_current = vim.api.nvim_buf_get_lines(current_bufnr, first_row, cursor_line_0indexed, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
+    local lines_before_current = vim.api.nvim_buf_get_lines(current_bufnr, first_row_base0, cursor_line_0indexed, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
     local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_line_before_split
 
     -- TODO edge cases for new line at end of current line? is that a concern
@@ -72,7 +72,7 @@ function M.get_prefix_suffix()
 
     if log.is_verbose_enabled() then
         -- if in trace mode... combine document prefix and suffix and check if matches entire document:
-        local entire_document = table.concat(vim.api.nvim_buf_get_lines(current_bufnr, first_row, last_row, IGNORE_BOUNDARIES), "\n")
+        local entire_document = table.concat(vim.api.nvim_buf_get_lines(current_bufnr, first_row_base0, last_row, IGNORE_BOUNDARIES), "\n")
         local combined = document_prefix .. document_suffix
         if entire_document ~= combined then
             -- trace mode, check if matches (otherwise may be incomplete or not in expected format)
