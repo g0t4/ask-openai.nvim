@@ -58,17 +58,6 @@ function M.get_prefix_suffix(buffer_number)
     local current_line_before_split = current_line:sub(1, before_is_thru_col) -- sub is END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
     log:trace("current_line_before (1 => " .. before_is_thru_col .. "): '" .. current_line_before_split .. "'")
 
-    -- PRN revisit prediction when cursor has existing text "after" it
-    -- - test case: remove text from a finished line of code (i.e. delete a param in a function call)
-    --   => enter insert mode and qwen2.5-coder (BASE) does a stellar job completing that (respects EOS much better than instruct finetunes)
-    -- - prediction can visually replace existing code (easiest and most logical given the existing text can be rewritten too).. inherently a diff based situation (assume model can rewrite remainder of line?)
-    -- - actually, what appears to work is when it can just insert new text at the cursor
-    -- - PRN what happens when it wants to insert more text after the existing text too or instead?
-    --   - Actually, wait, this is the domain of a rewrite (not solely a prediction)
-    --   - Prediction should only fill the domain of inserting text after/before existing text
-    --   - If I want help w/ a line I can wipe the end to get all of it redone (that is not ideal for cases when the cue is midway or toward end but that is gonna have to wait for as AskImplicitRewrite :) that compliments AskExplicitRewrite
-
-    -- TODO! add a PSM Buffer/Window Parser! and test it (like builder but on the parsing side)
     local after_starts_at_char_under_cursor = original_col + 1 -- FYI original_col is 0-indexed, thus +1
     local current_line_after_split = current_line:sub(after_starts_at_char_under_cursor)
     log:trace("current_line_after (" .. after_starts_at_char_under_cursor .. " => end): '" .. current_line_after_split .. "'")
@@ -91,6 +80,7 @@ function M.get_prefix_suffix(buffer_number)
             log:trace("diff\n", vim.diff(entire_document, combined))
         end
     end
+    -- TODO convert to new Chunk type (w/ line #s so I can pass those to LSP to only skip lines in this range with RAG matching)
     return document_prefix, document_suffix
 end
 
