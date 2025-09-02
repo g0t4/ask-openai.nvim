@@ -66,16 +66,6 @@ function M.get_prefix_suffix()
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local document_suffix = current_line_after_split .. "\n" .. table.concat(lines_after_current, "\n")
 
-    if log.is_verbose_enabled() then
-        -- if in trace mode... combine document prefix and suffix and check if matches entire document:
-        local entire_document = table.concat(vim.api.nvim_buf_get_lines(current_bufnr, first_row_base0, last_row_base0, IGNORE_BOUNDARIES), "\n")
-        local combined = document_prefix .. document_suffix
-        if entire_document ~= combined then
-            -- trace mode, check if matches (otherwise may be incomplete or not in expected format)
-            log:error("document mismatch: prefix+suffix != entire document")
-            log:trace("diff\n", vim.diff(entire_document, combined))
-        end
-    end
     -- TODO convert to new Chunk type (w/ line #s so I can pass those to LSP to only skip lines in this range with RAG matching)
     return document_prefix, document_suffix
 end
