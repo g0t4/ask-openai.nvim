@@ -79,7 +79,7 @@ describe("determine_line_range", function()
         -- 5 extra overflow lines from after, 10+5==15
         -- 95-15==80
         assert.equal(80, first_row)
-        assert.equal(100, last_row)
+        assert.equal(99, last_row)
     end)
 
     it("total rows is less than allowed lines in both directions, takes all lines", function()
@@ -98,6 +98,6 @@ describe("determine_line_range", function()
         local buffer_line_count = 100
         local first_row, last_row = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
         assert.equal(80, first_row)
-        assert.equal(100, last_row)
+        assert.equal(99, last_row)
     end)
 end)
