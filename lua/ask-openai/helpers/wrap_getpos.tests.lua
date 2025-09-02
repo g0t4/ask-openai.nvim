@@ -2,7 +2,7 @@ require('ask-openai.helpers.testing')
 local Selection = require('ask-openai.helpers.selection')
 local should = require('devtools.tests.should')
 local log = require("ask-openai.logs.logger").predictions()
-require('ask-openai.helpers.wrap_tests')
+require('ask-openai.helpers.buffer_testing')
 require('ask-openai.helpers.wrap_getpos')
 
 
