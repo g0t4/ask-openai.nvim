@@ -46,7 +46,7 @@ end)
 local ps = require("ask-openai.prediction.prefix_suffix")
 
 describe("determine_line_range", function()
-    it("allowed lines both before/after are within document", function()
+    it("plenty of lines for both prefix and suffix", function()
         local current_row = 40
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
@@ -57,7 +57,7 @@ describe("determine_line_range", function()
         assert.equal(50, end_row_base0)
     end)
 
-    it("current line is less than allowed lines, adds before's overflow to end_row_base0", function()
+    it("unused prefix lines are added to the suffix", function()
         local current_row = 4
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
@@ -69,7 +69,7 @@ describe("determine_line_range", function()
         assert.equal(20, end_row_base0)
     end)
 
-    it("current line is greater than total_lines - take_num_lines_each_way, adds after's overflow to start_row", function()
+    it("unused suffix lines are added to the prefix", function()
         local current_row = 95
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
@@ -81,7 +81,7 @@ describe("determine_line_range", function()
         assert.equal(99, end_row_base0)
     end)
 
-    it("total rows is less than allowed lines in both directions, takes all lines", function()
+    it("buffer line count is less than allowed lines in both directions, takes all lines", function()
         local current_row = 4
         local take_num_lines_each_way = 10
         local buffer_line_count = 8
@@ -90,7 +90,7 @@ describe("determine_line_range", function()
         assert.equal(7, end_row_base0) -- TODO fix this, base0 would make this max 7! (not 8)
     end)
 
-    it("just enough lines to take take_num_lines_each_way, where suffix has remainder of document through exactly the last line", function()
+    it("suffix has remainder of document through exactly the last line", function()
         -- arguably redundant, boundary condition
         local current_row = 90
         local take_num_lines_each_way = 10
