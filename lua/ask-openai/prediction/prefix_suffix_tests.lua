@@ -101,6 +101,7 @@ describe("determine_line_range", function()
         local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
         -- 5 extra overflow lines from after, 10+5==15
         -- 95-15==80
+        -- PRN should this be 79 too since the cursor line could be added to prefix too :)... NBD for now
         assert.equal(80, start_row_base0)
         assert.equal(99, end_row_base0)
     end)
@@ -111,7 +112,7 @@ describe("determine_line_range", function()
         local buffer_line_count = 8
         local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
         assert.equal(0, start_row_base0)
-        assert.equal(7, end_row_base0) -- TODO fix this, base0 would make this max 7! (not 8)
+        assert.equal(7, end_row_base0)
     end)
 
     it("suffix has remainder of document through exactly the last line", function()
