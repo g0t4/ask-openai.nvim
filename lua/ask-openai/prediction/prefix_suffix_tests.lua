@@ -24,7 +24,9 @@ describe("get_prefix_suffix", function()
         local col_base0 = 0 -- cursor in first col
         vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 
-        local prefix, suffix = ps.get_prefix_suffix()
+        local prefix, suffix = ps.get_prefix_suffix_chunks()
+        prefix = prefix.text
+        suffix = suffix.text
 
         assert.equal("line 1\nline 2\nline 3\n", prefix)
         assert.equal("line 4\nline 5\nline 6\nline 7", suffix)

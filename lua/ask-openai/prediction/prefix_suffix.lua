@@ -6,7 +6,7 @@ local M = {}
 ---@class Chunk
 ---@field i1_start_line integer
 ---@field i1_end_line integer
----@field lines string|string[] -- TODO lines array or text?
+---@field text string
 local Chunk = {}
 
 --- Determine range of lines to take before/after cursor position.
