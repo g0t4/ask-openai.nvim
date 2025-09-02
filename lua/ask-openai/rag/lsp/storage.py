@@ -156,6 +156,15 @@ class RAGDataset:
     index: faiss.Index
     index_view: FaissIndexView
 
+    def num_chunks(self) -> int:
+        return sum(len(chunks) for chunks in self.chunks_by_file.values())
+
+    def num_files(self) -> int:
+        return len(self.stat_by_path)
+
+    def num_vectors(self) -> int:
+        return self.index.ntotal if self.index is not None else 0
+
 @dataclass
 class Datasets:
     all_datasets: dict[str, RAGDataset]
@@ -322,4 +331,3 @@ def load_all_datasets(dot_rag_dir: Path) -> Datasets:
 
     logger.info(f"Loaded all datasets - {total_files} total files, {total_vectors} total FAISS vectors, {total_chunks} total chunks")
     return Datasets(datasets)
-
