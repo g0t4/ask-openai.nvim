@@ -70,7 +70,7 @@ describe("determine_line_range", function()
     end)
 
     it("current line is greater than total_lines - take_num_lines_each_way, adds after's overflow to first_row", function()
-        local current_row = 95
+        local current_row = 110
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
 
