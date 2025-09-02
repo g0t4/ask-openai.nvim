@@ -24,19 +24,14 @@ describe("get_prefix_suffix", function()
         local col_base0 = 0 -- cursor in first col
         vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 
-        local prefix, suffix = ps.get_prefix_suffix_chunks()
+        local ps_chunk = ps.get_prefix_suffix_chunks()
 
         assert.are_same({
-            text = "line 1\nline 2\nline 3\n",
+            prefix = "line 1\nline 2\nline 3\n",
+            suffix = "line 4\nline 5\nline 6\nline 7",
             start_line_base1 = 1,
-            end_line_base1 = 3,
-        }, prefix)
-
-        assert.are_same({
-            text = "line 4\nline 5\nline 6\nline 7",
-            start_line_base1 = 4,
             end_line_base1 = 7,
-        }, suffix)
+        }, ps_chunk)
     end)
 
     it("cursor is at start of buffer, first line, first col", function()
