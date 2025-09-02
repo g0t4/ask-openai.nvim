@@ -5,7 +5,7 @@ local assert = require 'luassert'
 
 require("ask-openai.rx.tests-setup")
 
-local handlers = require("ask-openai.prediction.handlers")
+local ps = require("ask-openai.prediction.prefix_suffix")
 
 describe("get_line_range", function()
     it("allowed lines both before/after are within document", function()
@@ -13,7 +13,7 @@ describe("get_line_range", function()
         local allow_lines = 10
         local total_rows = 100
 
-        local first_row, last_row = handlers.get_line_range(current_row, allow_lines, total_rows)
+        local first_row, last_row = ps.get_line_range(current_row, allow_lines, total_rows)
 
         assert.equals(30, first_row)
         assert.equals(50, last_row)
@@ -23,7 +23,7 @@ describe("get_line_range", function()
         local current_row = 4
         local allow_lines = 10
         local total_rows = 100
-        local first_row, last_row = handlers.get_line_range(current_row, allow_lines, total_rows)
+        local first_row, last_row = ps.get_line_range(current_row, allow_lines, total_rows)
         assert.equals(0, first_row)
         -- 6 extra overflow lines from before, 10+6==16
         --    16+4 = 20
@@ -35,7 +35,7 @@ describe("get_line_range", function()
         local allow_lines = 10
         local total_rows = 100
 
-        local first_row, last_row = handlers.get_line_range(current_row, allow_lines, total_rows)
+        local first_row, last_row = ps.get_line_range(current_row, allow_lines, total_rows)
         -- local first_row, last_row = handlers.get_line_range(current_row, allow_lines, total_rows)
         -- 5 extra overflow lines from after, 10+5==15
         -- 95-15==80
@@ -47,7 +47,7 @@ describe("get_line_range", function()
         local current_row = 4
         local allow_lines = 10
         local total_rows = 8
-        local first_row, last_row = handlers.get_line_range(current_row, allow_lines, total_rows)
+        local first_row, last_row = ps.get_line_range(current_row, allow_lines, total_rows)
         assert.equals(0, first_row)
         assert.equals(8, last_row)
     end)
@@ -57,7 +57,7 @@ describe("get_line_range", function()
         local current_row = 90
         local allow_lines = 10
         local total_rows = 100
-        local first_row, last_row = handlers.get_line_range(current_row, allow_lines, total_rows)
+        local first_row, last_row = ps.get_line_range(current_row, allow_lines, total_rows)
         assert.equals(80, first_row)
         assert.equals(100, last_row)
     end)

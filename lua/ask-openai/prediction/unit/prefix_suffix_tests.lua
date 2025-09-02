@@ -1,7 +1,6 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
 require("ask-openai.helpers.buffer_testing")
-
-local handlers = require("ask-openai.prediction.handlers")
+local ps = require("ask-openai.prediction.prefix_suffix")
 
 describe("get_prefix_suffix", function()
     local function create_lines(num_lines)
@@ -23,7 +22,7 @@ describe("get_prefix_suffix", function()
         local col_base0 = 0 -- cursor in first col
         vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 
-        local prefix, suffix = get_prefix_suffix(bufnr)
+        local prefix, suffix = ps.get_prefix_suffix(bufnr)
 
         assert.equal("line 1\nline 2\nline 3\n", prefix)
         assert.equal("line 4\nline 5\nline 6\nline 7", suffix)
