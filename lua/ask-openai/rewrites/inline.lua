@@ -104,9 +104,6 @@ function M.on_sse_llama_server_timings(sse)
         return
     end
 
-    -- llama-server timing/stats on final SSE
-    local t = sse.timings
-
     vim.schedule(function()
         -- PRN move into dispatcher where this belongs w/ diff preview
         local current_cursor_row_1based, _ = unpack(vim.api.nvim_win_get_cursor(0))
@@ -117,22 +114,20 @@ function M.on_sse_llama_server_timings(sse)
             {
                 string.format(
                     "%s predicted @ %s tokens/sec ",
-                    human.format_num(t.predicted_n),
-                    human.comma_delimit(t.predicted_per_second)
+                    human.format_num(sse.timings.predicted_n),
+                    human.comma_delimit(sse.timings.predicted_per_second)
                 ),
                 "AskStatsPredicted",
             },
             {
                 string.format(
                     "%s prompt @ %s tokens/sec",
-                    human.format_num(t.prompt_n),
-                    human.comma_delimit(t.prompt_per_second)
+                    human.format_num(sse.timings.prompt_n),
+                    human.comma_delimit(sse.timings.prompt_per_second)
                 ),
                 "AskStatsPrompt",
             },
         }
-
-
 
         vim.api.nvim_buf_set_extmark(0, M.displayer.marks.namespace_id, current_cursor_row_0based, 0, {
             virt_text = virt_text,
