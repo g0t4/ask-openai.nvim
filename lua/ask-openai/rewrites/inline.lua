@@ -118,15 +118,23 @@ function M.on_sse_llama_server_timings(sse)
         local virt_text = {
             {
                 string.format(
-                    "Tokens/sec: %s predicted n: %s | Prompt Tokens/sec: %s prompt n: %s",
+                    "Tokens/sec: %s predicted n: %s | ",
                     human.format_num(pps),
-                    human.comma_delimit(t.predicted_n),
+                    human.comma_delimit(t.predicted_n)
+                ),
+                "AskStatsPredicted",
+            },
+            {
+                string.format(
+                    "Prompt Tokens/sec: %s prompt n: %s",
                     human.format_num(t.prompt_per_second),
                     human.comma_delimit(t.prompt_n)
                 ),
-                "AskStats",
+                "AskStatsPrompt",
             },
         }
+
+
 
         vim.api.nvim_buf_set_extmark(0, M.displayer.marks.namespace_id, current_cursor_row_0based, 0, {
             virt_text = virt_text,
