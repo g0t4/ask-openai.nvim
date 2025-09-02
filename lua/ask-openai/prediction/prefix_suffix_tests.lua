@@ -98,9 +98,8 @@ describe("get_prefix_suffix", function()
                 local co = coroutine.running()
                 vim.schedule(function()
                     local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-                    vim.print(lines)
+                    -- vim.print(lines)
                     local mode = vim.api.nvim_get_mode().mode
-                    vim.print(mode)
                     assert.equal("i", mode) -- ensure in insert mode
                     local cusror = vim.api.nvim_win_get_cursor(0)
 
@@ -118,6 +117,18 @@ describe("get_prefix_suffix", function()
         end)
 
         describe("cursor line is empty", function()
+            it("cursor is at start of the empty line", function()
+                local bufnr = new_buffer_with_lines({ "one", "two", "", "four", "five" })
+                local line_base1 = 3
+                local col_base0 = 0
+                vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+
+                local take_lines = 2
+                local prefix, suffix = ps.get_prefix_suffix(take_lines)
+
+                assert.equal("one\ntwo\n", prefix)
+                assert.equal("\nfour\nfive", suffix)
+            end)
         end)
     end)
 end)
