@@ -309,9 +309,17 @@ def load_all_datasets(dot_rag_dir: Path) -> Datasets:
     dot_rag_dir = Path(dot_rag_dir)
     language_dirs = find_language_dirs(dot_rag_dir)
     datasets = {}
+    total_chunks = 0
+    total_vectors = 0
+    total_files = 0
     for lang_dir in language_dirs:
         language_extension = lang_dir.name
         dataset = load_prior_data(dot_rag_dir, language_extension)
         datasets[language_extension] = dataset
+        total_chunks += sum(len(v) for v in dataset.chunks_by_file.values())
+        total_vectors += dataset.index.ntotal if dataset.index is not None else 0
+        total_files += len(dataset.stat_by_path)
 
+    logger.info(f"Loaded all datasets - {total_files} total files, {total_vectors} total FAISS vectors, {total_chunks} total chunks")
     return Datasets(datasets)
+
