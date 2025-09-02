@@ -57,10 +57,11 @@ function M.get_prefix_suffix()
     local take_start_row_base0, take_end_row_base0 = M.determine_line_range_base0(cursor_line_base0, take_num_lines_each_way, line_count)
 
     local cursor_row_text = vim.api.nvim_buf_get_lines(current_bufnr,
+        -- 0indexed, END-EXCLUSIVE
         cursor_line_base0,
         cursor_line_base0 + 1, -- end is exclusive, thus + 1
         IGNORE_BOUNDARIES
-    )[1] -- 0indexed, END-EXCLUSIVE
+    )[1]
 
     -- FYI prefix stops with column before cursor column
     local col_before_cursor_base1 = cursor_col_base0
@@ -75,10 +76,11 @@ function M.get_prefix_suffix()
 
     -- TODO edge cases for new line at end of current line? is that a concern
     local lines_after_cursor_line = vim.api.nvim_buf_get_lines(current_bufnr,
+        -- 0indexed END-EXCLUSIVE
         cursor_line_base0 + 1, -- start w/ line after cursor line
-        take_end_row_base0 + 1, -- END-exclusive, thus add one to end row b/c we want the end row included
+        take_end_row_base0 + 1, -- end is exclusive, thus + 1
         IGNORE_BOUNDARIES
-    ) -- 0indexed END-EXCLUSIVE
+    )
 
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local suffix_text = cursor_row_text_cursor_plus
