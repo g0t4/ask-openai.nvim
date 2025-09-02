@@ -88,7 +88,7 @@ describe("get_line_range", function()
         local buffer_line_count = 8
         local first_row_base0, last_row = ps.get_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
         assert.equal(0, first_row_base0)
-        assert.equal(8, last_row)
+        assert.equal(7, last_row) -- TODO fix this, base0 would make this max 7! (not 8)
     end)
 
     it("just enough lines to take take_num_lines_each_way, where suffix has remainder of document through last line", function()
