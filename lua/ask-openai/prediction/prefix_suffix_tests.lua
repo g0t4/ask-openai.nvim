@@ -51,53 +51,52 @@ describe("determine_line_range", function()
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
 
-        local first_row, last_row = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
 
-        assert.equal(30, first_row)
-        assert.equal(50, last_row)
+        assert.equal(30, start_row_base0)
+        assert.equal(50, end_row_base0)
     end)
 
-    it("current line is less than allowed lines, adds before's overflow to last_row", function()
+    it("current line is less than allowed lines, adds before's overflow to end_row_base0", function()
         local current_row = 4
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
-        local first_row_base0, last_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
-        assert.equal(0, first_row_base0)
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        assert.equal(0, start_row_base0)
         -- 6 extra overflow lines from before, 10+6==16
         --    16+4 = 20
         --    (note 21 rows total with current_row)
-        assert.equal(20, last_row_base0)
+        assert.equal(20, end_row_base0)
     end)
 
-    it("current line is greater than total_lines - take_num_lines_each_way, adds after's overflow to first_row", function()
+    it("current line is greater than total_lines - take_num_lines_each_way, adds after's overflow to start_row", function()
         local current_row = 110
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
 
-        local first_row, last_row = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
-        -- local first_row, last_row = handlers.determine_line_range(current_row, take_num_lines_each_way, buffer_line_count)
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
         -- 5 extra overflow lines from after, 10+5==15
         -- 95-15==80
-        assert.equal(80, first_row)
-        assert.equal(99, last_row)
+        assert.equal(80, start_row_base0)
+        assert.equal(99, end_row_base0)
     end)
 
     it("total rows is less than allowed lines in both directions, takes all lines", function()
         local current_row = 4
         local take_num_lines_each_way = 10
         local buffer_line_count = 8
-        local first_row_base0, last_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
-        assert.equal(0, first_row_base0)
-        assert.equal(7, last_row_base0) -- TODO fix this, base0 would make this max 7! (not 8)
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        assert.equal(0, start_row_base0)
+        assert.equal(7, end_row_base0) -- TODO fix this, base0 would make this max 7! (not 8)
     end)
 
-    it("just enough lines to take take_num_lines_each_way, where suffix has remainder of document through last line", function()
+    it("just enough lines to take take_num_lines_each_way, where suffix has remainder of document through exactly the last line", function()
         -- arguably redundant, boundary condition
         local current_row = 90
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
-        local first_row, last_row = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
-        assert.equal(80, first_row)
-        assert.equal(99, last_row)
+        local start_row, end_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        assert.equal(80, start_row)
+        assert.equal(99, end_row_base0)
     end)
 end)
