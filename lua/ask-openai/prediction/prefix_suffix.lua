@@ -15,6 +15,8 @@ function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, b
     -- - the math here can be off by a smidge and won't matter b/c separate code reads the lines
     -- - assuming cursor line stays in range, you're good to go
 
+    -- FYI I am experimenting here with _b0 for base 0... leave this style for comparison until you feel super compelled to make everything the same
+
     local take_start_row_b0 = current_row_b0 - take_num_lines_each_way
     local take_end_row_b0 = current_row_b0 + take_num_lines_each_way
     if take_start_row_b0 < 0 then
@@ -26,11 +28,11 @@ function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, b
         take_end_row_b0 = take_end_row_b0 + unused_prefix_rows
     end
 
-    local last_line_base0 = buffer_line_count - 1
-    if take_end_row_b0 > last_line_base0 then
+    local last_line_b0 = buffer_line_count - 1
+    if take_end_row_b0 > last_line_b0 then
         -- end row cannot be after last line!
         local unused_suffix_rows = take_end_row_b0 - buffer_line_count
-        take_end_row_b0 = last_line_base0
+        take_end_row_b0 = last_line_b0
 
         -- unused lines in suffix, try expanding prefix
         take_start_row_b0 = take_start_row_b0 - unused_suffix_rows
