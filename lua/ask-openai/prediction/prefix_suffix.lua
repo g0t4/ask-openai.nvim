@@ -64,7 +64,6 @@ function M.get_prefix_suffix()
 
     -- FYI prefix stops in column before cursor column
     local col_before_cursor_base1 = cursor_col_base0
-    -- test edge case: enter insert mode 'i' => type/paste char(s) => observe char under cursor position shifts right
     local cursor_row_text_before_cursor = cursor_row_text:sub(1, col_before_cursor_base1) -- 1-indexed, END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
 
     -- FYI char under the cursor is in the suffix
