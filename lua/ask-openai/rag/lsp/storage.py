@@ -303,7 +303,8 @@ def load_prior_data(dot_rag_dir: Path, language_extension: str) -> RAGDataset:
     if num_chunks != (log_num_vectors or 0):
         logger.error(f"Num chunks ({num_chunks}) != Num vectors ({log_num_vectors}) which suggests problems with FAISS index vectors or otherwise, use rag_validate_index to check")
 
-    return RAGDataset(language_extension, chunks_by_file, files_by_path, index)
+    dataset = RAGDataset(language_extension, chunks_by_file, files_by_path, index)
+    return dataset
 
 def find_language_dirs(dot_rag_dir: Path) -> list[Path]:
     dot_rag_dir = Path(dot_rag_dir)
