@@ -1,5 +1,3 @@
-local log = require("ask-openai.logs.logger").predictions()
-
 local IGNORE_BOUNDARIES = false
 local M = {}
 
