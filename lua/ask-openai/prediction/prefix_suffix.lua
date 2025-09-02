@@ -70,11 +70,11 @@ function M.get_prefix_suffix()
     local cursor_col_base1 = cursor_col_base0 + 1
     local cursor_row_text_cursor_plus = cursor_row_text:sub(cursor_col_base1) -- 1-indexed, END-INCLUSIVE
 
-    local lines_before_current = vim.api.nvim_buf_get_lines(current_bufnr, take_start_row_base0, cursor_line_base0, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
-    local prefix_text = table.concat(lines_before_current, "\n") .. "\n" .. cursor_row_text_before_cursor
+    local lines_before_cursor_line = vim.api.nvim_buf_get_lines(current_bufnr, take_start_row_base0, cursor_line_base0, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
+    local prefix_text = table.concat(lines_before_cursor_line, "\n") .. "\n" .. cursor_row_text_before_cursor
 
     -- TODO edge cases for new line at end of current line? is that a concern
-    local lines_after_current = vim.api.nvim_buf_get_lines(current_bufnr,
+    local lines_after_cursor_line = vim.api.nvim_buf_get_lines(current_bufnr,
         cursor_line_base0 + 1, -- start w/ line after cursor line
         take_end_row_base0 + 1, -- END-exclusive, thus add one to end row b/c we want the end row included
         IGNORE_BOUNDARIES
@@ -83,7 +83,7 @@ function M.get_prefix_suffix()
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local suffix_text = cursor_row_text_cursor_plus
         .. "\n" -- TODO! doesn't cursor row have a newline already? why am I adding that here?
-        .. table.concat(lines_after_current, "\n")
+        .. table.concat(lines_after_cursor_line, "\n")
 
     -- TODO convert to new Chunk type (w/ line #s so I can pass those to LSP to only skip lines in this range with RAG matching)
     return prefix_text, suffix_text
