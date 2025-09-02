@@ -48,7 +48,7 @@ function M.get_prefix_suffix()
 
     local take_num_lines_each_way = 80
     local line_count = vim.api.nvim_buf_line_count(current_bufnr)
-    local first_row_base0, last_row_base0 = M.determine_line_range_base0(cursor_line_base0, take_num_lines_each_way, line_count)
+    local take_start_row_base0, take_end_row_base0 = M.determine_line_range_base0(cursor_line_base0, take_num_lines_each_way, line_count)
 
     local current_line = vim.api.nvim_buf_get_lines(current_bufnr, cursor_line_base0, cursor_line_base0 + 1, IGNORE_BOUNDARIES)[1] -- 0indexed, END-EXCLUSIVE
 
@@ -59,11 +59,11 @@ function M.get_prefix_suffix()
     local after_starts_at_char_under_cursor = cursor_col_base0 + 1 -- FYI cursor_col_0indexed, thus +1
     local current_line_after_split = current_line:sub(after_starts_at_char_under_cursor)
 
-    local lines_before_current = vim.api.nvim_buf_get_lines(current_bufnr, first_row_base0, cursor_line_base0, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
+    local lines_before_current = vim.api.nvim_buf_get_lines(current_bufnr, take_start_row_base0, cursor_line_base0, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
     local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_line_before_split
 
     -- TODO edge cases for new line at end of current line? is that a concern
-    local lines_after_current = vim.api.nvim_buf_get_lines(current_bufnr, cursor_line_base0 + 1, last_row_base0, IGNORE_BOUNDARIES) -- 0indexed END-EXCLUSIVE
+    local lines_after_current = vim.api.nvim_buf_get_lines(current_bufnr, cursor_line_base0 + 1, take_end_row_base0, IGNORE_BOUNDARIES) -- 0indexed END-EXCLUSIVE
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local document_suffix = current_line_after_split .. "\n" .. table.concat(lines_after_current, "\n")
 
