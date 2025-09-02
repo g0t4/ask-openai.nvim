@@ -63,16 +63,21 @@ function M.get_prefix_suffix()
         IGNORE_BOUNDARIES
     )[1]
 
+
+    -- * pefix
     -- FYI prefix stops with column before cursor column
     local col_before_cursor_base1 = cursor_col_base0
     local cursor_row_text_before_cursor = cursor_row_text:sub(1, col_before_cursor_base1) -- 1-indexed, END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
 
+    local lines_before_cursor_line = vim.api.nvim_buf_get_lines(current_bufnr, take_start_row_base0, cursor_line_base0, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
+
+    local prefix_text = table.concat(lines_before_cursor_line, "\n") .. "\n" .. cursor_row_text_before_cursor
+
+
+    -- * suffix
     -- FYI char under the cursor is in the suffix
     local cursor_col_base1 = cursor_col_base0 + 1
     local cursor_row_text_cursor_plus = cursor_row_text:sub(cursor_col_base1) -- 1-indexed, END-INCLUSIVE
-
-    local lines_before_cursor_line = vim.api.nvim_buf_get_lines(current_bufnr, take_start_row_base0, cursor_line_base0, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
-    local prefix_text = table.concat(lines_before_cursor_line, "\n") .. "\n" .. cursor_row_text_before_cursor
 
     -- TODO edge cases for new line at end of current line? is that a concern
     local lines_after_cursor_line = vim.api.nvim_buf_get_lines(current_bufnr,
