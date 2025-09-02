@@ -50,7 +50,11 @@ function M.get_prefix_suffix()
     local line_count = vim.api.nvim_buf_line_count(current_bufnr)
     local take_start_row_base0, take_end_row_base0 = M.determine_line_range_base0(cursor_line_base0, take_num_lines_each_way, line_count)
 
-    local current_line = vim.api.nvim_buf_get_lines(current_bufnr, cursor_line_base0, cursor_line_base0 + 1, IGNORE_BOUNDARIES)[1] -- 0indexed, END-EXCLUSIVE
+    local current_line = vim.api.nvim_buf_get_lines(current_bufnr,
+        cursor_line_base0,
+        cursor_line_base0 + 1, -- end is exclusive, thus + 1
+        IGNORE_BOUNDARIES
+    )[1] -- 0indexed, END-EXCLUSIVE
 
     local before_is_thru_col = cursor_col_base0 -- don't +1 b/c that would include the char under the cursor which goes after any typed/inserted chars
     -- test edge case: enter insert mode 'i' => type/paste char(s) => observe char under cursor position shifts right
@@ -64,11 +68,10 @@ function M.get_prefix_suffix()
 
     -- TODO edge cases for new line at end of current line? is that a concern
     local lines_after_current = vim.api.nvim_buf_get_lines(current_bufnr,
-        -- 0indexed END-EXCLUSIVE
         cursor_line_base0 + 1, -- start w/ line after cursor line
         take_end_row_base0 + 1, -- END-exclusive, thus add one to end row b/c we want the end row included
         IGNORE_BOUNDARIES
-    )
+    ) -- 0indexed END-EXCLUSIVE
 
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local document_suffix = current_line_after_split .. "\n" .. table.concat(lines_after_current, "\n")
