@@ -7,7 +7,8 @@ local M = {}
 ---TODO base1 or base0 here?
 ---@field start_line_base1 integer
 ---@field end_line_base1 integer
----@field text string
+---@field prefix string
+---@field suffix string
 local PSChunk = {}
 
 function PSChunk:new()
@@ -50,7 +51,7 @@ function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, b
 end
 
 ---@param take_num_lines_each_way? integer
----@return PSChunk prefix, PSChunk suffix
+---@return PSChunk ps_chunk
 function M.get_prefix_suffix_chunks(take_num_lines_each_way)
     take_num_lines_each_way = take_num_lines_each_way or 80
     -- presently, this only works with current buffer/window:
@@ -100,16 +101,17 @@ function M.get_prefix_suffix_chunks(take_num_lines_each_way)
         .. "\n" -- TODO! doesn't cursor row have a newline already? why am I adding that here?
         .. table.concat(lines_after_cursor_line, "\n")
 
-    local prefix = PSChunk:new()
-    prefix.text = prefix_text
-    local suffix = PSChunk:new()
-    suffix.text = suffix_text
-    return prefix, suffix
+    local ps_chunk = PSChunk:new()
+    ps_chunk.prefix = prefix_text
+    ps_chunk.suffix = suffix_text
+    ps_chunk.start_line_base1 = take_start_row_base0 + 1
+    ps_chunk.end_line_base1 = take_end_row_base0 + 1
+    return ps_chunk
 end
 
 function M.get_prefix_suffix(take_num_lines_each_way)
-    local prefix, suffix = M.get_prefix_suffix_chunks(take_num_lines_each_way)
-    return prefix.text, suffix.text
+    local ps_chunk = M.get_prefix_suffix_chunks(take_num_lines_each_way)
+    return ps_chunk.prefix, ps_chunk.suffix
 end
 
 return M
