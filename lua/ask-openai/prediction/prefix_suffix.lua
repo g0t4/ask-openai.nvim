@@ -3,11 +3,17 @@ local log = require("ask-openai.logs.logger").predictions()
 local IGNORE_BOUNDARIES = false
 local M = {}
 
----@class Chunk
----@field i1_start_line integer
----@field i1_end_line integer
+---@class PSChunk
+---TODO base1 or base0 here?
+---@field start_line_base1 integer
+---@field end_line_base1 integer
 ---@field text string
-local Chunk = {}
+local PSChunk = {}
+
+function PSChunk:new()
+    self = setmetatable({}, { __index = PSChunk })
+    return self
+end
 
 --- Determine range of lines to take before/after cursor position.
 --- Try taking X lines in both directions.
@@ -43,8 +49,8 @@ function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, b
     return take_start_row_b0, take_end_row_b0
 end
 
----@param take_num_lines_each_way integer
----@return Chunk prefix, Chunk suffix
+---@param take_num_lines_each_way? integer
+---@return PSChunk prefix, PSChunk suffix
 function M.get_prefix_suffix_chunks(take_num_lines_each_way)
     take_num_lines_each_way = take_num_lines_each_way or 80
     -- presently, this only works with current buffer/window:
@@ -93,12 +99,17 @@ function M.get_prefix_suffix_chunks(take_num_lines_each_way)
     local suffix_text = cursor_row_text_cursor_plus
         .. "\n" -- TODO! doesn't cursor row have a newline already? why am I adding that here?
         .. table.concat(lines_after_cursor_line, "\n")
-    -- TODO convert to new Chunk type (w/ line #s so I can pass those to LSP to only skip lines in this range with RAG matching)
-    return prefix_text, suffix_text
+
+    local prefix = PSChunk:new()
+    prefix.text = prefix_text
+    local suffix = PSChunk:new()
+    suffix.text = suffix_text
+    return prefix, suffix
 end
 
 function M.get_prefix_suffix(take_num_lines_each_way)
-    return M.get_prefix_suffix_chunks(take_num_lines_each_way)
+    local prefix, suffix = M.get_prefix_suffix_chunks(take_num_lines_each_way)
+    return prefix.text, suffix.text
 end
 
 return M

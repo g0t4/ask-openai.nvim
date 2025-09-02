@@ -25,11 +25,9 @@ describe("get_prefix_suffix", function()
         vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 
         local prefix, suffix = ps.get_prefix_suffix_chunks()
-        prefix = prefix.text
-        suffix = suffix.text
 
-        assert.equal("line 1\nline 2\nline 3\n", prefix)
-        assert.equal("line 4\nline 5\nline 6\nline 7", suffix)
+        assert.equal("line 1\nline 2\nline 3\n", prefix.text)
+        assert.equal("line 4\nline 5\nline 6\nline 7", suffix.text)
     end)
 
     it("cursor is at start of buffer, first line, first col", function()
