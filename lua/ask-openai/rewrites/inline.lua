@@ -119,16 +119,16 @@ function M.on_sse_llama_server_timings(sse)
             {
                 string.format(
                     "%s predicted @ %s tokens/sec ",
-                    human.format_num(pps),
-                    human.comma_delimit(t.predicted_n)
+                    human.format_num(t.predicted_n),
+                    human.comma_delimit(t.predicted_per_second)
                 ),
                 "AskStatsPredicted",
             },
             {
                 string.format(
                     "%s prompt @ %s tokens/sec",
-                    human.format_num(t.prompt_per_second),
-                    human.comma_delimit(t.prompt_n)
+                    human.format_num(t.prompt_n),
+                    human.comma_delimit(t.prompt_per_second)
                 ),
                 "AskStatsPrompt",
             },
