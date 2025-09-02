@@ -68,8 +68,8 @@ function M.get_prefix_suffix()
     local cursor_row_text_before_cursor = cursor_row_text:sub(1, col_before_cursor_base1) -- 1-indexed, END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
 
     -- FYI char under the cursor is in the suffix
-    local after_starts_at_char_under_cursor = cursor_col_base0 + 1 -- FYI cursor_col_0indexed, thus +1
-    local cursor_row_text_after_cursor = cursor_row_text:sub(after_starts_at_char_under_cursor)
+    local cursor_col_base1 = cursor_col_base0 + 1
+    local cursor_row_text_after_cursor = cursor_row_text:sub(cursor_col_base1) -- 1-indexed, END-INCLUSIVE
 
     local lines_before_current = vim.api.nvim_buf_get_lines(current_bufnr, take_start_row_base0, cursor_line_base0, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
     local prefix_text = table.concat(lines_before_current, "\n") .. "\n" .. cursor_row_text_before_cursor
