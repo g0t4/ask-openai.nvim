@@ -104,10 +104,8 @@ function M.on_sse_llama_server_timings(sse)
         return
     end
 
-    -- llama-server timing/stats on final SSErewritein
+    -- llama-server timing/stats on final SSE
     local t = sse.timings
-    local pps = math.floor(t.predicted_per_second * 10 + 0.5) / 10
-    log:info("Tokens/sec: ", pps, " predicted n: ", t.predicted_n)
 
     vim.schedule(function()
         -- PRN move into dispatcher where this belongs w/ diff preview
