@@ -61,11 +61,12 @@ describe("get_line_range", function()
         local current_row = 4
         local take_num_lines_each_way = 10
         local total_rows = 100
-        local first_row, last_row = ps.get_line_range_base0(current_row, take_num_lines_each_way, total_rows)
-        assert.equal(0, first_row)
+        local first_row_base0, last_row_base0 = ps.get_line_range_base0(current_row, take_num_lines_each_way, total_rows)
+        assert.equal(0, first_row_base0)
         -- 6 extra overflow lines from before, 10+6==16
         --    16+4 = 20
-        assert.equal(20, last_row)
+        --    (note 21 rows total with current_row)
+        assert.equal(20, last_row_base0)
     end)
 
     it("current line is greater than total_lines - take_num_lines_each_way, adds after's overflow to first_row", function()
