@@ -70,7 +70,7 @@ function M.get_prefix_suffix()
     local cursor_row_text_after_split = cursor_row_text:sub(after_starts_at_char_under_cursor)
 
     local lines_before_current = vim.api.nvim_buf_get_lines(current_bufnr, take_start_row_base0, cursor_line_base0, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
-    local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. cursor_row_text_before_split
+    local prefix_text = table.concat(lines_before_current, "\n") .. "\n" .. cursor_row_text_before_split
 
     -- TODO edge cases for new line at end of current line? is that a concern
     local lines_after_current = vim.api.nvim_buf_get_lines(current_bufnr,
@@ -80,10 +80,10 @@ function M.get_prefix_suffix()
     ) -- 0indexed END-EXCLUSIVE
 
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
-    local document_suffix = cursor_row_text_after_split .. "\n" .. table.concat(lines_after_current, "\n")
+    local suffix_text = cursor_row_text_after_split .. "\n" .. table.concat(lines_after_current, "\n")
 
     -- TODO convert to new Chunk type (w/ line #s so I can pass those to LSP to only skip lines in this range with RAG matching)
-    return document_prefix, document_suffix
+    return prefix_text, suffix_text
 end
 
 return M
