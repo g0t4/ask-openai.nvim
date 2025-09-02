@@ -70,6 +70,19 @@ describe("get_prefix_suffix", function()
                 assert.equal("line 2\nline 3\nlin", prefix)
                 assert.equal("e 4\nline 5\nline 6", suffix)
             end)
+
+            it("cursor is on last char of line (means before the last char)", function()
+                local bufnr = new_buffer_with_lines(seven_lines)
+                local line_base1 = 4 -- 'line 4'
+                local col_base0 = 5 -- 5 ==> '4'
+                vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+
+                local take_lines = 2
+                local prefix, suffix = ps.get_prefix_suffix(take_lines)
+
+                assert.equal("line 2\nline 3\nline ", prefix)
+                assert.equal("4\nline 5\nline 6", suffix)
+            end)
         end)
 
         describe("cursor line is not empty", function()
