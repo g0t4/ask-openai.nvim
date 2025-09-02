@@ -81,6 +81,18 @@ describe("determine_line_range", function()
         assert.equal(99, end_row_base0)
     end)
 
+    it("current_row is past the end of the document, still takes end of document", function()
+        local current_row = 115
+        local take_num_lines_each_way = 10
+        local buffer_line_count = 100
+
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        -- 5 extra overflow lines from after, 10+5==15
+        -- 95-15==80
+        assert.equal(80, start_row_base0)
+        assert.equal(99, end_row_base0)
+    end)
+
     it("buffer line count is less than allowed lines in both directions, takes all lines", function()
         local current_row = 4
         local take_num_lines_each_way = 10
