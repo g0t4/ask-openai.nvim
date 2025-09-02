@@ -63,7 +63,13 @@ function M.get_prefix_suffix()
     local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_line_before_split
 
     -- TODO edge cases for new line at end of current line? is that a concern
-    local lines_after_current = vim.api.nvim_buf_get_lines(current_bufnr, cursor_line_base0 + 1, take_end_row_base0, IGNORE_BOUNDARIES) -- 0indexed END-EXCLUSIVE
+    local lines_after_current = vim.api.nvim_buf_get_lines(current_bufnr,
+        -- 0indexed END-EXCLUSIVE
+        cursor_line_base0 + 1, -- start w/ line after cursor line
+        take_end_row_base0 + 1, -- END-exclusive, thus add one to end row b/c we want the end row included
+        IGNORE_BOUNDARIES
+    )
+
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local document_suffix = current_line_after_split .. "\n" .. table.concat(lines_after_current, "\n")
 
