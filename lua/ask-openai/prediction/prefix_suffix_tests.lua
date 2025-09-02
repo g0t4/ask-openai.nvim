@@ -21,8 +21,11 @@ describe("get_prefix_suffix", function()
     it("splits prefix and suffix", function()
         local bufnr = new_buffer_with_lines(seven_lines)
         local line_base1 = 4 -- 4th line
-        local col_base0 = 0 -- cursor in first col
-        vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+        local col_base1 = 1 -- cursor in first col
+
+        vim.fn.setpos(".", { 0, line_base1, col_base1 })
+
+        -- vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 
         local prefix, suffix = ps.get_prefix_suffix(bufnr)
 
