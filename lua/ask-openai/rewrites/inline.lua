@@ -13,7 +13,7 @@ local files = require("ask-openai.helpers.files")
 local api = require("ask-openai.api")
 local rag_client = require("ask-openai.rag.client")
 local LastRequest = require("ask-openai.backends.last_request")
-
+local human = require("devtools.humanize")
 
 local M = {}
 
@@ -118,11 +118,11 @@ function M.on_sse_llama_server_timings(sse)
         local virt_text = {
             {
                 string.format(
-                    "Tokens/sec: %.1f predicted n: %d | Prompt Tokens/sec: %.1f prompt n: %d",
-                    pps,
-                    t.predicted_n,
-                    t.prompt_per_second,
-                    t.prompt_n
+                    "Tokens/sec: %s predicted n: %s | Prompt Tokens/sec: %s prompt n: %s",
+                    human.format_num(pps),
+                    human.comma_delimit(t.predicted_n),
+                    human.format_num(t.prompt_per_second),
+                    human.comma_delimit(t.prompt_n)
                 ),
                 "AskStats",
             },
