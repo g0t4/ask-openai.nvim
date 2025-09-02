@@ -84,19 +84,36 @@ describe("get_prefix_suffix", function()
                 assert.equal("4\nline 5\nline 6", suffix)
             end)
 
-            it("nvim will place cursor on last char if you set its column past last char in line", function()
-                -- FYI this is a redundant test... really is testing behavior of nvim_win_set_cursor b/c that dictates the outcome here
-                --   unless there's a way to place cursor past the end of the line... which I feel like there is a mode for that... but unsure
+            it("in INSERT mode, after typing 'A' to append, cursor is past the last character ('4') and now prefix will have last char ('4')", function()
+                -- FYI docs on coroutines and plenary tests:
+                --   https://github.com/nvim-lua/plenary.nvim/blob/master/TESTS_README.md#asynchronous-testing
+
                 local bufnr = new_buffer_with_lines(seven_lines)
-                local line_base1 = 4 -- 'line 4'
-                local col_base0 = 6
-                vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+                -- move to 4th line, and go into insert mode at end of line
+                -- that way the cursor will be PAST the last '4' char and so it will end up in prefix (assuming the splitter code works)
+                vim.api.nvim_command(":4")
+                vim.api.nvim_feedkeys("A", "n", false)
 
-                local take_lines = 2
-                local prefix, suffix = ps.get_prefix_suffix(take_lines)
+                -- wait for insert mode... a clock tick
+                local co = coroutine.running()
+                vim.schedule(function()
+                    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+                    vim.print(lines)
+                    local mode = vim.api.nvim_get_mode().mode
+                    vim.print(mode)
+                    assert.equal("i", mode) -- ensure in insert mode
+                    local cusror = vim.api.nvim_win_get_cursor(0)
 
-                assert.equal("line 2\nline 3\nline ", prefix)
-                assert.equal("4\nline 5\nline 6", suffix)
+                    local take_lines = 2
+                    local prefix, suffix = ps.get_prefix_suffix(take_lines)
+
+                    assert.equal("line 2\nline 3\nline 4", prefix)
+                    assert.equal("\nline 5\nline 6", suffix)
+
+                    coroutine.resume(co) -- test is done now
+                end)
+
+                coroutine.yield()
             end)
         end)
 
