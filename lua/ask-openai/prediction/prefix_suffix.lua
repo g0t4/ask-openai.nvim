@@ -44,7 +44,8 @@ function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, b
 end
 
 ---@return Chunk prefix, Chunk suffix
-function M.get_prefix_suffix()
+function M.get_prefix_suffix(take_num_lines_each_way)
+    take_num_lines_each_way = take_num_lines_each_way or 80
     -- presently, this only works with current buffer/window:
     local current_win_id = 0
     local current_bufnr = 0
@@ -54,7 +55,6 @@ function M.get_prefix_suffix()
 
 
     -- * READ LINES AROUND CURSOR LINE
-    local take_num_lines_each_way = 80
     local line_count = vim.api.nvim_buf_line_count(current_bufnr)
     local take_start_row_base0, take_end_row_base0 = M.determine_line_range_base0(cursor_line_base0, take_num_lines_each_way, line_count)
 
