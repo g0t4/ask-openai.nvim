@@ -11,7 +11,7 @@ local Chunk = {}
 
 --- Determine range of lines to take before/after cursor position
 --- take_max_num_lines can come entire before or after cursor position...
-function M.get_line_range(current_row, take_max_num_lines, buffer_line_count)
+function M.get_line_range_base0(current_row, take_max_num_lines, buffer_line_count)
     local earliestfirst_row_b0 = current_row - take_max_num_lines
     local last_row = current_row + take_max_num_lines
     if earliestfirst_row_b0 < 0 then
@@ -46,7 +46,7 @@ function M.get_prefix_suffix()
 
     local take_max_num_lines = 80
     local line_count = vim.api.nvim_buf_line_count(current_bufnr)
-    local first_row, last_row = M.get_line_range(cursor_line_0indexed, take_max_num_lines, line_count)
+    local first_row, last_row = M.get_line_range_base0(cursor_line_0indexed, take_max_num_lines, line_count)
     log:trace("first_row", first_row, "last_row", last_row, "cursor_line_0indexed", cursor_line_0indexed, "cursor_col_0indexed", cursor_col_0indexed)
 
     local current_line = vim.api.nvim_buf_get_lines(current_bufnr, cursor_line_0indexed, cursor_line_0indexed + 1, IGNORE_BOUNDARIES)[1] -- 0indexed, END-EXCLUSIVE
