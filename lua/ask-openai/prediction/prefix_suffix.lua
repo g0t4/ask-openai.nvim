@@ -13,28 +13,28 @@ local Chunk = {}
 function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, buffer_line_count)
     -- reminder... buffer_line_count is a count, so it does not have a base!
 
-    local take_first_row_b0 = current_row_b0 - take_num_lines_each_way
-    local take_last_row_b0 = current_row_b0 + take_num_lines_each_way
-    if take_first_row_b0 < 0 then
-        -- first row cannot < 0
-        local unused_prefix_rows = -take_first_row_b0
-        take_first_row_b0 = 0
+    local take_start_row_b0 = current_row_b0 - take_num_lines_each_way
+    local take_end_row_b0 = current_row_b0 + take_num_lines_each_way
+    if take_start_row_b0 < 0 then
+        -- start row cannot be before first line!
+        local unused_prefix_rows = -take_start_row_b0
+        take_start_row_b0 = 0
 
         -- unused lines in prefix, thus expand possible suffix
-        take_last_row_b0 = take_last_row_b0 + unused_prefix_rows
+        take_end_row_b0 = take_end_row_b0 + unused_prefix_rows
     end
 
     local last_line_base0 = buffer_line_count - 1
-    if take_last_row_b0 > last_line_base0 then
-        -- last row cannot be > num_rows_total
-        local unused_suffix_rows = take_last_row_b0 - buffer_line_count
-        take_last_row_b0 = last_line_base0
+    if take_end_row_b0 > last_line_base0 then
+        -- end row cannot be after last line!
+        local unused_suffix_rows = take_end_row_b0 - buffer_line_count
+        take_end_row_b0 = last_line_base0
 
         -- unused lines in suffix, try expanding prefix
-        take_first_row_b0 = take_first_row_b0 - unused_suffix_rows
-        take_first_row_b0 = math.max(0, take_first_row_b0)
+        take_start_row_b0 = take_start_row_b0 - unused_suffix_rows
+        take_start_row_b0 = math.max(0, take_start_row_b0)
     end
-    return take_first_row_b0, take_last_row_b0
+    return take_start_row_b0, take_end_row_b0
 end
 
 ---@return Chunk prefix, Chunk suffix
