@@ -12,12 +12,12 @@ local Chunk = {}
 --- Determine range of lines to take before/after cursor position
 --- take_max_num_lines can come entire before or after cursor position...
 function M.get_line_range(current_row, take_max_num_lines, buffer_line_count)
-    local first_row_b0 = current_row - take_max_num_lines
+    local earliestfirst_row_b0 = current_row - take_max_num_lines
     local last_row = current_row + take_max_num_lines
-    if first_row_b0 < 0 then
+    if earliestfirst_row_b0 < 0 then
         -- first row cannot < 0
-        local extra_rows = -first_row_b0
-        first_row_b0 = 0 -- here I am assuming base 0
+        local extra_rows = -earliestfirst_row_b0
+        earliestfirst_row_b0 = 0 -- here I am assuming base 0
 
         -- expand end of range
         last_row = last_row + extra_rows
@@ -28,11 +28,11 @@ function M.get_line_range(current_row, take_max_num_lines, buffer_line_count)
         last_row = buffer_line_count
 
         -- add extra rows to start of range:
-        first_row_b0 = first_row_b0 - extra_rows
-        first_row_b0 = math.max(0, first_row_b0)
+        earliestfirst_row_b0 = earliestfirst_row_b0 - extra_rows
+        earliestfirst_row_b0 = math.max(0, earliestfirst_row_b0)
         -- todo do I have to ensure > 0 ? for first_row
     end
-    return first_row_b0, last_row
+    return earliestfirst_row_b0, last_row
 end
 
 ---@return Chunk prefix, Chunk suffix
