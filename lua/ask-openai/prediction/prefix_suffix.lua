@@ -49,8 +49,7 @@ function M.get_prefix_suffix(buffer_number)
     local first_row, last_row = M.get_line_range(cursor_line_0indexed, allow_lines, num_rows_total)
     log:trace("first_row", first_row, "last_row", last_row, "cursor_line_0indexed", cursor_line_0indexed, "cursor_col_0indexed", cursor_col_0indexed)
 
-    local current_line = vim.api.nvim_buf_get_lines(buffer_number, cursor_line_0indexed, cursor_line_0indexed + 1, IGNORE_BOUNDARIES)[1]
-    -- get_lines is END-EXCLUSIVE, 0-indexed
+    local current_line = vim.api.nvim_buf_get_lines(buffer_number, cursor_line_0indexed, cursor_line_0indexed + 1, IGNORE_BOUNDARIES)[1] -- 0indexed, END-EXCLUSIVE
     log:trace("current_line", current_line)
 
     local before_is_thru_col = cursor_col_0indexed -- don't +1 b/c that would include the char under the cursor which goes after any typed/inserted chars
