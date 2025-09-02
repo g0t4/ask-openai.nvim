@@ -1,4 +1,4 @@
-function load_lines(lines)
+function new_buffer_with_lines(lines)
     local bufnr = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
 

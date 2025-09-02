@@ -21,7 +21,7 @@ describe("get_visual_selection()", function()
         end
 
         before_each(function()
-            load_lines({ "foo the bar" })
+            new_buffer_with_lines({ "foo the bar" })
         end)
 
         it("no selections yet, should map to empty selection", function()
@@ -57,7 +57,7 @@ describe("get_visual_selection()", function()
         end)
 
         it("linewise visual mode - selected last two lines thru end of file", function()
-            load_lines({ "one", "two", "three", "four", "five" })
+            new_buffer_with_lines({ "one", "two", "three", "four", "five" })
 
             vim.cmd(':4')
             vim.cmd(':normal! VjV') -- second V exits
@@ -67,7 +67,7 @@ describe("get_visual_selection()", function()
         end)
 
         it("linewise visual mode - selected first two lines - start of file", function()
-            load_lines({ "one", "two", "three", "four", "five" })
+            new_buffer_with_lines({ "one", "two", "three", "four", "five" })
 
             vim.cmd(':1')
             vim.cmd('normal! VjV') -- second V exits
@@ -77,7 +77,7 @@ describe("get_visual_selection()", function()
         end)
 
         it("linewise visual mode - multiple lines selected in middle of buffer", function()
-            load_lines({ "one", "two", "three", "four", "five" })
+            new_buffer_with_lines({ "one", "two", "three", "four", "five" })
 
             vim.cmd(':2')
             vim.cmd('normal! V2jV') -- second V exits
@@ -127,7 +127,7 @@ describe("get_visual_selection()", function()
     describe("still in visual mode", function()
         -- PRN if I want current mode checks, add these tests, though right now I don't think I have a direct need for these other than completeness of selection utility
         -- it("still in linewise 'V' visual mode - cursor position is AFTER other position", function()
-        --     load_lines({ "one", "two", "three", "four", "five" })
+        --     new_buffer_with_lines({ "one", "two", "three", "four", "five" })
         --     vim.cmd(':2')
         --     vim.cmd(':normal! Vj') -- STILL in V mode, so no 2nd V
         --     should.be_equal(vim.fn.mode(), "V")
@@ -138,7 +138,7 @@ describe("get_visual_selection()", function()
         -- end)
         --
         -- it("still in linewise 'V' visual mode - cursor position is BEFORE other position", function()
-        --     load_lines({ "one", "two", "three", "four", "five" })
+        --     new_buffer_with_lines({ "one", "two", "three", "four", "five" })
         --     vim.cmd(':2')
         --     vim.cmd(':normal! Vk') -- STILL in V mode, so no 2nd V
         --     should.be_equal(vim.fn.mode(), "V")
@@ -152,7 +152,7 @@ describe("get_visual_selection()", function()
         --
         -- -- TODO! still in charwise 'v' visual mode
         -- it("still in char-wise 'v' visual mode", function()
-        --     load_lines({ "one", "two", "three", "four", "five" })
+        --     new_buffer_with_lines({ "one", "two", "three", "four", "five" })
         --     vim.cmd(':2')
         --     vim.cmd(':normal! 0vj') -- STILL in v mode, so no 2nd v
         --     should.be_equal(vim.fn.mode(), "v")
@@ -186,7 +186,7 @@ describe("get_visual_selection()", function()
                 "line 13",
                 "line 14 the cow is over there",
             }
-            load_lines(lines)
+            new_buffer_with_lines(lines)
         end)
 
         describe("linewise selections", function()

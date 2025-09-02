@@ -14,6 +14,6 @@ describe("get_prefix_suffix", function()
     end
 
     it("", function()
-        load_lines(lines_1_to_30)
+        new_buffer_with_lines(lines_1_to_30)
     end)
 end)
