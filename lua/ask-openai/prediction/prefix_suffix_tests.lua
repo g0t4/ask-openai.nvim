@@ -90,7 +90,7 @@ describe("get_line_range", function()
         assert.equal(8, last_row)
     end)
 
-    it("enough lines to take take_num_lines_each_way", function()
+    it("just enough lines to take take_num_lines_each_way, where suffix has remainder of document through last line", function()
         -- arguably redundant, boundary condition
         local current_row = 90
         local take_num_lines_each_way = 10
