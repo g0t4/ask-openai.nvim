@@ -18,7 +18,7 @@ describe("get_prefix_suffix", function()
         "line 6", "line 7"
     }
 
-    it("splits prefix and suffix", function()
+    it("in middle of buffer, returns prefix and suffix", function()
         local bufnr = new_buffer_with_lines(seven_lines)
         local line_base1 = 4 -- 4th line
         local col_base0 = 0 -- cursor in first col
@@ -28,6 +28,17 @@ describe("get_prefix_suffix", function()
 
         assert.equal("line 1\nline 2\nline 3\n", prefix)
         assert.equal("line 4\nline 5\nline 6\nline 7", suffix)
+    end)
+
+    it("cursor is at start of buffer, first line, first col", function()
+        local bufnr = new_buffer_with_lines(seven_lines)
+        local line_base1 = 1
+        local col_base0 = 0
+        vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+
+        local prefix, suffix = ps.get_prefix_suffix(bufnr)
+
+        assert.equal("", prefix)
     end)
 end)
 
