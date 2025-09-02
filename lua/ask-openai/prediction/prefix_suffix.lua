@@ -11,7 +11,9 @@ local Chunk = {}
 
 --- Determine range of lines to take before/after cursor position
 function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, buffer_line_count)
-    -- reminder... buffer_line_count is a count, so it does not have a base!
+    -- separate logic for finding range of lines to use as prefix/suffix
+    -- - the math here can be off by a smidge and won't matter b/c separate code reads the lines
+    -- - assuming cursor line stays in range, you're good to go
 
     local take_start_row_b0 = current_row_b0 - take_num_lines_each_way
     local take_end_row_b0 = current_row_b0 + take_num_lines_each_way
