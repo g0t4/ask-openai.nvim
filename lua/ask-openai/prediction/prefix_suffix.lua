@@ -52,6 +52,8 @@ function M.get_prefix_suffix()
     local cursor_line_base1, cursor_col_base0 = unpack(vim.api.nvim_win_get_cursor(current_win_id)) -- (1,0)-indexed
     local cursor_line_base0 = cursor_line_base1 - 1 -- 0-indexed now
 
+
+    -- * READ LINES AROUND CURSOR LINE
     local take_num_lines_each_way = 80
     local line_count = vim.api.nvim_buf_line_count(current_bufnr)
     local take_start_row_base0, take_end_row_base0 = M.determine_line_range_base0(cursor_line_base0, take_num_lines_each_way, line_count)
@@ -64,7 +66,7 @@ function M.get_prefix_suffix()
     )[1]
 
 
-    -- * pefix
+    -- * PREFIX
     -- FYI prefix stops with column before cursor column
     local col_before_cursor_base1 = cursor_col_base0
     local cursor_row_text_before_cursor = cursor_row_text:sub(1, col_before_cursor_base1) -- 1-indexed, END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
@@ -74,7 +76,7 @@ function M.get_prefix_suffix()
     local prefix_text = table.concat(lines_before_cursor_line, "\n") .. "\n" .. cursor_row_text_before_cursor
 
 
-    -- * suffix
+    -- * SUFFIX
     -- FYI char under the cursor is in the suffix
     local cursor_col_base1 = cursor_col_base0 + 1
     local cursor_row_text_cursor_plus = cursor_row_text:sub(cursor_col_base1) -- 1-indexed, END-INCLUSIVE
