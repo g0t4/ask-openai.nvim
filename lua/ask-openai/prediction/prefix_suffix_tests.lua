@@ -47,6 +47,27 @@ describe("get_prefix_suffix", function()
         assert.equal("line 1\nline 2\nline 3\nline 4\nline 5", suffix)
     end)
 
+    it("cursor is at end of buffer, last line, last col", function()
+        local bufnr = new_buffer_with_lines(seven_lines)
+        local line_base1 = 7
+        local col_base0 = 5
+        vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+
+        local take_lines = 2
+        local ps_chunk = ps.get_prefix_suffix_chunks(2)
+
+        -- to make this consistent I probably should make line range take 3 to 7 here
+        --  like with start of doc, which takes 1 to 5
+        --   right now this takes 4 lines only when it s/b 2 on either side of cursor line
+        --   thus in this case all 4 before cursor line so 3 to 7 (5 lines)
+        assert.same({
+            prefix = "line 4\nline 5\nline 6\nline ",
+            suffix = "7\n",
+            start_line_base1 = 4,
+            end_line_base1 = 7,
+        }, ps_chunk)
+    end)
+
     describe("plenty of lines both ways", function()
         describe("cursor line is not empty", function()
             it("cursor is at start of line", function()
