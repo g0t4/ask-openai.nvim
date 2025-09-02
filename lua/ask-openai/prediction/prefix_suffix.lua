@@ -10,11 +10,11 @@ local M = {}
 local Chunk = {}
 
 --- Determine range of lines to take before/after cursor position
-function M.get_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+function M.get_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
     -- reminder... buffer_line_count is a count, so it does not have a base!
 
-    local first_row_b0 = current_row - take_num_lines_each_way
-    local last_row_b0 = current_row + take_num_lines_each_way
+    local first_row_b0 = current_row_base0 - take_num_lines_each_way
+    local last_row_b0 = current_row_base0 + take_num_lines_each_way
     if first_row_b0 < 0 then
         -- first row cannot < 0
         local extra_rows = -first_row_b0
