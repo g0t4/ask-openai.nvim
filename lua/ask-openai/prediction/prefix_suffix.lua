@@ -40,25 +40,25 @@ end
 ---@return Chunk prefix, Chunk suffix
 function M.get_prefix_suffix(buffer_number)
     local current_window_id = 0 -- ONLY if needed, lookup: vim.fn.win_findbuf(bufnr) and take first?
-    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(current_window_id)) -- (1,0)-indexed
+    local original_row_1indexed, original_col_0indexed = unpack(vim.api.nvim_win_get_cursor(current_window_id)) -- (1,0)-indexed
     local original_row_0indexed = original_row_1indexed - 1 -- 0-indexed now
 
     local allow_lines = 80
     local num_rows_total = vim.api.nvim_buf_line_count(buffer_number)
     -- TODO test for 0indexed vs 1indexed indexing in get_line_range (I know you can get a number past end of document but that works out given get_lines is END-EXCLUSIVE
     local first_row, last_row = M.get_line_range(original_row_0indexed, allow_lines, num_rows_total)
-    log:trace("first_row", first_row, "last_row", last_row, "original_row_0indexed", original_row_0indexed, "original_col", original_col)
+    log:trace("first_row", first_row, "last_row", last_row, "original_row_0indexed", original_row_0indexed, "original_col_0indexed", original_col_0indexed)
 
     local current_line = vim.api.nvim_buf_get_lines(buffer_number, original_row_0indexed, original_row_0indexed + 1, IGNORE_BOUNDARIES)[1]
     -- get_lines is END-EXCLUSIVE, 0-indexed
     log:trace("current_line", current_line)
 
-    local before_is_thru_col = original_col -- original_col is 0-indexed, but don't +1 b/c that would include the char under the cursor which goes after any typed/inserted chars
+    local before_is_thru_col = original_col_0indexed -- don't +1 b/c that would include the char under the cursor which goes after any typed/inserted chars
     -- test edge case: enter insert mode 'i' => type/paste char(s) => observe char under cursor position shifts right
     local current_line_before_split = current_line:sub(1, before_is_thru_col) -- sub is END-INCLUSIVE ("foobar"):sub(2,3) == "ob"
     log:trace("current_line_before (1 => " .. before_is_thru_col .. "): '" .. current_line_before_split .. "'")
 
-    local after_starts_at_char_under_cursor = original_col + 1 -- FYI original_col is 0-indexed, thus +1
+    local after_starts_at_char_under_cursor = original_col_0indexed + 1 -- FYI original_col_0indexed, thus +1
     local current_line_after_split = current_line:sub(after_starts_at_char_under_cursor)
     log:trace("current_line_after (" .. after_starts_at_char_under_cursor .. " => end): '" .. current_line_after_split .. "'")
 
