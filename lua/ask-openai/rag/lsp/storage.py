@@ -299,9 +299,9 @@ def load_prior_data(dot_rag_dir: Path, language_extension: str) -> RAGDataset:
 
     dataset = RAGDataset(language_extension, chunks_by_file, files_by_path, index)
 
-    num_chunks = sum(len(v) for v in chunks_by_file.values())
-    log_num_vectors = index.ntotal if index is not None else None
-    logger.info(f"Loaded {language_extension} - {len(files_by_path)} file stats, {log_num_vectors} FAISS vectors, {num_chunks} chunks")
+    num_chunks = dataset.num_chunks()
+    log_num_vectors = dataset.num_vectors()
+    logger.info(f"Loaded {language_extension} - {dataset.num_files()} file stats, {log_num_vectors} FAISS vectors, {num_chunks} chunks")
     if num_chunks != (log_num_vectors or 0):
         logger.error(f"Num chunks ({num_chunks}) != Num vectors ({log_num_vectors}) which suggests problems with FAISS index vectors or otherwise, use rag_validate_index to check")
 
