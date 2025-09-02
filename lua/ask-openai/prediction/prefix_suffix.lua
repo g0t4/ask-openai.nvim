@@ -45,7 +45,7 @@ end
 
 ---@param take_num_lines_each_way integer
 ---@return Chunk prefix, Chunk suffix
-function M.get_prefix_suffix(take_num_lines_each_way)
+function M._get_prefix_suffix(take_num_lines_each_way)
     take_num_lines_each_way = take_num_lines_each_way or 80
     -- presently, this only works with current buffer/window:
     local current_win_id = 0
@@ -93,9 +93,12 @@ function M.get_prefix_suffix(take_num_lines_each_way)
     local suffix_text = cursor_row_text_cursor_plus
         .. "\n" -- TODO! doesn't cursor row have a newline already? why am I adding that here?
         .. table.concat(lines_after_cursor_line, "\n")
-
     -- TODO convert to new Chunk type (w/ line #s so I can pass those to LSP to only skip lines in this range with RAG matching)
     return prefix_text, suffix_text
+end
+
+function M.get_prefix_suffix(take_num_lines_each_way)
+    return M._get_prefix_suffix(take_num_lines_each_way)
 end
 
 return M
