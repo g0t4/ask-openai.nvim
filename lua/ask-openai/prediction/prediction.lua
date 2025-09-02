@@ -12,7 +12,7 @@ function Prediction:new()
     -- (nanosecond) time based s/b sufficient, esp b/c there should only ever be one prediction at a time.. even if multiple in short time (b/c of keystrokes, there is gonna be 1ms or so between them at most)
 
     -- PRN prediction per buffer (only when not having this becomes a hassle)
-    prediction.buffer = 0 -- 0 = CURRENT_BUFFER
+    prediction.buffer = 0 -- 0 == current buffer
 
     prediction.namespace_id = vim.api.nvim_create_namespace("ask-predictions")
     -- ?? keep \n to differentiate lines ? or map to some sort of object model (lines at least... and maybe tokenize the lines)

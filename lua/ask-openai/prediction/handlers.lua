@@ -16,12 +16,10 @@ local OllamaFimBackend = require("ask-openai.prediction.backends.llama")
 -- FYI would need current prediction PER buffer in the future if want multiple buffers to have predictions at same time (not sure I want this feature)
 M.current_prediction = nil -- set on module for now, just so I can inspect it easily
 
-local CURRENT_BUFFER = 0
-
 function M.ask_for_prediction()
     M.cancel_current_prediction()
     local enable_rag = api.is_rag_enabled()
-    local document_prefix, document_suffix = ps.get_prefix_suffix(CURRENT_BUFFER)
+    local document_prefix, document_suffix = ps.get_prefix_suffix()
     local perf = FIMPerformance:new()
 
     ---@param rag_matches LSPRankedMatch[]

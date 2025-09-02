@@ -36,19 +36,21 @@ function M.get_line_range(current_row, allow_lines, buffer_line_count)
     return first_row, last_row
 end
 
----@param buffer_number integer
 ---@return Chunk prefix, Chunk suffix
-function M.get_prefix_suffix(buffer_number)
-    local current_window_id = 0 -- ONLY if needed, lookup: vim.fn.win_findbuf(bufnr) and take first?
-    local cursor_line_1indexed, cursor_col_0indexed = unpack(vim.api.nvim_win_get_cursor(current_window_id)) -- (1,0)-indexed
+function M.get_prefix_suffix()
+    -- presently, this only works with current buffer/window:
+    local current_win_id = 0
+    local current_bufnr = 0
+
+    local cursor_line_1indexed, cursor_col_0indexed = unpack(vim.api.nvim_win_get_cursor(current_win_id)) -- (1,0)-indexed
     local cursor_line_0indexed = cursor_line_1indexed - 1 -- 0-indexed now
 
     local allow_lines = 80
-    local line_count = vim.api.nvim_buf_line_count(buffer_number)
+    local line_count = vim.api.nvim_buf_line_count(current_bufnr)
     local first_row, last_row = M.get_line_range(cursor_line_0indexed, allow_lines, line_count)
     log:trace("first_row", first_row, "last_row", last_row, "cursor_line_0indexed", cursor_line_0indexed, "cursor_col_0indexed", cursor_col_0indexed)
 
-    local current_line = vim.api.nvim_buf_get_lines(buffer_number, cursor_line_0indexed, cursor_line_0indexed + 1, IGNORE_BOUNDARIES)[1] -- 0indexed, END-EXCLUSIVE
+    local current_line = vim.api.nvim_buf_get_lines(current_bufnr, cursor_line_0indexed, cursor_line_0indexed + 1, IGNORE_BOUNDARIES)[1] -- 0indexed, END-EXCLUSIVE
     log:trace("current_line", current_line)
 
     local before_is_thru_col = cursor_col_0indexed -- don't +1 b/c that would include the char under the cursor which goes after any typed/inserted chars
@@ -60,17 +62,17 @@ function M.get_prefix_suffix(buffer_number)
     local current_line_after_split = current_line:sub(after_starts_at_char_under_cursor)
     log:trace("current_line_after (" .. after_starts_at_char_under_cursor .. " => end): '" .. current_line_after_split .. "'")
 
-    local lines_before_current = vim.api.nvim_buf_get_lines(buffer_number, first_row, cursor_line_0indexed, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
+    local lines_before_current = vim.api.nvim_buf_get_lines(current_bufnr, first_row, cursor_line_0indexed, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
     local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_line_before_split
 
     -- TODO edge cases for new line at end of current line? is that a concern
-    local lines_after_current = vim.api.nvim_buf_get_lines(buffer_number, cursor_line_0indexed + 1, last_row, IGNORE_BOUNDARIES) -- 0indexed END-EXCLUSIVE
+    local lines_after_current = vim.api.nvim_buf_get_lines(current_bufnr, cursor_line_0indexed + 1, last_row, IGNORE_BOUNDARIES) -- 0indexed END-EXCLUSIVE
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local document_suffix = current_line_after_split .. "\n" .. table.concat(lines_after_current, "\n")
 
     if log.is_verbose_enabled() then
         -- if in trace mode... combine document prefix and suffix and check if matches entire document:
-        local entire_document = table.concat(vim.api.nvim_buf_get_lines(buffer_number, first_row, last_row, IGNORE_BOUNDARIES), "\n")
+        local entire_document = table.concat(vim.api.nvim_buf_get_lines(current_bufnr, first_row, last_row, IGNORE_BOUNDARIES), "\n")
         local combined = document_prefix .. document_suffix
         if entire_document ~= combined then
             -- trace mode, check if matches (otherwise may be incomplete or not in expected format)
