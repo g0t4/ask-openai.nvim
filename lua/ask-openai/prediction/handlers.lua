@@ -44,18 +44,25 @@ end
 local IGNORE_BOUNDARIES = false
 local CURRENT_BUFFER = 0
 
-local function get_prefix_suffix()
-    -- TODO! add some tests here next time something goes wrong or needs changed
-    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(CURRENT_BUFFER)) -- (1,0)-indexed #s... aka original_row starts at 1, original_col starts at 0
+---@class Chunk
+---@field i1_start_line integer
+---@field i1_end_line integer
+---@field lines string|string[] -- TODO lines array or text?
+local Chunk = {}
+
+---@param buffer_number integer
+---@return Chunk prefix, Chunk suffix
+local function get_prefix_suffix(buffer_number)
+    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(buffer_number)) -- (1,0)-indexed #s... aka original_row starts at 1, original_col starts at 0
     local original_row = original_row_1indexed - 1 -- 0-indexed now
 
     local allow_lines = 80
-    local num_rows_total = vim.api.nvim_buf_line_count(CURRENT_BUFFER)
+    local num_rows_total = vim.api.nvim_buf_line_count(buffer_number)
     -- TODO test for 0indexed vs 1indexed indexing in get_line_range (I know you can get a number past end of document but that works out given get_lines is END-EXCLUSIVE
     local first_row, last_row = M.get_line_range(original_row, allow_lines, num_rows_total)
     log:trace("first_row", first_row, "last_row", last_row, "original_row", original_row, "original_col", original_col)
 
-    local current_line = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row, original_row + 1, IGNORE_BOUNDARIES)[1]
+    local current_line = vim.api.nvim_buf_get_lines(buffer_number, original_row, original_row + 1, IGNORE_BOUNDARIES)[1]
     -- get_lines is END-EXCLUSIVE, 0-indexed
     log:trace("current_line", current_line)
 
@@ -79,17 +86,17 @@ local function get_prefix_suffix()
     local current_line_after_split = current_line:sub(after_starts_at_char_under_cursor)
     log:trace("current_line_after (" .. after_starts_at_char_under_cursor .. " => end): '" .. current_line_after_split .. "'")
 
-    local lines_before_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, first_row, original_row, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
+    local lines_before_current = vim.api.nvim_buf_get_lines(buffer_number, first_row, original_row, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
     local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_line_before_split
 
     -- TODO edge cases for new line at end of current line? is that a concern
-    local lines_after_current = vim.api.nvim_buf_get_lines(CURRENT_BUFFER, original_row + 1, last_row, IGNORE_BOUNDARIES) -- 0indexed END-EXCLUSIVE
+    local lines_after_current = vim.api.nvim_buf_get_lines(buffer_number, original_row + 1, last_row, IGNORE_BOUNDARIES) -- 0indexed END-EXCLUSIVE
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local document_suffix = current_line_after_split .. "\n" .. table.concat(lines_after_current, "\n")
 
     if log.is_verbose_enabled() then
         -- if in trace mode... combine document prefix and suffix and check if matches entire document:
-        local entire_document = table.concat(vim.api.nvim_buf_get_lines(CURRENT_BUFFER, first_row, last_row, IGNORE_BOUNDARIES), "\n")
+        local entire_document = table.concat(vim.api.nvim_buf_get_lines(buffer_number, first_row, last_row, IGNORE_BOUNDARIES), "\n")
         local combined = document_prefix .. document_suffix
         if entire_document ~= combined then
             -- trace mode, check if matches (otherwise may be incomplete or not in expected format)
@@ -103,7 +110,7 @@ end
 function M.ask_for_prediction()
     M.cancel_current_prediction()
     local enable_rag = api.is_rag_enabled()
-    local document_prefix, document_suffix = get_prefix_suffix()
+    local document_prefix, document_suffix = get_prefix_suffix(CURRENT_BUFFER)
     local perf = FIMPerformance:new()
 
     ---@param rag_matches LSPRankedMatch[]
