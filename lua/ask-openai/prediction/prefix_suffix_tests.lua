@@ -47,21 +47,21 @@ local ps = require("ask-openai.prediction.prefix_suffix")
 
 describe("determine_line_range", function()
     it("plenty of lines for both prefix and suffix", function()
-        local current_row = 40
+        local current_row_base0 = 40
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
 
-        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
 
         assert.equal(30, start_row_base0)
         assert.equal(50, end_row_base0)
     end)
 
     it("unused prefix lines are added to the suffix", function()
-        local current_row = 4
+        local current_row_base0 = 4
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
-        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
         assert.equal(0, start_row_base0)
         -- 6 extra overflow lines from before, 10+6==16
         --    16+4 = 20
@@ -70,11 +70,11 @@ describe("determine_line_range", function()
     end)
 
     it("unused suffix lines are added to the prefix", function()
-        local current_row = 95
+        local current_row_base0 = 95
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
 
-        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
         -- 5 extra overflow lines from after, 10+5==15
         -- 95-15==80
         assert.equal(80, start_row_base0)
@@ -82,11 +82,11 @@ describe("determine_line_range", function()
     end)
 
     it("current_row is before the start of the document, takes start of document", function()
-        local current_row = -5
+        local current_row_base0 = -5
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
 
-        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
         -- 5 extra overflow lines from after, 10+5==15
         -- 95-15==80
         assert.equal(0, start_row_base0)
@@ -94,11 +94,11 @@ describe("determine_line_range", function()
     end)
 
     it("current_row is past the end of the document, still takes end of document", function()
-        local current_row = 115
+        local current_row_base0 = 115
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
 
-        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
         -- 5 extra overflow lines from after, 10+5==15
         -- 95-15==80
         assert.equal(80, start_row_base0)
@@ -106,20 +106,20 @@ describe("determine_line_range", function()
     end)
 
     it("buffer line count is less than allowed lines in both directions, takes all lines", function()
-        local current_row = 4
+        local current_row_base0 = 4
         local take_num_lines_each_way = 10
         local buffer_line_count = 8
-        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
         assert.equal(0, start_row_base0)
         assert.equal(7, end_row_base0) -- TODO fix this, base0 would make this max 7! (not 8)
     end)
 
     it("suffix has remainder of document through exactly the last line", function()
         -- arguably redundant, boundary condition
-        local current_row = 89
+        local current_row_base0 = 89
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
-        local start_row, end_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        local start_row, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
         assert.equal(79, start_row)
         assert.equal(99, end_row_base0)
     end)
