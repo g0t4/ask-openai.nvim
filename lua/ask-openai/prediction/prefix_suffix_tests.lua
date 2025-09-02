@@ -116,11 +116,11 @@ describe("determine_line_range", function()
 
     it("suffix has remainder of document through exactly the last line", function()
         -- arguably redundant, boundary condition
-        local current_row = 90
+        local current_row = 89
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
         local start_row, end_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
-        assert.equal(80, start_row)
+        assert.equal(79, start_row)
         assert.equal(99, end_row_base0)
     end)
 end)
