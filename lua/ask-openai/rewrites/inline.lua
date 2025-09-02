@@ -118,7 +118,7 @@ function M.on_sse_llama_server_timings(sse)
         local virt_text = {
             {
                 string.format(
-                    "Tokens/sec: %s predicted n: %s | ",
+                    "%s predicted @ %s tokens/sec ",
                     human.format_num(pps),
                     human.comma_delimit(t.predicted_n)
                 ),
@@ -126,7 +126,7 @@ function M.on_sse_llama_server_timings(sse)
             },
             {
                 string.format(
-                    "Prompt Tokens/sec: %s prompt n: %s",
+                    "%s prompt @ %s tokens/sec",
                     human.format_num(t.prompt_per_second),
                     human.comma_delimit(t.prompt_n)
                 ),
