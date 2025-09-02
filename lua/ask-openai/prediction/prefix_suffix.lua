@@ -47,8 +47,8 @@ function M.get_prefix_suffix()
 
     local take_num_lines_each_way = 80
     local line_count = vim.api.nvim_buf_line_count(current_bufnr)
-    local first_row_base0, last_row = M.get_line_range_base0(cursor_line_0indexed, take_num_lines_each_way, line_count)
-    log:trace("first_row_base0", first_row_base0, "last_row", last_row, "cursor_line_0indexed", cursor_line_0indexed, "cursor_col_0indexed", cursor_col_0indexed)
+    local first_row_base0, last_row_base0 = M.get_line_range_base0(cursor_line_0indexed, take_num_lines_each_way, line_count)
+    log:trace("first_row_base0", first_row_base0, "last_row_base0", last_row_base0, "cursor_line_0indexed", cursor_line_0indexed, "cursor_col_0indexed", cursor_col_0indexed)
 
     local current_line = vim.api.nvim_buf_get_lines(current_bufnr, cursor_line_0indexed, cursor_line_0indexed + 1, IGNORE_BOUNDARIES)[1] -- 0indexed, END-EXCLUSIVE
     log:trace("current_line", current_line)
@@ -66,13 +66,13 @@ function M.get_prefix_suffix()
     local document_prefix = table.concat(lines_before_current, "\n") .. "\n" .. current_line_before_split
 
     -- TODO edge cases for new line at end of current line? is that a concern
-    local lines_after_current = vim.api.nvim_buf_get_lines(current_bufnr, cursor_line_0indexed + 1, last_row, IGNORE_BOUNDARIES) -- 0indexed END-EXCLUSIVE
+    local lines_after_current = vim.api.nvim_buf_get_lines(current_bufnr, cursor_line_0indexed + 1, last_row_base0, IGNORE_BOUNDARIES) -- 0indexed END-EXCLUSIVE
     -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local document_suffix = current_line_after_split .. "\n" .. table.concat(lines_after_current, "\n")
 
     if log.is_verbose_enabled() then
         -- if in trace mode... combine document prefix and suffix and check if matches entire document:
-        local entire_document = table.concat(vim.api.nvim_buf_get_lines(current_bufnr, first_row_base0, last_row, IGNORE_BOUNDARIES), "\n")
+        local entire_document = table.concat(vim.api.nvim_buf_get_lines(current_bufnr, first_row_base0, last_row_base0, IGNORE_BOUNDARIES), "\n")
         local combined = document_prefix .. document_suffix
         if entire_document ~= combined then
             -- trace mode, check if matches (otherwise may be incomplete or not in expected format)
