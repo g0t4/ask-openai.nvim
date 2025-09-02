@@ -31,7 +31,6 @@ function M.get_line_range_base0(current_row_b0, take_num_lines_each_way, buffer_
         -- unused lines in suffix, try expanding prefix
         first_row_b0 = first_row_b0 - unused_suffix_rows
         first_row_b0 = math.max(0, first_row_b0)
-        -- todo do I have to ensure > 0 ? for first_row_b0
     end
     return first_row_b0, last_row_b0
 end
