@@ -9,12 +9,12 @@ local M = {}
 ---@field lines string|string[] -- TODO lines array or text?
 local Chunk = {}
 
-function M.get_line_range(current_row, allow_lines, buffer_line_count)
+function M.get_line_range(current_row, take_max_num_lines, buffer_line_count)
     -- FYI do not adjust for 0/1-indexed, assume all of these are in same 0/1-index
     --   only adjust when using nvim's line funcs
 
-    local first_row = current_row - allow_lines
-    local last_row = current_row + allow_lines
+    local first_row = current_row - take_max_num_lines
+    local last_row = current_row + take_max_num_lines
     if first_row < 0 then
         -- first row cannot < 0
         local extra_rows = -first_row
@@ -45,9 +45,9 @@ function M.get_prefix_suffix()
     local cursor_line_1indexed, cursor_col_0indexed = unpack(vim.api.nvim_win_get_cursor(current_win_id)) -- (1,0)-indexed
     local cursor_line_0indexed = cursor_line_1indexed - 1 -- 0-indexed now
 
-    local allow_lines = 80
+    local take_max_num_lines = 80
     local line_count = vim.api.nvim_buf_line_count(current_bufnr)
-    local first_row, last_row = M.get_line_range(cursor_line_0indexed, allow_lines, line_count)
+    local first_row, last_row = M.get_line_range(cursor_line_0indexed, take_max_num_lines, line_count)
     log:trace("first_row", first_row, "last_row", last_row, "cursor_line_0indexed", cursor_line_0indexed, "cursor_col_0indexed", cursor_col_0indexed)
 
     local current_line = vim.api.nvim_buf_get_lines(current_bufnr, cursor_line_0indexed, cursor_line_0indexed + 1, IGNORE_BOUNDARIES)[1] -- 0indexed, END-EXCLUSIVE
