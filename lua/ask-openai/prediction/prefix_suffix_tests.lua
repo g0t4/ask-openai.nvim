@@ -27,11 +27,15 @@ describe("get_prefix_suffix", function()
         local prefix, suffix = ps.get_prefix_suffix_chunks()
 
         assert.are_same({
-            text = "line 1\nline 2\nline 3\n"
+            text = "line 1\nline 2\nline 3\n",
+            start_line_base1 = 1,
+            end_line_base1 = 3,
         }, prefix)
 
         assert.are_same({
-            text = "line 4\nline 5\nline 6\nline 7"
+            text = "line 4\nline 5\nline 6\nline 7",
+            start_line_base1 = 4,
+            end_line_base1 = 7,
         }, suffix)
     end)
 
