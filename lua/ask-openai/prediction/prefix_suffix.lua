@@ -9,7 +9,9 @@ local M = {}
 ---@field lines string|string[] -- TODO lines array or text?
 local Chunk = {}
 
---- Determine range of lines to take before/after cursor position
+--- Determine range of lines to take before/after cursor position.
+--- Try taking X lines in both directions.
+--- If one direction doesn't have X lines, try taking the difference from the other side.
 function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, buffer_line_count)
     -- separate logic for finding range of lines to use as prefix/suffix
     -- - the math here can be off by a smidge and won't matter b/c separate code reads the lines
