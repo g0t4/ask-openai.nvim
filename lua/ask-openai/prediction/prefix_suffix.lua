@@ -39,8 +39,8 @@ end
 ---@param buffer_number integer
 ---@return Chunk prefix, Chunk suffix
 function M.get_prefix_suffix(buffer_number)
-    local win_id = 0 -- ONLY if needed, lookup: vim.fn.win_findbuf(bufnr) and take first?
-    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(win_id)) -- (1,0)-indexed
+    local current_window_id = 0 -- ONLY if needed, lookup: vim.fn.win_findbuf(bufnr) and take first?
+    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(current_window_id)) -- (1,0)-indexed
     local original_row_0indexed = original_row_1indexed - 1 -- 0-indexed now
 
     local allow_lines = 80
