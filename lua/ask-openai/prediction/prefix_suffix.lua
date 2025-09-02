@@ -87,7 +87,6 @@ function M.get_prefix_suffix()
         IGNORE_BOUNDARIES
     )
 
-    -- pass new lines verbatim so the model can understand line breaks (as well as indents) as-is!
     local suffix_text = cursor_row_text_cursor_plus
         .. "\n" -- TODO! doesn't cursor row have a newline already? why am I adding that here?
         .. table.concat(lines_after_cursor_line, "\n")
