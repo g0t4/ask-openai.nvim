@@ -113,10 +113,19 @@ function M.ask_for_prediction()
                 -- * timing
                 if perf ~= nil then
                     perf:overall_done()
-                    table.insert(messages, "\nRAG: " .. perf.rag_duration_ms .. " ms")
-                    table.insert(messages, "TTFT: " .. perf.time_to_first_token_ms .. " ms")
-                    table.insert(messages, "  w/o RAG: " .. perf:TTFT_minus_RAG_ms() .. " ms")
-                    table.insert(messages, "Total: " .. perf.total_duration_ms .. " ms")
+                    table.insert(messages, "\n")
+                    if perf.rag_duration_ms ~= nil then
+                        table.insert(messages, "RAG: " .. perf.rag_duration_ms .. " ms")
+                    end
+                    if perf.time_to_first_token_ms ~= nil then
+                        table.insert(messages, "TTFT: " .. perf.time_to_first_token_ms .. " ms")
+                    end
+                    if perf:TTFT_minus_RAG_ms() ~= nil then
+                        table.insert(messages, "  w/o RAG: " .. perf:TTFT_minus_RAG_ms() .. " ms")
+                    end
+                    if perf.total_duration_ms ~= nil then
+                        table.insert(messages, "Total: " .. perf.total_duration_ms .. " ms")
+                    end
                 end
 
                 local message = table.concat(messages, "\n")
