@@ -43,6 +43,7 @@ function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, b
     return take_start_row_b0, take_end_row_b0
 end
 
+---@param integer take_num_lines_each_way
 ---@return Chunk prefix, Chunk suffix
 function M.get_prefix_suffix(take_num_lines_each_way)
     take_num_lines_each_way = take_num_lines_each_way or 80

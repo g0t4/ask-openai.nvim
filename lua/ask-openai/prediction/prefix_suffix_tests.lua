@@ -42,6 +42,38 @@ describe("get_prefix_suffix", function()
         -- assert.equal("", prefix) -- TODO FIX FOR new line not expected!
         assert.equal("line 1\nline 2\nline 3\nline 4\nline 5", suffix)
     end)
+
+    describe("plenty of lines both ways", function()
+        describe("cursor line is empty", function()
+            it("cursor is at start of line", function()
+                local bufnr = new_buffer_with_lines(seven_lines)
+                local line_base1 = 4 -- 'line 4'
+                local col_base0 = 0 -- 'l' in 'line'
+                vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+
+                local take_lines = 2 -- mostly focus on cursor line
+                local prefix, suffix = ps.get_prefix_suffix(take_lines)
+
+                assert.equal("line 2\nline 3\n", prefix)
+                assert.equal("line 4\nline 5\nline 6", suffix)
+            end)
+
+            -- it("cursor is in middle of line", function()
+            --     local bufnr = new_buffer_with_lines(seven_lines)
+            --     local line_base1 = 4 -- 'line 4'
+            --     local col_base0 = 3 -- 3 is the 'e' in 'line'
+            --     vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+            --
+            --     local take_lines = 2
+            --     local prefix, suffix = ps.get_prefix_suffix(take_lines)
+            --
+            --     assert.equal("", prefix)
+            -- end)
+        end)
+
+        describe("cursor line is not empty", function()
+        end)
+    end)
 end)
 
 
