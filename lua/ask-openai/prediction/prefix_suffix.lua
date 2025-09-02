@@ -10,7 +10,7 @@ local M = {}
 local Chunk = {}
 
 --- Determine range of lines to take before/after cursor position
-function M.get_line_range_base0(current_row_b0, take_num_lines_each_way, buffer_line_count)
+function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, buffer_line_count)
     -- reminder... buffer_line_count is a count, so it does not have a base!
 
     local first_row_b0 = current_row_b0 - take_num_lines_each_way
@@ -46,7 +46,7 @@ function M.get_prefix_suffix()
 
     local take_num_lines_each_way = 80
     local line_count = vim.api.nvim_buf_line_count(current_bufnr)
-    local first_row_base0, last_row_base0 = M.get_line_range_base0(cursor_line_base0, take_num_lines_each_way, line_count)
+    local first_row_base0, last_row_base0 = M.determine_line_range_base0(cursor_line_base0, take_num_lines_each_way, line_count)
 
     local current_line = vim.api.nvim_buf_get_lines(current_bufnr, cursor_line_base0, cursor_line_base0 + 1, IGNORE_BOUNDARIES)[1] -- 0indexed, END-EXCLUSIVE
 

@@ -45,13 +45,13 @@ end)
 
 local ps = require("ask-openai.prediction.prefix_suffix")
 
-describe("get_line_range", function()
+describe("determine_line_range", function()
     it("allowed lines both before/after are within document", function()
         local current_row = 40
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
 
-        local first_row, last_row = ps.get_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        local first_row, last_row = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
 
         assert.equal(30, first_row)
         assert.equal(50, last_row)
@@ -61,7 +61,7 @@ describe("get_line_range", function()
         local current_row = 4
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
-        local first_row_base0, last_row_base0 = ps.get_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        local first_row_base0, last_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
         assert.equal(0, first_row_base0)
         -- 6 extra overflow lines from before, 10+6==16
         --    16+4 = 20
@@ -74,8 +74,8 @@ describe("get_line_range", function()
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
 
-        local first_row, last_row = ps.get_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
-        -- local first_row, last_row = handlers.get_line_range(current_row, take_num_lines_each_way, buffer_line_count)
+        local first_row, last_row = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        -- local first_row, last_row = handlers.determine_line_range(current_row, take_num_lines_each_way, buffer_line_count)
         -- 5 extra overflow lines from after, 10+5==15
         -- 95-15==80
         assert.equal(80, first_row)
@@ -86,7 +86,7 @@ describe("get_line_range", function()
         local current_row = 4
         local take_num_lines_each_way = 10
         local buffer_line_count = 8
-        local first_row_base0, last_row_base0 = ps.get_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        local first_row_base0, last_row_base0 = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
         assert.equal(0, first_row_base0)
         assert.equal(7, last_row_base0) -- TODO fix this, base0 would make this max 7! (not 8)
     end)
@@ -96,7 +96,7 @@ describe("get_line_range", function()
         local current_row = 90
         local take_num_lines_each_way = 10
         local buffer_line_count = 100
-        local first_row, last_row = ps.get_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
+        local first_row, last_row = ps.determine_line_range_base0(current_row, take_num_lines_each_way, buffer_line_count)
         assert.equal(80, first_row)
         assert.equal(100, last_row)
     end)
