@@ -89,6 +89,22 @@ async def disconnect(writer):
     writer.close()
     await writer.wait_closed()
 
+def hotpath_done():
+    # let client signal that hotpath is done
+    # - cache can be reused during "hotpath"... i.e. re-indexing a codebase
+    # - biggest benefit of cleanup is gonna be for re-indexing
+    # (Lang Server one off file updated won't matter much)
+    import torch
+    import gc
+
+    rich.print("[yellow bold]hotpath done - clearing caches...")
+    qwen3_embeddings.dump_device_memory_stats("before hotpath_done")
+
+    torch.cuda.empty_cache()
+    gc.collect()
+
+    qwen3_embeddings.dump_device_memory_stats("after hotpath_done")
+
 async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
     logger.info("client connected")
     # PRN consider longer lived (i.e. all request batches for one round of semantic_grep)
@@ -119,11 +135,11 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
             def after_send():
                 num_sequences = len(input_ids)
                 num_tokens = len(input_ids[0])
-                rich.print(f"[blue]embedded {num_sequences} sequences of {num_tokens} tokens in {colorful_ms(encode_elapsed_ms)} ms")
+                rich.print(f"[blue]embedded {num_sequences} sequences of {num_tokens} tokens in {colorful_ms(operation_elapsed_ms)} ms")
                 dump_token_details(input_ids, texts)
                 qwen3_embeddings.dump_device_memory_stats()
-                import torch
-                torch.cuda.empty_cache()
+                # import torch
+                # torch.cuda.empty_cache()
 
         elif request_type == 'rerank':
             instruct: str = request['instruct']
@@ -136,18 +152,24 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
             def after_send():
                 num_docs = len(docs)
                 num_tokens = len(input_ids[0])
-                rich.print(f"[blue]re-ranked {num_docs} docs of {num_tokens=} tokens in {colorful_ms(encode_elapsed_ms)} ms")
+                rich.print(f"[blue]re-ranked {num_docs} docs of {num_tokens=} tokens in {colorful_ms(operation_elapsed_ms)} ms")
                 qwen3_embeddings.dump_device_memory_stats()  # FYI shows for devices (not model specific), so assuming I am hitting the same current_device then I should be fine to cover everything
-                import torch
-                torch.cuda.empty_cache()
+                # import torch
+                # torch.cuda.empty_cache()
 
-        # PRN combine encode and rerank! do batches of both! and can abort between too
+        elif request_type == "hotpath_done":
+            # no response
+            await disconnect(writer)
+            hotpath_done()
+            return
 
         else:
             logger.error(f'unsupported {request_type=}')
             return await disconnect(writer)
 
-    encode_elapsed_ms = encode_timer.elapsed_ms()
+        # PRN combine encode and rerank! do batches of both! and can abort between too
+
+    operation_elapsed_ms = encode_timer.elapsed_ms()
 
     await send_len_then_msg_async(writer, response)
     await disconnect(writer)
