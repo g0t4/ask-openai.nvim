@@ -1,14 +1,12 @@
 from lsp.logs import get_logger
 from typing import Optional
+import numpy as np
+from lsp.inference.client import AsyncInferenceClient
 
 logger = get_logger(__name__)
 
-async def _encode_batch(texts: list[str]) -> "np.ndarray":
+async def _encode_batch(texts: list[str]) -> np.ndarray:
     # TODO can I just load numpy upfront? or is it a huge hit on load times?
-    with logger.timer("import numpy"):
-        import numpy as np
-    with logger.timer("import async client"):
-        from lsp.inference.client import AsyncInferenceClient
 
     # FYI for now lets leave batch_size at 8?
     # TODO capture some sequence length distribution data so I can see how variable it is
@@ -34,7 +32,7 @@ async def _encode_batch(texts: list[str]) -> "np.ndarray":
     vecs_np = await batched_encode(texts)
     return vecs_np
 
-async def encode_passages(passages: list[str]) -> "np.ndarray":
+async def encode_passages(passages: list[str]) -> np.ndarray:
     # FYI Qwen3 has NO passage/document label, only query side has Query:/Instruct:
     return await _encode_batch(passages)
 
@@ -43,7 +41,7 @@ def qwen3_format_query(text: str, instruct: Optional[str]) -> str:
         return f'Instruct: {instruct}\nQuery:{text}'
     return f"Query: {text}"
 
-async def encode_query(text: str, instruct: Optional[str]) -> "np.ndarray":
+async def encode_query(text: str, instruct: Optional[str]) -> np.ndarray:
     return await _encode_batch([
         qwen3_format_query(text, instruct),
     ])
