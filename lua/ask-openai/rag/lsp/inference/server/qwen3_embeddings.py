@@ -81,6 +81,12 @@ else:
     raise ValueError("ONLY setup for CUDA device")
 
 model = AutoModel.from_pretrained(model_path, **model_kwargs)
+
+# disable cache altogether
+# - cuts peak reserved memory by 50%, and 40% less allocated
+# - caching should happen client side by not even requesting a re-embed of the exact same chunk
+model.config.use_cache = False
+
 dump_device_memory_stats("after embedding model loaded")
 
 logger.debug(f'{model.hf_device_map=}')
