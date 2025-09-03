@@ -63,7 +63,7 @@ def tokenize_docs(instruct: str, query: str, documents: list[str]):
     return move_to_gpu(documents_tokens, model.device)
 
 def compute_relevance_scores(tokenized_inputs):
-    with torch.no_grad():
+    with torch.inference_mode():
         output_logits = model(**tokenized_inputs).logits[:, -1, :]
         yes_logits = output_logits[:, TOKEN_ID_YES]
         no_logits = output_logits[:, TOKEN_ID_NO]
