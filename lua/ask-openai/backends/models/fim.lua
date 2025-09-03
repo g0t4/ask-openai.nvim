@@ -88,6 +88,7 @@ function M.gpt_oss.get_fim_chat_messages(request)
         .. request.ps_chunk.prefix
         .. "<<<FIM>>>"
         .. request.ps_chunk.suffix
+    -- PRN should I be using fim tokens / format for the query here? I know it's not the same thing but if the model is trained on that, would that perform better (TODO find a way to quantify)
 
     table.insert(messages, ChatMessage:user(fim_message))
 

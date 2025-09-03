@@ -41,6 +41,14 @@ end
 ---@field end_col_b1 integer
 _G.GetPosSelectionRange = {}
 
+-- TODO ctor + functions
+-- function _G.GetPosSelectionRange:new()
+-- end
+
+-- function _G.GetPosSelectionRange:___()
+-- end
+
+
 ---Returns the selection range in 1‑indexed line/column coordinates.
 ---The order is always start → end regardless of cursor direction.
 ---@return GetPosSelectionRange
