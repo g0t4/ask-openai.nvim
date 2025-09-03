@@ -5,8 +5,10 @@ logger = get_logger(__name__)
 
 async def _encode_batch(texts: list[str]) -> "np.ndarray":
     # TODO can I just load numpy upfront? or is it a huge hit on load times?
-    import numpy as np
-    from lsp.inference.client import AsyncInferenceClient
+    with logger.timer("import numpy"):
+        import numpy as np
+    with logger.timer("import async client"):
+        from lsp.inference.client import AsyncInferenceClient
 
     # FYI for now lets leave batch_size at 8?
     # TODO capture some sequence length distribution data so I can see how variable it is
