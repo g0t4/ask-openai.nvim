@@ -54,7 +54,8 @@ model = AutoModel.from_pretrained(model_path, **model_kwargs)
 logger.debug(f'{model.hf_device_map=}')
 logger.info(f'[red bold] %s', model.device)
 
-def encode(input_texts) -> tuple[np.ndarray, list[list[np.int64]]]:
+
+def encode(input_texts: list[str]) -> tuple[np.ndarray, list[list[np.int64]]]:
 
     with torch.no_grad():
         batch_args = tokenizer(
