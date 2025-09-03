@@ -56,6 +56,11 @@ async def semantic_grep(
 ) -> list[LSPRankedMatch]:
     all_languages = args.languages == "ALL"
 
+    # TODO! if memory is an issue from re-ranker, investigate if you can at least disable cache for most requests
+    #   see notes in qwen3_rerank.py module
+    #   one idea: len(query) could decide (long query can benefit)... need to prove this first
+    #   FYI right now cache is enabled.. maybe that is not the wise default?
+
     rerank_top_k = args.topK
     embed_top_k = args.embedTopK or args.topK
     query_embed_top_k = embed_top_k * 3 if args.skipSameFile else embed_top_k

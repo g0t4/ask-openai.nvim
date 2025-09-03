@@ -29,6 +29,9 @@ model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs).eval()
 #      IIRC query comes first in "prompt" so it would be cacheable
 #      FIM queries are long enough to matter for this
 #    PERHAPS decide request by request if you want to cache?
+#    - i.e. my RAG telescope picker the query is tiny so not much of a point there
+#    - FIM query is up to 1500 chars
+#    - MAYBE use len(query) to decide on caching?
 #  not sure it would but I suppose my search tool might benefit from it?
 #  but, before optimizing this here, let's test it first
 #  using realistic loads
