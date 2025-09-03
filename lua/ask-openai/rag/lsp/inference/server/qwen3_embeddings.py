@@ -90,7 +90,7 @@ torch.cuda.reset_peak_memory_stats()
 
 def encode(input_texts: list[str]) -> tuple[np.ndarray, list[list[np.int64]]]:
 
-    with torch.no_grad():
+    with torch.inference_mode():
         batch_args = tokenizer(
             input_texts,
             padding=True,
