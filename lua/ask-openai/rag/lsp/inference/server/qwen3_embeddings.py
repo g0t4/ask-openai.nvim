@@ -24,6 +24,8 @@ def dump_device_memory_stats(message: str = ""):
         return
     message = "" if message == "" else f" - {message}"  # add space
 
+    # FYI https://docs.pytorch.org/docs/stable/torch_cuda_memory.html#torch-cuda-memory
+
     # TODO check which device is displayed for stats, should I explicitly choose or is current_device sufficient?
 
     torch.cuda.synchronize()
