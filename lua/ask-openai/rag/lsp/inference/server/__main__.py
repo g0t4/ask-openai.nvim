@@ -122,8 +122,8 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
                 rich.print(f"[blue]embedded {num_sequences} sequences of {num_tokens} tokens in {colorful_ms(encode_elapsed_ms)} ms")
                 dump_token_details(input_ids, texts)
                 qwen3_embeddings.dump_device_memory_stats()
-                # import torch
-                # torch.cuda.empty_cache()
+                import torch
+                torch.cuda.empty_cache()
 
         elif request_type == 'rerank':
             instruct: str = request['instruct']
@@ -138,8 +138,8 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
                 num_tokens = len(input_ids[0])
                 rich.print(f"[blue]re-ranked {num_docs} docs of {num_tokens=} tokens in {colorful_ms(encode_elapsed_ms)} ms")
                 qwen3_embeddings.dump_device_memory_stats()  # FYI shows for devices (not model specific), so assuming I am hitting the same current_device then I should be fine to cover everything
-                # import torch
-                # torch.cuda.empty_cache()
+                import torch
+                torch.cuda.empty_cache()
 
         # PRN combine encode and rerank! do batches of both! and can abort between too
 
