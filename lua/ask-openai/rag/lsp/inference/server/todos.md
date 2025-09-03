@@ -19,3 +19,19 @@
 
 - Allocator knobs: PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:128,expandable_segments:True.
 
+## signal hotpath ideas/notes
+
+- let client signal that hotpath is done
+    - cache can be reused during "hotpath"... i.e. re-indexing a codebase
+    - biggest benefit of cleanup is gonna be for re-indexing
+    - Lang Server one off file updated won't matter much
+
+- FTR empty_cache after each batch in after_send below:
+- when rag_rebuild this entire repo, resulted in no increase in duration
+- shouldn't be necessary but if needed just a heads up
+
+- PRN ignore signal if no batches run since last
+    - OR if less than threshold?
+    - OR if memory isn't high?
+    - I say this b/c client should always signal when hotpath is done
+        - and client should not think about impact on server, let server handle that or all clients
