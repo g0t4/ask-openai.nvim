@@ -1,3 +1,4 @@
+import sys
 import torch
 import torch.nn.functional as F
 import numpy as np
@@ -10,13 +11,18 @@ from lsp.inference.server.helpers import auto_device
 from lsp.logs import get_logger, logging_fwk_to_console
 
 logger = get_logger(__name__)
+enable_memory_logs = '--memory' in sys.argv
+
 if __name__ == '__main__':
     logging_fwk_to_console("INFO")
-#
+
 # FYI! this is designed ONLY for cuda/5090s for socket server (remote embeddings)
 #
 
 def dump_memory_stats():
+    if not enable_memory_logs:
+        return
+
     torch.cuda.synchronize()
     allocated = torch.cuda.memory_allocated() / 1e9
     reserved = torch.cuda.memory_reserved() / 1e9
