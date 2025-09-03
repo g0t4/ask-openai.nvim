@@ -20,6 +20,12 @@ class AsyncInferenceClient:
         self.writer.close()
         await self.writer.wait_closed()
 
+    async def signal_hotpath_done(self) -> None:
+        logger.info("signaling hotpath done")
+        message = {'type': 'hotpath_done'}
+        await send_len_then_msg_async(self.writer, message)
+        # no response
+
     async def encode(self, inputs: dict[str, str]) -> list[list[float]] | None:
         # PRN add dataclass like rerank below
         inputs['type'] = 'embed'

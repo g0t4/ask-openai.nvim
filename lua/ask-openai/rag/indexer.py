@@ -1,7 +1,7 @@
 import aiofiles
 import asyncio
 from lsp.logs import get_logger
-from lsp.inference.client.embedder import get_shape, encode_passages
+from lsp.inference.client.embedder import get_shape, encode_passages, signal_hotpath_done
 
 logger = get_logger(__name__)
 
@@ -47,6 +47,7 @@ class IncrementalRAGIndexer:
         for ext in exts:
             await self.build_index(ext)
         self.warn_about_other_extensions(exts)
+        await signal_hotpath_done()  # PRN run after each dataset? or after all? (move into loop above for after each)
 
     async def get_included_extensions(self):
         rag_yaml = self.source_code_dir / ".rag.yaml"

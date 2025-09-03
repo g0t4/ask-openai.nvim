@@ -5,6 +5,11 @@ from lsp.inference.client import AsyncInferenceClient
 
 logger = get_logger(__name__)
 
+async def signal_hotpath_done() -> None:
+    from lsp.inference.client import AsyncInferenceClient
+    async with AsyncInferenceClient() as client:
+        await client.signal_hotpath_done()
+
 async def _encode_batch(texts: list[str]) -> np.ndarray:
     # TODO can I just load numpy upfront? or is it a huge hit on load times?
 
