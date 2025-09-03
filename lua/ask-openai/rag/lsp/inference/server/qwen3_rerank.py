@@ -23,6 +23,14 @@ else:
     raise ValueError("ONLY setup for CUDA device")
 
 model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs).eval()
+# TODO! do some testing of re-ranker memory usage
+#  would it benefit from caching at all?
+#  not sure it would but I suppose my search tool might benefit from it?
+#  but, before optimizing this here, let's test it first
+#  using realistic loads
+# model.config.use_cache = False
+# TODO! model.eval() too?
+
 #
 # FYI reranker uses probabilities from yes/no tokens for relevance score
 TOKEN_ID_NO = tokenizer.convert_tokens_to_ids("no")

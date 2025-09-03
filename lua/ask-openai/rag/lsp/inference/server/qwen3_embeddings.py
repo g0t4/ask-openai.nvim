@@ -86,6 +86,7 @@ model = AutoModel.from_pretrained(model_path, **model_kwargs)
 # - cuts peak reserved memory by 50%, and 40% less allocated
 # - caching should happen client side by not even requesting a re-embed of the exact same chunk
 model.config.use_cache = False
+# TODO! model.eval() too?
 
 dump_device_memory_stats("after embedding model loaded")
 
