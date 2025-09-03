@@ -96,6 +96,7 @@ function M.context_query_rewrites(user_prompt, code_context, callback)
     -- FYI use user message for now as Instruct and selected code as the Query
     local query = code_context
     local instruct = user_prompt
+    -- TODO! pass line ranges for limiting same file skips
     return M._context_query(query, instruct, callback)
 end
 
@@ -104,6 +105,7 @@ end
 function M.context_query_fim(ps_chunk, callback)
     local fim_specific_instruct = "Complete the missing portion of code (FIM) based on the surrounding context (Fill-in-the-middle)"
     local query = fim_concat(ps_chunk) -- TODO map fim_concat
+    -- TODO! pass ps_chunk start/end lines to limit same file skips
     return M._context_query(query, fim_specific_instruct, callback)
 end
 
