@@ -2,7 +2,7 @@ from lsp.logs import get_logger
 
 logger = get_logger(__name__)
 
-async def _encode_batch(texts):
+async def _encode_batch(texts: list[str]):
     import numpy as np
     from lsp.inference.client import AsyncInferenceClient
 
