@@ -19,21 +19,30 @@ if __name__ == '__main__':
 # FYI! this is designed ONLY for cuda/5090s for socket server (remote embeddings)
 #
 
-def dump_memory_stats():
+def dump_device_memory_stats(message: str = ""):
     if not enable_memory_logs:
         return
+    message = "" if message == "" else f" - {message}"  # add space
+
+    # TODO check which device is displayed for stats, should I explicitly choose or is current_device sufficient?
 
     torch.cuda.synchronize()
     allocated = torch.cuda.memory_allocated() / 1e9
     reserved = torch.cuda.memory_reserved() / 1e9
+    max_allocated = torch.cuda.max_memory_allocated()
+    max_reserved = torch.cuda.max_memory_reserved() / 1e9
     # cached = torch.cuda.memory_cached() / 1e9 # replaced by memory_reserved
     # stats = torch.cuda.memory_stats() # advanced stats
     # summary = torch.cuda.memory_summary() # nice table like nvidia-smi output
     # print(summary)
     # usage = torch.cuda.memory_usage() / 1e9 # usage stats in real time, how many GB read per last 1 second (or other unit of time)
-    print(f"alloc={allocated:.2f} GB  reserv={reserved:.2f} GB")
+    print(
+        f"alloc={allocated:.2f} GB (max {max_allocated/1e9:.2f} GB), " \
+        + f"reserv={reserved:.2f} GB (max {max_reserved:.2f} GB)" \
+        + message \
+    )
 
-dump_memory_stats()
+dump_device_memory_stats("before embedding model load")
 
 # FYI - warnings... I believe both of these are false positives...
 #   reproduce by running inference server on linux and connect with neovim LSP (change a doc and save it) ... during update it will show warning first time
@@ -56,6 +65,7 @@ def last_token_pool(last_hidden_states: Tensor, attention_mask: Tensor) -> Tenso
 # sizes: 0.6B (remember this is big for embeddings), also 4B and 8B
 model_path = 'Qwen/Qwen3-Embedding-0.6B'
 tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side='left')
+dump_device_memory_stats("after tokenizer loaded")
 
 device = auto_device()
 if device.type == 'cuda':
@@ -69,6 +79,7 @@ else:
     raise ValueError("ONLY setup for CUDA device")
 
 model = AutoModel.from_pretrained(model_path, **model_kwargs)
+dump_device_memory_stats("after embedding model loaded")
 
 logger.debug(f'{model.hf_device_map=}')
 logger.info(f'[red bold] %s', model.device)
@@ -90,8 +101,6 @@ def encode(input_texts: list[str]) -> tuple[np.ndarray, list[list[np.int64]]]:
         outputs = model(**batch_args)
         embeddings = last_token_pool(outputs.last_hidden_state, batch_args['attention_mask'])
         norm: np.ndarray = F.normalize(embeddings, p=2, dim=1).cpu().numpy()
-
-        dump_memory_stats()
 
         # norm is ndarray (SEQ,EMBEDDING DIMENSION) => fix usage of matrix multi in verify_qwen3_known_embeddings so I can do norm.tolist() here too
         # batch_args is a Tensor

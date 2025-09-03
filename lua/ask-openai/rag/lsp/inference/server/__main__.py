@@ -11,7 +11,13 @@ import signal
 import socket
 import sys
 
-from . import qwen3_embeddings, qwen3_rerank
+from . import qwen3_embeddings
+
+qwen3_embeddings.dump_device_memory_stats("before rerank")
+from . import qwen3_rerank
+
+qwen3_embeddings.dump_device_memory_stats("after rerank")
+
 from lsp.logs import Timer, get_logger, logging_fwk_to_console
 from ..comms import recv_len_then_msg_async, send_len_then_msg_async
 
@@ -115,6 +121,7 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
                 num_tokens = len(input_ids[0])
                 rich.print(f"[blue]embedded {num_sequences} sequences of {num_tokens} tokens in {colorful_ms(encode_elapsed_ms)} ms")
                 dump_token_details(input_ids, texts)
+                qwen3_embeddings.dump_device_memory_stats()
 
         elif request_type == 'rerank':
             instruct: str = request['instruct']
@@ -128,6 +135,7 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
                 num_docs = len(docs)
                 num_tokens = len(input_ids[0])
                 rich.print(f"[blue]re-ranked {num_docs} docs of {num_tokens=} tokens in {colorful_ms(encode_elapsed_ms)} ms")
+                qwen3_embeddings.dump_device_memory_stats()  # FYI shows for devices (not model specific), so assuming I am hitting the same current_device then I should be fine to cover everything
 
         # PRN combine encode and rerank! do batches of both! and can abort between too
 
@@ -163,7 +171,8 @@ async def main():
         #   will help when I move to long-lived connections across requests where it's not just one request/response per connection
     )
 
-    clear_iterm_scrollback()
+    if not qwen3_embeddings.enable_memory_logs:
+        clear_iterm_scrollback()
 
     addrs = ', '.join(str(sock.getsockname()) for sock in server.sockets)
     rich.print(f"[green bold]Server ready on {addrs}...")
