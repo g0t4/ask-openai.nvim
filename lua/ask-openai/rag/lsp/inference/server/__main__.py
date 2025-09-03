@@ -94,6 +94,11 @@ def hotpath_done():
     # - cache can be reused during "hotpath"... i.e. re-indexing a codebase
     # - biggest benefit of cleanup is gonna be for re-indexing
     # (Lang Server one off file updated won't matter much)
+
+    # FTR empty_cache after each batch in after_send below:
+    # - when rag_rebuild this entire repo, resulted in no increase in duration
+    # - shouldn't be necessary but if needed just a heads up
+
     import torch
     import gc
 
@@ -138,8 +143,6 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
                 rich.print(f"[blue]embedded {num_sequences} sequences of {num_tokens} tokens in {colorful_ms(operation_elapsed_ms)} ms")
                 dump_token_details(input_ids, texts)
                 qwen3_embeddings.dump_device_memory_stats()
-                # import torch
-                # torch.cuda.empty_cache()
 
         elif request_type == 'rerank':
             instruct: str = request['instruct']
@@ -154,8 +157,6 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
                 num_tokens = len(input_ids[0])
                 rich.print(f"[blue]re-ranked {num_docs} docs of {num_tokens=} tokens in {colorful_ms(operation_elapsed_ms)} ms")
                 qwen3_embeddings.dump_device_memory_stats()  # FYI shows for devices (not model specific), so assuming I am hitting the same current_device then I should be fine to cover everything
-                # import torch
-                # torch.cuda.empty_cache()
 
         elif request_type == "hotpath_done":
             # no response
