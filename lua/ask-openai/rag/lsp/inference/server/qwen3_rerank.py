@@ -25,6 +25,10 @@ else:
 model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs).eval()
 # TODO! do some testing of re-ranker memory usage
 #  would it benefit from caching at all?
+#    i.e. when I re-rank the same query across multiple docs, is there a material boost from caching the query?
+#      IIRC query comes first in "prompt" so it would be cacheable
+#      FIM queries are long enough to matter for this
+#    PERHAPS decide request by request if you want to cache?
 #  not sure it would but I suppose my search tool might benefit from it?
 #  but, before optimizing this here, let's test it first
 #  using realistic loads
