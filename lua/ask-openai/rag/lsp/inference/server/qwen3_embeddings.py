@@ -43,6 +43,13 @@ def dump_device_memory_stats(message: str = ""):
         + f"reserv={reserved:.2f} GB (max {max_reserved:.2f} GB)" \
         + message \
     )
+    # if reserved > 12:
+    #     re-ranker is causing the explosion in cache...
+    #     however it also appears to be caching with FIM at least partly?
+    #     how about have rerank send hotpath signal after all docs re-ranked?
+    #     if that fails, consider a threshold to clean up here?
+    #     OR set use_cache = False entirely for re-ranker
+    #     torch.cuda.empty_cache()
 
 dump_device_memory_stats("before embedding model load")
 
