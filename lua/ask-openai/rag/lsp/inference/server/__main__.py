@@ -100,6 +100,7 @@ def hotpath_done():
 
     torch.cuda.empty_cache()
     gc.collect()
+    torch.cuda.reset_peak_memory_stats()
 
     qwen3_embeddings.dump_device_memory_stats("after hotpath_done")
 
