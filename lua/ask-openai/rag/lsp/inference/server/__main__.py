@@ -89,8 +89,10 @@ async def disconnect(writer):
     writer.close()
     await writer.wait_closed()
 
-def hotpath_done():
+async def hotpath_done():
     # FYI put notes in todos.md
+
+    # await asyncio.sleep(3) # test if client blocked
 
     import torch
     import gc
@@ -155,7 +157,7 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
         elif request_type == "hotpath_done":
             # no response
             await disconnect(writer)
-            hotpath_done()
+            await hotpath_done()  # TODO is this blocking client still?
             return
 
         else:

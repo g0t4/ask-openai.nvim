@@ -226,7 +226,8 @@ async def semantic_grep(
 
     # FYI 1 to 1.5ms delay due to signaling hotpath
     # TODO run in background so not blocking the response
-    async with AsyncInferenceClient() as client:
-        await client.signal_hotpath_done()
+    with logger.timer("signal hotpath"):
+        async with AsyncInferenceClient() as client:
+            await client.signal_hotpath_done()
 
     return matches
