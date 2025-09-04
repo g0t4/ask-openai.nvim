@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 
+import asyncio
 import attrs
 from lsp.inference.client.embedder import encode_query
 from lsp.stoppers import Stopper
@@ -227,7 +228,11 @@ async def semantic_grep(
     # FYI 1 to 1.5ms delay due to signaling hotpath
     # TODO run in background so not blocking the response
     with logger.timer("signal hotpath"):
-        async with AsyncInferenceClient() as client:
-            await client.signal_hotpath_done()
+
+        async def send_hotpath_in_background():
+            async with AsyncInferenceClient() as client:
+                await client.signal_hotpath_done()
+
+        asyncio.create_task(send_hotpath_in_background())
 
     return matches
