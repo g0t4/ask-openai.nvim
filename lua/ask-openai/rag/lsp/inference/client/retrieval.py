@@ -224,4 +224,9 @@ async def semantic_grep(
         logger.warn(f"{embed_top_k=} > {rerank_top_k=} truncating")
         matches = matches[:rerank_top_k]
 
+    # FYI 1 to 1.5ms delay due to signaling hotpath
+    # TODO run in background so not blocking the response
+    async with AsyncInferenceClient() as client:
+        await client.signal_hotpath_done()
+
     return matches
