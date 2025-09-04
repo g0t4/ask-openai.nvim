@@ -2,13 +2,18 @@ from lsp.logs import get_logger
 from typing import Optional
 import numpy as np
 from lsp.inference.client import AsyncInferenceClient
+import asyncio
 
 logger = get_logger(__name__)
 
-async def signal_hotpath_done() -> None:
-    from lsp.inference.client import AsyncInferenceClient
-    async with AsyncInferenceClient() as client:
-        await client.signal_hotpath_done()
+async def signal_hotpath_done_in_background() -> None:
+    # FYI 0.01 ms if triggered in background
+    # FYI 1 to 1.5ms if signal is sent while blocking response here (sans create_task)
+    async def send_hotpath_in_background():
+        async with AsyncInferenceClient() as client:
+            await client.signal_hotpath_done()
+
+    asyncio.create_task(send_hotpath_in_background())
 
 async def _encode_batch(texts: list[str]) -> np.ndarray:
     # TODO can I just load numpy upfront? or is it a huge hit on load times?
