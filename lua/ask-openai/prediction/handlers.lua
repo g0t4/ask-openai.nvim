@@ -198,6 +198,7 @@ function M.ask_for_prediction()
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
+        local start = get_time_in_ns()
         if not vim.lsp.get_clients({ name = "ask_language_server", bufnr = 0 })[1] then
             -- FYI this check of client ready, must have immaterial overhead for working clients
             --  would be better to do no checks than slow down normal use
@@ -205,7 +206,8 @@ function M.ask_for_prediction()
             send_fim({})
             return
         end
-
+        -- FYI vim.lsp.get_clients is taking ~3us for case when the LSP is operational, imperceptible overhead
+        log:warn("took: " .. (get_time_in_ns() - start) .. "ns to get here")
 
         local this_request_ids, cancel -- declare in advance so closure can access
         perf:rag_started()
