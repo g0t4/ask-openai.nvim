@@ -105,6 +105,8 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     rag.validate_rag_indexes()  # TODO! ASYNC?
 
 async def update_rag_for_text_doc(doc_uri: str):
+    # TODO! add buffer_with_time or throttle or debounce... I save frequently and I don't need to rebuild right away, every time
+    #  mostly due to doc_saved which I have a habit of saving rapidly and I don't wanna change that
     if fs.is_no_rag_dir():
         return
 
