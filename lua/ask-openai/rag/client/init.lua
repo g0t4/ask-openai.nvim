@@ -19,6 +19,7 @@ end
 check_supported_dirs()
 
 function M.get_filetypes_for_workspace()
+    -- FYI vim filetypes for enabling the LSP client for RAG purposes
     local ext_to_filetype = {
         -- extension = filetype
         bash = "sh", -- *
