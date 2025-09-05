@@ -19,9 +19,40 @@ end
 check_supported_dirs()
 
 function M.get_filetypes_for_workspace()
-    -- TODO map any of these extensions to different filetypes?
-    -- i.e. bash => sh filetype
-    return M.rag_extensions
+    local ext_to_filetype = {
+        -- extension = filetype
+        bash = "sh", -- *
+        clj = "clojure",
+        coffee = "coffeescript",
+        conf = "cfg",
+        cs = "csharp",
+        h = "c",
+        hh = "cpp",
+        hpp = "cpp",
+        hs = "haskell",
+        htm = "html",
+        jade = "pug",
+        js = "javascript", -- *
+        julia = "julia",
+        kt = "kotlin",
+        lhs = "lhaskell",
+        md = "markdown", -- *
+        pl = "perl",
+        pm = "perl",
+        py = "python", -- *
+        rb = "ruby",
+        rs = "rust",
+        scm = "scheme",
+        shtml = "html",
+        ts = "typescript",
+        tsx = "typescriptreact",
+        vimrc = "vim",
+        yml = "yaml", -- *
+    }
+
+    return vim.iter(M.rag_extensions)
+        :map(function(ext) return ext_to_filetype[ext] or ext end)
+        :totable()
 end
 
 function M.is_rag_supported_in_current_file()
