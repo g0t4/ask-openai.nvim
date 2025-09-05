@@ -51,7 +51,7 @@ function M.get_filetypes_for_workspace()
         yml = "yaml", -- *
     }
 
-    return vim.iter(M.rag_extensions)
+    return vim.iter(M.rag_extensions or {})
         :map(function(ext) return ext_to_filetype[ext] or ext end)
         :totable()
 end
