@@ -198,6 +198,15 @@ function M.ask_for_prediction()
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
+        if not vim.lsp.get_clients({ name = "ask_language_server", bufnr = 0 })[1] then
+            -- FYI this check of client ready, must have immaterial overhead for working clients
+            --  would be better to do no checks than slow down normal use
+            log:error("RAG not available in current LSP, when it should be, so, sending FIM w/o RAG")
+            send_fim({})
+            return
+        end
+
+
         local this_request_ids, cancel -- declare in advance so closure can access
         perf:rag_started()
 
