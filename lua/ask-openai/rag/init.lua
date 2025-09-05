@@ -20,6 +20,7 @@ function M.setup_lsp()
 
     local lspconfig = require("lspconfig")
     local configs = require("lspconfig.configs")
+    local rag_client = require("ask-openai.rag.client")
 
     if not configs.ask_language_server then
         configs.ask_language_server = {
@@ -30,16 +31,8 @@ function M.setup_lsp()
                     "lsp.server",
                 },
                 cmd_cwd = os.getenv("HOME") .. "/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag",
-                filetypes = {
-                    -- TODO! configure this list based on .rag.yaml?
-                    "lua", "python",
-                    "fish",
-                    -- "zsh",
-                    "sh", -- bash
-                },
-                -- filetypes = { "lua" }, -- USE this if python is too busy while you are writing code for LS!
+                filetypes = rag_client.get_filetypes_for_workspace(),
                 root_dir = require("lspconfig.util").root_pattern(".git", "."),
-
             },
         }
     end

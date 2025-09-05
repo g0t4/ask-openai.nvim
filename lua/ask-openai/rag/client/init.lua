@@ -18,6 +18,12 @@ local function check_supported_dirs()
 end
 check_supported_dirs()
 
+function M.get_filetypes_for_workspace()
+    -- TODO map any of these extensions to different filetypes?
+    -- i.e. bash => sh filetype
+    return M.rag_extensions
+end
+
 function M.is_rag_supported_in_current_file()
     if not M.is_rag_indexed_workspace then
         return false
