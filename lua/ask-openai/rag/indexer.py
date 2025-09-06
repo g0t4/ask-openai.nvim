@@ -56,7 +56,7 @@ class IncrementalRAGIndexer:
             # TODO I need to create groupings of related extensions... i.e. fish+zsh+bash+sh as 'shell' type
             #   PRN also use shebang when chunking files? and look at plaintext, extensionless files w/ a shebang (esp chmod +x files)
             return [
-                "lua", "py",
+                "lua", "py", "java", "js", "ts", "html",
                 "fish", "zsh", "sh", # shells
                 "cpp", "cc", "c", "h", "hpp", # c related
                 "cu", "cuh", "cl", # GPU
