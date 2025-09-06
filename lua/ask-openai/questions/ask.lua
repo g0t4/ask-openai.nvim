@@ -99,13 +99,10 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
         --
         -- model = "gemma3:12b-it-q8_0", -- btw -base- does terrible here :)
         -- temperature = 0.2, -- TODO what temp?
-        -- PRN limit num_predict?
         -- model = "huggingface.co/lmstudio-community/openhands-lm-32b-v0.1-GGUF:latest", -- qwen fine tuned for SWE ... not doing well... same issue as qwen2.5-coder
 
-        -- FYI - ollama, be careful w/ `num_ctx`, can't set it with OpenAI compat endpoints (whereas can pass with /api/generate)
-        --   SEE NOTES about how to set this with env vars / Modelfile instead that can work with openai endpoints (don't have to use /api/generate to fix this issue)
-        --   review start logs for n_ctx and during completion it warns if truncated prompt:
-        --     level=WARN source=runner.go:131 msg="truncating input prompt" limit=8192 prompt=10552 keep=4 new=8192
+        -- avoid num_ctx (s/b set server side), instead use max_tokens to cap request:
+        max_tokens = 20000, -- PRN what level for rewrites?
     })
     -- /v1/chat/completions
     -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)

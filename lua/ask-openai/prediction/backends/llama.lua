@@ -13,7 +13,6 @@ local use_model = "bytedance-seed-coder-8b"
 --
 -- * llama-server (llama-cpp)
 local url = "http://ollama:8013/completions"
--- TODO! add switch or some check to make sure you set max tokens (n_predict, num_predict, others use max_tokens IIRC)
 -- /completions - raw prompt: qwen2.5-coder(llama-server) # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
 -- local url = "http://ollama:8012/chat/completions" -- gpt-oss(llama-server, not working yet)
 -- * ollama
@@ -72,6 +71,7 @@ function OllamaFimBackend:request_options()
 end
 
 function OllamaFimBackend:body_for()
+    local max_tokens = 200
     local body = {
         -- FYI! keep model notes in MODELS.notes.md
         -- for llama-server this is only to select the right prompt/chat builder below
@@ -81,36 +81,23 @@ function OllamaFimBackend:body_for()
 
         stream = true,
 
+        -- * MAX tokens (very important)
+        max_tokens = max_tokens, -- works for: llama-server /completions, OpenAI's compat endpoints
+        -- n_predict = max_tokens, -- llama-server specific (avoid for consistency)
+        -- options.num_predict = max_tokens, -- ollama's /api/generate
 
-        --  TODO! add a request checker I can use in any of my tools to always vet max tokens is set
-        --     TODO looks at URL + body and vets even backend specific differenes
-        max_tokens = 200, -- also works for llama-server /completions endpoint, and OpenAI's formats
-        -- n_predict = 200, -- llama-server /completions endpoint
-        -- num_predict = 200, -- aka max_tokens
-        --  TODO check what ollama supports and if it supports max_tokens then remove the rest and convert everything to that
-
-        -- llama-server /completion endpoint
+        -- * llama-server /completions endpoint
         response_fields = {
+            -- set fields so the rest are skipped, else the SSEs are HUGE, and last has entire prompt too
             "content", "timings", "truncated", "stop_type", "stopping_word",
             "generation_settings", -- for last SSE to reflect inputs
         },
         -- these seem to be included regardless: "index","content","tokens","stop","id_slot","tokens_predicted","tokens_evaluated"
-        -- PRN disable tokens_predicted/tokens_evaluated on all SSEs (but last)
         --
         -- timings_per_token = false, -- default false, shows timings on every SSE, BTW doesn't seem to control tokens_predicted, tokens_evaluated per SSE
-        --
-        -- what is "has_new_line"
 
         -- TODO temperature, top_p,
-
-        options = {
-            -- https://github.com/ollama/ollama/blob/main/docs/api.md#generate-request-with-options
-            -- options only for /api/generate
-            --   /v1/completions ignores them even though it uses same GenerateHandler!
-
-            -- TODO can I pass OLLAMA_NUM_PARALLEL=1 via request?
-            num_ctx = 8192,
-        }
+        options = {} -- empty so I can set stop_tokens below (IIRC for ollama only?)
     }
 
     -- FYI some models have a bundled (or in ollama Modelfile, IIRC) prompt template that will handle the format, if you set raw=false

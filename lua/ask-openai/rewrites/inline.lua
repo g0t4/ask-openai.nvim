@@ -293,12 +293,10 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             -- * current models only
             -- model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base" # VERY HAPPY WITH THIS MODEL FOR CODING TOO!
             -- model = "qwen3-coder:30b-a3b-q8_0", # q4_K_M
-            max_tokens = 8192, -- PRN set high if using /think only?
             temperature = 0.2,
-            -- ?? do I need num_ctx (can't recall why I set it - check predicitons code)
-            -- options = {
-            --     num_ctx = 8192
-            -- }
+
+            -- avoid num_ctx (s/b set server side), use max_tokens to cap request:
+            max_tokens = 8192, -- PRN set high if using /think only?
         }
 
         local gptoss_chat_body_llama_server_chat_completions = {

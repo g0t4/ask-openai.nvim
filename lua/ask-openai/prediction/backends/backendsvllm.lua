@@ -32,14 +32,13 @@ local function body_for(prefix, suffix, _recent_edits)
 
         stream = true,
 
+        -- avoid num_ctx (s/b set server side), instead use max_tokens to cap request:
         max_tokens = 200,
 
         -- TODO temperature, top_p,
 
         -- options = {
         --     -- stop_token_ids: Optional[list[int]] = Field(default_factory=list)  -- vllm
-        --     -- any params for parallelization like I had w/ ollama/
-        --     --   num_ctx = 8192, -- ollama
         -- }
     }
 
