@@ -13,6 +13,7 @@ local use_model = "bytedance-seed-coder-8b"
 --
 -- * llama-server (llama-cpp)
 local url = "http://ollama:8013/completions"
+-- TODO! add switch or some check to make sure you set max tokens (n_predict, num_predict, others use max_tokens IIRC)
 -- /completions - raw prompt: qwen2.5-coder(llama-server) # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
 -- local url = "http://ollama:8012/chat/completions" -- gpt-oss(llama-server, not working yet)
 -- * ollama
@@ -79,7 +80,14 @@ function OllamaFimBackend:body_for()
         raw = true, -- bypass templates (only /api/generate, not /v1/completions)
 
         stream = true,
-        num_predict = 200, -- aka max_tokens
+
+
+        --  TODO! add a request checker I can use in any of my tools to always vet max tokens is set
+        --     TODO looks at URL + body and vets even backend specific differenes
+        max_tokens = 200, -- also works for llama-server /completions endpoint, and OpenAI's formats
+        -- n_predict = 200, -- llama-server /completions endpoint
+        -- num_predict = 200, -- aka max_tokens
+        --  TODO check what ollama supports and if it supports max_tokens then remove the rest and convert everything to that
 
         -- llama-server /completion endpoint
         response_fields = {
