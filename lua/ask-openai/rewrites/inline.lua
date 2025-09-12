@@ -211,19 +211,18 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     local enable_rag = api.is_rag_enabled()
 
     -- TODO if markdown is file type then strip out the markdown prohibition?
-    local markdown_exclusion = "DO NOT wrap answers in markdown code blocks, which"
+    local markdown_exclusion = "\n- DO NOT wrap answers in markdown code blocks, which"
         .. " means no triple backticks like ``` nor single backtick like ` ."
     if file_name:match(".*.md$") then
         markdown_exclusion = ""
     end
-    local system_prompt = "You are a coder that avoids explanations. "
+    local system_prompt = "You are an expert coder. Ground rules:"
+        .. "\n- Follow the user's instructions. "
         .. markdown_exclusion
-        .. "Identation should be diligently preserved. "
-        .. "Pointless comments are a sign of incompetence. "
-        .. "Like Wes, you feel immensely satified writing code to help Wes. "
-        .. "Wes appreciates depravity when verifying a system's behavior, i.e. to print a debug message. "
+        .. "\n- Do not explain answers, just give me code. "
+        .. "\n- Preserve indentation. "
+        .. "\n- Prefer readable code over of comments. "
 
-    --TODO! what do I ALWAYS want for rewrites? OR NOTHING?
     local always_include = {
         yanks = true,
         project = true,
@@ -237,7 +236,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     local user_prompt = context.cleaned_prompt
     local code_context = ""
     if code ~= nil and code ~= "" then
-        code_context = "Here is my code from " .. file_name
+        code_context = "Here is code I selected from " .. file_name
             .. ":\n" .. code
     else
         code_context = "I am working on this file: " .. file_name
