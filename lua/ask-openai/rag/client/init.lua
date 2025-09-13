@@ -37,6 +37,7 @@ function M.get_filetypes_for_workspace()
         julia = "julia",
         kt = "kotlin",
         lhs = "lhaskell",
+        m = "objc",  -- others for objc?
         md = "markdown", -- *
         pl = "perl",
         pm = "perl",
@@ -45,6 +46,7 @@ function M.get_filetypes_for_workspace()
         rs = "rust",
         scm = "scheme",
         shtml = "html",
+        swift = "swift",
         ts = "typescript",
         tsx = "typescriptreact",
         vimrc = "vim",
