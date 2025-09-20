@@ -175,9 +175,13 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
         if node.type == 'function_declaration':
             # text = node.text.decode("utf-8", errors="replace")  # TODO better way to get text?
+            stop_before_node = None
             for child in node.children:
                 text = child.text.decode("utf-8", errors="replace")  # TODO better way to get text?
                 print(f'  {child.type=}\n    {text=}')
+                if child.type == "statement_block":
+                    stop_before_node = child
+                    break
 
         # * dump signature
         # TODO other function types, produce the signature parsing
