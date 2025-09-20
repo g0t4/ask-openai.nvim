@@ -292,6 +292,7 @@ async def main():
         in_githook: bool
         rebuild: bool
         level: int
+        only_extension: str | None = None
 
     def parse_program_args() -> ProgramArgs:
         parser = argparse.ArgumentParser()
@@ -309,6 +310,7 @@ async def main():
             in_githook=args.githook,
             rebuild=args.rebuild,
             level=logging.WARNING,
+            only_extension=args.only_extension,
         )
         if args.githook:
             level = logging.INFO
