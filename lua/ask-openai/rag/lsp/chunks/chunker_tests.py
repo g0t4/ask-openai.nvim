@@ -11,7 +11,7 @@ from lsp.storage import Chunk
 repo_root = Path(__file__).parent.parent.parent.parent.parent.parent
 my_dir = Path(__file__).parent.parent
 test_cases = my_dir / "../tests/test_cases"
-test_cases_treesitter = my_dir / "../tests/test_cases/ts"
+test_cases_treesitter = my_dir / "../tests/test_cases/treesitter"
 test_cases_python = test_cases_treesitter / "python"
 
 set_root_dir(repo_root)
