@@ -5,6 +5,7 @@ from lsp.inference.client.embedder import get_shape, encode_passages, signal_hot
 
 logger = get_logger(__name__)
 
+import argparse
 import logging
 import subprocess
 import sys
@@ -43,11 +44,8 @@ class IncrementalRAGIndexer:
         self.source_code_dir = Path(source_code_dir)
 
     async def main(self):
-        # TODO add arg to limit to one extension (i.e. test rag_indexer --ext ts)
         exts = await self.get_included_extensions()
-        # exts = ["ts"] # tmp workaround
-        for ext in exts:
-            await self.build_index(ext)
+        # TODO! use new argument
         self.warn_about_other_extensions(exts)
         await signal_hotpath_done_in_background()
 
@@ -62,7 +60,7 @@ class IncrementalRAGIndexer:
                 "fish", "zsh", "sh", # shells
                 "cpp", "cc", "c", "h", "hpp", # c related
                 "cu", "cuh", "cl", # GPU
-            ]
+            ] # yapf: disable
         import yaml
         async with aiofiles.open(rag_yaml, mode="r") as f:
             content = await f.read()
@@ -288,14 +286,25 @@ async def main():
     from lsp.logs import logging_fwk_to_console
 
     # * command line args
-    verbose = "--verbose" in sys.argv or "--debug" in sys.argv
-    info = "--info" in sys.argv
+
+    def parse_args():
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--verbose", "--debug", action="store_true", help="Enable verbose logging")
+        parser.add_argument("--info", action="store_true", help="Enable info logging")
+        parser.add_argument("--rebuild", action="store_true", help="Rebuild index")
+        parser.add_argument("--githook", action="store_true", help="Run in git hook mode")
+        return parser.parse_args()
+
+    args = parse_args()
+    verbose = args.verbose
+    info = args.info
     level = logging.DEBUG if verbose else (logging.INFO if info else logging.WARNING)
-    rebuild = "--rebuild" in sys.argv
-    in_githook = "--githook" in sys.argv
-    if in_githook:
-        # for now bump level to INFO until I get the hooks stabilized (i.e. not running indexer twice)
+    if args.githook:
         level = logging.INFO
+    rebuild = args.rebuild
+    in_githook = args.githook
+
+    logging.basicConfig(level=level)
 
     logging_fwk_to_console(level)
 
