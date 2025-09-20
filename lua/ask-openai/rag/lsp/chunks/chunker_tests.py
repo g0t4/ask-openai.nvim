@@ -281,7 +281,7 @@ class TestTreesitterTypescriptChunker:
 
     def test_signature_function_declaration(self):
         #
-        # * BTW, structure:
+        # * BTW, structure in typescript (top level func):
         # function_declaration node:
         #     child.type='function'
         #       text='function'
