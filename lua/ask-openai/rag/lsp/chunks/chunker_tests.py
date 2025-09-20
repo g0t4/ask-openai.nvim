@@ -167,7 +167,7 @@ class TestTreesitterPythonClassChunker:
         self.test_file = test_cases_python / "class_with_functions.py"
         self.chunks = build_test_chunks(self.test_file, RAGChunkerOptions.OnlyTsChunks())
 
-    def test_class_with_methods(self):
+    def test_class_has_correct_code(self):
         chunks = self.chunks
 
         assert len(chunks) == 5
@@ -192,6 +192,9 @@ class TestTreesitterPythonClassChunker:
         return f'Person({self.first_name}, {self.last_name}, {self.dob})'"""
         assert first_chunk.text == class_text
 
+    def test_each_method_is_chunked(self):
+        chunks = self.chunks
+
         assert chunks[1].text == """def __init__(self, first_name, last_name, dob):
         self.first_name = first_name
         self.last_name = last_name
@@ -207,11 +210,16 @@ class TestTreesitterPythonClassChunker:
         assert chunks[4].text == """def __str__(self):
         return f'Person({self.first_name}, {self.last_name}, {self.dob})'"""
 
-    def test_class_signatures(self):
+    def test_signatures(self):
         chunks = build_test_chunks(test_cases_python / "class_with_functions.py", RAGChunkerOptions.OnlyTsChunks())
         first_chunk = chunks[0]
 
         assert first_chunk.signature == "class Person():"
+
+        assert chunks[1].signature == "def __init__(self, first_name, last_name, dob):"
+        assert chunks[2].signature == "def say_hi(self):"
+        assert chunks[3].signature == "def is_of_age(self):"
+        assert chunks[4].signature == "def __str__(self):"
 
     # def WIP_test_ts_toplevel_query_py(self):
     #     from tree_sitter_languages import get_parser, get_language
