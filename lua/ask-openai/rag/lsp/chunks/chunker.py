@@ -186,6 +186,12 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                         stop_before_node = child
                         break
 
+                if stop_before_node is not None:
+                    # stop at block
+                    sig = source_bytes[node.start_byte:stop_before_node.start_byte].decode("utf-8", errors="replace").strip()
+                else:
+                    sig = "Can't find block to use as signature end for a function"
+
             # * dump signature
             #   EXTRACT helpers too if needed
             if node.type.find("function_definition") >= 0:
