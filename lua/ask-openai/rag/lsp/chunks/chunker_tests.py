@@ -170,8 +170,9 @@ CODE:
 {code_block}
 """
             print(doc)
+            # DOC : {first_docline or ""}
 
-# DOC : {first_docline or ""}
+class TestTreesitterPythonNestedFunctionsChunker:
 
     def test_nested_functions(self):
         chunks = build_test_chunks(test_cases_python / "nested_functions.py", RAGChunkerOptions.OnlyTsChunks())
@@ -186,6 +187,8 @@ CODE:
         assert second_chunk.text == expected_second_chunk
         # TODO how do I want to handle nesting? maybe all in one if its under a token count?
         # and/or index nested too?
+
+class TestTreesitterPythonDataClassChunker:
 
     def test_dataclass(self):
         chunks = build_test_chunks(test_cases_python / "dataclass.py", RAGChunkerOptions.OnlyTsChunks())
