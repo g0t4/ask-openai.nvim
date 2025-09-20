@@ -186,7 +186,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         elif node.type.find("function_definition") >= 0:
             stop_node_type = "block"
         else:
-            sig = f"--- TODO {node.type} ---"
+            return f"--- TODO {node.type} ---"
 
         for child in node.children:
             # text = child.text.decode("utf-8", errors="replace")
@@ -195,14 +195,14 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 stop_before_node = child
                 break
 
-        if stop_before_node:
-            sig = source_bytes[node.start_byte:stop_before_node.start_byte] \
-                    .decode("utf-8", errors="replace") \
-                    .strip()
-        else:
-            sig = "--- missing signature ---"
+        if not stop_before_node:
+            return f"--- unexpected stop node not found: {stop_before_node} ---"
 
-            # PRN strip 2+ lines that are purely comments
+        sig = source_bytes[node.start_byte:stop_before_node.start_byte] \
+                .decode("utf-8", errors="replace") \
+                .strip()
+
+        # PRN strip 2+ lines that are purely comments
 
         if True:
             # * print for debug purposes
