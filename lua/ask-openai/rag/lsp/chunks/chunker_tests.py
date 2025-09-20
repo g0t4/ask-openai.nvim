@@ -19,7 +19,7 @@ set_root_dir(repo_root)
 # z rag
 # ptw lsp/chunker_tests.py -- --capture=tee-sys
 
-def _ts_chunks_from_file_with_fake_hash(path: Path, options: RAGChunkerOptions) -> list[Chunk]:
+def _treesitter_chunks_from_file_with_fake_hash(path: Path, options: RAGChunkerOptions) -> list[Chunk]:
     return build_ts_chunks_from_source_bytes(path, "fake_hash", path.read_bytes(), options)
 
 class TestReadingFilesAndNewLines:
@@ -122,7 +122,7 @@ class TestLowLevel_LinesChunker:
 class TestTreesitterPythonChunker:
 
     def test_two_functions_py(self):
-        chunks = _ts_chunks_from_file_with_fake_hash(test_cases_python / "two_functions.py", RAGChunkerOptions.OnlyTsChunks())
+        chunks = _treesitter_chunks_from_file_with_fake_hash(test_cases_python / "two_functions.py", RAGChunkerOptions.OnlyTsChunks())
         assert len(chunks) == 2
 
         first_chunk = chunks[0]
@@ -134,7 +134,7 @@ class TestTreesitterPythonChunker:
         assert second_chunk.text == expected_func2_chunk_text
 
     def test_nested_functions_py(self):
-        chunks = _ts_chunks_from_file_with_fake_hash(test_cases_python / "nested_functions.py", RAGChunkerOptions.OnlyTsChunks())
+        chunks = _treesitter_chunks_from_file_with_fake_hash(test_cases_python / "nested_functions.py", RAGChunkerOptions.OnlyTsChunks())
         assert len(chunks) == 2
 
         first_chunk = chunks[0]
@@ -148,7 +148,7 @@ class TestTreesitterPythonChunker:
         # and/or index nested too?
 
     def test_dataclass_py(self):
-        chunks = _ts_chunks_from_file_with_fake_hash(test_cases_python / "dataclass.py", RAGChunkerOptions.OnlyTsChunks())
+        chunks = _treesitter_chunks_from_file_with_fake_hash(test_cases_python / "dataclass.py", RAGChunkerOptions.OnlyTsChunks())
         assert len(chunks) == 1
 
         first_chunk = chunks[0]
@@ -159,7 +159,7 @@ class TestTreesitterPythonChunker:
         assert first_chunk.text == class_text
 
     def test_class_with_functions_py(self):
-        chunks = _ts_chunks_from_file_with_fake_hash(test_cases_python / "class_with_functions.py", RAGChunkerOptions.OnlyTsChunks())
+        chunks = _treesitter_chunks_from_file_with_fake_hash(test_cases_python / "class_with_functions.py", RAGChunkerOptions.OnlyTsChunks())
 
         assert len(chunks) == 5
         self.maxDiff = None
