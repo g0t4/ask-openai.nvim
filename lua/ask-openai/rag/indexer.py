@@ -44,14 +44,19 @@ class ProgramArgs:
 
 class IncrementalRAGIndexer:
 
-    def __init__(self, dot_rag_dir, source_code_dir, options: RAGChunkerOptions):
+    def __init__(self, dot_rag_dir, source_code_dir, options: RAGChunkerOptions, program_args: ProgramArgs | None = None):
         self.options = options
         self.dot_rag_dir = Path(dot_rag_dir)
         self.source_code_dir = Path(source_code_dir)
+        self.program_args = program_args
 
     async def main(self):
         exts = await self.get_included_extensions()
-        # TODO! use new argument
+
+        if self.program_args and self.program_args.only_extension:
+            exts = [self.program_args.only_extension]
+            logger.info(f"Indexing only extension: {exts[0]}")
+
         for ext in exts:
             await self.build_index(ext)
         self.warn_about_other_extensions(exts)
@@ -335,7 +340,7 @@ async def main():
         if args.rebuild:
             trash_dot_rag(dot_rag_dir)
         options = RAGChunkerOptions.ProductionOptions()
-        indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, options)
+        indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, options, args)
         await indexer.main()
 
 if __name__ == "__main__":
