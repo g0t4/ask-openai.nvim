@@ -175,6 +175,11 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
         stop_before_node = None
 
+        # algorithm: signature == copy everything until start of the function body
+        # - function_declaration => statement_block (typescript)
+        # - function_definition => block (lua)
+        #   - TODO what others are covered via 'definition' => IIRC that is why I have .find() below
+
         if node.type == 'function_declaration':
             for child in node.children:
                 # text = child.text.decode("utf-8", errors="replace")
@@ -184,9 +189,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                     break
 
         elif node.type.find("function_definition") >= 0:
-            # take until first block (top level)
             for child in node.children:
-                # for functions, in lua, block is a top-level child so we can dump all direct children up to the block
                 if child.type == "block":
                     stop_before_node = child
                     break
