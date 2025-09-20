@@ -180,17 +180,17 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         # - function_definition => block (lua)
         #   - TODO what others are covered via 'definition' => IIRC that is why I have .find() below
 
+        stop_node_type = None
         if node.type == 'function_declaration':
+            stop_node_type = "statement_block"
+        elif node.type.find("function_definition") >= 0:
+            stop_node_type = "block"
+
+        if stop_node_type:
             for child in node.children:
                 # text = child.text.decode("utf-8", errors="replace")
                 # print(f'  {child.type=}\n    {text=}')
-                if child.type == "statement_block":
-                    stop_before_node = child
-                    break
-
-        elif node.type.find("function_definition") >= 0:
-            for child in node.children:
-                if child.type == "block":
+                if child.type == stop_node_type:
                     stop_before_node = child
                     break
 
