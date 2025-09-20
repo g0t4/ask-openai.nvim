@@ -236,7 +236,9 @@ class TestTreesitterPythonClassChunker:
     #     for node, name in captures:
     #         print(name, node.type, node.start_point, node.end_point)
 
-    def test_top_level_functions(self):
+class TestTreesitterPythonTopLevelFunctionsChunking:
+
+    def test_functions(self):
         query_str = "(module (function_definition) @toplevel.func)"
         from tree_sitter_languages import get_parser, get_language
         parser = get_parser("python")
