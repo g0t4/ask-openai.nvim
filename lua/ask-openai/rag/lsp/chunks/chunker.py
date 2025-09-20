@@ -266,7 +266,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         uncovered = [ln for ln in range(len(source_lines)) if ln not in covered]
 
         if uncovered:
-            logger.debug("Uncovered lines:")
+            logger.debug("[bold on red] *********************** Uncovered lines *********************** ")
             last_ln = -1
             for ln in uncovered:
                 if ln - last_ln > 1:
