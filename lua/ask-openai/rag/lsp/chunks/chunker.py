@@ -173,36 +173,37 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     def get_signature(node):
         sig = None
 
-        if node.type == 'function_declaration':
-            # text = node.text.decode("utf-8", errors="replace")  # TODO better way to get text?
-            stop_before_node = None
-            for child in node.children:
-                text = child.text.decode("utf-8", errors="replace")  # TODO better way to get text?
-                print(f'  {child.type=}\n    {text=}')
-                if child.type == "statement_block":
-                    stop_before_node = child
-                    break
+        if node.type.find("function") >= 0:
 
-        # * dump signature
-        # TODO other function types, produce the signature parsing
-        #   EXTRACT helpers too if needed
-        #   i.e. typescript function_definition
-        if node.type.find("function_definition") >= 0:
-            # take until first block (top level)
-            stop_before_node = None
-            for child in node.children:
-                # for functions, in lua, block is a top-level child so we can dump all direct children up to the block
-                if child.type == "block":
-                    stop_before_node = child
-                    break
+            # TODO other function types, produce the signature parsing
 
-            if stop_before_node is not None:
-                # stop at block
-                sig = source_bytes[node.start_byte:stop_before_node.start_byte].decode("utf-8", errors="replace").strip()
-            else:
-                sig = "Can't find block to use as signature end for a function"
+            if node.type == 'function_declaration':
+                stop_before_node = None
+                for child in node.children:
+                    text = child.text.decode("utf-8", errors="replace")
+                    print(f'  {child.type=}\n    {text=}')
+                    if child.type == "statement_block":
+                        stop_before_node = child
+                        break
 
-            # PRN strip 2+ lines that are purely comments
+            # * dump signature
+            #   EXTRACT helpers too if needed
+            if node.type.find("function_definition") >= 0:
+                # take until first block (top level)
+                stop_before_node = None
+                for child in node.children:
+                    # for functions, in lua, block is a top-level child so we can dump all direct children up to the block
+                    if child.type == "block":
+                        stop_before_node = child
+                        break
+
+                if stop_before_node is not None:
+                    # stop at block
+                    sig = source_bytes[node.start_byte:stop_before_node.start_byte].decode("utf-8", errors="replace").strip()
+                else:
+                    sig = "Can't find block to use as signature end for a function"
+
+                # PRN strip 2+ lines that are purely comments
 
         if True:
             # * print for debug purposes
