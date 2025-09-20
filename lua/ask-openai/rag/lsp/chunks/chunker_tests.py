@@ -13,6 +13,7 @@ my_dir = Path(__file__).parent.parent
 test_cases = my_dir / "../tests/test_cases"
 test_cases_treesitter = my_dir / "../tests/test_cases/treesitter"
 test_cases_python = test_cases_treesitter / "python"
+test_cases_typescript = test_cases_treesitter / "typescript"
 
 set_root_dir(repo_root)
 
@@ -251,3 +252,25 @@ CODE:
             print(doc)
 
 # DOC : {first_docline or ""}
+
+class TestTreesitterTypescriptChunker:
+
+    def test_functions(self):
+        chunks = _treesitter_chunks_from_file_with_fake_hash(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
+        assert len(chunks) == 4
+
+        add_chunk = chunks[0]
+        expected_func1_chunk_text = "function add(a: number, b: number): number {\n    return a + b;\n}"
+        assert add_chunk.text == expected_func1_chunk_text
+
+        sub_chunk = chunks[1]
+        expected_func2_chunk_text = "function subtract(a: number, b: number): number {\n    return a - b;\n}"
+        assert sub_chunk.text == expected_func2_chunk_text
+
+        mul_chunk = chunks[2]
+        expected_func3_chunk_text = "function multiply(a: number, b: number): number {\n    return a * b;\n}"
+        assert mul_chunk.text == expected_func3_chunk_text
+
+        div_chunk = chunks[3]
+        expected_func4_chunk_text = "function divide(a: number, b: number): number {\n    return a / b;\n}"
+        assert div_chunk.text == expected_func4_chunk_text
