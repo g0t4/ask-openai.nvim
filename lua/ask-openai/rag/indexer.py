@@ -317,7 +317,6 @@ async def main():
 
     prog_args = parse_args()
     level = prog_args.level
-    verbose = prog_args.verbose
     # print("args", prog_args)
 
     logging_fwk_to_console(level)
