@@ -186,26 +186,26 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         #   i.e. typescript function_definition
         if node.type.find("function_definition") >= 0:
             # take until first block (top level)
-            block = None
+            stop_node = None
             for child in node.children:
                 # for functions, in lua, block is a top-level child so we can dump all direct children up to the block
                 if child.type == "block":
-                    block = child
+                    stop_node = child
                     break
 
-            if block is not None:
+            if stop_node is not None:
                 # stop at block
-                sig = source_bytes[node.start_byte:block.start_byte].decode("utf-8", errors="replace").strip()
+                sig = source_bytes[node.start_byte:stop_node.start_byte].decode("utf-8", errors="replace").strip()
             else:
                 sig = "Can't find block to use as signature end for a function"
 
             # PRN strip 2+ lines that are purely comments
 
-        if logger.isEnabledForDebug():
+        if True:
             # * print for debug purposes
             logger.debug("sig: %s", sig)
 
-            show_hierarchy = sig is None # tmp override True to see all
+            show_hierarchy = True  # tmp override True to see all
             if show_hierarchy:
                 # only dump if sig is None (basically not known to above code that extracts signature)
 
