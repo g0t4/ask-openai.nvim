@@ -3,6 +3,7 @@ include:
     - py
     - fish
     - txt
+    - ts
 ignores:
     - "notes/"
 all_languages:
