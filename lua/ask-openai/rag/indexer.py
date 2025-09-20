@@ -295,6 +295,14 @@ async def main():
         parser.add_argument("--githook", action="store_true", help="Run in git hook mode")
         return parser.parse_args()
 
+    @dataclass
+    class ProgramArgs:
+        verbose: bool
+        info: bool
+        in_githook: bool
+        rebuild: bool
+        level: int
+
     args = parse_args()
     verbose = args.verbose
     info = args.info
