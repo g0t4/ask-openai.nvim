@@ -191,7 +191,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
         if logger.isEnabledForDebug():
             # * print for debug purposes
-            logger.debug("sig: ", sig)
+            logger.debug("sig: %s", sig)
 
             # * dump node hierarchy
             def dump(node, prefix):
