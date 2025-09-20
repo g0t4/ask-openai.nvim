@@ -41,7 +41,7 @@ function M.get_filetypes_for_workspace()
         md = "markdown", -- *
         pl = "perl",
         pm = "perl",
-        -- py = "python", -- *
+        py = "python", -- *
         rb = "ruby",
         rs = "rust",
         scm = "scheme",
