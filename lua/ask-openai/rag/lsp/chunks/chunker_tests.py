@@ -161,8 +161,14 @@ class TestTreesitterPythonChunker:
 
         assert first_chunk.signature == "class Customer():"
 
+class TestTreesitterPythonClassChunker:
+
+    def setup_method(self):
+        self.test_file = test_cases_python / "class_with_functions.py"
+        self.chunks = build_test_chunks(self.test_file, RAGChunkerOptions.OnlyTsChunks())
+
     def test_class_with_methods(self):
-        chunks = build_test_chunks(test_cases_python / "class_with_functions.py", RAGChunkerOptions.OnlyTsChunks())
+        chunks = self.chunks
 
         assert len(chunks) == 5
         self.maxDiff = None
