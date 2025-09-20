@@ -126,9 +126,15 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         local last_col = -1
         -- TODO confirm hl.range is base0 for both line/col values on start and end
         vim.hl.range(bufnr, ns, "RagLineRange", { start_line_base0, 0 }, { end_line_base0, last_col }, {})
-        logs:info("text: " .. entry.match.text)
 
-        local ft = vim.filetype.match({ filename = filename }) or "text"
+        -- TODO fix lookup ft... FFS it doesn't know what ".ts" is... seriously?
+        local ft = vim.filetype.match({ filename = filename })
+        if not ft then
+            logs:info("filetype match failed (ft=" .. tostring(ft) .. ") for filename: " .. filename)
+            if filename:match("%.ts$") then
+                ft = "typescript"
+            end
+        end
 
         vim.bo[bufnr].filetype = ft -- triggers FileType autocommands
         vim.bo[bufnr].syntax = "" -- avoid regex syntax if you only want TS
