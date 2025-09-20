@@ -174,6 +174,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
         # * dump signature
         sig = None
+        # TODO other function types, produce the signature parsing
+        #   EXTRACT helpers too if needed
+        #   i.e. typescript function_definition
         if node.type.find("function_definition") >= 0:
             # take until first block (top level)
             block = None
