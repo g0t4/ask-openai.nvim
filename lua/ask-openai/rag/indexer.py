@@ -316,10 +316,9 @@ async def main():
         return program_args
 
     prog_args = parse_args()
-    level = prog_args.level
     # print("args", prog_args)
 
-    logging_fwk_to_console(level)
+    logging_fwk_to_console(prog_args.level)
 
     with logger.timer("Total indexing time"):
         # yup, can turn this into a command that uses git repo of CWD
