@@ -262,6 +262,7 @@ class TestTreesitterTypescriptChunker:
         add_chunk = chunks[0]
         expected_func1_chunk_text = "function add(a: number, b: number): number {\n    return a + b;\n}"
         assert add_chunk.text == expected_func1_chunk_text
+        assert add_chunk.signature == "function add(a: number, b: number): number"
 
         sub_chunk = chunks[1]
         expected_func2_chunk_text = "function subtract(a: number, b: number): number {\n    return a - b;\n}"
