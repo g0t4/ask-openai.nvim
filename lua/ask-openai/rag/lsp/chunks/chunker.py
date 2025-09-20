@@ -186,16 +186,16 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         #   i.e. typescript function_definition
         if node.type.find("function_definition") >= 0:
             # take until first block (top level)
-            stop_node = None
+            stop_before_node = None
             for child in node.children:
                 # for functions, in lua, block is a top-level child so we can dump all direct children up to the block
                 if child.type == "block":
-                    stop_node = child
+                    stop_before_node = child
                     break
 
-            if stop_node is not None:
+            if stop_before_node is not None:
                 # stop at block
-                sig = source_bytes[node.start_byte:stop_node.start_byte].decode("utf-8", errors="replace").strip()
+                sig = source_bytes[node.start_byte:stop_before_node.start_byte].decode("utf-8", errors="replace").strip()
             else:
                 sig = "Can't find block to use as signature end for a function"
 
