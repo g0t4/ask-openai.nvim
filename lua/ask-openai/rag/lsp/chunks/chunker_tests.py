@@ -120,7 +120,7 @@ class TestLowLevel_LinesChunker:
         chunks = build_line_range_chunks_from_lines(Path("foo.txt"), "fake_hash", lines)
         assert [(c.start_line0, c.end_line0) for c in chunks] == [(0, 19)]
 
-class TestTreesitterPythonTopLevelFunctionsChunker:
+class TestTreesitterChunker_Python_TopLevelFunctions:
 
     def test_two_top_level_functions(self):
         chunks = build_test_chunks(test_cases_python / "two_functions.py", RAGChunkerOptions.OnlyTsChunks())
@@ -172,7 +172,7 @@ CODE:
             print(doc)
             # DOC : {first_docline or ""}
 
-class TestTreesitterPythonNestedFunctionsChunker:
+class TestTreesitterChunker_Python_NestedFunctions:
 
     def test_nested_functions(self):
         chunks = build_test_chunks(test_cases_python / "nested_functions.py", RAGChunkerOptions.OnlyTsChunks())
@@ -188,7 +188,7 @@ class TestTreesitterPythonNestedFunctionsChunker:
         # TODO how do I want to handle nesting? maybe all in one if its under a token count?
         # and/or index nested too?
 
-class TestTreesitterPythonDataClassChunker:
+class TestTreesitterChunker_Python_DataClass:
 
     def test_dataclass(self):
         chunks = build_test_chunks(test_cases_python / "dataclass.py", RAGChunkerOptions.OnlyTsChunks())
@@ -203,7 +203,7 @@ class TestTreesitterPythonDataClassChunker:
 
         assert first_chunk.signature == "class Customer():"
 
-class TestTreesitterPythonClassChunker:
+class TestTreesitterChunker_Python_Class:
 
     def setup_method(self):
         self.test_file = test_cases_python / "class_with_functions.py"
@@ -278,14 +278,17 @@ class TestTreesitterPythonClassChunker:
     #     for node, name in captures:
     #         print(name, node.type, node.start_point, node.end_point)
 
-class TestTreesitterTypescriptChunker:
+class TestTreesitterChunker_Typescript_TopLevelFunctions:
 
     # * only this test class:
     #    trigger on any changes to chunker____ files (not just test code)
     # ptw lsp/chunks/chunker* -- --capture=tee-sys -k TestTreesitterTypescriptChunker
+    def setup_method(self):
+        self.chunks = build_test_chunks(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
 
-    def test_top_level_functions(self):
-        chunks = build_test_chunks(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
+    def test_code(self):
+        chunks = self.chunks
+
         assert len(chunks) >= 4
 
         add_chunk = chunks[0]
@@ -304,7 +307,7 @@ class TestTreesitterTypescriptChunker:
         expected_func4_chunk_text = "function divide(a: number, b: number): number {\n    return a / b;\n}"
         assert div_chunk.text == expected_func4_chunk_text
 
-    def test_top_level_function_signatures(self):
+    def test_signatures(self):
         #
         # * BTW, structure in typescript (top level func):
         # function_declaration node:
@@ -322,7 +325,8 @@ class TestTreesitterTypescriptChunker:
         #       * do not want body in the signature!
         #       * works the same as function_definition in python
 
-        chunks = build_test_chunks(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
+        chunks = self.chunks
+
         add_chunk = chunks[0]
         assert add_chunk.signature == "function add(a: number, b: number): number"
 
@@ -335,8 +339,13 @@ class TestTreesitterTypescriptChunker:
         div_chunk = chunks[3]
         assert div_chunk.signature == "function divide(a: number, b: number): number"
 
-    def test_top_level_class(self):
-        chunks = build_test_chunks(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
+class TestTreesitterChunker_Typescript_Class:
+
+    def setup_method(self):
+        self.chunks = build_test_chunks(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
+
+    def test_code(self):
+        chunks = self.chunks
         assert len(chunks) >= 5
 
         class_chunk = chunks[4]
@@ -344,8 +353,8 @@ class TestTreesitterTypescriptChunker:
 
         assert class_chunk.text == expected_class_text
 
-    def test_top_level_class_signature(self):
-        chunks = build_test_chunks(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
+    def test_signature(self):
+        chunks = self.chunks
 
         class_chunk = chunks[4]
 
