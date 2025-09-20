@@ -236,7 +236,7 @@ class TestTreesitterPythonClassChunker:
     #     for node, name in captures:
     #         print(name, node.type, node.start_point, node.end_point)
 
-class TestTreesitterPythonTopLevelFunctionsChunking:
+class TestTreesitterQueryToSignatureIDEAS:
 
     def test_functions(self):
         query_str = "(module (function_definition) @toplevel.func)"
