@@ -159,6 +159,8 @@ class TestTreesitterPythonChunker:
     email: str"""
         assert first_chunk.text == class_text
 
+        assert first_chunk.signature == "class Customer():"
+
     def test_class_with_methods(self):
         chunks = build_test_chunks(test_cases_python / "class_with_functions.py", RAGChunkerOptions.OnlyTsChunks())
 
