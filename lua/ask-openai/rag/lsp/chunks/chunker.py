@@ -185,6 +185,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             stop_node_type = "statement_block"
         elif node.type.find("function_definition") >= 0:
             stop_node_type = "block"
+        else:
+            sig = f"--- TODO {node.type} ---"
 
         if stop_node_type:
             for child in node.children:
