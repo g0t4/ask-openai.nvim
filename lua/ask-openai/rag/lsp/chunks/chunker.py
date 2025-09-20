@@ -170,36 +170,34 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     with logger.timer('parse_ts ' + str(path)):
         tree = parser.parse(source_bytes)
 
-    def get_signature(node):
+    def get_function_signature(node):
         sig = None
 
-        if node.type.find("function") >= 0:
-            # TODO other function types, produce the signature parsing
-            stop_before_node = None
+        stop_before_node = None
 
-            if node.type == 'function_declaration':
-                for child in node.children:
-                    text = child.text.decode("utf-8", errors="replace")
-                    print(f'  {child.type=}\n    {text=}')
-                    if child.type == "statement_block":
-                        stop_before_node = child
-                        break
+        if node.type == 'function_declaration':
+            for child in node.children:
+                text = child.text.decode("utf-8", errors="replace")
+                print(f'  {child.type=}\n    {text=}')
+                if child.type == "statement_block":
+                    stop_before_node = child
+                    break
 
-            elif node.type.find("function_definition") >= 0:
-                # take until first block (top level)
-                for child in node.children:
-                    # for functions, in lua, block is a top-level child so we can dump all direct children up to the block
-                    if child.type == "block":
-                        stop_before_node = child
-                        break
+        elif node.type.find("function_definition") >= 0:
+            # take until first block (top level)
+            for child in node.children:
+                # for functions, in lua, block is a top-level child so we can dump all direct children up to the block
+                if child.type == "block":
+                    stop_before_node = child
+                    break
 
-            if stop_before_node is not None:
-                # stop at block
-                sig = source_bytes[node.start_byte:stop_before_node.start_byte].decode("utf-8", errors="replace").strip()
-            else:
-                sig = "Can't find block node that indicates end of function signature"
+        if stop_before_node is not None:
+            # stop at block
+            sig = source_bytes[node.start_byte:stop_before_node.start_byte].decode("utf-8", errors="replace").strip()
+        else:
+            sig = "Can't find block node that indicates end of function signature"
 
-                # PRN strip 2+ lines that are purely comments
+            # PRN strip 2+ lines that are purely comments
 
         if True:
             # * print for debug purposes
@@ -246,7 +244,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             nodes.append(node)
             collected_parent = True
             # TODO track sig with node
-            sig = get_signature(node)
+            sig = get_function_signature(node)
             if sig is not None:
                 sigs_by_node[node] = sig
         elif node.type == "class_definition":
