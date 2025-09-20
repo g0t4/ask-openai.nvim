@@ -177,8 +177,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # text = node.text.decode("utf-8", errors="replace")  # TODO better way to get text?
             for child in node.children:
                 text = child.text.decode("utf-8", errors="replace")  # TODO better way to get text?
-                print(f'  {text=}')
-
+                print(f'  {child.type=}\n    {text=}')
 
         # * dump signature
         # TODO other function types, produce the signature parsing
