@@ -299,6 +299,8 @@ async def main():
         parser.add_argument("--info", action="store_true", help="Enable info logging")
         parser.add_argument("--rebuild", action="store_true", help="Rebuild index")
         parser.add_argument("--githook", action="store_true", help="Run in git hook mode")
+        parser.add_argument("--only-extension", type=str, help="Only process files with the specified extension")
+
         args = parser.parse_args()
 
         program_args = ProgramArgs(
