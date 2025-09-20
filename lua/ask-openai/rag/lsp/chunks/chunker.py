@@ -232,12 +232,16 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             sig = get_function_signature(node)
             if sig is not None:
                 sigs_by_node[node] = sig
-        elif node.type == "class_definition":
+        elif node.type == "class_definition" \
+            or node.type == "class_declaration":
+            # typescript class_declaration
             # python
             nodes.append(node)
             collected_parent = True
         elif logger.isEnabledForDebug() and not collected_parent:
             debug_uncollected_node(node)
+        # else:
+        #     print(f"UNMATCHED {node.type}")
 
         for child in node.children:
             _nodes, _sigs_by_node = collect_key_nodes(child, collected_parent)

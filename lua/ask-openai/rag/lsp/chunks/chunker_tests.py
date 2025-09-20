@@ -259,7 +259,7 @@ class TestTreesitterTypescriptChunker:
     #    trigger on any changes to chunker____ files (not just test code)
     # ptw lsp/chunks/chunker* -- --capture=tee-sys -k TestTreesitterTypescriptChunker
 
-    def test_functions(self):
+    def test_top_level_functions(self):
         chunks = build_test_chunks(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
         assert len(chunks) >= 4
 
@@ -279,7 +279,7 @@ class TestTreesitterTypescriptChunker:
         expected_func4_chunk_text = "function divide(a: number, b: number): number {\n    return a / b;\n}"
         assert div_chunk.text == expected_func4_chunk_text
 
-    def test_signature_function_declaration(self):
+    def test_top_level_function_signatures(self):
         #
         # * BTW, structure in typescript (top level func):
         # function_declaration node:
@@ -309,3 +309,13 @@ class TestTreesitterTypescriptChunker:
 
         div_chunk = chunks[3]
         assert div_chunk.signature == "function divide(a: number, b: number): number"
+
+    def test_top_level_classes(self):
+        chunks = build_test_chunks(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
+        assert len(chunks) >= 5
+
+        class_chunk = chunks[4]
+        expected_class_text = "class Calculator {\n    add(a: number, b: number): number {\n        return add(a, b);\n    }\n    subtract(a: number, b: number): number {\n        return subtract(a, b);\n    }\n    multiply(a: number, b: number): number {\n        return multiply(a, b);\n    }\n    divide(a: number, b: number): number {\n        return divide(a, b);\n    }\n}"
+
+        assert class_chunk.text == expected_class_text
+
