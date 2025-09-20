@@ -171,9 +171,16 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         tree = parser.parse(source_bytes)
 
     def get_signature(node):
+        sig = None
+
+        if node.type == 'function_declaration':
+            # text = node.text.decode("utf-8", errors="replace")  # TODO better way to get text?
+            for child in node.children:
+                text = child.text.decode("utf-8", errors="replace")  # TODO better way to get text?
+                print(f'  {text=}')
+
 
         # * dump signature
-        sig = None
         # TODO other function types, produce the signature parsing
         #   EXTRACT helpers too if needed
         #   i.e. typescript function_definition
