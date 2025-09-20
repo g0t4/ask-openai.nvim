@@ -177,8 +177,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
         if node.type == 'function_declaration':
             for child in node.children:
-                text = child.text.decode("utf-8", errors="replace")
-                print(f'  {child.type=}\n    {text=}')
+                # text = child.text.decode("utf-8", errors="replace")
+                # print(f'  {child.type=}\n    {text=}')
                 if child.type == "statement_block":
                     stop_before_node = child
                     break
