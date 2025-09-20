@@ -122,7 +122,7 @@ class TestLowLevel_LinesChunker:
 
 class TestTreesitterPythonChunker:
 
-    def test_two_functions_py(self):
+    def test_two_top_level_functions(self):
         chunks = build_test_chunks(test_cases_python / "two_functions.py", RAGChunkerOptions.OnlyTsChunks())
         assert len(chunks) == 2
 
@@ -134,7 +134,7 @@ class TestTreesitterPythonChunker:
         expected_func2_chunk_text = "def func2():\n    return 2"
         assert second_chunk.text == expected_func2_chunk_text
 
-    def test_nested_functions_py(self):
+    def test_nested_functions(self):
         chunks = build_test_chunks(test_cases_python / "nested_functions.py", RAGChunkerOptions.OnlyTsChunks())
         assert len(chunks) == 2
 
@@ -148,7 +148,7 @@ class TestTreesitterPythonChunker:
         # TODO how do I want to handle nesting? maybe all in one if its under a token count?
         # and/or index nested too?
 
-    def test_dataclass_py(self):
+    def test_dataclass(self):
         chunks = build_test_chunks(test_cases_python / "dataclass.py", RAGChunkerOptions.OnlyTsChunks())
         assert len(chunks) == 1
 
@@ -159,7 +159,7 @@ class TestTreesitterPythonChunker:
     email: str"""
         assert first_chunk.text == class_text
 
-    def test_class_with_functions_py(self):
+    def test_class_with_methods(self):
         chunks = build_test_chunks(test_cases_python / "class_with_functions.py", RAGChunkerOptions.OnlyTsChunks())
 
         assert len(chunks) == 5
@@ -214,7 +214,7 @@ class TestTreesitterPythonChunker:
     #     for node, name in captures:
     #         print(name, node.type, node.start_point, node.end_point)
 
-    def test_ts_toplevel_funcs_py(self):
+    def test_top_level_functions(self):
         query_str = "(module (function_definition) @toplevel.func)"
         from tree_sitter_languages import get_parser, get_language
         parser = get_parser("python")
