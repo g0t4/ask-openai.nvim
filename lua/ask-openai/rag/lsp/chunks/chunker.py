@@ -151,6 +151,8 @@ def get_cached_parser_for_path(path):
         language = "lua"
     elif language == "js":
         language = "javascript"
+    elif language == "ts":
+        language = "typescript"
     else:
         logger.warning(f'language not supported for tree_sitter chunker: {language=}')
         return None
