@@ -167,7 +167,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     if parser is None:
         return []
 
-    with logger.timer('parse_ts ' + str(path)):
+    with logger.timer(f'parse_ts {path}'):
         tree = parser.parse(source_bytes)
 
     def get_function_signature(node):
