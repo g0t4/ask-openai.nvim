@@ -255,6 +255,10 @@ CODE:
 
 class TestTreesitterTypescriptChunker:
 
+    # * only this test class:
+    #    trigger on any changes to chunker____ files (not just test code)
+    # ptw lsp/chunks/chunker* -- --capture=tee-sys -k TestTreesitterTypescriptChunker
+
     def test_functions(self):
         chunks = _treesitter_chunks_from_file_with_fake_hash(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
         assert len(chunks) == 4
