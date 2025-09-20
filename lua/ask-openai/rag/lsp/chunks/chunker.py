@@ -268,7 +268,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             last_ln = -1
             for ln in uncovered:
                 if ln - last_ln > 1:
-                    logger.debug()  # divide non-contiguous ranges
+                    logger.debug("----")  # divide non-contiguous ranges
 
                 # Show line number (1‑based) and content
                 logger.debug(f"{ln+1:4d}: {source_lines[ln].decode('utf-8', errors='replace')}")
