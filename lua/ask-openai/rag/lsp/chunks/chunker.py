@@ -191,11 +191,12 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                     stop_before_node = child
                     break
 
-        if stop_before_node is not None:
-            # stop at block
-            sig = source_bytes[node.start_byte:stop_before_node.start_byte].decode("utf-8", errors="replace").strip()
+        if stop_before_node:
+            sig = source_bytes[node.start_byte:stop_before_node.start_byte] \
+                    .decode("utf-8", errors="replace") \
+                    .strip()
         else:
-            sig = "Can't find block node that indicates end of function signature"
+            sig = "--- missing signature ---"
 
             # PRN strip 2+ lines that are purely comments
 
