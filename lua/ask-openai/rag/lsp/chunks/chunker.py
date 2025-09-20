@@ -179,6 +179,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         # - function_declaration => statement_block (typescript)
         # - function_definition => block (lua)
         #   - TODO what others are covered via 'definition' => IIRC that is why I have .find() below
+        # PRN strip 2+ lines that are purely comments?
 
         stop_node_type = None
         if node.type == 'function_declaration':
@@ -198,30 +199,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         if not stop_before_node:
             return f"--- unexpected stop node not found: {stop_before_node} ---"
 
-        sig = source_bytes[node.start_byte:stop_before_node.start_byte] \
+        return source_bytes[node.start_byte:stop_before_node.start_byte] \
                 .decode("utf-8", errors="replace") \
                 .strip()
-
-        # PRN strip 2+ lines that are purely comments
-
-        if True:
-            # * print for debug purposes
-            logger.debug("sig: %s", sig)
-
-            show_hierarchy = True  # tmp override True to see all
-            if show_hierarchy:
-                # only dump if sig is None (basically not known to above code that extracts signature)
-
-                # * dump node hierarchy
-                def dump(node, prefix):
-                    logger.debug(prefix + node.type)
-                    prefix = prefix + "  "
-                    for child in node.children:
-                        dump(child, prefix)
-
-                dump(node, "")
-
-        return sig
 
     def debug_uncollected_node(node):
         # use node type filter to find specific nodes
