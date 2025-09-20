@@ -120,7 +120,7 @@ class TestLowLevel_LinesChunker:
         chunks = build_line_range_chunks_from_lines(Path("foo.txt"), "fake_hash", lines)
         assert [(c.start_line0, c.end_line0) for c in chunks] == [(0, 19)]
 
-class TestTreesitterPythonChunker:
+class TestTreesitterPythonTopLevelFunctionsChunker:
 
     def test_two_top_level_functions(self):
         chunks = build_test_chunks(test_cases_python / "two_functions.py", RAGChunkerOptions.OnlyTsChunks())
