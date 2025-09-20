@@ -300,3 +300,12 @@ class TestTreesitterTypescriptChunker:
         chunks = _treesitter_chunks_from_file_with_fake_hash(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
         add_chunk = chunks[0]
         assert add_chunk.signature == "function add(a: number, b: number): number"
+
+        sub_chunk = chunks[1]
+        assert sub_chunk.signature == "function subtract(a: number, b: number): number"
+
+        mul_chunk = chunks[2]
+        assert mul_chunk.signature == "function multiply(a: number, b: number): number"
+
+        div_chunk = chunks[3]
+        assert div_chunk.signature == "function divide(a: number, b: number): number"
