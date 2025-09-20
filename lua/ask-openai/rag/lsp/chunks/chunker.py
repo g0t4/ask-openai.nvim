@@ -175,10 +175,12 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         stop_before_node = None
 
         stop_node_type = None
+        # - class_declaration == typescript
+        # - class_definition == python (and lua?)
         if node.type == 'class_declaration':
             stop_node_type = "class_body"
-        # # elif node.type.find("class_definition") >= 0:
-        # #     stop_node_type = "block"
+        elif node.type.find("class_definition") >= 0:
+            stop_node_type = "block"
         else:
             return f"--- TODO {node.type} ---"
 

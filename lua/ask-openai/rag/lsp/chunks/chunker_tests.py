@@ -199,6 +199,12 @@ class TestTreesitterPythonChunker:
         assert chunks[4].text == """def __str__(self):
         return f'Person({self.first_name}, {self.last_name}, {self.dob})'"""
 
+    def test_class_signatures(self):
+        chunks = build_test_chunks(test_cases_python / "class_with_functions.py", RAGChunkerOptions.OnlyTsChunks())
+        first_chunk = chunks[0]
+
+        assert first_chunk.signature == "class Person():"
+
     # def WIP_test_ts_toplevel_query_py(self):
     #     from tree_sitter_languages import get_parser, get_language
     #     parser = get_parser("python")
