@@ -134,6 +134,45 @@ class TestTreesitterPythonChunker:
         expected_func2_chunk_text = "def func2():\n    return 2"
         assert second_chunk.text == expected_func2_chunk_text
 
+    def test_example_treesitter_query(self):
+        query_str = "(module (function_definition) @toplevel.func)"
+        from tree_sitter_languages import get_parser, get_language
+        parser = get_parser("python")
+        language = get_language("python")
+        file = test_cases_python / "two_functions.py"
+        relpath = relative_to_workspace(file)
+
+        source_code = read_bytes(file)
+
+        tree = parser.parse(source_code)
+
+        query = language.query(query_str)
+
+        captures = query.captures(tree.root_node)
+        print()  # blank line
+        for node, name in captures:
+            print(name, node.type, node.start_point, node.end_point)
+            code_block = node.text.decode("utf-8")
+            scope_path = func_name(node)
+            sig_str = func_sig(node, source_code)
+
+            rich_print(node.sexp())
+            # BTW
+            #  SIG: is two fold:
+            #  - allows me to easily parse the key information about this chunk (i.e. if matched I can show that in UI)
+            #    - without this you'd have to attempt to parse code again and that might not go well
+            #  - PLUS it adds normalized context that the embeddings model can use
+            #
+            doc = f"""FILE: {relpath}
+FUNC: {scope_path}
+SIG : {sig_str}
+CODE:
+{code_block}
+"""
+            print(doc)
+
+# DOC : {first_docline or ""}
+
     def test_nested_functions(self):
         chunks = build_test_chunks(test_cases_python / "nested_functions.py", RAGChunkerOptions.OnlyTsChunks())
         assert len(chunks) == 2
@@ -235,47 +274,6 @@ class TestTreesitterPythonClassChunker:
     #     captures = query.captures(tree.root_node)
     #     for node, name in captures:
     #         print(name, node.type, node.start_point, node.end_point)
-
-class TestTreesitterQueryToSignatureIDEAS:
-
-    def test_functions(self):
-        query_str = "(module (function_definition) @toplevel.func)"
-        from tree_sitter_languages import get_parser, get_language
-        parser = get_parser("python")
-        language = get_language("python")
-        file = test_cases_python / "two_functions.py"
-        relpath = relative_to_workspace(file)
-
-        source_code = read_bytes(file)
-
-        tree = parser.parse(source_code)
-
-        query = language.query(query_str)
-
-        captures = query.captures(tree.root_node)
-        print()  # blank line
-        for node, name in captures:
-            print(name, node.type, node.start_point, node.end_point)
-            code_block = node.text.decode("utf-8")
-            scope_path = func_name(node)
-            sig_str = func_sig(node, source_code)
-
-            rich_print(node.sexp())
-            # BTW
-            #  SIG: is two fold:
-            #  - allows me to easily parse the key information about this chunk (i.e. if matched I can show that in UI)
-            #    - without this you'd have to attempt to parse code again and that might not go well
-            #  - PLUS it adds normalized context that the embeddings model can use
-            #
-            doc = f"""FILE: {relpath}
-FUNC: {scope_path}
-SIG : {sig_str}
-CODE:
-{code_block}
-"""
-            print(doc)
-
-# DOC : {first_docline or ""}
 
 class TestTreesitterTypescriptChunker:
 
