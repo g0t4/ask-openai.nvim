@@ -185,8 +185,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             return f"--- TODO {node.type} ---"
 
         for child in node.children:
-            text = child.text.decode("utf-8", errors="replace")
-            print(f'  {child.type=}\n    {text=}')
+            # text = child.text.decode("utf-8", errors="replace")
+            # print(f'  {child.type=}\n    {text=}')
             if child.type == stop_node_type:
                 stop_before_node = child
                 break
