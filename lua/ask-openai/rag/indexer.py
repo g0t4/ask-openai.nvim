@@ -293,7 +293,7 @@ async def main():
         rebuild: bool
         level: int
 
-    def parse_args() -> ProgramArgs:
+    def parse_program_args() -> ProgramArgs:
         parser = argparse.ArgumentParser()
         parser.add_argument("--verbose", "--debug", action="store_true", help="Enable verbose logging")
         parser.add_argument("--info", action="store_true", help="Enable info logging")
@@ -317,10 +317,10 @@ async def main():
 
         return program_args
 
-    prog_args = parse_args()
-    # print("args", prog_args)
+    args = parse_program_args()
+    # print("args", args)
 
-    logging_fwk_to_console(prog_args.level)
+    logging_fwk_to_console(args.level)
 
     with logger.timer("Total indexing time"):
         # yup, can turn this into a command that uses git repo of CWD
@@ -331,7 +331,7 @@ async def main():
         dot_rag_dir = root_directory / ".rag"
         source_code_dir = "."  # TODO make this root_directory always? has been nice to test a subset of files by cd to nested dir
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
-        if prog_args.rebuild:
+        if args.rebuild:
             trash_dot_rag(dot_rag_dir)
         options = RAGChunkerOptions.ProductionOptions()
         indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, options)
