@@ -320,8 +320,6 @@ async def main():
     verbose = prog_args.verbose
     info = prog_args.info
     rebuild = prog_args.rebuild
-
-    logging.basicConfig(level=level)
     # print("args", prog_args)
 
     logging_fwk_to_console(level)
