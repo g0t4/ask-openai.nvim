@@ -33,8 +33,14 @@ class FilesDiff:
     deleted: Set[str]
     not_changed: Set[str]
 
-from dataclasses import dataclass
-from pathlib import Path
+@dataclass
+class ProgramArgs:
+    verbose: bool
+    info: bool
+    in_githook: bool
+    rebuild: bool
+    level: int
+    only_extension: str | None = None
 
 class IncrementalRAGIndexer:
 
@@ -286,15 +292,6 @@ def trash_dot_rag(dot_rag_dir):
 
 async def main():
     from lsp.logs import logging_fwk_to_console
-
-    @dataclass
-    class ProgramArgs:
-        verbose: bool
-        info: bool
-        in_githook: bool
-        rebuild: bool
-        level: int
-        only_extension: str | None = None
 
     def parse_program_args() -> ProgramArgs:
         parser = argparse.ArgumentParser()
