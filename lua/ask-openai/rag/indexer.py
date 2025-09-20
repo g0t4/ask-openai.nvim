@@ -319,7 +319,6 @@ async def main():
     level = prog_args.level
     verbose = prog_args.verbose
     info = prog_args.info
-    rebuild = prog_args.rebuild
     # print("args", prog_args)
 
     logging_fwk_to_console(level)
@@ -333,7 +332,7 @@ async def main():
         dot_rag_dir = root_directory / ".rag"
         source_code_dir = "."  # TODO make this root_directory always? has been nice to test a subset of files by cd to nested dir
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
-        if rebuild:
+        if prog_args.rebuild:
             trash_dot_rag(dot_rag_dir)
         options = RAGChunkerOptions.ProductionOptions()
         indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, options)
