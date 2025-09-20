@@ -222,7 +222,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         # TODO should I have a set per language that I keep?
         if node.type == "function_definition" \
             or node.type == "local_function_definition_statement" \
-            or node.type == "function_definition_statement":
+            or node.type == "function_definition_statement" \
+            or node.type == "function_declaration":
+            # ts: function_declaration
             # lua: function_definition == anonymous functions
             # python: function_definition == named functions
             # lua: named functions (local_function_definition_statement/local vs function_definition_statement/global)
