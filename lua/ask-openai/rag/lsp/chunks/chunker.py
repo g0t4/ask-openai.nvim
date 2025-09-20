@@ -198,14 +198,18 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # * print for debug purposes
             logger.debug("sig: %s", sig)
 
-            # * dump node hierarchy
-            def dump(node, prefix):
-                logger.debug(prefix + node.type)
-                prefix = prefix + "  "
-                for child in node.children:
-                    dump(child, prefix)
+            show_hierarchy = sig is None # tmp override True to see all
+            if show_hierarchy:
+                # only dump if sig is None (basically not known to above code that extracts signature)
 
-            dump(node, "")
+                # * dump node hierarchy
+                def dump(node, prefix):
+                    logger.debug(prefix + node.type)
+                    prefix = prefix + "  "
+                    for child in node.children:
+                        dump(child, prefix)
+
+                dump(node, "")
 
         return sig
 
