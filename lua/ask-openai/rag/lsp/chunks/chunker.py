@@ -170,6 +170,32 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     with logger.timer(f'parse_ts {path}'):
         tree = parser.parse(source_bytes)
 
+    def get_class_signature(node):
+        sig = None
+        stop_before_node = None
+
+        stop_node_type = None
+        if node.type == 'class_declaration':
+            stop_node_type = "class_body"
+        # # elif node.type.find("class_definition") >= 0:
+        # #     stop_node_type = "block"
+        else:
+            return f"--- TODO {node.type} ---"
+
+        for child in node.children:
+            text = child.text.decode("utf-8", errors="replace")
+            print(f'  {child.type=}\n    {text=}')
+            if child.type == stop_node_type:
+                stop_before_node = child
+                break
+
+        if not stop_before_node:
+            return f"--- unexpected {stop_node_type=} NOT FOUND ---"
+
+        return source_bytes[node.start_byte:stop_before_node.start_byte] \
+                .decode("utf-8", errors="replace") \
+                .strip()
+
     def get_function_signature(node):
         sig = None
 
@@ -197,7 +223,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 break
 
         if not stop_before_node:
-            return f"--- unexpected stop node not found: {stop_before_node} ---"
+            return f"--- unexpected {stop_node_type=} NOT FOUND ---"
 
         return source_bytes[node.start_byte:stop_before_node.start_byte] \
                 .decode("utf-8", errors="replace") \
@@ -238,6 +264,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # python
             nodes.append(node)
             collected_parent = True
+            sig = get_class_signature(node)
+            if sig is not None:
+                sigs_by_node[node] = sig
         elif logger.isEnabledForDebug() and not collected_parent:
             debug_uncollected_node(node)
         # else:

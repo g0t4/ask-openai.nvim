@@ -310,7 +310,7 @@ class TestTreesitterTypescriptChunker:
         div_chunk = chunks[3]
         assert div_chunk.signature == "function divide(a: number, b: number): number"
 
-    def test_top_level_classes(self):
+    def test_top_level_class(self):
         chunks = build_test_chunks(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
         assert len(chunks) >= 5
 
@@ -319,3 +319,9 @@ class TestTreesitterTypescriptChunker:
 
         assert class_chunk.text == expected_class_text
 
+    def test_top_level_class_signature(self):
+        chunks = build_test_chunks(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
+
+        class_chunk = chunks[4]
+
+        assert class_chunk.signature == "class Calculator"
