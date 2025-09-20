@@ -45,7 +45,7 @@ class IncrementalRAGIndexer:
     async def main(self):
         # TODO add arg to limit to one extension (i.e. test rag_indexer --ext ts)
         exts = await self.get_included_extensions()
-        exts = ["ts"] # tmp workaround
+        # exts = ["ts"] # tmp workaround
         for ext in exts:
             await self.build_index(ext)
         self.warn_about_other_extensions(exts)
