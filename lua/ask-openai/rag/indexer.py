@@ -285,16 +285,6 @@ def trash_dot_rag(dot_rag_dir):
 async def main():
     from lsp.logs import logging_fwk_to_console
 
-    # * command line args
-
-    def parse_args():
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--verbose", "--debug", action="store_true", help="Enable verbose logging")
-        parser.add_argument("--info", action="store_true", help="Enable info logging")
-        parser.add_argument("--rebuild", action="store_true", help="Rebuild index")
-        parser.add_argument("--githook", action="store_true", help="Run in git hook mode")
-        return parser.parse_args()
-
     @dataclass
     class ProgramArgs:
         verbose: bool
@@ -303,16 +293,36 @@ async def main():
         rebuild: bool
         level: int
 
-    args = parse_args()
-    verbose = args.verbose
-    info = args.info
-    level = logging.DEBUG if verbose else (logging.INFO if info else logging.WARNING)
-    if args.githook:
-        level = logging.INFO
-    rebuild = args.rebuild
-    in_githook = args.githook
+    def parse_args() -> ProgramArgs:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--verbose", "--debug", action="store_true", help="Enable verbose logging")
+        parser.add_argument("--info", action="store_true", help="Enable info logging")
+        parser.add_argument("--rebuild", action="store_true", help="Rebuild index")
+        parser.add_argument("--githook", action="store_true", help="Run in git hook mode")
+        args = parser.parse_args()
+
+        program_args = ProgramArgs(
+            verbose=args.verbose,
+            info=args.info,
+            in_githook=args.githook,
+            rebuild=args.rebuild,
+            level=logging.WARNING,
+        )
+        if args.githook:
+            level = logging.INFO
+        else:
+            program_args.level = logging.DEBUG if args.verbose else (logging.INFO if args.info else logging.WARNING)
+
+        return program_args
+
+    prog_args = parse_args()
+    level = prog_args.level
+    verbose = prog_args.verbose
+    info = prog_args.info
+    rebuild = prog_args.rebuild
 
     logging.basicConfig(level=level)
+    # print("args", prog_args)
 
     logging_fwk_to_console(level)
 
