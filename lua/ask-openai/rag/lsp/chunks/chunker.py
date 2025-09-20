@@ -174,11 +174,10 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         sig = None
 
         if node.type.find("function") >= 0:
-
             # TODO other function types, produce the signature parsing
+            stop_before_node = None
 
             if node.type == 'function_declaration':
-                stop_before_node = None
                 for child in node.children:
                     text = child.text.decode("utf-8", errors="replace")
                     print(f'  {child.type=}\n    {text=}')
@@ -186,28 +185,19 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                         stop_before_node = child
                         break
 
-                if stop_before_node is not None:
-                    # stop at block
-                    sig = source_bytes[node.start_byte:stop_before_node.start_byte].decode("utf-8", errors="replace").strip()
-                else:
-                    sig = "Can't find block to use as signature end for a function"
-
-            # * dump signature
-            #   EXTRACT helpers too if needed
-            if node.type.find("function_definition") >= 0:
+            elif node.type.find("function_definition") >= 0:
                 # take until first block (top level)
-                stop_before_node = None
                 for child in node.children:
                     # for functions, in lua, block is a top-level child so we can dump all direct children up to the block
                     if child.type == "block":
                         stop_before_node = child
                         break
 
-                if stop_before_node is not None:
-                    # stop at block
-                    sig = source_bytes[node.start_byte:stop_before_node.start_byte].decode("utf-8", errors="replace").strip()
-                else:
-                    sig = "Can't find block to use as signature end for a function"
+            if stop_before_node is not None:
+                # stop at block
+                sig = source_bytes[node.start_byte:stop_before_node.start_byte].decode("utf-8", errors="replace").strip()
+            else:
+                sig = "Can't find block node that indicates end of function signature"
 
                 # PRN strip 2+ lines that are purely comments
 
