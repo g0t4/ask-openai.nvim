@@ -266,7 +266,6 @@ class TestTreesitterTypescriptChunker:
         add_chunk = chunks[0]
         expected_func1_chunk_text = "function add(a: number, b: number): number {\n    return a + b;\n}"
         assert add_chunk.text == expected_func1_chunk_text
-        assert add_chunk.signature == "function add(a: number, b: number): number"
 
         sub_chunk = chunks[1]
         expected_func2_chunk_text = "function subtract(a: number, b: number): number {\n    return a - b;\n}"
@@ -279,3 +278,25 @@ class TestTreesitterTypescriptChunker:
         div_chunk = chunks[3]
         expected_func4_chunk_text = "function divide(a: number, b: number): number {\n    return a / b;\n}"
         assert div_chunk.text == expected_func4_chunk_text
+
+    def test_signature_function_declaration(self):
+        #
+        # * BTW, structure:
+        # function_declaration node:
+        #     child.type='function'
+        #       text='function'
+        #     child.type='identifier'
+        #       text='add'
+        #     child.type='formal_parameters'
+        #       text='(a: number, b: number)'
+        #     child.type='type_annotation'
+        #       text=': number'
+        #     child.type='statement_block'
+        #       text='{\n    return a + b;\n}'
+        #       * thus we want to stop before statement_block, thant results in the signature!
+        #       * do not want body in the signature!
+        #       * works the same as function_definition in python
+
+        chunks = _treesitter_chunks_from_file_with_fake_hash(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
+        add_chunk = chunks[0]
+        assert add_chunk.signature == "function add(a: number, b: number): number"
