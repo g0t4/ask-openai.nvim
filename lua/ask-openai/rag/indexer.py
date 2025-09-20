@@ -46,6 +46,8 @@ class IncrementalRAGIndexer:
     async def main(self):
         exts = await self.get_included_extensions()
         # TODO! use new argument
+        for ext in exts:
+            await self.build_index(ext)
         self.warn_about_other_extensions(exts)
         await signal_hotpath_done_in_background()
 
