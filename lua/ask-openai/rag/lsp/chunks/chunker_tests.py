@@ -373,6 +373,9 @@ class TestTreesitterChunker_c_Functions:
         expected_main_text = "int main() {\n    printf(\"Hello, World!\\n\");"
         assert self.main_chunk.text.startswith(expected_main_text) == True
 
+    def test_signature(self):
+        assert self.main_chunk.signature == "int main()"
+
 class TestTreesitterChunker_cpp_Functions:
 
     def setup_method(self):
