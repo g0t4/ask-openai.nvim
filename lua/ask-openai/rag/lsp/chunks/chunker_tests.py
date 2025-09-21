@@ -437,14 +437,19 @@ class TestTreesitterChunker_rust_Functions:
         #    text='{\n    println!("Hello, world!");\n}'
 
         chunks = build_test_chunks(test_cases_rust / "hello.rs", RAGChunkerOptions.OnlyTsChunks())
-        assert len(chunks) == 1
+        assert len(chunks) == 2
         self.first_chunk = chunks[0]
+        self.second_chunk = chunks[1]
 
     def test_code(self):
         expected_main_text = "fn hello()\n{\n    println!(\"Hello, world!\");\n}"
         assert self.first_chunk.text == expected_main_text
 
+        expected_greeting_text = "fn greeting()\n{\n    println!(\"Greetings, user!\");\n}"
+        assert self.second_chunk.text == expected_greeting_text
+
     def test_signature(self):
         assert self.first_chunk.signature == "fn hello()"
+        assert self.second_chunk.signature == "fn greeting()"
 
 
