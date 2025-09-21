@@ -210,26 +210,27 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         # algorithm: signature == copy everything until start of the function body
         # - function_declaration => statement_block (typescript)
         # - function_definition => block (lua)
+        #   function_definition => compound_statement (cpp)
         #   - TODO what others are covered via 'definition' => IIRC that is why I have .find() below
         # PRN strip 2+ lines that are purely comments?
 
-        stop_node_type = None
+        stop_node_types = []
         if node.type == 'function_declaration':
-            stop_node_type = "statement_block"
+            stop_node_types = ["statement_block"]
         elif node.type.find("function_definition") >= 0:
-            stop_node_type = "block"
+            stop_node_types = ["block", "compound_statement"]
         else:
             return f"--- TODO {node.type} ---"
 
         for child in node.children:
             # text = child.text.decode("utf-8", errors="replace")
             # print(f'  {child.type=}\n    {text=}')
-            if child.type == stop_node_type:
+            if child.type in stop_node_types:
                 stop_before_node = child
                 break
 
         if not stop_before_node:
-            return f"--- unexpected {stop_node_type=} NOT FOUND ---"
+            return f"--- unexpected {stop_node_types=} NOT FOUND ---"
 
         return source_bytes[node.start_byte:stop_before_node.start_byte] \
                 .decode("utf-8", errors="replace") \

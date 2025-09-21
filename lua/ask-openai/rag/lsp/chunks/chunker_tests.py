@@ -378,10 +378,12 @@ class TestTreesitterChunker_cpp_Functions:
 
     def setup_method(self):
         self.chunks = build_test_chunks(test_cases_cpp / "hello.cpp", RAGChunkerOptions.OnlyTsChunks())
+        assert len(self.chunks) == 1
+        self.first_chunk = self.chunks[0]
 
     def test_code(self):
-        chunks = self.chunks
-        assert len(chunks) == 1
-        main_chunk = chunks[0]
         expected_main_text = "int main() {\n    std::cout << \"Hello, World!\" << std::endl;\n    return 0;\n}"
-        assert main_chunk.text == expected_main_text
+        assert self.first_chunk.text == expected_main_text
+
+    def test_signature(self):
+        assert self.first_chunk.signature == "int main()"
