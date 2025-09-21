@@ -215,7 +215,11 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         #   - TODO what others are covered via 'definition' => IIRC that is why I have .find() below
         # PRN strip 2+ lines that are purely comments?
 
-        stop_node_types = ["statement_block", "block", "compound_statement"]
+        stop_node_types = [
+            "statement_block",
+            "block",
+            "compound_statement",
+        ]
 
         for child in node.children:
             text = child.text.decode("utf-8", errors="replace")
