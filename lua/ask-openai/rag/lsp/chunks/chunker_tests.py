@@ -14,6 +14,7 @@ test_cases = my_dir / "../tests/test_cases"
 test_cases_treesitter = my_dir / "../tests/test_cases/treesitter"
 test_cases_python = test_cases_treesitter / "python"
 test_cases_typescript = test_cases_treesitter / "typescript"
+test_cases_c = test_cases_treesitter / "c"
 
 set_root_dir(repo_root)
 
@@ -359,3 +360,17 @@ class TestTreesitterChunker_Typescript_Class:
         class_chunk = chunks[4]
 
         assert class_chunk.signature == "class Calculator"
+
+class TestTreesitterChunker_C_Functions:
+
+    def setup_method(self):
+        self.chunks = build_test_chunks(test_cases_c / "hello.c", RAGChunkerOptions.OnlyTsChunks())
+
+    def test_code(self):
+        chunks = self.chunks
+        assert len(chunks) == 1
+        main_chunk = chunks[0]
+
+
+        expected_main_text = "int main() {\n    printf(\"Hello, World!\\n\");"
+        assert main_chunk.text.startswith(expected_main_text) == True
