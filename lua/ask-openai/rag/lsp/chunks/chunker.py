@@ -159,6 +159,8 @@ def get_cached_parser_for_path(path):
         language = "cpp"
     elif language == "cs":
         language = "c_sharp"
+    elif language == "rs":
+        language = "rust"
     else:
         logger.warning(f'language not supported for tree_sitter chunker: {language=}')
         return None

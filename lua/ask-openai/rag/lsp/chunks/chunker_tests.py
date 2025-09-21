@@ -17,6 +17,8 @@ test_cases_typescript = test_cases_treesitter / "typescript"
 test_cases_c = test_cases_treesitter / "c"
 test_cases_cpp = test_cases_treesitter / "cpp"
 test_cases_csharp = test_cases_treesitter / "csharp"
+test_cases_rust = test_cases_treesitter / "rust"
+
 
 set_root_dir(repo_root)
 
