@@ -205,7 +205,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 .strip()
 
     def get_function_signature(node):
-        printtmp(f'\n [red]{node.type=}[/]')
+        # printtmp(f'\n [red]{node.type=}[/]')
 
         sig = None
         stop_before_node = None
@@ -224,7 +224,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
         for child in node.children:
             text = child.text.decode("utf-8", errors="replace")
-            printtmp(f'  {child.type=}\n    {text=}')
+            # printtmp(f'  {child.type=}\n    {text=}')
             if child.type in stop_node_types:
                 stop_before_node = child
                 break

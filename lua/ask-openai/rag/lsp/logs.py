@@ -144,6 +144,9 @@ class Timer:
 DISABLE_PRINT_TMP = False
 
 def disable_printtmp():
+    # by the way disabling it means when I am using the printtmp for unit tests,
+    # I can run LS and indexer CLI and not need to have them blow up and/or insane logs there
+    #   then I comment out printtmp calls when done, and they are easier to spot now that they're called printtmp (to uncomment later when testing again and need them)
     global DISABLE_PRINT_TMP
     DISABLE_PRINT_TMP = True
 
