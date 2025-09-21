@@ -74,6 +74,7 @@ end
 
 function M.on_generated_text(chunk)
     if not chunk then return end
+    if not M.displayer then return end -- else after cancel, if get another SSE, boom
 
     M.accumulated_chunks = M.accumulated_chunks .. chunk
 
@@ -105,7 +106,7 @@ function M.on_sse_llama_server_timings(sse)
     end
 
     vim.schedule(function()
-        -- PRN move into dispatcher where this belongs w/ diff preview
+        -- PRN move into displayer where this belongs w/ diff preview
         local current_cursor_row_1based, _ = unpack(vim.api.nvim_win_get_cursor(0))
         local current_cursor_row_0based = current_cursor_row_1based - 2
         if current_cursor_row_0based < 0 then current_cursor_row_0based = 0 end
@@ -137,7 +138,7 @@ function M.on_sse_llama_server_timings(sse)
     end)
 end
 
-function M.handle_request_completed()
+function M.curl_request_exited_successful_on_zero_rc()
 end
 
 function M.accept_rewrite()
@@ -220,7 +221,10 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         .. "\n- Follow the user's instructions. "
         .. markdown_exclusion
         .. "\n- Do not explain answers, just give me code. "
+        .. "\n- Never add comments to the end of a line. "
+        .. "\n- Never add comments."
         .. "\n- Preserve indentation. "
+        .. "\n- If rewriting code, preserve unrelated code. "
         .. "\n- Prefer readable code over of comments. "
 
     local always_include = {
@@ -302,6 +306,22 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             messages = messages,
             model = "", -- irrelevant for llama-server
             temperature = 0.3, -- 0.3 to 0.6?
+
+            -- TODO use mcp tools getter here too
+            tools = {
+                -- FYI temporary tools definition to cause error to test error messages
+                type = "function",
+                ["function"] = {
+                    name = "get_current_branch_name",
+                    description = "Get the current Git branch name",
+                    parameters = {
+                        type = "object",
+                        properties = {},
+                        required = {},
+                    },
+                },
+
+            },
         }
 
         -- /v1/chat/completions
@@ -451,13 +471,14 @@ local function ask_and_stream_from_ollama(opts)
     M.stream_from_ollama(user_prompt, selection.original_text, relative_file_path)
 end
 
-function M.handle_request_failed(code)
-    -- FYI test by pointing at the wrong server/port
-    -- this is for AFTER the request completes and curl exits
-    vim.schedule(function()
-        -- for now just write into buffer is fine
-        M.on_generated_text("\nerror: request failed with code: " .. code)
-    end)
+function M.on_sse_llama_server_error_explanation(sse_parsed)
+    if sse_parsed.error then
+        if M.displayer then
+            vim.schedule(function()
+                M.displayer:explain_error(M.selection, vim.inspect(sse_parsed.error))
+            end)
+        end
+    end
 end
 
 function M.on_stderr_data(text)

@@ -139,17 +139,15 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
             end
         end
 
-        vim.bo[bufnr].filetype = ft -- triggers FileType autocommands
-        vim.bo[bufnr].syntax = "" -- avoid regex syntax if you only want TS
+        vim.bo[bufnr].filetype = ft
+        vim.bo[bufnr].syntax = "" -- only TS
         -- require('telescope.previewers.utils').highlighter(bufnr, ft)
 
         -- tracking # is just to help race condition around moving cursor (in my own code, not in telescope's code which can also blow up on a race)
         latest_query_num = latest_query_num + 1
         local gen = latest_query_num
-        -- logs:info("updating cursor in previewer: " .. gen) -- for debugging race condition
         vim.schedule(function()
             if gen ~= latest_query_num then
-                -- logs:info("ignoring old gen in previewer: " .. gen) -- for debugging race condition
                 return
             end
             if not vim.api.nvim_win_is_valid(winid) then

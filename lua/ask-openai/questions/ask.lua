@@ -192,14 +192,9 @@ function M.abort_and_close()
     end
 end
 
--- WIP - callback when non-zero exit code (at end)
--- [4.603]sec [WARN] on_stderr chunk:  curl: (7) Failed to connect to build21 port 8000 after 7 ms: Couldn't connect to server
--- [4.609]sec [ERROR] spawn - non-zero exit code: 7 Signal: 0
-
-function M.handle_request_failed()
-    -- this is for AFTER the request completes and curl exits
+function M.on_sse_llama_server_error_explanation(sse_parsed)
     vim.schedule(function()
-        M.chat_window:append("\nerror: request failed")
+        M.chat_window:explain_error(vim.inspect(sse_parsed))
     end)
 end
 
@@ -301,7 +296,7 @@ function M.handle_messages_updated()
     end)
 end
 
-function M.handle_request_completed()
+function M.curl_request_exited_successful_on_zero_rc()
     -- TODO! if I send a follow up does it keep entire message history?
     -- TODO! If I use ask_question/ask_tool_use after previous... w/o clear anything, does it keep messages?
 

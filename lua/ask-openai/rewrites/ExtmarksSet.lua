@@ -12,12 +12,12 @@ ExtmarksSet.__index = ExtmarksSet
 --   prediction_marks:clear_all()
 
 ---@param buffer_number integer
----@param namespace_id integer
+---@param ns string
 ---@return ExtmarksSet
-function ExtmarksSet:new(buffer_number, namespace_id)
+function ExtmarksSet:new(buffer_number, ns)
     self = setmetatable({}, ExtmarksSet)
     self.buffer_number = buffer_number
-    self.namespace_id = namespace_id
+    self.namespace_id = vim.api.nvim_create_namespace(ns)
 
     -- PRN mark_ids is tentative, not sure it needs stored in a list
     --  instead, might have an Extmark class that encapsulates the mark_id

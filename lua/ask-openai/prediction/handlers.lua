@@ -64,8 +64,6 @@ function M.ask_for_prediction()
             end
 
             local function show_stats(sse_result)
-                -- yes! this will help me remember to shut off debug logs when I don't need them!
-                -- TODO or extmarks in this mode?! or extmarks in both?
                 local messages = {}
                 table.insert(messages, "FIM Stats")
                 local stats = sse_result.stats

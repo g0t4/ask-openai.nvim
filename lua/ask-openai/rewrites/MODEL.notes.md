@@ -1,7 +1,16 @@
 ## last SSE llama-server fails to "parse"
 
+```log
 [WARN ] WARN - unexpected, no delta in completion choice, what gives?!
 [WARN ] SSE json parse failed for ss_event: data: {"choices":[],"created":1756191041,"id":"chatcmpl-CQC9ww0KtsZGzo41Ldp1liJHPRJ6zV29","model":"","system_fingerprint":"b6271-dfd9b5f6","object":"chat.completion.chunk","usage":{"completion_tokens":409,"prompt_tokens":515,"total_tokens":924},"timings":{"prompt_n":1,"prompt_ms":22.812,"prompt_per_token_ms":22.812,"prompt_per_second":43.836577240049095,"predicted_n":409,"predicted_ms":2222.731,"predicted_per_token_ms":5.434550122249389,"predicted_per_second":184.00787139784345}}
+```
+
+## llama-server error SSE when invalid request
+
+```log
+[TRACE] on_stdout data: {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
+[TRACE] on_stderr data: curl: (22) The requested URL returned error: 500
+```
 
 ## groq.com
 

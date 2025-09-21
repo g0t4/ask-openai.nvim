@@ -48,11 +48,9 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
 
         if code ~= nil and code ~= 0 then
             log:error("spawn - non-zero exit code: '" .. code .. "' Signal: '" .. signal .. "'")
-
-            -- todo what logic do I want to NOT call handle_request_failed here?
-            frontend.handle_request_failed(code)
+            -- DO NOT add frontend handler just to have it log again!
         else
-            frontend.handle_request_completed()
+            frontend.curl_request_exited_successful_on_zero_rc()
         end
         stdout:close()
         stderr:close()
@@ -167,6 +165,13 @@ function M.on_line_or_lines(data, extract_generated_text, frontend, request)
                 -- PRN on_reasoning_text ... choice.delta.reasoning?/thinking? ollama splits this out, IIUC LM Studio does too... won't work if using harmony format with gpt-oss that isnt' parsed
             end
             -- FYI not every SSE has to have generated tokens (choices), no need to warn
+
+            if sse_parsed.error then
+                -- only confirmed this on llama_server, rename if other backends follow suit
+                -- {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
+                -- FYI do not log again here
+                frontend.on_sse_llama_server_error_explanation(sse_parsed)
+            end
 
             if sse_parsed.timings then
                 frontend.on_sse_llama_server_timings(sse_parsed)

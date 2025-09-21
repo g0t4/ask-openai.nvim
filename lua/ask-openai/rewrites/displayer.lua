@@ -11,21 +11,25 @@ Displayer.__index = Displayer
 
 local hlgroup = "AskRewrite"
 vim.api.nvim_command("highlight default " .. hlgroup .. " guifg=#ccffcc ctermfg=green")
-local extmarks_namespace_id = vim.api.nvim_create_namespace("ask-openai-rewrites")
 local select_excerpt_mark_id = 11
+
+local hlgroup_error = "AskRewriteError"
+vim.api.nvim_command("highlight default " .. hlgroup_error .. " guibg=#ff7777 guifg=#000000 ctermbg=red ctermfg=black")
 
 function Displayer:new(_current_accept, _current_cancel)
     self = setmetatable({}, Displayer)
     self._current_cancel = _current_cancel
     self._current_accept = _current_accept
     self.window = WindowController:new_from_current_window()
-    self.marks = ExtmarksSet:new(self.window:buffer().buffer_number, extmarks_namespace_id)
+    self.marks = ExtmarksSet:new(self.window:buffer().buffer_number, "AskRewriteExtmarks")
+    self.error_marks = ExtmarksSet:new(self.window:buffer().buffer_number, "AskRewriteErrorExtmarks")
     self.removed_original_lines = false
     return self
 end
 
 function Displayer:clear_extmarks()
     self.marks:clear_all()
+    self.error_marks:clear_all()
 end
 
 ---@param selection Selection
@@ -48,7 +52,7 @@ function Displayer:show_green_preview_text(selection, lines)
     -- Set extmark at the beginning of the selection
     vim.api.nvim_buf_set_extmark(
         0, -- Current buffer
-        extmarks_namespace_id,
+        self.marks.namespace_id,
         selection:start_line_0indexed(),
         selection:start_col_0indexed(),
         {
@@ -57,6 +61,30 @@ function Displayer:show_green_preview_text(selection, lines)
             virt_lines = virt_lines,
             virt_text_pos = "overlay",
             hl_mode = "combine"
+        }
+    )
+end
+
+---@param selection Selection
+---@param text string
+function Displayer:explain_error(selection, text)
+    -- TODO separate extmarks so it can be used with any other extmarks
+    self:clear_extmarks()
+    local lines = vim.split(text, '\n')
+    local first_line = { { table.remove(lines, 1), "AskRewriteError" } }
+    local virt_lines = {}
+    for _, line in ipairs(lines) do
+        table.insert(virt_lines, { { line, "AskRewriteError" } })
+    end
+    vim.api.nvim_buf_set_extmark(
+        0, -- Current buffer
+        self.error_marks.namespace_id,
+        selection:start_line_0indexed(),
+        selection:start_col_0indexed(),
+        {
+            virt_text = first_line,
+            virt_lines = virt_lines,
+            virt_text_pos = "overlay",
         }
     )
 end

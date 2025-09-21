@@ -177,6 +177,13 @@ function M.qwen25coder.get_fim_prompt(request)
         prompt = prompt .. non_fim_file
     end
 
+    local instructions = ContextItem:new("instructions", [[
+General project code rules:
+- Never add comments to the end of a line.
+- NEVER add TODO comments for me.
+]])
+    append_file_non_fim(instructions)
+
     if request.context.includes.yanks and request.context.yanks then
         append_file_non_fim(request.context.yanks)
     end

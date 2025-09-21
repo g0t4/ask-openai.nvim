@@ -48,6 +48,11 @@ function ChatWindow:ensure_open()
     self:open()
 end
 
+function ChatWindow:explain_error(text)
+    -- TODO add extmarks for error too?
+    self.buffer:append("## ERROR " .. tostring(text))
+end
+
 function ChatWindow:append(text)
     self.buffer:append(text)
 end
