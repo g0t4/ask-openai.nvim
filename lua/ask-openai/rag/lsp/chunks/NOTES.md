@@ -8,6 +8,15 @@
 
 ### Observations
 
+- OK zeta appears to be getting an update see Zeta2Request (WIP) just from 3 days ago
+    - ~/repos/github/zed-industries/zed/crates/edit_prediction_context
+    - change includes similarity scoring
+    - ~/repos/github/zed-industries/zed/crates/edit_prediction_context/src/wip_requests.rs
+
+- woa => deepwiki is a great way to summarize what a codebase is doing! uses devin
+    https://deepwiki.com/search/what-does-this-app-do-with-emb_5b86643f-c264-44b5-b838-070f2d7305ca
+    can ask about things
+
 - uses openai compat endpoint for embeddings
     - presumably works with llama-server?
 
@@ -42,6 +51,9 @@ CREATE INDEX IF NOT EXISTS "idx_retrieved_at_on_embeddings" ON "embeddings" ("re
 
 ### database
 
+- seems like its merged with zed collab feature
+    - https://github.com/zed-industries/zed/blob/main/crates/collab/src/db/tables.rs#L13
+    - must be a remote db?
 - TODO is this the latest db location? found in my .config dir, didn't look at their code yet
     - sqlite db in ~/.config/zed/embeddings/
 - Also found this:
