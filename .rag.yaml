@@ -6,6 +6,7 @@ include:
     - fish
     - txt
     - ts
+    - rs
 ignores:
     - "notes/"
 all_languages:
