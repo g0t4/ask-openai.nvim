@@ -147,6 +147,9 @@ def disable_printtmp():
     global DISABLE_PRINT_TMP
     DISABLE_PRINT_TMP = True
 
+# force color, for pytest/ptw runners
+console = Console(force_terminal=True)
+
 # mostly for STDOUT when running pytest
 # sometimes I use this for rag_indexer too
 # intended for temporary use
@@ -155,5 +158,4 @@ def printtmp(what):
     if DISABLE_PRINT_TMP:
         return
 
-    from rich import print
-    print(what)
+    console.print(what)
