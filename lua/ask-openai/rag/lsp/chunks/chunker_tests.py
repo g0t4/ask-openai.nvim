@@ -365,21 +365,20 @@ class TestTreesitterChunker_Typescript_Class:
 class TestTreesitterChunker_c_Functions:
 
     def setup_method(self):
-        self.chunks = build_test_chunks(test_cases_c / "hello.c", RAGChunkerOptions.OnlyTsChunks())
+        chunks = build_test_chunks(test_cases_c / "hello.c", RAGChunkerOptions.OnlyTsChunks())
+        assert len(chunks) == 1
+        self.main_chunk = chunks[0]
 
     def test_code(self):
-        chunks = self.chunks
-        assert len(chunks) == 1
-        main_chunk = chunks[0]
         expected_main_text = "int main() {\n    printf(\"Hello, World!\\n\");"
-        assert main_chunk.text.startswith(expected_main_text) == True
+        assert self.main_chunk.text.startswith(expected_main_text) == True
 
 class TestTreesitterChunker_cpp_Functions:
 
     def setup_method(self):
-        self.chunks = build_test_chunks(test_cases_cpp / "hello.cpp", RAGChunkerOptions.OnlyTsChunks())
-        assert len(self.chunks) == 1
-        self.first_chunk = self.chunks[0]
+        chunks = build_test_chunks(test_cases_cpp / "hello.cpp", RAGChunkerOptions.OnlyTsChunks())
+        assert len(chunks) == 1
+        self.first_chunk = chunks[0]
 
     def test_code(self):
         expected_main_text = "int main() {\n    std::cout << \"Hello, World!\" << std::endl;\n    return 0;\n}"
