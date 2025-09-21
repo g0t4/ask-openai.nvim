@@ -73,6 +73,8 @@ class IncrementalRAGIndexer:
                 "fish", "zsh", "sh", # shells
                 "cpp", "cc", "c", "h", "hpp", # c related
                 "cu", "cuh", "cl", # GPU
+                "rs",
+                "go",
             ] # yapf: disable
         import yaml
         async with aiofiles.open(rag_yaml, mode="r") as f:
