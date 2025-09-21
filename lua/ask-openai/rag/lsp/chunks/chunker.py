@@ -247,7 +247,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         logger.debug(str(node.text).replace("\\n", "\n"))
         logger.debug("")
 
-    def collect_key_nodes(node: Node, collected_parent: bool = False) -> tuple[list[Node], dict[Node, str]]:
+    def collect_key_nodes(node: Node, collected_parent: bool = False, level: int = 0) -> tuple[list[Node], dict[Node, str]]:
         nodes: list[Node] = []
         sigs_by_node: dict[Node, str] = {}
 
@@ -267,7 +267,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # FOR lua functions, grab --- triple dash comments before function (until blank line)
             nodes.append(node)
             collected_parent = True
-            # TODO track sig with node
             sig = get_function_signature(node)
             if sig is not None:
                 sigs_by_node[node] = sig
@@ -283,10 +282,11 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         elif logger.isEnabledForDebug() and not collected_parent:
             debug_uncollected_node(node)
         else:
-            printtmp(f"UNMATCHED {node.type}")
+            padding = "  " * level
+            printtmp(f"UNMATCHED {padding}{node.type} {len(node.children)} children")  # , end=" ")
 
         for child in node.children:
-            _nodes, _sigs_by_node = collect_key_nodes(child, collected_parent)
+            _nodes, _sigs_by_node = collect_key_nodes(child, collected_parent, level + 1)
             nodes.extend(_nodes)
             sigs_by_node.update(_sigs_by_node)
 
