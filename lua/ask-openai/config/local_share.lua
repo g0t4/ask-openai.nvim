@@ -95,6 +95,18 @@ function M.toggle_verbose_logs()
     return cfg.verbose_logs
 end
 
+-- * notify stats *
+function M.are_notify_stats_enabled()
+    return get().notify_stats
+end
+
+function M.toggle_notify_stats()
+    local cfg = get()
+    cfg.notify_stats = not cfg.notify_stats
+    save()
+    return cfg.notify_stats
+end
+
 -- * rag *
 function M.is_rag_enabled()
     return get().rag.enabled

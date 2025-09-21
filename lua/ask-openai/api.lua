@@ -25,6 +25,15 @@ function M.are_predictions_enabled()
     return config.local_share.are_predictions_enabled()
 end
 
+-- * notify stats *
+function M.toggle_notify_stats()
+    config.local_share.toggle_notify_stats()
+end
+
+function M.are_notify_stats_enabled()
+    return config.local_share.are_notify_stats_enabled()
+end
+
 -- * verbose logs *
 function M.toggle_verbose_logs()
     config.local_share.toggle_verbose_logs()
