@@ -13,7 +13,8 @@ from lsp.chunks.chunker import RAGChunkerOptions
 from lsp import ignores, rag
 from lsp import fs
 from lsp.context.imports import imports
-from lsp.logs import get_logger, logging_fwk_to_language_server_log_file
+from lsp.logs import get_logger, logging_fwk_to_language_server_log_file, no_printtmp
+
 from lsp.stoppers import request_stop, create_stopper, remove_stopper
 
 logging_fwk_to_language_server_log_file(logging.INFO)

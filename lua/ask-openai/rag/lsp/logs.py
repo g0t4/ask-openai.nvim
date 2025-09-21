@@ -140,3 +140,19 @@ class Timer:
 
     def elapsed_ms(self):
         return self.elapsed_ns() / 1000000
+
+NO_PRINT_TMP = False
+
+def no_printtmp():
+    NO_PRINT_TMP = True
+
+# mostly for STDOUT when running pytest
+# sometimes I use this for rag_indexer too
+# intended for temporary use
+# stuff I might comment out when I am done too, not just drop log level
+def printtmp(what):
+    if NO_PRINT_TMP:
+        return
+
+    from rich import print
+    # print(what)

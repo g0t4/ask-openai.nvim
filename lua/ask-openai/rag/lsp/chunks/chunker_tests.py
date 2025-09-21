@@ -16,6 +16,7 @@ test_cases_python = test_cases_treesitter / "python"
 test_cases_typescript = test_cases_treesitter / "typescript"
 test_cases_c = test_cases_treesitter / "c"
 test_cases_cpp = test_cases_treesitter / "cpp"
+test_cases_csharp = test_cases_treesitter / "csharp"
 
 set_root_dir(repo_root)
 
@@ -398,3 +399,19 @@ class TestTreesitterChunker_cpp_Functions:
 
     def test_signature(self):
         assert self.first_chunk.signature == "int main()"
+
+# treesitter + cs is blowing up on some symbol BS so just put this aside for now, not important
+
+class TestTreesitterChunker_csharp_Functions:
+
+    def setup_method(self):
+        chunks = build_test_chunks(test_cases_csharp / "Program.cs", RAGChunkerOptions.OnlyTsChunks())
+        assert len(chunks) == 1
+        self.first_chunk = chunks[0]
+
+    def test_code(self):
+        expected_main_text = "static void Greeting(string name)\n{\n    Console.WriteLine($\"Hello, {name}!\");\n}"
+        assert self.first_chunk.text == expected_main_text
+
+    def test_signature(self):
+        assert self.first_chunk.signature == "static void Greeting(string name)"

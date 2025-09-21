@@ -5,7 +5,7 @@ from tree_sitter import Node
 from tree_sitter_languages import get_language, get_parser
 
 from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
-from lsp.logs import get_logger
+from lsp.logs import get_logger, printtmp
 
 logger = get_logger(__name__)
 
@@ -157,6 +157,9 @@ def get_cached_parser_for_path(path):
         language = "c"
     elif language == "cpp":
         language = "cpp"
+    elif language == "cs":
+    #      NOT WORKING, symbol missing failure... don't care for now
+        language = "c_sharp"
     else:
         logger.warning(f'language not supported for tree_sitter chunker: {language=}')
         return None
@@ -165,7 +168,6 @@ def get_cached_parser_for_path(path):
 
 def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: bytes, options: RAGChunkerOptions) -> list[Chunk]:
 
-    # language = get_language('python')
 
     parser = get_cached_parser_for_path(path)
     if parser is None:
@@ -190,7 +192,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
         for child in node.children:
             # text = child.text.decode("utf-8", errors="replace")
-            # print(f'  {child.type=}\n    {text=}')
+            # printtmp(f'  {child.type=}\n    {text=}')
             if child.type == stop_node_type:
                 stop_before_node = child
                 break
@@ -203,8 +205,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 .strip()
 
     def get_function_signature(node):
-        sig = None
+        printtmp(f'  {node.type=}')
 
+        sig = None
         stop_before_node = None
 
         # algorithm: signature == copy everything until start of the function body
@@ -214,18 +217,11 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         #   - TODO what others are covered via 'definition' => IIRC that is why I have .find() below
         # PRN strip 2+ lines that are purely comments?
 
-        stop_node_types = []
-        if node.type == 'function_declaration':
-            stop_node_types = ["statement_block"]
-        elif node.type.find("function_definition") >= 0:
-            stop_node_types = ["block", "compound_statement"]
-        else:
-            return f"--- TODO {node.type} ---"
+        stop_node_types = ["statement_block", "block", "compound_statement"]
 
-        print(f'  {node.type=}')
         for child in node.children:
             text = child.text.decode("utf-8", errors="replace")
-            print(f'  {child.type=}\n    {text=}')
+            printtmp(f'  {child.type=}\n    {text=}')
             if child.type in stop_node_types:
                 stop_before_node = child
                 break
@@ -254,11 +250,13 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         if node.type == "function_definition" \
             or node.type == "local_function_definition_statement" \
             or node.type == "function_definition_statement" \
+            or node.type == "local_function_statement" \
             or node.type == "function_declaration":
             # ts: function_declaration
             # lua: function_definition == anonymous functions
             # python: function_definition == named functions
             # lua: named functions (local_function_definition_statement/local vs function_definition_statement/global)
+            # c_sharp: local_function_statement
             # FOR lua functions, grab --- triple dash comments before function (until blank line)
             nodes.append(node)
             collected_parent = True
@@ -278,7 +276,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         elif logger.isEnabledForDebug() and not collected_parent:
             debug_uncollected_node(node)
         # else:
-        #     print(f"UNMATCHED {node.type}")
+        #     printtmp(f"UNMATCHED {node.type}")
 
         for child in node.children:
             _nodes, _sigs_by_node = collect_key_nodes(child, collected_parent)
