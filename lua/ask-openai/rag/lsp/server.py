@@ -179,7 +179,7 @@ async def rag_query_command(_: LanguageServer, args: rag.LSPRagQueryRequest) -> 
         return rag.LSPRagQueryResult(error=rag.LSPResponseErrors.CANCELLED)
 
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):
-    print("SIGKILL myself")
+    logger.warn("SIGKILL myself")
     os.kill(os.getpid(), signal.SIGKILL)
 
 # TODO detect when LSP disconnects and shutdown self?
