@@ -8,9 +8,11 @@
 
 ### Observations
 
-- OK zeta appears to be getting an update see Zeta2Request (WIP) just from 3 days ago
+- WIP Zeta2 context
+    - *** https://github.com/zed-industries/zed/pull/38372
+    - zeta appears to be getting an update see Zeta2Request (WIP) just from 3 days ago
     - ~/repos/github/zed-industries/zed/crates/edit_prediction_context
-    - change includes similarity scoring
+        - change includes similarity scoring
     - ~/repos/github/zed-industries/zed/crates/edit_prediction_context/src/wip_requests.rs
 
 - woa => deepwiki is a great way to summarize what a codebase is doing! uses devin
