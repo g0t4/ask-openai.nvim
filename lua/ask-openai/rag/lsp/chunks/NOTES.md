@@ -1,0 +1,76 @@
+## zed embeddings
+
+### TODO
+
+- find a way to get it to index some code?
+- is there a search tool builtin to zed now (I see semantic search in the zed codebase)
+- or is this just for chat completions? and/or predictions
+
+### Observations
+
+- uses openai compat endpoint for embeddings
+    - presumably works with llama-server?
+
+### Implementation details
+
+- language specific treesitter queries
+    - i.e. for c: https://github.com/zed-industries/zed/blob/main/crates/languages/src/c/embedding.scmL12
+      crates/languages/src/c/embedding.scm
+      crates/languages/src/javascript/embedding.scm
+      crates/languages/src/jsonc/embedding.scm
+      crates/languages/src/go/embedding.scm
+      crates/languages/src/typescript/embedding.scm
+      crates/languages/src/rust/embedding.scm
+      crates/languages/src/tsx/embedding.scm
+      crates/languages/src/python/embedding.scm
+      crates/languages/src/cpp/embedding.scm
+      crates/languages/src/json/embedding.scm
+- sqlite db in ~/.config/zed/embeddings/
+
+```sql
+CREATE TABLE files (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    worktree_id INTEGER NOT NULL, -- * worktree == absolute_path
+    relative_path VARCHAR NOT NULL,
+    mtime_seconds INTEGER NOT NULL, -- * file modification timestamp, presumably to re-index
+    mtime_nanos INTEGER NOT NULL,
+    FOREIGN KEY(worktree_id) REFERENCES worktrees(id) ON DELETE CASCADE
+);
+```
+
+```sql
+CREATE TABLE worktrees (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    absolute_path VARCHAR NOT NULL
+);
+-- TLDR absolute path to the worktree, then relative paths within, in the files table
+```
+
+```sql
+CREATE TABLE semantic_index_config (
+    version INTEGER NOT NULL
+);
+-- IIAC this database's migrations ID
+```
+
+```sql
+CREATE TABLE spans (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    file_id INTEGER NOT NULL,
+
+    -- * offsets in bytes, per treesitter queries
+    start_byte INTEGER NOT NULL,
+    end_byte INTEGER NOT NULL,
+
+    -- TODO what is the name? is it a summary or? do they search on this?
+    name VARCHAR NOT NULL,
+
+    -- * presumably the vector:
+    --   TODO what do they use for vector search?
+    embedding BLOB NOT NULL,
+
+    digest BLOB NOT NULL,
+    FOREIGN KEY(file_id) REFERENCES files(id) ON DELETE CASCADE
+);
+CREATE INDEX spans_digest ON spans (digest);
+```
