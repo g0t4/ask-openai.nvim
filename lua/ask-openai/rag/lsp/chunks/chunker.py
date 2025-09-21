@@ -158,7 +158,6 @@ def get_cached_parser_for_path(path):
     elif language == "cpp":
         language = "cpp"
     elif language == "cs":
-    #      NOT WORKING, symbol missing failure... don't care for now
         language = "c_sharp"
     else:
         logger.warning(f'language not supported for tree_sitter chunker: {language=}')
@@ -167,7 +166,6 @@ def get_cached_parser_for_path(path):
     return get_cached_parser(language)
 
 def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: bytes, options: RAGChunkerOptions) -> list[Chunk]:
-
 
     parser = get_cached_parser_for_path(path)
     if parser is None:
@@ -205,7 +203,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 .strip()
 
     def get_function_signature(node):
-        printtmp(f'  {node.type=}')
+        printtmp(f'\n [red]{node.type=}[/]')
 
         sig = None
         stop_before_node = None
@@ -227,7 +225,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 break
 
         if not stop_before_node:
-            return f"--- unexpected {stop_node_types=} NOT FOUND ---"
+            return f"[bold red] --- unexpected {stop_node_types=} NOT FOUND ---[/]"
 
         return source_bytes[node.start_byte:stop_before_node.start_byte] \
                 .decode("utf-8", errors="replace") \
@@ -304,7 +302,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         uncovered = [ln for ln in range(len(source_lines)) if ln not in covered]
 
         if uncovered:
-            logger.debug("[bold on red] *********************** Uncovered lines *********************** ")
+            logger.debug("[bold on red] *********************** Uncovered lines *********************** [/]  ")
             last_ln = -1
             for ln in uncovered:
                 if ln - last_ln > 1:
