@@ -229,7 +229,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 break
 
         if not stop_before_node:
-            return f"[bold red] --- unexpected {stop_node_types=} NOT FOUND ---[/]"
+            return f"--- unexpected {stop_node_types=} NOT FOUND ---"
 
         return source_bytes[node.start_byte:stop_before_node.start_byte] \
                 .decode("utf-8", errors="replace") \
