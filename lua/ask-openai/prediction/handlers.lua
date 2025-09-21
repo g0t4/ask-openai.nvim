@@ -175,7 +175,7 @@ function M.ask_for_prediction()
                         this_prediction:mark_generation_finished()
                     end
                     if sse_result.stats then
-                        if api.are_verbose_logs_enabled() then
+                        if api.are_notify_stats_enabled() then
                             show_stats(sse_result)
                         end
                     end

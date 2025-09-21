@@ -21,6 +21,7 @@ local function load_config()
     local default = {
         predictions = { enabled = true },
         verbose_logs = false,
+        notify_stats = false,
         rag = { enabled = true },
     }
 

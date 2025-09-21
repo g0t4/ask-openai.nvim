@@ -229,6 +229,9 @@ function M.lualine()
             if local_share.are_verbose_logs_enabled() then
                 table.insert(icons, '')
             end
+            if local_share.are_notify_stats_enabled() then
+                table.insert(icons, '󰍨')
+            end
             if local_share.is_rag_enabled() then
                 table.insert(icons, '󰵉')
             end
