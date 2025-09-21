@@ -15,6 +15,7 @@ test_cases_treesitter = my_dir / "../tests/test_cases/treesitter"
 test_cases_python = test_cases_treesitter / "python"
 test_cases_typescript = test_cases_treesitter / "typescript"
 test_cases_c = test_cases_treesitter / "c"
+test_cases_cpp = test_cases_treesitter / "cpp"
 
 set_root_dir(repo_root)
 
@@ -361,7 +362,7 @@ class TestTreesitterChunker_Typescript_Class:
 
         assert class_chunk.signature == "class Calculator"
 
-class TestTreesitterChunker_C_Functions:
+class TestTreesitterChunker_c_Functions:
 
     def setup_method(self):
         self.chunks = build_test_chunks(test_cases_c / "hello.c", RAGChunkerOptions.OnlyTsChunks())
@@ -370,7 +371,17 @@ class TestTreesitterChunker_C_Functions:
         chunks = self.chunks
         assert len(chunks) == 1
         main_chunk = chunks[0]
-
-
         expected_main_text = "int main() {\n    printf(\"Hello, World!\\n\");"
         assert main_chunk.text.startswith(expected_main_text) == True
+
+class TestTreesitterChunker_cpp_Functions:
+
+    def setup_method(self):
+        self.chunks = build_test_chunks(test_cases_cpp / "hello.cpp", RAGChunkerOptions.OnlyTsChunks())
+
+    def test_code(self):
+        chunks = self.chunks
+        assert len(chunks) == 1
+        main_chunk = chunks[0]
+        expected_main_text = "int main() {\n    std::cout << \"Hello, World!\" << std::endl;\n    return 0;\n}"
+        assert main_chunk.text == expected_main_text

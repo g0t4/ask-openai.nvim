@@ -1,6 +1,7 @@
 include:
     - lua
     - c
+    - cpp
     - py
     - fish
     - txt
