@@ -124,17 +124,26 @@ class TestLowLevel_LinesChunker:
 
 class TestTreesitterChunker_Python_TopLevelFunctions:
 
-    def test_two_top_level_functions(self):
+    def setup_method(self):
+        # node.type='function_definition'
+        #   child.type='def'
+        #     text='def'
+        #   child.type='identifier'
+        #     text='func1'
+        #   child.type='parameters'
+        #     text='()'
+        #   child.type=':'
+        #     text=':'
+        #   child.type='block'
+        #     text='return 1'
         chunks = build_test_chunks(test_cases_python / "two_functions.py", RAGChunkerOptions.OnlyTsChunks())
         assert len(chunks) == 2
+        self.first_chunk = chunks[0]
+        self.second_chunk = chunks[1]
 
-        first_chunk = chunks[0]
-        expected_func1_chunk_text = "def func1():\n    return 1"  # TODO new line between two funcs? how about skip that?
-        assert first_chunk.text == expected_func1_chunk_text
-
-        second_chunk = chunks[1]
-        expected_func2_chunk_text = "def func2():\n    return 2"
-        assert second_chunk.text == expected_func2_chunk_text
+    def test_two_top_level_functions(self):
+        assert self.first_chunk.text == "def func1():\n    return 1"
+        assert self.second_chunk.text == "def func2():\n    return 2"
 
     def test_example_treesitter_query(self):
         query_str = "(module (function_definition) @toplevel.func)"
