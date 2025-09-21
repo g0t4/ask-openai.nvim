@@ -127,12 +127,15 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         -- TODO confirm hl.range is base0 for both line/col values on start and end
         vim.hl.range(bufnr, ns, "RagLineRange", { start_line_base0, 0 }, { end_line_base0, last_col }, {})
 
-        -- TODO fix lookup ft... FFS it doesn't know what ".ts" is... seriously?
         local ft = vim.filetype.match({ filename = filename })
         if not ft then
-            logs:info("filetype match failed (ft=" .. tostring(ft) .. ") for filename: " .. filename)
+            -- ! DO NOT WASTE MORE TIME ON vim.filetype.match, it's a cluster fuck
+            -- JUST MAP W/E does not fit for now, it doesn't matter... you're not the first person to have this issue with vim.filetype.match so just ignore it
+            -- DO NOT RELY ON vim.filetype... even though the docs suggest it has no qualifications it apparently doesn't handle any of the legacy vimscript ftplugin logic? filetype.vim? (IIUC)
             if filename:match("%.ts$") then
                 ft = "typescript"
+            else
+                logs:info("filetype match failed, please manually add the mapping for the file extension (ft=" .. tostring(ft) .. ") for filename: " .. filename)
             end
         end
 
