@@ -129,7 +129,7 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     return request
 end
 
-M.on_line_or_lines = function(data, extract_generated_text, frontend, request)
+function M.on_line_or_lines(data, extract_generated_text, frontend, request)
     -- SSE = Server-Sent Event
     -- split on lines first (each SSE can have 0+ "event" - one per line)
 
