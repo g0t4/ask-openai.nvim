@@ -283,9 +283,10 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 sigs_by_node[node] = sig
         elif logger.isEnabledForDebug() and not collected_parent:
             debug_uncollected_node(node)
-        else:
-            padding = "  " * level
-            printtmp(f"UNMATCHED {padding}{node.type} {len(node.children)} children")  # , end=" ")
+        # else:
+        #     # uncomment this to dump anything not explicilty matched above (great for initially finding nodes of interest)
+        #     padding = "  " * level
+        #     printtmp(f"UNMATCHED {padding}{node.type} {len(node.children)} children")  # , end=" ")
 
         for child in node.children:
             _nodes, _sigs_by_node = collect_key_nodes(child, collected_parent, level + 1)
