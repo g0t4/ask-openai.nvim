@@ -9,7 +9,10 @@
 ### Observations
 
 - WIP Zeta2 context
-    - *** https://github.com/zed-industries/zed/pull/38372
+    - active branches under zeta2
+        - https://github.com/zed-industries/zed/branches/all?query=zeta2&lastTab=overview
+    - *** https://github.com/zed-industries/zed/compare/main...zeta2-context
+    - *** https://github.com/zed-industries/zed/pull/38372 (merged)
     - zeta appears to be getting an update see Zeta2Request (WIP) just from 3 days ago
     - ~/repos/github/zed-industries/zed/crates/edit_prediction_context
         - change includes similarity scoring
