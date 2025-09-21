@@ -26,12 +26,28 @@
       crates/languages/src/cpp/embedding.scm
       crates/languages/src/json/embedding.scm
 
+## migrations?
+
+~/repos/github/zed-industries/zed/crates/collab/migrations/20240409082755_create_embeddings.sql
+
+CREATE TABLE IF NOT EXISTS "embeddings" (
+    "model" TEXT,
+    "digest" BYTEA,
+    "dimensions" FLOAT4[1536],
+    "retrieved_at" TIMESTAMP NOT NULL DEFAULT now(),
+    PRIMARY KEY ("model", "digest")
+);
+
+CREATE INDEX IF NOT EXISTS "idx_retrieved_at_on_embeddings" ON "embeddings" ("retrieved_at");
+
 ### database
 
 - TODO is this the latest db location? found in my .config dir, didn't look at their code yet
     - sqlite db in ~/.config/zed/embeddings/
 - Also found this:
     - embeddings/semantic-index-db.0.mdb/
+    lmdb
+    `mdb_dump embeddings/semantic-index-db.0.mdb`
 
 ```sql
 CREATE TABLE files (
