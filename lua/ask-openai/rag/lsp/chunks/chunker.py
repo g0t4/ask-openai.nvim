@@ -257,7 +257,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             or node.type == "function_definition_statement" \
             or node.type == "local_function_statement" \
             or node.type == "function_declaration" \
-            or node.type == "function_item":
+            or node.type == "function_item" \
+            :
             # ts: function_declaration
             # lua: function_definition == anonymous functions
             # python: function_definition == named functions
