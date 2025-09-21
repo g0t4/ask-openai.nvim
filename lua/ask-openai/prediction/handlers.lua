@@ -136,10 +136,10 @@ function M.ask_for_prediction()
                 ---@param opts? table      -- vim.notify options
                 local function notify_once(message, level, opts)
                     opts = opts or {}
-                    if M.last_notify_id then
-                        opts.replace = M.last_notify_id
+                    if M.last_notify_id_for_stats then
+                        opts.replace = M.last_notify_id_for_stats
                     end
-                    M.last_notify_id = vim.notify(message, level, opts)
+                    M.last_notify_id_for_stats = vim.notify(message, level, opts)
                 end
 
                 notify_once(message)
