@@ -425,3 +425,26 @@ class TestTreesitterChunker_csharp_Functions:
 
     def test_signature(self):
         assert self.first_chunk.signature == "static void Greeting(string name)"
+
+
+class TestTreesitterChunker_rust_Functions:
+
+    def setup_method(self):
+        # node.type='function_definition'
+        #  child.type='function_signature'
+        #    text='fn hello()'
+        #  child.type='block'
+        #    text='{\n    println!("Hello, world!");\n}'
+
+        chunks = build_test_chunks(test_cases_rust / "hello.rs", RAGChunkerOptions.OnlyTsChunks())
+        assert len(chunks) == 1
+        self.first_chunk = chunks[0]
+
+    def test_code(self):
+        expected_main_text = "fn hello()\n{\n    println!(\"Hello, world!\");\n}"
+        assert self.first_chunk.text == expected_main_text
+
+    def test_signature(self):
+        assert self.first_chunk.signature == "fn hello()"
+
+
