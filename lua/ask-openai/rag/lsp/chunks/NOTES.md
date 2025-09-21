@@ -25,7 +25,13 @@
       crates/languages/src/python/embedding.scm
       crates/languages/src/cpp/embedding.scm
       crates/languages/src/json/embedding.scm
-- sqlite db in ~/.config/zed/embeddings/
+
+### database
+
+- TODO is this the latest db location? found in my .config dir, didn't look at their code yet
+    - sqlite db in ~/.config/zed/embeddings/
+- Also found this:
+    - embeddings/semantic-index-db.0.mdb/
 
 ```sql
 CREATE TABLE files (
