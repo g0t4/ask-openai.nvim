@@ -212,9 +212,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         # - function_declaration => statement_block (typescript)
         # - function_definition => block (lua, python)
         #   function_definition => compound_statement (c, cpp)
-        #   - TODO what others are covered via 'definition' => IIRC that is why I have .find() below
-        # PRN strip 2+ lines that are purely comments?
-
+        # - local_function_statement => block (c_sharp)
         stop_node_types = [
             "statement_block",
             "block",
@@ -230,6 +228,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
         if not stop_before_node:
             return f"--- unexpected {stop_node_types=} NOT FOUND ---"
+
+        # PRN strip 2+ lines that are purely comments?
 
         return source_bytes[node.start_byte:stop_before_node.start_byte] \
                 .decode("utf-8", errors="replace") \

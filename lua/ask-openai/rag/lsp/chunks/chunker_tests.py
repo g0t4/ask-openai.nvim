@@ -400,11 +400,21 @@ class TestTreesitterChunker_cpp_Functions:
     def test_signature(self):
         assert self.first_chunk.signature == "int main()"
 
-# treesitter + cs is blowing up on some symbol BS so just put this aside for now, not important
-
 class TestTreesitterChunker_csharp_Functions:
 
     def setup_method(self):
+        # node.type='local_function_statement'
+        #  child.type='modifier'
+        #    text='static'
+        #  child.type='predefined_type'
+        #    text='void'
+        #  child.type='identifier'
+        #    text='Greeting'
+        #  child.type='parameter_list'
+        #    text='(string name)'
+        #  child.type='block'
+        #    text='{\n    Console.WriteLine($"Hello, {name}!");\n}'
+
         chunks = build_test_chunks(test_cases_csharp / "Program.cs", RAGChunkerOptions.OnlyTsChunks())
         assert len(chunks) == 1
         self.first_chunk = chunks[0]
