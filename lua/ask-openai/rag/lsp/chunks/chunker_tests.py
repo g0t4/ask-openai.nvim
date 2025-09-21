@@ -19,7 +19,6 @@ test_cases_cpp = test_cases_treesitter / "cpp"
 test_cases_csharp = test_cases_treesitter / "csharp"
 test_cases_rust = test_cases_treesitter / "rust"
 
-
 set_root_dir(repo_root)
 
 # z rag
@@ -428,15 +427,9 @@ class TestTreesitterChunker_csharp_Functions:
     def test_signature(self):
         assert self.first_chunk.signature == "static void Greeting(string name)"
 
-
 class TestTreesitterChunker_rust_Functions:
 
     def setup_method(self):
-        # node.type='function_definition'
-        #  child.type='function_signature'
-        #    text='fn hello()'
-        #  child.type='block'
-        #    text='{\n    println!("Hello, world!");\n}'
 
         chunks = build_test_chunks(test_cases_rust / "hello.rs", RAGChunkerOptions.OnlyTsChunks())
         assert len(chunks) == 2
@@ -444,14 +437,12 @@ class TestTreesitterChunker_rust_Functions:
         self.second_chunk = chunks[1]
 
     def test_code(self):
-        expected_main_text = "fn hello()\n{\n    println!(\"Hello, world!\");\n}"
+        expected_main_text = "fn main() {\n    println!(\"Hello, world!\");\n    greeting();\n}"
         assert self.first_chunk.text == expected_main_text
 
-        expected_greeting_text = "fn greeting()\n{\n    println!(\"Greetings, user!\");\n}"
+        expected_greeting_text = "fn greeting() {\n    println!(\"Greetings, user!\");\n}"
         assert self.second_chunk.text == expected_greeting_text
 
     def test_signature(self):
-        assert self.first_chunk.signature == "fn hello()"
+        assert self.first_chunk.signature == "fn main()"
         assert self.second_chunk.signature == "fn greeting()"
-
-
