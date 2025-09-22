@@ -93,7 +93,6 @@ end
 function Displayer:on_response(selection, lines)
     local lines_text = table.concat(lines, "\n")
     local diff = combined.combined_word_diff(selection.original_text, lines_text)
-    -- log:info("diff:\n" .. inspect_diff(diff))
 
     local extmark_lines = vim.iter(diff):fold({ {} }, function(accum, chunk)
         if chunk == nil then
@@ -107,18 +106,11 @@ function Displayer:on_response(selection, lines)
             local type = chunk[1]
             local text = chunk[2]
 
-            local type_hlgroup = nil -- nil = TODO don't change it right?
+            local type_hlgroup = nil
             if type == '+' then
-                -- type_hlgroup = hl_added -- mine (above)
-                -- FYI nvim and plugins have a bunch of options already registerd too (color/highlight wise)
-                -- type_hlgroup = "Added" -- light green
-                type_hlgroup = 'diffAdded' -- darker green/cyan - *** FAVORITE
+                type_hlgroup = 'diffAdded'
             elseif type == '-' then
-                -- type_hlgroup = hl_deleted -- mine (above)
-                -- type_hlgroup = "Removed" -- very light red (almost brown/gray)
-                type_hlgroup = 'diffRemoved' -- dark red - *** FAVORITE
-                -- return accum
-                -- actually, based on how I aggregate between sames... there should only be one delete and one add between any two sames... so, I could just show both and it would appaer like remove / add (probably often lines removed then lines added, my diff processor puts the delete first which makes sense for that to be on top)
+                type_hlgroup = 'diffRemoved'
             end
             if not text:find('\n') then
                 -- no new lines, so we just tack on to end of current line
@@ -127,19 +119,14 @@ function Displayer:on_response(selection, lines)
                     table.insert(current_line, { text, type_hlgroup })
                 end
             else
-                -- TODO this needs testing, something could be buggy and it'd be very hard to find out
                 local split_lines = vim.split(text, '\n')
-                -- ? is split_lines the right name here? why did I use piece below and not line? (wes notes inline rewrites)
-                -- log:info("split_lines:", vim.inspect(split_lines))
                 for i, piece in ipairs(split_lines) do
-                    -- FYI often v will be empty (i.e. a series of newlines)... do not exclude these empty lines!
                     local len_text = #piece
                     if len_text > 0 then
                         -- don't add empty pieces, just make sure we add the lines (even if empty)
                         table.insert(current_line, { piece, type_hlgroup })
                     end
                     if i < #split_lines then
-                        -- ? why isn't this done on the last split line? (wes notes inline rewrites)
                         -- start a new, empty line (even if last piece was empty)
                         current_line = {}
                         accum[#accum + 1] = current_line
@@ -162,24 +149,11 @@ function Displayer:on_response(selection, lines)
         return
     end
 
-    -- TODO! do I need to support rewrites in the middle of a line? I doubt it... and right now the zeta rewrite is based on whole lines IIRC
     local start_line_0i = selection:start_line_0indexed()
     local end_line_0i = selection:end_line_0indexed()
-    -- log:info("original selection: " .. selection:range_str_0indexed())
-
-
-    -- log:info('extmark_lines')
-    -- for _, v in ipairs(extmark_lines) do
-    --     log:info(vim.inspect(v))
-    -- end
 
     -- delete original lines (that way only diff shows in extmarks)
     if not self.removed_original_lines then
-        -- TODO! IIUC there's a bug in this code when selection goes through last line in file
-        --   reproduce with linewise (shift+v) then arrow down through to last line
-        --   trigger rewrite and you will see it doesn't replace the text on that last line
-        --   this also might be a column issue with linewise? I recall funky behavior in nvim APIs with diff selection modes
-
         -- keep in mind, doing this before/after set extmarks matters
         self.window:buffer():replace_lines(
             start_line_0i,
@@ -193,7 +167,7 @@ function Displayer:on_response(selection, lines)
 
     self.marks:set(select_excerpt_mark_id, {
         start_line = start_line_0i,
-        start_col = 0, -- TODO! allow intra line selections too
+        start_col = 0,
         virt_text = first_extmark_line,
         virt_lines = extmark_lines,
         virt_text_pos = 'overlay',
@@ -230,7 +204,6 @@ function Displayer:set_keymaps()
 end
 
 function Displayer:remove_keymaps()
-    -- TODO get rid of fallbacks? Alt-Tab/Esc shouldn't be needed
     vim.cmd([[
       silent! iunmap <buffer> <Tab>
       silent! iunmap <buffer> <Esc>
