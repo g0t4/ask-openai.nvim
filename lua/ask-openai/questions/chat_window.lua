@@ -49,7 +49,7 @@ function ChatWindow:ensure_open()
 end
 
 function ChatWindow:explain_error(text)
-    -- TODO add extmarks for error too?
+    -- TODO add extmarks with red background like I did in rewrite/inline.lua => displayer class
     self.buffer:append("## ERROR " .. tostring(text))
 end
 
