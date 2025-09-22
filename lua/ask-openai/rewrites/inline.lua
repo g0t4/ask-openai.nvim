@@ -310,10 +310,40 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
             -- tools = mcp.openai_tools(),
         }
+        local qwen3coder_chat_body_llama_server_chat_completions = {
+
+            messages = messages,
+            model = "", -- irrelevant for llama-server
+
+            -- official recommended settings
+            -- https://huggingface.co/Qwen/Qwen3-Coder-480B-A35B-Instruct/blob/main/generation_config.json
+            --   "pad_token_id": 151643,
+            --   "do_sample": true,
+            --   "eos_token_id": [
+            --     151645,
+            --     151643
+            --   ],
+            --   "repetition_penalty": 1.05,
+            --   "temperature": 0.7,
+            --   "top_p": 0.8,
+            --   "top_k": 20
+            --
+            --   * TODO test these official recommendations
+            --   * TODO are these all the correct param names and location for llama-server?
+            pad_token_id = 151643, -- this is the correct pad token for Qwen3-Coder
+            do_sample = true,
+            eos_token_id = { 151645, 151643 },
+            repetition_penalty = 1.05,
+            temperature = 0.7,
+            top_p = 0.8,
+            top_k = 20,
+
+            -- tools = mcp.openai_tools(),
+        }
 
         -- /v1/chat/completions
         -- local body = qwen_chat_body
-        local body = gptoss_chat_body_llama_server_chat_completions
+        local body = qwen3coder_chat_body_llama_server_chat_completions
 
         local base_url = "http://ollama:8013"
 
