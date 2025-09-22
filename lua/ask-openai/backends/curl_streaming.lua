@@ -276,8 +276,4 @@ function M.on_delta_update_message_history(choice, request)
     end
 end
 
--- PRN does vllm have both finish_reason and stop_reason?
---   wait to handle it until actually needed
---   probably coalesce finish_reason|stop_reason to keep it transparent
-
 return M
