@@ -246,19 +246,22 @@ function M.on_delta_update_message_history(choice, frontend, request)
     local calls = choice.delta.tool_calls
     if calls then
         message.tool_calls = (message.tool_calls or {})
-        for _, call_delta in ipairs(calls) do
+        for _, tool_call_delta in ipairs(calls) do
+
+            -- * lookup or create parsed_call
             -- TODO create a typed class for parsed_call?
-            local parsed_call = message.tool_calls[call_delta.index + 1]
+            local parsed_call = message.tool_calls[tool_call_delta.index + 1]
             if parsed_call == nil then
                 parsed_call = {
                     -- assuming these are always on first delta per message
-                    id    = call_delta.id,
-                    index = call_delta.index,
-                    type  = call_delta.type,
+                    id    = tool_call_delta.id,
+                    index = tool_call_delta.index,
+                    type  = tool_call_delta.type,
                 }
                 table.insert(message.tool_calls, parsed_call)
             end
-            local func = call_delta["function"]
+
+            local func = tool_call_delta["function"]
             if func ~= nil then
                 parsed_call["function"] = parsed_call["function"] or {}
                 if func.name ~= nil then
