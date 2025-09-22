@@ -247,13 +247,13 @@ function M.on_delta_update_message_history(choice, frontend, request)
         message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
     end
 
-    calls = choice.delta.tool_calls
+    local calls = choice.delta.tool_calls
     if calls then
         message.tool_calls = (message.tool_calls or {})
         for _, call_delta in ipairs(calls) do
             -- TODO test stream case w/ vllm b/c non stream case is easier
             -- for now just assume entirely new tool call each time... will fix this with a test of streaming later
-            parsed_call = message.tool_calls[call_delta.index + 1]
+            local parsed_call = message.tool_calls[call_delta.index + 1]
             -- PRN lookup message by index # and dont rely on contiguous index values?
             if parsed_call == nil then
                 parsed_call = {
@@ -264,7 +264,7 @@ function M.on_delta_update_message_history(choice, frontend, request)
                 }
                 table.insert(message.tool_calls, parsed_call)
             end
-            func = call_delta["function"]
+            local func = call_delta["function"]
             if func ~= nil then
                 parsed_call["function"] = parsed_call["function"] or {}
                 if func.name ~= nil then
@@ -272,7 +272,7 @@ function M.on_delta_update_message_history(choice, frontend, request)
                 end
                 if func.arguments ~= nil then
                     -- technically, need a test to validate nil check here but just do it for now
-                    current = parsed_call["function"].arguments or ""
+                    local current = parsed_call["function"].arguments or ""
                     parsed_call["function"].arguments = (current .. func.arguments)
                 end
             end
