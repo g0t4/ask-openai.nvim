@@ -328,8 +328,10 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             --   "top_p": 0.8,
             --   "top_k": 20
             --
-            --   * TODO test these official recommendations
-            --   * TODO are these all the correct param names and location for llama-server?
+            --   TODO test these official recommendations
+            --   TODO! are these all the correct param names and location for llama-server?
+            --   TODO! put these into predictions AND ask questions ...
+            --   PRN ideally consolidate into a central location if they work well across all scenarios
             pad_token_id = 151643, -- this is the correct pad token for Qwen3-Coder
             do_sample = true,
             eos_token_id = { 151645, 151643 },
