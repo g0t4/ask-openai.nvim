@@ -205,7 +205,6 @@ end
 ---@field arguments string|nil
 
 ---@param choice OpenAIChoice|nil
----@param request any
 function M.on_delta_update_message_history(choice, request)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
     -- rebuilds message as if sent `stream: false`
@@ -215,10 +214,7 @@ function M.on_delta_update_message_history(choice, request)
         log:trace("[WARN] skipping b/c choice/choice.delta is nil: '" .. vim.inspect(choice) .. "'")
         return
     end
-    if request.messages == nil then
-        -- TODO move this to a request type?
-        request.messages = {}
-    end
+    request.messages = request.messages or {}
 
     -- lookup or create message
     local msg_lookup = choice.index + 1
