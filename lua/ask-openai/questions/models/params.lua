@@ -80,7 +80,9 @@ function M.new_qwen3coder_llama_server_chat_body(request_body) -- this is a dupl
 end
 
 function M.new_qwen25coder_ollama_body(request_body)
-
+    -- get values from rewrite/ask/predictions
+    -- PRN I should run some tests too, I never optimized using 2.5-Coder!
+    --   keep in mind it had both base and instruct variants
 end
 
 return M

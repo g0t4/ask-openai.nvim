@@ -10,7 +10,7 @@ local ChatParams = require("ask-openai.questions.chat_params")
 local Selection = require("ask-openai.helpers.selection")
 local CurrentContext = require("ask-openai.prediction.context")
 local files = require("ask-openai.helpers.files")
-local models = require("ask-openai.questions.models.params")
+local model_params = require("ask-openai.questions.models.params")
 require("ask-openai.helpers.buffers")
 
 
@@ -118,8 +118,8 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
     -- vllm:
     -- local base_url = "http://build21:8000"
 
-    -- body_overrides = models.new_gptoss_chat_body_llama_server({
-    body_overrides = models.new_qwen3coder_llama_server_chat_body({
+    -- local body_overrides = models.new_gptoss_chat_body_llama_server({
+    local body_overrides = model_params.new_qwen3coder_llama_server_chat_body({
         messages = messages,
         model = "", -- irrelevant for llama-server
         -- tools = mcp.openai_tools(),
