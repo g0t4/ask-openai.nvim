@@ -292,7 +292,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
         table.insert(messages, ChatMessage:user(user_message_with_code))
 
-        local qwen_chat_body = {
+        local qwen25_chat_body = {
             messages = messages,
             -- * current models only
             -- model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base" # VERY HAPPY WITH THIS MODEL FOR CODING TOO!
@@ -303,14 +303,14 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             max_tokens = 8192, -- PRN set high if using /think only?
         }
 
-        local gptoss_chat_body_llama_server_chat_completions = {
+        local gptoss_chat_body_llama_server = {
             messages = messages,
             model = "", -- irrelevant for llama-server
             temperature = 0.3, -- 0.3 to 0.6?
 
             -- tools = mcp.openai_tools(),
         }
-        local qwen3coder_chat_body_llama_server_chat_completions = {
+        local qwen3coder_chat_body_llama_server = {
 
             messages = messages,
             model = "", -- irrelevant for llama-server
@@ -344,8 +344,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         }
 
         -- /v1/chat/completions
-        -- local body = qwen_chat_body
-        local body = qwen3coder_chat_body_llama_server_chat_completions
+        local body = qwen3coder_chat_body_llama_server
 
         local base_url = "http://ollama:8013"
 

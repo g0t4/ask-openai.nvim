@@ -85,7 +85,7 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
     table.insert(messages, ChatMessage:new("user", user_message))
 
     ---@type ChatParams
-    local qwen_body_overrides = ChatParams:new({
+    local qwen25_body_overrides = ChatParams:new({
 
         -- model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :) -- instruct works at random... seems to be a discrepency in published template and what it was actually trained with? (for tool calls)
         -- model = "devstral:24b-small-2505-q4_K_M",
@@ -116,21 +116,50 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
     -- local base_url = "http://build21:8000"
     -- body.model = "" -- dont pass model, use whatever is served
 
-    local gptoss_chat_body_llama_server_chat_completions = {
+    local gptoss_chat_body_llama_server = {
         messages = messages,
         model = "gpt-oss:20b",
         temperature = 0.3, -- 0.3 to 0.6?
     }
+    local qwen3coder_chat_body_llama_server = {
 
-    -- body_overrides = qwen_body_overrides
-    body_overrides = gptoss_chat_body_llama_server_chat_completions
+        messages = messages,
+        model = "", -- irrelevant for llama-server
+
+        -- official recommended settings
+        -- https://huggingface.co/Qwen/Qwen3-Coder-480B-A35B-Instruct/blob/main/generation_config.json
+        --   "pad_token_id": 151643,
+        --   "do_sample": true,
+        --   "eos_token_id": [
+        --     151645,
+        --     151643
+        --   ],
+        --   "repetition_penalty": 1.05,
+        --   "temperature": 0.7,
+        --   "top_p": 0.8,
+        --   "top_k": 20
+        --
+        --   TODO test these official recommendations
+        --   TODO! are these all the correct param names and location for llama-server?
+        --   TODO! put these into predictions AND ask questions ...
+        --   PRN ideally consolidate into a central location if they work well across all scenarios
+        pad_token_id = 151643, -- this is the correct pad token for Qwen3-Coder
+        do_sample = true,
+        eos_token_id = { 151645, 151643 },
+        repetition_penalty = 1.05,
+        temperature = 0.7,
+        top_p = 0.8,
+        top_k = 20,
+
+        -- tools = mcp.openai_tools(),
+    }
+
+    -- body_overrides = qwen25_body_overrides
+    body_overrides = qwen3coder_chat_body_llama_server
 
     if use_tools then
         log:info("USING TOOLS")
-        -- TODO impl final test case for streaming tool_calls with vllm!
-        qwen_body_overrides.tools = mcp.openai_tools()
-        -- TODO tool use with llama-server?!
-        body_overrides.tools = qwen_body_overrides.tools
+        body_overrides.tools = mcp.openai_tools()
     end
 
     M.thread = ChatThread:new(messages, body_overrides, base_url)
