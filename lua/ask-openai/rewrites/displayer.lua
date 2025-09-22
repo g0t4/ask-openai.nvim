@@ -49,20 +49,17 @@ function Displayer:show_green_preview_text(selection, lines)
         table.insert(virt_lines, { { line, hlgroup } })
     end
 
-    -- Set extmark at the beginning of the selection
-    vim.api.nvim_buf_set_extmark(
-        0, -- Current buffer
-        self.marks.namespace_id,
-        selection:start_line_0indexed(),
-        selection:start_col_0indexed(),
-        {
-            id = select_excerpt_mark_id,
-            virt_text = first_line,
-            virt_lines = virt_lines,
-            virt_text_pos = "overlay",
-            hl_mode = "combine"
-        }
-    )
+    self.marks:set(select_excerpt_mark_id, {
+
+        -- Set extmark at the beginning of the selection
+        start_line = selection:start_line_0indexed(),
+        start_col = selection:start_col_0indexed(),
+
+        virt_text = first_line,
+        virt_lines = virt_lines,
+        virt_text_pos = "overlay",
+        hl_mode = "combine"
+    })
 end
 
 ---@param selection Selection
