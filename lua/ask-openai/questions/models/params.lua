@@ -2,7 +2,8 @@ local M = {}
 
 function default_to_recommended(request_body, recommended)
     -- rightmost wins
-    return vim.tbl_deep_extend("force", recommended, request_body or {})
+    local merged = vim.tbl_deep_extend("force", recommended, request_body or {})
+    return merged
 end
 
 function M.new_gptoss_chat_body_llama_server(request_body)
