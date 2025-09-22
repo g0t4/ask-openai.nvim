@@ -1,8 +1,11 @@
+local log = require("ask-openai.logs.logger").predictions()
+
 local M = {}
 
 function default_to_recommended(request_body, recommended)
     -- rightmost wins
     local merged = vim.tbl_deep_extend("force", recommended, request_body or {})
+    log:info("merged request body: " .. vim.inspect(merged))
     return merged
 end
 
