@@ -70,7 +70,7 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
         ChatMessage:new("system", system_prompt),
     }
 
-    -- PRN add back by giving user / commands to include context... I don't think I should be always including context? or should I in chat threads
+    -- TODO add this back and optionall RAG?
     -- if context.includes.yanks and context.yanks then
     --     table.insert(messages, ChatMessage:new("user", context.yanks.content))
     -- end
