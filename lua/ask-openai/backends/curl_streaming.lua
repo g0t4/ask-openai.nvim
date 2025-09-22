@@ -264,6 +264,7 @@ function M.on_delta_update_message_history(choice, frontend, request)
                 }
                 table.insert(message.tool_calls, parsed_call)
             end
+            -- create a typed class for parsed_call?
             local func = call_delta["function"]
             if func ~= nil then
                 parsed_call["function"] = parsed_call["function"] or {}
@@ -272,8 +273,10 @@ function M.on_delta_update_message_history(choice, frontend, request)
                 end
                 if func.arguments ~= nil then
                     -- technically, need a test to validate nil check here but just do it for now
-                    local current = parsed_call["function"].arguments or ""
-                    parsed_call["function"].arguments = (current .. func.arguments)
+
+                    parsed_call["function"].arguments =
+                        (parsed_call["function"].arguments or "")
+                        .. func.arguments
                 end
             end
         end
