@@ -138,6 +138,13 @@ function OllamaFimBackend:body_for()
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
+
+        body.temperature = 0.7
+        body.repeat_penalty = 1.05
+        body.top_p = 0.8
+        body.top_k = 20
+        -- PRN new_qwen3coder_llama_server_legacy_body (or w/e to call it, the old endpoint to do raw FIM prompts)
+
         -- TODO! stop token isn't set! should I just remove this... I have them commented out in the other file linked here:
         body.options.stop = fim.qwen25coder.sentinel_tokens.fim_stop_tokens
         log:error("stop token: " .. vim.inspect(body.options.stop))

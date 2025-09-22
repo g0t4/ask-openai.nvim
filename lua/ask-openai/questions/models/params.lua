@@ -73,7 +73,7 @@ function M.new_qwen3coder_llama_server_chat_body(request_body) -- this is a dupl
         temperature = 0.7,
         top_p = 0.8,
         top_k = 20,
-        --   TODO! put these into predictions
+        --  FYI I inlined these values into predictions handler, it's not using chat completions endpoint so not gonna conflate the two here
     }
     return default_to_recommended(request_body, recommended)
 end
