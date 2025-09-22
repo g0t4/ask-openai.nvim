@@ -12,6 +12,7 @@ Displayer.__index = Displayer
 local hlgroup = "AskRewrite"
 vim.api.nvim_command("highlight default " .. hlgroup .. " guifg=#ccffcc ctermfg=green")
 local select_excerpt_mark_id = 11
+local explain_error_mark_id = 31
 
 local hlgroup_error = "AskRewriteError"
 vim.api.nvim_command("highlight default " .. hlgroup_error .. " guibg=#ff7777 guifg=#000000 ctermbg=red ctermfg=black")
@@ -73,17 +74,16 @@ function Displayer:explain_error(selection, text)
     for _, line in ipairs(lines) do
         table.insert(virt_lines, { { line, "AskRewriteError" } })
     end
-    vim.api.nvim_buf_set_extmark(
-        0, -- Current buffer
-        self.error_marks.namespace_id,
-        selection:start_line_0indexed(),
-        selection:start_col_0indexed(),
-        {
-            virt_text = first_line,
-            virt_lines = virt_lines,
-            virt_text_pos = "overlay",
-        }
-    )
+
+    self.error_marks:set(explain_error_mark_id, {
+        start_line = selection:start_line_0indexed(),
+        start_col = selection:start_col_0indexed(),
+
+        virt_text = first_line,
+        virt_lines = virt_lines,
+        virt_text_pos = "overlay",
+        hl_mode = "combine"
+    })
 end
 
 ---@param selection Selection
