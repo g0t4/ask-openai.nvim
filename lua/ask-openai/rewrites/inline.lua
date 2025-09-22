@@ -14,6 +14,7 @@ local api = require("ask-openai.api")
 local rag_client = require("ask-openai.rag.client")
 local LastRequest = require("ask-openai.backends.last_request")
 local human = require("devtools.humanize")
+local mcp = require("ask-openai.tools.mcp")
 
 local M = {}
 
@@ -307,21 +308,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             model = "", -- irrelevant for llama-server
             temperature = 0.3, -- 0.3 to 0.6?
 
-            -- TODO use mcp tools getter here too
-            tools = {
-                -- FYI temporary tools definition to cause error to test error messages
-                type = "function",
-                ["function"] = {
-                    name = "get_current_branch_name",
-                    description = "Get the current Git branch name",
-                    parameters = {
-                        type = "object",
-                        properties = {},
-                        required = {},
-                    },
-                },
-
-            },
+            tools = mcp.openai_tools(),
         }
 
         -- /v1/chat/completions
