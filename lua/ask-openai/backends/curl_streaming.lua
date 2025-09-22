@@ -152,7 +152,7 @@ function M.on_line_or_lines(data, extract_generated_text, frontend, request)
 
                 -- IIRC this is only ask questions currently
                 --   ? if I don't need this in rewrites, THEN, push this back down into asks via on_generated_text
-                M.on_delta_update_message_history(first_choice, frontend, request)
+                M.on_delta_update_message_history(first_choice, request)
                 frontend.handle_messages_updated()
 
                 -- only rewrite uses this... and that may not change (not sure denormalizer makes sense for rewrites)
@@ -184,7 +184,29 @@ function M.on_line_or_lines(data, extract_generated_text, frontend, request)
     end
 end
 
-function M.on_delta_update_message_history(choice, frontend, request)
+---@class OpenAIChoice
+---@field delta OpenAIChoiceDelta
+---@field finish_reason string|nil
+---@field index integer
+
+---@class OpenAIChoiceDelta
+---@field content string|nil
+---@field role string|nil
+---@field tool_calls OpenAIChoiceDeltaToolCall[]|nil
+
+---@class OpenAIChoiceDeltaToolCall
+---@field index integer
+---@field id string|nil
+---@field type string|nil
+---@field function OpenAIChoiceDeltaToolCallFunction|nil
+
+---@class OpenAIChoiceDeltaToolCallFunction
+---@field name string|nil
+---@field arguments string|nil
+
+---@param choice OpenAIChoice|nil
+---@param request any
+function M.on_delta_update_message_history(choice, request)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
     -- rebuilds message as if sent `stream: false`
     -- for message history / follow up
@@ -247,7 +269,6 @@ function M.on_delta_update_message_history(choice, frontend, request)
     if calls then
         message.tool_calls = (message.tool_calls or {})
         for _, tool_call_delta in ipairs(calls) do
-
             -- * lookup or create parsed_call
             -- TODO create a typed class for parsed_call?
             local parsed_call = message.tool_calls[tool_call_delta.index + 1]
@@ -265,11 +286,10 @@ function M.on_delta_update_message_history(choice, frontend, request)
             if func ~= nil then
                 parsed_call["function"] = parsed_call["function"] or {}
                 if func.name ~= nil then
+                    -- only first delta has name (in my testing)
                     parsed_call["function"].name = func.name
                 end
                 if func.arguments ~= nil then
-                    -- technically, need a test to validate nil check here but just do it for now
-
                     parsed_call["function"].arguments =
                         (parsed_call["function"].arguments or "")
                         .. func.arguments

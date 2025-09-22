@@ -68,7 +68,7 @@ data: [DONE]
             local deltas = text.split_lines_skip_empties(choices)
             for _, delta_json in pairs(deltas) do
                 local delta_table = vim.json.decode(delta_json)
-                curls.on_delta_update_message_history(delta_table, frontend, request)
+                curls.on_delta_update_message_history(delta_table, request)
             end
             return request, frontend
         end
