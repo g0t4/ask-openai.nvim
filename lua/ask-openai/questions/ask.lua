@@ -119,12 +119,7 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
     -- local base_url = "http://build21:8000"
     -- body.model = "" -- dont pass model, use whatever is served
 
-    local gptoss_chat_body_llama_server = {
-        messages = messages,
-        model = "gpt-oss:20b",
-        temperature = 0.3, -- 0.3 to 0.6?
-    }
-
+    -- body_overrides = models.new_gptoss_chat_body_llama_server({
     body_overrides = models.new_qwen3coder_llama_server_chat_body({
         messages = messages,
         model = "", -- irrelevant for llama-server

@@ -10,7 +10,34 @@ function default_to_recommended(request_body, recommended)
 end
 
 function M.new_gptoss_chat_body_llama_server(request_body)
+    local recommended = {
+        -- https://huggingface.co/openai/gpt-oss-20b/blob/main/generation_config.json
+        --   "bos_token_id": 199998,
+        --   "do_sample": true,
+        --   "eos_token_id": [
+        --     200002,
+        --     199999,
+        --     200012
+        --   ],
+        --   "pad_token_id": 199999,
+        --   "transformers_version": "4.55.0.dev0"
+        bos_token_id = 199998,
+        do_sample = true,
+        eos_token_id = { 200002, 199999, 200012 },
+        pad_token_id = 199999,
 
+        -- gh repo has more recommends
+        --   We recommend sampling with temperature=1.0 and top_p=1.0.
+        --   https://github.com/openai/gpt-oss?tab=readme-ov-file#recommended-sampling-parameters
+        --
+        temperature = 1.0,
+        top_p = 1.0,
+
+
+        -- TODO test/validate these settings
+        -- TODO also adjust per circumstance? (pass to override then)
+    }
+    return default_to_recommended(request_body, recommended)
 end
 
 function M.new_qwen3coder_llama_server_chat_body(request_body) -- this is a duplicate
