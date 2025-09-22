@@ -117,7 +117,6 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
     --
     -- vllm:
     -- local base_url = "http://build21:8000"
-    -- body.model = "" -- dont pass model, use whatever is served
 
     -- body_overrides = models.new_gptoss_chat_body_llama_server({
     body_overrides = models.new_qwen3coder_llama_server_chat_body({

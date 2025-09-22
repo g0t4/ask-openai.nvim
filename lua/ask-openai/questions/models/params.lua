@@ -9,7 +9,16 @@ function default_to_recommended(request_body, recommended)
     return merged
 end
 
+local function throw_if_no_messages(request_body)
+    if request_body.messages == nil then
+        error("messages are required for gpt-oss chat")
+    end
+end
+
+
 function M.new_gptoss_chat_body_llama_server(request_body)
+    throw_if_no_messages(request_body)
+
     local recommended = {
         -- https://huggingface.co/openai/gpt-oss-20b/blob/main/generation_config.json
         --   "bos_token_id": 199998,
@@ -41,6 +50,8 @@ function M.new_gptoss_chat_body_llama_server(request_body)
 end
 
 function M.new_qwen3coder_llama_server_chat_body(request_body) -- this is a duplicate
+    throw_if_no_messages(request_body)
+
     local recommended = {
         -- official recommended settings
         -- https://huggingface.co/Qwen/Qwen3-Coder-480B-A35B-Instruct/blob/main/generation_config.json
