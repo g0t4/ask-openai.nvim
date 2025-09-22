@@ -219,11 +219,6 @@ function M.on_delta_update_message_history(choice, request)
     --   oai_completions doesn't have delta, I would need to look at its examples before I try to fit it in here...
     --   I probably should have a diff aggregator for each backend's streaming format
     --   FYI I called oai_chat the 'middleend' briefly, this could be passed by the middleend to on_chunk
-    if request == nil then
-        log:trace("[WARN] on_delta not implemented")
-        -- TODO REMOVE WHEN TESTS/CODE ARE UPDATED
-        return
-    end
     if choice == nil or choice.delta == nil then
         log:trace("[WARN] skipping b/c choice/choice.delta is nil: '" .. vim.inspect(choice) .. "'")
         return
