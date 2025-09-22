@@ -233,7 +233,7 @@ function Logger:trace_stdio_read_always(label, read_error, data)
         self:trace(label .. " read_error:", read_error)
     end
     if data == "" then data = "<empty>" end
-    self:trace(label .. " data:", data)
+    self:trace(label, data)
     -- ftr... nil prints as "nil"
 end
 
