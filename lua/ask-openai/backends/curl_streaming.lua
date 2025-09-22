@@ -224,12 +224,6 @@ function M.on_delta_update_message_history(choice, request)
         -- TODO REMOVE WHEN TESTS/CODE ARE UPDATED
         return
     end
-    if type(request) == "string" and request:match("^TODO") then
-        log:trace("[WARN] on_delta not implemented for some tests")
-        -- TODO REMOVE WHEN TESTS ARE UPDATED
-        return
-    end
-
     if choice == nil or choice.delta == nil then
         log:trace("[WARN] skipping b/c choice/choice.delta is nil: '" .. vim.inspect(choice) .. "'")
         return
