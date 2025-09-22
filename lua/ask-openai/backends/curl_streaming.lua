@@ -210,15 +210,7 @@ function M.on_delta_update_message_history(choice, request)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
     -- rebuilds message as if sent `stream: false`
     -- for message history / follow up
-    -- TODO later, use to update the ChatWindow
-    --    == rip out the original pathways that called on_generated_text / etc
-    --    KEEP DeltaArrived signal though (refreshes/rebuilds ChatWindow)
 
-
-    -- FYI for now lets only do this for oai_chat (which uses delta in the choice)...
-    --   oai_completions doesn't have delta, I would need to look at its examples before I try to fit it in here...
-    --   I probably should have a diff aggregator for each backend's streaming format
-    --   FYI I called oai_chat the 'middleend' briefly, this could be passed by the middleend to on_chunk
     if choice == nil or choice.delta == nil then
         log:trace("[WARN] skipping b/c choice/choice.delta is nil: '" .. vim.inspect(choice) .. "'")
         return
