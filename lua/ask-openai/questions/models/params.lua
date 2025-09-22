@@ -53,7 +53,7 @@ function M.new_qwen3coder_llama_server_chat_body(request_body) -- this is a dupl
     throw_if_no_messages(request_body)
 
     local recommended = {
-        -- official recommended settings
+        -- official recommended settings (for transformers):
         -- https://huggingface.co/Qwen/Qwen3-Coder-480B-A35B-Instruct/blob/main/generation_config.json
         --   "pad_token_id": 151643,
         --   "do_sample": true,
@@ -66,15 +66,14 @@ function M.new_qwen3coder_llama_server_chat_body(request_body) -- this is a dupl
         --   "top_p": 0.8,
         --   "top_k": 20
         --
-        --     --   TODO! are these all the correct param names and location for llama-server?
-        pad_token_id = 151643, -- can't find
-        do_sample = true, -- can't find, I believe this is just on by default as llama-server has samples plural in __verbose output
-        eos_token_id = { 151645, 151643 }, -- can't find
-        repeat_penalty = 1.05, -- confirmed
-        temperature = 0.7, -- confirmed
-        top_p = 0.8, -- confirmed
-        top_k = 20, -- confirmed
-        --     --   TODO! put these into predictions AND ask questions ...
+        -- pad_token_id = 151643, -- no param in llama-server
+        -- do_sample = true, -- no param in llama-server
+        -- eos_token_id = { 151645, 151643 }, -- no param in llama-server
+        repeat_penalty = 1.05,
+        temperature = 0.7,
+        top_p = 0.8,
+        top_k = 20,
+        --   TODO! put these into predictions
     }
     return default_to_recommended(request_body, recommended)
 end
