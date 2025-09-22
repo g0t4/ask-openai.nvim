@@ -60,7 +60,7 @@ end
 ---@return string
 function ChatMessage:dump_text()
     local lines = {
-        ansi.white_bold(self.role .. ":") .. " " .. self.content,
+        ansi.white_bold(self.role .. ":") .. " " .. tostring(self.content or ""),
     }
     -- include fields not explicitly in the template above
     for key, v in pairs(self) do
