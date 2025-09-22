@@ -210,7 +210,7 @@ data: [DONE]
             -- FYI see llama-server-tool-call.md for full response capture
             local choices = [[
                 {"finish_reason":null,"index":0,"delta":{"role":"assistant","content":null}}
-                {"finish_reason":null,"index":0,"delta":{"tool_calls":[{"index":0,"id":"v2dhUNilw8En9qFqCAHEz5Ow0GnQsclc","type":"function","function":{"name":"run_command","arguments":""}}]}}
+                {"finish_reason":null,"index":0,"delta":{"tool_calls":[{"index":0,"id":"CALL_ID","type":"function","function":{"name":"run_command","arguments":""}}]}}
                 {"finish_reason":null,"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\""}}]}}
                 {"finish_reason":null,"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"command"}}]}}
                 {"finish_reason":null,"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\":"}}]}}
@@ -219,6 +219,25 @@ data: [DONE]
                 {"finish_reason":null,"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"}"}}]}}
                 {"finish_reason":"tool_calls","index":0,"delta":{}}
             ]]
+
+            local request, frontend = call_on_delta(choices)
+            should.be_equal(1, #request.messages)
+
+            local msg = request.messages[1]
+            should.be_equal(0, msg.index) -- do I care about this?
+            should.be_equal(nil, msg.content) -- do I care about this?
+            should.be_equal("assistant", msg.role)
+            should.be_equal("tool_calls", msg.finish_reason)
+
+            -- * validate accumulated tool call
+            should.be_equal(1, #msg.tool_calls)
+            call = msg.tool_calls[1]
+            should.be_equal("CALL_ID", call.id)
+            should.be_equal(0, call.index)
+            should.be_equal("function", call.type)
+            func = call["function"]
+            should.be_equal("run_command", func.name)
+            should.be_equal('{"command":"pwd"}', func.arguments)
         end)
 
         it("llama-server tool calls - TODO gptoss models + harmony?", function()

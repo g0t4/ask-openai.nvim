@@ -263,7 +263,7 @@ function M.on_delta_update_message_history(choice, request)
             if func ~= nil then
                 parsed_call["function"] = parsed_call["function"] or {}
                 if func.name ~= nil then
-                    -- only first delta has name (in my testing)
+                    -- first delta has full name in my testing
                     parsed_call["function"].name = func.name
                 end
                 if func.arguments ~= nil then
