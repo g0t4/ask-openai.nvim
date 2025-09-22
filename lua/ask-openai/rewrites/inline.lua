@@ -308,7 +308,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             model = "", -- irrelevant for llama-server
             temperature = 0.3, -- 0.3 to 0.6?
 
-            tools = mcp.openai_tools(),
+            -- tools = mcp.openai_tools(),
         }
 
         -- /v1/chat/completions
