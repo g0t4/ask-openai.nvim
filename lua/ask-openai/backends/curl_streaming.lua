@@ -226,7 +226,6 @@ function M.on_delta_update_message_history(choice, frontend, request)
             role = choice.delta.role,
         }
         -- assumes contiguous indexes, s/b almost always 0 index only, 1 too with dual tool call IIRC
-        -- TODO add tests for index/role lookups too and be safe about this
         request.messages[msg_lookup] = message
     end
 
@@ -234,7 +233,6 @@ function M.on_delta_update_message_history(choice, frontend, request)
         if choice.delta.content == vim.NIL then
             log:error("TODO FIND OUT IF THIS MATTERS - my guess is NO but still check - content is null (in json) or vim.NIL in parsed on first delta (when using llama-server + gpt-oss)?",
                 vim.inspect(choice))
-            -- TODO return?
         else
             message.content = (message.content or "") .. choice.delta.content
         end
@@ -242,8 +240,6 @@ function M.on_delta_update_message_history(choice, frontend, request)
 
     if choice.finish_reason ~= nil then
         -- FYI this is vim.NIL on first too
-        -- TODO is finish_reason per message OR the entire request!?
-        -- PRN throw if finish_reason already set?
         message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
     end
 
@@ -251,10 +247,8 @@ function M.on_delta_update_message_history(choice, frontend, request)
     if calls then
         message.tool_calls = (message.tool_calls or {})
         for _, call_delta in ipairs(calls) do
-            -- TODO test stream case w/ vllm b/c non stream case is easier
-            -- for now just assume entirely new tool call each time... will fix this with a test of streaming later
+            -- TODO create a typed class for parsed_call?
             local parsed_call = message.tool_calls[call_delta.index + 1]
-            -- PRN lookup message by index # and dont rely on contiguous index values?
             if parsed_call == nil then
                 parsed_call = {
                     -- assuming these are always on first delta per message
@@ -264,7 +258,6 @@ function M.on_delta_update_message_history(choice, frontend, request)
                 }
                 table.insert(message.tool_calls, parsed_call)
             end
-            -- create a typed class for parsed_call?
             local func = call_delta["function"]
             if func ~= nil then
                 parsed_call["function"] = parsed_call["function"] or {}
