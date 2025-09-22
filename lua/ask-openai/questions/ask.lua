@@ -124,12 +124,12 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
         model = "gpt-oss:20b",
         temperature = 0.3, -- 0.3 to 0.6?
     }
-    local qwen3coder_chat_body_llama_server = models.new_qwen3coder_llama_server_chat_body({
+
+    body_overrides = models.new_qwen3coder_llama_server_chat_body({
         messages = messages,
         model = "", -- irrelevant for llama-server
         -- tools = mcp.openai_tools(),
     })
-    body_overrides = qwen3coder_chat_body_llama_server
 
     if use_tools then
         log:info("USING TOOLS")
