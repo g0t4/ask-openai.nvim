@@ -10,10 +10,13 @@ local ChatParams = require("ask-openai.questions.chat_params")
 local Selection = require("ask-openai.helpers.selection")
 local CurrentContext = require("ask-openai.prediction.context")
 local files = require("ask-openai.helpers.files")
-
-local M = {}
+local models = require("ask-openai.questions.models.params")
 require("ask-openai.helpers.buffers")
 
+
+
+
+local M = {}
 
 function M.send_question(user_prompt, selected_text, file_name, use_tools, entire_file)
     use_tools = use_tools or false
@@ -121,40 +124,11 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
         model = "gpt-oss:20b",
         temperature = 0.3, -- 0.3 to 0.6?
     }
-    local qwen3coder_chat_body_llama_server = {
-
+    local qwen3coder_chat_body_llama_server = models.new_qwen3coder_llama_server_chat_body({
         messages = messages,
         model = "", -- irrelevant for llama-server
-
-        -- official recommended settings
-        -- https://huggingface.co/Qwen/Qwen3-Coder-480B-A35B-Instruct/blob/main/generation_config.json
-        --   "pad_token_id": 151643,
-        --   "do_sample": true,
-        --   "eos_token_id": [
-        --     151645,
-        --     151643
-        --   ],
-        --   "repetition_penalty": 1.05,
-        --   "temperature": 0.7,
-        --   "top_p": 0.8,
-        --   "top_k": 20
-        --
-        --   TODO test these official recommendations
-        --   TODO! are these all the correct param names and location for llama-server?
-        --   TODO! put these into predictions AND ask questions ...
-        --   PRN ideally consolidate into a central location if they work well across all scenarios
-        pad_token_id = 151643, -- this is the correct pad token for Qwen3-Coder
-        do_sample = true,
-        eos_token_id = { 151645, 151643 },
-        repetition_penalty = 1.05,
-        temperature = 0.7,
-        top_p = 0.8,
-        top_k = 20,
-
         -- tools = mcp.openai_tools(),
-    }
-
-    -- body_overrides = qwen25_body_overrides
+    })
     body_overrides = qwen3coder_chat_body_llama_server
 
     if use_tools then
