@@ -242,5 +242,46 @@ data: [DONE]
 
         it("llama-server tool calls - TODO gptoss models + harmony?", function()
         end)
+
+        it("llama-server qwen3coder30b leaking <tool_call>\n<function name=... - from mixed content + tool_call in one response", function()
+            -- FYI see llama-server-tool-call.md for full response capture
+            local sses_json = vim.fn.readfile("lua/ask-openai/tools/tests/captures/weather-mixed-content-toolcall-sses.json")
+            -- vim.print(ss_events)
+            local frontend = FakeFrontend:new()
+            local request = {}
+
+            local sses = vim.iter(sses_json)
+                :map(function(line)
+                    return vim.json.decode(line, {})
+                end)
+                :map(function(sse)
+                    return sse.choices
+                end)
+                :each(function(sse)
+                    vim.print(sse[1])
+                    curls.on_delta_update_message_history(sse[1], request)
+                end)
+            -- :totable()
+
+
+
+            should.be_equal(1, #request.messages)
+
+            local msg = request.messages[1]
+            should.be_equal(0, msg.index) -- do I care about this?
+            -- should.be_equal(nil, msg.content) -- do I care about this?
+            -- should.be_equal("assistant", msg.role)
+            -- should.be_equal("tool_calls", msg.finish_reason)
+            --
+            -- -- * validate accumulated tool call
+            -- should.be_equal(1, #msg.tool_calls)
+            -- call = msg.tool_calls[1]
+            -- should.be_equal("CALL_ID", call.id)
+            -- should.be_equal(0, call.index)
+            -- should.be_equal("function", call.type)
+            -- func = call["function"]
+            -- should.be_equal("run_command", func.name)
+            -- should.be_equal('{"command":"pwd"}', func.arguments)
+        end)
     end)
 end)
