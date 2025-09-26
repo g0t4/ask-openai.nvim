@@ -271,18 +271,19 @@ data: [DONE]
             should.be_equal(0, msg.index)
             -- TODO this is current behavior... next I want to change the behavior to strip the <tool_call>... and after part
             should.be_equal("Hi there! Let me check the current weather for Washington DC for you.\n<tool_call>\n<function=get_current_weather", msg.content)
-            -- should.be_equal("assistant", msg.role)
-            -- should.be_equal("tool_calls", msg.finish_reason)
+            should.be_equal("assistant", msg.role)
+            should.be_equal("tool_calls", msg.finish_reason)
             --
             -- -- * validate accumulated tool call
-            -- should.be_equal(1, #msg.tool_calls)
-            -- call = msg.tool_calls[1]
-            -- should.be_equal("CALL_ID", call.id)
-            -- should.be_equal(0, call.index)
-            -- should.be_equal("function", call.type)
-            -- func = call["function"]
-            -- should.be_equal("run_command", func.name)
-            -- should.be_equal('{"command":"pwd"}', func.arguments)
+            should.be_equal(1, #msg.tool_calls)
+            call = msg.tool_calls[1]
+            should.be_equal("CALL_ID", call.id)
+            should.be_equal(0, call.index)
+            should.be_equal("function", call.type)
+            func = call["function"]
+            should.be_equal("get_current_weather", func.name)
+            -- cat lua/ask-openai/tools/tests/captures/weather-mixed-content-toolcall-sses.json | jq ".choices[0].delta.tool_calls[0].function.arguments" -r | grep -v null | string join ""
+            should.be_equal('{"location":"Washington DC"}', func.arguments)
         end)
     end)
 end)
