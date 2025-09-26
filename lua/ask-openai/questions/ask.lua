@@ -28,8 +28,8 @@ function M.send_question(user_prompt, selected_text, file_name, use_tools, entir
         " You can respond with markdown and it will show up rendered in neovim in a popup window. Concise is best. Longer responses, please add a TLDR. Though, it would be best to just respond with the TLDR, only! Wes will ask for clarification if needed."
 
     if use_tools then
-        -- devstral is hesitant to use tools w/o this:
-        system_prompt = system_prompt .. " If the user requests that you use tools, do not refuse."
+        -- devstral is hesitant to use tools w/o this: " If the user requests that you use tools, do not refuse."
+        system_prompt = system_prompt .. "For tool use, stay in CWD (" .. vim.fn.getcwd() .. ") unless otherwise specified. "
     end
     local always_include = {
         yanks = true,
