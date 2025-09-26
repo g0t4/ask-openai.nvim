@@ -244,6 +244,9 @@ data: [DONE]
         end)
 
         it("llama-server qwen3coder30b leaking <tool_call>\n<function name=... - from mixed content + tool_call in one response", function()
+            -- join content together
+            --  cat lua/ask-openai/tools/tests/captures/weather-mixed-content-toolcall-sses.json | jq ".choices[0].delta.content" -r | grep -v null | string join ""
+
             -- FYI see llama-server-tool-call.md for full response capture
             local sses_json = vim.fn.readfile("lua/ask-openai/tools/tests/captures/weather-mixed-content-toolcall-sses.json")
             -- vim.print(ss_events)
@@ -258,18 +261,16 @@ data: [DONE]
                     return sse.choices
                 end)
                 :each(function(sse)
-                    vim.print(sse[1])
+                    -- vim.print(sse[1])
                     curls.on_delta_update_message_history(sse[1], request)
                 end)
-            -- :totable()
-
-
 
             should.be_equal(1, #request.messages)
 
             local msg = request.messages[1]
-            should.be_equal(0, msg.index) -- do I care about this?
-            -- should.be_equal(nil, msg.content) -- do I care about this?
+            should.be_equal(0, msg.index)
+            -- TODO this is current behavior... next I want to change the behavior to strip the <tool_call>... and after part
+            should.be_equal("Hi there! Let me check the current weather for Washington DC for you.\n<tool_call>\n<function=get_current_weather", msg.content)
             -- should.be_equal("assistant", msg.role)
             -- should.be_equal("tool_calls", msg.finish_reason)
             --
