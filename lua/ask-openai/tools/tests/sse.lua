@@ -244,6 +244,10 @@ data: [DONE]
         end)
 
         it("llama-server qwen3coder30b leaking <tool_call>\n<function name=... - from mixed content + tool_call in one response", function()
+            -- FYI this is just temporary until the llama-server backend can detect and not leak the start of a tool_call
+            -- part of issue IIUC is that hermes tool call format is triggered (in part b/c of how they prompt the model)
+            --  and when streaming results, after content starts, it doesn't hold back content deltas, even if they start matching the hermes tool call regex
+            --  mixed content AFAICT always ends with the tool call in my testing
             -- join content together
             --  cat lua/ask-openai/tools/tests/captures/weather-mixed-content-toolcall-sses.json | jq ".choices[0].delta.content" -r | grep -v null | string join ""
 
@@ -285,5 +289,10 @@ data: [DONE]
             -- cat lua/ask-openai/tools/tests/captures/weather-mixed-content-toolcall-sses.json | jq ".choices[0].delta.tool_calls[0].function.arguments" -r | grep -v null | string join ""
             should.be_equal('{"location":"Washington DC"}', func.arguments)
         end)
+
+        -- TODO! other variations I've encounterd and that I need to test for
+        -- TODO!  <function name=...  alone
+        -- TODO!  <tool_call>  w/o <function after
+        -- TODO dual tool calls back to back
     end)
 end)
