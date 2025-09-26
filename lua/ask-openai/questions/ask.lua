@@ -136,7 +136,7 @@ end
 
 function M.send_messages()
     M.hack_lines_before_request = M.chat_window.buffer:get_line_count()
-    local request = backend.curl_for(M.thread:next_body(), M.thread.base_url, M)
+    local request = backend.curl_for(M.thread:next_curl_request_body(), M.thread.base_url, M)
     M.thread:set_last_request(request)
 end
 
