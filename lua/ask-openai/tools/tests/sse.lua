@@ -277,7 +277,7 @@ data: [DONE]
             local content_only = "Hi there! Let me check the current weather for Washington DC for you."
             local tool_call_only = "\n<tool_call>\n<function=get_current_weather"
             local mixed = content_only .. tool_call_only
-            should.be_equal(mixed, msg.original_content)
+            should.be_equal(mixed, msg.verbatim_content)
             should.be_equal(content_only, msg.content)
 
             should.be_equal("assistant", msg.role)
