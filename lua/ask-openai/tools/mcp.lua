@@ -202,6 +202,13 @@ function openai_tool(mcp_tool)
     }
 end
 
+---@param tool_name string
+---@return boolean
+function M.handles_tool(tool_name)
+    local tool = M.tools_available[tool_name]
+    return tool ~= nil
+end
+
 M.send_tool_call = function(tool_call, callback)
     -- tool call: {
     --   ["function"] = {

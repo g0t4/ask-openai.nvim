@@ -1,6 +1,7 @@
 local buffers = require("ask-openai.helpers.buffers")
 local log = require("ask-openai.logs.logger").predictions()
 local mcp = require("ask-openai.tools.mcp")
+local tool_router = require("ask-openai.tools.router")
 local backend = require("ask-openai.backends.oai_chat")
 local agentica = require("ask-openai.backends.models.agentica")
 local ChatWindow = require("ask-openai.questions.chat_window")
@@ -332,6 +333,7 @@ function M.call_tools()
         for _, tool_call in ipairs(message.tool_calls or {}) do
             -- log:jsonify_info("tool:", tool_call)
             -- log:trace("tool:", vim.inspect(tool))
+            -- TODO fix type annotations, ToolCall is wrong (has response/response.message crap on it
             -- tool:
             -- {
             --   ["function"] = {
@@ -343,8 +345,7 @@ function M.call_tools()
             --   type = "function"
             -- }
 
-            ---@param tool_call ToolCall
-            mcp.send_tool_call(tool_call, function(mcp_response)
+            tool_router.send_tool_call_router(tool_call, function(mcp_response)
                 tool_call.response = mcp_response
                 -- log:jsonify_info("mcp_response:", mcp_response)
                 -- log:trace("mcp_response:", vim.inspect(mcp_response))
