@@ -233,6 +233,7 @@ function M.on_delta_update_message_history(choice, request)
             log:error("TODO FIND OUT IF THIS MATTERS - my guess is NO but still check - content is null (in json) or vim.NIL in parsed on first delta (when using llama-server + gpt-oss)?",
                 vim.inspect(choice))
         else
+            -- by tracking verbatim_content, I can trim the end every single time and if it is not a full match it will show back up once it's past the match point
             message.verbatim_content = (message.verbatim_content or "" ) .. choice.delta.content
         end
     end
