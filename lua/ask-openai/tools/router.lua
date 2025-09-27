@@ -6,8 +6,8 @@ local M = {}
 ---@param callback fun(response: table)
 function M.send_tool_call_router(tool_call, callback)
     local tool_name = tool_call["function"].name
-    local handles = mcp.handles_tool(tool_name)
-    if handles then
+
+    if mcp.handles_tool(tool_name) then
         mcp.send_tool_call(tool_call, callback)
         return
     end
