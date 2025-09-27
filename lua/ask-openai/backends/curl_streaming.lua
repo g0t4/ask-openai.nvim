@@ -223,6 +223,7 @@ function M.on_delta_update_message_history(choice, request)
         message = {
             index = choice.index,
             role = choice.delta.role,
+            verbatim_content = "",
         }
         -- assumes contiguous indexes, s/b almost always 0 index only, 1 too with dual tool call IIRC
         request.messages[msg_lookup] = message
@@ -234,7 +235,7 @@ function M.on_delta_update_message_history(choice, request)
                 vim.inspect(choice))
         else
             -- by tracking verbatim_content, I can trim the end every single time and if it is not a full match it will show back up once it's past the match point
-            message.verbatim_content = (message.verbatim_content or "" ) .. choice.delta.content
+            message.verbatim_content = (message.verbatim_content or "") .. choice.delta.content
         end
     end
 
@@ -243,11 +244,9 @@ function M.on_delta_update_message_history(choice, request)
         message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
     end
 
-    message.content = message.verbatim_content
-    -- strip <tool_call> on last line
-    if message.content and message.content:gsub("\n<tool_call>.*", "") then
-        -- crap cannot strip this until we have the full friggin match but there's no guarnatee that the name doesn't have say another part of it coming...
-        message.content = message.content:gsub("\n<tool_call>\n<function=[%w_]+", "")
+    message.content = message.verbatim_content:gsub("\n<tool_call>\n<function=[%w_]+", "")
+    if message.content ~= message.verbatim_content then
+        log:error("stripping LEAKED TOOL CALL!")
     end
 
     -- vim.print("original", message.original_content)
