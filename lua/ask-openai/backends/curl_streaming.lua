@@ -233,7 +233,7 @@ function M.on_delta_update_message_history(choice, request)
             log:error("TODO FIND OUT IF THIS MATTERS - my guess is NO but still check - content is null (in json) or vim.NIL in parsed on first delta (when using llama-server + gpt-oss)?",
                 vim.inspect(choice))
         else
-            message.content = (message.content or "") .. choice.delta.content
+            message.original_content = (message.original_content or "" ) .. choice.delta.content
         end
     end
 
@@ -242,13 +242,15 @@ function M.on_delta_update_message_history(choice, request)
         message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
     end
 
+    message.content = message.original_content
     -- strip <tool_call> on last line
     if message.content and message.content:gsub("\n<tool_call>.*", "") then
         -- crap cannot strip this until we have the full friggin match but there's no guarnatee that the name doesn't have say another part of it coming...
-        message.stripped_content = message.content:gsub("\n<tool_call>\n<function=[%w_]+", "")
+        message.content = message.content:gsub("\n<tool_call>\n<function=[%w_]+", "")
     end
 
-    -- vim.print(message.content)
+    -- vim.print("original", message.original_content)
+    -- vim.print("truncated", message.content)
 
     local calls = choice.delta.tool_calls
     if calls then
