@@ -213,15 +213,18 @@ M.send_tool_call = function(tool_call, callback)
     --   type = "function"
     -- }
 
-    local args = tool_call["function"].arguments
-    local args_decoded = vim.json.decode(args)
-    -- log:trace("args_decoded: " .. vim.inspect(args_decoded))
     local name = tool_call["function"].name
     local tool = M.tools_available[name]
     if tool == nil then
         log:trace("tool not found: " .. name)
         return
     end
+
+    local args = tool_call["function"].arguments
+    -- TODO ideally the caller would already transform json into lua tables
+    -- TODO and have parsed XML instead of JSON if that is what a model responds with
+    local args_decoded = vim.json.decode(args)
+    -- log:trace("args_decoded: " .. vim.inspect(args_decoded))
 
     -- PRN timeout mechanism? might be a good spot to wrap an async timer to check back (wait for the need to arise)
 
