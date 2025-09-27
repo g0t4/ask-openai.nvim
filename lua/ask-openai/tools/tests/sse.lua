@@ -274,7 +274,12 @@ data: [DONE]
             local msg = request.messages[1]
             should.be_equal(0, msg.index)
             -- TODO this is current behavior... next I want to change the behavior to strip the <tool_call>... and after part
-            should.be_equal("Hi there! Let me check the current weather for Washington DC for you.\n<tool_call>\n<function=get_current_weather", msg.content)
+            local content_only = "Hi there! Let me check the current weather for Washington DC for you."
+            local tool_call_only = "\n<tool_call>\n<function=get_current_weather"
+            local mixed = content_only .. tool_call_only
+            should.be_equal(mixed, msg.content)
+            should.be_equal(content_only, msg.stripped_content)
+
             should.be_equal("assistant", msg.role)
             should.be_equal("tool_calls", msg.finish_reason)
             --

@@ -242,6 +242,14 @@ function M.on_delta_update_message_history(choice, request)
         message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
     end
 
+    -- strip <tool_call> on last line
+    if message.content and message.content:gsub("\n<tool_call>.*", "") then
+        -- crap cannot strip this until we have the full friggin match but there's no guarnatee that the name doesn't have say another part of it coming...
+        message.stripped_content = message.content:gsub("\n<tool_call>\n<function=[%w_]+", "")
+    end
+
+    -- vim.print(message.content)
+
     local calls = choice.delta.tool_calls
     if calls then
         message.tool_calls = (message.tool_calls or {})
