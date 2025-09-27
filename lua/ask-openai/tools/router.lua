@@ -1,4 +1,5 @@
 local mcp = require("ask-openai.tools.mcp")
+local inprocess = require("ask-openai.tools.inprocess")
 
 local M = {}
 
@@ -9,6 +10,11 @@ function M.send_tool_call_router(tool_call, callback)
 
     if mcp.handles_tool(tool_name) then
         mcp.send_tool_call(tool_call, callback)
+        return
+    end
+
+    if inprocess.handles_tool(tool_name) then
+        inprocess.send_tool_call(tool_call, callback)
         return
     end
 
