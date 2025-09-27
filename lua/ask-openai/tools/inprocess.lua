@@ -3,6 +3,11 @@ local M = {}
 -- In-process tools would be added here
 -- For now, we'll just have the basic structure
 
+local function hello_new_tool()
+    print("Hello new tool!")
+    return "Hello from the new in-process tool!"
+end
+
 M.tools_available = {
     hello_new_tool = {
         name = "hello_new_tool",
@@ -29,8 +34,9 @@ function M.send_tool_call(tool_call, callback)
     local name = tool_call["function"].name
     
     if name == "hello_new_tool" then
+        local result = hello_new_tool()
         local response = {
-            result = "Hello from the new in-process tool!"
+            result = result
         }
         callback(response)
         return
