@@ -244,6 +244,7 @@ function M.on_delta_update_message_history(choice, request)
         message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
     end
 
+    -- TODO what other tool_call styles are left in, there were others
     message.content = message.verbatim_content:gsub("\n<tool_call>\n<function=[%w_]+", "")
     if message.content ~= message.verbatim_content then
         log:error("stripping LEAKED TOOL CALL!")
