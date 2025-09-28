@@ -30,10 +30,15 @@ more examples from Claude's log files!
  *** working examples (manual testing)
 
 ```
-# get tools/list (modify to send a diff one-off message)
+# list tools:
+echo '{ "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {} }'  \
+    | npx ~/repos/github/g0t4/mcp-server-commands/build/index.js | jq
 
-echo '{ "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {} }' | npx ~/repos/github/g0t4/mcp-server-commands/build/index.js | jq
+# call tool:
+echo '{ "jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": { "name": "run_command", "arguments": { "command": "ls" } }}' \
+    | npx ~/repos/github/g0t4/mcp-server-commands/build/index.js | jq
 ```
+
    tools/list
      { "jsonrpc": "2.0", "id": 4, "method": "tools/list", "params": {} }
      { "jsonrpc": "2.0", "id": 1, "method": "tools/list" }

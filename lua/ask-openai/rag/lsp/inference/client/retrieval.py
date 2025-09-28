@@ -111,9 +111,11 @@ async def semantic_grep(
             scores.extend(_scores[0])
             ids.extend(_ids[0])
     else:
+        # TODO? rework to use languages for one language?
         dataset = datasets.for_file(args.currentFileAbsolutePath, vim_filetype=args.vimFiletype)
         if dataset is None:
-            logger.error(f"No dataset for {args.currentFileAbsolutePath}")
+            logger.error(f"No dataset for currentFileAbsolutePath='{args.currentFileAbsolutePath}' and vim_filetype='{args.vimFiletype}'")
+
             # return {"failed": True, "error": f"No dataset for {current_file_abs}"} # TODO return failure?
             raise Exception(f"No dataset for {args.currentFileAbsolutePath}")
 

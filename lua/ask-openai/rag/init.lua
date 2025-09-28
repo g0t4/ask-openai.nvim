@@ -31,7 +31,8 @@ function M.setup_lsp()
                     "lsp.server",
                 },
                 cmd_cwd = os.getenv("HOME") .. "/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag",
-                filetypes = rag_client.get_filetypes_for_workspace(),
+                -- filetypes = rag_client.get_filetypes_for_workspace(),
+                -- filetypes = { '*' }, -- not set == all filetypes
                 root_dir = require("lspconfig.util").root_pattern(".git", "."),
             },
         }

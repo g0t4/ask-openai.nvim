@@ -185,8 +185,10 @@ class Datasets:
         # PRN might wanna move this to the dataset level to update it on updates to a doc in a dataset
         return self._chunks_by_faiss_id.get(faiss_id)
 
-    def for_file(self, file_path: str | Path, vim_filetype: str | None = None):
-        language_extension = Path(file_path).suffix.removeprefix('.') or vim_filetype
+    def for_file(self, file_path: str | Path | None = None, vim_filetype: str | None = None):
+        language_extension = vim_filetype  # use if no file_path passed
+        if file_path is not None:
+            language_extension = Path(file_path).suffix.removeprefix('.') or vim_filetype
         if language_extension == '' or language_extension is None:
             logger.error("No file suffix and no vim_filetype, can't find dataset!")
             return None

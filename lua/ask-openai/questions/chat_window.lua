@@ -8,7 +8,12 @@ local ChatWindow = {}
 
 function ChatWindow:new()
     self = setmetatable({}, { __index = ChatWindow })
-    local bufnr = vim.api.nvim_create_buf(false, true)
+
+    local listed_buffer = false
+    -- must be scratch, otherwise have to save contents or trash it on exit
+    local scratch_buffer = true
+    local bufnr = vim.api.nvim_create_buf(listed_buffer, scratch_buffer)
+
     self.buffer_number = bufnr
     self.buffer = BufferController:new(self.buffer_number)
     vim.api.nvim_buf_set_name(self.buffer_number, 'Question Response')
@@ -18,27 +23,53 @@ function ChatWindow:new()
     return self
 end
 
-function ChatWindow:open()
-    local height_percent = 80
-    local width_percent = 50
-
-    local screen_lines = vim.api.nvim_get_option_value('lines', {})
-    local screen_columns = vim.api.nvim_get_option_value('columns', {})
-    local win_height = math.ceil(height_percent / 100 * screen_lines)
-    local win_width = math.ceil(width_percent / 100 * screen_columns)
-    local top_is_at_row = screen_lines / 2 - win_height / 2
-    local left_is_at_col = screen_columns / 2 - win_width / 2
-    self.winid = vim.api.nvim_open_win(self.buffer_number, true, {
-        relative = 'editor',
+local function centered_window()
+    -- TODO? minimum width? basically a point at which the window is allowed to cover more than 50% wide and 80% tall
+    local win_height = math.ceil(0.8 * vim.o.lines)
+    local win_width = math.ceil(0.5 * vim.o.columns)
+    local top_is_at_row = math.floor((vim.o.lines - win_height) / 2)
+    local left_is_at_col = math.floor((vim.o.columns - win_width) / 2)
+    return {
+        relative = "editor",
         width = win_width,
         height = win_height,
         row = top_is_at_row,
         col = left_is_at_col,
-        style = 'minimal',
-        border = 'single'
-    })
+        style = "minimal",
+        border = "single",
+    }
+end
+
+function ChatWindow:open()
+    local win = vim.api.nvim_open_win(self.buffer_number, true, centered_window())
+    self.winid = win
+
     -- set FileType after creating window, otherwise the default wrap option (vim.o.wrap) will override any ftplugin mods to wrap (and the same for other window-local options like wrap)
     vim.api.nvim_set_option_value('filetype', 'markdown', { buf = self.buffer_number })
+
+    -- manually trigger LSP attach, b/c scratch buffers are normally not auto attached
+    local client = vim.lsp.get_clients({ name = "ask_language_server" })[1]
+    if client then vim.lsp.buf_attach_client(self.buffer_number, client.id) end
+
+    local gid = vim.api.nvim_create_augroup("ChatWindow_" .. win, { clear = true })
+
+    vim.api.nvim_create_autocmd("VimResized", {
+        group = gid,
+        callback = function()
+            if not vim.api.nvim_win_is_valid(win) then return end
+            vim.api.nvim_win_set_config(win, centered_window())
+        end,
+    })
+
+    -- when THIS window closes, drop its autocmds
+    vim.api.nvim_create_autocmd("WinClosed", {
+        group = gid,
+        pattern = tostring(win),
+        callback = function()
+            pcall(vim.api.nvim_del_augroup_by_id, gid)
+        end,
+        once = true,
+    })
 end
 
 function ChatWindow:ensure_open()

@@ -288,13 +288,19 @@ function M.handle_messages_updated()
 
             -- * tool result
             if call.response then
-                for _, tool_content in ipairs(call.response.result.content) do
-                    table.insert(new_lines, tool_content.name)
-                    if tool_content.type == "text" then
-                        table_insert_split_lines(new_lines, tool_content.text)
-                    else
-                        table.insert(new_lines, "  unexpected content type: " .. tool_content.type)
+                if call.response.result.content then
+                    for _, tool_content in ipairs(call.response.result.content) do
+                        table.insert(new_lines, tool_content.name)
+                        if tool_content.type == "text" then
+                            table_insert_split_lines(new_lines, tool_content.text)
+                        else
+                            table.insert(new_lines, "  unexpected content type: " .. tool_content.type)
+                        end
                     end
+                else
+                    -- TODO show inprocess tooling outputs in CHAT user window (this is not building a request to LLM)
+                    --    TODO content is just an MCP construct
+                    --    TODO summarize? or otherwise show?
                 end
             end
 
