@@ -38,8 +38,13 @@ Wes will ask for clarification if needed.
         system_prompt = system_prompt .. "For tool use, stay in CWD ("
             .. vim.fn.getcwd()
             .. ") unless otherwise specified." .. [[
-
+Here are noteworthy commands you have access to:
+- fd, rg, gsed, gawk, jq, yq, httpie
+- exa, icdiff, ffmpeg, imagemagick, fzf
+If there's a tool that would be helpful, just ask me to get it installed/added!
 ]]
+        -- TODO on mac show diff tools: i.e. gsed and gawk when on mac where that would be useful to know
+        -- TODO on linux show awk/sed (maybe mention GNU variant)
     end
     local always_include = {
         yanks = true,
