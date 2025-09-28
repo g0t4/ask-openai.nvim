@@ -15,26 +15,25 @@ M.tools_available = {
             name = "rag_query",
             parameters = {
                 properties = {
-                    -- TODO multiple filetypes?
                     filetype = {
                         type = "string",
-                        description = "(optional) limit matches to a vim compatible filetype. Leave unset for all filetypes in a workspace."
+                        description = "limit matches to a vim compatible filetype. Leave unset for all filetypes in a workspace."
                     },
                     query = {
                         type = "string",
-                        description = "The query to send to the RAG system"
+                        description = "embeddings query"
                     },
                     instruct = {
                         type = "string",
-                        description = "Optional instruct to provide context for the query"
+                        description = "instructions for the query"
                     },
                     top_k = {
                         type = "number",
-                        description = "Top K results to return"
+                        description = "number of results to return (post reranking)"
                     },
                     embed_top_k = {
                         type = "number",
-                        description = "Number of embeddings to consider for reranking"
+                        description = "number of embeddings to consider for reranking"
                     },
                 },
                 required = { "query" },
@@ -57,7 +56,7 @@ function M._context_query(parsed_args, callback)
     ---@type LSPRagQueryRequest
     local lsp_rag_request = {
         query = parsed_args.query,
-        instruct = parsed_args.instruct or "",
+        instruct = parsed_args.instruct or "Find relevant code for the AI agent's query",
         -- TODO make currentFileAbsolutePath nil-able instead of empty string
         currentFileAbsolutePath = "",
         -- TODO NEED TO make sure no issues using filetype vs extension....
