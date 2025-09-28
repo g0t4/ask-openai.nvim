@@ -35,7 +35,11 @@ Wes will ask for clarification if needed.
 
     if use_tools then
         -- devstral is hesitant to use tools w/o this: " If the user requests that you use tools, do not refuse."
-        system_prompt = system_prompt .. "For tool use, stay in CWD (" .. vim.fn.getcwd() .. ") unless otherwise specified. "
+        system_prompt = system_prompt .. "For tool use, stay in CWD ("
+            .. vim.fn.getcwd()
+            .. ") unless otherwise specified." .. [[
+
+]]
     end
     local always_include = {
         yanks = true,
