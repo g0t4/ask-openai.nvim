@@ -26,15 +26,24 @@ M.tools_available = {
                     type = "string",
                     description = "The query to send to the RAG system"
                 },
-                -- top_k = {
-                --     type = "number",
-                --     description = "Top K results to return"
-                -- }
+                instruct = {
+                    type = "string",
+                    description = "Optional instruct to provide context for the query"
+                },
+                top_k = {
+                    type = "number",
+                    description = "Top K results to return"
+                },
+                embed_top_k = {
+                    type = "number",
+                    description = "Number of embeddings to consider for reranking"
+                }
             },
             required = { "query" }
         }
     }
 }
+
 
 ---@param tool_name string
 ---@return boolean
