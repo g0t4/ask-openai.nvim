@@ -1,6 +1,5 @@
 local buffers = require("ask-openai.helpers.buffers")
 local log = require("ask-openai.logs.logger").predictions()
-local mcp = require("ask-openai.tools.mcp")
 local tool_router = require("ask-openai.tools.router")
 local backend = require("ask-openai.backends.oai_chat")
 local agentica = require("ask-openai.backends.models.agentica")
@@ -137,12 +136,12 @@ If there's a tool that would be helpful, just ask me to get it installed/added!
     local body_overrides = model_params.new_qwen3coder_llama_server_chat_body({
         messages = messages,
         model = "", -- irrelevant for llama-server
-        -- tools = mcp.openai_tools(),
+        -- tools = tool_router.openai_tools(),
     })
 
     if use_tools then
         log:info("USING TOOLS")
-        body_overrides.tools = mcp.openai_tools()
+        body_overrides.tools = tool_router.openai_tools()
     end
 
     M.thread = ChatThread:new(messages, body_overrides, base_url)

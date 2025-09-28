@@ -14,7 +14,7 @@ local api = require("ask-openai.api")
 local rag_client = require("ask-openai.rag.client")
 local LastRequest = require("ask-openai.backends.last_request")
 local human = require("devtools.humanize")
-local mcp = require("ask-openai.tools.mcp")
+local tool_router = require("ask-openai.tools.router")
 local model_params = require("ask-openai.questions.models.params")
 
 local M = {}
@@ -308,7 +308,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         local body = model_params.new_qwen3coder_llama_server_chat_body({
             messages = messages,
             model = "", -- irrelevant for llama-server
-            -- tools = mcp.openai_tools(),
+            -- tools = tool_router.openai_tools(),
         })
 
         local base_url = "http://ollama:8013"

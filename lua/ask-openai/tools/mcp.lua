@@ -166,14 +166,6 @@ M.setup = function()
     end, { nargs = 0 })
 end
 
-function M.openai_tools()
-    local tools = {}
-    for _, mcp_tool in pairs(M.tools_available) do
-        table.insert(tools, openai_tool(mcp_tool))
-    end
-    return tools
-end
-
 function openai_tool(mcp_tool)
     -- OpenAI docs for tools: https://platform.openai.com/docs/api-reference/chat/create#chat-create-tools
 
