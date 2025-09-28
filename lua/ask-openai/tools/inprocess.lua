@@ -1,12 +1,4 @@
-local M = {}
-
--- In-process tools would be added here
--- For now, we'll just have the basic structure
-
-local function hello_new_tool()
-    print("Hello new tool!")
-    return "Hello from the new in-process tool!"
-end
+local log = require("ask-openai.logs.logger").predictions()
 
 local M = {}
 
@@ -14,33 +6,36 @@ local M = {}
 ---@field name string
 ---@field description string
 ---@field inputSchema table
-
 M.tools_available = {
+    ---@type ToolDefinition
     rag_query = {
-        name = "rag_query",
-        description = "Query RAG for code and documents in the current workspace",
-        inputSchema = {
-            type = "object",
-            properties = {
-                query = {
-                    type = "string",
-                    description = "The query to send to the RAG system"
+        ["function"] = {
+            description = "Query RAG for code and documents in the current workspace",
+            name = "rag_query",
+            parameters = {
+                properties = {
+                    query = {
+                        type = "string",
+                        description = "The query to send to the RAG system"
+                    },
+                    instruct = {
+                        type = "string",
+                        description = "Optional instruct to provide context for the query"
+                    },
+                    top_k = {
+                        type = "number",
+                        description = "Top K results to return"
+                    },
+                    embed_top_k = {
+                        type = "number",
+                        description = "Number of embeddings to consider for reranking"
+                    },
                 },
-                instruct = {
-                    type = "string",
-                    description = "Optional instruct to provide context for the query"
-                },
-                top_k = {
-                    type = "number",
-                    description = "Top K results to return"
-                },
-                embed_top_k = {
-                    type = "number",
-                    description = "Number of embeddings to consider for reranking"
-                }
-            },
-            required = { "query" }
-        }
+                required = { "query" },
+                type = "object"
+            }
+        },
+        type = "function"
     }
 }
 
