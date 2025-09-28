@@ -18,14 +18,18 @@ local M = {}
 M.tools_available = {
     rag_query = {
         name = "rag_query",
-        description = "Query the RAG system for information",
+        description = "Query RAG for code and documents in the current workspace",
         inputSchema = {
             type = "object",
             properties = {
                 query = {
                     type = "string",
                     description = "The query to send to the RAG system"
-                }
+                },
+                -- top_k = {
+                --     type = "number",
+                --     description = "Top K results to return"
+                -- }
             },
             required = { "query" }
         }
@@ -68,4 +72,3 @@ function M.send_tool_call(tool_call, callback)
 end
 
 return M
-

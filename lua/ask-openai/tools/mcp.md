@@ -29,6 +29,11 @@ more examples from Claude's log files!
 
  *** working examples (manual testing)
 
+```
+# get tools/list (modify to send a diff one-off message)
+
+echo '{ "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {} }' | npx ~/repos/github/g0t4/mcp-server-commands/build/index.js | jq
+```
    tools/list
      { "jsonrpc": "2.0", "id": 4, "method": "tools/list", "params": {} }
      { "jsonrpc": "2.0", "id": 1, "method": "tools/list" }
