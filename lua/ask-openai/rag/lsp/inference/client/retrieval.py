@@ -34,7 +34,6 @@ class LSPRankedMatch:
 
 FAKE_STOPPER = Stopper("fake")
 
-# FYI v2 pygls supports databinding args... but I had issues with j
 @attrs.define
 class LSPRagQueryRequest:
     query: str
@@ -50,16 +49,10 @@ class LSPRagQueryRequest:
 
 async def semantic_grep(
     args: LSPRagQueryRequest,
-    # TODO! fix datasets to not be so yucky
     datasets: Datasets,
     stopper: Stopper = FAKE_STOPPER,
 ) -> list[LSPRankedMatch]:
     all_languages = args.languages == "ALL"
-
-    # TODO! if memory is an issue from re-ranker, investigate if you can at least disable cache for most requests
-    #   see notes in qwen3_rerank.py module
-    #   one idea: len(query) could decide (long query can benefit)... need to prove this first
-    #   FYI right now cache is enabled.. maybe that is not the wise default?
 
     rerank_top_k = args.topK
     embed_top_k = args.embedTopK or args.topK
@@ -68,9 +61,6 @@ async def semantic_grep(
     instruct = args.instruct
     if instruct is None:
         instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
-        # TODO try this instead after I geet a feel for re-rank with my original instruct:
-        #   instruct_aka_task = "Given a user Query to find code in a repository, retrieve the most relevant Documents"
-        #   PRN tweak/evaluate performance of different instruct/task descriptions?
 
     stopper.throw_if_stopped()
     # * encode query vector
@@ -111,7 +101,7 @@ async def semantic_grep(
             scores.extend(_scores[0])
             ids.extend(_ids[0])
     else:
-        # TODO? rework to use languages for one language?
+        # ? rework to use languages for one language?
         dataset = datasets.for_file(args.currentFileAbsolutePath, vim_filetype=args.vimFiletype)
         if dataset is None:
             logger.error(f"No dataset for currentFileAbsolutePath='{args.currentFileAbsolutePath}' and vim_filetype='{args.vimFiletype}'")
@@ -124,21 +114,10 @@ async def semantic_grep(
         scores = scores[0]
 
     logger.info(f"ids len {len(ids)}")
-    # logger.info(f"scores len {len(scores)}")
-    # logger.info(f'{ids=}')
-    # logger.info(f'{scores=}')
 
     # * lookup matching chunks (filter any exclusions on metadata)
     id_score_pairs = zip(ids, scores)
     if all_languages:
-        # cross language lookups need to either:
-        # 1. sample from each language evenly or weighted?
-        # 2. sort by score? see how this works in reality...
-        # FYI use #1 if scores don't really compare well across languages... I suspect they will though
-        #
-        # otherwise later languages (i.e. fish) configured late in all_languages will be skipped almost every time
-        #   b/c I over sample each language in the hopes of not missing a few extra key chunks
-        #   I don't take just top_k/num_languages
         id_score_pairs = sorted(id_score_pairs, key=lambda x: x[1], reverse=True)
 
     matches: list[LSPRankedMatch] = []
@@ -192,10 +171,10 @@ async def semantic_grep(
     matches.sort(key=lambda c: len(c.text))
 
     def rerank_document(chunk: LSPRankedMatch):
-        # [file: utils.py | lines 120–145]
         file = relative_to_workspace(chunk.file)
         start_line_base1 = chunk.start_line_base0 + 1
         end_line_base1 = chunk.end_line_base0 + 1
+        # example:   [file: utils.py | lines 120–145]\n...
         return f"[ file: {file} | lines {start_line_base1}-{end_line_base1} ]\n" + chunk.text
 
     # * rerank batches
