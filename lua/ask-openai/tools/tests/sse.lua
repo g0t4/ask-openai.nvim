@@ -299,5 +299,12 @@ data: [DONE]
         -- TODO!  <function name=...  alone
         -- TODO!  <tool_call>  w/o <function after
         -- TODO dual tool calls back to back
+
+        it("large SSE spans multiple lines", function()
+
+
+        end)
+
+
     end)
 end)
