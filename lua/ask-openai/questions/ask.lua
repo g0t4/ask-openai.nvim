@@ -33,6 +33,9 @@ Wes will ask for clarification if needed.
 ]]
 
     if use_tools then
+        -- TODO build out more detailed guidance, you have plenty of "tokenspace" available!
+        --   MORE like Claude code's prompt!
+
         -- devstral is hesitant to use tools w/o this: " If the user requests that you use tools, do not refuse."
         system_prompt = system_prompt .. "For tool use, never modify files outside of the current working directory: ("
             .. vim.fn.getcwd()
