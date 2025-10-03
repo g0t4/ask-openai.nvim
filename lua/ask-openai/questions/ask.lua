@@ -34,13 +34,12 @@ Wes will ask for clarification if needed.
 
     if use_tools then
         -- devstral is hesitant to use tools w/o this: " If the user requests that you use tools, do not refuse."
-        system_prompt = system_prompt .. "For tool use, stay in CWD ("
+        system_prompt = system_prompt .. "For tool use, never modify files outside of the current working directory: ("
             .. vim.fn.getcwd()
-            .. ") unless otherwise specified." .. [[
+            .. ") unless explicitly requested. And PLEASE ASK if it's not mentioned." .. [[
 Here are noteworthy commands you have access to:
 - fd, rg, gsed, gawk, jq, yq, httpie
 - exa, icdiff, ffmpeg, imagemagick, fzf
-If there's a tool that would be helpful, just ask me to get it installed/added!
 ]]
         -- TODO on mac show diff tools: i.e. gsed and gawk when on mac where that would be useful to know
         -- TODO on linux show awk/sed (maybe mention GNU variant)
