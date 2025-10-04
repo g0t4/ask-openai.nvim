@@ -64,7 +64,9 @@ describe("data-only events", function()
 
     describe("no trailing blank line emits no events", function()
         it("only on newline at end", function()
-
+            local write1 = "data: event1\n"
+            parser:write(write1)
+            assert.are.same({}, events)
         end)
     end)
 
