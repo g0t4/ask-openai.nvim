@@ -12,19 +12,22 @@ describe("data-only events", function()
     end)
 
     describe("single data value in single write", function()
-        local write1 = 'data: data_value1\n\n'
+        local blank_line_markers = { "\n\n" } -- , "\r\n\r\n" }
+        for _, marker in ipairs(blank_line_markers) do
+            local write1 = 'data: data_value1' .. marker
 
-        before_each(function()
-            parser:write(write1)
-        end)
+            before_each(function()
+                parser:write(write1)
+            end)
 
-        it("should emit event", function()
-            assert.are.same({ "data_value1" }, events)
-        end)
+            it("should emit event", function()
+                assert.are.same({ "data_value1" }, events)
+            end)
 
-        it("should track in _lines", function()
-            assert.same({ write1 }, parser._lines)
-        end)
+            it("should track in _lines", function()
+                assert.same({ write1 }, parser._lines)
+            end)
+        end
     end)
 
     it("concatenate split write data value with newline at end of first write, preserves value's newline", function()
