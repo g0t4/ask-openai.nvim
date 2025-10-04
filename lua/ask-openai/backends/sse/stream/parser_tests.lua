@@ -11,15 +11,15 @@ describe("data-only events", function()
         parser = SSEStreamParser.new(data_only_handler)
     end)
 
-    describe("single data line", function()
-        local write1 = "data: event1\n\n"
+    describe("single data value in single write", function()
+        local write1 = 'data: data_value1\n\n'
 
         before_each(function()
             parser:write(write1)
         end)
 
         it("should emit event", function()
-            assert.are.same({ "event1" }, events)
+            assert.are.same({ "data_value1" }, events)
         end)
 
         it("should track in _lines", function()
@@ -27,7 +27,7 @@ describe("data-only events", function()
         end)
     end)
 
-    it("concatenate multiple data with new line at end of first, is preserved", function()
+    it("concatenate split write data value with newline at end of first write, preserves value's newline", function()
         -- no different than if the \n were in the middle of the data value
         local write1 = "data: hello\n"
         local write2 = "data: world\n\n"
@@ -37,7 +37,7 @@ describe("data-only events", function()
         assert.are.same({ "hello\nworld" }, events)
     end)
 
-    it("concatenate multiple data lines in same event", function()
+    it("concatenate split write data value (single event)", function()
         local write1 = "data: hello"
         local write2 = "data: world\n\n"
 
@@ -46,23 +46,23 @@ describe("data-only events", function()
         assert.are.same({ "helloworld" }, events)
     end)
 
-    it("single data line, split across multiple writes", function()
-        local write1 = "data: even"
-        local write2 = "t1\n\n"
+    it("concatenate split write data value without 'data: ' prefix on second write", function()
+        local write1 = "data: data_va"
+        local write2 = "lue1\n\n"
 
         parser:write(write1)
         parser:write(write2)
-        assert.are.same({ "event1" }, events)
+        assert.are.same({ "data_value1" }, events)
     end)
 
-    it("multiple events  in single write", function()
+    it("multiple events in single write", function()
         local write = "data: hello\n\ndata: world\n\n"
 
         parser:write(write)
         assert.are.same({ "hello", "world" }, events)
     end)
 
-    it("'data: ' at start of a multi-line single event's data value", function()
+    it("'data: ' at start of a multi write, single event's data value", function()
         -- edge case - make sure the second 'data: ' is preserved
         local write1 = 'data: {"code": "local my_var = \\"my_'
         local write2 = 'data: data: bar\\""}\n\n'
@@ -87,7 +87,7 @@ describe("data-only events", function()
             --  b/c no doubt I will wonder what about new line at end in the future!
             --  this helps make my intent explicit!
 
-            local write1 = "data: event1\n"
+            local write1 = "data: data_value1\n"
             parser:write(write1)
             assert.are.same({}, events)
             -- TODO? emit some sort of warning on a done message?
@@ -95,7 +95,7 @@ describe("data-only events", function()
         end)
 
         it("no new lines at end", function()
-            local write1 = "data: event1"
+            local write1 = "data: data_value1"
             parser:write(write1)
             assert.are.same({}, events)
         end)
