@@ -56,7 +56,10 @@ describe("data-only events", function()
     end)
 
     it("multiple events  in single write", function()
-        -- TODO
+        local write = "data: hello\n\ndata: world\n\n"
+
+        parser:write(write)
+        assert.are.same({ "hello", "world" }, events)
     end)
 
     describe("no trailing blank line emits no events", function()
