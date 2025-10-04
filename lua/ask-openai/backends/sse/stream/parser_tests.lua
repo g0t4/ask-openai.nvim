@@ -19,7 +19,7 @@ describe("data-only events", function()
         local blank_line_markers = { "\n\n" } -- , "\r\n\r\n" }
         for _, marker in ipairs(blank_line_markers) do
             local write1 = 'data: data_value1' .. marker
-            describe(marker, function()
+            describe(escape_newlines(marker), function()
                 before_each(function()
                     parser:write(write1)
                 end)
