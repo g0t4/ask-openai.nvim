@@ -62,6 +62,25 @@ describe("data-only events", function()
         assert.are.same({ "hello", "world" }, events)
     end)
 
+    it("'data: ' at start of a multi-line single event's data value", function()
+        -- edge case - make sure the second 'data: ' is preserved
+        local write1 = 'data: {"code": "local my_var = \\"my_'
+        local write2 = 'data: data: bar\\""}\n\n'
+
+        parser:write(write1)
+        parser:write(write2)
+
+        assert.are.same({ '{"code": "local my_var = \\"my_data: bar\\""}' }, events)
+    end)
+
+    -- it("'data: ' is at the start of a new event's data value", function()
+    --     -- FYI this won't ever happen w/ json payload
+    --     --   SO, DO NOT TEST THIS
+    --     local write = "data: data: \n\n"
+    --     parser:write(write)
+    --     assert.are.same({ "data: " }, events)
+    -- end)
+
     describe("no trailing blank line emits no events", function()
         it("only on newline at end", function()
             -- FYI this test exists mostly so I am documenting my thought process

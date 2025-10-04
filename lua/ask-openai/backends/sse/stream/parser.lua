@@ -65,8 +65,10 @@ function SSEStreamParser:write(data)
 
         for i = 1, #lines - 1 do
             local event = lines[i]
+
             event = event:gsub("^data: ", "") -- happens when multiple in one message
             -- FTR I am not a fan of this, feels sloppy but thank god I split out this low-level event parser... nightmare to do this in same loop that uses deltas!
+
             self._data_only_handler(event)
         end
 
