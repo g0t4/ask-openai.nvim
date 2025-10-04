@@ -130,6 +130,9 @@ describe("integration test - completion captures", function()
         end)
 
         assert.equal(5, #events)
+        -- FYI I counted 16634 by hand:
+        --  though I do wonder if the 5 spaces at start of second line should only be 4?
+        --  if no label is there still a space at start of the line?
         assert.equal(16634, #(events[4]))
     end)
 
