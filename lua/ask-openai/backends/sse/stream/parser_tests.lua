@@ -60,7 +60,7 @@ describe("data-only events", function()
     end)
 
     describe("no trailing blank line emits no events", function()
-        it("only \n at end", function()
+        it("only on newline at end", function()
 
         end)
     end)
