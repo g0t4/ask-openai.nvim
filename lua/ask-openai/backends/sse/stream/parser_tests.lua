@@ -36,7 +36,7 @@ describe("data-only events", function()
         parser:write(write1)
         parser:write(write2)
         assert.same({ write1, write2 }, parser._lines)
-        -- assert.are.same({ "event1" }, events)
+        assert.are.same({ "event1" }, events)
     end)
 
     describe("no trailing \n\n emits no events", function()
