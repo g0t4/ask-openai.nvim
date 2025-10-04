@@ -138,7 +138,8 @@ end
 function M.on_line_or_lines(data_value, extract_generated_text, frontend, request)
     -- log:trace("data_value", data_value)
 
-    if data_value:match("^%[DONE%]$") then
+    if data_value == "[DONE]" then
+        log:trace("DETECTED DONE")
         goto ignore_done
     end
 
