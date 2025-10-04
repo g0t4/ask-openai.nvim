@@ -39,6 +39,10 @@ describe("data-only events", function()
         assert.are.same({ "event1" }, events)
     end)
 
+    it("multiple \n\n in single write", function()
+        -- TODO
+    end)
+
     describe("no trailing \n\n emits no events", function()
         it("only \n at end", function()
 
