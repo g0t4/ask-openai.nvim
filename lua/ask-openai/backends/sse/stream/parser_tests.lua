@@ -67,6 +67,8 @@ describe("data-only events", function()
             local write1 = "data: event1\n"
             parser:write(write1)
             assert.are.same({}, events)
+            -- TODO? emit some sort of warning on a done message?
+            --   so I can log a warning?
         end)
     end)
 
