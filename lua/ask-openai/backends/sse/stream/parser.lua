@@ -48,6 +48,11 @@ end
 ---@param data string
 function SSEStreamParser:write(data)
     table.insert(self._lines, data)
+
+    data = data:gsub("^data: ", "")
+    data = data:gsub("\n\n", "")
+
+    self._data_only_handler(data)
 end
 
 function SSEStreamParser:save_to_file()
