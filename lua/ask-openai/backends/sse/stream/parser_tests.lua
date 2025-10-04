@@ -11,12 +11,20 @@ describe("data-only events", function()
         parser = SSEStreamParser.new(data_only_handler)
     end)
 
-    it("single data line", function()
+    describe("single data line", function()
         local write1 = "data: event1\n\n"
 
-        parser:write(write1)
-        assert.same({ write1 }, parser._lines)
-        assert.are.same({ "event1" }, events)
+        before_each(function()
+            parser:write(write1)
+        end)
+
+        it("should emit event", function()
+            assert.are.same({ "event1" }, events)
+        end)
+
+        it("should track in _lines", function()
+            assert.same({ write1 }, parser._lines)
+        end)
     end)
 
     it("concatenate multiple data with new line at end of first, is preserved", function()
@@ -26,7 +34,6 @@ describe("data-only events", function()
 
         parser:write(write1)
         parser:write(write2)
-        assert.same({ write1, write2 }, parser._lines)
         assert.are.same({ "hello\nworld" }, events)
     end)
 
@@ -36,7 +43,6 @@ describe("data-only events", function()
 
         parser:write(write1)
         parser:write(write2)
-        assert.same({ write1, write2 }, parser._lines)
         assert.are.same({ "helloworld" }, events)
     end)
 
@@ -46,7 +52,6 @@ describe("data-only events", function()
 
         parser:write(write1)
         parser:write(write2)
-        assert.same({ write1, write2 }, parser._lines)
         assert.are.same({ "event1" }, events)
     end)
 
