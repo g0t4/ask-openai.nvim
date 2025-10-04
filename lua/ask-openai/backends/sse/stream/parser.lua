@@ -63,14 +63,11 @@ function SSEStreamParser:write(data)
     elseif (#lines >= 2) then
         -- had \n\n ==> emit all but last one
 
-        -- TODO leave loop for after a multi test is setup
-        -- for i = 1, #lines - 1 do
-
-        local i = 1
-        local event = lines[i]
-        self._data_only_handler(event)
-
-        -- end
+        for i = 1, #lines - 1 do
+            local event = lines[i]
+            event = event:gsub("^data: ", "") -- happens when multiple in one message
+            self._data_only_handler(event)
+        end
 
         -- keep last one in buffer for next
         self._buffer = lines[#lines]
