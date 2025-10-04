@@ -56,7 +56,7 @@ function SSEStreamParser:write(data)
     local lines = vim.split(self._buffer, "\n\n", {})
     -- FYI split takes plain and trimempty option values
     --   default not removing empties, can use to check if a \n\n was present
-    vim.print(lines)
+    -- vim.print(lines)
     if (#lines == 1) then
         -- no \n\n
         return -- buffer is fine as-is
