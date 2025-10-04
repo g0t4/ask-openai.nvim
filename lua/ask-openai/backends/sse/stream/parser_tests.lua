@@ -19,6 +19,17 @@ describe("data-only events", function()
         assert.are.same({ "event1" }, events)
     end)
 
+    it("concatenate multiple data with new line at end of first, is preserved", function()
+        -- no different than if the \n were in the middle of the data value
+        local write1 = "data: hello\n"
+        local write2 = "data: world\n\n"
+
+        parser:write(write1)
+        parser:write(write2)
+        assert.same({ write1, write2 }, parser._lines)
+        assert.are.same({ "hello\nworld" }, events)
+    end)
+
     it("concatenate multiple data lines in same event", function()
         local write1 = "data: hello"
         local write2 = "data: world\n\n"
