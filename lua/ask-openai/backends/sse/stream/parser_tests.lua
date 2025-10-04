@@ -20,7 +20,7 @@ describe("data-only events", function()
     end)
 
     it("concatenate multiple data lines in same event", function()
-        local write1 = "data: hello\n"
+        local write1 = "data: hello"
         local write2 = "data: world\n\n"
 
         parser:write(write1)

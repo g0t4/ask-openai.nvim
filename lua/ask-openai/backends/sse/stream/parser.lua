@@ -49,6 +49,9 @@ end
 function SSEStreamParser:write(data)
     table.insert(self._lines, data)
 
+    -- FYI assumed to be all data events so this is fine, to strip before inserting in buffer
+    data = data:gsub("^data: ", "")
+
     self._buffer = self._buffer .. data
     local lines = vim.split(self._buffer, "\n\n", {})
     -- FYI split takes plain and trimempty option values
@@ -65,7 +68,6 @@ function SSEStreamParser:write(data)
 
         local i = 1
         local event = lines[i]
-        event = event:gsub("^data: ", "") -- TODO should I require data: match to emit? (add test if so)
         self._data_only_handler(event)
 
         -- end
