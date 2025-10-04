@@ -9,6 +9,7 @@ require("devtools.performance")
 local log = require("ask-openai.logs.logger").predictions()
 require("ask-openai.prediction.prefix_suffix")
 local ps = require("ask-openai.prediction.prefix_suffix")
+local notify = require("notify")
 
 local OllamaFimBackend = require("ask-openai.prediction.backends.llama")
 -- local backend = require("ask-openai.prediction.backends.backendsvllm")
@@ -128,19 +129,8 @@ function M.ask_for_prediction()
 
                 local message = table.concat(messages, "\n")
 
-                ---Show a notification, clearing previous if it exists.
-                ---@param message string
-                ---@param level? integer   -- vim.log.levels
-                ---@param opts? table      -- vim.notify options
-                local function notify_once(message, level, opts)
-                    opts = opts or {}
-                    if M.last_notify_id_for_stats then
-                        opts.replace = M.last_notify_id_for_stats
-                    end
-                    M.last_notify_id_for_stats = vim.notify(message, level, opts)
-                end
-
-                notify_once(message)
+                notify.dismiss({ pending = true, silent = true })
+                notify(message, "info", {})
             end
 
             if data then
