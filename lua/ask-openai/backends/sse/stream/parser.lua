@@ -49,10 +49,30 @@ end
 function SSEStreamParser:write(data)
     table.insert(self._lines, data)
 
-    data = data:gsub("^data: ", "")
-    data = data:gsub("\n\n", "")
+    self._buffer = self._buffer .. data
+    local lines = vim.split(self._buffer, "\n\n", {})
+    -- FYI split takes plain and trimempty option values
+    --   default not removing empties, can use to check if a \n\n was present
+    vim.print(lines)
+    if (#lines == 1) then
+        -- no \n\n
+        return -- buffer is fine as-is
+    elseif (#lines >= 2) then
+        -- had \n\n ==> emit all but last one
 
-    self._data_only_handler(data)
+        -- TODO leave loop for after a multi test is setup
+        -- for i = 1, #lines - 1 do
+
+        local i = 1
+        local event = lines[i]
+        event = event:gsub("^data: ", "") -- TODO should I require data: match to emit? (add test if so)
+        self._data_only_handler(event)
+
+        -- end
+
+        -- keep last one in buffer for next
+        self._buffer = lines[#lines]
+    end
 end
 
 function SSEStreamParser:save_to_file()
