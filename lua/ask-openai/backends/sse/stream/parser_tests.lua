@@ -11,6 +11,10 @@ describe("data-only events", function()
         parser = SSEStreamParser.new(data_only_handler)
     end)
 
+    local function escape_newlines(s)
+        return s:gsub("\n", "\\n"):gsub("\r", "\\r")
+    end
+
     describe("single data value in single write", function()
         local blank_line_markers = { "\n\n" } -- , "\r\n\r\n" }
         for _, marker in ipairs(blank_line_markers) do
