@@ -19,17 +19,18 @@ describe("data-only events", function()
         local blank_line_markers = { "\n\n" } -- , "\r\n\r\n" }
         for _, marker in ipairs(blank_line_markers) do
             local write1 = 'data: data_value1' .. marker
+            describe(marker, function()
+                before_each(function()
+                    parser:write(write1)
+                end)
 
-            before_each(function()
-                parser:write(write1)
-            end)
+                it("should emit event", function()
+                    assert.are.same({ "data_value1" }, events)
+                end)
 
-            it("should emit event", function()
-                assert.are.same({ "data_value1" }, events)
-            end)
-
-            it("should track in _lines", function()
-                assert.same({ write1 }, parser._lines)
+                it("should track in _lines", function()
+                    assert.same({ write1 }, parser._lines)
+                end)
             end)
         end
     end)
