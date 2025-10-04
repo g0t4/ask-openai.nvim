@@ -45,7 +45,9 @@ describe("data-only events", function()
         end)
     end)
 
-    -- TODO strip comments
+    -- TODO strip comments test case
+
+    -- TODO! curl-stream-sses-weather.out
 
     -- TODO! make sure to devise a test of this:
     --   lua/ask-openai/tools/tests/captures/multi-line-sse.json
