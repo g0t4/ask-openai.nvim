@@ -1,5 +1,6 @@
 local log = require("ask-openai.logs.logger").predictions()
 local LastRequest = require("ask-openai.backends.last_request")
+local SSEStreamParser = require("ask-openai.backends.sse.stream.parser")
 local uv = vim.uv
 
 local M = {}
@@ -66,20 +67,12 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
         stdio = { nil, stdout, stderr },
     }, options.on_exit)
 
-    options.on_stdout = function(read_error, data)
-        log:trace_stdio_read_always("on_stdout", read_error, data)
-        -- log:trace_stdio_read_errors("on_stdout", err, data)
 
-        local no_data = data == nil or data == ""
-        if read_error or no_data then
-            -- reminder, rely on trace above
-            return
-        end
-
+    function data_value_handler(data_value)
         -- TODO extract error handling: both the xpcall + traceback, and the print_error func below
         -- FYI good test case is to comment out: choice.delta.content == vim.NIL in extract_generated_text
         local success, result = xpcall(function()
-            M.on_line_or_lines(data, extract_generated_text, frontend, request)
+            M.on_line_or_lines(data_value, extract_generated_text, frontend, request)
         end, function(e)
             -- otherwise only get one line from the traceback (frame that exception was thrown)
             return debug.traceback(e, 3)
@@ -107,6 +100,21 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
             end)
         end
     end
+
+    -- PRN request._sse_parser = parser -- currently closure is sufficient for all expected use cases
+    local parser = SSEStreamParser.new(data_value_handler)
+    options.on_stdout = function(read_error, data)
+        -- log:trace_stdio_read_errors("on_stdout", err, data)
+        log:trace_stdio_read_always("on_stdout", read_error, data)
+
+        local no_data = data == nil or data == ""
+        if read_error or no_data then
+            -- reminder, rely on trace above
+            return
+        end
+
+        parser:write(data)
+    end
     uv.read_start(stdout, options.on_stdout)
 
     options.on_stderr = function(read_error, data)
@@ -127,61 +135,51 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     return request
 end
 
-function M.on_line_or_lines(data, extract_generated_text, frontend, request)
-    -- SSE = Server-Sent Event
-    -- split on lines first (each SSE can have 0+ "event" - one per line)
+function M.on_line_or_lines(data_value, extract_generated_text, frontend, request)
+    -- log:trace("data_value", data_value)
 
-    for ss_event in data:gmatch("[^\r\n]+") do
-        -- log:trace("ss_event" ss_event)
-
-        if ss_event:match("^data:%s*%[DONE%]$") then
-            goto ignore_done
-        end
-
-        --  strip leading "data: " (if present)
-        local event_json = ss_event
-        if ss_event:sub(1, 6) == "data: " then
-            event_json = ss_event:sub(7)
-        end
-        local success, sse_parsed = pcall(vim.json.decode, event_json)
-
-        if success and sse_parsed then
-            if sse_parsed.choices and sse_parsed.choices[1] then
-                local first_choice = sse_parsed.choices[1]
-                -- OK if no first_choice
-
-                -- IIRC this is only ask questions currently
-                --   ? if I don't need this in rewrites, THEN, push this back down into asks via on_generated_text
-                M.on_delta_update_message_history(first_choice, request)
-                frontend.handle_messages_updated()
-
-                -- only rewrite uses this... and that may not change (not sure denormalizer makes sense for rewrites)
-                local generated_text = extract_generated_text(first_choice)
-                if generated_text and frontend.on_generated_text then
-                    -- FYI checks for on_generated_text b/c ask doesn't use this interface anymore
-                    frontend.on_generated_text(generated_text, sse_parsed)
-                end
-
-                -- PRN on_reasoning_text ... choice.delta.reasoning?/thinking? ollama splits this out, IIUC LM Studio does too... won't work if using harmony format with gpt-oss that isnt' parsed
-            end
-            -- FYI not every SSE has to have generated tokens (choices), no need to warn
-
-            if sse_parsed.error then
-                -- only confirmed this on llama_server, rename if other backends follow suit
-                -- {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
-                -- FYI do not log again here
-                frontend.on_sse_llama_server_error_explanation(sse_parsed)
-            end
-
-            if sse_parsed.timings then
-                frontend.on_sse_llama_server_timings(sse_parsed)
-            end
-        else
-            log:warn("SSE json parse failed for ss_event: ", ss_event)
-        end
-
-        ::ignore_done::
+    if data_value:match("^%[DONE%]$") then
+        goto ignore_done
     end
+
+    local success, sse_parsed = pcall(vim.json.decode, data_value)
+
+    if success and sse_parsed then
+        if sse_parsed.choices and sse_parsed.choices[1] then
+            local first_choice = sse_parsed.choices[1]
+            -- OK if no first_choice
+
+            -- IIRC this is only ask questions currently
+            --   ? if I don't need this in rewrites, THEN, push this back down into asks via on_generated_text
+            M.on_delta_update_message_history(first_choice, request)
+            frontend.handle_messages_updated()
+
+            -- only rewrite uses this... and that may not change (not sure denormalizer makes sense for rewrites)
+            local generated_text = extract_generated_text(first_choice)
+            if generated_text and frontend.on_generated_text then
+                -- FYI checks for on_generated_text b/c ask doesn't use this interface anymore
+                frontend.on_generated_text(generated_text, sse_parsed)
+            end
+
+            -- PRN on_reasoning_text ... choice.delta.reasoning?/thinking? ollama splits this out, IIUC LM Studio does too... won't work if using harmony format with gpt-oss that isnt' parsed
+        end
+        -- FYI not every SSE has to have generated tokens (choices), no need to warn
+
+        if sse_parsed.error then
+            -- only confirmed this on llama_server, rename if other backends follow suit
+            -- {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
+            -- FYI do not log again here
+            frontend.on_sse_llama_server_error_explanation(sse_parsed)
+        end
+
+        if sse_parsed.timings then
+            frontend.on_sse_llama_server_timings(sse_parsed)
+        end
+    else
+        log:warn("SSE json parse failed for data_value: ", data_value)
+    end
+
+    ::ignore_done::
 end
 
 ---@class OpenAIChoice
