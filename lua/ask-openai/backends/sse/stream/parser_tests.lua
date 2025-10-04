@@ -19,14 +19,14 @@ describe("data-only events", function()
         assert.are.same({ "event1" }, events)
     end)
 
-    it("multiple data lines", function()
-        local write1 = "data: event1\n"
-        local write2 = "data: event2\n\n"
+    it("concatenate multiple data lines in same event", function()
+        local write1 = "data: hello\n"
+        local write2 = "data: world\n\n"
 
         parser:write(write1)
         parser:write(write2)
         assert.same({ write1, write2 }, parser._lines)
-        -- assert.are.same({ "event1" }, events)
+        assert.are.same({ "helloworld" }, events)
     end)
 
     it("single data line, split across multiple writes", function()
