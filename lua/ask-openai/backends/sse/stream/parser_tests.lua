@@ -101,17 +101,37 @@ describe("data-only events", function()
         end)
     end)
 
-    -- TODO strip comments test case
+    -- PRN strip comments test case -- if I have a server that does this?
+end)
 
-
-    -- TODO! it is imperative to add test cases with json payloads
-    --    AND/OR to convert the above into json examples
-
+describe("integration test - completion captures", function()
     -- TODO! curl-stream-sses-weather.out
 
-    -- TODO! make sure to devise a test of this:
-    --   lua/ask-openai/tools/tests/captures/multi-line-sse.json
-    --   or ensure it is covered in the above sceanrios
+
+    it("mult-line-sse.json", function()
+        local contents = vim.fn.readfile("lua/ask-openai/tools/tests/captures/multi-line-sse.json")
+        -- lines are split => but those split are not actual \n in the original curl stdout output
+
+        local events = {}
+        local parser = SSEStreamParser.new(function(data)
+            table.insert(events, data)
+        end)
+        vim.iter(contents):each(function(line)
+            --  by convention empty line == \n
+            --  I added one extra empty line before and after "done"
+            --  others already had two between each
+            --  TODO find out if any odd behavior with actual \n ... especially around "done"
+            if (line == "") then
+                -- empty line == \n
+                parser:write("\n")
+            else
+                parser:write(line)
+            end
+        end)
+
+        assert.equal(5, #events)
+        assert.equal(16634, #(events[4]))
+    end)
 
 
     -- data: YHOO
