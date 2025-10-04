@@ -103,6 +103,10 @@ describe("data-only events", function()
 
     -- TODO strip comments test case
 
+
+    -- TODO! it is imperative to add test cases with json payloads
+    --    AND/OR to convert the above into json examples
+
     -- TODO! curl-stream-sses-weather.out
 
     -- TODO! make sure to devise a test of this:
