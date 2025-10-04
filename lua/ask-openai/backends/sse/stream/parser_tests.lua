@@ -64,11 +64,21 @@ describe("data-only events", function()
 
     describe("no trailing blank line emits no events", function()
         it("only on newline at end", function()
+            -- FYI this test exists mostly so I am documenting my thought process
+            --  b/c no doubt I will wonder what about new line at end in the future!
+            --  this helps make my intent explicit!
+
             local write1 = "data: event1\n"
             parser:write(write1)
             assert.are.same({}, events)
             -- TODO? emit some sort of warning on a done message?
             --   so I can log a warning?
+        end)
+
+        it("no new lines at end", function()
+            local write1 = "data: event1"
+            parser:write(write1)
+            assert.are.same({}, events)
         end)
     end)
 
