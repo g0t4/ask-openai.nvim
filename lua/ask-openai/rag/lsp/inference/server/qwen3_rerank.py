@@ -20,6 +20,13 @@ if device.type == 'cuda':
         attn_implementation="flash_attention_2",  # cuda only
         # only set device_map if using accelerate to shard
         # device_map= {"": "cuda:0"},  # accelerate ONLY (also remove .to(device) below)
+        #
+        # notes re 6000 pro boot fiasco
+        # BTW when I dropped down to one GPU (6000 Pro RTX)... accelerate stopped placing properly (I did not check why) but it tried to put stuff on CPU too and blew up...
+        #   I fixed that by forcing first CUDA device
+        #   still weird that it was assuming there wasn't plenty of space when there was plenty of VRAM
+        #   is it possible accelerate's VRAM calcs are affected by disabled BAR size (bios fix to stop d4/d6 at boot)
+        #     so it sees the bar space only (which is default at like 256MB only?)
     )
 else:
     raise ValueError("ONLY setup for CUDA device")
