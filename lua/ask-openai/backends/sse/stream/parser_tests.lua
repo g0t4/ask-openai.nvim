@@ -16,8 +16,9 @@ describe("data-only events", function()
     end
 
     describe("single data value in single write", function()
-        local blank_line_types = { "\n\n", "\r\n\r\n", "\r\r" }
-        for _, blank_line in ipairs(blank_line_types) do
+        local line_ending_types = { "\n", "\r\n", "\r" }
+        for _, line_ending in ipairs(line_ending_types) do
+            local blank_line = line_ending .. line_ending
             local write1 = 'data: data_value1' .. blank_line
             describe(escape_newlines(blank_line), function()
                 before_each(function()
