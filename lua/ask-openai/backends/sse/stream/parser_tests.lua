@@ -37,6 +37,10 @@ describe("data-only events", function()
     end
 
     it("concatenate split write data value with newline at end of first write, preserves value's newline", function()
+        -- FYI it is possible this is not how I should combine when there are multiple data labels, in that case I might need to concat with \n in between
+        --   for now I am leaving this as is as I have yet to see it in the wild with openai compatible streaming endpoints, so I can't easily verify one way or the other
+        --   in this case if I concat w/ \n then I should have "hello\n\nworld"
+
         -- no different than if the \n were in the middle of the data value
         local write1 = "data: hello\n"
         local write2 = "data: world\n\n"
@@ -47,6 +51,10 @@ describe("data-only events", function()
     end)
 
     it("concatenate split write data value (single event)", function()
+        -- FYI it is possible this is not how I should combine when there are multiple data labels, in that case I might need to concat with \n in between
+        --   for now I am leaving this as is as I have yet to see it in the wild with openai compatible streaming endpoints, so I can't easily verify one way or the other
+        --   in this case if I concat w/ \n then I should have "hello\nworld"
+
         local write1 = "data: hello"
         local write2 = "data: world\n\n"
 
@@ -56,6 +64,10 @@ describe("data-only events", function()
     end)
 
     it("concatenate split write data value without 'data: ' prefix on second write", function()
+        -- FYI AFAICT this is NOT PER the spec... and is just my intution looking at how llama-server generates this one large final SSE (w/ verbose logging turned on)
+        -- see multi-line-sse.json which makes it pretty clear no \n is intended between the two lines
+        -- so even if I change 2+ data lables to use \n I would likely leave this as is with no \n added in middle
+
         local write1 = "data: data_va"
         local write2 = "lue1\n\n"
 
@@ -72,6 +84,7 @@ describe("data-only events", function()
     end)
 
     it("'data: ' at start of a multi write, single event's data value", function()
+        -- FYI this might be a problem with concat multiple data labels, see notes above in other similar tests... for now this is FINE as is until I get a real world test case to invalidate it
         -- edge case - make sure the second 'data: ' is preserved
         local write1 = 'data: {"code": "local my_var = \\"my_'
         local write2 = 'data: data: bar\\""}\n\n'
