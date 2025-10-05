@@ -19,6 +19,10 @@ describe("data-only events", function()
     for _, line_ending in ipairs(line_ending_types) do
         local blank_line = line_ending .. line_ending
         describe(escape_newlines(blank_line), function()
+            -- FYI I am ONLY testing this one case with \r and \r\n endings... I don't really think I will ever encounter this
+            --  and I don't want to muck up my LF ending tests that make sense to me and should be all I ever see on *nix anyways
+            --  FTR it would be fine to strip out the \r and \r\n handling entirely
+
             describe("single data value in single write", function()
                 local write1 = 'data: data_value1' .. blank_line
                 before_each(function()
