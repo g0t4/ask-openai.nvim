@@ -15,9 +15,9 @@ describe("data-only events", function()
         return s:gsub("\n", "\\n"):gsub("\r", "\\r")
     end
 
-    describe("single data value in single write", function()
-        local line_ending_types = { "\n", "\r\n", "\r" }
-        for _, line_ending in ipairs(line_ending_types) do
+    local line_ending_types = { "\n", "\r\n", "\r" }
+    for _, line_ending in ipairs(line_ending_types) do
+        describe("single data value in single write", function()
             local blank_line = line_ending .. line_ending
             local write1 = 'data: data_value1' .. blank_line
             describe(escape_newlines(blank_line), function()
@@ -33,8 +33,8 @@ describe("data-only events", function()
                     assert.same({ write1 }, parser._lines)
                 end)
             end)
-        end
-    end)
+        end)
+    end
 
     it("concatenate split write data value with newline at end of first write, preserves value's newline", function()
         -- no different than if the \n were in the middle of the data value
