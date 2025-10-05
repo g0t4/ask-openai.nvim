@@ -82,7 +82,7 @@ if device.type == 'cuda':
     model_kwargs = dict(
         torch_dtype=torch.float16,
         attn_implementation="flash_attention_2",  # cuda only
-        device_map="auto",  # DO NOT also call model.to(device) too!, must let accelerate handle placement
+        device_map= {"": "cuda:0"},  # DO NOT also call model.to(device) too!, must let accelerate handle placement
     )
 else:
     raise ValueError("ONLY setup for CUDA device")
@@ -113,7 +113,7 @@ def encode(input_texts: list[str]) -> tuple[np.ndarray, list[list[np.int64]]]:
             return_tensors="pt",
         )
 
-        # batch_args.to(model.device) # not needed with device_map='auto', right?
+        batch_args.to(model.device) # not needed with device_map='auto', right?
         outputs = model(**batch_args)
         embeddings = last_token_pool(outputs.last_hidden_state, batch_args['attention_mask'])
         norm: np.ndarray = F.normalize(embeddings, p=2, dim=1).cpu().numpy()

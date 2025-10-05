@@ -17,7 +17,7 @@ if device.type == 'cuda':
     model_kwargs = dict(
         torch_dtype=torch.float16,
         attn_implementation="flash_attention_2",  # cuda only
-        device_map="auto",  # DO NOT also call model.to(device) too!, must let accelerate handle placement
+        device_map= {"": "cuda:0"},  # DO NOT also call model.to(device) too!, must let accelerate handle placement
     )
 else:
     raise ValueError("ONLY setup for CUDA device")
