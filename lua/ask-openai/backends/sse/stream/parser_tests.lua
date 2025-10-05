@@ -1,4 +1,6 @@
+require("ask-openai.helpers.test_setup").modify_package_path()
 local SSEStreamParser = require("ask-openai.backends.sse.stream.parser")
+local describe = require("devtools.tests._describe")
 
 describe("data-only events", function()
     local events = {}
@@ -12,6 +14,7 @@ describe("data-only events", function()
     end)
 
     local function escape_newlines(s)
+        -- this is for display purposes in test description headers
         return s:gsub("\n", "\\n"):gsub("\r", "\\r")
     end
 
