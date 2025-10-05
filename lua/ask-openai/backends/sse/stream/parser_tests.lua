@@ -16,7 +16,7 @@ describe("data-only events", function()
     end
 
     describe("single data value in single write", function()
-        local blank_line_markers = { "\n\n", "\r\n\r\n" }
+        local blank_line_markers = { "\n\n", "\r\n\r\n", "\r\r" }
         for _, marker in ipairs(blank_line_markers) do
             local write1 = 'data: data_value1' .. marker
             describe(escape_newlines(marker), function()
