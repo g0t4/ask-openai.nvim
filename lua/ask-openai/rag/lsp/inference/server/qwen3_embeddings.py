@@ -78,16 +78,19 @@ dump_device_memory_stats("after tokenizer loaded")
 
 device = auto_device()
 if device.type == 'cuda':
-    # TODO would bfloat16 work better on 5090s?
+    # FYI this block exists largely to set best precision for a given device type
+    # TODO would bfloat16 work better on 5090s? IIRC no but I should check again
     model_kwargs = dict(
         torch_dtype=torch.float16,
         attn_implementation="flash_attention_2",  # cuda only
-        device_map= {"": "cuda:0"},  # DO NOT also call model.to(device) too!, must let accelerate handle placement
+        # only set device_map if using accelerate to shard
+        # device_map= {"": "cuda:0"},  # accelerate ONLY (also remove .to(device) below)
     )
 else:
     raise ValueError("ONLY setup for CUDA device")
 
-model = AutoModel.from_pretrained(model_path, **model_kwargs)
+# remove .to(device) if using accelerate
+model = AutoModel.from_pretrained(model_path, **model_kwargs).to(device).eval()  # type: ignore
 
 # disable cache altogether
 # - cuts peak reserved memory by 50%, and 40% less allocated
@@ -97,7 +100,7 @@ model.config.use_cache = False
 
 dump_device_memory_stats("after embedding model loaded")
 
-logger.debug(f'{model.hf_device_map=}')
+# logger.debug(f'{model.hf_device_map=}') # only use w/ accelerate
 logger.info(f'[red bold] %s', model.device)
 
 torch.cuda.reset_peak_memory_stats()
@@ -113,7 +116,7 @@ def encode(input_texts: list[str]) -> tuple[np.ndarray, list[list[np.int64]]]:
             return_tensors="pt",
         )
 
-        batch_args.to(model.device) # not needed with device_map='auto', right?
+        batch_args.to(model.device) # COMMENT OUT if using accelerate
         outputs = model(**batch_args)
         embeddings = last_token_pool(outputs.last_hidden_state, batch_args['attention_mask'])
         norm: np.ndarray = F.normalize(embeddings, p=2, dim=1).cpu().numpy()

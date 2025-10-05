@@ -14,15 +14,19 @@ tokenizer = AutoTokenizer.from_pretrained(model_path, padding_side='left')
 
 device = auto_device()
 if device.type == 'cuda':
+    # FYI this block exists largely to set best precision for a given device type
     model_kwargs = dict(
         torch_dtype=torch.float16,
         attn_implementation="flash_attention_2",  # cuda only
-        device_map= {"": "cuda:0"},  # DO NOT also call model.to(device) too!, must let accelerate handle placement
+        # only set device_map if using accelerate to shard
+        # device_map= {"": "cuda:0"},  # accelerate ONLY (also remove .to(device) below)
     )
 else:
     raise ValueError("ONLY setup for CUDA device")
 
-model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs).eval()
+# remove .to(device) if using accelerate
+model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs).to(device).eval()  # type: ignore
+
 # TODO! do some testing of re-ranker memory usage
 #  would it benefit from caching at all?
 #    i.e. when I re-rank the same query across multiple docs, is there a material boost from caching the query?
