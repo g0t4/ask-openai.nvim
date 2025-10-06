@@ -167,7 +167,7 @@ function M.context_query_fim(ps_chunk, callback, skip_rag)
     local fim_specific_instruct = "Complete the missing portion of code (FIM) based on the surrounding context (Fill-in-the-middle)"
     local query = fim_concat(ps_chunk) -- TODO map fim_concat
     if query == nil then
-        log:trace(ansi.red_bold("[bold] SKIPPING RAG b/c no query "))
+        log:trace(ansi.white_bold(ansi.red_bg("SKIPPING RAG b/c no query ")))
         skip_rag()
         -- PRN return indicator to caller? right now nil for results s/b fine
         return
