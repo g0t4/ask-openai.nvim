@@ -1,5 +1,7 @@
 local log = require("ask-openai.logs.logger").predictions()
 local files = require("ask-openai.helpers.files")
+local ansi = require("ask-openai.prediction.ansi")
+
 local M = {}
 
 local function check_supported_dirs()
@@ -37,7 +39,7 @@ function M.get_filetypes_for_workspace()
         julia = "julia",
         kt = "kotlin",
         lhs = "lhaskell",
-        m = "objc",  -- others for objc?
+        m = "objc", -- others for objc?
         md = "markdown", -- *
         pl = "perl",
         pm = "perl",
@@ -67,8 +69,15 @@ function M.is_rag_supported_in_current_file()
     return vim.tbl_contains(M.rag_extensions, current_file_extension)
 end
 
+---@param str string
+---@return string
+function trim(str)
+    return (str:gsub("^%s*(.-)%s*$", "%1"))
+end
+
 ---@param ps_chunk PSChunk
 ---@param limit? integer -- number of characters before/after cursor position for RAG query document
+---@returns string? -- FIM query string, or nil to disable FIM RAG query
 local function fim_concat(ps_chunk, limit)
     limit = limit or 1500 -- 2000?
     local half = math.floor(limit / 2)
@@ -89,10 +98,21 @@ local function fim_concat(ps_chunk, limit)
     local short_prefix = ps_chunk.prefix:sub(-half) -- take from the end of the prefix (if over limit)
     local short_suffix = ps_chunk.suffix:sub(1, half) -- take from the start of the suffix (if over limit)
 
-    local query = short_prefix .. "<<<FIM CURSOR HERE>>>" .. short_suffix
-    if truncated then
-        log:trace("FIM query: ", query)
+    local lines = vim.split(short_prefix, "\n")
+    if #lines < 1 then
+        log:trace("fim_concat: no prefix lines, skipping RAG")
+        return nil
     end
+    local last_line_of_prefix = lines[#lines]
+    if trim(last_line_of_prefix) == "" then
+        -- PRN previous line? with a non-empty value?
+        log:trace("fim_concat: current line's prefix is empty, skipping RAG")
+        return nil
+    end
+
+    -- FYI see fim_query_notes.md for past and future ideas for RAG query selection w.r.t. RAG+FIM
+    local query = last_line_of_prefix
+    log:trace("fim_concat: query='" .. tostring(query) .. "'")
     return query
 end
 
@@ -142,9 +162,16 @@ end
 
 ---@param ps_chunk PSChunk
 ---@param callback fun(matches: LSPRankedMatch[], failed: boolean)
-function M.context_query_fim(ps_chunk, callback)
+---@param skip_rag fun()
+function M.context_query_fim(ps_chunk, callback, skip_rag)
     local fim_specific_instruct = "Complete the missing portion of code (FIM) based on the surrounding context (Fill-in-the-middle)"
     local query = fim_concat(ps_chunk) -- TODO map fim_concat
+    if query == nil then
+        log:trace(ansi.red_bold("[bold] SKIPPING RAG b/c no query "))
+        skip_rag()
+        -- PRN return indicator to caller? right now nil for results s/b fine
+        return
+    end
     -- TODO! pass ps_chunk start/end lines to limit same file skips
     return M._context_query(query, fim_specific_instruct, callback)
 end

@@ -218,7 +218,7 @@ function M.ask_for_prediction()
             send_fim(rag_matches)
         end
 
-        this_request_ids, cancel = rag_client.context_query_fim(ps_chunk, on_rag_response)
+        this_request_ids, cancel = rag_client.context_query_fim(ps_chunk, on_rag_response, function() send_fim({}) end)
         M.rag_cancel = cancel
         M.rag_request_ids = this_request_ids
     else
