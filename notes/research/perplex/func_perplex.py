@@ -314,7 +314,8 @@ import rich
 
 # Example usage
 lines = func1.split("\n")
-line_perplexities = line_isolated_perplexity(lines)
+line_perplexities = one_pass_linewise_perplexity(lines)
+# line_perplexities = line_isolated_perplexity(lines)
 print(f'{line_perplexities=}')
 
 perplexities_skip_none = [p for p in line_perplexities if p is not None]
@@ -324,7 +325,7 @@ lines_mean = torch.mean(perplexities_tensor)
 lines_std = torch.std(perplexities_tensor)
 rich.print(f'{lines_mean=} {lines_std=}')
 
-alpha_spike_factor = 1.0
+alpha_spike_factor = 2.0
 for idx, line in enumerate(lines):
     perplex = line_perplexities[idx]
     threshold = alpha_spike_factor * lines_std + lines_mean
