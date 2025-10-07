@@ -242,7 +242,7 @@ perplexity_from_logits(simple)  # 6.49609375 (avg)
 
 # %%
 
-def line_perplexity_from_loss(lines: list[str]):
+def line_isolated_perplexity(lines: list[str]):
     line_losses = []
     # PRN? SKIP COMMENTS!?
     for line in lines:
@@ -267,14 +267,14 @@ def line_perplexity_from_loss(lines: list[str]):
         line_losses.append(None)
     return line_losses
 
-print(f"simple perplex: {line_perplexity_from_loss([simple])}")  # 6.49357
+print(f"simple perplex: {line_isolated_perplexity([simple])}")  # 6.49357
 
 # %%
 import rich
 
 # Example usage
 lines = func1.split("\n")
-line_perplexities = line_perplexity_from_loss(lines)
+line_perplexities = line_isolated_perplexity(lines)
 print(f'{line_perplexities=}')
 
 perplexities_skip_none = [p for p in line_perplexities if p is not None]
