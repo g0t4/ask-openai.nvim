@@ -270,6 +270,46 @@ def line_isolated_perplexity(lines: list[str]):
 print(f"simple perplex: {line_isolated_perplexity([simple])}")  # 6.49357
 
 # %%
+def one_pass_linewise_perplexity(lines: list[str]):
+    # Join all lines into one text block so the model sees full context.
+    joined = "\n".join(lines)
+    enc = tok(joined, return_tensors="pt").to(device)
+
+    with torch.no_grad():
+        out = model(**enc, labels=enc.input_ids)
+
+    # Cross-entropy loss per token
+    token_losses = out.loss.detach().new_zeros(enc.input_ids.shape)
+    logits = out.logits[:, :-1]
+    labels = enc.input_ids[:, 1:]
+    per_token_loss = torch.nn.functional.cross_entropy(
+        logits.reshape(-1, logits.size(-1)),
+        labels.reshape(-1),
+        reduction="none",
+    ).reshape(labels.shape)
+
+    # Map token losses back to lines
+    all_text = tok.batch_decode(enc.input_ids[0], skip_special_tokens=True)
+    text = "".join(all_text)
+    line_breaks = [i for i, ch in enumerate(text) if ch == "\n"]
+
+    line_losses, start = [], 0
+    for br in line_breaks + [len(text)]:
+        segment = text[start:br]
+        if not segment.strip() or segment.lstrip().startswith(("--", "#")):
+            line_losses.append(None)
+        else:
+            # average token losses over the segment’s tokens
+            segment_ids = tok(segment, return_tensors="pt").input_ids[0]
+            mask = torch.isin(enc.input_ids[0], segment_ids)
+            seg_loss = per_token_loss[0][mask[1:]]  # shift by 1 for next-token prediction
+            line_losses.append(seg_loss.mean().item() if seg_loss.numel() else None)
+        start = br + 1
+
+    return line_losses
+
+
+# %%
 import rich
 
 # Example usage
