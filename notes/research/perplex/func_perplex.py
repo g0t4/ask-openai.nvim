@@ -267,7 +267,7 @@ def line_isolated_perplexity(lines: list[str]):
         line_losses.append(None)
     return line_losses
 
-print(f"simple perplex: {line_isolated_perplexity([simple])}")  # 6.49357
+print(f"simple line isolated perplex: {line_isolated_perplexity([simple])}")  # 6.49357
 
 # %%
 def one_pass_linewise_perplexity(lines: list[str]):
@@ -307,7 +307,7 @@ def one_pass_linewise_perplexity(lines: list[str]):
         start = br + 1
 
     return line_losses
-
+print(f"simple onepass perplexity: {one_pass_linewise_perplexity([simple])}")  # 6.49357
 
 # %%
 import rich
