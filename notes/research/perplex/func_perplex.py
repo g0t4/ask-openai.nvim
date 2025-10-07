@@ -254,7 +254,10 @@ def line_perplexity_from_loss(lines):
         inputs = tok(line, return_tensors="pt").to(device)
         with torch.no_grad():
             out = model(**inputs, labels=inputs.input_ids)
-        line_losses.append(out.loss.item())
+        if torch.isfinite(out.loss):
+            line_losses.append(out.loss.item())
+            continue
+        line_losses.append(None)
     return line_losses
 
 print(f"simple perplex: {line_perplexity_from_loss([simple])}")  # 6.49357
@@ -265,8 +268,10 @@ import rich
 # Example usage
 lines = func1.split("\n")
 line_perplexities = line_perplexity_from_loss(lines)
+print(f'{line_perplexities=}')
 
 perplexities_skip_none = [p for p in line_perplexities if p is not None]
+print(f'{perplexities_skip_none}')
 perplexities_tensor = torch.tensor(perplexities_skip_none)
 lines_mean = torch.mean(perplexities_tensor)
 lines_std = torch.std(perplexities_tensor)
