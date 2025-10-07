@@ -257,6 +257,7 @@ def line_perplexity_from_loss(lines: list[str]):
             # PRN decide if skip comments?
             line_losses.append(None)
             continue
+        # TODO tokenize all prior lines too and just grab the token losses line by line... so,  one forward pass where prior lines factor into loss/perplexity but we only consider each line's loss
         inputs = tok(line, return_tensors="pt").to(device)
         with torch.no_grad():
             out = model(**inputs, labels=inputs.input_ids)
