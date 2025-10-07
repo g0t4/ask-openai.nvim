@@ -242,13 +242,19 @@ perplexity_from_logits(simple)  # 6.49609375 (avg)
 
 # %%
 
-def line_perplexity_from_loss(lines):
+def line_perplexity_from_loss(lines: list[str]):
     line_losses = []
     # PRN? SKIP COMMENTS!?
     for line in lines:
         print(line)
         line = line.strip()
-        if not line:  # skip empty lines
+        if not line:
+            # skip empty and comments
+            line_losses.append(None)
+            continue
+        is_comment = line.startswith("--") or line.startswith("#")
+        if is_comment:
+            # PRN decide if skip comments?
             line_losses.append(None)
             continue
         inputs = tok(line, return_tensors="pt").to(device)
