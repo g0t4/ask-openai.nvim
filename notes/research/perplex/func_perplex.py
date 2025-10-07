@@ -300,7 +300,7 @@ def one_pass_linewise_perplexity(lines: list[str]):
             line_losses.append(None)
         else:
             # average token losses over the segment’s tokens
-            segment_ids = tok(segment, return_tensors="pt").input_ids[0]
+            segment_ids = tok(segment, return_tensors="pt").to(device).input_ids[0]
             mask = torch.isin(enc.input_ids[0], segment_ids)
             seg_loss = per_token_loss[0][mask[1:]]  # shift by 1 for next-token prediction
             line_losses.append(seg_loss.mean().item() if seg_loss.numel() else None)
