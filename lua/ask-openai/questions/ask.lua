@@ -491,6 +491,16 @@ function ask_dump_thread()
     M.thread:dump()
 end
 
+function ask_review_diff()
+    vim.notify("TODO implement")
+    -- For example, say I do a quick boolean refactor to flip branches in an if statement, I can then ask AI for a quick code review and the git diff automatically is fed into the prompt
+    --   in fact, I already have some code for git changes into context, from my auto context ideas
+
+    --  1. take the diff from git (or from the file if not in git)
+    --  2. custom system_prompt
+    --  3. show results in ask window
+end
+
 function M.setup()
     -- explicitly ask to use tools (vs not)... long term I hope to remove this need
     --    but, using smaller models its probably wise to control when they are allowed to use tools
@@ -511,6 +521,10 @@ function M.setup()
     vim.api.nvim_set_keymap('v', '<Leader>aq', ':<C-u>AskQuestionAbout ', { noremap = true })
     vim.api.nvim_create_user_command("AskQuestionAboutWithContext", ask_question_about_with_context, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('v', '<Leader>aqc', ':<C-u>AskQuestionAboutWithContext ', { noremap = true })
+
+    -- AskReviewDiff
+    vim.api.nvim_create_user_command("AskReviewDiff", ask_review_diff, { range = true, nargs = 1 })
+    vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskReviewDiff ', { noremap = true })
 
     vim.keymap.set('n', '<leader>ao', M.ensure_response_window_is_open, { noremap = true })
     vim.keymap.set('n', '<leader>aa', M.abort_last_request, { noremap = true })
