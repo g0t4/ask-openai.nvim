@@ -70,6 +70,7 @@ class IncrementalRAGIndexer:
             "lua", "py", "java", "js", "ts", "html",
             "fish", "zsh", "sh", # shells
             "cpp", "cc", "c", "h", "hpp", # c related
+            "m", "mm", # objective c
             "cu", "cuh", "cl", # GPU
             "rs",
             "go",
