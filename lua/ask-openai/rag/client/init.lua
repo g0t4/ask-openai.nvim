@@ -40,6 +40,7 @@ function M.get_filetypes_for_workspace()
         kt = "kotlin",
         lhs = "lhaskell",
         m = "objc", -- others for objc?
+        mm = "objc",
         md = "markdown", -- *
         pl = "perl",
         pm = "perl",
