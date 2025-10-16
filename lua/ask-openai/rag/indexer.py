@@ -65,7 +65,7 @@ class IncrementalRAGIndexer:
     async def get_included_extensions(self):
         rag_yaml = self.source_code_dir / ".rag.yaml"
         if not rag_yaml.exists():
-            logger.debug(f"no rag config found {rag_yaml}, using default config")
+            logger.info(f"no rag config found {rag_yaml}, using default config")
             # TODO I need to create groupings of related extensions... i.e. fish+zsh+bash+sh as 'shell' type
             #   PRN also use shebang when chunking files? and look at plaintext, extensionless files w/ a shebang (esp chmod +x files)
             return [
