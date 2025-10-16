@@ -51,15 +51,15 @@ class IncrementalRAGIndexer:
         self.program_args = program_args
 
     async def main(self):
-        exts = await self.get_included_extensions()
+        index_these_file_extensions = await self.get_included_extensions()
 
         if self.program_args and self.program_args.only_extension:
-            exts = [self.program_args.only_extension]
-            logger.info(f"Indexing only extension: {exts[0]}")
+            index_these_file_extensions = [self.program_args.only_extension]
+            logger.info(f"Indexing only extension: {index_these_file_extensions[0]}")
 
-        for ext in exts:
-            await self.build_index(ext)
-        self.warn_about_other_extensions(exts)
+        for file_extension in index_these_file_extensions:
+            await self.build_index(file_extension)
+        self.warn_about_other_extensions(index_these_file_extensions)
         await signal_hotpath_done_in_background()
 
     async def get_included_extensions(self):
