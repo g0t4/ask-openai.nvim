@@ -51,7 +51,7 @@ class IncrementalRAGIndexer:
         self.program_args = program_args
 
     async def main(self):
-        index_these_file_extensions = await self.get_included_extensions()
+        index_these_file_extensions = await self.get_indexed_file_extensions()
 
         if self.program_args and self.program_args.only_extension:
             index_these_file_extensions = [self.program_args.only_extension]
@@ -62,7 +62,7 @@ class IncrementalRAGIndexer:
         self.warn_about_other_extensions(index_these_file_extensions)
         await signal_hotpath_done_in_background()
 
-    async def get_included_extensions(self):
+    async def get_indexed_file_extensions(self):
         rag_yaml = self.source_code_dir / ".rag.yaml"
         if not rag_yaml.exists():
             logger.info(f"no rag config found {rag_yaml}, using default config")
