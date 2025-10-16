@@ -9,6 +9,7 @@ import argparse
 import logging
 import subprocess
 import sys
+import yaml
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Set
@@ -76,7 +77,6 @@ class IncrementalRAGIndexer:
                 "rs",
                 "go",
             ] # yapf: disable
-        import yaml
         async with aiofiles.open(rag_yaml, mode="r") as f:
             content = await f.read()
         config = yaml.safe_load(content)
