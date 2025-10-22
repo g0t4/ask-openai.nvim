@@ -34,7 +34,7 @@ local servers = {
     commands = {
         command = "npx",
         args = {
-            "/Users/wesdemos/repos/github/g0t4/mcp-server-commands/build/index.js",
+            os.getenv("HOME") .. "/repos/github/g0t4/mcp-server-commands/build/index.js",
             -- "--verbose",
         },
     },
