@@ -137,6 +137,7 @@ def get_cached_parser(language):
 def get_cached_parser_for_path(path):
     language = path.suffix[1:]
     if language is None:
+        # PRN shebang?
         return None
     elif language == "txt":
         # no need to log... just skip txt files
@@ -159,11 +160,22 @@ def get_cached_parser_for_path(path):
         language = "cpp"
     elif language == "cs":
         language = "csharp"
+    elif language == "bash":
+        language = "bash"
     elif language == "fish":
         language = "fish"
+    elif language == "vim":
+        language = "vim"
+    elif language == "ps1":
+        language = "powershell"
     elif language == "rs":
         language = "rust"
+    elif language == "json":
+        language = "json"
     else:
+        # *** https://github.com/Goldziher/tree-sitter-language-pack#readme
+        # not (yet?): zsh, snippet, applescript?
+
         # TODO! attempt to use extension as is? or is it best if I manually map what I want?
         logger.info(f'TODO how about try get parser with extension as a fallback?')
         logger.warning(f'language not supported for tree_sitter chunker: {language=}')
