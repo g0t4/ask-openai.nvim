@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from rich import print as rich_print
+from tree_sitter import QueryCursor
 
 from lsp.fs import *
 from lsp.chunks.chunker import *
@@ -160,30 +161,39 @@ class TestTreesitterChunker_Python_TopLevelFunctions:
         tree = parser.parse(source_code)
 
         query = language.query(query_str)
+        query_cursor = QueryCursor(query)
 
-        captures = query.captures(tree.root_node)
+        def node_sexp(node, depth=0):
+            # simulate node.sexp() which is no longer present in latest py-tree-sitter
+            #  removed here: https://github.com/tree-sitter/py-tree-sitter/pull/208
+            children = [node_sexp(child, depth + 1) for child in node.children]
+            inner = " ".join(children)
+            return f"({node.type} {inner})" if inner else f"({node.type})"
+
+        captures = query_cursor.captures(tree.root_node)
         print()  # blank line
-        for node, name in captures:
-            print(name, node.type, node.start_point, node.end_point)
-            code_block = node.text.decode("utf-8")
-            scope_path = func_name(node)
-            sig_str = func_sig(node, source_code)
+        for name, nodes in captures.items():
+            for node in nodes:
+                print(f"{name=}, {node.type=}, {node.start_point=}, {node.end_point=}")
+                code_block = node.text.decode("utf-8")
+                scope_path = func_name(node)
+                sig_str = func_sig(node, source_code)
 
-            rich_print(node.sexp())
-            # BTW
-            #  SIG: is two fold:
-            #  - allows me to easily parse the key information about this chunk (i.e. if matched I can show that in UI)
-            #    - without this you'd have to attempt to parse code again and that might not go well
-            #  - PLUS it adds normalized context that the embeddings model can use
-            #
-            doc = f"""FILE: {relpath}
-FUNC: {scope_path}
-SIG : {sig_str}
-CODE:
-{code_block}
-"""
-            print(doc)
-            # DOC : {first_docline or ""}
+                rich_print("sexp", node_sexp(node))
+                # BTW
+                #  SIG: is two fold:
+                #  - allows me to easily parse the key information about this chunk (i.e. if matched I can show that in UI)
+                #    - without this you'd have to attempt to parse code again and that might not go well
+                #  - PLUS it adds normalized context that the embeddings model can use
+                #
+                doc = f"""FILE: {relpath}
+    FUNC: {scope_path}
+    SIG : {sig_str}
+    CODE:
+    {code_block}
+    """
+                print(doc)
+                # DOC : {first_docline or ""}
 
 class TestTreesitterChunker_Python_NestedFunctions:
 
