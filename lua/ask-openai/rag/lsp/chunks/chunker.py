@@ -158,7 +158,7 @@ def get_cached_parser_for_path(path):
     elif language == "cpp":
         language = "cpp"
     elif language == "cs":
-        language = "c_sharp"
+        language = "csharp"
     elif language == "rs":
         language = "rust"
     else:
@@ -214,7 +214,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         # - function_declaration => statement_block (typescript)
         # - function_definition => block (lua, python)
         #   function_definition => compound_statement (c, cpp)
-        # - local_function_statement => block (c_sharp)
+        # - local_function_statement => block (csharp)
         # - function_item => block (rust)
         stop_node_types = [
             "statement_block",
@@ -264,7 +264,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # lua: function_definition == anonymous functions
             # python: function_definition == named functions
             # lua: named functions (local_function_definition_statement/local vs function_definition_statement/global)
-            # c_sharp: local_function_statement
+            # csharp: local_function_statement
             # rust: function_item
             # FOR lua functions, grab --- triple dash comments before function (until blank line)
             nodes.append(node)
