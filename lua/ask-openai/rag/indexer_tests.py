@@ -1,3 +1,4 @@
+import os
 from lsp.logs import get_logger, logging_fwk_to_console
 
 logger = get_logger(__name__)
@@ -75,6 +76,11 @@ class TestBuildIndex:
         assert first_chunk.text.startswith(start) == True
         end = "table.insert(self.results, {status = \"fail\", message = \"Test failed: expected \" .. tostring(test.expected) .. \", got \" .. tostring(result)})\n"
         assert first_chunk.text.endswith(end) == True
+
+        home_dir: str = os.path.expanduser('~')
+        if home_dir != "/Users/wesdemos":
+            raise RuntimeError(f"Shit, your home dir is {home_dir}. This test only runs on /Users/wesdemos.")
+
         # manually computed when running on my machine... so maybe warn if not same path
         # echo -n "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag/tests/indexer_src/sample.lua:lines:0-19:b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b" | sha256sum | head -c16
         assert first_chunk.id == "e2d1d29ec4960e8f"
