@@ -27,6 +27,7 @@ dependencies = [
     "sentence-transformers>=4.1.0",
     "setuptools>=80.9.0",
     "tree-sitter>=0.25.2",
+    "tree-sitter-language-pack>=0.10.0",
     "yapf>=0.43.0",
 ]
 
