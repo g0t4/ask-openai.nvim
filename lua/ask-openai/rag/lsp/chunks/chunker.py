@@ -159,9 +159,13 @@ def get_cached_parser_for_path(path):
         language = "cpp"
     elif language == "cs":
         language = "csharp"
+    elif language == "fish":
+        language = "fish"
     elif language == "rs":
         language = "rust"
     else:
+        # TODO! attempt to use extension as is? or is it best if I manually map what I want?
+        logger.info(f'TODO how about try get parser with extension as a fallback?')
         logger.warning(f'language not supported for tree_sitter chunker: {language=}')
         return None
 
