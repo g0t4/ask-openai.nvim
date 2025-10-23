@@ -149,7 +149,7 @@ class TestTreesitterChunker_Python_TopLevelFunctions:
 
     def test_example_treesitter_query(self):
         query_str = "(module (function_definition) @toplevel.func)"
-        from tree_sitter_languages import get_parser, get_language
+        from tree_sitter_language_pack import get_parser, get_language
         parser = get_parser("python")
         language = get_language("python")
         file = test_cases_python / "two_functions.py"
@@ -277,7 +277,7 @@ class TestTreesitterChunker_Python_Class:
         assert chunks[4].signature == "def __str__(self):"
 
     # def WIP_test_ts_toplevel_query_py(self):
-    #     from tree_sitter_languages import get_parser, get_language
+    #     from tree_sitter_language_pack import get_parser, get_language
     #     parser = get_parser("python")
     #     language = get_language("python")
     #     source_code = read_bytes(test_cases_python / "class_with_functions.py")

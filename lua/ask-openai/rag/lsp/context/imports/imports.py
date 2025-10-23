@@ -2,7 +2,7 @@ import sys
 import os
 import logging
 import lsprotocol.types as types
-from tree_sitter_languages import get_language, get_parser
+from tree_sitter_language_pack import get_language, get_parser
 
 from lsp.logs import logging_fwk_to_console
 

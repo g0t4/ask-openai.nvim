@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import hashlib
 from pathlib import Path
 from tree_sitter import Node
-from tree_sitter_languages import get_language, get_parser
+from tree_sitter_language_pack import get_language, get_parser
 
 from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
 from lsp.logs import get_logger, printtmp
