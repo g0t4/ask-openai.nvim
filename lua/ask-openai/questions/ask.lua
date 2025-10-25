@@ -522,6 +522,8 @@ function M.setup()
     vim.api.nvim_create_user_command("AskQuestionAboutWithContext", ask_question_about_with_context, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('v', '<Leader>aqc', ':<C-u>AskQuestionAboutWithContext ', { noremap = true })
 
+    vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
+
     -- AskReviewDiff
     vim.api.nvim_create_user_command("AskReviewDiff", ask_review_diff, { range = true, nargs = 1 })
     vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskReviewDiff ', { noremap = true })
