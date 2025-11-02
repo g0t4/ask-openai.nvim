@@ -43,14 +43,14 @@ def is_no_rag_dir() -> bool:
         return False
     return not dot_rag_dir.exists()
 
-def set_root_dir(root: str | Path | None):
+def set_root_dir(root_dir: str | Path | None):
     global root_path, dot_rag_dir, config
 
-    if root is None:
-        logger.error(f"aborting on_initialize b/c missing client workspace dir, {root=}")
+    if root_dir is None:
+        logger.error(f"aborting on_initialize b/c missing client workspace dir, {root_dir=}")
         raise ValueError("root_uri is None")
 
-    root_path = Path(root)
+    root_path = Path(root_dir)
     logger.debug(f"{root_path=}")
 
     dot_rag_dir = Path(root_path) / ".rag"
