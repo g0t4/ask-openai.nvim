@@ -9,12 +9,13 @@ local function check_supported_dirs()
     local dot_rag_dir = cwd .. "/.rag"
 
     local is_rag_dir = files.exists(dot_rag_dir)
-    M.is_rag_indexed_workspace = is_rag_dir
 
     if not is_rag_dir then
         log:info("RAG is disabled b/c there is NO .rag dir: " .. dot_rag_dir)
         return
     end
+
+    M.is_rag_indexed_workspace = is_rag_dir
 
     M.rag_extensions = files.list_directories(dot_rag_dir)
     log:info("RAG is supported for: " .. vim.inspect(M.rag_extensions))
