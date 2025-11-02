@@ -6,7 +6,7 @@ local M = {}
 
 local function check_supported_dirs()
     local cwd = vim.fn.getcwd()
-    dot_rag_dir = cwd .. "/.rag"
+    local dot_rag_dir = cwd .. "/.rag"
 
     M.is_rag_indexed_workspace = files.exists(dot_rag_dir)
 
