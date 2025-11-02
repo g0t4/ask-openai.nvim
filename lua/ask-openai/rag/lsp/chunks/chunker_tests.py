@@ -195,6 +195,16 @@ class TestTreesitterChunker_Python_TopLevelFunctions:
                 print(doc)
                 # DOC : {first_docline or ""}
 
+class TestTreesitterChunker_Python_Decorators:
+
+    def TODO_test_functions_with_decorators(self):
+        chunks = build_test_chunks(test_cases_python / "decorators.py", RAGChunkerOptions.OnlyTsChunks())
+        # TODO
+
+    def TODO_test_decorated_class(self):
+        chunks = build_test_chunks(test_cases_python / "decorators.py", RAGChunkerOptions.OnlyTsChunks())
+        # TODO
+
 class TestTreesitterChunker_Python_NestedFunctions:
 
     def test_nested_functions(self):
