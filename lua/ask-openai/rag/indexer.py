@@ -338,12 +338,13 @@ async def main():
     logging_fwk_to_console(args.level)
 
     with logger.timer("Total indexing time"):
+        # PRN make this work in CWD first, fallback to repo root? like lua code? only when I only want a subset of a repo or non-repos
         repo_root_dir = fs.get_cwd_repo_root()
         if not repo_root_dir:
             logger.error("[red]No Git repository found in current working directory, cannot build RAG index.")
             sys.exit(1)
         dot_rag_dir = repo_root_dir / ".rag"
-        source_code_dir = "."  # TODO make this root_directory always? has been nice to test a subset of files by cd to nested dir
+        source_code_dir = "."  # TODO make this repo_root_dir always? has been nice to test a subset of files by cd to nested dir
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
         if args.rebuild:
             trash_dot_rag(dot_rag_dir)
