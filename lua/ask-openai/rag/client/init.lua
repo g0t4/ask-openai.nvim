@@ -21,7 +21,7 @@ local function check_supported_dirs()
             log:info("RAG is disabled b/c there is NO .rag dir: " .. dot_rag_dir)
             return
         end
-        log:info("found .rag in repo root: " .. git_root .. "/.rag")
+        log:info("fallback, found .rag in repo root: " .. git_root .. "/.rag")
     end
 
     M.is_rag_indexed_workspace = is_rag_dir
