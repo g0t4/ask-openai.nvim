@@ -283,7 +283,10 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # lua: named functions (local_function_definition_statement/local vs function_definition_statement/global)
             # csharp: local_function_statement
             # rust: function_item
-            # FOR lua functions, grab --- triple dash comments before function (until blank line)
+            #
+            # TODO:
+            # - lua functions, grab --- triple dash comments before function (until blank line)
+            # - py functions, decorators i.e. @dataclass right before function signature
             nodes.append(node)
             collected_parent = True
             sig = get_function_signature(node)
