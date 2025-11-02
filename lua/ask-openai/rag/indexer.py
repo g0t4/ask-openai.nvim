@@ -338,12 +338,11 @@ async def main():
     logging_fwk_to_console(args.level)
 
     with logger.timer("Total indexing time"):
-        # yup, can turn this into a command that uses git repo of CWD
-        root_directory = fs.get_cwd_repo_root()
-        if not root_directory:
+        repo_root_dir = fs.get_cwd_repo_root()
+        if not repo_root_dir:
             logger.error("[red]No Git repository found in current working directory, cannot build RAG index.")
             sys.exit(1)
-        dot_rag_dir = root_directory / ".rag"
+        dot_rag_dir = repo_root_dir / ".rag"
         source_code_dir = "."  # TODO make this root_directory always? has been nice to test a subset of files by cd to nested dir
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
         if args.rebuild:
