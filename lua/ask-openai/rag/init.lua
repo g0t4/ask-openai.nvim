@@ -33,6 +33,9 @@ function M.setup_lsp()
                 cmd_cwd = os.getenv("HOME") .. "/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag",
                 -- filetypes = rag_client.get_filetypes_for_workspace(),
                 -- filetypes = { '*' }, -- not set == all filetypes
+                --
+                -- FYI .git first means repo root is preferred, fallback is CWD
+                -- this maps to root_uri/root_path in server's on_initialize
                 root_dir = require("lspconfig.util").root_pattern(".git", "."),
             },
         }
