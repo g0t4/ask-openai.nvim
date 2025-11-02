@@ -9,6 +9,6 @@ include:
     - rs
 ignores:
     - "notes/"
-all_languages:
+global_languages:
     - lua
     - py

@@ -28,14 +28,11 @@ function _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, proc
         logs:error("canceling previous request, last_msg_id: " .. vim.inspect(last_msg_id))
         cancel_last_requests()
         cancel_last_requests = nil
-        -- TODO get lsp client and cancel all outstanding requests? or these type?
     end
 
     lsp_buffer_number = lsp_buffer_number or 0
 
     logs:warn("requesting semantic_grep, last_msg_id: " .. vim.inspect(last_msg_id))
-    -- TODO how can I cancel prior requests? my socket might be the issue :).. no cancelation mechanism :)
-    -- TODO debounce/throttle requests!!
     local msg_id, cancel_my_request
     msg_id, cancel_my_request = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
             command = "rag_query",
@@ -216,9 +213,8 @@ function semantic_grep_current_filetype_picker(opts)
         skipSameFile = false,
         -- PRN other file types?
     }
-    -- currently for ALL languages
+    -- FYI right now languages is for GLOBAL/EVERYTHING only
     lsp_rag_request.languages = opts.languages
-    local all_languages = opts.languages == "ALL"
 
     local lsp_buffer_number = vim.api.nvim_get_current_buf()
 
@@ -288,8 +284,12 @@ function semantic_grep_current_filetype_picker(opts)
 
     opts_previewer = {}
     local prompt_title = 'semantic grep 󰕡 ' .. tostring(vim.o.filetype)
-    if all_languages then
-        prompt_title = 'semantic grep 󰕡 ALL languages'
+    if opts.languages == "GLOBAL" then
+        -- TODO list global languages here? from rag.yaml?
+        prompt_title = 'semantic grep 󰕡 GLOBAL languages'
+    end
+    if opts.languages == "EVERYTHING" then
+        prompt_title = 'semantic grep 󰕡 EVERYTHING'
     end
     picker = pickers:new({
         prompt_title = prompt_title,

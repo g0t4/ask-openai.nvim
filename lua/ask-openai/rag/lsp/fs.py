@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 class Config:
     ignores: list[str] = field(default_factory=list)
     include: list[str] = field(default_factory=list)
-    all_languages: list[str] = field(default_factory=list)
+    global_languages: list[str] = field(default_factory=list)
 
     @staticmethod
     def default() -> "Config":
@@ -26,7 +26,7 @@ def load_config(yaml_text: str) -> Config:
     return Config(
         ignores=raw.get("ignores") or [],
         include=raw.get("include") or [],
-        all_languages=raw.get("all_languages") or [],
+        global_languages=raw.get("global_languages") or [],
     )
 
 root_path: Path | None = None

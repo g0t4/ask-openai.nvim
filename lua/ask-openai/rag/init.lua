@@ -107,7 +107,11 @@ function M.setup_lsp()
 end
 
 function on_agg()
-    vim.cmd("Telescope ask_semantic_grep languages=ALL")
+    vim.cmd("Telescope ask_semantic_grep languages=GLOBAL")
+end
+
+function on_age()
+    vim.cmd("Telescope ask_semantic_grep languages=EVERYTHING")
 end
 
 function on_ag()
@@ -121,7 +125,10 @@ function M.setup_telescope_picker()
         { noremap = true, silent = true, desc = 'Semantic grep Telescope picker, current filetype only' }
     )
     vim.keymap.set('n', '<leader>agg', on_agg,
-        { noremap = true, silent = true, desc = 'Semantic grep, Telescope picker, all languages' }
+        { noremap = true, silent = true, desc = 'Semantic grep, Telescope picker, global languages (subject to rag.yaml -> global_languages)' }
+    )
+    vim.keymap.set('n', '<leader>age', on_age,
+        { noremap = true, silent = true, desc = 'Semantic grep, Telescope picker, everything (NOT subject to rag.yaml -> global_languages)' }
     )
 end
 

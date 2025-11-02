@@ -53,6 +53,14 @@ function M.handles_tool(tool_name)
 end
 
 function M._context_query(parsed_args, callback)
+    local languages = ""
+    if not parsed_args.filetype then
+        -- PRN use EVERYTHING instead of GLOBAL?
+        -- when using tools that might make more sense
+        -- but for now, assume if I limit the list then I did that for a good reason that likely benefits agent tool use
+        languages = "GLOBAL" -- GLOBAL is subject to rag.yaml -> global_languages
+    end
+
     ---@type LSPRagQueryRequest
     local lsp_rag_request = {
         query = parsed_args.query,
@@ -61,8 +69,7 @@ function M._context_query(parsed_args, callback)
         currentFileAbsolutePath = "",
         -- TODO NEED TO make sure no issues using filetype vs extension....
         vimFiletype = parsed_args.filetype,
-        -- FYI right now backend only uses languages for ALL scenario, not sure why I did that
-        languages = parsed_args.filetype or "ALL", -- ALL languages if no filetype requested
+        languages = languages,
         skipSameFile = false,
         topK = parsed_args.top_k or 5,
         embedTopK = parsed_args.embed_top_k or 18,

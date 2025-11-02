@@ -52,7 +52,8 @@ async def semantic_grep(
     datasets: Datasets,
     stopper: Stopper = FAKE_STOPPER,
 ) -> list[LSPRankedMatch]:
-    all_languages = args.languages == "ALL"
+    global_search = args.languages == "GLOBAL"
+    everything_search = args.languages == "EVERYTHING"
 
     rerank_top_k = args.topK
     embed_top_k = args.embedTopK or args.topK
@@ -69,34 +70,34 @@ async def semantic_grep(
         stopper.throw_if_stopped()  # PRN add in cancel/stop logic... won't matter though if the real task isn't cancellable (and just keeps running to completion)
 
     # * search embeddings
-    if all_languages:
+    if global_search or everything_search:
         scores = []
         ids = []
 
         # * top_k_per_lang
         # crude calculations for splitting top_k... these can and will be changed long-term
-        #   consider just configuring how much per language in the all_languages config list (make each a configurable object)
+        #   consider just configuring how much per language in the global_languages config list (make each a configurable object)
         config = get_config()
-        filter_languages = config.all_languages and len(config.all_languages) > 0
-        if filter_languages:
+        filter_global_languages = global_search and config.global_languages and len(config.global_languages) > 0
+        if filter_global_languages:
             num_languages = 0
-            for lang in config.all_languages:
+            for lang in config.global_languages:
                 if lang in datasets.all_datasets:
                     num_languages += 1
         else:
             num_languages = len(datasets.all_datasets)
         if num_languages == 0:
-            logger.error(f"all_languages={config.all_languages}, but no datasets match")
-            raise Exception(f"all_languages={config.all_languages}, but no datasets match")
+            logger.error(f"no languages for multi-language RAG query using: {args.languages=}")
+            raise Exception(f"No languages for multi-language RAG query using: {args.languages=}")
         top_k_per_lang = round(1.5 * query_embed_top_k / num_languages)  # over sample each language by 50%
-        logger.info(f"{top_k_per_lang=} {config.all_languages=}")
+        # logger.info(f"{top_k_per_lang=}")
 
         for lang, ds in datasets.all_datasets.items():
-            if filter_languages and lang not in config.all_languages:
-                logger.warn(f"skipping language: {lang}")
+            if filter_global_languages and lang not in config.global_languages:
+                logger.warn(f"skipping dataset for {lang=}")
                 continue
 
-            logger.info(f"searching {lang} index")
+            logger.info(f"searching dataset for {lang=}")
             _scores, _ids = ds.index.search(query_vector, top_k_per_lang)
             scores.extend(_scores[0])
             ids.extend(_ids[0])
@@ -117,7 +118,9 @@ async def semantic_grep(
 
     # * lookup matching chunks (filter any exclusions on metadata)
     id_score_pairs = zip(ids, scores)
-    if all_languages:
+    if global_search or everything_search:
+        # IIRC within each language, the results are sorted by score
+        #   thus need to sort across languages when there are multiple
         id_score_pairs = sorted(id_score_pairs, key=lambda x: x[1], reverse=True)
 
     matches: list[LSPRankedMatch] = []
@@ -160,7 +163,7 @@ async def semantic_grep(
         if num_embeds >= embed_top_k:
             # this is the case when we need to skipSameFile
             # - over query with query_embed_top_k
-            # - also over query when doing all_languages (not just top_k/num_languages)
+            # - also over query when doing global_languages/everything_languages (not just top_k/num_languages)
             break
 
     if len(matches) == 0:
