@@ -220,12 +220,21 @@ class TestTreesitterChunker_Lua_DocumentationComments:
     def setup_method(self):
         self.chunks = build_test_chunks(test_cases_lua / "doc_comments.lua", RAGChunkerOptions.OnlyTsChunks())
 
-    def test_function_annotations(self):
-        for c in self.chunks:
-            print("********")
-            print(c.text)
+    def test_function_annotations_Adder(self):
+        chunk = self.chunks[0]
+        expected_first_chunk = """---@param a number
+---@param b number
+---@return number
+function Adder(a, b)
+    return a + b
+end"""
+        assert chunk.text == expected_first_chunk
 
-        print()
+        # for c in self.chunks:
+        #     print("********")
+        #     print(c.text)
+        #
+        # print()
 
         # FYI it's not just annotations, you can have comments that describe the function, though I will think of those as annotations
         #   perhaps rename as func "docs"?
