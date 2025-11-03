@@ -234,8 +234,10 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # print(node.prev_sibling)
             collected_parent = True
             sigs_by_node[node] = get_function_signature(node)
-        elif node.type == "class_definition" \
-            or node.type == "class_declaration":
+        elif node.type in [
+                "class_definition",
+                "class_declaration",
+        ]:
             # typescript class_declaration
             # python
             nodes.append(node)
