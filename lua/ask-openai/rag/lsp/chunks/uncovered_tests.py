@@ -8,7 +8,7 @@ logging_fwk_to_console("INFO")
 
 class TestUncoveredNodes():
 
-    def test_uncovered(self):
+    def test_single_function_uncovered(self):
         lua_parser = get_parser('lua')
         tree = lua_parser.parse(bytes('function a() return 1 end', 'utf8'))
         uncovered_code = _debug_uncovered_nodes(tree, bytes('function a() return 1 end', 'utf8'), [], Path('foo.lua'))
