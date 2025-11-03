@@ -62,7 +62,7 @@ class DatasetsValidator:
         else:
             logger.debug("[bold green]ALL CHECKS PASS!")
 
-if __name__ == "__main__":
+def main():
     # usage:
     #   python3 -m index.validate $(_repo_root)/.rag
 
@@ -76,3 +76,6 @@ if __name__ == "__main__":
 
     if validator.any_problems:
         sys.exit(1)
+
+if __name__ == "__main__":
+    main()
