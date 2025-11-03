@@ -277,21 +277,18 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             for node in chunk.sibling_nodes:
                 covered_spans.append((node.start_byte, node.end_byte))
 
-        if not covered_spans:
-            logger_uncovered.debug("No covered nodes to subtract.")
-            return
-
         # Merge overlapping or contiguous spans
         covered_spans.sort()
         merged = []
-        cur_start, cur_end = covered_spans[0]
-        for start, end in covered_spans[1:]:
-            if start <= cur_end:
-                cur_end = max(cur_end, end)
-            else:
-                merged.append((cur_start, cur_end))
-                cur_start, cur_end = start, end
-        merged.append((cur_start, cur_end))
+        if len(covered_spans) > 0:
+            cur_start, cur_end = covered_spans[0]
+            for start, end in covered_spans[1:]:
+                if start <= cur_end:
+                    cur_end = max(cur_end, end)
+                else:
+                    merged.append((cur_start, cur_end))
+                    cur_start, cur_end = start, end
+            merged.append((cur_start, cur_end))
 
         # Invert the spans to get uncovered byte ranges
         uncovered_spans = []
@@ -303,24 +300,21 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         if last_end < len(source_bytes):
             uncovered_spans.append((last_end, len(source_bytes)))
 
-        # Log uncovered sections
-        if not uncovered_spans:
-            logger_uncovered.debug("All nodes are covered by key chunks.")
-            return
-
         relative_path = path.relative_to(os.getcwd())
-        logger_uncovered.debug(
-            f"[bold on red] *********************** Uncovered nodes {relative_path} *********************** [/]"
-        )
+
+        if not uncovered_spans:
+            # logger_uncovered.debug(f" **** NO uncoverd nodes: {relative_path} **** ")
+            return
+        logger_uncovered.debug(f"[bold on red] *********************** Uncovered nodes {relative_path} *********************** [/]")
+        if not covered_spans:
+            logger_uncovered.debug("[red]No covered nodes to subtract.[/]")
 
         for start, end in uncovered_spans:
             text = source_bytes[start:end].decode("utf-8", errors="replace").rstrip()
             if text.strip():
                 start_line = source_bytes[:start].count(b"\n") + 1
                 end_line = start_line + text.count("\n")
-                logger_uncovered.debug(
-                    f"[black on yellow] uncovered bytes {start_line}–{end_line} [/]\n{text}\n"
-                )
+                logger_uncovered.debug(f"[black on yellow] uncovered bytes {start_line}–{end_line} [/]\n{text}\n")
 
     def debug_uncovered_lines(source_bytes, identified_chunks):
 
