@@ -16,6 +16,17 @@ class TestUncoveredNodes():
         tree = parser.parse(source_bytes)
         return source_bytes, tree
 
+    def test_fully_covered_single_function(self):
+        source_bytes, tree = self.parse_lua('function a() return 1 end')
+        identified_chunks = [IdentifiedChunk(
+            sibling_nodes=[tree.root_node.children[0]],
+            signature='a',
+        )]
+
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
+
+        assert len(uncovered_code) == 0
+
     def test_single_function_uncovered(self):
         source_bytes, tree = self.parse_lua('function a() return 1 end')
 
@@ -30,7 +41,6 @@ class TestUncoveredNodes():
     def test_start_and_end_uncovered_code(self):
         # three functions, middle is covered
         source_bytes, tree = self.parse_lua('function a() return 1 end\nfunction b() return 2 end\nfunction c() return 3 end')
-
         identified_chunks = [IdentifiedChunk(
             sibling_nodes=[tree.root_node.children[1]],
             signature='b',
