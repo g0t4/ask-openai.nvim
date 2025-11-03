@@ -321,40 +321,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 end_line = start_line + text.count("\n")
                 logger_uncovered.debug(f"[black on yellow] uncovered bytes {start_line}–{end_line} [/]\n{text}\n")
 
-    def debug_uncovered_lines(source_bytes, identified_chunks):
-
-        # TODO flag uncovered nodes instead of lines! and then recreate line #s using the node offsets
-        # assume node start/end line dictates covered lines
-        covered_line_numbers = set()
-        for chunk in identified_chunks:
-            # TODO! factor in multiple nodes (not just primary)
-            node = chunk.primary_node
-            start_line = node.start_point[0]
-            end_line = node.end_point[0]  # inclusive
-            for line_number in range(start_line, end_line + 1):
-                covered_line_numbers.add(line_number)
-
-        source_lines = source_bytes.splitlines()
-
-        all_line_numbers = set(range(len(source_lines)))
-        uncovered_line_numbers = sorted(all_line_numbers - covered_line_numbers)
-
-        if uncovered_line_numbers:
-            relative_path = path.relative_to(os.getcwd())  # ? use .rag dir's parent?
-            logger_uncovered.debug(f"[bold on red] *********************** Uncovered lines {relative_path} *********************** [/]  ")
-            last_line_number = -1
-            for line_number in uncovered_line_numbers:
-                if line_number - last_line_number > 1:
-                    logger_uncovered.debug("[black on yellow]-------[/]")  # divide non-contiguous ranges
-                # Show line number (1‑based) and content
-                logger_uncovered.debug(f"{line_number+1:4d}: {source_lines[line_number].decode('utf-8', errors='replace')}")
-                last_line_number = line_number
-        else:
-            logger_uncovered.debug("All lines are covered by key nodes.")
-
     identified_chunks = identify_chunks(tree.root_node)
     if logger_uncovered.isEnabledForDebug():
-        debug_uncovered_lines(source_bytes, identified_chunks)
         debug_uncovered_nodes(tree, source_bytes, identified_chunks, logger_uncovered, path)
 
     ts_chunks = []
