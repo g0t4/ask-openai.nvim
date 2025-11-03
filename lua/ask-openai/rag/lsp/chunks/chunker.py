@@ -229,19 +229,16 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # - lua functions, grab --- triple dash comments before function (until blank line)
             # - py functions, decorators i.e. @dataclass right before function signature
             nodes.append(node)
+            # print(node.prev_sibling)
             collected_parent = True
-            sig = get_function_signature(node)
-            if sig is not None:
-                sigs_by_node[node] = sig
+            sigs_by_node[node] = get_function_signature(node)
         elif node.type == "class_definition" \
             or node.type == "class_declaration":
             # typescript class_declaration
             # python
             nodes.append(node)
             collected_parent = True
-            sig = get_class_signature(node)
-            if sig is not None:
-                sigs_by_node[node] = sig
+            sigs_by_node[node] = get_class_signature(node)
         elif logger.isEnabledForDebug() and not collected_parent:
             debug_uncollected_node(node)
         # else:
