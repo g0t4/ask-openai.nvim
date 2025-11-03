@@ -178,6 +178,9 @@ class Datasets:
                     faiss_id = chunk.faiss_id
                     self._chunks_by_faiss_id[faiss_id] = chunk
 
+    def get_indexed_extensions(self) -> set[str]:
+        return set(self.all_datasets.keys())
+
     def get_chunk_by_faiss_id(self, faiss_id) -> Optional[Chunk]:
         # now consumers have no knowledge of the cache
         #  this will help with updates too, to not let the updater have to think about this
