@@ -72,15 +72,15 @@ class DatasetsValidator:
                 extension = Path(filename).suffix.lower().lstrip('.')
                 if extension:
                     extension_counts[extension] += 1
-        EXTENSION_COUNT_THRESHOLD = 10
 
-        frequent_exts: Set[str] = {e for e, cnt in extension_counts.items() if cnt > EXTENSION_COUNT_THRESHOLD}
+        EXTENSION_COUNT_THRESHOLD = 10
+        frequent_exts: Set[str] = {extension for extension, cnt in extension_counts.items() if cnt > EXTENSION_COUNT_THRESHOLD}
         indexed_extensions = set(datasets.all_datasets.keys())
         missing_exts: Set[str] = frequent_exts - indexed_extensions
 
         if missing_exts:
-            missing_counts = {ext: extension_counts[ext] for ext in missing_exts}
-            logger.debug("Found unindexed extensions: " + ", ".join(f"{ext}={cnt}" for ext, cnt in missing_counts.items()))
+            missing_counts = {extension: extension_counts[extension] for extension in missing_exts}
+            logger.debug("Found unindexed extensions: " + ", ".join(f"{extension}={count}" for extension, count in missing_counts.items()))
         else:
             logger.debug("All good, no missing extensions, you lucky motherf***er")
 
