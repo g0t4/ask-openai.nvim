@@ -3,6 +3,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 
+import portion as P
 from tree_sitter import Tree
 from lsp.chunks.identified import IdentifiedChunk
 from lsp.logs import get_logger
@@ -40,45 +41,29 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
     return uncovered_code
 
 def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk]) -> list[UncoveredCode]:
+    print()
 
     # * collect covered node byte spans
     covered_spans = []
     for chunk in chunks:
         for node in chunk.sibling_nodes:
-            covered_spans.append((node.start_byte, node.end_byte))
+            covered = P.openclosed(node.start_byte, node.end_byte)
+            covered_spans.append(covered)
+    print("covered", covered_spans)
 
-    # * merge overlapping or contiguous spans
+    # * collect uncovered byte spans
     covered_spans.sort()
-    merged_covered_spans = []
-    if len(covered_spans) > 0:
-        cur_start, cur_end = covered_spans[0]
-        for start, end in covered_spans[1:]:
-            if start <= cur_end:
-                # contiguous (or overlapping) => combine spans
-                cur_end = max(cur_end, end)
-            else:
-                # start > cur_end (not contiguous == uncovered span from cur_end => start)
-                combined_span = (cur_start, cur_end)
-                merged_covered_spans.append(combined_span)
-                cur_start, cur_end = start, end
-        last_combined = (cur_start, cur_end)
-        merged_covered_spans.append(last_combined)
-
-    # * invert merged_covered_spans to get uncovered byte ranges
-    uncovered_spans = []
-    last_end = 0
-    for start, end in merged_covered_spans:
-        if start > last_end:
-            # gap (last_end => start) == uncovered span
-            uncovered_spans.append((last_end, start))
-        last_end = end
-    total_bytes = len(source_bytes)
-    if last_end < total_bytes:
-        uncovered_spans.append((last_end, total_bytes))
+    uncovered_spans = P.openclosed(0, len(source_bytes))
+    for s in covered_spans:
+        uncovered_spans -= s
 
     # * collect uncovered code
     uncovered_code: list[UncoveredCode] = []
-    for start, end in uncovered_spans:
+    for span in uncovered_spans:
+        print("uncovered", span)
+        start = span.lower
+        end = span.upper
+        print(start, end)
         text = source_bytes[start:end].decode("utf-8", errors="replace").rstrip()
         if text.strip():
             start_line_base1 = source_bytes[:start].count(b"\n") + 1
