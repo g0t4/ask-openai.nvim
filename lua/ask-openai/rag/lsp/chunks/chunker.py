@@ -135,7 +135,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     with logger.timer(f'parse_ts {path}'):
         tree = parser.parse(source_bytes)
 
-    def get_class_signature(node):
+    def get_class_signature(node) -> str:
         sig = None
         stop_before_node = None
 
@@ -163,7 +163,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 .decode("utf-8", errors="replace") \
                 .strip()
 
-    def get_function_signature(node):
+    def get_function_signature(node) -> str:
         # printtmp(f'\n [red]{node.type=}[/]')
 
         sig = None
