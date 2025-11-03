@@ -1,4 +1,5 @@
 from pathlib import Path
+import subprocess
 import sys
 from lsp.storage import load_all_datasets, Datasets
 from lsp.logs import get_logger, logging_fwk_to_console
@@ -66,22 +67,30 @@ class DatasetsValidator:
             logger.debug("[bold green]ALL CHECKS PASS!")
 
     def find_unindexed_languages(self, datasets: Datasets) -> None:
-        extension_counts: Counter[str] = Counter()
-        for root, _, files in os.walk(Path.cwd()):
-            for filename in files:
-                extension = Path(filename).suffix.lower().lstrip('.')
+
+        def find_extensions_in_cwd():
+            fd_command = ["fd", "--type", "file"]  # `fd` respects ignores
+            out = subprocess.check_output(fd_command, text=True)
+            # PRN git ls-files or other fallback
+
+            extension_counts = Counter()
+            for file_path in out.splitlines():
+                extension = Path(file_path).suffix.lower().lstrip(".")
                 if extension:
                     extension_counts[extension] += 1
+            return extension_counts
+
+        extension_counts = find_extensions_in_cwd()
 
         EXTENSION_COUNT_THRESHOLD = 10
-        IGNORE_EXTENSIONS_ALWAYS = set(["pyc"])
         frequent_extensions = {extension for extension, count in extension_counts.items() if count > EXTENSION_COUNT_THRESHOLD}
         indexed_extensions = datasets.get_indexed_extensions()
-        missing_extensions = frequent_extensions - indexed_extensions - IGNORE_EXTENSIONS_ALWAYS
+        missing_extensions = frequent_extensions - indexed_extensions
+        # ? split into rag.yaml ignored vs just not indexed at all (two prints?)
 
         if missing_extensions:
             missing_counts = {extension: extension_counts[extension] for extension in missing_extensions}
-            logger.debug("Found unindexed extensions: " + ", ".join( \
+            logger.debug("Found prominent, unindexed extensions: " + ", ".join( \
                 f"{extension}={count}" for extension, count in missing_counts.items()))
         else:
             logger.debug("All good, no missing extensions, you lucky motherf***er")
