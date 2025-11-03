@@ -13,6 +13,9 @@ class TestUncoveredNodes():
         tree = lua_parser.parse(bytes('function a() return 1 end', 'utf8'))
         uncovered_code = _debug_uncovered_nodes(tree, bytes('function a() return 1 end', 'utf8'), [], Path('foo.lua'))
         assert len(uncovered_code) == 1
-        assert uncovered_code[0].text == 'function a() return 1 end'
+        only = uncovered_code[0]
+        assert only.text == 'function a() return 1 end'
+        assert only.start_line_base1 == 1
+        assert only.end_line_base1 == 1
 
     # TODO flesh out tests of returning the uncovered code

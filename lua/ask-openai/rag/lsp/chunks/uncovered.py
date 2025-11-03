@@ -13,8 +13,8 @@ logger_uncovered.setLevel(logging.DEBUG)
 @dataclass
 class UncoveredCode:
     text: str
-    start_line_base0: int
-    end_line_base0: int
+    start_line_base1: int
+    end_line_base1: int
 
 def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, identified_chunks: list[IdentifiedChunk], relative_path: Path):
     if not logger_uncovered.isEnabledForDebug():
@@ -76,13 +76,13 @@ def _debug_uncovered_nodes(
     for start, end in uncovered_spans:
         text = source_bytes[start:end].decode("utf-8", errors="replace").rstrip()
         if text.strip():
-            start_line = source_bytes[:start].count(b"\n") + 1
-            end_line = start_line + text.count("\n")
+            start_line_base1 = source_bytes[:start].count(b"\n") + 1
+            end_line_base1 = start_line_base1 + text.count("\n")
             # FYI I am not computing column offsets, for uncovered code purposes I think that's fine for now b/c...
             # - this is only going to be for sliding window "fallback" chunker which is 100% fine to cover a smidge extra
             # - I might even cover X lines around window too so columns on the start/end line don't matter
-            logger_uncovered.debug(f"[black on yellow] uncovered bytes (within lines: {start_line}–{end_line}) [/]\n{text}\n")
-            uncovered_code.append(UncoveredCode(text=text, start_line_base0=start_line, end_line_base0=end_line))
+            logger_uncovered.debug(f"[black on yellow] uncovered bytes (within lines: {start_line_base1}–{end_line_base1}) [/]\n{text}\n")
+            uncovered_code.append(UncoveredCode(text=text, start_line_base1=start_line_base1, end_line_base1=end_line_base1))
         # else:
         #     # ? return whitespace only sections?
         #     start_line = source_bytes[:start].count(b"\n") + 1
