@@ -10,8 +10,9 @@ class TestUncoveredNodes():
 
     def test_single_function_uncovered(self):
         lua_parser = get_parser('lua')
-        tree = lua_parser.parse(bytes('function a() return 1 end', 'utf8'))
-        uncovered_code = _debug_uncovered_nodes(tree, bytes('function a() return 1 end', 'utf8'), [], Path('foo.lua'))
+        source_bytes = bytes('function a() return 1 end', 'utf8')
+        tree = lua_parser.parse(source_bytes)
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, [], Path('foo.lua'))
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
         assert only.text == 'function a() return 1 end'
