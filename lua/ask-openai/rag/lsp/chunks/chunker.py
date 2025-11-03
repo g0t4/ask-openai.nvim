@@ -210,8 +210,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         nodes: list[Node] = []
         sigs_by_node: dict[Node, str] = {}
 
-        # TODO map new languages... i.e. fish/bash/vim added recently
-        #   run the detailed logging and see what nodes might need classified
         if node.type in [
                 "function_definition",
                 "local_function_definition_statement",
