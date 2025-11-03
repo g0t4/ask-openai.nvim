@@ -239,6 +239,19 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 sibling_nodes=[node],
                 signature=get_function_signature(node),
             )
+            if parser_language == "lua":
+
+                def insert_previous_doc_comment(node, sibling_nodes: list) -> None:
+                    prev = node.prev_sibling
+                    prev_is_doc_comment = prev and prev.type == "comment"
+                    if not prev_is_doc_comment:
+                        return
+
+                    sibling_nodes.insert(0, prev)
+                    insert_previous_doc_comment(prev, sibling_nodes)
+
+                insert_previous_doc_comment(node, chunk.sibling_nodes)
+
             chunks.append(chunk)
             collected_parent = True
         elif node.type in [
