@@ -51,16 +51,18 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
             covered_spans |= covered
     print("covered", covered_spans)
 
-    # * collect uncovered byte spans
     uncovered_spans = P.openclosed(0, len(source_bytes)) - covered_spans
 
     # * collect uncovered code
     uncovered_code: list[UncoveredCode] = []
     for span in uncovered_spans:
         print("uncovered", span)
+        assert span.left == P.Bound.OPEN
+        assert span.right == P.Bound.CLOSED
+        # FYI logic below assumes open/closed (use assertions for now to ensure that reality)
+        #  slice below treats end as not-inclusive, thus matches open/closed
         start = span.lower
         end = span.upper
-        print(start, end)
         text = source_bytes[start:end].decode("utf-8", errors="replace").rstrip()
         if text.strip():
             start_line_base1 = source_bytes[:start].count(b"\n") + 1
