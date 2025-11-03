@@ -13,7 +13,9 @@ class TestUncoveredNodes():
         lua_parser = get_parser('lua')
         source_bytes = bytes('function a() return 1 end', 'utf8')
         tree = lua_parser.parse(source_bytes)
+
         uncovered_code = _debug_uncovered_nodes(tree, source_bytes, [], Path('foo.lua'))
+
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
         assert only.text == 'function a() return 1 end'
@@ -27,9 +29,11 @@ class TestUncoveredNodes():
         tree = lua_parser.parse(source_bytes)
         identified_chunks = [IdentifiedChunk(
             sibling_nodes=[tree.root_node.children[1]],
-            signature='function b() return 2 end',
+            signature='b',
         )]
+
         uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks, Path('foo.lua'))
+
         assert len(uncovered_code) == 2
         start_uncovered = uncovered_code[0]
         assert start_uncovered.text == 'function a() return 1 end'
@@ -42,5 +46,25 @@ class TestUncoveredNodes():
         assert end_uncovered.text == '\nfunction c() return 3 end'
         assert end_uncovered.start_line_base1 == 2
         assert end_uncovered.end_line_base1 == 3
+
+    def test_middle_uncovered_code(self):
+        lua_parser = get_parser('lua')
+        source_bytes = bytes('function a() return 1 end\nfunction b() return 2 end\nfunction c() return 3 end', 'utf8')
+        tree = lua_parser.parse(source_bytes)
+        identified_chunks = [IdentifiedChunk(
+            sibling_nodes=[tree.root_node.children[0]],
+            signature='a',
+        ), IdentifiedChunk(
+            sibling_nodes=[tree.root_node.children[2]],
+            signature='c',
+        )]
+
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks, Path('foo.lua'))
+
+        assert len(uncovered_code) == 1
+        middle_uncovered = uncovered_code[0]
+        assert middle_uncovered.text == '\nfunction b() return 2 end'
+        assert middle_uncovered.start_line_base1 == 1
+        assert middle_uncovered.end_line_base1 == 2
 
     # TODO flesh out tests of returning the uncovered code
