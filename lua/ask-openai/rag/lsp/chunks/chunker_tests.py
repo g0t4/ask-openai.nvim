@@ -198,16 +198,20 @@ class TestTreesitterChunker_Python_TopLevelFunctions:
 
 class TestTreesitterChunker_Python_Decorators:
 
+    def setup_method(self):
+        self.chunks = build_test_chunks(test_cases_python / "decorators.py", RAGChunkerOptions.OnlyTsChunks())
+
     def TODO_test_functions_with_decorators(self):
-        chunks = build_test_chunks(test_cases_python / "decorators.py", RAGChunkerOptions.OnlyTsChunks())
+        # TODO reference tests below for lua annotations/doc_comments
+        pass
         # TODO
 
     def TODO_test_decorated_class(self):
-        chunks = build_test_chunks(test_cases_python / "decorators.py", RAGChunkerOptions.OnlyTsChunks())
+        pass
         # TODO
 
     def TODO_test_nested_function_with_decorator(self):
-        chunks = build_test_chunks(test_cases_python / "decorators.py", RAGChunkerOptions.OnlyTsChunks())
+        pass
         #  log_and_call_nested => functools.lru_cache()
         # TODO
 
