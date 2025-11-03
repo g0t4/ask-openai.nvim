@@ -4,10 +4,10 @@ import logging
 from pathlib import Path
 
 from tree_sitter import Node
-from tree_sitter_language_pack import get_language, get_parser
 
 from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
 from lsp.logs import get_logger, printtmp
+from lsp.chunks.parsers import get_cached_parser_for_path
 
 logger = get_logger(__name__)
 # logger.setLevel(logging.DEBUG)
@@ -124,66 +124,6 @@ def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[s
             )
 
     return list(iter_chunks())
-
-parsers_by_language = {}
-
-def get_cached_parser(language):
-    if language in parsers_by_language:
-        return parsers_by_language[language]
-
-    with logger.timer('get_parser' + language):
-        parser = get_parser(language)
-        parsers_by_language[language] = parser
-    return parser
-
-def get_cached_parser_for_path(path):
-    language = path.suffix[1:]
-    if language is None:
-        # PRN shebang?
-        return None
-    elif language == "txt":
-        # no need to log... just skip txt files
-        return None
-    elif language == "py":
-        language = "python"
-    elif language == "sh":
-        language = "bash"
-    # elif language == "fish":
-    #     language = "fish"
-    elif language == "lua":
-        language = "lua"
-    elif language == "js":
-        language = "javascript"
-    elif language == "ts":
-        language = "typescript"
-    elif language == "c":
-        language = "c"
-    elif language == "cpp":
-        language = "cpp"
-    elif language == "cs":
-        language = "csharp"
-    elif language == "bash":
-        language = "bash"
-    elif language == "fish":
-        language = "fish"
-    elif language == "vim":
-        language = "vim"
-    elif language == "ps1":
-        language = "powershell"
-    elif language == "rs":
-        language = "rust"
-    elif language == "json":
-        language = "json"
-    else:
-        # *** https://github.com/Goldziher/tree-sitter-language-pack#readme
-        # not (yet?): zsh, snippet, applescript?
-
-        # TODO! attempt to use extension as is? or is it best if I manually map what I want?
-        logger.info(f'TODO how about try get parser with extension as a fallback?')
-        logger.warning(f'language not supported for tree_sitter chunker: {language=}')
-        return None
-
-    return get_cached_parser(language)
 
 def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: bytes, options: RAGChunkerOptions) -> list[Chunk]:
 
@@ -316,7 +256,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             sigs_by_node.update(_sigs_by_node)
 
         return nodes, sigs_by_node
-
 
     def debug_uncovered_lines(source_bytes, key_nodes):
         """
