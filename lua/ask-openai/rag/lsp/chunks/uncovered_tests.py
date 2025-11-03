@@ -41,19 +41,34 @@ class TestUncoveredNodes():
 
     def test_start_and_end_uncovered_code(self):
         # three functions, middle is covered
-        # KEEP IN MIND \n => one byte (not two)
-        # range math:
-        # a => (0,25]  or (0,24) -- 25 chars
-        # b => (25,51] or (25,50) -- \n==1 + 25 chars == 26 chars
-        # c => (51,77] or (51,76) -- 26 chars too (same \n==1 + 25 chars)
-        source_bytes, tree = self.parse_lua('function a() return 1 end\nfunction b() return 2 end\nfunction c() return 3 end')
-        # print(len(source_bytes))  # --25*3 + 2 (two newlines) == 77 chars
+        code = 'function a() return 1 end\nfunction b() return 2 end\nfunction c() return 3 end'
+        source_bytes, tree = self.parse_lua(code)
         identified_chunks = [IdentifiedChunk(
             sibling_nodes=[tree.root_node.children[1]],
             signature='b',
         )]
-        for child in tree.root_node.children:
-            print("child", child.start_byte, child.end_byte, str(child.text))
+
+        # * review range inclusivity/exclusivity
+        # print(f'{len(code)=}') # 77 characters (\n == 1 char)
+        # print(len(source_bytes))  # 77 bytes
+        #
+        # print(f'{source_bytes[77]=}') # fails b/c no 78th char (this is base0)
+        #
+        # KEEP IN MIND \n => one byte (not two)
+        #
+        # for child in tree.root_node.children:
+        #     # END BYTE IS NOT INCLUSIVE (checked total length is 77 on this example, last end_byte==77 Q.E.D.)
+        #     print("child", child.start_byte, child.end_byte, str(child.text))
+        #     print(f'{child.byte_range=} {child.range=}')
+        # child.byte_range=(0, 25) child.range=<Range start_point=(0, 0), end_point=(0, 25), start_byte=0, end_byte=25>
+        #   a => (0,25]  or (0,24) -- 25 chars
+        # char #25 (base0) is SKIPPED (\n) - treesitter skips this (see consecutive end/start_byte values and it's missing
+        # child.byte_range=(26, 51) child.range=<Range start_point=(1, 0), end_point=(1, 25), start_byte=26, end_byte=51>
+        #   b => (26,51] or (26,50) -- \n==1 + 25 chars == 26 chars
+        # char #51 (base0) is SKIPPED (\n)
+        # child.byte_range=(52, 77) child.range=<Range start_point=(2, 0), end_point=(2, 25), start_byte=52, end_byte=77>       #
+        #   c => (52,77] or (52,76) -- 26 chars too (same \n==1 + 25 chars)
+        #   ends are OPEN/CLOSE (confirmed)
 
         uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
 

@@ -66,6 +66,7 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         end = span.upper
         # TODO drop rstrip? why would I need that if the range is not inclusive?
         # TODO seems to be bug that results in \n on front of next line?
+        # TODO why am I getting \n in front and end of middle line?! see multi node tests
         text = source_bytes[start:end].decode("utf-8", errors="replace").rstrip()
 
         not_empty_or_whitespace = text.strip()
