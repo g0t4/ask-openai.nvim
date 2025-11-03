@@ -205,6 +205,29 @@ class TestTreesitterChunker_Python_Decorators:
         chunks = build_test_chunks(test_cases_python / "decorators.py", RAGChunkerOptions.OnlyTsChunks())
         # TODO
 
+class TestTreesitterChunker_Lua_DocumentationComments:
+
+    def TODO_test_function_annotations(self):
+        # FYI it's not just annotations, you can have comments that describe the function, though I will think of those as annotations
+        #   perhaps rename as func "docs"?
+        # TODO include all comments immediately preceding a function signature
+        #   until blank line
+        #   OR until non-comment node
+        pass
+        # TODO
+
+    def TODO_test_function_with_non_annotation_comment(self):
+        pass
+        # TODO
+
+    def TODO_test_function_without_blank_line_before_comments(self):
+        pass
+        # TODO
+
+    def TODO_test_table_annotations(self):
+        pass
+        # TODO
+
 class TestTreesitterChunker_Python_NestedFunctions:
 
     def test_nested_functions(self):
