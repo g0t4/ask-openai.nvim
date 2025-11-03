@@ -26,8 +26,6 @@ def get_cached_parser_for_path(path):
         language = "python"
     elif language == "sh":
         language = "bash"
-    # elif language == "fish":
-    #     language = "fish"
     elif language == "lua":
         language = "lua"
     elif language == "js":
