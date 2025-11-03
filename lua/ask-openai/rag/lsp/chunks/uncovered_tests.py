@@ -84,4 +84,25 @@ class TestUncoveredNodes():
 
         assert len(uncovered_code) == 0
 
+    def test_non_consecutive_single_chunk(self):
+        # I do not have plans for this currently, nonetheless it can help me sniff out edge cases in my uncovered detection
+        source_bytes, tree = self.parse_lua('function a() return 1 end\nfunction b() return 2 end\nfunction c() return 3 end')
+        func_a = tree.root_node.children[0]
+        func_c = tree.root_node.children[2]
+        identified_chunks = [
+            IdentifiedChunk(
+                # hypothetically could chunk non-contiguous nodes
+                sibling_nodes=[func_a, func_c],
+                signature='a',
+            )
+        ]
+
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks, Path('foo.lua'))
+
+        assert len(uncovered_code) == 1
+        only = uncovered_code[0]
+        assert only.text == '\nfunction b() return 2 end'
+        assert only.start_line_base1 == 1
+        assert only.end_line_base1 == 2
+
     # TODO flesh out tests of returning the uncovered code
