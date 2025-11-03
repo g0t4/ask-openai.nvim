@@ -279,7 +279,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
         # Merge overlapping or contiguous spans
         covered_spans.sort()
-        merged = []
+        merged_covered_spans = []
         if len(covered_spans) > 0:
             cur_start, cur_end = covered_spans[0]
             for start, end in covered_spans[1:]:
@@ -288,16 +288,16 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                     cur_end = max(cur_end, end)
                 else:
                     # start > cur_end (not contiguous == uncovered span from cur_end => start)
-                    combined = (cur_start, cur_end)
-                    merged.append(combined)
+                    combined_span = (cur_start, cur_end)
+                    merged_covered_spans.append(combined_span)
                     cur_start, cur_end = start, end
             last_combined = (cur_start, cur_end)
-            merged.append(last_combined)
+            merged_covered_spans.append(last_combined)
 
         # Invert the spans to get uncovered byte ranges
         uncovered_spans = []
         last_end = 0
-        for start, end in merged:
+        for start, end in merged_covered_spans:
             if start > last_end:
                 uncovered_spans.append((last_end, start))
             last_end = end
