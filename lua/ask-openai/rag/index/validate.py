@@ -87,14 +87,6 @@ class DatasetsValidator:
         indexed_extensions = datasets.get_indexed_extensions()
         missing_extensions = frequent_extensions - indexed_extensions
 
-        # ? split into rag.yaml ignored vs just not indexed at all (two prints?)
-        # from lsp.fs import get_config
-        # config = get_config()
-        # print(config)
-        # TODO this has to be passed? b/c it is not set here! so default kicks in b/c no set_root_dir .. PERHAPS throw in that case?
-        # ? partition with config.include
-        # ? partition with config.ignores (or outright ignore - see what LSP does) => files that are versioned but that I don't want to be RAG indexed (or is it fine? originaly I was thinking of this to remove noise... i.e. notes)
-
         if missing_extensions:
             missing_counts = {extension: extension_counts[extension] for extension in missing_extensions}
             logger.debug("Found prominent, unindexed extensions: " + ", ".join( \
