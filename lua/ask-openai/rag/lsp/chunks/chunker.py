@@ -246,6 +246,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                     prev_is_doc_comment = prev and prev.type == "comment"
                     if not prev_is_doc_comment:
                         return
+                    # TODO ensure not blank line between (comment's end_point will have line # that is 2 less than node's start_point=>line)
 
                     sibling_nodes.insert(0, prev)
                     insert_previous_doc_comment(prev, sibling_nodes)
