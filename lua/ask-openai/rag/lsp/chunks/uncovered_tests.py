@@ -69,4 +69,19 @@ class TestUncoveredNodes():
         assert middle_uncovered.start_line_base1 == 1
         assert middle_uncovered.end_line_base1 == 2
 
+    def test_consecutive_covered_code(self):
+        # ? do I really need this test?
+        source_bytes, tree = self.parse_lua('function a() return 1 end\nfunction b() return 2 end')
+        identified_chunks = [IdentifiedChunk(
+            sibling_nodes=[tree.root_node.children[0]],
+            signature='a',
+        ), IdentifiedChunk(
+            sibling_nodes=[tree.root_node.children[1]],
+            signature='b',
+        )]
+
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks, Path('foo.lua'))
+
+        assert len(uncovered_code) == 0
+
     # TODO flesh out tests of returning the uncovered code
