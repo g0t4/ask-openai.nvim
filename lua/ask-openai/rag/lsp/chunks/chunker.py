@@ -247,9 +247,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         #     printtmp(f"UNMATCHED {padding}{node.type} {len(node.children)} children")  # , end=" ")
 
         for child in node.children:
-            _nodes, _sigs_by_node = collect_key_nodes(child, collected_parent, level + 1)
-            nodes.extend(_nodes)
-            sigs_by_node.update(_sigs_by_node)
+            _nested_nodes, _nested_sigs_by_node = collect_key_nodes(child, collected_parent, level + 1)
+            nodes.extend(_nested_nodes)
+            sigs_by_node.update(_nested_sigs_by_node)
 
         return nodes, sigs_by_node
 
