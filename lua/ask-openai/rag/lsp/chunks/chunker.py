@@ -280,11 +280,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             for line_number in uncovered_line_numbers:
                 if line_number - last_line_number > 1:
                     logger_uncovered.debug("[black on yellow]-------[/]")  # divide non-contiguous ranges
-
                 # Show line number (1‑based) and content
                 logger_uncovered.debug(f"{line_number+1:4d}: {source_lines[line_number].decode('utf-8', errors='replace')}")
                 last_line_number = line_number
-
         else:
             logger_uncovered.debug("All lines are covered by key nodes.")
 
