@@ -6,6 +6,7 @@ from pathlib import Path
 
 from tree_sitter import Node
 
+from lsp.chunks.lua import insert_previous_doc_comment
 from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
 from lsp.logs import get_logger, printtmp
 from lsp.chunks.parsers import get_cached_parser_for_path
@@ -240,17 +241,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 signature=get_function_signature(node),
             )
             if parser_language == "lua":
-
-                def insert_previous_doc_comment(node, sibling_nodes: list) -> None:
-                    prev = node.prev_sibling
-                    prev_is_doc_comment = prev and prev.type == "comment"
-                    if not prev_is_doc_comment:
-                        return
-                    # TODO ensure not blank line between (comment's end_point will have line # that is 2 less than node's start_point=>line)
-
-                    sibling_nodes.insert(0, prev)
-                    insert_previous_doc_comment(prev, sibling_nodes)
-
                 insert_previous_doc_comment(node, chunk.sibling_nodes)
 
             chunks.append(chunk)
