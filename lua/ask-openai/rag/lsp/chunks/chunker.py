@@ -10,7 +10,7 @@ from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id, chu
 from lsp.logs import get_logger, printtmp
 
 logger = get_logger(__name__)
-logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 
 @dataclass
 class RAGChunkerOptions:
@@ -318,6 +318,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
         return nodes, sigs_by_node
 
+    logger_uncovered = get_logger("uncovered.lines")
+    logger_uncovered.setLevel(logging.DEBUG)
+
     def debug_uncovered_lines(source_bytes, key_nodes):
         """
         Given a tree-sitter tree and the raw source bytes, print any lines that are not
@@ -337,21 +340,21 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         uncovered = [ln for ln in range(len(source_lines)) if ln not in covered]
 
         if uncovered:
-            logger.debug("[bold on red] *********************** Uncovered lines *********************** [/]  ")
+            logger_uncovered.debug("[bold on red] *********************** Uncovered lines *********************** [/]  ")
             last_ln = -1
             for ln in uncovered:
                 if ln - last_ln > 1:
-                    logger.debug("-------")  # divide non-contiguous ranges
+                    logger_uncovered.debug("-------")  # divide non-contiguous ranges
 
                 # Show line number (1‑based) and content
-                logger.debug(f"{ln+1:4d}: {source_lines[ln].decode('utf-8', errors='replace')}")
+                logger_uncovered.debug(f"{ln+1:4d}: {source_lines[ln].decode('utf-8', errors='replace')}")
                 last_ln = ln
 
         else:
-            logger.debug("All lines are covered by key nodes.")
+            logger_uncovered.debug("All lines are covered by key nodes.")
 
     key_nodes, sigs_by_node = collect_key_nodes(tree.root_node)
-    if logger.isEnabledForDebug():
+    if logger_uncovered.isEnabledForDebug():
         debug_uncovered_lines(source_bytes, key_nodes)
 
     # This will list every line that does not fall inside any of the key nodes,
