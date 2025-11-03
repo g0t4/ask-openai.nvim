@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import hashlib
 import logging
+import os
 from pathlib import Path
 
 from tree_sitter import Node
@@ -273,7 +274,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         uncovered_line_numbers = sorted(all_line_numbers - covered_line_numbers)
 
         if uncovered_line_numbers:
-            logger_uncovered.debug("[bold on red] *********************** Uncovered lines *********************** [/]  ")
+            relative_path = path.relative_to(os.getcwd())  # ? use .rag dir's parent?
+            logger_uncovered.debug(f"[bold on red] *********************** Uncovered lines {relative_path} *********************** [/]  ")
             last_line_number = -1
             for line_number in uncovered_line_numbers:
                 if line_number - last_line_number > 1:
