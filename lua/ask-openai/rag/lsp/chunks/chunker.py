@@ -206,7 +206,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         logger.debug(str(node.text).replace("\\n", "\n"))
         logger.debug("")
 
-    def collect_key_nodes(node: Node, collected_parent: bool = False, level: int = 0) \
+    def identify_chunks(node: Node, collected_parent: bool = False, level: int = 0) \
         -> tuple[list[Node], dict[Node, str]]:
 
         nodes: list[Node] = []
@@ -249,7 +249,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         #     printtmp(f"UNMATCHED {padding}{node.type} {len(node.children)} children")  # , end=" ")
 
         for child in node.children:
-            _nested_nodes, _nested_sigs_by_node = collect_key_nodes(child, collected_parent, level + 1)
+            _nested_nodes, _nested_sigs_by_node = identify_chunks(child, collected_parent, level + 1)
             nodes.extend(_nested_nodes)
             sigs_by_node.update(_nested_sigs_by_node)
 
@@ -284,7 +284,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         else:
             logger_uncovered.debug("All lines are covered by key nodes.")
 
-    key_nodes, sigs_by_node = collect_key_nodes(tree.root_node)
+    key_nodes, sigs_by_node = identify_chunks(tree.root_node)
     if logger_uncovered.isEnabledForDebug():
         debug_uncovered_lines(source_bytes, key_nodes)
 
