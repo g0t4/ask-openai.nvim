@@ -22,6 +22,7 @@ class TestUncoveredNodes():
             sibling_nodes=[tree.root_node.children[0]],
             signature='a',
         )]
+        print("tree", tree.root_node.children[0].start_byte, tree.root_node.children[0].end_byte)
 
         uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
 
@@ -40,11 +41,19 @@ class TestUncoveredNodes():
 
     def test_start_and_end_uncovered_code(self):
         # three functions, middle is covered
+        # KEEP IN MIND \n => one byte (not two)
+        # range math:
+        # a => (0,25]  or (0,24) -- 25 chars
+        # b => (25,51] or (25,50) -- \n==1 + 25 chars == 26 chars
+        # c => (51,77] or (51,76) -- 26 chars too (same \n==1 + 25 chars)
         source_bytes, tree = self.parse_lua('function a() return 1 end\nfunction b() return 2 end\nfunction c() return 3 end')
+        # print(len(source_bytes))  # --25*3 + 2 (two newlines) == 77 chars
         identified_chunks = [IdentifiedChunk(
             sibling_nodes=[tree.root_node.children[1]],
             signature='b',
         )]
+        for child in tree.root_node.children:
+            print("child", child.start_byte, child.end_byte, str(child.text))
 
         uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
 
