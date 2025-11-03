@@ -19,7 +19,7 @@ class TestUncoveredNodes():
     def test_single_function_uncovered(self):
         source_bytes, tree = self.parse_lua('function a() return 1 end')
 
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, [], Path('foo.lua'))
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, [])
 
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
@@ -36,7 +36,7 @@ class TestUncoveredNodes():
             signature='b',
         )]
 
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks, Path('foo.lua'))
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
 
         assert len(uncovered_code) == 2
         start_uncovered = uncovered_code[0]
@@ -61,7 +61,7 @@ class TestUncoveredNodes():
             signature='c',
         )]
 
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks, Path('foo.lua'))
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
 
         assert len(uncovered_code) == 1
         middle_uncovered = uncovered_code[0]
@@ -80,7 +80,7 @@ class TestUncoveredNodes():
             signature='b',
         )]
 
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks, Path('foo.lua'))
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
 
         assert len(uncovered_code) == 0
 
@@ -97,7 +97,7 @@ class TestUncoveredNodes():
             )
         ]
 
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks, Path('foo.lua'))
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
 
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
@@ -119,7 +119,7 @@ class TestUncoveredNodes():
             ),
         ]
 
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks, Path('foo.lua'))
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
         assert only.text == '\nfunction b() return 2 end'
@@ -143,7 +143,7 @@ class TestUncoveredNodes():
                 signature='a_nested',
             ),
         ]
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks, Path('foo.lua'))
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
         assert only.text == '\nfunction b() return 2 end'
