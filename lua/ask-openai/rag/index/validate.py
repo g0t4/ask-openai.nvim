@@ -2,6 +2,9 @@ from pathlib import Path
 import sys
 from lsp.storage import load_all_datasets, Datasets
 from lsp.logs import get_logger, logging_fwk_to_console
+import os
+from collections import Counter
+from typing import Set
 
 logger = get_logger(__name__)
 
@@ -62,6 +65,20 @@ class DatasetsValidator:
         else:
             logger.debug("[bold green]ALL CHECKS PASS!")
 
+    def find_unindexed_languages(self, datasets: Datasets) -> None:
+        ext_counts: Counter[str] = Counter()
+        for root, _, files in os.walk(Path.cwd()):
+            for filename in files:
+                suffix = Path(filename).suffix.lower().lstrip('.')
+                if suffix:
+                    ext_counts[suffix] += 1
+        frequent_exts: Set[str] = {ext for ext, cnt in ext_counts.items() if cnt > 10}
+        missing_exts: Set[str] = frequent_exts - set(datasets.all_datasets.keys())
+        if missing_exts:
+            logger.debug(f"Found unindexed extensions: {' '.join(missing_exts)}")
+        else:
+            logger.debug("All good, no missing extensions, you lucky motherf***er")
+
 def main():
     # usage:
     #   python3 -m index.validate $(_repo_root)/.rag
@@ -73,6 +90,8 @@ def main():
 
     validator = DatasetsValidator(ds)
     validator.validate_datasets()
+
+    validator.find_unindexed_languages(ds)
 
     if validator.any_problems:
         sys.exit(1)
