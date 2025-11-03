@@ -25,7 +25,13 @@ class UncoveredCode:
 def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, identified_chunks: list[IdentifiedChunk], relative_path: Path):
     if not logger_uncovered.isEnabledForDebug():
         return
-    _debug_uncovered_nodes(tree, source_bytes, identified_chunks, relative_path)
+    uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks, relative_path)
+
+    # * log uncovered code
+    for c in uncovered_code:
+        logger_uncovered.debug(
+            f"[black on yellow] uncovered bytes (within lines: {c.start_line_base1}–{c.end_line_base1}) [/]\n{c.text}\n" \
+        )
 
 def _debug_uncovered_nodes(
     tree: Tree,
@@ -76,6 +82,7 @@ def _debug_uncovered_nodes(
     if not covered_spans:
         logger_uncovered.debug("[red]No covered nodes to subtract.[/]")
 
+    # * collect uncovered code
     uncovered_code: list[UncoveredCode] = []
     for start, end in uncovered_spans:
         text = source_bytes[start:end].decode("utf-8", errors="replace").rstrip()
@@ -91,11 +98,5 @@ def _debug_uncovered_nodes(
         #     start_line = source_bytes[:start].count(b"\n") + 1
         #     end_line = start_line
         #     uncovered_code.append(UncoveredCode(text=text, start_line_base0=start_line, end_line_base0=end_line))
-
-    # * log uncovered code
-    for c in uncovered_code:
-        logger_uncovered.debug(
-            f"[black on yellow] uncovered bytes (within lines: {c.start_line_base1}–{c.end_line_base1}) [/]\n{c.text}\n" \
-        )
 
     return uncovered_code
