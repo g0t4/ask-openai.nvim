@@ -16,6 +16,12 @@ class UncoveredCode:
     start_line_base1: int
     end_line_base1: int
 
+    def start_line_base0(self) -> int:
+        return self.start_line_base1 - 1
+
+    def end_line_base0(self) -> int:
+        return self.end_line_base1 - 1
+
 def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, identified_chunks: list[IdentifiedChunk], relative_path: Path):
     if not logger_uncovered.isEnabledForDebug():
         return
