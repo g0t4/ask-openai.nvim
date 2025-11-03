@@ -315,6 +315,10 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             if text.strip():
                 start_line = source_bytes[:start].count(b"\n") + 1
                 end_line = start_line + text.count("\n")
+                # TODO compute start/end_column too (so I can use this for sliding window on only uncovered code)
+                #  might be feasible to use the nodes and determine contiguous node ranges... then I'd have start/end_point for line/column ranges for covered vs uncovered
+                #    without having to recompute line and column numbers
+                #    OR just add good tests of recomputing line/column
                 logger_uncovered.debug(f"[black on yellow] uncovered bytes (within lines: {start_line}–{end_line}) [/]\n{text}\n")
 
     identified_chunks = identify_chunks(tree.root_node)
