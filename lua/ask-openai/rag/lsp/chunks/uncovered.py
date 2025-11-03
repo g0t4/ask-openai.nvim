@@ -64,9 +64,11 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         #  slice below treats end as not-inclusive, thus matches open/closed
         start = span.lower
         end = span.upper
+        print(f'  {start=} {end=}')
         # TODO drop rstrip? why would I need that if the range is not inclusive?
         # TODO seems to be bug that results in \n on front of next line?
         # TODO why am I getting \n in front and end of middle line?! see multi node tests
+        #  ok it is b/c I am subtracing from overall range and there is no node for the skipped whitespace chars... ok
         text = source_bytes[start:end].decode("utf-8", errors="replace").rstrip()
 
         not_empty_or_whitespace = text.strip()
