@@ -14,7 +14,12 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, identified_chunks: li
         return
     _debug_uncovered_nodes(tree, source_bytes, identified_chunks, relative_path)
 
-def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, identified_chunks: list[IdentifiedChunk], relative_path: Path):
+def _debug_uncovered_nodes(
+    tree: Tree,
+    source_bytes: bytes,
+    identified_chunks: list[IdentifiedChunk],
+    relative_path: Path,
+) -> list[str]:
 
     # * collect covered node byte spans
     covered_spans = []
@@ -59,8 +64,10 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, identified_chunks: l
         logger_uncovered.debug("[red]No covered nodes to subtract.[/]")
 
     # * log uncovered code
+    uncovered_code = []
     for start, end in uncovered_spans:
         text = source_bytes[start:end].decode("utf-8", errors="replace").rstrip()
+        uncovered_code.append(text)
         if text.strip():
             start_line = source_bytes[:start].count(b"\n") + 1
             end_line = start_line + text.count("\n")
@@ -69,3 +76,4 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, identified_chunks: l
             #    without having to recompute line and column numbers
             #    OR just add good tests of recomputing line/column
             logger_uncovered.debug(f"[black on yellow] uncovered bytes (within lines: {start_line}–{end_line}) [/]\n{text}\n")
+    return uncovered_code
