@@ -9,12 +9,13 @@ from lsp.logs import get_logger
 logger_uncovered = get_logger(__name__)
 logger_uncovered.setLevel(logging.DEBUG)
 
-def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, identified_chunks: list[IdentifiedChunk], path: Path):
+def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, identified_chunks: list[IdentifiedChunk], relative_path: Path):
     if not logger_uncovered.isEnabledForDebug():
         return
-    _debug_uncovered_nodes(tree, source_bytes, identified_chunks, path)
+    _debug_uncovered_nodes(tree, source_bytes, identified_chunks, relative_path)
 
-def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, identified_chunks: list[IdentifiedChunk], path: Path):
+def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, identified_chunks: list[IdentifiedChunk], relative_path: Path):
+
     # * collect covered node byte spans
     covered_spans = []
     for chunk in identified_chunks:
@@ -49,8 +50,6 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, identified_chunks: l
     total_bytes = len(source_bytes)
     if last_end < total_bytes:
         uncovered_spans.append((last_end, total_bytes))
-
-    relative_path = path.relative_to(os.getcwd())
 
     if not uncovered_spans:
         # logger_uncovered.debug(f" **** NO uncoverd nodes: {relative_path} **** ")

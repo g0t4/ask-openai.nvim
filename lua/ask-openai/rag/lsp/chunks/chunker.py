@@ -261,7 +261,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         return chunks
 
     identified_chunks = identify_chunks(tree.root_node)
-    debug_uncovered_nodes(tree, source_bytes, identified_chunks, path)
+    relative_path = path.relative_to(os.getcwd())
+    debug_uncovered_nodes(tree, source_bytes, identified_chunks, relative_path)
 
     ts_chunks = []
     for chunk in identified_chunks:
