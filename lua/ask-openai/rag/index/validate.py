@@ -69,9 +69,9 @@ class DatasetsValidator:
         ext_counts: Counter[str] = Counter()
         for root, _, files in os.walk(Path.cwd()):
             for filename in files:
-                suffix = Path(filename).suffix.lower().lstrip('.')
-                if suffix:
-                    ext_counts[suffix] += 1
+                extension = Path(filename).suffix.lower().lstrip('.')
+                if extension:
+                    ext_counts[extension] += 1
         EXTENSION_COUNT_THRESHOLD = 10
 
         frequent_exts: Set[str] = {ext for ext, cnt in ext_counts.items() if cnt > EXTENSION_COUNT_THRESHOLD}
