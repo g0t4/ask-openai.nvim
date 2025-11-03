@@ -11,7 +11,7 @@ class DatasetsValidator:
         self.datasets = datasets
         self.any_problems = False
 
-    def validate(self):
+    def validate_datasets(self):
 
         for dataset in self.datasets.all_datasets.values():
             any_problem_with_this_dataset = False
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     ds = load_all_datasets(rag_dir)
 
     validator = DatasetsValidator(ds)
-    validator.validate()
+    validator.validate_datasets()
 
     if validator.any_problems:
         sys.exit(1)

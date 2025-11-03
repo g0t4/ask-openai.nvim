@@ -21,7 +21,7 @@ def load_model_and_indexes(dot_rag_dir: Path):
 
 def validate_rag_indexes():
     validator = DatasetsValidator(datasets)
-    validator.validate()
+    validator.validate_datasets()
 
 @attrs.define
 class LSPRagQueryResult:
