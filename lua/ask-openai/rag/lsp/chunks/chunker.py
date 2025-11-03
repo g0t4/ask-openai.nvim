@@ -6,6 +6,7 @@ from pathlib import Path
 
 from tree_sitter import Node
 
+from lsp.chunks.identified import IdentifiedChunk
 from lsp.chunks.lua import insert_previous_doc_comment
 from lsp.chunks.uncovered import debug_uncovered_nodes
 from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
@@ -125,12 +126,6 @@ def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[s
             )
 
     return list(iter_chunks())
-
-@dataclass
-class IdentifiedChunk:
-    # i.e. when primary has doc_comments/annotations/decorators before it, these are then siblings and there is not single node
-    sibling_nodes: list[Node]
-    signature: str = ""
 
 def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: bytes, options: RAGChunkerOptions) -> list[Chunk]:
 

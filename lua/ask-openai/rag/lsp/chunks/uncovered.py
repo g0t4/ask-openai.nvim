@@ -1,17 +1,18 @@
 import os
 import logging
 from pathlib import Path
+from lsp.chunks.identified import IdentifiedChunk
 from lsp.logs import get_logger
 
-logger_uncovered = get_logger("uncovered.lines")
+logger_uncovered = get_logger(__name__)
 logger_uncovered.setLevel(logging.DEBUG)
 
-def debug_uncovered_nodes(tree, source_bytes, identified_chunks, path: Path):
+def debug_uncovered_nodes(tree, source_bytes, identified_chunks: list[IdentifiedChunk], path: Path):
     if not logger_uncovered.isEnabledForDebug():
         return
     _debug_uncovered_nodes(tree, source_bytes, identified_chunks, path)
 
-def _debug_uncovered_nodes(tree, source_bytes, identified_chunks, path: Path):
+def _debug_uncovered_nodes(tree, source_bytes, identified_chunks: list[IdentifiedChunk], path: Path):
     # * collect covered node byte spans
     covered_spans = []
     for chunk in identified_chunks:
