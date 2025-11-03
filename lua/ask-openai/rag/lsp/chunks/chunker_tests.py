@@ -19,6 +19,7 @@ test_cases_c = test_cases_treesitter / "c"
 test_cases_cpp = test_cases_treesitter / "cpp"
 test_cases_csharp = test_cases_treesitter / "csharp"
 test_cases_rust = test_cases_treesitter / "rust"
+test_cases_lua = test_cases_treesitter / "lua"
 
 set_root_dir(repo_root)
 
@@ -206,8 +207,14 @@ class TestTreesitterChunker_Python_Decorators:
         # TODO
 
 class TestTreesitterChunker_Lua_DocumentationComments:
+    # BTW DocComments / DocumentationComments refers to BOTH:
+    # - annotations
+    # - regular comments
+    # BOTH must immediately precede the member (i.e. function, table) w/o blank line(s)
 
-    def TODO_test_function_annotations(self):
+    def test_function_annotations(self):
+        chunks = build_test_chunks(test_cases_lua / "doc_comments.lua", RAGChunkerOptions.OnlyTsChunks())
+
         # FYI it's not just annotations, you can have comments that describe the function, though I will think of those as annotations
         #   perhaps rename as func "docs"?
         # TODO include all comments immediately preceding a function signature
