@@ -216,15 +216,26 @@ class TestTreesitterChunker_Lua_DocumentationComments:
         pass
         # TODO
 
-    def TODO_test_function_with_non_annotation_comment(self):
+    def TODO_test_function_with_non_annotation_doc_comment(self):
         pass
         # TODO
 
     def TODO_test_function_without_blank_line_before_comments(self):
+        # in this case, the comments are right after a prior function defintion
         pass
         # TODO
 
     def TODO_test_table_annotations(self):
+        pass
+        # TODO
+
+    def TODO_test_function_with_preceding_unrelated_comment(self):
+        # Subtract
+        pass
+        # TODO
+
+    def TODO_test_function_with_preceding_unrelated_comment_before_annotation_comments(self):
+        # Multiply
         pass
         # TODO
 

@@ -1,7 +1,7 @@
 ---@param a number
 ---@param b number
 ---@return number
-function adder(a, b)
+function Adder(a, b)
     return a + b
 end
 
@@ -21,10 +21,24 @@ function Vector3.new(x, y, z)
     setmetatable(t, Vector3)
     return t
 end
+
 --- example of no blank line before function comments
 ---@param a Vector3
 ---@param b Vector3
 ---@return Vector3
 function Vector3.__add(a, b)
     return Vector3.new(a.x + b.x, a.y + b.y, a.z + b.z)
+end
+
+-- unrelated comment (blank line separator)
+
+function Subtract(a, b)
+    return a - b
+end
+
+-- unrelated comment (blank line separator)
+
+---@return number
+function Multiply(a, b)
+    return a * b
 end
