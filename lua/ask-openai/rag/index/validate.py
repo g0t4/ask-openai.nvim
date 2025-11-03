@@ -66,7 +66,7 @@ class DatasetsValidator:
         else:
             logger.debug("[bold green]ALL CHECKS PASS!")
 
-    def find_unindexed_languages(self, datasets: Datasets) -> None:
+    def warn_about_unindexed_languages(self, datasets: Datasets) -> None:
 
         def find_extensions_in_cwd():
             fd_command = ["fd", "--type", "file"]  # `fd` respects ignores
@@ -107,7 +107,7 @@ def main():
     validator = DatasetsValidator(ds)
     validator.validate_datasets()
 
-    validator.find_unindexed_languages(ds)
+    validator.warn_about_unindexed_languages(ds)
 
     if validator.any_problems:
         sys.exit(1)
