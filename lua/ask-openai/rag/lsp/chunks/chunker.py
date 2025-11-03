@@ -237,7 +237,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # - py functions, decorators i.e. @dataclass right before function signature
             # print(node.prev_sibling)
             chunk = IdentifiedChunk(
-                # TODO rename top_level_nodes?
                 primary_node=node,
                 sibling_nodes=[node],
                 signature=get_function_signature(node),
@@ -259,10 +258,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             collected_parent = True
         elif logger.isEnabledForDebug() and not collected_parent:
             debug_uncollected_node(node)
-        # else:
-        #     # uncomment this to dump anything not explicilty matched above (great for initially finding nodes of interest)
-        #     padding = "  " * level
-        #     printtmp(f"UNMATCHED {padding}{node.type} {len(node.children)} children")  # , end=" ")
 
         for child in node.children:
             nested_chunks = identify_chunks(child, collected_parent, level + 1)
