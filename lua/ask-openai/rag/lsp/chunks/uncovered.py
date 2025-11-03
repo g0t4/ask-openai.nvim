@@ -1,8 +1,17 @@
 import os
+import logging
+from pathlib import Path
+from lsp.logs import get_logger
 
-def debug_uncovered_nodes(tree, source_bytes, identified_chunks, logger_uncovered, path):
-    # TODO! test this before I use it for sliding windows (on only uncovered code)
+logger_uncovered = get_logger("uncovered.lines")
+logger_uncovered.setLevel(logging.DEBUG)
 
+def debug_uncovered_nodes(tree, source_bytes, identified_chunks, path: Path):
+    if not logger_uncovered.isEnabledForDebug():
+        return
+    _debug_uncovered_nodes(tree, source_bytes, identified_chunks, path)
+
+def _debug_uncovered_nodes(tree, source_bytes, identified_chunks, path: Path):
     # * collect covered node byte spans
     covered_spans = []
     for chunk in identified_chunks:

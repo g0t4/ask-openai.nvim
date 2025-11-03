@@ -14,8 +14,6 @@ from lsp.chunks.parsers import get_cached_parser_for_path
 
 logger = get_logger(__name__)
 # logger.setLevel(logging.DEBUG)
-logger_uncovered = get_logger("uncovered.lines")
-logger_uncovered.setLevel(logging.DEBUG)
 
 @dataclass
 class RAGChunkerOptions:
@@ -268,8 +266,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         return chunks
 
     identified_chunks = identify_chunks(tree.root_node)
-    if logger_uncovered.isEnabledForDebug():
-        debug_uncovered_nodes(tree, source_bytes, identified_chunks, logger_uncovered, path)
+    debug_uncovered_nodes(tree, source_bytes, identified_chunks, path)
 
     ts_chunks = []
     for chunk in identified_chunks:
