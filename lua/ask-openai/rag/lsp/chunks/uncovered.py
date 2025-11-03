@@ -1,5 +1,6 @@
 import os
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 
 from tree_sitter import Tree
@@ -8,6 +9,12 @@ from lsp.logs import get_logger
 
 logger_uncovered = get_logger(__name__)
 logger_uncovered.setLevel(logging.DEBUG)
+
+@dataclass
+class UncoveredCode:
+    text: str
+    start_line_base0: int
+    end_line_base0: int
 
 def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, identified_chunks: list[IdentifiedChunk], relative_path: Path):
     if not logger_uncovered.isEnabledForDebug():
@@ -19,7 +26,7 @@ def _debug_uncovered_nodes(
     source_bytes: bytes,
     identified_chunks: list[IdentifiedChunk],
     relative_path: Path,
-) -> list[str]:
+) -> list[UncoveredCode]:
 
     # * collect covered node byte spans
     covered_spans = []
@@ -58,22 +65,29 @@ def _debug_uncovered_nodes(
 
     if not uncovered_spans:
         # logger_uncovered.debug(f" **** NO uncoverd nodes: {relative_path} **** ")
-        return
+        return []
     logger_uncovered.debug(f"[bold on red] *********************** Uncovered nodes {relative_path} *********************** [/]")
     if not covered_spans:
         logger_uncovered.debug("[red]No covered nodes to subtract.[/]")
 
     # * log uncovered code
-    uncovered_code = []
+
+    uncovered_code: list[UncoveredCode] = []
     for start, end in uncovered_spans:
         text = source_bytes[start:end].decode("utf-8", errors="replace").rstrip()
-        uncovered_code.append(text)
         if text.strip():
             start_line = source_bytes[:start].count(b"\n") + 1
             end_line = start_line + text.count("\n")
-            # TODO compute start/end_column too (so I can use this for sliding window on only uncovered code)
+            # TODO compute start/end_column too (so I can use this for sliding window on only uncovered code)... OR just cover full line for sliding window?
             #  might be feasible to use the nodes and determine contiguous node ranges... then I'd have start/end_point for line/column ranges for covered vs uncovered
             #    without having to recompute line and column numbers
             #    OR just add good tests of recomputing line/column
             logger_uncovered.debug(f"[black on yellow] uncovered bytes (within lines: {start_line}–{end_line}) [/]\n{text}\n")
+            uncovered_code.append(UncoveredCode(text=text, start_line_base0=start_line, end_line_base0=end_line))
+        # else:
+        #     # ? return whitespace only sections?
+        #     start_line = source_bytes[:start].count(b"\n") + 1
+        #     end_line = start_line
+        #     uncovered_code.append(UncoveredCode(text=text, start_line_base0=start_line, end_line_base0=end_line))
+
     return uncovered_code
