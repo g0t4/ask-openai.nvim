@@ -1,3 +1,4 @@
+from tree_sitter import Parser
 from tree_sitter_language_pack import get_language, get_parser
 
 from lsp.logs import get_logger
@@ -14,14 +15,15 @@ def _get_cached_parser(language):
         parsers_by_language[language] = parser
     return parser
 
-def get_cached_parser_for_path(path):
+def get_cached_parser_for_path(path) -> tuple[Parser | None, str]:
+
     language = path.suffix[1:]
     if language is None:
         # PRN shebang?
-        return None
+        return None, ""
     elif language == "txt":
         # no need to log... just skip txt files
-        return None
+        return None, "txt"
     elif language == "py":
         language = "python"
     elif language == "sh":
@@ -56,6 +58,6 @@ def get_cached_parser_for_path(path):
 
         # PRN attempt to use extension as is? as fallback?
         logger.warning(f'no tree-sitter parser for: {language=}')
-        return None
+        return None, language
 
-    return _get_cached_parser(language)
+    return _get_cached_parser(language), language

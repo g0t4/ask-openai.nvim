@@ -128,7 +128,7 @@ def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[s
 
 def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: bytes, options: RAGChunkerOptions) -> list[Chunk]:
 
-    parser = get_cached_parser_for_path(path)
+    parser, parser_language = get_cached_parser_for_path(path)
     if parser is None:
         return []
 
