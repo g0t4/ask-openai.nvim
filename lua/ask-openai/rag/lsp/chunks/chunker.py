@@ -126,6 +126,13 @@ def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[s
 
     return list(iter_chunks())
 
+@dataclass
+class IdentifiedChunk:
+    primary_node: Node  # TODO do I need this?
+    # i.e. when primary has doc_comments/annotations/decorators before it, these are then siblings and there is not single node
+    sibling_nodes: list[Node]
+    signature: str = ""
+
 def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: bytes, options: RAGChunkerOptions) -> list[Chunk]:
 
     parser, parser_language = get_cached_parser_for_path(path)
@@ -206,11 +213,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         logger.debug(str(node.text).replace("\\n", "\n"))
         logger.debug("")
 
-    def identify_chunks(node: Node, collected_parent: bool = False, level: int = 0) \
-        -> tuple[list[Node], dict[Node, str]]:
+    def identify_chunks(node: Node, collected_parent: bool = False, level: int = 0) -> list[IdentifiedChunk]:
 
-        nodes: list[Node] = []
-        sigs_by_node: dict[Node, str] = {}
+        chunks: list[IdentifiedChunk] = []
 
         if node.type in [
                 "function_definition",
@@ -230,19 +235,28 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # TODO:
             # - lua functions, grab --- triple dash comments before function (until blank line)
             # - py functions, decorators i.e. @dataclass right before function signature
-            nodes.append(node)
             # print(node.prev_sibling)
+            chunk = IdentifiedChunk(
+                # TODO rename top_level_nodes?
+                primary_node=node,
+                sibling_nodes=[node],
+                signature=get_function_signature(node),
+            )
+            chunks.append(chunk)
             collected_parent = True
-            sigs_by_node[node] = get_function_signature(node)
         elif node.type in [
                 "class_definition",
                 "class_declaration",
         ]:
             # typescript class_declaration
             # python
-            nodes.append(node)
+            chunk = IdentifiedChunk(
+                primary_node=node,
+                sibling_nodes=[node],
+                signature=get_class_signature(node),
+            )
+            chunks.append(chunk)
             collected_parent = True
-            sigs_by_node[node] = get_class_signature(node)
         elif logger.isEnabledForDebug() and not collected_parent:
             debug_uncollected_node(node)
         # else:
@@ -251,18 +265,19 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         #     printtmp(f"UNMATCHED {padding}{node.type} {len(node.children)} children")  # , end=" ")
 
         for child in node.children:
-            _nested_nodes, _nested_sigs_by_node = identify_chunks(child, collected_parent, level + 1)
-            nodes.extend(_nested_nodes)
-            sigs_by_node.update(_nested_sigs_by_node)
+            nested_chunks = identify_chunks(child, collected_parent, level + 1)
+            chunks.extend(nested_chunks)
 
-        return nodes, sigs_by_node
+        return chunks
 
-    def debug_uncovered_lines(source_bytes, key_nodes):
+    def debug_uncovered_lines(source_bytes, identified_chunks):
 
         # TODO flag uncovered nodes instead of lines! and then recreate line #s using the node offsets
         # assume node start/end line dictates covered lines
         covered_line_numbers = set()
-        for node in key_nodes:
+        for chunk in identified_chunks:
+            # TODO! factor in multiple nodes (not just primary)
+            node = chunk.primary_node
             start_line = node.start_point[0]
             end_line = node.end_point[0]  # inclusive
             for line_number in range(start_line, end_line + 1):
@@ -286,28 +301,28 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         else:
             logger_uncovered.debug("All lines are covered by key nodes.")
 
-    key_nodes, sigs_by_node = identify_chunks(tree.root_node)
+    identified_chunks = identify_chunks(tree.root_node)
     if logger_uncovered.isEnabledForDebug():
-        debug_uncovered_lines(source_bytes, key_nodes)
+        debug_uncovered_lines(source_bytes, identified_chunks)
 
-    chunks = []
-    for fn in key_nodes:
-        # logger.debug(f'{fn=}')
+    ts_chunks = []
+    for chunk in identified_chunks:
 
-        start_line_base0 = fn.start_point[0]
-        end_line_base0 = fn.end_point[0]
-        start_column_base0 = fn.start_point[1]
-        end_column_base0 = fn.end_point[1]
+        # FYI assume contiguous and ordered nodes (so first is literally first in doc, last is last)
+        first = chunk.sibling_nodes[0]
+        last = chunk.sibling_nodes[-1]
+
+        start_line_base0 = first.start_point[0]
+        start_column_base0 = first.start_point[1]
+        end_line_base0 = last.end_point[0]
+        end_column_base0 = last.end_point[1]
 
         chunk_type = "ts"
         chunk_id = chunk_id_with_columns_for(path, chunk_type, start_line_base0, start_column_base0, end_line_base0, end_column_base0, file_hash)
-        text = fn.text.decode('utf-8')
-        # TODO plug in new SIG/FUNC/etc tag header info like in test case
 
-        if sigs_by_node.get(fn) is not None:
-            sig = sigs_by_node[fn]
-        else:
-            sig = ""
+        # TODO! add test cases that cover multi node at the chunk level
+        text = source_bytes[first.start_byte:last.end_byte] \
+                .decode("utf-8", errors="replace")
 
         chunk = Chunk(
             id=chunk_id,
@@ -320,9 +335,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             end_column0=end_column_base0,
             type=chunk_type,
             file_hash=file_hash,
-            signature=sig,
+            signature=chunk.signature or "",
         )
 
-        chunks.append(chunk)
+        ts_chunks.append(chunk)
 
-    return chunks
+    return ts_chunks
