@@ -263,13 +263,15 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         return chunks
 
     def debug_uncovered_nodes(tree, source_bytes, identified_chunks, logger_uncovered, path):
-        # Collect all covered node byte spans
+        # TODO! test this before I use it for sliding windows (on only uncovered code)
+
+        # * collect covered node byte spans
         covered_spans = []
         for chunk in identified_chunks:
             for node in chunk.sibling_nodes:
                 covered_spans.append((node.start_byte, node.end_byte))
 
-        # Merge overlapping or contiguous spans
+        # * merge overlapping or contiguous spans
         covered_spans.sort()
         merged_covered_spans = []
         if len(covered_spans) > 0:
@@ -286,11 +288,12 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             last_combined = (cur_start, cur_end)
             merged_covered_spans.append(last_combined)
 
-        # Invert the merged_covered_spans to get uncovered byte ranges
+        # * invert merged_covered_spans to get uncovered byte ranges
         uncovered_spans = []
         last_end = 0
         for start, end in merged_covered_spans:
             if start > last_end:
+                # gap (last_end => start) == uncovered span
                 uncovered_spans.append((last_end, start))
             last_end = end
         total_bytes = len(source_bytes)
@@ -306,12 +309,13 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         if not covered_spans:
             logger_uncovered.debug("[red]No covered nodes to subtract.[/]")
 
+        # * log uncovered code
         for start, end in uncovered_spans:
             text = source_bytes[start:end].decode("utf-8", errors="replace").rstrip()
             if text.strip():
                 start_line = source_bytes[:start].count(b"\n") + 1
                 end_line = start_line + text.count("\n")
-                logger_uncovered.debug(f"[black on yellow] uncovered bytes {start_line}–{end_line} [/]\n{text}\n")
+                logger_uncovered.debug(f"[black on yellow] uncovered bytes (within lines: {start_line}–{end_line}) [/]\n{text}\n")
 
     identified_chunks = identify_chunks(tree.root_node)
     if logger_uncovered.isEnabledForDebug():
