@@ -74,8 +74,9 @@ class DatasetsValidator:
                     extension_counts[extension] += 1
         EXTENSION_COUNT_THRESHOLD = 10
 
-        frequent_exts: Set[str] = {ext for ext, cnt in extension_counts.items() if cnt > EXTENSION_COUNT_THRESHOLD}
-        missing_exts: Set[str] = frequent_exts - set(datasets.all_datasets.keys())
+        frequent_exts: Set[str] = {e for e, cnt in extension_counts.items() if cnt > EXTENSION_COUNT_THRESHOLD}
+        indexed_extensions = set(datasets.all_datasets.keys())
+        missing_exts: Set[str] = frequent_exts - indexed_extensions
 
         if missing_exts:
             missing_counts = {ext: extension_counts[ext] for ext in missing_exts}
