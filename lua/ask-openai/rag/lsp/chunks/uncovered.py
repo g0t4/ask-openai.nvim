@@ -76,8 +76,6 @@ def _debug_uncovered_nodes(
     if not covered_spans:
         logger_uncovered.debug("[red]No covered nodes to subtract.[/]")
 
-    # * log uncovered code
-
     uncovered_code: list[UncoveredCode] = []
     for start, end in uncovered_spans:
         text = source_bytes[start:end].decode("utf-8", errors="replace").rstrip()
@@ -87,12 +85,17 @@ def _debug_uncovered_nodes(
             # FYI I am not computing column offsets, for uncovered code purposes I think that's fine for now b/c...
             # - this is only going to be for sliding window "fallback" chunker which is 100% fine to cover a smidge extra
             # - I might even cover X lines around window too so columns on the start/end line don't matter
-            logger_uncovered.debug(f"[black on yellow] uncovered bytes (within lines: {start_line_base1}–{end_line_base1}) [/]\n{text}\n")
             uncovered_code.append(UncoveredCode(text=text, start_line_base1=start_line_base1, end_line_base1=end_line_base1))
         # else:
         #     # ? return whitespace only sections?
         #     start_line = source_bytes[:start].count(b"\n") + 1
         #     end_line = start_line
         #     uncovered_code.append(UncoveredCode(text=text, start_line_base0=start_line, end_line_base0=end_line))
+
+    # * log uncovered code
+    for c in uncovered_code:
+        logger_uncovered.debug(
+            f"[black on yellow] uncovered bytes (within lines: {c.start_line_base1}–{c.end_line_base1}) [/]\n{c.text}\n" \
+        )
 
     return uncovered_code
