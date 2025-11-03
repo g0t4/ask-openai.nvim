@@ -294,15 +294,16 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             last_combined = (cur_start, cur_end)
             merged_covered_spans.append(last_combined)
 
-        # Invert the spans to get uncovered byte ranges
+        # Invert the merged_covered_spans to get uncovered byte ranges
         uncovered_spans = []
         last_end = 0
         for start, end in merged_covered_spans:
             if start > last_end:
                 uncovered_spans.append((last_end, start))
             last_end = end
-        if last_end < len(source_bytes):
-            uncovered_spans.append((last_end, len(source_bytes)))
+        total_bytes = len(source_bytes)
+        if last_end < total_bytes:
+            uncovered_spans.append((last_end, total_bytes))
 
         relative_path = path.relative_to(os.getcwd())
 
