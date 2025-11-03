@@ -105,4 +105,47 @@ class TestUncoveredNodes():
         assert only.start_line_base1 == 1
         assert only.end_line_base1 == 2
 
-    # TODO flesh out tests of returning the uncovered code
+    def test_overlapping_nodes_within_single_chunk_with_uncovered_after(self):
+        # this touches on merged_covered_spans
+        source_bytes, tree = self.parse_lua('function a() function a_nested() return 1 end end\nfunction b() return 2 end')
+        func_a = tree.root_node.children[0]
+        func_a_nested = func_a.named_children[0]
+        # func_b = tree.root_node.children[1]
+        identified_chunks = [
+            IdentifiedChunk(
+                # hypothetically could chunk non-contiguous nodes
+                sibling_nodes=[func_a, func_a_nested],
+                signature='a',
+            ),
+        ]
+
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks, Path('foo.lua'))
+        assert len(uncovered_code) == 1
+        only = uncovered_code[0]
+        assert only.text == '\nfunction b() return 2 end'
+        assert only.start_line_base1 == 1
+        assert only.end_line_base1 == 2
+
+    def test_overlapping_nodes_in_separate_chunks_with_uncovered_after(self):
+        # this touches on merged_covered_spans
+        source_bytes, tree = self.parse_lua('function a() function a_nested() return 1 end end\nfunction b() return 2 end')
+        func_a = tree.root_node.children[0]
+        func_a_nested = func_a.named_children[0]
+        func_b = tree.root_node.children[1]
+        identified_chunks = [
+            IdentifiedChunk(
+                # hypothetically could chunk non-contiguous nodes
+                sibling_nodes=[func_a],
+                signature='a',
+            ),
+            IdentifiedChunk(
+                sibling_nodes=[func_a_nested],
+                signature='a_nested',
+            ),
+        ]
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks, Path('foo.lua'))
+        assert len(uncovered_code) == 1
+        only = uncovered_code[0]
+        assert only.text == '\nfunction b() return 2 end'
+        assert only.start_line_base1 == 1
+        assert only.end_line_base1 == 2
