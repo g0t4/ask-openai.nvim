@@ -75,13 +75,14 @@ class DatasetsValidator:
 
         EXTENSION_COUNT_THRESHOLD = 10
         IGNORE_EXTENSIONS_ALWAYS = set(["pyc"])
-        frequent_exts = {extension for extension, count in extension_counts.items() if count > EXTENSION_COUNT_THRESHOLD}
+        frequent_extensions = {extension for extension, count in extension_counts.items() if count > EXTENSION_COUNT_THRESHOLD}
         indexed_extensions = datasets.get_indexed_extensions()
-        missing_exts = frequent_exts - indexed_extensions - IGNORE_EXTENSIONS_ALWAYS
+        missing_extensions = frequent_extensions - indexed_extensions - IGNORE_EXTENSIONS_ALWAYS
 
-        if missing_exts:
-            missing_counts = {extension: extension_counts[extension] for extension in missing_exts}
-            logger.debug("Found unindexed extensions: " + ", ".join(f"{extension}={count}" for extension, count in missing_counts.items()))
+        if missing_extensions:
+            missing_counts = {extension: extension_counts[extension] for extension in missing_extensions}
+            logger.debug("Found unindexed extensions: " + ", ".join( \
+                f"{extension}={count}" for extension, count in missing_counts.items()))
         else:
             logger.debug("All good, no missing extensions, you lucky motherf***er")
 
