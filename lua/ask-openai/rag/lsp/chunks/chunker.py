@@ -128,7 +128,6 @@ def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[s
 
 @dataclass
 class IdentifiedChunk:
-    primary_node: Node  # TODO do I need this?
     # i.e. when primary has doc_comments/annotations/decorators before it, these are then siblings and there is not single node
     sibling_nodes: list[Node]
     signature: str = ""
@@ -237,7 +236,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # - py functions, decorators i.e. @dataclass right before function signature
             # print(node.prev_sibling)
             chunk = IdentifiedChunk(
-                primary_node=node,
                 sibling_nodes=[node],
                 signature=get_function_signature(node),
             )
@@ -250,7 +248,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # typescript class_declaration
             # python
             chunk = IdentifiedChunk(
-                primary_node=node,
                 sibling_nodes=[node],
                 signature=get_class_signature(node),
             )
