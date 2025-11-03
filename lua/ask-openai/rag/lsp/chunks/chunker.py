@@ -260,7 +260,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
     def debug_uncovered_lines(source_bytes, key_nodes):
 
-        # Build a set of line numbers that are covered by any node.
+        # TODO flag uncovered nodes instead of lines! and then recreate line #s using the node offsets
+        # assume node start/end line dictates covered lines
         covered_line_numbers = set()
         for node in key_nodes:
             start_line = node.start_point[0]
