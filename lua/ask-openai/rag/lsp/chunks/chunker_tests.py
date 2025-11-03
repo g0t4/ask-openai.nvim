@@ -206,6 +206,11 @@ class TestTreesitterChunker_Python_Decorators:
         chunks = build_test_chunks(test_cases_python / "decorators.py", RAGChunkerOptions.OnlyTsChunks())
         # TODO
 
+    def TODO_test_nested_function_with_decorator(self):
+        chunks = build_test_chunks(test_cases_python / "decorators.py", RAGChunkerOptions.OnlyTsChunks())
+        #  log_and_call_nested => functools.lru_cache()
+        # TODO
+
 class TestTreesitterChunker_Lua_DocumentationComments:
     # BTW DocComments / DocumentationComments refers to BOTH:
     # - annotations

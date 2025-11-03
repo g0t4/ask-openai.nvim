@@ -1,12 +1,14 @@
+import functools
 from dataclasses import dataclass
 
 def log_calls(func):
 
-    def log_and_call(*args, **kwargs):
+    @functools.lru_cache()
+    def log_and_call_nested(*args, **kwargs):
         print("before")
         return func(*args, **kwargs)
 
-    return log_and_call
+    return log_and_call_nested
 
 @log_calls
 def func1():
