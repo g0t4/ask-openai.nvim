@@ -11,6 +11,8 @@ from lsp.logs import get_logger, printtmp
 
 logger = get_logger(__name__)
 # logger.setLevel(logging.DEBUG)
+logger_uncovered = get_logger("uncovered.lines")
+logger_uncovered.setLevel(logging.DEBUG)
 
 @dataclass
 class RAGChunkerOptions:
@@ -69,15 +71,12 @@ def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], option
         DOES NOT READ FILE at path
         path is just for building chunk results
     """
-    # lines is the common denominator between Language Server (TextDocument.lines)
-    #  and I was already using readlines() in when building from files on disk (indexer)
     chunks = []
 
     if options.enable_line_range_chunks:
         chunks.extend(build_line_range_chunks_from_lines(path, file_hash, lines))
 
     if options.enable_ts_chunks:
-        # TODO add indexer tests that include ts_chunking (maybe even disable line range chunking)
         source_bytes = "".join(lines).encode("utf-8")
         chunks.extend(build_ts_chunks_from_source_bytes(path, file_hash, source_bytes, options))
 
@@ -318,8 +317,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
         return nodes, sigs_by_node
 
-    logger_uncovered = get_logger("uncovered.lines")
-    logger_uncovered.setLevel(logging.DEBUG)
 
     def debug_uncovered_lines(source_bytes, key_nodes):
         """
