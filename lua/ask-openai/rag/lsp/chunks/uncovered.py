@@ -44,7 +44,7 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
     print()
 
     # * collect covered node byte spans
-    covered_spans = P.openclosed(0, 0)
+    covered_spans = P.empty()
     for chunk in chunks:
         for node in chunk.sibling_nodes:
             covered = P.openclosed(node.start_byte, node.end_byte)
