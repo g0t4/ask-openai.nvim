@@ -74,9 +74,10 @@ class DatasetsValidator:
                     extension_counts[extension] += 1
 
         EXTENSION_COUNT_THRESHOLD = 10
+        IGNORE_EXTENSIONS_ALWAYS = set(["pyc"])
         frequent_exts = {extension for extension, cnt in extension_counts.items() if cnt > EXTENSION_COUNT_THRESHOLD}
         indexed_extensions = datasets.get_indexed_extensions()
-        missing_exts = frequent_exts - indexed_extensions
+        missing_exts = frequent_exts - indexed_extensions - IGNORE_EXTENSIONS_ALWAYS
 
         if missing_exts:
             missing_counts = {extension: extension_counts[extension] for extension in missing_exts}
