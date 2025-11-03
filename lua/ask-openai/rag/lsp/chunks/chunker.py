@@ -258,33 +258,29 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         return nodes, sigs_by_node
 
     def debug_uncovered_lines(source_bytes, key_nodes):
-        """
-        Given a tree-sitter tree and the raw source bytes, print any lines that are not
-        covered by any node returned by collect_key_nodes(tree.root_node).
-        """
 
         # Build a set of line numbers that are covered by any node.
-        covered = set()
+        covered_line_numbers = set()
         for node in key_nodes:
             start_line = node.start_point[0]
             end_line = node.end_point[0]  # inclusive
-            for ln in range(start_line, end_line + 1):
-                covered.add(ln)
+            for line_number in range(start_line, end_line + 1):
+                covered_line_numbers.add(line_number)
 
         source_lines = source_bytes.splitlines()
 
-        uncovered = [ln for ln in range(len(source_lines)) if ln not in covered]
+        uncovered_line_numbers = [line_number for line_number in range(len(source_lines)) if line_number not in covered_line_numbers]
 
-        if uncovered:
+        if uncovered_line_numbers:
             logger_uncovered.debug("[bold on red] *********************** Uncovered lines *********************** [/]  ")
-            last_ln = -1
-            for ln in uncovered:
-                if ln - last_ln > 1:
+            last_line_number = -1
+            for line_number in uncovered_line_numbers:
+                if line_number - last_line_number > 1:
                     logger_uncovered.debug("[black on yellow]-------[/]")  # divide non-contiguous ranges
 
                 # Show line number (1‑based) and content
-                logger_uncovered.debug(f"{ln+1:4d}: {source_lines[ln].decode('utf-8', errors='replace')}")
-                last_ln = ln
+                logger_uncovered.debug(f"{line_number+1:4d}: {source_lines[line_number].decode('utf-8', errors='replace')}")
+                last_line_number = line_number
 
         else:
             logger_uncovered.debug("All lines are covered by key nodes.")
@@ -292,9 +288,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     key_nodes, sigs_by_node = collect_key_nodes(tree.root_node)
     if logger_uncovered.isEnabledForDebug():
         debug_uncovered_lines(source_bytes, key_nodes)
-
-    # This will list every line that does not fall inside any of the key nodes,
-    # which is handy for inspecting stray or unparsed sections of the file.
 
     chunks = []
     for fn in key_nodes:
@@ -305,10 +298,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         start_column_base0 = fn.start_point[1]
         end_column_base0 = fn.end_point[1]
 
-        chunk_type = "ts"  # PRN and/or set node type?
+        chunk_type = "ts"
         chunk_id = chunk_id_with_columns_for(path, chunk_type, start_line_base0, start_column_base0, end_line_base0, end_column_base0, file_hash)
         text = fn.text.decode('utf-8')
-        # TODO logic to split up if over a certain size (tokens)
         # TODO plug in new SIG/FUNC/etc tag header info like in test case
 
         if sigs_by_node.get(fn) is not None:
