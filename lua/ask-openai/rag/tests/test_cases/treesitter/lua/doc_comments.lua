@@ -21,7 +21,6 @@ function Vector3.new(x, y, z)
     setmetatable(t, Vector3)
     return t
 end
-
 --- example of no blank line before function comments
 ---@param a Vector3
 ---@param b Vector3
