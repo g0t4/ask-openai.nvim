@@ -217,9 +217,11 @@ class TestTreesitterChunker_Lua_DocumentationComments:
     # - regular comments
     # BOTH must immediately precede the member (i.e. function, table) w/o blank line(s)
 
+    def setup_method(self):
+        self.chunks = build_test_chunks(test_cases_lua / "doc_comments.lua", RAGChunkerOptions.OnlyTsChunks())
+
     def test_function_annotations(self):
-        chunks = build_test_chunks(test_cases_lua / "doc_comments.lua", RAGChunkerOptions.OnlyTsChunks())
-        for c in chunks:
+        for c in self.chunks:
             print("********")
             print(c.text)
 
