@@ -206,7 +206,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         logger.debug(str(node.text).replace("\\n", "\n"))
         logger.debug("")
 
-    def collect_key_nodes(node: Node, collected_parent: bool = False, level: int = 0) -> tuple[list[Node], dict[Node, str]]:
+    def collect_key_nodes(node: Node, collected_parent: bool = False, level: int = 0) \
+        -> tuple[list[Node], dict[Node, str]]:
+
         nodes: list[Node] = []
         sigs_by_node: dict[Node, str] = {}
 
