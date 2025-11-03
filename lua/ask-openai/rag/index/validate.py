@@ -66,19 +66,19 @@ class DatasetsValidator:
             logger.debug("[bold green]ALL CHECKS PASS!")
 
     def find_unindexed_languages(self, datasets: Datasets) -> None:
-        ext_counts: Counter[str] = Counter()
+        extension_counts: Counter[str] = Counter()
         for root, _, files in os.walk(Path.cwd()):
             for filename in files:
                 extension = Path(filename).suffix.lower().lstrip('.')
                 if extension:
-                    ext_counts[extension] += 1
+                    extension_counts[extension] += 1
         EXTENSION_COUNT_THRESHOLD = 10
 
-        frequent_exts: Set[str] = {ext for ext, cnt in ext_counts.items() if cnt > EXTENSION_COUNT_THRESHOLD}
+        frequent_exts: Set[str] = {ext for ext, cnt in extension_counts.items() if cnt > EXTENSION_COUNT_THRESHOLD}
         missing_exts: Set[str] = frequent_exts - set(datasets.all_datasets.keys())
 
         if missing_exts:
-            missing_counts = {ext: ext_counts[ext] for ext in missing_exts}
+            missing_counts = {ext: extension_counts[ext] for ext in missing_exts}
             logger.debug("Found unindexed extensions: " + ", ".join(f"{ext}={cnt}" for ext, cnt in missing_counts.items()))
         else:
             logger.debug("All good, no missing extensions, you lucky motherf***er")
