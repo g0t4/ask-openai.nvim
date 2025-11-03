@@ -230,20 +230,6 @@ function Adder(a, b)
 end"""
         assert chunk.text == expected_first_chunk
 
-        # for c in self.chunks:
-        #     print("********")
-        #     print(c.text)
-        #
-        # print()
-
-        # FYI it's not just annotations, you can have comments that describe the function, though I will think of those as annotations
-        #   perhaps rename as func "docs"?
-        # TODO include all comments immediately preceding a function signature
-        #   until blank line
-        #   OR until non-comment node
-        pass
-        # TODO
-
     def TODO_test_function_with_non_annotation_doc_comment(self):
         pass
         # TODO
