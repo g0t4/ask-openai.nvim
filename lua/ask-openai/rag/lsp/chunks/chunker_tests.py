@@ -216,15 +216,16 @@ class TestTreesitterChunker_Python_Decorators:
     def test_nested_function_with_decorator(self):
         chunk = self.chunks[1]
         assert chunk.signature == 'def log_and_call_nested(*args, **kwargs):'
-        # ?? fix for indent on first line, otherwise function appears invalid when chunked (first line is not indented to match... then again it's a nested function... those aren't standalone viable either)
-        # expected_code = '    @functools.lru_cache()\n    def log_and_call_nested(*args, **kwargs):\n        print("before")\n        return func(*args, **kwargs)'
+        # FYI! purpose of checking the code here is to make sure the decorator is included
+        #   the indentation before is irrelevant... that is a conern of an uncovered code sliding window consumer
+        #   that consumer would decide how best to represent the chunk (likely keep entire line)
+        #   SO DO NOT TOUCH INDENTATION in these tests! nor change it in the uncovered code detector
+        #   TODO! add support for start/end_point (row,col) in identified_chunks so I can use that in consumers to find full line?
         expected_code = '@functools.lru_cache()\n    def log_and_call_nested(*args, **kwargs):\n        print("before")\n        return func(*args, **kwargs)'
         assert chunk.text == expected_code
         # rich_print(f'{chunk=}')
 
     def test_decorated_function_in_class(self):
-        # ?? fix for indent?
-        # expected_code = '    @log_calls\n    def repr(self):\n        return f"({self.x}, {self.y})"'
         expected_code = '@log_calls\n    def repr(self):\n        return f"({self.x}, {self.y})"'
         chunk = self.chunks[4]
         assert chunk.signature == 'def repr(self):'
