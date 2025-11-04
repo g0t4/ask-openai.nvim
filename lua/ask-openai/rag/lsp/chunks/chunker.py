@@ -268,8 +268,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
     # PRN batch process chunks?
     identified_chunks = list(identify_chunks(tree.root_node))
-    # TODO need to get root dir as os.getcwd() is gonna be rag dir in ask repo always
-    # relative_path = path.relative_to(os.getcwd())
     debug_uncovered_intervals(tree, source_bytes, identified_chunks, path)
 
     ts_chunks = []
