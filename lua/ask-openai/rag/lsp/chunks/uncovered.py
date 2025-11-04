@@ -13,7 +13,7 @@ from io import StringIO
 logger_uncovered = get_logger(__name__)
 logger_uncovered.setLevel(logging.DEBUG)
 
-@dataclass
+@dataclass(slots=True)
 class UncoveredCode:
     text: str
     start_line_base1: int
