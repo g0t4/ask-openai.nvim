@@ -206,7 +206,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             return
 
         logger.debug(f'node type not handled: {node.type}')
-        logger.debug(str(node.text).replace("\\n", "\n"))
+        logger.debug_no_markup(str(node.text).replace("\\n", "\n"))
         logger.debug("")
 
     def identify_chunks(node: Node, collected_parent: bool = False, level: int = 0) -> list[IdentifiedChunk]:
