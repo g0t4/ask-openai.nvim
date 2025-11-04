@@ -70,23 +70,26 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
     return uncovered_code
 
 def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk]) -> list[UncoveredCode]:
+    from rich import print
     print()
 
     # * collect covered node byte spans
     covered_spans = P.empty()
+    print("[green]COVERED[/]")
     for chunk in chunks:
         for node in chunk.sibling_nodes:
             covered = P.openclosed(node.start_byte, node.end_byte)
-            print("covered", covered)
+            text = source_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
+            print("  ", covered, repr(text))
             covered_spans |= covered
-    print("covered_spans (combined)", covered_spans)
+    print("  [cyan]COMBINED[/]", covered_spans)
 
     uncovered_spans = P.openclosed(0, len(source_bytes)) - covered_spans
 
     # * collect uncovered code
     uncovered_code: list[UncoveredCode] = []
+    print("[red]UNCOVERED[/]")
     for span in uncovered_spans:
-        print("uncovered", span)
         assert span.left == P.Bound.OPEN
         assert span.right == P.Bound.CLOSED
         # FYI logic below assumes open/closed (use assertions for now to ensure that reality)
@@ -100,7 +103,7 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         #  ok it is b/c I am subtracing from overall range and there is no node for the skipped whitespace chars... ok
         text = source_bytes[start_base0:end_base0].decode("utf-8", errors="replace")
 
-        print(f'  ({start_base0},{end_base0}] - {repr(text)}')
+        print(f'  {span} - {repr(text)}')
 
         # FYI I am not computing column offsets, for uncovered code purposes I think that's fine for now b/c...
         # - this is only going to be for sliding window "fallback" chunker which is 100% fine to cover a smidge extra
