@@ -70,7 +70,7 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
 
     return uncovered_code
 
-def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], debug=False) -> list[UncoveredCode]:
+def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], show_intervals=False) -> list[UncoveredCode]:
 
     # * collect covered node byte spans
     merged_covered_spans = P.empty()
@@ -86,7 +86,7 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
             # back to treating as standalone nodes, is perfectly fine and best way to keep byte/(line,col) alignments
             covered = P.openclosed(node.start_byte, node.end_byte)
             text = source_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
-            if debug:
+            if show_intervals:
                 t_covered.append(TroubleshootNode(interval=covered, text=text, type="covered"))
             merged_covered_spans |= covered
 
@@ -109,7 +109,7 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         #  ok it is b/c I am subtracing from overall range and there is no node for the skipped whitespace chars... ok
         text = source_bytes[start_base0:end_base0].decode("utf-8", errors="replace")
 
-        if debug:
+        if show_intervals:
             t_uncovered.append(TroubleshootNode(interval=span, text=text, type="uncovered"))
 
         # FYI I am not computing column offsets, for uncovered code purposes I think that's fine for now b/c...
@@ -126,7 +126,7 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         )
         uncovered_code.append(code)
 
-    if debug:
+    if show_intervals:
         from rich import print
         # ***! This view of code covered/not is ESSENTIAL to understand what is happening
         #  i.e. immediately obvious why we get leading and trailing \n in specific situations
