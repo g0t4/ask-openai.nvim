@@ -47,7 +47,9 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
     )
     for code in uncovered_code:
         if code.is_whitespace_or_empty():
+            # TODO hide this once I am happy with the leading \n issue (IIAC it is affecting this too)
             console.print(f"[black on cyan]uncovered whitespace within lines {code.start_line_base1}–{code.end_line_base1}[/]", highlight=False)
+            console.print(f"{repr(code.text)}", highlight=False) # see what kinda whitespace it is
             continue
 
         if code.start_line_base1 == code.end_line_base1:
