@@ -3,8 +3,12 @@ from tree_sitter import Parser, Tree
 from tree_sitter_language_pack import get_parser
 
 from lsp.chunks.identified import IdentifiedChunk
-from lsp.chunks.uncovered import _debug_uncovered_nodes
+import lsp.chunks.uncovered
 from lsp.logs import logging_fwk_to_console
+
+def _debug_uncovered_nodes(*args, **kwargs):
+    kwargs['debug'] = True
+    return lsp.chunks.uncovered._debug_uncovered_nodes(*args, **kwargs)
 
 logging_fwk_to_console("INFO")
 
