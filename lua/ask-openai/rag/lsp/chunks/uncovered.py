@@ -90,7 +90,6 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
             text = source_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
             troubleshoots.append(TroubleshootNode(interval=covered, text=text, covered=True))
             covered_spans |= covered
-    print("[cyan]COMBINED[/]", covered_spans)
 
     uncovered_spans = P.openclosed(0, len(source_bytes)) - covered_spans
 
@@ -125,6 +124,9 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
             end_byte_base0=end_base0,
         )
         uncovered_code.append(code)
+
+    # PRN toggle to see combined covered spans instead of individual ones that can overlap (i.e. nested funcs)
+    print("[cyan]COMBINED[/]", covered_spans)
 
     for t in sorted(troubleshoots):
         if t.covered:
