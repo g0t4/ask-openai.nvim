@@ -74,13 +74,14 @@ class TestUncoveredNodes():
 
         assert len(uncovered_code) == 2
         start_uncovered = uncovered_code[0]
-        assert start_uncovered.text == 'function a() return 1 end'
+        assert start_uncovered.text == 'function a() return 1 end\n'
         assert start_uncovered.start_line_base1 == 1
-        assert start_uncovered.end_line_base1 == 1
+        assert start_uncovered.end_line_base1 == 2
         end_uncovered = uncovered_code[1]
         # TODO look into how whitespace is handled (here it's tacking onto start of 3rd function which is fine)
         #   I just need to understand how it works so I am not surprised
         #   mostly shouldn't matter aside from writing tests
+        # TODO review leading \n
         assert end_uncovered.text == '\nfunction c() return 3 end'
         assert end_uncovered.start_line_base1 == 2
         assert end_uncovered.end_line_base1 == 3
@@ -99,9 +100,11 @@ class TestUncoveredNodes():
 
         assert len(uncovered_code) == 1
         middle_uncovered = uncovered_code[0]
-        assert middle_uncovered.text == '\nfunction b() return 2 end'
+        # TODO review leading \n
+        # TODO review how I feel about \n bumping up ending_line_base1? what impact?
+        assert middle_uncovered.text == '\nfunction b() return 2 end\n'
         assert middle_uncovered.start_line_base1 == 1
-        assert middle_uncovered.end_line_base1 == 2
+        assert middle_uncovered.end_line_base1 == 3
 
     def test_consecutive_covered_code(self):
         # ? do I really need this test?
@@ -116,12 +119,12 @@ class TestUncoveredNodes():
 
         uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
 
-        # newline between is not marked as covered, that's fine to track, I can always ignore it in consumers
+        # newline between is not covered, that's fine to track, I can always ignore it in consumers
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
-        # assert only.text == '\n'
+        assert only.text == '\n'
         assert only.start_line_base1 == 1
-        assert only.end_line_base1 == 1
+        assert only.end_line_base1 == 2
 
     def test_non_consecutive_single_chunk(self):
         # I do not have plans for this currently, nonetheless it can help me sniff out edge cases in my uncovered detection
@@ -140,9 +143,10 @@ class TestUncoveredNodes():
 
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
-        assert only.text == '\nfunction b() return 2 end'
+        # TODO review leading \n
+        assert only.text == '\nfunction b() return 2 end\n'
         assert only.start_line_base1 == 1
-        assert only.end_line_base1 == 2
+        assert only.end_line_base1 == 3
 
     def test_overlapping_nodes_within_single_chunk_with_uncovered_after(self):
         # this touches on merged_covered_spans
@@ -161,6 +165,7 @@ class TestUncoveredNodes():
         uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
+        # TODO review leading \n
         assert only.text == '\nfunction b() return 2 end'
         assert only.start_line_base1 == 1
         assert only.end_line_base1 == 2
@@ -185,6 +190,7 @@ class TestUncoveredNodes():
         uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
+        # TODO review leading \n
         assert only.text == '\nfunction b() return 2 end'
         assert only.start_line_base1 == 1
         assert only.end_line_base1 == 2
