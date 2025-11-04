@@ -66,6 +66,7 @@ class UncoveredCode:
 def create_uncovered_code(source_bytes: bytes, byte_interval) -> UncoveredCode:
     assert byte_interval.left == P.Bound.OPEN
     assert byte_interval.right == P.Bound.CLOSED
+
     # FYI logic below assumes open/closed (use assertions for now to ensure that reality)
     #  slice below treats end as not-inclusive, thus matches open/closed
     start_byte_base0: int = byte_interval.lower
@@ -78,6 +79,7 @@ def create_uncovered_code(source_bytes: bytes, byte_interval) -> UncoveredCode:
     # - I might even cover X lines around window too so columns on the start/end line don't matter
     start_line_base1 = source_bytes[:start_byte_base0].count(b"\n") + 1
     end_line_base1 = start_line_base1 + text.count("\n")
+
     return UncoveredCode(
         text=text,
         byte_interval_base0=byte_interval,
