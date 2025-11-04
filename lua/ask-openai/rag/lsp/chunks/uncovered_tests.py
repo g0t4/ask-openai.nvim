@@ -195,7 +195,7 @@ class TestUncoveredNodes():
         assert only.end_line_base1 == 2
 
     def test_overlapping_nodes_in_separate_chunks_with_uncovered_after(self):
-        # this touches on merged_covered_spans
+        # this touches on merged intervals
         source_bytes, tree = self.parse_lua('function a() function a_nested() return 1 end end\nfunction b() return 2 end')
         func_a = tree.root_node.children[0]
         func_a_nested = func_a.named_children[0]

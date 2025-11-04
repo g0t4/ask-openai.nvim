@@ -48,7 +48,7 @@ class UncoveredCode:
     text: str
     start_line_base1: int
     end_line_base1: int
-    byte_span_base0: P.Interval
+    byte_interval_base0: P.Interval
 
     def start_line_base0(self) -> int:
         return self.start_line_base1 - 1
@@ -61,7 +61,7 @@ class UncoveredCode:
         return self.text == '' or self.text.isspace()
 
     def troubleshooter(self):
-        return TroubleshootCodeInterval(interval=self.byte_span_base0, text=self.text, type="uncovered")
+        return TroubleshootCodeInterval(interval=self.byte_interval_base0, text=self.text, type="uncovered")
 
 def create_uncovered_code(source_bytes: bytes, byte_interval) -> UncoveredCode:
     assert byte_interval.left == P.Bound.OPEN
@@ -80,7 +80,7 @@ def create_uncovered_code(source_bytes: bytes, byte_interval) -> UncoveredCode:
     end_line_base1 = start_line_base1 + text.count("\n")
     return UncoveredCode(
         text=text,
-        byte_span_base0=byte_interval,
+        byte_interval_base0=byte_interval,
         start_line_base1=start_line_base1,
         end_line_base1=end_line_base1,
     )
@@ -128,7 +128,6 @@ def create_merged_troubleshooter(source_bytes: bytes, interval: P.Interval):
 
 def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], show_intervals=False) -> list[UncoveredCode]:
 
-    # * collect covered node byte spans
     merged_covered_intervals = P.empty()
 
     t_covered: list[TroubleshootCodeInterval] = []
