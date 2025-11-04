@@ -46,16 +46,16 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
         style="bold white on red",
     )
     for code in uncovered_code:
-        if code.is_whitespace_or_empty():
-            # TODO hide this once I am happy with the leading \n issue (IIAC it is affecting this too)
-            console.print(f"[black on cyan]uncovered whitespace within lines {code.start_line_base1}–{code.end_line_base1}[/]", highlight=False)
-            console.print(f"{repr(code.text)}", highlight=False) # see what kinda whitespace it is
-            continue
-
         if code.start_line_base1 == code.end_line_base1:
             line_desc = f"line {code.start_line_base1}"
         else:
             line_desc = f"lines {code.start_line_base1}–{code.end_line_base1}"
+
+        if code.is_whitespace_or_empty():
+            console.print(f"[black on cyan]uncovered whitespace within {line_desc}[/]", highlight=False)
+            console.print(f"{repr(code.text)}", highlight=False)
+            continue
+
         console.print(f"[black on yellow]uncovered bytes within {line_desc}[/]", highlight=False)
         console.print(f"{code.text}", markup=False, highlight=False, end="")  # end="" else each line has a \n after!
 
