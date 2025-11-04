@@ -2,6 +2,33 @@ from tree_sitter import Parser
 from lsp.chunks.parsers import get_parser
 from rich import print
 
+# %%
+
+lua = get_parser("lua")
+for name in dir(lua):
+    print(name + ": " + str(getattr(lua, name)))
+print(globals().keys())
+
+# %%
+# * image with dot graph
+tree = lua.parse(b"local a = 1")
+with open("lua.graph", "wb") as f:
+    tree.print_dot_graph(f)
+import subprocess as sp
+
+sp.call("cat lua.graph | dot -Tpng -o lua.png", shell=True)
+# lua.reset()
+
+# %%
+
+import rich
+
+dir(rich)
+
+dir(getattr(rich, '__builtins__'))
+
+# %%
+
 def _inspect(parser: Parser, code: bytes):
     tree = parser.parse(code)
     root = tree.root_node
@@ -129,7 +156,6 @@ inspect_python(b"""\n    a=1\n    b=2\n""")  # CORRECT
 #   (expression_statement (assignment left: (identifier) right: (integer)))
 
 # %%
-
 
 # FYI cannot have more than two blank lines (nor less) at end of multiline string """
 inspect_python(b"""
