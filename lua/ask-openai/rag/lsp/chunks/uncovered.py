@@ -35,7 +35,7 @@ class UncoveredCode:
 def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], relative_path: Path) -> list[UncoveredCode]:
     if not logger_uncovered.isEnabledForDebug():
         return []
-    uncovered_code = _debug_uncovered_nodes(tree, source_bytes, chunks)
+    uncovered_code = _debug_uncovered_nodes(tree, source_bytes, chunks, show_intervals=True)
 
     if not uncovered_code:
         # logger_uncovered.debug(f" **** NO uncovered nodes: {relative_path} **** ")
