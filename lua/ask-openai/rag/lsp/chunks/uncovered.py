@@ -105,25 +105,13 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         # - I might even cover X lines around window too so columns on the start/end line don't matter
         start_line_base1 = source_bytes[:start].count(b"\n") + 1
         end_line_base1 = start_line_base1 + text.count("\n")
-        not_empty_or_whitespace = text.strip()
-        if not_empty_or_whitespace:
-            uncovered_code.append(UncoveredCode(
-                text=text,
-                start_line_base1=start_line_base1,
-                end_line_base1=end_line_base1,
-                start_byte_base0=start,
-                end_byte_base0=end,
-            ))
-        else:
-            #    TODO! factor this into tests and uncovered sliding window chunker, b/c it very well may change what the code appears to do if I am missing \n and other whitespace
-            #      MAYBE add a toggle to include it (or not)
-            #     # ? return whitespace only sections?
-            uncovered_code.append(UncoveredCode(
-                text=text,
-                start_line_base1=start_line_base1,
-                end_line_base1=end_line_base1,
-                start_byte_base0=start,
-                end_byte_base0=end,
-            ))
+        code = UncoveredCode(
+            text=text,
+            start_line_base1=start_line_base1,
+            end_line_base1=end_line_base1,
+            start_byte_base0=start,
+            end_byte_base0=end,
+        )
+        uncovered_code.append(code)
 
     return uncovered_code
