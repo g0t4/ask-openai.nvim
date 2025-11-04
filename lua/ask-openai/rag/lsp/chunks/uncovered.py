@@ -93,13 +93,14 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         #  slice below treats end as not-inclusive, thus matches open/closed
         start_base0: int = span.lower
         end_base0: int = span.upper
-        print(f'  ({start_base0},{end_base0}]')
 
         # TODO! drop rstrip? why would I need that if the range is not inclusive?
         # TODO seems to be bug that results in \n on front of next line?
         # TODO! why am I getting \n in front and end of middle line?! see multi node tests
         #  ok it is b/c I am subtracing from overall range and there is no node for the skipped whitespace chars... ok
         text = source_bytes[start_base0:end_base0].decode("utf-8", errors="replace")
+
+        print(f'  ({start_base0},{end_base0}] - {repr(text)}')
 
         # FYI I am not computing column offsets, for uncovered code purposes I think that's fine for now b/c...
         # - this is only going to be for sliding window "fallback" chunker which is 100% fine to cover a smidge extra
