@@ -70,9 +70,10 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
 
     return uncovered_code
 
-def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk]) -> list[UncoveredCode]:
+def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], debug=False) -> list[UncoveredCode]:
     from rich import print
-    print()
+    if debug:
+        print()
 
     # * collect covered node byte spans
     merged_covered_spans = P.empty()
@@ -88,7 +89,8 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
             # back to treating as standalone nodes, is perfectly fine and best way to keep byte/(line,col) alignments
             covered = P.openclosed(node.start_byte, node.end_byte)
             text = source_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
-            t_covered.append(TroubleshootNode(interval=covered, text=text, type="covered"))
+            if debug:
+                t_covered.append(TroubleshootNode(interval=covered, text=text, type="covered"))
             merged_covered_spans |= covered
 
     uncovered_spans = P.openclosed(0, len(source_bytes)) - merged_covered_spans
@@ -110,7 +112,8 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         #  ok it is b/c I am subtracing from overall range and there is no node for the skipped whitespace chars... ok
         text = source_bytes[start_base0:end_base0].decode("utf-8", errors="replace")
 
-        t_uncovered.append(TroubleshootNode(interval=span, text=text, type="uncovered"))
+        if debug:
+            t_uncovered.append(TroubleshootNode(interval=span, text=text, type="uncovered"))
 
         # FYI I am not computing column offsets, for uncovered code purposes I think that's fine for now b/c...
         # - this is only going to be for sliding window "fallback" chunker which is 100% fine to cover a smidge extra
@@ -126,24 +129,25 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         )
         uncovered_code.append(code)
 
-    t_merged = [TroubleshootNode(
-        interval=m,
-        text=source_bytes[m.lower:m.upper].decode("utf-8", errors="replace"),
-        type="merged_covered",
-    ) for m in merged_covered_spans]
+    if debug:
+        t_merged = [TroubleshootNode(
+            interval=m,
+            text=source_bytes[m.lower:m.upper].decode("utf-8", errors="replace"),
+            type="merged_covered",
+        ) for m in merged_covered_spans]
 
-    # troubleshoots = t_uncovered + t_covered # show unmerged covered spans
-    troubleshoots = t_uncovered + t_merged
+        # troubleshoots = t_uncovered + t_covered # show unmerged covered spans
+        troubleshoots = t_uncovered + t_merged
 
-    for t in sorted(troubleshoots):
-        if t.type == "merged_covered":
-            style = "cyan"
-        elif t.type == "covered":
-            style = "green"
-        elif t.type == "uncovered":
-            style = "red"
-        else:
-            raise Exception("bad type")
-        print(f'  [{style}]{t.interval} - {repr(t.text)}[/]')
+        for t in sorted(troubleshoots):
+            if t.type == "merged_covered":
+                style = "cyan"
+            elif t.type == "covered":
+                style = "green"
+            elif t.type == "uncovered":
+                style = "red"
+            else:
+                raise Exception("bad type")
+            print(f'  [{style}]{t.interval} - {repr(t.text)}[/]')
 
     return uncovered_code
