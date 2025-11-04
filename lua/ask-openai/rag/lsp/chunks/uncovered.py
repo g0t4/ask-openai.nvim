@@ -8,7 +8,6 @@ import portion as P
 from tree_sitter import Tree
 from lsp.chunks.identified import IdentifiedChunk
 from lsp.logs import get_logger
-from rich.console import Console
 from io import StringIO
 
 logger_uncovered = get_logger(__name__)
@@ -35,6 +34,9 @@ CYANBG = "\x1b[46m"
 WHITEBG = "\x1b[47m"
 #
 RESET = "\x1b[0m"
+BOLD = "\x1b[1m"
+ITALIC = "\x1b[3m"
+UNDERLINE = "\x1b[4m"
 
 @dataclass(slots=True)
 class UncoveredCode:
@@ -64,15 +66,8 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
         return []
 
     # * log uncovered code
-    buffer = StringIO()  # buffer for single log per file
-    # TODO fix wrapping issues between console.print and then logger's rich_handler, for now I am setting width to 200 for console printer:
-    #   absolute file path is notorious for causing wrap
-    console = Console(file=buffer, force_terminal=True, color_system="truecolor", width=200)
-    console.print(
-        f"\n** Uncovered nodes {relative_path}",
-        style="bold white on red",
-        highlight=False,  # avoid highlight on path
-    )
+    buffer = StringIO()
+    buffer.write(f"\n{BOLD}{REDBG}** Uncovered nodes {relative_path}{RESET}\n")
     for code in uncovered_code:
         if code.start_line_base1 == code.end_line_base1:
             line_desc = f"line {code.start_line_base1}"
@@ -80,12 +75,15 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
             line_desc = f"lines {code.start_line_base1}–{code.end_line_base1}"
 
         if code.is_whitespace_or_empty():
-            console.print(f"[black on cyan]uncovered whitespace within {line_desc}[/]", highlight=False)
-            console.print(f"{repr(code.text)}", highlight=False)
+            buffer.write(f"{BLACK}{CYANBG}uncovered whitespace within {line_desc}{RESET}\n")
+            buffer.write(repr(code.text))
+            buffer.write("\n")
             continue
 
-        console.print(f"[black on yellow]uncovered bytes within {line_desc}[/]", highlight=False)
-        console.print(f"{code.text}", markup=False, highlight=False, end="")  # end="" else each line has a \n after!
+        buffer.write(f"{BLACK}{YELLOWBG}uncovered bytes within {line_desc}{RESET}\n")
+        buffer.write(code.text)
+        if code.text[-1] != "\n":
+            buffer.write("\n")
 
         # use console directly so I can disable markup for code
     logger_uncovered.debug_no_markup(buffer.getvalue())
