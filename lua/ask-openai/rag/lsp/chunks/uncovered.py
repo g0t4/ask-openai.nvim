@@ -63,13 +63,13 @@ class UncoveredCode:
     def troubleshooter(self):
         return TroubleshootCodeInterval(interval=self.byte_span_base0, text=self.text, type="uncovered")
 
-def create_uncovered_code(source_bytes: bytes, byte_span) -> UncoveredCode:
-    assert byte_span.left == P.Bound.OPEN
-    assert byte_span.right == P.Bound.CLOSED
+def create_uncovered_code(source_bytes: bytes, byte_interval) -> UncoveredCode:
+    assert byte_interval.left == P.Bound.OPEN
+    assert byte_interval.right == P.Bound.CLOSED
     # FYI logic below assumes open/closed (use assertions for now to ensure that reality)
     #  slice below treats end as not-inclusive, thus matches open/closed
-    start_byte_base0: int = byte_span.lower
-    end_byte_base0: int = byte_span.upper
+    start_byte_base0: int = byte_interval.lower
+    end_byte_base0: int = byte_interval.upper
 
     text = source_bytes[start_byte_base0:end_byte_base0].decode("utf-8", errors="replace")
 
@@ -80,7 +80,7 @@ def create_uncovered_code(source_bytes: bytes, byte_span) -> UncoveredCode:
     end_line_base1 = start_line_base1 + text.count("\n")
     return UncoveredCode(
         text=text,
-        byte_span_base0=byte_span,
+        byte_span_base0=byte_interval,
         start_line_base1=start_line_base1,
         end_line_base1=end_line_base1,
     )
@@ -129,7 +129,7 @@ def create_merged_troubleshooter(source_bytes: bytes, interval: P.Interval):
 def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], show_intervals=False) -> list[UncoveredCode]:
 
     # * collect covered node byte spans
-    merged_covered_spans = P.empty()
+    merged_covered_intervals = P.empty()
 
     t_covered: list[TroubleshootCodeInterval] = []
     for chunk in chunks:
@@ -139,14 +139,14 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
             if show_intervals:
                 text = source_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
                 t_covered.append(TroubleshootCodeInterval(interval=covered, text=text, type="covered"))
-            merged_covered_spans |= covered
+            merged_covered_intervals |= covered
 
-    uncovered_spans = P.openclosed(0, len(source_bytes)) - merged_covered_spans
+    uncovered_intervals = P.openclosed(0, len(source_bytes)) - merged_covered_intervals
 
     # * collect uncovered code
     uncovered_code: list[UncoveredCode] = []
-    for span in uncovered_spans:
-        code = create_uncovered_code(source_bytes, span)
+    for interval in uncovered_intervals:
+        code = create_uncovered_code(source_bytes, interval)
         uncovered_code.append(code)
 
     if show_intervals:
@@ -154,10 +154,10 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         #  i.e. immediately obvious why we get leading and trailing \n in specific situations
         #  run the myriad of test cases in uncovered_tests and then look at the output w.r.t. this debug section
 
-        t_merged = [create_merged_troubleshooter(source_bytes, m) for m in merged_covered_spans]
+        t_merged = [create_merged_troubleshooter(source_bytes, interval) for interval in merged_covered_intervals]
         t_uncovered = [code.troubleshooter() for code in uncovered_code]
 
-        # troubleshoots = t_uncovered + t_covered # show unmerged covered spans
+        # troubleshoots = t_uncovered + t_covered # show covered intervals (NOT merged)
         troubleshoots = t_uncovered + t_merged
 
         buffer = StringIO()
