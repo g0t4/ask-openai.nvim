@@ -47,7 +47,7 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
         else:
             line_desc = f"lines {code.start_line_base1}–{code.end_line_base1}"
         console.print(f"[black on yellow]uncovered bytes within {line_desc}[/]", highlight=False)
-        console.print(f"{code.text}", markup=False, highlight=False)
+        console.print(f"{code.text}", markup=False, highlight=False, end="") # end="" else each line has a \n after!
 
         # use console directly so I can disable markup for code
     logger_uncovered.debug_no_markup(buffer.getvalue())
