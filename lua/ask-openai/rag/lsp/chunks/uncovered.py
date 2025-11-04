@@ -38,7 +38,7 @@ BOLD = "\x1b[1m"
 ITALIC = "\x1b[3m"
 UNDERLINE = "\x1b[4m"
 
-class TroubleshootNode(NamedTuple):
+class TroubleshootCodeInterval(NamedTuple):
     interval: P.Interval
     text: str
     type: str
@@ -61,7 +61,7 @@ class UncoveredCode:
         return self.text == '' or self.text.isspace()
 
     def troubleshooter(self):
-        return TroubleshootNode(interval=self.byte_span_base0, text=self.text, type="uncovered")
+        return TroubleshootCodeInterval(interval=self.byte_span_base0, text=self.text, type="uncovered")
 
 def create_uncovered_code(source_bytes: bytes, byte_span) -> UncoveredCode:
     assert byte_span.left == P.Bound.OPEN
@@ -120,7 +120,7 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
     return uncovered_code
 
 def create_span_troubleshooter(source_bytes: bytes, m: P.Interval):
-    return TroubleshootNode(
+    return TroubleshootCodeInterval(
         interval=m,
         text=source_bytes[m.lower:m.upper].decode("utf-8", errors="replace"),
         type="merged_covered",
@@ -131,14 +131,14 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
     # * collect covered node byte spans
     merged_covered_spans = P.empty()
 
-    t_covered: list[TroubleshootNode] = []
+    t_covered: list[TroubleshootCodeInterval] = []
     for chunk in chunks:
         for node in chunk.sibling_nodes:
             # back to treating as standalone nodes, is perfectly fine and best way to keep byte/(line,col) alignments
             covered = P.openclosed(node.start_byte, node.end_byte)
             if show_intervals:
                 text = source_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
-                t_covered.append(TroubleshootNode(interval=covered, text=text, type="covered"))
+                t_covered.append(TroubleshootCodeInterval(interval=covered, text=text, type="covered"))
             merged_covered_spans |= covered
 
     uncovered_spans = P.openclosed(0, len(source_bytes)) - merged_covered_spans
