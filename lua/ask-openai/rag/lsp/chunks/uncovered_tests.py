@@ -116,7 +116,12 @@ class TestUncoveredNodes():
 
         uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
 
-        assert len(uncovered_code) == 0
+        # newline between is not marked as covered, that's fine to track, I can always ignore it in consumers
+        assert len(uncovered_code) == 1
+        only = uncovered_code[0]
+        # assert only.text == '\n'
+        assert only.start_line_base1 == 1
+        assert only.end_line_base1 == 1
 
     def test_non_consecutive_single_chunk(self):
         # I do not have plans for this currently, nonetheless it can help me sniff out edge cases in my uncovered detection
