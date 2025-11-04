@@ -25,6 +25,10 @@ class UncoveredCode:
     def end_line_base0(self) -> int:
         return self.end_line_base1 - 1
 
+    def is_whitespace_or_empty(self) -> bool:
+        # FYI should not be empty but doesn't hurt to include it if that changes later
+        return self.text == '' or self.text.isspace()
+
 def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], relative_path: Path) -> list[UncoveredCode]:
     if not logger_uncovered.isEnabledForDebug():
         return []
@@ -42,8 +46,7 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
         style="bold white on red",
     )
     for code in uncovered_code:
-        is_only_whitespace = code.text.isspace()
-        if is_only_whitespace:
+        if code.is_whitespace_or_empty():
             console.print(f"[black on cyan]uncovered whitespace within lines {code.start_line_base1}–{code.end_line_base1}[/]", highlight=False)
             continue
 
