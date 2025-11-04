@@ -7,7 +7,7 @@ import lsp.chunks.uncovered
 from lsp.logs import logging_fwk_to_console
 
 def _debug_uncovered_nodes(*args, **kwargs):
-    kwargs['debug'] = True
+    # kwargs['debug'] = True # uncomment to get debug logs of intervals and code repr's!
     return lsp.chunks.uncovered._debug_uncovered_nodes(*args, **kwargs)
 
 logging_fwk_to_console("INFO")
