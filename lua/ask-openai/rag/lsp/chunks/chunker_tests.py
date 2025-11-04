@@ -313,10 +313,7 @@ class TestTreesitterChunker_Python_DataClass:
 
         first_chunk = chunks[0]
 
-        class_text = """@dataclass\nclass Customer():
-    id: int
-    name: str
-    email: str"""
+        class_text = '@dataclass\nclass Customer():\n    id: int\n    name: str\n    email: str'
         assert first_chunk.text == class_text
 
         assert first_chunk.signature == "class Customer():"
