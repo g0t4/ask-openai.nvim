@@ -105,11 +105,19 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         end_line_base1 = start_line_base1 + text.count("\n")
         not_empty_or_whitespace = text.strip()
         if not_empty_or_whitespace:
-            uncovered_code.append(UncoveredCode(text=text, start_line_base1=start_line_base1, end_line_base1=end_line_base1))
+            uncovered_code.append(UncoveredCode(
+                text=text,
+                start_line_base1=start_line_base1,
+                end_line_base1=end_line_base1,
+            ))
         else:
             #    TODO! factor this into tests and uncovered sliding window chunker, b/c it very well may change what the code appears to do if I am missing \n and other whitespace
             #      MAYBE add a toggle to include it (or not)
             #     # ? return whitespace only sections?
-            uncovered_code.append(UncoveredCode(text=text, start_line_base1=start_line_base1, end_line_base1=end_line_base1))
+            uncovered_code.append(UncoveredCode(
+                text=text,
+                start_line_base1=start_line_base1,
+                end_line_base1=end_line_base1,
+            ))
 
     return uncovered_code
