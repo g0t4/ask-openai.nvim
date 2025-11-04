@@ -5,7 +5,7 @@ from tree_sitter import QueryCursor
 
 from lsp.fs import *
 from lsp.chunks.chunker import *
-from lsp.chunks.ts import *
+from lsp.chunks.ts.ts import *
 from lsp.storage import Chunk
 
 # * set root dir for relative paths
@@ -201,13 +201,16 @@ class TestTreesitterChunker_Python_Decorators:
     def setup_method(self):
         self.chunks = build_test_chunks(test_cases_python / "decorators.py", RAGChunkerOptions.OnlyTsChunks())
 
-    def TODO_test_functions_with_decorators(self):
-        for chunk in self.chunks:
-            assert chunk.text
+    def test_functions_with_decorators_func1(self):
+        chunk = self.chunks[2]
+        assert chunk.signature == "def func1():"
+        assert chunk.text == """@log_calls\ndef func1():\n    return 1"""
+        rich_print(f'{chunk=}')
 
     def TODO_test_decorated_class(self):
-        pass
         # TODO
+        for chunk in self.chunks:
+            print(chunk)
 
     def TODO_test_nested_function_with_decorator(self):
         pass

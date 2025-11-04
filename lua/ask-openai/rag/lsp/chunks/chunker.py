@@ -8,7 +8,8 @@ from typing import Iterator
 from tree_sitter import Node
 
 from lsp.chunks.identified import IdentifiedChunk
-from lsp.chunks.lua import insert_previous_doc_comment
+from lsp.chunks.ts.lua import attach_doc_comments
+from lsp.chunks.ts.py import attach_decorators
 from lsp.chunks.uncovered import debug_uncovered_nodes
 from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
 from lsp.logs import get_logger, printtmp
@@ -239,8 +240,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 signature=get_function_signature(node),
             )
             if parser_language == "lua":
-                insert_previous_doc_comment(node, chunk.sibling_nodes)
-
+                attach_doc_comments(node, chunk.sibling_nodes)
+            if parser_language == "python":
+                attach_decorators(node, chunk.sibling_nodes)
             yield chunk
             collected_parent = True
         elif node.type in [
