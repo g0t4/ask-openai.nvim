@@ -202,9 +202,8 @@ class TestTreesitterChunker_Python_Decorators:
         self.chunks = build_test_chunks(test_cases_python / "decorators.py", RAGChunkerOptions.OnlyTsChunks())
 
     def TODO_test_functions_with_decorators(self):
-        # TODO reference tests below for lua annotations/doc_comments
-        pass
-        # TODO
+        for chunk in self.chunks:
+            assert chunk.text
 
     def TODO_test_decorated_class(self):
         pass
