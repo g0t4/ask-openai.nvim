@@ -113,15 +113,15 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
 
     return uncovered_code
 
+class TroubleshootNode(NamedTuple):
+    interval: P.Interval
+    text: str
+    type: str
+
 def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], show_intervals=False) -> list[UncoveredCode]:
 
     # * collect covered node byte spans
     merged_covered_spans = P.empty()
-
-    class TroubleshootNode(NamedTuple):
-        interval: P.Interval
-        text: str
-        type: str
 
     t_covered: list[TroubleshootNode] = []
     for chunk in chunks:
