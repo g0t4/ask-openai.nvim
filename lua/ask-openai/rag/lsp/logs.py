@@ -59,7 +59,10 @@ def logging_fwk_to_language_server_log_file(level):
     log_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     log_file = open(log_file_path, "w", encoding="utf-8")
-    console = Console(file=log_file, force_terminal=True, width=150)
+
+    # TODO stop fucking with rich settings, leave it alone for long lines (if they wrap, so be it, get over it)
+    # FYI you use two primary features in rich (ansi escape from styles/markup, highlighting based on data type, i.e. numbers)
+    console = Console(file=log_file, force_terminal=True, width=150, tab_size=4)
 
     clear_iterm_scrollback(log_file)
 
