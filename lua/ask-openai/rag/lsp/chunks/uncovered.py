@@ -119,6 +119,13 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
 
     return uncovered_code
 
+def create_span_troubleshooter(source_bytes: bytes, m: P.Interval):
+    return TroubleshootNode(
+        interval=m,
+        text=source_bytes[m.lower:m.upper].decode("utf-8", errors="replace"),
+        type="merged_covered",
+    )
+
 def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], show_intervals=False) -> list[UncoveredCode]:
 
     # * collect covered node byte spans
