@@ -90,10 +90,9 @@ def create_uncovered_code(source_bytes: bytes, byte_interval) -> UncoveredCode:
 def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], relative_path: Path) -> list[UncoveredCode]:
     if not logger_uncovered.isEnabledForDebug():
         return []
-    uncovered_code = _debug_uncovered_nodes(tree, source_bytes, chunks, show_intervals=True)
+    uncovered_code = _build_uncovered_intervals(tree, source_bytes, chunks, show_intervals=True)
 
     if not uncovered_code:
-        # logger_uncovered.debug(f" **** NO uncovered nodes: {relative_path} **** ")
         return []
 
     # * log uncovered code
@@ -128,7 +127,7 @@ def create_merged_troubleshooter(source_bytes: bytes, interval: P.Interval):
         type="merged_covered",
     )
 
-def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], show_intervals=False) -> list[UncoveredCode]:
+def _build_uncovered_intervals(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], show_intervals=False) -> list[UncoveredCode]:
 
     merged_covered_intervals = P.empty()
 

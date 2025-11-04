@@ -6,8 +6,8 @@ from lsp.chunks.identified import IdentifiedChunk
 import lsp.chunks.uncovered
 from lsp.logs import logging_fwk_to_console
 
-def _debug_uncovered_nodes(*args):
-    return lsp.chunks.uncovered._debug_uncovered_nodes(*args, show_intervals=True)
+def _build_uncovered_intervals(*args):
+    return lsp.chunks.uncovered._build_uncovered_intervals(*args, show_intervals=True)
 
 logging_fwk_to_console("INFO")
 
@@ -27,14 +27,14 @@ class TestUncoveredNodes():
         )]
         print("tree", tree.root_node.children[0].start_byte, tree.root_node.children[0].end_byte)
 
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
+        uncovered_code = _build_uncovered_intervals(tree, source_bytes, identified_chunks)
 
         assert len(uncovered_code) == 0
 
     def test_single_function_uncovered(self):
         source_bytes, tree = self.parse_lua('function a() return 1 end')
 
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, [])
+        uncovered_code = _build_uncovered_intervals(tree, source_bytes, [])
 
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
@@ -73,7 +73,7 @@ class TestUncoveredNodes():
         #   c => (52,77] or (52,76) -- 26 chars too (same \n==1 + 25 chars)
         #   ends are OPEN/CLOSE (confirmed)
 
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
+        uncovered_code = _build_uncovered_intervals(tree, source_bytes, identified_chunks)
 
         assert len(uncovered_code) == 2
         start_uncovered = uncovered_code[0]
@@ -99,7 +99,7 @@ class TestUncoveredNodes():
             signature='c',
         )]
 
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
+        uncovered_code = _build_uncovered_intervals(tree, source_bytes, identified_chunks)
 
         assert len(uncovered_code) == 1
         middle_uncovered = uncovered_code[0]
@@ -119,7 +119,7 @@ class TestUncoveredNodes():
             ], ),
         ]
 
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
+        uncovered_code = _build_uncovered_intervals(tree, source_bytes, identified_chunks)
 
         # newline between is not covered, that's fine to track, I can always ignore it in consumers
         assert len(uncovered_code) == 1
@@ -139,7 +139,7 @@ class TestUncoveredNodes():
             signature='b',
         )]
 
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
+        uncovered_code = _build_uncovered_intervals(tree, source_bytes, identified_chunks)
 
         # newline between is not covered, that's fine to track, I can always ignore it in consumers
         assert len(uncovered_code) == 1
@@ -163,7 +163,7 @@ class TestUncoveredNodes():
             )
         ]
 
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
+        uncovered_code = _build_uncovered_intervals(tree, source_bytes, identified_chunks)
 
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
@@ -186,7 +186,7 @@ class TestUncoveredNodes():
             ),
         ]
 
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
+        uncovered_code = _build_uncovered_intervals(tree, source_bytes, identified_chunks)
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
         # TODO review leading \n
@@ -211,7 +211,7 @@ class TestUncoveredNodes():
                 signature='a_nested',
             ),
         ]
-        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
+        uncovered_code = _build_uncovered_intervals(tree, source_bytes, identified_chunks)
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
         # TODO review leading \n
