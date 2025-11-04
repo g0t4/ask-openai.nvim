@@ -85,20 +85,18 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         #  ok it is b/c I am subtracing from overall range and there is no node for the skipped whitespace chars... ok
         text = source_bytes[start:end].decode("utf-8", errors="replace").rstrip()
 
+        # FYI I am not computing column offsets, for uncovered code purposes I think that's fine for now b/c...
+        # - this is only going to be for sliding window "fallback" chunker which is 100% fine to cover a smidge extra
+        # - I might even cover X lines around window too so columns on the start/end line don't matter
+        start_line_base1 = source_bytes[:start].count(b"\n") + 1
+        end_line_base1 = start_line_base1 + text.count("\n")
         not_empty_or_whitespace = text.strip()
         if not_empty_or_whitespace:
-            start_line_base1 = source_bytes[:start].count(b"\n") + 1
-            end_line_base1 = start_line_base1 + text.count("\n")
-            # FYI I am not computing column offsets, for uncovered code purposes I think that's fine for now b/c...
-            # - this is only going to be for sliding window "fallback" chunker which is 100% fine to cover a smidge extra
-            # - I might even cover X lines around window too so columns on the start/end line don't matter
             uncovered_code.append(UncoveredCode(text=text, start_line_base1=start_line_base1, end_line_base1=end_line_base1))
         else:
             #    TODO! factor this into tests and uncovered sliding window chunker, b/c it very well may change what the code appears to do if I am missing \n and other whitespace
             #      MAYBE add a toggle to include it (or not)
             #     # ? return whitespace only sections?
-            start_line_base1 = source_bytes[:start].count(b"\n") + 1
-            end_line_base1 = start_line_base1 + text.count("\n")
             uncovered_code.append(UncoveredCode(text=text, start_line_base1=start_line_base1, end_line_base1=end_line_base1))
 
     return uncovered_code
