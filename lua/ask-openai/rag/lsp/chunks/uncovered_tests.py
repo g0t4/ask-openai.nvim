@@ -146,11 +146,9 @@ class TestUncoveredNodes():
         assert only.end_line_base1 == 2
 
     def test_non_consecutive_single_chunk(self):
-        # REMOVE THIS UNTIL NEEDED... after I changed the whitespace inclusion of consecutive nodes then this broken
-        #  TODO bring this back if you add consecutive node check to the uncovered node debugger!
-        #    and then rollback for any assumptions that sibling nodes are consecutive (as well as any assumption that they aren't overlapping)
-        #
-
+        # THIS is not a real use case currently, though it should work fine to keep this test
+        # keep this around mostly to assert the design of this coverage detector
+        #  even though currently I don't target any nodes for chunking that are not contiguous (within the same single chunk)
         source_bytes, tree = self.parse_lua('function a() return 1 end\nfunction b() return 2 end\nfunction c() return 3 end')
         func_a = tree.root_node.children[0]
         func_c = tree.root_node.children[2]
@@ -173,7 +171,6 @@ class TestUncoveredNodes():
 
     def test_overlapping_nodes_within_single_chunk_with_uncovered_after(self):
         # THIS is not a real use case currently, though it should work fine to keep this test
-        #   right now I would only be merging TOP level consecutive nodes (overlapping end up as separate identified_chunks)
         source_bytes, tree = self.parse_lua('function a() function a_nested() return 1 end end\nfunction b() return 2 end')
         func_a = tree.root_node.children[0]
         func_a_nested = func_a.named_children[0]
