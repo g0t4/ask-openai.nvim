@@ -125,14 +125,7 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         start_base0: int = span.lower
         end_base0: int = span.upper
 
-        # TODO! drop rstrip? why would I need that if the range is not inclusive?
-        # TODO seems to be bug that results in \n on front of next line?
-        # TODO! why am I getting \n in front and end of middle line?! see multi node tests
-        #  ok it is b/c I am subtracing from overall range and there is no node for the skipped whitespace chars... ok
         text = source_bytes[start_base0:end_base0].decode("utf-8", errors="replace")
-
-        if show_intervals:
-            t_uncovered.append(TroubleshootNode(interval=span, text=text, type="uncovered"))
 
         # FYI I am not computing column offsets, for uncovered code purposes I think that's fine for now b/c...
         # - this is only going to be for sliding window "fallback" chunker which is 100% fine to cover a smidge extra
@@ -147,6 +140,9 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
             end_byte_base0=end_base0,
         )
         uncovered_code.append(code)
+
+        if show_intervals:
+            t_uncovered.append(TroubleshootNode(interval=span, text=text, type="uncovered"))
 
     if show_intervals:
         # ***! This view of code covered/not is ESSENTIAL to understand what is happening
