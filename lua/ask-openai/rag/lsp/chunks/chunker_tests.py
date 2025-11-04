@@ -204,7 +204,7 @@ class TestTreesitterChunker_Python_Decorators:
     def test_functions_with_decorators_func1(self):
         chunk = self.chunks[2]
         assert chunk.signature == "def func1():"
-        assert chunk.text == """@log_calls\ndef func1():\n    return 1"""
+        assert chunk.text == """@log_calls\n@log_calls\ndef func1():\n    return 1"""
         rich_print(f'{chunk=}')
 
     def TODO_test_decorated_class(self):

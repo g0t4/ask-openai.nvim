@@ -11,6 +11,7 @@ def log_calls(func):
     return log_and_call_nested
 
 @log_calls
+@log_calls
 def func1():
     return 1
 
