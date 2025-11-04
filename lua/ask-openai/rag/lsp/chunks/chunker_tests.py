@@ -210,14 +210,17 @@ class TestTreesitterChunker_Python_Decorators:
         chunk = self.chunks[3]
         assert chunk.signature == 'class MyPoint:'
         assert chunk.text == '@dataclass\n@dataclass\nclass MyPoint:\n    x: int\n    y: int\n\n    @log_calls\n    def repr(self):\n        return f"({self.x}, {self.y})"'
-        rich_print(f'{chunk=}')
         # build \n delimtied string:
         #   pbpaste | gsed -n '1 h; 2,$ H; ${g;s/\\n/\\\\n/g;p}'
 
-    def TODO_test_nested_function_with_decorator(self):
-        pass
-        #  log_and_call_nested => functools.lru_cache()
-        # TODO
+    def test_nested_function_with_decorator(self):
+        chunk = self.chunks[1]
+        assert chunk.signature == 'def log_and_call_nested(*args, **kwargs):'
+        # ? fix for indent on first line, otherwise function appears invalid when chunked (first line is not indented to match... then again it's a nested function... those aren't standalone viable either)
+        # expected_code = '    @functools.lru_cache()\n    def log_and_call_nested(*args, **kwargs):\n        print("before")\n        return func(*args, **kwargs)'
+        expected_code = '@functools.lru_cache()\n    def log_and_call_nested(*args, **kwargs):\n        print("before")\n        return func(*args, **kwargs)'
+        assert chunk.text == expected_code
+        # rich_print(f'{chunk=}')
 
 class TestTreesitterChunker_Lua_DocumentationComments:
     # BTW DocComments / DocumentationComments refers to BOTH:
