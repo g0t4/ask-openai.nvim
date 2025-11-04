@@ -91,9 +91,10 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         assert span.right == P.Bound.CLOSED
         # FYI logic below assumes open/closed (use assertions for now to ensure that reality)
         #  slice below treats end as not-inclusive, thus matches open/closed
-        start = span.lower
-        end = span.upper
-        print(f'  {start=} {end=}')
+        start: int = span.lower
+        end: int = span.upper
+        print(f'  ({lower=},{upper=}]')
+
         # TODO! drop rstrip? why would I need that if the range is not inclusive?
         # TODO seems to be bug that results in \n on front of next line?
         # TODO! why am I getting \n in front and end of middle line?! see multi node tests
