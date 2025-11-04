@@ -119,10 +119,10 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
 
     return uncovered_code
 
-def create_span_troubleshooter(source_bytes: bytes, m: P.Interval):
+def create_merged_troubleshooter(source_bytes: bytes, interval: P.Interval):
     return TroubleshootCodeInterval(
-        interval=m,
-        text=source_bytes[m.lower:m.upper].decode("utf-8", errors="replace"),
+        interval=interval,
+        text=source_bytes[interval.lower:interval.upper].decode("utf-8", errors="replace"),
         type="merged_covered",
     )
 
@@ -154,7 +154,7 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         #  i.e. immediately obvious why we get leading and trailing \n in specific situations
         #  run the myriad of test cases in uncovered_tests and then look at the output w.r.t. this debug section
 
-        t_merged = [create_span_troubleshooter(source_bytes, m) for m in merged_covered_spans]
+        t_merged = [create_merged_troubleshooter(source_bytes, m) for m in merged_covered_spans]
         t_uncovered = [code.troubleshooter() for code in uncovered_code]
 
         # troubleshoots = t_uncovered + t_covered # show unmerged covered spans
