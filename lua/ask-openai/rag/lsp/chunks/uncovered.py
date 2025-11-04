@@ -2,6 +2,7 @@ import os
 import logging
 from dataclasses import dataclass
 from pathlib import Path
+from typing import NamedTuple
 
 import portion as P
 from tree_sitter import Tree
@@ -75,20 +76,26 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
 
     # * collect covered node byte spans
     covered_spans = P.empty()
-    print("[green]COVERED[/]")
+
+    class TroubleshootNode(NamedTuple):
+        interval: P.Interval
+        text: str
+        covered: bool
+
+    troubleshoots: list[TroubleshootNode] = []
+
     for chunk in chunks:
         for node in chunk.sibling_nodes:
             covered = P.openclosed(node.start_byte, node.end_byte)
             text = source_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
-            print("  ", covered, repr(text))
+            troubleshoots.append(TroubleshootNode(interval=covered, text=text, covered=True))
             covered_spans |= covered
-    print("  [cyan]COMBINED[/]", covered_spans)
+    print("[cyan]COMBINED[/]", covered_spans)
 
     uncovered_spans = P.openclosed(0, len(source_bytes)) - covered_spans
 
     # * collect uncovered code
     uncovered_code: list[UncoveredCode] = []
-    print("[red]UNCOVERED[/]")
     for span in uncovered_spans:
         assert span.left == P.Bound.OPEN
         assert span.right == P.Bound.CLOSED
@@ -103,7 +110,7 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         #  ok it is b/c I am subtracing from overall range and there is no node for the skipped whitespace chars... ok
         text = source_bytes[start_base0:end_base0].decode("utf-8", errors="replace")
 
-        print(f'  {span} - {repr(text)}')
+        troubleshoots.append(TroubleshootNode(interval=span, text=text, covered=False))
 
         # FYI I am not computing column offsets, for uncovered code purposes I think that's fine for now b/c...
         # - this is only going to be for sliding window "fallback" chunker which is 100% fine to cover a smidge extra
@@ -118,5 +125,12 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
             end_byte_base0=end_base0,
         )
         uncovered_code.append(code)
+
+    for t in sorted(troubleshoots):
+        if t.covered:
+            style = "green"
+        else:
+            style = "red"
+        print(f'  [{style}]{t.interval} - {repr(t.text)}[/]')
 
     return uncovered_code
