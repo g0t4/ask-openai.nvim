@@ -56,6 +56,29 @@ class UncoveredCode:
         # FYI should not be empty but doesn't hurt to include it if that changes later
         return self.text == '' or self.text.isspace()
 
+def create_uncovered_code(source_bytes: bytes, span) -> UncoveredCode:
+    assert span.left == P.Bound.OPEN
+    assert span.right == P.Bound.CLOSED
+    # FYI logic below assumes open/closed (use assertions for now to ensure that reality)
+    #  slice below treats end as not-inclusive, thus matches open/closed
+    start_byte_base0: int = span.lower
+    end_byte_base0: int = span.upper
+
+    text = source_bytes[start_byte_base0:end_byte_base0].decode("utf-8", errors="replace")
+
+    # FYI I am not computing column offsets, for uncovered code purposes I think that's fine for now b/c...
+    # - this is only going to be for sliding window "fallback" chunker which is 100% fine to cover a smidge extra
+    # - I might even cover X lines around window too so columns on the start/end line don't matter
+    start_line_base1 = source_bytes[:start_byte_base0].count(b"\n") + 1
+    end_line_base1 = start_line_base1 + text.count("\n")
+    return UncoveredCode(
+        text=text,
+        start_line_base1=start_line_base1,
+        end_line_base1=end_line_base1,
+        start_byte_base0=start_byte_base0,
+        end_byte_base0=end_byte_base0,
+    )
+
 def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], relative_path: Path) -> list[UncoveredCode]:
     if not logger_uncovered.isEnabledForDebug():
         return []
@@ -116,31 +139,11 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
     uncovered_code: list[UncoveredCode] = []
     t_uncovered: list[TroubleshootNode] = []
     for span in uncovered_spans:
-        assert span.left == P.Bound.OPEN
-        assert span.right == P.Bound.CLOSED
-        # FYI logic below assumes open/closed (use assertions for now to ensure that reality)
-        #  slice below treats end as not-inclusive, thus matches open/closed
-        start_byte_base0: int = span.lower
-        end_byte_base0: int = span.upper
-
-        text = source_bytes[start_byte_base0:end_byte_base0].decode("utf-8", errors="replace")
-
-        # FYI I am not computing column offsets, for uncovered code purposes I think that's fine for now b/c...
-        # - this is only going to be for sliding window "fallback" chunker which is 100% fine to cover a smidge extra
-        # - I might even cover X lines around window too so columns on the start/end line don't matter
-        start_line_base1 = source_bytes[:start_byte_base0].count(b"\n") + 1
-        end_line_base1 = start_line_base1 + text.count("\n")
-        code = UncoveredCode(
-            text=text,
-            start_line_base1=start_line_base1,
-            end_line_base1=end_line_base1,
-            start_byte_base0=start_byte_base0,
-            end_byte_base0=end_byte_base0,
-        )
+        code = create_uncovered_code(source_bytes, span)
         uncovered_code.append(code)
 
         if show_intervals:
-            t_uncovered.append(TroubleshootNode(interval=span, text=text, type="uncovered"))
+            t_uncovered.append(TroubleshootNode(interval=span, text=code.text, type="uncovered"))
 
     if show_intervals:
         # ***! This view of code covered/not is ESSENTIAL to understand what is happening
