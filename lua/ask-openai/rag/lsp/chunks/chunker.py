@@ -211,6 +211,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         logger.debug("")
 
     def identify_chunks(node: Node, collected_parent: bool = False, level: int = 0) -> Iterator[IdentifiedChunk]:
+        # TODO make this async and take it all the way up to the indexer level (which is already async, and is already batched)... so I could actually batch process end to end and do some sort of localized grouping on chunk size still over in the indexer (embedder)... interesting!
+        #  would also allow me to get the embedding server going sooner (probably boost meaningful responsiveness when I have small batches of updates (i.e. after git commit) where starting the embedding server sooner would cut material % of time off overall for Time to First Embedding Batch
+        #  could even use multi worker arch to prepare next batch while server is embedding first batch(es) - producer/consumer?
 
         if node.type in [
                 "function_definition",
