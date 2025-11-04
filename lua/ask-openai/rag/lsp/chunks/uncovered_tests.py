@@ -110,20 +110,20 @@ class TestUncoveredNodes():
         # FYI right now this will apply to decorators/annotations/doc_comments in python/lua (more in future)
         source_bytes, tree = self.parse_lua('--- doc comment\nfunction a() return 1 end')
         identified_chunks = [
-            IdentifiedChunk(
-                sibling_nodes=[
-                    # TWO in ONE chunk (why? b/c then the non-covered whitespace in between should be covered)
-                    tree.root_node.children[0],
-                    tree.root_node.children[1],
-                ],
-                signature="consecutive_single_chunk",
-            ),
+            IdentifiedChunk(sibling_nodes=[
+                tree.root_node.children[0],
+                tree.root_node.children[1],
+            ], ),
         ]
 
         uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
 
         # newline between is not covered, that's fine to track, I can always ignore it in consumers
-        assert len(uncovered_code) == 0
+        assert len(uncovered_code) == 1
+        only = uncovered_code[0]
+        assert only.text == '\n'
+        assert only.start_line_base1 == 1
+        assert only.end_line_base1 == 2
 
     def test_consecutive_covered_code(self):
         # it is possible I don't need this test

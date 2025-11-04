@@ -84,14 +84,12 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
 
     t_covered: list[TroubleshootNode] = []
     for chunk in chunks:
-        # currently I assume siblings are consecutive, if that changes I can revisit this
-        #  thus they should consume inner whitespace
-        start_byte0 = min([c.start_byte for c in chunk.sibling_nodes])
-        end_byte0 = max([c.end_byte for c in chunk.sibling_nodes])
-        covered = P.openclosed(start_byte0, end_byte0)
-        text = source_bytes[start_byte0:end_byte0].decode("utf-8", errors="replace")
-        t_covered.append(TroubleshootNode(interval=covered, text=text, type="covered"))
-        merged_covered_spans |= covered
+        for node in chunk.sibling_nodes:
+            # back to treating as standalone nodes, is perfectly fine and best way to keep byte/(line,col) alignments
+            covered = P.openclosed(node.start_byte, node.end_byte)
+            text = source_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
+            t_covered.append(TroubleshootNode(interval=covered, text=text, type="covered"))
+            merged_covered_spans |= covered
 
     uncovered_spans = P.openclosed(0, len(source_bytes)) - merged_covered_spans
 
