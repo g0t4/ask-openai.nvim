@@ -43,9 +43,10 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
     )
     for code in uncovered_code:
         if code.start_line_base1 == code.end_line_base1:
-            console.print(f"[black on yellow]uncovered bytes within line {code.start_line_base1}[/]", highlight=False)
+            line_desc = f"line {code.start_line_base1}"
         else:
-            console.print(f"[black on yellow]uncovered bytes within lines {code.start_line_base1}–{code.end_line_base1}[/]", highlight=False)
+            line_desc = f"lines {code.start_line_base1}–{code.end_line_base1}"
+        console.print(f"[black on yellow]uncovered bytes within {line_desc}[/]", highlight=False)
         console.print(f"{code.text}", markup=False, highlight=False)
 
         # use console directly so I can disable markup for code
