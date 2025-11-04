@@ -14,6 +14,28 @@ from io import StringIO
 logger_uncovered = get_logger(__name__)
 logger_uncovered.setLevel(logging.DEBUG)
 
+# * ANSI colors
+# foreground:
+BLACK = "\x1b[30m"
+RED = "\x1b[31m"
+GREEN = "\x1b[32m"
+YELLOW = "\x1b[33m"
+BLUE = "\x1b[34m"
+MAGENTA = "\x1b[35m"
+CYAN = "\x1b[36m"
+WHITE = "\x1b[37m"
+# background:
+BLACKBG = "\x1b[40m"
+REDBG = "\x1b[41m"
+GREENBG = "\x1b[42m"
+YELLOWBG = "\x1b[43m"
+BLUEBG = "\x1b[44m"
+MAGENTABG = "\x1b[45m"
+CYANBG = "\x1b[46m"
+WHITEBG = "\x1b[47m"
+#
+RESET = "\x1b[0m"
+
 @dataclass(slots=True)
 class UncoveredCode:
     text: str
@@ -127,7 +149,6 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         uncovered_code.append(code)
 
     if show_intervals:
-        from rich import print
         # ***! This view of code covered/not is ESSENTIAL to understand what is happening
         #  i.e. immediately obvious why we get leading and trailing \n in specific situations
         #  run the myriad of test cases in uncovered_tests and then look at the output w.r.t. this debug section
@@ -142,20 +163,18 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         troubleshoots = t_uncovered + t_merged
 
         buffer = StringIO()
-        console = Console(file=buffer, force_terminal=True, color_system="truecolor")
-        console.print("")
+        buffer.write("\n")
 
         for t in sorted(troubleshoots):
             if t.type == "merged_covered":
-                style = "cyan"
+                style = CYAN
             elif t.type == "covered":
-                style = "green"
+                style = GREEN
             elif t.type == "uncovered":
-                style = "red"
+                style = RED
             else:
                 raise Exception("bad type")
-            # logger_uncovered.debug_no_markup(f'  [{style}]{t.interval} - {repr(t.text)}[/]')
-            console.print(f'[{style}]{t.interval} - {repr(t.text)}[/]')
+            buffer.write(f'{style}{t.interval} - {repr(t.text)}{RESET}\n')
 
         logger_uncovered.debug_no_markup(buffer.getvalue())
 
