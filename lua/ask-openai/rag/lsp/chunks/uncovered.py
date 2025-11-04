@@ -130,6 +130,10 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         uncovered_code.append(code)
 
     if debug:
+        # ***! This view of code covered/not is ESSENTIAL to understand what is happening
+        #  i.e. immediately obvious why we get leading and trailing \n in specific situations
+        #  run the myriad of test cases in uncovered_tests and then look at the output w.r.t. this debug section
+
         t_merged = [TroubleshootNode(
             interval=m,
             text=source_bytes[m.lower:m.upper].decode("utf-8", errors="replace"),
