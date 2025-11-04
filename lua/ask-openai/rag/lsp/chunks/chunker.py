@@ -3,6 +3,7 @@ import hashlib
 import logging
 import os
 from pathlib import Path
+from typing import Iterator
 
 from tree_sitter import Node
 
@@ -209,9 +210,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         logger.debug_no_markup(str(node.text).replace("\\n", "\n"))
         logger.debug("")
 
-    def identify_chunks(node: Node, collected_parent: bool = False, level: int = 0) -> list[IdentifiedChunk]:
-
-        chunks: list[IdentifiedChunk] = []
+    def identify_chunks(node: Node, collected_parent: bool = False, level: int = 0) -> Iterator[IdentifiedChunk]:
 
         if node.type in [
                 "function_definition",
@@ -239,7 +238,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             if parser_language == "lua":
                 insert_previous_doc_comment(node, chunk.sibling_nodes)
 
-            chunks.append(chunk)
+            yield chunk
             collected_parent = True
         elif node.type in [
                 "class_definition",
@@ -251,18 +250,16 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 sibling_nodes=[node],
                 signature=get_class_signature(node),
             )
-            chunks.append(chunk)
+            yield chunk
             collected_parent = True
         elif logger.isEnabledForDebug() and not collected_parent:
             debug_uncollected_node(node)
 
         for child in node.children:
-            nested_chunks = identify_chunks(child, collected_parent, level + 1)
-            chunks.extend(nested_chunks)
+            yield from identify_chunks(child, collected_parent, level + 1)
 
-        return chunks
-
-    identified_chunks = identify_chunks(tree.root_node)
+    # PRN batch process chunks?
+    identified_chunks = list(identify_chunks(tree.root_node))
     relative_path = path.relative_to(os.getcwd())
     debug_uncovered_nodes(tree, source_bytes, identified_chunks, relative_path)
 
