@@ -145,31 +145,31 @@ class TestUncoveredNodes():
         assert only.start_line_base1 == 1
         assert only.end_line_base1 == 2
 
-    # def test_non_consecutive_single_chunk(self):
-    #     # REMOVE THIS UNTIL NEEDED... after I changed the whitespace inclusion of consecutive nodes then this broken
-    #     #  TODO bring this back if you add consecutive node check to the uncovered node debugger!
-    #     #    and then rollback for any assumptions that sibling nodes are consecutive (as well as any assumption that they aren't overlapping)
-    #     #
-    #
-    #     source_bytes, tree = self.parse_lua('function a() return 1 end\nfunction b() return 2 end\nfunction c() return 3 end')
-    #     func_a = tree.root_node.children[0]
-    #     func_c = tree.root_node.children[2]
-    #     identified_chunks = [
-    #         IdentifiedChunk(
-    #             # hypothetically could chunk non-contiguous nodes
-    #             sibling_nodes=[func_a, func_c],
-    #             signature='a',
-    #         )
-    #     ]
-    #
-    #     uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
-    #
-    #     assert len(uncovered_code) == 1
-    #     only = uncovered_code[0]
-    #     # TODO review leading \n
-    #     assert only.text == '\nfunction b() return 2 end\n'
-    #     assert only.start_line_base1 == 1
-    #     assert only.end_line_base1 == 3
+    def test_non_consecutive_single_chunk(self):
+        # REMOVE THIS UNTIL NEEDED... after I changed the whitespace inclusion of consecutive nodes then this broken
+        #  TODO bring this back if you add consecutive node check to the uncovered node debugger!
+        #    and then rollback for any assumptions that sibling nodes are consecutive (as well as any assumption that they aren't overlapping)
+        #
+
+        source_bytes, tree = self.parse_lua('function a() return 1 end\nfunction b() return 2 end\nfunction c() return 3 end')
+        func_a = tree.root_node.children[0]
+        func_c = tree.root_node.children[2]
+        identified_chunks = [
+            IdentifiedChunk(
+                # hypothetically could chunk non-contiguous nodes
+                sibling_nodes=[func_a, func_c],
+                signature='a',
+            )
+        ]
+
+        uncovered_code = _debug_uncovered_nodes(tree, source_bytes, identified_chunks)
+
+        assert len(uncovered_code) == 1
+        only = uncovered_code[0]
+        # TODO review leading \n
+        assert only.text == '\nfunction b() return 2 end\n'
+        assert only.start_line_base1 == 1
+        assert only.end_line_base1 == 3
 
     def test_overlapping_nodes_within_single_chunk_with_uncovered_after(self):
         # THIS is not a real use case currently, though it should work fine to keep this test
