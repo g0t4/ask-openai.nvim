@@ -168,7 +168,8 @@ class TestUncoveredNodes():
         assert only.end_line_base1 == 3
 
     def test_overlapping_nodes_within_single_chunk_with_uncovered_after(self):
-        # this touches on merged_covered_spans
+        # THIS is not a real use case currently, though it should work fine to keep this test
+        #   right now I would only be merging TOP level consecutive nodes (overlapping end up as separate identified_chunks)
         source_bytes, tree = self.parse_lua('function a() function a_nested() return 1 end end\nfunction b() return 2 end')
         func_a = tree.root_node.children[0]
         func_a_nested = func_a.named_children[0]
