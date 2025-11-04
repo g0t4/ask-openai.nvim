@@ -65,9 +65,9 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         start = span.lower
         end = span.upper
         print(f'  {start=} {end=}')
-        # TODO drop rstrip? why would I need that if the range is not inclusive?
+        # TODO! drop rstrip? why would I need that if the range is not inclusive?
         # TODO seems to be bug that results in \n on front of next line?
-        # TODO why am I getting \n in front and end of middle line?! see multi node tests
+        # TODO! why am I getting \n in front and end of middle line?! see multi node tests
         #  ok it is b/c I am subtracing from overall range and there is no node for the skipped whitespace chars... ok
         text = source_bytes[start:end].decode("utf-8", errors="replace").rstrip()
 
@@ -80,6 +80,8 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
             # - I might even cover X lines around window too so columns on the start/end line don't matter
             uncovered_code.append(UncoveredCode(text=text, start_line_base1=start_line_base1, end_line_base1=end_line_base1))
         # else:
+        #    TODO! factor this into tests and uncovered sliding window chunker, b/c it very well may change what the code appears to do if I am missing \n and other whitespace
+        #      MAYBE add a toggle to include it (or not)
         #     # ? return whitespace only sections?
         #     start_line = source_bytes[:start].count(b"\n") + 1
         #     end_line = start_line
