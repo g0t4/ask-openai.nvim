@@ -216,7 +216,7 @@ class TestTreesitterChunker_Python_Decorators:
     def test_nested_function_with_decorator(self):
         chunk = self.chunks[1]
         assert chunk.signature == 'def log_and_call_nested(*args, **kwargs):'
-        # ? fix for indent on first line, otherwise function appears invalid when chunked (first line is not indented to match... then again it's a nested function... those aren't standalone viable either)
+        # ?? fix for indent on first line, otherwise function appears invalid when chunked (first line is not indented to match... then again it's a nested function... those aren't standalone viable either)
         # expected_code = '    @functools.lru_cache()\n    def log_and_call_nested(*args, **kwargs):\n        print("before")\n        return func(*args, **kwargs)'
         expected_code = '@functools.lru_cache()\n    def log_and_call_nested(*args, **kwargs):\n        print("before")\n        return func(*args, **kwargs)'
         assert chunk.text == expected_code
@@ -229,9 +229,6 @@ class TestTreesitterChunker_Python_Decorators:
         chunk = self.chunks[4]
         assert chunk.signature == 'def repr(self):'
         assert chunk.text == expected_code
-        # rich_print(f'{chunk=}')
-
-
 
 class TestTreesitterChunker_Lua_DocumentationComments:
     # BTW DocComments / DocumentationComments refers to BOTH:
