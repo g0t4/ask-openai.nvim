@@ -71,9 +71,6 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
     return uncovered_code
 
 def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], debug=False) -> list[UncoveredCode]:
-    from rich import print
-    if debug:
-        print()
 
     # * collect covered node byte spans
     merged_covered_spans = P.empty()
@@ -130,6 +127,7 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         uncovered_code.append(code)
 
     if debug:
+        from rich import print
         # ***! This view of code covered/not is ESSENTIAL to understand what is happening
         #  i.e. immediately obvious why we get leading and trailing \n in specific situations
         #  run the myriad of test cases in uncovered_tests and then look at the output w.r.t. this debug section
@@ -143,6 +141,10 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         # troubleshoots = t_uncovered + t_covered # show unmerged covered spans
         troubleshoots = t_uncovered + t_merged
 
+        buffer = StringIO()
+        console = Console(file=buffer, force_terminal=True, color_system="truecolor")
+        console.print("")
+
         for t in sorted(troubleshoots):
             if t.type == "merged_covered":
                 style = "cyan"
@@ -152,6 +154,9 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
                 style = "red"
             else:
                 raise Exception("bad type")
-            print(f'  [{style}]{t.interval} - {repr(t.text)}[/]')
+            # logger_uncovered.debug_no_markup(f'  [{style}]{t.interval} - {repr(t.text)}[/]')
+            console.print(f'[{style}]{t.interval} - {repr(t.text)}[/]')
+
+        logger_uncovered.debug_no_markup(buffer.getvalue())
 
     return uncovered_code
