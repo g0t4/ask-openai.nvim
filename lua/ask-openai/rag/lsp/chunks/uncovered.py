@@ -38,13 +38,17 @@ BOLD = "\x1b[1m"
 ITALIC = "\x1b[3m"
 UNDERLINE = "\x1b[4m"
 
+class TroubleshootNode(NamedTuple):
+    interval: P.Interval
+    text: str
+    type: str
+
 @dataclass(slots=True)
 class UncoveredCode:
     text: str
     start_line_base1: int
     end_line_base1: int
-    start_byte_base0: int
-    end_byte_base0: int
+    byte_span_base0: P.Interval
 
     def start_line_base0(self) -> int:
         return self.start_line_base1 - 1
@@ -56,13 +60,16 @@ class UncoveredCode:
         # FYI should not be empty but doesn't hurt to include it if that changes later
         return self.text == '' or self.text.isspace()
 
-def create_uncovered_code(source_bytes: bytes, span) -> UncoveredCode:
-    assert span.left == P.Bound.OPEN
-    assert span.right == P.Bound.CLOSED
+    def troubleshoot_node(self):
+        return TroubleshootNode(interval=self.byte_span_base0, text=self.text, type="uncovered")
+
+def create_uncovered_code(source_bytes: bytes, byte_span) -> UncoveredCode:
+    assert byte_span.left == P.Bound.OPEN
+    assert byte_span.right == P.Bound.CLOSED
     # FYI logic below assumes open/closed (use assertions for now to ensure that reality)
     #  slice below treats end as not-inclusive, thus matches open/closed
-    start_byte_base0: int = span.lower
-    end_byte_base0: int = span.upper
+    start_byte_base0: int = byte_span.lower
+    end_byte_base0: int = byte_span.upper
 
     text = source_bytes[start_byte_base0:end_byte_base0].decode("utf-8", errors="replace")
 
@@ -73,10 +80,9 @@ def create_uncovered_code(source_bytes: bytes, span) -> UncoveredCode:
     end_line_base1 = start_line_base1 + text.count("\n")
     return UncoveredCode(
         text=text,
+        byte_span_base0=byte_span,
         start_line_base1=start_line_base1,
         end_line_base1=end_line_base1,
-        start_byte_base0=start_byte_base0,
-        end_byte_base0=end_byte_base0,
     )
 
 def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], relative_path: Path) -> list[UncoveredCode]:
@@ -113,11 +119,6 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
 
     return uncovered_code
 
-class TroubleshootNode(NamedTuple):
-    interval: P.Interval
-    text: str
-    type: str
-
 def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], show_intervals=False) -> list[UncoveredCode]:
 
     # * collect covered node byte spans
@@ -143,7 +144,7 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         uncovered_code.append(code)
 
         if show_intervals:
-            t_uncovered.append(TroubleshootNode(interval=span, text=code.text, type="uncovered"))
+            t_uncovered.append(code.troubleshoot_node())
 
     if show_intervals:
         # ***! This view of code covered/not is ESSENTIAL to understand what is happening
