@@ -257,6 +257,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             )
             yield chunk
             collected_parent = True
+            if parser_language == "python":
+                attach_decorators(node, chunk.sibling_nodes)
+
         elif logger.isEnabledForDebug() and not collected_parent:
             debug_uncollected_node(node)
 
