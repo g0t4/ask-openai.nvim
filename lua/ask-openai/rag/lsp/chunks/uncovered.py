@@ -35,9 +35,8 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
     # * log uncovered code
     logger_uncovered.debug(f"[bold on red] *********************** Uncovered nodes {relative_path} *********************** [/]")
     for c in uncovered_code:
-        logger_uncovered.debug(
-            f"[black on yellow] uncovered bytes (within lines: {c.start_line_base1}–{c.end_line_base1}) [/]\n{c.text}\n" \
-        )
+        logger_uncovered.debug(f"[black on yellow] uncovered bytes (within lines: {c.start_line_base1}–{c.end_line_base1}) [/]")
+        logger_uncovered.debug_no_markup(f"\n{c.text}")
     return uncovered_code
 
 def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk]) -> list[UncoveredCode]:

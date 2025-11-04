@@ -70,6 +70,12 @@ def logging_fwk_to_console(level):
 
 class Logger(logging.Logger):
 
+    def debug_no_markup(self, message: object, *args: object):
+        # FYI add more log levels as needed
+        if not self.isEnabledFor(logging.DEBUG):
+            return
+        self.debug(message, *args, extra={"markup": False})
+
     def _pp(self, obj):
         return pretty_repr(obj, indent_size=2)
 
