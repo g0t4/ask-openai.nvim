@@ -134,6 +134,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         return []
 
     with logger.timer(f'parse_ts {path}'):
+        # TODO! do I need to call parser.reset() to be safe?
+        #   if there was a failure on a previous call to .parse() then IIUC subseuqent calls to parse() will attempt resumption?
         tree = parser.parse(source_bytes)
 
     def get_class_signature(node) -> str:
