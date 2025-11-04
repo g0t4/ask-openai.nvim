@@ -91,27 +91,27 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         assert span.right == P.Bound.CLOSED
         # FYI logic below assumes open/closed (use assertions for now to ensure that reality)
         #  slice below treats end as not-inclusive, thus matches open/closed
-        start: int = span.lower
-        end: int = span.upper
-        print(f'  ({lower=},{upper=}]')
+        start_base0: int = span.lower
+        end_base0: int = span.upper
+        print(f'  ({start_base0},{end_base0}]')
 
         # TODO! drop rstrip? why would I need that if the range is not inclusive?
         # TODO seems to be bug that results in \n on front of next line?
         # TODO! why am I getting \n in front and end of middle line?! see multi node tests
         #  ok it is b/c I am subtracing from overall range and there is no node for the skipped whitespace chars... ok
-        text = source_bytes[start:end].decode("utf-8", errors="replace")
+        text = source_bytes[start_base0:end_base0].decode("utf-8", errors="replace")
 
         # FYI I am not computing column offsets, for uncovered code purposes I think that's fine for now b/c...
         # - this is only going to be for sliding window "fallback" chunker which is 100% fine to cover a smidge extra
         # - I might even cover X lines around window too so columns on the start/end line don't matter
-        start_line_base1 = source_bytes[:start].count(b"\n") + 1
+        start_line_base1 = source_bytes[:start_base0].count(b"\n") + 1
         end_line_base1 = start_line_base1 + text.count("\n")
         code = UncoveredCode(
             text=text,
             start_line_base1=start_line_base1,
             end_line_base1=end_line_base1,
-            start_byte_base0=start,
-            end_byte_base0=end,
+            start_byte_base0=start_base0,
+            end_byte_base0=end_base0,
         )
         uncovered_code.append(code)
 
