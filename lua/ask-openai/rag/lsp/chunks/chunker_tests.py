@@ -222,6 +222,17 @@ class TestTreesitterChunker_Python_Decorators:
         assert chunk.text == expected_code
         # rich_print(f'{chunk=}')
 
+    def test_decorated_function_in_class(self):
+        # ?? fix for indent?
+        # expected_code = '    @log_calls\n    def repr(self):\n        return f"({self.x}, {self.y})"'
+        expected_code = '@log_calls\n    def repr(self):\n        return f"({self.x}, {self.y})"'
+        chunk = self.chunks[4]
+        assert chunk.signature == 'def repr(self):'
+        assert chunk.text == expected_code
+        # rich_print(f'{chunk=}')
+
+
+
 class TestTreesitterChunker_Lua_DocumentationComments:
     # BTW DocComments / DocumentationComments refers to BOTH:
     # - annotations
