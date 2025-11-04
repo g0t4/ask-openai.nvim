@@ -40,9 +40,11 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
 
     # * log uncovered code
     buffer = StringIO()  # buffer for single log per file
-    console = Console(file=buffer, force_terminal=True, color_system="truecolor")
+    # TODO fix wrapping issues between console.print and then logger's rich_handler, for now I am setting width to 200 for console printer:
+    #   absolute file path is notorious for causing wrap
+    console = Console(file=buffer, force_terminal=True, color_system="truecolor", width=200)
     console.print(
-        f"\n*********************** Uncovered nodes {relative_path} ***********************",
+        f"\n** Uncovered nodes {relative_path}",
         style="bold white on red",
         highlight=False,  # avoid highlight on path
     )
