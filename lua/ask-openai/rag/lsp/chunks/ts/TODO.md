@@ -1,0 +1,33 @@
+## annotation/decorators/doc_comments
+
+- Adapt existing decorator detector, make it generic for some or all of the following:
+    - maybe merge it with lua doc_comments
+
+- c++ Attributes: `[[nodiscard]]`, `[[deprecated]]`, attached to members or classes, runtime accessible
+    - Doxygen comments: `/// or /** ... */`
+- rust Attributes: `#[derive(Debug)]`, `#[test]`, etc. - compiler metadata on functions, structs, modules.
+    - Doc comments: `/// or //!.`
+- JavaScript / TypeScript
+    - Decorators (proposals / TS): `@Injectable()`, `@Component()`, etc.
+    - JSDoc / TSDoc comments: `/** @param x number */`
+- Go
+    - struct tags: `json:"name"`
+    - `// comments` and `/* block comments */`
+- Java and C#
+    - Annotations (C#): `[Serializable]`, `[TestMethod]`, attached to classes, methods, fields, etc.
+- Swift
+    - Annotations: `@MainActor`, `@objc`, etc.
+- Kotlin
+    - Annotations: `@JvmStatic`, `@Deprecated`, etc.
+    - KDoc comments: `/** ... */`
+- Dart
+    - Annotations: `@override`, `@deprecated`, etc.
+    - Doc comments: `///` or `/** ... */`
+- Objective-C
+    - Annotations: `NS_AVAILABLE`, `NS_UNAVAILABLE`, etc.
+    - Doc comments: `/** ... */`
+- PHP
+    - Annotations: `@var`, `@return`, etc.
+    - Doc comments: `/** ... */`
+- Ruby
+    - Doc comments: `#` or `=begin =end`
