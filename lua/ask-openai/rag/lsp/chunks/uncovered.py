@@ -105,8 +105,8 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         for node in chunk.sibling_nodes:
             # back to treating as standalone nodes, is perfectly fine and best way to keep byte/(line,col) alignments
             covered = P.openclosed(node.start_byte, node.end_byte)
-            text = source_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
             if show_intervals:
+                text = source_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
                 t_covered.append(TroubleshootNode(interval=covered, text=text, type="covered"))
             merged_covered_spans |= covered
 
