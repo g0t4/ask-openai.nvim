@@ -10,7 +10,7 @@ from tree_sitter import Node
 from lsp.chunks.identified import IdentifiedChunk
 from lsp.chunks.ts.lua import attach_doc_comments
 from lsp.chunks.ts.py import attach_decorators
-from lsp.chunks.uncovered import debug_uncovered_nodes
+from lsp.chunks.uncovered import debug_uncovered_intervals
 from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
 from lsp.logs import get_logger, printtmp
 from lsp.chunks.parsers import get_cached_parser_for_path
@@ -270,7 +270,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     identified_chunks = list(identify_chunks(tree.root_node))
     # TODO need to get root dir as os.getcwd() is gonna be rag dir in ask repo always
     # relative_path = path.relative_to(os.getcwd())
-    debug_uncovered_nodes(tree, source_bytes, identified_chunks, path)
+    debug_uncovered_intervals(tree, source_bytes, identified_chunks, path)
 
     ts_chunks = []
     for chunk in identified_chunks:
