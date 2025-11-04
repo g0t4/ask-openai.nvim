@@ -209,7 +209,7 @@ class TestTreesitterChunker_Python_Decorators:
     def test_decorated_class(self):
         chunk = self.chunks[3]
         assert chunk.signature == 'class MyPoint:'
-        assert chunk.text == '@dataclass\nclass MyPoint:\n    x: int\n    y: int\n\n    @log_calls\n    def repr(self):\n        return f"({self.x}, {self.y})"'
+        assert chunk.text == '@dataclass\n@dataclass\nclass MyPoint:\n    x: int\n    y: int\n\n    @log_calls\n    def repr(self):\n        return f"({self.x}, {self.y})"'
         rich_print(f'{chunk=}')
         # build \n delimtied string:
         #   pbpaste | gsed -n '1 h; 2,$ H; ${g;s/\\n/\\\\n/g;p}'

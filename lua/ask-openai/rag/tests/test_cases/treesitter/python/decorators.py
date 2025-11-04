@@ -16,6 +16,7 @@ def func1():
     return 1
 
 @dataclass
+@dataclass
 class MyPoint:
     x: int
     y: int
