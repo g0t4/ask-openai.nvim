@@ -18,6 +18,8 @@ class UncoveredCode:
     text: str
     start_line_base1: int
     end_line_base1: int
+    start_byte_base0: int
+    end_byte_base0: int
 
     def start_line_base0(self) -> int:
         return self.start_line_base1 - 1
@@ -109,6 +111,8 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
                 text=text,
                 start_line_base1=start_line_base1,
                 end_line_base1=end_line_base1,
+                start_byte_base0=start,
+                end_byte_base0=end,
             ))
         else:
             #    TODO! factor this into tests and uncovered sliding window chunker, b/c it very well may change what the code appears to do if I am missing \n and other whitespace
@@ -118,6 +122,8 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
                 text=text,
                 start_line_base1=start_line_base1,
                 end_line_base1=end_line_base1,
+                start_byte_base0=start,
+                end_byte_base0=end,
             ))
 
     return uncovered_code
