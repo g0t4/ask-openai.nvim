@@ -127,6 +127,8 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
 
     # PRN toggle to see combined covered spans instead of individual ones that can overlap (i.e. nested funcs)
     print("[cyan]COMBINED[/]", covered_spans)
+    for c in covered_spans:
+        print(f"  {c}")
 
     for t in sorted(troubleshoots):
         if t.covered:
