@@ -75,26 +75,26 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
     print()
 
     # * collect covered node byte spans
-    covered_spans = P.empty()
+    merged_covered_spans = P.empty()
 
     class TroubleshootNode(NamedTuple):
         interval: P.Interval
         text: str
-        covered: bool
+        type: str
 
-    troubleshoots: list[TroubleshootNode] = []
-
+    t_covered: list[TroubleshootNode] = []
     for chunk in chunks:
         for node in chunk.sibling_nodes:
             covered = P.openclosed(node.start_byte, node.end_byte)
             text = source_bytes[node.start_byte:node.end_byte].decode("utf-8", errors="replace")
-            troubleshoots.append(TroubleshootNode(interval=covered, text=text, covered=True))
-            covered_spans |= covered
+            t_covered.append(TroubleshootNode(interval=covered, text=text, type="covered"))
+            merged_covered_spans |= covered
 
-    uncovered_spans = P.openclosed(0, len(source_bytes)) - covered_spans
+    uncovered_spans = P.openclosed(0, len(source_bytes)) - merged_covered_spans
 
     # * collect uncovered code
     uncovered_code: list[UncoveredCode] = []
+    t_uncovered: list[TroubleshootNode] = []
     for span in uncovered_spans:
         assert span.left == P.Bound.OPEN
         assert span.right == P.Bound.CLOSED
@@ -109,7 +109,7 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         #  ok it is b/c I am subtracing from overall range and there is no node for the skipped whitespace chars... ok
         text = source_bytes[start_base0:end_base0].decode("utf-8", errors="replace")
 
-        troubleshoots.append(TroubleshootNode(interval=span, text=text, covered=False))
+        t_uncovered.append(TroubleshootNode(interval=span, text=text, type="uncovered"))
 
         # FYI I am not computing column offsets, for uncovered code purposes I think that's fine for now b/c...
         # - this is only going to be for sliding window "fallback" chunker which is 100% fine to cover a smidge extra
@@ -125,16 +125,24 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         )
         uncovered_code.append(code)
 
-    # PRN toggle to see combined covered spans instead of individual ones that can overlap (i.e. nested funcs)
-    print("[cyan]COMBINED[/]", covered_spans)
-    for c in covered_spans:
-        print(f"  {c}")
+    t_merged = [TroubleshootNode(
+        interval=m,
+        text=source_bytes[m.lower:m.upper].decode("utf-8", errors="replace"),
+        type="merged_covered",
+    ) for m in merged_covered_spans]
+
+    # troubleshoots = t_uncovered + t_covered # show unmerged covered spans
+    troubleshoots = t_uncovered + t_merged
 
     for t in sorted(troubleshoots):
-        if t.covered:
+        if t.type == "merged_covered":
+            style = "cyan"
+        elif t.type == "covered":
             style = "green"
-        else:
+        elif t.type == "uncovered":
             style = "red"
+        else:
+            raise Exception("bad type")
         print(f'  [{style}]{t.interval} - {repr(t.text)}[/]')
 
     return uncovered_code
