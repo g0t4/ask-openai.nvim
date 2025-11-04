@@ -138,13 +138,9 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
 
     # * collect uncovered code
     uncovered_code: list[UncoveredCode] = []
-    t_uncovered: list[TroubleshootNode] = []
     for span in uncovered_spans:
         code = create_uncovered_code(source_bytes, span)
         uncovered_code.append(code)
-
-        if show_intervals:
-            t_uncovered.append(code.troubleshoot_node())
 
     if show_intervals:
         # ***! This view of code covered/not is ESSENTIAL to understand what is happening
@@ -156,6 +152,8 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
             text=source_bytes[m.lower:m.upper].decode("utf-8", errors="replace"),
             type="merged_covered",
         ) for m in merged_covered_spans]
+
+        t_uncovered = [code.troubleshoot_node() for code in uncovered_code]
 
         # troubleshoots = t_uncovered + t_covered # show unmerged covered spans
         troubleshoots = t_uncovered + t_merged
