@@ -60,7 +60,7 @@ class UncoveredCode:
         # FYI should not be empty but doesn't hurt to include it if that changes later
         return self.text == '' or self.text.isspace()
 
-    def troubleshoot_node(self):
+    def troubleshooter(self):
         return TroubleshootNode(interval=self.byte_span_base0, text=self.text, type="uncovered")
 
 def create_uncovered_code(source_bytes: bytes, byte_span) -> UncoveredCode:
@@ -155,7 +155,7 @@ def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identif
         #  run the myriad of test cases in uncovered_tests and then look at the output w.r.t. this debug section
 
         t_merged = [create_span_troubleshooter(source_bytes, m) for m in merged_covered_spans]
-        t_uncovered = [code.troubleshoot_node() for code in uncovered_code]
+        t_uncovered = [code.troubleshooter() for code in uncovered_code]
 
         # troubleshoots = t_uncovered + t_covered # show unmerged covered spans
         troubleshoots = t_uncovered + t_merged
