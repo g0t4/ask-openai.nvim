@@ -312,7 +312,8 @@ class TestTreesitterChunker_Python_DataClass:
         assert len(chunks) == 1
 
         first_chunk = chunks[0]
-        class_text = """class Customer():
+
+        class_text = """@dataclass\nclass Customer():
     id: int
     name: str
     email: str"""
