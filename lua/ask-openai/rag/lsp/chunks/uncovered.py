@@ -44,6 +44,7 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
     console.print(
         f"\n*********************** Uncovered nodes {relative_path} ***********************",
         style="bold white on red",
+        highlight=False,  # avoid highlight on path
     )
     for code in uncovered_code:
         if code.start_line_base1 == code.end_line_base1:
