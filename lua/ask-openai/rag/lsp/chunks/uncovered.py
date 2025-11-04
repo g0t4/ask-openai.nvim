@@ -42,12 +42,17 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
         style="bold white on red",
     )
     for code in uncovered_code:
+        is_only_whitespace = code.text.isspace()
+        if is_only_whitespace:
+            console.print(f"[black on cyan]uncovered whitespace within lines {code.start_line_base1}–{code.end_line_base1}[/]", highlight=False)
+            continue
+
         if code.start_line_base1 == code.end_line_base1:
             line_desc = f"line {code.start_line_base1}"
         else:
             line_desc = f"lines {code.start_line_base1}–{code.end_line_base1}"
         console.print(f"[black on yellow]uncovered bytes within {line_desc}[/]", highlight=False)
-        console.print(f"{code.text}", markup=False, highlight=False, end="") # end="" else each line has a \n after!
+        console.print(f"{code.text}", markup=False, highlight=False, end="")  # end="" else each line has a \n after!
 
         # use console directly so I can disable markup for code
     logger_uncovered.debug_no_markup(buffer.getvalue())
