@@ -1,3 +1,4 @@
+from io import StringIO
 import logging
 import time
 from typing import cast
@@ -70,11 +71,26 @@ def logging_fwk_to_console(level):
 
 class Logger(logging.Logger):
 
+    def rich_to_ansi(self, text: str, style: str) -> str:
+        """Return a string with ANSI escapes for the given style.
+           Then, pass this to debug_no_markup.
+           That way you control all coloring decisions and effectively bypass rich_handler
+        """
+        # NOT yet used, wanna leave as a reminder, I decomposed this into uncovered code logger, but figured I might want this elsewhere
+        buffer = StringIO()
+        console = Console(file=buffer, force_terminal=True, color_system="truecolor")
+        console.print(text, style=style, end="")  # end="" to avoid newline
+        return buffer.getvalue()
+
     def debug_no_markup(self, message: object, *args: object):
+        """ think of this as log w/o rich (bypass rich_handler, mostly)"""
         # FYI add more log levels as needed
         if not self.isEnabledFor(logging.DEBUG):
             return
-        self.debug(message, *args, extra={"markup": False})
+        # highlighter is rich's highlighting of numbers, etc
+        # markup is [red]...[/] tags
+        # TODO other extras to disable?
+        self.debug(message, *args, extra={"markup": False, "highlighter": False})
 
     def _pp(self, obj):
         return pretty_repr(obj, indent_size=2)

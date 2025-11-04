@@ -7,6 +7,8 @@ import portion as P
 from tree_sitter import Tree
 from lsp.chunks.identified import IdentifiedChunk
 from lsp.logs import get_logger
+from rich.console import Console
+from io import StringIO
 
 logger_uncovered = get_logger(__name__)
 logger_uncovered.setLevel(logging.DEBUG)
@@ -33,10 +35,22 @@ def debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[Identifi
         return []
 
     # * log uncovered code
-    logger_uncovered.debug(f"[bold on red] *********************** Uncovered nodes {relative_path} *********************** [/]")
-    for c in uncovered_code:
-        logger_uncovered.debug(f"[black on yellow] uncovered bytes (within lines: {c.start_line_base1}–{c.end_line_base1}) [/]")
-        logger_uncovered.debug_no_markup(f"\n{c.text}")
+    buffer = StringIO()  # buffer for single log per file
+    console = Console(file=buffer, force_terminal=True, color_system="truecolor")
+    console.print(
+        f"\n*********************** Uncovered nodes {relative_path} ***********************",
+        style="bold white on red",
+    )
+    for code in uncovered_code:
+        if code.start_line_base1 == code.end_line_base1:
+            console.print(f"[black on yellow]uncovered bytes within line {code.start_line_base1}[/]", highlight=False)
+        else:
+            console.print(f"[black on yellow]uncovered bytes within lines {code.start_line_base1}–{code.end_line_base1}[/]", highlight=False)
+        console.print(f"{code.text}", markup=False, highlight=False)
+
+        # use console directly so I can disable markup for code
+    logger_uncovered.debug_no_markup(buffer.getvalue())
+
     return uncovered_code
 
 def _debug_uncovered_nodes(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk]) -> list[UncoveredCode]:
