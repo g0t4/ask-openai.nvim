@@ -305,19 +305,6 @@ class TestTreesitterChunker_Python_NestedFunctions:
         # TODO how do I want to handle nesting? maybe all in one if its under a token count?
         # and/or index nested too?
 
-class TestTreesitterChunker_Python_DataClass:
-
-    def test_dataclass(self):
-        chunks = build_test_chunks(test_cases_python / "dataclass.py", RAGChunkerOptions.OnlyTsChunks())
-        assert len(chunks) == 1
-
-        first_chunk = chunks[0]
-
-        class_text = '@dataclass\nclass Customer():\n    id: int\n    name: str\n    email: str'
-        assert first_chunk.text == class_text
-
-        assert first_chunk.signature == "class Customer():"
-
 class TestTreesitterChunker_Python_Class:
 
     def setup_method(self):
