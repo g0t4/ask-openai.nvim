@@ -94,15 +94,12 @@ vim.api.nvim_set_hl(0, hlgroup, {
 
 local preview_content_type = 0
 local function is_file_preview()
-    -- values: "file" (real file on-disk)
     return preview_content_type == 0
 end
-local function is_entry_preview()
-    -- telescope entry object (think entry debug view)
+local function is_entry_debug_preview()
     return preview_content_type == 1
 end
 local function is_chunk_text_preview()
-    -- chunk text
     return preview_content_type == 2
 end
 local function cycle_preview_content()
@@ -135,7 +132,7 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
             -- might not match RAG chunk text
             -- so far, I haven't noticed this, but it might not be obvious beyond a bad match or not quite right match!
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.fn.readfile(filename))
-        elseif is_entry_preview() then
+        elseif is_entry_debug_preview() then
             -- TODO mark as lua language b/c vim.inspect spits out lua table syntax
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(vim.inspect(entry), "\n"))
         elseif is_chunk_text_preview() then
@@ -165,7 +162,7 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
             vim.hl.range(bufnr, ns, "RagLineRange", { start_line_base0, 0 }, { end_line_base0, last_col }, {})
 
             ft = vim.filetype.match({ filename = filename })
-        elseif is_entry_preview() then
+        elseif is_entry_debug_preview() then
             ft = "lua"
         elseif is_chunk_text_preview() then
             -- FYI no selection b/c it's just the chunk text!
