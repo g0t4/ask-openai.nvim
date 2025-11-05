@@ -277,6 +277,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         first = chunk.sibling_nodes[0]
         last = chunk.sibling_nodes[-1]
 
+        # ?? allow non-contiguous nodes (i.e. top level module statements if I were to use treesitter to find and aggrgate these instead of sliding window)
         start_line_base0 = first.start_point[0]
         start_column_base0 = first.start_point[1]
         end_line_base0 = last.end_point[0]
