@@ -111,7 +111,26 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         local winid = self.state.winid
         local bufnr = self.state.bufnr
 
-        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.fn.readfile(filename))
+        -- * show file on-disk (current contents)
+        --   - might not match RAG chunk text
+        --   - so far, I haven't noticed this, but it might not be obvious beyond a bad match or not quite right match!
+        -- vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.fn.readfile(filename))
+        --
+        -- * show entry
+        --   - TODO mark as lua language b/c vim.inspect spits out lua table syntax
+        -- vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(vim.inspect(entry), "\n"))
+        --
+        -- * show entry text
+        --   - chunk time text
+        --   - useful to compare if there is a discrepency
+        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(entry.match.text, "\n"))
+        --     -- * IDEA for showing chunks that have non-contiguous nodes (selections) - i.e. python, top-level/module statements
+
+        -- * non-contiguous nodes w/in a chunk
+        -- - one RAG chunk has nodes that are not neighbors lexically, but are neighbors semantically
+        --   i.e. python module's top-level statements => basically akin to a "module global function"
+        -- - would be fine with entry.text preview option (above)
+        -- - could do actual file too and have multiple regions selected, with arrow/keymap to jump up/down (perhaps Ctrl-j/k) between nodes
 
         -- local num_lines = vim.api.nvim_buf_line_count(bufnr)
 
