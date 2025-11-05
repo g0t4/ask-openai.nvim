@@ -90,6 +90,7 @@ def create_uncovered_code(source_bytes: bytes, byte_interval) -> UncoveredCode:
 def debug_uncovered_intervals(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], relative_path: Path) -> list[UncoveredCode]:
     if not logger_uncovered.isEnabledForDebug():
         return []
+    # TODO when I start using uncovered intervals for sliding window, then get rid of debug checks here (except to dictate logging of show_intervals and original/legacy uncovered lines viewer below in this function)
     uncovered_code = _build_uncovered_intervals(tree, source_bytes, chunks, show_intervals=True)
 
     if not uncovered_code:
