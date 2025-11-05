@@ -104,7 +104,6 @@ local function is_chunk_text_preview()
 end
 local function cycle_preview_content()
     preview_content_type = (preview_content_type + 1) % 3
-    -- TODO if visible, trigger update to show new view
 end
 
 local custom_buffer_previewer = previewers.new_buffer_previewer({
@@ -409,6 +408,9 @@ function semantic_grep_current_filetype_picker(opts)
             keymap({ 'n' }, '<tab>', function()
                 -- PRN add keymap to jump to specific view?
                 cycle_preview_content()
+
+                local picker = state.get_current_picker(prompt_bufnr)
+                picker:refresh_previewer()
             end)
             return true
         end,
