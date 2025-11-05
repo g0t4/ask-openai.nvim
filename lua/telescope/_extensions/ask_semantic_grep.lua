@@ -404,24 +404,11 @@ function semantic_grep_current_filetype_picker(opts)
             --     -- vim.api.nvim_command('vsplit ' .. link)
             -- end)
             -- keymap({ 'n' }, 'c', function()
-            --     -- add to context
-            --     -- TODO add action for adding to an explicit context!
-            --     -- TODO it would also be useful to have add to explicit context on a regular rg file search
+            --     -- * add to Ask context! for future prompts
             -- end)
             keymap({ 'n' }, '<tab>', function()
                 -- PRN add keymap to jump to specific view?
                 cycle_preview_content()
-            end)
-            keymap({ 'n' }, '<leader>d', function()
-                ---@type SemanticGrepTelescopeEntryMatch
-                local selection = state.get_selected_entry()
-
-                -- SHOW chunk details... i.e. compare to highlights in previewer
-                logs:jsonify_info("selection:", selection.match)
-                logs:info("selection.text:", selection.match.text)
-
-                -- still blocks logs from updating, FYI...NBD
-                vim.print(selection)
             end)
             return true
         end,
