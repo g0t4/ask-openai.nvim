@@ -131,39 +131,47 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         local bufnr = self.state.bufnr
 
         -- TODO! toggle to switch preview contents! (maybe subdivide define_preview to isolate each view since it is not just contents, but also selection, filetype, etc)
-        -- * show file on-disk (current contents)
-        --   - might not match RAG chunk text
-        --   - so far, I haven't noticed this, but it might not be obvious beyond a bad match or not quite right match!
-        vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.fn.readfile(filename))
-        --
-        -- * show entry
-        --   - TODO mark as lua language b/c vim.inspect spits out lua table syntax
-        -- vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(vim.inspect(entry), "\n"))
-        --
-        -- * show entry text
-        --   - chunk time text
-        --   - useful to compare if there is a discrepency
-        -- vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(entry.match.text, "\n"))
-        --     -- * IDEA for showing chunks that have non-contiguous nodes (selections) - i.e. python, top-level/module statements
+        if is_file_preview() then
+            -- might not match RAG chunk text
+            -- so far, I haven't noticed this, but it might not be obvious beyond a bad match or not quite right match!
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.fn.readfile(filename))
+        elseif is_entry_preview() then
+            -- TODO mark as lua language b/c vim.inspect spits out lua table syntax
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(vim.inspect(entry), "\n"))
+        elseif is_chunk_text_preview() then
+            -- useful to compare if there is a discrepency vs file on-disk
+            -- also a bit easier way to visualize full chunk text, especially if I add non-contiguous nodes in one chunk
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(entry.match.text, "\n"))
+        else
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "FAIL SAUCE" })
+        end
 
         -- * non-contiguous nodes w/in a chunk
         -- - one RAG chunk has nodes that are not neighbors lexically, but are neighbors semantically
         --   i.e. python module's top-level statements => basically akin to a "module global function"
-        -- - would be fine with entry.text preview option (above)
         -- - could do actual file too and have multiple regions selected, with arrow/keymap to jump up/down (perhaps Ctrl-j/k) between nodes
-        --   see below RagLineRange (could select multiple parts of file)
-        --   FYI can use mouse to move file window to scroll buffer and see diff parts, so completely reasonable to add multi selection
+        --   can use mouse to move file window to scroll buffer and see diff parts, so completely reasonable to add multi selection
 
+        ---@type string|nil
+        local ft = "lua"
         vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
         local start_line_base0 = entry.match.start_line_base0
         local end_line_base0 = entry.match.end_line_base0
 
-        -- TODO use start_column and end_column (base 0)
-        local last_col = -1
-        -- TODO confirm hl.range is base0 for both line/col values on start and end
-        vim.hl.range(bufnr, ns, "RagLineRange", { start_line_base0, 0 }, { end_line_base0, last_col }, {})
+        if is_file_preview() then
+            -- PRN use start_column and end_column (base 0)
+            local last_col = -1
+            -- TODO confirm hl.range is base0 for both line/col values on start and end
+            vim.hl.range(bufnr, ns, "RagLineRange", { start_line_base0, 0 }, { end_line_base0, last_col }, {})
 
-        local ft = vim.filetype.match({ filename = filename })
+            ft = vim.filetype.match({ filename = filename })
+        elseif is_entry_preview() then
+            ft = "lua"
+        elseif is_chunk_text_preview() then
+            -- FYI no selection b/c it's just the chunk text!
+            ft = vim.filetype.match({ filename = filename })
+        end
+
         if not ft then
             -- ! DO NOT WASTE MORE TIME ON vim.filetype.match, it's a cluster fuck
             -- JUST MAP W/E does not fit for now, it doesn't matter... you're not the first person to have this issue with vim.filetype.match so just ignore it
@@ -172,6 +180,7 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
                 ft = "typescript"
             else
                 logs:info("filetype match failed, please manually add the mapping for the file extension (ft=" .. tostring(ft) .. ") for filename: " .. filename)
+                ft = ""
             end
         end
 
@@ -198,6 +207,11 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
             vim.api.nvim_set_option_value("relativenumber", false, { win = winid })
 
             function scroll_to_first_highlight()
+                if not is_file_preview() then
+                    -- PRN during a change of preview type, would I need to scroll to top for non-file previews?
+                    return
+                end
+
                 local window_height = vim.api.nvim_win_get_height(winid)
                 local num_highlight_lines = end_line_base0 - start_line_base0
                 if num_highlight_lines <= window_height then
