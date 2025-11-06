@@ -9,7 +9,6 @@ require("devtools.performance")
 local log = require("ask-openai.logs.logger").predictions()
 require("ask-openai.prediction.prefix_suffix")
 local ps = require("ask-openai.prediction.prefix_suffix")
-local notify = require("notify")
 
 local OllamaFimBackend = require("ask-openai.prediction.backends.llama")
 -- local backend = require("ask-openai.prediction.backends.backendsvllm")
@@ -129,6 +128,7 @@ function M.ask_for_prediction()
 
                 local message = table.concat(messages, "\n")
 
+                local notify = require("notify")
                 notify.dismiss({ pending = true, silent = true })
                 notify(message, "info", {})
             end
