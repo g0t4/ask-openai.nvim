@@ -79,7 +79,8 @@ def print_code(*args, **kwargs):
     # this is just a plain wrapper around builtin print
     # goal is to capture the intent of printing code
     # could always use some fancy printing (coloring) of code by updating this one spot, too!
-    __builtins__.print(*args, **kwargs)
+    import builtins
+    builtins.print(*args, **kwargs)
 
 class Logger(logging.Logger):
 
