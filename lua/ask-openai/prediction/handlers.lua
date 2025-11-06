@@ -129,8 +129,11 @@ function M.ask_for_prediction()
                 local message = table.concat(messages, "\n")
 
                 local notify = require("notify")
-                notify.dismiss({ pending = true, silent = true })
-                notify(message, "info", {})
+                if notify then
+                    -- if using nvim-notify, then clear prior notifications
+                    notify.dismiss({ pending = true, silent = true })
+                end
+                vim.notify(message, "info", { title = "FIM Stats" })
             end
 
             if data then
