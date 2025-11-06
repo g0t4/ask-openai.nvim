@@ -57,7 +57,7 @@ def dump_token_details(input_ids, input_texts):
         total_actual_tokens += current
         if current > biggest:
             biggest = current
-        rich.print(f"  {current}: {t}")
+            __builtins__.print(f"  {current}: {t}")  # NEVER print code with rich's print function (b/c it might have markup in it! [/] owns me every time!)
 
     avg_tokens = total_actual_tokens / len(input_texts)
     rich.print(f"  avg_tokens={avg_tokens:.2f} longest={biggest}")
