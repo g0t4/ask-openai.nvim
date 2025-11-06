@@ -13,6 +13,20 @@ logging_fwk_to_console("INFO")
 
 class TestUncoveredNodes():
 
+    # NOTES for uncovered node scenarios I want to consider in treesitter chunker
+    # - lua:
+    #   - dotfiles/.config/hammerspoon/config/ui_callouts.lua - lots of anonymous functions bound to keymaps, top level
+    #     - in this case I'd like to expand the anonymous function when it's an argument to a function and just push it up into the function call and include the function call
+    #     - IOTW I wanna capture the keymap call! and the anonymous, inline functions
+    #     - PERHAPS all anonymous functions should be captured with the entire noded they are embedded inside of?
+    #       - entire line => the function call
+    #       - assignment? (in other languages maybe) to a variable ... not in lua or not frequently in my lua code
+    #   - most uncovered code (after functions/classes) is just top level module code
+    #     - AND, it's almost exclusively at the TOP of a module file! and 99% is before functions so it's contiguous!
+    #       1. how about auto chunk all of it at top of file
+    #       2. OR, do sliding window on it if its too big
+    #
+
     def setup_method(self):
         # add \n so first logging call doesn't start at end of test name
         print()
