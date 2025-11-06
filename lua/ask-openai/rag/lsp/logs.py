@@ -72,6 +72,15 @@ def logging_fwk_to_console(level):
     console = Console()
     setup_logging(console, level)
 
+def print_code(*args, **kwargs):
+    """ never print code with rich.print
+        b/c if your code has markup in it! i.e. for rich.print calls! then it will explode when its printed to rich!
+    """
+    # this is just a plain wrapper around builtin print
+    # goal is to capture the intent of printing code
+    # could always use some fancy printing (coloring) of code by updating this one spot, too!
+    __builtins__.print(*args, **kwargs)
+
 class Logger(logging.Logger):
 
     def debug_no_markup(self, message: object, *args: object):

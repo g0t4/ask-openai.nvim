@@ -1,5 +1,5 @@
 import os
-from lsp.logs import get_logger, logging_fwk_to_console
+from lsp.logs import get_logger, logging_fwk_to_console, print_code
 
 logger = get_logger(__name__)
 # logging_fwk_to_console("INFO") # start info level to capture timing logs (add with logger.timer to below)
@@ -143,7 +143,7 @@ class TestBuildIndex:
         #
         # # troubleshooting:
         # for i, c in enumerate(chunks):
-        #     __builtins__.print(f"\nchunk {i}\n  {c.id_int}\n\n{c.text}")
+        #     print_code(f"\nchunk {i}\n  {c.id_int}\n\n{c.text}")
 
         # ***! TODO USE THIS TO FIX OpenMP issue
         #

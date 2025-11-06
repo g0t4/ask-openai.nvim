@@ -2,7 +2,7 @@ import asyncio
 import rich
 from pathlib import Path
 
-from lsp.logs import get_logger, logging_fwk_to_console
+from lsp.logs import get_logger, logging_fwk_to_console, print_code
 from lsp.storage import load_all_datasets
 from lsp.inference.client.retrieval import *
 from lsp.fs import set_root_dir
@@ -40,7 +40,7 @@ async def main():
     for idx, m in enumerate(ranked_matches):
         rich.print(f'#{m.rerank_rank} / {m.id}: rerank={format_score_percent(m.rerank_score)} embed={format_score_percent(m.embed_score)}/#{m.embed_rank}')
         if logger.isEnabledForDebug():
-            __builtins__.print(m.text)
+            print_code(m.text)
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -18,7 +18,7 @@ from . import qwen3_rerank
 
 qwen3_embeddings.dump_device_memory_stats("after rerank")
 
-from lsp.logs import Timer, get_logger, logging_fwk_to_console
+from lsp.logs import Timer, get_logger, logging_fwk_to_console, print_code
 from ..comms import recv_len_then_msg_async, send_len_then_msg_async
 
 print('imports done')
@@ -57,7 +57,7 @@ def dump_token_details(input_ids, input_texts):
         total_actual_tokens += current
         if current > biggest:
             biggest = current
-            __builtins__.print(f"  {current}: {t}")  # NEVER print code with rich's print function (b/c it might have markup in it! [/] owns me every time!)
+            print_code(f"  {current}: {t}")  # NEVER print code with rich's print function (b/c it might have markup in it! [/] owns me every time!)
 
     avg_tokens = total_actual_tokens / len(input_texts)
     rich.print(f"  avg_tokens={avg_tokens:.2f} longest={biggest}")
