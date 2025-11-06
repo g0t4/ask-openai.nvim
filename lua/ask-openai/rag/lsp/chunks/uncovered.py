@@ -173,6 +173,13 @@ def _build_uncovered_intervals(tree: Tree, source_bytes: bytes, chunks: list[Ide
                 style = RED
             else:
                 raise Exception("bad type")
+
+            if t.type == "uncovered" and t.text.isspace():
+                # style = RESET  # not colored
+                # OR use 24bit color to make light red: \x1b[38;2;⟨r⟩;⟨g⟩;⟨b⟩m
+                # style = "\x1b[38;2;255;214;214m" # slightly more red (pinker)
+                style = "\x1b[38;2;255;182;182m"  # lightest red (mostly white)
+
             buffer.write(f'{style}{t.interval} - {repr(t.text)}{RESET}\n')
 
         logger_uncovered.debug_no_markup(buffer.getvalue())
