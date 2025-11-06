@@ -13,6 +13,10 @@ logging_fwk_to_console("INFO")
 
 class TestUncoveredNodes():
 
+    def setup_method(self):
+        # add \n so first logging call doesn't start at end of test name
+        print()
+
     def parse_lua(self, code: str) -> tuple[bytes, Tree]:
         parser = get_parser('lua')
         source_bytes = bytes(code, 'utf8')
