@@ -405,7 +405,8 @@ function semantic_grep_current_filetype_picker(opts)
             -- keymap({ 'n' }, 'c', function()
             --     -- * add to Ask context! for future prompts
             -- end)
-            keymap({ 'n' }, '<tab>', function()
+            -- FYI <tab> in insert mode normally allows multi-select, so if you need that then add it back, for now I want it to switch views too
+            keymap({ 'i', 'n' }, '<tab>', function()
                 -- PRN add keymap to jump to specific view?
                 cycle_preview_content()
 
