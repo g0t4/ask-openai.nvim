@@ -143,7 +143,7 @@ class TestBuildIndex:
         #
         # # troubleshooting:
         # for i, c in enumerate(chunks):
-        #     rich.print(f"\nchunk {i}\n  {c.id_int}\n\n{c.text}")
+        #     __builtins__.print(f"\nchunk {i}\n  {c.id_int}\n\n{c.text}")
 
         # ***! TODO USE THIS TO FIX OpenMP issue
         #

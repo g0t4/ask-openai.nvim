@@ -40,7 +40,7 @@ async def main():
     for idx, m in enumerate(ranked_matches):
         rich.print(f'#{m.rerank_rank} / {m.id}: rerank={format_score_percent(m.rerank_score)} embed={format_score_percent(m.embed_score)}/#{m.embed_rank}')
         if logger.isEnabledForDebug():
-            print(m.text)
+            __builtins__.print(m.text)
 
 if __name__ == "__main__":
     asyncio.run(main())
