@@ -85,10 +85,6 @@ class TestUncoveredNodes():
         assert start_uncovered.start_line_base1 == 1
         assert start_uncovered.end_line_base1 == 2
         end_uncovered = uncovered_code[1]
-        # TODO look into how whitespace is handled (here it's tacking onto start of 3rd function which is fine)
-        #   I just need to understand how it works so I am not surprised
-        #   mostly shouldn't matter aside from writing tests
-        # TODO review leading \n
         assert end_uncovered.text == '\nfunction c() return 3 end'
         assert end_uncovered.start_line_base1 == 2
         assert end_uncovered.end_line_base1 == 3
@@ -107,8 +103,12 @@ class TestUncoveredNodes():
 
         assert len(uncovered_code) == 1
         middle_uncovered = uncovered_code[0]
-        # TODO review leading \n
-        # TODO review how I feel about \n bumping up ending_line_base1? what impact?
+        # FYI leading \n is just due to \n not being contained w/o a node so it's always marked as uncovered code between identified nodes
+        # PRN consider impact on line matching for semantic grep telescope extension display (later)... b/c this will mark line before a function too
+        #    in that case I might want to just ignore leading \n and add one to the start_line
+        #    OR I might wanna change how I generate uncovered code so I don't flag the leading \n to begin with
+        #    OR... maybe keep leading \n so you know that this match is the FULL line! and not a subset of it!
+        #       w/o leading \n that means the line might be partial! IOTW partial or full node was not included ahead of it on the first line
         assert middle_uncovered.text == '\nfunction b() return 2 end\n'
         assert middle_uncovered.start_line_base1 == 1
         assert middle_uncovered.end_line_base1 == 3
@@ -171,7 +171,6 @@ class TestUncoveredNodes():
 
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
-        # TODO review leading \n
         assert only.text == '\nfunction b() return 2 end\n'
         assert only.start_line_base1 == 1
         assert only.end_line_base1 == 3
@@ -193,7 +192,6 @@ class TestUncoveredNodes():
         uncovered_code = _build_uncovered_intervals(tree, source_bytes, identified_chunks)
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
-        # TODO review leading \n
         assert only.text == '\nfunction b() return 2 end'
         assert only.start_line_base1 == 1
         assert only.end_line_base1 == 2
@@ -218,7 +216,6 @@ class TestUncoveredNodes():
         uncovered_code = _build_uncovered_intervals(tree, source_bytes, identified_chunks)
         assert len(uncovered_code) == 1
         only = uncovered_code[0]
-        # TODO review leading \n
         assert only.text == '\nfunction b() return 2 end'
         assert only.start_line_base1 == 1
         assert only.end_line_base1 == 2
