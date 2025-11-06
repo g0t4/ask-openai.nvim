@@ -86,16 +86,32 @@ def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], option
         chunks.extend(ts_chunks)
 
     if options.enable_line_range_chunks:
-        # TODO should I configure which languages can even use uncovered_code instead of full sliding window?
-        #   i.e. start with python and lua only?
-        if len(ts_chunks) > 0:
-            # TODO use uncovered_code instead of full sliding window:
-            chunks.extend(build_line_range_chunks_from_lines(path, file_hash, lines))
+        can_use_uncoverd_code = path.suffix in {".py", ".lua"}
+        # can_use_uncoverd_code = False # uncomment to block all use of uncovered code
+        if can_use_uncoverd_code and len(ts_chunks) > 0:
+            chunks.extend(build_line_range_chunks_from_uncovered_code(path, file_hash, uncovered_code))
         else:
             # if no treesitter chunks, fallback to sliding window for all of it (regardless why no chunks)
             chunks.extend(build_line_range_chunks_from_lines(path, file_hash, lines))
 
     return chunks
+
+def build_line_range_chunks_from_uncovered_code(path: Path, file_hash: str, uncovered_code: list[UncoveredCode]) -> Iterator[Chunk]:
+    # FYI quick idea for using sliding window on each contiguous section of covered code:
+
+    for idx, uncovered in enumerate(uncovered_code):
+        if uncovered.is_whitespace_or_empty():
+            continue
+        lines = uncovered.text.splitlines()
+        for chunk in build_line_range_chunks_from_lines(path, file_hash, lines):
+            # TODO VERIFY start/end lines are adjusted to match relative position in actual file
+            chunk.start_line0 += uncovered.start_line_base0()
+            chunk.end_line0 += uncovered.start_line_base0()
+            # recompute chunk id w/ corrected start/end line
+            chunk_id = chunk_id_for(path, chunk.type, chunk.start_line0, chunk.end_line0, file_hash)
+            chunk.id = chunk_id
+            chunk.id_int = str(chunk_id_to_faiss_id(chunk_id))
+            yield chunk
 
 def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[str]) -> list[Chunk]:
     """ only builder for line range chunks (thus denominated in lines only)"""
