@@ -66,7 +66,8 @@ def dump_token_details(input_ids, input_texts):
     wasted_tokens_percent = 100 * (biggest - avg_tokens) / biggest
     rich.print(f"  wasted_tokens={wasted_tokens_percent:.2f}%")
 
-    logger.debug(f"  input_ids={input_ids.tolist()}")
+    # if logger.isEnabledFor(logging.DEBUG):
+    #     logger.debug(f"  input_ids={input_ids}")
 
 def enable_keepalive(writer: asyncio.StreamWriter):
     # for py3.12 and older, keep alive must be set on socket level
