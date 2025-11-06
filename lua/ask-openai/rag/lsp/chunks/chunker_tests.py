@@ -27,7 +27,9 @@ set_root_dir(repo_root)
 # ptw lsp/chunker_tests.py -- --capture=tee-sys
 
 def build_test_chunks(path: Path, options: RAGChunkerOptions) -> list[Chunk]:
-    return build_ts_chunks_from_source_bytes(path, "fake_hash", path.read_bytes(), options)
+    ts_chunks, _ = build_ts_chunks_from_source_bytes(path, "fake_hash", path.read_bytes(), options)
+    # PRN use uncovered_code (second return?)
+    return ts_chunks
 
 class TestReadingFilesAndNewLines:
     """ purpose is to test that readlines is behaving the way I expect

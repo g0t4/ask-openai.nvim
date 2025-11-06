@@ -10,7 +10,7 @@ from tree_sitter import Node
 from lsp.chunks.identified import IdentifiedChunk
 from lsp.chunks.ts.lua import attach_doc_comments
 from lsp.chunks.ts.py import attach_decorators
-from lsp.chunks.uncovered import debug_uncovered_intervals
+from lsp.chunks.uncovered import UncoveredCode, debug_uncovered_intervals
 from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
 from lsp.logs import get_logger, printtmp
 from lsp.chunks.parsers import get_cached_parser_for_path
@@ -70,19 +70,30 @@ def build_chunks_from_file(path: Path | str, file_hash: str, options: RAGChunker
         lines = f.readlines()
         return build_chunks_from_lines(path, file_hash, lines, options)
 
-def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], options: RAGChunkerOptions):
+def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], options: RAGChunkerOptions) \
+    -> list[Chunk]:
     """ use lines as the source to build all chunks
         DOES NOT READ FILE at path
         path is just for building chunk results
     """
     chunks = []
 
-    if options.enable_line_range_chunks:
-        chunks.extend(build_line_range_chunks_from_lines(path, file_hash, lines))
-
+    ts_chunks = []
+    uncovered_code = []
     if options.enable_ts_chunks:
         source_bytes = "".join(lines).encode("utf-8")
-        chunks.extend(build_ts_chunks_from_source_bytes(path, file_hash, source_bytes, options))
+        ts_chunks, uncovered_code = build_ts_chunks_from_source_bytes(path, file_hash, source_bytes, options)
+        chunks.extend(ts_chunks)
+
+    if options.enable_line_range_chunks:
+        # TODO should I configure which languages can even use uncovered_code instead of full sliding window?
+        #   i.e. start with python and lua only?
+        if len(ts_chunks) > 0:
+            # TODO use uncovered_code instead of full sliding window:
+            chunks.extend(build_line_range_chunks_from_lines(path, file_hash, lines))
+        else:
+            # if no treesitter chunks, fallback to sliding window for all of it (regardless why no chunks)
+            chunks.extend(build_line_range_chunks_from_lines(path, file_hash, lines))
 
     return chunks
 
@@ -129,11 +140,12 @@ def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[s
 
     return list(iter_chunks())
 
-def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: bytes, options: RAGChunkerOptions) -> list[Chunk]:
+def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: bytes, options: RAGChunkerOptions) \
+    -> tuple[list[Chunk], list[UncoveredCode]]:
 
     parser, parser_language = get_cached_parser_for_path(path)
     if parser is None:
-        return []
+        return [], []
 
     with logger.timer(f'parse_ts {path}'):
         # TODO! do I need to call parser.reset() to be safe?
@@ -268,7 +280,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
     # PRN batch process chunks?
     identified_chunks = list(identify_chunks(tree.root_node))
-    debug_uncovered_intervals(tree, source_bytes, identified_chunks, path)
+    uncovered_code = debug_uncovered_intervals(tree, source_bytes, identified_chunks, path)
 
     ts_chunks = []
     for chunk in identified_chunks:
@@ -306,4 +318,4 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
         ts_chunks.append(chunk)
 
-    return ts_chunks
+    return ts_chunks, uncovered_code
