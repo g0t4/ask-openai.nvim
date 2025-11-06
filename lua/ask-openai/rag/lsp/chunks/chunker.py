@@ -143,6 +143,13 @@ def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[s
 def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: bytes, options: RAGChunkerOptions) \
     -> tuple[list[Chunk], list[UncoveredCode]]:
 
+    # IDEA: try semantic chunking within large nodes (i.e. functions)?
+    # - split into smaller chunks, compute their embeddings
+    # - compute cosine similiarity of neighbors (dot product)
+    # - if within threshold, combine (up to a chunk size limit)
+    #
+    # OR, would a sliding window work about as well?
+
     parser, parser_language = get_cached_parser_for_path(path)
     if parser is None:
         return [], []
