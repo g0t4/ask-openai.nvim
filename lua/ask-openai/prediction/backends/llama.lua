@@ -7,14 +7,15 @@ require("ask-openai.backends.sse")
 
 -- * primary models I am testing (keep notes in MODELS.notes.md)
 -- local use_model = "qwen2.5-coder:7b-instruct-q8_0"
-local use_model = "bytedance-seed-coder-8b"
--- local use_model = "gpt-oss:20b"
+-- local use_model = "bytedance-seed-coder-8b"
+local use_model = "gpt-oss:120b"
 -- local use_model = "qwen3-coder:30b-a3b-q8_0"
 --
 -- * llama-server (llama-cpp)
-local url = "http://ollama:8012/completions"
+-- local url = "http://ollama:8012/completions" -- qwen2.5-coder
+local url = "http://ollama:8013/completions"
 -- /completions - raw prompt: qwen2.5-coder(llama-server) # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
--- local url = "http://ollama:8012/chat/completions" -- gpt-oss(llama-server, not working yet)
+-- local url = "http://ollama:8012/chat/completions" -- gpt-oss(llama-server, not working yet) - actually, try /completions and fill in the raw harmony prompt (and stop thinking too)
 -- * ollama
 -- local url = "http://ollama:11434/api/generate" -- raw prompt: qwen2.5-coder(ollama)
 -- local url = "http://ollama:11434/api/chat" -- gpt-oss(ollama works)
