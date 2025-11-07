@@ -4,7 +4,7 @@ from pathlib import Path
 import attrs
 from lsp.inference.client.embedder import encode_query, signal_hotpath_done_in_background
 from lsp.stoppers import Stopper
-from lsp.storage import Datasets
+from lsp.storage import ChunkType, Datasets
 from lsp.inference.client import *
 from lsp.fs import get_config, relative_to_workspace
 
@@ -20,7 +20,7 @@ class LSPRankedMatch:
     start_column_base0: int
     end_line_base0: int
     end_column_base0: int | None
-    type: str
+    type: ChunkType
     signature: str
     # file_hash: str # not used
 

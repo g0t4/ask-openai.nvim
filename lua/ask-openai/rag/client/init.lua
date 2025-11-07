@@ -127,6 +127,13 @@ local function fim_concat(ps_chunk, limit)
     return query
 end
 
+---@enum ChunkType
+local ChunkType = {
+    LINES = "lines",
+    TREESITTER = "ts",
+    UNCOVERED_CODE = "uncovered",
+}
+
 ---@class LSPRagQueryRequest
 ---@field query string
 ---@field vimFiletype string
@@ -144,7 +151,6 @@ _G.LSPRagQueryRequest = {}
 ---@field error? string
 _G.LSPRagQueryResult = {}
 
-
 ---@class LSPRankedMatch
 ---@field text string
 ---@field file string
@@ -152,7 +158,7 @@ _G.LSPRagQueryResult = {}
 ---@field start_column_base0 integer
 ---@field end_line_base0 integer
 ---@field end_column_base0 integer|nil
----@field type string
+---@field type ChunkType
 ---@field embed_score number
 ---@field rerank_score number
 ---@field embed_rank integer

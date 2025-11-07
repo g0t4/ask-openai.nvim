@@ -6,7 +6,7 @@ from tree_sitter import QueryCursor
 from lsp.fs import *
 from lsp.chunks.chunker import *
 from lsp.chunks.ts.ts import *
-from lsp.storage import Chunk
+from lsp.storage import Chunk, ChunkType
 
 # * set root dir for relative paths
 repo_root = Path(__file__).parent.parent.parent.parent.parent.parent
@@ -91,7 +91,7 @@ class TestLowLevel_LinesChunker:
         #   bitmaths "0xfc78caf765f98c08 & 0x7FFFFFFFFFFFFFFF"
         #      FYI this case id_int the high bits are truncated
         assert chunk1.id_int == "8969141821824928776"
-        assert chunk1.type == "lines"
+        assert chunk1.type == ChunkType.LINES
         assert chunk1.file_hash == "fake_hash"
 
         chunk2 = chunks[1]
@@ -108,7 +108,7 @@ class TestLowLevel_LinesChunker:
         #   bitmaths "0x5f0546bff37a52e6 & 0x7FFFFFFFFFFFFFFF"
         #     FYI no high_bits to truncate in this case
         assert chunk2.id_int == "6846956598724285158"
-        assert chunk2.type == "lines"
+        assert chunk2.type == ChunkType.LINES
         assert chunk2.file_hash == "fake_hash"
 
     def test_last_chunk_has_one_line_past_overlap__thus_is_kept(self):

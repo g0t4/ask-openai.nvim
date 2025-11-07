@@ -15,7 +15,7 @@ import rich
 from indexer import IncrementalRAGIndexer
 from lsp.chunks.chunker import RAGChunkerOptions
 from lsp.inference.client.embedder import encode_query
-from lsp.storage import load_chunks_by_file, load_file_stats_by_file
+from lsp.storage import ChunkType, load_chunks_by_file, load_file_stats_by_file
 
 # logging_fwk_to_console("WARN") # stop INFO logs after timing captured
 
@@ -66,7 +66,7 @@ class TestBuildIndex:
         # rich.print(f'{sample_lua_path=}')
         for c in chunks:
             assert c.file == str(sample_lua_path)
-            assert c.type == "lines"
+            assert c.type == ChunkType.LINES
 
         first_chunk = [c for c in chunks if c.start_line0 == 0][0]
         assert first_chunk.start_line0 == 0

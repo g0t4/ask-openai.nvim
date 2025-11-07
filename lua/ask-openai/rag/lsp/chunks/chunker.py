@@ -11,7 +11,7 @@ from lsp.chunks.identified import IdentifiedChunk
 from lsp.chunks.ts.lua import attach_doc_comments
 from lsp.chunks.ts.py import attach_decorators
 from lsp.chunks.uncovered import UncoveredCode, debug_uncovered_intervals
-from lsp.storage import Chunk, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
+from lsp.storage import Chunk, ChunkType, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
 from lsp.logs import get_logger, printtmp
 from lsp.chunks.parsers import get_cached_parser_for_path
 
@@ -113,6 +113,7 @@ def build_line_range_chunks_from_uncovered_code(path: Path, file_hash: str, unco
             continue
         lines = uncovered.text.splitlines()
         for chunk in build_line_range_chunks_from_lines(path, file_hash, lines):
+            # TODO! add a few integration tests
             # TODO VERIFY start/end lines are adjusted to match relative position in actual file
             chunk.start_line0 += uncovered.start_line_base0()
             chunk.end_line0 += uncovered.start_line_base0()
@@ -120,6 +121,7 @@ def build_line_range_chunks_from_uncovered_code(path: Path, file_hash: str, unco
             chunk_id = chunk_id_for(path, chunk.type, chunk.start_line0, chunk.end_line0, file_hash)
             chunk.id = chunk_id
             chunk.id_int = str(chunk_id_to_faiss_id(chunk_id))
+            chunk.type = ChunkType.UNCOVERED_CODE
             yield chunk
 
 def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[str]) -> list[Chunk]:
@@ -147,7 +149,7 @@ def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[s
                 break
 
             end_line_base0 = end_line_exclusive_base0 - 1
-            chunk_type = "lines"
+            chunk_type = ChunkType.LINES
             chunk_id = chunk_id_for(path, chunk_type, start_line_base0, end_line_base0, file_hash)
             yield Chunk(
                 id=chunk_id,
@@ -327,7 +329,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         end_line_base0 = last.end_point[0]
         end_column_base0 = last.end_point[1]
 
-        chunk_type = "ts"
+        chunk_type = ChunkType.TREESITTER
         chunk_id = chunk_id_with_columns_for(path, chunk_type, start_line_base0, start_column_base0, end_line_base0, end_column_base0, file_hash)
 
         # TODO! add test cases that cover multi node at the chunk level

@@ -3,6 +3,7 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional, Protocol, cast, Iterable
+from enum import Enum, StrEnum
 
 # FYI if you go back to inference in the same process as FAISS, then torch has to be imported before FAISS (issue w/ qwen3 model load blowing up)
 #   also might be related to OpenMP error
@@ -41,6 +42,12 @@ class FileStat(BaseModel):
     hash: str
     path: str
 
+# BTW (str, Enum) == (StrEnum) => str is for [de]serilialization
+class ChunkType(StrEnum):
+    LINES = "lines"
+    UNCOVERED_CODE = "uncovered"
+    TREESITTER = "ts"
+
 class Chunk(BaseModel):
     id: str
     id_int: str  # mostly store this for comparing manually (when reviewing the files themselves)
@@ -53,7 +60,7 @@ class Chunk(BaseModel):
     end_line0: int
     end_column0: Optional[int]  # None means last column of end_line (i.e. line based chunking)
 
-    type: str
+    type: ChunkType
     file_hash: str
 
     # sig is two-fold: for re-ranker and for telescope picker results list

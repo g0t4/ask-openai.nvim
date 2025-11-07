@@ -81,16 +81,17 @@ function _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, proc
     logs:warn("client_request_ids: " .. vim.inspect(last_msg_id))
 end
 
+-- * RAG match highlighting
 local ns = vim.api.nvim_create_namespace("rag_preview")
 -- -- I want my own highlight style (not Search)
-local hlgroup = "RagLineRange"
-vim.api.nvim_set_hl(0, hlgroup, {
-    -- bg = "#50fa7b",
-    bg = "#414858",
-    -- bold = true,
-    -- standout = true,
-})
+local hlgroup = "RagHighlightMatch"
+vim.api.nvim_set_hl(0, hlgroup, { bg = "#414858" })
 
+-- * chunk type colors
+local hlgroup_light_green = "RagChunkTypeTreesitter"
+vim.api.nvim_set_hl(0, hlgroup_light_green, { fg = "#b0d5a6" })
+local hlgroup_light_red = "RagChunkTypeUncoveredCode"
+vim.api.nvim_set_hl(0, hlgroup_light_red, { fg = "#e24040" })
 
 local preview_content_type = 0
 local function is_file_preview()
@@ -161,7 +162,7 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
             -- PRN use start_column and end_column (base 0)
             local last_col = -1
             -- TODO confirm hl.range is base0 for both line/col values on start and end
-            vim.hl.range(bufnr, ns, "RagLineRange", { start_line_base0, 0 }, { end_line_base0, last_col }, {})
+            vim.hl.range(bufnr, ns, "RagHighlightMatch", { start_line_base0, 0 }, { end_line_base0, last_col }, {})
 
             ft = vim.filetype.match({ filename = filename })
         elseif is_entry_debug_preview() then
@@ -249,11 +250,15 @@ local path_abs = function(path)
     return Path:new(path):make_relative(cwd)
 end
 
+---@param chunk_type ChunkType
+---@return string icon, string hlgroup
 local get_icon_for_chunk_type = function(chunk_type)
     if chunk_type == "ts" then
-        return "󱘎"
+        return "󱘎", "RagChunkTypeTreesitter"
     elseif chunk_type == "lines" then
-        return ""
+        return "", "Normal"
+    elseif chunk_type == "uncovered" then
+        return "󱎘", "RagChunkTypeUncoveredCode"
     end
 end
 
@@ -324,7 +329,7 @@ function semantic_grep_current_filetype_picker(opts)
         -- replace newlines with backslash n => \n shows
         contents = string.gsub(contents, "\n", "\\n") --  else telescope replaces new line with a | which then screws up icon color
 
-        local chunk_type = get_icon_for_chunk_type(entry.match.type)
+        local chunk_type, chunk_type_hlgroup = get_icon_for_chunk_type(entry.match.type)
 
         return displayer {
             { rerank_score_percent, "TelescopeResultsNumber" },
@@ -333,7 +338,7 @@ function semantic_grep_current_filetype_picker(opts)
             { match.embed_rank,     "TelescopeResultsNumber" },
             { icon,                 icon_hlgroup },
             { line },
-            { chunk_type },
+            { chunk_type,           chunk_type_hlgroup },
             { contents,             "TelescopeResultsLine" },
         }
     end
