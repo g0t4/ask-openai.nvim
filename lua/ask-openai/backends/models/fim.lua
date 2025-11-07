@@ -3,6 +3,7 @@ local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.prediction.ansi")
 local ChatThread = require("ask-openai.questions.chat_thread")
 local ChatMessage = require("ask-openai.questions.chat_message")
+local HarmonyRawFimPromptBuilder = require("ask-openai.backends.models.fim_harmony")
 
 local M = {}
 
@@ -15,9 +16,48 @@ M.gpt_oss = {
         -- fim_stop_tokens = [] -- TODO?
     }
 }
+---@param request OllamaFimBackend
+function M.gpt_oss.get_fim_raw_prompt_no_thinking(request)
+    local system_prompt = "Your response will be used for code completion in neovim"
+        .. ", in a FIM (fill-in-the-middle) pluging that genrates code as the user types. \n"
+        .. "Reasoning: low"
+    -- ? if I add support for thinking which would definitely be interesting for FIM, then I could set a level or have some way to trigger completion of diff thinking level
+    -- .. "\nReasoning: high"
+    -- .. "Reasoning: medium"
+
+    -- TODO add context! (i.e. RAG) once you are happy with FIM prompt template
+
+    -- * user message
+    local current_file_relative_path = request.inject_file_path_test_seam()
+    if current_file_relative_path == nil then
+        log:warn("current_file_name is nil")
+        current_file_relative_path = ""
+    end
+    local repo_name = request:get_repo_name()
+    local fim_user_message = "Project info:"
+        .. "\nrepository: " .. repo_name
+        .. "\nfile: " .. current_file_relative_path
+        -- TODO move the instructions to system and/or thinking?
+        .. "\n\nPlease complete the middle of the following example (do not return anything else, just provide code that fits in <<<FIM>>>):"
+        .. "\n\n"
+        .. request.ps_chunk.prefix
+        -- TODO any issues with same line FIM (existing prefix/suffix?)
+        .. "<<<FIM>>>"
+        .. request.ps_chunk.suffix
+
+    local builder = HarmonyRawFimPromptBuilder.new()
+        :system(system_prompt)
+        :user(fim_user_message)
+        :set_thinking()
+        :start_assistant_final_response()
+
+    return builder:build_raw_prompt()
+end
 
 ---@param request OllamaFimBackend
 function M.gpt_oss.get_fim_chat_messages(request)
+    -- FYI! gptoss w/ /v1/chat/completions is on hold... I am testing a raw prompt where I can disable thinking entirely (above)!
+
     local system_prompt = "Your response will be used for code completion in neovim"
         .. ", in a FIM (fill-in-the-middle) pluging that genrates code as the user types. \n"
         .. "Reasoning: low"
@@ -75,7 +115,6 @@ function M.gpt_oss.get_fim_chat_messages(request)
         current_file_relative_path = ""
     end
 
-    -- TODO add repo name to prompt?
     local fim_message = ""
     local repo_name = request:get_repo_name()
 

@@ -5,14 +5,14 @@ local meta = require("ask-openai.backends.models.meta")
 local files = require("ask-openai.helpers.files")
 require("ask-openai.backends.sse")
 
--- * primary models I am testing (keep notes in MODELS.notes.md)
+-- * primary models I am testing (keep notes in MODELS.notes.md) - keep in mind with llama-server this is not an argument (server uses the model it was started with)
 -- local use_model = "qwen2.5-coder:7b-instruct-q8_0"
 -- local use_model = "bytedance-seed-coder-8b"
 local use_model = "gpt-oss:120b"
 -- local use_model = "qwen3-coder:30b-a3b-q8_0"
 --
 -- * llama-server (llama-cpp)
--- local url = "http://ollama:8012/completions" -- qwen2.5-coder
+-- local url = "http://ollama:8012/completions" -- * preferred for qwen2.5-coder
 local url = "http://ollama:8013/completions"
 -- /completions - raw prompt: qwen2.5-coder(llama-server) # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
 -- local url = "http://ollama:8012/chat/completions" -- gpt-oss(llama-server, not working yet) - actually, try /completions and fill in the raw harmony prompt (and stop thinking too)
@@ -167,8 +167,16 @@ function OllamaFimBackend:body_for()
         body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
         -- log:error("stop token: " .. vim.inspect(body.options.stop))
     elseif string.find(body.model, "gpt-oss", nil, true) then
-        body.messages = fim.gpt_oss.get_fim_chat_messages(self)
-        body.raw = false -- not used in chat -- FYI hacky
+        -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
+        -- body.messages = fim.gpt_oss.get_fim_chat_messages(self)
+        -- body.raw = false -- not used in chat -- FYI hacky
+
+        builder = function()
+            -- * raw prompt /completions, no thinking (I could have model think too, just need to parse that then)
+            return fim.gpt_oss.get_fim_raw_prompt_no_thinking(self)
+        end
+
+        -- TODO gptoss stop?
         -- body.options.stop = fim.gpt_oss.sentinel_tokens.fim_stop_tokens
     elseif string.find(body.model, "codestral", nil, true) then
         builder = function()
