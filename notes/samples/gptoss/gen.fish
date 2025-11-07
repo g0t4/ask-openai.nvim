@@ -26,11 +26,17 @@ echo '{
   "max_tokens": 80,
   "stream": false
 }' | curl --fail-with-body -sSL --no-buffer http://build21:8013/apply-template -d @- \
-    | jq > test.apply-template.json
+    | jq >test.apply-template.json
 
 # %%
 
 # send the rendered prompt
 
 curl --fail-with-body -sSL --no-buffer http://build21:8013/v1/completions \
-    -d @test.apply-template.json | jq
+    -d @test.apply-template.json | jq >test.raw.json
+
+# %%
+
+# * NO THINK w/ pre-filled analysis channel
+curl --fail-with-body -sSL --no-buffer http://build21:8013/v1/completions \
+    -d @./nothink/1-only-message.json | jq
