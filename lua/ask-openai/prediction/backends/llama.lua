@@ -25,7 +25,7 @@ local url = "http://ollama:8013/completions"
 --   (make based on url/model so not have to explicitly config too)
 local endpoint_ollama_api_generate = string.match(url, "/api/generate$")
 local endpoint_ollama_api_chat = string.match(url, "/api/chat$")
-local endpoint_llama_server_proprietary_completions = string.match(url, ":8012/completions$")
+local endpoint_llama_server_proprietary_completions = string.match(url, ":801%d/completions$")
 local endpoint_openaicompat_chat_completions = string.match(url, "v1/chat/completions$")
 
 ---@class OllamaFimBackend
