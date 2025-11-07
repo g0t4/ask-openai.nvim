@@ -16,6 +16,10 @@ class DatasetsValidator:
         self.any_problems = False
 
     def validate_datasets(self):
+        # TODO add stats about chunk types?
+        #   I'd like to know how many are ts_chunks, vs sliding window, vs uncovered code derived chunks
+        #   show line count stats (esp ts_chunks and uncvoered code derived chunks)
+        #   and for all I'd like to see token count stats (per chunk)
 
         for dataset in self.datasets.all_datasets.values():
             any_problem_with_this_dataset = False
