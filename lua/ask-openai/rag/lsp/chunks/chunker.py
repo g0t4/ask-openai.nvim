@@ -111,7 +111,7 @@ def build_line_range_chunks_from_uncovered_code(path: Path, file_hash: str, unco
     for idx, uncovered in enumerate(uncovered_code):
         if uncovered.is_whitespace_or_empty():
             continue
-        lines = uncovered.text.splitlines()
+        lines = uncovered.text.splitlines(keepends=True)  # TODO! test case to ensure trailing \n preserved (and/or other line endings? \r\n, etc?)
         for chunk in build_line_range_chunks_from_lines(path, file_hash, lines):
             # TODO! add a few integration tests
             # TODO VERIFY start/end lines are adjusted to match relative position in actual file
