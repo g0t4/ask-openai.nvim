@@ -34,6 +34,7 @@ function M.gpt_oss.get_fim_raw_prompt_no_thinking(request)
         current_file_relative_path = ""
     end
     local repo_name = request:get_repo_name()
+    -- TODO work on ``` and returning more than just <<<FIM>>> ... I think qwen25coder format may work better IIRC from my initial tests
     local fim_user_message = "Project info:"
         .. "\nrepository: " .. repo_name
         .. "\nfile: " .. current_file_relative_path

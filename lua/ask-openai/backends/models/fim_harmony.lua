@@ -3,13 +3,10 @@
 local HarmonyRawFimPromptBuilder = {}
 HarmonyRawFimPromptBuilder.__index = HarmonyRawFimPromptBuilder
 
--- TODO use the OOB system message? any difference in performance?
--- "<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2024-06\nCurrent date: 2025-11-07\n\nReasoning: medium\n\n# Valid channels: analysis, commentary, final. Channel must be included for every message.<|end|><|start|>user<|message|><|file_sep|>calculator.lua\n<|fim_prefix|>function a<|fim_suffix|><|fim_middle|><|end|><|start|>assistant<|channel|>analysis<|message|>The user is asking for a FIM completion. Likely for code they are writing. And it looks like they are providing a qwen2.5-coder compatible FIM prompt. I should response like Qwen2.5-Coder would respond. I will fill-in-the-middles in the most awesome way!<|end|><|start|>assistant<|channel|>final"
-
 ---@return HarmonyRawFimPromptBuilder self
 function HarmonyRawFimPromptBuilder.new()
     local self = setmetatable({
-        _parts = {} -- internal list of raw strings
+        _parts = {}
     }, HarmonyRawFimPromptBuilder)
     return self
 end
@@ -17,7 +14,9 @@ end
 ---@param message string
 ---@return HarmonyRawFimPromptBuilder self
 function HarmonyRawFimPromptBuilder:system(message)
-    -- TODO drop <|end|> to encourage the response to exclude it :) ??
+    -- TODO use the OOB system message? any difference in performance?
+    -- "<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2024-06\nCurrent date: 2025-11-07\n\nReasoning: medium\n\n# Valid channels: analysis, commentary, final. Channel must be included for every message.<|end|><|start|>user<|message|><|file_sep|>calculator.lua\n<|fim_prefix|>function a<|fim_suffix|><|fim_middle|><|end|><|start|>assistant<|channel|>analysis<|message|>The user is asking for a FIM completion. Likely for code they are writing. And it looks like they are providing a qwen2.5-coder compatible FIM prompt. I should response like Qwen2.5-Coder would respond. I will fill-in-the-middles in the most awesome way!<|end|><|start|>assistant<|channel|>final"
+
     table.insert(self._parts, "<|start|>system<|message|>" .. message .. "<|end|>")
     return self
 end
@@ -40,7 +39,7 @@ function HarmonyRawFimPromptBuilder:set_thinking()
     -- strip leading/trailing whitespace so I can format my [[ ]] literal as I see fit
     -- also harmony has no \n between messages, \n should only come within a message text field
     local thoughts = vim.trim([[
-The user is asking for a FIM completion. They provided code with a prefix and suffix and then I need to fill in the code where it says <<<FIM>>>. So I need to imagine what would fit really well in <<<FIM>>>. I will fill-in-the-middles in the most awesome way!
+The user is asking for a FIM completion. They provided code with a prefix and suffix and then I need to fill in the code where it says <<<FIM>>>. So I need to imagine what would fit really well in <<<FIM>>>. I will fill-in-the-middles in the most awesome way! I should NOT wrap the response in ``` markdown blocks. And I should not repeat code in the prefix/suffix.
 ]])
 
     table.insert(self._parts, "<|start|>assistant<|channel|>analysis<|message|>" .. thoughts .. "<|end|>")
@@ -50,6 +49,7 @@ end
 ---@return HarmonyRawFimPromptBuilder self
 function HarmonyRawFimPromptBuilder:start_assistant_final_response()
     -- make it so the model only ends with the prediction and maybe <|end|>
+    -- FYI in testing <|end|> is not showing up, which is fine by me!
     table.insert(self._parts, "<|start|>assistant<|channel|>final<|message|>")
     return self
 end
