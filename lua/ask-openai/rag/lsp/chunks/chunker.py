@@ -278,8 +278,14 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # rust: function_item
             #
             # TODO:
-            # - lua functions, grab --- triple dash comments before function (until blank line)
-            # - py functions, decorators i.e. @dataclass right before function signature
+            # - extract indentation level from start of line (before matched node)
+            #   - perhaps take the entire start line and end line?
+            #   - right now nodes that are indented (i.e. nested function),
+            #     the first line (signature) has incorrect indentation!
+            #     b/c treesitter selects the start of the signature (not the line)
+            #
+            #   - applies to treesitter chunks
+            #   - applies to uncovered_code chunks
             # print(node.prev_sibling)
             chunk = IdentifiedChunk(
                 sibling_nodes=[node],

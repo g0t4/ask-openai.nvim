@@ -235,9 +235,11 @@ class TestTreesitterChunker_Python_Decorators:
 
 class TestTreesitterChunker_Lua_DocumentationComments:
     # BTW DocComments / DocumentationComments refers to BOTH:
-    # - annotations
-    # - regular comments
-    # BOTH must immediately precede the member (i.e. function, table) w/o blank line(s)
+    # - annotations (type hints)
+    # - regular comments, i.e. function description (not a type hint)
+    # AND, must immediately precede the member (i.e. function, table) w/o blank line(s)
+    # - TODO! stop at blank line
+    # - PRN stop at non-doc comment / annotation? (or just use blank line?, thus allowing -- too?)
 
     def setup_method(self):
         self.chunks = build_test_chunks(test_cases_lua / "doc_comments.lua", RAGChunkerOptions.OnlyTsChunks())
