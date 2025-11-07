@@ -18,6 +18,15 @@ from lsp.chunks.parsers import get_cached_parser_for_path
 logger = get_logger(__name__)
 # logger.setLevel(logging.DEBUG)
 
+# TODO! flagging good/bad query results
+# - it would help to have a way to quantify my chunking/querying effectiveness... vs just gut feeling on future searches
+# - thus flagging good/bad results would provide a supervised way to quantify effectiveness
+# - TODO what do I need to capture?
+#   - git commit ID so I have original code and can align matches to the original code positions?
+# - TODO add keymap in semantic grep extension to flag good/bad
+# - TODO add keymap for FIM generation that I attribute to RAG context as good/bad
+#   - same idea in AskToolUse and AskRewrite
+
 @dataclass
 class RAGChunkerOptions:
     enable_ts_chunks: bool = False
