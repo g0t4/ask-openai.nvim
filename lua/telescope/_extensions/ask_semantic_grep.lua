@@ -102,6 +102,9 @@ end
 local function is_chunk_text_preview()
     return preview_content_type == 2
 end
+local function reverse_cycle_preview_content()
+    preview_content_type = (preview_content_type - 1) % 3
+end
 local function cycle_preview_content()
     preview_content_type = (preview_content_type + 1) % 3
 end
@@ -406,7 +409,13 @@ function semantic_grep_current_filetype_picker(opts)
             --     -- * add to Ask context! for future prompts
             -- end)
             -- FYI <tab> in insert mode normally allows multi-select, so if you need that then add it back, for now I want it to switch views too
-            keymap({ 'i', 'n' }, '<tab>', function()
+            keymap({ 'i', 'n' }, '<S-Tab>', function()
+                reverse_cycle_preview_content()
+
+                local picker = state.get_current_picker(prompt_bufnr)
+                picker:refresh_previewer()
+            end)
+            keymap({ 'i', 'n' }, '<Tab>', function()
                 -- PRN add keymap to jump to specific view?
                 cycle_preview_content()
 
