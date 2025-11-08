@@ -5,6 +5,13 @@ local meta = require("ask-openai.backends.models.meta")
 local files = require("ask-openai.helpers.files")
 require("ask-openai.backends.sse")
 
+---@class OllamaFimBackend
+---@field ps_chunk PSChunk
+---@field rag_matches LSPRankedMatch[]
+---@field context CurrentContext
+local OllamaFimBackend = {}
+OllamaFimBackend.__index = OllamaFimBackend
+
 -- * primary models I am testing (keep notes in MODELS.notes.md) - keep in mind with llama-server this is not an argument (server uses the model it was started with)
 -- local use_model = "qwen2.5-coder:7b-instruct-q8_0"
 -- local use_model = "bytedance-seed-coder-8b"
@@ -34,13 +41,6 @@ local endpoint_ollama_api_generate = string.match(url, "/api/generate$")
 local endpoint_ollama_api_chat = string.match(url, "/api/chat$")
 local endpoint_llama_server_proprietary_completions = string.match(url, ":801%d/completions$")
 local endpoint_openaicompat_chat_completions = string.match(url, "v1/chat/completions$")
-
----@class OllamaFimBackend
----@field ps_chunk PSChunk
----@field rag_matches LSPRankedMatch[]
----@field context CurrentContext
-local OllamaFimBackend = {}
-OllamaFimBackend.__index = OllamaFimBackend
 
 ---@param ps_chunk PSChunk
 ---@param rag_matches LSPRankedMatch[]
