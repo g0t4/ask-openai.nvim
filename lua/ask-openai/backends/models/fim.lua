@@ -70,6 +70,36 @@ and NOT:
                 table.insert(context_lines, value.content)
             end)
     end
+
+    --     local instructions = ContextItem:new("instructions", [[
+    -- General project code rules:
+    -- - Never add comments to the end of a line.
+    -- - NEVER add TODO comments for me.
+    -- ]])
+    --     append_file_non_fim(instructions)
+    --
+    --     if request.context.includes.yanks and request.context.yanks then
+    --         append_file_non_fim(request.context.yanks)
+    --     end
+    --
+    --     if request.context.includes.matching_ctags and request.context.matching_ctags then
+    --         append_file_non_fim(request.context.matching_ctags)
+    --     end
+    --
+    --     if request.context.includes.project and request.context.project then
+    --         vim.iter(request.context.project)
+    --             :each(append_file_non_fim)
+    --     end
+    --
+    --     if request.rag_matches then
+    --         vim.iter(request.rag_matches)
+    --             :each(function(chunk)
+    --                 ---@cast chunk LSPRankedMatch
+    --                 local file_name = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
+    --                 local non_fim_file = tokens.file_sep .. file_name .. "\n" .. chunk.text
+    --                 prompt = prompt .. non_fim_file
+    --             end)
+    --     end
     local rag_matches = request.rag_matches
     if enable_rag and rag_matches ~= nil and #rag_matches > 0 then
         rag_message_parts = {}
