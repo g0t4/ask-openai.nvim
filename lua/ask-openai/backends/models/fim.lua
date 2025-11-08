@@ -30,28 +30,6 @@ function M.gpt_oss.get_fim_raw_prompt_no_thinking(request)
     -- </analysis>
     -- <final>
 
-    local developer_message = vim.trim([[
-You are completing code from a Neovim plugin.
-As the user types, the plugin suggests code completions based on their cursor (<<<CURSOR>>>) position.
-The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near <<<CURSOR>>>
-Do NOT explain your decisions. Do NOT return markdown blocks ```
-Do NOT repeat surrounding code, especially pay attention to the suffix!
-ONLY return valid code at the <<<CURSOR>> position
-
-For example, if you see this in a python file:
-def adder(a, b):
-    return <<<CURSOR>>> + b
-
-The correct completion is:
-a
-
-NOT:
-a + b
-
-and NOT:
-    return a + b
-
-]])
     -- * CONTEXT
     local context_lines = {
         "Here is context that's automatically provided, that MAY be relevant.",
@@ -120,7 +98,7 @@ General project code rules:
         .. request.ps_chunk.suffix
 
     local builder = HarmonyRawFimPromptBuilder.new()
-        :developer(developer_message)
+        :developer()
         :user(table.concat(context_lines, "\n"))
         :user(fim_user_message)
         :set_thinking()

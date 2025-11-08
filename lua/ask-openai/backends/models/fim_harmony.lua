@@ -43,9 +43,31 @@ end
 --- developer message (harmony spec):
 --- - instructions for the model (what is normally considered the “system prompt”)
 --- - and available function tools
----@param message string
 ---@return HarmonyRawFimPromptBuilder self
-function HarmonyRawFimPromptBuilder:developer(message)
+function HarmonyRawFimPromptBuilder:developer()
+    local message = vim.trim([[
+You are completing code from a Neovim plugin.
+As the user types, the plugin suggests code completions based on their cursor (<<<CURSOR>>>) position.
+The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near <<<CURSOR>>>
+Do NOT explain your decisions. Do NOT return markdown blocks ```
+Do NOT repeat surrounding code, especially pay attention to the suffix!
+ONLY return valid code at the <<<CURSOR>> position
+
+For example, if you see this in a python file:
+def adder(a, b):
+    return <<<CURSOR>>> + b
+
+The correct completion is:
+a
+
+NOT:
+a + b
+
+and NOT:
+    return a + b
+
+]])
+
     table.insert(self._parts, "<|start|>developer<|message|>" .. message .. "<|end|>")
     return self
 end
