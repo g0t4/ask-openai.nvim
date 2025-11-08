@@ -29,7 +29,7 @@ function M.ask_for_prediction()
 
         -- log:trace("curl", table.concat(spawn_curl_options.args, " "))
 
-        local this_prediction = Prediction.new()
+        local this_prediction = Prediction:new()
         M.current_prediction = this_prediction
 
         local stdout = uv.new_pipe(false)

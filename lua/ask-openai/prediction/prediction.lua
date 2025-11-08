@@ -25,26 +25,27 @@ local log = require("ask-openai.logs.logger").predictions()
 
 local hlgroup = "AskPrediction"
 
-function Prediction.new()
-    local prediction = {}
+---@return Prediction
+function Prediction:new()
+    self = self or {}
     -- id was originaly intended to track current prediction and not let past predictions write to extmarks (for example)
-    prediction.id = uv.hrtime() -- might not need id if I can use object reference instead, we will see (id is helpful if I need to roundtrip identity outside lua process)
+    self.id = uv.hrtime() -- might not need id if I can use object reference instead, we will see (id is helpful if I need to roundtrip identity outside lua process)
     -- (nanosecond) time based s/b sufficient, esp b/c there should only ever be one prediction at a time.. even if multiple in short time (b/c of keystrokes, there is gonna be 1ms or so between them at most)
 
     -- PRN prediction per buffer (only when not having this becomes a hassle)
-    prediction.buffer = 0 -- 0 == current buffer
+    self.buffer = 0 -- 0 == current buffer
 
-    prediction.namespace_id = vim.api.nvim_create_namespace("ask-predictions")
+    self.namespace_id = vim.api.nvim_create_namespace("ask-predictions")
     -- ?? keep \n to differentiate lines ? or map to some sort of object model (lines at least... and maybe tokenize the lines)
-    prediction.prediction = ""
-    prediction.extmarks = {}
-    prediction.paused = false
-    prediction.buffered_chunks = ""
-    prediction.abandoned = false -- PRN could be a prediction state? IF NEEDED
-    prediction.disable_cursor_moved = false
-    prediction.has_reasoning = false
-    prediction.start_time = os.time()
-    return setmetatable(prediction, { __index = Prediction })
+    self.prediction = ""
+    self.extmarks = {}
+    self.paused = false
+    self.buffered_chunks = ""
+    self.abandoned = false -- PRN could be a prediction state? IF NEEDED
+    self.disable_cursor_moved = false
+    self.has_reasoning = false
+    self.start_time = os.time()
+    return setmetatable(self, { __index = Prediction })
 end
 
 function Prediction:add_chunk_to_prediction(chunk, reasoning_content)
