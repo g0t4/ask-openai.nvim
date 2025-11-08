@@ -77,38 +77,28 @@ and NOT:
     -- - NEVER add TODO comments for me.
     -- ]])
     --     append_file_non_fim(instructions)
-    --
-    --     if request.rag_matches then
-    --         vim.iter(request.rag_matches)
-    --             :each(function(chunk)
-    --                 ---@cast chunk LSPRankedMatch
-    --                 local file_name = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
-    --                 local non_fim_file = tokens.file_sep .. file_name .. "\n" .. chunk.text
-    --                 prompt = prompt .. non_fim_file
-    --             end)
-    --     end
-    local rag_matches = request.rag_matches
-    if enable_rag and rag_matches ~= nil and #rag_matches > 0 then
-        rag_message_parts = {}
-        if #rag_matches == 1 then
-            heading = "# RAG query match: \n"
-        elseif #rag_matches > 1 then
-            heading = "# RAG query matches: " .. #rag_matches .. "\n"
+
+    if request.rag_matches and #request.rag_matches > 0 then
+        local rag_parts = {}
+        if #request.rag_matches == 1 then
+            heading = "# RAG query match:\n"
+        elseif #request.rag_matches > 1 then
+            heading = "# RAG query matches: " .. #request.rag_matches .. "\n"
         end
-        table.insert(rag_message_parts, heading)
-        vim.iter(rag_matches)
+        table.insert(rag_parts, heading)
+
+        vim.iter(request.rag_matches)
             :each(function(chunk)
-                -- FYI this comes from embeddings query results... so the structure is different than other context providers
-                -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
                 ---@cast chunk LSPRankedMatch
                 local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
                 local code_chunk = chunk.text
-                table.insert(rag_message_parts,
+                table.insert(rag_parts,
                     "## " .. file .. "\n"
                     .. code_chunk .. "\n"
                 )
             end)
-        table.insert(messages, ChatMessage:user(table.concat(rag_message_parts, "\n")))
+        local rag_context = table.concat(rag_parts, "\n")
+        table.insert(context_lines, rag_context)
     end
 
     -- * user message
@@ -131,7 +121,7 @@ and NOT:
 
     local builder = HarmonyRawFimPromptBuilder.new()
         :developer(developer_message)
-        :user(context_lines)
+        :user(table.concat(context_lines, "\n"))
         :user(fim_user_message)
         :set_thinking()
         :start_assistant_final_response() -- this forces the model to respond w/o any further thinking
@@ -153,45 +143,8 @@ function M.gpt_oss.get_fim_chat_messages(request)
         { role = "system", content = system_prompt }
     }
 
-    -- -- * CONTEXT
-    -- local context = request.context
-    -- -- FYI uncomment this when READY, it's all patched up:
-    -- if context.includes.yanks and context.yanks then
-    --     table.insert(messages, ChatMessage:user(context.yanks.content))
-    -- end
-    -- if request.context.includes.matching_ctags and request.context.matching_ctags then
-    --     table.insert(messages, ChatMessage:user(request.context.matching_ctags))
-    -- end
-    -- if context.includes.project and context.project then
-    --     vim.iter(context.project)
-    --         :each(function(value)
-    --             table.insert(messages, ChatMessage:user(value.content))
-    --         end)
-    -- end
-    -- TODO! review the following for changes to other usages of rag_matches before adding it back... I did update this for base0 but there might other differences since commenting it out
-    -- local rag_matches = request.rag_matches
-    -- if enable_rag and rag_matches ~= nil and #rag_matches > 0 then
-    --     rag_message_parts = {}
-    --     if #rag_matches == 1 then
-    --         heading = "# RAG query match: \n"
-    --     elseif #rag_matches > 1 then
-    --         heading = "# RAG query matches: " .. #rag_matches .. "\n"
-    --     end
-    --     table.insert(rag_message_parts, heading)
-    --     vim.iter(rag_matches)
-    --         :each(function(chunk)
-    --             -- FYI this comes from embeddings query results... so the structure is different than other context providers
-    --             -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
-    --             ---@cast chunk LSPRankedMatch
-    --             local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
-    --             local code_chunk = chunk.text
-    --             table.insert(rag_message_parts,
-    --                 "## " .. file .. "\n"
-    --                 .. code_chunk .. "\n"
-    --             )
-    --         end)
-    --     table.insert(messages, ChatMessage:user(table.concat(rag_message_parts, "\n")))
-    -- end
+    -- * CONTEXT
+    --   TODO see CONTEXT above in non-thinking gptoss
 
     -- * FIM file
     local current_file_relative_path = request.inject_file_path_test_seam()
