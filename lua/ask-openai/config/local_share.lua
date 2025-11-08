@@ -120,6 +120,33 @@ function M.toggle_rag()
     return cfg.rag.enabled
 end
 
+-- * FIM model
+
+function M.get_fim_model()
+    local cfg = get()
+    local model = cfg.fim and cfg.fim.model or nil
+    -- enforce choices on read
+    if model == "gptoss" then
+        return model
+    else
+        return "qwen25coder"
+    end
+end
+
+function M.set_fim_model(model)
+    local cfg = get()
+    cfg.fim = cfg.fim or {}
+    cfg.fim.model = model
+    save()
+end
+
+function M.toggle_fim_model()
+    local current = M.get_fim_model()
+    local next_model = (current == "gptoss") and "qwen25coder" or "gptoss"
+    M.set_fim_model(next_model)
+    return next_model
+end
+
 function M.setup()
 end
 

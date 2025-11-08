@@ -235,6 +235,7 @@ function M.lualine()
             if local_share.is_rag_enabled() then
                 table.insert(icons, '󰵉')
             end
+            table.insert(icons, local_share.get_fim_model())
             return table.concat(icons, ' ')
         end,
         color = function()
