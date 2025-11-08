@@ -153,6 +153,9 @@ function M.accept_rewrite()
         lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
 
+        log:info("accepted rewrite (accumulated_chunks): ", M.accumulated_chunks)
+        log:info("accepted rewrite (lines): ", lines)
+
         -- FYI this may not be a problem with the linewise only mode that I setup for now with the streaming diff
         -- notes about not replacing last character of selection
         --   select some text, i.e. viw => then <leader>rw => notice it doesn't show the char that was under the cursor as selected
