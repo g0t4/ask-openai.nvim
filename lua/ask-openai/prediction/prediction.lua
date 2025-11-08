@@ -7,7 +7,7 @@ local log = require("ask-openai.logs.logger").predictions()
 
 local hlgroup = "AskPrediction"
 
-function Prediction:new()
+function Prediction.new()
     local prediction = {}
     -- id was originaly intended to track current prediction and not let past predictions write to extmarks (for example)
     prediction.id = uv.hrtime() -- might not need id if I can use object reference instead, we will see (id is helpful if I need to roundtrip identity outside lua process)
