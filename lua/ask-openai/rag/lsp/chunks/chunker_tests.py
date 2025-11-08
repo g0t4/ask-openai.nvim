@@ -291,8 +291,7 @@ end"""
         chunk = self.chunks[3]
         assert chunk.text == """function Subtract(a, b)
     return a - b
-end
-"""
+end"""
 
     def test_function_with_preceding_unrelated_comment_before_annotation_comments(self):
         chunk = self.chunks[4]
@@ -301,8 +300,7 @@ end
 #         assert chunk.text == """---@return number
 # function Multiply(a, b)
 #     return a * b
-# end
-# """
+# end"""
 
 class TestTreesitterChunker_Python_NestedFunctions:
 
