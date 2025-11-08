@@ -21,6 +21,8 @@ function M.gpt_oss.get_fim_raw_prompt_no_thinking(request)
     local developer_message = vim.trim([[
 You are completing code from a Neovim plugin.
 As the user types, the plugin suggests code completions based on their cursor position and surrounding code.
+The surrounding code is limited to X lines above/below the cursor, so it may not be the full file.
+Focus on the code near <<<CURSOR>>>
 ]])
     -- * context
     local context = "Here is context that's automatically provided, that MAY be relevant."
