@@ -49,7 +49,7 @@ function OllamaFimBackend:new(ps_chunk, rag_matches)
     local always_include = {
         yanks = true,
         matching_ctags = true, -- TODO should RAG replace this by default? and just have more RAG matches (FYI RAG can index the ctags file too)
-        project = false, -- for now lets leave this for AskRewrites only
+        project = true,
     }
     local instance = {
         ps_chunk = ps_chunk,
