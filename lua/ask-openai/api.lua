@@ -34,6 +34,21 @@ function M.are_verbose_logs_enabled()
     return config.local_share.are_verbose_logs_enabled()
 end
 
+function M.set_fim_model(model)
+    config.local_share.set_fim_model(model)
+end
+
+function M.get_fim_model()
+    return config.local_share.get_fim_model()
+end
+
+function M.toggle_fim_model()
+    local current = config.local_share.get_fim_model()
+    local next_model = (current == "codellama") and "deepseek-coder-v2" or "codellama"
+    config.local_share.set_fim_model(next_model)
+    return next_model
+end
+
 -- * notify stats *
 function M.toggle_notify_stats()
     config.local_share.toggle_notify_stats()
