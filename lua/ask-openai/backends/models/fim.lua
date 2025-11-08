@@ -35,6 +35,7 @@ As the user types, the plugin suggests code completions based on their cursor po
         file_prefix = "I am editing this file: " .. current_file_relative_path .. "\n\n"
     end
 
+    -- TODO I want to try <fim_middle> and/or <CURSOR> instead of <<<FIM>>>
     local fim_user_message = file_prefix
         .. "Please complete <<<FIM>>> in the following code (which has carefully preserved indentation):\n"
         .. request.ps_chunk.prefix
