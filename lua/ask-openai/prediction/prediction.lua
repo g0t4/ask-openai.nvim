@@ -1,5 +1,23 @@
 local dots = require("ask-openai.rewrites.thinking.dots")
 
+--- Prediction object – handles streaming LLM completions, rendering them as virtual
+--- text/ext‑marks in the current buffer and exposing a small API for pausing,
+--- resuming, accepting or abandoning the generation.
+---
+--- @class Prediction
+--- @field id integer
+--- @field buffer integer
+--- @field namespace_id integer
+--- @field prediction string         # content streamed so far (excluding buffered chunks)
+--- @field extmarks table
+--- @field paused boolean
+--- @field buffered_chunks string    # chunks received while `paused` – will be appended once resumed
+--- @field abandoned boolean         # user aborted prediction
+--- @field disable_cursor_moved boolean
+--- @field has_reasoning boolean
+--- @field start_time number
+--- @field generated boolean|nil
+--- @field mark_generation_failed boolean|nil
 local Prediction = {}
 local uv = vim.uv
 
