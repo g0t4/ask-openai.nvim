@@ -242,6 +242,11 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     local user_prompt = context.cleaned_prompt
     local code_context = ""
     if code ~= nil and code ~= "" then
+        -- FYI I added the note about "carefully preserved indentation" to attempt to improve chances the indented code is correct
+        --   TODO ? add manual test to verify % accuracy preserving indentation
+        --   i.e. see commit 69723fe4 for spelling correction request results that had indentation issues before prompt change
+        --   ALTERNATIVELY, if I could show more of the surrounding code, that would likely help too/instead
+        --     think the style that zed used for Edit Predictions (finetune on qwen25dcoder7b)
         code_context = "Here is code I selected (with carefully preserved indentation) from " .. file_name
             .. ":\n" .. code
     else
