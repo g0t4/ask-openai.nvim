@@ -40,12 +40,7 @@ Reasoning: low
     return self
 end
 
---- developer message (harmony spec):
---- - instructions for the model (what is normally considered the “system prompt”)
---- - and available function tools
----@return HarmonyRawFimPromptBuilder self
-function HarmonyRawFimPromptBuilder:developer()
-    local message = vim.trim([[
+HarmonyRawFimPromptBuilder.developer_message = vim.trim([[
 You are completing code from a Neovim plugin.
 As the user types, the plugin suggests code completions based on their cursor (<<<CURSOR>>>) position.
 The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near <<<CURSOR>>>
@@ -68,7 +63,12 @@ and NOT:
 
 ]])
 
-    table.insert(self._parts, "<|start|>developer<|message|>" .. message .. "<|end|>")
+--- developer message (harmony spec):
+--- - instructions for the model (what is normally considered the “system prompt”)
+--- - and available function tools
+---@return HarmonyRawFimPromptBuilder self
+function HarmonyRawFimPromptBuilder:developer()
+    table.insert(self._parts, "<|start|>developer<|message|>" .. HarmonyRawFimPromptBuilder.developer_message .. "<|end|>")
     return self
 end
 

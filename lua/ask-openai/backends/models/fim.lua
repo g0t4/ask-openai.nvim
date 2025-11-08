@@ -118,14 +118,11 @@ function M.gpt_oss.get_fim_chat_messages(request)
     -- TODO! PORT OVER ALL MY non-thinking changes here
     --   I just need to get thinking to pay attention to current line prefix/suffix and it will rock
 
-    local system_prompt = "Your response will be used for code completion in neovim"
-        .. ", in a FIM (fill-in-the-middle) pluging that genrates code as the user types. \n"
-
     local messages = {
         -- FYI the template for gptoss in llama-server will not set system message for you!
         -- it always puts it under the developer message (which is basically per harmony spec which tells you to use developer message for what you'd typically put into system message)
         -- this also means you have to set "Reasoning:" effort via parameter and NOT in the system message
-        { role = "developer", content = system_prompt }
+        { role = "developer", content = HarmonyRawFimPromptBuilder.developer_message }
     }
 
     -- * CONTEXT
