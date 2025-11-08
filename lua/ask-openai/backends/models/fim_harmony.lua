@@ -71,20 +71,28 @@ function HarmonyRawFimPromptBuilder:set_thinking()
     --   I should response like Qwen2.5-Coder would respond.
     --   I will fill-in-the-middles in the most awesome way!
 
-    -- strip leading/trailing whitespace so I can format my [[ ]] literal as I see fit
-    -- also harmony has no \n between messages, \n should only come within a message text field
+    -- FYI these are NOT instructions, INSTEAD they are the model's observations!
+    -- - So you can use them as instructions just word them appropriately
+    -- - What do you want the model to have observed?
+    -- ?? should I get gptoss to do this without myself and copy its style instead of wording them myself?
+    --
+    -- vim.stip - strip leading/trailing whitespace so I can format my [[ ]] literal as I see fit
+    -- - also harmony has no \n between messages, \n should only come within a message text field
     local deep_thoughts_about_fim = vim.trim([[
-The user is asking for a FIM completion.
-They provided code with a <<<FIM>>> tag. The code before <<<FIM>>> is the prefix. The code after is the suffix.
-I need to imagine what would fit really well in <<<FIM>>>
-I will fill-in-the-middles in the most awesome way!
-I should NOT wrap my response in ``` markdown blocks.
-I am not changing the prefix. I am not changing the suffix. So I shouldn't repeat those in my response.
+The user is asking for a code completion.
+They provided the existing code with a <<<CURSOR>>> tag where their cursor is currently located. Whatever I provide will replace <<<CURSOR>>>
+To clarify, the code before <<<CURSOR>>> is the prefix. The code after is the suffix.
+I am not changing the prefix nor the suffix. So I shouldn't repeat those in my response.
+Do not forget, the neovim plugin automaticaly collected context to consider. It's included above. I won't blindly repeat this either.
+I will NOT wrap my response in ``` markdown blocks.
+I will not explain anything.
 They also carefully preserved indentation, so I need to carefully consider indentation in my response.
-If there's no line break before <<<FIM>> and/or after, then that means I am completing code on a line of existing code. Do not repeat the rest of the line either!
+I will fill-in-the-middles in the most awesome way!
 ]])
     -- FYI adding blurb about no ``` and markdown worked well to stop that!
-    -- TODO detect line break before/after <<<FIM>>> and adjust the thought about modifying an existing line of code accordingly?
+    -- TODO! detect line break before/after <<<CURSOR>>> and adjust the thought about modifying an existing line of code accordingly?
+    --   present this as a reflective thought from the model:
+    --     If there's no line break before <<<CURSOR>>> and/or after, then that means I am completing code on a line of existing code. Do not repeat the rest of the line either!
 
     table.insert(self._parts, "<|start|>assistant<|channel|>analysis<|message|>" .. deep_thoughts_about_fim .. "<|end|>")
     return self

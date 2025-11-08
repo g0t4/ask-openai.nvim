@@ -35,11 +35,13 @@ As the user types, the plugin suggests code completions based on their cursor po
         file_prefix = "I am editing this file: " .. current_file_relative_path .. "\n\n"
     end
 
-    -- TODO I want to try <fim_middle> and/or <CURSOR> instead of <<<FIM>>>
+    -- TODO do I want to try <fim_middle> and/or <CURSOR> instead of <<<CURSOR>>>?
+    --  need to reword some instructions above?
+    --  also I am worried about the impact on current line code (before/after cursor)
     local fim_user_message = file_prefix
-        .. "Please complete <<<FIM>>> in the following code (which has carefully preserved indentation):\n"
+        .. "Please complete <<<CURSOR>>> in the following code (which has carefully preserved indentation):\n"
         .. request.ps_chunk.prefix
-        .. "<<<FIM>>>"
+        .. "<<<CURSOR>>>"
         .. request.ps_chunk.suffix
 
     local builder = HarmonyRawFimPromptBuilder.new()
@@ -119,11 +121,11 @@ function M.gpt_oss.get_fim_chat_messages(request)
     fim_message = fim_message .. "Background info:"
         .. "\nrepository: " .. repo_name
         .. "\nfile: " .. current_file_relative_path
-        .. "\n\nPlase complete the middle of the following example (do not return anything beyond the code for <<<FIM>>>):"
+        .. "\n\nPlase complete the middle of the following example (do not return anything beyond the code for <<<CURSOR>>>):"
         .. "\n\n"
-        -- NOTE I am not (yet) labeling sections, just put it together as a block and ask for the <<<FIM>>> part!
+        -- NOTE I am not (yet) labeling sections, just put it together as a block and ask for the <<<CURSOR>>> part!
         .. request.ps_chunk.prefix
-        .. "<<<FIM>>>"
+        .. "<<<CURSOR>>>"
         .. request.ps_chunk.suffix
     -- PRN should I be using fim tokens / format for the query here? I know it's not the same thing but if the model is trained on that, would that perform better (TODO find a way to quantify)
 
