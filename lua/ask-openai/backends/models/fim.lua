@@ -18,6 +18,18 @@ M.gpt_oss = {
 }
 ---@param request OllamaFimBackend
 function M.gpt_oss.get_fim_raw_prompt_no_thinking(request)
+    -- TODO if I allow the model to finish the reasoning... that might be best!
+    --   Ask it to practice its change before it decides
+    -- I could update my example too:
+    -- <analysis>
+    -- Let's practice the change first.
+    -- I need to insert a variable name between 'return' and '+ b'.
+    -- Candidate: a
+    -- Check: would that make 'return a + b'? Yes.
+    -- So the correct insertion is 'a'.
+    -- </analysis>
+    -- <final>
+
     local developer_message = vim.trim([[
 You are completing code from a Neovim plugin.
 As the user types, the plugin suggests code completions based on their cursor (<<<CURSOR>>>) position.
