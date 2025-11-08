@@ -49,8 +49,14 @@ end
 function M.gpt_oss.get_fim_chat_messages(request)
     -- TODO! experiment 1 - PORT OVER ALL MY non-thinking changes here
 
+    local dev = HarmonyRawFimPromptBuilder.developer_message
+    -- FYI if/when you test out using partial thinking with raw template above, then put this into the shared developer message
+    dev = dev .. [[
+Make sure to practice the code change before you return a suggestion. Take the cursor line (and surrounding context if relevant) and type it all out and make sure it is valid, correct code.
+]]
+
     local messages = {
-        { role = "developer", content = HarmonyRawFimPromptBuilder.developer_message },
+        { role = "developer", content = dev },
         { role = "user",      content = HarmonyRawFimPromptBuilder.context_user_msg(request) },
         { role = "user",      content = HarmonyRawFimPromptBuilder.fim_prompt(request) },
         -- TODO provide the thinking from raw as more instructions in developer or user messages
