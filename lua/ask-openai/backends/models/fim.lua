@@ -19,7 +19,7 @@ M.gpt_oss = {
 ---@param request OllamaFimBackend
 function M.gpt_oss.get_fim_raw_prompt_no_thinking(request)
     local system_prompt = "Your response will be used for code completion in neovim"
-        .. ", in a FIM (fill-in-the-middle) pluging that genrates code as the user types. \n"
+        .. ", in a FIM (fill-in-the-middle) plugin that generates code as the user types. \n"
         .. "Reasoning: low"
     -- ? if I add support for thinking which would definitely be interesting for FIM, then I could set a level or have some way to trigger completion of diff thinking level
     -- .. "\nReasoning: high"
