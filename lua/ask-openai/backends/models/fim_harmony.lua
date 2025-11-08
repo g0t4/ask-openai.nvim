@@ -1,3 +1,5 @@
+local log = require("ask-openai.logs.logger")
+
 ---@class HarmonyRawFimPromptBuilder
 ---@field _parts string[]
 local HarmonyRawFimPromptBuilder = {}
@@ -123,6 +125,28 @@ General project code rules:
     end
 
     return table.concat(context_lines, "\n")
+end
+
+---@param request OllamaFimBackend
+function HarmonyRawFimPromptBuilder.fim_prompt(request)
+    -- * user message
+    local current_file_relative_path = request.inject_file_path_test_seam()
+    local file_prefix = ""
+    if current_file_relative_path == nil then
+        log:warn("current_file_name is nil")
+        current_file_relative_path = ""
+        file_prefix = "I am editing this file: " .. current_file_relative_path .. "\n\n"
+    end
+
+    --  TODO try PSM format anyways! I think it might help with repeating the suffix?
+    --    might want to find a fine tune too that actually has training for PSM/SPM
+    --    would need to reword some instructions above (including examples)
+    local fim_user_message = file_prefix
+        .. "Please complete <<<CURSOR>>> in the following code (which has carefully preserved indentation):\n"
+        .. request.ps_chunk.prefix
+        .. "<<<CURSOR>>>"
+        .. request.ps_chunk.suffix
+    return fim_user_message
 end
 
 --- user message (harmony spec):

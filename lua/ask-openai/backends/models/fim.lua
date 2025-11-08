@@ -30,28 +30,11 @@ function M.gpt_oss.get_fim_raw_prompt_no_thinking(request)
     -- </analysis>
     -- <final>
 
-    -- * user message
-    local current_file_relative_path = request.inject_file_path_test_seam()
-    local file_prefix = ""
-    if current_file_relative_path == nil then
-        log:warn("current_file_name is nil")
-        current_file_relative_path = ""
-        file_prefix = "I am editing this file: " .. current_file_relative_path .. "\n\n"
-    end
-
-    --  TODO try PSM format anyways! I think it might help with repeating the suffix?
-    --    might want to find a fine tune too that actually has training for PSM/SPM
-    --    would need to reword some instructions above (including examples)
-    local fim_user_message = file_prefix
-        .. "Please complete <<<CURSOR>>> in the following code (which has carefully preserved indentation):\n"
-        .. request.ps_chunk.prefix
-        .. "<<<CURSOR>>>"
-        .. request.ps_chunk.suffix
 
     local builder = HarmonyRawFimPromptBuilder.new()
         :developer()
         :user(HarmonyRawFimPromptBuilder.context_user_msg(request))
-        :user(fim_user_message)
+        :user(HarmonyRawFimPromptBuilder.fim_prompt(request))
         :set_thinking()
         :start_assistant_final_response() -- this forces the model to respond w/o any further thinking
 
