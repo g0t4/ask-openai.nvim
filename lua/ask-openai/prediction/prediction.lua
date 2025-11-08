@@ -22,16 +22,23 @@ function Prediction:new()
     prediction.buffered_chunks = ""
     prediction.abandoned = false -- PRN could be a prediction state? IF NEEDED
     prediction.disable_cursor_moved = false
+    prediction.is_reasoning = false
     return setmetatable(prediction, { __index = Prediction })
 end
 
-function Prediction:add_chunk_to_prediction(chunk)
+function Prediction:add_chunk_to_prediction(chunk, reasoning_content)
     if self.paused then
         self.buffered_chunks = self.buffered_chunks .. chunk
         return
     end
 
-    self.prediction = self.prediction .. chunk
+    if chunk then
+        self.prediction = self.prediction .. chunk
+    end
+    if reasoning_content then
+        self.is_reasoning = true
+        -- if needed, accumulate reasoning (maybe for log messages to troubleshoot the reasoning)
+    end
     self:redraw_extmarks()
 end
 
@@ -62,7 +69,10 @@ function Prediction:redraw_extmarks()
 
     local lines = split_lines_to_table(self.prediction)
     if #lines == 0 then
-        return
+        if not self.is_reasoning then
+            return
+        end
+        lines = { "..." }
     end
 
     local first_line = { { table.remove(lines, 1), hlgroup } } -- can add hlgroup too

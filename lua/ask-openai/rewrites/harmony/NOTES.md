@@ -75,3 +75,20 @@ data: {"choices":[{"finish_reason":null,"index":0,"delta":{"content":"<|channel|
 srv  update_chat_: Parsing chat message: <|channel|>analysis<|message|>We need to run a command to get current directory. Use 'pwd'. Use the run_command tool.<|start|>assistant<|channel|>commentary to=functions.run_command json<|message|>{"command":"pwd"}
 Parsing input with format GPT-OSS: <|channel|>analysis<|message|>We need to run a command to get current directory. Use 'pwd'. Use the run_command tool.<|start|>assistant<|channel|>commentary to=functions.run_command json<|message|>{"command":"pwd"}
 ```
+
+## ollama /v1/chat/completions endpoint
+
+FYI this might be outdated, found this in code for parsing SSEs, and moved it here.
+
+```json
+// reasoning/thinking deltas (full message, all fields):
+{
+    "id":"chatcmpl-900","object":"chat.completion.chunk","created":1754453131,"model":"gpt-oss:20b","system_fingerprint":"fp_ollama",
+    "choices":[{"index":0,"delta":{"role":"assistant","content":"","reasoning":"?"},"finish_reason":null}]
+}
+```json
+// content deltas:
+{ "choices":[{"index":0,"delta":{"role":"assistant","content":" }"},"finish_reason":null}]} }
+{ "choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":"stop"}]} }
+```
+

@@ -248,11 +248,12 @@ end
 --- @field stats table?  -- parsed SSE
 SSEResult = {}
 
-function SSEResult:new(chunk, done, done_reason, stats)
+function SSEResult:new(chunk, done, done_reason, stats, reasoning_content)
     self = setmetatable({}, { __index = SSEResult })
     self.chunk = chunk
     self.done = done
     self.done_reason = done_reason
+    self.reasoning_content = reasoning_content
     self.stats = stats
     return self
 end
@@ -267,6 +268,7 @@ function OllamaFimBackend.process_sse(lines)
     local chunk = nil -- combine all chunks into one string and check for done
     local done = false
     local done_reason = nil
+    local reasoning_content = nil
     local stats = nil
     for ss_event in lines:gmatch("[^\r\n]+") do
         if ss_event:match("^data:%s*%[DONE%]$") then
@@ -287,7 +289,7 @@ function OllamaFimBackend.process_sse(lines)
             if endpoint_llama_server_proprietary_completions then
                 parsed_chunk, done, done_reason = parse_llama_cpp_server(parsed_sse)
             elseif endpoint_openaicompat_chat_completions then
-                parsed_chunk, done, done_reason, thinking = parse_sse_oai_chat_completions(parsed_sse)
+                parsed_chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(parsed_sse)
             elseif endpoint_ollama_api_chat then
                 parsed_chunk, done, done_reason = parse_sse_ollama_chat(parsed_sse)
             else
@@ -301,7 +303,7 @@ function OllamaFimBackend.process_sse(lines)
             log:warn("SSE json parse failed for ss_event: ", ss_event)
         end
     end
-    return SSEResult:new(chunk, done, done_reason, stats)
+    return SSEResult:new(chunk, done, done_reason, stats, reasoning_content)
 end
 
 ---@class SSEStats

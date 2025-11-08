@@ -155,8 +155,8 @@ function M.ask_for_prediction()
                     local chunk = sse_result.chunk
                     local generation_done = sse_result.done
                     local done_reason = sse_result.done_reason
-                    if chunk then
-                        this_prediction:add_chunk_to_prediction(chunk)
+                    if chunk or sse_result.reasoning_content then
+                        this_prediction:add_chunk_to_prediction(chunk, sse_result.reasoning_content)
                     end
                     if generation_done then
                         if not this_prediction:any_chunks() then
