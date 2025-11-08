@@ -1,4 +1,4 @@
-def attach_decorators(node, sibling_nodes: list) -> None:
+def attach_decorators(node, accumulated_decorators: list) -> None:
     prev = node.prev_sibling
     prev_is_decorator = prev and prev.type == "decorator"
     if not prev_is_decorator:
@@ -6,5 +6,5 @@ def attach_decorators(node, sibling_nodes: list) -> None:
 
     # TODO any other constraints?
 
-    sibling_nodes.insert(0, prev)
-    attach_decorators(prev, sibling_nodes)
+    accumulated_decorators.insert(0, prev)
+    attach_decorators(prev, accumulated_decorators)

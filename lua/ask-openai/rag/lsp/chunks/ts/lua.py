@@ -1,4 +1,4 @@
-def attach_doc_comments(node, sibling_nodes: list) -> None:
+def attach_doc_comments(node, accumulated_comments: list) -> None:
     prev = node.prev_sibling
     prev_is_doc_comment = prev and prev.type == "comment"
     if not prev_is_doc_comment:
@@ -10,7 +10,7 @@ def attach_doc_comments(node, sibling_nodes: list) -> None:
     if comment_end_line != node_start_line - 1:
         return
 
-    sibling_nodes.insert(0, prev)
+    accumulated_comments.insert(0, prev)
 
     # TODO remove tail recursion using smth like what gptoss120b suggested:
     # sibling = prev.prev_sibling
@@ -18,4 +18,4 @@ def attach_doc_comments(node, sibling_nodes: list) -> None:
     #     if sibling.type not in ("comment"):
     #         return
     #     sibling = sibling.prev_sibling
-    attach_doc_comments(prev, sibling_nodes)
+    attach_doc_comments(prev, accumulated_comments)
