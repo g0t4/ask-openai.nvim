@@ -95,7 +95,7 @@ def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], option
         chunks.extend(ts_chunks)
 
     if options.enable_line_range_chunks:
-        # TODO! I am noticing good results from line ranges (sliding windows) that aren't coming up in ts_chunk equivalents
+        # TODO! I am noticing good results from line ranges (sliding windows) that aren't coming up in ts_chunk equivalents when ts_chunks are BIG (i.e. huge functions)
         #    IIGC b/c those functions are BIG and so it's missing some of the granularity to identify a subset of a function
         #    I might want to keep sliding window overlaps UNTIL I add some sort of sliding window breaking up of functions?
         #    - OR should I not index a full function if it spans too many lines? and leave it uncovered for sliding window only?
