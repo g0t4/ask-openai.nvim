@@ -61,7 +61,7 @@ and NOT:
     if context.includes.yanks and context.yanks then
         table.insert(context_lines, context.yanks.content)
     end
-    if request.context.includes.matching_ctags and request.context.matching_ctags then
+    if context.includes.matching_ctags and request.context.matching_ctags then
         table.insert(context_lines, request.context.matching_ctags)
     end
     if context.includes.project and context.project then
@@ -77,10 +77,6 @@ and NOT:
     -- - NEVER add TODO comments for me.
     -- ]])
     --     append_file_non_fim(instructions)
-    --
-    --     if request.context.includes.yanks and request.context.yanks then
-    --         append_file_non_fim(request.context.yanks)
-    --     end
     --
     --     if request.context.includes.matching_ctags and request.context.matching_ctags then
     --         append_file_non_fim(request.context.matching_ctags)
