@@ -80,7 +80,7 @@ function HarmonyRawFimPromptBuilder:set_thinking()
     -- PRN add after I test context (and it feels like the model isn't paying attention to it)
     --   "Do not forget, the neovim plugin automaticaly collected context to consider. It's included above, in a previous message. I won't blindly repeat it."
     --
-    -- vim.strip - strip leading/trailing whitespace so I can format my [[ ]] literal as I see fit
+    -- vim.trim - strip leading/trailing whitespace so I can format my [[ ]] literal as I see fit
     -- - also harmony has no \n between messages, \n should only come within a message text field
     local deep_thoughts_about_fim = vim.trim([[
 The user is asking for a code completion.
