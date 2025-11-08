@@ -20,9 +20,25 @@ M.gpt_oss = {
 function M.gpt_oss.get_fim_raw_prompt_no_thinking(request)
     local developer_message = vim.trim([[
 You are completing code from a Neovim plugin.
-As the user types, the plugin suggests code completions based on their cursor position and surrounding code.
-The surrounding code is limited to X lines above/below the cursor, so it may not be the full file.
-Focus on the code near <<<CURSOR>>>
+As the user types, the plugin suggests code completions based on their cursor (<<<CURSOR>>>) position.
+The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near <<<CURSOR>>>
+Do NOT explain your decisions. Do NOT return markdown blocks ```
+Do NOT repeat surrounding code, especially pay attention to the suffix!
+ONLY return valid code at the <<<CURSOR>> position
+
+For example, if you see this in a python file:
+def adder(a, b):
+    return <<<CURSOR>>> + b
+
+The correct completion is:
+a
+
+NOT:
+a + b
+
+and NOT:
+    return a + b
+
 ]])
     -- * context
     local context = "Here is context that's automatically provided, that MAY be relevant."
@@ -37,9 +53,9 @@ Focus on the code near <<<CURSOR>>>
         file_prefix = "I am editing this file: " .. current_file_relative_path .. "\n\n"
     end
 
-    -- TODO do I want to try <fim_middle> and/or <CURSOR> instead of <<<CURSOR>>>?
-    --  need to reword some instructions above?
-    --  also I am worried about the impact on current line code (before/after cursor)
+    --  TODO try PSM format anyways! I think it might help with repeating the suffix?
+    --    might want to find a fine tune too that actually has training for PSM/SPM
+    --    would need to reword some instructions above (including examples)
     local fim_user_message = file_prefix
         .. "Please complete <<<CURSOR>>> in the following code (which has carefully preserved indentation):\n"
         .. request.ps_chunk.prefix

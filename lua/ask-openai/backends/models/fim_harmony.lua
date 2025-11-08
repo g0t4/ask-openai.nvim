@@ -76,14 +76,16 @@ function HarmonyRawFimPromptBuilder:set_thinking()
     -- - What do you want the model to have observed?
     -- ?? should I get gptoss to do this without myself and copy its style instead of wording them myself?
     --
-    -- vim.stip - strip leading/trailing whitespace so I can format my [[ ]] literal as I see fit
+    -- PRN add after I test context (and it feels like the model isn't paying attention to it)
+    --   "Do not forget, the neovim plugin automaticaly collected context to consider. It's included above, in a previous message. I won't blindly repeat it."
+    --
+    -- vim.strip - strip leading/trailing whitespace so I can format my [[ ]] literal as I see fit
     -- - also harmony has no \n between messages, \n should only come within a message text field
     local deep_thoughts_about_fim = vim.trim([[
 The user is asking for a code completion.
 They provided the existing code with a <<<CURSOR>>> tag where their cursor is currently located. Whatever I provide will replace <<<CURSOR>>>
 To clarify, the code before <<<CURSOR>>> is the prefix. The code after is the suffix.
 I am not changing the prefix nor the suffix.
-Do not forget, the neovim plugin automaticaly collected context to consider. It's included above, in a previous message. I won't blindly repeat it.
 I will NOT wrap my response in ``` markdown blocks.
 I will not explain anything.
 They also carefully preserved indentation, so I need to carefully consider indentation in my response.
