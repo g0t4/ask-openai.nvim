@@ -70,30 +70,29 @@ and NOT:
                 table.insert(context_lines, value.content)
             end)
     end
-    -- TODO! review the following for changes to other usages of rag_matches before adding it back... I did update this for base0 but there might other differences since commenting it out
-    -- local rag_matches = request.rag_matches
-    -- if enable_rag and rag_matches ~= nil and #rag_matches > 0 then
-    --     rag_message_parts = {}
-    --     if #rag_matches == 1 then
-    --         heading = "# RAG query match: \n"
-    --     elseif #rag_matches > 1 then
-    --         heading = "# RAG query matches: " .. #rag_matches .. "\n"
-    --     end
-    --     table.insert(rag_message_parts, heading)
-    --     vim.iter(rag_matches)
-    --         :each(function(chunk)
-    --             -- FYI this comes from embeddings query results... so the structure is different than other context providers
-    --             -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
-    --             ---@cast chunk LSPRankedMatch
-    --             local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
-    --             local code_chunk = chunk.text
-    --             table.insert(rag_message_parts,
-    --                 "## " .. file .. "\n"
-    --                 .. code_chunk .. "\n"
-    --             )
-    --         end)
-    --     table.insert(messages, ChatMessage:user(table.concat(rag_message_parts, "\n")))
-    -- end
+    local rag_matches = request.rag_matches
+    if enable_rag and rag_matches ~= nil and #rag_matches > 0 then
+        rag_message_parts = {}
+        if #rag_matches == 1 then
+            heading = "# RAG query match: \n"
+        elseif #rag_matches > 1 then
+            heading = "# RAG query matches: " .. #rag_matches .. "\n"
+        end
+        table.insert(rag_message_parts, heading)
+        vim.iter(rag_matches)
+            :each(function(chunk)
+                -- FYI this comes from embeddings query results... so the structure is different than other context providers
+                -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
+                ---@cast chunk LSPRankedMatch
+                local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
+                local code_chunk = chunk.text
+                table.insert(rag_message_parts,
+                    "## " .. file .. "\n"
+                    .. code_chunk .. "\n"
+                )
+            end)
+        table.insert(messages, ChatMessage:user(table.concat(rag_message_parts, "\n")))
+    end
 
     -- * user message
     local current_file_relative_path = request.inject_file_path_test_seam()
