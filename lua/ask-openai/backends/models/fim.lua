@@ -52,7 +52,7 @@ function M.gpt_oss.get_fim_chat_messages(request)
     local dev = HarmonyRawFimPromptBuilder.developer_message
     -- FYI if/when you test out using partial thinking with raw template above, then put this into the shared developer message
     dev = dev .. [[
-Make sure to practice the code change before you return a suggestion. Take the cursor line (and surrounding context if relevant) and type it all out and make sure it is valid, correct code.
+Make sure to practice the code change before you return a suggestion. Take the cursor line (at least) and type it out with the new code and make sure it is valid, correct code.
 ]]
 
     local messages = {
