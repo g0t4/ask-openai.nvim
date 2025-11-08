@@ -109,14 +109,12 @@ end
 
 ---@param request OllamaFimBackend
 function M.gpt_oss.get_fim_chat_messages(request)
-    -- FYI! next step here is to test a combination of fixed thinking start + partial thinking finish
+    -- TODO! experiment 1 - PORT OVER ALL MY non-thinking changes here
+
+    -- TODO! experiment 2 - combination of fixed thinking start + partial thinking finish
     --   add my thinking reflections from above...
     --   then let the model finish thinking?
-    --   ??? OR would it just be better to put my stuff into the developer message and leave thinking entirely up to the gptoss?
-    --     with the caveat that I limit it to low so it's not taking forever on FIM
-
-    -- TODO! PORT OVER ALL MY non-thinking changes here
-    --   I just need to get thinking to pay attention to current line prefix/suffix and it will rock
+    --   use new harmony parser for raw /completions output parsing
 
     local messages = {
         -- FYI the template for gptoss in llama-server will not set system message for you!
