@@ -95,8 +95,15 @@ def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], option
         chunks.extend(ts_chunks)
 
     if options.enable_line_range_chunks:
-        can_use_uncoverd_code = path.suffix in {".py", ".lua"}
-        # can_use_uncoverd_code = False # uncomment to block all use of uncovered code
+        # TODO! I am noticing good results from line ranges (sliding windows) that aren't coming up in ts_chunk equivalents
+        #    IIGC b/c those functions are BIG and so it's missing some of the granularity to identify a subset of a function
+        #    I might want to keep sliding window overlaps UNTIL I add some sort of sliding window breaking up of functions?
+        #    - OR should I not index a full function if it spans too many lines? and leave it uncovered for sliding window only?
+        #      - IOTW only exclude small functions from line range chunking?
+        #    TLDR: when I use uncovered code ONLY for line ranges... ouch I lose the ability to query large functions
+        #
+        # can_use_uncoverd_code = path.suffix in {".py", ".lua"}
+        can_use_uncoverd_code = False # uncomment to block all use of uncovered code
         if can_use_uncoverd_code and len(ts_chunks) > 0:
             chunks.extend(build_line_range_chunks_from_uncovered_code(path, file_hash, uncovered_code))
         else:
