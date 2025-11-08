@@ -24,7 +24,7 @@ function Prediction:new()
     prediction.buffered_chunks = ""
     prediction.abandoned = false -- PRN could be a prediction state? IF NEEDED
     prediction.disable_cursor_moved = false
-    prediction.is_reasoning = false
+    prediction.has_reasoning = false
     prediction.start_time = os.time()
     return setmetatable(prediction, { __index = Prediction })
 end
@@ -39,7 +39,7 @@ function Prediction:add_chunk_to_prediction(chunk, reasoning_content)
         self.prediction = self.prediction .. chunk
     end
     if reasoning_content then
-        self.is_reasoning = true
+        self.has_reasoning = true
         -- if needed, accumulate reasoning (maybe for log messages to troubleshoot the reasoning)
     end
     self:redraw_extmarks()
@@ -72,7 +72,7 @@ function Prediction:redraw_extmarks()
 
     local lines = split_lines_to_table(self.prediction)
     if #lines == 0 then
-        if not self.is_reasoning then
+        if not self.has_reasoning then
             return
         end
         -- PRN use thinking dots module w/ strip ability to partially parse harmony response to strip_thinking_tags
