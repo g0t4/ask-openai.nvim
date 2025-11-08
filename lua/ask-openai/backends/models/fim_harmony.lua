@@ -52,13 +52,18 @@ end
 
 --- user message (harmony spec):
 --- - Typically representing the input to the model
----@param message string
+---@param message string|string[] -- one or more messages
 ---@return HarmonyRawFimPromptBuilder self
 function HarmonyRawFimPromptBuilder:user(message)
     if not message then
         -- don't add an empty message
         return self
     end
+
+    if type(message) == "table" then
+        message = table.concat(message, "\n")
+    end
+
     table.insert(self._parts, "<|start|>user<|message|>" .. message .. "<|end|>")
     return self
 end

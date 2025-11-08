@@ -52,9 +52,48 @@ and NOT:
     return a + b
 
 ]])
-    -- * context
-    local context = "Here is context that's automatically provided, that MAY be relevant."
-        .. "\nrepo: " .. request:get_repo_name()
+    -- * CONTEXT
+    local context_lines = {
+        "Here is context that's automatically provided, that MAY be relevant.",
+        "repo: " .. request:get_repo_name()
+    }
+    local context = request.context
+    if context.includes.yanks and context.yanks then
+        table.insert(context_lines, context.yanks.content)
+    end
+    -- if request.context.includes.matching_ctags and request.context.matching_ctags then
+    --     table.insert(messages, ChatMessage:user(request.context.matching_ctags))
+    -- end
+    -- if context.includes.project and context.project then
+    --     vim.iter(context.project)
+    --         :each(function(value)
+    --             table.insert(messages, ChatMessage:user(value.content))
+    --         end)
+    -- end
+    -- TODO! review the following for changes to other usages of rag_matches before adding it back... I did update this for base0 but there might other differences since commenting it out
+    -- local rag_matches = request.rag_matches
+    -- if enable_rag and rag_matches ~= nil and #rag_matches > 0 then
+    --     rag_message_parts = {}
+    --     if #rag_matches == 1 then
+    --         heading = "# RAG query match: \n"
+    --     elseif #rag_matches > 1 then
+    --         heading = "# RAG query matches: " .. #rag_matches .. "\n"
+    --     end
+    --     table.insert(rag_message_parts, heading)
+    --     vim.iter(rag_matches)
+    --         :each(function(chunk)
+    --             -- FYI this comes from embeddings query results... so the structure is different than other context providers
+    --             -- include the line number range so if there are multiple matches it might be a bit more obvious that these are subsets of lines
+    --             ---@cast chunk LSPRankedMatch
+    --             local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
+    --             local code_chunk = chunk.text
+    --             table.insert(rag_message_parts,
+    --                 "## " .. file .. "\n"
+    --                 .. code_chunk .. "\n"
+    --             )
+    --         end)
+    --     table.insert(messages, ChatMessage:user(table.concat(rag_message_parts, "\n")))
+    -- end
 
     -- * user message
     local current_file_relative_path = request.inject_file_path_test_seam()
@@ -76,7 +115,7 @@ and NOT:
 
     local builder = HarmonyRawFimPromptBuilder.new()
         :developer(developer_message)
-        :user(context)
+        :user(context_lines)
         :user(fim_user_message)
         :set_thinking()
         :start_assistant_final_response() -- this forces the model to respond w/o any further thinking
