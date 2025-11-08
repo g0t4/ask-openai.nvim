@@ -131,11 +131,10 @@ end
 
 ---@param request OllamaFimBackend
 function M.gpt_oss.get_fim_chat_messages(request)
-    -- FYI! gptoss w/ /v1/chat/completions is on hold... I am testing a raw prompt where I can disable thinking entirely (above)!
-    -- FYI next step here is to test a combination of fixed thinking start + partial thinking finish
+    -- FYI! next step here is to test a combination of fixed thinking start + partial thinking finish
     --   add my thinking reflections from above...
     --   then let the model finish thinking?
-    --   OR would it just be better to put my stuff into the developer message and leave thinking entirely up to the gptoss?
+    --   ? OR would it just be better to put my stuff into the developer message and leave thinking entirely up to the gptoss?
     --     with the caveat that I limit it to low so it's not taking forever on FIM
 
     local system_prompt = "Your response will be used for code completion in neovim"
