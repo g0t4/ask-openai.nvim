@@ -1,3 +1,5 @@
+local dots = require("ask-openai.rewrites.thinking.dots")
+
 local Prediction = {}
 local uv = vim.uv
 
@@ -23,6 +25,7 @@ function Prediction:new()
     prediction.abandoned = false -- PRN could be a prediction state? IF NEEDED
     prediction.disable_cursor_moved = false
     prediction.is_reasoning = false
+    prediction.start_time = os.time()
     return setmetatable(prediction, { __index = Prediction })
 end
 
@@ -72,7 +75,9 @@ function Prediction:redraw_extmarks()
         if not self.is_reasoning then
             return
         end
-        lines = { "..." }
+        -- PRN use thinking dots module w/ strip ability to partially parse harmony response to strip_thinking_tags
+        --   or blend this with the harmony_parser module idea
+        lines = { dots:get_still_thinking_message(self.start_time) }
     end
 
     local first_line = { { table.remove(lines, 1), hlgroup } } -- can add hlgroup too
