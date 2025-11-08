@@ -171,10 +171,12 @@ function OllamaFimBackend:body_for()
         -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
         body.messages = fim.gpt_oss.get_fim_chat_messages(self)
         body.raw = false -- not used in chat -- FYI hacky
-        body.max_tokens = 2048 -- ONLY when thinking
         body.chat_template_kwargs = {
             reasoning_effort = "low"
         }
+        body.max_tokens = 2048 -- low thinking
+        -- body.max_tokens = 4096 -- medium
+        -- body.max_tokens = 8192 -- high
 
         -- * /completions legacy endpoint:
         -- builder = function()
