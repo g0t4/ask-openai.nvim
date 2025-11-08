@@ -1,23 +1,11 @@
-## vim.NIL on first delta?
+## vim.NIL on first delta
 
-TODO IS THIS AN ISSUE? I can skip for sure just curious... is this something to do with stripping out some of the tags?
+First SSE has content == vim.NIL b/c in JSON "content": null (likely b/c it is just reporting role as "assistant")... NBD ignore this
+-- data: {"choices":[{"finish_reason":null,"index":0,"delta":{"role":"assistant","content":null}}],"created":1762593253,"id":"chatcmpl-DHvcEyFobkuV4Xu1QSYo4bqNv18TDqaA","model":"gpt-oss:120b","system_fingerprint":"b6881-8b11deea4","object":"chat.completion.chunk"}
+2+ SSEs are thinking so content field is completely missing in JSON, thus content == nil, again ignore that too
+-- data: {"choices":[{"finish_reason":null,"index":0,"delta":{"reasoning_content":"We"}}],"created":1762593253,"id":"chatcmpl-DHvcEyFobkuV4Xu1QSYo4bqNv18TDqaA","model":"gpt-oss:120b","system_fingerprint":"b6881-8b11deea4","object":"chat.completion.chunk"}
 
-choice object from logs:
-
-```json
-[TRACE] on_stdout data: data: {"choices":[{"finish_reason":null,"index":0,"delta":{"role":"assistant","content":null}}],"created":1754523863,"id":"chatcmpl-X6urH4f6JOotPwco2EgcgeoM6ZWup59u","model":"gpt-oss:20b","system_fingerprint":"b6097-9515c613","object":"chat.completion.chunk"}
-
-{
-  delta = {
-    content = vim.NIL,
-    role = "assistant"
-  },
-  finish_reason = vim.NIL,
-  index = 0
-}
-```
-
-AND is this why the end is empty for delta too!? NOTICE `"delta":{}` below:
+? AND is this why the end is empty for delta too!? NOTICE `"delta":{}` below:
 
 ```json
 {"choices":[{"finish_reason":"stop","index":0,"delta":{}}],"created":1754524122,"id":"chatcmpl-yPk7z9nC22CofOlh100qQdHVEDMNYCb1","model":"gpt-oss:20b","system_fingerprint":"b6097-9515c613","object":"chat.completion.chunk","usage":{"completion_tokens":247,"prompt_tokens":1085,"total_tokens":1332},"timings":{"prompt_n":1085,"prompt_ms":203.378,"prompt_per_token_ms":0.18744516129032257,"prompt_per_second":5334.893646313762,"predicted_n":247,"predicted_ms":933.63,"predicted_per_token_ms":3.7798785425101213,"predicted_per_second":264.5587652496171}}
