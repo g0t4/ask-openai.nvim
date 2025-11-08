@@ -61,8 +61,8 @@ and NOT:
     if context.includes.yanks and context.yanks then
         table.insert(context_lines, context.yanks.content)
     end
-    if context.includes.matching_ctags and request.context.matching_ctags then
-        table.insert(context_lines, request.context.matching_ctags)
+    if context.includes.matching_ctags and context.matching_ctags then
+        table.insert(context_lines, context.matching_ctags)
     end
     if context.includes.project and context.project then
         vim.iter(context.project)
@@ -77,10 +77,6 @@ and NOT:
     -- - NEVER add TODO comments for me.
     -- ]])
     --     append_file_non_fim(instructions)
-    --
-    --     if request.context.includes.matching_ctags and request.context.matching_ctags then
-    --         append_file_non_fim(request.context.matching_ctags)
-    --     end
     --
     --     if request.context.includes.project and request.context.project then
     --         vim.iter(request.context.project)
