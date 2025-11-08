@@ -18,36 +18,32 @@ M.gpt_oss = {
 }
 ---@param request OllamaFimBackend
 function M.gpt_oss.get_fim_raw_prompt_no_thinking(request)
-    local system_prompt = "Your response will be used for code completion in neovim"
-        .. ", in a FIM (fill-in-the-middle) plugin that generates code as the user types. \n"
-        .. "Reasoning: low"
-    -- ? if I add support for thinking which would definitely be interesting for FIM, then I could set a level or have some way to trigger completion of diff thinking level
-    -- .. "\nReasoning: high"
-    -- .. "Reasoning: medium"
-
-    -- TODO add context! (i.e. RAG) once you are happy with FIM prompt template
+    local developer_message = vim.trim([[
+You are completing code from a Neovim plugin.
+As the user types, the plugin suggests code completions based on their cursor position and surrounding code.
+]])
+    -- * context
+    local context = "Here is context that's automatically provided, that MAY be relevant."
+        .. "\nrepo: " .. request:get_repo_name()
 
     -- * user message
     local current_file_relative_path = request.inject_file_path_test_seam()
+    local file_prefix = ""
     if current_file_relative_path == nil then
         log:warn("current_file_name is nil")
         current_file_relative_path = ""
+        file_prefix = "I am editing this file: " .. current_file_relative_path .. "\n\n"
     end
-    local repo_name = request:get_repo_name()
-    -- TODO work on ``` and returning more than just <<<FIM>>> ... I think qwen25coder format may work better IIRC from my initial tests
-    local fim_user_message = "Project info:"
-        .. "\nrepository: " .. repo_name
-        .. "\nfile: " .. current_file_relative_path
-        -- TODO move the instructions to system and/or thinking?
-        .. "\n\nPlease complete the middle of the following example (do not return anything else, just provide code that fits in <<<FIM>>>):"
-        .. "\n\n"
+
+    local fim_user_message = file_prefix
+        .. "Please complete <<<FIM>>> in the following code (which has carefully preserved indentation):\n"
         .. request.ps_chunk.prefix
-        -- TODO any issues with same line FIM (existing prefix/suffix?)
         .. "<<<FIM>>>"
         .. request.ps_chunk.suffix
 
     local builder = HarmonyRawFimPromptBuilder.new()
-        :system(system_prompt)
+        :developer(developer_message)
+        :user(context)
         :user(fim_user_message)
         :set_thinking()
         :start_assistant_final_response()

@@ -215,7 +215,7 @@ function OllamaFimBackend:body_for()
     return vim.json.encode(body)
 end
 
-function OllamaFimBackend:inject_file_path_test_seam()
+function OllamaFimBackend.inject_file_path_test_seam()
     return files.get_current_file_relative_path()
 end
 

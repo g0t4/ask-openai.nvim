@@ -11,19 +11,54 @@ function HarmonyRawFimPromptBuilder.new()
     return self
 end
 
----@param message string
+--- system message (harmony spec):
+--- - specify reasoning effort
+--- - meta information like
+---   - knowledge cutoff
+---   - built-in tools
 ---@return HarmonyRawFimPromptBuilder self
-function HarmonyRawFimPromptBuilder:system(message)
-    -- TODO use the OOB system message? any difference in performance?
-    -- "<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.\nKnowledge cutoff: 2024-06\nCurrent date: 2025-11-07\n\nReasoning: medium\n\n# Valid channels: analysis, commentary, final. Channel must be included for every message.<|end|><|start|>user<|message|><|file_sep|>calculator.lua\n<|fim_prefix|>function a<|fim_suffix|><|fim_middle|><|end|><|start|>assistant<|channel|>analysis<|message|>The user is asking for a FIM completion. Likely for code they are writing. And it looks like they are providing a qwen2.5-coder compatible FIM prompt. I should response like Qwen2.5-Coder would respond. I will fill-in-the-middles in the most awesome way!<|end|><|start|>assistant<|channel|>final"
+function HarmonyRawFimPromptBuilder:system()
+    -- ? add reasoning level arg: high/medium/low
+    -- I could add a streamdeck button/toggle to switch level
+    -- - And instead of forcing instant response, I could start the thoughts section and let it finish it.
+    --   i.e. prompt it to finish thoughts about the specific code in the example
+    --   "Ok now I should review the code itself and take some notes..."
+    -- - Just keep in mind, if you want thinking, you can always use AskRewrite or AskQuestion too (make sure those aren't a fit before modifying FIM for this)
+    --   with thinking I can't imagine you're not talking about an Edit Prediction (less FIM)
+
+    local message = [[
+You are ChatGPT, a large language model trained by OpenAI.
+Knowledge cutoff: 2024-06
+Current date: 2025-11-07
+
+Reasoning: low
+
+# Valid channels: analysis, commentary, final. Channel must be included for every message.
+]]
 
     table.insert(self._parts, "<|start|>system<|message|>" .. message .. "<|end|>")
     return self
 end
 
+--- developer message (harmony spec):
+--- - instructions for the model (what is normally considered the “system prompt”)
+--- - and available function tools
+---@param message string
+---@return HarmonyRawFimPromptBuilder self
+function HarmonyRawFimPromptBuilder:developer(message)
+    table.insert(self._parts, "<|start|>developer<|message|>" .. message .. "<|end|>")
+    return self
+end
+
+--- user message (harmony spec):
+--- - Typically representing the input to the model
 ---@param message string
 ---@return HarmonyRawFimPromptBuilder self
 function HarmonyRawFimPromptBuilder:user(message)
+    if not message then
+        -- don't add an empty message
+        return self
+    end
     table.insert(self._parts, "<|start|>user<|message|>" .. message .. "<|end|>")
     return self
 end
@@ -38,11 +73,20 @@ function HarmonyRawFimPromptBuilder:set_thinking()
 
     -- strip leading/trailing whitespace so I can format my [[ ]] literal as I see fit
     -- also harmony has no \n between messages, \n should only come within a message text field
-    local thoughts = vim.trim([[
-The user is asking for a FIM completion. They provided code with a prefix and suffix and then I need to fill in the code where it says <<<FIM>>>. So I need to imagine what would fit really well in <<<FIM>>>. I will fill-in-the-middles in the most awesome way! I should NOT wrap the response in ``` markdown blocks. And I should not repeat code in the prefix/suffix.
+    local deep_thoughts_about_fim = vim.trim([[
+The user is asking for a FIM completion.
+They provided code with a <<<FIM>>> tag. The code before <<<FIM>>> is the prefix. The code after is the suffix.
+I need to imagine what would fit really well in <<<FIM>>>
+I will fill-in-the-middles in the most awesome way!
+I should NOT wrap my response in ``` markdown blocks.
+I am not changing the prefix. I am not changing the suffix. So I shouldn't repeat those in my response.
+They also carefully preserved indentation, so I need to carefully consider indentation in my response.
+If there's no line break before <<<FIM>> and/or after, then that means I am completing code on a line of existing code. Do not repeat the rest of the line either!
 ]])
+    -- FYI adding blurb about no ``` and markdown worked well to stop that!
+    -- TODO detect line break before/after <<<FIM>>> and adjust the thought about modifying an existing line of code accordingly?
 
-    table.insert(self._parts, "<|start|>assistant<|channel|>analysis<|message|>" .. thoughts .. "<|end|>")
+    table.insert(self._parts, "<|start|>assistant<|channel|>analysis<|message|>" .. deep_thoughts_about_fim .. "<|end|>")
     return self
 end
 
