@@ -72,6 +72,59 @@ function HarmonyRawFimPromptBuilder:developer()
     return self
 end
 
+---@param request OllamaFimBackend
+function HarmonyRawFimPromptBuilder.context_user_msg(request)
+    local context_lines = {
+        "Here is context that's automatically provided, that MAY be relevant.",
+        "repo: " .. request:get_repo_name(),
+        "",
+        vim.trim([[
+General project code rules:
+- Never add comments to the end of a line.
+- NEVER add TODO comments for me.
+]]),
+    }
+
+    local context = request.context
+    if context.includes.yanks and context.yanks then
+        table.insert(context_lines, context.yanks.content)
+    end
+    -- if context.includes.matching_ctags and context.matching_ctags then
+    --     table.insert(context_lines, context.matching_ctags)
+    -- end
+    if context.includes.project and context.project then
+        vim.iter(context.project)
+            :each(function(value)
+                table.insert(context_lines, value.content)
+            end)
+    end
+
+    if request.rag_matches and #request.rag_matches > 0 then
+        local rag_parts = {}
+        if #request.rag_matches == 1 then
+            heading = "# RAG query match:\n"
+        elseif #request.rag_matches > 1 then
+            heading = "# RAG query matches: " .. #request.rag_matches .. "\n"
+        end
+        table.insert(rag_parts, heading)
+
+        vim.iter(request.rag_matches)
+            :each(function(chunk)
+                ---@cast chunk LSPRankedMatch
+                local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
+                local code_chunk = chunk.text
+                table.insert(rag_parts,
+                    "## " .. file .. "\n"
+                    .. code_chunk .. "\n"
+                )
+            end)
+        local rag_context = table.concat(rag_parts, "\n")
+        table.insert(context_lines, rag_context)
+    end
+
+    return table.concat(context_lines, "\n")
+end
+
 --- user message (harmony spec):
 --- - Typically representing the input to the model
 ---@param message string
