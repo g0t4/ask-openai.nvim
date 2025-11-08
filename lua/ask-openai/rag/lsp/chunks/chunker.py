@@ -10,7 +10,7 @@ from tree_sitter import Node
 from lsp.chunks.identified import IdentifiedChunk
 from lsp.chunks.ts.lua import attach_doc_comments
 from lsp.chunks.ts.py import attach_decorators
-from lsp.chunks.uncovered import UncoveredCode, debug_uncovered_intervals
+from lsp.chunks.uncovered import UncoveredCode, build_uncovered_intervals
 from lsp.storage import Chunk, ChunkType, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
 from lsp.logs import get_logger, printtmp
 from lsp.chunks.parsers import get_cached_parser_for_path
@@ -102,8 +102,8 @@ def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], option
         #      - IOTW only exclude small functions from line range chunking?
         #    TLDR: when I use uncovered code ONLY for line ranges... ouch I lose the ability to query large functions
         #
-        # can_use_uncoverd_code = path.suffix in {".py", ".lua"}
-        can_use_uncoverd_code = False # uncomment to block all use of uncovered code
+        can_use_uncoverd_code = path.suffix in {".py", ".lua"}
+        # can_use_uncoverd_code = False # uncomment to block all use of uncovered code
         if can_use_uncoverd_code and len(ts_chunks) > 0:
             chunks.extend(build_line_range_chunks_from_uncovered_code(path, file_hash, uncovered_code))
         else:
@@ -327,7 +327,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
     # PRN batch process chunks?
     identified_chunks = list(identify_chunks(tree.root_node))
-    uncovered_code = debug_uncovered_intervals(tree, source_bytes, identified_chunks, path)
+    uncovered_code = build_uncovered_intervals(tree, source_bytes, identified_chunks, path)
 
     ts_chunks = []
     for chunk in identified_chunks:

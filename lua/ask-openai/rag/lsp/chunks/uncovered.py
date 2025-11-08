@@ -87,14 +87,14 @@ def create_uncovered_code(source_bytes: bytes, byte_interval) -> UncoveredCode:
         end_line_base1=end_line_base1,
     )
 
-def debug_uncovered_intervals(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], relative_path: Path) -> list[UncoveredCode]:
-    if not logger_uncovered.isEnabledForDebug():
-        return []
-    # TODO when I start using uncovered intervals for sliding window, then get rid of debug checks here (except to dictate logging of show_intervals and original/legacy uncovered lines viewer below in this function)
-    uncovered_code = _build_uncovered_intervals(tree, source_bytes, chunks, show_intervals=True)
+def build_uncovered_intervals(tree: Tree, source_bytes: bytes, chunks: list[IdentifiedChunk], relative_path: Path) -> list[UncoveredCode]:
 
+    uncovered_code = _build_uncovered_intervals(tree, source_bytes, chunks, show_intervals=logger_uncovered.isEnabledForDebug())
     if not uncovered_code:
         return []
+
+    if not logger_uncovered.isEnabledForDebug():
+        return uncovered_code
 
     # * log uncovered code
     buffer = StringIO()
@@ -116,7 +116,6 @@ def debug_uncovered_intervals(tree: Tree, source_bytes: bytes, chunks: list[Iden
         if code.text[-1] != "\n":
             buffer.write("\n")
 
-        # use console directly so I can disable markup for code
     logger_uncovered.debug_no_markup(buffer.getvalue())
 
     return uncovered_code
@@ -136,7 +135,6 @@ def _build_uncovered_intervals(tree: Tree, source_bytes: bytes, chunks: list[Ide
     for chunk in chunks:
         # TODO run line range splits on the longer ts_chunks. Instead of allowing them again as uncovered code.
         #   TODO once I do this I can remove the hack here to use uncovered code for this (below).
-        #   TODO turn on uncovered code again and test this new hack to split up large ts_chunks too.
         if chunk.number_lines() > 20:
             # skip long ts_chunks so they are also indexed using sliding window (line ranges)
             # otherwise:
