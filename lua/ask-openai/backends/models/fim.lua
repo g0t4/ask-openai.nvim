@@ -55,8 +55,15 @@ and NOT:
     -- * CONTEXT
     local context_lines = {
         "Here is context that's automatically provided, that MAY be relevant.",
-        "repo: " .. request:get_repo_name()
+        "repo: " .. request:get_repo_name(),
+        "",
+        vim.trim([[
+General project code rules:
+- Never add comments to the end of a line.
+- NEVER add TODO comments for me.
+]]),
     }
+
     local context = request.context
     if context.includes.yanks and context.yanks then
         table.insert(context_lines, context.yanks.content)
@@ -70,13 +77,6 @@ and NOT:
                 table.insert(context_lines, value.content)
             end)
     end
-
-    --     local instructions = ContextItem:new("instructions", [[
-    -- General project code rules:
-    -- - Never add comments to the end of a line.
-    -- - NEVER add TODO comments for me.
-    -- ]])
-    --     append_file_non_fim(instructions)
 
     if request.rag_matches and #request.rag_matches > 0 then
         local rag_parts = {}
