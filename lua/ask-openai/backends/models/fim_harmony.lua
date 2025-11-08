@@ -82,7 +82,7 @@ function HarmonyRawFimPromptBuilder:set_thinking()
 The user is asking for a code completion.
 They provided the existing code with a <<<CURSOR>>> tag where their cursor is currently located. Whatever I provide will replace <<<CURSOR>>>
 To clarify, the code before <<<CURSOR>>> is the prefix. The code after is the suffix.
-I am not changing the prefix nor the suffix. So I shouldn't repeat those in my response.
+I am not changing the prefix nor the suffix.
 Do not forget, the neovim plugin automaticaly collected context to consider. It's included above, in a previous message. I won't blindly repeat it.
 I will NOT wrap my response in ``` markdown blocks.
 I will not explain anything.
@@ -93,6 +93,9 @@ I will fill-in-the-middles in the most awesome way!
     -- TODO! detect line break before/after <<<CURSOR>>> and adjust the thought about modifying an existing line of code accordingly?
     --   present this as a reflective thought from the model:
     --     If there's no line break before <<<CURSOR>>> and/or after, then that means I am completing code on a line of existing code. Do not repeat the rest of the line either!
+    -- YES! repeat the CURRENT LINE HERE as an observation!!! And maybe even state what I shouldn't duplicate! (this might help with repeating on same line (almost always right now when there's code on same line after cursor)
+    --   MAYBE mention its indentation too instead of other indentation comments above (I can say this line has X indent so I need to respect that)
+    --   IF there's code before and after the cursor on the current line, reflect that this is likely just a fill in the middle of this line only, not a multi line response (not likely anyways)
 
     table.insert(self._parts, "<|start|>assistant<|channel|>analysis<|message|>" .. deep_thoughts_about_fim .. "<|end|>")
     return self
