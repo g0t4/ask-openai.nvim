@@ -41,3 +41,9 @@ end
 function Multiply(a, b)
     return a * b
 end
+
+---@alias number_or_string = number | string -- unrelated to next function (make sure not included just b/c its triple dash)
+
+function Divide(a, b)
+    return a / b
+end

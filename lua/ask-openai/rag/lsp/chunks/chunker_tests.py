@@ -301,6 +301,15 @@ function Multiply(a, b)
     return a * b
 end"""
 
+    def test_function_with_preceding_unrelated_triple_dash_alias(self):
+        # again another edge case that I want to keep even though I use generic blank line detection
+        # ---@alias preceding (with blank line separator) is not related
+        # HOWEVER, if I were to tack one on w/o the blank line then that's gonna be included b/c that's not a direction I want to go with disambiguating annotation doc_commments :)
+        chunk = self.chunks[5]
+        assert chunk.text == """function Divide(a, b)
+    return a / b
+end"""
+
 class TestTreesitterChunker_Python_NestedFunctions:
 
     def test_nested_functions(self):
