@@ -83,7 +83,7 @@ The user is asking for a code completion.
 They provided the existing code with a <<<CURSOR>>> tag where their cursor is currently located. Whatever I provide will replace <<<CURSOR>>>
 To clarify, the code before <<<CURSOR>>> is the prefix. The code after is the suffix.
 I am not changing the prefix nor the suffix. So I shouldn't repeat those in my response.
-Do not forget, the neovim plugin automaticaly collected context to consider. It's included above. I won't blindly repeat this either.
+Do not forget, the neovim plugin automaticaly collected context to consider. It's included above, in a previous message. I won't blindly repeat it.
 I will NOT wrap my response in ``` markdown blocks.
 I will not explain anything.
 They also carefully preserved indentation, so I need to carefully consider indentation in my response.
