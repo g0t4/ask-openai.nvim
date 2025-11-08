@@ -13,8 +13,8 @@ local use_model = "gpt-oss:120b"
 --
 -- * llama-server (llama-cpp)
 -- local url = "http://ollama:8012/completions" -- * preferred for qwen2.5-coder
--- local url = "http://ollama:8013/completions"
-local url = "http://ollama:8013/v1/chat/completions"
+-- local url = "http://ollama:8013/completions" -- for gptoss non-thinking FIM (knee capped b/c raw prompt stops thinking)
+local url = "http://ollama:8013/v1/chat/completions" -- for gptoss also doing FIM w/ thinking
 -- /completions - raw prompt: qwen2.5-coder(llama-server) # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
 -- local url = "http://ollama:8012/chat/completions" -- gpt-oss(llama-server, not working yet) - actually, try /completions and fill in the raw harmony prompt (and stop thinking too)
 -- * ollama

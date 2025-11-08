@@ -134,8 +134,11 @@ function M.gpt_oss.get_fim_chat_messages(request)
     -- FYI! next step here is to test a combination of fixed thinking start + partial thinking finish
     --   add my thinking reflections from above...
     --   then let the model finish thinking?
-    --   ? OR would it just be better to put my stuff into the developer message and leave thinking entirely up to the gptoss?
+    --   ??? OR would it just be better to put my stuff into the developer message and leave thinking entirely up to the gptoss?
     --     with the caveat that I limit it to low so it's not taking forever on FIM
+
+    -- TODO! PORT OVER ALL MY non-thinking changes here
+    --   I just need to get thinking to pay attention to current line prefix/suffix and it will rock
 
     local system_prompt = "Your response will be used for code completion in neovim"
         .. ", in a FIM (fill-in-the-middle) pluging that genrates code as the user types. \n"
