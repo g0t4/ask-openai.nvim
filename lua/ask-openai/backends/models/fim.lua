@@ -64,12 +64,12 @@ and NOT:
     -- if request.context.includes.matching_ctags and request.context.matching_ctags then
     --     table.insert(messages, ChatMessage:user(request.context.matching_ctags))
     -- end
-    -- if context.includes.project and context.project then
-    --     vim.iter(context.project)
-    --         :each(function(value)
-    --             table.insert(messages, ChatMessage:user(value.content))
-    --         end)
-    -- end
+    if context.includes.project and context.project then
+        vim.iter(context.project)
+            :each(function(value)
+                table.insert(context_lines, value.content)
+            end)
+    end
     -- TODO! review the following for changes to other usages of rag_matches before adding it back... I did update this for base0 but there might other differences since commenting it out
     -- local rag_matches = request.rag_matches
     -- if enable_rag and rag_matches ~= nil and #rag_matches > 0 then
