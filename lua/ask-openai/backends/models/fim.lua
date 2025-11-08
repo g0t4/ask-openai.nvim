@@ -18,6 +18,11 @@ M.gpt_oss = {
 }
 ---@param request OllamaFimBackend
 function M.gpt_oss.get_fim_raw_prompt_no_thinking(request)
+    -- TODO! experiment 2 - combination of fixed thinking start + partial thinking finish
+    --   add my thinking reflections from above...
+    --   then let the model finish thinking?
+    --   use new harmony parser for raw /completions output parsing
+
     -- TODO if I allow the model to finish the reasoning... that might be best!
     --   Ask it to practice its change before it decides
     -- I could update my example too:
@@ -29,7 +34,6 @@ function M.gpt_oss.get_fim_raw_prompt_no_thinking(request)
     -- So the correct insertion is 'a'.
     -- </analysis>
     -- <final>
-
 
     local builder = HarmonyRawFimPromptBuilder.new()
         :developer()
@@ -45,43 +49,12 @@ end
 function M.gpt_oss.get_fim_chat_messages(request)
     -- TODO! experiment 1 - PORT OVER ALL MY non-thinking changes here
 
-    -- TODO! experiment 2 - combination of fixed thinking start + partial thinking finish
-    --   add my thinking reflections from above...
-    --   then let the model finish thinking?
-    --   use new harmony parser for raw /completions output parsing
-
     local messages = {
-        -- FYI the template for gptoss in llama-server will not set system message for you!
-        -- it always puts it under the developer message (which is basically per harmony spec which tells you to use developer message for what you'd typically put into system message)
-        -- this also means you have to set "Reasoning:" effort via parameter and NOT in the system message
-        { role = "developer", content = HarmonyRawFimPromptBuilder.developer_message }
+        { role = "developer", content = HarmonyRawFimPromptBuilder.developer_message },
+        { role = "user",      content = HarmonyRawFimPromptBuilder.context_user_msg(request) },
+        { role = "user",      content = HarmonyRawFimPromptBuilder.fim_prompt(request) },
+        -- TODO provide the thinking from raw as more instructions in developer or user messages
     }
-
-    -- * CONTEXT
-    --   TODO see CONTEXT above in non-thinking gptoss
-
-    -- * FIM file
-    local current_file_relative_path = request.inject_file_path_test_seam()
-    if current_file_relative_path == nil then
-        log:warn("current_file_name is nil")
-        current_file_relative_path = ""
-    end
-
-    local fim_message = ""
-    local repo_name = request:get_repo_name()
-
-    fim_message = fim_message .. "Background info:"
-        .. "\nrepository: " .. repo_name
-        .. "\nfile: " .. current_file_relative_path
-        .. "\n\nPlase complete the middle of the following example (do not return anything beyond the code for <<<CURSOR>>>):"
-        .. "\n\n"
-        -- NOTE I am not (yet) labeling sections, just put it together as a block and ask for the <<<CURSOR>>> part!
-        .. request.ps_chunk.prefix
-        .. "<<<CURSOR>>>"
-        .. request.ps_chunk.suffix
-    -- PRN should I be using fim tokens / format for the query here? I know it's not the same thing but if the model is trained on that, would that perform better (TODO find a way to quantify)
-
-    table.insert(messages, ChatMessage:user(fim_message))
 
     return messages
 end
