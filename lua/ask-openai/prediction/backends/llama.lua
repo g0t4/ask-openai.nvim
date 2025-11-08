@@ -176,7 +176,7 @@ function OllamaFimBackend:body_for()
     elseif string.find(body.model, "gpt-oss", nil, true) then
         if not use_gptoss_raw then
             -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
-            body.messages = fim.gpt_oss.get_fim_chat_messages(self)
+            body.messages = fim.gptoss.get_fim_chat_messages(self)
             body.raw = false -- not used in chat -- FYI hacky
             body.chat_template_kwargs = {
                 reasoning_effort = "low"
@@ -188,13 +188,13 @@ function OllamaFimBackend:body_for()
             -- * /completions legacy endpoint:
             builder = function()
                 -- * raw prompt /completions, no thinking (I could have model think too, just need to parse that then)
-                return fim.gpt_oss.get_fim_raw_prompt_no_thinking(self)
+                return fim.gptoss.get_fim_raw_prompt_no_thinking(self)
             end
             body.max_tokens = 200 -- FYI if I cut off all thinking
             -- body.max_tokens = 2048 -- low thinking (if/when I allow thinking and use my harmoney_parser)
         end
 
-        -- body.options.stop = fim.gpt_oss.sentinel_tokens.fim_stop_tokens -- TODO?
+        -- body.options.stop = fim.gptoss.sentinel_tokens.fim_stop_tokens -- TODO?
     elseif string.find(body.model, "codestral", nil, true) then
         builder = function()
             return fim.codestral.get_fim_prompt(self)

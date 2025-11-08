@@ -11,13 +11,13 @@ local M = {}
 --   but lets collect them under fim for now
 --   really these are the fim related special tokens
 
-M.gpt_oss = {
+M.gptoss = {
     sentinel_tokens = {
         -- fim_stop_tokens = [] -- TODO?
     }
 }
 ---@param request OllamaFimBackend
-function M.gpt_oss.get_fim_raw_prompt_no_thinking(request)
+function M.gptoss.get_fim_raw_prompt_no_thinking(request)
     -- TODO! experiment 2 - combination of fixed thinking start + partial thinking finish
     --   add my thinking reflections from above...
     --   then let the model finish thinking?
@@ -46,7 +46,7 @@ function M.gpt_oss.get_fim_raw_prompt_no_thinking(request)
 end
 
 ---@param request OllamaFimBackend
-function M.gpt_oss.get_fim_chat_messages(request)
+function M.gptoss.get_fim_chat_messages(request)
     -- TODO! experiment 1 - PORT OVER ALL MY non-thinking changes here
 
     local dev = HarmonyRawFimPromptBuilder.developer_message
