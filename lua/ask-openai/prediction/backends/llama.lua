@@ -172,6 +172,7 @@ function OllamaFimBackend:body_for()
         body.messages = fim.gpt_oss.get_fim_chat_messages(self)
         body.raw = false -- not used in chat -- FYI hacky
         body.max_tokens = 2048 -- ONLY when thinking
+        body.reasoning_effort = "low" -- TODO! VERIFY THIS WORKS... can't I see the rendered prompt?
 
         -- * /completions legacy endpoint:
         -- builder = function()
