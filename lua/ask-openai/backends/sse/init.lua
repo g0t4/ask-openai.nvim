@@ -4,11 +4,11 @@ function parse_sse_oai_chat_completions(sse)
     content = ""
     if sse.choices and sse.choices[1] then
         content = sse.choices[1].delta.content
-        if content == vim.NIL then
-            -- TODO fix llama-server + gpt-oss on chat/completions
-            --   streaming response streams low level tokens including channel!
-            --   and the first response's content is vim.NIL (seems to indicate the template issue too)
-            error("content: " .. tostring(content) .. " is vim.NIL, WHY?!")
+        if content == nil or content == vim.NIL then
+            -- content == vim.NIL => with llama-server the first response is content: null b/c it is setting the role to asssistant (maybe to do with roles/channels in harmony parser)... doesn't matter, just ignore it
+            --    vim.NIL == "content": null (in the JSON)
+            -- content == nil => then 2+ SSEs are for reasoning and use reasoning_content until thinking is complete (these don't even set the content field, so it's nil in this case)
+            --    skip these too
             content = ""
         end
         reasoning = sse.choices[1].delta.reasoning

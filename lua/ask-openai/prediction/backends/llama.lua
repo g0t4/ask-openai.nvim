@@ -13,7 +13,8 @@ local use_model = "gpt-oss:120b"
 --
 -- * llama-server (llama-cpp)
 -- local url = "http://ollama:8012/completions" -- * preferred for qwen2.5-coder
-local url = "http://ollama:8013/completions"
+-- local url = "http://ollama:8013/completions"
+local url = "http://ollama:8013/v1/chat/completions"
 -- /completions - raw prompt: qwen2.5-coder(llama-server) # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
 -- local url = "http://ollama:8012/chat/completions" -- gpt-oss(llama-server, not working yet) - actually, try /completions and fill in the raw harmony prompt (and stop thinking too)
 -- * ollama
@@ -168,13 +169,14 @@ function OllamaFimBackend:body_for()
         -- log:error("stop token: " .. vim.inspect(body.options.stop))
     elseif string.find(body.model, "gpt-oss", nil, true) then
         -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
-        -- body.messages = fim.gpt_oss.get_fim_chat_messages(self)
-        -- body.raw = false -- not used in chat -- FYI hacky
+        body.messages = fim.gpt_oss.get_fim_chat_messages(self)
+        body.raw = false -- not used in chat -- FYI hacky
 
-        builder = function()
-            -- * raw prompt /completions, no thinking (I could have model think too, just need to parse that then)
-            return fim.gpt_oss.get_fim_raw_prompt_no_thinking(self)
-        end
+        -- * /completions legacy endpoint:
+        -- builder = function()
+        --     -- * raw prompt /completions, no thinking (I could have model think too, just need to parse that then)
+        --     return fim.gpt_oss.get_fim_raw_prompt_no_thinking(self)
+        -- end
 
         -- TODO gptoss stop?
         -- body.options.stop = fim.gpt_oss.sentinel_tokens.fim_stop_tokens
