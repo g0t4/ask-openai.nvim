@@ -79,7 +79,7 @@ and NOT:
         :user(context)
         :user(fim_user_message)
         :set_thinking()
-        :start_assistant_final_response()
+        :start_assistant_final_response() -- this forces the model to respond w/o any further thinking
 
     return builder:build_raw_prompt()
 end
