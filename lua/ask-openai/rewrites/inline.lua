@@ -252,6 +252,9 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         --   i.e. see commit 69723fe4 for spelling correction request results that had indentation issues before prompt change
         --   ALTERNATIVELY, if I could show more of the surrounding code, that would likely help too/instead
         --     think the style that zed used for Edit Predictions (finetune on qwen25dcoder7b)
+        --   FYI - huge, uninteneded effect, mentioning carefully indented resulted in the model not generating markdown wrapers and explanations! (gptoss120b)
+        --     :AskRewrite please review and just fix spelling only
+        --     - previously I'd get markdown and explanations! now I only get the fixed code!
         code_context = "Here is code I selected (with carefully preserved indentation) from " .. file_name
             .. ":\n" .. code
     else
