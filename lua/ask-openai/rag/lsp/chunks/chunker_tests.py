@@ -289,11 +289,10 @@ end"""
 
     def test_function_with_preceding_unrelated_comment(self):
         chunk = self.chunks[3]
-        # TODO FINISH unrelated comments
-#         assert chunk.text == """function Subtract(a, b)
-#     return a - b
-# end
-# """
+        assert chunk.text == """function Subtract(a, b)
+    return a - b
+end
+"""
 
     def test_function_with_preceding_unrelated_comment_before_annotation_comments(self):
         chunk = self.chunks[4]
