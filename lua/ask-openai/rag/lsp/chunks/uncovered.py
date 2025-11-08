@@ -11,7 +11,7 @@ from lsp.logs import get_logger
 from io import StringIO
 
 logger_uncovered = get_logger(__name__)
-logger_uncovered.setLevel(logging.DEBUG)
+# logger_uncovered.setLevel(logging.DEBUG)
 
 # * ANSI colors
 # foreground:
