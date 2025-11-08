@@ -9,7 +9,7 @@ require("ask-openai.backends.sse")
 -- local use_model = "qwen2.5-coder:7b-instruct-q8_0"
 -- local use_model = "bytedance-seed-coder-8b"
 local use_model = "gpt-oss:120b"
-local use_gptoss_raw = true
+local use_gptoss_raw = false
 -- local use_model = "qwen3-coder:30b-a3b-q8_0"
 --
 -- * llama-server (llama-cpp)
