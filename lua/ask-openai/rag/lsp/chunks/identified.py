@@ -7,6 +7,12 @@ class IdentifiedChunk:
     sibling_nodes: list[Node]
     signature: str = ""
 
+    def number_lines(self):
+        return sum(
+            node.end_point[0] - node.start_point[0] + 1 \
+                   for node in self.sibling_nodes
+        )
+
 # # PRN switch to NamedTuple?
 # #  pros: hashable, better for caching
 # #  cons: immutable

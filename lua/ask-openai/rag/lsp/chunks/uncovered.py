@@ -134,6 +134,17 @@ def _build_uncovered_intervals(tree: Tree, source_bytes: bytes, chunks: list[Ide
 
     t_covered: list[TroubleshootCodeInterval] = []
     for chunk in chunks:
+        # TODO run line range splits on the longer ts_chunks. Instead of allowing them again as uncovered code.
+        #   TODO once I do this I can remove the hack here to use uncovered code for this (below).
+        #   TODO turn on uncovered code again and test this new hack to split up large ts_chunks too.
+        if chunk.number_lines() > 20:
+            # skip long ts_chunks so they are also indexed using sliding window (line ranges)
+            # otherwise:
+            # - semantic grep suffers, seems to work well for smaller chunks of code and less well for larger
+            #   - longer code matches require my human eyes to hunt for what matched, which defeats the point
+            #   - longer also seems a poor match (probably too many directions averaged together)
+            continue
+
         for node in chunk.sibling_nodes:
             # back to treating as standalone nodes, is perfectly fine and best way to keep byte/(line,col) alignments
             covered = P.openclosed(node.start_byte, node.end_byte)
