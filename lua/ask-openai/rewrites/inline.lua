@@ -153,8 +153,10 @@ function M.accept_rewrite()
         lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
 
-        log:info("accepted rewrite (accumulated_chunks): ", M.accumulated_chunks)
-        log:info("accepted rewrite (lines): ", lines)
+        log:info("Accepted rewrite (accumulated_chunks): ", M.accumulated_chunks)
+        -- log "sanitized" version of what is inserted:
+        local lines_joined = table.concat(lines, "\n")
+        log:info("Accepted rewrite (lines): ", lines_joined)
 
         -- FYI this may not be a problem with the linewise only mode that I setup for now with the streaming diff
         -- notes about not replacing last character of selection
@@ -205,7 +207,7 @@ function M.cleanup_after_cancel()
     M.displayer = nil
 
     -- PRN store this in a last_accumulated_chunks / canceled_accumulated_chunks?
-    log:info("Canceling this rewrite: ", M.accumulated_chunks)
+    log:info("Cancel rewrite (accumulated_chunks): ", M.accumulated_chunks)
 
     M.accumulated_chunks = ""
 end
