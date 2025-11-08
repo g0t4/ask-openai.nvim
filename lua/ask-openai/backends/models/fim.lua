@@ -61,9 +61,9 @@ and NOT:
     if context.includes.yanks and context.yanks then
         table.insert(context_lines, context.yanks.content)
     end
-    if request.context.includes.matching_ctags and request.context.matching_ctags then
-        table.insert(context_lines, request.context.matching_ctags)
-    end
+    -- if request.context.includes.matching_ctags and request.context.matching_ctags then
+    --     table.insert(context_lines, request.context.matching_ctags)
+    -- end
     if context.includes.project and context.project then
         vim.iter(context.project)
             :each(function(value)
