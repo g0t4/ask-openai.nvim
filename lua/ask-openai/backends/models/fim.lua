@@ -47,7 +47,12 @@ end
 
 ---@param request OllamaFimBackend
 function M.gptoss.get_fim_chat_messages(request)
-    -- TODO! experiment 1 - PORT OVER ALL MY non-thinking changes here
+    -- TODO! what if I change this to ask gptoss to rewrite the current line (only current line)
+    --  and then FIM just replaces that line?
+    --  OR, add a shortcut key to accept FIM as replace current line?
+    --  not always, but sometimes gptoss still suggests entire line (espeically for partial lines)
+    --    why not work around that or encourage that?
+    --    I can even diff the current line vs the generated to see what to insert so I don't have to do extmarks that replace the full line
 
     local dev = HarmonyRawFimPromptBuilder.developer_message
     -- FYI if/when you test out using partial thinking with raw template above, then put this into the shared developer message
