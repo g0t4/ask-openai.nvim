@@ -7,7 +7,8 @@ def attach_doc_comments(node, accumulated_comments: list) -> None:
     # * Ensure no blank line between the comment and the node
     comment_end_line = prev.end_point[0]
     node_start_line = node.start_point[0]
-    if comment_end_line != node_start_line - 1:
+    is_blank_line_between = comment_end_line != node_start_line - 1
+    if is_blank_line_between:
         return
 
     accumulated_comments.insert(0, prev)
