@@ -20,21 +20,23 @@ local endpoint_ollama_api_chat = false
 local endpoint_llama_server_proprietary_completions = false
 local endpoint_openaicompat_chat_completions = false
 function OllamaFimBackend.set_fim_model(model)
+    -- FYI right now, given I am using llama-server exclusively, toggling is just about changing between the two instances I run at the same time
+    --   so, toggling the port/endpoint :)
     if model == "gptoss" then
         use_model = "gpt-oss:120b"
         if use_gptoss_raw then
-            url = "http://ollama:8013/completions" -- for gptoss non-thinking FIM (knee capped b/c raw prompt stops thinking)
+            url = "http://ollama:8013/completions" -- manually formatted prompt to disable thinking
         else
-            url = "http://ollama:8013/v1/chat/completions" -- for gptoss also doing FIM w/ thinking
+            url = "http://ollama:8013/v1/chat/completions"
         end
     else
-        use_model = "qwen2.5-coder:7b-instruct-q8_0"
+        use_model = "qwen25coder"
         url = "http://ollama:8012/completions" -- * preferred for qwen2.5-coder
-        -- /completions - raw prompt: qwen2.5-coder(llama-server) # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
+        -- /completions - raw prompt # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
     end
     -- add new options in config so I no longer have to switch in code;
     -- use_model = "bytedance-seed-coder-8b"
-    -- use_model = "qwen3-coder:30b-a3b-q8_0"
+    -- use_model = "qwen3-coder:30b-a3b-q8_0" -- just call this qwen3coder
 
     -- * ollama
     -- url = "http://ollama:11434/api/generate" -- raw prompt: qwen2.5-coder(ollama)
@@ -122,10 +124,8 @@ function OllamaFimBackend:body_for()
 
     if string.find(body.model, "codellama") then
         builder = function()
-            -- TODO:
             return fim.codellama.get_fim_prompt(self)
             -- have it use meta.codellama.sentinel_tokens
-            -- FYI if I want a generic builder for all models w/o a specific prompt format then add that, maybe use qwen2.5-coder?
         end
 
         -- codellama uses <EOT> that seems to not be set as param in modelfile (at least for FIM?)
@@ -151,8 +151,8 @@ function OllamaFimBackend:body_for()
         builder = function()
             return fim.starcoder2.get_fim_prompt(self)
         end
-    elseif string.find(body.model, "qwen3-coder", nil, true) then
-        -- TODO! verify this is compatible with Qwen2.5-Coder FIM tokens, I believe it is
+    elseif string.find(body.model, "qwen3coder", nil, true) then
+        -- TODO verify this is compatible with Qwen2.5-Coder FIM tokens, I believe it is
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
@@ -166,7 +166,7 @@ function OllamaFimBackend:body_for()
         -- TODO! stop token isn't set! should I just remove this... I have them commented out in the other file linked here:
         body.options.stop = fim.qwen25coder.sentinel_tokens.fim_stop_tokens
         log:error("stop token: " .. vim.inspect(body.options.stop))
-    elseif string.find(body.model, "qwen2.5-coder", nil, true) then
+    elseif string.find(body.model, "qwen25coder", nil, true) then
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
