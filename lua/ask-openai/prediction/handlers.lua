@@ -149,7 +149,6 @@ function M.ask_for_prediction()
                         -- then set 500ms delay using defer_fn
                         -- then trigger a prediction and cancel it midway and it'll be stuck!
                         log:info(ansi.yellow_bold("skipping on_stdout chunk b/c prediction is abandoned"))
-
                         return
                     end
 
