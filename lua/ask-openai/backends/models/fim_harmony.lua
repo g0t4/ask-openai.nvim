@@ -48,7 +48,7 @@ As the user types, the plugin suggests code completions based on their cursor (<
 The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near <<<CURSOR>>>
 Do NOT explain your decisions. Do NOT return markdown blocks ```
 Do NOT repeat surrounding code, especially pay attention to the suffix!
-ONLY return valid code at the <<<CURSOR>> position
+ONLY return valid code at the <<<CURSOR>>> position
 
 For example, if you see this in a python file:
 def adder(a, b):
