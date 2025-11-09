@@ -49,7 +49,8 @@ The surrounding code is limited to X lines above/below the cursor, so it may not
 Do NOT explain your decisions. Do NOT return markdown blocks ```
 Do NOT repeat surrounding code (suffix/prefix)
 ONLY return valid code at the <|fim_middle|> position
-YOU ARE ONLY INSERTING CODE, DO NOT REPEAT PREFIX/SUFFIX. Think about overlap before finishing your thoughts.
+
+## YOU ARE ONLY INSERTING CODE, DO NOT REPEAT PREFIX/SUFFIX. Think about overlap before finishing your thoughts.
 
 For example, if you see this in a python file:
 def adder(a, b):
@@ -63,6 +64,40 @@ a + b
 
 and NOT:
     return a + b
+
+## PAY ATTENTION TO WHITESPACE.
+- Do not duplicate existing indentation on the cursor line!
+- When suggesting multiple lines, you have to indent each line verbatim.
+- No tool should be needed to fix indentation.
+
+For example, if you see this in a lua file:
+function load_config(path)
+    local file = io.open(path, "r")
+    <|fim_middle|>
+    local content = file:read("*a")
+    file:close()
+    return content
+end
+
+The correct completion is:
+if not file then
+        error("Cannot open config: " .. path)
+    end
+
+NOT:
+if not file then
+    error("Cannot open config: " .. path)
+end
+
+and NOT:
+    if not file then
+        error("Cannot open config: " .. path)
+    end
+
+and NOT:
+    if not file then
+    error("Cannot open config: " .. path)
+end
 
 ]])
 
