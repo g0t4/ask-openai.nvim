@@ -1,17 +1,17 @@
 local IGNORE_BOUNDARIES = false
 local M = {}
 
----@class PSChunk
+---@class PrefixSuffixChunk
 ---TODO base1 or base0 here?
 ---@field start_line_base1 integer
 ---@field end_line_base1 integer
 ---@field prefix string
 ---@field suffix string
-local PSChunk = {}
+local PrefixSuffixChunk = {}
 
-function PSChunk:new(o)
+function PrefixSuffixChunk:new(o)
     o = o or {}
-    setmetatable(o, self) -- self == PSChunk (table/instance)
+    setmetatable(o, self) -- self == PrefixSuffixChunk (table/instance)
     self.__index = self
     return o
 end
@@ -51,7 +51,7 @@ function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, b
 end
 
 ---@param take_num_lines_each_way? integer
----@return PSChunk ps_chunk
+---@return PrefixSuffixChunk ps_chunk
 function M.get_prefix_suffix_chunk(take_num_lines_each_way)
     take_num_lines_each_way = take_num_lines_each_way or 80
     -- presently, this only works with current buffer/window:
@@ -101,7 +101,7 @@ function M.get_prefix_suffix_chunk(take_num_lines_each_way)
         .. "\n" -- TODO! doesn't cursor row have a newline already? why am I adding that here?
         .. table.concat(lines_after_cursor_line, "\n")
 
-    local ps_chunk = PSChunk:new()
+    local ps_chunk = PrefixSuffixChunk:new()
     ps_chunk.prefix = prefix_text
     ps_chunk.suffix = suffix_text
     ps_chunk.start_line_base1 = take_start_row_base0 + 1

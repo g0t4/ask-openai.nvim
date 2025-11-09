@@ -86,7 +86,7 @@ function trim(str)
     return (str:gsub("^%s*(.-)%s*$", "%1"))
 end
 
----@param ps_chunk PSChunk
+---@param ps_chunk PrefixSuffixChunk
 ---@param limit? integer -- number of characters before/after cursor position for RAG query document
 ---@returns string? -- FIM query string, or nil to disable FIM RAG query
 local function fim_concat(ps_chunk, limit)
@@ -177,7 +177,7 @@ function M.context_query_rewrites(user_prompt, code_context, callback)
     return M._context_query(query, instruct, callback)
 end
 
----@param ps_chunk PSChunk
+---@param ps_chunk PrefixSuffixChunk
 ---@param callback fun(matches: LSPRankedMatch[], failed: boolean)
 ---@param skip_rag fun()
 function M.context_query_fim(ps_chunk, callback, skip_rag)

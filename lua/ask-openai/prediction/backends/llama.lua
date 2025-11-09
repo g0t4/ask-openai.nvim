@@ -8,7 +8,7 @@ local local_share = require("ask-openai.config.local_share")
 require("ask-openai.backends.sse")
 
 ---@class OllamaFimBackend
----@field ps_chunk PSChunk
+---@field ps_chunk PrefixSuffixChunk
 ---@field rag_matches LSPRankedMatch[]
 ---@field context CurrentContext
 local OllamaFimBackend = {}
@@ -55,7 +55,7 @@ end
 
 OllamaFimBackend.set_fim_model("qwen25coder") -- default
 
----@param ps_chunk PSChunk
+---@param ps_chunk PrefixSuffixChunk
 ---@param rag_matches LSPRankedMatch[]
 ---@return OllamaFimBackend
 function OllamaFimBackend:new(ps_chunk, rag_matches, model)
