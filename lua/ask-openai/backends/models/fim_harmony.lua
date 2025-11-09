@@ -49,6 +49,7 @@ The surrounding code is limited to X lines above/below the cursor, so it may not
 Do NOT explain your decisions. Do NOT return markdown blocks ```
 Do NOT repeat surrounding code (suffix/prefix)
 ONLY return valid code at the <|fim_middle|> position
+PAY attention to existing whitespace.
 YOU ARE ONLY INSERTING CODE, DO NOT REPEAT PREFIX/SUFFIX. Think about overlap before finishing your thoughts.
 
 For example, if you see this in a python file:
