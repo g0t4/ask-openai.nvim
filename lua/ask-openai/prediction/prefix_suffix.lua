@@ -9,9 +9,11 @@ local M = {}
 ---@field suffix string
 local PSChunk = {}
 
-function PSChunk:new()
-    self = setmetatable({}, { __index = PSChunk })
-    return self
+function PSChunk:new(o)
+    o = o or {}
+    setmetatable(o, self) -- self == PSChunk (table/instance)
+    self.__index = self
+    return o
 end
 
 --- Determine range of lines to take before/after cursor position.
