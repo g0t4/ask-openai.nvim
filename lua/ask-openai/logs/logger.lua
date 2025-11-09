@@ -1,3 +1,4 @@
+local local_share = require("ask-openai.config.local_share")
 local ansi = require("ask-openai.prediction.ansi")
 local Logger = {}
 Logger.__index = Logger
@@ -57,27 +58,17 @@ function Logger:ensure_file_is_open()
     end
 end
 
-local LEVEL = {
-    TRACE = 0,
-    INFO = 1,
-    WARN = 2,
-    ERROR = 3,
-}
-
-local function log_level_string(level)
-    -- TODO extract out color helpers (i.e. copy over devtools ansi.lua module)
-    local lookup = {
-        [LEVEL.TRACE] = ansi.cyan("TRACE"),
-        [LEVEL.INFO] = ansi.white_bold("INFO "),
-        [LEVEL.WARN] = ansi.yellow_bold("WARN "),
-        [LEVEL.ERROR] = ansi.red_bold("ERROR"),
+local function log_level_tag_for_number(level_number)
+    local level_number_to_tag = {
+        [local_share.LOG_LEVEL_NUMBERS.TRACE] = ansi.cyan("TRACE"),
+        [local_share.LOG_LEVEL_NUMBERS.INFO] = ansi.white_bold("INFO "),
+        [local_share.LOG_LEVEL_NUMBERS.WARN] = ansi.yellow_bold("WARN "),
+        [local_share.LOG_LEVEL_NUMBERS.ERROR] = ansi.red_bold("ERROR"),
     }
-
-    return lookup[level]
+    return level_number_to_tag[level_number]
 end
 
-
-local function build_entry(level, ...)
+local function build_entry(level_number, ...)
     -- CAREFUL with how you use arg table, it's fine to do but it messes up sequential tables (arg is a table)...
     --   #arg => stops at first nil
     --   use select("#", ...) as it doesn't suffer from this issue'
@@ -92,28 +83,28 @@ local function build_entry(level, ...)
 
     return string.format(
         "[%s] %s\n",
-        log_level_string(level),
+        log_level_tag_for_number(level_number),
         table.concat(args_strings, " ")
     )
 end
 
 function Logger:error(...)
-    self:log(LEVEL.ERROR, ...)
+    self:log(local_share.LOG_LEVEL_NUMBERS.ERROR, ...)
 end
 
 function Logger:warn(...)
-    self:log(LEVEL.WARN, ...)
+    self:log(local_share.LOG_LEVEL_NUMBERS.WARN, ...)
 end
 
 function Logger:trace(...)
-    self:log(LEVEL.TRACE, ...)
+    self:log(local_share.LOG_LEVEL_NUMBERS.TRACE, ...)
 end
 
 -- TODO add unit test of info log method so I don't waste another hour on its quirks:
 -- log:info("foo", nil, "bar") -- use to validate nil args don't interupt the rest of log args getting included -- nuke this is fine, just leaving as a reminder I had trouble with logging nil values
 
 function Logger:info(...)
-    self:log(LEVEL.INFO, ...)
+    self:log(local_share.LOG_LEVEL_NUMBERS.INFO, ...)
 end
 
 function Logger:jsonify_info(message, ...)
@@ -178,19 +169,13 @@ function Logger:json_info(message, json, pretty)
     vim.fn.chanclose(job_id, "stdin")
 end
 
-local_share = require("ask-openai.config.local_share")
-
-function Logger.is_verbose_enabled()
-    return local_share.are_verbose_logs_enabled() or false
-end
-
-function Logger:log(level, ...)
-    if not local_share.are_verbose_logs_enabled() and level < 2 then
+function Logger:log(level_number, ...)
+    local _, threshold_number = local_share.get_log_threshold()
+    if level_number < threshold_number then
         return
     end
 
-    -- TODO adapt to have a level? and add filter for it
-    local entry = build_entry(level, ...)
+    local entry = build_entry(level_number, ...)
 
     -- PRN can use vim.defer_fn if overhead is interferring with predictions... don't  care to do that now though...
     self:ensure_file_is_open() -- ~11ms first time only (when ask dir already exists, so worse case is higher if it has to make the dir), 0 thereafter

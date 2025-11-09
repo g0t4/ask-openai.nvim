@@ -91,11 +91,9 @@ function M.get_options()
 end
 
 function M.print_verbose(msg, ...)
-    -- ?? move this to logger, or?
-    if not local_share.are_verbose_logs_enabled() then
-        return
+    if local_share.is_trace_logging_enabled() then
+        print(msg, ...)
     end
-    print(msg, ...)
 end
 
 local function _get_provider()
@@ -188,7 +186,7 @@ function M.check()
         vim.health.error("bearer_token is empty")
     else
         vim.health.ok("bearer_token retrieved")
-        if local_share.are_verbose_logs_enabled() then
+        if local_share.is_trace_logging_enabled() then
             -- TODO extract mask function and test it, try to submit to plenary? or does plenary have one?
             local len = string.len(bearer_token)
             local num = math.min(5, math.floor(len * 0.07)) -- first and last 7%, max of 5 chars

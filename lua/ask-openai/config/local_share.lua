@@ -17,12 +17,37 @@ local function mkdir_p(path)
     vim.fn.mkdir(vim.fn.fnamemodify(path, ':h'), 'p')
 end
 
+
+-- * log level constants
+local LEVEL_NUMBERS = {
+    TRACE = 0,
+    INFO = 1,
+    WARN = 2,
+    ERROR = 3,
+}
+M.LOG_LEVEL_NUMBERS = LEVEL_NUMBERS
+local LEVEL_TEXT_TO_NUMBER = {
+    ["TRACE"] = LEVEL_NUMBERS.TRACE,
+    ["INFO"]  = LEVEL_NUMBERS.INFO,
+    ["WARN"]  = LEVEL_NUMBERS.WARN,
+    ["ERROR"] = LEVEL_NUMBERS.ERROR,
+}
+M.LOG_LEVEL_TEXT_TO_NUMBER = LEVEL_TEXT_TO_NUMBER
+local LEVEL_NUMBER_TO_TEXT = {
+    [LEVEL_NUMBERS.TRACE] = "TRACE",
+    [LEVEL_NUMBERS.INFO]  = "INFO",
+    [LEVEL_NUMBERS.WARN]  = "WARN",
+    [LEVEL_NUMBERS.ERROR] = "ERROR",
+}
+M.LOG_LEVEL_NUMBER_TO_TEXT = LEVEL_NUMBER_TO_TEXT
+local DEFAULT_LOG_LEVEL_NUMBER = LEVEL_NUMBERS.WARN
+
 local function load_config()
     local default = {
         predictions = { enabled = true },
-        verbose_logs = false,
         notify_stats = false,
         rag = { enabled = true },
+        log_threshold_text = LEVEL_NUMBER_TO_TEXT[DEFAULT_LOG_LEVEL_NUMBER],
     }
 
     if file_exists(config_path) then
@@ -84,16 +109,30 @@ function M.toggle_predictions()
     return cfg.predictions.enabled
 end
 
--- * verbose logs *
-function M.are_verbose_logs_enabled()
-    return get().verbose_logs
+-- * log threshold *
+local MAX_LOG_THRESHOLD = 2 -- must always show WARN/ERROR
+
+---@return string, number
+function M.cycle_log_verbosity()
+    local current_text, current_number = M.get_log_threshold()
+    local next_number = (current_number + 1) % (MAX_LOG_THRESHOLD + 1)
+    local cfg = get()
+    cfg.log_threshold_text = LEVEL_NUMBER_TO_TEXT[next_number]
+    save()
+    return cfg.log_threshold_text, next_number
 end
 
-function M.toggle_verbose_logs()
+---@return string level_text, number level_number
+function M.get_log_threshold()
     local cfg = get()
-    cfg.verbose_logs = not cfg.verbose_logs
-    save()
-    return cfg.verbose_logs
+    local text = cfg.log_threshold_text or LEVEL_NUMBER_TO_TEXT[DEFAULT_LOG_LEVEL_NUMBER]
+    local number = LEVEL_TEXT_TO_NUMBER[text]
+    return text, number
+end
+
+--- @return boolean
+function M.is_trace_logging_enabled()
+    return M.get_log_threshold() < 1
 end
 
 -- * notify stats *

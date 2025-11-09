@@ -23,9 +23,11 @@ function M.lualine()
     return {
         function()
             local icons = { '󰼇' }
-            if local_share.are_verbose_logs_enabled() then
-                table.insert(icons, '')
-            end
+
+            -- * log threshold
+            local threshold_text, _ = local_share.get_log_threshold()
+            table.insert(icons, threshold_text)
+
             if local_share.are_notify_stats_enabled() then
                 table.insert(icons, '󰍨')
             end

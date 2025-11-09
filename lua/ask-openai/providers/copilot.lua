@@ -5,6 +5,7 @@
 
 local curl = require("plenary.curl")
 local Path = require("plenary.path")
+local local_share = require("ask-openai.config.local_share")
 
 ---FYI type annotations work nicely with coc (completions) and hover docs (Shift+K)
 --- token from copilot_internal/v2/token
@@ -156,7 +157,7 @@ local function check()
         return
     end
 
-    if require("ask-openai.config.local_share").are_verbose_logs_enabled() then
+    if local_share.is_trace_logging_enabled() then
         -- if verbose then show copilot_internal/v2/token response
         local masked = vim.deepcopy(config)
         masked.token = "***" -- mask all of token
