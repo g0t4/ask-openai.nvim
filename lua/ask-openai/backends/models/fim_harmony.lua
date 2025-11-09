@@ -44,11 +44,13 @@ end
 
 HarmonyRawFimPromptBuilder.developer_message = vim.trim([[
 You are completing code from a Neovim plugin.
-As the user types, the plugin suggests code completions based on their cursor (<|fim_middle|>) position.
+As the user types, the plugin suggests code completions based on their cursor position marked with: <|fim_middle|>
 The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near <|fim_middle|>
 Do NOT explain your decisions. Do NOT return markdown blocks ```
-Do NOT repeat surrounding code, especially pay attention to the suffix!
+Do NOT repeat surrounding code (suffix/prefix)
 ONLY return valid code at the <|fim_middle|> position
+PAY attention to existing whitespace too, it was reproduced exactly as it is in the file right now. Think about whitespace before you answer.
+YOU ARE NOT ONLY INSERTING CODE, DO NOT REPEAT PREFIX/SUFFIX. Think about overlap before finishing your thoughts.
 
 For example, if you see this in a python file:
 def adder(a, b):
