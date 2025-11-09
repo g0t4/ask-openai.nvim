@@ -49,6 +49,17 @@ function M.black(text, options)
     return "\27[" .. color_keys.black .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
 end
 
+function M.cyan_bold(text, options)
+    options = options or {}
+    options.color = options.color or true -- default is true
+    if not options.color then
+        return text
+    end
+    local bold_text =
+        "\27[" .. color_keys.bright .. ";" .. color_keys.cyan .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
+    return bold_text
+end
+
 function M.cyan(text, options)
     options = options or {}
     options.color = options.color or true -- default is true
@@ -78,6 +89,17 @@ function M.red(text, options)
     return "\27[" .. color_keys.red .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
 end
 
+function M.blue_bold(text, options)
+    options = options or {}
+    options.color = options.color or true -- default is true
+    if not options.color then
+        return text
+    end
+    local bold_text =
+        "\27[" .. color_keys.bright .. ";" .. color_keys.blue .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
+    return bold_text
+end
+
 function M.blue(text, options)
     options = options or {}
     options.color = options.color or true -- default is true
@@ -87,6 +109,17 @@ function M.blue(text, options)
     return "\27[" .. color_keys.blue .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
 end
 
+function M.magenta_bold(text, options)
+    options = options or {}
+    options.color = options.color or true -- default is true
+    if not options.color then
+        return text
+    end
+    local bold_text =
+        "\27[" .. color_keys.bright .. ";" .. color_keys.magenta .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
+    return bold_text
+end
+
 function M.magenta(text, options)
     options = options or {}
     options.color = options.color or true -- default is true
@@ -94,6 +127,17 @@ function M.magenta(text, options)
         return text
     end
     return "\27[" .. color_keys.magenta .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
+end
+
+function M.green_bold(text, options)
+    options = options or {}
+    options.color = options.color or true -- default is true
+    if not options.color then
+        return text
+    end
+    local bold_text =
+        "\27[" .. color_keys.bright .. ";" .. color_keys.green .. "m" .. text .. "\27[" .. color_keys.reset .. "m"
+    return bold_text
 end
 
 function M.green(text, options)

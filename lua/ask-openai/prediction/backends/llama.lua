@@ -3,6 +3,8 @@ local CurrentContext = require("ask-openai.prediction.context")
 local fim = require("ask-openai.backends.models.fim")
 local meta = require("ask-openai.backends.models.meta")
 local files = require("ask-openai.helpers.files")
+local ansi = require("ask-openai.prediction.ansi")
+local local_share = require("ask-openai.config.local_share")
 require("ask-openai.backends.sse")
 
 ---@class OllamaFimBackend
@@ -234,10 +236,41 @@ function OllamaFimBackend:body_for()
 
     if builder then
         body.prompt = builder()
-    elseif body.messages == nil then
+        log:info(ansi.green_bold('body.prompt:\n'), ansi.green(body.prompt))
+    elseif body.messages then
+        local _, log_threshold = local_share.get_log_threshold()
+        -- TODO if verbose then log all messages
+        -- log:info('body.messages', vim.inspect(body.messages))
+        if log_threshold < local_share.LOG_LEVEL_NUMBERS.WARN then
+            -- IOTW INFO LOGGING (and below)
+            -- HACK: ONLY log last message, around cursor_marker
+            -- FYI WON'T WORK WITH non-gptoss models b/c they have different cursor_marker
+            local last_message = body.messages[#body.messages]
+            local cursor_marker = '<<<CURSOR>>>'
+            local lines = vim.split(last_message.content, '\n', true)
+            local cursor_index = nil
+            local cursor_count = 0
+            for i, line in ipairs(lines) do
+                if line:find(cursor_marker, 1, true) then
+                    cursor_index = i
+                    cursor_count = cursor_count + 1
+                    if cursor_count == 2 then
+                        break
+                    end
+                end
+            end
+            if cursor_index then
+                local start_idx = math.max(1, cursor_index - 5)
+                local end_idx = math.min(#lines, cursor_index + 5)
+                local snippet = table.concat(vim.list_slice(lines, start_idx, end_idx), '\n')
+                log:info(ansi.red_bold('CURSOR CONTEXT:\n'), ansi.red(snippet))
+            else
+                log:info(ansi.yellow('No <<<CURSOR>>> marker found, you messed up big time!'))
+            end
+        end
+    else
         error("you must define either the prompt builder OR messages for chat like FIM for: " .. body.model)
     end
-    log:trace('body.prompt', body.prompt)
 
     return vim.json.encode(body)
 end
