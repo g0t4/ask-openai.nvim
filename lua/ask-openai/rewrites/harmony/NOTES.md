@@ -1,3 +1,17 @@
+## researching what to use for FIM tag(s) with gptoss
+
+```py
+# I asked gptoss to explain what TAGs are used for FIM... to see what "comes to mind" first... it was <|fim_*|> which is not really a surprise given codex/starcoder/qwencoder/etc use these
+
+import tiktoken
+enc = tiktoken.get_encoding("p50k_edit")
+enc._special_tokens
+# {'<|endoftext|>': 50256,
+#  '<|fim_prefix|>': 50281,
+#  '<|fim_middle|>': 50282,
+#  '<|fim_suffix|>': 50283}
+```
+
 ## vim.NIL on first delta
 
 First SSE has content == vim.NIL b/c in JSON "content": null (likely b/c it is just reporting role as "assistant")... NBD ignore this
