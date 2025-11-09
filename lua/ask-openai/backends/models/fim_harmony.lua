@@ -44,15 +44,15 @@ end
 
 HarmonyRawFimPromptBuilder.developer_message = vim.trim([[
 You are completing code from a Neovim plugin.
-As the user types, the plugin suggests code completions based on their cursor (<<<CURSOR>>>) position.
-The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near <<<CURSOR>>>
+As the user types, the plugin suggests code completions based on their cursor (<|fim_middle|>) position.
+The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near <|fim_middle|>
 Do NOT explain your decisions. Do NOT return markdown blocks ```
 Do NOT repeat surrounding code, especially pay attention to the suffix!
-ONLY return valid code at the <<<CURSOR>>> position
+ONLY return valid code at the <|fim_middle|> position
 
 For example, if you see this in a python file:
 def adder(a, b):
-    return <<<CURSOR>>> + b
+    return <|fim_middle|> + b
 
 The correct completion is:
 a
@@ -142,9 +142,9 @@ function HarmonyRawFimPromptBuilder.fim_prompt(request)
     --    might want to find a fine tune too that actually has training for PSM/SPM
     --    would need to reword some instructions above (including examples)
     local fim_user_message = file_prefix
-        .. "Please complete <<<CURSOR>>> in the following code (which has carefully preserved indentation):\n"
+        .. "Please complete <|fim_middle|> in the following code (which has carefully preserved indentation):\n"
         .. request.ps_chunk.prefix
-        .. "<<<CURSOR>>>"
+        .. "<|fim_middle|>"
         .. request.ps_chunk.suffix
     return fim_user_message
 end
@@ -183,8 +183,8 @@ function HarmonyRawFimPromptBuilder:set_thinking()
     -- - also harmony has no \n between messages, \n should only come within a message text field
     local deep_thoughts_about_fim = vim.trim([[
 The user is asking for a code completion.
-They provided the existing code with a <<<CURSOR>>> tag where their cursor is currently located. Whatever I provide will replace <<<CURSOR>>>
-To clarify, the code before <<<CURSOR>>> is the prefix. The code after is the suffix.
+They provided the existing code with a <|fim_middle|> tag where their cursor is currently located. Whatever I provide will replace <|fim_middle|>
+To clarify, the code before <|fim_middle|> is the prefix. The code after is the suffix.
 I am not changing the prefix nor the suffix.
 I will NOT wrap my response in ``` markdown blocks.
 I will not explain anything.
@@ -192,9 +192,9 @@ They also carefully preserved indentation, so I need to carefully consider inden
 I will fill-in-the-middles in the most awesome way!
 ]])
     -- FYI adding blurb about no ``` and markdown worked well to stop that!
-    -- TODO! detect line break before/after <<<CURSOR>>> and adjust the thought about modifying an existing line of code accordingly?
+    -- TODO! detect line break before/after <|fim_middle|> and adjust the thought about modifying an existing line of code accordingly?
     --   present this as a reflective thought from the model:
-    --     If there's no line break before <<<CURSOR>>> and/or after, then that means I am completing code on a line of existing code. Do not repeat the rest of the line either!
+    --     If there's no line break before <|fim_middle|> and/or after, then that means I am completing code on a line of existing code. Do not repeat the rest of the line either!
     -- YES! repeat the CURRENT LINE HERE as an observation!!! And maybe even state what I shouldn't duplicate! (this might help with repeating on same line (almost always right now when there's code on same line after cursor)
     --   MAYBE mention its indentation too instead of other indentation comments above (I can say this line has X indent so I need to respect that)
     --   IF there's code before and after the cursor on the current line, reflect that this is likely just a fill in the middle of this line only, not a multi line response (not likely anyways)

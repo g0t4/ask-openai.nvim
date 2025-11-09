@@ -246,7 +246,7 @@ function OllamaFimBackend:body_for()
             -- HACK: ONLY log last message, around cursor_marker
             -- FYI WON'T WORK WITH non-gptoss models b/c they have different cursor_marker
             local last_message = body.messages[#body.messages]
-            local cursor_marker = '<<<CURSOR>>>'
+            local cursor_marker = '<|fim_middle|>'
             local lines = vim.split(last_message.content, '\n', true)
             local cursor_index = nil
             local cursor_count = 0
@@ -265,7 +265,7 @@ function OllamaFimBackend:body_for()
                 local snippet = table.concat(vim.list_slice(lines, start_idx, end_idx), '\n')
                 log:info(ansi.red_bold('CURSOR CONTEXT:\n'), ansi.red(snippet))
             else
-                log:info(ansi.yellow('No <<<CURSOR>>> marker found, you messed up big time!'))
+                log:info(ansi.yellow('No <|fim_middle|> marker found, you messed up big time!'))
             end
         end
     else
