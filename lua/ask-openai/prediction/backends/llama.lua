@@ -282,8 +282,8 @@ function OllamaFimBackend.process_sse(lines)
     local stats = nil
     for ss_event in lines:gmatch("[^\r\n]+") do
         if ss_event:match("^data:%s*%[DONE%]$") then
-            -- shouldn't land here b/c finish_reason is usually on prior SSE
-            return SSEResult:new(chunk, true)
+            -- can land here when last SSE (i.e. with timings) is bundled with [DONE]
+            return SSEResult:new(chunk, true, "[DONE]", stats, reasoning_content)
         end
 
         --  strip leading "data: " (if present)
