@@ -166,6 +166,11 @@ function M.ask_for_prediction()
                         if not this_prediction:any_chunks() then
                             -- FYI great way to test this, go to a line that is done (i.e. a return) and go into insert mode before the returned variable and it almost always suggests that is EOS (at least with qwen2.5-coder + ollama)
                             log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (done_reason or "") .. "'")
+
+                            -- TODO real fix for empty response to remove thinking tokens:
+                            -- good test case is to go b/w ends (below) and insert new line (empty) will likely result in a blank eventually (check reasoning too to confirm)
+                            -- FYI might have a similar issue in other spots... maybe parlay this into a final cleanup step?
+                            this_prediction:clear_extmarks()
                         end
                         this_prediction:mark_generation_finished()
                     end
