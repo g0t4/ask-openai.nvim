@@ -12,40 +12,50 @@ require("ask-openai.backends.sse")
 local OllamaFimBackend = {}
 OllamaFimBackend.__index = OllamaFimBackend
 
--- * primary models I am testing (keep notes in MODELS.notes.md) - keep in mind with llama-server this is not an argument (server uses the model it was started with)
--- local use_model = "qwen2.5-coder:7b-instruct-q8_0"
--- local use_model = "bytedance-seed-coder-8b"
-local use_model = "gpt-oss:120b"
+local use_model = ""
+local url = ""
 local use_gptoss_raw = false
--- local use_model = "qwen3-coder:30b-a3b-q8_0"
---
--- * llama-server (llama-cpp)
--- local url = "http://ollama:8012/completions" -- * preferred for qwen2.5-coder
-local url
-if use_gptoss_raw then
-    url = "http://ollama:8013/completions" -- for gptoss non-thinking FIM (knee capped b/c raw prompt stops thinking)
-else
-    url = "http://ollama:8013/v1/chat/completions" -- for gptoss also doing FIM w/ thinking
+local endpoint_ollama_api_generate = false
+local endpoint_ollama_api_chat = false
+local endpoint_llama_server_proprietary_completions = false
+local endpoint_openaicompat_chat_completions = false
+function OllamaFimBackend.set_fim_model(model)
+    if model == "gptoss" then
+        use_model = "gpt-oss:120b"
+        if use_gptoss_raw then
+            url = "http://ollama:8013/completions" -- for gptoss non-thinking FIM (knee capped b/c raw prompt stops thinking)
+        else
+            url = "http://ollama:8013/v1/chat/completions" -- for gptoss also doing FIM w/ thinking
+        end
+    else
+        use_model = "qwen2.5-coder:7b-instruct-q8_0"
+        url = "http://ollama:8012/completions" -- * preferred for qwen2.5-coder
+        -- /completions - raw prompt: qwen2.5-coder(llama-server) # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
+    end
+    -- add new options in config so I no longer have to switch in code;
+    -- use_model = "bytedance-seed-coder-8b"
+    -- use_model = "qwen3-coder:30b-a3b-q8_0"
+
+    -- * ollama
+    -- url = "http://ollama:11434/api/generate" -- raw prompt: qwen2.5-coder(ollama)
+    -- url = "http://ollama:11434/api/chat" -- gpt-oss(ollama works)
+    -- url = "http://ollama:11434/v1/chat/completions" -- gpt-oss(ollama works)
+
+    -- * parser toggles
+    --   (make based on url/model so not have to explicitly config too)
+    endpoint_ollama_api_generate = string.match(url, "/api/generate$")
+    endpoint_ollama_api_chat = string.match(url, "/api/chat$")
+    endpoint_llama_server_proprietary_completions = string.match(url, ":801%d/completions$")
+    endpoint_openaicompat_chat_completions = string.match(url, "v1/chat/completions$")
 end
 
--- /completions - raw prompt: qwen2.5-coder(llama-server) # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
--- local url = "http://ollama:8012/chat/completions" -- gpt-oss(llama-server, not working yet) - actually, try /completions and fill in the raw harmony prompt (and stop thinking too)
--- * ollama
--- local url = "http://ollama:11434/api/generate" -- raw prompt: qwen2.5-coder(ollama)
--- local url = "http://ollama:11434/api/chat" -- gpt-oss(ollama works)
--- local url = "http://ollama:11434/v1/chat/completions" -- gpt-oss(ollama works)
---
--- * parser toggles
---   (make based on url/model so not have to explicitly config too)
-local endpoint_ollama_api_generate = string.match(url, "/api/generate$")
-local endpoint_ollama_api_chat = string.match(url, "/api/chat$")
-local endpoint_llama_server_proprietary_completions = string.match(url, ":801%d/completions$")
-local endpoint_openaicompat_chat_completions = string.match(url, "v1/chat/completions$")
+OllamaFimBackend.set_fim_model("qwen25coder") -- default
 
 ---@param ps_chunk PSChunk
 ---@param rag_matches LSPRankedMatch[]
 ---@return OllamaFimBackend
-function OllamaFimBackend:new(ps_chunk, rag_matches)
+function OllamaFimBackend:new(ps_chunk, rag_matches, model)
+    OllamaFimBackend.set_fim_model(model)
     local always_include = {
         yanks = true,
         matching_ctags = true, -- TODO should RAG replace this by default? and just have more RAG matches (FYI RAG can index the ctags file too)

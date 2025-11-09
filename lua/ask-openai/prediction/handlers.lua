@@ -24,7 +24,8 @@ function M.ask_for_prediction()
 
     ---@param rag_matches LSPRankedMatch[]
     function send_fim(rag_matches)
-        local backend = OllamaFimBackend:new(ps_chunk, rag_matches)
+        local model = api.get_fim_model()
+        local backend = OllamaFimBackend:new(ps_chunk, rag_matches, model)
         local spawn_curl_options = backend:request_options()
 
         -- log:trace("curl", table.concat(spawn_curl_options.args, " "))
