@@ -132,7 +132,8 @@ end
 
 --- @return boolean
 function M.is_trace_logging_enabled()
-    return M.get_log_threshold() < 1
+    local _, number = M.get_log_threshold()
+    return number <= LEVEL_NUMBERS.TRACE
 end
 
 -- * notify stats *
