@@ -161,6 +161,9 @@ function M.ask_for_prediction()
                         this_prediction:add_chunk_to_prediction(chunk, sse_result.reasoning_content)
                     end
                     if generation_done then
+                        if this_prediction.has_reasoning then
+                            log:trace("REASONING:\n", ansi.yellow(this_prediction:get_reasoning()))
+                        end
                         if not this_prediction:any_chunks() then
                             -- FYI great way to test this, go to a line that is done (i.e. a return) and go into insert mode before the returned variable and it almost always suggests that is EOS (at least with qwen2.5-coder + ollama)
                             log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (done_reason or "") .. "'")

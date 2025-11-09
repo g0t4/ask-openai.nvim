@@ -44,6 +44,7 @@ function Prediction:new()
     self.abandoned = false -- PRN could be a prediction state? IF NEEDED
     self.disable_cursor_moved = false
     self.has_reasoning = false
+    self.reasoning_chunks = {}
     self.start_time = os.time()
     return setmetatable(self, { __index = Prediction })
 end
@@ -54,14 +55,21 @@ function Prediction:add_chunk_to_prediction(chunk, reasoning_content)
         return
     end
 
+    -- TODO anything more efficient for concatenating chunks?
     if chunk then
         self.prediction = self.prediction .. chunk
     end
     if reasoning_content then
+        table.insert(self.reasoning_chunks, reasoning_content)
+        -- TODO log reasoning chunks when done
         self.has_reasoning = true
         -- if needed, accumulate reasoning (maybe for log messages to troubleshoot the reasoning)
     end
     self:redraw_extmarks()
+end
+
+function Prediction:get_reasoning()
+    return table.concat(self.reasoning_chunks, "")
 end
 
 function Prediction:any_chunks()
