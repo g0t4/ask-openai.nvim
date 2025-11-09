@@ -1,4 +1,5 @@
 local local_share = require('ask-openai.config.local_share')
+local human = require('devtools.humanize')
 
 ---@class lualine
 ---@field last_stats SSEStats|nil
@@ -33,11 +34,13 @@ function M.lualine()
             end
             table.insert(icons, local_share.get_fim_model())
             if M.last_stats then
-                if M.last_stats.predicted_tokens_per_second then
-                    table.insert(icons, tostring(M.last_stats.predicted_tokens_per_second))
-                end
                 if M.last_stats.prompt_tokens_per_second then
-                    table.insert(icons, tostring(M.last_stats.prompt_tokens_per_second))
+                    local text = "in@" .. human.format_num(M.last_stats.prompt_tokens_per_second, 0) .. "tps"
+                    table.insert(icons, text)
+                end
+                if M.last_stats.predicted_tokens_per_second then
+                    local text = "out@" .. human.format_num(M.last_stats.predicted_tokens_per_second, 0) .. "tps"
+                    table.insert(icons, text)
                 end
             end
             return table.concat(icons, ' ')
