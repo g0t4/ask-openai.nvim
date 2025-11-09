@@ -17,7 +17,6 @@ local dots = require("ask-openai.rewrites.thinking.dots")
 --- @field has_reasoning boolean
 --- @field start_time number
 --- @field generated boolean|nil
---- @field mark_generation_failed boolean|nil
 local Prediction = {}
 local uv = vim.uv
 
