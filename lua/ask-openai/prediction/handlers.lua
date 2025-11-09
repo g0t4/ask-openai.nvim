@@ -9,6 +9,7 @@ require("devtools.performance")
 local log = require("ask-openai.logs.logger").predictions()
 require("ask-openai.prediction.prefix_suffix")
 local ps = require("ask-openai.prediction.prefix_suffix")
+local lualine = require('ask-openai.status.lualine')
 
 local OllamaFimBackend = require("ask-openai.prediction.backends.llama")
 -- local backend = require("ask-openai.prediction.backends.backendsvllm")
@@ -167,6 +168,7 @@ function M.ask_for_prediction()
                         this_prediction:mark_generation_finished()
                     end
                     if sse_result.stats then
+                        lualine.set_last_fim_stats(sse_result.stats)
                         if api.are_notify_stats_enabled() then
                             show_stats(sse_result)
                         end
