@@ -1,6 +1,7 @@
 local M = {}
 local init = require("ask-openai")
 local config = require("ask-openai.config")
+local lualine = require('ask-openai.status.lualine')
 
 -- * predictions *
 function M.enable_predictions()
@@ -70,6 +71,11 @@ end
 
 function M.is_rag_enabled()
     return config.local_share.is_rag_enabled()
+end
+
+---@return table components
+function M.get_lualine_status()
+    return lualine.lualine()
 end
 
 return M
