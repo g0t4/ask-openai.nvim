@@ -223,32 +223,14 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 .strip()
 
     def get_class_signature(node) -> str:
-        sig = None
-
-        stop_node_type = None
         # - class_declaration == typescript
         # - class_definition == python (and lua?)
         if node.type == 'class_declaration':
-            stop_node_type = "class_body"
+            return get_signature_stop_on(node, "class_body")
         elif node.type.find("class_definition") >= 0:
-            stop_node_type = "block"
+            return get_signature_stop_on(node, "block")
         else:
             return f"--- TODO {node.type} ---"
-
-        stop_before_node = None
-        for child in node.children:
-            # text = child.text.decode("utf-8", errors="replace")
-            # printtmp(f'  {child.type=}\n    {text=}')
-            if child.type == stop_node_type:
-                stop_before_node = child
-                break
-
-        if not stop_before_node:
-            return f"--- unexpected {stop_node_type=} NOT FOUND ---"
-
-        return source_bytes[node.start_byte:stop_before_node.start_byte] \
-                .decode("utf-8", errors="replace") \
-                .strip()
 
     def get_function_signature(node) -> str:
         # printtmp(f'\n [red]{node.type=}[/]')
