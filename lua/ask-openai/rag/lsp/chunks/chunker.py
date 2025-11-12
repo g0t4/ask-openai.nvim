@@ -322,8 +322,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             if parser_language == "python":
                 attach_py_decorators(node, chunk.sibling_nodes)
 
-        elif logger.isEnabledForDebug() and not collected_parent:
-            debug_uncollected_node(node)
+        # elif logger.isEnabledForDebug() and not collected_parent:
+        #     debug_uncollected_node(node)
 
         for child in node.children:
             yield from identify_chunks(child, collected_parent, level + 1)
