@@ -276,6 +276,18 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         #  would also allow me to get the embedding server going sooner (probably boost meaningful responsiveness when I have small batches of updates (i.e. after git commit) where starting the embedding server sooner would cut material % of time off overall for Time to First Embedding Batch
         #  could even use multi worker arch to prepare next batch while server is embedding first batch(es) - producer/consumer?
 
+        # FYI use the following to search across parsers for who uses what node types, many grammars in this org:
+        # two prominent orgs:
+        #   gh search code --owner tree-sitter --owner tree-sitter-grammars --filename grammar.json function_definition
+        #   TODO find other repos/orgs to search too? compile into a script?
+        #
+        # good index of grammars (if not matching list above)
+        #    https://github.com/Goldziher/tree-sitter-language-pack
+        #
+        # NOTE: grammar.js has implementation details
+        #
+        #   gh search repos --owner tree-sitter-grammars # see grammars
+
         if node.type in [
                 "function_definition",
                 "local_function_definition_statement",
