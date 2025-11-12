@@ -195,24 +195,20 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         tree = parser.parse(source_bytes)
 
     def get_type_signature(node) -> str:
-        sig = None
-        stop_node_type = None
         if node.type == 'type_alias_declaration':
             # - type_alias_declaration == typescript
             # FYI in this case, I could do stop on type=="type_identifier" INSTEAD of stop before type=="="
-            # TODO refactor signature extractor to be generic stop_before (maybe add stop_on if needed)
-            #   pass pairs of type / stop_before_type
-            #   THEN do I even care if it is a func/class/type/etc?
-            stop_node_type = "="
+            return get_signature_stop_on(node, "=")
         elif node.type == 'interface_declaration':
-            # interface declarations end before the body starts
-            stop_node_type = "interface_body"
+            # typescript
+            return get_signature_stop_on(node, "interface_body")
         elif node.type == 'enum_declaration':
-            # enum declarations end before the body starts
-            stop_node_type = "enum_body"
+            # typescript
+            return get_signature_stop_on(node, "enum_body")
         else:
             return f"--- TODO {node.type} ---"
 
+    def get_signature_stop_on(node, stop_node_type) -> str:
         stop_before_node = None
         for child in node.children:
             if child.type == stop_node_type:
