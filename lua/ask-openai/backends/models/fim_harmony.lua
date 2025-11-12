@@ -1,4 +1,5 @@
 local log = require("ask-openai.logs.logger")
+local api = require("ask-openai.api")
 
 ---@class HarmonyRawFimPromptBuilder
 ---@field _parts string[]
@@ -20,7 +21,7 @@ end
 ---   - built-in tools
 ---@return HarmonyRawFimPromptBuilder self
 function HarmonyRawFimPromptBuilder:system()
-    -- ? add reasoning level arg: high/medium/low
+    -- reasoning level: high/medium/low - https://arxiv.org/html/2508.10925v1#S2.SS5.SSS2
     -- I could add a streamdeck button/toggle to switch level
     -- - And instead of forcing instant response, I could start the thoughts section and let it finish it.
     --   i.e. prompt it to finish thoughts about the specific code in the example
@@ -33,7 +34,7 @@ You are ChatGPT, a large language model trained by OpenAI.
 Knowledge cutoff: 2024-06
 Current date: 2025-11-07
 
-Reasoning: low
+Reasoning: ]] .. api.get_reasoning_level() [[
 
 # Valid channels: analysis, commentary, final. Channel must be included for every message.
 ]]

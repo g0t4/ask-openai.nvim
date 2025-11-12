@@ -5,6 +5,7 @@ local meta = require("ask-openai.backends.models.meta")
 local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.prediction.ansi")
 local local_share = require("ask-openai.config.local_share")
+local api = require("ask-openai.api")
 require("ask-openai.backends.sse")
 
 ---@class OllamaFimBackend
@@ -190,12 +191,17 @@ function OllamaFimBackend:body_for()
             -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
             body.messages = fim.gptoss.get_fim_chat_messages(self)
             body.raw = false -- not used in chat -- FYI hacky
+            local level = api.get_reasoning_level()
             body.chat_template_kwargs = {
-                reasoning_effort = "low"
+                reasoning_effort = level
             }
-            body.max_tokens = 2048 -- low thinking
-            -- body.max_tokens = 4096 -- medium
-            -- body.max_tokens = 8192 -- high
+            if level == "high" then
+                body.max_tokens = 8192 -- high thinking
+            elseif level == "medium" then
+                body.max_tokens = 4096 -- medium thinking
+            else
+                body.max_tokens = 2048 -- low thinking
+            end
         else
             -- * /completions legacy endpoint:
             builder = function()

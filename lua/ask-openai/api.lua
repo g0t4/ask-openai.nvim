@@ -44,6 +44,19 @@ function M.toggle_fim_model()
     config.local_share.toggle_fim_model()
 end
 
+-- * reasoning level (universal - FIM, Ask*)
+function M.set_reasoning_level(level)
+    config.local_share.set_reasoning_level(level)
+end
+
+function M.get_reasoning_level()
+    return config.local_share.get_reasoning_level()
+end
+
+function M.cycle_reasoning_level()
+    return config.local_share.cycle_reasoning_level()
+end
+
 -- * notify stats *
 function M.toggle_notify_stats()
     config.local_share.toggle_notify_stats()

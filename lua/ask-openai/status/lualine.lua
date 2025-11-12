@@ -34,7 +34,12 @@ function M.lualine()
             if local_share.is_rag_enabled() then
                 table.insert(icons, '󰵉')
             end
-            table.insert(icons, local_share.get_fim_model())
+            local fim_model = local_share.get_fim_model()
+            if fim_model == "gptoss" then
+                local level = local_share.get_reasoning_level()
+                fim_model = fim_model .. "." .. level
+            end
+            table.insert(icons, fim_model)
             if M.last_stats then
                 if M.last_stats.prompt_tokens_per_second then
                     local text = "in@" .. human.format_num(M.last_stats.prompt_tokens_per_second, 0) .. "tps"

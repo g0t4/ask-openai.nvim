@@ -187,6 +187,33 @@ function M.toggle_fim_model()
     return next_model
 end
 
+-- thinking model's reasoning level (for thinking models, including FIM)
+function M.set_reasoning_level(level)
+    local cfg = get()
+    cfg.reasoning_level = level
+    save()
+end
+
+---@return string|nil
+function M.get_reasoning_level()
+    local cfg = get()
+    return cfg.reasoning_level or "low"
+end
+
+function M.cycle_reasoning_level()
+    local current = M.get_reasoning_level()
+    local next_level = ""
+    if current == "low" then
+        next_level = "medium"
+    elseif current == "medium" then
+        next_level = "high"
+    else
+        next_level = "low"
+    end
+    M.set_reasoning_level(next_level)
+    return next_level
+end
+
 function M.setup()
 end
 
