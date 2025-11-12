@@ -103,7 +103,7 @@ def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], option
         #      - IOTW only exclude small functions from line range chunking?
         #    TLDR: when I use uncovered code ONLY for line ranges... ouch I lose the ability to query large functions
         #
-        can_use_uncoverd_code = path.suffix in {".py", ".lua"}
+        can_use_uncoverd_code = path.suffix in {".py", ".lua", ".ts", }
         # can_use_uncoverd_code = False # uncomment to block all use of uncovered code
         if can_use_uncoverd_code and len(ts_chunks) > 0:
             chunks.extend(build_line_range_chunks_from_uncovered_code(path, file_hash, uncovered_code))
