@@ -194,20 +194,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         #   if there was a failure on a previous call to .parse() then IIUC subseuqent calls to parse() will attempt resumption?
         tree = parser.parse(source_bytes)
 
-    def get_type_signature(node) -> str:
-        if node.type == 'type_alias_declaration':
-            # - type_alias_declaration == typescript
-            # FYI in this case, I could do stop on type=="type_identifier" INSTEAD of stop before type=="="
-            return get_signature_stop_on(node, "=")
-        elif node.type == 'interface_declaration':
-            # typescript
-            return get_signature_stop_on(node, "interface_body")
-        elif node.type == 'enum_declaration':
-            # typescript
-            return get_signature_stop_on(node, "enum_body")
-        else:
-            return f"--- TODO {node.type} ---"
-
     def get_signature_stop_on(node, stop_node_type) -> str:
         stop_before_node = None
         for child in node.children:
@@ -222,12 +208,22 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 .decode("utf-8", errors="replace") \
                 .strip()
 
-    def get_class_signature(node) -> str:
-        # - class_declaration == typescript
-        # - class_definition == python (and lua?)
-        if node.type == 'class_declaration':
+    def get_signature(node) -> str:
+        if node.type == 'type_alias_declaration':
+            # - type_alias_declaration == typescript
+            # FYI in this case, I could do stop on type=="type_identifier" INSTEAD of stop before type=="="
+            return get_signature_stop_on(node, "=")
+        elif node.type == 'interface_declaration':
+            # typescript
+            return get_signature_stop_on(node, "interface_body")
+        elif node.type == 'enum_declaration':
+            # typescript
+            return get_signature_stop_on(node, "enum_body")
+        elif node.type == 'class_declaration':
+            # - class_declaration == typescript
             return get_signature_stop_on(node, "class_body")
         elif node.type.find("class_definition") >= 0:
+            # - class_definition == python (and lua?)
             return get_signature_stop_on(node, "block")
         else:
             return f"--- TODO {node.type} ---"
@@ -322,7 +318,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # python
             chunk = IdentifiedChunk(
                 sibling_nodes=[node],
-                signature=get_class_signature(node),
+                signature=get_signature(node),
             )
             yield chunk
             collected_parent = True
@@ -338,7 +334,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             # ts enum_declaration https://www.typescriptlang.org/docs/handbook/enums.html
             chunk = IdentifiedChunk(
                 sibling_nodes=[node],
-                signature=get_type_signature(node),
+                signature=get_signature(node),
             )
             collected_parent = True
             yield chunk
