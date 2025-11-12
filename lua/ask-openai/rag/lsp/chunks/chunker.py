@@ -194,15 +194,15 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         #   if there was a failure on a previous call to .parse() then IIUC subseuqent calls to parse() will attempt resumption?
         tree = parser.parse(source_bytes)
 
-    def get_signature_stop_on(node, stop_node_type) -> str:
+    def get_signature_stop_on(node, *stop_node_types: str) -> str:
         stop_before_node = None
         for child in node.children:
-            if child.type == stop_node_type:
+            if child.type in stop_node_types:
                 stop_before_node = child
                 break
 
         if not stop_before_node:
-            return f"--- unexpected {stop_node_type=} NOT FOUND ---"
+            return f"--- unexpected {stop_node_types=} NOT FOUND ---"
 
         return source_bytes[node.start_byte:stop_before_node.start_byte] \
                 .decode("utf-8", errors="replace") \
