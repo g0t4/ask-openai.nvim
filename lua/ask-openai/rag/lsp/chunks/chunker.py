@@ -210,21 +210,20 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
     def get_signature(node) -> str:
         if node.type == 'type_alias_declaration':
-            # typescript: type_alias_declaration
-            # FYI in this case, I could do stop on type=="type_identifier" INSTEAD of stop before type=="="
-            # ? any cases where = wouldn't be present?
+            # type_alias_declaration: ts only (AFAICT)
+            #   FYI = is always required after identifier (AFAICT)
             return get_signature_stop_on(node, "=")
         elif node.type == 'interface_declaration':
-            # typescript: interface_declaration
+            # interface_declaration: ts, java, php, c#
             return get_signature_stop_on(node, "interface_body")
         elif node.type == 'enum_declaration':
-            # typescript: enum_declaration
+            # enum_declaration: ts, c#, java, php, zig
             return get_signature_stop_on(node, "enum_body")
         elif node.type == 'class_declaration':
-            # - class_declaration == typescript
+            # class_declaration: ts, js, java, kotlin, c#, php
             return get_signature_stop_on(node, "class_body")
         elif node.type.find("class_definition") >= 0:
-            # - class_definition == python
+            # class_definition: py, ocaml, scala, puppet
             return get_signature_stop_on(node, "block")
         else:
             return f"--- TODO {node.type} ---"
