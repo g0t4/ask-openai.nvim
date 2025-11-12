@@ -260,6 +260,10 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         #   gh search code --owner tree-sitter --owner tree-sitter-grammars --filename grammar.json function_definition
         #   TODO find other repos/orgs to search too? compile into a script?
         #
+        # search broad terms:
+        #   gh search code --owner tree-sitter --owner tree-sitter-grammars --filename grammar.json function_ --limit 100 | grep -Eo "\w*function\w*" | sort | uniq
+        #      function_ # add underscore if term is too broad, most multi word node types are underscore delimited
+        #
         # good index of grammars (if not matching list above)
         #    https://github.com/Goldziher/tree-sitter-language-pack
         #
