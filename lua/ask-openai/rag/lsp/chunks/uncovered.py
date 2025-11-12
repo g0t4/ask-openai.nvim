@@ -12,7 +12,7 @@ from io import StringIO
 from lsp.chunks.ansi import *
 
 logger_uncovered = get_logger(__name__)
-# logger_uncovered.setLevel(logging.DEBUG)
+logger_uncovered.setLevel(logging.DEBUG)
 
 class TroubleshootCodeInterval(NamedTuple):
     interval: P.Interval

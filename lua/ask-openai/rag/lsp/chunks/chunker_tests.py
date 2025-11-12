@@ -128,7 +128,7 @@ class TestLowLevel_LinesChunker:
         chunks = build_line_range_chunks_from_lines(Path("foo.txt"), "fake_hash", lines)
         assert [(c.start_line0, c.end_line0) for c in chunks] == [(0, 19)]
 
-class TestTreesitterChunker_Python_TopLevelFunctions:
+class TestTsChunker_Python_TopLevelFunctions:
 
     def setup_method(self):
         # node.type='function_definition'
@@ -198,7 +198,7 @@ class TestTreesitterChunker_Python_TopLevelFunctions:
                 print(doc)
                 # DOC : {first_docline or ""}
 
-class TestTreesitterChunker_Python_Decorators:
+class TestTsChunker_Python_Decorators:
 
     def setup_method(self):
         self.chunks = build_test_chunks(test_cases_python / "decorators.py", RAGChunkerOptions.OnlyTsChunks())
@@ -233,7 +233,7 @@ class TestTreesitterChunker_Python_Decorators:
         assert chunk.signature == 'def repr(self):'
         assert chunk.text == expected_code
 
-class TestTreesitterChunker_Lua_DocumentationComments:
+class TestTsChunker_Lua_DocumentationComments:
     # BTW DocComments / DocumentationComments refers to BOTH:
     # - annotations (type hints)
     # - regular comments, i.e. function description (not a type hint)
@@ -281,6 +281,7 @@ end"""
         # TODO update indicies of function chunks above (or more table chunk after them)
         chunk = self.chunks[1]
         # TODO support top level tables? OR not? should this just be part of sliding window coverage?
+
 #         assert chunk.text == """---@class Vector3
 # ---@field x number
 # ---@field y number
@@ -310,7 +311,7 @@ end"""
     return a / b
 end"""
 
-class TestTreesitterChunker_Python_NestedFunctions:
+class TestTsChunker_Python_NestedFunctions:
 
     def test_nested_functions(self):
         chunks = build_test_chunks(test_cases_python / "nested_functions.py", RAGChunkerOptions.OnlyTsChunks())
@@ -326,7 +327,7 @@ class TestTreesitterChunker_Python_NestedFunctions:
         # TODO how do I want to handle nesting? maybe all in one if its under a token count?
         # and/or index nested too?
 
-class TestTreesitterChunker_Python_Class:
+class TestTsChunker_Python_Class:
 
     def setup_method(self):
         self.test_file = test_cases_python / "class_with_functions.py"
@@ -401,11 +402,11 @@ class TestTreesitterChunker_Python_Class:
     #     for node, name in captures:
     #         print(name, node.type, node.start_point, node.end_point)
 
-class TestTreesitterChunker_Typescript_TopLevelFunctions:
+class TestTsChunker_TypeScript_TopLevelFunctions:
 
     # * only this test class:
     #    trigger on any changes to chunker____ files (not just test code)
-    # ptw lsp/chunks/chunker* -- --capture=tee-sys -k TestTreesitterTypescriptChunker
+    # ptw lsp/chunks/chunker* -- --capture=tee-sys -k TestTreesitterTypeScriptChunker
     def setup_method(self):
         self.chunks = build_test_chunks(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
 
@@ -462,7 +463,7 @@ class TestTreesitterChunker_Typescript_TopLevelFunctions:
         div_chunk = chunks[3]
         assert div_chunk.signature == "function divide(a: number, b: number): number"
 
-class TestTreesitterChunker_Typescript_Class:
+class TestTsChunker_TypeScript_Class:
 
     def setup_method(self):
         self.chunks = build_test_chunks(test_cases_typescript / "calc.ts", RAGChunkerOptions.OnlyTsChunks())
@@ -483,7 +484,38 @@ class TestTreesitterChunker_Typescript_Class:
 
         assert class_chunk.signature == "class Calculator"
 
-class TestTreesitterChunker_c_Functions:
+class TestTsChunker_TypeScript_Types:
+
+    def setup_method(self):
+        self.chunks = build_test_chunks(test_cases_typescript / "types.ts", RAGChunkerOptions.OnlyTsChunks())
+
+    def assert_all_chunks_found(self):
+        chunks = self.chunks
+        assert len(chunks) == 1  # TODO increment as other examples are parsed
+
+    def test_type_alias_chunked(self):
+        expected_text = "type TriggerMacroSettings = {\n    macro_uuid?: string;\n    parameter?: string;\n    dynamic_title?: string;\n};"
+        assert self.chunks[0].text == expected_text
+        assert self.chunks[0].signature == "type TriggerMacroSettings"
+
+    def test_enum_chunked(self):
+        expected_text = "enum Direction {\n    Up,\n    Down,\n    Left,\n    Right,\n}"
+        assert self.chunks[1].text == expected_text
+        assert self.chunks[1].signature == "enum Direction"
+
+    def test_interface_chunked(self):
+        expected_text = "interface Point {\n    x: number;\n    y: number;\n}"
+        assert self.chunks[2].text == expected_text
+        assert self.chunks[2].signature == "interface Point"
+
+class TODO_TestTsChunker_TypeScript_DecoratorsAndDocComments:
+    # TODO!
+    # decorators: https://www.typescriptlang.org/docs/handbook/decorators.html
+    # and docstring style comments?
+    def setup_method(self):
+        self.chunks = build_test_chunks(test_cases_typescript / "decorators.ts", RAGChunkerOptions.OnlyTsChunks())
+
+class TestTsChunker_c_Functions:
 
     def setup_method(self):
         chunks = build_test_chunks(test_cases_c / "hello.c", RAGChunkerOptions.OnlyTsChunks())
@@ -497,7 +529,7 @@ class TestTreesitterChunker_c_Functions:
     def test_signature(self):
         assert self.main_chunk.signature == "int main()"
 
-class TestTreesitterChunker_cpp_Functions:
+class TestTsChunker_cpp_Functions:
 
     def setup_method(self):
         chunks = build_test_chunks(test_cases_cpp / "hello.cpp", RAGChunkerOptions.OnlyTsChunks())
@@ -511,7 +543,7 @@ class TestTreesitterChunker_cpp_Functions:
     def test_signature(self):
         assert self.first_chunk.signature == "int main()"
 
-class TestTreesitterChunker_csharp_Functions:
+class TestTsChunker_csharp_Functions:
 
     def setup_method(self):
         # node.type='local_function_statement'
@@ -537,7 +569,7 @@ class TestTreesitterChunker_csharp_Functions:
     def test_signature(self):
         assert self.first_chunk.signature == "static void Greeting(string name)"
 
-class TestTreesitterChunker_rust_Functions:
+class TestTsChunker_rust_Functions:
 
     def setup_method(self):
 

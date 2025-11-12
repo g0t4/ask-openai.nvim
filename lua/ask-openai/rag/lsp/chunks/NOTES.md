@@ -1,3 +1,7 @@
+## typescript treesitter observations
+
+- top-level: program
+
 ## zed embeddings
 
 ### TODO

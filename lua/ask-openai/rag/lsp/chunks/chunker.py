@@ -17,7 +17,7 @@ from lsp.chunks.parsers import get_cached_parser_for_path
 from lsp.chunks.ansi import *
 
 logger = get_logger(__name__)
-# logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.DEBUG)
 
 # TODO! flagging good/bad query results
 # - it would help to have a way to quantify my chunking/querying effectiveness... vs just gut feeling on future searches
@@ -194,9 +194,40 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         #   if there was a failure on a previous call to .parse() then IIUC subseuqent calls to parse() will attempt resumption?
         tree = parser.parse(source_bytes)
 
+    def get_type_signature(node) -> str:
+        sig = None
+        stop_node_type = None
+        if node.type == 'type_alias_declaration':
+            # - type_alias_declaration == typescript
+            # FYI in this case, I could do stop on type=="type_identifier" INSTEAD of stop before type=="="
+            # TODO refactor signature extractor to be generic stop_before (maybe add stop_on if needed)
+            #   pass pairs of type / stop_before_type
+            #   THEN do I even care if it is a func/class/type/etc?
+            stop_node_type = "="
+        elif node.type == 'interface_declaration':
+            # interface declarations end before the body starts
+            stop_node_type = "interface_body"
+        elif node.type == 'enum_declaration':
+            # enum declarations end before the body starts
+            stop_node_type = "enum_body"
+        else:
+            return f"--- TODO {node.type} ---"
+
+        stop_before_node = None
+        for child in node.children:
+            if child.type == stop_node_type:
+                stop_before_node = child
+                break
+
+        if not stop_before_node:
+            return f"--- unexpected {stop_node_type=} NOT FOUND ---"
+
+        return source_bytes[node.start_byte:stop_before_node.start_byte] \
+                .decode("utf-8", errors="replace") \
+                .strip()
+
     def get_class_signature(node) -> str:
         sig = None
-        stop_before_node = None
 
         stop_node_type = None
         # - class_declaration == typescript
@@ -208,6 +239,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         else:
             return f"--- TODO {node.type} ---"
 
+        stop_before_node = None
         for child in node.children:
             # text = child.text.decode("utf-8", errors="replace")
             # printtmp(f'  {child.type=}\n    {text=}')
@@ -226,7 +258,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         # printtmp(f'\n [red]{node.type=}[/]')
 
         sig = None
-        stop_before_node = None
 
         # algorithm: signature == copy everything until start of the function body
         # - function_declaration => statement_block (typescript)
@@ -240,6 +271,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             "compound_statement",
         ]
 
+        stop_before_node = None
         for child in node.children:
             text = child.text.decode("utf-8", errors="replace")
             # printtmp(f'  {child.type=}\n    {text=}')
@@ -318,6 +350,20 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             collected_parent = True
             if parser_language == "python":
                 attach_decorators(node, chunk.sibling_nodes)
+        elif node.type in [
+                "type_alias_declaration",
+                "interface_declaration",
+                "enum_declaration",
+        ]:
+            # ts type_alias_declaration https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-aliases
+            # ts interface_declaration https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#interfaces
+            # ts enum_declaration https://www.typescriptlang.org/docs/handbook/enums.html
+            chunk = IdentifiedChunk(
+                sibling_nodes=[node],
+                signature=get_type_signature(node),
+            )
+            collected_parent = True
+            yield chunk
 
         elif logger.isEnabledForDebug() and not collected_parent:
             debug_uncollected_node(node)
