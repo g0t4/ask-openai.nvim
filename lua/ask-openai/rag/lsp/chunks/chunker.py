@@ -310,12 +310,20 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 attach_decorators(node, chunk.sibling_nodes)
             yield chunk
             collected_parent = True
+
         elif node.type in [
                 "class_definition",
                 "class_declaration",
+                "type_alias_declaration",
+                "interface_declaration",
+                "enum_declaration",
         ]:
+            # ts type_alias_declaration https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-aliases
+            # ts interface_declaration https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#interfaces
+            # ts enum_declaration https://www.typescriptlang.org/docs/handbook/enums.html
+            #
             # typescript class_declaration
-            # python
+            # python ?
             chunk = IdentifiedChunk(
                 sibling_nodes=[node],
                 signature=get_signature(node),
@@ -324,20 +332,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             collected_parent = True
             if parser_language == "python":
                 attach_decorators(node, chunk.sibling_nodes)
-        elif node.type in [
-                "type_alias_declaration",
-                "interface_declaration",
-                "enum_declaration",
-        ]:
-            # ts type_alias_declaration https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-aliases
-            # ts interface_declaration https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#interfaces
-            # ts enum_declaration https://www.typescriptlang.org/docs/handbook/enums.html
-            chunk = IdentifiedChunk(
-                sibling_nodes=[node],
-                signature=get_signature(node),
-            )
-            collected_parent = True
-            yield chunk
 
         elif logger.isEnabledForDebug() and not collected_parent:
             debug_uncollected_node(node)
