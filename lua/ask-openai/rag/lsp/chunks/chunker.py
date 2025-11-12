@@ -231,8 +231,10 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     def get_function_signature(node) -> str:
         # algorithm: signature == copy everything until start of the function body
         # - function_declaration => statement_block (typescript)
-        # - function_definition => block (lua, python)
+        # - function_definition => block (lua: anonymous funcs, python: named funcs)
         #   function_definition => compound_statement (c, cpp)
+        # - local_function_definition_statement (lua: local named funcs)
+        #   function_definition_statement (lua: global named funcs)
         # - local_function_statement => block (csharp)
         # - function_item => block (rust)
         #
@@ -285,15 +287,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 "function_declaration",
                 "function_item",
         ]:
-            # ts: function_declaration
-            # lua: function_definition == anonymous functions
-            # python: function_definition == named functions
-            # lua: named functions (local_function_definition_statement/local vs function_definition_statement/global)
-            # csharp: local_function_statement
-            # rust: function_item
-            #
-            # TODO:
-            # - extract indentation level from start of line (before matched node)
+            # TODO: extract indentation level from start of line (before matched node)
             #   - perhaps take the entire start line and end line?
             #   - right now nodes that are indented (i.e. nested function),
             #     the first line (signature) has incorrect indentation!
@@ -301,7 +295,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             #
             #   - applies to treesitter chunks
             #   - applies to uncovered_code chunks
-            # print(node.prev_sibling)
             chunk = IdentifiedChunk(
                 sibling_nodes=[node],
                 signature=get_function_signature(node),
