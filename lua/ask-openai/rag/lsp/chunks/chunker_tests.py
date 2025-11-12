@@ -508,12 +508,19 @@ class TestTsChunker_TypeScript_Types:
         assert self.chunks[2].text == expected_text
         assert self.chunks[2].signature == "interface Point"
 
-class TODO_TestTsChunker_TypeScript_DecoratorsAndDocComments:
-    # TODO!
+class TestTsChunker_TypeScript_DecoratorsAndDocComments:
     # decorators: https://www.typescriptlang.org/docs/handbook/decorators.html
     # and docstring style comments?
     def setup_method(self):
         self.chunks = build_test_chunks(test_cases_typescript / "decorators.ts", RAGChunkerOptions.OnlyTsChunks())
+
+    def test_class_with_sealed(self):
+        chunks = self.chunks
+        chunk = self.chunks[2]
+        # FYI in typescript, decorators are correctly placed UNDER the class_declaration!
+        #   so I don't have to do anything special to detect them and include in the class chunk!
+        assert chunk.signature == "@sealed\nclass SimpleTest"
+        # ? remove the @sealed on the class signature?! it's fine for now me thinks... only revisit if it annoys you in the semantic grep (only real spot where signature is currently used)
 
 class TestTsChunker_c_Functions:
 
