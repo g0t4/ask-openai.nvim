@@ -210,20 +210,21 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
     def get_signature(node) -> str:
         if node.type == 'type_alias_declaration':
-            # - type_alias_declaration == typescript
+            # typescript: type_alias_declaration
             # FYI in this case, I could do stop on type=="type_identifier" INSTEAD of stop before type=="="
+            # ? any cases where = wouldn't be present?
             return get_signature_stop_on(node, "=")
         elif node.type == 'interface_declaration':
-            # typescript
+            # typescript: interface_declaration
             return get_signature_stop_on(node, "interface_body")
         elif node.type == 'enum_declaration':
-            # typescript
+            # typescript: enum_declaration
             return get_signature_stop_on(node, "enum_body")
         elif node.type == 'class_declaration':
             # - class_declaration == typescript
             return get_signature_stop_on(node, "class_body")
         elif node.type.find("class_definition") >= 0:
-            # - class_definition == python (and lua?)
+            # - class_definition == python
             return get_signature_stop_on(node, "block")
         else:
             return f"--- TODO {node.type} ---"
@@ -318,12 +319,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 "interface_declaration",
                 "enum_declaration",
         ]:
-            # ts type_alias_declaration https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-aliases
-            # ts interface_declaration https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#interfaces
-            # ts enum_declaration https://www.typescriptlang.org/docs/handbook/enums.html
-            #
-            # typescript class_declaration
-            # python ?
             chunk = IdentifiedChunk(
                 sibling_nodes=[node],
                 signature=get_signature(node),
