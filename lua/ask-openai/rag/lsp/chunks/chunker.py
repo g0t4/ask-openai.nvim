@@ -17,7 +17,7 @@ from lsp.chunks.parsers import get_cached_parser_for_path
 from lsp.chunks.ansi import *
 
 logger = get_logger(__name__)
-logger.setLevel(logging.DEBUG)
+# logger.setLevel(logging.DEBUG)
 
 # TODO! flagging good/bad query results
 # - it would help to have a way to quantify my chunking/querying effectiveness... vs just gut feeling on future searches
