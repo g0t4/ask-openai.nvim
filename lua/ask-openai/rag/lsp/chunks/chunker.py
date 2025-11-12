@@ -229,10 +229,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             return f"--- TODO {node.type} ---"
 
     def get_function_signature(node) -> str:
-        # printtmp(f'\n [red]{node.type=}[/]')
-
-        sig = None
-
         # algorithm: signature == copy everything until start of the function body
         # - function_declaration => statement_block (typescript)
         # - function_definition => block (lua, python)
@@ -244,23 +240,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             "block",
             "compound_statement",
         ]
-
-        stop_before_node = None
-        for child in node.children:
-            text = child.text.decode("utf-8", errors="replace")
-            # printtmp(f'  {child.type=}\n    {text=}')
-            if child.type in stop_node_types:
-                stop_before_node = child
-                break
-
-        if not stop_before_node:
-            return f"--- unexpected {stop_node_types=} NOT FOUND ---"
-
-        # PRN strip 2+ lines that are purely comments?
-
-        return source_bytes[node.start_byte:stop_before_node.start_byte] \
-                .decode("utf-8", errors="replace") \
-                .strip()
+        return get_signature_stop_on(node, *stop_node_types)
 
     def debug_uncollected_node(node):
         # use node type filter to find specific nodes
