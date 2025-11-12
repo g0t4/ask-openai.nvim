@@ -317,8 +317,8 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             max_tokens = 8192, -- PRN set high if using /think only?
         }
 
-        -- local body = model_params.new_gptoss_chat_body_llama_server({
-        local body = model_params.new_qwen3coder_llama_server_chat_body({
+        local body = model_params.new_gptoss_chat_body_llama_server({
+        -- local body = model_params.new_qwen3coder_llama_server_chat_body({
             messages = messages,
             model = "", -- irrelevant for llama-server
             -- tools = tool_router.openai_tools(),

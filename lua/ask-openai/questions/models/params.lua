@@ -1,4 +1,5 @@
 local log = require("ask-openai.logs.logger").predictions()
+local api = require("ask-openai.api")
 
 local M = {}
 
@@ -18,6 +19,8 @@ end
 
 function M.new_gptoss_chat_body_llama_server(request_body)
     throw_if_no_messages(request_body)
+    local level = api.get_reasoning_level()
+    local max_tokens = level == "high" and 8192 or level == "medium" and 4096 or 2048
 
     local recommended = {
         -- https://huggingface.co/openai/gpt-oss-20b/blob/main/generation_config.json
@@ -41,6 +44,11 @@ function M.new_gptoss_chat_body_llama_server(request_body)
         --
         temperature = 1.0,
         top_p = 1.0,
+
+        chat_template_kwargs = {
+            reasoning_effort = level,
+        },
+        max_tokens = max_tokens
 
 
         -- TODO test/validate these settings
