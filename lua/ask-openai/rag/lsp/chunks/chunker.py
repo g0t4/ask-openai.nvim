@@ -235,6 +235,12 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         #   function_definition => compound_statement (c, cpp)
         # - local_function_statement => block (csharp)
         # - function_item => block (rust)
+        #
+        # TODO candidates:
+        #    _local_function_declaration (lua)
+        #    function_expression (js, ts)
+        #    function_statement (scss)
+        #    function_static_declaration (php)
         stop_node_types = [
             "statement_block",
             "block",

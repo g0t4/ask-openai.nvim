@@ -19,3 +19,8 @@ function search_partial
 
     gh search code --owner tree-sitter --owner tree-sitter-grammars --filename grammar.json "$partial" --limit 100 | grep -Eo "\w*$partial\w*" | sort | uniq
 end
+
+
+# usage:
+#  search_partial function   # find _candidate_, then:
+#  who_uses _candidate_
