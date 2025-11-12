@@ -1,4 +1,4 @@
-def attach_decorators(node, accumulated_decorators: list) -> None:
+def attach_py_decorators(node, accumulated_decorators: list) -> None:
     while True:
         prev = node.prev_sibling
         prev_is_decorator = prev and prev.type == "decorator"

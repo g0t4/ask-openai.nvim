@@ -1,4 +1,4 @@
-def attach_doc_comments(node, accumulated_comments: list) -> None:
+def attach_lua_doc_comments(node, accumulated_comments: list) -> None:
     while True:
         prev = node.prev_sibling
         prev_is_doc_comment = prev and prev.type == "comment"

@@ -8,8 +8,8 @@ from typing import Iterator
 from tree_sitter import Node
 
 from lsp.chunks.identified import IdentifiedChunk
-from lsp.chunks.ts.lua import attach_doc_comments
-from lsp.chunks.ts.py import attach_decorators
+from lsp.chunks.ts.lua import attach_lua_doc_comments
+from lsp.chunks.ts.py import attach_py_decorators
 from lsp.chunks.uncovered import UncoveredCode, build_uncovered_intervals
 from lsp.storage import Chunk, ChunkType, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
 from lsp.logs import get_logger, printtmp
@@ -305,9 +305,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 signature=get_function_signature(node),
             )
             if parser_language == "lua":
-                attach_doc_comments(node, chunk.sibling_nodes)
+                attach_lua_doc_comments(node, chunk.sibling_nodes)
             if parser_language == "python":
-                attach_decorators(node, chunk.sibling_nodes)
+                attach_py_decorators(node, chunk.sibling_nodes)
             yield chunk
             collected_parent = True
 
@@ -331,7 +331,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             yield chunk
             collected_parent = True
             if parser_language == "python":
-                attach_decorators(node, chunk.sibling_nodes)
+                attach_py_decorators(node, chunk.sibling_nodes)
 
         elif logger.isEnabledForDebug() and not collected_parent:
             debug_uncollected_node(node)
