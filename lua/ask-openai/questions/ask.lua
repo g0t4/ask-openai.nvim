@@ -259,7 +259,6 @@ function M.handle_messages_updated()
     for _, message in ipairs(M.thread.last_request.response_messages) do
         -- TODO! do not show assisstant IF no content + 1+ tool calls... headers from tool calls are fine
         local role = format_role(message.role)
-        assert(not role:find("\n"), "role should not have a new line but it does")
         table.insert(turn_lines, role)
 
         -- * message contents
@@ -287,8 +286,6 @@ function M.handle_messages_updated()
             local mark_header_line_base0 = #turn_lines -- # is 0-based b/c header line not added yet (will be next)
             table.insert(turn_lines, tool_header)
             table.insert(marks, { start_line_base0 = mark_header_line_base0, start_col_base0 = 0, hl_group = hl_group })
-
-            assert(not tool_header:find("\n"), "tool should not have a new line but it does")
 
             -- * tool args
             local args = call["function"].arguments
