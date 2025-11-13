@@ -251,6 +251,7 @@ vim.api.nvim_set_hl(0, "AskToolSuccess", { fg = "#92E2AC", bg = "NONE", italic =
 vim.api.nvim_set_hl(0, "AskToolFailed", { fg = "#e06c75", bg = "NONE", bold = true, italic = false, underline = false })
 vim.api.nvim_set_hl(0, "AskAssistantRole", { fg = "#0A84FF", italic = true, bold = true })
 vim.api.nvim_set_hl(0, "AskUserRole", { fg = "#35C759", italic = true })
+vim.api.nvim_set_hl(0, "AskChatReasoning", { fg = "#808080", italic = true })
 
 function M.handle_messages_updated()
     if not M.thread.last_request.response_messages then
@@ -268,7 +269,7 @@ function M.handle_messages_updated()
             lines:add_role(message.role)
 
             -- TODO show reasoning collapsed?
-            table_insert_split_lines(lines.turn_lines, reasoning_content)
+            lines:add_lines_marked({ reasoning_content }, "AskChatReasoning")
 
             table_insert_split_lines(lines.turn_lines, content)
             table.insert(lines.turn_lines, "")
