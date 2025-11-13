@@ -46,4 +46,22 @@ function LinesBuilder:add_lines_marked(lines, hl_group)
     vim.list_extend(self.turn_lines, lines)
 end
 
+---Add a block of lines that should start folded.
+---The lines will be appended to `turn_lines` and a fold entry will be recorded.
+---@param lines string[]   -- lines to add
+---@param hl_group string  -- optional highlight for the folded region header
+function LinesBuilder:add_folded_lines(lines, hl_group)
+    local start_line_base0 = #self.turn_lines
+    local mark = {
+        start_line_base0 = start_line_base0, -- base0 b/c next line is the marked one (thus not yet in line count)
+        start_col_base0 = 0,
+        end_line_base0 = start_line_base0 + #lines, -- IIAC I want end exclusive
+        end_col_base0 = 0, -- or, #lines[#lines], to stop on last line (have to -1 on end line too)
+        hl_group = hl_group,
+        fold = true
+    }
+    table.insert(self.marks, mark)
+    vim.list_extend(self.turn_lines, lines)
+end
+
 return LinesBuilder

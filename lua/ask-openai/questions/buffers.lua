@@ -52,10 +52,27 @@ function BufferController:replace_lines_after(line_number_base0, with_lines, mar
                 {
                     hl_group = mark.hl_group,
                     end_line = mark.end_line_base0 + line_number_base0,
-                    end_col  = mark.end_col_base0
-                    -- virt_text = { { mark.text, 'Added' } }
+                    end_col  = mark.end_col_base0,
                 }
             )
+
+            -- TODO FIX FOLDING TO NOT BE SUCH A HACKY PIECE OF SHIT (lol)
+            --
+            local more_than_one_line = mark.end_line_base0 > mark.start_line_base0 + 1
+            if mark.fold and more_than_one_line then
+                local fold_start_line_base0 = mark.start_line_base0 + line_number_base0 + 1
+                -- delete fold(s)??
+                vim.cmd(string.format(
+                    "silent! %d normal! zD; G",
+                    fold_start_line_base0))
+
+                -- add new fold
+                vim.cmd(string.format(
+                    "silent! %d,%dfold",
+                    fold_start_line_base0,
+                    mark.end_line_base0 + line_number_base0
+                ))
+            end
         end
     end)
 

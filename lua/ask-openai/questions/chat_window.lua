@@ -20,6 +20,7 @@ function ChatWindow:new()
     -- buffer local keymaps
     -- PRN use <LocalLeader>?
     vim.keymap.set('n', '<leader>c', function() self:clear() end, { buffer = self.buffer_number, desc = "clear the chat window, and eventually the message history" })
+
     return self
 end
 
@@ -77,6 +78,13 @@ function ChatWindow:ensure_open()
         return
     end
     self:open()
+
+    -- TODO put this in a opened event handler for the window
+    -- set manual folding so I can fold line ranges (i.e. reasoning sections) automatically!
+    --  else my default of treesitter will kick in
+    vim.o.foldmethod = "manual"
+    vim.o.foldenable = true
+    vim.o.foldlevel = 0
 end
 
 function ChatWindow:explain_error(text)

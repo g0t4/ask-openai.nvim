@@ -268,8 +268,7 @@ function M.handle_messages_updated()
             -- ONLY add role header IF there is content (or reasoning) to show... otherwise just show tool_call(s)
             lines:add_role(message.role)
 
-            -- TODO show reasoning collapsed?
-            lines:add_lines_marked({ reasoning_content }, "AskChatReasoning")
+            lines:add_folded_lines(vim.split(reasoning_content, '\n'), "AskChatReasoning")
 
             table_insert_split_lines(lines.turn_lines, content)
             table.insert(lines.turn_lines, "")
