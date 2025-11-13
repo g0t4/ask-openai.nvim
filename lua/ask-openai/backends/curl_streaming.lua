@@ -235,6 +235,11 @@ function M.on_streaming_delta_update_message_history(choice, request)
         message._verbatim_content = (message._verbatim_content or "") .. choice.delta.content
     end
 
+    if choice.delta.reasoning_content ~= nil and choice.delta.reasoning_content ~= vim.NIL then
+        message.reasoning_content =
+            (message.reasoning_content or "") .. choice.delta.reasoning_content
+    end
+
     if choice.finish_reason ~= nil then
         -- FYI this is vim.NIL on first too
         message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)

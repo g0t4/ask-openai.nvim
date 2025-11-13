@@ -261,11 +261,14 @@ function M.handle_messages_updated()
     for _, message in ipairs(M.thread.last_request.response_messages) do
         -- * message contents
         local content = message.content or ""
-        if content ~= "" then
+        local reasoning_content = message.reasoning_content or ""
+
+        if content ~= "" or reasoning_content ~= "" then
             -- ONLY add role header IF there is content (or reasoning) to show... otherwise just show tool_call(s)
             lines:add_role(message.role)
 
             -- TODO show reasoning collapsed?
+            table_insert_split_lines(lines.turn_lines, reasoning_content)
 
             table_insert_split_lines(lines.turn_lines, content)
             table.insert(lines.turn_lines, "")
