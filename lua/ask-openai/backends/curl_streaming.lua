@@ -224,6 +224,7 @@ end
 ---@field arguments string|nil
 
 ---@param choice OpenAIChoice|nil
+---@param request LastRequest
 function M.on_delta_update_message_history(choice, request)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
     -- rebuilds message as if sent `stream: false`
