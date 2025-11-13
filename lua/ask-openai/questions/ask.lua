@@ -248,6 +248,8 @@ end
 
 vim.api.nvim_set_hl(0, "AskToolSuccess", { fg = "#92E2AC", bg = "NONE", italic = false, underline = false })
 vim.api.nvim_set_hl(0, "AskToolFailed", { fg = "#e06c75", bg = "NONE", bold = true, italic = false, underline = false })
+vim.api.nvim_set_hl(0, "AskAssistantRole", { fg = "#0A84FF", italic = true, bold = true })
+vim.api.nvim_set_hl(0, "AskUserRole", { fg = "#35C759", italic = true })
 
 function M.handle_messages_updated()
     if not M.thread.last_request.response_messages then
@@ -269,12 +271,14 @@ function M.handle_messages_updated()
         -- * message contents
         local content = message.content or ""
         if content ~= "" then
-            -- ONLY add role header IF there is content (and later reasoning) to show... otherwise just show tool_call(s)
-            local role = format_role(message.role)
-            table.insert(turn_lines, role)
+            -- ONLY add role header IF there is content (or reasoning) to show... otherwise just show tool_call(s)
+            mark_next_line("AskAssistantRole")
+            table.insert(turn_lines, message.role)
+
+            -- TODO show reasoning collapsed?
 
             table_insert_split_lines(turn_lines, content)
-            table.insert(turn_lines, "") -- TODO keep? between messages?
+            table.insert(turn_lines, "")
         elseif #message.tool_calls == 0 then
             -- gptoss120b - this works:
             --   :AskQuestion testing a request, I need you to NOT say anything in response, just stop immediatley
