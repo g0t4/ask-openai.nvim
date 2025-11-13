@@ -273,7 +273,7 @@ function M.handle_messages_updated()
             --   for that I'll need a rich model of what is where in the buffer
 
             -- * tool name/id/status
-            local tool_header = "**" .. (call["function"].name or "") .. "**"
+            local tool_header = call["function"].name or ""
             local hl_group = "Added" -- TODO add my own colors?
             if call.response then
                 if call.response.result.isError then
