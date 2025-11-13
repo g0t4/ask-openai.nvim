@@ -37,7 +37,7 @@ function M.lualine_components()
         table.insert(icons, icon)
     end
 
-    return { {
+    local primary = {
         function()
             local icons = { '[' }
 
@@ -79,7 +79,8 @@ function M.lualine_components()
             end
             return { fg = fg_color }
         end,
-    } }
+    }
+    return { primary }
 end
 
 return M
