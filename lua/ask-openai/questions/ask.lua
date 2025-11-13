@@ -256,6 +256,15 @@ function M.handle_messages_updated()
 
     local turn_lines = {}
     local marks = {}
+
+    local function mark_next_line(hl_group)
+        table.insert(marks, {
+            start_line_base0 = #turn_lines, -- # is 0-based b/c header line not added yet (will be next)
+            start_col_base0 = 0,
+            hl_group = hl_group
+        })
+    end
+
     for _, message in ipairs(M.thread.last_request.response_messages) do
         -- * message contents
         local content = message.content or ""
@@ -288,11 +297,7 @@ function M.handle_messages_updated()
                     tool_header = "✅ " .. tool_header
                 end
             end
-            table.insert(marks, {
-                start_line_base0 = #turn_lines, -- # is 0-based b/c header line not added yet (will be next)
-                start_col_base0 = 0,
-                hl_group = hl_group
-            })
+            mark_next_line(hl_group)
             table.insert(turn_lines, tool_header)
 
             -- * tool args
