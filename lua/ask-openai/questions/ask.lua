@@ -280,7 +280,6 @@ function M.handle_messages_updated()
 
             -- * tool name/id/status
             local tool_header = "**" .. (call["function"].name or "") .. "**"
-            tool_header = tool_header .. " (" .. call.id .. ")"
             if single_call then
                 tool_header = "" -- it is in the role already
             end
