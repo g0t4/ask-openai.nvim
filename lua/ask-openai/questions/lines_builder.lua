@@ -18,6 +18,8 @@ function LinesBuilder:mark_next_line(hl_group)
     table.insert(self.marks, {
         start_line_base0 = #self.turn_lines,
         start_col_base0 = 0,
+        end_line_base0 = #self.turn_lines + 1,
+        end_col_base0 = 0,
         hl_group = hl_group
     })
 end
