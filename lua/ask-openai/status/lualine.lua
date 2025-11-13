@@ -83,9 +83,10 @@ function M.lualine_components()
         separator = nil,
         padding = 1 -- left/right padding (# chars)
     }
+    -- TODO revisit multi component styling (i.e. color, padding, etc)
     return {
         primary,
-        primary,
+        -- primary,
     }
 end
 
