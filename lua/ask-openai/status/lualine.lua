@@ -32,7 +32,7 @@ function M.lualine_components()
         local level, _ = local_share.get_log_threshold()
         local icon = LEVEL_ICONS[level:lower()]
         if not icon then
-            error("Unknown log threshold: " .. level)
+            icon = level
         end
         table.insert(icons, icon)
     end
