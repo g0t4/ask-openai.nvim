@@ -245,12 +245,9 @@ function M.on_sse_llama_server_timings(sse)
 end
 
 function M.handle_messages_updated()
-    -- TODO rename last_request to just request? or current_request?
     if not M.thread.last_request.response_messages then
         return
     end
-
-    -- TODO toggle to expand what is displayed (i.e. hidden messages), tool definitions?
 
     local new_lines = {}
     for _, message in ipairs(M.thread.last_request.response_messages) do
