@@ -6,8 +6,11 @@ local log = require("ask-openai.logs.logger").predictions()
 ---@field pid integer
 ---@field thread ChatThread
 ---@field response_messages ChatMessage[] -- PRN? rename as response_messages?
+---@field start_time integer -- unix timestamp when request was sent (for timing)
+---@field marks_ns_id
 local LastRequest = {}
 
+local request_counter = 1
 --- @param body table<string, any>
 --- @return LastRequest
 function LastRequest:new(body)
@@ -20,6 +23,8 @@ function LastRequest:new(body)
     self.thread = nil -- TODO pass thread in ctor?
     self.response_messages = {}
     self.start_time = os.time()
+    self.marks_ns_id = vim.api.nvim_create_namespace("ask.marks." .. request_counter)
+    request_counter = request_counter + 1
     return self
 end
 

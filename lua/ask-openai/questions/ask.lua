@@ -158,7 +158,9 @@ The rag_query tool:
 end
 
 function M.send_messages()
-    M.hack_lines_before_request = M.chat_window.buffer:get_line_count()
+    -- * conversation turns (track start line for streaming chunks)
+    M.this_turn_chat_start_line_base0 = M.chat_window.buffer:get_line_count()
+
     local request = backend.curl_for(M.thread:next_curl_request_body(), M.thread.base_url, M)
     M.thread:set_last_request(request)
 end
@@ -249,7 +251,8 @@ function M.handle_messages_updated()
         return
     end
 
-    local new_lines = {}
+    local turn_lines = {}
+    local marks = {}
     for _, message in ipairs(M.thread.last_request.response_messages) do
         -- TODO extract a message formatter to build the lines below
         local _role = message.role
@@ -260,13 +263,13 @@ function M.handle_messages_updated()
         end
         local role = format_role(_role)
         assert(not role:find("\n"), "role should not have a new line but it does")
-        table.insert(new_lines, role)
+        table.insert(turn_lines, role)
 
         -- * message contents
         local content = message.content or ""
         if content ~= "" then
-            table_insert_split_lines(new_lines, content)
-            table.insert(new_lines, "") -- between messages?
+            table_insert_split_lines(turn_lines, content)
+            table.insert(turn_lines, "") -- between messages?
         end
 
         for _, call in ipairs(tool_calls) do
@@ -285,7 +288,9 @@ function M.handle_messages_updated()
                     tool_header = "✅ " .. tool_header
                 end
             end
-            table.insert(new_lines, tool_header)
+            local mark_header_line_base0 = #turn_lines - 1 -- # is 1-based b/c I am targeting the role line that is already added as last line (thus base1)
+            table.insert(turn_lines, tool_header)
+            table.insert(marks, { start_line_base0 = mark_header_line_base0, start_col_base0 = 0, text = role })
 
             assert(not role:find("\n"), "tool should not have a new line but it does")
 
@@ -293,18 +298,18 @@ function M.handle_messages_updated()
             local args = call["function"].arguments
             if args then
                 -- TODO new line in args? s\b \n right?
-                table.insert(new_lines, args)
+                table.insert(turn_lines, args)
             end
 
             -- * tool result
             if call.response then
                 if call.response.result.content then
                     for _, tool_content in ipairs(call.response.result.content) do
-                        table.insert(new_lines, tool_content.name)
+                        table.insert(turn_lines, tool_content.name)
                         if tool_content.type == "text" then
-                            table_insert_split_lines(new_lines, tool_content.text)
+                            table_insert_split_lines(turn_lines, tool_content.text)
                         else
-                            table.insert(new_lines, "  unexpected content type: " .. tool_content.type)
+                            table.insert(turn_lines, "  unexpected content type: " .. tool_content.type)
                         end
                     end
                 else
@@ -314,12 +319,12 @@ function M.handle_messages_updated()
                 end
             end
 
-            table.insert(new_lines, "") -- between messages?
+            table.insert(turn_lines, "") -- between messages?
         end
     end
 
     vim.schedule(function()
-        M.chat_window.buffer:replace_lines_after(M.hack_lines_before_request, new_lines)
+        M.chat_window.buffer:replace_lines_after(M.this_turn_chat_start_line_base0, turn_lines, marks, M.thread.last_request.marks_ns_id)
     end)
 end
 

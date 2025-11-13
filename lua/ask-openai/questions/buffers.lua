@@ -35,28 +35,40 @@ function BufferController:get_cursor_line_number_0indexed()
     return cursor[1] - 1
 end
 
-local ns = vim.api.nvim_create_namespace('test_colors_chat')
-
-function BufferController:replace_lines_after(line_number, new_lines)
-    -- TODO allow passing extmarks to go with the lines to add so it is all one operation before they show
+function BufferController:replace_lines_after(line_number_base0, with_lines, marks, marks_ns_id)
     vim.api.nvim_buf_call(self.buffer_number, function()
         -- "atomic" so no flickering b/w adding lines and extmarks
 
-        -- replace all lines from line_number to end of file
-        vim.api.nvim_buf_set_lines(self.buffer_number, line_number, -1, false, new_lines)
+        -- replace all lines from line_number (offset for this conversation turn) to end of file
+        vim.api.nvim_buf_set_lines(self.buffer_number, line_number_base0, -1, false, with_lines)
 
-        vim.api.nvim_buf_clear_namespace(self.buffer_number, ns, 0, -1)
+        vim.api.nvim_buf_clear_namespace(self.buffer_number, marks_ns_id, 0, -1)
 
-        vim.api.nvim_buf_set_extmark(self.buffer_number, ns,
-            line_number,
-            0,
-            {
-                hl_group = 'Added',
-                end_line = line_number + #new_lines,
-                end_col  = 0,
-            }
-        )
+        for i, mark in ipairs(marks or {}) do
+            -- log:info("mark", vim.inspect(mark))
+            vim.api.nvim_buf_set_extmark(self.buffer_number, marks_ns_id,
+                mark.start_line_base0 + line_number_base0,
+                mark.start_col_base0,
+                {
+                    hl_group = 'Added',
+                    end_line = mark.start_line_base0 + line_number_base0 + 1,
+                    end_col  = 0,
+                    -- virt_text = { { mark.text, 'Added' } }
+                }
+            )
+        end
+
+        -- vim.api.nvim_buf_set_extmark(self.buffer_number, marks_ns_id,
+        --     line_number,
+        --     0,
+        --     {
+        --         hl_group = 'Added',
+        --         end_line = line_number + #with_lines,
+        --         end_col  = 0,
+        --     }
+        -- )
     end)
+
 
     self:scroll_cursor_to_end_of_buffer()
 end
