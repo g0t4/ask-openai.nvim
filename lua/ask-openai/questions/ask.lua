@@ -257,15 +257,18 @@ function M.handle_messages_updated()
     local turn_lines = {}
     local marks = {}
     for _, message in ipairs(M.thread.last_request.response_messages) do
-        -- TODO! do not show assisstant IF no content + 1+ tool calls... headers from tool calls are fine
-        local role = format_role(message.role)
-        table.insert(turn_lines, role)
-
         -- * message contents
         local content = message.content or ""
         if content ~= "" then
+            -- ONLY add role header IF there is content (and later reasoning) to show... otherwise just show tool_call(s)
+            local role = format_role(message.role)
+            table.insert(turn_lines, role)
+
             table_insert_split_lines(turn_lines, content)
-            table.insert(turn_lines, "") -- between messages?
+            table.insert(turn_lines, "") -- TODO keep? between messages?
+        elseif #message.tool_calls == 0 then
+            table.insert(turn_lines, "[UNEXPECTED: empty response]")
+            table.insert(turn_lines, "")
         end
 
         for _, call in ipairs(message.tool_calls) do
