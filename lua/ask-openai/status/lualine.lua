@@ -37,6 +37,13 @@ function M.lualine_components()
         table.insert(icons, icon)
     end
 
+    local enabled_color = function()
+        local fg_color = ''
+        if not local_share.are_predictions_enabled() then
+            fg_color = '#333333'
+        end
+        return { fg = fg_color }
+    end
     local primary = {
         function()
             local icons = { '[' }
@@ -72,13 +79,7 @@ function M.lualine_components()
 
             return table.concat(icons, ' ')
         end,
-        color = function()
-            local fg_color = ''
-            if not local_share.are_predictions_enabled() then
-                fg_color = '#333333'
-            end
-            return { fg = fg_color }
-        end,
+        color = enabled_color,
     }
     return { primary }
 end
