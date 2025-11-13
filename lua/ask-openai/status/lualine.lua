@@ -13,6 +13,14 @@ function M.set_last_fim_stats(stats)
     M.last_stats = stats
 end
 
+local LEVEL_ICONS = {
+    trace = "∙", -- or "…" / "⋯" / "·"
+    debug = "",
+    info  = "",
+    warn  = "",
+    error = "",
+}
+
 function M.lualine()
     -- FYI this is an example, copy and modify it to your liking!
     -- reference: "󰼇" "󰼈"
@@ -20,13 +28,21 @@ function M.lualine()
     --  󰵉  󱐎  󰵕  search axis/arrow
     --     󰕡 (search vector)
 
+
+    local function get_threshold_summary(icons)
+        local level, _ = local_share.get_log_threshold()
+        local icon = LEVEL_ICONS[level:lower()]
+        if not icon then
+            error("Unknown log threshold: " .. level)
+        end
+        table.insert(icons, icon)
+    end
+
     return {
         function()
-            local icons = { '󰼇' }
+            local icons = { '[' }
 
-            -- * log threshold
-            local threshold_text, _ = local_share.get_log_threshold()
-            table.insert(icons, threshold_text)
+            get_threshold_summary(icons)
 
             if local_share.are_notify_stats_enabled() then
                 table.insert(icons, '󰍨')
@@ -38,6 +54,9 @@ function M.lualine()
             if fim_model == "gptoss" then
                 local level = local_share.get_reasoning_level()
                 fim_model = fim_model .. "." .. level
+            else
+                local level = local_share.get_reasoning_level()
+                fim_model = fim_model .. " " .. level
             end
             table.insert(icons, fim_model)
             if M.last_stats then
@@ -50,6 +69,8 @@ function M.lualine()
                     table.insert(icons, text)
                 end
             end
+            table.insert(icons, ']')
+
             return table.concat(icons, ' ')
         end,
         color = function()
