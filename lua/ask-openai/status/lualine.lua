@@ -81,7 +81,10 @@ function M.lualine_components()
         end,
         color = enabled_color,
     }
-    return { primary }
+    return {
+        primary,
+        primary,
+    }
 end
 
 return M
