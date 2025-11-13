@@ -2,12 +2,13 @@ local log = require('ask-openai.logs.logger').predictions()
 local ansi = require('ask-openai.prediction.ansi')
 
 ---@class ChatMessage
----@field role string
----@field content string
----@field finish_reason string|nil
----@field tool_call_id string|nil
----@field name string|nil
----@field tool_calls ToolCall[]|nil
+---@field role? string
+---@field content? string
+---@field reasoning_content? string
+---@field finish_reason? string
+---@field tool_call_id? string
+---@field name? string
+---@field tool_calls? ToolCall[]
 local ChatMessage = {}
 
 --- FYI largely a marker interface as well, don't need to actually use this ctor
