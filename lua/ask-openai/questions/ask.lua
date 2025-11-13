@@ -16,6 +16,10 @@ require("ask-openai.helpers.buffers")
 ---@class AskQuestionFrontend : StreamingFrontend
 local M = {}
 
+local function format_role(role)
+    return "**" .. (role or "") .. "**"
+end
+
 function M.send_question(user_prompt, selected_text, file_name, use_tools, entire_file)
     use_tools = use_tools or false
 
@@ -78,10 +82,10 @@ The rag_query tool:
             .. "```"
     end
 
-    -- TODO add in other context items? toggles for these? yes! actually lets do like /foo and see if I like that
-
     -- show initial question
-    M.chat_window:append("**system**:\n" .. system_prompt .. "\n\n**user**:\n" .. user_message)
+    -- TODO show system message collapsed? or add smth to preview it on a command
+    --    how about toggle a debug mode that shows vim.inspect(request)? like with rag telescope extension alt+tab
+    M.chat_window:append(format_role("user") .. "\n" .. user_message)
 
     ---@type ChatMessage[]
     local messages = {
@@ -234,10 +238,6 @@ function M.ensure_response_window_is_open()
     end
 
     M.chat_window:ensure_open()
-end
-
-local function format_role(role)
-    return "**" .. (role or "") .. "**"
 end
 
 function M.on_sse_llama_server_timings(sse)
