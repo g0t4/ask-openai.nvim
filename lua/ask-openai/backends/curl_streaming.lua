@@ -10,6 +10,22 @@ function M.terminate(request)
     LastRequest.terminate(request)
 end
 
+---@class StreamingFrontend
+---@field on_generated_text fun(content_chunk: string, sse_parsed: table)
+---@field on_sse_llama_server_timings fun(sse_parsed: table)
+---@field on_sse_llama_server_error_explanation fun(sse_parsed: table)
+---@field handle_messages_updated fun()
+---@field curl_request_exited_successful_on_zero_rc fun()
+---@field on_stderr_data fun(text: string)
+
+---@alias ExtractGeneratedTextFunction fun(first_choice: table): string
+
+---@param body table
+---@param url string
+---@param frontend StreamingFrontend
+---@param extract_generated_text ExtractGeneratedTextFunction
+---@param backend CurlMiddle -- TODO remove backend unused param?
+---@return LastRequest
 function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backend)
     local request = LastRequest:new(body)
 
@@ -135,6 +151,10 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     return request
 end
 
+---@param data_value string
+---@param extract_generated_text ExtractGeneratedTextFunction
+---@param frontend StreamingFrontend
+---@param request LastRequest
 function M.on_line_or_lines(data_value, extract_generated_text, frontend, request)
     -- log:trace("data_value", data_value)
 

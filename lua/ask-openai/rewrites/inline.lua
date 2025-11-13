@@ -1,4 +1,5 @@
 local buffers = require("ask-openai.helpers.buffers")
+---@type CurlMiddle
 local backend = require("ask-openai.backends.oai_chat")
 -- local backend = require("ask-openai.backends.oai_completions")
 local log = require("ask-openai.logs.logger").predictions()
@@ -17,6 +18,7 @@ local human = require("devtools.humanize")
 local tool_router = require("ask-openai.tools.router")
 local model_params = require("ask-openai.questions.models.params")
 
+---@class AskInlineRewriteFrontend : StreamingFrontend
 local M = {}
 
 -- Initialize selection position variables at module level

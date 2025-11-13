@@ -13,9 +13,7 @@ local files = require("ask-openai.helpers.files")
 local model_params = require("ask-openai.questions.models.params")
 require("ask-openai.helpers.buffers")
 
-
-
-
+---@class AskQuestionFrontend : StreamingFrontend
 local M = {}
 
 function M.send_question(user_prompt, selected_text, file_name, use_tools, entire_file)

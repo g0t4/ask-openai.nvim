@@ -11,7 +11,9 @@ local should = require("devtools.tests.should")
 -- ***! use <leader>u to run tests in this file! (habituate that, don't type out the cmd yourself)
 
 describe("tool use SSE parsing in /v1/chat/completions", function()
+    ---@class FakeFrontend : StreamingFrontend
     local FakeFrontend = {}
+    ---@return FakeFrontend
     function FakeFrontend:new()
         -- create a table and attach methods
         local f = setmetatable({}, { __index = self })
@@ -27,17 +29,13 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
             table.insert(f.on_generated_text_calls, chunk)
         end
 
-        function f.process_finish_reason(reason)
-            table.insert(f.process_finish_reason_calls, reason)
-        end
-
         function f.handle_messages_updated()
         end
 
-        function f.on_sse_llama_server_timings(parsed)
+        function f.on_sse_llama_server_timings(sse_parsed)
         end
 
-        function f.on_sse_llama_server_error_explanation(error)
+        function f.on_sse_llama_server_error_explanation(sse_parsed)
         end
 
         return f
@@ -302,9 +300,6 @@ data: [DONE]
 
         it("large SSE spans multiple lines", function()
 
-
         end)
-
-
     end)
 end)
