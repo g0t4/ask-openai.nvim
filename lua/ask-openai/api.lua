@@ -83,8 +83,21 @@ function M.is_rag_enabled()
 end
 
 ---@return table components
+function M.get_lualine_components()
+    return lualine.lualine_components()
+end
+
 function M.get_lualine_status()
-    return lualine.lualine()
+    return {
+        function() return "PLEASE SWITCH TO api.lualine_components()" end,
+        color = function()
+            return {
+                bg = '#FF0000',
+                fg = '#FFFFFF',
+                gui = 'bold'
+            }
+        end
+    }
 end
 
 return M

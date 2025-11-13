@@ -21,13 +21,12 @@ local LEVEL_ICONS = {
     error = "",
 }
 
-function M.lualine()
+function M.lualine_components()
     -- FYI this is an example, copy and modify it to your liking!
     -- reference: "󰼇" "󰼈"
     --  ''            󰨰   (test/debug)
     --  󰵉  󱐎  󰵕  search axis/arrow
     --     󰕡 (search vector)
-
 
     local function get_threshold_summary(icons)
         local level, _ = local_share.get_log_threshold()
@@ -38,7 +37,7 @@ function M.lualine()
         table.insert(icons, icon)
     end
 
-    return {
+    return { {
         function()
             local icons = { '[' }
 
@@ -80,7 +79,7 @@ function M.lualine()
             end
             return { fg = fg_color }
         end,
-    }
+    } }
 end
 
 return M
