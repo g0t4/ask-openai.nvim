@@ -257,7 +257,13 @@ function M.handle_messages_updated()
     local new_lines = {}
     for _, message in ipairs(M.thread.last_request.messages) do
         -- TODO extract a message formatter to build the lines below
-        local role = format_role(message.role)
+        local _role = message.role
+        local tool_calls = message.tool_calls or {}
+        local single_call = #tool_calls == 1
+        if single_call then
+            _role = tool_calls[1]["function"].name
+        end
+        local role = format_role(_role)
         assert(not role:find("\n"), "role should not have a new line but it does")
         table.insert(new_lines, role)
 
@@ -268,13 +274,16 @@ function M.handle_messages_updated()
             table.insert(new_lines, "") -- between messages?
         end
 
-        for _, call in ipairs(message.tool_calls or {}) do
+        for _, call in ipairs(tool_calls or {}) do
             -- FYI keep in mind later on I can come back and insert tool results!
             --   for that I'll need a rich model of what is where in the buffer
 
             -- * tool name/id/status
             local tool_header = "**" .. (call["function"].name or "") .. "**"
             tool_header = tool_header .. " (" .. call.id .. ")"
+            if single_call then
+                tool_header = "" -- it is in the role already
+            end
             if call.response then
                 if call.response.result.isError then
                     tool_header = "❌ " .. tool_header
