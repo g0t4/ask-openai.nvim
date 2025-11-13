@@ -80,7 +80,8 @@ function M.lualine_components()
             return table.concat(icons, ' ')
         end,
         color = enabled_color,
-        separator = "-", -- right side separator
+        separator = nil,
+        padding = 1 -- left/right padding (# chars)
     }
     return {
         primary,
