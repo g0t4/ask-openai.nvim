@@ -288,7 +288,7 @@ function M.handle_messages_updated()
             table.insert(turn_lines, tool_header)
             table.insert(marks, { start_line_base0 = mark_header_line_base0, start_col_base0 = 0, hl_group = hl_group })
 
-            assert(not role:find("\n"), "tool should not have a new line but it does")
+            assert(not tool_header:find("\n"), "tool should not have a new line but it does")
 
             -- * tool args
             local args = call["function"].arguments
