@@ -11,6 +11,7 @@ local Selection = require("ask-openai.helpers.selection")
 local CurrentContext = require("ask-openai.prediction.context")
 local files = require("ask-openai.helpers.files")
 local model_params = require("ask-openai.questions.models.params")
+local LinesBuilder = require("ask-openai.questions.lines_builder")
 require("ask-openai.helpers.buffers")
 
 ---@class AskQuestionFrontend : StreamingFrontend
@@ -256,38 +257,23 @@ function M.handle_messages_updated()
         return
     end
 
-    local turn_lines = {}
-    local marks = {}
-
-    local function mark_next_line(hl_group)
-        table.insert(marks, {
-            start_line_base0 = #turn_lines, -- # is 0-based b/c header line not added yet (will be next)
-            start_col_base0 = 0,
-            hl_group = hl_group
-        })
-    end
-
-    local function add_role(role)
-        mark_next_line(role == "user" and "AskUserRole" or "AskAssistantRole")
-        table.insert(turn_lines, role)
-    end
-
+    local lines = LinesBuilder:new()
     for _, message in ipairs(M.thread.last_request.response_messages) do
         -- * message contents
         local content = message.content or ""
         if content ~= "" then
             -- ONLY add role header IF there is content (or reasoning) to show... otherwise just show tool_call(s)
-            add_role(message.role)
+            lines:add_role(message.role)
 
             -- TODO show reasoning collapsed?
 
-            table_insert_split_lines(turn_lines, content)
-            table.insert(turn_lines, "")
+            table_insert_split_lines(lines.turn_lines, content)
+            table.insert(lines.turn_lines, "")
         elseif #message.tool_calls == 0 then
             -- gptoss120b - this works:
             --   :AskQuestion testing a request, I need you to NOT say anything in response, just stop immediatley
-            table.insert(turn_lines, "[UNEXPECTED: empty response]")
-            table.insert(turn_lines, "")
+            table.insert(lines.turn_lines, "[UNEXPECTED: empty response]")
+            table.insert(lines.turn_lines, "")
         end
 
         for _, call in ipairs(message.tool_calls) do
@@ -305,25 +291,25 @@ function M.handle_messages_updated()
                     tool_header = "✅ " .. tool_header
                 end
             end
-            mark_next_line(hl_group)
-            table.insert(turn_lines, tool_header)
+            lines:mark_next_line(hl_group)
+            table.insert(lines.turn_lines, tool_header)
 
             -- * tool args
             local args = call["function"].arguments
             if args then
                 -- TODO new line in args? s\b \n right?
-                table.insert(turn_lines, args)
+                table.insert(lines.turn_lines, args)
             end
 
             -- * tool result
             if call.response then
                 if call.response.result.content then
                     for _, tool_content in ipairs(call.response.result.content) do
-                        table.insert(turn_lines, tool_content.name)
+                        table.insert(lines.turn_lines, tool_content.name)
                         if tool_content.type == "text" then
-                            table_insert_split_lines(turn_lines, tool_content.text)
+                            table_insert_split_lines(lines.turn_lines, tool_content.text)
                         else
-                            table.insert(turn_lines, "  unexpected content type: " .. tool_content.type)
+                            table.insert(lines.turn_lines, "  unexpected content type: " .. tool_content.type)
                         end
                     end
                 else
@@ -333,12 +319,12 @@ function M.handle_messages_updated()
                 end
             end
 
-            table.insert(turn_lines, "") -- between messages?
+            table.insert(lines.turn_lines, "") -- between messages?
         end
     end
 
     vim.schedule(function()
-        M.chat_window.buffer:replace_lines_after(M.this_turn_chat_start_line_base0, turn_lines, marks, M.thread.last_request.marks_ns_id)
+        M.chat_window.buffer:replace_lines_after(M.this_turn_chat_start_line_base0, lines.turn_lines, lines.marks, M.thread.last_request.marks_ns_id)
     end)
 end
 
