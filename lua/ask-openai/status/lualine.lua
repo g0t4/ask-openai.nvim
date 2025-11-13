@@ -80,6 +80,7 @@ function M.lualine_components()
             return table.concat(icons, ' ')
         end,
         color = enabled_color,
+        separator = "-", -- right side separator
     }
     return {
         primary,
