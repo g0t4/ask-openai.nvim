@@ -246,6 +246,9 @@ function M.on_sse_llama_server_timings(sse)
     -- PRN use this to extract timing like in rewrites
 end
 
+vim.api.nvim_set_hl(0, "AskToolSuccess", { fg = "#92E2AC", bg = "NONE", italic = false, underline = false })
+vim.api.nvim_set_hl(0, "AskToolFailed", { fg = "#e06c75", bg = "NONE", bold = true, italic = false, underline = false })
+
 function M.handle_messages_updated()
     if not M.thread.last_request.response_messages then
         return
@@ -274,11 +277,11 @@ function M.handle_messages_updated()
 
             -- * tool name/id/status
             local tool_header = call["function"].name or ""
-            local hl_group = "Added" -- TODO add my own colors?
+            local hl_group = "AskToolSuccess"
             if call.response then
                 if call.response.result.isError then
                     tool_header = "❌ " .. tool_header
-                    hl_group = "Error"
+                    hl_group = "AskToolFailed"
                 else
                     tool_header = "✅ " .. tool_header
                 end
