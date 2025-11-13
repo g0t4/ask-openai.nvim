@@ -35,13 +35,29 @@ function BufferController:get_cursor_line_number_0indexed()
     return cursor[1] - 1
 end
 
-function BufferController:replace_lines_after(line_number, new_lines)
-    -- TODO if perf is an issue, I could easily keep last lines, do a diff and patch only changed lines
-    --   that said, given this is just the current request... that basically is a coarse grain diff
-    vim.api.nvim_buf_set_lines(self.buffer_number, line_number, -1, false, new_lines)
+local ns = vim.api.nvim_create_namespace('test_colors_chat')
 
-    -- todo should I only scroll if the new content goes past the last line? i.e. if more than one line in new_lines?
-    --   would that have any performance impact?
+function BufferController:replace_lines_after(line_number, new_lines)
+    -- TODO allow passing extmarks to go with the lines to add so it is all one operation before they show
+    vim.api.nvim_buf_call(self.buffer_number, function()
+        -- "atomic" so no flickering b/w adding lines and extmarks
+
+        -- replace all lines from line_number to end of file
+        vim.api.nvim_buf_set_lines(self.buffer_number, line_number, -1, false, new_lines)
+
+        vim.api.nvim_buf_clear_namespace(self.buffer_number, ns, 0, -1)
+
+        vim.api.nvim_buf_set_extmark(self.buffer_number, ns,
+            line_number,
+            0,
+            {
+                hl_group = 'Added',
+                end_line = line_number + #new_lines,
+                end_col  = 0,
+            }
+        )
+    end)
+
     self:scroll_cursor_to_end_of_buffer()
 end
 
