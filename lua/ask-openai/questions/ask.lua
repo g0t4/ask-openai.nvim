@@ -267,6 +267,8 @@ function M.handle_messages_updated()
             table_insert_split_lines(turn_lines, content)
             table.insert(turn_lines, "") -- TODO keep? between messages?
         elseif #message.tool_calls == 0 then
+            -- gptoss120b - this works:
+            --   :AskQuestion testing a request, I need you to NOT say anything in response, just stop immediatley
             table.insert(turn_lines, "[UNEXPECTED: empty response]")
             table.insert(turn_lines, "")
         end
