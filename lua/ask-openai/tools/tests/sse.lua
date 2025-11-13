@@ -66,7 +66,7 @@ data: [DONE]
             local deltas = text.split_lines_skip_empties(choices)
             for _, delta_json in pairs(deltas) do
                 local delta_table = vim.json.decode(delta_json)
-                curls.on_delta_update_message_history(delta_table, request)
+                curls.on_streaming_delta_update_message_history(delta_table, request)
             end
             return request, frontend
         end
@@ -94,8 +94,8 @@ data: [DONE]
 
             local request = call_on_delta(choices)
 
-            should.be_equal(1, #request.messages)
-            local msg = request.messages[1]
+            should.be_equal(1, #request.response_messages)
+            local msg = request.response_messages[1]
             should.be_equal(0, msg.index)
             should.be_equal("assistant", msg.role)
             should.be_equal("My name is Neo Vim.", msg.content)
@@ -121,8 +121,8 @@ data: [DONE]
 
             local request, frontend = call_on_delta(choices)
             -- print("request", vim.inspect(request))
-            should.be_equal(1, #request.messages)
-            local msg = request.messages[1]
+            should.be_equal(1, #request.response_messages)
+            local msg = request.response_messages[1]
             should.be_equal(0, msg.index)
             should.be_equal("assistant", msg.role)
             should.be_equal("tool_calls", msg.finish_reason)
@@ -172,8 +172,8 @@ data: [DONE]
                 {"index":0,"delta":{"content":""},"logprobs":null,"finish_reason":"tool_calls","stop_reason":null}
             ]]
             local request, frontend = call_on_delta(choices)
-            should.be_equal(1, #request.messages)
-            msg = request.messages[1]
+            should.be_equal(1, #request.response_messages)
+            msg = request.response_messages[1]
             should.be_equal("assistant", msg.role)
             -- FYI VLLM IS NOT DUPLICATING ATTRS like role across all deltas, just on first one it seems
             should.be_equal(0, msg.index)
@@ -219,11 +219,11 @@ data: [DONE]
             ]]
 
             local request, frontend = call_on_delta(choices)
-            should.be_equal(1, #request.messages)
+            should.be_equal(1, #request.response_messages)
 
-            local msg = request.messages[1]
-            should.be_equal(0, msg.index) -- do I care about this?
-            should.be_equal(nil, msg.content) -- do I care about this?
+            local msg = request.response_messages[1]
+            should.be_equal(0, msg.index) -- must send this back to OpenAI, so yes I need this
+            should.be_equal("", msg.content)
             should.be_equal("assistant", msg.role)
             should.be_equal("tool_calls", msg.finish_reason)
 
@@ -264,18 +264,18 @@ data: [DONE]
                 end)
                 :each(function(sse)
                     -- vim.print(sse[1])
-                    curls.on_delta_update_message_history(sse[1], request)
+                    curls.on_streaming_delta_update_message_history(sse[1], request)
                 end)
 
-            should.be_equal(1, #request.messages)
+            should.be_equal(1, #request.response_messages)
 
-            local msg = request.messages[1]
+            local msg = request.response_messages[1]
             should.be_equal(0, msg.index)
 
             local content_only = "Hi there! Let me check the current weather for Washington DC for you."
             local tool_call_only = "\n<tool_call>\n<function=get_current_weather"
             local mixed = content_only .. tool_call_only
-            should.be_equal(mixed, msg.verbatim_content)
+            should.be_equal(mixed, msg._verbatim_content)
             should.be_equal(content_only, msg.content)
 
             should.be_equal("assistant", msg.role)

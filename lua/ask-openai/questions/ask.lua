@@ -246,14 +246,14 @@ end
 
 function M.handle_messages_updated()
     -- TODO rename last_request to just request? or current_request?
-    if not M.thread.last_request.messages then
+    if not M.thread.last_request.response_messages then
         return
     end
 
     -- TODO toggle to expand what is displayed (i.e. hidden messages), tool definitions?
 
     local new_lines = {}
-    for _, message in ipairs(M.thread.last_request.messages) do
+    for _, message in ipairs(M.thread.last_request.response_messages) do
         -- TODO extract a message formatter to build the lines below
         local _role = message.role
         local tool_calls = message.tool_calls
@@ -331,9 +331,9 @@ function M.curl_request_exited_successful_on_zero_rc()
     -- TODO! If I use ask_question/ask_tool_use after previous... w/o clear anything, does it keep messages?
 
     vim.schedule(function()
-        for _, message in ipairs(M.thread.last_request.messages or {}) do
+        for _, message in ipairs(M.thread.last_request.response_messages or {}) do
             -- log:jsonify_info("last request message:", message)
-            -- KEEP IN MIND, thread.last_request.messages IS NOT the same as thread.messages
+            -- KEEP IN MIND, thread.last_request.response_messages IS NOT the same as thread.messages
             --
             -- this is the response(s) from the model, they need to be added to the message history!!!
             --   and before any tool responses
@@ -343,8 +343,6 @@ function M.curl_request_exited_successful_on_zero_rc()
             local model_responses = ChatMessage:new(role, content)
             model_responses.finish_reason = message.finish_reason
 
-            -- TODO do I need to copy message.index too? ... this might be weird on top level but maybe not?
-            -- TODO if ever can be multiple messages from model, are they sorted by index then? (not tool_call.index, there's also a message.index)
             for _, call_request in ipairs(message.tool_calls) do
                 model_responses:add_tool_call_requests(call_request)
             end
@@ -361,7 +359,7 @@ function M.curl_request_exited_successful_on_zero_rc()
 end
 
 function M.call_tools()
-    for _, message in ipairs(M.thread.last_request.messages or {}) do
+    for _, message in ipairs(M.thread.last_request.response_messages or {}) do
         for _, tool_call in ipairs(message.tool_calls) do
             -- log:jsonify_info("tool:", tool_call)
             -- log:trace("tool:", vim.inspect(tool))
@@ -445,7 +443,7 @@ end
 
 ---@return boolean
 function M.any_outstanding_tool_calls()
-    for _, message in ipairs(M.thread.last_request.messages or {}) do
+    for _, message in ipairs(M.thread.last_request.response_messages or {}) do
         for _, tool_call in ipairs(message.tool_calls) do
             if tool_call.response_message == nil then
                 return true

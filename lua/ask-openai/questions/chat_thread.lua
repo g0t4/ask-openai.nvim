@@ -1,11 +1,11 @@
 local log = require('ask-openai.logs.logger').predictions()
 
--- @class ChatThread
--- @see https://platform.openai.com/docs/api-reference/chat/create
--- @field messages ChatMessage[]
--- @field params ChatParams
--- @field last_request LastRequest
--- @field base_url string
+--- see https://platform.openai.com/docs/api-reference/chat/create
+---@class ChatThread
+---@field messages ChatMessage[]
+---@field params ChatParams
+---@field last_request LastRequest
+---@field base_url string
 local ChatThread = {}
 
 --- @param messages ChatMessage[]

@@ -3,7 +3,9 @@ local ansi = require('ask-openai.prediction.ansi')
 
 ---@class ChatMessage
 ---@field role? string
+---@field index integer -- must be kept and sent back with thread
 ---@field content? string
+---@field _verbatim_content? string -- hack for  <tool_call>... leaks (can be removed if fixed)
 ---@field reasoning_content? string
 ---@field finish_reason? string
 ---@field tool_call_id? string
@@ -12,6 +14,7 @@ local ansi = require('ask-openai.prediction.ansi')
 local ChatMessage = {}
 
 --- FYI largely a marker interface as well, don't need to actually use this ctor
+---@return ChatMessage
 function ChatMessage:new(role, content)
     self = setmetatable({}, { __index = ChatMessage })
     self.role = role

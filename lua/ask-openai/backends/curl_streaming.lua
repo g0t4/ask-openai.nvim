@@ -1,6 +1,8 @@
 local log = require("ask-openai.logs.logger").predictions()
 local LastRequest = require("ask-openai.backends.last_request")
 local SSEStreamParser = require("ask-openai.backends.sse.stream.parser")
+local ChatMessage = require("ask-openai.questions.chat_message")
+local ToolCall = require("ask-openai.questions.tool_call")
 local uv = vim.uv
 
 local M = {}
@@ -172,7 +174,7 @@ function M.on_line_or_lines(data_value, extract_generated_text, frontend, reques
 
             -- IIRC this is only ask questions currently
             --   ? if I don't need this in rewrites, THEN, push this back down into asks via on_generated_text
-            M.on_delta_update_message_history(first_choice, request)
+            M.on_streaming_delta_update_message_history(first_choice, request)
             frontend.handle_messages_updated()
 
             -- only rewrite uses this... and that may not change (not sure denormalizer makes sense for rewrites)
@@ -203,29 +205,9 @@ function M.on_line_or_lines(data_value, extract_generated_text, frontend, reques
     ::ignore_done::
 end
 
----@class OpenAIChoice
----@field delta OpenAIChoiceDelta
----@field finish_reason string|nil
----@field index integer
-
----@class OpenAIChoiceDelta
----@field content string|nil
----@field role string|nil
----@field tool_calls OpenAIChoiceDeltaToolCall[]|nil
-
----@class OpenAIChoiceDeltaToolCall
----@field index integer
----@field id string|nil
----@field type string|nil
----@field function OpenAIChoiceDeltaToolCallFunction|nil
-
----@class OpenAIChoiceDeltaToolCallFunction
----@field name string|nil
----@field arguments string|nil
-
 ---@param choice OpenAIChoice|nil
 ---@param request LastRequest
-function M.on_delta_update_message_history(choice, request)
+function M.on_streaming_delta_update_message_history(choice, request)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
     -- rebuilds message as if sent `stream: false`
     -- for message history / follow up
@@ -234,29 +216,23 @@ function M.on_delta_update_message_history(choice, request)
         log:trace("[WARN] skipping b/c choice/choice.delta is nil: '" .. vim.inspect(choice) .. "'")
         return
     end
-    request.messages = request.messages or {}
+    request.response_messages = request.response_messages or {}
 
-    -- lookup or create message
-    local msg_lookup = choice.index + 1
-    local message = request.messages[msg_lookup]
+    -- * lookup or create message
+    local index_base1 = choice.index + 1
+    local message = request.response_messages[index_base1]
     if message == nil then
-        message = {
-            index = choice.index,
-            role = choice.delta.role,
-            verbatim_content = "",
-        }
+        message = ChatMessage:new(choice.delta.role, "")
+        message.index = choice.index
+        message._verbatim_content = ""
         -- assumes contiguous indexes, s/b almost always 0 index only, 1 too with dual tool call IIRC
-        request.messages[msg_lookup] = message
+        request.response_messages[index_base1] = message
     end
 
-    if choice.delta.content ~= nil then
-        if choice.delta.content == vim.NIL then
-            log:error("TODO FIND OUT IF THIS MATTERS - my guess is NO but still check - content is null (in json) or vim.NIL in parsed on first delta (when using llama-server + gpt-oss)?",
-                vim.inspect(choice))
-        else
-            -- by tracking verbatim_content, I can trim the end every single time and if it is not a full match it will show back up once it's past the match point
-            message.verbatim_content = (message.verbatim_content or "") .. choice.delta.content
-        end
+    if choice.delta.content ~= nil and choice.delta.content ~= vim.NIL then
+        -- by tracking _verbatim_content, I can trim the end every single time
+        -- and if it is not a full match it will show back up once it's past the match point
+        message._verbatim_content = (message._verbatim_content or "") .. choice.delta.content
     end
 
     if choice.finish_reason ~= nil then
@@ -264,39 +240,39 @@ function M.on_delta_update_message_history(choice, request)
         message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
     end
 
-    -- TODO what other tool_call styles are left in, there were others
-    message.content = message.verbatim_content:gsub("\n<tool_call>\n<function=[%w_]+", "")
-    if message.content ~= message.verbatim_content then
+    -- * strip leaked tool call tokens (bug in llama.cpp)
+    message.content = message._verbatim_content:gsub("\n<tool_call>\n<function=[%w_]+", "")
+    if message.content ~= message._verbatim_content then
         log:error("stripping LEAKED TOOL CALL!")
     end
 
-    -- vim.print("original", message.original_content)
-    -- vim.print("truncated", message.content)
-
+    -- * parse tool calls
     local calls = choice.delta.tool_calls
     if calls then
-        for _, tool_call_delta in ipairs(calls) do
-            -- * lookup or create parsed_call
-            -- TODO create a typed class for parsed_call?
-            local parsed_call = message.tool_calls[tool_call_delta.index + 1]
+        for _, call_delta in ipairs(calls) do
+            -- * lookup or create new parsed_call
+            local parsed_call = message.tool_calls[call_delta.index + 1]
             if parsed_call == nil then
-                parsed_call = {
+                -- first time, create ToolCall so it can be populated across streaming SSEs
+                parsed_call = ToolCall:new {
                     -- assuming these are always on first delta per message
-                    id    = tool_call_delta.id,
-                    index = tool_call_delta.index,
-                    type  = tool_call_delta.type,
+                    id    = call_delta.id,
+                    index = call_delta.index,
+                    type  = call_delta.type,
                 }
                 table.insert(message.tool_calls, parsed_call)
             end
 
-            local func = tool_call_delta["function"]
+            local func = call_delta["function"] -- "function" is a keyword in lua, so must wrap it to access it
             if func ~= nil then
+                -- FYI different fields are populated across deltas, so you must use/append to what already exists
                 parsed_call["function"] = parsed_call["function"] or {}
                 if func.name ~= nil then
-                    -- first delta has full name in my testing
+                    -- first delta has full name in my testing (not appending chunks, if I encounter split name then add test for it and update here)
                     parsed_call["function"].name = func.name
                 end
                 if func.arguments ~= nil then
+                    -- append latest chunks for the arguments string (streaming chunks like content/reasoning)
                     parsed_call["function"].arguments =
                         (parsed_call["function"].arguments or "")
                         .. func.arguments

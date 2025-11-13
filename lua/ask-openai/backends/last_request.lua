@@ -5,7 +5,7 @@ local log = require("ask-openai.logs.logger").predictions()
 ---@field handle uv_process_t
 ---@field pid integer
 ---@field thread ChatThread
----@field messages ChatMessage[]
+---@field response_messages ChatMessage[] -- PRN? rename as response_messages?
 local LastRequest = {}
 
 --- @param body table<string, any>
@@ -18,7 +18,7 @@ function LastRequest:new(body)
     self.handle = nil
     self.pid = nil
     self.thread = nil -- TODO pass thread in ctor?
-    self.messages = {}
+    self.response_messages = {}
     self.start_time = os.time()
     return self
 end
