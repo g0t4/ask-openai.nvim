@@ -267,13 +267,17 @@ function M.handle_messages_updated()
         })
     end
 
+    local function add_role(role)
+        mark_next_line(role == "user" and "AskUserRole" or "AskAssistantRole")
+        table.insert(turn_lines, role)
+    end
+
     for _, message in ipairs(M.thread.last_request.response_messages) do
         -- * message contents
         local content = message.content or ""
         if content ~= "" then
             -- ONLY add role header IF there is content (or reasoning) to show... otherwise just show tool_call(s)
-            mark_next_line("AskAssistantRole")
-            table.insert(turn_lines, message.role)
+            add_role(message.role)
 
             -- TODO show reasoning collapsed?
 
