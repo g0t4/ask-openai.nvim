@@ -291,8 +291,7 @@ function M.handle_messages_updated()
                     tool_header = "✅ " .. tool_header
                 end
             end
-            lines:mark_next_line(hl_group)
-            table.insert(lines.turn_lines, tool_header)
+            lines:add_lines_marked({ tool_header }, hl_group)
 
             -- * tool args
             local args = call["function"].arguments

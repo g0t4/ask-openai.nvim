@@ -28,4 +28,17 @@ function LinesBuilder:add_role(role)
     table.insert(self.turn_lines, role)
 end
 
+---@param lines string[]
+function LinesBuilder:add_lines_marked(lines, hl_group)
+    local mark = {
+        start_line_base0 = #self.turn_lines, -- base0 b/c next line is the marked one (thus not yet in line count)
+        start_col_base0 = 0,
+        end_line_base0 = #self.turn_lines + #lines, -- IIAC I want end exclusive
+        end_col_base0 = 0, -- or, #lines[#lines], to stop on last line (have to -1 on end line too)
+        hl_group = hl_group
+    }
+    table.insert(self.marks, mark)
+    vim.list_extend(self.turn_lines, lines)
+end
+
 return LinesBuilder
