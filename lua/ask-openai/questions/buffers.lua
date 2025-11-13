@@ -57,16 +57,6 @@ function BufferController:replace_lines_after(line_number_base0, with_lines, mar
                 }
             )
         end
-
-        -- vim.api.nvim_buf_set_extmark(self.buffer_number, marks_ns_id,
-        --     line_number,
-        --     0,
-        --     {
-        --         hl_group = 'Added',
-        --         end_line = line_number + #with_lines,
-        --         end_col  = 0,
-        --     }
-        -- )
     end)
 
 
