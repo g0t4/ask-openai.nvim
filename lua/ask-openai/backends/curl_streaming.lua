@@ -254,7 +254,6 @@ function M.on_delta_update_message_history(choice, request)
 
     local calls = choice.delta.tool_calls
     if calls then
-        message.tool_calls = (message.tool_calls or {})
         for _, tool_call_delta in ipairs(calls) do
             -- * lookup or create parsed_call
             -- TODO create a typed class for parsed_call?

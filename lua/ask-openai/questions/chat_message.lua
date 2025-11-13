@@ -8,7 +8,7 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@field finish_reason? string
 ---@field tool_call_id? string
 ---@field name? string
----@field tool_calls? ToolCall[]
+---@field tool_calls ToolCall[] -- empty if none
 local ChatMessage = {}
 
 --- FYI largely a marker interface as well, don't need to actually use this ctor
@@ -17,6 +17,7 @@ function ChatMessage:new(role, content)
     self.role = role
     self.content = content
     self.finish_reason = nil
+    self.tool_calls = {} -- empty == None (enforce invariant)
     -- PRN enforce content is string here?
     return self
 end
@@ -42,9 +43,6 @@ function ChatMessage:new_system_message(content)
 end
 
 function ChatMessage:add_tool_call_requests(call_request)
-    if self.tool_calls == nil then
-        self.tool_calls = {}
-    end
     -- ONLY clone fields on the original call request from the model
     local new_call = {
         id = call_request.id,

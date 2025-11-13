@@ -258,7 +258,7 @@ function M.handle_messages_updated()
     for _, message in ipairs(M.thread.last_request.messages) do
         -- TODO extract a message formatter to build the lines below
         local _role = message.role
-        local tool_calls = message.tool_calls or {}
+        local tool_calls = message.tool_calls
         local single_call = #tool_calls == 1
         if single_call then
             _role = tool_calls[1]["function"].name
@@ -274,7 +274,7 @@ function M.handle_messages_updated()
             table.insert(new_lines, "") -- between messages?
         end
 
-        for _, call in ipairs(tool_calls or {}) do
+        for _, call in ipairs(tool_calls) do
             -- FYI keep in mind later on I can come back and insert tool results!
             --   for that I'll need a rich model of what is where in the buffer
 
@@ -347,7 +347,7 @@ function M.curl_request_exited_successful_on_zero_rc()
 
             -- TODO do I need to copy message.index too? ... this might be weird on top level but maybe not?
             -- TODO if ever can be multiple messages from model, are they sorted by index then? (not tool_call.index, there's also a message.index)
-            for _, call_request in ipairs(message.tool_calls or {}) do
+            for _, call_request in ipairs(message.tool_calls) do
                 model_responses:add_tool_call_requests(call_request)
             end
             -- log:jsonify_info("final model_response message:", model_responses)
@@ -364,7 +364,7 @@ end
 
 function M.call_tools()
     for _, message in ipairs(M.thread.last_request.messages or {}) do
-        for _, tool_call in ipairs(message.tool_calls or {}) do
+        for _, tool_call in ipairs(message.tool_calls) do
             -- log:jsonify_info("tool:", tool_call)
             -- log:trace("tool:", vim.inspect(tool))
             -- TODO fix type annotations, ToolCall is wrong (has response/response.message crap on it
@@ -448,7 +448,7 @@ end
 ---@return boolean
 function M.any_outstanding_tool_calls()
     for _, message in ipairs(M.thread.last_request.messages or {}) do
-        for _, tool_call in ipairs(message.tool_calls or {}) do
+        for _, tool_call in ipairs(message.tool_calls) do
             if tool_call.response_message == nil then
                 return true
             end
