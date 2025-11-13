@@ -274,16 +274,18 @@ function M.handle_messages_updated()
 
             -- * tool name/id/status
             local tool_header = "**" .. (call["function"].name or "") .. "**"
+            local hl_group = "Added" -- TODO add my own colors?
             if call.response then
                 if call.response.result.isError then
                     tool_header = "❌ " .. tool_header
+                    hl_group = "Error"
                 else
                     tool_header = "✅ " .. tool_header
                 end
             end
             local mark_header_line_base0 = #turn_lines -- # is 0-based b/c header line not added yet (will be next)
             table.insert(turn_lines, tool_header)
-            table.insert(marks, { start_line_base0 = mark_header_line_base0, start_col_base0 = 0, text = role })
+            table.insert(marks, { start_line_base0 = mark_header_line_base0, start_col_base0 = 0, hl_group = hl_group })
 
             assert(not role:find("\n"), "tool should not have a new line but it does")
 

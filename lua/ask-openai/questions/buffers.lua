@@ -50,7 +50,7 @@ function BufferController:replace_lines_after(line_number_base0, with_lines, mar
                 mark.start_line_base0 + line_number_base0,
                 mark.start_col_base0,
                 {
-                    hl_group = 'Added',
+                    hl_group = mark.hl_group,
                     end_line = mark.start_line_base0 + line_number_base0 + 1,
                     end_col  = 0,
                     -- virt_text = { { mark.text, 'Added' } }
