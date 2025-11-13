@@ -254,13 +254,9 @@ function M.handle_messages_updated()
     local turn_lines = {}
     local marks = {}
     for _, message in ipairs(M.thread.last_request.response_messages) do
-        -- TODO extract a message formatter to build the lines below
+        -- TODO! do not show assisstant IF no content + 1+ tool calls... headers from tool calls are fine
         local _role = message.role
         local tool_calls = message.tool_calls
-        local single_call = #tool_calls == 1
-        if single_call then
-            _role = tool_calls[1]["function"].name
-        end
         local role = format_role(_role)
         assert(not role:find("\n"), "role should not have a new line but it does")
         table.insert(turn_lines, role)
@@ -278,9 +274,6 @@ function M.handle_messages_updated()
 
             -- * tool name/id/status
             local tool_header = "**" .. (call["function"].name or "") .. "**"
-            if single_call then
-                tool_header = "" -- it is in the role already
-            end
             if call.response then
                 if call.response.result.isError then
                     tool_header = "❌ " .. tool_header
@@ -288,7 +281,7 @@ function M.handle_messages_updated()
                     tool_header = "✅ " .. tool_header
                 end
             end
-            local mark_header_line_base0 = #turn_lines - 1 -- # is 1-based b/c I am targeting the role line that is already added as last line (thus base1)
+            local mark_header_line_base0 = #turn_lines -- # is 0-based b/c header line not added yet (will be next)
             table.insert(turn_lines, tool_header)
             table.insert(marks, { start_line_base0 = mark_header_line_base0, start_col_base0 = 0, text = role })
 
