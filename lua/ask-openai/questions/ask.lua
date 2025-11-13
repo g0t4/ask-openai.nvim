@@ -140,7 +140,7 @@ The rag_query tool:
 
     -- TODO setup a way to auto switch model based on what's hosted when using llama_server?
     local body_overrides = model_params.new_gptoss_chat_body_llama_server({
-    -- local body_overrides = model_params.new_qwen3coder_llama_server_chat_body({
+        -- local body_overrides = model_params.new_qwen3coder_llama_server_chat_body({
         messages = messages,
         model = "", -- irrelevant for llama-server
         -- tools = tool_router.openai_tools(),
