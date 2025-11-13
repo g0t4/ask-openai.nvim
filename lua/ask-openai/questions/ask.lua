@@ -258,9 +258,7 @@ function M.handle_messages_updated()
     local marks = {}
     for _, message in ipairs(M.thread.last_request.response_messages) do
         -- TODO! do not show assisstant IF no content + 1+ tool calls... headers from tool calls are fine
-        local _role = message.role
-        local tool_calls = message.tool_calls
-        local role = format_role(_role)
+        local role = format_role(message.role)
         assert(not role:find("\n"), "role should not have a new line but it does")
         table.insert(turn_lines, role)
 
@@ -271,7 +269,7 @@ function M.handle_messages_updated()
             table.insert(turn_lines, "") -- between messages?
         end
 
-        for _, call in ipairs(tool_calls) do
+        for _, call in ipairs(message.tool_calls) do
             -- FYI keep in mind later on I can come back and insert tool results!
             --   for that I'll need a rich model of what is where in the buffer
 
