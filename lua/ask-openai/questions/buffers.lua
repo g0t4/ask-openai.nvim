@@ -63,6 +63,8 @@ function BufferController:replace_lines_after(line_number_base0, with_lines, mar
                 local fold_start_line_base0 = mark.start_line_base0 + line_number_base0 + 1
                 -- delete fold(s)??
                 vim.cmd(string.format(
+                    -- translation => jump cursor to start line, zD => G (cursor back to end of file)
+                    -- FYI the cursor movement is why this is not reliable! I would need to wait to confirm the cursor is moved before proceeding?
                     "silent! %d normal! zD; G",
                     fold_start_line_base0))
 
