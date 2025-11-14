@@ -55,6 +55,7 @@ function M.merge_contiguous_rag_chunks(rag_matches)
             if not current_chunk then
                 -- current as in we are merging subsequent chunks until nothing overlaps/touches
                 current_chunk = M.clone_chunk(next_chunk)
+                table.insert(merged_chunks, current_chunk)
             else
                 -- TODO add test case of overlap
                 -- TODO add test case of touch (and check math here for + 1):
@@ -67,12 +68,12 @@ function M.merge_contiguous_rag_chunks(rag_matches)
                     --   USE A UNIT TEST TO FIX THIS! careful! this is almost impossible to test otherwise!
                     current_chunk.text = current_chunk.text .. "\n" .. next_chunk.text
                 else
-                    table.insert(merged_chunks, current_chunk)
+                    -- proceed to next chunk
                     current_chunk = M.clone_chunk(next_chunk)
+                    table.insert(merged_chunks, current_chunk)
                 end
             end
         end
-        if current_chunk then table.insert(merged_chunks, current_chunk) end
     end
     return merged_chunks
 end
