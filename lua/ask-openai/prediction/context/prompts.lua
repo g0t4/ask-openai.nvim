@@ -1,5 +1,14 @@
+---@class ParseIncludesResult
+---@field all boolean
+---@field yanks boolean
+---@field commits boolean
+---@field cleaned_prompt string
+
 local M = {}
 
+---@param prompt string
+---@param command string
+---@return string
 local function clean_prompt(prompt, command)
     -- in middle, between whitespace
     local cleaned = prompt:gsub("(%W)(" .. command .. ")%W", "%1")
@@ -10,9 +19,13 @@ local function clean_prompt(prompt, command)
     return cleaned
 end
 
+---@param prompt? string
+---@return ParseIncludesResult
 function M.parse_includes(prompt)
     prompt = prompt or ""
 
+    ---@param command string
+    ---@return boolean
     local function has(command)
         -- in middle, between whitespace
         local found = prompt:find("%W(" .. command .. ")%W")
