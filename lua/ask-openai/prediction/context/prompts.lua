@@ -2,6 +2,8 @@
 ---@field all boolean
 ---@field yanks boolean
 ---@field commits boolean
+---@field current_file boolean
+---@field open_files boolean
 ---@field cleaned_prompt string
 
 local M = {}
@@ -36,18 +38,23 @@ function M.parse_includes(prompt)
         return found ~= nil
     end
 
+    ---@type ParseIncludesResult
     local includes = {
         all = (prompt == "") or has("/all"),
         yanks = true,
         commits = true,
+        cleaned_prompt = "",
+        current_file = has("/file"),
+        open_files = has("/files"),
     }
+
     if not includes.all then
         includes.yanks = has("/yanks")
         includes.commits = has("/commits")
     end
 
     local cleaned = prompt
-    for _, k in ipairs({ "/yanks", "/all", "/commits" }) do
+    for _, k in ipairs({ "/yanks", "/all", "/commits", "/file", "/files", }) do
         cleaned = clean_prompt(cleaned, k)
     end
     includes.cleaned_prompt = cleaned
