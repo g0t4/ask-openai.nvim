@@ -9,16 +9,16 @@ end
 
 ---@return table<string, string>
 function M.get_entire_text_of_all_buffers()
-    local result = {}
+    local text_by_file = {}
     for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
         if vim.api.nvim_buf_is_loaded(bufnr) and vim.api.nvim_buf_get_option(bufnr, "buflisted") then
             local name = vim.api.nvim_buf_get_name(bufnr)
             if name == "" then name = tostring(bufnr) end
             local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-            result[name] = table.concat(lines, "\n")
+            text_by_file[name] = table.concat(lines, "\n")
         end
     end
-    return result
+    return text_by_file
 end
 
 function M.dump_last_seletion()
