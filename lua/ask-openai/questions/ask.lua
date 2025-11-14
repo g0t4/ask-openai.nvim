@@ -567,6 +567,7 @@ function get_git_diff(range)
 end
 
 function ask_review_git_oustanding_changes(opts)
+    -- TODO if I like letting the model use tools instead... then get rid of this (ask_review_git_oustanding_changes)
     local diff, command = get_git_diff("HEAD")
 
     local system_prompt = [[
@@ -618,7 +619,7 @@ function M.setup()
     --  ? add flag for specifying commit range?
     -- vim.api.nvim_create_user_command("AskReviewGitDiff", ask_review_git_oustanding_changes, { range = true, nargs = 1 })
     -- vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskReviewGitDiff ', { noremap = true })
-    -- TODO WAIT... why not just do this!!!
+    -- TODO if I like this way, get rid of ask_review_git_oustanding_changes above
     vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskQuestion /tools can you review my outstanding git changes', { noremap = true })
 
     vim.keymap.set('n', '<leader>ao', M.ensure_response_window_is_open, { noremap = true })
