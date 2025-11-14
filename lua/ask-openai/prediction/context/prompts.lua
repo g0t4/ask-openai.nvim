@@ -56,7 +56,8 @@ function M.parse_includes(prompt)
     end
 
     local cleaned = prompt
-    for _, k in ipairs({ "/yanks", "/all", "/commits", "/file", "/files", }) do
+    local slash_commands = { "/yanks", "/all", "/commits", "/file", "/files", }
+    for _, k in ipairs(slash_commands) do
         cleaned = clean_prompt(cleaned, k)
     end
     includes.cleaned_prompt = cleaned
