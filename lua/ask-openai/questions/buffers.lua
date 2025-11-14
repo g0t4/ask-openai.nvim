@@ -56,7 +56,35 @@ function BufferController:replace_lines_after(line_number_base0, with_lines, mar
                 }
             )
 
-            -- TODO FIX FOLDING TO NOT BE SUCH A HACKY PIECE OF SHIT (lol)
+            -- TODO redo folding using a list of ranges and then a custom foldexpr
+            --    instead of manually marking ranges and deleting, etc
+            --
+            -- vim.opt.foldmethod = "expr"
+            -- vim.opt.foldexpr = "v:lua.MyFoldFunc(v:lnum)"
+            --
+            -- -- ensure ranges sorted by start_line
+            -- table.sort(folds, function(a, b) return a[1] < b[1] end)
+            --
+            -- function _G.MyFoldFunc(lnum)
+            --     -- binary search for containing range
+            --     local lo, hi = 1, #folds
+            --     while lo <= hi do
+            --         local mid = (lo + hi) // 2
+            --         local s, e = folds[mid][1], folds[mid][2]
+            --         if lnum < s then
+            --             hi = mid - 1
+            --         elseif lnum > e then
+            --             lo = mid + 1
+            --         else
+            --             return "1"
+            --         end
+            --     end
+            --     return "0"
+            -- end
+            --
+            --    vim.opt.foldtext = "v:lua.MyFoldText()"
+            --      summary text for the fold
+            --      OR use extmarks to summarize
             --
             local more_than_one_line = mark.end_line_base0 > mark.start_line_base0 + 1
             if mark.fold and more_than_one_line then
