@@ -41,16 +41,18 @@ function M.parse_includes(prompt)
     ---@type ParseIncludesResult
     local includes = {
         all = (prompt == "") or has("/all"),
-        yanks = true,
-        commits = true,
-        cleaned_prompt = "",
+        yanks = has("/yanks"),
+        commits = has("/commits"),
         current_file = has("/file"),
         open_files = has("/files"),
+        cleaned_prompt = "",
     }
 
-    if not includes.all then
-        includes.yanks = has("/yanks")
-        includes.commits = has("/commits")
+    if includes.all then
+        includes.yanks = true
+        includes.commits = true
+        includes.current_file = true
+        includes.open_files = true
     end
 
     local cleaned = prompt
