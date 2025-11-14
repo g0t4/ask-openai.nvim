@@ -339,6 +339,7 @@ function M.handle_messages_updated()
             end
 
             -- TODO REMINDER - try/add apply_patch when using gptoss (need to put this elsewhere)
+            --    USE BUILT-IN mcp server - https://github.com/openai/gpt-oss/tree/main/gpt-oss-mcp-server
             -- TODO REMINDER - also try/add other tools it uses (python code runner, browser)
 
             -- * tool result
