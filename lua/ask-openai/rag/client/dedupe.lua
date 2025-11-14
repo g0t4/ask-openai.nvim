@@ -52,6 +52,7 @@ function M.merge_contiguous_rag_chunks(rag_matches)
 
         local current_chunk = nil
         for _, next_chunk in ipairs(matches) do
+            -- ACCUMULATOR pattern => left to right, merge left
             if not current_chunk then
                 -- current as in we are merging subsequent chunks until nothing overlaps/touches
                 current_chunk = M.clone_chunk(next_chunk)
@@ -64,7 +65,7 @@ function M.merge_contiguous_rag_chunks(rag_matches)
                 if overlap_or_touch then
                     current_chunk.end_line_base0 = math.max(current_chunk.end_line_base0, next_chunk.end_line_base0)
 
-                    -- TODO fix logic for merging text! need to consider overlapping and remove the overlapping (not duplicate them)
+                    -- TODO! fix logic for merging text! need to consider overlapping and remove the overlapping (not duplicate them)
                     --   USE A UNIT TEST TO FIX THIS! careful! this is almost impossible to test otherwise!
                     current_chunk.text = current_chunk.text .. "\n" .. next_chunk.text
                 else
