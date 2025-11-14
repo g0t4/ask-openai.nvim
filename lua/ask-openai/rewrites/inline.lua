@@ -119,7 +119,7 @@ function M.on_sse_llama_server_timings(sse)
         local virt_text = {
             {
                 string.format(
-                    "%s predicted @ %s tokens/sec ",
+                    "%sout@%stps",
                     human.comma_delimit(sse.timings.predicted_n),
                     human.format_num(sse.timings.predicted_per_second)
                 ),
@@ -127,11 +127,18 @@ function M.on_sse_llama_server_timings(sse)
             },
             {
                 string.format(
-                    "%s prompt @ %s tokens/sec",
+                    " %sin@%stps",
                     human.comma_delimit(sse.timings.prompt_n),
                     human.format_num(sse.timings.prompt_per_second)
                 ),
                 "AskStatsPrompt",
+            },
+            {
+                string.format(
+                    " %scached",
+                    human.comma_delimit(sse.timings.cache_n or 0)
+                ),
+                "AskStatsCached",
             },
         }
 
@@ -430,6 +437,7 @@ and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
         else
             simulated_sse = {
                 timings = {
+                    cache_n = 1000,
                     predicted_per_second = 120,
                     predicted_n = 100,
                     prompt_per_second = 200,
@@ -459,6 +467,7 @@ local function simulate_rewrite_instant_one_chunk(opts)
     local full_rewrite = M.selection.original_text .. "\nINSTANT NEW LINE"
     local simulated_sse = {
         timings = {
+            cache_n = 1000,
             predicted_per_second = 120,
             predicted_n = 100,
             prompt_per_second = 200,

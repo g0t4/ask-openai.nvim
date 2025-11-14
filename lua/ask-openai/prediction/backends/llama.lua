@@ -422,6 +422,7 @@ function parse_llamacpp_stats(parsed_sse)
     -- "stop_type": "eos",
     -- "stopping_word": "",
     -- "tokens_cached": 59,
+    -- TODO fallback on cache_n? I am using that currently from llama.cpp's server... does OpenAI use tokens_cached? if so take one or the other?
     stats.cached_tokens = timings.tokens_cached
     --
     -- "timings": {

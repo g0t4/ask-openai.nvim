@@ -114,6 +114,12 @@ function M.start_predictions()
         -- bold = true
     })
 
+    vim.api.nvim_set_hl(0, "AskStatsCached", {
+        fg = "#2EBE10",
+        bg = "none",
+        -- italic = true,
+    })
+
     are_predictions_running = true
 end
 
