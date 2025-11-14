@@ -1,9 +1,15 @@
 local Selection = require("ask-openai.helpers.selection")
 local M = {}
 
+---@return string
+function M.get_text_in_current_buffer()
+    bufnr = bufnr or 0
+    return M.get_text_in_buffer(bufnr)
+end
+
 ---@param bufnr? integer
 ---@return string
-function M.get_text_in_current_buffer(bufnr)
+function M.get_text_in_buffer(bufnr)
     bufnr = bufnr or 0
     local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
     return table.concat(lines, "\n")
@@ -17,7 +23,7 @@ function M.get_text_in_all_buffers()
         if vim.api.nvim_buf_is_loaded(bufnr) and vim.api.nvim_buf_get_option(bufnr, "buflisted") then
             local name = vim.api.nvim_buf_get_name(bufnr)
             if name == "" then name = tostring(bufnr) end
-            text_by_file[name] = M.get_text_in_current_buffer(bufnr)
+            text_by_file[name] = M.get_text_in_buffer(bufnr)
         end
     end
     return text_by_file
