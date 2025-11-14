@@ -25,6 +25,7 @@ function M.merge_contiguous_rag_chunks(rag_matches)
         local current_chunk = nil
         for _, next_chunk in ipairs(matches) do
             if not current_chunk then
+                -- current as in we are merging subsequent chunks until nothing overlaps/touches
                 current_chunk = {
                     file = file,
                     start_line_base0 = next_chunk.start_line_base0,
@@ -32,8 +33,8 @@ function M.merge_contiguous_rag_chunks(rag_matches)
                     text = next_chunk.text,
                 }
             else
-                local is_overlap = next_chunk.start_line_base0 <= current_chunk.end_line_base0 + 1
-                if is_overlap then
+                local overlap_or_touch = next_chunk.start_line_base0 <= current_chunk.end_line_base0 + 1
+                if overlap_or_touch then
                     if next_chunk.end_line_base0 > current_chunk.end_line_base0 then
                         current_chunk.end_line_base0 = next_chunk.end_line_base0
                     end
