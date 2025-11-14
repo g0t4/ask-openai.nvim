@@ -264,6 +264,8 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     user_message_with_code = user_prompt .. "\n" .. code_context
     log:info("user_message_with_code: '" .. user_message_with_code .. "'")
 
+    -- TODO! /file /files => current_file and open_files ... at least do the current_file now => into a new chat history message (give whole file up)
+
     ---@param rag_matches LSPRankedMatch[]
     local function send_rewrite(rag_matches)
         local messages = {
