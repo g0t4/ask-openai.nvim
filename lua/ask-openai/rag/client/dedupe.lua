@@ -61,9 +61,8 @@ function M.merge_contiguous_rag_chunks(rag_matches)
                 local overlap_or_touch = next_chunk.start_line_base0 <= current_chunk.end_line_base0 + 1
 
                 if overlap_or_touch then
-                    if next_chunk.end_line_base0 > current_chunk.end_line_base0 then
-                        current_chunk.end_line_base0 = next_chunk.end_line_base0
-                    end
+                    current_chunk.end_line_base0 = math.max(current_chunk.end_line_base0, next_chunk.end_line_base0)
+
                     -- TODO fix logic for merging text! need to consider overlapping and remove the overlapping (not duplicate them)
                     --   USE A UNIT TEST TO FIX THIS! careful! this is almost impossible to test otherwise!
                     current_chunk.text = current_chunk.text .. "\n" .. next_chunk.text
