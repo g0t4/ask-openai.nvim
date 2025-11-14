@@ -601,14 +601,18 @@ function M.setup()
 
     vim.api.nvim_create_user_command("AskQuestion", ask_question, { range = true, nargs = 1 })
     -- * AskQuestion
-    vim.api.nvim_set_keymap('n', '<Leader>q', ':AskQuestion ', { noremap = true })
-    vim.api.nvim_set_keymap('v', '<Leader>q', ':<C-u>AskQuestion /selection ', { noremap = true })
+    vim.keymap.set('n', '<Leader>q', ':AskQuestion ', { noremap = true })
+    vim.keymap.set('v', '<Leader>q', ':<C-u>AskQuestion /selection ', { noremap = true })
     -- * /file
-    vim.api.nvim_set_keymap('n', '<Leader>qf', ':AskQuestion /file ', { noremap = true })
-    vim.api.nvim_set_keymap('v', '<Leader>qf', ':<C-u>AskQuestion /selection /file ', { noremap = true })
+    vim.keymap.set('n', '<Leader>qf', ':AskQuestion /file ', { noremap = true })
+    vim.keymap.set('v', '<Leader>qf', ':<C-u>AskQuestion /selection /file ', { noremap = true })
     -- * /tools
-    vim.api.nvim_set_keymap('n', '<Leader>at', ':<C-u>AskQuestion /tools ', { noremap = true })
-    vim.api.nvim_set_keymap('v', '<Leader>at', ':<C-u>AskQuestion /selection /tools ', { noremap = true })
+    vim.keymap.set('n', '<Leader>at', ':<C-u>AskQuestion /tools ', { noremap = true })
+    vim.keymap.set('v', '<Leader>at', ':<C-u>AskQuestion /selection /tools ', { noremap = true })
+    -- FYI also qt... see which you prefer? a/q first
+    vim.keymap.set('n', '<Leader>qt', ':<C-u>AskQuestion /tools ', { noremap = true })
+    vim.keymap.set('v', '<Leader>qt', ':<C-u>AskQuestion /selection /tools ', { noremap = true })
+
 
     --  * review outstanding changes
     --  ? add flag for specifying commit range?
