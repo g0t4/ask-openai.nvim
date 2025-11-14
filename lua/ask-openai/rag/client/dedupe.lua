@@ -3,6 +3,8 @@ local M = {}
 ---@param chunk LSPRankedMatch
 ---@return LSPRankedMatch
 function M.clone_chunk(chunk)
+    -- TODO anything I don't want to clone?
+    -- TODO test necessary fields in unit tests: start/end line, text, file, etc
     local copy = {}
     for k, v in pairs(chunk) do
         copy[k] = v
