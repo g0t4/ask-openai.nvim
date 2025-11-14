@@ -196,14 +196,6 @@ local function ask_question(opts, use_tools, include_context)
     M.send_question(user_prompt, selection, file_name, use_tools, entire_file_message)
 end
 
-local function ask_question_with_context(opts)
-    ask_question(opts, false, true)
-end
-
-local function ask_question_about_with_context(opts)
-    ask_question_about(opts, false, true)
-end
-
 local function ask_tool_use(opts)
     ask_question(opts, true)
 end
@@ -584,12 +576,10 @@ function M.setup()
     --  if I move to a float window, I'll want to add history there then which I can handle later when this falls apart
     vim.api.nvim_create_user_command("AskQuestion", ask_question, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('n', '<Leader>q', ':AskQuestion ', { noremap = true })
-    vim.api.nvim_create_user_command("AskQuestionWithContext", ask_question_with_context, { range = true, nargs = 1 })
-    vim.api.nvim_set_keymap('n', '<Leader>qc', ':AskQuestionWithContext ', { noremap = true })
+    vim.api.nvim_set_keymap('n', '<Leader>qf', ':AskQuestionWith /file', { noremap = true })
     vim.api.nvim_create_user_command("AskQuestionAbout", ask_question_about, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('v', '<Leader>q', ':<C-u>AskQuestionAbout ', { noremap = true })
-    vim.api.nvim_create_user_command("AskQuestionAboutWithContext", ask_question_about_with_context, { range = true, nargs = 1 })
-    vim.api.nvim_set_keymap('v', '<Leader>qc', ':<C-u>AskQuestionAboutWithContext ', { noremap = true })
+    vim.api.nvim_set_keymap('v', '<Leader>qf', ':<C-u>AskQuestionAbout /file ', { noremap = true })
 
     vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
 
