@@ -8,7 +8,7 @@ function M.get_current_buffer_entire_text()
 end
 
 ---@return table<string, string>
-function M.all()
+function M.get_entire_text_of_all_buffers()
     local result = {}
     for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
         if vim.api.nvim_buf_is_loaded(bufnr) and vim.api.nvim_buf_get_option(bufnr, "buflisted") then
