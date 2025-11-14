@@ -9,8 +9,7 @@
 ---@field project? boolean
 ---@field git_diff? boolean
 ---@field cleaned_prompt string
----@filed use_tools? boolean
-
+---@field use_tools? boolean
 local M = {}
 
 ---@param prompt string

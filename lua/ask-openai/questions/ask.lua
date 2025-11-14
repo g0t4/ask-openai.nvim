@@ -13,6 +13,7 @@ local files = require("ask-openai.helpers.files")
 local model_params = require("ask-openai.questions.models.params")
 local LinesBuilder = require("ask-openai.questions.lines_builder")
 local MessageBuilder = require("ask-openai.rewrites.message_builder")
+local prompts = require("ask-openai.prediction.context.prompts")
 require("ask-openai.helpers.buffers")
 
 ---@class AskQuestionFrontend : StreamingFrontend
@@ -170,7 +171,7 @@ local function current_file_message()
         :to_text()
 end
 
-local function ask_question_about(opts, use_tools)
+local function ask_question_about(opts)
     local selection = Selection.get_visual_selection_for_current_window()
     if selection:is_empty() then
         error("No visual selection found.")
@@ -178,32 +179,24 @@ local function ask_question_about(opts, use_tools)
     end
 
     local user_prompt = opts.args
+    local includes = prompts.parse_includes(user_prompt)
     local file_name = files.get_current_file_relative_path()
-    local entire_file_message = include_context and current_file_message() or nil
-    -- capture entire file before open window -- TODO switch to /files b/c "Context" is confusing
+    local entire_file_message = includes.current_file and current_file_message() or nil
 
     M.ensure_response_window_is_open()
-    M.send_question(user_prompt, selection.original_text, file_name, use_tools, entire_file_message)
+    M.send_question(includes.cleaned_prompt, selection.original_text, file_name, includes.use_tools, entire_file_message)
 end
 
-local function ask_question(opts, use_tools)
+local function ask_question(opts)
     local user_prompt = opts.args
+    local includes = prompts.parse_includes(user_prompt)
     local file_name = files.get_current_file_relative_path()
-    local entire_file_message = include_context and current_file_message() or nil
+    local entire_file_message = includes.current_file and current_file_message() or nil
 
     local selection = nil
     M.ensure_response_window_is_open()
-    M.send_question(user_prompt, selection, file_name, use_tools, entire_file_message)
+    M.send_question(includes.cleaned_prompt, selection, file_name, includes.use_tools, entire_file_message)
 end
-
-local function ask_tool_use(opts)
-    ask_question(opts, true)
-end
-
-local function ask_tool_use_about(opts)
-    ask_question_about(opts, true)
-end
-
 
 function M.abort_and_close()
     M.abort_last_request()
@@ -563,20 +556,13 @@ function ask_review_diff()
 end
 
 function M.setup()
-    -- explicitly ask to use tools (vs not)... long term I hope to remove this need
-    --    but, using smaller models its probably wise to control when they are allowed to use tools
-    --    will also speed up responses to not send tools list
-    --    also need this b/c right now ollama doesn't stream chunks when tools are passed
-    vim.api.nvim_create_user_command("AskToolUse", ask_tool_use, { range = true, nargs = 1 })
-    vim.api.nvim_create_user_command("AskToolUseAbout", ask_tool_use_about, { range = true, nargs = 1 })
-    vim.api.nvim_set_keymap('n', '<Leader>at', ':<C-u>AskToolUse ', { noremap = true })
-    vim.api.nvim_set_keymap('v', '<Leader>at', ':<C-u>AskToolUseAbout ', { noremap = true })
+    vim.api.nvim_set_keymap('n', '<Leader>at', ':<C-u>AskQuestion /tools ', { noremap = true })
+    -- TODO remove About commands... shouldn't need these... just detect which is which (i.e. what is selected?)
+    vim.api.nvim_set_keymap('v', '<Leader>at', ':<C-u>AskQuestionAbout /tools ', { noremap = true })
 
-    -- once again, pass question in command line for now... b/c then I can use cmd history to ask again or modify question easily
-    --  if I move to a float window, I'll want to add history there then which I can handle later when this falls apart
     vim.api.nvim_create_user_command("AskQuestion", ask_question, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('n', '<Leader>q', ':AskQuestion ', { noremap = true })
-    vim.api.nvim_set_keymap('n', '<Leader>qf', ':AskQuestionWith /file', { noremap = true })
+    vim.api.nvim_set_keymap('n', '<Leader>qf', ':AskQuestion /file ', { noremap = true })
     vim.api.nvim_create_user_command("AskQuestionAbout", ask_question_about, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('v', '<Leader>q', ':<C-u>AskQuestionAbout ', { noremap = true })
     vim.api.nvim_set_keymap('v', '<Leader>qf', ':<C-u>AskQuestionAbout /file ', { noremap = true })
