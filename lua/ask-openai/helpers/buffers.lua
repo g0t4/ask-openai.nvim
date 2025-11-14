@@ -1,9 +1,11 @@
 local Selection = require("ask-openai.helpers.selection")
 local M = {}
 
-function M.get_current_buffer_entire_text()
-    -- PRN take buffer_number
-    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+---@param bufnr? integer
+---@return string
+function M.get_current_buffer_entire_text(bufnr)
+    bufnr = bufnr or 0
+    local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
     return table.concat(lines, "\n")
 end
 
