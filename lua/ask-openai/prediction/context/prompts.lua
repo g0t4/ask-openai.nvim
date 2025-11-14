@@ -4,6 +4,10 @@
 ---@field commits boolean
 ---@field current_file boolean
 ---@field open_files boolean
+---@field ctags? boolean
+---@field matching_ctags? boolean
+---@field project? boolean
+---@field git_diff? boolean
 ---@field cleaned_prompt string
 
 local M = {}

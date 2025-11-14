@@ -9,15 +9,6 @@ local project = require("ask-openai.prediction.context.project")
 local messages = require("devtools.messages")
 local cmds = require("ask-openai.prediction.context.cmds")
 
----@alias IncludeToggles {
----  yanks: boolean,
----  commits: boolean,
----  ctags: boolean,
----  matching_ctags: boolean,
----  project: boolean
----  git_diff: boolean,
---- }
-
 ---@class CurrentContext
 ---
 ---@field yanks ContextItem
@@ -26,10 +17,12 @@ local cmds = require("ask-openai.prediction.context.cmds")
 ---@field matching_ctags ContextItem
 ---@field project ContextItem
 ---
----@field includes IncludeToggles
+---@field includes ParseIncludesResult
 ---@field cleaned_prompt string
 local CurrentContext = {}
 
+---@param prompt string
+---@param always_include table
 ---@return CurrentContext
 function CurrentContext:items(prompt, always_include)
     local items = {}
