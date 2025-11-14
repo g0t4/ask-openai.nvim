@@ -286,7 +286,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             local message = MessageBuilder:new()
                 :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request.")
                 :md_current_buffer()
-                :build_user_message()
+                :to_user_message()
 
             table.insert(messages, message)
         end

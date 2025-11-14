@@ -80,7 +80,7 @@ function MessageBuilder:build()
 end
 
 ---@return ChatMessage
-function MessageBuilder:build_user_message()
+function MessageBuilder:to_user_message()
     return ChatMessage:user(self:build())
 end
 
