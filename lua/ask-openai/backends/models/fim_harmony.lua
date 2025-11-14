@@ -124,13 +124,13 @@ General project code rules:
                 table.insert(matches_by_file[match.file], match)
             end
             local merged_chunks = {}
-            for file_path, matches in pairs(matches_by_file) do
+            for file, matches in pairs(matches_by_file) do
                 table.sort(matches, function(a, b) return a.start_line_base0 < b.start_line_base0 end)
                 local current_chunk = nil
                 for _, match in ipairs(matches) do
                     if not current_chunk then
                         current_chunk = {
-                            file = file_path,
+                            file = file,
                             start_line_base0 = match.start_line_base0,
                             end_line_base0 = match.end_line_base0,
                             text = match.text,
@@ -145,7 +145,7 @@ General project code rules:
                         else
                             table.insert(merged_chunks, current_chunk)
                             current_chunk = {
-                                file = file_path,
+                                file = file,
                                 start_line_base0 = match.start_line_base0,
                                 end_line_base0 = match.end_line_base0,
                                 text = match.text,
