@@ -33,7 +33,10 @@ function M.merge_contiguous_rag_chunks(rag_matches)
                     text = next_chunk.text,
                 }
             else
+                -- TODO add test case of overlap
+                -- TODO add test case of touch (and check math here for + 1):
                 local overlap_or_touch = next_chunk.start_line_base0 <= current_chunk.end_line_base0 + 1
+
                 if overlap_or_touch then
                     if next_chunk.end_line_base0 > current_chunk.end_line_base0 then
                         current_chunk.end_line_base0 = next_chunk.end_line_base0
