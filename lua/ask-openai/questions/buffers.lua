@@ -1,11 +1,16 @@
 local log = require("ask-openai.logs.logger").predictions()
+local Fold = require("ask-openai.questions.fold")
+require("ask-openai.prediction.context.inspect")
+
 ---@class BufferController
 ---@field buffer_number number
+---@field folds Fold[]
 local BufferController = {}
 
 function BufferController:new(buffer_number)
     self = setmetatable({}, { __index = BufferController })
     self.buffer_number = buffer_number
+    self.folds = {}
     return self
 end
 
@@ -35,77 +40,79 @@ function BufferController:get_cursor_line_number_0indexed()
     return cursor[1] - 1
 end
 
-function BufferController:replace_lines_after(line_number_base0, with_lines, marks, marks_ns_id)
+function BufferController:replace_lines_after(start_line_inclusive_base0, with_lines, marks, marks_ns_id)
+    -- TODO pass LinesBuilder instead of with_lines and marks params (do this when adding append LinesBuilder support elsewhere)
+    local start_line_inclusive_base1 = start_line_inclusive_base0 + 1
+    -- log:info(string.format("start_line_inclusive_base1 %d", start_line_inclusive_base1))
+
     vim.api.nvim_buf_call(self.buffer_number, function()
         -- "atomic" so no flickering b/w adding lines and extmarks
 
+        -- ** ALTER FOLD RANGES FIRST (before modifying lines)
+        -- 1. remove folds on lines being replaced
+        local keep_folds = vim.iter(self.folds)
+            :filter(function(fold)
+                return fold.end_line_base1 < start_line_inclusive_base1
+                -- FYI no folds should partially overlap (thus just use end)
+            end):totable()
+        self.folds = keep_folds
+
+        -- --   * 2a. TESTING explicit fold at start of each turn
+        -- --   * do not do this and add from marks (one or other)
+        -- -- force always 3 lines to be folded (assuming at least 3 lines):
+        -- self.folds = { Fold:new(start_line_inclusive_base1, math.min(#with_lines, 3) + start_line_inclusive_base1) }
+        -- log:info("fold values", inspect_repr(self.folds))
+
+        --   * 2b. add new fold range (BEFORE replacing lines)
+        for i, mark in ipairs(marks or {}) do
+            -- FYI ORDER MATTERS:
+            -- because you are algorithmically setting folds with expr, adjust your ranges FIRST (before adding lines)
+            --   b/c expr is evaluated after adding them! (so fold ranges must exist in advance)
+            --   think of this as logical folds
+            -- CAVEAT: if you go back to MANUALLY folding lines you'd need that to come AFTER adding the new lines
+            --   cannot create a fold on lines that don't exist!
+            --   think of this as physical folds
+            -- *** IF YOU DO NOT CAREFULLY CONSIDER WHEN FOLDS ARE DEFINED:
+            --   - folds will appear messed up / partial
+            --   - frustrated chasing bugs in your fold logic that don't exist... when it's just timing!
+            if mark.fold then
+                local fold_start_line_base1 = mark.start_line_base0 + start_line_inclusive_base0 + 1
+                local fold_end_line_base1 = mark.end_line_base0 + start_line_inclusive_base0 -- inclusive end so don't add 1 to get base1
+                local fold = Fold:new(fold_start_line_base1, fold_end_line_base1)
+                table.insert(self.folds, fold)
+            end
+        end
+
         -- replace all lines from line_number (offset for this conversation turn) to end of file
-        vim.api.nvim_buf_set_lines(self.buffer_number, line_number_base0, -1, false, with_lines)
+        vim.api.nvim_buf_set_lines(self.buffer_number, start_line_inclusive_base0, -1, false, with_lines)
 
         vim.api.nvim_buf_clear_namespace(self.buffer_number, marks_ns_id, 0, -1)
 
+        -- * set extmarks (after lines replaced)
         for i, mark in ipairs(marks or {}) do
-            -- log:info("mark", vim.inspect(mark))
             vim.api.nvim_buf_set_extmark(self.buffer_number, marks_ns_id,
-                mark.start_line_base0 + line_number_base0,
+                mark.start_line_base0 + start_line_inclusive_base0,
                 mark.start_col_base0,
                 {
                     hl_group = mark.hl_group,
-                    end_line = mark.end_line_base0 + line_number_base0,
+                    end_line = mark.end_line_base0 + start_line_inclusive_base0,
                     end_col  = mark.end_col_base0,
                 }
             )
 
-            -- TODO redo folding using a list of ranges and then a custom foldexpr
-            --    instead of manually marking ranges and deleting, etc
-            --
-            -- vim.opt.foldmethod = "expr"
-            -- vim.opt.foldexpr = "v:lua.MyFoldFunc(v:lnum)"
-            --
-            -- -- ensure ranges sorted by start_line
-            -- table.sort(folds, function(a, b) return a[1] < b[1] end)
-            --
-            -- function _G.MyFoldFunc(lnum)
-            --     -- binary search for containing range
-            --     local lo, hi = 1, #folds
-            --     while lo <= hi do
-            --         local mid = (lo + hi) // 2
-            --         local s, e = folds[mid][1], folds[mid][2]
-            --         if lnum < s then
-            --             hi = mid - 1
-            --         elseif lnum > e then
-            --             lo = mid + 1
-            --         else
-            --             return "1"
-            --         end
-            --     end
-            --     return "0"
-            -- end
-            --
-            --    vim.opt.foldtext = "v:lua.MyFoldText()"
+            -- TODO   vim.opt.foldtext = "v:lua.MyFoldText()"
             --      summary text for the fold
             --      OR use extmarks to summarize
-            --
-            local more_than_one_line = mark.end_line_base0 > mark.start_line_base0 + 1
-            if mark.fold and more_than_one_line then
-                local fold_start_line_base0 = mark.start_line_base0 + line_number_base0 + 1
-                -- delete fold(s)??
-                vim.cmd(string.format(
-                    -- translation => jump cursor to start line, zD => G (cursor back to end of file)
-                    -- FYI the cursor movement is why this is not reliable! I would need to wait to confirm the cursor is moved before proceeding?
-                    "silent! %d normal! zD; :normal! G",
-                    fold_start_line_base0))
-
-                -- add new fold
-                vim.cmd(string.format(
-                    "silent! %d,%dfold",
-                    fold_start_line_base0,
-                    mark.end_line_base0 + line_number_base0
-                ))
-            end
+            --  TODO show "reasoning"
+            --  PRN show thinking dots when it's WIP!
         end
-    end)
 
+        -- log:info("folding:")
+        -- local line_count = vim.api.nvim_buf_line_count(self.buffer_number)
+        -- for i = 0, line_count - 1 do
+        --     log:info("  line[" .. i .. "] → " .. _G.MyChatWindowFoldingForLine(i))
+        -- end
+    end)
 
     self:scroll_cursor_to_end_of_buffer()
 end

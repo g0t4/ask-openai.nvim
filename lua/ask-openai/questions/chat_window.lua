@@ -79,16 +79,16 @@ function ChatWindow:ensure_open()
     end
     self:open()
 
-    -- TODO put this in a opened event handler for the window
-    -- set manual folding so I can fold line ranges (i.e. reasoning sections) automatically!
-    --  else my default of treesitter will kick in
-    vim.o.foldmethod = "manual"
-    vim.o.foldenable = true
-    vim.o.foldlevel = 0
+    -- * folding options
+    vim.opt_local.foldmethod = "expr"
+    vim.opt_local.foldexpr = "v:lua.MyChatWindowFolding()"
+    vim.opt_local.foldenable = true
+    vim.opt_local.foldlevel = 0 -- CLOSE all folds with higher number, thus 0 == ALL (equiv to zM => foldenable + foldlevel=0)
 end
 
 function ChatWindow:explain_error(text)
     -- TODO add extmarks with red background like I did in rewrite/inline.lua => displayer class
+    --  TODO actually use the new LinesBuilder (soon I'll have it for append too, not just replace)
     self.buffer:append("## ERROR " .. tostring(text))
 end
 

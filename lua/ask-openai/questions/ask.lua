@@ -161,6 +161,7 @@ end
 function M.send_messages()
     -- * conversation turns (track start line for streaming chunks)
     M.this_turn_chat_start_line_base0 = M.chat_window.buffer:get_line_count()
+    -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
     local request = backend.curl_for(M.thread:next_curl_request_body(), M.thread.base_url, M)
     M.thread:set_last_request(request)
@@ -228,6 +229,38 @@ function M.on_stderr_data(text)
     vim.schedule(function()
         M.chat_window:append(text)
     end)
+end
+
+function _G.MyChatWindowFolding()
+    local line_num_base1 = vim.v.lnum -- confirmed this is base 1 (might get lnum=0 if no lines though)
+    local fold_value = _G.MyChatWindowFoldingForLine(line_num_base1)
+
+    -- To force re-evaluate folding on all lines:
+    --   `zx` ***
+    --   can also close (F8) the floating chat window and <leader>ao to reopen
+    -- If nvim isn't re-evaluating some lines, then some folds will appear wrong/partial when they are correct
+    --   this can happen if you set fold ranges AFTER adding/modifying relevant lines
+    --   always update the folds first, then the lines
+    --
+    -- BTW this log entry is designed to see WHEN a line's expr() is evaluated!
+    -- log:info("  foldexpr() line[" .. line_num_base1 .. "] → " .. fold_value)
+
+    return fold_value
+end
+
+function _G.MyChatWindowFoldingForLine(line_num_base1)
+    -- * HUGE WIN => with expr I can fold one line only! (IIUC manual is minimum 2)
+    --   * so for long reasoning lines (that wrap but don't span multiple new lines) these can still be collapsed!!
+    --
+    -- FYI read docs about return values for expr:
+    --   https://neovim.io/doc/user/fold.html#fold-expr
+    local folds = M.chat_window.buffer.folds or {}
+    for _, fold in ipairs(folds) do
+        if line_num_base1 >= fold.start_line_base1 and line_num_base1 <= fold.end_line_base1 then
+            return '1' -- inside first level fold
+        end
+    end
+    return '0' -- this line is not in a fold
 end
 
 function M.clear_undos()
