@@ -596,6 +596,9 @@ Don't nitpick.
 end
 
 function M.setup()
+    -- * cauterize top level
+    vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
+
     vim.api.nvim_create_user_command("AskQuestion", ask_question, { range = true, nargs = 1 })
     -- * AskQuestion
     vim.api.nvim_set_keymap('n', '<Leader>q', ':AskQuestion ', { noremap = true })
@@ -606,8 +609,6 @@ function M.setup()
     -- * /tools
     vim.api.nvim_set_keymap('n', '<Leader>at', ':<C-u>AskQuestion /tools ', { noremap = true })
     vim.api.nvim_set_keymap('v', '<Leader>at', ':<C-u>AskQuestion /selection /tools ', { noremap = true })
-
-    vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
 
     --  * review outstanding changes
     --  ? add flag for specifying commit range?
