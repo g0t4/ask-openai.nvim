@@ -16,8 +16,7 @@ function M.get_entire_text_of_all_buffers()
         if vim.api.nvim_buf_is_loaded(bufnr) and vim.api.nvim_buf_get_option(bufnr, "buflisted") then
             local name = vim.api.nvim_buf_get_name(bufnr)
             if name == "" then name = tostring(bufnr) end
-            local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-            text_by_file[name] = table.concat(lines, "\n")
+            text_by_file[name] = M.get_current_buffer_entire_text(bufnr)
         end
     end
     return text_by_file
