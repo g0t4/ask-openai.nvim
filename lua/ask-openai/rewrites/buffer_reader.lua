@@ -1,15 +1,5 @@
 local M = {}
 
---- Return the entire text of the current buffer as a single string.
--- The function concatenates lines with a newline character, preserving the file's
--- line endings as Neovim stores them (without the trailing newline on the last
--- line). This mirrors typical behaviour of `vim.api.nvim_buf_get_lines`.
-function M.current()
-  -- 0 refers to the current buffer, 0, -1 grabs all lines.
-  local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-  return table.concat(lines, "\n")
-end
-
 --- Return a table with the full text of every listed buffer.
 -- The returned table's keys are buffer numbers; each value is the buffer's
 -- content as a string. Buffers that are not loaded or have no name are still
