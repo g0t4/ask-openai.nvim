@@ -302,6 +302,9 @@ function M.handle_messages_updated()
         return
     end
 
+    -- TODO really cool if I develop a simple treesitter grammar to control styling (colors) and folding
+    -- that way I can stop tracking ranges and just add content!
+
     local lines = LinesBuilder:new()
     for _, message in ipairs(M.thread.last_request.response_messages) do
         -- * message contents
