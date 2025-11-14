@@ -358,6 +358,7 @@ function M.handle_messages_updated()
                 if call.response.result.content then
                     for _, tool_content in ipairs(call.response.result.content) do
                         -- TODO only show a few lines of output from tool (i.e. run_command) and fold the rest (like claude CLI does)
+                        --   TODO to test it ask for `:AskToolUse ls -R`
                         --  FYI I might need to adjust what is coming back from MCP to have more control over this
                         --  FYI also probably want to write custom templates specific to commands that I really care about (run_command, apply_patch, etc)
                         table.insert(lines.turn_lines, tool_content.name)
