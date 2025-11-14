@@ -1,5 +1,10 @@
 local M = {}
 
+-- PRIMARY TODO!s remaining:
+--   TODO add test cases
+--   TODO fix text combine
+--   TODO wire into spots in repo (marked with merge_contiguous_rag_chunks)
+
 ---@param chunk LSPRankedMatch
 ---@return LSPRankedMatch
 function M.clone_chunk(chunk)
@@ -33,11 +38,6 @@ end
 function M.merge_contiguous_rag_chunks(rag_matches)
     -- merge chunks that overlap OR touch (end line == start line)
     --   often from ts_chunk and line range overlap
-
-    -- TODO USE THIS IN ALL RAG_MATCH SPOTS:
-    -- - AskRewrite
-    -- - Predictions (various models)
-    -- - etc
 
     -- * group by file
     local matches_by_file = {}

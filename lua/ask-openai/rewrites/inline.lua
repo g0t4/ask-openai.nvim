@@ -296,6 +296,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
                 heading = "# RAG query matches: " .. #rag_matches .. "\n"
             end
             table.insert(rag_message_parts, heading)
+            -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
             vim.iter(rag_matches)
                 :each(function(chunk)
                     ---@cast chunk LSPRankedMatch

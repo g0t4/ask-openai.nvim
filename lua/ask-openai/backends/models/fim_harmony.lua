@@ -114,7 +114,7 @@ General project code rules:
         end
         table.insert(rag_parts, heading)
 
-        -- TODO! call dedupe.merge_contiguous_chunks
+        -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
         vim.iter(request.rag_matches)
             :each(function(chunk)
                 ---@cast chunk LSPRankedMatch

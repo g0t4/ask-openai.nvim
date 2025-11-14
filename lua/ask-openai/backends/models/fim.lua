@@ -173,6 +173,7 @@ General project code rules:
     end
 
     if request.rag_matches then
+        -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
         vim.iter(request.rag_matches)
             :each(function(chunk)
                 ---@cast chunk LSPRankedMatch
@@ -357,6 +358,7 @@ function M.bytedance_seed_coder.get_fim_prompt_repo_level(request)
     end
 
     if request.rag_matches then
+        -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
         vim.iter(request.rag_matches)
             :each(function(chunk)
                 ---@cast chunk LSPRankedMatch
