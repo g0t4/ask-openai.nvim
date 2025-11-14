@@ -4,26 +4,28 @@ local M = {}
 ---@return LSPRankedMatch
 function M.clone_chunk(chunk)
     -- TODO anything I don't want to clone:
-    -- return {
-    --     text = chunk.text,
-    --     file = chunk.file,
-    --     start_line_base0 = chunk.start_line_base0,
-    --     start_column_base0 = chunk.start_column_base0,
-    --     end_line_base0 = chunk.end_line_base0,
-    --     end_column_base0 = chunk.end_column_base0,
-    --     type = chunk.type,
-    --     embed_score = chunk.embed_score,
-    --     rerank_score = chunk.rerank_score,
-    --     embed_rank = chunk.embed_rank, -- TODO probably should strip rankings as they don't make sense now
-    --     rerank_rank = chunk.rerank_rank,
-    --     signature = chunk.signature,
-    -- }
-    -- TODO test necessary fields in unit tests: start/end line, text, file, etc
-    local copy = {}
-    for k, v in pairs(chunk) do
-        copy[k] = v
-    end
-    return copy
+    return {
+        -- TODO did I miss any fields (gptoss used RAG to get this list => probably used LSPRankedMatch definition, check to make sure that is complete)
+        text = chunk.text,
+        file = chunk.file,
+        start_line_base0 = chunk.start_line_base0,
+        start_column_base0 = chunk.start_column_base0,
+        end_line_base0 = chunk.end_line_base0,
+        end_column_base0 = chunk.end_column_base0,
+        type = chunk.type,
+        -- TODO do I even use scores/ranks in areas where I want to use this merge? I don't think so
+        --  if not, just skip entirely for now, leave this here in case you want to add later is fine
+        -- embed_score = chunk.embed_score,
+        -- rerank_score = chunk.rerank_score,
+        -- embed_rank = chunk.embed_rank,
+        -- rerank_rank = chunk.rerank_rank,
+        -- signature = chunk.signature,
+    }
+    -- local copy = {}
+    -- for k, v in pairs(chunk) do
+    --     copy[k] = v
+    -- end
+    -- return copy
 end
 
 ---@param rag_matches LSPRankedMatch[]
