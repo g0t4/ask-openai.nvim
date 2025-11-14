@@ -10,7 +10,7 @@ function M.get_text_in_current_buffer(bufnr)
 end
 
 ---@return table<string, string>
-function M.get_entire_text_of_all_buffers()
+function M.get_text_in_all_buffers()
     -- TODO use w/ /open_files slash command (or remove this)
     local text_by_file = {}
     for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
