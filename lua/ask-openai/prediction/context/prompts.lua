@@ -9,6 +9,7 @@
 ---@field project? boolean
 ---@field git_diff? boolean
 ---@field cleaned_prompt string
+---@filed use_tools? boolean
 
 local M = {}
 
@@ -49,6 +50,7 @@ function M.parse_includes(prompt)
         commits = has("/commits"),
         current_file = has("/file"),
         open_files = has("/files"),
+        use_tools = has("/tools"),
         cleaned_prompt = prompt,
     }
 
@@ -59,7 +61,7 @@ function M.parse_includes(prompt)
         includes.open_files = true
     end
 
-    local slash_commands = { "/yanks", "/all", "/commits", "/file", "/files", }
+    local slash_commands = { "/yanks", "/all", "/commits", "/file", "/files", "/tools", }
     for _, k in ipairs(slash_commands) do
         includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, k)
     end
