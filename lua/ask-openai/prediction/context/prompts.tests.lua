@@ -44,15 +44,18 @@ describe("parse_includes", function()
     end)
     describe("/others", function()
         it("should detect /yanks", function()
-            function ensure_detects(command)
+            function ensure_detects(command, field)
+                field = field or command
                 local includes = prompts.parse_includes("foo /" .. command .. " bar")
-                assert.is_true(includes[command], "includes." .. command .. " should be true")
+                assert.is_true(includes[field], "includes." .. field .. " should be true")
                 assert.are_equal("foo bar", includes.cleaned_prompt)
             end
 
             -- just add one test per, do not exercise tests of the parsing/stripping
             ensure_detects("yanks")
             ensure_detects("commits")
+            ensure_detects("file", "current_file")
+            ensure_detects("files", "open_files")
         end)
     end)
 end)
