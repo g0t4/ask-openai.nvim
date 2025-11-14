@@ -26,6 +26,8 @@ function M.merge_contiguous_chunks(rag_matches)
                     if match.end_line_base0 > current_chunk.end_line_base0 then
                         current_chunk.end_line_base0 = match.end_line_base0
                     end
+                    -- TODO fix logic for merging text! need to consider overlapping and remove the overlapping (not duplicate them)
+                    --   USE A UNIT TEST TO FIX THIS! careful! this is almost impossible to test otherwise!
                     current_chunk.text = current_chunk.text .. "\n" .. match.text
                 else
                     table.insert(merged_chunks, current_chunk)
