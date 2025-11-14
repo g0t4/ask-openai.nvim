@@ -544,14 +544,55 @@ function ask_dump_thread()
     M.thread:dump()
 end
 
-function ask_review_diff()
-    vim.notify("TODO implement")
-    -- For example, say I do a quick boolean refactor to flip branches in an if statement, I can then ask AI for a quick code review and the git diff automatically is fed into the prompt
-    --   in fact, I already have some code for git changes into context, from my auto context ideas
+---@param range string @git range spec, e.g. "HEAD~10..HEAD"
+---@return string diff_output
+---@return string command
+function get_git_diff(range)
+    local cwd = vim.loop.cwd()
+    -- block config files just to be safe (i.e. color = always could mess things up!)
+    local block_env_vars = "GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null "
+    -- ?? what else to exclude (that's versioned, i.e. package lock files)
+    -- --function-context is essential for the full local picture
+    -- ? other context? include entire file(s)?
+    -- TODO --inter-hunk-context useful?
+    local command = string.format(block_env_vars .. " git -C %s --no-pager diff --function-context -p %s -- . ':(exclude)uv.lock'", cwd, range)
+    local handle = io.popen(command)
+    -- TODO detect if no change? empty? abort? or let LLM troll me?
+    if not handle then
+        return "", command
+    end
+    local diff_output = handle:read("*a")
+    handle:close()
+    return diff_output, command
+end
 
-    --  1. take the diff from git (or from the file if not in git)
-    --  2. custom system_prompt
-    --  3. show results in ask window
+function ask_review_git_oustanding_changes(opts)
+    local diff, command = get_git_diff("HEAD")
+
+    local system_prompt = [[
+You are an AI assistant tasked with reviewing the provided git diff.
+Analyze the changes, point out potential issues, suggest improvements, and highlight any noteworthy modifications.
+Provide concise, helpful feedback.
+Don't nitpick.
+]]
+
+    local user_message = "Please review the following git diff and provide feedback.\n"
+        .. "By the way, this is the command I ran:\n"
+        .. "\t" .. command
+
+    -- * add custom instructions
+    local user_prompt = opts.args
+    if user_prompt then
+        user_message = user_message .. "\n\n" .. user_prompt .. "\n"
+    end
+
+    M.ensure_response_window_is_open()
+
+    local use_tools = true -- if model wants, it can ask for further context!
+
+    local filename = "diff" -- use selection as the diff
+    local entire_file_message = nil
+    M.send_question(user_message, diff, filename, use_tools, entire_file_message)
 end
 
 function M.setup()
@@ -569,7 +610,7 @@ function M.setup()
     vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
 
     -- AskReviewDiff
-    vim.api.nvim_create_user_command("AskReviewDiff", ask_review_diff, { range = true, nargs = 1 })
+    vim.api.nvim_create_user_command("AskReviewDiff", ask_review_git_oustanding_changes, { range = true, nargs = 1 })
     vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskReviewDiff ', { noremap = true })
 
     vim.keymap.set('n', '<leader>ao', M.ensure_response_window_is_open, { noremap = true })
