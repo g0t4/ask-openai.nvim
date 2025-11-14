@@ -303,6 +303,7 @@ function M.handle_messages_updated()
     end
 
     -- TODO really cool if I develop a simple treesitter grammar to control styling (colors) and folding
+    --   ideas: https://chatgpt.com/c/69174d02-b1fc-8333-b8a6-6ecace15a383
     -- that way I can stop tracking ranges and just add content!
 
     local lines = LinesBuilder:new()
