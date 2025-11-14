@@ -2,7 +2,7 @@ local M = {}
 
 ---@param rag_matches LSPRankedMatch[]
 ---@return LSPRankedMatch[]
-function M.merge_contiguous_chunks(rag_matches)
+function M.merge_contiguous_rag_chunks(rag_matches)
     -- merge chunks that overlap OR touch (end line == start line)
     --   often from ts_chunk and line range overlap
 
