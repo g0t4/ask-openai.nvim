@@ -170,7 +170,7 @@ local function current_file_message()
         :to_text()
 end
 
-local function ask_question_about(opts, use_tools, include_context)
+local function ask_question_about(opts, use_tools)
     local selection = Selection.get_visual_selection_for_current_window()
     if selection:is_empty() then
         error("No visual selection found.")
@@ -186,7 +186,7 @@ local function ask_question_about(opts, use_tools, include_context)
     M.send_question(user_prompt, selection.original_text, file_name, use_tools, entire_file_message)
 end
 
-local function ask_question(opts, use_tools, include_context)
+local function ask_question(opts, use_tools)
     local user_prompt = opts.args
     local file_name = files.get_current_file_relative_path()
     local entire_file_message = include_context and current_file_message() or nil
