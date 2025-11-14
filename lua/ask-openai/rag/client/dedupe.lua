@@ -3,6 +3,14 @@ local M = {}
 ---@param rag_matches LSPRankedMatch[]
 ---@return LSPRankedMatch[]
 function M.merge_contiguous_chunks(rag_matches)
+    -- merge chunks that overlap OR touch (end line == start line)
+    --   often from ts_chunk and line range overlap
+
+    -- TODO USE THIS IN ALL RAG_MATCH SPOTS:
+    -- - AskRewrite
+    -- - Predictions (various models)
+    -- - etc
+
     local matches_by_file = {}
     for _, match in ipairs(rag_matches) do
         if not matches_by_file[match.file] then matches_by_file[match.file] = {} end

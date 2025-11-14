@@ -1,5 +1,6 @@
 local log = require("ask-openai.logs.logger")
 local api = require("ask-openai.api")
+local dedupe = require("ask-openai.rag.client.dedupe")
 
 ---@class HarmonyRawFimPromptBuilder
 ---@field _parts string[]
@@ -113,9 +114,7 @@ General project code rules:
         end
         table.insert(rag_parts, heading)
 
-        -- TODO! combine contiguous / overlapping ranges (i.e. ts_chunk + line range both match)
-        --   TODO spread the de-dupe elsewhere too
-
+        -- TODO! call dedupe.merge_contiguous_chunks
         vim.iter(request.rag_matches)
             :each(function(chunk)
                 ---@cast chunk LSPRankedMatch
