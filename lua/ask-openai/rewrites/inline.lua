@@ -133,14 +133,18 @@ function M.on_sse_llama_server_timings(sse)
                 ),
                 "AskStatsPrompt",
             },
-            {
+        }
+
+        local cache_n = sse.timings.cache_n
+        if type(cache_n) == "number" and cache_n > 0 then
+            table.insert(virt_text, {
                 string.format(
                     " %scached",
-                    human.comma_delimit(sse.timings.cache_n or 0)
+                    human.comma_delimit(cache_n)
                 ),
                 "AskStatsCached",
-            },
-        }
+            })
+        end
 
         vim.api.nvim_buf_set_extmark(0, M.displayer.marks.namespace_id, current_cursor_row_0based, 0, {
             virt_text = virt_text,
