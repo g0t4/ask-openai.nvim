@@ -164,38 +164,36 @@ function M.send_messages()
     M.thread:set_last_request(request)
 end
 
-local function current_file_message()
-    return MessageBuilder:new()
-        :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request:")
-        :md_current_buffer()
-        :to_text()
-end
-
-local function ask_question_about(opts)
-    local selection = Selection.get_visual_selection_for_current_window()
-    if selection:is_empty() then
-        error("No visual selection found.")
-        return
-    end
-
-    local user_prompt = opts.args
-    local includes = prompts.parse_includes(user_prompt)
-    local file_name = files.get_current_file_relative_path()
-    local entire_file_message = includes.current_file and current_file_message() or nil
-
-    M.ensure_response_window_is_open()
-    M.send_question(includes.cleaned_prompt, selection.original_text, file_name, includes.use_tools, entire_file_message)
-end
-
 local function ask_question(opts)
     local user_prompt = opts.args
     local includes = prompts.parse_includes(user_prompt)
-    local file_name = files.get_current_file_relative_path()
-    local entire_file_message = includes.current_file and current_file_message() or nil
 
-    local selection = nil
+    -- * /selection
+    local selected_text = nil
+    if includes.include_selection then
+        -- FYI include_selection basically captures if user had selection when they first invoked a keymap to submit this command
+        --   b/c submitting command switches modes, also user might unselect text on accident (or want to repeat w/ prev selection)
+        --   thus it is useful to capture intent with /selection early on
+        local selection = Selection.get_visual_selection_for_current_window()
+        if selection:is_empty() then
+            error("No /selection found (no current, nor prior, selection).")
+            return
+        end
+        selected_text = selection.original_text
+    end
+
+    -- * /file - current file
+    local function current_file_message()
+        return MessageBuilder:new()
+            :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request:")
+            :md_current_buffer()
+            :to_text()
+    end
+    local entire_file_message = includes.current_file and current_file_message() or nil
+    local file_name = files.get_current_file_relative_path()
+
     M.ensure_response_window_is_open()
-    M.send_question(includes.cleaned_prompt, selection, file_name, includes.use_tools, entire_file_message)
+    M.send_question(includes.cleaned_prompt, selected_text, file_name, includes.use_tools, entire_file_message)
 end
 
 function M.abort_and_close()
@@ -375,8 +373,9 @@ function M.handle_messages_updated()
 end
 
 function M.curl_request_exited_successful_on_zero_rc()
-    -- TODO! If I use ask_question/ask_tool_use after previous... w/o clear anything, does it keep messages?
-    --   TODO how are tools affected if I start w/ AskQuestion and then use AskToolUse
+    -- TODO how are tools affected if I start w/ AskQuestion and then add /tools later?
+    --   and vice versa...
+    --   are messages kept w/o a clear?
 
     vim.schedule(function()
         for _, message in ipairs(M.thread.last_request.response_messages or {}) do
@@ -557,15 +556,13 @@ end
 
 function M.setup()
     vim.api.nvim_set_keymap('n', '<Leader>at', ':<C-u>AskQuestion /tools ', { noremap = true })
-    -- TODO remove About commands... shouldn't need these... just detect which is which (i.e. what is selected?)
-    vim.api.nvim_set_keymap('v', '<Leader>at', ':<C-u>AskQuestionAbout /tools ', { noremap = true })
+    vim.api.nvim_set_keymap('v', '<Leader>at', ':<C-u>AskQuestion /selection /tools ', { noremap = true })
 
     vim.api.nvim_create_user_command("AskQuestion", ask_question, { range = true, nargs = 1 })
     vim.api.nvim_set_keymap('n', '<Leader>q', ':AskQuestion ', { noremap = true })
     vim.api.nvim_set_keymap('n', '<Leader>qf', ':AskQuestion /file ', { noremap = true })
-    vim.api.nvim_create_user_command("AskQuestionAbout", ask_question_about, { range = true, nargs = 1 })
-    vim.api.nvim_set_keymap('v', '<Leader>q', ':<C-u>AskQuestionAbout ', { noremap = true })
-    vim.api.nvim_set_keymap('v', '<Leader>qf', ':<C-u>AskQuestionAbout /file ', { noremap = true })
+    vim.api.nvim_set_keymap('v', '<Leader>q', ':<C-u>AskQuestion /selection ', { noremap = true })
+    vim.api.nvim_set_keymap('v', '<Leader>qf', ':<C-u>AskQuestion /selection /file ', { noremap = true })
 
     vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
 

@@ -10,6 +10,7 @@
 ---@field git_diff? boolean
 ---@field cleaned_prompt string
 ---@field use_tools? boolean
+---@field include_selection? boolean
 local M = {}
 
 ---@param prompt string
@@ -50,6 +51,7 @@ function M.parse_includes(prompt)
         current_file = has("/file"),
         open_files = has("/files"),
         use_tools = has("/tools"),
+        include_selection = has("/selection"),
         cleaned_prompt = prompt,
     }
 
@@ -58,9 +60,10 @@ function M.parse_includes(prompt)
         includes.commits = true
         includes.current_file = true
         includes.open_files = true
+        -- ? do I want all to include tools/selection too? for now leave them off (all doesn't have to mean every slash command)
     end
 
-    local slash_commands = { "/yanks", "/all", "/commits", "/file", "/files", "/tools", }
+    local slash_commands = { "/yanks", "/all", "/commits", "/file", "/files", "/tools", "/selection", }
     for _, k in ipairs(slash_commands) do
         includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, k)
     end
