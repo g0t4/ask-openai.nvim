@@ -350,10 +350,16 @@ function M.handle_messages_updated()
                 table.insert(lines.turn_lines, args)
             end
 
+            -- TODO REMINDER - try/add apply_patch when using gptoss (need to put this elsewhere)
+            -- TODO REMINDER - also try/add other tools it uses (python code runner, browser)
+
             -- * tool result
             if call.response then
                 if call.response.result.content then
                     for _, tool_content in ipairs(call.response.result.content) do
+                        -- TODO only show a few lines of output from tool (i.e. run_command) and fold the rest (like claude CLI does)
+                        --  FYI I might need to adjust what is coming back from MCP to have more control over this
+                        --  FYI also probably want to write custom templates specific to commands that I really care about (run_command, apply_patch, etc)
                         table.insert(lines.turn_lines, tool_content.name)
                         if tool_content.type == "text" then
                             table_insert_split_lines(lines.turn_lines, tool_content.text)
