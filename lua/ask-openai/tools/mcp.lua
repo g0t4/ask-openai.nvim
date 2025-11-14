@@ -38,6 +38,16 @@ local servers = {
             -- "--verbose",
         },
     },
+    --
+    -- FYI THEY DO NOT SHIT apply_patch in any way to run it as an mcp server...
+    --   JUST RUN THE GODDAMN PYTHON SCRIPT YOURSELF LIKE WITH rag_query
+    -- gptoss = {
+    --     -- tools specific to gpt-oss
+    --     -- https://github.com/openai/gpt-oss/tree/main/gpt-oss-mcp-server
+    --     cwd = os.getenv("HOME") .. "/repos/github/openai/gpt-oss/gpt-oss-mcp-server", -- TODO need this?
+    --     command = os.getenv("HOME") .. "/repos/github/openai/gpt-oss/.venv/bin/mcp",
+    --     args = { "run", "-t", "stdio", os.getenv("HOME") .. "/repos/github/openai/gpt-oss/gpt-oss-mcp-server/python_server.py:mcp" }
+    -- }
 }
 
 
@@ -145,10 +155,14 @@ for name, server in pairs(servers) do
                 callback(msg)
             end
         end
-        -- log:trace("MCP message:", vim.inspect(msg))
+        log:trace("MCP message:", vim.inspect(msg))
     end)
     M.running_servers[name] = mcp
     mcp.tools_list(function(msg)
+        if msg.error then
+            log:error("tools/list@" .. name .. " error:", vim.inspect(msg))
+            return
+        end
         -- log:trace("tools/list:", vim.inspect(msg))
         for _, tool in ipairs(msg.result.tools) do
             -- log:trace("found " .. tool.name)
