@@ -1,5 +1,6 @@
 local files = require("ask-openai.helpers.files")
 local buffers = require("ask-openai.helpers.buffers")
+local ChatMessage = require("ask-openai.questions.chat_message")
 
 ---@class MessageBuilder
 ---@field private parts string[]
@@ -76,6 +77,11 @@ end
 ---@return string
 function MessageBuilder:build()
     return table.concat(self.parts, "\n")
+end
+
+---@return ChatMessage
+function MessageBuilder:build_user_message()
+    return ChatMessage:user(self:build())
 end
 
 return MessageBuilder

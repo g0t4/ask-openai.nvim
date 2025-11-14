@@ -283,12 +283,12 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         }
 
         if context.includes.current_file then
-            local user_message = MessageBuilder:new()
+            local message = MessageBuilder:new()
                 :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request.")
                 :md_current_buffer()
-                :build()
+                :build_user_message()
 
-            table.insert(messages, ChatMessage:user(user_message))
+            table.insert(messages, message)
         end
         if context.includes.open_files then
             -- TODO! /files => open_files
