@@ -3,7 +3,21 @@ local M = {}
 ---@param chunk LSPRankedMatch
 ---@return LSPRankedMatch
 function M.clone_chunk(chunk)
-    -- TODO anything I don't want to clone?
+    -- TODO anything I don't want to clone:
+    -- return {
+    --     text = chunk.text,
+    --     file = chunk.file,
+    --     start_line_base0 = chunk.start_line_base0,
+    --     start_column_base0 = chunk.start_column_base0,
+    --     end_line_base0 = chunk.end_line_base0,
+    --     end_column_base0 = chunk.end_column_base0,
+    --     type = chunk.type,
+    --     embed_score = chunk.embed_score,
+    --     rerank_score = chunk.rerank_score,
+    --     embed_rank = chunk.embed_rank, -- TODO probably should strip rankings as they don't make sense now
+    --     rerank_rank = chunk.rerank_rank,
+    --     signature = chunk.signature,
+    -- }
     -- TODO test necessary fields in unit tests: start/end line, text, file, etc
     local copy = {}
     for k, v in pairs(chunk) do
