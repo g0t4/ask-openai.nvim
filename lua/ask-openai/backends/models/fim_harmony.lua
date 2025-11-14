@@ -115,6 +115,49 @@ General project code rules:
 
         -- TODO! combine contiguous / overlapping ranges (i.e. ts_chunk + line range both match)
         --   TODO spread the de-dupe elsewhere too
+        ---@param rag_matches LSPRankedMatch[]
+        ---@return LSPRankedMatch[]
+        local function merge_contiguous_chunks(rag_matches)
+            local grouped = {}
+            for _, m in ipairs(rag_matches) do
+                if not grouped[m.file] then grouped[m.file] = {} end
+                table.insert(grouped[m.file], m)
+            end
+            local merged = {}
+            for file, list in pairs(grouped) do
+                table.sort(list, function(a, b) return a.start_line_base0 < b.start_line_base0 end)
+                local current = nil
+                for _, m in ipairs(list) do
+                    if not current then
+                        current = {
+                            file = file,
+                            start_line_base0 = m.start_line_base0,
+                            end_line_base0 = m.end_line_base0,
+                            text = m.text,
+                        }
+                    else
+                        local overlap = m.start_line_base0 <= current.end_line_base0 + 1
+                        if overlap then
+                            if m.end_line_base0 > current.end_line_base0 then
+                                current.end_line_base0 = m.end_line_base0
+                            end
+                            current.text = current.text .. "\n" .. m.text
+                        else
+                            table.insert(merged, current)
+                            current = {
+                                file = file,
+                                start_line_base0 = m.start_line_base0,
+                                end_line_base0 = m.end_line_base0,
+                                text = m.text,
+                            }
+                        end
+                    end
+                end
+                if current then table.insert(merged, current) end
+            end
+            return merged
+        end
+
         vim.iter(request.rag_matches)
             :each(function(chunk)
                 ---@cast chunk LSPRankedMatch
