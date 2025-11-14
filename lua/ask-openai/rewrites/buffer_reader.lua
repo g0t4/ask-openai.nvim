@@ -1,13 +1,3 @@
----
--- Utility module to read buffer contents.
--- Provides two simple helpers:
---   * `current()` – returns the whole text of the current buffer as a string.
---   * `all()` – returns a table mapping buffer numbers (or names) to their full text.
---
--- Both helpers use the Neovim API directly and avoid any heavy dependencies.
--- The implementation mirrors the style of other helpers in `helpers/buffers.lua`.
----
-
 local M = {}
 
 --- Return the entire text of the current buffer as a single string.
