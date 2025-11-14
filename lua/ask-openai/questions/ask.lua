@@ -616,8 +616,10 @@ function M.setup()
 
     --  * review outstanding changes
     --  ? add flag for specifying commit range?
-    vim.api.nvim_create_user_command("AskReviewGitDiff", ask_review_git_oustanding_changes, { range = true, nargs = 1 })
-    vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskReviewGitDiff ', { noremap = true })
+    -- vim.api.nvim_create_user_command("AskReviewGitDiff", ask_review_git_oustanding_changes, { range = true, nargs = 1 })
+    -- vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskReviewGitDiff ', { noremap = true })
+    -- TODO WAIT... why not just do this!!!
+    vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskQuestion /tools can you review my outstanding git changes', { noremap = true })
 
     vim.keymap.set('n', '<leader>ao', M.ensure_response_window_is_open, { noremap = true })
     vim.keymap.set('n', '<leader>aa', M.abort_last_request, { noremap = true })
