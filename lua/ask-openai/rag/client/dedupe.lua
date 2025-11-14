@@ -26,8 +26,10 @@ function M.merge_contiguous_rag_chunks(rag_matches)
         for _, next_chunk in ipairs(matches) do
             if not current_chunk then
                 -- current as in we are merging subsequent chunks until nothing overlaps/touches
+                -- TODO add clone to chunk's type
+                -- TODO clone any other fields I need (consider other contexts too, not just FIM harmony original I used)
                 current_chunk = {
-                    file = file,
+                    file = next_chunk.file,
                     start_line_base0 = next_chunk.start_line_base0,
                     end_line_base0 = next_chunk.end_line_base0,
                     text = next_chunk.text,
@@ -47,7 +49,7 @@ function M.merge_contiguous_rag_chunks(rag_matches)
                 else
                     table.insert(merged_chunks, current_chunk)
                     current_chunk = {
-                        file = file,
+                        file = next_chunk.file,
                         start_line_base0 = next_chunk.start_line_base0,
                         end_line_base0 = next_chunk.end_line_base0,
                         text = next_chunk.text,
