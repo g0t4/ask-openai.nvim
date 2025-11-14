@@ -272,6 +272,8 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         }
 
         if context.includes.current_file then
+            -- get this again, just in case somehow the current buffer is not the filename above
+            local file_name = files.get_current_file_relative_path()
             local entire_file = buffers.get_text_in_current_buffer()
 
             local user_message = MessageBuilder:new()
