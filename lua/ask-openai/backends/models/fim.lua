@@ -18,7 +18,10 @@ M.gptoss = {
 }
 ---@param request OllamaFimBackend
 function M.gptoss.get_fim_raw_prompt_no_thinking(request)
-    -- TODO! experiment 2 - combination of fixed thinking start + partial thinking finish
+    -- TODO toggle to disable thinking with gptoss?! (none/low/med/high)
+    --   need to swap endpoint too
+
+    -- TODO experiment 2 - combination of fixed thinking start + partial thinking finish
     --   add my thinking reflections from above...
     --   then let the model finish thinking?
     --   use new harmony parser for raw /completions output parsing
