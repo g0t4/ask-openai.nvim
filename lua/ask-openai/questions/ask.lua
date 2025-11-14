@@ -176,7 +176,7 @@ local function ask_question_about(opts, use_tools, include_context)
 
     local user_prompt = opts.args
     local file_name = files.get_current_file_relative_path()
-    local context = include_context and buffers.get_current_buffer_entire_text() or nil
+    local context = include_context and buffers.get_text_in_current_buffer() or nil
 
     M.ensure_response_window_is_open()
     M.send_question(user_prompt, selection.original_text, file_name, use_tools, context)
@@ -185,7 +185,7 @@ end
 local function ask_question(opts, use_tools, include_context)
     local user_prompt = opts.args
     local file_name = files.get_current_file_relative_path()
-    local context = include_context and buffers.get_current_buffer_entire_text() or nil
+    local context = include_context and buffers.get_text_in_current_buffer() or nil
 
     local selection = nil
     M.ensure_response_window_is_open()

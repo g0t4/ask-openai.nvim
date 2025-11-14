@@ -266,7 +266,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
     -- TODO! /file /files => current_file and open_files ... at least do the current_file now => into a new chat history message (give whole file up)
     -- TODO buffers.get_entire_text_of_all_buffers()
-    -- TODO buffers.get_current_buffer_entire_text()
+    -- TODO buffers.get_text_in_current_buffer()
 
     ---@param rag_matches LSPRankedMatch[]
     local function send_rewrite(rag_matches)
