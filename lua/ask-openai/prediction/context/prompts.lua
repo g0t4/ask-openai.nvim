@@ -45,7 +45,7 @@ function M.parse_includes(prompt)
         commits = has("/commits"),
         current_file = has("/file"),
         open_files = has("/files"),
-        cleaned_prompt = "",
+        cleaned_prompt = prompt,
     }
 
     if includes.all then
@@ -55,12 +55,10 @@ function M.parse_includes(prompt)
         includes.open_files = true
     end
 
-    local cleaned = prompt
     local slash_commands = { "/yanks", "/all", "/commits", "/file", "/files", }
     for _, k in ipairs(slash_commands) do
-        cleaned = clean_prompt(cleaned, k)
+        includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, k)
     end
-    includes.cleaned_prompt = cleaned
 
     return includes
 end
