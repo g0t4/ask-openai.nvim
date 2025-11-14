@@ -1,3 +1,6 @@
+local files = require("ask-openai.helpers.files")
+local buffers = require("ask-openai.helpers.buffers")
+
 ---@class MessageBuilder
 ---@field private parts string[]
 local MessageBuilder = {}
@@ -14,6 +17,14 @@ end
 ---@return MessageBuilder
 function MessageBuilder:plain_text(text)
     table.insert(self.parts, text)
+    return self
+end
+
+---@return MessageBuilder
+function MessageBuilder:md_current_buffer()
+    local path = files.get_current_file_relative_path()
+    local entire_file = buffers.get_text_in_current_buffer()
+    self:md_code_block(path, entire_file)
     return self
 end
 
