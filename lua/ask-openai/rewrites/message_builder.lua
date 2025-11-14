@@ -75,13 +75,14 @@ end
 
 ---Build the final message string
 ---@return string
-function MessageBuilder:build()
+function MessageBuilder:to_text()
     return table.concat(self.parts, "\n")
 end
 
+---Build the final message in a ChatMessage package
 ---@return ChatMessage
 function MessageBuilder:to_user_message()
-    return ChatMessage:user(self:build())
+    return ChatMessage:user(self:to_text())
 end
 
 return MessageBuilder

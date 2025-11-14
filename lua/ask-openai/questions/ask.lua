@@ -12,6 +12,7 @@ local CurrentContext = require("ask-openai.prediction.context")
 local files = require("ask-openai.helpers.files")
 local model_params = require("ask-openai.questions.models.params")
 local LinesBuilder = require("ask-openai.questions.lines_builder")
+local MessageBuilder = require("ask-openai.rewrites.message_builder")
 require("ask-openai.helpers.buffers")
 
 ---@class AskQuestionFrontend : StreamingFrontend
@@ -21,7 +22,7 @@ local function format_role(role)
     return "**" .. (role or "") .. "**"
 end
 
-function M.send_question(user_prompt, selected_text, file_name, use_tools, entire_file)
+function M.send_question(user_prompt, selected_text, file_name, use_tools, entire_file_message)
     use_tools = use_tools or false
 
     M.abort_last_request()
@@ -74,13 +75,8 @@ The rag_query tool:
             .. selected_text .. "\n"
             .. "```"
     end
-    if entire_file then
-        -- crude, take the whole file :)
-        user_message = user_message .. "\n\n"
-            .. "And I want you to see the entire file I am asking about:\n"
-            .. "```" .. file_name .. "\n"
-            .. entire_file .. "\n"
-            .. "```"
+    if entire_file_message then
+        user_message = user_message .. "\n\n" .. entire_file_message
     end
 
     -- show initial question
@@ -167,6 +163,13 @@ function M.send_messages()
     M.thread:set_last_request(request)
 end
 
+local function current_file_message()
+    return MessageBuilder:new()
+        :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request:")
+        :md_current_buffer()
+        :to_text()
+end
+
 local function ask_question_about(opts, use_tools, include_context)
     local selection = Selection.get_visual_selection_for_current_window()
     if selection:is_empty() then
@@ -176,20 +179,21 @@ local function ask_question_about(opts, use_tools, include_context)
 
     local user_prompt = opts.args
     local file_name = files.get_current_file_relative_path()
-    local context = include_context and buffers.get_text_in_current_buffer() or nil
+    local entire_file_message = include_context and current_file_message() or nil
+    -- capture entire file before open window -- TODO switch to /files b/c "Context" is confusing
 
     M.ensure_response_window_is_open()
-    M.send_question(user_prompt, selection.original_text, file_name, use_tools, context)
+    M.send_question(user_prompt, selection.original_text, file_name, use_tools, entire_file_message)
 end
 
 local function ask_question(opts, use_tools, include_context)
     local user_prompt = opts.args
     local file_name = files.get_current_file_relative_path()
-    local context = include_context and buffers.get_text_in_current_buffer() or nil
+    local entire_file_message = include_context and current_file_message() or nil
 
     local selection = nil
     M.ensure_response_window_is_open()
-    M.send_question(user_prompt, selection, file_name, use_tools, context)
+    M.send_question(user_prompt, selection, file_name, use_tools, entire_file_message)
 end
 
 local function ask_question_with_context(opts)
