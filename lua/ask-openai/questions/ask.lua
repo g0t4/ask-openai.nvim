@@ -230,6 +230,17 @@ function M.on_stderr_data(text)
     end)
 end
 
+function M.clear_undos()
+    -- wipe undo history
+    -- i.e. after assistant response - undo fucks up the extmarks, and the assistant response is not gonna be sent back if modified (this is view only) so just default to making that UX a bit more intuitive
+
+    local previous_undo_level = vim.bo.undolevels
+    vim.bo.undolevels = -1
+    vim.cmd("normal! a ") -- no-op edit to commit the change
+    vim.cmd("undo") -- clear old tree
+    vim.bo.undolevels = previous_undo_level
+end
+
 function M.ensure_response_window_is_open()
     if M.chat_window == nil then
         M.chat_window = ChatWindow:new()
@@ -331,8 +342,8 @@ function M.handle_messages_updated()
 end
 
 function M.curl_request_exited_successful_on_zero_rc()
-    -- TODO! if I send a follow up does it keep entire message history?
     -- TODO! If I use ask_question/ask_tool_use after previous... w/o clear anything, does it keep messages?
+    --   TODO how are tools affected if I start w/ AskQuestion and then use AskToolUse
 
     vim.schedule(function()
         for _, message in ipairs(M.thread.last_request.response_messages or {}) do
@@ -357,6 +368,7 @@ function M.curl_request_exited_successful_on_zero_rc()
             M.chat_window:append("\n" .. format_role("user"))
             M.chat_window.followup_starts_at_line_0indexed = M.chat_window.buffer:get_line_count() - 1
         end
+        M.clear_undos()
 
         M.call_tools()
     end)
