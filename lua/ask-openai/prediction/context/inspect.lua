@@ -67,3 +67,28 @@ end
 function is_inside_function()
     return find_parent_function(get_node_at_cursor()) ~= nil
 end
+
+--- use an item's __tostring to represent itself (if available)
+-- FYI use vim.inspect for a VERBATIM dump of a table
+--- including on tables
+function inspect_repr(x)
+    -- FYI made to show Fold type, to condense representations when I don't need the table dumped verbatim
+    local mt = getmetatable(x)
+    if mt and mt.__tostring then
+        return tostring(x)
+    end
+    if type(x) == "table" then
+        local copy = {}
+        for k, v in pairs(x) do
+            -- FYI k will be either an index or a key depending on table type
+            local vmt = getmetatable(v)
+            if vmt and vmt.__tostring then
+                copy[k] = tostring(v)
+            else
+                copy[k] = v
+            end
+        end
+        return vim.inspect(copy)
+    end
+    return vim.inspect(x)
+end
