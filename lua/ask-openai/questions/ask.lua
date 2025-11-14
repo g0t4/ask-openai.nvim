@@ -568,13 +568,13 @@ function M.setup()
     -- once again, pass question in command line for now... b/c then I can use cmd history to ask again or modify question easily
     --  if I move to a float window, I'll want to add history there then which I can handle later when this falls apart
     vim.api.nvim_create_user_command("AskQuestion", ask_question, { range = true, nargs = 1 })
-    vim.api.nvim_set_keymap('n', '<Leader>aq', ':AskQuestion ', { noremap = true })
+    vim.api.nvim_set_keymap('n', '<Leader>q', ':AskQuestion ', { noremap = true })
     vim.api.nvim_create_user_command("AskQuestionWithContext", ask_question_with_context, { range = true, nargs = 1 })
-    vim.api.nvim_set_keymap('n', '<Leader>aqc', ':AskQuestionWithContext ', { noremap = true })
+    vim.api.nvim_set_keymap('n', '<Leader>qc', ':AskQuestionWithContext ', { noremap = true })
     vim.api.nvim_create_user_command("AskQuestionAbout", ask_question_about, { range = true, nargs = 1 })
-    vim.api.nvim_set_keymap('v', '<Leader>aq', ':<C-u>AskQuestionAbout ', { noremap = true })
+    vim.api.nvim_set_keymap('v', '<Leader>q', ':<C-u>AskQuestionAbout ', { noremap = true })
     vim.api.nvim_create_user_command("AskQuestionAboutWithContext", ask_question_about_with_context, { range = true, nargs = 1 })
-    vim.api.nvim_set_keymap('v', '<Leader>aqc', ':<C-u>AskQuestionAboutWithContext ', { noremap = true })
+    vim.api.nvim_set_keymap('v', '<Leader>qc', ':<C-u>AskQuestionAboutWithContext ', { noremap = true })
 
     vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
 
