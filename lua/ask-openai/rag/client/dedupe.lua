@@ -1,5 +1,15 @@
 local M = {}
 
+---@param chunk LSPRankedMatch
+---@return LSPRankedMatch
+function M.clone_chunk(chunk)
+    local copy = {}
+    for k, v in pairs(chunk) do
+        copy[k] = v
+    end
+    return copy
+end
+
 ---@param rag_matches LSPRankedMatch[]
 ---@return LSPRankedMatch[]
 function M.merge_contiguous_rag_chunks(rag_matches)
@@ -26,14 +36,7 @@ function M.merge_contiguous_rag_chunks(rag_matches)
         for _, next_chunk in ipairs(matches) do
             if not current_chunk then
                 -- current as in we are merging subsequent chunks until nothing overlaps/touches
-                -- TODO add clone to chunk's type
-                -- TODO clone any other fields I need (consider other contexts too, not just FIM harmony original I used)
-                current_chunk = {
-                    file = next_chunk.file,
-                    start_line_base0 = next_chunk.start_line_base0,
-                    end_line_base0 = next_chunk.end_line_base0,
-                    text = next_chunk.text,
-                }
+                current_chunk = M.clone_chunk(next_chunk)
             else
                 -- TODO add test case of overlap
                 -- TODO add test case of touch (and check math here for + 1):
@@ -48,12 +51,7 @@ function M.merge_contiguous_rag_chunks(rag_matches)
                     current_chunk.text = current_chunk.text .. "\n" .. next_chunk.text
                 else
                     table.insert(merged_chunks, current_chunk)
-                    current_chunk = {
-                        file = next_chunk.file,
-                        start_line_base0 = next_chunk.start_line_base0,
-                        end_line_base0 = next_chunk.end_line_base0,
-                        text = next_chunk.text,
-                    }
+                    current_chunk = M.clone_chunk(next_chunk)
                 end
             end
         end
