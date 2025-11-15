@@ -121,6 +121,10 @@ function Logger:luaify_trace(message, value)
         "-l", "lua",
     }
 
+    self:_transform_then_log(command, args, text, message)
+end
+
+function Logger:_transform_then_log(command, args, text, message)
     local stdin = uv.new_pipe(false)
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
