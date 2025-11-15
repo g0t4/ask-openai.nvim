@@ -155,8 +155,6 @@ for name, server in pairs(servers) do
             return
         end
         log:luaify_trace("tools/list:", msg)
-        log:jsonify_trace("tools/list:", { foo = "bar" })
-        log:jsonify_trace("tools/list:", { foo = "bar" }, true)
         for _, tool in ipairs(msg.result.tools) do
             -- log:trace("found " .. tool.name)
             tool.server = mcp
