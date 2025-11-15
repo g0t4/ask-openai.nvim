@@ -121,7 +121,54 @@ function Logger:json_info_deferred(message, data)
 end
 
 function Logger:json_info(message, json, pretty)
-    -- TODO add other formats using bat or w/e else
+    if json == nil then
+        self:info(message, "nil (passed to json_info)")
+        return
+    end
+
+    -- local command = { "bat", "--style=plain", "--color", "always", "-l", "json" }
+    local command = { "jq", ".", "--color-output" }
+    pretty = pretty or false
+    if not pretty then
+        table.insert(command, "--compact-output")
+    end
+
+    local job_id = vim.fn.jobstart(command, {
+        stdout_buffered = true,
+        on_stderr = function(_, data)
+            if not data then
+                return
+            end
+            for _, line in ipairs(data) do
+                if line:match("^%s*$") then
+                    -- skip empty lines
+                    return
+                end
+                -- PRN remove message on every line and just add to first?
+                --   FYI most json logging is compact right now so NBD, yet
+                self:trace(message, line)
+            end
+        end,
+        on_stdout = function(_, data)
+            if not data then
+                return
+            end
+            for _, line in ipairs(data) do
+                if line:match("^%s*$") then
+                    -- skip empty lines
+                    return
+                end
+                self:trace(message, line)
+            end
+        end,
+        on_exit = function()
+        end
+    })
+    vim.fn.chansend(job_id, json .. "\n")
+    vim.fn.chanclose(job_id, "stdin")
+end
+
+function Logger:json_info(message, json, pretty)
     if json == nil then
         self:info(message, "nil (passed to json_info)")
         return
