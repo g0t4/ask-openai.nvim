@@ -120,17 +120,22 @@ function Logger:json_info_deferred(message, data)
     end, 0)
 end
 
-function Logger:json_info(message, json, pretty)
-    if json == nil then
-        self:info(message, "nil (passed to json_info)")
+---@param message string
+---@param code string
+---@param pretty boolean|nil
+function Logger:lua_info(message, code, pretty)
+    if code == nil then
+        self:info(message, "nil (passed to lua_info)")
         return
     end
 
-    -- local command = { "bat", "--style=plain", "--color", "always", "-l", "json" }
-    local command = { "jq", ".", "--color-output" }
+    -- Use bat to pretty‑print Lua syntax highlighted source
+    local command = { "bat", "--style=plain", "--color", "always", "-l", "lua" }
     pretty = pretty or false
-    if not pretty then
-        table.insert(command, "--compact-output")
+    if pretty then
+        table.insert(command, "--decorations=always")
+    else
+        table.insert(command, "--decorations=never")
     end
 
     local job_id = vim.fn.jobstart(command, {
@@ -141,11 +146,8 @@ function Logger:json_info(message, json, pretty)
             end
             for _, line in ipairs(data) do
                 if line:match("^%s*$") then
-                    -- skip empty lines
                     return
                 end
-                -- PRN remove message on every line and just add to first?
-                --   FYI most json logging is compact right now so NBD, yet
                 self:trace(message, line)
             end
         end,
@@ -155,16 +157,14 @@ function Logger:json_info(message, json, pretty)
             end
             for _, line in ipairs(data) do
                 if line:match("^%s*$") then
-                    -- skip empty lines
                     return
                 end
                 self:trace(message, line)
             end
         end,
-        on_exit = function()
-        end
+        on_exit = function() end,
     })
-    vim.fn.chansend(job_id, json .. "\n")
+    vim.fn.chansend(job_id, code .. "\n")
     vim.fn.chanclose(job_id, "stdin")
 end
 
