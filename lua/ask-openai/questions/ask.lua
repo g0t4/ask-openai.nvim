@@ -380,7 +380,7 @@ function M.curl_request_exited_successful_on_zero_rc()
 
     vim.schedule(function()
         for _, message in ipairs(M.thread.last_request.response_messages or {}) do
-            -- log:jsonify_info("last request message:", message)
+            -- log:jsonify_trace("last request message:", message)
             -- KEEP IN MIND, thread.last_request.response_messages IS NOT the same as thread.messages
             --
             -- this is the response(s) from the model, they need to be added to the message history!!!
@@ -394,7 +394,7 @@ function M.curl_request_exited_successful_on_zero_rc()
             for _, call_request in ipairs(message.tool_calls) do
                 model_responses:add_tool_call_requests(call_request)
             end
-            -- log:jsonify_info("final model_response message:", model_responses)
+            -- log:jsonify_trace("final model_response message:", model_responses)
             M.thread:add_message(model_responses)
 
             -- for now show user role as hint that you can follow up...
@@ -410,7 +410,7 @@ end
 function M.call_tools()
     for _, message in ipairs(M.thread.last_request.response_messages or {}) do
         for _, tool_call in ipairs(message.tool_calls) do
-            -- log:jsonify_info("tool:", tool_call)
+            -- log:jsonify_trace("tool:", tool_call)
             -- log:trace("tool:", vim.inspect(tool))
             -- TODO fix type annotations, ToolCall is wrong (has response/response.message crap on it
             -- tool:
@@ -426,7 +426,7 @@ function M.call_tools()
 
             tool_router.send_tool_call_router(tool_call, function(mcp_response)
                 tool_call.response = mcp_response
-                -- log:jsonify_info("mcp_response:", mcp_response)
+                -- log:jsonify_trace("mcp_response:", mcp_response)
                 -- log:trace("mcp_response:", vim.inspect(mcp_response))
                 -- mcp_response:
                 --  {
@@ -460,7 +460,7 @@ function M.call_tools()
                 --   role = "tool",
                 --   tool_call_id = "call_n44nr8e2"
                 -- }
-                log:jsonify_info("tool_message:", tool_response_message)
+                log:jsonify_trace("tool_message:", tool_response_message)
                 tool_call.response_message = tool_response_message
                 M.thread:add_message(tool_response_message)
                 --

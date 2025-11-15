@@ -177,7 +177,7 @@ function Logger:luaify_trace(message, value, pretty)
     stderr:read_start(on_stderr)
 end
 
-function Logger:jsonify_info(message, ...)
+function Logger:jsonify_trace(message, ...)
     -- TODO! port json_info to use uv.spawn (like lua_info does now) and then get rid of using defer_fn/schedule
     -- TODO! also collapse json_info into jsonify_info (rename this jsonify_trace) ...  so there's only method and no confusion!
     --   do the same thing in jsonify_info (vim.json.encode == vim.inspect)
