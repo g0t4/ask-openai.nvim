@@ -177,22 +177,14 @@ function Logger:luaify_trace(message, value, pretty)
     stderr:read_start(on_stderr)
 end
 
-function Logger:jsonify_trace(message, ...)
-    -- TODO! port json_info to use uv.spawn (like lua_info does now) and then get rid of using defer_fn/schedule
-    -- TODO! also collapse json_info into jsonify_info (rename this jsonify_trace) ...  so there's only method and no confusion!
-    --   do the same thing in jsonify_info (vim.json.encode == vim.inspect)
-
-    -- TODO handling for when data is not valid json?
-    local args = { ... }
-    local json = vim.json.encode(args)
-    self:json_info(message, json)
-end
-
-function Logger:json_info(message, json, pretty)
+function Logger:jsonify_trace(message, value, pretty)
+    local json = vim.json.encode(value)
     if json == nil then
-        self:info(message, "nil (passed to json_info)")
+        self:trace("json_info", "failed to encode value to JSON")
         return
     end
+
+    -- TODO! port json_info to use uv.spawn (like lua_info does now) and then get rid of using defer_fn/schedule
 
     -- local command = { "bat", "--style=plain", "--color", "always", "-l", "json" }
     local command = { "jq", ".", "--color-output" }
