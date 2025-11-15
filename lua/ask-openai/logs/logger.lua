@@ -114,7 +114,6 @@ function Logger:luaify_trace(message, value)
     local text = vim.inspect(value)
 
     local command = "bat"
-    pretty = pretty or false
     local args = {
         "--style=plain",
         "--color", "always",
@@ -191,12 +190,11 @@ end
 function Logger:jsonify_trace(message, value, pretty)
     local text = vim.json.encode(value)
     if not text then
-        self:trace("json_info", "failed to encode value to JSON, consider using luaify_trace")
+        self:trace("failed to encode value to JSON, consider using luaify_trace")
         return
     end
 
     local command = "jq"
-    pretty = pretty or false
     local args = { ".", "--color-output" }
     if not pretty then
         table.insert(args, "--compact-output")
