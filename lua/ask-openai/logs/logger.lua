@@ -271,7 +271,12 @@ NOOP_LOGGER = setmetatable({}, { __index = Logger })
 function NOOP_LOGGER:log(...)
 end
 
-function NOOP_LOGGER:json_info(...)
+-- PRN need to update this next time I use it (or get rid of it here)
+
+function NOOP_LOGGER:jsonify_trace(...)
+end
+
+function NOOP_LOGGER:luaify_trace(...)
 end
 
 local DISABLED = false
