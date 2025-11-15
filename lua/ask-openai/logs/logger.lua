@@ -126,12 +126,16 @@ function Logger:luaify_trace(message, value)
     local stderr = uv.new_pipe(false)
 
     local handle, pid
-    local function on_exit()
+
+    ---@param code   integer  -- exit code returned by the spawned process
+    ---@param signal integer  -- signal that terminated the process (0 if none)
+    local function on_exit(code, signal)
         if stdin then stdin:close() end
         if stdout then stdout:close() end
         if stderr then stderr:close() end
         if handle then handle:close() end
     end
+
     handle, pid = uv.spawn(command,
         ---@diagnostic disable-next-line: missing-fields
         {
@@ -151,24 +155,26 @@ function Logger:luaify_trace(message, value)
         end
     end
 
+    ---@param err? string
+    ---@param data? string
     local function on_stdout(err, data)
         if err then
-            self:trace("lua_info", "stderr error: " .. tostring(err))
+            self:trace("stderr error: " .. tostring(err))
             return
         end
         process_output(data)
     end
-
     stdout:read_start(on_stdout)
 
+    ---@param err? string
+    ---@param data? string
     local function on_stderr(err, data)
         if err then
-            self:trace("lua_info", "stderr error: " .. tostring(err))
+            self:trace("stderr error: " .. tostring(err))
             return
         end
         process_output(data)
     end
-
     stderr:read_start(on_stderr)
 
     stdin:write(code)
@@ -197,7 +203,10 @@ function Logger:jsonify_trace(message, value, pretty)
     local stderr = uv.new_pipe(false)
 
     local handle, pid
-    local function on_exit()
+
+    ---@param code   integer  -- exit code returned by the spawned process
+    ---@param signal integer  -- signal that terminated the process (0 if none)
+    local function on_exit(code, signal)
         if stdin then stdin:close() end
         if stdout then stdout:close() end
         if stderr then stderr:close() end
@@ -217,26 +226,33 @@ function Logger:jsonify_trace(message, value, pretty)
         for line in data:gmatch("[^\r\n]+") do
             local is_blank_line = line:match("^%s*$")
             if not is_blank_line then
+                -- TODO how about not log each line separately? (i.e. drop the log prefix at start of each line)
                 self:trace(message, line)
             end
         end
     end
 
-    stdout:read_start(function(err, data)
+    ---@param err? string
+    ---@param data? string
+    local function on_stdout(err, data)
         if err then
-            self:trace("json_info", "stdout error: " .. tostring(err))
+            self:trace("stderr error: " .. tostring(err))
             return
         end
         process_output(data)
-    end)
+    end
+    stdout:read_start(on_stdout)
 
-    stderr:read_start(function(err, data)
+    ---@param err? string
+    ---@param data? string
+    local function on_stderr(err, data)
         if err then
-            self:trace("json_info", "stderr error: " .. tostring(err))
+            self:trace("stderr error: " .. tostring(err))
             return
         end
         process_output(data)
-    end)
+    end
+    stderr:read_start(on_stderr)
 
     stdin:write(json)
     stdin:shutdown()
