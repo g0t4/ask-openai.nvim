@@ -108,9 +108,9 @@ General project code rules:
     if request.rag_matches and #request.rag_matches > 0 then
         local rag_parts = {}
         if #request.rag_matches == 1 then
-            heading = "# RAG query match:\n"
+            heading = "# Semantic Grep match:\n"
         elseif #request.rag_matches > 1 then
-            heading = "# RAG query matches: " .. #request.rag_matches .. "\n"
+            heading = "# Semantic Grep matches: " .. #request.rag_matches .. "\n"
         end
         table.insert(rag_parts, heading)
 

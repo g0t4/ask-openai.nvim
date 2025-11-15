@@ -87,8 +87,8 @@ async def semantic_grep(
         else:
             num_languages = len(datasets.all_datasets)
         if num_languages == 0:
-            logger.error(f"no languages for multi-language RAG query using: {args.languages=}")
-            raise Exception(f"No languages for multi-language RAG query using: {args.languages=}")
+            logger.error(f"no languages for multi-language Semantic Grep using: {args.languages=}")
+            raise Exception(f"No languages for multi-language Semantic Grep using: {args.languages=}")
         top_k_per_lang = round(1.5 * query_embed_top_k / num_languages)  # over sample each language by 50%
         # logger.info(f"{top_k_per_lang=}")
 

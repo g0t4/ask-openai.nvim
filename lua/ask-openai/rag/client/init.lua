@@ -87,8 +87,8 @@ function trim(str)
 end
 
 ---@param ps_chunk PrefixSuffixChunk
----@param limit? integer -- number of characters before/after cursor position for RAG query document
----@returns string? -- FIM query string, or nil to disable FIM RAG query
+---@param limit? integer -- number of characters before/after cursor position for Semantic Grep document
+---@returns string? -- FIM query string, or nil to disable FIM Semantic Grep
 local function fim_concat(ps_chunk, limit)
     limit = limit or 1500 -- 2000?
     local half = math.floor(limit / 2)
@@ -121,7 +121,7 @@ local function fim_concat(ps_chunk, limit)
         return nil
     end
 
-    -- FYI see fim_query_notes.md for past and future ideas for RAG query selection w.r.t. RAG+FIM
+    -- FYI see fim_query_notes.md for past and future ideas for Semantic Grep selection w.r.t. RAG+FIM
     local query = last_line_of_prefix
     log:trace("fim_concat: query='" .. tostring(query) .. "'")
     return query
@@ -184,7 +184,7 @@ function M.context_query_fim(ps_chunk, callback, skip_rag)
     local fim_specific_instruct = "Complete the missing portion of code (FIM) based on the surrounding context (Fill-in-the-middle)"
     local query = fim_concat(ps_chunk) -- TODO map fim_concat
     if query == nil then
-        log:trace(ansi.white_bold(ansi.red_bg("SKIPPING RAG b/c no query ")))
+        log:trace(ansi.white_bold(ansi.red_bg("SKIPPING Semantic Grep b/c no query text")))
         skip_rag()
         -- PRN return indicator to caller? right now nil for results s/b fine
         return
@@ -219,7 +219,7 @@ function M._context_query(query, instruct, callback)
     function on_server_response(err, result)
         -- FYI do your best to log errors here so that code is not duplicated downstream
         if err then
-            vim.notify("RAG query failed: " .. err.message, vim.log.levels.ERROR)
+            vim.notify("Semantic Grep failed: " .. err.message, vim.log.levels.ERROR)
             callback({}, true) -- still callback w/ no results
             return
         end

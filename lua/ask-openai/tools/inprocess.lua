@@ -81,8 +81,8 @@ function M._context_query(parsed_args, callback)
     function on_server_response(err, lsp_result)
         local result = {}
         if err then
-            -- vim.notify("RAG tool_call query failed: " .. err.message, vim.log.levels.ERROR)
-            log:error("RAG tool_call query failed: " .. tostring(err), vim.inspect(lsp_result))
+            -- vim.notify("Semantic Grep tool_call query failed: " .. err.message, vim.log.levels.ERROR)
+            log:error("Semantic Grep tool_call query failed: " .. tostring(err), vim.inspect(lsp_result))
             result.isError = true
             -- TODO is this how I want to return the error?
             result.error = err.message or "unknown error"
@@ -92,14 +92,14 @@ function M._context_query(parsed_args, callback)
         end
 
         if lsp_result.error ~= nil and lsp_result.error ~= "" then
-            log:error("RAG tool_call response error, still calling back: ", vim.inspect(lsp_result))
+            log:error("Semantic Grep tool_call response error, still calling back: ", vim.inspect(lsp_result))
             result.isError = true
             result.matches = lsp_result.matches or {}
             callback({ result = result })
             return
         end
 
-        log:info("RAG tool_call matches (client):", vim.inspect(lsp_result))
+        log:info("Semantic Grep tool_call matches (client):", vim.inspect(lsp_result))
         -- do not mark isError = false here... that is assumed, might also cause issues if mis-interpreted as an error!
         result.matches = lsp_result.matches
         callback({ result = result })

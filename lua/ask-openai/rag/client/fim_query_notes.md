@@ -40,6 +40,6 @@ local query = "ip.incremen" -- UGH this finds what I want! lol... but neither of
 -- TODO skip RAG if no text on current line? or < minimum (i.e. 5 or so?)
 --   PRN OR revert to full FIM if current line has no text (or < min)?
 
--- TODO a next idea: use a small model (qwen2.5-coder-0.5B or 1.5B) and have it generate a RAG query from the full FIM prompt! then use that... should be sub 10/20ms to do this
+-- TODO a next idea: use a small model (qwen2.5-coder-0.5B or 1.5B) and have it generate a Semantic Grep from the full FIM prompt! then use that... should be sub 10/20ms to do this
 --  quantized model too, no no p
 ```

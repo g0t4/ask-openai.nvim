@@ -311,9 +311,9 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         if enable_rag and rag_matches ~= nil and #rag_matches > 0 then
             rag_message_parts = {}
             if #rag_matches == 1 then
-                heading = "# RAG query match: \n"
+                heading = "# Semantic Grep match: \n"
             elseif #rag_matches > 1 then
-                heading = "# RAG query matches: " .. #rag_matches .. "\n"
+                heading = "# Semantic Grep matches: " .. #rag_matches .. "\n"
             end
             table.insert(rag_message_parts, heading)
             -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
