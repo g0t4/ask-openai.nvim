@@ -109,7 +109,7 @@ function Logger:info(...)
 end
 
 ---@param message string
----@param value any - lua value that will be vim.inspect()'d and piped through bat
+---@param value any - will be vim.inspect()'d and piped through bat
 ---@param pretty boolean|nil
 function Logger:luaify_trace(message, value, pretty)
     local code = vim.inspect(value)
@@ -142,9 +142,6 @@ function Logger:luaify_trace(message, value, pretty)
         },
         on_exit)
 
-    -- add trailing \n or the last line is dropped
-    stdin:write(code .. "\n")
-
     local function process_output(data)
         if not data then return end
         for line in data:gmatch("[^\r\n]+") do
@@ -175,8 +172,15 @@ function Logger:luaify_trace(message, value, pretty)
     end
 
     stderr:read_start(on_stderr)
+
+    -- add trailing \n or the last line is dropped
+    stdin:write(code .. "\n")
+    stdin:shutdown()
 end
 
+---@param message string
+---@param value any - lua value that will be vim.json.encode()'d
+---@param pretty boolean|nil
 function Logger:jsonify_trace(message, value, pretty)
     local json = vim.json.encode(value)
     if not json then
@@ -203,10 +207,13 @@ function Logger:jsonify_trace(message, value, pretty)
         if handle then handle:close() end
     end
 
-    handle, pid = uv.spawn(command, {
-        args = args,
-        stdio = { stdin, stdout, stderr },
-    }, on_exit)
+    handle, pid = uv.spawn(command,
+        ---@diagnostic disable-next-line: missing-fields
+        {
+            args = args,
+            stdio = { stdin, stdout, stderr },
+        },
+        on_exit)
 
     local function process_output(data)
         if not data then return end
