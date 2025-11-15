@@ -180,7 +180,7 @@ end
 function Logger:jsonify_trace(message, value, pretty)
     local json = vim.json.encode(value)
     if not json then
-        self:trace("json_info", "failed to encode value to JSON")
+        self:trace("json_info", "failed to encode value to JSON, consider using luaify_trace")
         return
     end
 
