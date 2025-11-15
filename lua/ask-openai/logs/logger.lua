@@ -116,6 +116,9 @@ end
 
 function Logger:json_info_deferred(message, data)
     -- TODO! port json_info to use uv.spawn (like lua_info does now) and then get rid of using defer_fn/schedule
+    -- TODO! also collapse json_info into jsonify_info (rename this jsonify_trace) ...  so there's only method and no confusion!
+    --   do the same thing in jsonify_info (vim.json.encode == vim.inspect)
+
     -- TODO handling for when data is not valid json?
     vim.schedule(function()
         self:json_info(message, data)
@@ -123,13 +126,10 @@ function Logger:json_info_deferred(message, data)
 end
 
 ---@param message string
----@param code string
+---@param value any - lua value that will be vim.inspect()'d and piped through bat
 ---@param pretty boolean|nil
-function Logger:lua_info(message, code, pretty)
-    if code == nil then
-        self:info(message, "nil (passed to lua_info)")
-        return
-    end
+function Logger:luaify_trace(message, value, pretty)
+    local code = vim.inspect(value)
 
     local command = "bat"
     pretty = pretty or false
