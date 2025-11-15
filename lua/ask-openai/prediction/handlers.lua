@@ -39,7 +39,7 @@ function M.ask_for_prediction()
         assert(stdout ~= nil)
         assert(stderr ~= nil)
 
-        spawn_curl_options.on_exit = function(code, signal)
+        local function on_exit(code, signal)
             log:trace(string.format("spawn - exit code: %d  signal:%s", code, signal))
             if code ~= 0 then
                 log:error("spawn - non-zero exit code:", code, "Signal:", signal)
@@ -54,9 +54,9 @@ function M.ask_for_prediction()
                 args = spawn_curl_options.args,
                 stdio = { nil, stdout, stderr },
             },
-            spawn_curl_options.on_exit)
+            on_exit)
 
-        spawn_curl_options.on_stdout = function(err, data)
+        local function on_stdout(err, data)
             log:trace("on_stdout chunk: ", data)
 
             if err then
@@ -186,15 +186,17 @@ function M.ask_for_prediction()
                 -- end, 500) -- 500 ms makes it easy to reproduce "stuck" predictions
             end
         end
-        uv.read_start(stdout, spawn_curl_options.on_stdout)
 
-        spawn_curl_options.on_stderr = function(err, data)
+        stdout:read_start(on_stdout)
+
+        local function on_stderr(err, data)
             log:warn("on_stderr chunk: ", data)
             if err then
                 log:warn("on_stderr error: ", err)
             end
         end
-        uv.read_start(stderr, spawn_curl_options.on_stderr)
+
+        stderr:read_start(on_stderr)
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then

@@ -51,7 +51,7 @@ function start_mcp_server(name, on_message)
 
     local handle
 
-    function on_exit(code, signal)
+    local function on_exit(code, signal)
         log:trace("MCP exited with code", code, "and signal", signal)
     end
 
@@ -60,7 +60,7 @@ function start_mcp_server(name, on_message)
         stdio = { stdin, stdout, stderr },
     }, on_exit)
 
-    function on_stdout(err, data)
+    local function on_stdout(err, data)
         -- log:trace("MCP stdout:", data)
         assert(not err, err)
         -- receive messages
@@ -81,7 +81,7 @@ function start_mcp_server(name, on_message)
 
     uv.read_start(stdout, on_stdout)
 
-    function on_stderr(err, data)
+    local function on_stderr(err, data)
         if err then
             log:trace("MCP stderr error:", err)
         end
@@ -154,7 +154,7 @@ for name, server in pairs(servers) do
             log:error("tools/list@" .. name .. " error:", vim.inspect(msg))
             return
         end
-        log:lua_info_deferred("tools/list:", vim.inspect(msg))
+        log:lua_info("tools/list:", vim.inspect(msg))
         for _, tool in ipairs(msg.result.tools) do
             -- log:trace("found " .. tool.name)
             tool.server = mcp

@@ -1,5 +1,6 @@
 local local_share = require("ask-openai.config.local_share")
 local ansi = require("ask-openai.prediction.ansi")
+local uv = vim.loop
 local Logger = {}
 Logger.__index = Logger
 
@@ -136,47 +137,67 @@ function Logger:lua_info(message, code, pretty)
         return
     end
 
-    -- Use bat to pretty‑print Lua syntax highlighted source
-    local command = { "bat", "--style=plain", "--color", "always", "-l", "lua" }
+    local command = "bat"
     pretty = pretty or false
-    if pretty then
-        table.insert(command, "--decorations=always")
-    else
-        table.insert(command, "--decorations=never")
+    local args = {
+        "--style=plain",
+        "--color", "always",
+        "-l", "lua",
+        pretty and "--decorations=always" or "--decorations=never",
+    }
+
+    local stdin = uv.new_pipe(false)
+    local stdout = uv.new_pipe(false)
+    local stderr = uv.new_pipe(false)
+
+    local handle, pid
+    local function on_exit()
+        if stdin then stdin:close() end
+        if stdout then stdout:close() end
+        if stderr then stderr:close() end
+        if handle then handle:close() end
+    end
+    handle, pid = uv.spawn(command,
+        ---@diagnostic disable-next-line: missing-fields
+        {
+            args = args,
+            stdio = { stdin, stdout, stderr },
+        },
+        on_exit)
+
+    -- add trailing \n or the last line is dropped
+    stdin:write(code .. "\n")
+
+    local function process_output(data)
+        if not data then return end
+        for line in data:gmatch("[^\r\n]+") do
+            local is_blank_line = line:match("^%s*$")
+            if not is_blank_line then
+                -- TODO how about not log each line separately? (i.e. drop the log prefix at start of each line)
+                self:trace(message, line)
+            end
+        end
     end
 
-    local job_id = vim.fn.jobstart(command, {
-        stdout_buffered = true,
-        on_stderr = function(_, data)
-            if not data then
-                return
-            end
-            for _, line in ipairs(data) do
-                if line:match("^%s*$") then
-                    -- skip empty lines
-                    return
-                end
-                -- PRN remove message on every line and just add to first?
-                --   FYI most json logging is compact right now so NBD, yet
-                self:trace(message, line)
-            end
-        end,
-        on_stdout = function(_, data)
-            if not data then
-                return
-            end
-            for _, line in ipairs(data) do
-                if line:match("^%s*$") then
-                    -- skip empty lines
-                    return
-                end
-                self:trace(message, line)
-            end
-        end,
-        on_exit = function() end,
-    })
-    vim.fn.chansend(job_id, code .. "\n")
-    vim.fn.chanclose(job_id, "stdin")
+    local function on_stdout(err, data)
+        if err then
+            self:trace("lua_info", "stderr error: " .. tostring(err))
+            return
+        end
+        process_output(data)
+    end
+
+    stdout:read_start(on_stdout)
+
+    local function on_stderr(err, data)
+        if err then
+            self:trace("lua_info", "stderr error: " .. tostring(err))
+            return
+        end
+        process_output(data)
+    end
+
+    stderr:read_start(on_stderr)
 end
 
 function Logger:json_info(message, json, pretty)
