@@ -154,7 +154,7 @@ for name, server in pairs(servers) do
             log:error("tools/list@" .. name .. " error:", vim.inspect(msg))
             return
         end
-        -- log:trace("tools/list:", vim.inspect(msg))
+        log:trace("tools/list:", vim.inspect(msg))
         for _, tool in ipairs(msg.result.tools) do
             -- log:trace("found " .. tool.name)
             tool.server = mcp
