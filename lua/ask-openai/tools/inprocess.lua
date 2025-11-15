@@ -163,9 +163,23 @@ function M.send_tool_call(tool_call, callback)
         local parsed_args = vim.json.decode(args)
         rag_query_impl(parsed_args, callback)
         return
+    elseif name == "apply_patch" then
+        local args = tool_call["function"].arguments
+        local parsed_args = vim.json.decode(args)
+        M.apply_patch(parsed_args, callback)
+        return
     end
 
     error("in-process tool not implemented yet: " .. name)
+end
+
+---@param parsed_args table
+---@param callback fun(response: table)
+function M.apply_patch(parsed_args, callback)
+    -- GPTOSS has an apply_patch tool it was trained with
+    -- instead of bothering with an MCP server, let's just trigger the python script in-process
+    -- later I can move this out to another process (MCP server) if that is worthwhile
+    error("apply_patch not implemented")
 end
 
 return M
