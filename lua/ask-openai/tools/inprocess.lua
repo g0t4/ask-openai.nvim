@@ -1,49 +1,15 @@
 local log = require("ask-openai.logs.logger").predictions()
 local files = require("ask-openai.helpers.files")
+local rag_query_module = require("ask-openai.tools.inproc.rag_query")
+local apply_patch_module = require("ask-openai.tools.inproc.apply_patch")
 
 local M = {}
 
----@class ToolDefinition
----@field name string
----@field description string
----@field inputSchema table
+---@type OpenAITool[]
 M.tools_available = {
-    ---@type ToolDefinition
-    rag_query = {
-        ["function"] = {
-            description = "Query RAG for code and documents in the current workspace",
-            name = "rag_query",
-            parameters = {
-                properties = {
-                    filetype = {
-                        type = "string",
-                        description = "limit matches to a vim compatible filetype. Leave unset for all filetypes in a workspace."
-                    },
-                    query = {
-                        type = "string",
-                        description = "embeddings query"
-                    },
-                    instruct = {
-                        type = "string",
-                        description = "instructions for the query"
-                    },
-                    top_k = {
-                        type = "number",
-                        description = "number of results to return (post reranking)"
-                    },
-                    embed_top_k = {
-                        type = "number",
-                        description = "number of embeddings to consider for reranking"
-                    },
-                },
-                required = { "query" },
-                type = "object"
-            }
-        },
-        type = "function"
-    }
+    rag_query = rag_query_module.ToolDefinition
+    -- apply_patch = apply_patch_module.ToolDefinition -- TODO
 }
-
 
 ---@param tool_name string
 ---@return boolean

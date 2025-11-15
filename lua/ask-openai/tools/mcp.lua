@@ -38,7 +38,6 @@ local servers = {
             -- "--verbose",
         },
     },
-    -- FYI use apply_patch like rag_query and later you can add an MCP server if you care enough
 }
 
 

@@ -1,10 +1,8 @@
 local M = {}
 
-M.definition = {
-    ---@type ToolDefinition
-    apply_patch = {
-        -- TODO
-    }
+---@type OpenAITool
+M.ToolDefinition = {
+    -- TODO
 }
 
 return M
