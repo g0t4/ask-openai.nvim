@@ -110,8 +110,7 @@ end
 
 ---@param message string
 ---@param value any - will be vim.inspect()'d and piped through bat
----@param pretty boolean|nil
-function Logger:luaify_trace(message, value, pretty)
+function Logger:luaify_trace(message, value)
     local code = vim.inspect(value)
 
     local command = "bat"
@@ -120,7 +119,6 @@ function Logger:luaify_trace(message, value, pretty)
         "--style=plain",
         "--color", "always",
         "-l", "lua",
-        pretty and "--decorations=always" or "--decorations=never",
     }
 
     local stdin = uv.new_pipe(false)
