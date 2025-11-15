@@ -168,8 +168,8 @@ async def doc_opened(params: types.DidOpenTextDocumentParams):
 #     # FYI would use this to invalidate internal caches and rebuild for a given file, i.e. imports, RAG vectors, etc
 #     #   rebuild on git commit + incremental updates s/b super fast?
 
-@server.command("rag_query")
-async def rag_query_command(_: LanguageServer, args: rag.LSPRagQueryRequest) -> rag.LSPRagQueryResult:
+@server.command("semantic_grep")
+async def semantic_grep_command(_: LanguageServer, args: rag.LSPRagQueryRequest) -> rag.LSPRagQueryResult:
     args.msgId = server.protocol.msg_id
     try:
         return await rag.handle_query(args)  # TODO! ASYNC REVIEW

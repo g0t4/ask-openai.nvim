@@ -35,7 +35,7 @@ function _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, proc
     logs:warn("requesting semantic_grep, last_msg_id: " .. vim.inspect(last_msg_id))
     local msg_id, cancel_my_request
     msg_id, cancel_my_request = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
-            command = "rag_query",
+            command = "semantic_grep",
             arguments = { lsp_rag_request },
         },
         ---@param result LSPRagQueryResult

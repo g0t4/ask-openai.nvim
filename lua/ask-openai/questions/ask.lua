@@ -47,11 +47,11 @@ Here are noteworthy commands you have access to:
 - fd, rg, gsed, gawk, jq, yq, httpie
 - exa, icdiff, ffmpeg, imagemagick, fzf
 
-The rag_query tool:
+The semantic_grep tool:
 - has access to an index of embeddings for the entire codebase in the current working directory
-- use it to find code too! Think of it as semantic grep
-- It includes a re-ranker so results are sorted
-- AND, it's really fast... IOTW, you can use it repeatedly without annoying Wes!
+- use it to find code! Think of it as a RAG query tool
+- It includes a re-ranker to sort the results
+- AND, it's really fast... so don't hesitate to use it!
 ]]
         -- TODO on mac show diff tools: i.e. gsed and gawk when on mac where that would be useful to know
         -- TODO on linux show awk/sed (maybe mention GNU variant)

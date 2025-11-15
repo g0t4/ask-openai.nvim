@@ -3,17 +3,17 @@ local M = {}
 ---@type OpenAITool
 M.ToolDefinition = {
     ["function"] = {
-        description = "Query RAG for code and documents in the current workspace",
-        name = "rag_query",
+        description = "Retrieval tool (the R in RAG) for code and documents in the current workspace. Uses a vector store with embeddings of the entire codebase. And a re-ranker for sorting results.",
+        name = "semantic_grep",
         parameters = {
             properties = {
                 filetype = {
                     type = "string",
-                    description = "limit matches to a vim compatible filetype. Leave unset for all filetypes in a workspace."
+                    description = "limit matches to a vim compatible filetype. Leave unset for all indexed filetypes in a workspace."
                 },
                 query = {
                     type = "string",
-                    description = "embeddings query"
+                    description = "query text, what you are looking for"
                 },
                 instruct = {
                     type = "string",

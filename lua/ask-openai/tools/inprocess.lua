@@ -1,13 +1,13 @@
 local log = require("ask-openai.logs.logger").predictions()
 local files = require("ask-openai.helpers.files")
-local rag_query_module = require("ask-openai.tools.inproc.rag_query")
+local semantic_grep_module = require("ask-openai.tools.inproc.semantic_grep")
 local apply_patch_module = require("ask-openai.tools.inproc.apply_patch")
 
 local M = {}
 
 ---@type OpenAITool[]
 M.tools_available = {
-    rag_query = rag_query_module.ToolDefinition
+    semantic_grep = semantic_grep_module.ToolDefinition
     -- apply_patch = apply_patch_module.ToolDefinition -- TODO
 }
 
@@ -77,7 +77,7 @@ function M._context_query(parsed_args, callback)
     --
 
 
-    ---@param result LSPRagQueryResult
+    ---@param lsp_result LSPRagQueryResult
     function on_server_response(err, lsp_result)
         local result = {}
         if err then
@@ -106,7 +106,7 @@ function M._context_query(parsed_args, callback)
     end
 
     local params = {
-        command = "rag_query",
+        command = "semantic_grep",
         arguments = { lsp_rag_request },
     }
 
@@ -115,7 +115,7 @@ function M._context_query(parsed_args, callback)
     return _client_request_ids, _cancel_all_requests
 end
 
-function rag_query_impl(parsed_args, callback)
+function semantic_grep_impl(parsed_args, callback)
     M._context_query(parsed_args or "", callback)
 end
 
@@ -124,10 +124,10 @@ end
 function M.send_tool_call(tool_call, callback)
     local name = tool_call["function"].name
 
-    if name == "rag_query" then
+    if name == "semantic_grep" then
         local args = tool_call["function"].arguments
         local parsed_args = vim.json.decode(args)
-        rag_query_impl(parsed_args, callback)
+        semantic_grep_impl(parsed_args, callback)
         return
     elseif name == "apply_patch" then
         local args = tool_call["function"].arguments

@@ -236,7 +236,7 @@ function M._context_query(query, instruct, callback)
     end
 
     local params = {
-        command = "rag_query",
+        command = "semantic_grep",
         -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
         arguments = { lsp_rag_request },
     }
