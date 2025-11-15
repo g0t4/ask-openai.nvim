@@ -35,7 +35,7 @@ class LSPRankedMatch:
 FAKE_STOPPER = Stopper("fake")
 
 @attrs.define
-class LSPRagQueryRequest:
+class LSPSemanticGrepRequest:
     query: str
     currentFileAbsolutePath: str | None = None
     vimFiletype: str | None = None
@@ -48,7 +48,7 @@ class LSPRagQueryRequest:
     # MAKE SURE TO GIVE DEFAULT VALUES IF NOT REQUIRED
 
 async def semantic_grep(
-    args: LSPRagQueryRequest,
+    args: LSPSemanticGrepRequest,
     datasets: Datasets,
     stopper: Stopper = FAKE_STOPPER,
 ) -> list[LSPRankedMatch]:

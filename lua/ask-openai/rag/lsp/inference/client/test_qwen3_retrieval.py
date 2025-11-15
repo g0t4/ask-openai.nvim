@@ -20,7 +20,7 @@ async def main():
     set_root_dir(dot_rag_dir.parent)
     datasets = load_all_datasets(dot_rag_dir)
 
-    args = LSPRagQueryRequest(
+    args = LSPSemanticGrepRequest(
         query="where did I set the top_k for semantic grep?",
         currentFileAbsolutePath="test.py",
         vimFiletype="py",

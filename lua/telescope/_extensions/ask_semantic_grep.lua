@@ -18,7 +18,7 @@ local picker
 local last_msg_id, cancel_last_requests
 
 
----@param lsp_rag_request LSPRagQueryRequest
+---@param lsp_rag_request LSPSemanticGrepRequest
 ---@param lsp_buffer_number integer
 ---@param process_result fun(entry: SemanticGrepTelescopeEntryMatch)
 ---@param process_complete fun()
@@ -38,7 +38,7 @@ function _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, proc
             command = "semantic_grep",
             arguments = { lsp_rag_request },
         },
-        ---@param result LSPRagQueryResult
+        ---@param result LSPSemanticGrepResult
         function(err, result, ctx)
             -- logs:warn("semantic_grep callback: " .. vim.inspect({ err = err, result = result, ctx = ctx }))
             if last_msg_id ~= msg_id then
@@ -264,7 +264,7 @@ end
 
 function semantic_grep_current_filetype_picker(opts)
     -- * this runs before picker opens, so you can gather context, i.e. current filetype, its LSP, etc
-    ---@type LSPRagQueryRequest
+    ---@type LSPSemanticGrepRequest
     local lsp_rag_request = {
         -- instruct => let server set the Instruct for semantic_grep (would be "Semantic grep of relevant code ...")
         query = "",

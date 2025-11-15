@@ -169,14 +169,14 @@ async def doc_opened(params: types.DidOpenTextDocumentParams):
 #     #   rebuild on git commit + incremental updates s/b super fast?
 
 @server.command("semantic_grep")
-async def semantic_grep_command(_: LanguageServer, args: rag.LSPRagQueryRequest) -> rag.LSPRagQueryResult:
+async def semantic_grep_command(_: LanguageServer, args: rag.LSPSemanticGrepRequest) -> rag.LSPSemanticGrepResult:
     args.msgId = server.protocol.msg_id
     try:
         return await rag.handle_query(args)  # TODO! ASYNC REVIEW
     except asyncio.CancelledError as e:
         # avoid leaving on in logs b/c takes up a ton of space for stack trace
         logger.info(f"Client cancelled query {args.msgId=}")  #, exc_info=e)  # uncomment to see where error is raised
-        return rag.LSPRagQueryResult(error=rag.LSPResponseErrors.CANCELLED)
+        return rag.LSPSemanticGrepResult(error=rag.LSPResponseErrors.CANCELLED)
 
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):
     logger.warn("SIGKILL myself")

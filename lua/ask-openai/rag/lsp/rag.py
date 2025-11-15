@@ -24,7 +24,7 @@ def validate_rag_indexes():
     validator.validate_datasets()
 
 @attrs.define
-class LSPRagQueryResult:
+class LSPSemanticGrepResult:
     """ Either return matches OR an error string, nothing else matters."""
     matches: list = []
     error: str | None = None
@@ -33,18 +33,18 @@ class LSPResponseErrors:
     NO_RAG_DIR = "No .rag dir"
     CANCELLED = "Client cancelled query"
 
-async def handle_query(args: LSPRagQueryRequest) -> LSPRagQueryResult:
+async def handle_query(args: LSPSemanticGrepRequest) -> LSPSemanticGrepResult:
     stopper = create_stopper(args.msgId)
     try:
         if fs.is_no_rag_dir():
-            return LSPRagQueryResult(error=LSPResponseErrors.NO_RAG_DIR)
+            return LSPSemanticGrepResult(error=LSPResponseErrors.NO_RAG_DIR)
 
         # TODO! REVIEW the ASYNC (i.e. for file ops? or other async capable ops)
 
         query = args.query
         if query is None or len(query) == 0:
             logger.info("No query provided")
-            return LSPRagQueryResult(error="No query provided")
+            return LSPSemanticGrepResult(error="No query provided")
 
         stopper.throw_if_stopped()
 
@@ -54,7 +54,7 @@ async def handle_query(args: LSPRagQueryRequest) -> LSPRagQueryResult:
             stopper=stopper,
         )
 
-        return LSPRagQueryResult(matches=matches)
+        return LSPSemanticGrepResult(matches=matches)
     finally:
         remove_stopper(args.msgId)
 

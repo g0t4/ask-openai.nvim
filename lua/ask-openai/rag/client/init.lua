@@ -134,7 +134,7 @@ local ChunkType = {
     UNCOVERED_CODE = "uncovered",
 }
 
----@class LSPRagQueryRequest
+---@class LSPSemanticGrepRequest
 ---@field query string
 ---@field vimFiletype string
 ---@field currentFileAbsolutePath string
@@ -143,13 +143,13 @@ local ChunkType = {
 ---@field skipSameFile? boolean
 ---@field topK? integer
 ---@field embedTopK? integer
-_G.LSPRagQueryRequest = {}
+_G.LSPSemanticGrepRequest = {}
 
 
----@class LSPRagQueryResult
+---@class LSPSemanticGrepResult
 ---@field matches LSPRankedMatch[]
 ---@field error? string
-_G.LSPRagQueryResult = {}
+_G.LSPSemanticGrepResult = {}
 
 ---@class LSPRankedMatch
 ---@field text string
@@ -197,7 +197,7 @@ end
 ---@param instruct string # Instruct section only
 ---@param callback fun(matches: LSPRankedMatch[], failed: boolean)
 function M._context_query(query, instruct, callback)
-    ---@type LSPRagQueryRequest
+    ---@type LSPSemanticGrepRequest
     local lsp_rag_request = {
         query = query,
         instruct = instruct,
@@ -215,7 +215,7 @@ function M._context_query(query, instruct, callback)
 
     local _client_request_ids, _cancel_all_requests -- declare in advance for closure:
 
-    ---@param result LSPRagQueryResult
+    ---@param result LSPSemanticGrepResult
     function on_server_response(err, result)
         -- FYI do your best to log errors here so that code is not duplicated downstream
         if err then

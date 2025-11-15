@@ -27,7 +27,7 @@ function M._context_query(parsed_args, callback)
         languages = "GLOBAL" -- GLOBAL is subject to rag.yaml -> global_languages
     end
 
-    ---@type LSPRagQueryRequest
+    ---@type LSPSemanticGrepRequest
     local lsp_rag_request = {
         query = parsed_args.query,
         instruct = parsed_args.instruct or "Find relevant code for the AI agent's query",
@@ -77,7 +77,7 @@ function M._context_query(parsed_args, callback)
     --
 
 
-    ---@param lsp_result LSPRagQueryResult
+    ---@param lsp_result LSPSemanticGrepResult
     function on_server_response(err, lsp_result)
         local result = {}
         if err then
