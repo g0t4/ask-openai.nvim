@@ -111,7 +111,7 @@ end
 ---@param message string
 ---@param value any - will be vim.inspect()'d and piped through bat
 function Logger:luaify_trace(message, value)
-    local code = vim.inspect(value)
+    local text = vim.inspect(value)
 
     local command = "bat"
     pretty = pretty or false
@@ -177,7 +177,7 @@ function Logger:luaify_trace(message, value)
     end
     stderr:read_start(on_stderr)
 
-    stdin:write(code)
+    stdin:write(text)
     stdin:shutdown()
 end
 
@@ -185,8 +185,8 @@ end
 ---@param value any - lua value that will be vim.json.encode()'d
 ---@param pretty boolean|nil
 function Logger:jsonify_trace(message, value, pretty)
-    local json = vim.json.encode(value)
-    if not json then
+    local text = vim.json.encode(value)
+    if not text then
         self:trace("json_info", "failed to encode value to JSON, consider using luaify_trace")
         return
     end
@@ -254,7 +254,7 @@ function Logger:jsonify_trace(message, value, pretty)
     end
     stderr:read_start(on_stderr)
 
-    stdin:write(json)
+    stdin:write(text)
     stdin:shutdown()
 end
 
