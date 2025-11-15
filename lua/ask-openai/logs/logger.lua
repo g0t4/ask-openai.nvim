@@ -171,8 +171,7 @@ function Logger:luaify_trace(message, value)
 
     stderr:read_start(on_stderr)
 
-    -- add trailing \n or the last line is dropped
-    stdin:write(code .. "\n")
+    stdin:write(code)
     stdin:shutdown()
 end
 
@@ -239,7 +238,7 @@ function Logger:jsonify_trace(message, value, pretty)
         process_output(data)
     end)
 
-    stdin:write(json .. "\n")
+    stdin:write(json)
     stdin:shutdown()
 end
 
