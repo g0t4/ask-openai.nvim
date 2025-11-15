@@ -179,53 +179,63 @@ end
 
 function Logger:jsonify_trace(message, value, pretty)
     local json = vim.json.encode(value)
-    if json == nil then
+    if not json then
         self:trace("json_info", "failed to encode value to JSON")
         return
     end
 
-    -- TODO! port json_info to use uv.spawn (like lua_info does now) and then get rid of using defer_fn/schedule
-
-    -- local command = { "bat", "--style=plain", "--color", "always", "-l", "json" }
-    local command = { "jq", ".", "--color-output" }
+    local command = "jq"
     pretty = pretty or false
+    local args = { ".", "--color-output" }
     if not pretty then
-        table.insert(command, "--compact-output")
+        table.insert(args, "--compact-output")
     end
 
-    local job_id = vim.fn.jobstart(command, {
-        stdout_buffered = true,
-        on_stderr = function(_, data)
-            if not data then
-                return
-            end
-            for _, line in ipairs(data) do
-                if line:match("^%s*$") then
-                    -- skip empty lines
-                    return
-                end
-                -- PRN remove message on every line and just add to first?
-                --   FYI most json logging is compact right now so NBD, yet
+    local stdin = uv.new_pipe(false)
+    local stdout = uv.new_pipe(false)
+    local stderr = uv.new_pipe(false)
+
+    local handle, pid
+    local function on_exit()
+        if stdin then stdin:close() end
+        if stdout then stdout:close() end
+        if stderr then stderr:close() end
+        if handle then handle:close() end
+    end
+
+    handle, pid = uv.spawn(command, {
+        args = args,
+        stdio = { stdin, stdout, stderr },
+    }, on_exit)
+
+    local function process_output(data)
+        if not data then return end
+        for line in data:gmatch("[^\r\n]+") do
+            local is_blank_line = line:match("^%s*$")
+            if not is_blank_line then
                 self:trace(message, line)
             end
-        end,
-        on_stdout = function(_, data)
-            if not data then
-                return
-            end
-            for _, line in ipairs(data) do
-                if line:match("^%s*$") then
-                    -- skip empty lines
-                    return
-                end
-                self:trace(message, line)
-            end
-        end,
-        on_exit = function()
         end
-    })
-    vim.fn.chansend(job_id, json .. "\n")
-    vim.fn.chanclose(job_id, "stdin")
+    end
+
+    stdout:read_start(function(err, data)
+        if err then
+            self:trace("json_info", "stdout error: " .. tostring(err))
+            return
+        end
+        process_output(data)
+    end)
+
+    stderr:read_start(function(err, data)
+        if err then
+            self:trace("json_info", "stderr error: " .. tostring(err))
+            return
+        end
+        process_output(data)
+    end)
+
+    stdin:write(json .. "\n")
+    stdin:shutdown()
 end
 
 function Logger:log(level_number, ...)
