@@ -198,7 +198,7 @@ end
 ---@param callback fun(matches: LSPRankedMatch[], failed: boolean)
 function M._context_query(query, instruct, callback)
     ---@type LSPSemanticGrepRequest
-    local lsp_rag_request = {
+    local semantic_grep_request = {
         query = query,
         instruct = instruct,
         currentFileAbsolutePath = files.get_current_file_absolute_path(),
@@ -238,7 +238,7 @@ function M._context_query(query, instruct, callback)
     local params = {
         command = "semantic_grep",
         -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
-        arguments = { lsp_rag_request },
+        arguments = { semantic_grep_request },
     }
 
     _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", params, on_server_response)

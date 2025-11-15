@@ -28,7 +28,7 @@ function M._context_query(parsed_args, callback)
     end
 
     ---@type LSPSemanticGrepRequest
-    local lsp_rag_request = {
+    local semantic_grep_request = {
         query = parsed_args.query,
         instruct = parsed_args.instruct or "Find relevant code for the AI agent's query",
         -- TODO make currentFileAbsolutePath nil-able instead of empty string
@@ -107,7 +107,7 @@ function M._context_query(parsed_args, callback)
 
     local params = {
         command = "semantic_grep",
-        arguments = { lsp_rag_request },
+        arguments = { semantic_grep_request },
     }
 
     -- PRN consolidate with other client requests, maybe rag.client?

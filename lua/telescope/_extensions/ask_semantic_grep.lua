@@ -18,12 +18,12 @@ local picker
 local last_msg_id, cancel_last_requests
 
 
----@param lsp_rag_request LSPSemanticGrepRequest
+---@param semantic_grep_request LSPSemanticGrepRequest
 ---@param lsp_buffer_number integer
 ---@param process_result fun(entry: SemanticGrepTelescopeEntryMatch)
 ---@param process_complete fun()
 ---@param entry_maker fun(match: LSPRankedMatch): SemanticGrepTelescopeEntryMatch
-function _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, process_complete, entry_maker)
+function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result, process_complete, entry_maker)
     if cancel_last_requests then
         logs:error("canceling previous request, last_msg_id: " .. vim.inspect(last_msg_id))
         cancel_last_requests()
@@ -36,7 +36,7 @@ function _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, proc
     local msg_id, cancel_my_request
     msg_id, cancel_my_request = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
             command = "semantic_grep",
-            arguments = { lsp_rag_request },
+            arguments = { semantic_grep_request },
         },
         ---@param result LSPSemanticGrepResult
         function(err, result, ctx)
@@ -265,7 +265,7 @@ end
 function semantic_grep_current_filetype_picker(opts)
     -- * this runs before picker opens, so you can gather context, i.e. current filetype, its LSP, etc
     ---@type LSPSemanticGrepRequest
-    local lsp_rag_request = {
+    local semantic_grep_request = {
         -- instruct => let server set the Instruct for semantic_grep (would be "Semantic grep of relevant code ...")
         query = "",
         vimFiletype = vim.o.filetype,
@@ -275,7 +275,7 @@ function semantic_grep_current_filetype_picker(opts)
         -- PRN other file types?
     }
     -- FYI right now languages is for GLOBAL/EVERYTHING only
-    lsp_rag_request.languages = opts.languages
+    semantic_grep_request.languages = opts.languages
 
     local lsp_buffer_number = vim.api.nvim_get_current_buf()
 
@@ -369,8 +369,8 @@ function semantic_grep_current_filetype_picker(opts)
                     return
                 end
                 -- function is called each time the user changes the prompt (text in the Telescope Picker)
-                lsp_rag_request.query = prompt
-                return _semantic_grep(lsp_rag_request, lsp_buffer_number, process_result, process_complete, entry_maker)
+                semantic_grep_request.query = prompt
+                return _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result, process_complete, entry_maker)
             end,
 
             ---@param match LSPRankedMatch
