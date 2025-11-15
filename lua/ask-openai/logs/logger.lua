@@ -114,17 +114,17 @@ function Logger:jsonify_info(message, ...)
 end
 
 function Logger:json_info_deferred(message, data)
-    vim.defer_fn(function()
-        -- TODO handling for when data is not valid json?
+    -- TODO handling for when data is not valid json?
+    vim.schedule(function()
         self:json_info(message, data)
-    end, 0)
+    end)
 end
 
 function Logger:lua_info_deferred(message, code, pretty)
     -- TODO implicit vim.inspect if code is not a string?
-    vim.defer_fn(function()
+    vim.schedule(function()
         self:lua_info(message, code, pretty)
-    end, 0)
+    end)
 end
 
 ---@param message string
