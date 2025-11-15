@@ -120,6 +120,13 @@ function Logger:json_info_deferred(message, data)
     end, 0)
 end
 
+function Logger:lua_info_deferred(message, code, pretty)
+    -- TODO implicit vim.inspect if code is not a string?
+    vim.defer_fn(function()
+        self:lua_info(message, code, pretty)
+    end, 0)
+end
+
 ---@param message string
 ---@param code string
 ---@param pretty boolean|nil

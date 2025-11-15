@@ -155,6 +155,7 @@ for name, server in pairs(servers) do
             return
         end
         log:trace("tools/list:", vim.inspect(msg))
+        log:lua_info_deferred("tools/list:", vim.inspect(msg))
         for _, tool in ipairs(msg.result.tools) do
             -- log:trace("found " .. tool.name)
             tool.server = mcp
