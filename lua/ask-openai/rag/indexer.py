@@ -65,9 +65,11 @@ class IncrementalRAGIndexer:
 
     def get_default_indexed_file_extensions(self):
         # TODO I need to create groupings of related extensions... i.e. fish+zsh+bash+sh as 'shell' type
+        #   TODO! combine alt file extensions that are the same: yaml/yml
         #   PRN also use shebang when chunking files? and look at plaintext, extensionless files w/ a shebang (esp chmod +x files)
         return [
             "lua", "py", "java", "js", "ts", "html",
+            "md", "json", "yaml", "yml",
             "fish", "zsh", "sh", # shells
             "cpp", "cc", "c", "h", "hpp", # c related
             "m", "mm", # objective c
