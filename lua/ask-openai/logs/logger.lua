@@ -115,16 +115,10 @@ function Logger:jsonify_info(message, ...)
 end
 
 function Logger:json_info_deferred(message, data)
+    -- TODO! port json_info to use uv.spawn (like lua_info does now) and then get rid of using defer_fn/schedule
     -- TODO handling for when data is not valid json?
     vim.schedule(function()
         self:json_info(message, data)
-    end)
-end
-
-function Logger:lua_info_deferred(message, code, pretty)
-    -- TODO implicit vim.inspect if code is not a string?
-    vim.schedule(function()
-        self:lua_info(message, code, pretty)
     end)
 end
 
