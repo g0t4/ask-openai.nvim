@@ -78,12 +78,4 @@ function SSEStreamParser:write(data)
     end
 end
 
-function SSEStreamParser:save_to_file()
-    -- TODO save to disk in a cache directory so I can replay, analyze event streams per request
-    -- TODO save _lines to disk (preserve correct \n breaks)
-    --   IOTW join lines with ""
-    -- TODO save matching file w/ original request?
-    --   probably should move this logic out and let consumer get _lines and do all of this
-end
-
 return SSEStreamParser

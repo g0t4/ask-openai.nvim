@@ -40,6 +40,7 @@ function ChatThread:next_curl_request_body()
     local body = {
         messages = self.messages,
     }
+    -- TODO handle when to send thinking back? for gpt-oss tool use in CoT
     -- merge params onto root of body:
     for k, v in pairs(self.params) do
         body[k] = v

@@ -120,6 +120,7 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     end
 
     local parser = SSEStreamParser.new(data_value_handler)
+
     ---@param read_error any
     ---@param data? string
     local function on_stdout(read_error, data)
