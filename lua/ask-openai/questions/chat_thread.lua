@@ -38,6 +38,7 @@ end
 ----@return table body
 function ChatThread:next_curl_request_body()
     local body = {
+        -- TODO clone so I can manipulate messages sent back?
         messages = self.messages,
     }
     -- TODO handle when to send thinking back? for gpt-oss tool use in CoT
