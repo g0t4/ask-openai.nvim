@@ -130,16 +130,14 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         local winid = self.state.winid
         local bufnr = self.state.bufnr
 
-        -- TODO! toggle to switch preview contents! (maybe subdivide define_preview to isolate each view since it is not just contents, but also selection, filetype, etc)
         if is_file_preview() then
             -- might not match RAG chunk text
             -- so far, I haven't noticed this, but it might not be obvious beyond a bad match or not quite right match!
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.fn.readfile(filename))
         elseif is_entry_debug_preview() then
-            -- TODO mark as lua language b/c vim.inspect spits out lua table syntax
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(vim.inspect(entry), "\n"))
         elseif is_chunk_text_preview() then
-            -- useful to compare if there is a discrepency vs file on-disk
+            -- useful to compare if there is a discrepancy vs file on-disk
             -- also a bit easier way to visualize full chunk text, especially if I add non-contiguous nodes in one chunk
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(entry.match.text, "\n"))
         else

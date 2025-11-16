@@ -175,7 +175,7 @@ async def semantic_grep_command(_: LanguageServer, args: rag.LSPSemanticGrepRequ
         return await rag.handle_query(args)  # TODO! ASYNC REVIEW
     except asyncio.CancelledError as e:
         # avoid leaving on in logs b/c takes up a ton of space for stack trace
-        logger.info(f"Client cancelled query {args.msgId=}")  #, exc_info=e)  # uncomment to see where error is raised
+        logger.info(f"Client cancelled semantic_grep query {args.msgId=}")  #, exc_info=e)  # uncomment to see where error is raised
         return rag.LSPSemanticGrepResult(error=rag.LSPResponseErrors.CANCELLED)
 
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):

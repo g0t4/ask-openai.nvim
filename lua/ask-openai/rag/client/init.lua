@@ -206,11 +206,9 @@ function M._context_query(query, instruct, callback)
         skipSameFile = true,
         topK = 5, -- TODO what do I want for FIM vs REWRITE? maybe a dial too?
         embedTopK = 18, -- consider more so that re-ranker picks topK best matches
-        -- PRN pass line range for same file RAG to allow outside that range
+        -- TODO pass line range for same file to allow outside that range
         -- FYI some rewrites I might not want ANY RAG... maybe no context too
         -- PRN other file types? languages=all? knob too?
-        -- actually, this is where RAG based picker action to add to context would be AWESOME
-        --  that way I can quickly review RAG matches, thumbs up what I want and GO
     }
 
     local _client_request_ids, _cancel_all_requests -- declare in advance for closure:
