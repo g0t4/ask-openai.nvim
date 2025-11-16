@@ -68,9 +68,8 @@ function SSEDataOnlyParser:write(data)
     local lines = vim.split(self._buffer, "\n\n", {})
     -- FYI split takes plain and trimempty option values
     --   default not removing empties, can use to check if a \n\n was present
-    log:info("DOP", data)
     if (#lines == 1) then
-        log:error("FUCK1")
+        log:error("POSSIBLE DREG")
         -- no \n\n
         return -- buffer is fine as-is
     elseif (#lines >= 2) then
@@ -87,6 +86,7 @@ function SSEDataOnlyParser:write(data)
 
         -- keep last one in buffer for next
         self._buffer = lines[#lines]
+        log:error("POSSIBLE DREG")
     end
 end
 
