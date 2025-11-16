@@ -88,7 +88,7 @@ The semantic_grep tool:
     lines:append_text(user_message)
     lines:append_blank_line()
     -- TODO move append_lines to chat_window:append(LinesBuilder)
-    M.chat_window.buffer:append_lines_builder(lines)
+    M.chat_window.buffer:append_styled_lines(lines)
 
     ---@type ChatMessage[]
     local messages = {
@@ -388,7 +388,7 @@ function M.handle_messages_updated()
 
     vim.schedule(function()
         lines.marks_ns_id = M.thread.last_request.marks_ns_id -- TODO generate here in lines builder
-        M.chat_window.buffer:replace_lines_after(M.this_turn_chat_start_line_base0, lines)
+        M.chat_window.buffer:replace_with_styled_lines_after(M.this_turn_chat_start_line_base0, lines)
     end)
 end
 
@@ -421,7 +421,7 @@ function M.curl_request_exited_successful_on_zero_rc()
             local lines_builder = LinesBuilder:new(marks_ns_id)
             lines_builder:append_role_header("user")
             lines_builder:append_blank_line()
-            M.chat_window.buffer:append_lines_builder(lines_builder)
+            M.chat_window.buffer:append_styled_lines(lines_builder)
 
             M.chat_window.followup_starts_at_line_0indexed = M.chat_window.buffer:get_line_count() - 1
         end

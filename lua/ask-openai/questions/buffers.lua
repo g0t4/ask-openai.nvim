@@ -52,18 +52,18 @@ function BufferController:get_cursor_line_number_0indexed()
 end
 
 ---@param lines LinesBuilder
-function BufferController:append_lines_builder(lines)
+function BufferController:append_styled_lines(lines)
     local start_line_base0 = self:get_line_count()
     if start_line_base0 == 1 then
         -- edge case, first line is not actually used in a new buffer (it's legit empty)
         start_line_base0 = 0
     end
-    self:replace_lines_after(start_line_base0, lines)
+    self:replace_with_styled_lines_after(start_line_base0, lines)
 end
 
 ---@param start_line_inclusive_base0 number
 ---@param lines LinesBuilder
-function BufferController:replace_lines_after(start_line_inclusive_base0, lines)
+function BufferController:replace_with_styled_lines_after(start_line_inclusive_base0, lines)
     local with_lines = lines.turn_lines
     local marks = lines.marks
     local marks_ns_id = lines.marks_ns_id
