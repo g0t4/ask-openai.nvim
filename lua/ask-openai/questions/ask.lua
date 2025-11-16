@@ -386,16 +386,12 @@ function M.handle_messages_updated()
     end
 
     vim.schedule(function()
-        lines.marks_ns_id = M.thread.last_request.marks_ns_id -- TODO generate here in lines builder
+        lines.marks_ns_id = M.thread.last_request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
         M.chat_window.buffer:replace_with_styled_lines_after(M.this_turn_chat_start_line_base0, lines)
     end)
 end
 
 function M.curl_request_exited_successful_on_zero_rc()
-    -- TODO how are tools affected if I start w/ AskQuestion and then add /tools later?
-    --   and vice versa...
-    --   are messages kept w/o a clear?
-
     vim.schedule(function()
         for _, message in ipairs(M.thread.last_request.response_messages or {}) do
             -- log:jsonify_compact_trace("last request message:", message)

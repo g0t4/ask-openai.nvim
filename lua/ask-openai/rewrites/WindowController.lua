@@ -1,5 +1,7 @@
 local BufferController0Indexed = require('ask-openai.rewrites.BufferController')
 
+-- TODO! any utility in merging some/all of ChatWindow into this?  (or vice versa, use this instead of ChatWindow in AskQuestion subsystem?)
+
 ---This entire class operates on 0-indexed row and column positions
 ---   or if that seems wrong I'll go to all 1-indexed
 ---Also intended to hide away complexities in nvim_ apis

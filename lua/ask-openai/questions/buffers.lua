@@ -25,7 +25,6 @@ end
 ---@param lines string[]
 function BufferController:append_plain_lines(lines)
     vim.api.nvim_buf_set_lines(self.buffer_number, -1, -1, false, lines)
-    -- TODO update other nvim_buf_set_lines cases for insert and other operations to not need to replace when inserting (or similar)
     self:scroll_cursor_to_end_of_buffer()
     -- TODO make consumers scroll?
 end
@@ -68,6 +67,7 @@ function BufferController:replace_with_styled_lines_after(start_line_inclusive_b
     local marks = lines.marks
     local marks_ns_id = lines.marks_ns_id
 
+    -- FYI start_line offset is mostly important for styling extmarks/folds/etc
     local start_line_inclusive_base1 = start_line_inclusive_base0 + 1
     -- log:info(string.format("start_line_inclusive_base1 %d", start_line_inclusive_base1))
 

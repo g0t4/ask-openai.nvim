@@ -44,6 +44,10 @@ function BufferController0Indexed:get_all_lines()
     return vim.api.nvim_buf_get_lines(self.buffer_number, 0, -1, true)
 end
 
+-- TODO! merge w/ other BufferController (which I believe is mostly using 0 indexed now?)
+--   TODO! also it has styled LinesBuilder support!
+--   TODO! BTW... LinesBuilder probably overlaps with some of what Displayer does (w.r.t. styling extmarks)
+
 --- does not include the end line #
 --- @param start_row integer 0-indexed
 --- @param end_row_exclusive integer 0-indexed
@@ -85,7 +89,7 @@ function BufferController0Indexed:replace_lines(start_row_base0, end_row_inclusi
         log:error('end_row is past end of buffer, clamping to end of buffer.. should not happen IRL, only in testing')
         end_row_inclusive_base0 = self:num_lines() - 1
     end
-    -- TODO why not use nvim_buf_set_lines?
+    -- TODO why not use nvim_buf_set_lines??
     --   right now I am just replacing lines anyways!
     -- vim.api.nvim_buf_set_lines(
     vim.api.nvim_buf_set_text(self.buffer_number,
