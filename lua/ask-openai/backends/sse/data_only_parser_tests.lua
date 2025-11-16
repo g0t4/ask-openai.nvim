@@ -130,19 +130,17 @@ describe("data-only events", function()
         end)
 
         describe("dregs is not valid JSON object", function()
-            -- (via llama server error object when no --jinja flag and try to use tools)
-            local llama_server_error_no_end_newlines = [[{"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}]]
-            -- ALSO no `data: ` prefix - DO NOT test that here too (split it apart if you want that test case to use this scenario too)
+            local not_valid_json = "notvalidjson"
 
             it("only one newline at end => logs warning", function()
-                local write1 = llama_server_error_no_end_newlines .. "\n"
+                local write1 = not_valid_json .. "\n"
                 parser:write(write1)
                 assert.are.same({}, events)
                 -- TODO validate warning
             end)
 
             it("NO newline at end => logs warning", function()
-                local write1 = llama_server_error_no_end_newlines
+                local write1 = not_valid_json
                 parser:write(write1)
                 assert.are.same({}, events)
                 -- TODO validate warning
