@@ -15,6 +15,13 @@ function LinesBuilder:new(marks_ns_id)
     return self
 end
 
+--- FYI DO NOT call this in a fast-event handler
+function LinesBuilder:create_marks_namespace()
+    local timestamp = vim.loop.hrtime()
+    local ns_name = "Ask_Marks_" .. timestamp
+    self.marks_ns_id = vim.api.nvim_create_namespace(ns_name)
+end
+
 ---@param hl_group string
 function LinesBuilder:mark_next_line(hl_group)
     local start_line_base0 = #self.turn_lines

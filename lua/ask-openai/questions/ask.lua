@@ -413,8 +413,8 @@ function M.curl_request_exited_successful_on_zero_rc()
             M.thread:add_message(model_responses)
 
             -- * show user role as hint to follow up
-            local marks_ns_id = vim.api.nvim_create_namespace("ask.marks.chat.window." .. os.time()) -- TODO use counter? os.time() might overlap if things go fast enough (seconds)
-            local lines_builder = LinesBuilder:new(marks_ns_id)
+            local lines_builder = LinesBuilder:new()
+            lines_builder:create_marks_namespace()
             lines_builder:append_role_header("user")
             lines_builder:append_blank_line()
             M.chat_window:append_styled_lines(lines_builder)
