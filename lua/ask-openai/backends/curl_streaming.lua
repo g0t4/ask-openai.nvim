@@ -85,7 +85,10 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
 
         -- TODO! need a test to make sure this is actually called
         --   an integration test, ideally (not manual alone if possible b/c I will forget about this)
-        parser:flush_dregs()
+        local error_text = parser:flush_dregs()
+        if error_text then
+            frontend.explain_error(error_text)
+        end
     end
 
     request.handle, request.pid = uv.spawn(options.command, {
