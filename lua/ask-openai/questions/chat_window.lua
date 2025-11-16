@@ -88,16 +88,22 @@ end
 
 function ChatWindow:explain_error(text)
     --  TODO use new LinesBuilder w/ append
-    self.buffer:append("## ERROR " .. tostring(text))
+    self.buffer:append_text("## ERROR " .. tostring(text))
 end
 
-function ChatWindow:append(text)
-    self.buffer:append(text)
+--- Append text, including newlines
+---@param text string
+function ChatWindow:append_text(text)
+    self.buffer:append_text(text)
 end
 
+function ChatWindow:append_blank_line()
+    self.buffer:append_blank_line()
+end
+
+--- clear the window contents only (not message history)
 function ChatWindow:clear()
     self.buffer:clear()
-    -- TODO clear message history (how do I want to link that? did I finish follow up already?)
 end
 
 function ChatWindow:close()

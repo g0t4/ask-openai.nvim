@@ -14,7 +14,9 @@ function BufferController:new(buffer_number)
     return self
 end
 
-function BufferController:append(text)
+--- Append text, including newlines
+---@param text string
+function BufferController:append_text(text)
     -- TODO do I want append_text/append_lines instead?
     -- TODO also append_line() singular that adds the \n while the rest don't?
     local new_lines = vim.split(text .. "\n", "\n") -- \n ensures a blank line after
@@ -22,6 +24,10 @@ function BufferController:append(text)
     -- TODO update other nvim_buf_set_lines cases for insert and other operations to not need to replace when inserting (or similar)
 
     self:scroll_cursor_to_end_of_buffer()
+end
+
+function BufferController:append_blank_line()
+    self:append_text("\n")
 end
 
 function BufferController:scroll_cursor_to_end_of_buffer()

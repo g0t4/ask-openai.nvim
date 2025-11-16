@@ -221,7 +221,8 @@ function M.on_stderr_data(text)
     --  first I need to understand what is returned across even successfulrequests (if anything)
     --  then I can decide what this is doing
     vim.schedule(function()
-        M.chat_window:append(text)
+        M.chat_window:append_text(text)
+        M.chat_window:append_blank_line()
     end)
 end
 
