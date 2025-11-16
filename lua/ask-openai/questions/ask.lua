@@ -147,12 +147,11 @@ The semantic_grep tool:
     })
 
     if use_tools then
-        log:info("USING TOOLS")
         body_overrides.tools = tool_router.openai_tools()
     end
 
     -- FYI starts a new chat thread when AskQuestion is used
-    --  TODO allow follow up if already existing thread?
+    --  TODO allow follow up, via the command, if already existing thread?
     M.thread = ChatThread:new(messages, body_overrides, base_url)
     M.send_messages()
 end
@@ -162,6 +161,7 @@ function M.send_messages()
     M.this_turn_chat_start_line_base0 = M.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
+    M.thread:dump()
     local request = backend.curl_for(M.thread:next_curl_request_body(), M.thread.base_url, M)
     M.thread:set_last_request(request)
 end
@@ -484,11 +484,6 @@ function M.send_tool_messages_if_all_tools_done()
     if M.any_outstanding_tool_calls() then
         return
     end
-    -- M.chat_window:append("sending tool results")
-    -- TODO send a new prompt to remind it that hte tools are done and now you can help with the original question?
-    --  maybe even include that previous question again?
-    --  why? I am noticidng qwen starts to go off on a tangent based on tool results as if no original question was asked
-    --  need to refocus qwen
     M.send_messages()
 end
 
@@ -532,7 +527,6 @@ function M.follow_up()
 
     local message = ChatMessage:user(user_message)
     M.thread:add_message(message)
-    M.thread:dump()
     M.send_messages()
 end
 
