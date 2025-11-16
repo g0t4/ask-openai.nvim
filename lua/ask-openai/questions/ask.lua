@@ -512,28 +512,25 @@ function M.abort_last_request()
 end
 
 function M.follow_up()
-    -- TODO setup so I can use follow up approach to ask initial question
-    --   ALSO keep the ability to select and send text
-    --
     -- take follow up after end of prior response message from assistant
     --  if already a M.thread then add to that with a new message
     --  leave content as is in the buffer, close enough to what it would be if redrawn
     --  and I don't use the buffer contents for past messages
     --  so, just copy it out into a new message from user
     M.ensure_response_window_is_open()
-    local followup = M.chat_window.buffer:get_lines_after(M.chat_window.followup_starts_at_line_0indexed)
+    local start_line_base0 = M.chat_window.followup_starts_at_line_0indexed or 0
+    local user_message = M.chat_window.buffer:get_lines_after(start_line_base0)
     M.chat_window.buffer:scroll_cursor_to_end_of_buffer()
     vim.cmd("normal! o") -- move to end of buffer, add new line below to separate subsequent follow up response message
-    log:trace("follow up content:", followup)
+    log:trace("follow up content:", user_message)
 
-    -- TODO CLEANUP sending first vs follow up to not need to differentiate all over
     if not M.thread then
-        -- assume tool use here
-        M.send_question(followup, nil, nil, true, nil)
+        local USE_TOOLS = true
+        M.send_question(user_message, nil, nil, USE_TOOLS, nil)
         return
     end
 
-    local message = ChatMessage:user(followup)
+    local message = ChatMessage:user(user_message)
     M.thread:add_message(message)
     M.thread:dump()
     M.send_messages()
