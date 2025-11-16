@@ -51,6 +51,10 @@ function SSEDataOnlyParser.new(on_data_sse)
     return instance
 end
 
+function SSEDataOnlyParser:flush_dregs()
+
+end
+
 --- curl stdout should be patched into this
 ---@param data string
 function SSEDataOnlyParser:write(data)
