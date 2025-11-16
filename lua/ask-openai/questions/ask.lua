@@ -344,8 +344,8 @@ function M.handle_messages_updated()
             if args then
                 -- TODO new line in args? s\b \n right?
                 lines:append_text(args)
-                lines:append_blank_line()
             end
+            -- PRN mark outputs somehow? or just dump them? (I hate to waste space)
 
             -- TODO REMINDER - try/add apply_patch when using gptoss (need to put this elsewhere)
             --    USE BUILT-IN mcp server - https://github.com/openai/gpt-oss/tree/main/gpt-oss-mcp-server
@@ -354,19 +354,26 @@ function M.handle_messages_updated()
             -- * tool result
             if call.response then
                 if call.response.result.content then
+                    -- TODO! use lines builde here to:
+                    --   TODO! FOLD output if more than X (3?) lines? across all content items or each content item?
+                    -- TODO! if content is not multi-line and not too long, put it on one line with : to delimit `name: text`
+                    --    i.e. STDOUT: 2025... (for date command) ... also EXIT_CODE doesn't need a separate line for the code!!
+                    -- PRN write custom tool/content.name handlers that specially format them
+                    --   TODO EXIT_CODE could be colored if failure
+                    --   TODO STDOUT should come last in run_command (same if only STDERR) .. if both STDERR can come first
+
                     for _, tool_content in ipairs(call.response.result.content) do
                         -- TODO only show a few lines of output from tool (i.e. run_command) and fold the rest (like claude CLI does)
                         --   TODO to test it ask for `:AskToolUse ls -R`
                         --  FYI I might need to adjust what is coming back from MCP to have more control over this
                         --  FYI also probably want to write custom templates specific to commands that I really care about (run_command, apply_patch, etc)
                         lines:append_text(tool_content.name)
-                        lines:append_blank_line() -- ? DO i want this?
                         if tool_content.type == "text" then
                             lines:append_text(tool_content.text)
                         else
+                            -- TODO use error style via this lines builder
                             lines:append_text("  unexpected content type: " .. tool_content.type)
                         end
-                        lines:append_blank_line() -- ? DO i want this?
                     end
                 else
                     -- TODO show inprocess tooling outputs in CHAT user window (this is not building a request to LLM)
@@ -375,7 +382,7 @@ function M.handle_messages_updated()
                 end
             end
 
-            lines:append_blank_line() -- between messages?
+            lines:append_blank_line() -- TODO conditionally if the last line is not already blank (often STDOUT is last and has a blank line already due to trailing \n)
         end
     end
 
