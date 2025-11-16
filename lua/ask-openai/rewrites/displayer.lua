@@ -14,8 +14,8 @@ vim.api.nvim_command("highlight default " .. hlgroup .. " guifg=#ccffcc ctermfg=
 local select_excerpt_mark_id = 11
 local explain_error_mark_id = 31
 
-local hlgroup_error = "AskRewriteError"
-vim.api.nvim_command("highlight default " .. hlgroup_error .. " guibg=#ff7777 guifg=#000000 ctermbg=red ctermfg=black")
+local HLGROUP_EXPLAIN_ERROR = "AskRewriteExplainError"
+vim.api.nvim_command("highlight default " .. HLGROUP_EXPLAIN_ERROR .. " guibg=#ff7777 guifg=#000000 ctermbg=red ctermfg=black")
 
 function Displayer:new(_current_accept, _current_cancel)
     self = setmetatable({}, Displayer)
@@ -77,10 +77,10 @@ function Displayer:explain_error(selection, new_text)
     -- ?? any utility in leaving other extmarks too? i.e. failure mid generation? (probably not but just a thought)
     -- self:clear_extmarks()
     local lines = vim.split(self._hack_previous_error_text, '\n')
-    local first_line = { { table.remove(lines, 1), "AskRewriteError" } }
+    local first_line = { { table.remove(lines, 1), HLGROUP_EXPLAIN_ERROR } }
     local virt_lines = {}
     for _, line in ipairs(lines) do
-        table.insert(virt_lines, { { line, "AskRewriteError" } })
+        table.insert(virt_lines, { { line, HLGROUP_EXPLAIN_ERROR } })
     end
 
     self.error_marks:set(explain_error_mark_id, {
