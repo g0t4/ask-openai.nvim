@@ -4,13 +4,13 @@ local describe = require("devtools.tests._describe")
 
 describe("data-only events", function()
     local events = {}
-    local function data_only_handler(data)
+    local function on_data_sse(data)
         table.insert(events, data)
     end
     local parser
     before_each(function()
         events = {}
-        parser = SSEDataOnlyParser.new(data_only_handler)
+        parser = SSEDataOnlyParser.new(on_data_sse)
     end)
 
     local function escape_newlines(s)

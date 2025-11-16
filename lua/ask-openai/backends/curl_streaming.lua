@@ -86,7 +86,7 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     }, options.on_exit)
 
 
-    function data_value_handler(data_value)
+    function on_data_sse(data_value)
         -- TODO extract error handling: both the xpcall + traceback, and the print_error func below
         -- FYI good test case is to comment out: choice.delta.content == vim.NIL in extract_generated_text
         local success, result = xpcall(function()
@@ -119,7 +119,7 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
         end
     end
 
-    local parser = SSEDataOnlyParser.new(data_value_handler)
+    local parser = SSEDataOnlyParser.new(on_data_sse)
 
     ---@param read_error any
     ---@param data? string

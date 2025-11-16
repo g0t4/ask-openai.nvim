@@ -24,23 +24,23 @@
 --   addEventListener() for named (typed) events
 --   onmessage() when no type
 
----@alias SSEDataOnlyHandler function(data string)
+---@alias SSEOnDataHandler function(data string)
 
 ---@class SSEDataOnlyParser
 ---@field _buffer string
 ---@field _done boolean
 ---@field _lines {} -- store all received lines here
----@field _data_only_handler SSEDataOnlyHandler
+---@field _on_data_sse SSEOnDataHandler
 local SSEDataOnlyParser = {}
 
---- @param data_only_handler SSEDataOnlyHandler
+--- @param on_data_sse SSEOnDataHandler
 --- @return SSEDataOnlyParser
-function SSEDataOnlyParser.new(data_only_handler)
+function SSEDataOnlyParser.new(on_data_sse)
     local instance = setmetatable({}, { __index = SSEDataOnlyParser })
     instance._buffer = ""
     instance._done = false
     instance._lines = {}
-    instance._data_only_handler = data_only_handler
+    instance._on_data_sse = on_data_sse
     return instance
 end
 
@@ -70,7 +70,7 @@ function SSEDataOnlyParser:write(data)
             event = event:gsub("^data: ", "") -- happens when multiple in one message
             -- FTR I am not a fan of this, feels sloppy but thank god I split out this low-level event parser... nightmare to do this in same loop that uses deltas!
 
-            self._data_only_handler(event)
+            self._on_data_sse(event)
         end
 
         -- keep last one in buffer for next
