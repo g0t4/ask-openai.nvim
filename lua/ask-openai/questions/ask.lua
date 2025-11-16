@@ -380,7 +380,8 @@ function M.handle_messages_updated()
     end
 
     vim.schedule(function()
-        M.chat_window.buffer:replace_lines_after(M.this_turn_chat_start_line_base0, lines.turn_lines, lines.marks, M.thread.last_request.marks_ns_id)
+        lines.marks_ns_id = M.thread.last_request.marks_ns_id -- TODO generate here in lines builder
+        M.chat_window.buffer:replace_lines_after(M.this_turn_chat_start_line_base0, lines)
     end)
 end
 

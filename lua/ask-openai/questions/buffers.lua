@@ -47,12 +47,16 @@ function BufferController:append_lines(lines)
         -- edge case, first line is not actually used in a new buffer (it's legit empty)
         start_line_base0 = 0
     end
-    -- TODO pass LinesBuilder instead of three args
-    self:replace_lines_after(start_line_base0, lines.turn_lines, lines.marks, lines.marks_ns_id)
+    self:replace_lines_after(start_line_base0, lines)
 end
 
-function BufferController:replace_lines_after(start_line_inclusive_base0, with_lines, marks, marks_ns_id)
-    -- TODO pass LinesBuilder instead of with_lines and marks params (do this when adding append LinesBuilder support elsewhere)
+---@param start_line_inclusive_base0 number
+---@param lines LinesBuilder
+function BufferController:replace_lines_after(start_line_inclusive_base0, lines)
+    local with_lines = lines.turn_lines
+    local marks = lines.marks
+    local marks_ns_id = lines.marks_ns_id
+
     local start_line_inclusive_base1 = start_line_inclusive_base0 + 1
     -- log:info(string.format("start_line_inclusive_base1 %d", start_line_inclusive_base1))
 
