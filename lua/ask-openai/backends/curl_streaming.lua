@@ -17,7 +17,7 @@ end
 ---@field on_sse_llama_server_timings fun(sse_parsed: table)
 ---@field on_sse_llama_server_error_explanation fun(sse_parsed: table)
 ---@field handle_messages_updated fun()
----@field curl_exited_successfully fun(code: integer, signal: integer)
+---@field curl_exited_successfully fun()
 ---@field on_stderr_data fun(text: string)
 
 ---@alias ExtractGeneratedTextFunction fun(first_choice: table): string
@@ -72,7 +72,7 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
             log:error("spawn - non-zero exit code: '" .. code .. "' Signal: '" .. signal .. "'")
             -- ! DO NOT add frontend handler just to have it log again!
         else
-            frontend.curl_exited_successfully(code, signal)
+            frontend.curl_exited_successfully()
         end
         stdout:close()
         stderr:close()
