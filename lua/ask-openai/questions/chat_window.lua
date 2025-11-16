@@ -92,9 +92,9 @@ function ChatWindow:explain_error(text)
     self.buffer:append_blank_line()
 end
 
---- Append text, including newlines
+--- Append plain text, including newlines
 ---@param text string
-function ChatWindow:append_text(text)
+function ChatWindow:append_plain_text(text)
     self.buffer:append_plain_text(text)
 end
 
