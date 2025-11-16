@@ -287,8 +287,9 @@ end
 
 vim.api.nvim_set_hl(0, "AskToolSuccess", { fg = "#92E2AC", bg = "NONE", italic = false, underline = false })
 vim.api.nvim_set_hl(0, "AskToolFailed", { fg = "#e06c75", bg = "NONE", bold = true, italic = false, underline = false })
-vim.api.nvim_set_hl(0, "AskAssistantRole", { fg = "#0A84FF", italic = true, bold = true })
-vim.api.nvim_set_hl(0, "AskUserRole", { fg = "#35C759", italic = true })
+vim.api.nvim_set_hl(0, "AskAssistantRole", { fg = "#5A6FFF", italic = true, bold = true })
+-- vim.api.nvim_set_hl(0, "AskUserRole", { fg = "#8660FF", italic = true, bold = true })
+vim.api.nvim_set_hl(0, "AskUserRole", { fg = "#A07CFF", italic = true, bold = true })
 vim.api.nvim_set_hl(0, "AskChatReasoning", { fg = "#808080", italic = true })
 
 function M.handle_messages_updated()
