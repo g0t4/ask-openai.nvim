@@ -51,16 +51,16 @@ function SSEDataOnlyParser.new(on_data_sse)
     return instance
 end
 
+---@return string invalid_dreg -- if the buffer has leftover, invalid JSON, return an error describing it
 function SSEDataOnlyParser:flush_dregs()
     -- TODO test for buffer empty => return?
-    print("buffer", vim.inspect(self._buffer))
-    local success, sse_parsed = pcall(vim.json.decode, self._buffer)
 
+    local success, sse_parsed = pcall(vim.json.decode, self._buffer)
     if not success then
         -- TODO? just flush it to _on_data_sse every time and let that blow up (it has error handler in it)?
         --   if I want terminate behavior then this would be wise
-        -- TODO LOG?!
-        return
+
+        return "invalid json: " .. self._buffer
     end
     self._on_data_sse(self._buffer)
 end

@@ -122,15 +122,21 @@ describe("data-only events", function()
             it("only one newline at end => treats as SSE", function()
                 local write1 = llama_server_error_no_end_newlines .. "\n"
                 parser:write(write1)
-                parser:flush_dregs() -- intended to be called in on_exit
+
+                local error_text = parser:flush_dregs() -- intended to be called in on_exit assert.are.same({ write1 }, events)
+
                 assert.are.same({ write1 }, events)
+                assert.are.same(nil, error_text)
             end)
 
             it("NO newline at end => treats as SSE", function()
                 local write1 = llama_server_error_no_end_newlines
                 parser:write(write1)
-                parser:flush_dregs()
+
+                local error_text = parser:flush_dregs()
+
                 assert.are.same({ write1 }, events)
+                assert.are.same(nil, error_text)
             end)
         end)
 
@@ -140,17 +146,21 @@ describe("data-only events", function()
             it("only one newline at end => logs warning", function()
                 local write1 = not_valid_json .. "\n"
                 parser:write(write1)
-                parser:flush_dregs()
+
+                local error_text = parser:flush_dregs()
+
                 assert.are.same({}, events)
-                -- TODO validate warning
+                assert.are.same("invalid json: notvalidjson\n", error_text)
             end)
 
             it("NO newline at end => logs warning", function()
                 local write1 = not_valid_json
                 parser:write(write1)
-                parser:flush_dregs()
+
+                local error_text = parser:flush_dregs()
+
                 assert.are.same({}, events)
-                -- TODO validate warning
+                assert.are.same("invalid json: notvalidjson", error_text)
             end)
         end)
     end)
