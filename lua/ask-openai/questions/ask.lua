@@ -218,11 +218,6 @@ function M.abort_and_close()
     end
 end
 
-function M.on_sse_llama_server_error_explanation(sse_parsed)
-    -- TODO remove this if I drop this pathway from detecting the error
-    M.explain_error(vim.inspect(sse_parsed))
-end
-
 function M.explain_error(text)
     vim.schedule(function()
         -- TEST this with:

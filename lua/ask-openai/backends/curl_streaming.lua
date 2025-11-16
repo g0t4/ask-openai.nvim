@@ -15,7 +15,6 @@ end
 ---@class StreamingFrontend
 ---@field on_generated_text fun(content_chunk: string, sse_parsed: table)
 ---@field on_sse_llama_server_timings fun(sse_parsed: table)
----@field on_sse_llama_server_error_explanation fun(sse_parsed: table)
 ---@field handle_messages_updated fun()
 ---@field curl_exited_successfully fun()
 ---@field explain_error fun(text: string)
@@ -203,8 +202,8 @@ function M.on_line_or_lines(data_value, extract_generated_text, frontend, reques
         if sse_parsed.error then
             -- only confirmed this on llama_server, rename if other backends follow suit
             -- {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
-            -- FYI do not log again here
-            frontend.on_sse_llama_server_error_explanation(sse_parsed)
+            -- DO NOT LOG HERE TOO
+            frontend.explain_error(vim.inspect(sse_parsed.error))
         end
 
         if sse_parsed.timings then

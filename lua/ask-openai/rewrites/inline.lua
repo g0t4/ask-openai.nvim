@@ -495,13 +495,6 @@ local function ask_and_stream_from_ollama(opts)
     M.stream_from_ollama(user_prompt, selection.original_text, relative_file_path)
 end
 
-function M.on_sse_llama_server_error_explanation(sse_parsed)
-    if sse_parsed.error then
-        -- TODO! this should be firing for the error.code 500 SSE llama-server json object, why isn't it?
-        M.explain_error(vim.inspect(sse_parsed.error))
-    end
-end
-
 function M.explain_error(text)
     if not M.displayer then
         vim.notify("ERROR, and no displayer, so here goes: " .. text, vim.log.levels.ERROR)
