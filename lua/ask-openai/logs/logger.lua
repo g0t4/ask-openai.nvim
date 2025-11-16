@@ -200,7 +200,7 @@ end
 ---@param compact? boolean
 ---@param ... any - lua value(s) that will be vim.json.encode()'d
 function Logger:_jsonify_trace(message, compact, ...)
-    local text = vim.json.encode(value)
+    local text = vim.json.encode(...)
     if not text then
         self:trace("failed to encode value to JSON, consider using luaify_trace")
         return
