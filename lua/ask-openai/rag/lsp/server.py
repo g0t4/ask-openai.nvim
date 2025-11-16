@@ -172,7 +172,7 @@ async def doc_opened(params: types.DidOpenTextDocumentParams):
 async def semantic_grep_command(_: LanguageServer, args: rag.LSPSemanticGrepRequest) -> rag.LSPSemanticGrepResult:
     args.msgId = server.protocol.msg_id
     try:
-        return await rag.handle_query(args)  # TODO! ASYNC REVIEW
+        return await rag.handle_semantic_grep_ls_command(args)  # TODO! ASYNC REVIEW
     except asyncio.CancelledError as e:
         # avoid leaving on in logs b/c takes up a ton of space for stack trace
         logger.info(f"Client cancelled semantic_grep query {args.msgId=}")  #, exc_info=e)  # uncomment to see where error is raised

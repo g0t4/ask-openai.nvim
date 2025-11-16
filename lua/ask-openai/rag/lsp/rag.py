@@ -33,7 +33,7 @@ class LSPResponseErrors:
     NO_RAG_DIR = "No .rag dir"
     CANCELLED = "Client cancelled query"
 
-async def handle_query(args: LSPSemanticGrepRequest) -> LSPSemanticGrepResult:
+async def handle_semantic_grep_ls_command(args: LSPSemanticGrepRequest) -> LSPSemanticGrepResult:
     stopper = create_stopper(args.msgId)
     try:
         if fs.is_no_rag_dir():
