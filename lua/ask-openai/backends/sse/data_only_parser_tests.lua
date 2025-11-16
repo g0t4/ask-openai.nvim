@@ -111,13 +111,12 @@ describe("data-only events", function()
     -- end)
 
     describe("no trailing blank line", function()
-        it("only one newline at end => flushes dregs", function()
-            -- PROPHECY! lol
-            -- ALSO no `data: ` prefix - DO NOT test that here too (split it apart if you want that test case to use this scenario too)
-            -- llama-server's error object is a PERFECT test case!
-            -- {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
+        -- (via llama server error object when no --jinja flag and try to use tools)
+        local llama_server_error_no_end_newlines = [[{"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}]]
+        -- ALSO no `data: ` prefix - DO NOT test that here too (split it apart if you want that test case to use this scenario too)
 
-            local write1 = "data: data_value1\n"
+        it("only one newline at end => flushes dregs", function()
+            local write1 = llama_server_error_no_end_newlines .. "\n"
             parser:write(write1)
             -- TODO? how about parser:flush_dregs("...") ??
             assert.are.same({}, events)
@@ -129,7 +128,7 @@ describe("data-only events", function()
         end)
 
         it("NO newline at end => flushes dregs", function()
-            local write1 = "data: data_value1"
+            local write1 = llama_server_error_no_end_newlines
             parser:write(write1)
             assert.are.same({}, events)
         end)
