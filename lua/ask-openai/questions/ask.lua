@@ -89,8 +89,8 @@ The semantic_grep tool:
     local lines = LinesBuilder:new(first_turn_ns_id)
     -- TODO? lines:add_folded_lines(system_prompt)
     lines:add_role("user")
-    table_insert_split_lines(lines.turn_lines, user_message) -- TODO lines builder helper method for this
-    table.insert(lines.turn_lines, "")
+    lines:append_text(user_message)
+    lines:append_blank_line()
     -- TODO move append_lines to chat_window:append(LinesBuilder)
     M.chat_window.buffer:append_lines(lines)
 
@@ -316,13 +316,13 @@ function M.handle_messages_updated()
 
             lines:add_folded_lines(vim.split(reasoning_content, '\n'), "AskChatReasoning")
 
-            table_insert_split_lines(lines.turn_lines, content)
-            table.insert(lines.turn_lines, "")
+            lines:append_text(content)
+            lines:append_blank_line()
         elseif #message.tool_calls == 0 then
             -- gptoss120b - this works:
             --   :AskQuestion testing a request, I need you to NOT say anything in response, just stop immediatley
-            table.insert(lines.turn_lines, "[UNEXPECTED: empty response]")
-            table.insert(lines.turn_lines, "")
+            lines:append_text("[unexpected: empty response]")
+            lines:append_blank_line()
         end
 
         for _, call in ipairs(message.tool_calls) do
@@ -346,7 +346,7 @@ function M.handle_messages_updated()
             local args = call["function"].arguments
             if args then
                 -- TODO new line in args? s\b \n right?
-                table.insert(lines.turn_lines, args)
+                lines:append_text(args)
             end
 
             -- TODO REMINDER - try/add apply_patch when using gptoss (need to put this elsewhere)
@@ -361,11 +361,11 @@ function M.handle_messages_updated()
                         --   TODO to test it ask for `:AskToolUse ls -R`
                         --  FYI I might need to adjust what is coming back from MCP to have more control over this
                         --  FYI also probably want to write custom templates specific to commands that I really care about (run_command, apply_patch, etc)
-                        table.insert(lines.turn_lines, tool_content.name)
+                        lines:append_text(tool_content.name)
                         if tool_content.type == "text" then
-                            table_insert_split_lines(lines.turn_lines, tool_content.text)
+                            lines:append_text(tool_content.text)
                         else
-                            table.insert(lines.turn_lines, "  unexpected content type: " .. tool_content.type)
+                            lines:append_text("  unexpected content type: " .. tool_content.type)
                         end
                     end
                 else
@@ -375,7 +375,7 @@ function M.handle_messages_updated()
                 end
             end
 
-            table.insert(lines.turn_lines, "") -- between messages?
+            lines:append_blank_line() -- between messages?
         end
     end
 

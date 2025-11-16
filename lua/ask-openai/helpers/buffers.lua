@@ -34,14 +34,8 @@ function M.dump_last_seletion()
     print(vim.inspect(selection))
 end
 
-function table_insert_many(tbl, items)
-    for _, item in ipairs(items) do
-        table.insert(tbl, item)
-    end
-end
-
 function table_insert_split_lines(tbl, text)
-    table_insert_many(tbl, vim.split(text, "\n"))
+    vim.list_extend(tbl, vim.split(text, "\n"))
 end
 
 return M

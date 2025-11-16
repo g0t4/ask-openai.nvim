@@ -66,4 +66,14 @@ function LinesBuilder:add_folded_lines(lines, hl_group)
     vim.list_extend(self.turn_lines, lines)
 end
 
+---@param text string   -- text to append; may contain newlines (will be split on \n)
+function LinesBuilder:append_text(text)
+    local lines = vim.split(text, "\n")
+    vim.list_extend(self.turn_lines, lines)
+end
+
+function LinesBuilder:append_blank_line()
+    table.insert(self.turn_lines, "")
+end
+
 return LinesBuilder
