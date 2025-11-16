@@ -151,6 +151,8 @@ The semantic_grep tool:
         body_overrides.tools = tool_router.openai_tools()
     end
 
+    -- FYI starts a new chat thread when AskQuestion is used
+    --  TODO allow follow up if already existing thread?
     M.thread = ChatThread:new(messages, body_overrides, base_url)
     M.send_messages()
 end
