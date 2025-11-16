@@ -61,6 +61,8 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
 
+    local parser = SSEDataOnlyParser.new(on_data_sse)
+
     ---@param code integer
     ---@param signal integer
     local function on_exit(code, signal)
@@ -120,8 +122,6 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
             end)
         end
     end
-
-    local parser = SSEDataOnlyParser.new(on_data_sse)
 
     ---@param read_error any
     ---@param data? string
