@@ -89,6 +89,7 @@ end
 function ChatWindow:explain_error(text)
     --  TODO use new LinesBuilder w/ append and make it red
     self.buffer:append_text("## ERROR " .. tostring(text))
+    self.buffer:append_blank_line()
 end
 
 --- Append text, including newlines

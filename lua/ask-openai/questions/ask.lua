@@ -344,6 +344,7 @@ function M.handle_messages_updated()
             if args then
                 -- TODO new line in args? s\b \n right?
                 lines:append_text(args)
+                lines:append_blank_line()
             end
 
             -- TODO REMINDER - try/add apply_patch when using gptoss (need to put this elsewhere)
@@ -359,11 +360,13 @@ function M.handle_messages_updated()
                         --  FYI I might need to adjust what is coming back from MCP to have more control over this
                         --  FYI also probably want to write custom templates specific to commands that I really care about (run_command, apply_patch, etc)
                         lines:append_text(tool_content.name)
+                        lines:append_blank_line() -- ? DO i want this?
                         if tool_content.type == "text" then
                             lines:append_text(tool_content.text)
                         else
                             lines:append_text("  unexpected content type: " .. tool_content.type)
                         end
+                        lines:append_blank_line() -- ? DO i want this?
                     end
                 else
                     -- TODO show inprocess tooling outputs in CHAT user window (this is not building a request to LLM)
