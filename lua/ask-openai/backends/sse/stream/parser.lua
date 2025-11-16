@@ -26,17 +26,17 @@
 
 ---@alias SSEDataOnlyHandler function(data string)
 
----@class SSEStreamParser
+---@class SSEDataOnlyParser
 ---@field _buffer string
 ---@field _done boolean
 ---@field _lines {} -- store all received lines here
 ---@field _data_only_handler SSEDataOnlyHandler
-local SSEStreamParser = {}
+local SSEDataOnlyParser = {}
 
 --- @param data_only_handler SSEDataOnlyHandler
---- @return SSEStreamParser
-function SSEStreamParser.new(data_only_handler)
-    local instance = setmetatable({}, { __index = SSEStreamParser })
+--- @return SSEDataOnlyParser
+function SSEDataOnlyParser.new(data_only_handler)
+    local instance = setmetatable({}, { __index = SSEDataOnlyParser })
     instance._buffer = ""
     instance._done = false
     instance._lines = {}
@@ -46,7 +46,7 @@ end
 
 --- curl stdout should be patched into this
 ---@param data string
-function SSEStreamParser:write(data)
+function SSEDataOnlyParser:write(data)
     table.insert(self._lines, data)
 
     -- FYI assumed to be all data events so this is fine, to strip before inserting in buffer
@@ -78,4 +78,4 @@ function SSEStreamParser:write(data)
     end
 end
 
-return SSEStreamParser
+return SSEDataOnlyParser

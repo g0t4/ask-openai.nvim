@@ -1,5 +1,5 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
-local SSEStreamParser = require("ask-openai.backends.sse.stream.parser")
+local SSEDataOnlyParser = require("ask-openai.backends.sse.stream.parser")
 local describe = require("devtools.tests._describe")
 
 describe("data-only events", function()
@@ -10,7 +10,7 @@ describe("data-only events", function()
     local parser
     before_each(function()
         events = {}
-        parser = SSEStreamParser.new(data_only_handler)
+        parser = SSEDataOnlyParser.new(data_only_handler)
     end)
 
     local function escape_newlines(s)
@@ -142,7 +142,7 @@ describe("integration test - completion captures", function()
         -- lines are split => but those split are not actual \n in the original curl stdout output
 
         local events = {}
-        local parser = SSEStreamParser.new(function(data)
+        local parser = SSEDataOnlyParser.new(function(data)
             table.insert(events, data)
         end)
         vim.iter(contents):each(function(line)

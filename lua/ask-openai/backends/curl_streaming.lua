@@ -1,6 +1,6 @@
 local log = require("ask-openai.logs.logger").predictions()
 local LastRequest = require("ask-openai.backends.last_request")
-local SSEStreamParser = require("ask-openai.backends.sse.stream.parser")
+local SSEDataOnlyParser = require("ask-openai.backends.sse.stream.parser")
 local ChatMessage = require("ask-openai.questions.chat_message")
 local ToolCall = require("ask-openai.questions.tool_call")
 local uv = vim.uv
@@ -119,7 +119,7 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
         end
     end
 
-    local parser = SSEStreamParser.new(data_value_handler)
+    local parser = SSEDataOnlyParser.new(data_value_handler)
 
     ---@param read_error any
     ---@param data? string
