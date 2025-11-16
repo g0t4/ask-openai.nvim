@@ -189,6 +189,7 @@ function M.context_query_fim(ps_chunk, callback, skip_rag)
         -- PRN return indicator to caller? right now nil for results s/b fine
         return
     end
+    -- TODO pass fim.semantic_grep.all_files settings (create an options object and pass that instead of a dozen args)
     -- TODO! pass ps_chunk start/end lines to limit same file skips
     return M._context_query(query, fim_specific_instruct, callback)
 end

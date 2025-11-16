@@ -48,6 +48,7 @@ local function load_config()
         notify_stats = false,
         rag = { enabled = true },
         log_threshold_text = LEVEL_NUMBER_TO_TEXT[DEFAULT_LOG_LEVEL_NUMBER],
+        fim = { semantic_grep = { all_files = false } },
     }
 
     if file_exists(config_path) then
@@ -186,6 +187,29 @@ function M.toggle_fim_model()
     M.set_fim_model(next_model)
     return next_model
 end
+
+-- * FIM semantic_grep's file type(s)
+
+
+function M.get_fim_semantic_grep_all_files()
+    -- TODO IF I KEEP THIS, I have to add it to settings b/c I wanna see when it is on/off (could affect regular FIM's semantic_grep which in many cases doesn't need cross language matches)
+    local cfg = get()
+    return cfg.fim
+        and cfg.fim.semantic_grep
+        and cfg.fim.semantic_grep.all_files
+        or false
+end
+
+function M.toggle_fim_semantic_grep_all_files()
+    local cfg = get()
+    cfg.fim = cfg.fim or {}
+    cfg.fim.semantic_grep = cfg.fim.semantic_grep or {}
+    cfg.fim.semantic_grep.all_files = not (cfg.fim.semantic_grep.all_files or false)
+    save()
+    return cfg.fim.semantic_grep.all_files
+end
+
+-- * reasoning level
 
 -- thinking model's reasoning level (for thinking models, including FIM)
 function M.set_reasoning_level(level)
