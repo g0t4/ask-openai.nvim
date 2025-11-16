@@ -532,8 +532,8 @@ function M.follow_up()
     end
 
     local message = ChatMessage:user(followup)
-    log:trace("message:", message)
     M.thread:add_message(message)
+    M.thread:dump()
     M.send_messages()
 end
 

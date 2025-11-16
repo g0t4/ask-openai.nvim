@@ -50,7 +50,7 @@ function ChatThread:next_curl_request_body()
 end
 
 function ChatThread:dump()
-    log:info("ChatThread:dump", vim.inspect(self.messages))
+    log:luaify_trace("ChatThread:dump", self.messages)
 
     local texts = { "ChatThread:dump" }
     for _, message in ipairs(self.messages) do
