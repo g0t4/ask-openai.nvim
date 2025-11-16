@@ -186,7 +186,7 @@ end
 
 ---@param message string
 ---@param ... any - lua value(s) that will be vim.json.encode()'d
-function Logger:jsonify_pretty_trace(message, ...)
+function Logger:jsonify_trace(message, ...)
     self:_jsonify_trace(message, true, ...)
 end
 
