@@ -87,8 +87,7 @@ The semantic_grep tool:
     lines:append_role_header("user")
     lines:append_text(user_message)
     lines:append_blank_line()
-    -- TODO move append_lines to chat_window:append(LinesBuilder)
-    M.chat_window.buffer:append_styled_lines(lines)
+    M.chat_window:append_styled_lines(lines)
 
     ---@type ChatMessage[]
     local messages = {
@@ -421,7 +420,7 @@ function M.curl_request_exited_successful_on_zero_rc()
             local lines_builder = LinesBuilder:new(marks_ns_id)
             lines_builder:append_role_header("user")
             lines_builder:append_blank_line()
-            M.chat_window.buffer:append_styled_lines(lines_builder)
+            M.chat_window:append_styled_lines(lines_builder)
 
             M.chat_window.followup_starts_at_line_0indexed = M.chat_window.buffer:get_line_count() - 1
         end

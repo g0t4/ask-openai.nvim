@@ -102,6 +102,11 @@ function ChatWindow:append_blank_line()
     self.buffer:append_blank_line()
 end
 
+---@param lines LinesBuilder
+function ChatWindow:append_styled_lines(lines)
+    self.buffer:append_styled_lines(lines)
+end
+
 --- clear the window contents only (not message history)
 function ChatWindow:clear()
     self.buffer:clear()
