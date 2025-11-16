@@ -119,36 +119,37 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
         end
     end
 
-    -- PRN request._sse_parser = parser -- currently closure is sufficient for all expected use cases
     local parser = SSEStreamParser.new(data_value_handler)
-    options.on_stdout = function(read_error, data)
+    ---@param read_error any
+    ---@param data? string
+    local function on_stdout(read_error, data)
         -- log:trace_stdio_read_errors("on_stdout", err, data)
         log:trace_stdio_read_always("on_stdout", read_error, data)
 
         local no_data = data == nil or data == ""
         if read_error or no_data then
-            -- reminder, rely on trace above
             return
         end
 
         parser:write(data)
     end
-    uv.read_start(stdout, options.on_stdout)
+    stdout:read_start(on_stdout)
 
-    options.on_stderr = function(read_error, data)
+    ---@param read_error? string
+    ---@param data? string
+    local function on_stderr(read_error, data)
         log:trace_stdio_read_always("on_stderr", read_error, data)
         -- log:trace_stdio_read_errors("on_stderr", err, data)
 
         local no_data = data == nil or data == ""
         if read_error or no_data then
-            -- reminder, rely on trace above
             return
         end
 
         -- keep in mind... curl errors will show as text in STDERR
         frontend.on_stderr_data(data)
     end
-    uv.read_start(stderr, options.on_stderr)
+    stderr:read_start(on_stderr)
 
     return request
 end
