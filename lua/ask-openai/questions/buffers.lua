@@ -15,10 +15,11 @@ function BufferController:new(buffer_number)
 end
 
 function BufferController:append(text)
-    local num_lines = vim.api.nvim_buf_line_count(self.buffer_number)
-    local last_line = vim.api.nvim_buf_get_lines(self.buffer_number, num_lines - 1, num_lines, false)[1]
-    local replace_lines = vim.split(last_line .. text .. "\n", "\n")
-    vim.api.nvim_buf_set_lines(self.buffer_number, num_lines - 1, num_lines, false, replace_lines)
+    -- TODO do I want append_text/append_lines instead?
+    -- TODO also append_line() singular that adds the \n while the rest don't?
+    local new_lines = vim.split(text .. "\n", "\n") -- \n ensures a blank line after
+    vim.api.nvim_buf_set_lines(self.buffer_number, -1, -1, false, new_lines)
+    -- TODO update other nvim_buf_set_lines cases for insert and other operations to not need to replace when inserting (or similar)
 
     self:scroll_cursor_to_end_of_buffer()
 end

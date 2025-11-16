@@ -87,8 +87,7 @@ function ChatWindow:ensure_open()
 end
 
 function ChatWindow:explain_error(text)
-    -- TODO add extmarks with red background like I did in rewrite/inline.lua => displayer class
-    --  TODO actually use the new LinesBuilder (soon I'll have it for append too, not just replace)
+    --  TODO use new LinesBuilder w/ append
     self.buffer:append("## ERROR " .. tostring(text))
 end
 
