@@ -156,7 +156,7 @@ end
 
 ---@param code integer
 ---@param signal integer
-function M.curl_request_exited_successful_on_zero_rc(code, signal)
+function M.curl_exited_successfully(code, signal)
 end
 
 function M.accept_rewrite()
