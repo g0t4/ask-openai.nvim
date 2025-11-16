@@ -82,6 +82,8 @@ end
 ---@param end_row_inclusive_base0 integer 0-indexed, end-EXCLUSIV
 ---@param new_lines string[]
 function BufferController0Indexed:replace_lines(start_row_base0, end_row_inclusive_base0, new_lines)
+    -- TODO! likely replace this with BufferController:replace_with_styled_lines_after (even if this is just plaintext)
+    --   TODO! in fact, I could make this into a replace_plaintext_lines()
     -- log:info(vim.inspect({ start_row_base0 = start_row_base0, end_row_inclusive_base0 = end_row_inclusive_base0, }))
     if end_row_inclusive_base0 >= self:num_lines() then
         -- FYI this happens when testing fake prediction if you trigger it near the end of the buffer

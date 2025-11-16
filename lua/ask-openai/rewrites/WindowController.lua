@@ -1,6 +1,7 @@
 local BufferController0Indexed = require('ask-openai.rewrites.BufferController')
 
--- TODO! any utility in merging some/all of ChatWindow into this?  (or vice versa, use this instead of ChatWindow in AskQuestion subsystem?)
+-- TODO! should ChatWindow be derived from WindowController0Indexed?
+--   TODO! especially after buffer controllers are merged into one that is 0 indexed
 
 ---This entire class operates on 0-indexed row and column positions
 ---   or if that seems wrong I'll go to all 1-indexed
