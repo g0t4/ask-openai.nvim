@@ -116,18 +116,16 @@ describe("data-only events", function()
             local llama_server_error_no_end_newlines = [[{"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}]]
             -- ALSO no `data: ` prefix - DO NOT test that here too (split it apart if you want that test case to use this scenario too)
 
-            it("only one newline at end => flushes dregs", function()
+            it("only one newline at end => treats as SSE", function()
                 local write1 = llama_server_error_no_end_newlines .. "\n"
                 parser:write(write1)
-                assert.are.same({}, events)
-                -- TODO? how about parser:flush_dregs("...") ??
+                assert.are.same({ llama_server_error_no_end_newlines }, events)
             end)
 
-            it("NO newline at end => flushes dregs", function()
+            it("NO newline at end => treats as SSE", function()
                 local write1 = llama_server_error_no_end_newlines
                 parser:write(write1)
-                assert.are.same({}, events)
-                -- TODO? how about parser:flush_dregs("...") ??
+                assert.are.same({ llama_server_error_no_end_newlines }, events)
             end)
         end)
 
