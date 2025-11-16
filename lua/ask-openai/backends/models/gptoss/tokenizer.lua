@@ -65,7 +65,15 @@ local M = {}
 -- <|start|>{toolname} to=assistant<|channel|>commentary<|message|>{output}<|end|>
 --    note the recipient to=assistant
 --
-
+-- * Tool calls
+--   - AFAICT only supports single tool calls
+--     - channel commentary has no mechanism to represent multiple tool calls, it's only one at a time
+--     - model stops on <|call|>
+--     - can have back to back tool calls
+--     - all in the same CoT - that is the beauty of this model
+--        - one request in => CoT (analysis) => tool call => CoT (etc) => one "final" response
+--
+--   - largely for tool calls in CoT
 
 
 
