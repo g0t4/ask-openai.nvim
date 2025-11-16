@@ -187,19 +187,19 @@ end
 ---@param message string
 ---@param ... any - lua value(s) that will be vim.json.encode()'d
 function Logger:jsonify_trace(message, ...)
-    self:_jsonify_trace(message, true, ...)
+    self:_jsonify_trace(message, false, ...)
 end
 
 ---@param message string
 ---@param ... any - lua value(s) that will be vim.json.encode()'d
 function Logger:jsonify_compact_trace(message, ...)
-    self:_jsonify_trace(message, false, ...)
+    self:_jsonify_trace(message, true, ...)
 end
 
 ---@param message string
----@param pretty? boolean
+---@param compact? boolean
 ---@param ... any - lua value(s) that will be vim.json.encode()'d
-function Logger:_jsonify_trace(message, pretty, ...)
+function Logger:_jsonify_trace(message, compact, ...)
     local text = vim.json.encode(value)
     if not text then
         self:trace("failed to encode value to JSON, consider using luaify_trace")
@@ -208,7 +208,7 @@ function Logger:_jsonify_trace(message, pretty, ...)
 
     local command = "jq"
     local args = { ".", "--color-output" }
-    if not pretty then
+    if compact then
         table.insert(args, "--compact-output")
     end
 
