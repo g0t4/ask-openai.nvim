@@ -41,8 +41,13 @@ function LinesBuilder:append_role_header(role)
     table.insert(self.turn_lines, role)
 end
 
+function LinesBuilder:append_styled_text(text, hl_group)
+    local lines = vim.split(text, "\n")
+    self:append_styled_lines(lines, hl_group)
+end
+
 ---@param lines string[]
-function LinesBuilder:add_lines_marked(lines, hl_group)
+function LinesBuilder:append_styled_lines(lines, hl_group)
     local start_line_base0 = #self.turn_lines
     local mark = {
         start_line_base0 = start_line_base0, -- base0 b/c next line is the marked one (thus not yet in line count)
