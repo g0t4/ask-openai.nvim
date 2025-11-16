@@ -14,15 +14,18 @@ function BufferController:new(buffer_number)
     return self
 end
 
---- Append text, including newlines
+--- Split text on \n and append the lines to the end of the buffer
 ---@param text string
 function BufferController:append_text(text)
-    -- TODO do I want append_text/append_lines instead?
-    -- TODO also append_line() singular that adds the \n while the rest don't?
     local new_lines = vim.split(text .. "\n", "\n") -- \n ensures a blank line after
-    vim.api.nvim_buf_set_lines(self.buffer_number, -1, -1, false, new_lines)
-    -- TODO update other nvim_buf_set_lines cases for insert and other operations to not need to replace when inserting (or similar)
+    self:append_lines(new_lines)
+end
 
+--- Append a list of lines to the end of the buffer
+---@param lines string[]
+function BufferController:append_lines(lines)
+    vim.api.nvim_buf_set_lines(self.buffer_number, -1, -1, false, lines)
+    -- TODO update other nvim_buf_set_lines cases for insert and other operations to not need to replace when inserting (or similar)
     self:scroll_cursor_to_end_of_buffer()
 end
 
@@ -48,7 +51,7 @@ function BufferController:get_cursor_line_number_0indexed()
 end
 
 ---@param lines LinesBuilder
-function BufferController:append_lines(lines)
+function BufferController:append_lines_builder(lines)
     local start_line_base0 = self:get_line_count()
     if start_line_base0 == 1 then
         -- edge case, first line is not actually used in a new buffer (it's legit empty)
