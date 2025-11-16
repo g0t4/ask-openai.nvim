@@ -1,6 +1,6 @@
 local log = require("ask-openai.logs.logger").predictions()
 local LastRequest = require("ask-openai.backends.last_request")
-local SSEDataOnlyParser = require("ask-openai.backends.sse.stream.parser")
+local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 local ChatMessage = require("ask-openai.questions.chat_message")
 local ToolCall = require("ask-openai.questions.tool_call")
 local uv = vim.uv
