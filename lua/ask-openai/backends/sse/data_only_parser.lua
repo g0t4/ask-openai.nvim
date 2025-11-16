@@ -1,3 +1,5 @@
+local log = require("ask-openai.logs.logger").predictions()
+
 -- stream parser will sit BELOW a chat completions client
 -- this will buffer data fields in multiline scenarios
 -- will split on and emit events when the blank line is detected
@@ -62,8 +64,9 @@ function SSEDataOnlyParser:write(data)
     local lines = vim.split(self._buffer, "\n\n", {})
     -- FYI split takes plain and trimempty option values
     --   default not removing empties, can use to check if a \n\n was present
-    -- vim.print(lines)
+    log:info("DOP", data)
     if (#lines == 1) then
+        log:error("FUCK1")
         -- no \n\n
         return -- buffer is fine as-is
     elseif (#lines >= 2) then
