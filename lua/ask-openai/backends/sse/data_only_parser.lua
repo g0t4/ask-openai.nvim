@@ -53,9 +53,15 @@ end
 
 function SSEDataOnlyParser:flush_dregs()
     -- TODO test for buffer empty => return?
-
+    print("buffer", vim.inspect(self._buffer))
     local success, sse_parsed = pcall(vim.json.decode, self._buffer)
-    -- TODO? just flush it to _on_data_sse every time and let that blow up (it has error handler in it)?
+
+    if not success then
+        -- TODO? just flush it to _on_data_sse every time and let that blow up (it has error handler in it)?
+        --   if I want terminate behavior then this would be wise
+        -- TODO LOG?!
+        return
+    end
     self._on_data_sse(self._buffer)
 end
 
