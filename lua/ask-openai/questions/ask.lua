@@ -223,7 +223,7 @@ function M.on_stderr_data(text)
         -- 3. try using tools
         -- =>  curl: (22) The requested URL returned error: 500
         -- 4. add extra log to confirm:
-        M.chat_window:append_plain_text("MAKE SURE THIS IS FAILURE PATH")
+        -- M.chat_window:append_plain_text("MAKE SURE THIS IS FAILURE PATH")
         --
         -- FYI separate note:
         --   on_stdout often has further explanation when a curl request fails, i.e. w/ no tools:
