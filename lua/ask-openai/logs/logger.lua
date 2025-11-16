@@ -185,9 +185,21 @@ function Logger:_transform_then_log(command, args, text, message)
 end
 
 ---@param message string
----@param value any - lua value that will be vim.json.encode()'d
----@param pretty boolean|nil
-function Logger:jsonify_trace(message, value, pretty)
+---@param ... any - lua value(s) that will be vim.json.encode()'d
+function Logger:jsonify_pretty_trace(message, ...)
+    self:_jsonify_trace(message, true, ...)
+end
+
+---@param message string
+---@param ... any - lua value(s) that will be vim.json.encode()'d
+function Logger:jsonify_trace(message, ...)
+    self:_jsonify_trace(message, false, ...)
+end
+
+---@param message string
+---@param pretty? boolean
+---@param ... any - lua value(s) that will be vim.json.encode()'d
+function Logger:_jsonify_trace(message, pretty, ...)
     local text = vim.json.encode(value)
     if not text then
         self:trace("failed to encode value to JSON, consider using luaify_trace")
