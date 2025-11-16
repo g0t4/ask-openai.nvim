@@ -18,7 +18,7 @@ end
 ---@field on_sse_llama_server_error_explanation fun(sse_parsed: table)
 ---@field handle_messages_updated fun()
 ---@field curl_exited_successfully fun()
----@field on_stderr_data fun(text: string)
+---@field explain_error fun(text: string)
 
 ---@alias ExtractGeneratedTextFunction fun(first_choice: table): string
 
@@ -131,11 +131,7 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
             -- on some failures, curl will include a JSON object describing the issue:
             -- {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
             --   => FYI in this case, read_error is nil (in my testing)
-
-            --  TODO make a more elegant way to report this?
-            --  TODO maybe instead of on_stderr_data, have literally .explain_error("...")
-            -- log it as if over STDERR (yes I know it is a hack)
-            frontend.on_stderr_data("FYI this is from STDOUT and likely relevant to the FAILURE:\n  " .. data)
+            frontend.explain_error("FYI this is from STDOUT and likely relevant to the FAILURE:\n  " .. data)
         end
 
         -- log:trace_stdio_read_errors("on_stdout", read_error, data)
@@ -162,7 +158,7 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
         end
 
         -- keep in mind... curl errors will show as text in STDERR
-        frontend.on_stderr_data(data)
+        frontend.explain_error(data)
     end
     stderr:read_start(on_stderr)
 

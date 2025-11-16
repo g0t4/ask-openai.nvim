@@ -215,7 +215,7 @@ function M.on_sse_llama_server_error_explanation(sse_parsed)
     end)
 end
 
-function M.on_stderr_data(text)
+function M.explain_error(text)
     vim.schedule(function()
         -- TEST this with:
         -- 1. remove --jinja from llama-server service

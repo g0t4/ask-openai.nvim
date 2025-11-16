@@ -64,11 +64,19 @@ function Displayer:show_green_preview_text(selection, lines)
 end
 
 ---@param selection Selection
----@param text string
-function Displayer:explain_error(selection, text)
-    -- TODO separate extmarks so it can be used with any other extmarks
-    self:clear_extmarks()
-    local lines = vim.split(text, '\n')
+---@param new_text string
+function Displayer:explain_error(selection, new_text)
+    -- FYI quick hack for showing multiple errors
+    --   test by using tools w/o --jinja flag server side => both STDOUT and STDERR have useful error messages
+    --   => tools = tool_router.openai_tools()
+    self._hack_previous_error_text = self._hack_previous_error_text or ""
+    self._hack_previous_error_text = self._hack_previous_error_text .. '\n' .. new_text
+    -- FYI I can polish this later, if it matters!
+    -- by the way I love how these errors show!
+
+    -- ?? any utility in leaving other extmarks too? i.e. failure mid generation? (probably not but just a thought)
+    -- self:clear_extmarks()
+    local lines = vim.split(self._hack_previous_error_text, '\n')
     local first_line = { { table.remove(lines, 1), "AskRewriteError" } }
     local virt_lines = {}
     for _, line in ipairs(lines) do

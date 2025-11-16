@@ -347,7 +347,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             -- local body = model_params.new_qwen3coder_llama_server_chat_body({
             messages = messages,
             model = "", -- irrelevant for llama-server
-            -- tools = tool_router.openai_tools(),
+            tools = tool_router.openai_tools(), -- TODO COMMENT OUT WHEN DONE TESTING ERRORS
         })
 
         local base_url = "http://ollama:8013"
@@ -497,18 +497,18 @@ end
 
 function M.on_sse_llama_server_error_explanation(sse_parsed)
     if sse_parsed.error then
-        if M.displayer then
-            vim.schedule(function()
-                M.displayer:explain_error(M.selection, vim.inspect(sse_parsed.error))
-            end)
-        end
+        -- TODO! this should be firing for the error.code 500 SSE llama-server json object, why isn't it?
+        M.explain_error(vim.inspect(sse_parsed.error))
     end
 end
 
-function M.on_stderr_data(text)
+function M.explain_error(text)
+    if not M.displayer then
+        vim.notify("ERROR, and no displayer, so here goes: " .. text, vim.log.levels.ERROR)
+        return
+    end
     vim.schedule(function()
-        -- PRN use diff extmark to show these errors (don't just write it as if it's generated text?)
-        M.on_generated_text("\n" .. text)
+        M.displayer:explain_error(M.selection, text)
     end)
 end
 
