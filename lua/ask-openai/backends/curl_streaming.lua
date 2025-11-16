@@ -127,7 +127,18 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     ---@param read_error any
     ---@param data? string
     local function on_stdout(read_error, data)
-        -- log:trace_stdio_read_errors("on_stdout", err, data)
+        if data and data:match('{"error":{"code"') then
+            -- on some failures, curl will include a JSON object describing the issue:
+            -- {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
+            --   => FYI in this case, read_error is nil (in my testing)
+
+            --  TODO make a more elegant way to report this?
+            --  TODO maybe instead of on_stderr_data, have literally .explain_error("...")
+            -- log it as if over STDERR (yes I know it is a hack)
+            frontend.on_stderr_data("FYI this is from STDOUT and likely relevant to the FAILURE:\n  " .. data)
+        end
+
+        -- log:trace_stdio_read_errors("on_stdout", read_error, data)
         log:trace_stdio_read_always("on_stdout", read_error, data)
 
         local no_data = data == nil or data == ""
