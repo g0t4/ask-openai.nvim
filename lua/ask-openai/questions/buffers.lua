@@ -16,14 +16,14 @@ end
 
 --- Split text on \n and append the lines to the end of the buffer
 ---@param text string
-function BufferController:append_text(text)
+function BufferController:append_plain_text(text)
     local lines = vim.split(text, "\n")
-    self:append_lines(lines)
+    self:append_plain_lines(lines)
 end
 
 --- Append a list of lines to the end of the buffer
 ---@param lines string[]
-function BufferController:append_lines(lines)
+function BufferController:append_plain_lines(lines)
     vim.api.nvim_buf_set_lines(self.buffer_number, -1, -1, false, lines)
     -- TODO update other nvim_buf_set_lines cases for insert and other operations to not need to replace when inserting (or similar)
     self:scroll_cursor_to_end_of_buffer()
@@ -31,7 +31,7 @@ function BufferController:append_lines(lines)
 end
 
 function BufferController:append_blank_line()
-    self:append_lines({ "" })
+    self:append_plain_lines({ "" })
 end
 
 function BufferController:scroll_cursor_to_end_of_buffer()
