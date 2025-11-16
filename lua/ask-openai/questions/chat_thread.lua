@@ -50,7 +50,9 @@ function ChatThread:next_curl_request_body()
 end
 
 function ChatThread:dump()
-    log:luaify_trace("ChatThread:dump", self.messages)
+    -- log:luaify_trace("ChatThread:dump", self.messages)
+    -- log:luaify_trace("ChatThread:dump", self.last_request.response_messages)
+    log:luaify_trace("ChatThread:dump", self)
 
     local texts = { "ChatThread:dump" }
     for _, message in ipairs(self.messages) do
