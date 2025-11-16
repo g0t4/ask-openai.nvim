@@ -32,7 +32,7 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     local request = LastRequest:new(body)
 
     body.stream = true
-    -- log:jsonify_trace("body:", body) -- compact
+    -- log:jsonify_compact_trace("body:", body) -- compact
     log:jsonify_pretty_trace("body:", body)
 
     local json = vim.json.encode(body)

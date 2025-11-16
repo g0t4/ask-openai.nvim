@@ -192,7 +192,7 @@ end
 
 ---@param message string
 ---@param ... any - lua value(s) that will be vim.json.encode()'d
-function Logger:jsonify_trace(message, ...)
+function Logger:jsonify_compact_trace(message, ...)
     self:_jsonify_trace(message, false, ...)
 end
 
@@ -285,7 +285,7 @@ end
 
 -- PRN need to update this next time I use it (or get rid of it here)
 
-function NOOP_LOGGER:jsonify_trace(...)
+function NOOP_LOGGER:jsonify_compact_trace(...)
 end
 
 function NOOP_LOGGER:luaify_trace(...)
