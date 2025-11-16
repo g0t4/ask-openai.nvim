@@ -110,8 +110,8 @@ describe("data-only events", function()
     --     assert.are.same({ "data: " }, events)
     -- end)
 
-    describe("no trailing blank line", function()
-        describe("valid JSON", function()
+    describe("dregs with no trailing blank line", function()
+        describe("dregs is valid JSON", function()
             -- (via llama server error object when no --jinja flag and try to use tools)
             local llama_server_error_no_end_newlines = [[{"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}]]
             -- ALSO no `data: ` prefix - DO NOT test that here too (split it apart if you want that test case to use this scenario too)
@@ -135,7 +135,7 @@ describe("data-only events", function()
             end)
         end)
 
-        describe("not valid JSON object", function()
+        describe("dregs is not valid JSON object", function()
             -- (via llama server error object when no --jinja flag and try to use tools)
             local llama_server_error_no_end_newlines = [[{"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}]]
             -- ALSO no `data: ` prefix - DO NOT test that here too (split it apart if you want that test case to use this scenario too)
