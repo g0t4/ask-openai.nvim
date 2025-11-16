@@ -6,7 +6,7 @@ local M = {}
 function default_to_recommended(request_body, recommended)
     -- rightmost wins
     local merged = vim.tbl_deep_extend("force", recommended, request_body or {})
-    log:trace("merged request body: " .. vim.inspect(merged))
+    -- log:luaify_trace("merged request body: ", merged)
     return merged
 end
 
@@ -15,7 +15,6 @@ local function throw_if_no_messages(request_body)
         error("messages are required for gpt-oss chat")
     end
 end
-
 
 function M.new_gptoss_chat_body_llama_server(request_body)
     throw_if_no_messages(request_body)
