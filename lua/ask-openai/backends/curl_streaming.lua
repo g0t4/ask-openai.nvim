@@ -82,6 +82,10 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
         -- clear out refs
         request.handle = nil
         request.pid = nil
+
+        -- TODO! need a test to make sure this is actually called
+        --   an integration test, ideally (not manual alone if possible b/c I will forget about this)
+        parser:flush_dregs()
     end
 
     request.handle, request.pid = uv.spawn(options.command, {
