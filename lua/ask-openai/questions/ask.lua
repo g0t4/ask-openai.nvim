@@ -599,6 +599,13 @@ Don't nitpick.
     M.send_question(user_message, diff, filename, use_tools, entire_file_message)
 end
 
+function M.clear_chat()
+    if M.chat_window then
+        M.chat_window:clear()
+    end
+    M.thread = nil
+end
+
 function M.setup()
     -- * cauterize top level
     vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
@@ -631,7 +638,7 @@ function M.setup()
 
     vim.api.nvim_create_user_command("AskDumpThread", ask_dump_thread, {})
 
-    -- TODO keymap to clear chat and start new thread, outside of the chat window so I can open it cleared with a new question ??
+    vim.keymap.set('n', '<leader>ac', M.clear_chat, { noremap = true })
 end
 
 return M
