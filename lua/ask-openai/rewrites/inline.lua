@@ -507,6 +507,7 @@ end
 
 function M.on_stderr_data(text)
     vim.schedule(function()
+        -- PRN use diff extmark to show these errors (don't just write it as if it's generated text?)
         M.on_generated_text("\n" .. text)
     end)
 end
