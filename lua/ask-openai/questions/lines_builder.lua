@@ -72,8 +72,17 @@ function LinesBuilder:append_text(text)
     vim.list_extend(self.turn_lines, lines)
 end
 
+---Append a blank line unconditionally.
 function LinesBuilder:append_blank_line()
     table.insert(self.turn_lines, "")
+end
+
+---Append a blank line only if the last line is not already blank.
+function LinesBuilder:append_blank_line_if_last_is_not_blank()
+    local last = self.turn_lines[#self.turn_lines]
+    if not last or last ~= "" then
+        table.insert(self.turn_lines, "")
+    end
 end
 
 return LinesBuilder

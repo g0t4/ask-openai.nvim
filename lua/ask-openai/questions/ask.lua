@@ -382,7 +382,7 @@ function M.handle_messages_updated()
                 end
             end
 
-            lines:append_blank_line() -- TODO conditionally if the last line is not already blank (often STDOUT is last and has a blank line already due to trailing \n)
+            lines:append_blank_line_if_last_is_not_blank()
         end
     end
 
