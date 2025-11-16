@@ -111,26 +111,52 @@ describe("data-only events", function()
     -- end)
 
     describe("no trailing blank line", function()
-        -- (via llama server error object when no --jinja flag and try to use tools)
-        local llama_server_error_no_end_newlines = [[{"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}]]
-        -- ALSO no `data: ` prefix - DO NOT test that here too (split it apart if you want that test case to use this scenario too)
+        describe("valid JSON", function()
+            -- (via llama server error object when no --jinja flag and try to use tools)
+            local llama_server_error_no_end_newlines = [[{"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}]]
+            -- ALSO no `data: ` prefix - DO NOT test that here too (split it apart if you want that test case to use this scenario too)
 
-        it("only one newline at end => flushes dregs", function()
-            local write1 = llama_server_error_no_end_newlines .. "\n"
-            parser:write(write1)
-            -- TODO? how about parser:flush_dregs("...") ??
-            assert.are.same({}, events)
-            -- TODO? emit some sort of warning on a done message?
-            --   so I can log a warning?
-            --   YES THAT WOULD BE GOOD ACTUALLY
-            --   BUT WHY NOT ALSO TRY JSON PARSING and if it succeeds, treat it as an SSE
-            --    that way non-standard IMPLs work even if the last isn't an error (which logging alone would suffice)
+            it("only one newline at end => flushes dregs", function()
+                local write1 = llama_server_error_no_end_newlines .. "\n"
+                parser:write(write1)
+                -- TODO? how about parser:flush_dregs("...") ??
+                assert.are.same({}, events)
+                -- TODO? emit some sort of warning on a done message?
+                --   so I can log a warning?
+                --   YES THAT WOULD BE GOOD ACTUALLY
+                --   BUT WHY NOT ALSO TRY JSON PARSING and if it succeeds, treat it as an SSE
+                --    that way non-standard IMPLs work even if the last isn't an error (which logging alone would suffice)
+            end)
+
+            it("NO newline at end => flushes dregs", function()
+                local write1 = llama_server_error_no_end_newlines
+                parser:write(write1)
+                assert.are.same({}, events)
+            end)
         end)
 
-        it("NO newline at end => flushes dregs", function()
-            local write1 = llama_server_error_no_end_newlines
-            parser:write(write1)
-            assert.are.same({}, events)
+        describe("not valid JSON object", function()
+            -- (via llama server error object when no --jinja flag and try to use tools)
+            local llama_server_error_no_end_newlines = [[{"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}]]
+            -- ALSO no `data: ` prefix - DO NOT test that here too (split it apart if you want that test case to use this scenario too)
+
+            it("only one newline at end => flushes dregs", function()
+                local write1 = llama_server_error_no_end_newlines .. "\n"
+                parser:write(write1)
+                -- TODO? how about parser:flush_dregs("...") ??
+                assert.are.same({}, events)
+                -- TODO? emit some sort of warning on a done message?
+                --   so I can log a warning?
+                --   YES THAT WOULD BE GOOD ACTUALLY
+                --   BUT WHY NOT ALSO TRY JSON PARSING and if it succeeds, treat it as an SSE
+                --    that way non-standard IMPLs work even if the last isn't an error (which logging alone would suffice)
+            end)
+
+            it("NO newline at end => flushes dregs", function()
+                local write1 = llama_server_error_no_end_newlines
+                parser:write(write1)
+                assert.are.same({}, events)
+            end)
         end)
     end)
 
