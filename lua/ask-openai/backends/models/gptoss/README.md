@@ -5,3 +5,5 @@ the thinking tokens until a `final` message is generated. Even across turns (too
 Anyways, I want to build my own streaming parser and really grasp the possible interactions.
 
 Then I am free to use mine or go back to using jinja templates w/ llama.cpp (llama-server)
+
+

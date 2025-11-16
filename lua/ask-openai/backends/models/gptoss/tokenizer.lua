@@ -1,6 +1,14 @@
 local M = {}
 
+-- NOTES:
+-- - o200k_harmony tokenizer
+--   - extends o200k tokenizer w/ harmony format tokens (used by gpt4o and o4-mini)
+--   - https://github.com/openai/tiktoken/blob/97e49cbadd500b5cc9dbb51a486f0b42e6701bee/tiktoken_ext/openai_public.py#L123-L151
+--   - all special tokens use <|type|> format
+--
+
 M.special_tokens = {
+
     -- https://huggingface.co/openai/gpt-oss-20b/blob/main/tokenizer_config.json
     -- "tokenizer_class": "PreTrainedTokenizerFast"
 
@@ -35,6 +43,16 @@ M.special_tokens = {
     ["<|call|>"] = 200012,
     ["<|endofprompt|>"] = 200018,
 
+    -- convenient constants:
+    STARTOFTEXT = 199998,
+    ENDOFTEXT = 199999,
+    RETURN = 200002,
+    CONSTRAIN = 200003,
+    CHANNEL = 200005,
+    START = 200006,
+    END = 200007,
+    MESSAGE = 200008,
+    CALL = 200012,
+    ENDOFPROMPT = 200018,
 }
-
 return M
