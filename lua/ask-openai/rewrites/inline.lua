@@ -154,7 +154,9 @@ function M.on_sse_llama_server_timings(sse)
     end)
 end
 
-function M.curl_request_exited_successful_on_zero_rc()
+---@param code integer
+---@param signal integer
+function M.curl_request_exited_successful_on_zero_rc(code, signal)
 end
 
 function M.accept_rewrite()

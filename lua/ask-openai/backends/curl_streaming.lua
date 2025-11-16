@@ -17,7 +17,7 @@ end
 ---@field on_sse_llama_server_timings fun(sse_parsed: table)
 ---@field on_sse_llama_server_error_explanation fun(sse_parsed: table)
 ---@field handle_messages_updated fun()
----@field curl_request_exited_successful_on_zero_rc fun()
+---@field curl_request_exited_successful_on_zero_rc fun(code: integer, signal: integer)
 ---@field on_stderr_data fun(text: string)
 
 ---@alias ExtractGeneratedTextFunction fun(first_choice: table): string
@@ -62,7 +62,9 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
 
-    options.on_exit = function(code, signal)
+    ---@param code integer
+    ---@param signal integer
+    local function on_exit(code, signal)
         log:trace_on_exit_always(code, signal)
         -- log:trace_on_exit_errors(code, signal) -- less verbose
 
@@ -70,7 +72,7 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
             log:error("spawn - non-zero exit code: '" .. code .. "' Signal: '" .. signal .. "'")
             -- DO NOT add frontend handler just to have it log again!
         else
-            frontend.curl_request_exited_successful_on_zero_rc()
+            frontend.curl_request_exited_successful_on_zero_rc(code, signal)
         end
         stdout:close()
         stderr:close()
@@ -84,7 +86,7 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     request.handle, request.pid = uv.spawn(options.command, {
         args = options.args,
         stdio = { nil, stdout, stderr },
-    }, options.on_exit)
+    }, on_exit)
 
 
     function on_data_sse(data_value)

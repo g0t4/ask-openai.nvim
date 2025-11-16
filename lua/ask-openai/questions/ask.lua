@@ -406,7 +406,9 @@ function M.handle_messages_updated()
     end)
 end
 
-function M.curl_request_exited_successful_on_zero_rc()
+---@param code integer
+---@param signal integer
+function M.curl_request_exited_successful_on_zero_rc(code, signal)
     vim.schedule(function()
         for _, message in ipairs(M.thread.last_request.response_messages or {}) do
             -- log:jsonify_compact_trace("last request message:", message)
