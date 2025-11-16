@@ -26,6 +26,11 @@
 
 ---@alias SSEOnDataHandler function(data string)
 
+---Think of this as unwrapping the SSE envelope, extracting events and triggering handlers
+---for each event type, though in this case data is the only event needed (thus far)
+---
+---This should work for more than just OpenAI endpoints... any data only SSE endpoint
+---
 ---@class SSEDataOnlyParser
 ---@field _buffer string
 ---@field _done boolean
