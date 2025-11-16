@@ -30,7 +30,7 @@ function BufferController:append_lines(lines)
 end
 
 function BufferController:append_blank_line()
-    self:append_text("\n")
+    self:append_lines({ "" })
 end
 
 function BufferController:scroll_cursor_to_end_of_buffer()
