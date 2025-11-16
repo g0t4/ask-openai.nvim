@@ -84,7 +84,7 @@ The semantic_grep tool:
     end
     local lines = LinesBuilder:new(first_turn_ns_id)
     -- TODO? lines:add_folded_lines(system_prompt)
-    lines:add_role("user")
+    lines:append_role_header("user")
     lines:append_text(user_message)
     lines:append_blank_line()
     -- TODO move append_lines to chat_window:append(LinesBuilder)
@@ -309,7 +309,7 @@ function M.handle_messages_updated()
 
         if content ~= "" or reasoning_content ~= "" then
             -- ONLY add role header IF there is content (or reasoning) to show... otherwise just show tool_call(s)
-            lines:add_role(message.role)
+            lines:append_role_header(message.role)
 
             lines:add_folded_lines(vim.split(reasoning_content, '\n'), "AskChatReasoning")
 
@@ -419,7 +419,7 @@ function M.curl_request_exited_successful_on_zero_rc()
             -- * show user role as hint to follow up
             local marks_ns_id = vim.api.nvim_create_namespace("ask.marks.chat.window." .. os.time()) -- TODO use counter? os.time() might overlap if things go fast enough (seconds)
             local lines_builder = LinesBuilder:new(marks_ns_id)
-            lines_builder:add_role("user")
+            lines_builder:append_role_header("user")
             lines_builder:append_blank_line()
             M.chat_window.buffer:append_lines_builder(lines_builder)
 

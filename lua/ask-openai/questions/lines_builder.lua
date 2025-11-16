@@ -29,7 +29,7 @@ function LinesBuilder:mark_next_line(hl_group)
 end
 
 ---@param role string
-function LinesBuilder:add_role(role)
+function LinesBuilder:append_role_header(role)
     self:mark_next_line(role == "user" and "AskUserRole" or "AskAssistantRole")
     table.insert(self.turn_lines, role)
 end
