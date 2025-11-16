@@ -110,20 +110,25 @@ describe("data-only events", function()
     --     assert.are.same({ "data: " }, events)
     -- end)
 
-    describe("no trailing blank line emits no events", function()
-        it("only on newline at end", function()
-            -- FYI this test exists mostly so I am documenting my thought process
-            --  b/c no doubt I will wonder what about new line at end in the future!
-            --  this helps make my intent explicit!
+    describe("no trailing blank line", function()
+        it("only one newline at end => flushes dregs", function()
+            -- PROPHECY! lol
+            -- ALSO no `data: ` prefix - DO NOT test that here too (split it apart if you want that test case to use this scenario too)
+            -- llama-server's error object is a PERFECT test case!
+            -- {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
 
             local write1 = "data: data_value1\n"
             parser:write(write1)
+            -- TODO? how about parser:flush_dregs("...") ??
             assert.are.same({}, events)
             -- TODO? emit some sort of warning on a done message?
             --   so I can log a warning?
+            --   YES THAT WOULD BE GOOD ACTUALLY
+            --   BUT WHY NOT ALSO TRY JSON PARSING and if it succeeds, treat it as an SSE
+            --    that way non-standard IMPLs work even if the last isn't an error (which logging alone would suffice)
         end)
 
-        it("no new lines at end", function()
+        it("NO newline at end => flushes dregs", function()
             local write1 = "data: data_value1"
             parser:write(write1)
             assert.are.same({}, events)
