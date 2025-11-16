@@ -23,6 +23,8 @@ local function format_role(role)
     return "**" .. (role or "") .. "**"
 end
 
+local first_turn_ns_id
+
 function M.send_question(user_prompt, selected_text, file_name, use_tools, entire_file_message)
     use_tools = use_tools or false
 
@@ -81,16 +83,23 @@ The semantic_grep tool:
     end
 
     -- show initial question
-    -- TODO show system message collapsed? or add smth to preview it on a command
-    --    how about toggle a debug mode that shows vim.inspect(request)? like with rag telescope extension alt+tab
-    M.chat_window:append(format_role("user") .. "\n" .. user_message)
+    if not first_turn_ns_id then
+        first_turn_ns_id = vim.api.nvim_create_namespace("ask.marks.chat.window.first.turn")
+    end
+    local lines = LinesBuilder:new() -- TODO pass ns_id to builder
+    -- TODO? lines:add_folded_lines(system_prompt)
+    lines:add_role("user")
+    table_insert_split_lines(lines.turn_lines, user_message) -- TODO lines builder helper method for this
+    table.insert(lines.turn_lines, "")
+    -- TODO move append_lines to chat_window:append(LinesBuilder)
+    M.chat_window.buffer:append_lines(lines, first_turn_ns_id)
 
     ---@type ChatMessage[]
     local messages = {
         ChatMessage:new("system", system_prompt),
     }
 
-    -- TODO add this back and optionall RAG?
+    -- TODO add this back and optional RAG?
     -- if context.includes.yanks and context.yanks then
     --     table.insert(messages, ChatMessage:new("user", context.yanks.content))
     -- end
