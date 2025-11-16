@@ -314,7 +314,7 @@ function M.handle_messages_updated()
             lines:add_folded_lines(vim.split(reasoning_content, '\n'), "AskChatReasoning")
 
             lines:append_text(content)
-            lines:append_blank_line()
+            lines:append_blank_line_if_last_is_not_blank() -- only if reasoning doesn't have trailing \n
         elseif #message.tool_calls == 0 then
             -- gptoss120b - this works:
             --   :AskQuestion testing a request, I need you to NOT say anything in response, just stop immediatley
