@@ -35,7 +35,7 @@ function ChatThread:add_message(message)
     table.insert(self.messages, message)
 end
 
-----@return string JSON
+----@return table body
 function ChatThread:next_curl_request_body()
     local body = {
         messages = self.messages,
