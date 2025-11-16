@@ -19,10 +19,6 @@ require("ask-openai.helpers.buffers")
 ---@class AskQuestionFrontend : StreamingFrontend
 local M = {}
 
-local function format_role(role)
-    return "**" .. (role or "") .. "**"
-end
-
 local first_turn_ns_id
 
 function M.send_question(user_prompt, selected_text, file_name, use_tools, entire_file_message)
@@ -409,8 +405,13 @@ function M.curl_request_exited_successful_on_zero_rc()
             -- log:jsonify_compact_trace("final model_response message:", model_responses)
             M.thread:add_message(model_responses)
 
-            -- for now show user role as hint that you can follow up...
-            M.chat_window:append("\n" .. format_role("user"))
+            -- * show user role as hint to follow up
+            local marks_ns_id = vim.api.nvim_create_namespace("ask.marks.chat.window." .. os.time()) -- TODO use counter? os.time() might overlap if things go fast enough (seconds)
+            local lines_builder = LinesBuilder:new(marks_ns_id)
+            lines_builder:add_role("user")
+            lines_builder:append_blank_line()
+            M.chat_window.buffer:append_lines(lines_builder)
+
             M.chat_window.followup_starts_at_line_0indexed = M.chat_window.buffer:get_line_count() - 1
         end
         M.clear_undos()
