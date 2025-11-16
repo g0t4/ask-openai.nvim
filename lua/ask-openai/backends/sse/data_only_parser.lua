@@ -69,6 +69,8 @@ end
 ---@param data string
 function SSEDataOnlyParser:write(data)
     table.insert(self._lines, data)
+    -- log:info("data", vim.inspect(data))
+    -- log:info("_lines", vim.inspect(self._lines))
 
     -- FYI assumed to be all data events so this is fine, to strip before inserting in buffer
     data = data:gsub("^data: ", "")
