@@ -219,9 +219,8 @@ function M.abort_and_close()
 end
 
 function M.on_sse_llama_server_error_explanation(sse_parsed)
-    vim.schedule(function()
-        M.chat_window:explain_error(vim.inspect(sse_parsed))
-    end)
+    -- TODO remove this if I drop this pathway from detecting the error
+    M.explain_error(vim.inspect(sse_parsed))
 end
 
 function M.explain_error(text)
