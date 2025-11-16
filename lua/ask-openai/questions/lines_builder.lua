@@ -1,14 +1,16 @@
 ---@class LinesBuilder
 ---@field turn_lines string[]
 ---@field marks table[]
+---@field marks_ns_id number
 local LinesBuilder = {}
 LinesBuilder.__index = LinesBuilder
 
 ---@return LinesBuilder
-function LinesBuilder:new()
+function LinesBuilder:new(marks_ns_id)
     local self = setmetatable({
         turn_lines = {},
-        marks = {}
+        marks = {},
+        marks_ns_id = marks_ns_id
     }, LinesBuilder)
     return self
 end

@@ -86,13 +86,13 @@ The semantic_grep tool:
     if not first_turn_ns_id then
         first_turn_ns_id = vim.api.nvim_create_namespace("ask.marks.chat.window.first.turn")
     end
-    local lines = LinesBuilder:new() -- TODO pass ns_id to builder
+    local lines = LinesBuilder:new(first_turn_ns_id)
     -- TODO? lines:add_folded_lines(system_prompt)
     lines:add_role("user")
     table_insert_split_lines(lines.turn_lines, user_message) -- TODO lines builder helper method for this
     table.insert(lines.turn_lines, "")
     -- TODO move append_lines to chat_window:append(LinesBuilder)
-    M.chat_window.buffer:append_lines(lines, first_turn_ns_id)
+    M.chat_window.buffer:append_lines(lines)
 
     ---@type ChatMessage[]
     local messages = {

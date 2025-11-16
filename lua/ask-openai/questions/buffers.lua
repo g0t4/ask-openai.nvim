@@ -41,14 +41,14 @@ function BufferController:get_cursor_line_number_0indexed()
 end
 
 ---@param lines LinesBuilder
-function BufferController:append_lines(lines, marks_ns_id)
+function BufferController:append_lines(lines)
     local start_line_base0 = self:get_line_count()
     if start_line_base0 == 1 then
         -- edge case, first line is not actually used in a new buffer (it's legit empty)
         start_line_base0 = 0
     end
-    -- TODO merge marks_ns_id into LinesBuilder and then pass that alone to replace_
-    self:replace_lines_after(start_line_base0, lines.turn_lines, lines.marks, marks_ns_id)
+    -- TODO pass LinesBuilder instead of three args
+    self:replace_lines_after(start_line_base0, lines.turn_lines, lines.marks, lines.marks_ns_id)
 end
 
 function BufferController:replace_lines_after(start_line_inclusive_base0, with_lines, marks, marks_ns_id)
