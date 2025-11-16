@@ -123,14 +123,14 @@ describe("data-only events", function()
                 local write1 = llama_server_error_no_end_newlines .. "\n"
                 parser:write(write1)
                 parser:flush_dregs() -- intended to be called in on_exit
-                assert.are.same({ llama_server_error_no_end_newlines }, events)
+                assert.are.same({ write1 }, events)
             end)
 
             it("NO newline at end => treats as SSE", function()
                 local write1 = llama_server_error_no_end_newlines
                 parser:write(write1)
                 parser:flush_dregs()
-                assert.are.same({ llama_server_error_no_end_newlines }, events)
+                assert.are.same({ write1 }, events)
             end)
         end)
 

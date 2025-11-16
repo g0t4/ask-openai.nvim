@@ -52,7 +52,11 @@ function SSEDataOnlyParser.new(on_data_sse)
 end
 
 function SSEDataOnlyParser:flush_dregs()
+    -- TODO test for buffer empty => return?
 
+    local success, sse_parsed = pcall(vim.json.decode, self._buffer)
+    -- TODO? just flush it to _on_data_sse every time and let that blow up (it has error handler in it)?
+    self._on_data_sse(self._buffer)
 end
 
 --- curl stdout should be patched into this
