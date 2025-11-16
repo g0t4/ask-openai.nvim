@@ -10,15 +10,14 @@ function ChatWindow:new()
     self = setmetatable({}, { __index = ChatWindow })
 
     local listed_buffer = false
-    -- must be scratch, otherwise have to save contents or trash it on exit
-    local scratch_buffer = true
+    local scratch_buffer = true -- must be scratch, otherwise have to save contents or trash it on exit
     local bufnr = vim.api.nvim_create_buf(listed_buffer, scratch_buffer)
 
     self.buffer_number = bufnr
     self.buffer = BufferController:new(self.buffer_number)
     vim.api.nvim_buf_set_name(self.buffer_number, 'Question Response')
-    -- buffer local keymaps
-    -- PRN use <LocalLeader>?
+
+    -- * buffer local keymaps
     vim.keymap.set('n', '<leader>c', function() self:clear() end, { buffer = self.buffer_number, desc = "clear the chat window, and eventually the message history" })
 
     return self
