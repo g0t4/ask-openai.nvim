@@ -183,8 +183,6 @@ function M.on_line_or_lines(data_value, extract_generated_text, frontend, reques
     end
 
     local success, sse_parsed = pcall(vim.json.decode, data_value)
-    log:info("FUCK2")
-
     if success and sse_parsed then
         if sse_parsed.choices and sse_parsed.choices[1] then
             local first_choice = sse_parsed.choices[1]
