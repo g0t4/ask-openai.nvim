@@ -60,10 +60,13 @@ function SSEDataOnlyParser:flush_dregs()
 
     local success, sse_parsed = pcall(vim.json.decode, self._buffer)
     if not success then
-        -- TODO? just flush it to _on_data_sse every time and let that blow up (it has error handler in it)?
-        --   if I want terminate behavior then this would be wise
         return "invalid json: " .. self._buffer
     end
+
+    -- PRN? just flush it to _on_data_sse every time and let that blow up (it has error handler in it)
+    --   if I want terminate behavior then this would be wise
+
+    -- YES I know this means the parsed JSON object is discarded and re-parsed in:
     self._on_data_sse(self._buffer)
 end
 
