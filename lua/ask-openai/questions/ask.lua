@@ -85,7 +85,7 @@ The semantic_grep tool:
         user_message = user_message .. "\n\n" .. entire_file_message
     end
 
-    -- show initial question
+    -- * show user's initial prompt
     if not first_turn_ns_id then
         first_turn_ns_id = vim.api.nvim_create_namespace("ask.marks.chat.window.first.turn")
     end
