@@ -75,6 +75,7 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
             -- important part is to alert me
             log:error("Terminating curl_streaming due to unhandled exception", result)
 
+            -- ?? pass this to explain_error?
             local function print_error(message)
                 -- replace literals so traceback is pretty printed (readable)
                 message = tostring(message):gsub("\\n", "\n"):gsub("\\t", "\t")
