@@ -31,7 +31,7 @@ function M.ask_for_prediction()
         local backend = OllamaFimBackend:new(ps_chunk, rag_matches, model)
         local spawn_curl_options = backend:request_options()
 
-        -- log:trace("curl", table.concat(spawn_curl_options.args, " "))
+        log:trace("curl", table.concat(spawn_curl_options.args, " ")) -- TODO remove after find hang culprit 2025-11-17
 
         local this_prediction = Prediction:new()
         M.current_prediction = this_prediction
@@ -40,8 +40,8 @@ function M.ask_for_prediction()
         local stderr = uv.new_pipe(false)
 
         local function on_exit(code, signal)
-            -- log:trace_on_exit_always(code, signal)
-            log:trace_on_exit_errors(code, signal) -- less verbose
+            log:trace_on_exit_always(code, signal) -- TODO switch to errors once find culprit 2025-11-17
+            -- log:trace_on_exit_errors(code, signal) -- less verbose
 
             -- TODO mark complete? close? any reason to do this? I vaguely recall there might be a reason I want to do this
             --   i.e. process related?
@@ -59,10 +59,11 @@ function M.ask_for_prediction()
                 stdio = { nil, stdout, stderr },
             },
             on_exit)
+        log:info("spawned FIM curl") -- TODO remove once find culprit 2025-11-17
 
         local function on_stdout(read_error, data)
-            log:trace_stdio_read_errors("on_stdout", read_error, data)
-            -- log:trace_stdio_read_always("on_stdout", read_error, data)
+            -- log:trace_stdio_read_errors("on_stdout", read_error, data)
+            log:trace_stdio_read_always("on_stdout", read_error, data) -- TODO switch to errors once find culprit 2025-11-17
 
             if read_error then
                 this_prediction:mark_generation_failed()
@@ -113,12 +114,14 @@ function M.ask_for_prediction()
             end
         end
         stdout:read_start(on_stdout)
+        log:info("stdout:read_start FIM curl") -- TODO remove once find culprit 2025-11-17
 
         local function on_stderr(read_error, data)
-            log:trace_stdio_read_errors("on_stderr", read_error, data)
-            -- log:trace_stdio_read_always("on_stderr", read_error, data)
+            -- log:trace_stdio_read_errors("on_stderr", read_error, data)
+            log:trace_stdio_read_always("on_stderr", read_error, data) -- TODO switch to errors once find culprit 2025-11-17
         end
         stderr:read_start(on_stderr)
+        log:info("stderr:read_start FIM curl") -- TODO remove once find culprit 2025-11-17
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
