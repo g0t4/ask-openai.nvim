@@ -58,6 +58,39 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     -- PRN could use bat -l sh for this one:
     -- log:warn("curl args: ", table.concat(options.args, " "))
 
+    function on_data_sse(data_value)
+        -- TODO extract error handling: both the xpcall + traceback, and the print_error func below
+        -- FYI good test case is to comment out: choice.delta.content == vim.NIL in extract_generated_text
+        local success, result = xpcall(function()
+            M.on_line_or_lines(data_value, extract_generated_text, frontend, request)
+        end, function(e)
+            -- otherwise only get one line from the traceback (frame that exception was thrown)
+            return debug.traceback(e, 3)
+        end)
+
+        if not success then
+            M.terminate(request)
+
+            -- FAIL EARLY, accept NO unexpected exceptions in completion parsing
+            -- by the way the request will go a bit longer but it will stop ASAP
+            -- important part is to alert me
+            log:error("Terminating curl_streaming due to unhandled exception", result)
+
+            local function print_error(message)
+                -- replace literals so traceback is pretty printed (readable)
+                message = tostring(message):gsub("\\n", "\n"):gsub("\\t", "\t")
+                -- with traceback lines... this will trigger hit-enter mode
+                --  therefore the error will not disappear into message history!
+                -- ErrorMsg makes it red
+                vim.api.nvim_echo({ { message, "ErrorMsg" } }, true, {})
+            end
+
+            vim.schedule(function()
+                print_error("Terminating curl_streaming due to unhandled exception" .. tostring(result))
+            end)
+        end
+    end
+
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
 
@@ -95,40 +128,6 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
         args = options.args,
         stdio = { nil, stdout, stderr },
     }, on_exit)
-
-
-    function on_data_sse(data_value)
-        -- TODO extract error handling: both the xpcall + traceback, and the print_error func below
-        -- FYI good test case is to comment out: choice.delta.content == vim.NIL in extract_generated_text
-        local success, result = xpcall(function()
-            M.on_line_or_lines(data_value, extract_generated_text, frontend, request)
-        end, function(e)
-            -- otherwise only get one line from the traceback (frame that exception was thrown)
-            return debug.traceback(e, 3)
-        end)
-
-        if not success then
-            M.terminate(request)
-
-            -- FAIL EARLY, accept NO unexpected exceptions in completion parsing
-            -- by the way the request will go a bit longer but it will stop ASAP
-            -- important part is to alert me
-            log:error("Terminating curl_streaming due to unhandled exception", result)
-
-            local function print_error(message)
-                -- replace literals so traceback is pretty printed (readable)
-                message = tostring(message):gsub("\\n", "\n"):gsub("\\t", "\t")
-                -- with traceback lines... this will trigger hit-enter mode
-                --  therefore the error will not disappear into message history!
-                -- ErrorMsg makes it red
-                vim.api.nvim_echo({ { message, "ErrorMsg" } }, true, {})
-            end
-
-            vim.schedule(function()
-                print_error("Terminating curl_streaming due to unhandled exception" .. tostring(result))
-            end)
-        end
-    end
 
     ---@param read_error any
     ---@param data? string
