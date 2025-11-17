@@ -25,9 +25,23 @@ function ChatMessage:new(role, content)
     return self
 end
 
-function ChatMessage:new_tool_response(content, tool_call_id, name)
-    self = ChatMessage:new("tool", content)
-    --PRN enforce strings are not empty?
+function ChatMessage:new_tool_response(call_result_object_not_json, tool_call_id, name)
+    --  FYI llama-server uses the gptoss jinja template w/ tojson (other models had similar part in their tool calling)
+    --   SO DO NOT ENCODE to JSON... else it ends up double encoded
+    --   SEE tojson in template:
+    --     https://github.com/ggml-org/llama.cpp/blob/cb623de3f/models/templates/openai-gpt-oss-120b.jinja#L322
+    --   FYI use --verbose-prompt => logs (IIRC also final SSE) => __verbose.prompt has rendered prompt
+    --   ALSO harmony spec on raw JSON inputs:
+    --     https://cookbook.openai.com/articles/openai-harmony#receiving-tool-calls
+    --
+    self = ChatMessage:new("tool", call_result_object_not_json)
+
+    -- TODO! what about tojson on args in original tool call request message (WHEN SENDING IT BACK)?
+    -- FYI __verbose.prompt has correct raw JSON for original tool_call request message (when it is sent back to the model)
+    -- https://github.com/ggml-org/llama.cpp/blob/cb623de3f/models/templates/openai-gpt-oss-120b.jinja#L298-L299   --
+    --   => ? tool_call.arguments|tojson
+
+    -- PRN enforce strings are not empty?
     self.tool_call_id = tool_call_id
     self.name = name
     return self

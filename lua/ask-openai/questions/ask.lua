@@ -420,19 +420,7 @@ function M.call_requested_tools_for_the_model()
                     M.handle_messages_updated()
 
                     -- *** tool response messages back to model
-                    -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
-                    -- make sure content is a string (keep json structure)
-                    -- PRN if issues, experiment with pretty printing the serialized json?
-                    -- TODO move encoding into newToolResponse?
-                    local content = vim.json.encode(tool_call.call_output.result)
-                    local tool_response_message = ChatMessage:new_tool_response(content, tool_call.id, tool_call["function"].name)
-                    -- log:trace("tool_message:", vim.inspect(response_message))
-                    -- tool_message: {
-                    --   content = '{"isError": false, "content": [{"name": "STDOUT", "type": "text", "text": "README.md\\nflows\\nlua\\nlua_modules\\ntests\\ntmp\\n"}]}',
-                    --   name = "run_command",
-                    --   role = "tool",
-                    --   tool_call_id = "call_n44nr8e2"
-                    -- }
+                    local tool_response_message = ChatMessage:new_tool_response(tool_call.call_output.result, tool_call.id, tool_call["function"].name)
                     log:jsonify_compact_trace("tool_message:", tool_response_message)
                     tool_call.response_message = tool_response_message
                     M.thread:add_message(tool_response_message)
