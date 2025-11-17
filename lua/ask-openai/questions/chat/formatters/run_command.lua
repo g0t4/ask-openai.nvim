@@ -6,7 +6,20 @@ local M = {}
 ---@param lines LinesBuilder
 ---@param tool_call ToolCall
 function M.format(lines, tool_call)
-    local tool_header = tool_call["function"].arguments
+    local args_json = tool_call["function"].arguments
+
+    -- PRN? don't even try to show until it parses? (in which case full command is available?)
+    local json_args_parsed, args = xpcall(function()
+        return vim.json.decode(args_json)
+    end, function() end) -- TODO is there an xpcall alternative that doesn't expect on failure (b/c I don't need a callback in that case)
+    log:info("is_full_command", json_args_parsed)
+    log:info("args", args)
+
+    local tool_header = args_json -- default show the JSON as the tool call is streamed in
+    if json_args_parsed and args.command then
+        tool_header = args.command
+    end
+
     -- TODO extract command from JSON and show if reasonable length?
     --   TODO if LONG then fold the one line b/c with my fold setup a long line can be collapsed
     --      and then the first part of command will be visible
@@ -24,18 +37,6 @@ function M.format(lines, tool_call)
         end
     end
     lines:append_styled_lines({ tool_header }, hl_group)
-
-    -- * tool args
-    local args = tool_call["function"].arguments
-    if args then
-        -- TODO new line in args? s\b \n right?
-        lines:append_text(args)
-    end
-    -- PRN mark outputs somehow? or just dump them? (I hate to waste space)
-
-    -- TODO REMINDER - try/add apply_patch when using gptoss (need to put this elsewhere)
-    --    USE BUILT-IN mcp server - https://github.com/openai/gpt-oss/tree/main/gpt-oss-mcp-server
-    -- TODO REMINDER - also try/add other tools it uses (python code runner, browser)
 
     -- * tool result
     if tool_call.response then
