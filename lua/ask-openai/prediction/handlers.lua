@@ -36,8 +36,6 @@ function M.ask_for_prediction()
 
         local stdout = uv.new_pipe(false)
         local stderr = uv.new_pipe(false)
-        assert(stdout ~= nil)
-        assert(stderr ~= nil)
 
         local function on_exit(code, signal)
             -- log:trace_on_exit_always(code, signal)
