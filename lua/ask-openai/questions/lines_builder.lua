@@ -62,11 +62,18 @@ function LinesBuilder:append_styled_lines(lines, hl_group)
     vim.list_extend(self.turn_lines, lines)
 end
 
+---@param text string
+---@param hl_group string
+function LinesBuilder:append_folded_styled_text(text, hl_group)
+    local lines = vim.split(text, "\n")
+    self:append_folded_styled_lines(lines, hl_group)
+end
+
 ---Add a block of lines that should start folded.
 ---The lines will be appended to `turn_lines` and a fold entry will be recorded.
 ---@param lines string[]   -- lines to add
 ---@param hl_group string  -- optional highlight for the folded region header
-function LinesBuilder:add_folded_lines(lines, hl_group)
+function LinesBuilder:append_folded_styled_lines(lines, hl_group)
     local start_line_base0 = #self.turn_lines
     local mark = {
         start_line_base0 = start_line_base0, -- base0 b/c next line is the marked one (thus not yet in line count)

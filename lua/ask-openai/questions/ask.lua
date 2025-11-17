@@ -87,7 +87,7 @@ The semantic_grep tool:
     local lines = LinesBuilder:new(first_turn_ns_id)
 
     lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
-    lines:add_folded_lines(vim.split("system\n" .. system_prompt, "\n"), "")
+    lines:append_folded_styled_text("system\n" .. system_prompt, "")
 
     lines:append_role_header("user")
     lines:append_text(user_message)
@@ -309,7 +309,7 @@ function M.handle_messages_updated()
             -- ONLY add role header IF there is content (or reasoning) to show... otherwise just show tool_call(s)
             lines:append_role_header(message.role)
 
-            lines:add_folded_lines(vim.split(reasoning_content, '\n'), HLGroups.CHAT_REASONING)
+            lines:append_folded_styled_text(reasoning_content, HLGroups.CHAT_REASONING)
 
             lines:append_text(content)
             lines:append_blank_line_if_last_is_not_blank() -- only if reasoning doesn't have trailing \n
