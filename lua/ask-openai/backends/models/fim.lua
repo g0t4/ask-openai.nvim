@@ -1,8 +1,8 @@
 local log = require("ask-openai.logs.logger").predictions()
 local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.prediction.ansi")
-local ChatThread = require("ask-openai.questions.chat_thread")
-local ChatMessage = require("ask-openai.questions.chat_message")
+local ChatThread = require("ask-openai.questions.chat.thread")
+local ChatMessage = require("ask-openai.questions.chat.message")
 local HarmonyRawFimPromptBuilder = require("ask-openai.backends.models.fim_harmony")
 
 local M = {}
