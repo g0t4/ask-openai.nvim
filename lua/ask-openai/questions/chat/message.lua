@@ -120,6 +120,7 @@ ChatMessage.LIFECYCLE = {
 }
 
 function ChatMessage:get_lifecycle_step()
+    -- TODO try using this to simplify consumer logic... i.e. in streaming chat window  message/tool formatters/summarizers
     if self:is_still_streaming() then
         return ChatMessage.LIFECYCLE.STREAMING
     end

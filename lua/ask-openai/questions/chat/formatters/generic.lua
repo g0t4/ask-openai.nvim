@@ -7,6 +7,7 @@ local M = {}
 function M.format(lines, tool_call, message)
     -- if message:is_still_streaming() then
     --     -- TODO?
+    --     -- TODO OR message:get_lifecycle_step() == ChatMessage.LIFECYCLE.FINISHED
     --     return
     -- end
 
@@ -32,7 +33,7 @@ function M.format(lines, tool_call, message)
 
     -- * tool result
     -- if not tool_call:is_done() then
-    --     -- TODO?
+    --     -- TODO ... by the way this is PER TOOL, not entire message (so message:get_lifecycle_step() is not likely what you want here)
     --     return -- ?
     -- end
 
