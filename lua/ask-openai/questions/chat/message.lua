@@ -34,12 +34,13 @@ function ChatMessage:new_tool_response(call_result_object_not_json, tool_call_id
     --   ALSO harmony spec on raw JSON inputs:
     --     https://cookbook.openai.com/articles/openai-harmony#receiving-tool-calls
     --
-    self = ChatMessage:new("tool", call_result_object_not_json)
+    -- self = ChatMessage:new("tool", call_result_object_not_json) -- blocked by server, this is needed
+    self = ChatMessage:new("tool", vim.json.encode(call_result_object_not_json)) -- this works but it is why I have issues I think ... works but results in double encoded in prompt (UGH)
     --- FUUUUUUUUUCK llama-server won't allow content to be an object... yet ;)
     ---   llama-server is rejecting raw objects?! only allows strings/arrays...
     ---   WHAT THE LITERAL FUCK MAN
     ---   https://github.com/ggml-org/llama.cpp/blob/cb623de3f/tools/server/utils.hpp#L611-L614
-    ---   I suppose I could just wrap my result in an array... though I'd prefer not to but crap
+    ---   I suppose I could just wrap my result in an array... NOPE THAT IS BLOCKED TOO
     ---   I'll go get rid of the runtime check :)
 
     -- TODO! what about tojson on args in original tool call request message (WHEN SENDING IT BACK)?
