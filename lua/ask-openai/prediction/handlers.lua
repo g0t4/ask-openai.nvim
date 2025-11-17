@@ -318,7 +318,7 @@ local keypresses_subscription = keypresses:subscribe(function()
 end)
 local debounced_subscription = debounced:subscribe(function()
     vim.schedule(function()
-        log:trace("CursorMovedI debounced")
+        -- log:trace("CursorMovedI debounced")
 
         if vim.fn.mode() ~= "i" then
             return
