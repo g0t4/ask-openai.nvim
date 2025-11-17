@@ -1,6 +1,16 @@
 local ansi = require("ask-openai.prediction.ansi")
 local log = require("ask-openai.logs.logger").predictions()
 
+-- TODO track thinking time? and merge thinking dots logic into here
+-- TODO turn this into FIMState too? and use for UX updates, i.e.
+--   request started (before anything sent)
+--   RAG sent/pending
+--   FIM sent/pending
+--   Thinking started
+--   Content started
+--   Finished
+--   (other states/perf/timing too)
+
 ---@class FIMPerformance
 ---@field time_to_first_token_ms? number
 ---@field rag_duration_ms? number
