@@ -1,6 +1,6 @@
 --- Wrapper around unstructured tool call output (regardless of tool used)
 ---@class ToolCallOutput
----@field result any
+---@field result any -- this is passed back to the model
 local ToolCallOutput = {}
 
 ---@return ToolCallOutput
