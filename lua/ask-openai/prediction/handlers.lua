@@ -40,7 +40,7 @@ function M.ask_for_prediction()
         assert(stderr ~= nil)
 
         local function on_exit(code, signal)
-            log:trace(string.format("spawn - exit code: %d  signal:%s", code, signal))
+            -- log:trace(string.format("spawn - exit code: %d  signal:%s", code, signal))
             if code ~= 0 then
                 log:error("spawn - non-zero exit code:", code, "Signal:", signal)
             end
