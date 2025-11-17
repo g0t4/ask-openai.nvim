@@ -105,4 +105,34 @@ function ChatMessage:is_still_streaming()
     return self.finish_reason == nil or self.finish_reason == vim.NIL
 end
 
+ChatMessage.LIFECYCLE = {
+    -- FYI I merged two concepts: message from model + managing requested tool_call object(s)
+    -- streaming -> rx finish_reason=stop/length -> finished
+    -- streaming -> rx finish_reason=tool_calls -> pending_tool_call -> calling -> rx results -> finished (tool call done)
+
+    STREAMING = "streaming", -- server is sending message (streaming SSEs)
+    FINISHED = "finished", -- server is done sending the message
+
+    -- * tool call related
+    -- PENDING_TOOL_CALL = "pending_tool_call", -- next the client will call the tool (add this only IF NEEDED)
+    TOOL_CALLING = "tool_calling", -- client is calling the tool, waiting for it to complete
+    TOOLS_DONE = "tool_called", -- tool finished (next message will send results to server for a new "TURN" in chat history)
+}
+
+function ChatMessage:get_lifecycle_step()
+    if self:is_still_streaming() then
+        return ChatMessage.LIFECYCLE.STREAMING
+    end
+    local finish_reason = self:get_finish_reason()
+    if finish_reason == ChatMessage.FINISH_REASONS.TOOL_CALLS then
+        -- IIRC tool_calls are parsed before FINISHED state... so just check all are complete (or not)
+        for _, call in ipairs(self.tool_calls) do
+            if not call:is_done() then
+                return ChatMessage.LIFECYCLE.TOOL_CALLING
+            end
+        end
+    end
+    return ChatMessage.LIFECYCLE.FINISHED
+end
+
 return ChatMessage

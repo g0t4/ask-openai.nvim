@@ -19,6 +19,12 @@ function ToolCall:new(o)
     return o
 end
 
+---@return boolean
+function ToolCall:is_done()
+    -- FYI see call_requested_tools_for_the_model() for when this happens, it sets response and calls back to handle_messages_updated()
+    return self.response ~= nil
+end
+
 -- FYI marker interface for now
 
 return ToolCall
