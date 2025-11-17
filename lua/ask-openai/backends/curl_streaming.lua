@@ -131,8 +131,8 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     ---@param read_error any
     ---@param data? string
     local function on_stdout(read_error, data)
-        -- log:trace_stdio_read_errors("on_stdout", read_error, data)
-        log:trace_stdio_read_always("on_stdout", read_error, data)
+        log:trace_stdio_read_errors("on_stdout", read_error, data)
+        -- log:trace_stdio_read_always("on_stdout", read_error, data)
 
         local no_data = data == nil or data == ""
         if read_error or no_data then
@@ -146,8 +146,8 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     ---@param read_error? string
     ---@param data? string
     local function on_stderr(read_error, data)
-        log:trace_stdio_read_always("on_stderr", read_error, data)
-        -- log:trace_stdio_read_errors("on_stderr", err, data)
+        log:trace_stdio_read_errors("on_stderr", read_error, data)
+        -- log:trace_stdio_read_always("on_stderr", read_error, data)
 
         local no_data = data == nil or data == ""
         if read_error or no_data then
