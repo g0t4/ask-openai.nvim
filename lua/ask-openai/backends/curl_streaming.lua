@@ -99,13 +99,10 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     ---@param code integer
     ---@param signal integer
     local function on_exit(code, signal)
-        log:trace_on_exit_always(code, signal)
-        -- log:trace_on_exit_errors(code, signal) -- less verbose
+        -- log:trace_on_exit_always(code, signal)
+        log:trace_on_exit_errors(code, signal) -- less verbose
 
-        if code ~= nil and code ~= 0 then
-            log:error("spawn - non-zero exit code: '" .. code .. "' Signal: '" .. signal .. "'")
-            -- ! DO NOT add frontend handler just to have it log again!
-        else
+        if code == 0 then
             frontend.curl_exited_successfully()
         end
         stdout:close()
