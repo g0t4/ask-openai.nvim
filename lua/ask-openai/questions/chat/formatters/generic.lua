@@ -3,9 +3,10 @@ local HLGroups = require("ask-openai.hlgroups")
 
 local M = {}
 
----@param lines LinesBuilder
----@param tool_call ToolCall
-function M.format(lines, tool_call)
+---@type ToolCallFormatter
+function M.format(lines, tool_call, message)
+    -- TODO use message.finish_reason to determine if still streaming or if you have the full message
+
     local tool_header = tool_call["function"].name or ""
 
     local hl_group = HLGroups.TOOL_SUCCESS

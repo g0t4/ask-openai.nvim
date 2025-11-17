@@ -325,7 +325,7 @@ function M.handle_messages_updated()
             local function_name = tool_call["function"].name or ""
             local formatter = formatters.get_formatter(function_name)
             if formatter then
-                formatter(lines, tool_call)
+                formatter(lines, tool_call, message)
             else
                 formatters.generic.format(lines, tool_call)
             end
