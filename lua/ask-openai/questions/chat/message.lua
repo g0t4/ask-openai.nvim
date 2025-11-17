@@ -35,11 +35,18 @@ function ChatMessage:new_tool_response(call_result_object_not_json, tool_call_id
     --     https://cookbook.openai.com/articles/openai-harmony#receiving-tool-calls
     --
     self = ChatMessage:new("tool", call_result_object_not_json)
+    --- FUUUUUUUUUCK llama-server won't allow content to be an object... yet ;)
+    ---   llama-server is rejecting raw objects?! only allows strings/arrays...
+    ---   WHAT THE LITERAL FUCK MAN
+    ---   https://github.com/ggml-org/llama.cpp/blob/cb623de3f/tools/server/utils.hpp#L611-L614
+    ---   I suppose I could just wrap my result in an array... though I'd prefer not to but crap
+    ---   I'll go get rid of the runtime check :)
 
     -- TODO! what about tojson on args in original tool call request message (WHEN SENDING IT BACK)?
     -- FYI __verbose.prompt has correct raw JSON for original tool_call request message (when it is sent back to the model)
     -- https://github.com/ggml-org/llama.cpp/blob/cb623de3f/models/templates/openai-gpt-oss-120b.jinja#L298-L299   --
     --   => ? tool_call.arguments|tojson
+    -- BTW upon inspection, the returned args seem fine (raw JSON looks good)... BUT HOW?!
 
     -- PRN enforce strings are not empty?
     self.tool_call_id = tool_call_id
