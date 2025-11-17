@@ -1,5 +1,6 @@
 local LinesBuilder = require("ask-openai.questions.lines_builder")
 local BufferController = require("ask-openai.questions.buffers")
+local HLGroups = require("ask-openai.hlgroups")
 
 ---@class ChatWindow
 ---@field buffer_number number
@@ -86,13 +87,10 @@ function ChatWindow:ensure_open()
     vim.opt_local.foldlevel = 0 -- CLOSE all folds with higher number, thus 0 == ALL (equiv to zM => foldenable + foldlevel=0)
 end
 
-local HLGROUP_EXPLAIN_ERROR = "AskChatWindowExplainError"
-vim.api.nvim_command("highlight default " .. HLGROUP_EXPLAIN_ERROR .. " guibg=#ff7777 guifg=#000000 ctermbg=red ctermfg=black")
-
 function ChatWindow:explain_error(text)
     local lines = LinesBuilder:new()
     lines:create_marks_namespace()
-    lines:append_styled_text(text, HLGROUP_EXPLAIN_ERROR)
+    lines:append_styled_text(text, HLGroups.EXPLAIN_ERROR)
     lines:append_blank_line()
     self:append_styled_lines(lines)
 end

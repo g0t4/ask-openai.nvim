@@ -14,16 +14,9 @@ local model_params = require("ask-openai.questions.models.params")
 local LinesBuilder = require("ask-openai.questions.lines_builder")
 local MessageBuilder = require("ask-openai.rewrites.message_builder")
 local prompts = require("ask-openai.prediction.context.prompts")
-require("ask-openai.helpers.buffers")
+local HLGroups = require("ask-openai.hlgroups")
 
-vim.api.nvim_set_hl(0, "AskToolSuccess", { fg = "#92E2AC", bg = "NONE" })
-vim.api.nvim_set_hl(0, "AskToolFailed", { fg = "#e06c75", bg = "NONE", bold = true })
-vim.api.nvim_set_hl(0, "AskAssistantRole", { fg = "#5A6FFF", italic = true, bold = true })
--- vim.api.nvim_set_hl(0, "AskUserRole", { fg = "#8660FF", italic = true, bold = true })
-vim.api.nvim_set_hl(0, "AskUserRole", { fg = "#A07CFF", italic = true, bold = true })
-local HLGROUP_ROLE_SYSTEM_PROMPT = "AskSystemRole"
-vim.api.nvim_set_hl(0, HLGROUP_ROLE_SYSTEM_PROMPT, { fg = "#D9C27A", italic = true, bold = true })
-vim.api.nvim_set_hl(0, "AskChatReasoning", { fg = "#808080", italic = true })
+require("ask-openai.helpers.buffers")
 
 ---@class AskQuestionFrontend : StreamingFrontend
 local M = {}
@@ -93,7 +86,7 @@ The semantic_grep tool:
     end
     local lines = LinesBuilder:new(first_turn_ns_id)
 
-    lines:mark_next_line(HLGROUP_ROLE_SYSTEM_PROMPT)
+    lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
     lines:add_folded_lines(vim.split("system\n" .. system_prompt, "\n"), "")
 
     lines:append_role_header("user")
@@ -316,7 +309,7 @@ function M.handle_messages_updated()
             -- ONLY add role header IF there is content (or reasoning) to show... otherwise just show tool_call(s)
             lines:append_role_header(message.role)
 
-            lines:add_folded_lines(vim.split(reasoning_content, '\n'), "AskChatReasoning")
+            lines:add_folded_lines(vim.split(reasoning_content, '\n'), HLGroups.CHAT_REASONING)
 
             lines:append_text(content)
             lines:append_blank_line_if_last_is_not_blank() -- only if reasoning doesn't have trailing \n
@@ -333,11 +326,11 @@ function M.handle_messages_updated()
 
             -- * tool name/id/status
             local tool_header = call["function"].name or ""
-            local hl_group = "AskToolSuccess"
+            local hl_group = HLGroups.TOOL_SUCCESS
             if call.response then
                 if call.response.result.isError then
                     tool_header = "❌ " .. tool_header
-                    hl_group = "AskToolFailed"
+                    hl_group = HLGroups.TOOL_FAILED
                 else
                     tool_header = "✅ " .. tool_header
                 end

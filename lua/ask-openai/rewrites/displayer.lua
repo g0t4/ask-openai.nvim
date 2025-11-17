@@ -4,18 +4,14 @@ local ExtmarksSet = require("ask-openai.rewrites.ExtmarksSet")
 local WindowController = require("ask-openai.rewrites.WindowController")
 local inspect = require("devtools.inspect")
 local ansi = require("devtools.ansi")
+local HLGroups = require("ask-openai.hlgroups")
 
 ---@class Displayer
 local Displayer = {}
 Displayer.__index = Displayer
 
-local hlgroup = "AskRewrite"
-vim.api.nvim_command("highlight default " .. hlgroup .. " guifg=#ccffcc ctermfg=green")
 local select_excerpt_mark_id = 11
 local explain_error_mark_id = 31
-
-local HLGROUP_EXPLAIN_ERROR = "AskRewriteExplainError"
-vim.api.nvim_command("highlight default " .. HLGROUP_EXPLAIN_ERROR .. " guibg=#ff7777 guifg=#000000 ctermbg=red ctermfg=black")
 
 function Displayer:new(_current_accept, _current_cancel)
     self = setmetatable({}, Displayer)
@@ -42,12 +38,12 @@ function Displayer:show_green_preview_text(selection, lines)
         return
     end
 
-    local first_line = { { table.remove(lines, 1), hlgroup } }
+    local first_line = { { table.remove(lines, 1), HLGroups.ASK_REWRITE } }
 
     -- Format remaining lines for virt_lines
     local virt_lines = {}
     for _, line in ipairs(lines) do
-        table.insert(virt_lines, { { line, hlgroup } })
+        table.insert(virt_lines, { { line, HLGroups.ASK_REWRITE } })
     end
 
     self.marks:set(select_excerpt_mark_id, {
@@ -77,10 +73,10 @@ function Displayer:explain_error(selection, new_text)
     -- ?? any utility in leaving other extmarks too? i.e. failure mid generation? (probably not but just a thought)
     -- self:clear_extmarks()
     local lines = vim.split(self._hack_previous_error_text, '\n')
-    local first_line = { { table.remove(lines, 1), HLGROUP_EXPLAIN_ERROR } }
+    local first_line = { { table.remove(lines, 1), HLGroups.EXPLAIN_ERROR } }
     local virt_lines = {}
     for _, line in ipairs(lines) do
-        table.insert(virt_lines, { { line, HLGROUP_EXPLAIN_ERROR } })
+        table.insert(virt_lines, { { line, HLGroups.EXPLAIN_ERROR } })
     end
 
     self.error_marks:set(explain_error_mark_id, {

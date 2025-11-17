@@ -18,6 +18,7 @@ local human = require("devtools.humanize")
 local tool_router = require("ask-openai.tools.router")
 local model_params = require("ask-openai.questions.models.params")
 local MessageBuilder = require("ask-openai.rewrites.message_builder")
+local HLGroups = require("ask-openai.hlgroups")
 
 ---@class AskInlineRewriteFrontend : StreamingFrontend
 local M = {}
@@ -123,7 +124,7 @@ function M.on_sse_llama_server_timings(sse)
                     human.comma_delimit(sse.timings.predicted_n),
                     human.format_num(sse.timings.predicted_per_second)
                 ),
-                "AskStatsPredicted",
+                HLGroups.STATS_PREDICTED
             },
             {
                 string.format(
@@ -131,7 +132,7 @@ function M.on_sse_llama_server_timings(sse)
                     human.comma_delimit(sse.timings.prompt_n),
                     human.format_num(sse.timings.prompt_per_second)
                 ),
-                "AskStatsPrompt",
+                HLGroups.STATS_PROMPT
             },
         }
 
@@ -142,7 +143,7 @@ function M.on_sse_llama_server_timings(sse)
                     " %scached",
                     human.comma_delimit(cache_n)
                 ),
-                "AskStatsCached",
+                HLGroups.STATS_CACHE
             })
         end
 

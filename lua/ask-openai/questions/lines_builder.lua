@@ -1,3 +1,5 @@
+local HLGroups = require("ask-openai.hlgroups")
+
 ---@class LinesBuilder
 ---@field turn_lines string[]
 ---@field marks table[]
@@ -37,7 +39,7 @@ end
 
 ---@param role string
 function LinesBuilder:append_role_header(role)
-    self:mark_next_line(role == "user" and "AskUserRole" or "AskAssistantRole")
+    self:mark_next_line(role == "user" and HLGroups.USER or HLGroups.ASSISTANT)
     table.insert(self.turn_lines, role)
 end
 

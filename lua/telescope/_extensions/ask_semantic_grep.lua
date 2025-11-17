@@ -11,6 +11,7 @@ local state = require('telescope.actions.state')
 local files = require("ask-openai.helpers.files")
 local logs = require('ask-openai.logs.logger').predictions()
 local AsyncDynamicFinder = require('telescope._extensions.ask_semantic_grep.async_dynamic_finder')
+local HLGroups = require('ask-openai.hlgroups')
 
 local latest_query_num = 0
 local picker
@@ -81,17 +82,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
     logs:warn("client_request_ids: " .. vim.inspect(last_msg_id))
 end
 
--- * RAG match highlighting
 local ns = vim.api.nvim_create_namespace("rag_preview")
--- -- I want my own highlight style (not Search)
-local hlgroup = "RagHighlightMatch"
-vim.api.nvim_set_hl(0, hlgroup, { bg = "#414858" })
-
--- * chunk type colors
-local hlgroup_light_green = "RagChunkTypeTreesitter"
-vim.api.nvim_set_hl(0, hlgroup_light_green, { fg = "#b0d5a6" })
-local hlgroup_light_red = "RagChunkTypeUncoveredCode"
-vim.api.nvim_set_hl(0, hlgroup_light_red, { fg = "#e24040" })
 
 local preview_content_type = 0
 local function is_file_preview()
@@ -160,7 +151,7 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
             -- PRN use start_column and end_column (base 0)
             local last_col = -1
             -- TODO confirm hl.range is base0 for both line/col values on start and end
-            vim.hl.range(bufnr, ns, "RagHighlightMatch", { start_line_base0, 0 }, { end_line_base0, last_col }, {})
+            vim.hl.range(bufnr, ns, HLGroups.RAG_HIGHLIGHT_LINES, { start_line_base0, 0 }, { end_line_base0, last_col }, {})
 
             ft = vim.filetype.match({ filename = filename })
         elseif is_entry_debug_preview() then
@@ -252,11 +243,11 @@ end
 ---@return string icon, string hlgroup
 local get_icon_for_chunk_type = function(chunk_type)
     if chunk_type == "ts" then
-        return "󱘎", "RagChunkTypeTreesitter"
+        return "󱘎", HLGroups.RAG_CHUNK_TYPE_ICON_TREESITTER
     elseif chunk_type == "lines" then
-        return "", "Normal"
+        return "", HLGroups.RAG_CHUNK_TYPE_ICON_LINE_RANGE
     elseif chunk_type == "uncovered" then
-        return "󱎘", "RagChunkTypeUncoveredCode"
+        return "󱎘", HLGroups.RAG_CHUNK_TYPE_ICON_UNCOVERED_CODE
     end
 end
 

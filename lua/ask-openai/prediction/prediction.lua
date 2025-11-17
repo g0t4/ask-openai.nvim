@@ -1,4 +1,5 @@
 local dots = require("ask-openai.rewrites.thinking.dots")
+local HLGroups = require("ask-openai.hlgroups")
 
 --- Prediction object – handles streaming LLM completions, rendering them as virtual
 --- text/ext‑marks in the current buffer and exposing a small API for pausing,
@@ -21,8 +22,6 @@ local Prediction = {}
 local uv = vim.uv
 
 local log = require("ask-openai.logs.logger").predictions()
-
-local hlgroup = "AskPrediction"
 
 ---@return Prediction
 function Prediction:new()
@@ -106,14 +105,14 @@ function Prediction:redraw_extmarks()
         lines = { dots:get_still_thinking_message(self.start_time) }
     end
 
-    local first_line = { { table.remove(lines, 1), hlgroup } } -- can add hlgroup too
+    local first_line = { { table.remove(lines, 1), HLGroups.PREDICTION_TEXT } } -- can add hlgroup too
 
     local virt_lines = {} -- FYI is a 3D array,  array of (lines like first_line format above)
     -- local virt_lines_example = { { { "line1 ..." } }, { { "line2 ..." } } }
     -- each line has an array of strings to add to the line and each string can have its own hlgroup (that is why)
     for i, line in ipairs(lines) do
         -- FYI can add hlgroup as second item { line, hlgroup }
-        table.insert(virt_lines, { { line, hlgroup } })
+        table.insert(virt_lines, { { line, HLGroups.PREDICTION_TEXT } })
     end
 
     vim.api.nvim_buf_set_extmark(self.buffer, self.namespace_id, original_row, original_col,
