@@ -132,15 +132,6 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     ---@param read_error any
     ---@param data? string
     local function on_stdout(read_error, data)
-        if data and data:match('{"error":{"code"') then
-            -- on some failures, curl will include a JSON object describing the issue:
-            -- {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
-            --   => FYI in this case, read_error is nil (in my testing)
-            frontend.explain_error("FYI this is from STDOUT and likely relevant to the FAILURE:\n  " .. data)
-            -- TODO! look into why SSE parser doesn't catch this?
-            --  TODO! OR DROP DETECTION FROM SSE PARSER IS PROBABLY THE BETTER WAY TO GO?
-        end
-
         -- log:trace_stdio_read_errors("on_stdout", read_error, data)
         log:trace_stdio_read_always("on_stdout", read_error, data)
 
@@ -210,7 +201,7 @@ function M.on_line_or_lines(data_value, extract_generated_text, frontend, reques
             -- only confirmed this on llama_server, rename if other backends follow suit
             -- {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
             -- DO NOT LOG HERE TOO
-            frontend.explain_error(vim.inspect(sse_parsed.error))
+            frontend.explain_error("found error on SSE:" .. vim.inspect(sse_parsed))
         end
 
         if sse_parsed.timings then
