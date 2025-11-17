@@ -16,6 +16,7 @@ local MessageBuilder = require("ask-openai.rewrites.message_builder")
 local prompts = require("ask-openai.prediction.context.prompts")
 local HLGroups = require("ask-openai.hlgroups")
 local formatters = require("ask-openai.questions.chat.formatters")
+local ToolCallOutput = require("ask-openai.questions.chat.tool_call_output")
 
 require("ask-openai.helpers.buffers")
 
@@ -397,7 +398,7 @@ function M.call_requested_tools_for_the_model()
             tool_router.send_tool_call_router(tool_call,
                 ---@type ToolCallDoneCallback
                 function(tool_call_output)
-                    tool_call.call_output = tool_call_output
+                    tool_call.call_output = ToolCallOutput:new(tool_call_output)
                     log:trace("tool_call_output", vim.inspect(tool_call_output))
                     -- MCP example:
                     --  {

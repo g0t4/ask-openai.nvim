@@ -7,7 +7,7 @@
 ---@field function OpenAIChoiceDeltaToolCallFunction
 ---
 ---@field response_message table|nil -- TODO type this? response message to send call results back to the model that will, also attached to chat_thread (history)
----@field call_output? table -- tool call outputs (specific to a given tool type, some have standard structure, i.e. MCP)
+---@field call_output? ToolCallOutput -- tool call outputs (specific to a given tool type, some have standard structure, i.e. MCP)
 local ToolCall = {}
 
 ---@return ToolCall
