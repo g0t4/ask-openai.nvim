@@ -222,7 +222,7 @@ function M.explain_error(text)
         -- 3. try using tools
         -- =>  curl: (22) The requested URL returned error: 500
         -- 4. add extra log to confirm:
-        -- M.chat_window:append_plain_text("MAKE SURE THIS IS FAILURE PATH")
+        -- log:warn("MAKE SURE THIS IS FAILURE PATH")
         --
         -- ALSO 503 error for model loading:
         --   error = { code = 503, message = "Loading model", type = "unavailable_error" }

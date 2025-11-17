@@ -95,16 +95,6 @@ function ChatWindow:explain_error(text)
     self:append_styled_lines(lines)
 end
 
---- Append plain text, including newlines
----@param text string
-function ChatWindow:append_plain_text(text)
-    self.buffer:append_plain_text(text)
-end
-
-function ChatWindow:append_blank_line()
-    self.buffer:append_blank_line()
-end
-
 ---@param lines LinesBuilder
 function ChatWindow:append_styled_lines(lines)
     self.buffer:append_styled_lines(lines)

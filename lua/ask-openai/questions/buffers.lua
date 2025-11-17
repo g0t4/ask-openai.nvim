@@ -14,23 +14,12 @@ function BufferController:new(buffer_number)
     return self
 end
 
---- Split text on \n and append the lines to the end of the buffer
----@param text string
-function BufferController:append_plain_text(text)
-    local lines = vim.split(text, "\n")
-    self:append_plain_lines(lines)
-end
-
 --- Append a list of lines to the end of the buffer
 ---@param lines string[]
 function BufferController:append_plain_lines(lines)
     vim.api.nvim_buf_set_lines(self.buffer_number, -1, -1, false, lines)
     self:scroll_cursor_to_end_of_buffer()
     -- TODO make consumers scroll?
-end
-
-function BufferController:append_blank_line()
-    self:append_plain_lines({ "" })
 end
 
 function BufferController:scroll_cursor_to_end_of_buffer()
