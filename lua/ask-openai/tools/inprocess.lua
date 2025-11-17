@@ -139,6 +139,7 @@ function M.send_tool_call(tool_call, callback)
         M.apply_patch(parsed_args, callback)
         return
     end
+    -- TODO try other tools from gptoss repo? (python code runner, browser)
 
     error("in-process tool not implemented yet: " .. name)
 end

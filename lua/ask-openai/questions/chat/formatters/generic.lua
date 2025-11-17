@@ -5,7 +5,10 @@ local M = {}
 
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
-    -- TODO use message.finish_reason to determine if still streaming or if you have the full message
+    -- if message:is_still_streaming() then
+    --     -- TODO?
+    --     return
+    -- end
 
     local tool_header = tool_call["function"].name or ""
 
@@ -23,34 +26,14 @@ function M.format(lines, tool_call, message)
     -- * tool args
     local args = tool_call["function"].arguments
     if args then
-        -- TODO new line in args? s\b \n right?
         lines:append_text(args)
     end
     -- PRN mark outputs somehow? or just dump them? (I hate to waste space)
-
-    -- TODO REMINDER - try/add apply_patch when using gptoss (need to put this elsewhere)
-    --    USE BUILT-IN mcp server - https://github.com/openai/gpt-oss/tree/main/gpt-oss-mcp-server
-    -- TODO REMINDER - also try/add other tools it uses (python code runner, browser)
 
     -- * tool result
     if tool_call.call_output then
         local is_mcp = tool_call.call_output.result.content
         if is_mcp then
-            --- https://modelcontextprotocol.io/specification/2025-06-18/server/tools#tool-result
-            ---@class MCPToolResult
-            ---@field content? MCPToolResultContent[]  # unstructured output items
-            ---@field isError? boolean                # see content for exit code, STDERR, etc
-            ---@field structuredContent?              # structured output, has inputSchema/outputSchema
-
-            ---@class MCPToolResultContent
-            ---@field type string      # "text", "image", "audio", "resource_link", "resource" ...
-            ---@field text? string     # for type=text
-            ---@field name? string     # IIUC this is considered optional metadata...  I am using this with my run_command tool for: "STDOUT", "STDERR", "EXIT_CODE"
-
-            -- * TESTING:
-            -- - date command is one liner
-            -- - `ls -R` for lots of output
-
             ---@type MCPToolResultContent[]
             local content = tool_call.call_output.result.content
 
