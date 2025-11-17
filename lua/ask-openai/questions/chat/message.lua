@@ -26,6 +26,9 @@ function ChatMessage:new(role, content)
 end
 
 function ChatMessage:new_tool_response(call_result_object_not_json, tool_call_id, name)
+    -- TODO if I keep using this bullshit /v1/chat/completions messages format that is OSTENSIBLY UNIVERSAL...
+    --   TODO I need tm have tests in place to verify vs .__verbose.prompt that I know what is going on b/c goddamn
+
     --  FYI llama-server uses the gptoss jinja template w/ tojson (other models had similar part in their tool calling)
     --   SO DO NOT ENCODE to JSON... else it ends up double encoded
     --   SEE tojson in template:
@@ -42,6 +45,24 @@ function ChatMessage:new_tool_response(call_result_object_not_json, tool_call_id
     ---   https://github.com/ggml-org/llama.cpp/blob/cb623de3f/tools/server/utils.hpp#L611-L614
     ---   I suppose I could just wrap my result in an array... NOPE THAT IS BLOCKED TOO
     ---   I'll go get rid of the runtime check :)
+    --- FYI! modified server template to drop |tojson and that works now (clean/raw JSON in harmony format!)
+    ---    I can use this for now
+    ---
+    -- {%- elif message.role == 'tool' -%}
+    --     ...
+    --     {{- "<|start|>functions." + last_tool_call.name }}
+    --     {{- " to=assistant<|channel|>commentary<|message|>" + message.content|tojson + "<|end|>" }}
+    --
+    -- FYI my fix:
+    --     {{- " to=assistant<|channel|>commentary<|message|>" + message.content + "<|end|>" }}
+    ---
+    --- !!! WAIT... so I send both the tool_call.arguments message as json encoded and then tool result JSON encoded
+    ---     ! THE FORMER tool_call arguments are correct in the rendered prompt (nevermind they have |tojson too!)
+    ---       BOTH USE |tojson... so smth differs in the server code!!
+    ---       smth about parse_tool_calls may be related, an option... but also that might just be about parsing from model's generated prompt
+    ---     is there smth server side that parses the tool_call.arguments into an object first?
+    ---     is there a way to do the same for the results?
+    ---
 
     -- TODO! what about tojson on args in original tool call request message (WHEN SENDING IT BACK)?
     -- FYI __verbose.prompt has correct raw JSON for original tool_call request message (when it is sent back to the model)
