@@ -22,7 +22,7 @@ vim.api.nvim_set_hl(0, "AskAssistantRole", { fg = "#5A6FFF", italic = true, bold
 -- vim.api.nvim_set_hl(0, "AskUserRole", { fg = "#8660FF", italic = true, bold = true })
 vim.api.nvim_set_hl(0, "AskUserRole", { fg = "#A07CFF", italic = true, bold = true })
 local HLGROUP_ROLE_SYSTEM_PROMPT = "AskSystemRole"
-vim.api.nvim_set_hl(0, HLGROUP_ROLE_SYSTEM_PROMPT, { fg = "#FF0000", italic = true, bold = true })
+vim.api.nvim_set_hl(0, HLGROUP_ROLE_SYSTEM_PROMPT, { fg = "#D9C27A", italic = true, bold = true })
 vim.api.nvim_set_hl(0, "AskChatReasoning", { fg = "#808080", italic = true })
 
 ---@class AskQuestionFrontend : StreamingFrontend
