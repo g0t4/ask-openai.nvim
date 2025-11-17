@@ -395,11 +395,10 @@ function M.call_requested_tools_for_the_model()
             --   type = "function"
             -- }
 
-            tool_router.send_tool_call_router(tool_call, function(mcp_response)
-                tool_call.response = mcp_response
-                -- log:jsonify_compact_trace("mcp_response:", mcp_response)
-                -- log:trace("mcp_response:", vim.inspect(mcp_response))
-                -- mcp_response:
+            tool_router.send_tool_call_router(tool_call, function(tool_call_response)
+                tool_call.response = tool_call_response
+                log:trace("tool_call_response", vim.inspect(tool_call_response))
+                -- MCP example:
                 --  {
                 --   id = "call_mmftuy7j",
                 --   jsonrpc = "2.0",
@@ -415,6 +414,7 @@ function M.call_requested_tools_for_the_model()
                 --   }
                 -- }
 
+                -- * triggers UI updates to show tool outputs
                 M.handle_messages_updated()
 
                 -- *** tool response messages back to model
