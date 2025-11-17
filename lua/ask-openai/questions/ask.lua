@@ -91,8 +91,7 @@ The semantic_grep tool:
     end
     local lines = LinesBuilder:new(first_turn_ns_id)
 
-    -- PRN? show fold text as "System Prompt"?
-    lines:add_folded_lines(vim.split(system_prompt, "\n"), "")
+    lines:add_folded_lines(vim.split("system\n" .. system_prompt, "\n"), "")
 
     lines:append_role_header("user")
     lines:append_text(user_message)
