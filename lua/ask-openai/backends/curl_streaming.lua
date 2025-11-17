@@ -111,13 +111,12 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
         stdout:close()
         stderr:close()
 
-        -- this shoudl be attacked to a specific request (not any module)
+        -- this should be attacked to a specific request (not any module)
         -- clear out refs
         request.handle = nil
         request.pid = nil
 
-        -- TODO! need a test to make sure this is actually called
-        --   an integration test, ideally (not manual alone if possible b/c I will forget about this)
+        -- TODO add an integration test to make sure this is actually called?
         local error_text = parser:flush_dregs()
         if error_text then
             frontend.explain_error(error_text)
@@ -201,7 +200,7 @@ function M.on_line_or_lines(data_value, extract_generated_text, frontend, reques
             -- only confirmed this on llama_server, rename if other backends follow suit
             -- {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
             -- DO NOT LOG HERE TOO
-            frontend.explain_error("found error on SSE:" .. vim.inspect(sse_parsed))
+            frontend.explain_error("found error on what looks like an SSE:" .. vim.inspect(sse_parsed))
         end
 
         if sse_parsed.timings then
