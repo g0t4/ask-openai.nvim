@@ -43,6 +43,11 @@ function M.ask_for_prediction()
             -- log:trace_on_exit_always(code, signal)
             log:trace_on_exit_errors(code, signal) -- less verbose
 
+            -- TODO mark complete? close? any reason to do this? I vaguely recall there might be a reason I want to do this
+            --   i.e. process related?
+            -- this_prediction:mark_generation_finished() -- only if zero exit code?
+            -- if non-zero exit code => mark failed?
+
             stdout:close()
             stderr:close()
         end
