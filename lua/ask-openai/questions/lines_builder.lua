@@ -69,9 +69,9 @@ function LinesBuilder:append_folded_styled_text(text, hl_group)
     self:append_folded_styled_lines(lines, hl_group)
 end
 
----Add a block of lines that should start folded.
+---a block lines that should start folded.
 ---The lines will be appended to `turn_lines` and a fold entry will be recorded.
----@param lines string[]   -- lines to add
+---@param lines string[]
 ---@param hl_group string  -- optional highlight for the folded region header
 function LinesBuilder:append_folded_styled_lines(lines, hl_group)
     local start_line_base0 = #self.turn_lines
