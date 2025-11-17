@@ -23,6 +23,9 @@ function M.ask_for_prediction()
     local ps_chunk = ps.get_prefix_suffix_chunk()
     local perf = FIMPerformance:new()
 
+    -- PRN? state machine that tracks which state and visually shows indicators?
+    -- i.e. request starting, RAG in progress, FIM sent, thinking, first content token, etc
+
     ---@param rag_matches LSPRankedMatch[]
     function send_fim(rag_matches)
         local model = api.get_fim_model()
