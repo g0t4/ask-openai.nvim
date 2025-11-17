@@ -347,7 +347,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             -- local body = model_params.new_qwen3coder_llama_server_chat_body({
             messages = messages,
             model = "", -- irrelevant for llama-server
-            tools = tool_router.openai_tools(), -- TODO COMMENT OUT WHEN DONE TESTING ERRORS
+            -- tools = tool_router.openai_tools(),
         })
 
         local base_url = "http://ollama:8013"
