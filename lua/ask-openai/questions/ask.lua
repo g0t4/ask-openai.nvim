@@ -536,7 +536,7 @@ function M.follow_up()
     local user_message = M.chat_window.buffer:get_lines_after(start_line_base0)
     M.chat_window.buffer:scroll_cursor_to_end_of_buffer()
     vim.cmd("normal! o") -- move to end of buffer, add new line below to separate subsequent follow up response message
-    log:trace("follow up content:", user_message)
+    -- log:trace("follow up content:", user_message)
 
     if not M.thread then
         local USE_TOOLS = true

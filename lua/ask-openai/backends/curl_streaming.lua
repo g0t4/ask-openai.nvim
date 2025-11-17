@@ -170,7 +170,7 @@ function M.on_line_or_lines(data_value, extract_generated_text, frontend, reques
     -- log:trace("data_value", data_value)
 
     if data_value == "[DONE]" then
-        log:trace("DETECTED DONE")
+        -- log:trace("DETECTED DONE")
         goto ignore_done
     end
 

@@ -54,11 +54,16 @@ function ChatThread:dump()
     -- log:luaify_trace("ChatThread:dump", self.last_request.response_messages)
     log:luaify_trace("ChatThread:dump", self)
 
+    -- self:dump_raw_messages()
+end
+
+function ChatThread:dump_raw_messages()
+    -- useful when need to see whitespace as-is and not \n\t
+
     local texts = { "ChatThread:dump" }
     for _, message in ipairs(self.messages) do
         table.insert(texts, message:dump_text())
     end
-
     log:info(table.concat(texts, "\n"))
 end
 
