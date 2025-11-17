@@ -352,7 +352,6 @@ function M.handle_messages_updated()
             -- * tool result
             if call.response then
                 if call.response.result.content then
-                    -- TODO! use lines builde here to:
                     --   TODO! FOLD output if more than X (3?) lines? across all content items or each content item?
                     -- TODO! if content is not multi-line and not too long, put it on one line with : to delimit `name: text`
                     --    i.e. STDOUT: 2025... (for date command) ... also EXIT_CODE doesn't need a separate line for the code!!
