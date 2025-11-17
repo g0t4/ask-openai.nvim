@@ -140,7 +140,7 @@ function M.ask_for_prediction()
                     -- if using nvim-notify, then clear prior notifications
                     notify.dismiss({ pending = true, silent = true })
                 end
-                vim.notify(message, "info", { title = "FIM Stats" })
+                vim.notify(message, vim.log.levels.INFO, { title = "FIM Stats" })
             end
 
             if data then
