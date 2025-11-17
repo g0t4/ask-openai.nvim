@@ -59,7 +59,6 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     -- log:warn("curl args: ", table.concat(options.args, " "))
 
     function on_data_sse(data_value)
-        -- TODO extract error handling: both the xpcall + traceback, and the print_error func below
         -- FYI good test case is to comment out: choice.delta.content == vim.NIL in extract_generated_text
         local success, result = xpcall(function()
             M.on_line_or_lines(data_value, extract_generated_text, frontend, request)
