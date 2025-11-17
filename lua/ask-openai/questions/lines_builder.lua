@@ -91,10 +91,29 @@ function LinesBuilder:append_folded_styled_lines(lines, hl_group)
     vim.list_extend(self.turn_lines, lines)
 end
 
+function LinesBuilder:append_unexpected_line(one_line)
+    self:append_styled_lines({ one_line }, HLGroups.UNEXPECTED_MESSAGE)
+end
+
+function LinesBuilder:append_unexpected_text(text)
+    self:append_styled_text(text, HLGroups.UNEXPECTED_MESSAGE)
+end
+
 ---@param text string   -- text to append; may contain newlines (will be split on \n)
 function LinesBuilder:append_text(text)
     local lines = vim.split(text, "\n")
     vim.list_extend(self.turn_lines, lines)
+end
+
+---@param lines string[]
+function LinesBuilder:append_lines(lines)
+    vim.list_extend(self.turn_lines, lines)
+end
+
+---@param one_line string - named to be noticeable given similarity in _lines functions
+function LinesBuilder:append_line(one_line)
+    -- TODO verify working with table.insert
+    table.insert(self.turn_lines, one_line)
 end
 
 ---Append a blank line unconditionally.
@@ -110,22 +129,46 @@ function LinesBuilder:append_blank_line_if_last_is_not_blank()
     end
 end
 
----@param lines string[]
----@param max_lines integer
-function LinesBuilder:append_STDOUT(lines, max_lines)
-    -- TODO rethink naming of this function and constants, but only AFTER styling 3+ of tool result content items to get a feel for it
+---@param text string
+---@param max_lines? integer
+function LinesBuilder:append_STDERR(text, max_lines)
+    --TODO color red
+    -- show all, always?
+end
+
+---@param text string
+---@param max_lines? integer
+function LinesBuilder:append_STDOUT(text, max_lines)
+    -- TODO! add some unit tests to flesh out bugs (b/c breaking an agent workflow would suck!)
 
     max_lines = max_lines or 3
     -- ?? double threshold ?
     --   #lines > 5 => show 3 max
     --   #lines <= 5 => show all
 
+    local lines = vim.split(text, "\n")
+    if #lines == 0 then
+        return
+    elseif #lines == 1 then
+        local oneliner = "STDOUT: " .. lines[1]
+        -- PRN style the STDOUT as subset of line (use column offsets)
+        self:append_styled_lines({ oneliner }, HLGroups.TOOL_STDOUT_CONTENT)
+        return
+    elseif #lines == 2 and lines[2] == "" then
+        -- last line is blank b/c of \n on end of STDOUT
+
+        local oneliner = "STDOUT: " .. lines[1]
+        -- PRN style the STDOUT as subset of line (use column offsets)
+        self:append_styled_lines({ oneliner }, HLGroups.TOOL_STDOUT_CONTENT)
+        return
+    end
 
     -- PRN parent fold around entire section (that way I can collapse on-demand...
     -- this would be good to add with a TS grammar so I am not doing even more work to mark ranges and another fold level)
 
-    -- PRN better name for STDOUT_HEADER?
-    self:append_styled_lines({ "stdout" }, HLGroups.TOOL_STDOUT_HEADER)
+    -- TODO do I really want this to be colorful? can I just show the output w/o a header? i.e. depending on what else was present in content array?
+    --    TODO in this case I need to handle the entire command on its own? so it can control rest of content?
+    self:append_styled_lines({ "STDOUT" }, HLGroups.TOOL_STDOUT_HEADER)
 
     -- first max_lines (default 3) are not collapsed
     local visible_lines = vim.list_slice(lines, 1, max_lines)
@@ -136,6 +179,7 @@ function LinesBuilder:append_STDOUT(lines, max_lines)
     -- Add the folded remainder as a child fold
     if #folded_lines > 0 then
         self:append_folded_styled_lines(folded_lines, "") -- foldtext blank or custom
+        -- TODO ask a tiny model to summarize the lines!
     end
 end
 

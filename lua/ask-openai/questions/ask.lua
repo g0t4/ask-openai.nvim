@@ -321,7 +321,16 @@ function M.handle_messages_updated()
             --   for that I'll need a rich model of what is where in the buffer
 
             -- * tool name/id/status
-            local tool_header = call["function"].name or ""
+            local function_name = call["function"].name or ""
+            if function_name == "run_command" then
+                -- TODO! handle run_command w/ its own template/formatter!
+                --   RIP out any STDOUT/ERR/EXIT_CODE etc and put that into run_command formatter
+                -- return
+                --
+                -- I suspect I will want tool specific templates on any tool I use frequently
+                -- and then leave only generic logic below for new tools that I don't yet have a template for (and may not see value in making one and/or using the tool other than to test it)
+            end
+            local tool_header = function_name
             local hl_group = HLGroups.TOOL_SUCCESS
             if call.response then
                 if call.response.result.isError then
@@ -347,32 +356,65 @@ function M.handle_messages_updated()
 
             -- * tool result
             if call.response then
-                if call.response.result.content then
-                    --   TODO! FOLD output if more than X (3?) lines? across all content items or each content item?
-                    -- TODO! if content is not multi-line and not too long, put it on one line with : to delimit `name: text`
-                    --    i.e. STDOUT: 2025... (for date command) ... also EXIT_CODE doesn't need a separate line for the code!!
-                    -- PRN write custom tool/content.name handlers that specially format them
-                    --   TODO EXIT_CODE could be colored if failure
-                    --   TODO STDOUT should come last in run_command (same if only STDERR) .. if both STDERR can come first
+                local is_mcp = call.response.result.content
+                if is_mcp then
+                    --- https://modelcontextprotocol.io/specification/2025-06-18/server/tools#tool-result
+                    ---@class MCPToolResult
+                    ---@field content? MCPToolResultContent[]  # unstructured output items
+                    ---@field isError? boolean                # see content for exit code, STDERR, etc
+                    ---@field structuredContent?              # structured output, has inputSchema/outputSchema
 
-                    for _, tool_content in ipairs(call.response.result.content) do
-                        -- TODO only show a few lines of output from tool (i.e. run_command) and fold the rest (like claude CLI does)
-                        --   TODO to test it ask for `:AskToolUse ls -R`
-                        --  FYI I might need to adjust what is coming back from MCP to have more control over this
-                        --  FYI also probably want to write custom templates specific to commands that I really care about (run_command, apply_patch, etc)
-                        lines:append_text(tool_content.name)
-                        if tool_content.type == "text" then
-                            lines:append_text(tool_content.text)
+                    ---@class MCPToolResultContent
+                    ---@field type string      # "text", "image", "audio", "resource_link", "resource" ...
+                    ---@field text? string     # for type=text
+                    ---@field name? string     # IIUC this is considered optional metadata...  I am using this with my run_command tool for: "STDOUT", "STDERR", "EXIT_CODE"
+
+                    -- * TESTING:
+                    -- - date command is one liner
+                    -- - `ls -R` for lots of output
+
+                    ---@type MCPToolResultContent[]
+                    local content = call.response.result.content
+
+                    for _, output in ipairs(content) do
+                        local name = output.name
+                        local text = tostring(output.text or "")
+                        -- PRN dict. lookup of formatter functions by type (name), w/ registerType(), esp. as the list of types grows
+                        if name == "STDOUT" then
+                            -- TODO! I want tool specific formatters... b/c for run_command, I want the command (esp if its small) to be the header! I don't need to see run_command ever, right?
+                            if text then
+                                lines:append_STDOUT(text)
+                            else
+                                -- PRN skip STDOUT entirely if empty?
+                                lines:append_unexpected_line("UNEXPECTED empty STDOUT?")
+                            end
                         else
-                            -- TODO use error style via this lines builder
-                            lines:append_text("  unexpected content type: " .. tool_content.type)
+                            -- GENERIC output type
+                            if name == nil or name == "" then
+                                name = "[NO NAME]" -- heads up for now so I can identify scenarios/tools, can remove this later
+                            end
+                            if output.type == "text" then
+                                local is_multi_line = text:match("\n")
+                                if is_multi_line then
+                                    lines:append_text(name)
+                                    lines:append_text(text)
+                                else
+                                    -- single line
+                                    lines:append_text(name .. ": " .. text)
+                                end
+                            else
+                                lines:append_unexpected_text("  UNEXPECTED type: \n" .. vim.inspect(output))
+                            end
                         end
                     end
                 else
-                    -- TODO show inprocess tooling outputs in CHAT user window (this is not building a request to LLM)
-                    --    TODO content is just an MCP construct
-                    --    TODO summarize? or otherwise show?
+                    -- TODO NON-MCP tool responses
+                    --  i.e. in-process tools: rag_query, apply_patch
                 end
+            else
+                -- no response
+                -- PRN in-progress tools (i.e. parallel tool calls and one tool completes)
+                -- it's probably best to start segmenting a type of tool's displayer and let it handle in-progress vs done vs w/e
             end
 
             lines:append_blank_line_if_last_is_not_blank()

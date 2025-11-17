@@ -56,6 +56,9 @@ vim.api.nvim_set_hl(0, HLGroups.RAG_CHUNK_TYPE_ICON_TREESITTER, { fg = "#b0d5a6"
 vim.api.nvim_set_hl(0, HLGroups.RAG_CHUNK_TYPE_ICON_UNCOVERED_CODE, { fg = "#e24040" })
 
 -- * Tool output (run_command related)
+HLGroups.UNEXPECTED_MESSAGE = "AskUnexpected" -- a warning the user should see, BUT shouldn't dominate the UI
+vim.api.nvim_set_hl(0, HLGroups.UNEXPECTED_MESSAGE, { fg = "#ff7777" })
+
 HLGroups.TOOL_STDOUT_HEADER = "AskStdoutHeader"
 HLGroups.TOOL_STDOUT_CONTENT = "AskStdoutContent"
 vim.api.nvim_set_hl(0, HLGroups.TOOL_STDOUT_HEADER, { fg = "#FF8C00" })
