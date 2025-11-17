@@ -26,8 +26,8 @@ function M.format(lines, tool_call, message)
     --   TODO args.STDIN show collapsed?
 
     local hl_group = HLGroups.TOOL_SUCCESS
-    if tool_call.response then
-        if tool_call.response.result.isError then
+    if tool_call.call_output then
+        if tool_call.call_output.result.isError then
             tool_header = "❌ " .. tool_header
             hl_group = HLGroups.TOOL_FAILED
         else
@@ -36,13 +36,13 @@ function M.format(lines, tool_call, message)
     end
     lines:append_styled_lines({ tool_header }, hl_group)
 
-    if not tool_call.response then
+    if not tool_call.call_output then
         -- tool not yet run/running
         return
     end
 
     -- * tool result
-    local is_mcp = tool_call.response.result.content
+    local is_mcp = tool_call.call_output.result.content
     if is_mcp then
         --- https://modelcontextprotocol.io/specification/2025-06-18/server/tools#tool-result
         ---@class MCPToolResult
@@ -60,7 +60,7 @@ function M.format(lines, tool_call, message)
         -- - `ls -R` for lots of output
 
         ---@type MCPToolResultContent[]
-        local content = tool_call.response.result.content
+        local content = tool_call.call_output.result.content
 
         for _, output in ipairs(content) do
             local name = output.name

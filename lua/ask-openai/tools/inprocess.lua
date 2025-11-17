@@ -18,6 +18,8 @@ function M.handles_tool(tool_name)
     return tool ~= nil
 end
 
+---@param parsed_args table
+---@param callback ToolCallDoneCallback
 function M._context_query(parsed_args, callback)
     local languages = ""
     if not parsed_args.filetype then
@@ -92,7 +94,7 @@ function M._context_query(parsed_args, callback)
         end
 
         if lsp_result.error ~= nil and lsp_result.error ~= "" then
-            log:error("Semantic Grep tool_call response error, still calling back: ", vim.inspect(lsp_result))
+            log:error("Semantic Grep tool_call lsp_result error, still calling back: ", vim.inspect(lsp_result))
             result.isError = true
             result.matches = lsp_result.matches or {}
             callback({ result = result })
@@ -102,7 +104,7 @@ function M._context_query(parsed_args, callback)
         log:info("Semantic Grep tool_call matches (client):", vim.inspect(lsp_result))
         -- do not mark isError = false here... that is assumed, might also cause issues if mis-interpreted as an error!
         result.matches = lsp_result.matches
-        callback({ result = result })
+        callback({ result = result }) -- FYI response object sent back to ToolCall/model
     end
 
     local params = {
@@ -115,12 +117,14 @@ function M._context_query(parsed_args, callback)
     return _client_request_ids, _cancel_all_requests
 end
 
+---@param parsed_args table
+---@param callback ToolCallDoneCallback
 function semantic_grep_impl(parsed_args, callback)
     M._context_query(parsed_args or "", callback)
 end
 
 ---@param tool_call table
----@param callback fun(response: table)
+---@param callback ToolCallDoneCallback
 function M.send_tool_call(tool_call, callback)
     local name = tool_call["function"].name
 
@@ -140,7 +144,7 @@ function M.send_tool_call(tool_call, callback)
 end
 
 ---@param parsed_args table
----@param callback fun(response: table)
+---@param callback ToolCallDoneCallback
 function M.apply_patch(parsed_args, callback)
     -- GPTOSS has an apply_patch tool it was trained with
     -- instead of bothering with an MCP server, let's just trigger the python script in-process

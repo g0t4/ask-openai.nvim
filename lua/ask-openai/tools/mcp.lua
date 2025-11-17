@@ -164,7 +164,7 @@ end
 
 M.tools_available = {}
 
-M.setup = function()
+function M.setup()
     vim.api.nvim_create_user_command("McpLogToolsList", function()
         log:trace(vim.inspect(M.tools_available))
     end, { nargs = 0 })
@@ -205,7 +205,9 @@ function M.handles_tool(tool_name)
     return tool ~= nil
 end
 
-M.send_tool_call = function(tool_call, callback)
+---@param tool_call table
+---@param callback ToolCallDoneCallback
+function M.send_tool_call(tool_call, callback)
     -- tool call: {
     --   ["function"] = {
     --     arguments = '{"command":"ls -la","cwd":""}',

@@ -383,7 +383,6 @@ function M.call_requested_tools_for_the_model()
         for _, tool_call in ipairs(message.tool_calls) do
             -- log:jsonify_compact_trace("tool:", tool_call)
             -- log:trace("tool:", vim.inspect(tool))
-            -- TODO fix type annotations, ToolCall is wrong (has response/response.message crap on it
             -- tool:
             -- {
             --   ["function"] = {
@@ -395,56 +394,57 @@ function M.call_requested_tools_for_the_model()
             --   type = "function"
             -- }
 
-            tool_router.send_tool_call_router(tool_call, function(tool_call_response)
-                tool_call.response = tool_call_response
-                log:trace("tool_call_response", vim.inspect(tool_call_response))
-                -- MCP example:
-                --  {
-                --   id = "call_mmftuy7j",
-                --   jsonrpc = "2.0",
-                --   result = {
-                --     toolResult = {
-                --       content = { {
-                --           name = "STDOUT",
-                --           text = "README.md\nflows\nlua\nlua_modules\ntests\ntmp\n",
-                --           type = "text"
-                --         } },
-                --       isError = false
-                --     }
-                --   }
-                -- }
+            tool_router.send_tool_call_router(tool_call,
+                ---@type ToolCallDoneCallback
+                function(tool_call_output)
+                    tool_call.call_output = tool_call_output
+                    log:trace("tool_call_output", vim.inspect(tool_call_output))
+                    -- MCP example:
+                    --  {
+                    --   id = "call_mmftuy7j",
+                    --   jsonrpc = "2.0",
+                    --   result = {
+                    --     toolResult = {
+                    --       content = { {
+                    --           name = "STDOUT",
+                    --           text = "README.md\nflows\nlua\nlua_modules\ntests\ntmp\n",
+                    --           type = "text"
+                    --         } },
+                    --       isError = false
+                    --     }
+                    --   }
+                    -- }
 
-                -- * triggers UI updates to show tool outputs
-                M.handle_messages_updated()
+                    -- * triggers UI updates to show tool outputs
+                    M.handle_messages_updated()
 
-                -- *** tool response messages back to model
-                -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
-                -- make sure content is a string (keep json structure)
-                -- PRN if issues, experiment with pretty printing the serialized json?
-                -- TODO move encoding into newToolResponse?
-                local content = vim.json.encode(tool_call.response.result)
-                local tool_response_message = ChatMessage:new_tool_response(content, tool_call.id, tool_call["function"].name)
-                -- log:trace("tool_message:", vim.inspect(response_message))
-                -- tool_message: {
-                --   content = '{"isError": false, "content": [{"name": "STDOUT", "type": "text", "text": "README.md\\nflows\\nlua\\nlua_modules\\ntests\\ntmp\\n"}]}',
-                --   name = "run_command",
-                --   role = "tool",
-                --   tool_call_id = "call_n44nr8e2"
-                -- }
-                log:jsonify_compact_trace("tool_message:", tool_response_message)
-                tool_call.response_message = tool_response_message
-                M.thread:add_message(tool_response_message)
-                --
-                -- TODO re-enable sending after I fix line capture
-                vim.schedule(function()
-                    -- FYI I am scheduling this... b/c the redraws are all scheduled...
-                    -- so this has to happen after redraws
-                    -- otherwise this will capture the wrong line count to replace ...
-                    -- yes, soon we can just track line numbers on the buffer itself and then
-                    -- REMOVE THIS if I dont have another reason to schedule it
-                    M.send_tool_messages_if_all_tools_done()
+                    -- *** tool response messages back to model
+                    -- Claude shows content with top level isError and content (STDOUT/STDERR fields)
+                    -- make sure content is a string (keep json structure)
+                    -- PRN if issues, experiment with pretty printing the serialized json?
+                    -- TODO move encoding into newToolResponse?
+                    local content = vim.json.encode(tool_call.call_output.result)
+                    local tool_response_message = ChatMessage:new_tool_response(content, tool_call.id, tool_call["function"].name)
+                    -- log:trace("tool_message:", vim.inspect(response_message))
+                    -- tool_message: {
+                    --   content = '{"isError": false, "content": [{"name": "STDOUT", "type": "text", "text": "README.md\\nflows\\nlua\\nlua_modules\\ntests\\ntmp\\n"}]}',
+                    --   name = "run_command",
+                    --   role = "tool",
+                    --   tool_call_id = "call_n44nr8e2"
+                    -- }
+                    log:jsonify_compact_trace("tool_message:", tool_response_message)
+                    tool_call.response_message = tool_response_message
+                    M.thread:add_message(tool_response_message)
+                    --
+                    vim.schedule(function()
+                        -- FYI I am scheduling this... b/c the redraws are all scheduled...
+                        -- so this has to happen after redraws
+                        -- otherwise this will capture the wrong line count to replace ...
+                        -- yes, soon we can just track line numbers on the buffer itself and then
+                        -- REMOVE THIS if I dont have another reason to schedule it
+                        M.send_tool_messages_if_all_tools_done()
+                    end)
                 end)
-            end)
         end
     end
 end

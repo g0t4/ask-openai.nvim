@@ -14,8 +14,10 @@ function M.openai_tools()
     return tools
 end
 
+---@alias ToolCallDoneCallback fun(call_output: table)
+
 ---@param tool_call table
----@param callback fun(response: table)
+---@param callback ToolCallDoneCallback
 function M.send_tool_call_router(tool_call, callback)
     local tool_name = tool_call["function"].name
 

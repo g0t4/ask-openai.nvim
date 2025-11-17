@@ -6,8 +6,8 @@
 ---@field type integer
 ---@field function OpenAIChoiceDeltaToolCallFunction
 ---
----@field response_message table|nil -- TODO type this? is this the response message that had this tool call in it?
----@field response table|nil #mcp response TODO rename response is terrible name if it's the output of the tool call
+---@field response_message table|nil -- TODO type this? response message to send call results back to the model that will, also attached to chat_thread (history)
+---@field call_output? table -- tool call outputs (specific to a given tool type, some have standard structure, i.e. MCP)
 local ToolCall = {}
 
 ---@return ToolCall
@@ -21,8 +21,8 @@ end
 
 ---@return boolean
 function ToolCall:is_done()
-    -- FYI see call_requested_tools_for_the_model() for when this happens, it sets response and calls back to handle_messages_updated()
-    return self.response ~= nil
+    -- FYI see call_requested_tools_for_the_model() for when call_output is set
+    return self.call_output ~= nil
 end
 
 -- FYI marker interface for now
