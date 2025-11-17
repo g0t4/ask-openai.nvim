@@ -6,7 +6,13 @@ local M = {}
 ---@param lines LinesBuilder
 ---@param tool_call ToolCall
 function M.format(lines, tool_call)
-    local tool_header = tool_call["function"].name or ""
+    local tool_header = tool_call["function"].arguments
+    -- TODO extract command from JSON and show if reasonable length?
+    --   TODO if LONG then fold the one line b/c with my fold setup a long line can be collapsed
+    --      and then the first part of command will be visible
+    --   TODO args.command (has full command)
+    --   TODO args.workdir
+    --   TODO args.STDIN show collapsed?
 
     local hl_group = HLGroups.TOOL_SUCCESS
     if tool_call.response then
