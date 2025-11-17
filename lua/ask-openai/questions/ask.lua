@@ -327,7 +327,7 @@ function M.handle_messages_updated()
             if formatter then
                 formatter(lines, tool_call, message)
             else
-                formatters.generic.format(lines, tool_call)
+                formatters.generic.format(lines, tool_call, message)
             end
             lines:append_blank_line_if_last_is_not_blank()
         end
