@@ -31,51 +31,50 @@ function M.format(lines, tool_call, message)
     -- PRN mark outputs somehow? or just dump them? (I hate to waste space)
 
     -- * tool result
-    if tool_call.call_output then
-        local is_mcp = tool_call.call_output.result.content
-        if is_mcp then
-            ---@type MCPToolResultContent[]
-            local content = tool_call.call_output.result.content
+    -- if not tool_call:is_done() then
+    --     -- TODO?
+    --     return -- ?
+    -- end
 
-            for _, output in ipairs(content) do
-                local name = output.name
-                local text = tostring(output.text or "")
-                -- PRN dict. lookup of formatter functions by type (name), w/ registerType(), esp. as the list of types grows
-                if name == "STDOUT" then
-                    -- TODO! I want tool specific formatters... b/c for run_command, I want the command (esp if its small) to be the header! I don't need to see run_command ever, right?
-                    if text then
-                        lines:append_STDOUT(text)
+    local is_mcp = tool_call.call_output.result.content
+    if is_mcp then
+        ---@type MCPToolResultContent[]
+        local content = tool_call.call_output.result.content
+
+        for _, output in ipairs(content) do
+            local name = output.name
+            local text = tostring(output.text or "")
+            -- PRN dict. lookup of formatter functions by type (name), w/ registerType(), esp. as the list of types grows
+            if name == "STDOUT" then
+                -- TODO! I want tool specific formatters... b/c for run_command, I want the command (esp if its small) to be the header! I don't need to see run_command ever, right?
+                if text then
+                    lines:append_STDOUT(text)
+                else
+                    -- PRN skip STDOUT entirely if empty?
+                    lines:append_unexpected_line("UNEXPECTED empty STDOUT?")
+                end
+            else
+                -- GENERIC output type
+                if name == nil or name == "" then
+                    name = "[NO NAME]" -- heads up for now so I can identify scenarios/tools, can remove this later
+                end
+                if output.type == "text" then
+                    local is_multi_line = text:match("\n")
+                    if is_multi_line then
+                        lines:append_text(name)
+                        lines:append_text(text)
                     else
-                        -- PRN skip STDOUT entirely if empty?
-                        lines:append_unexpected_line("UNEXPECTED empty STDOUT?")
+                        -- single line
+                        lines:append_text(name .. ": " .. text)
                     end
                 else
-                    -- GENERIC output type
-                    if name == nil or name == "" then
-                        name = "[NO NAME]" -- heads up for now so I can identify scenarios/tools, can remove this later
-                    end
-                    if output.type == "text" then
-                        local is_multi_line = text:match("\n")
-                        if is_multi_line then
-                            lines:append_text(name)
-                            lines:append_text(text)
-                        else
-                            -- single line
-                            lines:append_text(name .. ": " .. text)
-                        end
-                    else
-                        lines:append_unexpected_text("  UNEXPECTED type: \n" .. vim.inspect(output))
-                    end
+                    lines:append_unexpected_text("  UNEXPECTED type: \n" .. vim.inspect(output))
                 end
             end
-        else
-            -- TODO NON-MCP tool responses
-            --  i.e. in-process tools: rag_query, apply_patch
         end
     else
-        -- no response
-        -- PRN in-progress tools (i.e. parallel tool calls and one tool completes)
-        -- it's probably best to start segmenting a type of tool's displayer and let it handle in-progress vs done vs w/e
+        -- TODO NON-MCP tool responses
+        --  i.e. in-process tools: rag_query, apply_patch
     end
 end
 
