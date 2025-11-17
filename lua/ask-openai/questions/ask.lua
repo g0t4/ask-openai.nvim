@@ -18,8 +18,6 @@ require("ask-openai.helpers.buffers")
 
 vim.api.nvim_set_hl(0, "AskToolSuccess", { fg = "#92E2AC", bg = "NONE" })
 vim.api.nvim_set_hl(0, "AskToolFailed", { fg = "#e06c75", bg = "NONE", bold = true })
-local HLGROUP_EXPLAIN_ERROR = "AskQuestionExplainError"
-vim.api.nvim_command("highlight default " .. HLGROUP_EXPLAIN_ERROR .. " guibg=#ff7777 guifg=#000000 ctermbg=red ctermfg=black")
 vim.api.nvim_set_hl(0, "AskAssistantRole", { fg = "#5A6FFF", italic = true, bold = true })
 -- vim.api.nvim_set_hl(0, "AskUserRole", { fg = "#8660FF", italic = true, bold = true })
 vim.api.nvim_set_hl(0, "AskUserRole", { fg = "#A07CFF", italic = true, bold = true })
@@ -227,17 +225,7 @@ function M.explain_error(text)
         -- =>  curl: (22) The requested URL returned error: 500
         -- 4. add extra log to confirm:
         -- M.chat_window:append_plain_text("MAKE SURE THIS IS FAILURE PATH")
-        --
-        -- FYI separate note:
-        --   on_stdout often has further explanation when a curl request fails, i.e. w/ no tools:
-        --   on_stdout {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
-        --   TODO in the on_stdout, if "error" object ... with code 500 ... can I do smth about that w/o a ton of overhead?
-
-        local lines = LinesBuilder:new()
-        lines:create_marks_namespace()
-        lines:append_styled_text(text, HLGROUP_EXPLAIN_ERROR)
-        lines:append_blank_line()
-        M.chat_window:append_styled_lines(lines)
+        M.chat_window:explain_error(text)
     end)
 end
 
