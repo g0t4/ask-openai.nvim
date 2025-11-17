@@ -110,4 +110,33 @@ function LinesBuilder:append_blank_line_if_last_is_not_blank()
     end
 end
 
+---@param lines string[]
+---@param max_lines integer
+function LinesBuilder:append_STDOUT(lines, max_lines)
+    -- TODO rethink naming of this function and constants, but only AFTER styling 3+ of tool result content items to get a feel for it
+
+    max_lines = max_lines or 3
+    -- ?? double threshold ?
+    --   #lines > 5 => show 3 max
+    --   #lines <= 5 => show all
+
+
+    -- PRN parent fold around entire section (that way I can collapse on-demand...
+    -- this would be good to add with a TS grammar so I am not doing even more work to mark ranges and another fold level)
+
+    -- PRN better name for STDOUT_HEADER?
+    self:append_styled_lines({ "stdout" }, HLGroups.TOOL_STDOUT_HEADER)
+
+    -- first max_lines (default 3) are not collapsed
+    local visible_lines = vim.list_slice(lines, 1, max_lines)
+    local folded_lines = vim.list_slice(lines, max_lines + 1, #lines)
+
+    self:append_styled_lines(visible_lines, HLGroups.TOOL_STDOUT_CONTENT)
+
+    -- Add the folded remainder as a child fold
+    if #folded_lines > 0 then
+        self:append_folded_styled_lines(folded_lines, "") -- foldtext blank or custom
+    end
+end
+
 return LinesBuilder

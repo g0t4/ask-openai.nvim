@@ -55,4 +55,10 @@ vim.api.nvim_set_hl(0, HLGroups.RAG_HIGHLIGHT_LINES, { bg = "#414858" })
 vim.api.nvim_set_hl(0, HLGroups.RAG_CHUNK_TYPE_ICON_TREESITTER, { fg = "#b0d5a6" })
 vim.api.nvim_set_hl(0, HLGroups.RAG_CHUNK_TYPE_ICON_UNCOVERED_CODE, { fg = "#e24040" })
 
+-- * Tool output (run_command related)
+HLGroups.TOOL_STDOUT_HEADER = "AskStdoutHeader"
+HLGroups.TOOL_STDOUT_CONTENT = "AskStdoutContent"
+vim.api.nvim_set_hl(0, HLGroups.TOOL_STDOUT_HEADER, { fg = "#FF8C00" })
+vim.api.nvim_set_hl(0, HLGroups.TOOL_STDOUT_CONTENT, { fg = "#A0A0A0" })
+
 return HLGroups
