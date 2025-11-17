@@ -56,11 +56,11 @@ function M.ask_for_prediction()
             },
             on_exit)
 
-        local function on_stdout(err, data)
-            log:trace("on_stdout chunk: ", data)
+        local function on_stdout(read_error, data)
+            log:trace_stdio_read_errors("on_stdout", read_error, data)
+            -- log:trace_stdio_read_always("on_stdout", read_error, data)
 
-            if err then
-                log:warn("on_stdout error: ", err)
+            if read_error then
                 this_prediction:mark_generation_failed()
                 return
             end
@@ -186,16 +186,12 @@ function M.ask_for_prediction()
                 -- end, 500) -- 500 ms makes it easy to reproduce "stuck" predictions
             end
         end
-
         stdout:read_start(on_stdout)
 
-        local function on_stderr(err, data)
-            log:warn("on_stderr chunk: ", data)
-            if err then
-                log:warn("on_stderr error: ", err)
-            end
+        local function on_stderr(read_error, data)
+            log:trace_stdio_read_errors("on_stderr", read_error, data)
+            -- log:trace_stdio_read_always("on_stderr", read_error, data)
         end
-
         stderr:read_start(on_stderr)
     end
 
