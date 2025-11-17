@@ -34,6 +34,16 @@ function ChatMessage:new_tool_response(call_result_object_not_json, tool_call_id
     -- TODO if I keep using this bullshit /v1/chat/completions messages format that is OSTENSIBLY UNIVERSAL...
     --   TODO I need tm have tests in place to verify vs .__verbose.prompt that I know what is going on b/c goddamn
 
+    -- OpenAI docs show tool_call args as JSON string serialized
+    --   So, llama-server would expect the same
+    --   message.function.arguments => https://platform.openai.com/docs/guides/function-calling#handling-function-calls
+    -- OpenAI docs don't show result examples directly but does show what suggests the same thing for
+    --   message.content can be anything the model can interpret
+    --   of course model can read between lines but I think it would be best to mirror what it expects!
+    -- my guess is, llama server doesn't rehydrate the message.content (result) like it does with message.function.arguments
+    --   if that is the case then |tojson has no business being in the jinja template for message.content (only)
+    --   that is the fix I have currently (below)
+
     --  FYI llama-server uses the gptoss jinja template w/ tojson (other models had similar part in their tool calling)
     --   SO DO NOT ENCODE to JSON... else it ends up double encoded
     --   SEE tojson in template:
@@ -48,8 +58,6 @@ function ChatMessage:new_tool_response(call_result_object_not_json, tool_call_id
     ---   llama-server is rejecting raw objects?! only allows strings/arrays...
     ---   WHAT THE LITERAL FUCK MAN
     ---   https://github.com/ggml-org/llama.cpp/blob/cb623de3f/tools/server/utils.hpp#L611-L614
-    ---   I suppose I could just wrap my result in an array... NOPE THAT IS BLOCKED TOO
-    ---   I'll go get rid of the runtime check :)
     --- FYI! modified server template to drop |tojson and that works now (clean/raw JSON in harmony format!)
     ---    I can use this for now
     ---
