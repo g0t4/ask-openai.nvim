@@ -90,7 +90,10 @@ The semantic_grep tool:
         first_turn_ns_id = vim.api.nvim_create_namespace("ask.marks.chat.window.first.turn")
     end
     local lines = LinesBuilder:new(first_turn_ns_id)
-    -- TODO? lines:add_folded_lines(system_prompt)
+
+    -- PRN? show fold text as "System Prompt"?
+    lines:add_folded_lines(vim.split(system_prompt, "\n"), "")
+
     lines:append_role_header("user")
     lines:append_text(user_message)
     lines:append_blank_line()
