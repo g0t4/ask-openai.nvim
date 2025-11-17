@@ -20,7 +20,12 @@ function ChatMessage:new(role, content)
     self.role = role
     self.content = content
     self.finish_reason = nil
+
+    -- TODO exclude irrelevant fields... i.e. tool_calls is ONLY role=assistant
+    --  TODO OR how about custom clone/serializer so I am not including properties I shouldn't be?
+    --  TODO OR, maybe have diff factory functions that new up only relevant fields?
     self.tool_calls = {} -- empty == None (enforce invariant)
+
     -- PRN enforce content is string here?
     return self
 end
