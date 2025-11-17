@@ -389,6 +389,14 @@ function M.handle_messages_updated()
     end)
 end
 
+function M.show_user_role()
+    local lines_builder = LinesBuilder:new()
+    lines_builder:create_marks_namespace()
+    lines_builder:append_role_header("user")
+    lines_builder:append_blank_line()
+    M.chat_window:append_styled_lines(lines_builder)
+end
+
 function M.curl_exited_successfully()
     vim.schedule(function()
         for _, message in ipairs(M.thread.last_request.response_messages or {}) do
@@ -409,12 +417,8 @@ function M.curl_exited_successfully()
             -- log:jsonify_compact_trace("final model_response message:", model_responses)
             M.thread:add_message(model_responses)
 
-            -- * show user role as hint to follow up
-            local lines_builder = LinesBuilder:new()
-            lines_builder:create_marks_namespace()
-            lines_builder:append_role_header("user")
-            lines_builder:append_blank_line()
-            M.chat_window:append_styled_lines(lines_builder)
+            -- * show user role as hint to follow up:
+            M.show_user_role()
 
             M.chat_window.followup_starts_at_line_0indexed = M.chat_window.buffer:get_line_count() - 1
         end
