@@ -382,39 +382,13 @@ end
 function M.call_requested_tools_for_the_model()
     for _, message in ipairs(M.thread.last_request.response_messages or {}) do
         for _, tool_call in ipairs(message.tool_calls) do
-            -- log:jsonify_compact_trace("tool:", tool_call)
             -- log:trace("tool:", vim.inspect(tool))
-            -- tool:
-            -- {
-            --   ["function"] = {
-            --     arguments = '{"command":"ls"}',
-            --     name = "run_command"
-            --   },
-            --   id = "call_mmftuy7j",
-            --   index = 0,
-            --   type = "function"
-            -- }
 
             tool_router.send_tool_call_router(tool_call,
                 ---@type ToolCallDoneCallback
                 function(tool_call_output)
                     tool_call.call_output = ToolCallOutput:new(tool_call_output)
                     log:trace("tool_call_output", vim.inspect(tool_call_output))
-                    -- MCP example:
-                    --  {
-                    --   id = "call_mmftuy7j",
-                    --   jsonrpc = "2.0",
-                    --   result = {
-                    --     toolResult = {
-                    --       content = { {
-                    --           name = "STDOUT",
-                    --           text = "README.md\nflows\nlua\nlua_modules\ntests\ntmp\n",
-                    --           type = "text"
-                    --         } },
-                    --       isError = false
-                    --     }
-                    --   }
-                    -- }
 
                     -- * triggers UI updates to show tool outputs
                     M.handle_messages_updated()
@@ -424,16 +398,14 @@ function M.call_requested_tools_for_the_model()
                     log:jsonify_compact_trace("tool_message:", tool_response_message)
                     tool_call.response_message = tool_response_message
                     M.thread:add_message(tool_response_message)
-                    --
+
                     vim.schedule(function()
-                        -- FYI I am scheduling this... b/c the redraws are all scheduled...
-                        -- so this has to happen after redraws
-                        -- otherwise this will capture the wrong line count to replace ...
-                        -- yes, soon we can just track line numbers on the buffer itself and then
-                        -- REMOVE THIS if I dont have another reason to schedule it
+                        -- FYI I am scheduling this so it happens after redraws
+                        --  else IIUC, the line count won't be right for where in the chat window to insert next message
                         M.send_tool_messages_if_all_tools_done()
                     end)
-                end)
+                end
+            )
         end
     end
 end
