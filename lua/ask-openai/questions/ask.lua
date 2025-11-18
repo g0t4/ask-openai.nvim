@@ -354,7 +354,8 @@ function M.curl_exited_successfully()
             -- log:jsonify_compact_trace("last request message:", message)
             -- *** thread.last_request.response_messages IS NOT thread.messages
             --    even though I use ChatMessage type for both
-            --    TODO maybe use separate type? ModelResponseMessage and map that to ChatMessage here using some explicit helper
+            --    thread.messages => sent with future requests
+            --    request.resopnse_messages is simply to denormalize responses from SSEs
             --
             -- this is the response(s) from the model, they need to be added to the message history!!!
             --   and before any tool responses
