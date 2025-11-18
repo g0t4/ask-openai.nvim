@@ -401,6 +401,7 @@ function M.run_tool_calls_for_the_model()
 
                     vim.schedule(function()
                         -- FYI I am scheduling this so it happens after redraws
+                        --  IIUC I need to queue this after the other changes from above?
                         --  else IIUC, the line count won't be right for where in the chat window to insert next message
                         M.send_tool_messages_if_all_tools_done()
                     end)
