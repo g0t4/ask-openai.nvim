@@ -48,7 +48,7 @@ end
 
 ---@param tool_call ToolCall
 ---@return TxChatMessage
-function TxChatMessage:new_tool_response(tool_call)
+function TxChatMessage:tool_result(tool_call)
     -- FYI see NOTES.md for "fix" => removed `|tojson` from jinja template for message.content
     local content = vim.json.encode(tool_call.call_output.result)
     self = TxChatMessage:new(TX_MESSAGE_ROLES.TOOL, content)

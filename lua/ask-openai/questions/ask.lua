@@ -400,7 +400,7 @@ function M.run_tool_calls_for_the_model()
                     M.handle_messages_updated()
 
                     -- *** tool response messages back to model
-                    local tool_response_message = TxChatMessage:new_tool_response(tool_call)
+                    local tool_response_message = TxChatMessage:tool_result(tool_call)
                     log:jsonify_compact_trace("tool_message:", tool_response_message)
                     tool_call.response_message = tool_response_message
                     M.thread:add_message(tool_response_message)
