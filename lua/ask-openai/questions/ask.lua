@@ -350,6 +350,7 @@ end
 
 function M.curl_exited_successfully()
     vim.schedule(function()
+        -- ***! map final response messages => chat thread (history) messages that can be sent back w/ followup/tool_results
         for _, message in ipairs(M.thread.last_request.response_messages or {}) do
             -- log:jsonify_compact_trace("last request message:", message)
             -- *** thread.last_request.response_messages IS NOT thread.messages
@@ -362,14 +363,19 @@ function M.curl_exited_successfully()
             --   theoretically there can be multiple messages, with w/e role so I kept this in a loop and generic
             local role = message.role
             local content = message.content
-            local model_response = ChatMessage:new(role, content)
-            model_response.finish_reason = message.finish_reason
+            local model_response_thread_message = ChatMessage:new(role, content)
+
+            -- TODO! map thinking content (and let llama-server drop once no longer relevant?)
+            --  or double back at some point and drop it explicitly (too and/or instead)?
+            -- model_response_thread_message.thinking = message.reasoning_content
+
+            model_response_thread_message.finish_reason = message.finish_reason
 
             for _, call_request in ipairs(message.tool_calls) do
-                model_response:add_tool_call_requests(call_request)
+                model_response_thread_message:add_tool_call_requests(call_request)
             end
             -- log:jsonify_compact_trace("final model_response message:", model_responses)
-            M.thread:add_message(model_response)
+            M.thread:add_message(model_response_thread_message)
 
             -- * show user role as hint to follow up:
             M.show_user_role()
