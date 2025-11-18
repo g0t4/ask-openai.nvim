@@ -49,10 +49,19 @@ end
 ---@return TxChatMessage
 function TxChatMessage:tool_result(tool_call)
     -- FYI see NOTES.md for "fix" => removed `|tojson` from jinja template for message.content
+
+    -- * required: role, content, tool_call_id - docs https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-tool_message
     local content = vim.json.encode(tool_call.call_output.result)
     self = TxChatMessage:new(TX_MESSAGE_ROLES.TOOL, content)
 
     self.tool_call_id = tool_call.id
+    -- FYI gptoss/harmony jinja doesn't use tool_call_id b/c no parallel tool calls
+    --   it does a lookup on last tool call's name to correlate
+    --   do not remove this, as llama-server and other model templates may use the ID
+
+    -- TODO docs don't show name as needed, old function calling did use this! remove this if not needed?
+    --   why? b/c new tool  calling uses tool_call_id!
+    --   gptoss template doesn't use this (it actually does name lookup on last tool call b/c single tool calling)
     self.name = tool_call["function"].name
     return self
 end
