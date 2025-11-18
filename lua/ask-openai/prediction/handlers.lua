@@ -48,6 +48,16 @@ function M.ask_for_prediction()
             -- this_prediction:mark_generation_finished() -- only if zero exit code?
             -- if non-zero exit code => mark failed?
 
+            if M.handle then
+                -- FYI! review open lua vim.loop.walk(function(handle) print(handle) end) - handles/timers/etc
+                --     I am seeing alot after I just startup nvim... I wonder if some are from my MCP tool comms?
+                --     and what about my timer/schduling for debounced keyboard events to trigger predictions?
+                -- TODO! REVIEW OTHER uses of uv.spawn (and timers)... for missing cleanup logic!)
+                --    do that after you verify if this is proper way to shutdown?
+                M.handle:close()
+                -- TODO nil out M.handle/M.pid? (right now I will leave them b/c they are overwritten later... and if this close fails... cancel can still send kill to PID)
+            end
+            -- TODO do I need these if I call handle:closed()?
             stdout:close()
             stderr:close()
         end
