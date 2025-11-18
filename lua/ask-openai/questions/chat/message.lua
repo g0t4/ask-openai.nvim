@@ -17,7 +17,7 @@ local ChatMessage = {}
 ChatMessage.MESSAGE_ROLES = {
     USER = "user",
     ASSISTANT = "assistant",
-    TOOL = "tool",
+    TOOL = "tool", -- FYI this is for TOOL RESULTS
     SYSTEM = "system",
 }
 
@@ -29,6 +29,8 @@ ChatMessage.MESSAGE_ROLES = {
 --     https://unsloth.ai/blog/gpt-oss
 --     icdiff https://huggingface.co/openai/gpt-oss-120b/raw/main/chat_template.jinja https://huggingface.co/unsloth/gpt-oss-120b/raw/main/chat_template.jinja
 
+---@param role MESSAGE_ROLES
+---@param content string
 ---@return ChatMessage
 function ChatMessage:new(role, content)
     self = setmetatable({}, { __index = ChatMessage })

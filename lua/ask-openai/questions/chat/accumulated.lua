@@ -31,7 +31,7 @@ AccumulatedMessage.ACCUMULATED_MESSAGE_ROLES = {
 --- ONLY FOR ACCUMULATING MODEL RESPONSES (over streaming SSEs)
 --- NOT FOR BUILDING MESSAGES in a REQUEST (see ChatThread/ChatMessage for that)
 ---
----@param role ACCUMULATED_MESSAGE_ROLES|string
+---@param role ACCUMULATED_MESSAGE_ROLES|string - TODO GET RID OF ROLE PARAM? OR LOG WHEN IT IS NOT "assistant"?
 ---@param content string|nil
 ---@return AccumulatedMessage
 function AccumulatedMessage:new(role, content)
