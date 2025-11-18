@@ -4,10 +4,10 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@class TxChatMessage
 ---@field role? string
 ---@field content? string
----@field reasoning_content? string
+---@field reasoning_content? string TODO isn't this "thinking"?
 ---@field finish_reason? string|vim.NIL -- TODO I do not think I would be sending vim.NIL right? that's only in streaming when the response is not yet complete?
 ---@field tool_call_id? string -- ONLY for role=="tool"
----@field name? string -- optional name for the participant
+---@field name? string -- optional name for the participant (I am not using this, so far)
 ---@field tool_calls ToolCall[] -- empty if none
 local TxChatMessage = {}
 
@@ -84,8 +84,9 @@ end
 
 ---@param call_request ToolCall
 ---@return TxChatMessage
-function TxChatMessage:add_tool_call_request(call_request)
-    -- ONLY clone fields on the original call request from the model
+function TxChatMessage:add_assistant_tool_call_request(call_request)
+    --TODO MOVE DOWN BELOW from_assistant_rx_message
+    -- only clone needed fields
     local new_call = {
         id = call_request.id,
         index = call_request.index,
@@ -96,6 +97,31 @@ function TxChatMessage:add_tool_call_request(call_request)
         }
     }
     table.insert(self.tool_calls, new_call)
+end
+
+---@param rx_message RxAccumulatedMessage
+---@return TxChatMessage
+function TxChatMessage:from_assistant_rx_message(rx_message)
+    -- docs: https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message
+    -- * content, role, name, tool_calls ...  also: refusal, audio (not using these)
+
+    -- MAP the assistant's RxAccumulatedMessage message to TxChatMessage
+    local thread_message = TxChatMessage:new(rx_message.role, rx_message.content)
+    -- msg.reasoning_content = rx_message.reasoning_content ???
+    thread_message.finish_reason = rx_message.finish_reason
+    thread_message.name = rx_message.name -- optional, I am not using this on the rx_message incoming side
+
+    -- TODO! map thinking content (and let llama-server's jinja drop the thinking once no longer relevant) ?
+    --  or double back at some point and drop it explicitly (too and/or instead)?
+    -- model_response_thread_message.thinking = message.reasoning_content
+
+    if rx_message.tool_calls then
+        for _, call_request in ipairs(rx_message.tool_calls) do
+            thread_message:add_assistant_tool_call_request(call_request)
+        end
+    end
+
+    return thread_message
 end
 
 return TxChatMessage

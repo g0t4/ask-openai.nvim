@@ -359,21 +359,11 @@ function M.curl_exited_successfully()
             -- add assistant response message to chat history (TxChatMessage)
             --   (must come before tool result messages)
             --   theoretically there can be multiple messages, with any role (not just assitant)
-            local thread_message = TxChatMessage:new(rx_message.role, rx_message.content)
-
-            -- TODO! map thinking content (and let llama-server's jinja drop the thinking once no longer relevant) ?
-            --  or double back at some point and drop it explicitly (too and/or instead)?
-            -- model_response_thread_message.thinking = message.reasoning_content
-
-            thread_message.finish_reason = rx_message.finish_reason
-
-            for _, call_request in ipairs(rx_message.tool_calls) do
-                thread_message:add_tool_call_request(call_request)
-            end
+            local thread_message = TxChatMessage:from_assistant_rx_message(rx_message)
             log:jsonify_compact_trace("thread_message", thread_message)
             M.thread:add_message(thread_message)
 
-            -- * show user role as hint to follow up:
+            -- * show user role (in chat window) as hint to follow up (now that model+tool_calls are all done):
             M.show_user_role()
 
             M.chat_window.followup_starts_at_line_0indexed = M.chat_window.buffer:get_line_count() - 1
