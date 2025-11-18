@@ -5,7 +5,7 @@ local log = require("ask-openai.logs.logger").predictions()
 ---@field handle uv_process_t
 ---@field pid integer
 ---@field thread ChatThread
----@field response_messages ChatMessage[] -- PRN? rename as response_messages?
+---@field response_messages ChatMessage[] -- FYI rename model_response_messages? as in response to this request (final, tool_call(s))
 ---@field start_time integer -- unix timestamp when request was sent (for timing)
 ---@field marks_ns_id
 local LastRequest = {}
