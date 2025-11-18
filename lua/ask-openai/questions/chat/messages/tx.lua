@@ -99,8 +99,7 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
 
     --- * map tool calls
     if rx_message.tool_calls then
-        ---@param call_request ToolCall
-        local function add_tool_call_request(call_request)
+        for _, call_request in ipairs(rx_message.tool_calls) do
             -- FYI embed function here so no confusion about what is using it
             -- only clone needed fields
             -- * function.arguments, function.name, id, type docs: https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message-tool_calls
@@ -114,11 +113,6 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
                 }
             }
             table.insert(self.tool_calls, new_call)
-        end
-
-
-        for _, call_request in ipairs(rx_message.tool_calls) do
-            add_tool_call_request(call_request)
         end
     end
 
