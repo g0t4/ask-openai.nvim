@@ -106,6 +106,7 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
             -- FYI embed function here so no confusion about what is using it
             -- only clone needed fields
             -- * function.arguments, function.name, id, type docs: https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message-tool_calls
+            ---@type OpenAIChatCompletion_Input_AssistantMessageToolCallRequest
             local new_call = {
                 id = call_request.id,
                 -- index = call_request.index, -- not in OpenAI docs... I think this is just per request/response anyways
