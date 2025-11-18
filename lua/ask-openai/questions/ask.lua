@@ -390,12 +390,15 @@ function M.run_tool_calls_for_the_model()
         for _, tool_call in ipairs(rx_message.tool_calls) do
             -- log:trace("tool:", vim.inspect(tool))
 
+            -- FYI this is the primary interaction seam between RxAccumulatedMessage and TxChatMessage
+
             ---@type ToolCallDoneCallback
             local function when_tool_is_done(tool_call_output)
+                -- * store output on rx_message
                 tool_call.call_output = ToolCallOutput:new(tool_call_output)
                 log:trace("tool_call_output", vim.inspect(tool_call_output))
 
-                -- * triggers UI updates to show tool outputs
+                -- * triggers UI updates to show tool results
                 M.handle_rx_messages_updated()
 
                 -- * map tool result to a new TxChatMessage (to send back to model)
@@ -404,6 +407,7 @@ function M.run_tool_calls_for_the_model()
                 tool_call.response_message = tool_response_message
                 M.thread:add_message(tool_response_message)
 
+                -- * when last tool completes, send tool results (TxChatMessage package)
                 vim.schedule(function()
                     -- FYI I am scheduling this so it happens after redraws
                     --  IIUC I need to queue this after the other changes from above?
@@ -412,6 +416,7 @@ function M.run_tool_calls_for_the_model()
                 end)
             end
 
+            -- * run the tool!
             tool_router.send_tool_call_router(tool_call, when_tool_is_done)
         end
     end
