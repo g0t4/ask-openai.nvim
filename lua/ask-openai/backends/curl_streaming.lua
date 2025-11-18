@@ -49,8 +49,9 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
         },
     }
 
+    ---@param data_value string
     function on_data_sse(data_value)
-        local success, result = xpcall(function()
+        local success, error_message = xpcall(function()
             M.on_line_or_lines(data_value, extract_generated_text, frontend, request)
         end, function(e)
             -- otherwise only get one line from the traceback frame
@@ -63,7 +64,7 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
 
         -- request stops ASAP, but not immediately
         M.terminate(request)
-        frontend.explain_error("Abort... unhandled exception in curl_streaming: " .. tostring(result))
+        frontend.explain_error("Abort... unhandled exception in curl_streaming: " .. tostring(error_message))
     end
 
     local stdout = uv.new_pipe(false)
