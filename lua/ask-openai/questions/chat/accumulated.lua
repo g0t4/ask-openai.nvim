@@ -13,6 +13,26 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@field tool_calls ToolCall[] -- empty if none
 local AccumulatedMessage = {}
 
+---@enum ACCUMULATED_MESSAGE_ROLES
+AccumulatedMessage.ACCUMULATED_MESSAGE_ROLES = {
+    -- TODO ONLY ALLOW "assistant" role? => RENAME AssistantAccumulatedMessage?
+    -- TODO wait... AccumulatedMessage is the RECEIVE MODEL
+    --     and ChatMessage is the SEND MODEL
+    --     TODO rename ChatMessageSend / ChatMessageReceive? or smth like that?
+
+    -- these would never come FROM the model, so don't allow them as roles!
+    -- SYSTEM = "system", -- no reason for this to come back from the model so leave it off
+    -- USER = "user", -- no reason for this to come back from the model so leave it off
+    -- TOOL = "tool",
+
+    ASSISTANT = "assistant",
+}
+
+--- ONLY FOR ACCUMULATING MODEL RESPONSES (over streaming SSEs)
+--- NOT FOR BUILDING MESSAGES in a REQUEST (see ChatThread/ChatMessage for that)
+---
+---@param role ACCUMULATED_MESSAGE_ROLES|string
+---@param content string|nil
 ---@return AccumulatedMessage
 function AccumulatedMessage:new(role, content)
     self = setmetatable({}, { __index = AccumulatedMessage })
