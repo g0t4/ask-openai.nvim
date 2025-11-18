@@ -241,36 +241,36 @@ function M.on_streaming_delta_update_message_history(choice, request)
     if not calls then
         return
     end
-        for _, call_delta in ipairs(calls) do
-            -- * lookup or create new parsed_call
-            local parsed_call = message.tool_calls[call_delta.index + 1]
-            if parsed_call == nil then
-                -- first time, create ToolCall so it can be populated across streaming SSEs
-                parsed_call = ToolCall:new {
-                    -- assuming these are always on first delta per message
-                    id    = call_delta.id,
-                    index = call_delta.index,
-                    type  = call_delta.type,
-                }
-                table.insert(message.tool_calls, parsed_call)
-            end
+    for _, call_delta in ipairs(calls) do
+        -- * lookup or create new parsed_call
+        local parsed_call = message.tool_calls[call_delta.index + 1]
+        if parsed_call == nil then
+            -- first time, create ToolCall so it can be populated across streaming SSEs
+            parsed_call = ToolCall:new {
+                -- assuming these are always on first delta per message
+                id    = call_delta.id,
+                index = call_delta.index,
+                type  = call_delta.type,
+            }
+            table.insert(message.tool_calls, parsed_call)
+        end
 
-            local func = call_delta["function"] -- "function" is a keyword in lua, so must wrap it to access it
-            if func ~= nil then
-                -- FYI different fields are populated across deltas, so you must use/append to what already exists
-                parsed_call["function"] = parsed_call["function"] or {}
-                if func.name ~= nil then
-                    -- first delta has full name in my testing (not appending chunks, if I encounter split name then add test for it and update here)
-                    parsed_call["function"].name = func.name
-                end
-                if func.arguments ~= nil then
-                    -- append latest chunks for the arguments string (streaming chunks like content/reasoning)
-                    parsed_call["function"].arguments =
-                        (parsed_call["function"].arguments or "")
-                        .. func.arguments
-                end
+        local func = call_delta["function"] -- "function" is a keyword in lua, so must wrap it to access it
+        if func ~= nil then
+            -- FYI different fields are populated across deltas, so you must use/append to what already exists
+            parsed_call["function"] = parsed_call["function"] or {}
+            if func.name ~= nil then
+                -- first delta has full name in my testing (not appending chunks, if I encounter split name then add test for it and update here)
+                parsed_call["function"].name = func.name
+            end
+            if func.arguments ~= nil then
+                -- append latest chunks for the arguments string (streaming chunks like content/reasoning)
+                parsed_call["function"].arguments =
+                    (parsed_call["function"].arguments or "")
+                    .. func.arguments
             end
         end
+    end
 end
 
 return M
