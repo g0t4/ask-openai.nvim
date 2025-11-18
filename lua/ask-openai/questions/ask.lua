@@ -358,8 +358,7 @@ function M.curl_exited_successfully()
             --   and before any tool responses
             --   theoretically there can be multiple messages, with w/e role so I kept this in a loop and generic
 
-            local content = message.content
-            local model_response_thread_message = ChatMessage:new(message.role, content)
+            local model_response_thread_message = ChatMessage:new(message.role, message.content)
 
             -- TODO! map thinking content (and let llama-server drop once no longer relevant?)
             --  or double back at some point and drop it explicitly (too and/or instead)?
