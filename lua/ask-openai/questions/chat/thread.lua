@@ -50,8 +50,8 @@ function ChatThread:next_curl_request_body()
 end
 
 function ChatThread:dump()
-    -- log:luaify_trace("last_request reassembled messages", self.last_request.accumulated_model_response_messages)
-    -- log:luaify_trace("ChatThread messages (history, sent on followup/toolresults)", self.messages)
+    -- log:luaify_trace("last_request's RxAccumulatedMessages", self.last_request.accumulated_model_response_messages)
+    -- log:luaify_trace("thread's TxChatMessages (history, sent on followup/toolresults)", self.messages)
     log:luaify_trace("ChatThread:dump", self)
 end
 
