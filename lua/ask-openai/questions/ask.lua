@@ -349,7 +349,7 @@ end
 function M.curl_exited_successfully()
     vim.schedule(function()
         -- ***! map final response messages => chat thread (history) messages that can be sent back w/ followup/tool_results
-        for _, accumulated_message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
+        for _, rx_message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
             -- log:jsonify_compact_trace("last request message:", message)
             -- *** thread.last_request.accumulated_model_response_messages IS NOT thread.messages
             --    thread.messages => sent with future requests, hence TxChatMessage
@@ -360,15 +360,15 @@ function M.curl_exited_successfully()
             --   and before any tool responses
             --   theoretically there can be multiple messages, with w/e role so I kept this in a loop and generic
 
-            local thread_message = TxChatMessage:new(accumulated_message.role, accumulated_message.content)
+            local thread_message = TxChatMessage:new(rx_message.role, rx_message.content)
 
             -- TODO! map thinking content (and let llama-server's jinja drop once no longer relevant?)
             --  or double back at some point and drop it explicitly (too and/or instead)?
             -- model_response_thread_message.thinking = message.reasoning_content
 
-            thread_message.finish_reason = accumulated_message.finish_reason
+            thread_message.finish_reason = rx_message.finish_reason
 
-            for _, call_request in ipairs(accumulated_message.tool_calls) do
+            for _, call_request in ipairs(rx_message.tool_calls) do
                 thread_message:attach_tool_call_request(call_request)
             end
             log:jsonify_compact_trace("thread_message", thread_message)
