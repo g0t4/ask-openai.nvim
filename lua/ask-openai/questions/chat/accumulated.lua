@@ -33,18 +33,6 @@ function AccumulatedMessage:new_tool_response(call_result_object_not_json, tool_
     return self
 end
 
-function AccumulatedMessage:user(content)
-    return AccumulatedMessage:new("user", content)
-end
-
-function AccumulatedMessage:assistant(content)
-    return AccumulatedMessage:new("assistant", content)
-end
-
-function AccumulatedMessage:new_system_message(content)
-    return AccumulatedMessage:new("system", content)
-end
-
 function AccumulatedMessage:add_tool_call_requests(call_request)
     -- ONLY clone fields on the original call request from the model
     local new_call = {
@@ -57,22 +45,6 @@ function AccumulatedMessage:add_tool_call_requests(call_request)
         }
     }
     table.insert(self.tool_calls, new_call)
-end
-
----@return string
-function AccumulatedMessage:dump_text()
-    local lines = {
-        ansi.white_bold(self.role .. ":") .. " " .. tostring(self.content or ""),
-    }
-    -- include fields not explicitly in the template above
-    for key, v in pairs(self) do
-        if key ~= "__index" and key ~= "role" and key ~= "content" then
-            local color_key = ansi.yellow(key)
-            local line = string.format("%s: %s", color_key, vim.inspect(v))
-            table.insert(lines, line)
-        end
-    end
-    return table.concat(lines, "\n")
 end
 
 ---@enum FINISH_REASONS
