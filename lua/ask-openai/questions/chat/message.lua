@@ -13,6 +13,14 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@field tool_calls ToolCall[] -- empty if none
 local ChatMessage = {}
 
+---@enum MESSAGE_ROLES
+ChatMessage.MESSAGE_ROLES = {
+    USER = "user",
+    ASSISTANT = "assistant",
+    TOOL = "tool",
+    SYSTEM = "system",
+}
+
 ---@return ChatMessage
 function ChatMessage:new(role, content)
     self = setmetatable({}, { __index = ChatMessage })
@@ -30,20 +38,25 @@ end
 
 function ChatMessage:new_tool_response(call_result_object_not_json, tool_call_id, name)
     -- FYI see NOTES.md for "fix" => removed `|tojson` from jinja template for message.content
-    self = ChatMessage:new("tool", vim.json.encode(call_result_object_not_json))
+    self = ChatMessage:tool(vim.json.encode(call_result_object_not_json))
 
     self.tool_call_id = tool_call_id
     self.name = name
     return self
 end
 
+function ChatMessage:tool(content)
+    return ChatMessage:new(ChatMessage.MESSAGE_ROLES.TOOL, content)
+end
+
 function ChatMessage:user(content)
-    return ChatMessage:new("user", content)
+    return ChatMessage:new(ChatMessage.MESSAGE_ROLES.USER, content)
 end
 
 --- differentiate ChatMessage usage by making explicit this provides context to another user request
 function ChatMessage:user_context(content)
-    return ChatMessage:new("user", content)
+    -- FYI it would be fine to remove this after my AccumulatedMessage refactor
+    return ChatMessage:user(content)
 end
 
 function ChatMessage:add_tool_call_requests(call_request)
