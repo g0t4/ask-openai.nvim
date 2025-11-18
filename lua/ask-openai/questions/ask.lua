@@ -352,7 +352,9 @@ function M.curl_exited_successfully()
     vim.schedule(function()
         for _, message in ipairs(M.thread.last_request.response_messages or {}) do
             -- log:jsonify_compact_trace("last request message:", message)
-            -- KEEP IN MIND, thread.last_request.response_messages IS NOT the same as thread.messages
+            -- *** thread.last_request.response_messages IS NOT thread.messages
+            --    even though I use ChatMessage type for both
+            --    TODO maybe use separate type? ModelResponseMessage and map that to ChatMessage here using some explicit helper
             --
             -- this is the response(s) from the model, they need to be added to the message history!!!
             --   and before any tool responses
