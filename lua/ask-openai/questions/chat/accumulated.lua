@@ -103,7 +103,6 @@ AccumulatedMessage.LIFECYCLE = {
     TOOLS_DONE = "tool_called", -- tool finished (next message will send results to server for a new "TURN" in chat history)
 }
 
---- TODO review where LIFECYCLE should be? rx/tx/both?
 ---@return RX_LIFECYCLE
 function AccumulatedMessage:get_lifecycle_step()
     -- TODO try using this to simplify consumer logic... i.e. in streaming chat window  message/tool formatters/summarizers
