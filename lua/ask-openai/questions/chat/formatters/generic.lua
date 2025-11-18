@@ -7,7 +7,7 @@ local M = {}
 function M.format(lines, tool_call, message)
     -- if message:is_still_streaming() then
     --     -- TODO?
-    --     -- TODO OR message:get_lifecycle_step() == ChatMessage.LIFECYCLE.FINISHED
+    --     -- TODO OR message:get_lifecycle_step() == RxAccumulatedMessage.RX_LIFECYCLE.FINISHED
     --     return
     -- end
 
