@@ -200,17 +200,17 @@ function M.on_streaming_delta_update_message_history(choice, request)
         log:trace("[WARN] skipping b/c choice/choice.delta is nil: '" .. vim.inspect(choice) .. "'")
         return
     end
-    request.response_messages = request.response_messages or {}
+    request.model_response_messages_recreated = request.model_response_messages_recreated or {}
 
     -- * lookup or create message
     local index_base1 = choice.index + 1
-    local message = request.response_messages[index_base1]
+    local message = request.model_response_messages_recreated[index_base1]
     if message == nil then
         message = ChatMessage:new(choice.delta.role, "")
         message.index = choice.index
         message._verbatim_content = ""
         -- assumes contiguous indexes, s/b almost always 0 index only, 1 too with dual tool call IIRC
-        request.response_messages[index_base1] = message
+        request.model_response_messages_recreated[index_base1] = message
     end
 
     if choice.delta.content ~= nil and choice.delta.content ~= vim.NIL then

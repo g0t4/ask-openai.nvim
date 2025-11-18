@@ -94,8 +94,8 @@ data: [DONE]
 
             local request = call_on_delta(choices)
 
-            should.be_equal(1, #request.response_messages)
-            local msg = request.response_messages[1]
+            should.be_equal(1, #request.model_response_messages_recreated)
+            local msg = request.model_response_messages_recreated[1]
             should.be_equal(0, msg.index)
             should.be_equal("assistant", msg.role)
             should.be_equal("My name is Neo Vim.", msg.content)
@@ -121,8 +121,8 @@ data: [DONE]
 
             local request, frontend = call_on_delta(choices)
             -- print("request", vim.inspect(request))
-            should.be_equal(1, #request.response_messages)
-            local msg = request.response_messages[1]
+            should.be_equal(1, #request.model_response_messages_recreated)
+            local msg = request.model_response_messages_recreated[1]
             should.be_equal(0, msg.index)
             should.be_equal("assistant", msg.role)
             should.be_equal("tool_calls", msg.finish_reason)
@@ -172,8 +172,8 @@ data: [DONE]
                 {"index":0,"delta":{"content":""},"logprobs":null,"finish_reason":"tool_calls","stop_reason":null}
             ]]
             local request, frontend = call_on_delta(choices)
-            should.be_equal(1, #request.response_messages)
-            msg = request.response_messages[1]
+            should.be_equal(1, #request.model_response_messages_recreated)
+            msg = request.model_response_messages_recreated[1]
             should.be_equal("assistant", msg.role)
             -- FYI VLLM IS NOT DUPLICATING ATTRS like role across all deltas, just on first one it seems
             should.be_equal(0, msg.index)
@@ -219,9 +219,9 @@ data: [DONE]
             ]]
 
             local request, frontend = call_on_delta(choices)
-            should.be_equal(1, #request.response_messages)
+            should.be_equal(1, #request.model_response_messages_recreated)
 
-            local msg = request.response_messages[1]
+            local msg = request.model_response_messages_recreated[1]
             should.be_equal(0, msg.index) -- must send this back to OpenAI, so yes I need this
             should.be_equal("", msg.content)
             should.be_equal("assistant", msg.role)
@@ -267,9 +267,9 @@ data: [DONE]
                     curls.on_streaming_delta_update_message_history(sse[1], request)
                 end)
 
-            should.be_equal(1, #request.response_messages)
+            should.be_equal(1, #request.model_response_messages_recreated)
 
-            local msg = request.response_messages[1]
+            local msg = request.model_response_messages_recreated[1]
             should.be_equal(0, msg.index)
 
             local content_only = "Hi there! Let me check the current weather for Washington DC for you."
