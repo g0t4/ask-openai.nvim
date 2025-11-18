@@ -347,7 +347,7 @@ end
 function M.curl_exited_successfully()
     vim.schedule(function()
         -- ***! map final response messages => chat thread (history) messages that can be sent back w/ followup/tool_results
-        for _, message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
+        for _, accumulated_message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
             -- log:jsonify_compact_trace("last request message:", message)
             -- *** thread.last_request.accumulated_model_response_messages IS NOT thread.messages
             --    even though I use ChatMessage type for both
@@ -359,19 +359,19 @@ function M.curl_exited_successfully()
             --   and before any tool responses
             --   theoretically there can be multiple messages, with w/e role so I kept this in a loop and generic
 
-            local model_response_thread_message = ChatMessage:new(message.role, message.content)
+            local thread_message = ChatMessage:new(accumulated_message.role, accumulated_message.content)
 
             -- TODO! map thinking content (and let llama-server drop once no longer relevant?)
             --  or double back at some point and drop it explicitly (too and/or instead)?
             -- model_response_thread_message.thinking = message.reasoning_content
 
-            model_response_thread_message.finish_reason = message.finish_reason
+            thread_message.finish_reason = accumulated_message.finish_reason
 
-            for _, call_request in ipairs(message.tool_calls) do
-                model_response_thread_message:add_tool_call_requests(call_request)
+            for _, call_request in ipairs(accumulated_message.tool_calls) do
+                thread_message:add_tool_call_requests(call_request)
             end
             -- log:jsonify_compact_trace("final model_response message:", model_responses)
-            M.thread:add_message(model_response_thread_message)
+            M.thread:add_message(thread_message)
 
             -- * show user role as hint to follow up:
             M.show_user_role()
