@@ -36,7 +36,6 @@ local log = require("ask-openai.logs.logger").predictions()
 ---@class SSEDataOnlyParser
 ---@field _buffer string
 ---@field _done boolean
----@field _lines {} -- store all received lines here
 ---@field _on_data_sse SSEOnDataHandler
 local SSEDataOnlyParser = {}
 
@@ -46,7 +45,6 @@ function SSEDataOnlyParser.new(on_data_sse)
     local instance = setmetatable({}, { __index = SSEDataOnlyParser })
     instance._buffer = ""
     instance._done = false
-    instance._lines = {}
     instance._on_data_sse = on_data_sse
     return instance
 end
@@ -73,9 +71,7 @@ end
 --- curl stdout should be patched into this
 ---@param data string
 function SSEDataOnlyParser:write(data)
-    table.insert(self._lines, data)
     -- log:info("data", vim.inspect(data))
-    -- log:info("_lines", vim.inspect(self._lines))
 
     -- FYI assumed to be all data events so this is fine, to strip before inserting in buffer
     data = data:gsub("^data: ", "")

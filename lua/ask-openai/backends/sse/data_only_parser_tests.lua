@@ -35,10 +35,6 @@ describe("data-only events", function()
                 it("should emit event", function()
                     assert.are.same({ "data_value1" }, events)
                 end)
-
-                it("should track in _lines", function()
-                    assert.same({ write1 }, parser._lines)
-                end)
             end)
         end)
     end
