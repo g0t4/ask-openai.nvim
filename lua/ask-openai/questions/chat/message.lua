@@ -115,9 +115,4 @@ function ChatMessage:get_finish_reason()
     return self.finish_reason
 end
 
----@return boolean
-function ChatMessage:is_still_streaming()
-    return self.finish_reason == nil or self.finish_reason == vim.NIL
-end
-
 return ChatMessage
