@@ -370,7 +370,7 @@ function M.curl_exited_successfully()
             for _, call_request in ipairs(accumulated_message.tool_calls) do
                 thread_message:add_tool_call_requests(call_request)
             end
-            -- log:jsonify_compact_trace("final model_response message:", model_responses)
+            log:jsonify_compact_trace("thread_message", thread_message)
             M.thread:add_message(thread_message)
 
             -- * show user role as hint to follow up:
