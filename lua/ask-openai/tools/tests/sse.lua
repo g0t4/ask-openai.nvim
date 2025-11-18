@@ -95,14 +95,14 @@ data: [DONE]
             local request = call_on_delta(choices)
 
             should.be_equal(1, #request.accumulated_model_response_messages)
-            local msg = request.accumulated_model_response_messages[1]
-            should.be_equal(0, msg.index)
-            should.be_equal("assistant", msg.role)
-            should.be_equal("My name is Neo Vim.", msg.content)
+            local rx_message = request.accumulated_model_response_messages[1]
+            should.be_equal(0, rx_message.index)
+            should.be_equal("assistant", rx_message.role)
+            should.be_equal("My name is Neo Vim.", rx_message.content)
 
             -- TODO is finish_reason per message OR the entire request!?
             --   TODO get a multi message response to review
-            should.be_equal("stop", msg.finish_reason)
+            should.be_equal("stop", rx_message.finish_reason)
         end)
 
 
@@ -122,17 +122,17 @@ data: [DONE]
             local request, frontend = call_on_delta(choices)
             -- print("request", vim.inspect(request))
             should.be_equal(1, #request.accumulated_model_response_messages)
-            local msg = request.accumulated_model_response_messages[1]
-            should.be_equal(0, msg.index)
-            should.be_equal("assistant", msg.role)
-            should.be_equal("tool_calls", msg.finish_reason)
+            local rx_message = request.accumulated_model_response_messages[1]
+            should.be_equal(0, rx_message.index)
+            should.be_equal("assistant", rx_message.role)
+            should.be_equal("tool_calls", rx_message.finish_reason)
 
-            should.be_equal(2, #msg.tool_calls)
+            should.be_equal(2, #rx_message.tool_calls)
             -- * tool1:
             -- {"id":"call_809l7n8f","index":0,"type":"function", "function":{
             --    "name":"run_command",
             --    "arguments":"{\"command\":\"ls -la\"}"}}]},"finish_reason":null}
-            first_call = msg.tool_calls[1]
+            first_call = rx_message.tool_calls[1]
             should.be_equal("call_809l7n8f", first_call.id)
             should.be_equal(0, first_call.index)
             should.be_equal("function", first_call.type)
@@ -143,7 +143,7 @@ data: [DONE]
             -- {"id":"call_oqp1e2a1","index":1,"type":"function", "function":{
             --    "name":"run_command",
             --    "arguments":"{\"command\":\"ls -la\",\"cwd\":\"/path/to/directory\"}"}}]},"finish_reason":null}
-            second_call = msg.tool_calls[2]
+            second_call = rx_message.tool_calls[2]
             should.be_equal("call_oqp1e2a1", second_call.id)
             should.be_equal(1, second_call.index)
             should.be_equal("function", second_call.type)
@@ -173,19 +173,19 @@ data: [DONE]
             ]]
             local request, frontend = call_on_delta(choices)
             should.be_equal(1, #request.accumulated_model_response_messages)
-            msg = request.accumulated_model_response_messages[1]
-            should.be_equal("assistant", msg.role)
+            local rx_message = request.accumulated_model_response_messages[1]
+            should.be_equal("assistant", rx_message.role)
             -- FYI VLLM IS NOT DUPLICATING ATTRS like role across all deltas, just on first one it seems
-            should.be_equal(0, msg.index)
-            should.be_equal("", msg.content)
+            should.be_equal(0, rx_message.index)
+            should.be_equal("", rx_message.content)
             -- FYI I do not care about logprobs
-            should.be_equal("tool_calls", msg.finish_reason)
+            should.be_equal("tool_calls", rx_message.finish_reason)
             -- FYI stop_reason for now
 
             -- * tool delta 1:
             -- [{"id":"chatcmpl-tool-ca99dda515524c6abe47d1ea22813507","type":"function","index":0,"function":{"name":"run_command"}}
-            should.be_equal(1, #msg.tool_calls)
-            call = msg.tool_calls[1]
+            should.be_equal(1, #rx_message.tool_calls)
+            call = rx_message.tool_calls[1]
             should.be_equal("chatcmpl-tool-ca99dda515524c6abe47d1ea22813507", call.id)
             should.be_equal(0, call.index)
             should.be_equal("function", call.type)
@@ -221,15 +221,15 @@ data: [DONE]
             local request, frontend = call_on_delta(choices)
             should.be_equal(1, #request.accumulated_model_response_messages)
 
-            local msg = request.accumulated_model_response_messages[1]
-            should.be_equal(0, msg.index) -- must send this back to OpenAI, so yes I need this
-            should.be_equal("", msg.content)
-            should.be_equal("assistant", msg.role)
-            should.be_equal("tool_calls", msg.finish_reason)
+            local rx_message = request.accumulated_model_response_messages[1]
+            should.be_equal(0, rx_message.index) -- must send this back to OpenAI, so yes I need this
+            should.be_equal("", rx_message.content)
+            should.be_equal("assistant", rx_message.role)
+            should.be_equal("tool_calls", rx_message.finish_reason)
 
             -- * validate accumulated tool call
-            should.be_equal(1, #msg.tool_calls)
-            call = msg.tool_calls[1]
+            should.be_equal(1, #rx_message.tool_calls)
+            call = rx_message.tool_calls[1]
             should.be_equal("CALL_ID", call.id)
             should.be_equal(0, call.index)
             should.be_equal("function", call.type)
@@ -269,21 +269,21 @@ data: [DONE]
 
             should.be_equal(1, #request.accumulated_model_response_messages)
 
-            local msg = request.accumulated_model_response_messages[1]
-            should.be_equal(0, msg.index)
+            local rx_message = request.accumulated_model_response_messages[1]
+            should.be_equal(0, rx_message.index)
 
             local content_only = "Hi there! Let me check the current weather for Washington DC for you."
             local tool_call_only = "\n<tool_call>\n<function=get_current_weather"
             local mixed = content_only .. tool_call_only
-            should.be_equal(mixed, msg._verbatim_content)
-            should.be_equal(content_only, msg.content)
+            should.be_equal(mixed, rx_message._verbatim_content)
+            should.be_equal(content_only, rx_message.content)
 
-            should.be_equal("assistant", msg.role)
-            should.be_equal("tool_calls", msg.finish_reason)
+            should.be_equal("assistant", rx_message.role)
+            should.be_equal("tool_calls", rx_message.finish_reason)
             --
             -- -- * validate accumulated tool call
-            should.be_equal(1, #msg.tool_calls)
-            call = msg.tool_calls[1]
+            should.be_equal(1, #rx_message.tool_calls)
+            call = rx_message.tool_calls[1]
             should.be_equal("CALL_ID", call.id)
             should.be_equal(0, call.index)
             should.be_equal("function", call.type)
