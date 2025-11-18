@@ -80,25 +80,26 @@ function SSEDataOnlyParser:write(data)
     data = data:gsub("\r\n", "\n"):gsub("\r", "\n")
 
     self._buffer = self._buffer .. data
-    local lines = vim.split(self._buffer, "\n\n", {})
-    -- FYI split takes plain and trimempty option values
-    --   default not removing empties, can use to check if a \n\n was present
-    if (#lines == 1) then
-        -- no \n\n
-        return -- buffer is fine as-is
-    elseif (#lines >= 2) then
-        -- had \n\n ==> emit all but last one
 
+    -- * look for blank line (signals end of data event)
+    -- FYI split takes plain and trimempty options
+    --   default not removing empties, can use to check if a \n\n was present
+    local lines = vim.split(self._buffer, "\n\n", {})
+
+    if (#lines == 1) then
+        -- no blank line (yet)
+        return
+    elseif (#lines >= 2) then
+        -- had blank line(s)
+
+        -- ==> emit completed data event(s)
         for i = 1, #lines - 1 do
             local event = lines[i]
-
-            event = event:gsub("^data: ", "") -- happens when multiple in one message
-            -- FTR I am not a fan of this, feels sloppy but thank god I split out this low-level event parser... nightmare to do this in same loop that uses deltas!
-
+            event = event:gsub("^data: ", "") -- happens when multiple in one SSE
             self._on_data_sse(event)
         end
 
-        -- keep last one in buffer for next
+        -- keep last line in buffer (it's not complete w/o a blank line)
         self._buffer = lines[#lines]
     end
 end
