@@ -46,19 +46,19 @@ end
 --     -- TODO see ask.lua curl_exited_successfully (move that logic here? or move this idea to AccumulatedMessage?)
 -- end
 
-function ChatMessage:new_tool_response(call_result_object_not_json, tool_call_id, name)
+---@param tool_call ToolCall
+---@return ChatMessage
+function ChatMessage:new_tool_response(tool_call)
     -- FYI see NOTES.md for "fix" => removed `|tojson` from jinja template for message.content
-    self = ChatMessage:tool(vim.json.encode(call_result_object_not_json))
+    local content = vim.json.encode(tool_call.call_output.result)
+    self = ChatMessage:new(ChatMessage.MESSAGE_ROLES.TOOL, content)
 
-    self.tool_call_id = tool_call_id
-    self.name = name
+    self.tool_call_id = tool_call.id
+    self.name = tool_call["function"].name
     return self
 end
 
-function ChatMessage:tool(content)
-    return ChatMessage:new(ChatMessage.MESSAGE_ROLES.TOOL, content)
-end
-
+---@return ChatMessage
 function ChatMessage:user(content)
     return ChatMessage:new(ChatMessage.MESSAGE_ROLES.USER, content)
 end
