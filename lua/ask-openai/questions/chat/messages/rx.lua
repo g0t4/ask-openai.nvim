@@ -41,20 +41,6 @@ function RxAccumulatedMessage:new(role, content)
     return self
 end
 
-function RxAccumulatedMessage:add_tool_call_requests(call_request)
-    -- ONLY clone fields on the original call request from the model
-    local new_call = {
-        id = call_request.id,
-        index = call_request.index,
-        type = call_request.type,
-        ["function"] = {
-            name = call_request["function"].name,
-            arguments = call_request["function"].arguments,
-        }
-    }
-    table.insert(self.tool_calls, new_call)
-end
-
 ---Returns the finish reason, cleanup when not set (i.e. nil instead of vim.NIL)
 --- not set when still streaming
 ---@return FINISH_REASON?
