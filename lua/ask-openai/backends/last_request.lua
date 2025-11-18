@@ -5,7 +5,7 @@ local log = require("ask-openai.logs.logger").predictions()
 ---@field handle uv_process_t
 ---@field pid integer
 ---@field thread ChatThread
----@field accumulated_model_response_messages ChatMessage[] -- model responses, built from SSEs (these are not sent back in follow up / tool results ... instead these are mapped to ChatThread.messages
+---@field accumulated_model_response_messages AccumulatedMessage[] -- model responses, built from SSEs (these are not sent back in follow up / tool results ... instead these are mapped to ChatThread.messages
 ---@field start_time integer -- unix timestamp when request was sent (for timing)
 ---@field marks_ns_id
 local LastRequest = {}

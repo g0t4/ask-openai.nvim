@@ -350,7 +350,6 @@ function M.curl_exited_successfully()
         for _, accumulated_message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
             -- log:jsonify_compact_trace("last request message:", message)
             -- *** thread.last_request.accumulated_model_response_messages IS NOT thread.messages
-            --    even though I use ChatMessage type for both
             --    thread.messages => sent with future requests
             --    request.resopnse_messages is simply to denormalize responses from SSEs
             --    request => SSEs => acccumulated messages => toolcalls/followup => thread.messages => next request => ...

@@ -1,7 +1,7 @@
 local log = require("ask-openai.logs.logger").predictions()
 local LastRequest = require("ask-openai.backends.last_request")
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
-local ChatMessage = require("ask-openai.questions.chat.message")
+local AccumulatedMessage = require("ask-openai.questions.chat.accumulated")
 local ToolCall = require("ask-openai.questions.chat.tool_call")
 local uv = vim.uv
 
@@ -188,7 +188,7 @@ function M.on_line_or_lines(data_value, frontend, extract_generated_text, reques
     end
 end
 
---- think of this as denormalizing SSEs => into aggregate ChatMessages
+--- think of this as denormalizing SSEs => into aggregate AccumulatedMessage
 ---@param choice OpenAIChoice|nil
 ---@param request LastRequest
 function M.on_streaming_delta_update_message_history(choice, request)
@@ -206,7 +206,7 @@ function M.on_streaming_delta_update_message_history(choice, request)
     local index_base1 = choice.index + 1
     local message = request.accumulated_model_response_messages[index_base1]
     if message == nil then
-        message = ChatMessage:new(choice.delta.role, "")
+        message = AccumulatedMessage:new(choice.delta.role, "")
         message.index = choice.index
         message._verbatim_content = ""
         -- assumes contiguous indexes, s/b almost always 0 index only, 1 too with dual tool call IIRC
