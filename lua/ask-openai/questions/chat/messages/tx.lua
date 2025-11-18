@@ -4,11 +4,16 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@class TxChatMessage
 ---@field role? string
 ---@field content? string
----@field reasoning_content? string TODO isn't this "thinking"?
----@field finish_reason? string|vim.NIL -- TODO I do not think I would be sending vim.NIL right? that's only in streaming when the response is not yet complete?
----@field tool_call_id? string -- ONLY for role=="tool" (tool result messages)
 ---@field name? string -- optional name for the participant (I am not using this, so far)
----@field tool_calls ToolCall[] -- empty if none
+---@field reasoning_content? string TODO isn't this "thinking"?
+---
+--- FYI role="tool" only:
+---@field tool_call_id? string -- ONLY role=="tool" (tool result messages)
+---
+--- FYI role="assisant" only:
+---@field tool_calls ToolCall[] -- ONLY role=="assistant"
+---@field finish_reason? string|vim.NIL -- ONLY role=="assistant"
+---
 local TxChatMessage = {}
 
 ---@enum TX_MESSAGE_ROLES
