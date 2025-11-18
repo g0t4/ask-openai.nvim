@@ -5,7 +5,6 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@field role? string
 ---@field index integer -- must be kept and sent back with thread
 ---@field content? string
----@field _verbatim_content? string -- hack for  <tool_call>... leaks (can be removed if fixed)
 ---@field reasoning_content? string
 ---@field finish_reason? string|vim.NIL -- TODO I do not think I would be sending vim.NIL right? that's only in streaming when the response is not yet complete?
 ---@field tool_call_id? string
