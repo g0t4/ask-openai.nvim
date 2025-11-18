@@ -422,7 +422,8 @@ end
 function M.any_outstanding_tool_calls()
     for _, message in ipairs(M.thread.last_request.response_messages or {}) do
         for _, tool_call in ipairs(message.tool_calls) do
-            if tool_call.response_message == nil then
+            local is_outstanding = tool_call.response_message == nil
+            if is_outstanding then
                 return true
             end
         end
