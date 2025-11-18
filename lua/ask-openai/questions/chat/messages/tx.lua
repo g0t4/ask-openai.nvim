@@ -87,6 +87,7 @@ end
 function TxChatMessage:from_assistant_rx_message(rx_message)
     -- docs: https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message
     -- * content, role, name, tool_calls ...  also: refusal, audio (not using these)
+    --   NO mention of sending thinking back! so, no OpenAI compat name for that!
 
     -- MAP the assistant's RxAccumulatedMessage message to TxChatMessage
     local tx_message = TxChatMessage:new(rx_message.role, rx_message.content)
@@ -96,6 +97,8 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     -- TODO! map thinking content (and let llama-server's jinja drop the thinking once no longer relevant) ?
     --  or double back at some point and drop it explicitly (too and/or instead)?
     -- tx_message.thinking = message.reasoning_content
+    -- FYI gptoss jinja => assistant_message.(thinking|content) == return/resume CoT thinking after/between tool calls
+    --    FYI qwen3 uses reasoning_content (UGH)
 
     --- * map tool calls
     if rx_message.tool_calls then
