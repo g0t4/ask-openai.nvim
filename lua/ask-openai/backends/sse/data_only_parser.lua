@@ -73,9 +73,11 @@ end
 function SSEDataOnlyParser:write(data)
     -- log:info("data", vim.inspect(data))
 
-    -- FYI assumed to be all data events so this is fine, to strip before inserting in buffer
+    -- FYI assumed data only => strip data: prefix
     data = data:gsub("^data: ", "")
-    data = data:gsub("\r\n", "\n"):gsub("\r", "\n") -- normalize line endings to LF
+
+    -- normalize line endings to LF
+    data = data:gsub("\r\n", "\n"):gsub("\r", "\n")
 
     self._buffer = self._buffer .. data
     local lines = vim.split(self._buffer, "\n\n", {})
