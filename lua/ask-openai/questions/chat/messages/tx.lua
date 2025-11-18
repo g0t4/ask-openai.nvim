@@ -6,7 +6,7 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@field content? string
 ---@field reasoning_content? string TODO isn't this "thinking"?
 ---@field finish_reason? string|vim.NIL -- TODO I do not think I would be sending vim.NIL right? that's only in streaming when the response is not yet complete?
----@field tool_call_id? string -- ONLY for role=="tool"
+---@field tool_call_id? string -- ONLY for role=="tool" (tool result messages)
 ---@field name? string -- optional name for the participant (I am not using this, so far)
 ---@field tool_calls ToolCall[] -- empty if none
 local TxChatMessage = {}
@@ -53,7 +53,7 @@ function TxChatMessage:tool_result(tool_call)
     --   it does a lookup on last tool call's name to correlate
     --   do not remove this, as llama-server and other model templates may use the ID
 
-    -- TODO docs don't show name as needed, old function calling did use this! remove this if not needed?
+    -- TODO OpenAI docs (link above) don't show name at all, however, old function calling does! did I accidentally include this?
     --   why? b/c new tool  calling uses tool_call_id!
     --   gptoss template doesn't use this (it actually does name lookup on last tool call b/c single tool calling)
     self.name = tool_call["function"].name
@@ -90,7 +90,6 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
 
     -- MAP the assistant's RxAccumulatedMessage message to TxChatMessage
     local thread_message = TxChatMessage:new(rx_message.role, rx_message.content)
-    -- msg.reasoning_content = rx_message.reasoning_content ???
     thread_message.finish_reason = rx_message.finish_reason
     thread_message.name = rx_message.name -- optional, I am not using this on the rx_message incoming side
 
@@ -105,9 +104,10 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
         local function add_assistant_tool_call_request(call_request)
             -- FYI embed function here so no confusion about what is using it
             -- only clone needed fields
+            -- * function.arguments, function.name, id, type docs: https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message-tool_calls
             local new_call = {
                 id = call_request.id,
-                index = call_request.index,
+                -- index = call_request.index, -- not in OpenAI docs... I think this is just per request/response anyways
                 type = call_request.type,
                 ["function"] = {
                     name = call_request["function"].name,
