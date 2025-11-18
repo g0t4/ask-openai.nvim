@@ -123,10 +123,13 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
         end
     end
 
-    request.handle, request.pid = uv.spawn(options.command, {
-        args = options.args,
-        stdio = { nil, stdout, stderr },
-    }, on_exit)
+    request.handle, request.pid = uv.spawn(options.command,
+        ---@diagnostic disable-next-line: missing-fields
+        {
+            args = options.args,
+            stdio = { nil, stdout, stderr },
+        },
+        on_exit)
 
     ---@param read_error any
     ---@param data? string
