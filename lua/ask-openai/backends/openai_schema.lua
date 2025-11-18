@@ -85,12 +85,13 @@
 ---@field refusal? string - NOT using
 ---@see https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message
 
---- FYI this is not the same as above (OpenAITool) which is for defining tools
 ---@class OpenAIChatCompletion_Input_AssistantMessageToolCallRequest
 ---@field id string
 ---@field type string -- "function" or "custom"
 ---@field function OpenAIChatCompletion_Input_AssistantMessageToolCallRequestFunction
 ---@field custom? table -- NOT USING THIS
+-- FYI this is GOOD EXAMPLE of why I want split type definitions (INPUT vs OUTPUT):
+--   there is no `ToolCall.index` input like there is on the SSEs in the output!
 
 ---@class OpenAIChatCompletion_Input_AssistantMessageToolCallRequestFunction
 ---@field name string
@@ -141,5 +142,3 @@
 ---@field description? string
 
 -- PRN move the MCP to OpenAI logic here?
-
-
