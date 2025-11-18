@@ -236,11 +236,12 @@ function M.on_streaming_delta_update_message_history(choice, request)
         log:error("stripping LEAKED TOOL CALL!")
     end
 
-    -- * parse tool calls
     local calls = choice.delta.tool_calls
     if not calls then
         return
     end
+
+    -- * parse tool calls
     for _, call_delta in ipairs(calls) do
         -- * lookup or create new parsed_call
         local parsed_call = message.tool_calls[call_delta.index + 1]
