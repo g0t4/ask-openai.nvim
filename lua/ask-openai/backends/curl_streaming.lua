@@ -159,21 +159,19 @@ function M.on_line_or_lines(data_value, frontend, extract_generated_text, reques
             local first_choice = sse_parsed.choices[1]
             -- OK if no first_choice
 
-            -- IIRC this is only ask questions currently
             --   ? if I don't need this in rewrites, THEN, push this back down into asks via on_generated_text
             M.on_streaming_delta_update_message_history(first_choice, request)
+            -- * ONLY AskQuestion uses this:
             frontend.handle_messages_updated()
 
-            -- only rewrite uses this... and that may not change (not sure denormalizer makes sense for rewrites)
+            -- * ONLY AskRewrite uses this... and that may not change (not sure denormalizer makes sense for rewrites)
             local generated_text = extract_generated_text(first_choice)
             if generated_text and frontend.on_generated_text then
                 -- FYI checks for on_generated_text b/c ask doesn't use this interface anymore
                 frontend.on_generated_text(generated_text, sse_parsed)
             end
-
-            -- PRN on_reasoning_text ... choice.delta.reasoning?/thinking? ollama splits this out, IIUC LM Studio does too... won't work if using harmony format with gpt-oss that isnt' parsed
         end
-        -- FYI not every SSE has to have generated tokens (choices), no need to warn
+        -- FYI not every SSE has to have generated tokens (choices), no need to warn if no parsed value
 
         if sse_parsed.error then
             -- only confirmed this on llama_server, rename if other backends follow suit
@@ -190,6 +188,7 @@ function M.on_line_or_lines(data_value, frontend, extract_generated_text, reques
     end
 end
 
+--- think of this as denormalizing SSEs => into aggregate ChatMessages
 ---@param choice OpenAIChoice|nil
 ---@param request LastRequest
 function M.on_streaming_delta_update_message_history(choice, request)
@@ -246,9 +245,9 @@ function M.on_streaming_delta_update_message_history(choice, request)
         -- * lookup or create new parsed_call
         local parsed_call = message.tool_calls[call_delta.index + 1]
         if parsed_call == nil then
-            -- first time, create ToolCall so it can be populated across streaming SSEs
+            -- create ToolCall to populate across SSEs
             parsed_call = ToolCall:new {
-                -- assuming these are always on first delta per message
+                -- assume these fields are always on first SSE for each tool call
                 id    = call_delta.id,
                 index = call_delta.index,
                 type  = call_delta.type,
@@ -256,16 +255,19 @@ function M.on_streaming_delta_update_message_history(choice, request)
             table.insert(message.tool_calls, parsed_call)
         end
 
-        local func = call_delta["function"] -- "function" is a keyword in lua, so must wrap it to access it
+        local func = call_delta["function"] -- FYI "function" is keyword (lua)
         if func ~= nil then
-            -- FYI different fields are populated across deltas, so you must use/append to what already exists
             parsed_call["function"] = parsed_call["function"] or {}
+
+            -- * function.name is entirely in first delta (in my testing)
             if func.name ~= nil then
-                -- first delta has full name in my testing (not appending chunks, if I encounter split name then add test for it and update here)
+                --   => if that changes, add unit tests to verify observed splits
                 parsed_call["function"].name = func.name
             end
+
+            -- * funtion.arguments is split across deltas
             if func.arguments ~= nil then
-                -- append latest chunks for the arguments string (streaming chunks like content/reasoning)
+                -- accumuluate each chunk
                 parsed_call["function"].arguments =
                     (parsed_call["function"].arguments or "")
                     .. func.arguments
