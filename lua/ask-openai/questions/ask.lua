@@ -298,35 +298,35 @@ function M.handle_messages_updated()
     end
 
     local lines = LinesBuilder:new()
-    for _, message in ipairs(M.thread.last_request.accumulated_model_response_messages) do
+    for _, rx_message in ipairs(M.thread.last_request.accumulated_model_response_messages) do
         -- FYI !! now it is obvious that this is only operating on accumulated message type!
 
         -- * message contents
-        local content = message.content or ""
-        local reasoning_content = message.reasoning_content or ""
+        local content = rx_message.content or ""
+        local reasoning_content = rx_message.reasoning_content or ""
 
         if content ~= "" or reasoning_content ~= "" then
             -- ONLY add role header IF there is content (or reasoning) to show... otherwise just show tool_call(s)
-            lines:append_role_header(message.role)
+            lines:append_role_header(rx_message.role)
 
             lines:append_folded_styled_text(reasoning_content, HLGroups.CHAT_REASONING)
 
             lines:append_text(content)
             lines:append_blank_line_if_last_is_not_blank() -- only if reasoning doesn't have trailing \n
-        elseif #message.tool_calls == 0 then
+        elseif #rx_message.tool_calls == 0 then
             -- gptoss120b - this works:
             --   :AskQuestion testing a request, I need you to NOT say anything in response, just stop immediatley
             lines:append_text("[unexpected: empty response]")
             lines:append_blank_line()
         end
 
-        for _, tool_call in ipairs(message.tool_calls) do
+        for _, tool_call in ipairs(rx_message.tool_calls) do
             local function_name = tool_call["function"].name or ""
             local formatter = formatters.get_formatter(function_name)
             if formatter then
-                formatter(lines, tool_call, message)
+                formatter(lines, tool_call, rx_message)
             else
-                formatters.generic.format(lines, tool_call, message)
+                formatters.generic.format(lines, tool_call, rx_message)
             end
             lines:append_blank_line_if_last_is_not_blank()
         end
