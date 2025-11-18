@@ -7,8 +7,8 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@field content? string
 ---@field reasoning_content? string
 ---@field finish_reason? string|vim.NIL -- TODO I do not think I would be sending vim.NIL right? that's only in streaming when the response is not yet complete?
----@field tool_call_id? string
----@field name? string
+---@field tool_call_id? string -- ONLY for role=="tool"
+---@field name? string -- optional name for the participant
 ---@field tool_calls ToolCall[] -- empty if none
 local TxChatMessage = {}
 
@@ -40,11 +40,6 @@ function TxChatMessage:new(role, content)
     return self
 end
 
--- IDEA:
--- function TxChatMessage:from_accumulated(RxAccumulatedMessage accumulated)
---     -- TODO see ask.lua curl_exited_successfully (move that logic here? or move this idea to RxAccumulatedMessage?)
--- end
-
 ---@param tool_call ToolCall
 ---@return TxChatMessage
 function TxChatMessage:tool_result(tool_call)
@@ -66,23 +61,29 @@ function TxChatMessage:tool_result(tool_call)
     return self
 end
 
+---@param content string
 ---@return TxChatMessage
 function TxChatMessage:system(content)
+    -- * content, role, name - https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-system_message
     return TxChatMessage:new(TX_MESSAGE_ROLES.SYSTEM, content)
 end
 
+---@param content string
 ---@return TxChatMessage
 function TxChatMessage:user(content)
+    -- * content, role, name - https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-user_message
     return TxChatMessage:new(TX_MESSAGE_ROLES.USER, content)
 end
 
 --- differentiate TxChatMessage usage by making explicit this provides context to another user request
+---@param content string
 ---@return TxChatMessage
 function TxChatMessage:user_context(content)
     -- FYI it would be fine to remove this after my RxAccumulatedMessage refactor
     return TxChatMessage:user(content)
 end
 
+---@param call_request ToolCall
 ---@return TxChatMessage
 function TxChatMessage:add_tool_call_request(call_request)
     -- ONLY clone fields on the original call request from the model
