@@ -21,6 +21,14 @@ ChatMessage.MESSAGE_ROLES = {
     SYSTEM = "system",
 }
 
+-- TODO! I want end to end testing to verify scenarios that go into the model (the actual prompt) based on ChatMessage inputs
+--  ChatMessage inputs => .__verbose.prompt output
+--  will require --verbose-prompt arg to llama-server
+--  VERIFY |tojson fix for tool results, AND tool call args
+--  VERIFY other fixes identified by unsloth:
+--     https://unsloth.ai/blog/gpt-oss
+--     icdiff https://huggingface.co/openai/gpt-oss-120b/raw/main/chat_template.jinja https://huggingface.co/unsloth/gpt-oss-120b/raw/main/chat_template.jinja
+
 ---@return ChatMessage
 function ChatMessage:new(role, content)
     self = setmetatable({}, { __index = ChatMessage })
