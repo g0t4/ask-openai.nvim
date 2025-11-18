@@ -100,7 +100,6 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     --- * map tool calls
     if rx_message.tool_calls then
         ---@param call_request ToolCall
-        ---@return TxChatMessage
         local function add_tool_call_request(call_request)
             -- FYI embed function here so no confusion about what is using it
             -- only clone needed fields
