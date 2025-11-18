@@ -1,7 +1,20 @@
 ## NOTES/FIX for gptoss + llama-server messages /v1/chat/completions endpoint
-
 ```lua
---
+-- ***! unsloth jinja "fixes" / changes
+-- https://unsloth.ai/blog/gpt-oss Unsloth found similar issues (and others)
+-- one of their HF repos had this:
+--  - https://huggingface.co/unsloth/gpt-oss-120b/blob/main/chat_template.jinja
+--  - YESSSS! they found same issue and have a better fix for it and a few others I am about to encounter too!
+--  - TODO! switch to their template (establish some test harness and do a full review of it)
+--     I want to pull .__verbose.prompt from test cases to verify expectations
+-- ASIDE: their post also mentions a JSON messages format and this might be the template for it?
+--  - useful?
+--  - https://huggingface.co/unsloth/gpt-oss-120b-GGUF/blob/main/template
+
+--   FYI! llama-server is using the jinja unmodified from OpenAI's hf repo
+--   https://huggingface.co/openai/gpt-oss-120b/raw/main/chat_template.jinja
+
+-- older notes (before finding unsloth fixes):
 -- * OpenAI docs show tool_call args as JSON string serialized
 --   So, IIAC, llama-server would expect the same for its OpenAI compat endpoint
 --   message.function.arguments => https://platform.openai.com/docs/guides/function-calling#handling-function-calls
