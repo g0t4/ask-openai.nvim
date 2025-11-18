@@ -41,6 +41,11 @@ function ChatMessage:user(content)
     return ChatMessage:new("user", content)
 end
 
+--- differentiate ChatMessage usage by making explicit this provides context to another user request
+function ChatMessage:user_context(content)
+    return ChatMessage:new("user", content)
+end
+
 function ChatMessage:add_tool_call_requests(call_request)
     -- ONLY clone fields on the original call request from the model
     local new_call = {

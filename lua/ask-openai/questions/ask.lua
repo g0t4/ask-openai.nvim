@@ -103,20 +103,20 @@ The semantic_grep tool:
 
     -- TODO add this back and optional RAG?
     -- if context.includes.yanks and context.yanks then
-    --     table.insert(messages, ChatMessage:new("user", context.yanks.content))
+    --     table.insert(messages, ChatMessage:user_context(context.yanks.content))
     -- end
     -- if context.includes.commits and context.commits then
     --     for _, commit in pairs(context.commits) do
-    --         table.insert(messages, ChatMessage:new("user", commit.content))
+    --         table.insert(messages, ChatMessage:user_context(commit.content))
     --     end
     -- end
     -- if context.includes.project and context.project then
     --     for _, value in pairs(context.project) do
-    --         table.insert(messages, ChatMessage:new("user", value.content))
+    --         table.insert(messages, ChatMessage:user_context(value.content))
     --     end
     -- end
 
-    table.insert(messages, ChatMessage:new("user", user_message))
+    table.insert(messages, ChatMessage:user(user_message))
 
     ---@type ChatParams
     local qwen25_body_overrides = ChatParams:new({
@@ -299,6 +299,8 @@ function M.handle_messages_updated()
 
     local lines = LinesBuilder:new()
     for _, message in ipairs(M.thread.last_request.accumulated_model_response_messages) do
+        -- FYI !! now it is obvious that this is only operating on accumulated message type!
+
         -- * message contents
         local content = message.content or ""
         local reasoning_content = message.reasoning_content or ""

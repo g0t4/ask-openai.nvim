@@ -5,7 +5,7 @@ local M = {
     generic = generic
 }
 
----@alias ToolCallFormatter fun(lines: LinesBuilder, tool_call: ToolCall, message: ChatMessage) -> nil
+---@alias ToolCallFormatter fun(lines: LinesBuilder, tool_call: ToolCall, message: AccumulatedMessage) -> nil
 
 ---@type table<string, ToolCallFormatter>
 local formatters_by_function_name = {

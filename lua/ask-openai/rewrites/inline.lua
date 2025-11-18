@@ -296,17 +296,17 @@ function M.stream_from_ollama(user_prompt, code, file_name)
             -- FYI buffers.get_text_in_all_buffers()
         end
         if context.includes.yanks and context.yanks then
-            table.insert(messages, ChatMessage:user(context.yanks.content))
+            table.insert(messages, ChatMessage:user_context(context.yanks.content))
         end
         if context.includes.commits and context.commits then
             for _, commit in pairs(context.commits) do
-                table.insert(messages, ChatMessage:user(commit.content))
+                table.insert(messages, ChatMessage:user_context(commit.content))
             end
         end
         if context.includes.project and context.project then
             vim.iter(context.project)
                 :each(function(value)
-                    table.insert(messages, ChatMessage:user(value.content))
+                    table.insert(messages, ChatMessage:user_context(value.content))
                 end)
         end
         if enable_rag and rag_matches ~= nil and #rag_matches > 0 then
@@ -328,7 +328,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
                         .. code_chunk .. "\n"
                     )
                 end)
-            table.insert(messages, ChatMessage:user(table.concat(rag_message_parts, "\n")))
+            table.insert(messages, ChatMessage:user_context(table.concat(rag_message_parts, "\n")))
         end
 
         table.insert(messages, ChatMessage:user(user_message_with_code))
