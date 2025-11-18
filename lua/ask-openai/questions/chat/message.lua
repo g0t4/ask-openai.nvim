@@ -64,11 +64,13 @@ function ChatMessage:user(content)
 end
 
 --- differentiate ChatMessage usage by making explicit this provides context to another user request
+---@return ChatMessage
 function ChatMessage:user_context(content)
     -- FYI it would be fine to remove this after my AccumulatedMessage refactor
     return ChatMessage:user(content)
 end
 
+---@return ChatMessage
 function ChatMessage:add_tool_call_requests(call_request)
     -- ONLY clone fields on the original call request from the model
     local new_call = {
@@ -113,6 +115,7 @@ function ChatMessage:is_still_streaming()
     return self.finish_reason == nil or self.finish_reason == vim.NIL
 end
 
+---@enum LIFECYCLE
 ChatMessage.LIFECYCLE = {
     -- FYI I merged two concepts: message from model + managing requested tool_call object(s)
     -- streaming -> rx finish_reason=stop/length -> finished
@@ -127,6 +130,7 @@ ChatMessage.LIFECYCLE = {
     TOOLS_DONE = "tool_called", -- tool finished (next message will send results to server for a new "TURN" in chat history)
 }
 
+---@return LIFECYCLE
 function ChatMessage:get_lifecycle_step()
     -- TODO try using this to simplify consumer logic... i.e. in streaming chat window  message/tool formatters/summarizers
     if self:is_still_streaming() then
