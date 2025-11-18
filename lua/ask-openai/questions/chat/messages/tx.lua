@@ -112,7 +112,7 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
                     arguments = call_request["function"].arguments,
                 }
             }
-            table.insert(self.tool_calls, new_call)
+            table.insert(thread_message.tool_calls, new_call)
         end
     end
 
