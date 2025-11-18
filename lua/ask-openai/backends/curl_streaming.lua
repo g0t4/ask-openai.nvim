@@ -150,7 +150,7 @@ function M.on_line_or_lines(data_value, frontend, extract_generated_text, reques
 
     if data_value == "[DONE]" then
         -- log:trace("DETECTED DONE")
-        goto ignore_done
+        return
     end
 
     local success, sse_parsed = pcall(vim.json.decode, data_value)
@@ -188,8 +188,6 @@ function M.on_line_or_lines(data_value, frontend, extract_generated_text, reques
     else
         log:warn("SSE json parse failed for data_value: ", data_value)
     end
-
-    ::ignore_done::
 end
 
 ---@param choice OpenAIChoice|nil
