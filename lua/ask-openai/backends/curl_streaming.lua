@@ -102,21 +102,24 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
         -- log:trace_on_exit_always(code, signal)
         log:trace_on_exit_errors(code, signal) -- less verbose
 
-        if code == 0 then
-            frontend.curl_exited_successfully()
-        end
+        -- close before check dregs (b/c might still be data unflushed in STDOUT/ERR)
         stdout:close()
         stderr:close()
 
-        -- this should be attacked to a specific request (not any module)
-        -- clear out refs
         request.handle = nil
         request.pid = nil
 
-        -- TODO add an integration test to make sure this is actually called?
+        -- flush dregs before curl_exited_successfully
+        -- - which may depend on, for example, a tool_call in dregs
         local error_text = parser:flush_dregs()
         if error_text then
             frontend.explain_error(error_text)
+        end
+
+        if code == 0 then
+            -- FYI this has to come after dregs which may have data used by exit handler!
+            --  i.e. triggering tool_calls
+            frontend.curl_exited_successfully()
         end
     end
 
