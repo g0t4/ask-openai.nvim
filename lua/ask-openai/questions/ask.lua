@@ -353,6 +353,7 @@ function M.curl_exited_successfully()
             --    even though I use ChatMessage type for both
             --    thread.messages => sent with future requests
             --    request.resopnse_messages is simply to denormalize responses from SSEs
+            --    request => SSEs => acccumulated messages => toolcalls/followup => thread.messages => next request => ...
             --
             -- this is the response(s) from the model, they need to be added to the message history!!!
             --   and before any tool responses
