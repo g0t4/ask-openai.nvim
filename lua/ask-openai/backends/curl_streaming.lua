@@ -241,7 +241,7 @@ function M.on_streaming_delta_update_message_history(choice, request)
         return
     end
 
-    -- * parse tool calls
+    -- * parse tool calls (streaming)
     for _, call_delta in ipairs(calls) do
         -- * lookup or create new parsed_call
         local parsed_call = message.tool_calls[call_delta.index + 1]
