@@ -2,13 +2,13 @@ local log = require('ask-openai.logs.logger').predictions()
 
 --- see https://platform.openai.com/docs/api-reference/chat/create
 ---@class ChatThread
----@field messages ChatMessage[]
+---@field messages TxChatMessage[]
 ---@field params ChatParams
 ---@field last_request LastRequest
 ---@field base_url string
 local ChatThread = {}
 
---- @param messages ChatMessage[]
+--- @param messages TxChatMessage[]
 --- @param params ChatParams
 function ChatThread:new(messages, params, base_url)
     self = setmetatable({}, { __index = ChatThread })
@@ -27,7 +27,7 @@ function ChatThread:set_last_request(request)
     self.last_request = request
 end
 
---- @param message ChatMessage
+--- @param message TxChatMessage
 function ChatThread:add_message(message)
     if not message.role then
         error("message.role is required")

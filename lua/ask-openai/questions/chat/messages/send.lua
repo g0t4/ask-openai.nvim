@@ -1,7 +1,7 @@
 local log = require('ask-openai.logs.logger').predictions()
 local ansi = require('ask-openai.prediction.ansi')
 
----@class ChatMessage
+---@class TxChatMessage
 ---@field role? string
 ---@field index integer -- must be kept and sent back with thread
 ---@field content? string
@@ -11,7 +11,7 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@field tool_call_id? string
 ---@field name? string
 ---@field tool_calls ToolCall[] -- empty if none
-local ChatMessage = {}
+local TxChatMessage = {}
 
 ---@enum TX_MESSAGE_ROLES
 local TX_MESSAGE_ROLES = {
@@ -21,8 +21,8 @@ local TX_MESSAGE_ROLES = {
     SYSTEM = "system",
 }
 
--- TODO! I want end to end testing to verify scenarios that go into the model (the actual prompt) based on ChatMessage inputs
---  ChatMessage inputs => .__verbose.prompt output
+-- TODO! I want end to end testing to verify scenarios that go into the model (the actual prompt) based on TxChatMessage inputs
+--  TxChatMessage inputs => .__verbose.prompt output
 --  will require --verbose-prompt arg to llama-server
 --  VERIFY |tojson fix for tool results, AND tool call args
 --  VERIFY other fixes identified by unsloth:
@@ -31,9 +31,9 @@ local TX_MESSAGE_ROLES = {
 
 ---@param role TX_MESSAGE_ROLES
 ---@param content string
----@return ChatMessage
-function ChatMessage:new(role, content)
-    self = setmetatable({}, { __index = ChatMessage })
+---@return TxChatMessage
+function TxChatMessage:new(role, content)
+    self = setmetatable({}, { __index = TxChatMessage })
     self.role = role
     self.content = content
     self.finish_reason = nil
@@ -42,41 +42,41 @@ function ChatMessage:new(role, content)
 end
 
 -- IDEA:
--- function ChatMessage:from_accumulated(RxAccumulatedMessage accumulated)
+-- function TxChatMessage:from_accumulated(RxAccumulatedMessage accumulated)
 --     -- TODO see ask.lua curl_exited_successfully (move that logic here? or move this idea to RxAccumulatedMessage?)
 -- end
 
 ---@param tool_call ToolCall
----@return ChatMessage
-function ChatMessage:new_tool_response(tool_call)
+---@return TxChatMessage
+function TxChatMessage:new_tool_response(tool_call)
     -- FYI see NOTES.md for "fix" => removed `|tojson` from jinja template for message.content
     local content = vim.json.encode(tool_call.call_output.result)
-    self = ChatMessage:new(TX_MESSAGE_ROLES.TOOL, content)
+    self = TxChatMessage:new(TX_MESSAGE_ROLES.TOOL, content)
 
     self.tool_call_id = tool_call.id
     self.name = tool_call["function"].name
     return self
 end
 
----@return ChatMessage
-function ChatMessage:system(content)
-    return ChatMessage:new(TX_MESSAGE_ROLES.SYSTEM, content)
+---@return TxChatMessage
+function TxChatMessage:system(content)
+    return TxChatMessage:new(TX_MESSAGE_ROLES.SYSTEM, content)
 end
 
----@return ChatMessage
-function ChatMessage:user(content)
-    return ChatMessage:new(TX_MESSAGE_ROLES.USER, content)
+---@return TxChatMessage
+function TxChatMessage:user(content)
+    return TxChatMessage:new(TX_MESSAGE_ROLES.USER, content)
 end
 
---- differentiate ChatMessage usage by making explicit this provides context to another user request
----@return ChatMessage
-function ChatMessage:user_context(content)
+--- differentiate TxChatMessage usage by making explicit this provides context to another user request
+---@return TxChatMessage
+function TxChatMessage:user_context(content)
     -- FYI it would be fine to remove this after my RxAccumulatedMessage refactor
-    return ChatMessage:user(content)
+    return TxChatMessage:user(content)
 end
 
----@return ChatMessage
-function ChatMessage:add_tool_call_requests(call_request)
+---@return TxChatMessage
+function TxChatMessage:add_tool_call_requests(call_request)
     -- ONLY clone fields on the original call request from the model
     local new_call = {
         id = call_request.id,
@@ -92,11 +92,11 @@ end
 
 ---Returns the finish reason, cleanup when not set (i.e. nil instead of vim.NIL)
 ---@return FINISH_REASON?
-function ChatMessage:get_finish_reason()
+function TxChatMessage:get_finish_reason()
     if self.finish_reason == vim.NIL then
         return nil
     end
     return self.finish_reason
 end
 
-return ChatMessage
+return TxChatMessage

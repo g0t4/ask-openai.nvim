@@ -27,7 +27,7 @@ local RX_MESSAGE_ROLES = {
 }
 
 --- ONLY FOR ACCUMULATING MODEL RESPONSES (over streaming SSEs)
---- NOT FOR BUILDING MESSAGES in a REQUEST (see ChatThread/ChatMessage for that)
+--- NOT FOR BUILDING MESSAGES in a REQUEST (see ChatThread/TxChatMessage for that)
 ---
 ---@param role RX_MESSAGE_ROLES|string - TODO GET RID OF ROLE PARAM? OR LOG WHEN IT IS NOT "assistant"?
 ---@param content string|nil

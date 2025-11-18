@@ -1,5 +1,5 @@
 --
--- TODO ?? decouple ChatMessage from rendering and parsing (create a seam)
+-- TODO ?? decouple TxChatMessage from rendering and parsing (create a seam)
 --  * add gptoss raw renderer/parser
 --    you already have non-thinking renderer
 --    and parser is pretty much one message at a time (not that complex)
@@ -7,5 +7,5 @@
 --  * keep a generic messages renderer/parser
 
 -- TODO exclude irrelevant fields...
---   i.e. ChatMessage.tool_calls is ONLY role=assistant
+--   i.e. TxChatMessage.tool_calls is ONLY role=assistant
 --   right now I serialize it as empty on everything (it is possible that is part of my issues too with `|tojson`

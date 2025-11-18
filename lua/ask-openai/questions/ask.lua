@@ -5,7 +5,7 @@ local backend = require("ask-openai.backends.oai_chat")
 local agentica = require("ask-openai.backends.models.agentica")
 local ChatWindow = require("ask-openai.questions.chat.window")
 local ChatThread = require("ask-openai.questions.chat.thread")
-local ChatMessage = require("ask-openai.questions.chat.messages.send")
+local TxChatMessage = require("ask-openai.questions.chat.messages.send")
 local ChatParams = require("ask-openai.questions.chat.params")
 local Selection = require("ask-openai.helpers.selection")
 local CurrentContext = require("ask-openai.prediction.context")
@@ -96,27 +96,27 @@ The semantic_grep tool:
     lines:append_blank_line()
     M.chat_window:append_styled_lines(lines)
 
-    ---@type ChatMessage[]
+    ---@type TxChatMessage[]
     local messages = {
-        ChatMessage:system(system_prompt)
+        TxChatMessage:system(system_prompt)
     }
 
     -- TODO add this back and optional RAG?
     -- if context.includes.yanks and context.yanks then
-    --     table.insert(messages, ChatMessage:user_context(context.yanks.content))
+    --     table.insert(messages, TxChatMessage:user_context(context.yanks.content))
     -- end
     -- if context.includes.commits and context.commits then
     --     for _, commit in pairs(context.commits) do
-    --         table.insert(messages, ChatMessage:user_context(commit.content))
+    --         table.insert(messages, TxChatMessage:user_context(commit.content))
     --     end
     -- end
     -- if context.includes.project and context.project then
     --     for _, value in pairs(context.project) do
-    --         table.insert(messages, ChatMessage:user_context(value.content))
+    --         table.insert(messages, TxChatMessage:user_context(value.content))
     --     end
     -- end
 
-    table.insert(messages, ChatMessage:user(user_message))
+    table.insert(messages, TxChatMessage:user(user_message))
 
     ---@type ChatParams
     local qwen25_body_overrides = ChatParams:new({
@@ -360,7 +360,7 @@ function M.curl_exited_successfully()
             --   and before any tool responses
             --   theoretically there can be multiple messages, with w/e role so I kept this in a loop and generic
 
-            local thread_message = ChatMessage:new(accumulated_message.role, accumulated_message.content)
+            local thread_message = TxChatMessage:new(accumulated_message.role, accumulated_message.content)
 
             -- TODO! map thinking content (and let llama-server's jinja drop once no longer relevant?)
             --  or double back at some point and drop it explicitly (too and/or instead)?
@@ -400,7 +400,7 @@ function M.run_tool_calls_for_the_model()
                     M.handle_messages_updated()
 
                     -- *** tool response messages back to model
-                    local tool_response_message = ChatMessage:new_tool_response(tool_call)
+                    local tool_response_message = TxChatMessage:new_tool_response(tool_call)
                     log:jsonify_compact_trace("tool_message:", tool_response_message)
                     tool_call.response_message = tool_response_message
                     M.thread:add_message(tool_response_message)
@@ -463,7 +463,7 @@ function M.follow_up()
         return
     end
 
-    local message = ChatMessage:user(user_message)
+    local message = TxChatMessage:user(user_message)
     M.thread:add_message(message)
     M.send_messages()
 end

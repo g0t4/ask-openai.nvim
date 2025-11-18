@@ -1,6 +1,6 @@
 local files = require("ask-openai.helpers.files")
 local buffers = require("ask-openai.helpers.buffers")
-local ChatMessage = require("ask-openai.questions.chat.messages.send")
+local TxChatMessage = require("ask-openai.questions.chat.messages.send")
 
 ---@class MessageBuilder
 ---@field private parts string[]
@@ -79,10 +79,10 @@ function MessageBuilder:to_text()
     return table.concat(self.parts, "\n")
 end
 
----Build the final message in a ChatMessage package
----@return ChatMessage
+---Build the final message in a TxChatMessage package
+---@return TxChatMessage
 function MessageBuilder:to_user_message()
-    return ChatMessage:user(self:to_text())
+    return TxChatMessage:user(self:to_text())
 end
 
 return MessageBuilder
