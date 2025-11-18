@@ -352,9 +352,9 @@ function M.curl_exited_successfully()
         for _, accumulated_message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
             -- log:jsonify_compact_trace("last request message:", message)
             -- *** thread.last_request.accumulated_model_response_messages IS NOT thread.messages
-            --    thread.messages => sent with future requests
-            --    request.resopnse_messages is simply to denormalize responses from SSEs
-            --    request => SSEs => acccumulated messages => toolcalls/followup => thread.messages => next request => ...
+            --    thread.messages => sent with future requests, hence TxChatMessage
+            --    request.response_messages is simply to denormalize responses from SSEs, hence RxAccumulatedMessage
+            --    request => SSEs => RxAccumulatedMessage(s)  => toolcalls/followup => thread.messages (TxChatMessage) => next request => ...
             --
             -- this is the response(s) from the model, they need to be added to the message history!!!
             --   and before any tool responses
@@ -386,8 +386,8 @@ function M.curl_exited_successfully()
 end
 
 function M.run_tool_calls_for_the_model()
-    for _, message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
-        for _, tool_call in ipairs(message.tool_calls) do
+    for _, rx_message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
+        for _, tool_call in ipairs(rx_message.tool_calls) do
             -- log:trace("tool:", vim.inspect(tool))
 
             tool_router.send_tool_call_router(tool_call,
@@ -426,8 +426,8 @@ end
 
 ---@return boolean
 function M.any_outstanding_tool_calls()
-    for _, message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
-        for _, tool_call in ipairs(message.tool_calls) do
+    for _, rx_message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
+        for _, tool_call in ipairs(rx_message.tool_calls) do
             local is_outstanding = tool_call.response_message == nil
             if is_outstanding then
                 return true
