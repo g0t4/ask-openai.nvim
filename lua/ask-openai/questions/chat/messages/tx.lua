@@ -82,23 +82,6 @@ function TxChatMessage:user_context(content)
     return TxChatMessage:user(content)
 end
 
----@param call_request ToolCall
----@return TxChatMessage
-function TxChatMessage:add_assistant_tool_call_request(call_request)
-    --TODO MOVE DOWN BELOW from_assistant_rx_message
-    -- only clone needed fields
-    local new_call = {
-        id = call_request.id,
-        index = call_request.index,
-        type = call_request.type,
-        ["function"] = {
-            name = call_request["function"].name,
-            arguments = call_request["function"].arguments,
-        }
-    }
-    table.insert(self.tool_calls, new_call)
-end
-
 ---@param rx_message RxAccumulatedMessage
 ---@return TxChatMessage
 function TxChatMessage:from_assistant_rx_message(rx_message)
@@ -115,7 +98,26 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     --  or double back at some point and drop it explicitly (too and/or instead)?
     -- model_response_thread_message.thinking = message.reasoning_content
 
+    --- * map tool calls
     if rx_message.tool_calls then
+        ---@param call_request ToolCall
+        ---@return TxChatMessage
+        local function add_assistant_tool_call_request(call_request)
+            -- FYI embed function here so no confusion about what is using it
+            -- only clone needed fields
+            local new_call = {
+                id = call_request.id,
+                index = call_request.index,
+                type = call_request.type,
+                ["function"] = {
+                    name = call_request["function"].name,
+                    arguments = call_request["function"].arguments,
+                }
+            }
+            table.insert(self.tool_calls, new_call)
+        end
+
+
         for _, call_request in ipairs(rx_message.tool_calls) do
             thread_message:add_assistant_tool_call_request(call_request)
         end
