@@ -361,7 +361,7 @@ function M.curl_exited_successfully()
 
             local thread_message = ChatMessage:new(accumulated_message.role, accumulated_message.content)
 
-            -- TODO! map thinking content (and let llama-server drop once no longer relevant?)
+            -- TODO! map thinking content (and let llama-server's jinja drop once no longer relevant?)
             --  or double back at some point and drop it explicitly (too and/or instead)?
             -- model_response_thread_message.thinking = message.reasoning_content
 
