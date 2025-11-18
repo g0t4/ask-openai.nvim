@@ -20,70 +20,14 @@ function ChatMessage:new(role, content)
     self.role = role
     self.content = content
     self.finish_reason = nil
-
-    -- TODO exclude irrelevant fields... i.e. tool_calls is ONLY role=assistant
-    --  TODO OR how about custom clone/serializer so I am not including properties I shouldn't be?
-    --  TODO OR, maybe have diff factory functions that new up only relevant fields?
     self.tool_calls = {} -- empty == None (enforce invariant)
-
-    -- PRN enforce content is string here?
     return self
 end
 
 function ChatMessage:new_tool_response(call_result_object_not_json, tool_call_id, name)
-    -- TODO if I keep using this bullshit /v1/chat/completions messages format that is OSTENSIBLY UNIVERSAL...
-    --   TODO I need tm have tests in place to verify vs .__verbose.prompt that I know what is going on b/c goddamn
+    -- FYI see NOTES.md for "fix" => removed `|tojson` from jinja template for message.content
+    self = ChatMessage:new("tool", vim.json.encode(call_result_object_not_json))
 
-    -- OpenAI docs show tool_call args as JSON string serialized
-    --   So, llama-server would expect the same
-    --   message.function.arguments => https://platform.openai.com/docs/guides/function-calling#handling-function-calls
-    -- OpenAI docs don't show result examples directly but does show what suggests the same thing for
-    --   message.content can be anything the model can interpret
-    --   of course model can read between lines but I think it would be best to mirror what it expects!
-    -- my guess is, llama server doesn't rehydrate the message.content (result) like it does with message.function.arguments
-    --   if that is the case then |tojson has no business being in the jinja template for message.content (only)
-    --   that is the fix I have currently (below)
-
-    --  FYI llama-server uses the gptoss jinja template w/ tojson (other models had similar part in their tool calling)
-    --   SO DO NOT ENCODE to JSON... else it ends up double encoded
-    --   SEE tojson in template:
-    --     https://github.com/ggml-org/llama.cpp/blob/cb623de3f/models/templates/openai-gpt-oss-120b.jinja#L322
-    --   FYI use --verbose-prompt => logs (IIRC also final SSE) => __verbose.prompt has rendered prompt
-    --   ALSO harmony spec on raw JSON inputs:
-    --     https://cookbook.openai.com/articles/openai-harmony#receiving-tool-calls
-    --
-    -- self = ChatMessage:new("tool", call_result_object_not_json) -- blocked by server, this is needed
-    self = ChatMessage:new("tool", vim.json.encode(call_result_object_not_json)) -- this works but it is why I have issues I think ... works but results in double encoded in prompt (UGH)
-    --- FUUUUUUUUUCK llama-server won't allow content to be an object... yet ;)
-    ---   llama-server is rejecting raw objects?! only allows strings/arrays...
-    ---   WHAT THE LITERAL FUCK MAN
-    ---   https://github.com/ggml-org/llama.cpp/blob/cb623de3f/tools/server/utils.hpp#L611-L614
-    --- FYI! modified server template to drop |tojson and that works now (clean/raw JSON in harmony format!)
-    ---    I can use this for now
-    ---
-    -- {%- elif message.role == 'tool' -%}
-    --     ...
-    --     {{- "<|start|>functions." + last_tool_call.name }}
-    --     {{- " to=assistant<|channel|>commentary<|message|>" + message.content|tojson + "<|end|>" }}
-    --
-    -- FYI my fix:
-    --     {{- " to=assistant<|channel|>commentary<|message|>" + message.content + "<|end|>" }}
-    ---
-    --- !!! WAIT... so I send both the tool_call.arguments message as json encoded and then tool result JSON encoded
-    ---     ! THE FORMER tool_call arguments are correct in the rendered prompt (nevermind they have |tojson too!)
-    ---       BOTH USE |tojson... so smth differs in the server code!!
-    ---       smth about parse_tool_calls may be related, an option... but also that might just be about parsing from model's generated prompt
-    ---     is there smth server side that parses the tool_call.arguments into an object first?
-    ---     is there a way to do the same for the results?
-    ---
-
-    -- TODO! what about tojson on args in original tool call request message (WHEN SENDING IT BACK)?
-    -- FYI __verbose.prompt has correct raw JSON for original tool_call request message (when it is sent back to the model)
-    -- https://github.com/ggml-org/llama.cpp/blob/cb623de3f/models/templates/openai-gpt-oss-120b.jinja#L298-L299   --
-    --   => ? tool_call.arguments|tojson
-    -- BTW upon inspection, the returned args seem fine (raw JSON looks good)... BUT HOW?!
-
-    -- PRN enforce strings are not empty?
     self.tool_call_id = tool_call_id
     self.name = name
     return self
