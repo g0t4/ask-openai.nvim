@@ -16,20 +16,21 @@ local RxAccumulatedMessage = {}
 
 ---@enum RX_MESSAGE_ROLES
 local RX_MESSAGE_ROLES = {
-    -- TODO ONLY ALLOW "assistant" role?
-
     -- these would never come FROM the model, so don't allow them as roles!
     -- SYSTEM = "system", -- no reason for this to come back from the model so leave it off
     -- USER = "user", -- no reason for this to come back from the model so leave it off
     -- TOOL = "tool",
 
+    -- pretty much just assistant role...
+    --   that said, easy enough to force a model to generate any role
+    --   by hard coding it as the last part of the (raw) prompt
     ASSISTANT = "assistant",
 }
 
 --- ONLY FOR ACCUMULATING MODEL RESPONSES (over streaming SSEs)
 --- NOT FOR BUILDING MESSAGES in a REQUEST (see ChatThread/TxChatMessage for that)
 ---
----@param role RX_MESSAGE_ROLES|string - TODO GET RID OF ROLE PARAM? OR LOG WHEN IT IS NOT "assistant"?
+---@param role RX_MESSAGE_ROLES|string - Theoretically ONLY assistant role... but no reason to limit a model that generates a diff role(s)
 ---@param content string|nil
 ---@return RxAccumulatedMessage
 function RxAccumulatedMessage:new(role, content)
@@ -38,6 +39,14 @@ function RxAccumulatedMessage:new(role, content)
     self.content = content
     self.finish_reason = nil
     self.tool_calls = {} -- empty == None (enforce invariant)
+
+    if role ~= RX_MESSAGE_ROLES.ASSISTANT then
+        -- NOT really an error, I just want it to stand out
+        -- mostly I am interested in when this happens so I can build that into my mental model of this RxAccumulatedMessage type
+        log:error("[WARN] unexpected role (not a problem, just heads up so you can think about it): " .. tostring(role))
+        -- TODO remove this logging when you think you have enough history collected
+    end
+
     return self
 end
 
