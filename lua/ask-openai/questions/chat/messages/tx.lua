@@ -12,7 +12,6 @@ local ansi = require('ask-openai.prediction.ansi')
 ---
 --- FYI role="assisant" only:
 ---@field tool_calls ToolCall[] -- ONLY role=="assistant"
----@field finish_reason? string|vim.NIL -- ONLY role=="assistant"
 ---
 local TxChatMessage = {}
 
@@ -39,7 +38,6 @@ function TxChatMessage:new(role, content)
     self = setmetatable({}, { __index = TxChatMessage })
     self.role = role
     self.content = content
-    self.finish_reason = nil
     self.tool_calls = {} -- empty == None (enforce invariant)
     return self
 end
@@ -96,7 +94,6 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
 
     -- MAP the assistant's RxAccumulatedMessage message to TxChatMessage
     local tx_message = TxChatMessage:new(rx_message.role, rx_message.content)
-    tx_message.finish_reason = rx_message.finish_reason
     tx_message.name = rx_message.name -- optional, I am not using this on the rx_message incoming side
 
     -- TODO! map thinking content (and let llama-server's jinja drop the thinking once no longer relevant) ?
