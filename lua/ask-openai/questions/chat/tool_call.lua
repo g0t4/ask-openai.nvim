@@ -1,11 +1,8 @@
 --- FYI MUST MIRROR OpeanAI format b/c this will get sent back
 ---   i.e. that means function is a nested object
 ---@class ToolCall : OpenAIChoiceDeltaToolCall
----@field id string
----@field index integer
----@field type integer
----@field function OpenAIChoiceDeltaToolCallFunction
 ---
+---  my additions:
 ---@field response_message table|nil -- TODO type this? response message to send call results back to the model that will, also attached to chat_thread (history)
 ---@field call_output? ToolCallOutput -- tool call outputs (specific to a given tool type, some have standard structure, i.e. MCP)
 local ToolCall = {}
