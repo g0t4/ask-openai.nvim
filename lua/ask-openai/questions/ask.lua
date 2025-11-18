@@ -98,7 +98,7 @@ The semantic_grep tool:
 
     ---@type ChatMessage[]
     local messages = {
-        ChatMessage:new(ChatMessage.MESSAGE_ROLES.SYSTEM, system_prompt),
+        ChatMessage:system(system_prompt)
     }
 
     -- TODO add this back and optional RAG?

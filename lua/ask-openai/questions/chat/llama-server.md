@@ -35,9 +35,9 @@
 --     https://cookbook.openai.com/articles/openai-harmony#receiving-tool-calls
 
 --- FYI llama-server won't allow tool's message.content to be an object (string/array/null only)
---    self = ChatMessage:new("tool", call_result_object_not_json) -- fails
 ---   https://github.com/ggml-org/llama.cpp/blob/cb623de3f/tools/server/utils.hpp#L611-L614
----
+
+
 
 -- ***! Template "FIX"
 --- * I modified server template to drop |tojson and that works now (clean/raw JSON in harmony format!)

@@ -13,8 +13,8 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@field tool_calls ToolCall[] -- empty if none
 local AccumulatedMessage = {}
 
----@enum ACCUMULATED_MESSAGE_ROLES
-AccumulatedMessage.ACCUMULATED_MESSAGE_ROLES = {
+---@enum RX_MESSAGE_ROLES
+local RX_MESSAGE_ROLES = {
     -- TODO ONLY ALLOW "assistant" role? => RENAME AssistantAccumulatedMessage?
     -- TODO wait... AccumulatedMessage is the RECEIVE MODEL
     --     and ChatMessage is the SEND MODEL
@@ -31,7 +31,7 @@ AccumulatedMessage.ACCUMULATED_MESSAGE_ROLES = {
 --- ONLY FOR ACCUMULATING MODEL RESPONSES (over streaming SSEs)
 --- NOT FOR BUILDING MESSAGES in a REQUEST (see ChatThread/ChatMessage for that)
 ---
----@param role ACCUMULATED_MESSAGE_ROLES|string - TODO GET RID OF ROLE PARAM? OR LOG WHEN IT IS NOT "assistant"?
+---@param role RX_MESSAGE_ROLES|string - TODO GET RID OF ROLE PARAM? OR LOG WHEN IT IS NOT "assistant"?
 ---@param content string|nil
 ---@return AccumulatedMessage
 function AccumulatedMessage:new(role, content)
@@ -57,8 +57,9 @@ function AccumulatedMessage:add_tool_call_requests(call_request)
     table.insert(self.tool_calls, new_call)
 end
 
----@enum FINISH_REASONS
-AccumulatedMessage.FINISH_REASONS = {
+--- TODO review where RX_FINISH_REASONS should be? rx/tx/both?
+---@enum RX_FINISH_REASONS
+AccumulatedMessage.RX_FINISH_REASONS = {
     LENGTH = "length",
     STOP = "stop",
     TOOL_CALLS = "tool_calls",
@@ -74,7 +75,7 @@ AccumulatedMessage.FINISH_REASONS = {
 }
 
 ---Returns the finish reason, cleanup when not set (i.e. nil instead of vim.NIL)
----@return FINISH_REASONS?
+---@return RX_FINISH_REASONS?
 function AccumulatedMessage:get_finish_reason()
     if self.finish_reason == vim.NIL then
         return nil
@@ -87,6 +88,7 @@ function AccumulatedMessage:is_still_streaming()
     return self.finish_reason == nil or self.finish_reason == vim.NIL
 end
 
+---@enum RX_LIFECYCLE
 AccumulatedMessage.LIFECYCLE = {
     -- FYI I merged two concepts: message from model + managing requested tool_call object(s)
     -- streaming -> rx finish_reason=stop/length -> finished
@@ -101,13 +103,15 @@ AccumulatedMessage.LIFECYCLE = {
     TOOLS_DONE = "tool_called", -- tool finished (next message will send results to server for a new "TURN" in chat history)
 }
 
+--- TODO review where LIFECYCLE should be? rx/tx/both?
+---@return RX_LIFECYCLE
 function AccumulatedMessage:get_lifecycle_step()
     -- TODO try using this to simplify consumer logic... i.e. in streaming chat window  message/tool formatters/summarizers
     if self:is_still_streaming() then
         return AccumulatedMessage.LIFECYCLE.STREAMING
     end
     local finish_reason = self:get_finish_reason()
-    if finish_reason == AccumulatedMessage.FINISH_REASONS.TOOL_CALLS then
+    if finish_reason == AccumulatedMessage.RX_FINISH_REASONS.TOOL_CALLS then
         -- IIRC tool_calls are parsed before FINISHED state... so just check all are complete (or not)
         for _, call in ipairs(self.tool_calls) do
             if not call:is_done() then

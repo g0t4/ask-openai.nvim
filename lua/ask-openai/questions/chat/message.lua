@@ -13,8 +13,8 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@field tool_calls ToolCall[] -- empty if none
 local ChatMessage = {}
 
----@enum MESSAGE_ROLES
-ChatMessage.MESSAGE_ROLES = {
+---@enum TX_MESSAGE_ROLES
+local TX_MESSAGE_ROLES = {
     USER = "user",
     ASSISTANT = "assistant",
     TOOL = "tool", -- FYI this is for TOOL RESULTS
@@ -29,7 +29,7 @@ ChatMessage.MESSAGE_ROLES = {
 --     https://unsloth.ai/blog/gpt-oss
 --     icdiff https://huggingface.co/openai/gpt-oss-120b/raw/main/chat_template.jinja https://huggingface.co/unsloth/gpt-oss-120b/raw/main/chat_template.jinja
 
----@param role MESSAGE_ROLES
+---@param role TX_MESSAGE_ROLES
 ---@param content string
 ---@return ChatMessage
 function ChatMessage:new(role, content)
@@ -51,7 +51,7 @@ end
 function ChatMessage:new_tool_response(tool_call)
     -- FYI see NOTES.md for "fix" => removed `|tojson` from jinja template for message.content
     local content = vim.json.encode(tool_call.call_output.result)
-    self = ChatMessage:new(ChatMessage.MESSAGE_ROLES.TOOL, content)
+    self = ChatMessage:new(TX_MESSAGE_ROLES.TOOL, content)
 
     self.tool_call_id = tool_call.id
     self.name = tool_call["function"].name
@@ -59,8 +59,13 @@ function ChatMessage:new_tool_response(tool_call)
 end
 
 ---@return ChatMessage
+function ChatMessage:system(content)
+    return ChatMessage:new(TX_MESSAGE_ROLES.SYSTEM, content)
+end
+
+---@return ChatMessage
 function ChatMessage:user(content)
-    return ChatMessage:new(ChatMessage.MESSAGE_ROLES.USER, content)
+    return ChatMessage:new(TX_MESSAGE_ROLES.USER, content)
 end
 
 --- differentiate ChatMessage usage by making explicit this provides context to another user request
@@ -85,8 +90,8 @@ function ChatMessage:add_tool_call_requests(call_request)
     table.insert(self.tool_calls, new_call)
 end
 
----@enum FINISH_REASONS
-ChatMessage.FINISH_REASONS = {
+---@enum TX_FINISH_REASONS
+ChatMessage.TX_FINISH_REASONS = {
     LENGTH = "length",
     STOP = "stop",
     TOOL_CALLS = "tool_calls",
@@ -102,7 +107,7 @@ ChatMessage.FINISH_REASONS = {
 }
 
 ---Returns the finish reason, cleanup when not set (i.e. nil instead of vim.NIL)
----@return FINISH_REASONS?
+---@return TX_FINISH_REASONS?
 function ChatMessage:get_finish_reason()
     if self.finish_reason == vim.NIL then
         return nil
@@ -115,7 +120,7 @@ function ChatMessage:is_still_streaming()
     return self.finish_reason == nil or self.finish_reason == vim.NIL
 end
 
----@enum LIFECYCLE
+---@enum TX_LIFECYCLE
 ChatMessage.LIFECYCLE = {
     -- FYI I merged two concepts: message from model + managing requested tool_call object(s)
     -- streaming -> rx finish_reason=stop/length -> finished
@@ -130,14 +135,14 @@ ChatMessage.LIFECYCLE = {
     TOOLS_DONE = "tool_called", -- tool finished (next message will send results to server for a new "TURN" in chat history)
 }
 
----@return LIFECYCLE
+---@return TX_LIFECYCLE
 function ChatMessage:get_lifecycle_step()
     -- TODO try using this to simplify consumer logic... i.e. in streaming chat window  message/tool formatters/summarizers
     if self:is_still_streaming() then
         return ChatMessage.LIFECYCLE.STREAMING
     end
     local finish_reason = self:get_finish_reason()
-    if finish_reason == ChatMessage.FINISH_REASONS.TOOL_CALLS then
+    if finish_reason == ChatMessage.TX_FINISH_REASONS.TOOL_CALLS then
         -- IIRC tool_calls are parsed before FINISHED state... so just check all are complete (or not)
         for _, call in ipairs(self.tool_calls) do
             if not call:is_done() then
