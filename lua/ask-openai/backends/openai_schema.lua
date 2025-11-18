@@ -75,9 +75,41 @@
 --     FYI I am using longer names to namespace the schema b/c there are many ways these types are used and slight variations and I don't wanna bastardize these
 --
 
+--- * Message Types (by Role)
+
+---@class OpenAIChatCompletion_Input_SystemMessage
+---@field role string - "system"
+---@field content OpenAIChatCompletion_Input_MessageContent
+---@field name? string - NOT using (so far)
+
+---@class OpenAIChatCompletion_Input_DeveloperMessage
+---@field role string - "developer"
+---@field content OpenAIChatCompletion_Input_MessageContent
+---@field name? string - NOT using (so far)
+
+---@class OpenAIChatCompletion_Input_UserMessage
+---@field role string - "user"
+---@field content OpenAIChatCompletion_Input_MessageContent - FTR has a few extra item types if using table[] which I am not using
+---@field name? string - NOT using (so far)
+
+--- For returning tool call results to the model (assistant)
+---@class OpenAIChatCompletion_Input_ToolResultMessage
+---@field role string - "tool"
+---@field content OpenAIChatCompletion_Input_MessageContent
+---@field tool_call_id string
+
+
+--- I'm ONLY USING string
+--- I am not using table[] of {type,text|refusal} - all message roles have these two (and then user role has a few more item types)
+---@see https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message-content
+---
+---@alias OpenAIChatCompletion_Input_MessageContent string|table[]
+
+-- * Assistant Message Type (has extras like tool calls)
+
 ---@class OpenAIChatCompletion_Input_AssistantMessage
 ---@field role string - "assistant"
----@field content string|table[] -- I am not using table[] of {type,text|refusal}
+---@field content OpenAIChatCompletion_Input_MessageContent
 ---@field tool_calls OpenAIChatCompletion_Input_AssistantMessageToolCallRequest[]
 ---@field name? string - NOT using (so far)
 ---
