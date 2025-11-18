@@ -24,6 +24,11 @@ function ChatMessage:new(role, content)
     return self
 end
 
+-- IDEA:
+-- function ChatMessage:from_accumulated(AccumulatedMessage accumulated)
+--     -- TODO see ask.lua curl_exited_successfully (move that logic here? or move this idea to AccumulatedMessage?)
+-- end
+
 function ChatMessage:new_tool_response(call_result_object_not_json, tool_call_id, name)
     -- FYI see NOTES.md for "fix" => removed `|tojson` from jinja template for message.content
     self = ChatMessage:new("tool", vim.json.encode(call_result_object_not_json))
