@@ -57,27 +57,13 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
             return debug.traceback(e, 3)
         end)
 
-        if not success then
-            -- FAIL EARLY... NO unexpected exceptions in prediction parsing
-            -- request stops ASAP, but not immediately
-            M.terminate(request)
-
-            log:error("Terminating curl_streaming due to unhandled exception", result)
-
-            -- ?? pass this to explain_error?
-            local function print_error(message)
-                -- replace literals so traceback is pretty printed (readable)
-                message = tostring(message):gsub("\\n", "\n"):gsub("\\t", "\t")
-                -- with traceback lines... this will trigger hit-enter mode
-                --  therefore the error will not disappear into message history!
-                -- ErrorMsg makes it red
-                vim.api.nvim_echo({ { message, "ErrorMsg" } }, true, {})
-            end
-
-            vim.schedule(function()
-                print_error("Terminating curl_streaming due to unhandled exception" .. tostring(result))
-            end)
+        if success then
+            return
         end
+
+        -- request stops ASAP, but not immediately
+        M.terminate(request)
+        frontend.explain_error("Abort... unhandled exception in curl_streaming: " .. tostring(result))
     end
 
     local stdout = uv.new_pipe(false)
