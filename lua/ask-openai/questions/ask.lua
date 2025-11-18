@@ -293,12 +293,12 @@ function M.on_sse_llama_server_timings(sse)
 end
 
 function M.handle_messages_updated()
-    if not M.thread.last_request.model_response_messages_recreated then
+    if not M.thread.last_request.accumulated_model_response_messages then
         return
     end
 
     local lines = LinesBuilder:new()
-    for _, message in ipairs(M.thread.last_request.model_response_messages_recreated) do
+    for _, message in ipairs(M.thread.last_request.accumulated_model_response_messages) do
         -- * message contents
         local content = message.content or ""
         local reasoning_content = message.reasoning_content or ""
@@ -347,9 +347,9 @@ end
 function M.curl_exited_successfully()
     vim.schedule(function()
         -- ***! map final response messages => chat thread (history) messages that can be sent back w/ followup/tool_results
-        for _, message in ipairs(M.thread.last_request.model_response_messages_recreated or {}) do
+        for _, message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
             -- log:jsonify_compact_trace("last request message:", message)
-            -- *** thread.last_request.model_response_messages_recreated IS NOT thread.messages
+            -- *** thread.last_request.accumulated_model_response_messages IS NOT thread.messages
             --    even though I use ChatMessage type for both
             --    thread.messages => sent with future requests
             --    request.resopnse_messages is simply to denormalize responses from SSEs
@@ -384,7 +384,7 @@ function M.curl_exited_successfully()
 end
 
 function M.run_tool_calls_for_the_model()
-    for _, message in ipairs(M.thread.last_request.model_response_messages_recreated or {}) do
+    for _, message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(message.tool_calls) do
             -- log:trace("tool:", vim.inspect(tool))
 
@@ -424,7 +424,7 @@ end
 
 ---@return boolean
 function M.any_outstanding_tool_calls()
-    for _, message in ipairs(M.thread.last_request.model_response_messages_recreated or {}) do
+    for _, message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(message.tool_calls) do
             local is_outstanding = tool_call.response_message == nil
             if is_outstanding then

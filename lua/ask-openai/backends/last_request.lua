@@ -5,7 +5,7 @@ local log = require("ask-openai.logs.logger").predictions()
 ---@field handle uv_process_t
 ---@field pid integer
 ---@field thread ChatThread
----@field model_response_messages_recreated ChatMessage[] -- model responses, built from SSEs (these are not sent back in follow up / tool results ... instead these are mapped to ChatThread.messages
+---@field accumulated_model_response_messages ChatMessage[] -- model responses, built from SSEs (these are not sent back in follow up / tool results ... instead these are mapped to ChatThread.messages
 ---@field start_time integer -- unix timestamp when request was sent (for timing)
 ---@field marks_ns_id
 local LastRequest = {}
@@ -21,7 +21,7 @@ function LastRequest:new(body)
     self.handle = nil
     self.pid = nil
     self.thread = nil -- TODO pass thread in ctor?
-    self.model_response_messages_recreated = {}
+    self.accumulated_model_response_messages = {}
     self.start_time = os.time()
     self.marks_ns_id = vim.api.nvim_create_namespace("ask.marks." .. request_counter)
     request_counter = request_counter + 1
