@@ -297,10 +297,6 @@ function M.handle_messages_updated()
         return
     end
 
-    -- TODO!!!!! FIND AND MAP reasoning_content => thinking (at least until next final message with gptoss)
-    -- ... measure overhead of always including reasoning_content and letting llama-server drop it?
-    --  that assumes a template supports dropping it!
-
     local lines = LinesBuilder:new()
     for _, message in ipairs(M.thread.last_request.model_response_messages_recreated) do
         -- * message contents
