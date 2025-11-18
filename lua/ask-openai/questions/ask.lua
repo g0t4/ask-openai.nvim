@@ -357,9 +357,9 @@ function M.curl_exited_successfully()
             -- this is the response(s) from the model, they need to be added to the message history!!!
             --   and before any tool responses
             --   theoretically there can be multiple messages, with w/e role so I kept this in a loop and generic
-            local role = message.role
+
             local content = message.content
-            local model_response_thread_message = ChatMessage:new(role, content)
+            local model_response_thread_message = ChatMessage:new(message.role, content)
 
             -- TODO! map thinking content (and let llama-server drop once no longer relevant?)
             --  or double back at some point and drop it explicitly (too and/or instead)?
