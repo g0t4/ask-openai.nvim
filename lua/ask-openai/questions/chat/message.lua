@@ -13,7 +13,6 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@field tool_calls ToolCall[] -- empty if none
 local ChatMessage = {}
 
---- FYI largely a marker interface as well, don't need to actually use this ctor
 ---@return ChatMessage
 function ChatMessage:new(role, content)
     self = setmetatable({}, { __index = ChatMessage })

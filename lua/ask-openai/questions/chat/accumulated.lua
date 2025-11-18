@@ -13,8 +13,7 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@field tool_calls ToolCall[] -- empty if none
 local AccumulatedMessage = {}
 
---- FYI largely a marker interface as well, don't need to actually use this ctor
----@return ChatMessage
+---@return AccumulatedMessage
 function AccumulatedMessage:new(role, content)
     self = setmetatable({}, { __index = AccumulatedMessage })
     self.role = role
