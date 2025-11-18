@@ -1,7 +1,7 @@
 local log = require("ask-openai.logs.logger").predictions()
 local LastRequest = require("ask-openai.backends.last_request")
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
-local AccumulatedMessage = require("ask-openai.questions.chat.accumulated")
+local AccumulatedMessage = require("ask-openai.questions.chat.messages.receive")
 local ToolCall = require("ask-openai.questions.chat.tool_call")
 local uv = vim.uv
 

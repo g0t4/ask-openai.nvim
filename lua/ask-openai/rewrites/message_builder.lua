@@ -1,6 +1,6 @@
 local files = require("ask-openai.helpers.files")
 local buffers = require("ask-openai.helpers.buffers")
-local ChatMessage = require("ask-openai.questions.chat.message")
+local ChatMessage = require("ask-openai.questions.chat.messages.send")
 
 ---@class MessageBuilder
 ---@field private parts string[]
