@@ -23,15 +23,6 @@ function AccumulatedMessage:new(role, content)
     return self
 end
 
-function AccumulatedMessage:new_tool_response(call_result_object_not_json, tool_call_id, name)
-    -- FYI see NOTES.md for "fix" => removed `|tojson` from jinja template for message.content
-    self = AccumulatedMessage:new("tool", vim.json.encode(call_result_object_not_json))
-
-    self.tool_call_id = tool_call_id
-    self.name = name
-    return self
-end
-
 function AccumulatedMessage:add_tool_call_requests(call_request)
     -- ONLY clone fields on the original call request from the model
     local new_call = {
