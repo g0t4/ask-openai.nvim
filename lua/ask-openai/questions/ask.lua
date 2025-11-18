@@ -369,7 +369,7 @@ function M.curl_exited_successfully()
             thread_message.finish_reason = accumulated_message.finish_reason
 
             for _, call_request in ipairs(accumulated_message.tool_calls) do
-                thread_message:add_tool_call_requests(call_request)
+                thread_message:attach_tool_call_request(call_request)
             end
             log:jsonify_compact_trace("thread_message", thread_message)
             M.thread:add_message(thread_message)
