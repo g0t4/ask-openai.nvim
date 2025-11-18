@@ -348,7 +348,8 @@ end
 
 function M.curl_exited_successfully()
     vim.schedule(function()
-        -- ***! map final response messages => chat thread (history) messages that can be sent back w/ followup/tool_results
+        -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for assistant messages)
+
         for _, rx_message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
             -- log:jsonify_compact_trace("last request message:", message)
             -- *** thread.last_request.accumulated_model_response_messages IS NOT thread.messages
@@ -390,7 +391,7 @@ function M.run_tools_and_send_results_back_to_the_model()
         for _, tool_call in ipairs(rx_message.tool_calls) do
             -- log:trace("tool:", vim.inspect(tool))
 
-            -- FYI this is the primary interaction seam between RxAccumulatedMessage and TxChatMessage
+            -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for tool result messages)
 
             ---@type ToolCallDoneCallback
             local function when_tool_is_done(tool_call_output)
