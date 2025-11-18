@@ -375,11 +375,11 @@ function M.curl_exited_successfully()
         end
         M.clear_undos()
 
-        M.call_requested_tools_for_the_model()
+        M.run_tool_calls_for_the_model()
     end)
 end
 
-function M.call_requested_tools_for_the_model()
+function M.run_tool_calls_for_the_model()
     for _, message in ipairs(M.thread.last_request.response_messages or {}) do
         for _, tool_call in ipairs(message.tool_calls) do
             -- log:trace("tool:", vim.inspect(tool))

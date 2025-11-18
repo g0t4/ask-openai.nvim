@@ -21,7 +21,7 @@ end
 
 ---@return boolean
 function ToolCall:is_done()
-    -- FYI see call_requested_tools_for_the_model() for when call_output is set
+    -- FYI see run_tool_calls_for_the_model() for when call_output is set
     return self.call_output ~= nil
 end
 
