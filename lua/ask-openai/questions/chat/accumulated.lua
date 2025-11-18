@@ -1,5 +1,6 @@
 local log = require('ask-openai.logs.logger').predictions()
 local ansi = require('ask-openai.prediction.ansi')
+local shared = require('ask-openai.questions.chat.messages.shared')
 
 ---@class AccumulatedMessage
 ---@field role? string
@@ -57,25 +58,8 @@ function AccumulatedMessage:add_tool_call_requests(call_request)
     table.insert(self.tool_calls, new_call)
 end
 
---- TODO review where RX_FINISH_REASONS should be? rx/tx/both?
----@enum RX_FINISH_REASONS
-AccumulatedMessage.RX_FINISH_REASONS = {
-    LENGTH = "length",
-    STOP = "stop",
-    TOOL_CALLS = "tool_calls",
-    -- observed finish_reason values: "tool_calls", "stop", "length", null (not string, a literal null JSON value)
-    -- vim.NIL (still streaming) => b/c of JSON value of null (not string, but literal null in the JSON)
-
-    -- FYI find finish_reason observed values:
-    --   grep --no-filename -o '"finish_reason":[^,}]*' **/* 2>/dev/null | sort | uniq
-    -- "finish_reason":"length"
-    -- "finish_reason":"stop"
-    -- "finish_reason":"tool_calls"
-    -- "finish_reason":null
-}
-
 ---Returns the finish reason, cleanup when not set (i.e. nil instead of vim.NIL)
----@return RX_FINISH_REASONS?
+---@return FINISH_REASON?
 function AccumulatedMessage:get_finish_reason()
     if self.finish_reason == vim.NIL then
         return nil
@@ -110,7 +94,7 @@ function AccumulatedMessage:get_lifecycle_step()
         return AccumulatedMessage.RX_LIFECYCLE.STREAMING
     end
     local finish_reason = self:get_finish_reason()
-    if finish_reason == AccumulatedMessage.RX_FINISH_REASONS.TOOL_CALLS then
+    if finish_reason == shared.FINISH_REASON.TOOL_CALLS then
         -- IIRC tool_calls are parsed before FINISHED state... so just check all are complete (or not)
         for _, call in ipairs(self.tool_calls) do
             if not call:is_done() then

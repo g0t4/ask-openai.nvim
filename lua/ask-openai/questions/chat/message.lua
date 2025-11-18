@@ -90,24 +90,8 @@ function ChatMessage:add_tool_call_requests(call_request)
     table.insert(self.tool_calls, new_call)
 end
 
----@enum TX_FINISH_REASONS
-ChatMessage.TX_FINISH_REASONS = {
-    LENGTH = "length",
-    STOP = "stop",
-    TOOL_CALLS = "tool_calls",
-    -- observed finish_reason values: "tool_calls", "stop", "length", null (not string, a literal null JSON value)
-    -- vim.NIL (still streaming) => b/c of JSON value of null (not string, but literal null in the JSON)
-
-    -- FYI find finish_reason observed values:
-    --   grep --no-filename -o '"finish_reason":[^,}]*' **/* 2>/dev/null | sort | uniq
-    -- "finish_reason":"length"
-    -- "finish_reason":"stop"
-    -- "finish_reason":"tool_calls"
-    -- "finish_reason":null
-}
-
 ---Returns the finish reason, cleanup when not set (i.e. nil instead of vim.NIL)
----@return TX_FINISH_REASONS?
+---@return FINISH_REASON?
 function ChatMessage:get_finish_reason()
     if self.finish_reason == vim.NIL then
         return nil
