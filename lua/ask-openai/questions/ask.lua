@@ -390,27 +390,28 @@ function M.run_tool_calls_for_the_model()
         for _, tool_call in ipairs(rx_message.tool_calls) do
             -- log:trace("tool:", vim.inspect(tool))
 
-                ---@type ToolCallDoneCallback
-                function when_tool_finishes(tool_call_output)
-                    tool_call.call_output = ToolCallOutput:new(tool_call_output)
-                    log:trace("tool_call_output", vim.inspect(tool_call_output))
+            ---@type ToolCallDoneCallback
+            function when_tool_finishes(tool_call_output)
+                tool_call.call_output = ToolCallOutput:new(tool_call_output)
+                log:trace("tool_call_output", vim.inspect(tool_call_output))
 
-                    -- * triggers UI updates to show tool outputs
-                    M.handle_rx_messages_updated()
+                -- * triggers UI updates to show tool outputs
+                M.handle_rx_messages_updated()
 
-                    -- * map tool result to a new TxChatMessage (to send back to model)
-                    local tool_response_message = TxChatMessage:tool_result(tool_call)
-                    log:jsonify_compact_trace("tool_message:", tool_response_message)
-                    tool_call.response_message = tool_response_message
-                    M.thread:add_message(tool_response_message)
+                -- * map tool result to a new TxChatMessage (to send back to model)
+                local tool_response_message = TxChatMessage:tool_result(tool_call)
+                log:jsonify_compact_trace("tool_message:", tool_response_message)
+                tool_call.response_message = tool_response_message
+                M.thread:add_message(tool_response_message)
 
-                    vim.schedule(function()
-                        -- FYI I am scheduling this so it happens after redraws
-                        --  IIUC I need to queue this after the other changes from above?
-                        --  else IIUC, the line count won't be right for where in the chat window to insert next message
-                        M.send_tool_messages_if_all_tools_done()
-                    end)
-                end
+                vim.schedule(function()
+                    -- FYI I am scheduling this so it happens after redraws
+                    --  IIUC I need to queue this after the other changes from above?
+                    --  else IIUC, the line count won't be right for where in the chat window to insert next message
+                    M.send_tool_messages_if_all_tools_done()
+                end)
+            end
+
             tool_router.send_tool_call_router(tool_call, when_tool_finishes)
         end
     end
