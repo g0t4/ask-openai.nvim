@@ -42,8 +42,8 @@ function ChatMessage:new(role, content)
 end
 
 -- IDEA:
--- function ChatMessage:from_accumulated(AccumulatedMessage accumulated)
---     -- TODO see ask.lua curl_exited_successfully (move that logic here? or move this idea to AccumulatedMessage?)
+-- function ChatMessage:from_accumulated(RxAccumulatedMessage accumulated)
+--     -- TODO see ask.lua curl_exited_successfully (move that logic here? or move this idea to RxAccumulatedMessage?)
 -- end
 
 ---@param tool_call ToolCall
@@ -71,7 +71,7 @@ end
 --- differentiate ChatMessage usage by making explicit this provides context to another user request
 ---@return ChatMessage
 function ChatMessage:user_context(content)
-    -- FYI it would be fine to remove this after my AccumulatedMessage refactor
+    -- FYI it would be fine to remove this after my RxAccumulatedMessage refactor
     return ChatMessage:user(content)
 end
 

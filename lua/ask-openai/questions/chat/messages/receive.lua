@@ -2,7 +2,7 @@ local log = require('ask-openai.logs.logger').predictions()
 local ansi = require('ask-openai.prediction.ansi')
 local shared = require('ask-openai.questions.chat.messages.shared')
 
----@class AccumulatedMessage
+---@class RxAccumulatedMessage
 ---@field role? string
 ---@field index integer -- must be kept and sent back with thread
 ---@field content? string
@@ -12,14 +12,11 @@ local shared = require('ask-openai.questions.chat.messages.shared')
 ---@field tool_call_id? string
 ---@field name? string
 ---@field tool_calls ToolCall[] -- empty if none
-local AccumulatedMessage = {}
+local RxAccumulatedMessage = {}
 
 ---@enum RX_MESSAGE_ROLES
 local RX_MESSAGE_ROLES = {
-    -- TODO ONLY ALLOW "assistant" role? => RENAME AssistantAccumulatedMessage?
-    -- TODO wait... AccumulatedMessage is the RECEIVE MODEL
-    --     and ChatMessage is the SEND MODEL
-    --     TODO rename ChatMessageSend / ChatMessageReceive? or smth like that?
+    -- TODO ONLY ALLOW "assistant" role?
 
     -- these would never come FROM the model, so don't allow them as roles!
     -- SYSTEM = "system", -- no reason for this to come back from the model so leave it off
@@ -34,9 +31,9 @@ local RX_MESSAGE_ROLES = {
 ---
 ---@param role RX_MESSAGE_ROLES|string - TODO GET RID OF ROLE PARAM? OR LOG WHEN IT IS NOT "assistant"?
 ---@param content string|nil
----@return AccumulatedMessage
-function AccumulatedMessage:new(role, content)
-    self = setmetatable({}, { __index = AccumulatedMessage })
+---@return RxAccumulatedMessage
+function RxAccumulatedMessage:new(role, content)
+    self = setmetatable({}, { __index = RxAccumulatedMessage })
     self.role = role
     self.content = content
     self.finish_reason = nil
@@ -44,7 +41,7 @@ function AccumulatedMessage:new(role, content)
     return self
 end
 
-function AccumulatedMessage:add_tool_call_requests(call_request)
+function RxAccumulatedMessage:add_tool_call_requests(call_request)
     -- ONLY clone fields on the original call request from the model
     local new_call = {
         id = call_request.id,
@@ -60,7 +57,7 @@ end
 
 ---Returns the finish reason, cleanup when not set (i.e. nil instead of vim.NIL)
 ---@return FINISH_REASON?
-function AccumulatedMessage:get_finish_reason()
+function RxAccumulatedMessage:get_finish_reason()
     if self.finish_reason == vim.NIL then
         return nil
     end
@@ -68,12 +65,12 @@ function AccumulatedMessage:get_finish_reason()
 end
 
 ---@return boolean
-function AccumulatedMessage:is_still_streaming()
+function RxAccumulatedMessage:is_still_streaming()
     return self.finish_reason == nil or self.finish_reason == vim.NIL
 end
 
 ---@enum RX_LIFECYCLE
-AccumulatedMessage.RX_LIFECYCLE = {
+RxAccumulatedMessage.RX_LIFECYCLE = {
     -- FYI I merged two concepts: message from model + managing requested tool_call object(s)
     -- streaming -> rx finish_reason=stop/length -> finished
     -- streaming -> rx finish_reason=tool_calls -> pending_tool_call -> calling -> rx results -> finished (tool call done)
@@ -88,21 +85,21 @@ AccumulatedMessage.RX_LIFECYCLE = {
 }
 
 ---@return RX_LIFECYCLE
-function AccumulatedMessage:get_lifecycle_step()
+function RxAccumulatedMessage:get_lifecycle_step()
     -- TODO try using this to simplify consumer logic... i.e. in streaming chat window  message/tool formatters/summarizers
     if self:is_still_streaming() then
-        return AccumulatedMessage.RX_LIFECYCLE.STREAMING
+        return RxAccumulatedMessage.RX_LIFECYCLE.STREAMING
     end
     local finish_reason = self:get_finish_reason()
     if finish_reason == shared.FINISH_REASON.TOOL_CALLS then
         -- IIRC tool_calls are parsed before FINISHED state... so just check all are complete (or not)
         for _, call in ipairs(self.tool_calls) do
             if not call:is_done() then
-                return AccumulatedMessage.RX_LIFECYCLE.TOOL_CALLING
+                return RxAccumulatedMessage.RX_LIFECYCLE.TOOL_CALLING
             end
         end
     end
-    return AccumulatedMessage.RX_LIFECYCLE.FINISHED
+    return RxAccumulatedMessage.RX_LIFECYCLE.FINISHED
 end
 
-return AccumulatedMessage
+return RxAccumulatedMessage
