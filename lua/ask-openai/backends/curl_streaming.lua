@@ -31,7 +31,8 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     local request = LastRequest:new(body)
 
     body.stream = true
-    -- log:jsonify_compact_trace("body:", body) -- compact
+
+    -- log:jsonify_compact_trace("body:", body)
     log:jsonify_trace("body:", body)
 
     local json = vim.json.encode(body)
@@ -47,32 +48,20 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
             "-d", json
         },
     }
-    -- -- PRN use configuration/caching for this (various providers from original cmdline help feature)
-    -- -- for now, just uncomment this when testing:
-    -- api_key = os.getenv("OPENAI_API_KEY")
-    -- if api_key then
-    --     table.insert(options.args, "-H")
-    --     table.insert(options.args, "Authorization: Bearer " .. api_key)
-    -- end
-
-    -- PRN could use bat -l sh for this one:
-    -- log:warn("curl args: ", table.concat(options.args, " "))
 
     function on_data_sse(data_value)
-        -- FYI good test case is to comment out: choice.delta.content == vim.NIL in extract_generated_text
         local success, result = xpcall(function()
             M.on_line_or_lines(data_value, extract_generated_text, frontend, request)
         end, function(e)
-            -- otherwise only get one line from the traceback (frame that exception was thrown)
+            -- otherwise only get one line from the traceback frame
             return debug.traceback(e, 3)
         end)
 
         if not success then
+            -- FAIL EARLY... NO unexpected exceptions in prediction parsing
+            -- request stops ASAP, but not immediately
             M.terminate(request)
 
-            -- FAIL EARLY, accept NO unexpected exceptions in completion parsing
-            -- by the way the request will go a bit longer but it will stop ASAP
-            -- important part is to alert me
             log:error("Terminating curl_streaming due to unhandled exception", result)
 
             -- ?? pass this to explain_error?
