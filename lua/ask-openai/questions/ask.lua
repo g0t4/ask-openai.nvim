@@ -361,14 +361,14 @@ function M.curl_exited_successfully()
             --   theoretically there can be multiple messages, with w/e role so I kept this in a loop and generic
             local role = message.role
             local content = message.content
-            local model_responses = ChatMessage:new(role, content)
-            model_responses.finish_reason = message.finish_reason
+            local model_response = ChatMessage:new(role, content)
+            model_response.finish_reason = message.finish_reason
 
             for _, call_request in ipairs(message.tool_calls) do
-                model_responses:add_tool_call_requests(call_request)
+                model_response:add_tool_call_requests(call_request)
             end
             -- log:jsonify_compact_trace("final model_response message:", model_responses)
-            M.thread:add_message(model_responses)
+            M.thread:add_message(model_response)
 
             -- * show user role as hint to follow up:
             M.show_user_role()
