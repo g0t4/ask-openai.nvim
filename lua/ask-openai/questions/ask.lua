@@ -390,9 +390,8 @@ function M.run_tool_calls_for_the_model()
         for _, tool_call in ipairs(rx_message.tool_calls) do
             -- log:trace("tool:", vim.inspect(tool))
 
-            tool_router.send_tool_call_router(tool_call,
                 ---@type ToolCallDoneCallback
-                function(tool_call_output)
+                function when_tool_finishes(tool_call_output)
                     tool_call.call_output = ToolCallOutput:new(tool_call_output)
                     log:trace("tool_call_output", vim.inspect(tool_call_output))
 
@@ -412,7 +411,7 @@ function M.run_tool_calls_for_the_model()
                         M.send_tool_messages_if_all_tools_done()
                     end)
                 end
-            )
+            tool_router.send_tool_call_router(tool_call, when_tool_finishes)
         end
     end
 end
