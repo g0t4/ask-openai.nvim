@@ -52,7 +52,7 @@ function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backe
     ---@param data_value string
     function on_data_sse(data_value)
         local success, error_message = xpcall(function()
-            M.on_line_or_lines(data_value, extract_generated_text, frontend, request)
+            M.on_line_or_lines(data_value, frontend, extract_generated_text, request)
         end, function(e)
             -- otherwise only get one line from the traceback frame
             return debug.traceback(e, 3)
@@ -145,7 +145,7 @@ end
 ---@param extract_generated_text ExtractGeneratedTextFunction
 ---@param frontend StreamingFrontend
 ---@param request LastRequest
-function M.on_line_or_lines(data_value, extract_generated_text, frontend, request)
+function M.on_line_or_lines(data_value, frontend, extract_generated_text, request)
     -- log:trace("data_value", data_value)
 
     if data_value == "[DONE]" then
