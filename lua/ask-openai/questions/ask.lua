@@ -399,7 +399,7 @@ function M.run_tool_calls_for_the_model()
                     -- * triggers UI updates to show tool outputs
                     M.handle_rx_messages_updated()
 
-                    -- *** tool response messages back to model
+                    -- * map tool result to a new TxChatMessage (to send back to model)
                     local tool_response_message = TxChatMessage:tool_result(tool_call)
                     log:jsonify_compact_trace("tool_message:", tool_response_message)
                     tool_call.response_message = tool_response_message
