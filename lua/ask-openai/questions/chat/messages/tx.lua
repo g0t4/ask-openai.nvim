@@ -89,13 +89,13 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     -- * content, role, name, tool_calls ...  also: refusal, audio (not using these)
 
     -- MAP the assistant's RxAccumulatedMessage message to TxChatMessage
-    local thread_message = TxChatMessage:new(rx_message.role, rx_message.content)
-    thread_message.finish_reason = rx_message.finish_reason
-    thread_message.name = rx_message.name -- optional, I am not using this on the rx_message incoming side
+    local tx_message = TxChatMessage:new(rx_message.role, rx_message.content)
+    tx_message.finish_reason = rx_message.finish_reason
+    tx_message.name = rx_message.name -- optional, I am not using this on the rx_message incoming side
 
     -- TODO! map thinking content (and let llama-server's jinja drop the thinking once no longer relevant) ?
     --  or double back at some point and drop it explicitly (too and/or instead)?
-    -- model_response_thread_message.thinking = message.reasoning_content
+    -- tx_message.thinking = message.reasoning_content
 
     --- * map tool calls
     if rx_message.tool_calls then
@@ -112,11 +112,11 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
                     arguments = call_request["function"].arguments,
                 }
             }
-            table.insert(thread_message.tool_calls, new_call)
+            table.insert(tx_message.tool_calls, new_call)
         end
     end
 
-    return thread_message
+    return tx_message
 end
 
 return TxChatMessage
