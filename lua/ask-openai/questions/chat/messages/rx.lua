@@ -4,7 +4,7 @@ local shared = require('ask-openai.questions.chat.messages.shared')
 
 ---@class RxAccumulatedMessage
 ---@field role? string
----@field index integer -- must be kept and sent back with thread
+---@field index integer -- TODO! this appears to be Rx side only (it is not in OpenAI docs for chat completions endpoint, on any message type)... I believe I just need choice.index if there are multiple response rx_messages for one request ... but I wouldn't need it on the rx_message... just the dict that looksup rx mesage by choice.index ... IOTW I think I can remove tracking index ... ALSO choice.index is always 0 b/c it is PER response!
 ---@field content? string
 ---@field _verbatim_content? string -- hack for  <tool_call>... leaks (can be removed if fixed)
 ---@field reasoning_content? string
