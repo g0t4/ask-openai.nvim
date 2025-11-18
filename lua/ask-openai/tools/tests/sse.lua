@@ -29,7 +29,7 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
             table.insert(f.on_generated_text_calls, chunk)
         end
 
-        function f.handle_messages_updated()
+        function f.handle_rx_messages_updated()
         end
 
         function f.on_sse_llama_server_timings(sse_parsed)

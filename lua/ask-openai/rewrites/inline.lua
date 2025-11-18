@@ -71,7 +71,7 @@ local function ensure_new_lines_around(code, response_lines)
     return response_lines
 end
 
-function M.handle_messages_updated()
+function M.handle_rx_messages_updated()
     -- ?? replace on_generated_text?...
     --   get entire current refactor from the denormalizer?
     --   OR I can pass the latest chunk still...

@@ -15,7 +15,7 @@ end
 ---@class StreamingFrontend
 ---@field on_generated_text fun(content_chunk: string, sse_parsed: table)
 ---@field on_sse_llama_server_timings fun(sse_parsed: table)
----@field handle_messages_updated fun()
+---@field handle_rx_messages_updated fun()
 ---@field curl_exited_successfully fun()
 ---@field explain_error fun(text: string)
 
@@ -162,7 +162,7 @@ function M.on_line_or_lines(data_value, frontend, extract_generated_text, reques
             --   ? if I don't need this in rewrites, THEN, push this back down into asks via on_generated_text
             M.on_streaming_delta_update_message_history(first_choice, request)
             -- * ONLY AskQuestion uses this:
-            frontend.handle_messages_updated()
+            frontend.handle_rx_messages_updated()
 
             -- * ONLY AskRewrite uses this... and that may not change (not sure denormalizer makes sense for rewrites)
             local generated_text = extract_generated_text(first_choice)

@@ -292,7 +292,7 @@ function M.on_sse_llama_server_timings(sse)
     -- PRN use this to extract timing like in rewrites
 end
 
-function M.handle_messages_updated()
+function M.handle_rx_messages_updated()
     if not M.thread.last_request.accumulated_model_response_messages then
         return
     end
@@ -397,7 +397,7 @@ function M.run_tool_calls_for_the_model()
                     log:trace("tool_call_output", vim.inspect(tool_call_output))
 
                     -- * triggers UI updates to show tool outputs
-                    M.handle_messages_updated()
+                    M.handle_rx_messages_updated()
 
                     -- *** tool response messages back to model
                     local tool_response_message = TxChatMessage:tool_result(tool_call)
