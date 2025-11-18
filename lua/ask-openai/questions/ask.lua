@@ -391,7 +391,7 @@ function M.run_tool_calls_for_the_model()
             -- log:trace("tool:", vim.inspect(tool))
 
             ---@type ToolCallDoneCallback
-            function when_tool_finishes(tool_call_output)
+            local function when_tool_finishes(tool_call_output)
                 tool_call.call_output = ToolCallOutput:new(tool_call_output)
                 log:trace("tool_call_output", vim.inspect(tool_call_output))
 
