@@ -17,6 +17,11 @@ local M = {}
 function M.curl_for(body, base_url, frontend)
     local url = base_url .. "/v1/completions"
 
+    -- FYI! this appears vestigial... b/c I am using oai_chat for BOTH /v1/completions and /v1/chat/completions endpoints (and I don't swap this module in, I only change the URL/prompt)
+    -- TODO can I get rid of this module and simplify oai_chat?
+    -- I am really happen w/ llama-server at this point...
+    --   TODO no reason for ollama any more so let's cleanup the code accordingly
+
     if body.tools ~= nil then
         error("tool use was requested, but this backend " .. url .. " does not support tools")
         return nil
