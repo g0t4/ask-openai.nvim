@@ -56,6 +56,7 @@ function RxAccumulatedMessage:add_tool_call_requests(call_request)
 end
 
 ---Returns the finish reason, cleanup when not set (i.e. nil instead of vim.NIL)
+--- not set when still streaming
 ---@return FINISH_REASON?
 function RxAccumulatedMessage:get_finish_reason()
     if self.finish_reason == vim.NIL then

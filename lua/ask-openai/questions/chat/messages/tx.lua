@@ -7,7 +7,7 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@field content? string
 ---@field _verbatim_content? string -- hack for  <tool_call>... leaks (can be removed if fixed)
 ---@field reasoning_content? string
----@field finish_reason? string|vim.NIL -- FYI use get_finish_reason() for clean value (vim.NIL => nil)
+---@field finish_reason? string|vim.NIL -- TODO I do not think I would be sending vim.NIL right? that's only in streaming when the response is not yet complete?
 ---@field tool_call_id? string
 ---@field name? string
 ---@field tool_calls ToolCall[] -- empty if none
@@ -88,15 +88,6 @@ function TxChatMessage:add_tool_call_requests(call_request)
         }
     }
     table.insert(self.tool_calls, new_call)
-end
-
----Returns the finish reason, cleanup when not set (i.e. nil instead of vim.NIL)
----@return FINISH_REASON?
-function TxChatMessage:get_finish_reason()
-    if self.finish_reason == vim.NIL then
-        return nil
-    end
-    return self.finish_reason
 end
 
 return TxChatMessage
