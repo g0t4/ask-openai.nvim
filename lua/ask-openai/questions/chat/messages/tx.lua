@@ -76,7 +76,7 @@ function TxChatMessage:user_context(content)
 end
 
 ---@return TxChatMessage
-function TxChatMessage:attach_tool_call_request(call_request)
+function TxChatMessage:add_tool_call_request(call_request)
     -- ONLY clone fields on the original call request from the model
     local new_call = {
         id = call_request.id,

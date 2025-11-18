@@ -351,26 +351,24 @@ function M.curl_exited_successfully()
         -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for assistant messages)
 
         for _, rx_message in ipairs(M.thread.last_request.accumulated_model_response_messages or {}) do
-            -- log:jsonify_compact_trace("last request message:", message)
             -- *** thread.last_request.accumulated_model_response_messages IS NOT thread.messages
             --    thread.messages => sent with future requests, hence TxChatMessage
             --    request.response_messages is simply to denormalize responses from SSEs, hence RxAccumulatedMessage
             --    request => SSEs => RxAccumulatedMessage(s)  => toolcalls/followup => thread.messages (TxChatMessage) => next request => ...
-            --
-            -- this is the response(s) from the model, they need to be added to the message history!!!
-            --   and before any tool responses
-            --   theoretically there can be multiple messages, with w/e role so I kept this in a loop and generic
 
+            -- add assistant response message to chat history (TxChatMessage)
+            --   (must come before tool result messages)
+            --   theoretically there can be multiple messages, with any role (not just assitant)
             local thread_message = TxChatMessage:new(rx_message.role, rx_message.content)
 
-            -- TODO! map thinking content (and let llama-server's jinja drop once no longer relevant?)
+            -- TODO! map thinking content (and let llama-server's jinja drop the thinking once no longer relevant) ?
             --  or double back at some point and drop it explicitly (too and/or instead)?
             -- model_response_thread_message.thinking = message.reasoning_content
 
             thread_message.finish_reason = rx_message.finish_reason
 
             for _, call_request in ipairs(rx_message.tool_calls) do
-                thread_message:attach_tool_call_request(call_request)
+                thread_message:add_tool_call_request(call_request)
             end
             log:jsonify_compact_trace("thread_message", thread_message)
             M.thread:add_message(thread_message)
