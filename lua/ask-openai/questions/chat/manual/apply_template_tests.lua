@@ -1,16 +1,45 @@
--- TODO standardize on one of the test setup approaches (both have devtools):
--- require('ask-openai.helpers.testing') -- devtools only, looks older, I probably forgot about this and then made the second one:
 require('ask-openai.helpers.test_setup').modify_package_path()
-
 local ChatThread = require("ask-openai.questions.chat.thread")
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 local model_params = require("ask-openai.questions.models.params")
+local http = require("socket.http") -- luarocks install --lua-version=5.1  luasocket
+local ltn12 = require("ltn12")
 
-local http = require("socket.http") -- simple http client for test
--- luarocks install --lua-version=5.1  luasocket
+describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
+    it("check model is gpt-oss", function()
+        local response_body = {}
 
+        -- TODO make helper that takes args table and returns body only (does basic assertions like 200 OK)
+        local ok, status_code, response_headers, status_line = http.request {
+            url     = "http://build21.lan:8013" .. "/v1/models",
+            method  = "GET",
+            headers = { ["Content-Type"] = "application/json", },
+            sink    = ltn12.sink.table(response_body),
+        }
+        local response = nil
+        if ok then
+            local body_str = table.concat(response_body)
+            response, _, err = vim.json.decode(body_str)
+            if not response then
+                error("Failed to decode JSON response: " .. tostring(err))
+            end
+        else
+            error("HTTP request failed: " .. tostring(status_code))
+        end
 
-describe("apply_template with a simple thread", function()
+        assert.is_table(response, "Expected response table, got: " .. type(response))
+        assert.is_table(response.data, "Response does not contain a `data` array")
+        assert.is_true(#response.data > 0, "No models were returned by the backend")
+        -- vim.print(response.data)
+
+        local model = response.data[1]
+        local plain_text = true
+
+        -- verify gpt-oss on llama-server
+        assert.matches("ggml-org_gpt-oss-", model.id, nil, plain_text)
+        assert.same("llamacpp", model.owned_by, "MUST TEST WITH llama-server")
+    end)
+
     it("sends a single user message to the llama-server backend", function()
         local user_msg = TxChatMessage:user("Hello, can you rewrite this code?")
         local messages = { user_msg }
