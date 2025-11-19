@@ -2,7 +2,6 @@ local log = require('ask-openai.logs.logger').predictions()
 local ansi = require('ask-openai.prediction.ansi')
 
 ---@class TxChatMessage : OpenAIChatCompletion_TxChatMessage
----@field reasoning_content? string TODO isn't this "thinking"?
 local TxChatMessage = {}
 
 ---@enum TX_MESSAGE_ROLES
@@ -70,17 +69,18 @@ function TxChatMessage:user_context(content)
     return TxChatMessage:user(content)
 end
 
+---@class OpenAIChatCompletion_AssistantWithReasoning_TxChatMessage : OpenAIChatCompletion_Assistant_TxChatMessage
+---@field reasoning_content? TODO which?
+---@field thinking? TODO which?
+
 ---@param rx_message RxAccumulatedMessage
----@return OpenAIChatCompletion_Assistant_TxChatMessage
+---@return OpenAIChatCompletion_AssistantWithReasoning_TxChatMessage
 function TxChatMessage:from_assistant_rx_message(rx_message)
     -- docs: https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message
     -- * content, role, name, tool_calls ...  also: refusal, audio (not using these)
     --   NO mention of sending thinking back! so, no OpenAI compat name for that!
 
-    -- MAP the assistant's RxAccumulatedMessage message to TxChatMessage
-
-    local tx_message = TxChatMessage:new(rx_message.role, rx_message.content) --[[@as OpenAIChatCompletion_Assistant_TxChatMessage]]
-    tx_message.name = rx_message.name -- optional, I am not using this on the rx_message incoming side
+    local tx_message = TxChatMessage:new(rx_message.role, rx_message.content) --[[@as OpenAIChatCompletion_AssistantWithReasoning_TxChatMessage]]
 
     -- TODO! map thinking content (and let llama-server's jinja drop the thinking once no longer relevant) ?
     --  or double back at some point and drop it explicitly (too and/or instead)?
