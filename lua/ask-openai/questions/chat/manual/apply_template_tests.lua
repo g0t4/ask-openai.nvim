@@ -58,8 +58,6 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         local model = response.data[1]
         local plain_text = true
-
-        -- verify gpt-oss on llama-server
         assert.matches("ggml-org_gpt-oss-", model.id, nil, plain_text)
         assert.same("llamacpp", model.owned_by, "MUST TEST WITH llama-server")
     end)
