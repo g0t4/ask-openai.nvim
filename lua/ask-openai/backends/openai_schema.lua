@@ -77,25 +77,23 @@
 
 --- * Message Types (by Role)
 
----@class OpenAIChatCompletion_Input_BaseMessage
+---@class OpenAIChatCompletion_TxChatMessage
 ---@field role string
----@field content OpenAIChatCompletion_Input_MessageContent - btw role="user" has a few extra item times in table[]
-
----@class OpenAIChatCompletion_Input_BaseNamedMessage
+---@field content OpenAIChatCompletion_MessageContent - btw role="user" has a few extra item times in table[]
 ---@field name? string - NOT using (so far)
 
----@class OpenAIChatCompletion_Input_SystemMessage : OpenAIChatCompletion_Input_BaseNamedMessage
+---@class OpenAIChatCompletion_System_TxChatMessage : OpenAIChatCompletion_TxChatMessage
 ---@field role string - "system"
 
----@class OpenAIChatCompletion_Input_DeveloperMessage : OpenAIChatCompletion_Input_BaseNamedMessage
+---@class OpenAIChatCompletion_Developer_TxChatMessage : OpenAIChatCompletion_TxChatMessage
 ---@field role string - "developer"
 
----@class OpenAIChatCompletion_Input_UserMessage : OpenAIChatCompletion_Input_BaseNamedMessage
+---@class OpenAIChatCompletion_User_TxChatMessage : OpenAIChatCompletion_TxChatMessage
 ---@field role string - "user"
 
 --- For returning tool call results to the model (assistant)
----  FTR no name field
----@class OpenAIChatCompletion_Input_ToolResultMessage : OpenAIChatCompletion_Input_BaseMessage
+---  FTR no `name` field
+---@class OpenAIChatCompletion_ToolResult_TxChatMessage : OpenAIChatCompletion_TxChatMessage
 ---@field role string - "tool"
 ---@field tool_call_id string
 
@@ -103,27 +101,27 @@
 --- I am not using table[] of {type,text|refusal} - all message roles have these two (and then user role has a few more item types)
 ---@see https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message-content
 ---
----@alias OpenAIChatCompletion_Input_MessageContent string|table[]
+---@alias OpenAIChatCompletion_MessageContent string|table[]
 
 -- * Assistant Message Type (has extras like tool calls)
 
----@class OpenAIChatCompletion_Input_AssistantMessage : OpenAIChatCompletion_Input_BaseNamedMessage
+---@class OpenAIChatCompletion_Assistant_TxChatMessage : OpenAIChatCompletion_TxChatMessage
 ---@field role string - "assistant"
----@field tool_calls OpenAIChatCompletion_Input_AssistantMessageToolCallRequest[]
+---@field tool_calls OpenAIChatCompletion_Assistant_TxChatMessage_ToolCallRequest[]
 ---
 ---@field audio any - NOT using
 ---@field refusal? string - NOT using
 ---@see https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message
 
----@class OpenAIChatCompletion_Input_AssistantMessageToolCallRequest
+---@class OpenAIChatCompletion_Assistant_TxChatMessage_ToolCallRequest
 ---@field id string
 ---@field type string -- "function" or "custom"
----@field function OpenAIChatCompletion_Input_AssistantMessageToolCallRequestFunction
+---@field function OpenAIChatCompletion_Assistant_TxChatMessage_ToolCallRequestFunction
 ---@field custom? table -- NOT USING THIS
 -- FYI this is GOOD EXAMPLE of why I want split type definitions (INPUT vs OUTPUT):
 --   there is no `ToolCall.index` input like there is on the SSEs in the output!
 
----@class OpenAIChatCompletion_Input_AssistantMessageToolCallRequestFunction
+---@class OpenAIChatCompletion_Assistant_TxChatMessage_ToolCallRequestFunction
 ---@field name string
 ---@field arguments string -- *** in JSON format (https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message-tool_calls-function_tool_call-function-arguments)
 -- TODO FINISH THESE WITH TxChatMessage refactoring

@@ -2,7 +2,7 @@ local log = require('ask-openai.logs.logger').predictions()
 local ansi = require('ask-openai.prediction.ansi')
 
 -- FYI I am duplicating definitions here so I never lose them (role/content/name), using base class more as a marker interface
----@class TxChatMessage : OpenAIChatCompletion_Input_BaseNamedMessage
+---@class TxChatMessage : OpenAIChatCompletion_TxChatMessage
 ---@field role string
 ---@field content string
 ---@field name? string
@@ -43,13 +43,13 @@ function TxChatMessage:new(role, content)
 end
 
 ---@param tool_call ToolCall
----@return OpenAIChatCompletion_Input_ToolResultMessage
+---@return OpenAIChatCompletion_ToolResult_TxChatMessage
 function TxChatMessage:tool_result(tool_call)
     -- FYI see NOTES.md for "fix" => removed `|tojson` from jinja template for message.content
 
     -- * required: role, content, tool_call_id - docs https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-tool_message
     local content = vim.json.encode(tool_call.call_output.result)
-    self = TxChatMessage:new(TX_MESSAGE_ROLES.TOOL, content) --[[@as OpenAIChatCompletion_Input_ToolResultMessage]]
+    self = TxChatMessage:new(TX_MESSAGE_ROLES.TOOL, content) --[[@as OpenAIChatCompletion_ToolResult_TxChatMessage]]
 
     self.tool_call_id = tool_call.id
     -- FTR gptoss/harmony jinja doesn't use tool_call_id b/c no parallel tool calls, it correlates on last tool call's name
@@ -105,7 +105,7 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
             -- FYI embed function here so no confusion about what is using it
             -- only clone needed fields
             -- * function.arguments, function.name, id, type docs: https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message-tool_calls
-            ---@type OpenAIChatCompletion_Input_AssistantMessageToolCallRequest
+            ---@type OpenAIChatCompletion_Assistant_TxChatMessage_ToolCallRequest
             local new_call = {
                 id = call_request.id,
                 -- index = call_request.index, -- not in OpenAI docs... I think this is just per request/response anyways
