@@ -32,12 +32,13 @@ function M.format(lines, tool_call, message)
     -- PRN mark outputs somehow? or just dump them? (I hate to waste space)
 
     -- * tool result
-    -- if not tool_call:is_done() then
-    --     -- TODO ... by the way this is PER TOOL, not entire message (so message:get_lifecycle_step() is not likely what you want here)
-    --     return -- ?
-    -- end
+    if not tool_call:is_done() then
+        -- PRN for slow tools, use thinking dots ... as calling dots!
+        lines:append_unexpected_line("Tool call in progress...")
+        return
+    end
 
-    local is_mcp = tool_call.call_output.result.content
+    local is_mcp = tool_call.call_output and tool_call.call_output:is_mcp()
     if is_mcp then
         ---@type MCPToolResultContent[]
         local content = tool_call.call_output.result.content
