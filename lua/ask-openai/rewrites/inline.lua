@@ -280,7 +280,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
     ---@param rag_matches LSPRankedMatch[]
     local function send_rewrite(rag_matches)
         local messages = {
-            { role = "system", content = system_prompt }
+            TxChatMessage:system(system_prompt)
         }
 
         if context.includes.current_file then
