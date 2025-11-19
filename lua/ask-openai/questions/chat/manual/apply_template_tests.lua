@@ -7,6 +7,9 @@ local ltn12 = require("ltn12")
 
 describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
     local base_url = "http://build21.lan:8013"
+    local URL_V1_MODELS = base_url .. "/v1/models"
+    local URL_V1_CHAT_COMPLETIONS = base_url .. "/v1/chat/completions"
+    local URL_APPLY_TEMPLATE = base_url .. "/apply-template"
 
     local function get_json_response(url, method, body)
         local response_body = {}
@@ -39,8 +42,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     end
 
     it("check model is gpt-oss", function()
-        local url = base_url .. "/v1/models"
-        local response = get_json_response(url, "GET")
+        local response = get_json_response(URL_V1_MODELS, "GET")
 
         assert.is_table(response.data, "Response does not contain a `data` array")
         assert.is_true(#response.data > 0, "No models were returned by the backend")
@@ -67,11 +69,8 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         -- TODO why do I take messages both to ChatThread and body_overrides (chat thread ones IIRC are for display only?)... by the way can remove messasge arg to ChatThread:new and test works fine.. use {}
         local thread = ChatThread:new(messages, body_overrides, base_url)
 
-        local url = thread.base_url .. "/apply-template"
         local body = vim.json.encode(thread.params)
-        local parsed = get_json_response(url, "POST", body)
-
-
+        local parsed = get_json_response(URL_APPLY_TEMPLATE, "POST", body)
 
         assert.is_table(parsed, "Response body is not valid JSON")
         assert.is_string(parsed.prompt, "Expected `template` field in response")
