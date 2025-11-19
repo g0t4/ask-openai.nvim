@@ -11,6 +11,13 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     local URL_V1_CHAT_COMPLETIONS = base_url .. "/v1/chat/completions"
     local URL_APPLY_TEMPLATE = base_url .. "/apply-template"
 
+    ---@enum METHODS
+    local METHODS = {
+        GET = "GET",
+        POST = "POST",
+    }
+
+    ---@param method METHODS
     local function get_json_response(url, method, body)
         local response_body = {}
         local source = nil
@@ -42,7 +49,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     end
 
     it("check model is gpt-oss", function()
-        local response = get_json_response(URL_V1_MODELS, "GET")
+        local response = get_json_response(URL_V1_MODELS, METHODS.GET)
 
         assert.is_table(response.data, "Response does not contain a `data` array")
         assert.is_true(#response.data > 0, "No models were returned by the backend")
@@ -67,7 +74,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         local thread = ChatThread:new(body_overrides, base_url)
 
         local body = vim.json.encode(thread.params)
-        local parsed = get_json_response(URL_APPLY_TEMPLATE, "POST", body)
+        local parsed = get_json_response(URL_APPLY_TEMPLATE, METHODS.POST, body)
 
         assert.is_table(parsed, "Response body is not valid JSON")
         assert.is_string(parsed.prompt, "Expected `template` field in response")
