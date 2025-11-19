@@ -65,13 +65,13 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     end)
 
     it("sends a single user message to the llama-server backend", function()
-        local body = {
+        local request_body = {
             messages = {
                 TxChatMessage:user("Hello, can you rewrite this code?")
             }
         }
 
-        local response = get_json_response(URL_APPLY_TEMPLATE, METHODS.POST, body)
+        local response = get_json_response(URL_APPLY_TEMPLATE, METHODS.POST, request_body)
 
         assert.is_string(response.prompt, "Expected `prompt` field in response")
         print(response.prompt)
