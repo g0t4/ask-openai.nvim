@@ -76,13 +76,17 @@ end
 ---@param content string
 ---@return OpenAIChatCompletion_User_TxChatMessage
 function TxChatMessage:user_context(content)
-    -- FYI it would be fine to remove this after my RxAccumulatedMessage refactor
     return TxChatMessage:user(content)
 end
 
+---@param content string
+---@return OpenAIChatCompletion_Assistant_TxChatMessage
+function TxChatMessage:assistant(content)
+    return TxChatMessage:new(TX_MESSAGE_ROLES.ASSISTANT, content) --[[@as OpenAIChatCompletion_Assistant_TxChatMessage]]
+end
+
 ---@class OpenAIChatCompletion_AssistantWithReasoning_TxChatMessage : OpenAIChatCompletion_Assistant_TxChatMessage
----@field reasoning_content? TODO which?
----@field thinking? TODO which?
+---@field reasoning_content TODO
 
 ---@param rx_message RxAccumulatedMessage
 ---@return OpenAIChatCompletion_AssistantWithReasoning_TxChatMessage

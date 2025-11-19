@@ -25,10 +25,7 @@ function parse_sse_ollama_chat(sse)
     --   created_at = "2025-08-06T03:41:18.754207861Z",
     --   done = true,
     --   done_reason = "load",
-    --   message = {
-    --     content = "",
-    --     role = "assistant"
-    --   },
+    --   message = TxChatMessage:assistant("")
 
     -- it has "thinking"!
     -- gpt-oss:
