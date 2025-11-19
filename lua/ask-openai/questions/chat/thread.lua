@@ -8,11 +8,12 @@ local log = require('ask-openai.logs.logger').predictions()
 ---@field base_url string
 local ChatThread = {}
 
---- @param messages TxChatMessage[]
---- @param params ChatParams
-function ChatThread:new(messages, params, base_url)
+---@param params ChatParams
+---@param base_url string
+---@return ChatThread
+function ChatThread:new(params, base_url)
     self = setmetatable({}, { __index = ChatThread })
-    self.messages = messages or {}
+    self.messages = params.messages or {}
     -- FYI think of params as the next request params
     self.params = params or {}
     -- if I want a history of requests I can build that separately

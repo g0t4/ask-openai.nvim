@@ -1,6 +1,7 @@
 --- @class ChatParams
 --- @field model string
 --- @field stream boolean|nil
+--- @field messages TxChatMessage[]
 ---
 --- TODO validate these are correct:
 --- @field temperature number|nil

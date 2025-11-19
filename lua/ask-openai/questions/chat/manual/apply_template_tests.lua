@@ -62,12 +62,9 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         local body_overrides = model_params.new_gptoss_chat_body_llama_server({
             messages = messages,
-            model = "", -- irrelevant for llama‑server
-            tools = nil,
         })
 
-        -- TODO why do I take messages both to ChatThread and body_overrides (chat thread ones IIRC are for display only?)... by the way can remove messasge arg to ChatThread:new and test works fine.. use {}
-        local thread = ChatThread:new(messages, body_overrides, base_url)
+        local thread = ChatThread:new(body_overrides, base_url)
 
         local body = vim.json.encode(thread.params)
         local parsed = get_json_response(URL_APPLY_TEMPLATE, "POST", body)

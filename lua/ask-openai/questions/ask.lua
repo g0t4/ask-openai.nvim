@@ -121,6 +121,8 @@ The semantic_grep tool:
     ---@type ChatParams
     local qwen25_body_overrides = ChatParams:new({
 
+        messages = messages,
+
         -- model = "qwen2.5-coder:7b-instruct-q8_0", -- btw -base- does terrible here :) -- instruct works at random... seems to be a discrepency in published template and what it was actually trained with? (for tool calls)
         -- model = "devstral:24b-small-2505-q4_K_M",
         -- model = "devstral:24b-small-2505-q8_0",
@@ -163,7 +165,7 @@ The semantic_grep tool:
 
     -- FYI starts a new chat thread when AskQuestion is used
     --  TODO allow follow up, via the command, if already existing thread?
-    M.thread = ChatThread:new(messages, body_overrides, base_url)
+    M.thread = ChatThread:new(body_overrides, base_url)
     M.send_messages()
 end
 
