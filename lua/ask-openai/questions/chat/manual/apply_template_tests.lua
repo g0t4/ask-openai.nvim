@@ -58,7 +58,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         local url = thread.base_url .. "/apply-template"
         local body = vim.json.encode(thread.params)
 
-        local function apply_template(url, method, body)
+        local function get_json_response(url, method, body)
             local response_body = {}
             local res, code, headers, status = http.request {
                 url = url,
@@ -85,7 +85,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
             return parsed
         end
 
-        local parsed = apply_template(url, "POST", body)
+        local parsed = get_json_response(url, "POST", body)
 
 
 
