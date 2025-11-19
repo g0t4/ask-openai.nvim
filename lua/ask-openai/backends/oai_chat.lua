@@ -1,6 +1,12 @@
 local log = require("ask-openai.logs.logger").predictions()
 local curl = require("ask-openai.backends.curl_streaming")
 
+---@alias CurlForFunction function(body: table, base_url: string, frontend: StreamingFrontend): LastRequest?
+
+---@class CurlMiddle
+---@field curl_for CurlForFunction
+---@field terminate function(request: LastRequest, cb: function())
+
 ---@class OaiChatMiddle : CurlMiddle
 local M = {}
 
