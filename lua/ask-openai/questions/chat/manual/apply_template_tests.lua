@@ -69,21 +69,24 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
                 source = ltn12.source.string(body),
                 sink = ltn12.sink.table(response_body),
             }
-            return {
+            local result = {
                 code = code,
                 body = table.concat(response_body),
             }
+
+            assert.is_number(result.code)
+            assert.is_true(result.code == 200 or result.code == 201, "Expected successful HTTP status")
+            assert.is_string(result.body)
+            -- print(result.body)
+            -- print()
+
+            local parsed = vim.json.decode(result.body)
+            return parsed
         end
 
-        local result = apply_template(thread)
+        local parsed = apply_template(thread)
 
-        assert.is_number(result.code)
-        assert.is_true(result.code == 200 or result.code == 201, "Expected successful HTTP status")
-        assert.is_string(result.body)
-        -- print(result.body)
-        -- print()
 
-        local parsed = vim.json.decode(result.body)
         assert.is_table(parsed, "Response body is not valid JSON")
         assert.is_string(parsed.prompt, "Expected `template` field in response")
         print(parsed.prompt)
