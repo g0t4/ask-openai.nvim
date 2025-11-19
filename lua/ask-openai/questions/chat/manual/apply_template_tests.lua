@@ -18,12 +18,12 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     }
 
     ---@param method METHODS
-    local function get_json_response(url, method, body)
+    local function get_json_response(url, method, request_body)
         local response_body = {}
         local source = nil
-        if body then
-            body_json = vim.json.encode(body)
-            source = ltn12.source.string(body_json)
+        if request_body then
+            request_body_json = vim.json.encode(request_body)
+            source = ltn12.source.string(request_body_json)
         end
         local res, code, headers, status = http.request {
             url = url,
