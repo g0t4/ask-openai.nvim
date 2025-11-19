@@ -82,11 +82,11 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         print_prompt(prompt)
         local prompt_lines = vim.split(prompt, "\n")
 
-        should.start_with("<|start|>", prompt)
+        prompt:should_start_with("<|start|>")
 
         -- PRN get rid of first empty?
-        local mesages = vim.split("<|start|>", prompt)
-        for i, message in ipairs(mesages) do
+        local messages = vim.split(prompt, "<|start|>")
+        for i, message in ipairs(messages) do
             print("message", message)
         end
 
