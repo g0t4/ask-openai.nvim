@@ -5,7 +5,3 @@
 --    and parser is pretty much one message at a time (not that complex)
 --    well tested if you go this route
 --  * keep a generic messages renderer/parser
-
--- TODO exclude irrelevant fields...
---   i.e. TxChatMessage.tool_calls is ONLY role=assistant
---   right now I serialize it as empty on everything (it is possible that is part of my issues too with `|tojson`

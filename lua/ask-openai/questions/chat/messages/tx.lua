@@ -38,7 +38,6 @@ function TxChatMessage:new(role, content)
     self = setmetatable({}, { __index = TxChatMessage })
     self.role = role
     self.content = content
-    self.tool_calls = {} -- empty == None (enforce invariant)
     return self
 end
 
@@ -104,6 +103,7 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
 
     --- * map tool calls
     if rx_message.tool_calls then
+        tx_message.tool_calls = {} -- only set if assisant type message
         for _, call_request in ipairs(rx_message.tool_calls) do
             -- FYI embed function here so no confusion about what is using it
             -- only clone needed fields
