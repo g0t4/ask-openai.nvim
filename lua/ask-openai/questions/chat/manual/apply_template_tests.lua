@@ -99,8 +99,13 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         local first = messages[1]
         expect(first == "") -- b/c started with <|start|>
         local system = messages[2]
-        -- expect(system:find("Rasoning:"))
+
+
+        -- two ways to check contains:
         expect(system:find("Reasoning:"))
+        -- expect(system:find("Rasoning:")) -- shows code line + values on failure (with some attempt to diff...).. falls apart on really long string compares
+        system:should_contain("Reasoning: medium")
+        -- system:should_contain("Reasoning: low") -- try this to see nice diff on failure!
 
         -- should.be_same_colorful_diff({ "Reasoning:" }, prompt_lines) -- more helpful
         -- should.be_same_colorful_diff("Reasoning:", response.prompt)
