@@ -39,24 +39,12 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         local response_body = {}
 
         -- TODO make helper that takes args table and returns body only (does basic assertions like 200 OK)
-        local ok, status_code, response_headers, status_line = http.request {
-            url     = base_url .. "/v1/models",
-            method  = "GET",
-            headers = { ["Content-Type"] = "application/json", },
-            sink    = ltn12.sink.table(response_body),
-        }
-        local response = nil
-        if ok then
-            local body_str = table.concat(response_body)
-            response, _, err = vim.json.decode(body_str)
-            if not response then
-                error("Failed to decode JSON response: " .. tostring(err))
-            end
-        else
-            error("HTTP request failed: " .. tostring(status_code))
-        end
+        local url = base_url .. "/v1/models"
+        local method = "GET"
+        local body = {}
 
-        assert.is_table(response, "Expected response table, got: " .. type(response))
+        local response = get_json_response(url, method, vim.json.encode(body))
+
         assert.is_table(response.data, "Response does not contain a `data` array")
         assert.is_true(#response.data > 0, "No models were returned by the backend")
         -- vim.print(response.data)
