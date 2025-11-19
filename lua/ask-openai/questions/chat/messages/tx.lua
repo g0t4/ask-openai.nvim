@@ -7,13 +7,6 @@ local ansi = require('ask-openai.prediction.ansi')
 ---@field content string
 ---@field name? string
 ---@field reasoning_content? string TODO isn't this "thinking"?
----
---- FYI role="tool" only:
----@field tool_call_id? string -- ONLY role=="tool" (tool result messages)
----
---- FYI role="assisant" only:
----@field tool_calls ToolCall[] -- ONLY role=="assistant"
----
 local TxChatMessage = {}
 
 ---@enum TX_MESSAGE_ROLES
