@@ -70,6 +70,16 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         print(string.rep("-", 80) .. "\n")
     end
 
+    local function split_messages(prompt)
+        local messages = vim.split(prompt, "<|start|>")
+        -- for i, message in ipairs(messages) do
+        --     print(string.format("MESSAGE: <|start|>%q", message))
+        -- end
+        -- PRN get rid of first empty? maybe after asserting it exists?
+        return messages
+    end
+
+
     it("sends a single user message to the llama-server backend", function()
         local response = get_json_response(URL_APPLY_TEMPLATE, METHODS.POST, {
             messages = {
@@ -84,11 +94,13 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         prompt:should_start_with("<|start|>")
 
-        -- PRN get rid of first empty?
-        local messages = vim.split(prompt, "<|start|>")
-        for i, message in ipairs(messages) do
-            print("message", message)
-        end
+        local messages = split_messages(prompt)
+
+        local first = messages[1]
+        expect(first == "") -- b/c started with <|start|>
+        local system = messages[2]
+        -- expect(system:find("Rasoning:"))
+        expect(system:find("Reasoning:"))
 
         -- should.be_same_colorful_diff({ "Reasoning:" }, prompt_lines) -- more helpful
         -- should.be_same_colorful_diff("Reasoning:", response.prompt)
