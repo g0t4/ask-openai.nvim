@@ -9,25 +9,21 @@ local model_params = require("ask-openai.questions.models.params")
 local http = require("socket.http") -- simple http client for test
 -- luarocks install --lua-version=5.1  luasocket
 
+
 describe("apply_template with a simple thread", function()
     it("sends a single user message to the llama-server backend", function()
-        -- Build a single‑user message
         local user_msg = TxChatMessage:user("Hello, can you rewrite this code?")
         local messages = { user_msg }
 
-        -- Minimal ChatParams for llama‑server
         local body_overrides = model_params.new_gptoss_chat_body_llama_server({
             messages = messages,
             model = "", -- irrelevant for llama‑server
         })
 
-        -- No tools for this simple test
         body_overrides.tools = nil
 
-        -- Create the thread
         local thread = ChatThread:new(messages, body_overrides, "http://build21.lan:8013")
 
-        -- Simulate the apply_template call (the real function sends the HTTP request)
         local function apply_template(thread)
             local url = thread.base_url .. "/apply-template"
             local body = vim.json.encode(thread.params)
@@ -50,7 +46,6 @@ describe("apply_template with a simple thread", function()
 
         local result = apply_template(thread)
 
-        -- Basic assertions
         assert.is_number(result.code)
         assert.is_true(result.code == 200 or result.code == 201, "Expected successful HTTP status")
         assert.is_string(result.body)
