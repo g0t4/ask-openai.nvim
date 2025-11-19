@@ -8,6 +8,33 @@ local ltn12 = require("ltn12")
 describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
     local base_url = "http://build21.lan:8013"
 
+    local function get_json_response(url, method, body)
+        local response_body = {}
+        local res, code, headers, status = http.request {
+            url = url,
+            method = method,
+            headers = {
+                ["Content-Type"] = "application/json",
+                ["Content-Length"] = #body,
+            },
+            source = ltn12.source.string(body),
+            sink = ltn12.sink.table(response_body),
+        }
+        local result = {
+            code = code,
+            body = table.concat(response_body),
+        }
+
+        assert.is_number(result.code)
+        assert.is_true(result.code == 200 or result.code == 201, "Expected successful HTTP status")
+        assert.is_string(result.body)
+        -- print(result.body)
+        -- print()
+
+        local parsed = vim.json.decode(result.body)
+        return parsed
+    end
+
     it("check model is gpt-oss", function()
         local response_body = {}
 
@@ -59,32 +86,6 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         local url = thread.base_url .. "/apply-template"
         local body = vim.json.encode(thread.params)
 
-        local function get_json_response(url, method, body)
-            local response_body = {}
-            local res, code, headers, status = http.request {
-                url = url,
-                method = method,
-                headers = {
-                    ["Content-Type"] = "application/json",
-                    ["Content-Length"] = #body,
-                },
-                source = ltn12.source.string(body),
-                sink = ltn12.sink.table(response_body),
-            }
-            local result = {
-                code = code,
-                body = table.concat(response_body),
-            }
-
-            assert.is_number(result.code)
-            assert.is_true(result.code == 200 or result.code == 201, "Expected successful HTTP status")
-            assert.is_string(result.body)
-            -- print(result.body)
-            -- print()
-
-            local parsed = vim.json.decode(result.body)
-            return parsed
-        end
 
         local parsed = get_json_response(url, "POST", body)
 
