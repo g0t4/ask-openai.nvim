@@ -1,13 +1,13 @@
-local thread = require("ask-openai.questions.chat.thread")
+-- TODO standardize on one of the test setup approaches (both have devtools):
+-- require('ask-openai.helpers.testing') -- devtools only, looks older, I probably forgot about this and then made the second one:
+require('ask-openai.helpers.test_setup').modify_package_path()
 
-
--- tests/chat_manual_apply_template_spec.lua
----@mod ask-openai.tests.chat_manual_apply_template
 local ChatThread = require("ask-openai.questions.chat.thread")
-local TxChatMessage = require("ask-openai.questions.chat.message")
-local model_params = require("ask-openai.model_params")
-local tool_router = require("ask-openai.tool_router")
+local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
+local model_params = require("ask-openai.questions.models.params")
+
 local http = require("socket.http") -- simple http client for test
+-- luarocks install --lua-version=5.1  luasocket
 
 describe("apply_template with a simple thread", function()
     it("sends a single user message to the llama-server backend", function()
@@ -25,14 +25,14 @@ describe("apply_template with a simple thread", function()
         body_overrides.tools = nil
 
         -- Create the thread
-        local thread = ChatThread:new(messages, body_overrides, "http://localhost:8013")
+        local thread = ChatThread:new(messages, body_overrides, "http://build21.lan:8013")
 
         -- Simulate the apply_template call (the real function sends the HTTP request)
         local function apply_template(thread)
-            local url = thread.base_url .. "/v1/chat/completions"
+            local url = thread.base_url .. "/apply-template"
             local body = vim.json.encode(thread.params)
             local response_body = {}
-            local res, code, headers, status = http.request{
+            local res, code, headers, status = http.request {
                 url = url,
                 method = "POST",
                 headers = {
@@ -54,6 +54,6 @@ describe("apply_template with a simple thread", function()
         assert.is_number(result.code)
         assert.is_true(result.code == 200 or result.code == 201, "Expected successful HTTP status")
         assert.is_string(result.body)
+        print(result.body)
     end)
 end)
-
