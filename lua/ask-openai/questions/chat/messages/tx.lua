@@ -1,10 +1,11 @@
 local log = require('ask-openai.logs.logger').predictions()
 local ansi = require('ask-openai.prediction.ansi')
 
----@class TxChatMessage
----@field role? string
----@field content? string
----@field name? string -- optional name for the participant (I am not using this, so far)
+-- FYI I am duplicating definitions here so I never lose them (role/content/name), using base class more as a marker interface
+---@class TxChatMessage : OpenAIChatCompletion_Input_BaseNamedMessage
+---@field role string
+---@field content string
+---@field name? string
 ---@field reasoning_content? string TODO isn't this "thinking"?
 ---
 --- FYI role="tool" only:
