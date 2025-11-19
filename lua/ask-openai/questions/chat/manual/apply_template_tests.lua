@@ -78,6 +78,14 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         assert.is_number(result.code)
         assert.is_true(result.code == 200 or result.code == 201, "Expected successful HTTP status")
         assert.is_string(result.body)
-        print(result.body)
+        -- print(result.body)
+        -- print()
+
+        local parsed = vim.json.decode(result.body)
+        assert.is_table(parsed, "Response body is not valid JSON")
+        assert.is_string(parsed.prompt, "Expected `template` field in response")
+        print(parsed.prompt)
+
+        -- PRN parse and extract template
     end)
 end)
