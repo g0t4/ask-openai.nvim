@@ -45,8 +45,8 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         -- print(result.body)
         -- print()
 
-        local parsed = vim.json.decode(result.body)
-        return parsed
+        -- FYI if decode fails, will throw so no need to verify anything else in that case!
+        return vim.json.decode(result.body)
     end
 
     it("check model is gpt-oss", function()
@@ -70,11 +70,10 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         local body = { messages = messages }
 
-        local parsed = get_json_response(URL_APPLY_TEMPLATE, METHODS.POST, body)
+        local response = get_json_response(URL_APPLY_TEMPLATE, METHODS.POST, body)
 
-        assert.is_table(parsed, "Response body is not valid JSON")
-        assert.is_string(parsed.prompt, "Expected `template` field in response")
-        print(parsed.prompt)
+        assert.is_string(response.prompt, "Expected `prompt` field in response")
+        print(response.prompt)
 
         -- PRN parse and extract template
     end)
