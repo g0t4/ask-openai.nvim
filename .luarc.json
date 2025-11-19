@@ -33,7 +33,9 @@
             "~/.local/share/nvim/lazy/nvim-notify",
             "~/.local/share/nvim/lazy/plenary.nvim", // adds globals for describe, it, before_each, etc
             "~/repos/github/g0t4/devtools.nvim",
-            // FYI not using luarocks for dependencies, not currently, instead use package manager to install the respective repo into RTP
-        ],
+
+            "~/.luarocks/share/lua/5.1", // source for all luarocks packages is linked here
+            // FYI old node: apparently was "using package manager to install the respective repo into RTP" ?? ... I dunno what this means anymore
+        ]
     },
 }

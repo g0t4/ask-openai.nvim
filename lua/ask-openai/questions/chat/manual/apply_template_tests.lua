@@ -3,7 +3,7 @@ local ChatThread = require("ask-openai.questions.chat.thread")
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 local model_params = require("ask-openai.questions.models.params")
 local http = require("socket.http") -- luarocks install --lua-version=5.1  luasocket
-local ltn12 = require("ltn12")
+local ltn12 = require("ltn12") -- also from luasocket
 
 describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
     local base_url = "http://build21.lan:8013"
