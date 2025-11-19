@@ -71,7 +71,9 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         })
 
         assert.is_string(response.prompt, "Expected `prompt` field in response")
+        print("\n" .. string.rep("-", 80))
         print(response.prompt)
+        print(string.rep("-", 80) .. "\n")
         local prompt_lines = vim.split(response.prompt, "\n")
 
         -- should.be_same_colorful_diff({ "Reasoning:" }, prompt_lines) -- more helpful
