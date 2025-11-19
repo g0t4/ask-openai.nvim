@@ -6,12 +6,14 @@ local http = require("socket.http") -- luarocks install --lua-version=5.1  luaso
 local ltn12 = require("ltn12")
 
 describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
+    local base_url = "http://build21.lan:8013"
+
     it("check model is gpt-oss", function()
         local response_body = {}
 
         -- TODO make helper that takes args table and returns body only (does basic assertions like 200 OK)
         local ok, status_code, response_headers, status_line = http.request {
-            url     = "http://build21.lan:8013" .. "/v1/models",
+            url     = base_url .. "/v1/models",
             method  = "GET",
             headers = { ["Content-Type"] = "application/json", },
             sink    = ltn12.sink.table(response_body),
@@ -51,7 +53,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         body_overrides.tools = nil
 
-        local thread = ChatThread:new(messages, body_overrides, "http://build21.lan:8013")
+        local thread = ChatThread:new(messages, body_overrides, base_url)
 
         local function apply_template(thread)
             local url = thread.base_url .. "/apply-template"
