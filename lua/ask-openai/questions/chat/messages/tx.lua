@@ -43,23 +43,19 @@ function TxChatMessage:new(role, content)
 end
 
 ---@param tool_call ToolCall
----@return TxChatMessage
+---@return OpenAIChatCompletion_Input_ToolResultMessage
 function TxChatMessage:tool_result(tool_call)
     -- FYI see NOTES.md for "fix" => removed `|tojson` from jinja template for message.content
 
     -- * required: role, content, tool_call_id - docs https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-tool_message
     local content = vim.json.encode(tool_call.call_output.result)
-    self = TxChatMessage:new(TX_MESSAGE_ROLES.TOOL, content)
+    self = TxChatMessage:new(TX_MESSAGE_ROLES.TOOL, content) --[[@as OpenAIChatCompletion_Input_ToolResultMessage]]
 
     self.tool_call_id = tool_call.id
-    -- FYI gptoss/harmony jinja doesn't use tool_call_id b/c no parallel tool calls
-    --   it does a lookup on last tool call's name to correlate
-    --   do not remove this, as llama-server and other model templates may use the ID
+    -- FTR gptoss/harmony jinja doesn't use tool_call_id b/c no parallel tool calls, it correlates on last tool call's name
+    -- DO NOT remove this, other models have parallel tool calling
 
-    -- TODO OpenAI docs (link above) don't show name at all, however, old function calling does! did I accidentally include this?
-    --   why? b/c new tool  calling uses tool_call_id!
-    --   gptoss template doesn't use this (it actually does name lookup on last tool call b/c single tool calling)
-    self.name = tool_call["function"].name
+    -- heads up you might see examples that include function.name, that's not needed with newer tool calling API (b/c tool_call_id does linking now)
     return self
 end
 
