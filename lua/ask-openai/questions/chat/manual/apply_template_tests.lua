@@ -22,7 +22,8 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         local response_body = {}
         local source = nil
         if body then
-            source = ltn12.source.string(body)
+            body_json = vim.json.encode(body)
+            source = ltn12.source.string(body_json)
         end
         local res, code, headers, status = http.request {
             url = url,
@@ -69,9 +70,6 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         local body = { messages = messages }
 
-        local thread = ChatThread:new(body, base_url)
-
-        local body = vim.json.encode(thread.params)
         local parsed = get_json_response(URL_APPLY_TEMPLATE, METHODS.POST, body)
 
         assert.is_table(parsed, "Response body is not valid JSON")
