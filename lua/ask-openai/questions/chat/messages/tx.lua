@@ -60,36 +60,37 @@ function TxChatMessage:tool_result(tool_call)
 end
 
 ---@param content string
----@return TxChatMessage
+---@return OpenAIChatCompletion_System_TxChatMessage
 function TxChatMessage:system(content)
     -- * content, role, name - https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-system_message
-    return TxChatMessage:new(TX_MESSAGE_ROLES.SYSTEM, content)
+    return TxChatMessage:new(TX_MESSAGE_ROLES.SYSTEM, content) --[[@as OpenAIChatCompletion_System_TxChatMessage]]
 end
 
 ---@param content string
----@return TxChatMessage
+---@return OpenAIChatCompletion_User_TxChatMessage
 function TxChatMessage:user(content)
     -- * content, role, name - https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-user_message
-    return TxChatMessage:new(TX_MESSAGE_ROLES.USER, content)
+    return TxChatMessage:new(TX_MESSAGE_ROLES.USER, content) --[[@as OpenAIChatCompletion_User_TxChatMessage]]
 end
 
 --- differentiate TxChatMessage usage by making explicit this provides context to another user request
 ---@param content string
----@return TxChatMessage
+---@return OpenAIChatCompletion_User_TxChatMessage
 function TxChatMessage:user_context(content)
     -- FYI it would be fine to remove this after my RxAccumulatedMessage refactor
     return TxChatMessage:user(content)
 end
 
 ---@param rx_message RxAccumulatedMessage
----@return TxChatMessage
+---@return OpenAIChatCompletion_Assistant_TxChatMessage
 function TxChatMessage:from_assistant_rx_message(rx_message)
     -- docs: https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message
     -- * content, role, name, tool_calls ...  also: refusal, audio (not using these)
     --   NO mention of sending thinking back! so, no OpenAI compat name for that!
 
     -- MAP the assistant's RxAccumulatedMessage message to TxChatMessage
-    local tx_message = TxChatMessage:new(rx_message.role, rx_message.content)
+
+    local tx_message = TxChatMessage:new(rx_message.role, rx_message.content) --[[@as OpenAIChatCompletion_Assistant_TxChatMessage]]
     tx_message.name = rx_message.name -- optional, I am not using this on the rx_message incoming side
 
     -- TODO! map thinking content (and let llama-server's jinja drop the thinking once no longer relevant) ?
