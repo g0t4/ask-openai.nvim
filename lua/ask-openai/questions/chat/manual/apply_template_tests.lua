@@ -89,7 +89,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         local prompt = response.prompt
 
-        print_prompt(prompt)
+        -- print_prompt(prompt)
         local prompt_lines = vim.split(prompt, "\n")
 
         prompt:should_start_with("<|start|>")
