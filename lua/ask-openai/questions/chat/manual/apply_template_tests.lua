@@ -63,6 +63,13 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         assert.same("llamacpp", model.owned_by, "MUST TEST WITH llama-server")
     end)
 
+    local function print_prompt(prompt)
+        assert.is_string(prompt, "prompt should be a string")
+        print("\n" .. string.rep("-", 80))
+        print(prompt)
+        print(string.rep("-", 80) .. "\n")
+    end
+
     it("sends a single user message to the llama-server backend", function()
         local response = get_json_response(URL_APPLY_TEMPLATE, METHODS.POST, {
             messages = {
@@ -70,10 +77,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
             }
         })
 
-        assert.is_string(response.prompt, "Expected `prompt` field in response")
-        print("\n" .. string.rep("-", 80))
-        print(response.prompt)
-        print(string.rep("-", 80) .. "\n")
+        print_prompt(response.prompt)
         local prompt_lines = vim.split(response.prompt, "\n")
 
         -- should.be_same_colorful_diff({ "Reasoning:" }, prompt_lines) -- more helpful
