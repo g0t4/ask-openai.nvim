@@ -4,6 +4,7 @@ local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 local model_params = require("ask-openai.questions.models.params")
 local http = require("socket.http") -- luarocks install --lua-version=5.1  luasocket
 local ltn12 = require("ltn12") -- also from luasocket
+local should = require("devtools.tests.should")
 
 describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
     local base_url = "http://build21.lan:8013"
@@ -71,6 +72,10 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         assert.is_string(response.prompt, "Expected `prompt` field in response")
         print(response.prompt)
+        local prompt_lines = vim.split(response.prompt, "\n")
+
+        -- should.be_same_colorful_diff({ "Reasoning:" }, prompt_lines) -- more helpful
+        -- should.be_same_colorful_diff("Reasoning:", response.prompt)
 
         -- PRN parse and extract template
     end)
