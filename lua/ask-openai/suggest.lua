@@ -1,4 +1,5 @@
 local curl = require('plenary.curl')
+local TxChatMessage = require('ask-openai.questions.chat.messages.tx')
 
 --- @return string
 local function get_vim_command_suggestion(passed_context)
@@ -36,14 +37,14 @@ local function get_vim_command_suggestion(passed_context)
         body = vim.json.encode({
             model = model,
             messages = {
-                { role = "system", content = system_message },
-                { role = "user",   content = passed_context }
+                TxChatMessage:system(system_message),
+                TxChatMessage:user(passed_context),
             },
             max_tokens = config.get_options().max_tokens,
             n = 1,
             stream = false, -- FYI must set this for ollama, doesn't hurt to do for all
         }),
-        synchronous = true  -- might be fun to try to make this stream! not a huge value though for streaming a short cmdline but would teach me lua async
+        synchronous = true -- might be fun to try to make this stream! not a huge value though for streaming a short cmdline but would teach me lua async
     })
 
     if response and response.status == 200 then

@@ -1,3 +1,5 @@
+local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
+
 local M = {}
 
 -- TODO for agentic... and all reasoning models, I need to split apart the <think> chunk when its done and display spearately, right?
@@ -15,7 +17,7 @@ M.DeepCoder = {
         return {
             messages = {
                 -- TODO if agentica recommends no system prompt.. would it make more sense to just use legacy completions for that use case oai_completions?
-                { role = "user", content = system_prompt .. "\n" .. user_message },
+                TxChatMessage:user(system_prompt .. "\n" .. user_message),
             },
             -- Avoid adding a system prompt; all instructions should be contained within the user prompt.
             model = "agentica-org/DeepCoder-1.5B-Preview",
