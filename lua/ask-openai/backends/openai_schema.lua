@@ -108,6 +108,7 @@
 ---@class OpenAIChatCompletion_Assistant_TxChatMessage : OpenAIChatCompletion_TxChatMessage
 ---@field role string - "assistant"
 ---@field tool_calls OpenAIChatCompletion_Assistant_TxChatMessage_ToolCallRequest[]
+---@field reasoning_content string? - NOT in the OPENAI SPEC (llama-server uses this)
 ---
 ---@field audio any - NOT using
 ---@field refusal? string - NOT using

@@ -29,6 +29,7 @@ end
 
 --- @param message TxChatMessage
 function ChatThread:add_message(message)
+    -- TODO drop previous messages => message.reasoning_content once a final message is detected?
     if not message.role then
         error("message.role is required")
     end

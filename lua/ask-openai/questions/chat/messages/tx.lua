@@ -85,26 +85,19 @@ function TxChatMessage:assistant(content)
     return TxChatMessage:new(TX_MESSAGE_ROLES.ASSISTANT, content) --[[@as OpenAIChatCompletion_Assistant_TxChatMessage]]
 end
 
----@class OpenAIChatCompletion_AssistantWithReasoning_TxChatMessage : OpenAIChatCompletion_Assistant_TxChatMessage
----@field reasoning_content TODO
-
 ---@param rx_message RxAccumulatedMessage
----@return OpenAIChatCompletion_AssistantWithReasoning_TxChatMessage
+---@return OpenAIChatCompletion_Assistant_TxChatMessage
 function TxChatMessage:from_assistant_rx_message(rx_message)
     -- docs: https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message
     -- * content, role, name, tool_calls ...  also: refusal, audio (not using these)
     --   NO mention of sending thinking back! so, no OpenAI compat name for that!
 
-    local tx_message = TxChatMessage:new(rx_message.role, rx_message.content) --[[@as OpenAIChatCompletion_AssistantWithReasoning_TxChatMessage]]
+    local tx_message = TxChatMessage:new(rx_message.role, rx_message.content) --[[@as OpenAIChatCompletion_Assistant_TxChatMessage]]
 
-    -- TODO! map thinking content (and let llama-server's jinja drop the thinking once no longer relevant) ?
-    --  or double back at some point and drop it explicitly (too and/or instead)?
-    -- tx_message.thinking = message.reasoning_content
-    -- FYI gptoss jinja => assistant_message.(thinking|content) == return/resume CoT thinking after/between tool calls
-    --    FYI qwen3 uses reasoning_content (UGH)
-    -- FYI! llama-server populates thinking via reasoning_content:
+    tx_message.reasoning_content = rx_message.reasoning_content
+    -- FYI llama-server populates message.thinking via message.reasoning_content (for gptoss):
     --   https://github.com/ggml-org/llama.cpp/blob/0de8878c9/common/chat.cpp#L1813-L1817
-    --   so just stick with reasoning_content!
+    -- TODO modify thread:add_message() to drop reasoning_content when final message is added
 
     --- * map tool calls
     if rx_message.tool_calls then
@@ -128,6 +121,26 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     end
 
     return tx_message
+end
+
+---@return boolean
+function TxChatMessage:is_gptoss_assistant_turn_final_message()
+    -- FYI if you miss flagging a final message, gptoss jinja template will ignore it anyways
+
+    -- FYI jinja template has criteria to detect final:
+    --   https://github.com/ggml-org/llama.cpp/blob/0de8878c9/models/templates/openai-gpt-oss-120b.jinja#L277-L282
+    --   assistant + no tool_calls ... exactly what I dervied on my own!
+    --
+    --   WHY b/c there are only two types of Assistant messages:
+    --     tool_call request (w/ reasoning/content is possible, or w/o)
+    --     final response (w/ either reasoning or content but doesn't matter which, and even if neither, is still a final message)
+
+    local is_assistant = self.role == TX_MESSAGE_ROLES.ASSISTANT
+
+    ---@cast self OpenAIChatCompletion_Assistant_TxChatMessage
+    local no_tool_calls = (self.tool_calls == nil or #self.tool_calls == 0)
+
+    return is_assistant and no_tool_calls
 end
 
 return TxChatMessage
