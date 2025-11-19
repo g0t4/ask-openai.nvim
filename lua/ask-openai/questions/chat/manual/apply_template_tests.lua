@@ -67,11 +67,9 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         local user_msg = TxChatMessage:user("Hello, can you rewrite this code?")
         local messages = { user_msg }
 
-        local body_overrides = model_params.new_gptoss_chat_body_llama_server({
-            messages = messages,
-        })
+        local body = { messages = messages }
 
-        local thread = ChatThread:new(body_overrides, base_url)
+        local thread = ChatThread:new(body, base_url)
 
         local body = vim.json.encode(thread.params)
         local parsed = get_json_response(URL_APPLY_TEMPLATE, METHODS.POST, body)
