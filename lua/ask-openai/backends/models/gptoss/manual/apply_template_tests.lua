@@ -5,6 +5,7 @@ local model_params = require("ask-openai.questions.models.params")
 local http = require("socket.http") -- luarocks install --lua-version=5.1  luasocket
 local ltn12 = require("ltn12") -- also from luasocket
 local should = require("devtools.tests.should")
+local str = require("devtools.tests.str")
 
 describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
     local base_url = "http://build21.lan:8013"
@@ -79,7 +80,6 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         return messages
     end
 
-
     it("sends a single user message to the llama-server backend", function()
         local response = get_json_response(URL_APPLY_TEMPLATE, METHODS.POST, {
             messages = {
@@ -92,7 +92,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         -- print_prompt(prompt)
         local prompt_lines = vim.split(prompt, "\n")
 
-        prompt:should_start_with("<|start|>")
+        str(prompt):should_start_with("<|start|>")
 
         local messages = split_messages(prompt)
 
@@ -104,7 +104,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         -- two ways to check contains:
         expect(system:find("Reasoning:"))
         -- expect(system:find("Rasoning:")) -- shows code line + values on failure (with some attempt to diff...).. falls apart on really long string compares
-        system:should_contain("Reasoning: medium")
+        str(system):should_contain("Reasoning: medium")
         -- system:should_contain("Reasoning: low") -- try this to see nice diff on failure!
 
         -- should.be_same_colorful_diff({ "Reasoning:" }, prompt_lines) -- more helpful
