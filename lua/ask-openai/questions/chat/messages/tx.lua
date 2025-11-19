@@ -87,6 +87,9 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     -- tx_message.thinking = message.reasoning_content
     -- FYI gptoss jinja => assistant_message.(thinking|content) == return/resume CoT thinking after/between tool calls
     --    FYI qwen3 uses reasoning_content (UGH)
+    -- FYI! llama-server populates thinking via reasoning_content:
+    --   https://github.com/ggml-org/llama.cpp/blob/0de8878c9/common/chat.cpp#L1813-L1817
+    --   so just stick with reasoning_content!
 
     --- * map tool calls
     if rx_message.tool_calls then
