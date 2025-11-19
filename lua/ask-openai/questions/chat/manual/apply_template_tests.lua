@@ -65,10 +65,11 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     end)
 
     it("sends a single user message to the llama-server backend", function()
-        local user_msg = TxChatMessage:user("Hello, can you rewrite this code?")
-        local messages = { user_msg }
-
-        local body = { messages = messages }
+        local body = {
+            messages = {
+                TxChatMessage:user("Hello, can you rewrite this code?")
+            }
+        }
 
         local response = get_json_response(URL_APPLY_TEMPLATE, METHODS.POST, body)
 
