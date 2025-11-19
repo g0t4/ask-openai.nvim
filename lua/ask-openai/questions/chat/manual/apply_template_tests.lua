@@ -77,8 +77,18 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
             }
         })
 
-        print_prompt(response.prompt)
-        local prompt_lines = vim.split(response.prompt, "\n")
+        local prompt = response.prompt
+
+        print_prompt(prompt)
+        local prompt_lines = vim.split(prompt, "\n")
+
+        should.start_with("<|start|>", prompt)
+
+        -- PRN get rid of first empty?
+        local mesages = vim.split("<|start|>", prompt)
+        for i, message in ipairs(mesages) do
+            print("message", message)
+        end
 
         -- should.be_same_colorful_diff({ "Reasoning:" }, prompt_lines) -- more helpful
         -- should.be_same_colorful_diff("Reasoning:", response.prompt)
