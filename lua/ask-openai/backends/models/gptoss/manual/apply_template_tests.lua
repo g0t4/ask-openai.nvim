@@ -77,7 +77,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         --     print(string.format("MESSAGE: <|start|>%q", message))
         -- end
         -- PRN get rid of first empty? maybe after asserting it exists?
-        return messages
+        return vim.iter(messages):map(function(m) return str(m) end):totable()
     end
 
     it("sends a single user message to the llama-server backend", function()
@@ -97,13 +97,14 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         local messages = split_messages(prompt)
 
         local first = messages[1]
-        expect(first == "") -- b/c started with <|start|>
+        expect(first == str("")) -- b/c started with <|start|>
         local system = messages[2]
 
 
         -- two ways to check contains:
-        expect(system:find("Reasoning:"))
-        -- expect(system:find("Rasoning:")) -- shows code line + values on failure (with some attempt to diff...).. falls apart on really long string compares
+        -- TODO str() needs to map string methods to the string! use it's instance_mt and selectively forward based on name?
+        expect(system.str:find("Reasoning:"))
+        -- expect(system.str:find("Rasoning:")) -- shows code line + values on failure (with some attempt to diff...).. falls apart on really long string compares
         str(system):should_contain("Reasoning: medium")
         -- system:should_contain("Reasoning: low") -- try this to see nice diff on failure!
 
