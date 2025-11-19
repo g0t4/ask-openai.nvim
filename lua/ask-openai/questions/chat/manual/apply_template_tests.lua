@@ -55,13 +55,14 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         local thread = ChatThread:new(messages, body_overrides, base_url)
 
-        local function apply_template(thread)
-            local url = thread.base_url .. "/apply-template"
-            local body = vim.json.encode(thread.params)
+        local url = thread.base_url .. "/apply-template"
+        local body = vim.json.encode(thread.params)
+
+        local function apply_template(url, method, body)
             local response_body = {}
             local res, code, headers, status = http.request {
                 url = url,
-                method = "POST",
+                method = method,
                 headers = {
                     ["Content-Type"] = "application/json",
                     ["Content-Length"] = #body,
@@ -84,7 +85,8 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
             return parsed
         end
 
-        local parsed = apply_template(thread)
+        local parsed = apply_template(url, "POST", body)
+
 
 
         assert.is_table(parsed, "Response body is not valid JSON")
