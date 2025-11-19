@@ -64,9 +64,9 @@ Make sure to practice the code change before you return a suggestion. Take the c
 ]]
 
     local messages = {
-        { role = "developer", content = dev },
-        { role = "user",      content = HarmonyRawFimPromptBuilder.context_user_msg(request) },
-        { role = "user",      content = HarmonyRawFimPromptBuilder.fim_prompt(request) },
+        TxChatMessage:developer(dev), -- FYI developer or system message must be first, and ONLY ONE is allowed
+        TxChatMessage:user(HarmonyRawFimPromptBuilder.context_user_msg(request)),
+        TxChatMessage:user(HarmonyRawFimPromptBuilder.fim_prompt(request)),
         -- TODO provide the thinking from raw as more instructions in developer or user messages
     }
 

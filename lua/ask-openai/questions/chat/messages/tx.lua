@@ -10,6 +10,7 @@ local TX_MESSAGE_ROLES = {
     ASSISTANT = "assistant",
     TOOL = "tool", -- FYI this is for TOOL RESULTS
     SYSTEM = "system",
+    DEVELOPER = "developer",
 }
 
 -- TODO! I want end to end testing to verify scenarios that go into the model (the actual prompt) based on TxChatMessage inputs
@@ -45,6 +46,16 @@ function TxChatMessage:tool_result(tool_call)
 
     -- heads up you might see examples that include function.name, that's not needed with newer tool calling API (b/c tool_call_id does linking now)
     return self
+end
+
+---@param content string
+---@return OpenAIChatCompletion_Developer_TxChatMessage
+function TxChatMessage:developer(content)
+    -- FYI w/ gptoss this is the same as system_message with other models
+    -- - AND, gptoss's jinja template treats dev/system the same, must be first message only, and is put into harmony dev message
+    --
+    -- * content, role, name - https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-developer_message
+    return TxChatMessage:new(TX_MESSAGE_ROLES.DEVELOPER, content) --[[@as OpenAIChatCompletion_Developer_TxChatMessage]]
 end
 
 ---@param content string
