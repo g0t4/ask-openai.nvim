@@ -39,7 +39,7 @@ function M.get_context_item()
     --
     -- if empty, then get word before
     if word == "" or word == nil then
-        log:info("did not find word, trying before cursor...")
+        -- log:trace("did not find word, trying before cursor...")
         -- word = vim.fn.expand("<cWORD>")
         local col = vim.fn.col('.') - 1
         local line = vim.fn.getline('.')
@@ -49,7 +49,7 @@ function M.get_context_item()
     if word == nil then
         -- TODO OR should I just return full ctags on empty lines?
         -- i.e. on a neww line, nothing's gonna match!
-        log:info("no word at cursor, or before... skipping matching_ctags")
+        -- log:trace("no word at cursor, or before... skipping matching_ctags")
         return nil
     end
     -- PRN also <cWORD> ? match either?! perhaps if under a token budge?
