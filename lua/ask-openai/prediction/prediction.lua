@@ -66,7 +66,10 @@ function Prediction:any_chunks()
         or self.buffered_chunks and self.buffered_chunks ~= ""
 end
 
+---@param text string
+---@return string[] lines
 local function split_lines_to_table(text)
+    ---@type string[]
     local lines = {}
     for line in text:gmatch("[^\r\n]+") do
         table.insert(lines, line)
