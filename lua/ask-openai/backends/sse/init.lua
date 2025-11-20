@@ -50,7 +50,7 @@ function parse_llama_cpp_server(sse)
     -- "truncated": false,
     -- "stop_type": "eos",
     -- "stopping_word": "", -- TODO what is this for?
-    log:info("sse /completions", vim.inspect(sse))
+    -- log:info("sse /completions", vim.inspect(sse))
 
 
 

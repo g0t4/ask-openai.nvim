@@ -73,7 +73,7 @@ function OllamaFimBackend:new(ps_chunk, rag_matches, model)
         context = CurrentContext:items("", always_include)
     }
     setmetatable(instance, self)
-    log:info("context: ", vim.inspect(instance.context))
+    -- log:trace("context: ", vim.inspect(instance.context))
     return instance
 end
 
@@ -242,7 +242,7 @@ function OllamaFimBackend:body_for()
 
     if builder then
         body.prompt = builder()
-        log:info(ansi.green_bold('body.prompt:\n'), ansi.green(body.prompt))
+        -- log:info(ansi.green_bold('body.prompt:\n'), ansi.green(body.prompt))
     elseif body.messages then
         local _, log_threshold = local_share.get_log_threshold()
         -- TODO if verbose then log all messages

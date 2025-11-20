@@ -32,7 +32,7 @@ function M.ask_for_prediction()
         local backend = OllamaFimBackend:new(ps_chunk, rag_matches, model)
         local spawn_curl_options = backend:request_options()
 
-        log:trace("curl", table.concat(spawn_curl_options.args, " ")) -- TODO remove after find hang culprit 2025-11-17
+        -- log:trace("curl", table.concat(spawn_curl_options.args, " "))
 
         -- TODO move this_prediction creation above (before RAG too)
         local this_prediction = Prediction.new()
@@ -43,8 +43,8 @@ function M.ask_for_prediction()
         local stderr = uv.new_pipe(false)
 
         local function on_exit(code, signal)
-            log:trace_on_exit_always(code, signal) -- TODO switch to errors once find culprit 2025-11-17
-            -- log:trace_on_exit_errors(code, signal) -- less verbose
+            -- log:trace_on_exit_always(code, signal)
+            log:trace_on_exit_errors(code, signal) -- less verbose
 
             -- TODO mark complete? close? any reason to do this? I vaguely recall there might be a reason I want to do this
             --   i.e. process related?
@@ -72,13 +72,12 @@ function M.ask_for_prediction()
                 stdio = { nil, stdout, stderr },
             },
             on_exit)
-        log:info("spawned FIM curl") -- TODO remove once find culprit 2025-11-17
 
         local function on_stdout(read_error, data)
             -- FYI data == nil => EOF
 
-            -- log:trace_stdio_read_errors("on_stdout", read_error, data)
-            log:trace_stdio_read_always("on_stdout", read_error, data) -- TODO switch to errors once find culprit 2025-11-17
+            log:trace_stdio_read_errors("on_stdout", read_error, data)
+            -- log:trace_stdio_read_always("on_stdout", read_error, data)
 
             if read_error then
                 this_prediction:mark_generation_failed()
@@ -99,7 +98,7 @@ function M.ask_for_prediction()
                     -- reproduce bug by comment out this check...
                     -- then set 500ms delay using defer_fn
                     -- then trigger a prediction and cancel it midway and it'll be stuck!
-                    log:info(ansi.yellow_bold("skipping on_stdout chunk b/c prediction is abandoned"))
+                    log:trace(ansi.yellow_bold("skipping on_stdout chunk b/c prediction is abandoned"))
                     return
                 end
 
@@ -112,10 +111,10 @@ function M.ask_for_prediction()
                 end
                 if generation_done then
                     if this_prediction.has_reasoning then
-                        log:info(ansi.yellow_bold("REASONING:\n"), ansi.yellow(this_prediction:get_reasoning()))
+                        -- log:info(ansi.yellow_bold("REASONING:\n"), ansi.yellow(this_prediction:get_reasoning()))
                     end
                     if this_prediction:any_chunks() then
-                        log:info(ansi.cyan_bold("PREDICTION:\n"), ansi.cyan(this_prediction.prediction))
+                        -- log:info(ansi.cyan_bold("PREDICTION:\n"), ansi.cyan(this_prediction.prediction))
                     else
                         -- FYI great way to test this, go to a line that is done (i.e. a return) and go into insert mode before the returned variable and it almost always suggests that is EOS (at least with qwen2.5-coder + ollama)
                         log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (done_reason or "") .. "'")
@@ -131,16 +130,14 @@ function M.ask_for_prediction()
             end)
         end
         stdout:read_start(on_stdout)
-        log:info("stdout:read_start FIM curl") -- TODO remove once find culprit 2025-11-17
 
         local function on_stderr(read_error, data)
             -- FYI data == nil => EOF
 
-            -- log:trace_stdio_read_errors("on_stderr", read_error, data)
-            log:trace_stdio_read_always("on_stderr", read_error, data) -- TODO switch to errors once find culprit 2025-11-17
+            log:trace_stdio_read_errors("on_stderr", read_error, data)
+            -- log:trace_stdio_read_always("on_stderr", read_error, data)
         end
         stderr:read_start(on_stderr)
-        log:info("stderr:read_start FIM curl") -- TODO remove once find culprit 2025-11-17
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
@@ -166,13 +163,13 @@ function M.ask_for_prediction()
             if M.rag_request_ids ~= this_request_ids then
                 -- I bet this is why sometimes I get completions that still fire even after cancel b/c the RAG results aren't actually stopped in time on server and so they come back
                 --  and they arrive after next request started... the mismatch in request_ids will prevent that issue
-                log:trace("possibly stale rag results, skipping: "
-                    .. vim.inspect({ global_rag_request_ids = M.rag_request_ids, this_request_ids = this_request_ids }))
+                -- log:trace("possibly stale rag results, skipping: "
+                --     .. vim.inspect({ global_rag_request_ids = M.rag_request_ids, this_request_ids = this_request_ids }))
                 return
             end
 
             if M.rag_cancel == nil then
-                log:error("rag appears to have been canceled, skipping on_rag_response rag_matches results...")
+                -- log:error("rag appears to have been canceled, skipping on_rag_response rag_matches results...")
                 return
             end
 
@@ -201,7 +198,6 @@ function M.cancel_current_prediction()
     this_prediction:mark_as_abandoned()
 
     vim.schedule(function()
-        -- TODO is this why I get the jerky experience when accepting? where it seems the extmarks clear after inserting the text?
         this_prediction:clear_extmarks()
     end)
 
@@ -210,7 +206,7 @@ function M.cancel_current_prediction()
     M.handle = nil
     M.pid = nil
     if handle ~= nil and not handle:is_closing() then
-        log:trace("Terminating process, pid: ", pid)
+        -- log:trace("Terminating process, pid: ", pid)
 
         handle:kill("sigterm")
         handle:close()
