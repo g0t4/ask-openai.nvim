@@ -4,8 +4,10 @@ for i = 1, 50 do
     chunks[i] = "chunk_" .. i
 end
 local expected_length = 0
+local expected_result = ""
 for _, chunk in ipairs(chunks) do
     expected_length = expected_length + #chunk
+    expected_result = expected_result .. chunk
 end
 
 describe("string concatenation vs luajit buffer benchmark", function()
@@ -19,6 +21,7 @@ describe("string concatenation vs luajit buffer benchmark", function()
         print("concat elapsed ns:", elapsed_ns)
         print("total len:", #total)
         assert.equals(expected_length, #total)
+        assert.equals(expected_result, total)
     end)
 
     it("concatenates 100 chunks using luajit string.buffer", function()
@@ -32,5 +35,6 @@ describe("string concatenation vs luajit buffer benchmark", function()
         print("buffer elapsed ns:", elapsed_ns)
         print("total len:", #total)
         assert.equals(expected_length, #total)
+        assert.equals(expected_result, total)
     end)
 end)
