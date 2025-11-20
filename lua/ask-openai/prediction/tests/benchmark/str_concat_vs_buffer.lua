@@ -1,6 +1,7 @@
 ---@type string[]
 local chunks = {}
-for i = 1, 200 do
+local NUM_TOKENS = 200
+for i = 1, NUM_TOKENS do
     chunks[i] = "chunk_" .. i
 end
 local expected_length = 0
