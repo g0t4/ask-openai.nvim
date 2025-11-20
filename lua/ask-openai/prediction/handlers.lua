@@ -185,6 +185,7 @@ function M.ask_for_prediction()
 end
 
 function M.cancel_current_prediction()
+    -- PRN stdout/stderr:read_stop() to halt on_stdout/stderr callbacks from firing again (before handle:close())?!
     if M.rag_cancel then
         M.rag_cancel()
         M.rag_cancel = nil
