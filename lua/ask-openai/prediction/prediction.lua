@@ -199,8 +199,7 @@ function Prediction:accept_first_line()
     --    - w/o it, you end up eating one line below per accepted line...
     --      b/c new code is INSERTED into existing (cursor) line
     --    - so the new blank just adds the next line to insert into (one at a time)
-    --
-    -- TODO get testing in place, there are some edge cases (i.e. whey I insert a blank line) that I really want to document!
+    --    TODO mirror NO BLANK_LINE on last line of prediction
 
     -- * remove first line from prediction
     self.prediction = table.concat(lines, "\n")
