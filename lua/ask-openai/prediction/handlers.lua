@@ -198,6 +198,7 @@ function M.cancel_current_prediction()
     this_prediction:mark_as_abandoned()
 
     vim.schedule(function()
+        -- TODO is this why I get the jerky experience when accepting? where it seems the extmarks clear after inserting the text?
         this_prediction:clear_extmarks()
     end)
 
