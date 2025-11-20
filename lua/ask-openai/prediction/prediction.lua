@@ -221,11 +221,13 @@ function Prediction:accept_first_word()
     -- PRN add integration testing of these buffer/cursor interactions
 
     local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
+    log:warn("  word_end", vim.inspect(word_end))
     local last_predicted_line = #lines == 1
     local first_word
     local inserted_lines = {}
     local BLANK_LINE = ""
     local one_non_word_remains = word_end == nil
+    local one_word_remains = word_end == #lines[1] -- word_end == # chars in line ==> full match!
     if one_non_word_remains then
         -- *1 one non-word left
         log:warn("  *1 rest of line is non-word char(s) (matches all of it) => wrap to next line")
