@@ -211,6 +211,9 @@ function Prediction:accept_all()
     self.disable_cursor_moved = true
     vim.api.nvim_buf_set_text(self.buffer, original_row_0indexed, original_col_0indexed, original_row_0indexed, original_col_0indexed, lines)
 
+    -- TODO cursor column move position calculation has two scenarios:
+    -- 1. inserting text on current line only => cursor moves relative to its current position + len(accepted text) => so this is why I have issues with accept all on a single line prediction! b/c it doesn't include original_col_0indexed below!
+    -- 2. inserting multiple lines => in this case, cursor moves to last line of inserted text, right after last inserted character (IOTW length of last linei == #lines[#lines])
     -- cursor should stop at end of inserted text
     local last_col = #lines[#lines]
     local last_row = original_row_1indexed + #lines - 1
