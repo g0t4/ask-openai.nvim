@@ -183,7 +183,12 @@ function Prediction:accept_first_line()
 
     self.disable_cursor_moved = true
 
-    local inserted_lines = { first_line, BLANK_LINE }
+    local inserted_lines = { first_line }
+    if #lines > 0 then
+        -- only wrap a line if there are more lines to accept!
+        table.insert(inserted_lines, BLANK_LINE)
+    end
+
     self:insert_text_at_cursor(cursor, inserted_lines)
     local controller = CursorController:new()
     controller:move_cursor_after_insert(cursor, inserted_lines)
