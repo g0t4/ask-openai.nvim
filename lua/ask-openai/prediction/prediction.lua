@@ -178,35 +178,26 @@ function Prediction:accept_first_line()
     -- PRN add integration testing of these buffer/cursor interactions
 
     -- * insert first line
-    local first_line = table.remove(lines, 1) -- mostly just change this to accept 1+ words/lines
-    local cursor = get_cursor_position()
-
     self.disable_cursor_moved = true
-
+    local first_line = table.remove(lines, 1)
     local inserted_lines = { first_line }
     if #lines > 0 then
         -- only wrap a line if there are more lines to accept!
-        table.insert(inserted_lines, BLANK_LINE)
+        inserted_lines = { first_line, BLANK_LINE }
+
+        -- BTW the blank line is important...
+        -- - w/o it, you end up eating one line below per accepted line...
+        --   b/c new code is INSERTED into existing (cursor) line
+        -- - so the new blank just adds the next line to insert into (one at a time)
     end
 
+    local cursor = get_cursor_position()
+    -- TODO combine:
     self:insert_text_at_cursor(cursor, inserted_lines)
     local controller = CursorController:new()
     controller:move_cursor_after_insert(cursor, inserted_lines)
 
-    -- PRIOR CURSOR move
-    --    vim.api.nvim_win_set_cursor(0, { cursor.line_base1 + 1, 0 }) -- (1,0)-indexed (row,col) -- **
-    --    - move to start of next line (every time)... b/c then I can naturally accept the next line!
-    --
-    --    1. moving down takes my eyes with the cursor to read the next line (from its start)
-    --    2. and then being on that line means my calculations all work out (if I wound up at end of current line then I'd have to do smth to go down (without losing prediction)...
-    --
-    --    BTW the blank line is important...
-    --    - w/o it, you end up eating one line below per accepted line...
-    --      b/c new code is INSERTED into existing (cursor) line
-    --    - so the new blank just adds the next line to insert into (one at a time)
-    --    TODO mirror NO BLANK_LINE on last line of prediction
-
-    -- * remove first line from prediction
+    -- * update prediction
     self.prediction = table.concat(lines, "\n")
     self:redraw_extmarks()
 end
@@ -268,7 +259,7 @@ function Prediction:accept_first_word()
     local controller = CursorController:new()
     controller:move_cursor_after_insert(cursor, inserted_lines)
 
-    -- * update prediction with remainder
+    -- * update prediction
     self.prediction = table.concat(lines, "\n")
     log:warn("  self.prediction", vim.inspect(self.prediction))
     self:redraw_extmarks()
@@ -305,6 +296,7 @@ function Prediction:accept_all()
     -- -- ** I am leaning toward let's just move cursor to end of accepted text (not ever go beyond that to next line, at least for accept all)... that seems to be my intent too (minus the column bug)
     -- -- FYI this is a good first example to add some testing!
 
+    -- * clear prediction
     self.prediction = "" -- strip all lines from the prediction (and update it)
     self:redraw_extmarks()
 
