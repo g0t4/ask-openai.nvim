@@ -214,38 +214,46 @@ function Prediction:accept_first_word()
     -- PRN add integration testing of these buffer/cursor interactions
 
     local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
+    local first_word
+    local inserted_lines = {}
+    local BLANK_LINE = ""
     if word_end == nil then
-        word_end = -1 -- entire line (b/c nil means one word left)
-        log:warn("  * word_end == nil")
+        log:warn("  *1 word_end == nil (means inserting whole line + the line has no word chars per my pattern above)")
+        first_word = lines[1]
+        inserted_lines = { first_word, BLANK_LINE }
+        lines[1] = ""
         -- PRN test scenario so I can experiment with how this feels!
         -- self:accept_first_line()
         -- return
-    end
+    else
+        first_word = lines[1]:sub(1, word_end) -- pull that word out
 
-    local first_word = lines[1]:sub(1, word_end) or ""
+        inserted_lines = { first_word }
 
-    if first_word == lines[1] then
-        log:warn("  * first_word == lines[1]")
-        -- PRN test scenario
-        -- self:accept_first_line()
-        -- return
-        -- TODO can I hit this scenario w/o word_end == nil above? if so I likely have a bug here (need to clear lines[1] too)
+        if first_word == lines[1] then
+            log:warn("  *3 first_word == lines[1]")
+            -- FYI SCENARIO TO TEST:
+            --   delete the "else" line (on its own line) above and the line after it... gen two+ line
+            --   go into insert mode right where else's e is at
+            --   then alt+right on else hits this scenario
+
+            -- FYI line ending => needs to insert blank line!
+            -- TODO don't add BLANK_LINE if #lines == 1 ? this is my critique of what I had before!
+            inserted_lines = { first_word, BLANK_LINE }
+            lines[1] = ""
+        else
+            -- strip first_word:
+            lines[1] = lines[1]:sub(word_end + 1) or "" -- shouldn't need `or ""`
+        end
     end
     log:warn("  first_word", vim.inspect(first_word))
-
-    -- strip first_word:
-    lines[1] = lines[1]:sub(word_end + 1) or "" -- shouldn't need `or ""`
-    if word_end == -1 then
-        lines[1] = ""
-    end
-
     log:warn("  lines[1]", vim.inspect(lines[1]))
+    log:warn("  inserted_lines", vim.inspect(inserted_lines))
 
     -- insert first word into document
     local cursor = get_cursor_position()
 
     self.disable_cursor_moved = true
-    local inserted_lines = { first_word }
     self:insert_text_at_cursor(cursor, inserted_lines)
     local controller = CursorController:new()
     controller:move_cursor_after_insert(cursor, inserted_lines)
