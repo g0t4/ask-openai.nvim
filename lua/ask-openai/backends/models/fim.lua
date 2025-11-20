@@ -143,7 +143,7 @@ function M.qwen25coder.get_fim_prompt(request)
         --  or, maybe mark it as new?
         --   can I deterine filetype using some heuristic or other metadata?
         --   should I mark it "new"
-        log:warn("current_file_name is nil")
+        -- log:warn("current_file_name is nil")
         current_file_relative_path = ""
     end
 
@@ -376,7 +376,7 @@ function M.bytedance_seed_coder.get_fim_prompt_repo_level(request)
     -- * FIM file
     local current_file_relative_path = request.inject_file_path_test_seam()
     if current_file_relative_path == nil then
-        log:warn("current_file_name is nil")
+        -- log:warn("current_file_name is nil")
         current_file_relative_path = ""
     end
 
@@ -528,7 +528,7 @@ function M.mellum.get_fim_prompt(request)
     -- * FIM file
     local current_file_path = request.inject_file_path_test_seam()
     if current_file_path == nil then
-        log:warn("current_file_name is nil")
+        -- log:warn("current_file_name is nil")
         current_file_path = ""
     end
     --
@@ -608,7 +608,7 @@ function M.starcoder2.get_fim_prompt(request)
     -- * FIM file
     local current_file_path = request.inject_file_path_test_seam()
     if current_file_path == nil then
-        log:warn("current_file_name is nil")
+        -- log:warn("current_file_name is nil")
         current_file_path = ""
     end
     --

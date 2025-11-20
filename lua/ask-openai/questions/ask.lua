@@ -174,7 +174,6 @@ function M.send_messages()
     M.this_turn_chat_start_line_base0 = M.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
-    M.thread:dump()
     local request = backend.curl_for(M.thread:next_curl_request_body(), M.thread.base_url, M)
     M.thread:set_last_request(request)
 end
@@ -362,7 +361,6 @@ function M.curl_exited_successfully()
             --   (must come before tool result messages)
             --   theoretically there can be multiple messages, with any role (not just assitant)
             local thread_message = TxChatMessage:from_assistant_rx_message(rx_message)
-            log:jsonify_compact_trace("thread_message", thread_message)
             M.thread:add_message(thread_message)
 
             -- * show user role (in chat window) as hint to follow up (now that model+tool_calls are all done):
@@ -387,14 +385,14 @@ function M.run_tools_and_send_results_back_to_the_model()
             local function when_tool_is_done(tool_call_output)
                 -- * store output on rx_message
                 tool_call.call_output = ToolCallOutput:new(tool_call_output)
-                log:trace("tool_call_output", vim.inspect(tool_call_output))
+                -- log:trace("tool_call_output", vim.inspect(tool_call_output))
 
                 -- * triggers UI updates to show tool results
                 M.handle_rx_messages_updated()
 
                 -- * map tool result to a new TxChatMessage (to send back to model)
                 local tool_response_message = TxChatMessage:tool_result(tool_call)
-                log:jsonify_compact_trace("tool_message:", tool_response_message)
+                -- log:jsonify_compact_trace("tool_message:", tool_response_message)
                 tool_call.response_message = tool_response_message
                 M.thread:add_message(tool_response_message)
 

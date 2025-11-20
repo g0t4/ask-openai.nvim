@@ -188,7 +188,7 @@ end
 
 function Displayer:reject()
     vim.schedule(function()
-        log:info('Rejecting')
+        -- log:info('Rejecting')
         self:remove_keymaps()
         self:clear_extmarks()
 

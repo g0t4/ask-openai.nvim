@@ -13,10 +13,9 @@ function M.setup_lsp()
     -- TMP disable, i.e. when working on lsp itself :)
     --  HRMm wont be easy to enable/disable this though, will have to restart if LSP wasn't started and rag is toggled?
     if not api.is_rag_enabled() then
-        log:info("NOT starting LSP (b/c RAG is disabled)")
+        log:trace("NOT starting LSP (b/c RAG is disabled)")
         return
     end
-
 
     local lspconfig = require("lspconfig")
     local configs = require("lspconfig.configs")

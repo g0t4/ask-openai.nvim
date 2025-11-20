@@ -83,7 +83,6 @@ function M._context_query(parsed_args, callback)
     function on_server_response(err, lsp_result)
         local result = {}
         if err then
-            -- vim.notify("Semantic Grep tool_call query failed: " .. err.message, vim.log.levels.ERROR)
             log:error("Semantic Grep tool_call query failed: " .. tostring(err), vim.inspect(lsp_result))
             result.isError = true
             -- TODO is this how I want to return the error?

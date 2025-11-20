@@ -177,7 +177,7 @@ function Selection._get_visual_selection_for_window_id(window_id)
     -- print(vim.inspect({ selected_lines = selected_lines }))
 
     local selection = Selection:new(selected_lines, start_line_1indexed, start_col_1indexed, end_line_1indexed, end_col_1indexed)
-    selection:log_info("get_visual_selection():")
+    -- selection:log_info("get_visual_selection():")
     return selection
 end
 

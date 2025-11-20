@@ -168,10 +168,8 @@ function M.accept_rewrite()
         lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(M.selection.original_text, lines)
 
-        log:info("Accepted rewrite (accumulated_chunks): ", M.accumulated_chunks)
-        -- log "sanitized" version of what is inserted:
-        local lines_joined = table.concat(lines, "\n")
-        log:info("Accepted rewrite (lines): ", lines_joined)
+        -- log:info("Accepted rewrite (accumulated_chunks): ", M.accumulated_chunks)
+        -- log:info("Accepted rewrite (inserted lines, sanitized): ", table.concat(lines, "\n"))
 
         -- FYI this may not be a problem with the linewise only mode that I setup for now with the streaming diff
         -- notes about not replacing last character of selection
@@ -222,7 +220,7 @@ function M.cleanup_after_cancel()
     M.displayer = nil
 
     -- PRN store this in a last_accumulated_chunks / canceled_accumulated_chunks?
-    log:info("Cancel rewrite (accumulated_chunks): ", M.accumulated_chunks)
+    -- log:info("Cancel rewrite (accumulated_chunks): ", M.accumulated_chunks)
 
     M.accumulated_chunks = ""
 end
@@ -253,9 +251,6 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         project = true,
     }
     local context = CurrentContext:items(user_prompt, always_include)
-    -- log:info("user_prompt: '" .. user_prompt .. "'")
-    -- log:info("context: '" .. vim.inspect(context) .. "'")
-    -- log:info("includes: '" .. vim.inspect(context.includes) .. "'")
 
     -- make sure to remove slash commands like /yanks (hence cleaned_prompt)
     local user_prompt = context.cleaned_prompt
@@ -275,7 +270,6 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         code_context = "I am working on this file: " .. file_name
     end
     user_message_with_code = user_prompt .. "\n" .. code_context
-    log:info("user_message_with_code: '" .. user_message_with_code .. "'")
 
     ---@param rag_matches LSPRankedMatch[]
     local function send_rewrite(rag_matches)
