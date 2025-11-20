@@ -218,9 +218,9 @@ local ignore_filetypes = {
     "TelescopeResults",
     "NvimTree",
     "DressingInput", -- pickers from nui (IIRC) => in nvim tree add a file => the file name box is one of these
-    -- TODO make sure only check this on enter buffer first time? not on every event (cursormoved,etc)
 }
 local function is_rename_window()
+    -- TODO make sure only check this on enter buffer first time? not on every event (cursormoved,etc)
     if vim.bo.buftype ~= "nofile"
         or vim.bo.filetype ~= "DressingInput" then
         return false
@@ -235,21 +235,12 @@ local function is_rename_window()
 
     -- win_config.title => { { " Rename to " } }
     is_rename = win_config.title[1][1] == " Rename to "
-    -- TODO! ok now set smth somewhere to specify "detected file type" is "rename" for FILE rename... do I need to do any further filtering to determine that?
-    --   ... vs say a variable rename?
-    --   then, use that in FIM prompt builder to provide custom FIM instructions:
-    --   - provide full path
-    --   - provide file contents too? in a separate file_sep object?
-    --   - ALSO yank context (might be stop gap to make this work the best w/o the above)
+    -- TODO tell model about the window that is open (in some cases)...
+    -- i.e. rename window (gather diff context too, i.e. what would help with renames?)
     return is_rename
 end
 
 local ignore_buftypes = {
-    -- FYI with yank history and edits... rename window should be brought back b/c it will suggest good names for files
-    --   should tell model specifically about the window that is open in this case (and maybe others)
-    --   so it knows what task the user is performing
-    --   put that into a file_sep section like WIP.md or smth?
-    --
     "nofile", -- rename refactor popup window uses this w/o a filetype, also Dressing rename in nvimtree uses nofile
     "terminal",
 }
@@ -275,19 +266,20 @@ end)
 
 function M.cursor_moved_in_insert_mode()
     if M.current_prediction ~= nil and M.current_prediction.disable_cursor_moved == true then
-        log:trace("Disabled CursorMovedI, skipping...")
-        M.current_prediction.disable_cursor_moved = false -- just skip one time
-        -- basically this is called after accepting/inserting the new content (AFAICT only one time too)
+        -- log:trace("Disabled CursorMovedI, skipping...")
+        M.current_prediction.disable_cursor_moved = false -- skip once
+        -- called after accepting/inserting text (AFAICT only once per accept)
         return
     end
 
+    -- * disable predictions in some windows
+    --  TODO do I need this anymore? I swear I setup predictions to attach on BufEnter... and that already ignores specific filetypes (and other factors)?
     if vim.tbl_contains(ignore_buftypes, vim.bo.buftype)
         or vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
-        -- this would be a good spot to expand and catch other file types too, rework is_rename_window to share get config
+        -- but, allow renames:
         if not is_rename_window() then
             return
         end
-        -- allow renames to continue
     end
 
     keypresses:onNext({})
@@ -298,7 +290,6 @@ function M.leaving_insert_mode()
 end
 
 function M.entering_insert_mode()
-    -- log:trace("function M.entering_insert_mode()")
     M.cursor_moved_in_insert_mode()
 end
 
