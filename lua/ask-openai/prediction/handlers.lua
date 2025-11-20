@@ -80,48 +80,50 @@ function M.ask_for_prediction()
                 return
             end
 
-            if data then
-                perf:token_arrived()
-
-                vim.schedule(function()
-                    -- vim.defer_fn(function()
-                    if this_prediction.abandoned then
-                        -- DO NOT update prediction text if it's been abandoned!
-                        -- reproduce bug by comment out this check...
-                        -- then set 500ms delay using defer_fn
-                        -- then trigger a prediction and cancel it midway and it'll be stuck!
-                        log:info(ansi.yellow_bold("skipping on_stdout chunk b/c prediction is abandoned"))
-                        return
-                    end
-
-                    local sse_result = backend.process_sse(data)
-                    local chunk = sse_result.chunk
-                    local generation_done = sse_result.done
-                    local done_reason = sse_result.done_reason
-                    if chunk or sse_result.reasoning_content then
-                        this_prediction:add_chunk_to_prediction(chunk, sse_result.reasoning_content)
-                    end
-                    if generation_done then
-                        if this_prediction.has_reasoning then
-                            log:info(ansi.yellow_bold("REASONING:\n"), ansi.yellow(this_prediction:get_reasoning()))
-                        end
-                        if this_prediction:any_chunks() then
-                            log:info(ansi.cyan_bold("PREDICTION:\n"), ansi.cyan(this_prediction.prediction))
-                        else
-                            -- FYI great way to test this, go to a line that is done (i.e. a return) and go into insert mode before the returned variable and it almost always suggests that is EOS (at least with qwen2.5-coder + ollama)
-                            log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (done_reason or "") .. "'")
-
-                            -- TODO real fix for empty response to remove thinking tokens:
-                            -- good test case is to go b/w ends (below) and insert new line (empty) will likely result in a blank eventually (check reasoning too to confirm)
-                            -- FYI might have a similar issue in other spots... maybe parlay this into a final cleanup step?
-                            this_prediction:clear_extmarks()
-                        end
-                        this_prediction:mark_generation_finished()
-                    end
-                    stats.show_prediction_stats(sse_result, perf)
-                end)
-                -- end, 500) -- 500 ms makes it easy to reproduce "stuck" predictions
+            if not data then
+                return
             end
+
+            perf:token_arrived()
+
+            vim.schedule(function()
+                -- vim.defer_fn(function()
+                if this_prediction.abandoned then
+                    -- DO NOT update prediction text if it's been abandoned!
+                    -- reproduce bug by comment out this check...
+                    -- then set 500ms delay using defer_fn
+                    -- then trigger a prediction and cancel it midway and it'll be stuck!
+                    log:info(ansi.yellow_bold("skipping on_stdout chunk b/c prediction is abandoned"))
+                    return
+                end
+
+                local sse_result = backend.process_sse(data)
+                local chunk = sse_result.chunk
+                local generation_done = sse_result.done
+                local done_reason = sse_result.done_reason
+                if chunk or sse_result.reasoning_content then
+                    this_prediction:add_chunk_to_prediction(chunk, sse_result.reasoning_content)
+                end
+                if generation_done then
+                    if this_prediction.has_reasoning then
+                        log:info(ansi.yellow_bold("REASONING:\n"), ansi.yellow(this_prediction:get_reasoning()))
+                    end
+                    if this_prediction:any_chunks() then
+                        log:info(ansi.cyan_bold("PREDICTION:\n"), ansi.cyan(this_prediction.prediction))
+                    else
+                        -- FYI great way to test this, go to a line that is done (i.e. a return) and go into insert mode before the returned variable and it almost always suggests that is EOS (at least with qwen2.5-coder + ollama)
+                        log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (done_reason or "") .. "'")
+
+                        -- TODO real fix for empty response to remove thinking tokens:
+                        -- good test case is to go b/w ends (below) and insert new line (empty) will likely result in a blank eventually (check reasoning too to confirm)
+                        -- FYI might have a similar issue in other spots... maybe parlay this into a final cleanup step?
+                        this_prediction:clear_extmarks()
+                    end
+                    this_prediction:mark_generation_finished()
+                end
+                stats.show_prediction_stats(sse_result, perf)
+            end)
+            -- end, 500) -- 500 ms makes it easy to reproduce "stuck" predictions
         end
         stdout:read_start(on_stdout)
         log:info("stdout:read_start FIM curl") -- TODO remove once find culprit 2025-11-17
