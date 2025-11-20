@@ -18,8 +18,8 @@ local Prediction = {}
 local extmarks_ns_id = vim.api.nvim_create_namespace("ask-predictions")
 
 ---@return Prediction
-function Prediction:new()
-    self = self or {}
+function Prediction.new()
+    local self = {} -- FYI after changing to self being a new instance per prediction... instead of all using Prediction singleton... I might have issues w/ cancel/abort/back2back predictions as I type... just keep that in mind
 
     -- id was originaly intended to track current prediction and not let past predictions write to extmarks (for example)
     self.id = vim.uv.hrtime() -- might not need id if I can use object reference instead, we will see (id is helpful if I need to roundtrip identity outside lua process)

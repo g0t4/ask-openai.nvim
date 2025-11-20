@@ -35,7 +35,7 @@ function M.ask_for_prediction()
         log:trace("curl", table.concat(spawn_curl_options.args, " ")) -- TODO remove after find hang culprit 2025-11-17
 
         -- TODO move this_prediction creation above (before RAG too)
-        local this_prediction = Prediction:new()
+        local this_prediction = Prediction.new()
         M.current_prediction = this_prediction
 
         -- TODO attach stdout/err to this_prediction and call read_stop on abort prediction?
