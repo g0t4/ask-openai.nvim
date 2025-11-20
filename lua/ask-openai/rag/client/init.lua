@@ -205,6 +205,7 @@ function M._context_query(query, instruct, callback)
             return
         end
         -- log:info(ansi.white_bold(ansi.red_bg("RAG matches (client):")), vim.inspect(result))
+        -- TODO use log_semantic_grep_matches(result) instead of luaify_trace/vim.inspect ... move the func and make it useful here
         callback(result.matches or {}, false)
     end
 

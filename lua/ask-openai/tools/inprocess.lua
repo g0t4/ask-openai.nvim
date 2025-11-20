@@ -104,6 +104,7 @@ function M._context_query(parsed_args, callback)
 
         ---@param lsp_result LSPSemanticGrepResult
         function log_semantic_grep_matches(lsp_result)
+            -- TODO move this elsewhere if/when proves useful
             log:trace("Semantic Grep tool_call matches (client):")
             vim.iter(lsp_result.matches)
                 :each(
@@ -115,7 +116,8 @@ function M._context_query(parsed_args, callback)
                     end
                 )
         end
-        log_semantic_grep_matches(lsp_result)
+
+        -- log_semantic_grep_matches(lsp_result)
 
         -- do not mark isError = false here... that is assumed, might also cause issues if mis-interpreted as an error!
         result.matches = lsp_result.matches
