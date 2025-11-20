@@ -279,29 +279,18 @@ function Prediction:accept_all()
     local controller = CursorController:new()
     controller:move_cursor_after_insert(cursor, inserted_lines)
 
-    -- -- TODO cursor column move position calculation has two scenarios:
-    -- -- 1. inserting text on current line only => cursor moves relative to its current position + len(accepted text) => so this is why I have issues with accept all on a single line prediction! b/c it doesn't include cursor.col_base0 below!
-    -- -- 2. inserting multiple lines => in this case, cursor moves to last line of inserted text, right after last inserted character (IOTW length of last linei == #lines[#lines])
-    -- -- cursor should stop at end of inserted text
-    -- local new_cursor_col_base0 = #lines[#lines]
-    -- local new_cursor_line_base1 = cursor.line_base1 + #lines - 1
-    -- vim.api.nvim_win_set_cursor(0, { new_cursor_line_base1, new_cursor_col_base0 }) -- (1,0)-indexed (row,col)
-    -- -- TODO review cursor line movement... in different scenarios
-    -- -- 1. insert text into current line only:
-    -- --    a. if middle of current line, stay on current line
-    -- --    b. if accept to end of current line, stay or go to next line?
-    -- -- 2. if multiline insert...
-    -- --    a. if last line has no existing text after it... then stay or go to next line?
-    -- --    b. if last line has existing text after it... then probably stay on that line?
-    -- -- ** I am leaning toward let's just move cursor to end of accepted text (not ever go beyond that to next line, at least for accept all)... that seems to be my intent too (minus the column bug)
-    -- -- FYI this is a good first example to add some testing!
+    -- FYI KEY TEST SCENARIO: complete to end of generated text
+    --   * easy b/c no partial accept... whatever the model generates, insert it
+    --   MOVE cursor to end of inserted text:
+    --   - same line as last char
+    --   - no extra blank lines
 
     -- * clear prediction
     self.prediction = "" -- strip all lines from the prediction (and update it)
     self:redraw_extmarks()
 
     -- PRN? mark fully accepted?
-    -- SIGNAL TO handlers to generate next prediction? or not?
+    -- TODO? SIGNAL TO handlers to generate next prediction? or not? (same on other accepts if they take last part of prediction)
 end
 
 function Prediction:IDEA_accept_line_with_replace_current_line()
