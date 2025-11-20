@@ -232,15 +232,18 @@ function Prediction:accept_first_word()
         -- *1 one non-word left
         log:warn("  *1 rest of line is non-word char(s) (matches all of it) => wrap to next line")
 
-        -- FYI SCENARIO TO TEST: delete } or all of {} on the {} above and the line after (or not)
-        --    get prediction that spans to next line(s)
-        --    this works b/c the last chars on the line are non-words
-        --    so you'll match it and then w/o the BLANK_LINE here the line won't wrap!
+        -- FYI TEST SCENARIOS:
+        -- identify one of each:
+        -- 1. non-word: } or {}
+        -- 2. word: end/else
+        -- then, two cases each (to test finishing a line):
+        --   - test accept on last word/non-word at end of line
+        --   A. with no line after (does not insert blank line, right)
+        --   B. with line after, inserts blank and propertly continues to accept on that next line
+        --   redo the gen to get a useful scenario (often can get one word gens on lines that really only would have one word/non-word)
 
         first_word = lines[1]
         if last_predicted_line then
-            -- *1b - no more prediction lines so DO NOT ADD BLANK LINE
-            -- FYI SCENARIO delete one non word at end of line, i.e. {} and then gen until get just its replacement (no next line)
             inserted_lines = { first_word }
         else
             inserted_lines = { first_word, BLANK_LINE }
@@ -253,15 +256,7 @@ function Prediction:accept_first_word()
             -- *2 one word left
             log:warn("  *3 rest of line is one word (no non-word chars left) => wrap to next line")
 
-            -- FYI SCENARIO TO TEST:
-            --   delete the "else" line (on its own line) above and the line after it... gen two+ line
-            --   go into insert mode right where else's e is at
-            --   then alt+right on else hits this scenario
-
             if last_predicted_line then
-                -- *2b - no more prediction lines so DO NOT ADD BLANK LINE
-                -- FYI SCENARIO - delete just one word (i.e. else/end)
-                --   - then gen until you get prediction to replace ONLY that one word (NO next line)
                 inserted_lines = { first_word }
             else
                 inserted_lines = { first_word, BLANK_LINE }
