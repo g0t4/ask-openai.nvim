@@ -151,6 +151,14 @@ function Prediction:mark_generation_failed()
     self.mark_generation_failed = true
 end
 
+---@param cursor CursorInfo
+---@param lines string[]
+function Prediction:insert_text_at_cursor(cursor, lines)
+    -- TODO get_cursor_position() in here? (especially if I move the move logic here!)
+    -- start = end = cursor position!
+    vim.api.nvim_buf_set_text(self.buffer, cursor.line_base0, cursor.col_base0, cursor.line_base0, cursor.col_base0, lines)
+end
+
 function Prediction:accept_first_line()
     -- FYI instead of splitting every time... could make a class that buffers into line splits for me! use a table of chunks until hit \n... flush to the next line and start accumulating next line, etc
     local lines = split_lines_to_table(self.prediction)
@@ -165,8 +173,7 @@ function Prediction:accept_first_line()
     local cursor = get_cursor_position()
 
     self.disable_cursor_moved = true
-    -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
-    vim.api.nvim_buf_set_text(self.buffer, cursor.line_base0, cursor.col_base0, cursor.line_base0, cursor.col_base0, { first_line, "" })
+    self:insert_text_at_cursor(cursor, { first_line, "" })
     vim.api.nvim_win_set_cursor(0, { cursor.line_base1 + 1, 0 }) -- (1,0)-indexed (row,col)
 
     -- * remove first line from prediction
@@ -202,9 +209,7 @@ function Prediction:accept_first_word()
     local cursor = get_cursor_position()
 
     self.disable_cursor_moved = true
-    -- TODO reduce duplication here with inserting... this is in every accept handler... how about make a PredictionAcceptor class? (tested too): insert text, move cursor, etc?
-    -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
-    vim.api.nvim_buf_set_text(self.buffer, cursor.line_base0, cursor.col_base0, cursor.line_base0, cursor.col_base0, { first_word })
+    self:insert_text_at_cursor(cursor, { first_word })
     vim.api.nvim_win_set_cursor(0, { cursor.line_base1, cursor.col_base0 + #first_word }) -- (1,0)-indexed (row,col)
 
     self.prediction = table.concat(lines, "\n") -- strip that first line then from the prediction (and update it)
@@ -220,7 +225,7 @@ function Prediction:accept_all()
     local cursor = get_cursor_position()
 
     self.disable_cursor_moved = true
-    vim.api.nvim_buf_set_text(self.buffer, cursor.line_base0, cursor.col_base0, cursor.line_base0, cursor.col_base0, lines)
+    self:insert_text_at_cursor(cursor, lines)
 
     -- TODO cursor column move position calculation has two scenarios:
     -- 1. inserting text on current line only => cursor moves relative to its current position + len(accepted text) => so this is why I have issues with accept all on a single line prediction! b/c it doesn't include cursor.col_base0 below!
