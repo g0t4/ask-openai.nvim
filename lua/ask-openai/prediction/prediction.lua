@@ -231,7 +231,13 @@ function Prediction:accept_first_word()
         --    so you'll match it and then w/o the BLANK_LINE here the line won't wrap!
 
         first_word = lines[1]
-        inserted_lines = { first_word, BLANK_LINE }
+        if #lines == 1 then
+            -- *1b - no more prediction lines so DO NOT ADD BLANK LINE
+            -- FYI SCENARIO delete one non word at end of line, i.e. {} and then gen until get just its replacement (no next line)
+            inserted_lines = { first_word }
+        else
+            inserted_lines = { first_word, BLANK_LINE }
+        end
         lines[1] = ""
     else
         first_word = lines[1]:sub(1, word_end) -- pull that word out
