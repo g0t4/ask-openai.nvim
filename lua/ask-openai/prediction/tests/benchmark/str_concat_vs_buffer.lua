@@ -1,7 +1,11 @@
 ---@type string[]
 local chunks = {}
-for i = 1, 200 do
+for i = 1, 50 do
     chunks[i] = "chunk_" .. i
+end
+local expected_length = 0
+for _, chunk in ipairs(chunks) do
+    expected_length = expected_length + #chunk
 end
 
 describe("string concatenation vs luajit buffer benchmark", function()
@@ -13,6 +17,8 @@ describe("string concatenation vs luajit buffer benchmark", function()
         end
         local elapsed_ns = vim.uv.hrtime() - start
         print("concat elapsed ns:", elapsed_ns)
+        print("total len:", #total)
+        assert.equals(expected_length, #total)
     end)
 
     it("concatenates 100 chunks using luajit string.buffer", function()
@@ -24,5 +30,7 @@ describe("string concatenation vs luajit buffer benchmark", function()
         local total = buffer:tostring()
         local elapsed_ns = vim.uv.hrtime() - start
         print("buffer elapsed ns:", elapsed_ns)
+        print("total len:", #total)
+        assert.equals(expected_length, #total)
     end)
 end)
