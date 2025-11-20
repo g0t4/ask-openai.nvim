@@ -1,5 +1,7 @@
 local log = require("ask-openai.logs.logger").predictions()
 local ansi = require("ask-openai.prediction.ansi")
+local plumbing = require("ask-openai.tools.plumbing")
+
 local uv = vim.uv
 
 local M = {}
@@ -223,14 +225,7 @@ function M.send_tool_call(tool_call, callback)
     local name = tool_call["function"].name
     local tool = M.tools_available[name]
     if tool == nil then
-        log:error("requested tool not found: " .. name)
-        vim.schedule_wrap(function()
-            ---@type MCPToolCallOutputError
-            local call_output = {
-                error = { message = "invalid_tool_name: " .. name, }
-            }
-            callback(call_output)
-        end)
+        callback(plumbing.create_tool_call_output_failure("Invalid MCP tool name: " .. name))
         return
     end
 
