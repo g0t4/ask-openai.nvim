@@ -249,7 +249,7 @@ function Prediction:accept_first_word()
     else
         first_word = lines[1]:sub(1, word_end) -- pull that word out
 
-        if first_word == lines[1] then
+        if one_word_remains then
             -- *2 one word left
             log:warn("  *3 rest of line is one word (no non-word chars left) => wrap to next line")
 
