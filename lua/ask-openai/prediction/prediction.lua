@@ -187,10 +187,10 @@ function Prediction:accept_first_line()
 
     -- * insert first line
     local first_line = table.remove(lines, 1)
-    local inserted_lines = { first_line }
+    local insert_lines = { first_line }
     if #lines > 0 then
         -- only wrap a line if there are more lines to accept!
-        inserted_lines = { first_line, BLANK_LINE }
+        insert_lines = { first_line, BLANK_LINE }
 
         -- BTW the blank line is important...
         -- - w/o it, you end up eating one line below per accepted line...
@@ -198,7 +198,7 @@ function Prediction:accept_first_line()
         -- - so the new blank just adds the next line to insert into (one at a time)
     end
 
-    self:insert_accepted(inserted_lines)
+    self:insert_accepted(insert_lines)
 
     -- * update prediction
     self.prediction = table.concat(lines, "\n")
@@ -216,7 +216,7 @@ function Prediction:accept_first_word()
 
     local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
     log:warn("  word_end", vim.inspect(word_end))
-    local inserted_lines = {}
+    local insert_lines = {}
 
     local one_non_word_remains = word_end == nil
     local one_word_remains = word_end == #lines[1] -- word_end == # chars in line ==> full match!
@@ -241,21 +241,21 @@ function Prediction:accept_first_word()
 
         local last_predicted_line = #lines == 1
         if last_predicted_line then
-            inserted_lines = { first_word }
+            insert_lines = { first_word }
         else
-            inserted_lines = { first_word, BLANK_LINE }
+            insert_lines = { first_word, BLANK_LINE }
         end
     else
         -- take next word only (not end of line)
         local first_word = lines[1]:sub(1, word_end)
         lines[1] = lines[1]:sub(word_end + 1)
 
-        inserted_lines = { first_word }
+        insert_lines = { first_word }
     end
     log:warn("  lines[1]", vim.inspect(lines[1]))
-    log:warn("  inserted_lines", vim.inspect(inserted_lines))
+    log:warn("  insert_lines", vim.inspect(insert_lines))
 
-    self:insert_accepted(inserted_lines)
+    self:insert_accepted(insert_lines)
 
     -- * update prediction
     self.prediction = table.concat(lines, "\n")
