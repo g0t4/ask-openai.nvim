@@ -223,7 +223,14 @@ function M.send_tool_call(tool_call, callback)
     local name = tool_call["function"].name
     local tool = M.tools_available[name]
     if tool == nil then
-        log:trace("tool not found: " .. name)
+        log:error("requested tool not found: " .. name)
+        vim.schedule_wrap(function()
+            ---@type MCPToolCallOutputError
+            local call_output = {
+                error = { message = "invalid_tool_name: " .. name, }
+            }
+            callback(call_output)
+        end)
         return
     end
 

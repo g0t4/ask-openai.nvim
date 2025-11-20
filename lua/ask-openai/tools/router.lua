@@ -14,7 +14,7 @@ function M.openai_tools()
     return tools
 end
 
----@alias ToolCallDoneCallback fun(call_output: table)
+---@alias ToolCallDoneCallback fun(call_output: table|MCPToolCallOutputResult|MCPToolCallOutputError)
 
 ---@param tool_call table
 ---@param callback ToolCallDoneCallback

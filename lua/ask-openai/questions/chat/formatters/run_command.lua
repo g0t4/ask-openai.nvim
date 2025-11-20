@@ -45,6 +45,13 @@ function M.format(lines, tool_call, message)
     local is_mcp = tool_call.call_output.result.content
     if is_mcp then
         --- https://modelcontextprotocol.io/specification/2025-06-18/server/tools#tool-result
+
+        ---@class MCPToolCallOutputResult
+        ---@field result MCPToolResult
+
+        ---@class MCPToolCallOutputError
+        ---@field error { code, messeage }  -- { "code": 100, "message": "Unknown tool: invalid_tool_name" }
+
         ---@class MCPToolResult
         ---@field content? MCPToolResultContent[]  # unstructured output items
         ---@field isError? boolean                # see content for exit code, STDERR, etc
