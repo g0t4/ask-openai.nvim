@@ -245,19 +245,20 @@ function Prediction:accept_first_word()
         --   B. with line after, inserts blank and propertly continues to accept on that next line
         --   redo the gen to get a useful scenario (often can get one word gens on lines that really only would have one word/non-word)
 
+        -- take rest of line
         first_word = lines[1]
+        lines[1] = ""
+
         if last_predicted_line then
             inserted_lines = { first_word }
         else
             inserted_lines = { first_word, BLANK_LINE }
         end
-        lines[1] = ""
     else
+        -- take next word only
         first_word = lines[1]:sub(1, word_end)
-
-        -- *3 matched next word (line has more words after this)
-        -- strip first_word:
         lines[1] = lines[1]:sub(word_end + 1) or "" -- shouldn't need `or ""`
+
         inserted_lines = { first_word }
     end
     log:warn("  first_word", vim.inspect(first_word))
