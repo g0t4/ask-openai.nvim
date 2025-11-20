@@ -37,7 +37,8 @@ function Prediction.new()
     self.has_reasoning = false
     self.reasoning_chunks = {}
     self.start_time = os.time()
-    return setmetatable(self, instance_metatable)
+    setmetatable(self, instance_metatable)
+    return self
 end
 
 function Prediction:add_chunk_to_prediction(chunk, reasoning_content)
