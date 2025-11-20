@@ -1,3 +1,5 @@
+local log = require("ask-openai.logs.logger"):predictions()
+
 -- logic for parsing SSEs from all completion backends
 
 function parse_sse_oai_chat_completions(sse)
@@ -48,7 +50,11 @@ function parse_llama_cpp_server(sse)
     -- "truncated": false,
     -- "stop_type": "eos",
     -- "stopping_word": "", -- TODO what is this for?
+    log:info("sse /completions", vim.inspect(sse))
 
+
+
+    -- TODO why am I returning content for done?!
     -- TODO reasoning_content
     return sse.content, sse.content, sse.stop_type
 end
