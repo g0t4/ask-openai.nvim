@@ -227,9 +227,9 @@ function Prediction:accept_all()
     -- 2. inserting multiple lines => in this case, cursor moves to last line of inserted text, right after last inserted character (IOTW length of last linei == #lines[#lines])
     -- cursor should stop at end of inserted text
     local new_cursor_col_base0 = #lines[#lines]
-    local new_cursor_row_base1 = cursor.line_base1 + #lines - 1
-    vim.api.nvim_win_set_cursor(0, { new_cursor_row_base1, new_cursor_col_base0 }) -- (1,0)-indexed (row,col)
-    -- TODO review cursor row movement... in different scenarios
+    local new_cursor_line_base1 = cursor.line_base1 + #lines - 1
+    vim.api.nvim_win_set_cursor(0, { new_cursor_line_base1, new_cursor_col_base0 }) -- (1,0)-indexed (row,col)
+    -- TODO review cursor line movement... in different scenarios
     -- 1. insert text into current line only:
     --    a. if middle of current line, stay on current line
     --    b. if accept to end of current line, stay or go to next line?
