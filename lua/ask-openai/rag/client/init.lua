@@ -95,8 +95,8 @@ local function fim_concat(ps_chunk)
     local query = ps_chunk.rag_cursor_line_before_cursor
 
     if trim(query) == "" then
+        -- log:trace(ansi.white_bold(ansi.red_bg("SKIPPING Semantic Grep b/c no query (nothing on cursor line before cursor)")))
         -- PRN previous line? with a non-empty value? if so, pass all lines or a subset from ps_chunk builder (on ps_chunk)
-        log:trace("fim_concat: current line's prefix (text before cursor) is empty, skipping RAG")
         return nil
     end
 
@@ -159,15 +159,13 @@ end
 ---@param skip_rag fun()
 function M.context_query_fim(ps_chunk, callback, skip_rag)
     local fim_specific_instruct = "Complete the missing portion of code (FIM) based on the surrounding context (Fill-in-the-middle)"
-    local query = fim_concat(ps_chunk) -- TODO map fim_concat
+    local query = fim_concat(ps_chunk)
     if query == nil then
-        log:trace(ansi.white_bold(ansi.red_bg("SKIPPING Semantic Grep b/c no query text")))
         skip_rag()
-        -- PRN return indicator to caller? right now nil for results s/b fine
         return
     end
-    -- TODO pass fim.semantic_grep.all_files settings (create an options object and pass that instead of a dozen args)
-    -- TODO! pass ps_chunk start/end lines to limit same file skips
+    -- PRN pass fim.semantic_grep.all_files settings (create an options object and pass that instead of a dozen args)
+    -- PRN pass ps_chunk start/end lines to limit same file skips
     return M._context_query(query, fim_specific_instruct, callback)
 end
 
