@@ -168,6 +168,14 @@ end
 local CursorController = require "ask-openai.prediction.cursor_controller"
 local BLANK_LINE = ""
 
+function Prediction:insert_accepted(inserted_lines)
+    self.disable_cursor_moved = true
+    local cursor = get_cursor_position()
+    self:insert_text_at_cursor(cursor, inserted_lines)
+    local controller = CursorController:new()
+    controller:move_cursor_after_insert(cursor, inserted_lines)
+end
+
 function Prediction:accept_first_line()
     -- FYI instead of splitting every time... could make a class that buffers into line splits for me! use a table of chunks until hit \n... flush to the next line and start accumulating next line, etc
     local lines = split_lines_to_table(self.prediction)
@@ -190,11 +198,7 @@ function Prediction:accept_first_line()
         -- - so the new blank just adds the next line to insert into (one at a time)
     end
 
-    self.disable_cursor_moved = true
-    local cursor = get_cursor_position()
-    self:insert_text_at_cursor(cursor, inserted_lines)
-    local controller = CursorController:new()
-    controller:move_cursor_after_insert(cursor, inserted_lines)
+    self:insert_accepted(inserted_lines)
 
     -- * update prediction
     self.prediction = table.concat(lines, "\n")
@@ -251,12 +255,7 @@ function Prediction:accept_first_word()
     log:warn("  lines[1]", vim.inspect(lines[1]))
     log:warn("  inserted_lines", vim.inspect(inserted_lines))
 
-    -- * insert first word
-    self.disable_cursor_moved = true
-    local cursor = get_cursor_position()
-    self:insert_text_at_cursor(cursor, inserted_lines)
-    local controller = CursorController:new()
-    controller:move_cursor_after_insert(cursor, inserted_lines)
+    self:insert_accepted(inserted_lines)
 
     -- * update prediction
     self.prediction = table.concat(lines, "\n")
