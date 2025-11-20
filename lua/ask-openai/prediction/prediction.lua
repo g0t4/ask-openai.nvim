@@ -212,9 +212,9 @@ function Prediction:accept_all()
     -- 1. inserting text on current line only => cursor moves relative to its current position + len(accepted text) => so this is why I have issues with accept all on a single line prediction! b/c it doesn't include cursor_col_base0 below!
     -- 2. inserting multiple lines => in this case, cursor moves to last line of inserted text, right after last inserted character (IOTW length of last linei == #lines[#lines])
     -- cursor should stop at end of inserted text
-    local last_col_0indexed = #lines[#lines]
-    local last_row_1indexed = cursor_line_base1 + #lines - 1
-    vim.api.nvim_win_set_cursor(0, { last_row_1indexed, last_col_0indexed }) -- (1,0)-indexed (row,col)
+    local new_cursor_col_base0 = #lines[#lines]
+    local new_cursor_row_base1 = cursor_line_base1 + #lines - 1
+    vim.api.nvim_win_set_cursor(0, { new_cursor_row_base1, new_cursor_col_base0 }) -- (1,0)-indexed (row,col)
     -- TODO review cursor row movement... in different scenarios
     -- 1. insert text into current line only:
     --    a. if middle of current line, stay on current line
