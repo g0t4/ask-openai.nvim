@@ -32,20 +32,24 @@ function M.send_tool_call_router(tool_call, callback)
         return
     end
 
-    ---TODO make a helper to build this message (or just return an error object in callback and handle it in the callback)
-    ---@type MCPToolCallOutputResult
-    local call_output = {
-        result = {
-            isError = true,
-            content = { {
-                type = "text",
-                text = "Invalid tool name: " .. tool_name,
-                name = "error",
-            } }
+    ---@param description string
+    ---@return MCPToolCallOutputResult
+    function create_tool_call_plumbing_error_response(description)
+        return {
+            result = {
+                isError = true,
+                content = {
+                    {
+                        type = "text",
+                        text = description,
+                        name = "error",
+                    },
+                },
+            },
         }
-        -- error = { message = "invalid_tool_name: " .. tool_name, }
-    }
-    callback(call_output)
+    end
+
+    callback(create_tool_call_plumbing_error_response("Invalid tool name: " .. tool_name))
 end
 
 return M
