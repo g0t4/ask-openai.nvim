@@ -59,7 +59,7 @@ function M.get_prefix_suffix_chunk(take_num_lines_each_way)
     local current_bufnr = 0
 
     local cursor_line_base1, cursor_col_base0 = unpack(vim.api.nvim_win_get_cursor(current_win_id)) -- (1,0)-indexed
-    local cursor_line_base0 = cursor_line_base1 - 1 -- 0-indexed now
+    local cursor_line_base0 = cursor_line_base1 - 1
 
 
     -- * READ LINES AROUND CURSOR LINE
