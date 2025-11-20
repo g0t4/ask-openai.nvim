@@ -220,8 +220,8 @@ function Prediction:accept_first_word()
 
     local one_non_word_remains = word_end == nil
     local one_word_remains = word_end == #lines[1] -- word_end == # chars in line ==> full match!
-    local matches_rest_of_line = one_non_word_remains or one_word_remains
-    if matches_rest_of_line then
+    local accepts_rest_of_line = one_non_word_remains or one_word_remains
+    if accepts_rest_of_line then
         log:warn("  one_non_word_remains", vim.inspect(one_non_word_remains))
         log:warn("  one_word_remains", vim.inspect(one_word_remains))
 
