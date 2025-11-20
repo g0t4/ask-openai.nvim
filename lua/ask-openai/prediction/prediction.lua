@@ -228,7 +228,7 @@ function Prediction:accept_first_word()
     local BLANK_LINE = ""
     local one_non_word_remains = word_end == nil
     local one_word_remains = word_end == #lines[1] -- word_end == # chars in line ==> full match!
-    if one_non_word_remains then
+    if one_non_word_remains or one_word_remains then
         -- *1 one non-word left
         log:warn("  *1 rest of line is non-word char(s) (matches all of it) => wrap to next line")
 
@@ -252,22 +252,10 @@ function Prediction:accept_first_word()
     else
         first_word = lines[1]:sub(1, word_end) -- pull that word out
 
-        if one_word_remains then
-            -- *2 one word left
-            log:warn("  *3 rest of line is one word (no non-word chars left) => wrap to next line")
-
-            if last_predicted_line then
-                inserted_lines = { first_word }
-            else
-                inserted_lines = { first_word, BLANK_LINE }
-            end
-            lines[1] = ""
-        else
-            -- *3 matched next word (line has more words after this)
-            -- strip first_word:
-            lines[1] = lines[1]:sub(word_end + 1) or "" -- shouldn't need `or ""`
-            inserted_lines = { first_word }
-        end
+        -- *3 matched next word (line has more words after this)
+        -- strip first_word:
+        lines[1] = lines[1]:sub(word_end + 1) or "" -- shouldn't need `or ""`
+        inserted_lines = { first_word }
     end
     log:warn("  first_word", vim.inspect(first_word))
     log:warn("  lines[1]", vim.inspect(lines[1]))
