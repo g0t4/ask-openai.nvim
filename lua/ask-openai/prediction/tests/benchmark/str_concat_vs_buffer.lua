@@ -1,10 +1,10 @@
-describe("string concatenation vs luajit buffer benchmark", function()
-    ---@type string[]
-    local chunks = {}
-    for i = 1, 200 do
-        chunks[i] = "chunk_" .. i
-    end
+---@type string[]
+local chunks = {}
+for i = 1, 200 do
+    chunks[i] = "chunk_" .. i
+end
 
+describe("string concatenation vs luajit buffer benchmark", function()
     it("concatenates 100 chunks using .. operator", function()
         local start = vim.uv.hrtime()
         local total = ""
