@@ -14,9 +14,9 @@ function VimUvTimeoutScheduler.create()
 end
 
 --- Schedules an action to run at a future point in time.
--- @arg {function} action
--- @arg {number=0} delay, in milliseconds.
--- @returns {rx.Subscription} => IIUC is used to cancel the timer (i.e. if a source produces a new event before timer fires)
+---@arg {function} action
+---@arg {number=0} delay, in milliseconds.
+---@returns {rx.Subscription} => IIUC is used to cancel the timer (i.e. if a source produces a new event before timer fires)
 function VimUvTimeoutScheduler:schedule(action, delay_ms, ...)
     local packed_args = { ... }
 

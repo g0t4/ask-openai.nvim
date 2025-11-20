@@ -42,11 +42,11 @@ It demonstrates the classic recursive algorithm, prints each move, and even repo
 
 -- ------------------------------------------------------------------
 -- Recursively solve the puzzle.
--- @param n   Number of disks to move.
--- @param from  Name of the source peg.
--- @param to    Name of the destination peg.
--- @param aux   Name of the auxiliary peg.
--- @param steps (optional) table that will collect all move strings.
+---@param n   Number of disks to move.
+---@param from  Name of the source peg.
+---@param to    Name of the destination peg.
+---@param aux   Name of the auxiliary peg.
+---@param steps (optional) table that will collect all move strings.
 -- ------------------------------------------------------------------
 local function hanoi(n, from, to, aux, steps)
     -- Guard against invalid input
@@ -71,7 +71,7 @@ end
 
 ------------------------------------------------------------
 -- Helper: pretty‑print all moves stored in a table.
--- @param steps Table containing move strings.
+---@param steps Table containing move strings.
 ------------------------------------------------------------
 local function print_steps(steps)
     for i, step in ipairs(steps) do
