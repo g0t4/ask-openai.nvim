@@ -16,8 +16,8 @@ describe("string concatenation vs luajit buffer benchmark", function()
     end)
 
     it("concatenates 100 chunks using luajit string.buffer", function()
-        local buffer = require("string.buffer").new()
         local start = vim.uv.hrtime()
+        local buffer = require("string.buffer").new()
         for _, chunk in ipairs(chunks) do
             buffer:put(chunk)
         end
