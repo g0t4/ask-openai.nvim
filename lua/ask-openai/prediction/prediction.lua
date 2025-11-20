@@ -218,15 +218,15 @@ function Prediction:accept_first_word()
 
     local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
     log:warn("  word_end", vim.inspect(word_end))
-    local last_predicted_line = #lines == 1
     local inserted_lines = {}
 
     local one_non_word_remains = word_end == nil
-    log:warn("  one_non_word_remains", vim.inspect(one_non_word_remains))
     local one_word_remains = word_end == #lines[1] -- word_end == # chars in line ==> full match!
-    log:warn("  one_word_remains", vim.inspect(one_word_remains))
     local matches_rest_of_line = one_non_word_remains or one_word_remains
     if matches_rest_of_line then
+        log:warn("  one_non_word_remains", vim.inspect(one_non_word_remains))
+        log:warn("  one_word_remains", vim.inspect(one_word_remains))
+
         -- FYI TEST SCENARIOS:
         -- identify one of each:
         -- 1. non-word: } or {}
@@ -241,6 +241,7 @@ function Prediction:accept_first_word()
         local first_word = lines[1]
         lines[1] = ""
 
+        local last_predicted_line = #lines == 1
         if last_predicted_line then
             inserted_lines = { first_word }
         else
