@@ -39,13 +39,4 @@ function CursorController:calc_new_position(cursor, inserted_lines)
     }
 end
 
----@param cursor CursorInfo
----@param inserted_lines string[]
-function CursorController:move_cursor_after_insert(cursor, inserted_lines)
-    -- TODO likley I will merge this with inserting the text, I think it's all going to work well together
-    -- FYI for now this gets the calculations CORRECT to fix the bug in cursor movement in accept all with a middle of the line FIM so let's plug this in and use it for now
-    local new_cursor = self:calc_new_position(cursor, inserted_lines)
-    vim.api.nvim_win_set_cursor(self.window_id, { new_cursor.line_base1, new_cursor.col_base0 }) -- (1,0)-indexed
-end
-
 return CursorController

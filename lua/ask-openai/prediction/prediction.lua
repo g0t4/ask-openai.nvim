@@ -172,7 +172,8 @@ function Prediction:insert_accepted(lines)
     local cursor = get_cursor_position()
     self:insert_text_at_cursor(cursor, lines)
     local controller = CursorController:new()
-    controller:move_cursor_after_insert(cursor, lines)
+    local new_cursor = controller:calc_new_position(cursor, lines)
+    vim.api.nvim_win_set_cursor(controller.window_id, { new_cursor.line_base1, new_cursor.col_base0 }) -- (1,0)-indexed
 end
 
 function Prediction:accept_first_line()
