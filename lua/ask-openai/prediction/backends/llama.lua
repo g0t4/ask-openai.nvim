@@ -310,9 +310,9 @@ end
 ---@param lines string
 ---@returns SSEResult
 function OllamaFimBackend.process_sse(lines)
-    -- SSE = Server-Sent Event
-    -- split on lines first (each SSE can have 0+ "event" - one per line)
+    -- TODO? replace with data_only_parser
 
+    -- split on lines first (each SSE can have 0+ "event" - one per line)
     -- FYI use nil to indicate nothing in the SSE... vs empty line which is a valid thingy right?
     local chunk = nil -- combine all chunks into one string and check for done
     local done = false

@@ -72,6 +72,8 @@ function M.ask_for_prediction()
         log:info("spawned FIM curl") -- TODO remove once find culprit 2025-11-17
 
         local function on_stdout(read_error, data)
+            -- FYI data == nil => EOF
+
             -- log:trace_stdio_read_errors("on_stdout", read_error, data)
             log:trace_stdio_read_always("on_stdout", read_error, data) -- TODO switch to errors once find culprit 2025-11-17
 
@@ -86,7 +88,8 @@ function M.ask_for_prediction()
 
             perf:token_arrived()
 
-            -- FYI use defer_fn w/ 500ms to reproduce "stuck" predictions
+            -- use defer_fn w/ 500ms to reproduce "stuck" predictions
+            -- also found that toggling off the copilot while a prediction is visible, results in a stuck prediction
             vim.schedule(function()
                 if this_prediction.abandoned then
                     -- DO NOT update prediction text if it's been abandoned!
@@ -128,6 +131,8 @@ function M.ask_for_prediction()
         log:info("stdout:read_start FIM curl") -- TODO remove once find culprit 2025-11-17
 
         local function on_stderr(read_error, data)
+            -- FYI data == nil => EOF
+
             -- log:trace_stdio_read_errors("on_stderr", read_error, data)
             log:trace_stdio_read_always("on_stderr", read_error, data) -- TODO switch to errors once find culprit 2025-11-17
         end
