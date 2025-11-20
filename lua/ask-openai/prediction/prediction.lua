@@ -20,7 +20,7 @@ local HLGroups = require("ask-openai.hlgroups")
 local Prediction = {}
 local uv = vim.uv
 
-local namespace_id = vim.api.nvim_create_namespace("ask-predictions")
+local extmarks_ns_id = vim.api.nvim_create_namespace("ask-predictions")
 
 local log = require("ask-openai.logs.logger").predictions()
 
@@ -115,7 +115,7 @@ function Prediction:redraw_extmarks()
         table.insert(virt_lines, { { line, HLGroups.PREDICTION_TEXT } })
     end
 
-    vim.api.nvim_buf_set_extmark(self.buffer, namespace_id, original_row, original_col,
+    vim.api.nvim_buf_set_extmark(self.buffer, extmarks_ns_id, original_row, original_col,
         -- FYI, row,col are 0-indexed! ARGH FML
         {
             virt_text = first_line,
@@ -127,7 +127,7 @@ end
 
 function Prediction:clear_extmarks()
     -- clear from 0 to -1 => entire buffer
-    vim.api.nvim_buf_clear_namespace(self.buffer, namespace_id, 0, -1)
+    vim.api.nvim_buf_clear_namespace(self.buffer, extmarks_ns_id, 0, -1)
 end
 
 function Prediction:pause_new_chunks()
