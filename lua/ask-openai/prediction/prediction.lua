@@ -227,9 +227,6 @@ function Prediction:accept_first_word()
     log:warn("  one_word_remains", vim.inspect(one_word_remains))
     local matches_rest_of_line = one_non_word_remains or one_word_remains
     if matches_rest_of_line then
-        -- *1 one non-word left
-        log:warn("  *1 rest of line is non-word char(s) (matches all of it) => wrap to next line")
-
         -- FYI TEST SCENARIOS:
         -- identify one of each:
         -- 1. non-word: } or {}
@@ -250,7 +247,7 @@ function Prediction:accept_first_word()
             inserted_lines = { first_word, BLANK_LINE }
         end
     else
-        -- take next word only
+        -- take next word only (not end of line)
         local first_word = lines[1]:sub(1, word_end)
         lines[1] = lines[1]:sub(word_end + 1)
 
