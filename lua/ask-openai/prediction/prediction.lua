@@ -209,33 +209,51 @@ function Prediction:accept_first_word()
     if #lines == 0 then
         return
     end
+    log:warn("lines", vim.inspect(lines))
 
     -- PRN add integration testing of these buffer/cursor interactions
 
     local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
     if word_end == nil then
+        word_end = -1 -- entire line (b/c nil means one word left)
+        log:warn("  * word_end == nil")
         -- PRN test scenario so I can experiment with how this feels!
-        self:accept_first_line()
-        return
+        -- self:accept_first_line()
+        -- return
     end
 
     local first_word = lines[1]:sub(1, word_end) or ""
+
     if first_word == lines[1] then
+        log:warn("  * first_word == lines[1]")
         -- PRN test scenario
-        self:accept_first_line()
-        return
+        -- self:accept_first_line()
+        -- return
     end
+    log:warn("  first_word", vim.inspect(first_word))
+
     -- strip first_word:
     lines[1] = lines[1]:sub(word_end + 1) or "" -- shouldn't need `or ""`
+    if word_end == -1 then
+        lines[1] = ""
+    end
+
+    log:warn("  lines[1]", vim.inspect(lines[1]))
 
     -- insert first word into document
     local cursor = get_cursor_position()
 
     self.disable_cursor_moved = true
-    self:insert_text_at_cursor(cursor, { first_word })
-    vim.api.nvim_win_set_cursor(0, { cursor.line_base1, cursor.col_base0 + #first_word }) -- (1,0)-indexed (row,col)
+    local inserted_lines = { first_word }
+    self:insert_text_at_cursor(cursor, inserted_lines)
+    local controller = CursorController:new()
+    controller:move_cursor_after_insert(cursor, inserted_lines)
+    -- -- cursor should stop at end of first word
+
+    -- vim.api.nvim_win_set_cursor(0, { cursor.line_base1, cursor.col_base0 + #first_word }) -- (1,0)-indexed (row,col)
 
     self.prediction = table.concat(lines, "\n") -- strip that first line then from the prediction (and update it)
+    log:warn("  self.prediction", vim.inspect(self.prediction))
     self:redraw_extmarks()
 end
 
