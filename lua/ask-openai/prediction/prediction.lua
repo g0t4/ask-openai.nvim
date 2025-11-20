@@ -233,4 +233,11 @@ function Prediction:accept_all()
     -- SIGNAL TO handlers to generate next prediction? or not?
 end
 
+function Prediction:IDEA_accept_line_with_replace_current_line()
+    -- gptoss often recommends text that has full line (not just new text)... if I had accept line and replace existing line motion... that would make it far less painful!
+    --
+    -- alternative would be to do diffs and strip common parts... so I can show just the new text as if the model didn't screw up!
+    -- - this would actually work as a basis for edit predictions (not just FIM) ... could start small with one line editing only
+end
+
 return Prediction
