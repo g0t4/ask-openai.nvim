@@ -3,6 +3,7 @@ local files = require("ask-openai.helpers.files")
 local semantic_grep_module = require("ask-openai.tools.inproc.semantic_grep")
 local apply_patch_module = require("ask-openai.tools.inproc.apply_patch")
 local plumbing = require("ask-openai.tools.plumbing")
+local ansi = require("ask-openai.prediction.ansi")
 
 local M = {}
 
@@ -101,7 +102,16 @@ function M._context_query(parsed_args, callback)
             return
         end
 
-        log:luaify_trace("Semantic Grep tool_call matches (client):", lsp_result)
+        log:trace("Semantic Grep tool_call matches (client):")
+        vim.iter(lsp_result.matches)
+            :each(
+            ---@param m LSPRankedMatch
+                function(m)
+                    local line_range = tostring(m.start_line_base0 + 1) .. "-" .. (m.end_line_base0 + 1)
+                    local header = ansi.yellow(tostring(m.file) .. ":" .. line_range .. "\n")
+                    log:trace(header, m.text)
+                end)
+
         -- do not mark isError = false here... that is assumed, might also cause issues if mis-interpreted as an error!
         result.matches = lsp_result.matches
         callback({ result = result }) -- FYI response object sent back to ToolCall/model
