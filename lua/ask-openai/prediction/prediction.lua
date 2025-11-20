@@ -246,9 +246,15 @@ function Prediction:accept_first_word()
             --   go into insert mode right where else's e is at
             --   then alt+right on else hits this scenario
 
-            -- FYI line ending => needs to insert blank line!
-            -- TODO don't add BLANK_LINE if #lines == 1 ? this is my critique of what I had before!
-            inserted_lines = { first_word, BLANK_LINE }
+            if #lines == 1 then
+                -- *2b - no more prediction lines so DO NOT ADD BLANK LINE
+                -- FYI SCENARIO - delete just one word (i.e. else/end)
+                --   - then gen until you get prediction to replace ONLY that one word (NO next line)
+                inserted_lines = { first_word }
+            else
+                -- add a blank line and move on to next line of prediction
+                inserted_lines = { first_word, BLANK_LINE }
+            end
             lines[1] = ""
         else
             -- *3 matched next word (line has more words after this)
