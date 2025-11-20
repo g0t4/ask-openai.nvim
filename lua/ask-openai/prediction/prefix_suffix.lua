@@ -7,6 +7,7 @@ local M = {}
 ---@field end_line_base1 integer
 ---@field prefix string
 ---@field suffix string
+---@field rag_cursor_line_before_cursor string
 local PrefixSuffixChunk = {}
 
 function PrefixSuffixChunk:new(o)
@@ -106,6 +107,7 @@ function M.get_prefix_suffix_chunk(take_num_lines_each_way)
     ps_chunk.suffix = suffix_text
     ps_chunk.start_line_base1 = take_start_row_base0 + 1
     ps_chunk.end_line_base1 = take_end_row_base0 + 1
+    ps_chunk.rag_cursor_line_before_cursor = cursor_row_text_before_cursor
     return ps_chunk
 end
 

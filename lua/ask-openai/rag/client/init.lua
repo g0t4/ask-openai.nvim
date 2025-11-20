@@ -89,22 +89,18 @@ end
 ---@param ps_chunk PrefixSuffixChunk
 ---@returns string? -- FIM query string, or nil to disable FIM Semantic Grep
 local function fim_concat(ps_chunk)
+    -- FYI see fim_query_notes.md for past and future ideas for Semantic Grep selection w.r.t. RAG+FIM
+
     -- * TESTING FIM+RAG with cursor line ONLY for query
-    local lines = vim.split(ps_chunk.prefix, "\n")
-    if #lines < 1 then
-        log:trace("fim_concat: no prefix lines, skipping RAG")
-        return nil
-    end
-    local last_line_of_prefix = lines[#lines]
-    if trim(last_line_of_prefix) == "" then
-        -- PRN previous line? with a non-empty value?
-        log:trace("fim_concat: current line's prefix is empty, skipping RAG")
+    local query = ps_chunk.rag_cursor_line_before_cursor
+
+    if trim(query) == "" then
+        -- PRN previous line? with a non-empty value? if so, pass all lines or a subset from ps_chunk builder (on ps_chunk)
+        log:trace("fim_concat: current line's prefix (text before cursor) is empty, skipping RAG")
         return nil
     end
 
-    -- FYI see fim_query_notes.md for past and future ideas for Semantic Grep selection w.r.t. RAG+FIM
-    local query = last_line_of_prefix
-    log:trace("fim_concat: query='" .. tostring(query) .. "'")
+    log:trace(string.format("fim_concat: query=%q", query))
     return query
 end
 
