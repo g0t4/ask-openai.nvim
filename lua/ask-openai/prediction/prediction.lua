@@ -229,6 +229,7 @@ function Prediction:accept_first_word()
         -- PRN test scenario
         -- self:accept_first_line()
         -- return
+        -- TODO can I hit this scenario w/o word_end == nil above? if so I likely have a bug here (need to clear lines[1] too)
     end
     log:warn("  first_word", vim.inspect(first_word))
 
