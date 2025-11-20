@@ -178,7 +178,6 @@ function Prediction:accept_first_line()
     -- PRN add integration testing of these buffer/cursor interactions
 
     -- * insert first line
-    self.disable_cursor_moved = true
     local first_line = table.remove(lines, 1)
     local inserted_lines = { first_line }
     if #lines > 0 then
@@ -191,8 +190,8 @@ function Prediction:accept_first_line()
         -- - so the new blank just adds the next line to insert into (one at a time)
     end
 
+    self.disable_cursor_moved = true
     local cursor = get_cursor_position()
-    -- TODO combine:
     self:insert_text_at_cursor(cursor, inserted_lines)
     local controller = CursorController:new()
     controller:move_cursor_after_insert(cursor, inserted_lines)
@@ -253,8 +252,8 @@ function Prediction:accept_first_word()
     log:warn("  inserted_lines", vim.inspect(inserted_lines))
 
     -- * insert first word
-    local cursor = get_cursor_position()
     self.disable_cursor_moved = true
+    local cursor = get_cursor_position()
     self:insert_text_at_cursor(cursor, inserted_lines)
     local controller = CursorController:new()
     controller:move_cursor_after_insert(cursor, inserted_lines)
@@ -271,9 +270,8 @@ function Prediction:accept_all()
         return
     end
 
-    local cursor = get_cursor_position()
-
     self.disable_cursor_moved = true
+    local cursor = get_cursor_position()
     self:insert_text_at_cursor(cursor, lines)
     local controller = CursorController:new()
     controller:move_cursor_after_insert(cursor, lines)
