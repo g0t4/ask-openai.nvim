@@ -214,10 +214,6 @@ function Prediction:accept_first_word()
     end
     log:warn("lines", vim.inspect(lines))
 
-    -- FYI! leave this hot mess for now... you're re-learning the edge cases... that's a good thing!
-    --    DO NOT CLEAN THIS UNTIL YOU REALLY ARE SURE YOU KNOW IT IS WORKING WELL with CursorController
-    --     and you are happy with fixes for edge cases (i.e. wrap lines)
-    --
     -- PRN add integration testing of these buffer/cursor interactions
 
     local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
