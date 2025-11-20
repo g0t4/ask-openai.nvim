@@ -181,9 +181,7 @@ function Prediction:accept_first_word()
 
     local first_word = lines[1]:sub(1, word_end) or ""
     if first_word == lines[1] then
-        -- BTW can get blank line (with ' ' or ' \n' ... go right after a function definition and add a new line, or two... and if your cursor stays above the new lines, right below func signature, it will often suggest a blank line there - qwen2.5-coder:7b does anyways)
-        -- rest of word, then use accept line
-        -- log:trace("next word is last word for line, take it all")
+        -- PRN test scenario
         self:accept_first_line()
         return
     end
