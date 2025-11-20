@@ -211,6 +211,10 @@ function Prediction:accept_first_word()
     end
     log:warn("lines", vim.inspect(lines))
 
+    -- FYI! leave this hot mess for now... you're re-learning the edge cases... that's a good thing!
+    --    DO NOT CLEAN THIS UNTIL YOU REALLY ARE SURE YOU KNOW IT IS WORKING WELL with CursorController
+    --     and you are happy with fixes for edge cases (i.e. wrap lines)
+    --
     -- PRN add integration testing of these buffer/cursor interactions
 
     local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
@@ -218,20 +222,25 @@ function Prediction:accept_first_word()
     local inserted_lines = {}
     local BLANK_LINE = ""
     if word_end == nil then
-        log:warn("  *1 word_end == nil (means inserting whole line + the line has no word chars per my pattern above)")
+        -- *1 one non-word left
+        log:warn("  *1 rest of line is non-word char(s) (matches all of it) => wrap to next line")
+
+        -- FYI SCENARIO TO TEST: delete } or all of {} on the {} above and the line after (or not)
+        --    get prediction that spans to next line(s)
+        --    this works b/c the last chars on the line are non-words
+        --    so you'll match it and then w/o the BLANK_LINE here the line won't wrap!
+
         first_word = lines[1]
         inserted_lines = { first_word, BLANK_LINE }
         lines[1] = ""
-        -- PRN test scenario so I can experiment with how this feels!
-        -- self:accept_first_line()
-        -- return
     else
         first_word = lines[1]:sub(1, word_end) -- pull that word out
-
         inserted_lines = { first_word }
 
         if first_word == lines[1] then
-            log:warn("  *3 first_word == lines[1]")
+            -- *2 one word left
+            log:warn("  *3 rest of line is one word (no non-word chars left) => wrap to next line")
+
             -- FYI SCENARIO TO TEST:
             --   delete the "else" line (on its own line) above and the line after it... gen two+ line
             --   go into insert mode right where else's e is at
@@ -242,6 +251,7 @@ function Prediction:accept_first_word()
             inserted_lines = { first_word, BLANK_LINE }
             lines[1] = ""
         else
+            -- *3 matched next word (line has more words after this)
             -- strip first_word:
             lines[1] = lines[1]:sub(word_end + 1) or "" -- shouldn't need `or ""`
         end
@@ -250,18 +260,15 @@ function Prediction:accept_first_word()
     log:warn("  lines[1]", vim.inspect(lines[1]))
     log:warn("  inserted_lines", vim.inspect(inserted_lines))
 
-    -- insert first word into document
+    -- * insert first word
     local cursor = get_cursor_position()
-
     self.disable_cursor_moved = true
     self:insert_text_at_cursor(cursor, inserted_lines)
     local controller = CursorController:new()
     controller:move_cursor_after_insert(cursor, inserted_lines)
-    -- -- cursor should stop at end of first word
 
-    -- vim.api.nvim_win_set_cursor(0, { cursor.line_base1, cursor.col_base0 + #first_word }) -- (1,0)-indexed (row,col)
-
-    self.prediction = table.concat(lines, "\n") -- strip that first line then from the prediction (and update it)
+    -- * update prediction with remainder
+    self.prediction = table.concat(lines, "\n")
     log:warn("  self.prediction", vim.inspect(self.prediction))
     self:redraw_extmarks()
 end
