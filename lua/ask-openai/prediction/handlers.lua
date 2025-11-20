@@ -317,7 +317,6 @@ function M.resume_stream_invoked()
 end
 
 function M.accept_all_invoked()
-    log:trace("Accepting all predictions...")
     if not M.current_prediction then
         return
     end
@@ -325,7 +324,6 @@ function M.accept_all_invoked()
 end
 
 function M.accept_line_invoked()
-    log:trace("Accepting line prediction...")
     if not M.current_prediction then
         return
     end
@@ -333,7 +331,6 @@ function M.accept_line_invoked()
 end
 
 function M.accept_word_invoked()
-    log:trace("Accepting word prediction...")
     if not M.current_prediction then
         return
     end
@@ -345,8 +342,6 @@ function M.new_prediction_invoked()
 end
 
 function M.vim_is_quitting()
-    -- PRN detect rogue curl processes still running?
-    log:trace("Vim is quitting, stopping current prediction (ensures curl is terminated)...")
     M.cancel_current_prediction()
 end
 
