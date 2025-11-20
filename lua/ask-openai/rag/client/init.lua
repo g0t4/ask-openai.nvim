@@ -204,8 +204,7 @@ function M._context_query(query, instruct, callback)
             callback(result.matches or {}, true)
             return
         end
-
-        log:info("RAG matches (client):", vim.inspect(result))
+        log:info(ansi.white_bold(ansi.red_bg("RAG matches (client):")), vim.inspect(result))
         callback(result.matches or {}, false)
     end
 
