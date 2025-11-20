@@ -102,15 +102,20 @@ function M._context_query(parsed_args, callback)
             return
         end
 
-        log:trace("Semantic Grep tool_call matches (client):")
-        vim.iter(lsp_result.matches)
-            :each(
-            ---@param m LSPRankedMatch
-                function(m)
-                    local line_range = tostring(m.start_line_base0 + 1) .. "-" .. (m.end_line_base0 + 1)
-                    local header = ansi.yellow(tostring(m.file) .. ":" .. line_range .. "\n")
-                    log:trace(header, m.text)
-                end)
+        ---@param lsp_result LSPSemanticGrepResult
+        function log_semantic_grep_matches(lsp_result)
+            log:trace("Semantic Grep tool_call matches (client):")
+            vim.iter(lsp_result.matches)
+                :each(
+                ---@param m LSPRankedMatch
+                    function(m)
+                        local line_range = tostring(m.start_line_base0 + 1) .. "-" .. (m.end_line_base0 + 1)
+                        local header = ansi.yellow(tostring(m.file) .. ":" .. line_range .. "\n")
+                        log:trace(header, m.text)
+                    end
+                )
+        end
+        log_semantic_grep_matches(lsp_result)
 
         -- do not mark isError = false here... that is assumed, might also cause issues if mis-interpreted as an error!
         result.matches = lsp_result.matches
