@@ -20,6 +20,7 @@ end
 ---@param callback ToolCallDoneCallback
 function M.send_tool_call_router(tool_call, callback)
     local tool_name = tool_call["function"].name
+    -- local tool_name = "no_way" -- FYI test tool call failure plumbing (callbacks)
 
     if mcp.handles_tool(tool_name) then
         mcp.send_tool_call(tool_call, callback)
