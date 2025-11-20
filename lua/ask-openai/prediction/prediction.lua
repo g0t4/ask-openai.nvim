@@ -20,12 +20,12 @@ local extmarks_ns_id = vim.api.nvim_create_namespace("ask-predictions")
 ---@return Prediction
 function Prediction:new()
     self = self or {}
+
     -- id was originaly intended to track current prediction and not let past predictions write to extmarks (for example)
     self.id = vim.uv.hrtime() -- might not need id if I can use object reference instead, we will see (id is helpful if I need to roundtrip identity outside lua process)
     -- (nanosecond) time based s/b sufficient, esp b/c there should only ever be one prediction at a time.. even if multiple in short time (b/c of keystrokes, there is gonna be 1ms or so between them at most)
 
     self.buffer = 0 -- 0 == current buffer
-
     self.prediction = ""
     self.extmarks = {}
     self.paused = false

@@ -1,5 +1,4 @@
 local uv = vim.uv
-local M = {}
 local Prediction = require("ask-openai.prediction.prediction")
 local ansi = require("ask-openai.prediction.ansi")
 local rag_client = require("ask-openai.rag.client")
@@ -15,8 +14,9 @@ local stats = require("ask-openai.prediction.stats")
 local OllamaFimBackend = require("ask-openai.prediction.backends.llama")
 -- local backend = require("ask-openai.prediction.backends.backendsvllm")
 
--- FYI would need current prediction PER buffer in the future if want multiple buffers to have predictions at same time (not sure I want this feature)
-M.current_prediction = nil -- set on module for now, just so I can inspect it easily
+local M = {}
+
+M.current_prediction = nil
 
 function M.ask_for_prediction()
     M.cancel_current_prediction()
