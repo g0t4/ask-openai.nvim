@@ -98,7 +98,7 @@ function Prediction:redraw_extmarks()
         table.insert(virt_lines, { { line, HLGroups.PREDICTION_TEXT } })
     end
 
-    vim.api.nvim_buf_set_extmark(self.buffer, extmarks_ns_id, cursor_line_base0, cursor_col_base0, -- row & col are 0-indexed
+    vim.api.nvim_buf_set_extmark(self.buffer, extmarks_ns_id, cursor_line_base0, cursor_col_base0, -- 0-indexed
         {
             virt_text = first_line,
             virt_lines = virt_lines,
@@ -146,7 +146,7 @@ function Prediction:accept_first_line()
     -- * insert first line
     local first_line = table.remove(lines, 1) -- mostly just change this to accept 1+ words/lines
     local cursor_line_base1, cursor_col_base0 = unpack(vim.api.nvim_win_get_cursor(0))
-    local cursor_line_base0 = cursor_line_base1 - 1 -- 0-indexed now
+    local cursor_line_base0 = cursor_line_base1 - 1
 
     self.disable_cursor_moved = true
     -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
