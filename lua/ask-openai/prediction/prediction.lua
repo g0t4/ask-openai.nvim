@@ -16,6 +16,7 @@ local log = require("ask-openai.logs.logger").predictions()
 ---@field start_time number
 ---@field generated boolean|nil
 local Prediction = {}
+local instance_metatable = { __index = Prediction }
 local extmarks_ns_id = vim.api.nvim_create_namespace("ask-predictions")
 
 ---@return Prediction
@@ -36,7 +37,7 @@ function Prediction.new()
     self.has_reasoning = false
     self.reasoning_chunks = {}
     self.start_time = os.time()
-    return setmetatable(self, { __index = Prediction })
+    return setmetatable(self, instance_metatable)
 end
 
 function Prediction:add_chunk_to_prediction(chunk, reasoning_content)
