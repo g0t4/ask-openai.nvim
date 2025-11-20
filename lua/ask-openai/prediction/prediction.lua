@@ -218,6 +218,7 @@ function Prediction:accept_first_word()
     -- PRN add integration testing of these buffer/cursor interactions
 
     local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
+    local last_predicted_line = #lines == 1
     local first_word
     local inserted_lines = {}
     local BLANK_LINE = ""
@@ -231,7 +232,7 @@ function Prediction:accept_first_word()
         --    so you'll match it and then w/o the BLANK_LINE here the line won't wrap!
 
         first_word = lines[1]
-        if #lines == 1 then
+        if last_predicted_line then
             -- *1b - no more prediction lines so DO NOT ADD BLANK LINE
             -- FYI SCENARIO delete one non word at end of line, i.e. {} and then gen until get just its replacement (no next line)
             inserted_lines = { first_word }
@@ -241,7 +242,6 @@ function Prediction:accept_first_word()
         lines[1] = ""
     else
         first_word = lines[1]:sub(1, word_end) -- pull that word out
-        inserted_lines = { first_word }
 
         if first_word == lines[1] then
             -- *2 one word left
@@ -252,7 +252,7 @@ function Prediction:accept_first_word()
             --   go into insert mode right where else's e is at
             --   then alt+right on else hits this scenario
 
-            if #lines == 1 then
+            if last_predicted_line then
                 -- *2b - no more prediction lines so DO NOT ADD BLANK LINE
                 -- FYI SCENARIO - delete just one word (i.e. else/end)
                 --   - then gen until you get prediction to replace ONLY that one word (NO next line)
@@ -266,6 +266,7 @@ function Prediction:accept_first_word()
             -- *3 matched next word (line has more words after this)
             -- strip first_word:
             lines[1] = lines[1]:sub(word_end + 1) or "" -- shouldn't need `or ""`
+            inserted_lines = { first_word }
         end
     end
     log:warn("  first_word", vim.inspect(first_word))
