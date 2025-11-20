@@ -166,7 +166,7 @@ local function check()
     end
 end
 
---- @type Provider
+---@type Provider
 return {
     get_chat_completions_url = get_chat_completions_url,
     get_bearer_token = get_bearer_token,

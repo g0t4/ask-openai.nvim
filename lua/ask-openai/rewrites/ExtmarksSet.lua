@@ -20,7 +20,7 @@ function ExtmarksSet:clear_all()
 end
 
 --- get an extmark by id
---- @param mark_id integer
+---@param mark_id integer
 ---@return vim.api.keyset.get_extmark_item_by_id # 0-indexed (row, col) tuple or empty list ()
 function ExtmarksSet:get(mark_id)
     -- FYI probably it's more useful to cache this in the consumer, unless multiple consumers can change it
@@ -28,8 +28,8 @@ function ExtmarksSet:get(mark_id)
 end
 
 --- create OR update (i.e. move) an existing mark
---- @param mark_id integer
---- @param opts { start_line:integer, start_col:integer, ... } # nvim_buf_set_extmark options
+---@param mark_id integer
+---@param opts { start_line:integer, start_col:integer, ... } # nvim_buf_set_extmark options
 ---@return integer mark_id # useful if you didn't provide a mark_id and want the generated id
 function ExtmarksSet:set(mark_id, opts)
     opts.id = mark_id

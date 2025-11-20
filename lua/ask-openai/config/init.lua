@@ -1,17 +1,17 @@
 local local_share = require("ask-openai.config.local_share")
 
---- @class Provider
---- @field get_bearer_token fun(): string
---- @field check fun() # optional
---- @field get_chat_completions_url fun(): string # optional
+---@class Provider
+---@field get_bearer_token fun(): string
+---@field check fun() # optional
+---@field get_chat_completions_url fun(): string # optional
 local M = {}
 
 --- ask-openai options
---- @class AskOpenAIOptions
---- @field model string
---- @field provider string
---- @field copilot CopilotOptions
---- @field api_url string|nil
+---@class AskOpenAIOptions
+---@field model string
+---@field provider string
+---@field copilot CopilotOptions
+---@field api_url string|nil
 local default_options = {
 
     keymaps = {
@@ -112,10 +112,10 @@ local function _get_provider()
     end
 end
 
---- @type Provider
+---@type Provider
 local cached_provider = nil
 
---- @return Provider
+---@return Provider
 function M.get_provider()
     if cached_provider == nil then
         cached_provider = _get_provider()

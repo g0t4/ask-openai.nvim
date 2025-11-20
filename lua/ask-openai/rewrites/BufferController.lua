@@ -10,7 +10,7 @@ local log = require("ask-openai.logs.logger").predictions()
 local BufferController0Indexed = {}
 BufferController0Indexed.__index = BufferController0Indexed
 
---- @param buffer_number integer
+---@param buffer_number integer
 function BufferController0Indexed:new(buffer_number)
     self = setmetatable(self, BufferController0Indexed)
     self.buffer_number = buffer_number
@@ -49,8 +49,8 @@ end
 --   TODO! BTW... LinesBuilder probably overlaps with some of what Displayer does (w.r.t. styling extmarks)
 
 --- does not include the end line #
---- @param start_row integer 0-indexed
---- @param end_row_exclusive integer 0-indexed
+---@param start_row integer 0-indexed
+---@param end_row_exclusive integer 0-indexed
 function BufferController0Indexed:get_lines(start_row, end_row_exclusive)
     -- TODO should I decide on end-inclusive or end-exclusive for ALL operations on BufferController?
     --   if so which is more common in nvim APIs?

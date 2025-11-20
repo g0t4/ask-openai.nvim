@@ -8,7 +8,7 @@ local M = {}
 -- TODO when switch model, I should reset the values
 M.last_stats = nil
 
---- @param stats SSEStats?
+---@param stats SSEStats?
 function M.set_last_fim_stats(stats)
     M.last_stats = stats
 end

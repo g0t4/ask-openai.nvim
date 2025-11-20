@@ -23,12 +23,12 @@ function ChatThread:new(params, base_url)
     return self
 end
 
---- @param request LastRequest
+---@param request LastRequest
 function ChatThread:set_last_request(request)
     self.last_request = request
 end
 
---- @param message TxChatMessage
+---@param message TxChatMessage
 function ChatThread:add_message(message)
     -- TODO drop previous messages => message.reasoning_content once a final message is detected?
     if not message.role then

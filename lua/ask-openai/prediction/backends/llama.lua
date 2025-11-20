@@ -290,11 +290,11 @@ function OllamaFimBackend:get_repo_name()
     return vim.fn.getcwd():match("([^/]+)$")
 end
 
---- @class SSEResult
---- @field chunk string?          -- text delta
---- @field done boolean           -- true if the stream is finished
---- @field done_reason string?    -- reason for completion, if any
---- @field stats SSEStats?        -- parsed SSE statistics
+---@class SSEResult
+---@field chunk string?          -- text delta
+---@field done boolean           -- true if the stream is finished
+---@field done_reason string?    -- reason for completion, if any
+---@field stats SSEStats?        -- parsed SSE statistics
 SSEResult = {}
 
 function SSEResult:new(chunk, done, done_reason, stats, reasoning_content)
@@ -355,21 +355,21 @@ function OllamaFimBackend.process_sse(lines)
     return SSEResult:new(chunk, done, done_reason, stats, reasoning_content)
 end
 
---- @class SSEStats
---- @field timings table?  -- llama-server timings object (for quick tests)
---- @field prompt_tokens integer
---- @field prompt_tokens_per_second number
---- @field predicted_tokens integer
---- @field predicted_tokens_per_second number
---- @field cached_tokens integer?               # optional, may be nil
---- @field draft_tokens integer?                # optional, may be nil
---- @field draft_tokens_accepted integer?       # optional, may be nil
---- @field truncated_warning string?            # optional, may be nil
---- @field parsed_sse table?                    # raw SSE payload, optional
---- @field generation_settings table?           # extracted from parsed_sse.generation_settings, optional
---- @field generation_settings.temperature number?
---- @field generation_settings.top_p number?
---- @field generation_settings.max_tokens integer?
+---@class SSEStats
+---@field timings table?  -- llama-server timings object (for quick tests)
+---@field prompt_tokens integer
+---@field prompt_tokens_per_second number
+---@field predicted_tokens integer
+---@field predicted_tokens_per_second number
+---@field cached_tokens integer?               # optional, may be nil
+---@field draft_tokens integer?                # optional, may be nil
+---@field draft_tokens_accepted integer?       # optional, may be nil
+---@field truncated_warning string?            # optional, may be nil
+---@field parsed_sse table?                    # raw SSE payload, optional
+---@field generation_settings table?           # extracted from parsed_sse.generation_settings, optional
+---@field generation_settings.temperature number?
+---@field generation_settings.top_p number?
+---@field generation_settings.max_tokens integer?
 SSEStats = {}
 
 function SSEStats:new(parsed_sse)
@@ -378,8 +378,8 @@ function SSEStats:new(parsed_sse)
     return self
 end
 
---- @param parsed_sse table
---- @returns SSEStats?
+---@param parsed_sse table
+---@returns SSEStats?
 function parse_llamacpp_stats(parsed_sse)
     -- *** currently only llama-server stats from its last SSE
     if not parsed_sse or not parsed_sse.timings then

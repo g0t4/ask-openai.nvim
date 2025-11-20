@@ -12,7 +12,7 @@ local BufferController0Indexed = require('ask-openai.rewrites.BufferController')
 local WindowController0Indexed = {}
 WindowController0Indexed.__index = WindowController0Indexed
 
---- @param window_id integer
+---@param window_id integer
 function WindowController0Indexed:new(window_id)
     self = setmetatable(self, WindowController0Indexed)
     self.window_id = window_id

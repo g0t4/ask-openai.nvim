@@ -39,8 +39,8 @@ local log = require("ask-openai.logs.logger").predictions()
 ---@field _on_data_sse SSEOnDataHandler
 local SSEDataOnlyParser = {}
 
---- @param on_data_sse SSEOnDataHandler
---- @return SSEDataOnlyParser
+---@param on_data_sse SSEOnDataHandler
+---@return SSEDataOnlyParser
 function SSEDataOnlyParser.new(on_data_sse)
     local instance = setmetatable({}, { __index = SSEDataOnlyParser })
     instance._buffer = ""

@@ -1,7 +1,7 @@
 local curl = require('plenary.curl')
 local TxChatMessage = require('ask-openai.questions.chat.messages.tx')
 
---- @return string
+---@return string
 local function get_vim_command_suggestion(passed_context)
     local system_message = [[
         You are a vim expert. The user (that you are talking to) has vim open in command mode.

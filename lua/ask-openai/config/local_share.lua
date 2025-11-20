@@ -131,7 +131,7 @@ function M.get_log_threshold()
     return text, number
 end
 
---- @return boolean
+---@return boolean
 function M.is_trace_logging_enabled()
     local _, number = M.get_log_threshold()
     return number <= LEVEL_NUMBERS.TRACE

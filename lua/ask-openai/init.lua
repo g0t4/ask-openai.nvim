@@ -139,7 +139,7 @@ function M.ask_openai()
     return trim_null_characters(result)
 end
 
---- @param user_options AskOpenAIOptions
+---@param user_options AskOpenAIOptions
 function M.setup(user_options)
     -- FYI this is called by the plugin consumer... passing their options
     config.setup(user_options)

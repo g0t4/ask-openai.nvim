@@ -1,17 +1,17 @@
---- @class ChatParams
---- @field model string
---- @field stream boolean|nil
---- @field messages TxChatMessage[]
+---@class ChatParams
+---@field model string
+---@field stream boolean|nil
+---@field messages TxChatMessage[]
 ---
 --- TODO validate these are correct:
---- @field temperature number|nil
---- @field top_p number|nil
---- @field n number|nil
---- @field stop string[]|nil
---- @field max_tokens number|nil
---- @field presence_penalty number|nil
---- @field frequency_penalty number|nil
---- @field tools table[]|nil
+---@field temperature number|nil
+---@field top_p number|nil
+---@field n number|nil
+---@field stop string[]|nil
+---@field max_tokens number|nil
+---@field presence_penalty number|nil
+---@field frequency_penalty number|nil
+---@field tools table[]|nil
 --- TODO MORE
 local ChatParams = {}
 
