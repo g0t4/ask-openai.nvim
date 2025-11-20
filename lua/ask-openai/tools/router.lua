@@ -31,8 +31,20 @@ function M.send_tool_call_router(tool_call, callback)
         return
     end
 
-    -- for now it's fine to just fail here with an error
-    error("tool not found: " .. tool_name)
+    ---TODO make a helper to build this message (or just return an error object in callback and handle it in the callback)
+    ---@type MCPToolCallOutputResult
+    local call_output = {
+        result = {
+            isError = true,
+            content = { {
+                type = "text",
+                text = "Invalid tool name: " .. tool_name,
+                name = "error",
+            } }
+        }
+        -- error = { message = "invalid_tool_name: " .. tool_name, }
+    }
+    callback(call_output)
 end
 
 return M
