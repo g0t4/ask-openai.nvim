@@ -36,4 +36,21 @@ function CursorController:calc_new_position(cursor, inserted_lines)
     }
 end
 
+---@class CursorInfo
+---@field line_base0 integer
+---@field line_base1 integer
+---@field col_base0 integer
+---@field col_base1 integer
+
+---@return CursorInfo
+function CursorController:get_cursor_position()
+    local line_base1, col_base0 = unpack(vim.api.nvim_win_get_cursor(self.window_id)) -- (1,0)-indexed (row,col)
+    return {
+        line_base1 = line_base1,
+        line_base0 = line_base1 - 1,
+        col_base0 = col_base0,
+        col_base1 = col_base0 + 1,
+    }
+end
+
 return CursorController

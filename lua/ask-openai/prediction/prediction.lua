@@ -1,6 +1,7 @@
 local dots = require("ask-openai.rewrites.thinking.dots")
 local HLGroups = require("ask-openai.hlgroups")
 local log = require("ask-openai.logs.logger").predictions()
+local CursorController = require "ask-openai.prediction.cursor_controller"
 
 ---@class Prediction
 ---@field id integer
@@ -77,29 +78,11 @@ local function split_lines(text)
     return lines
 end
 
----@class CursorInfo
----@field line_base0 integer
----@field line_base1 integer
----@field col_base0 integer
----@field col_base1 integer
-
----@return CursorInfo
-local function get_cursor_position()
-    -- TODO make CursorController w/ method to calculate (and maybe even move) it by lines/cols!
-    -- TODO move and use elsewhere too!
-    local line_base1, col_base0 = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0)-indexed (row,col)
-    return {
-        line_base1 = line_base1,
-        line_base0 = line_base1 - 1,
-        col_base0 = col_base0,
-        col_base1 = col_base0 + 1,
-    }
-end
-
 function Prediction:redraw_extmarks()
     self:clear_extmarks()
 
-    local cursor = get_cursor_position()
+    local controller = CursorController:new()
+    local cursor = controller:get_cursor_position()
 
     if self.prediction == nil then
         print("unexpected... prediction is nil?")
@@ -157,17 +140,15 @@ function Prediction:mark_generation_failed()
     self.mark_generation_failed = true
 end
 
-local CursorController = require "ask-openai.prediction.cursor_controller"
 local BLANK_LINE = ""
-
 function Prediction:insert_accepted(lines)
     self.disable_cursor_moved = true
-    local cursor = get_cursor_position()
+    local controller = CursorController:new()
+    local cursor = controller:get_cursor_position()
 
     -- start = end = cursor position!
     vim.api.nvim_buf_set_text(self.buffer, cursor.line_base0, cursor.col_base0, cursor.line_base0, cursor.col_base0, lines)
 
-    local controller = CursorController:new()
     local new_cursor = controller:calc_new_position(cursor, lines)
     vim.api.nvim_win_set_cursor(controller.window_id, { new_cursor.line_base1, new_cursor.col_base0 }) -- (1,0)-indexed
 end
