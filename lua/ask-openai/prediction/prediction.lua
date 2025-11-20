@@ -31,15 +31,13 @@ function Prediction:new()
     self.id = uv.hrtime() -- might not need id if I can use object reference instead, we will see (id is helpful if I need to roundtrip identity outside lua process)
     -- (nanosecond) time based s/b sufficient, esp b/c there should only ever be one prediction at a time.. even if multiple in short time (b/c of keystrokes, there is gonna be 1ms or so between them at most)
 
-    -- PRN prediction per buffer (only when not having this becomes a hassle)
     self.buffer = 0 -- 0 == current buffer
 
-    -- ?? keep \n to differentiate lines ? or map to some sort of object model (lines at least... and maybe tokenize the lines)
     self.prediction = ""
     self.extmarks = {}
     self.paused = false
     self.buffered_chunks = ""
-    self.abandoned = false -- PRN could be a prediction state? IF NEEDED
+    self.abandoned = false
     self.disable_cursor_moved = false
     self.has_reasoning = false
     self.reasoning_chunks = {}
@@ -53,15 +51,12 @@ function Prediction:add_chunk_to_prediction(chunk, reasoning_content)
         return
     end
 
-    -- TODO anything more efficient for concatenating chunks?
     if chunk then
         self.prediction = self.prediction .. chunk
     end
     if reasoning_content then
         table.insert(self.reasoning_chunks, reasoning_content)
-        -- TODO log reasoning chunks when done
         self.has_reasoning = true
-        -- if needed, accumulate reasoning (maybe for log messages to troubleshoot the reasoning)
     end
     self:redraw_extmarks()
 end
@@ -85,10 +80,9 @@ end
 
 function Prediction:redraw_extmarks()
     self:clear_extmarks()
-    -- clear from 0 to -1 => entire buffer
 
-    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0)-indexed #s... aka original_row starts at 1, original_col starts at 0
-    local original_row = original_row_1indexed - 1 -- 0-indexed now
+    local original_row_1indexed, original_col_0indexed = unpack(vim.api.nvim_win_get_cursor(0))
+    local original_row_0indexed = original_row_1indexed - 1
 
     if self.prediction == nil then
         print("unexpected... prediction is nil?")
@@ -115,7 +109,7 @@ function Prediction:redraw_extmarks()
         table.insert(virt_lines, { { line, HLGroups.PREDICTION_TEXT } })
     end
 
-    vim.api.nvim_buf_set_extmark(self.buffer, extmarks_ns_id, original_row, original_col,
+    vim.api.nvim_buf_set_extmark(self.buffer, extmarks_ns_id, original_row_0indexed, original_col_0indexed,
         -- FYI, row,col are 0-indexed! ARGH FML
         {
             virt_text = first_line,
@@ -126,18 +120,11 @@ function Prediction:redraw_extmarks()
 end
 
 function Prediction:clear_extmarks()
-    -- clear from 0 to -1 => entire buffer
     vim.api.nvim_buf_clear_namespace(self.buffer, extmarks_ns_id, 0, -1)
 end
 
 function Prediction:pause_new_chunks()
-    --
-    -- pause means stop showing new chunks
-    --    make sure to accept what is shown (if accepted after pause)
-    --    which means new chunks (after paused) need to be:
-    --      buffered
-    --      or discarded
-    --
+    -- pause means stop showing new chunks (buffer new chunks)
     self.paused = true
 end
 
