@@ -222,7 +222,8 @@ function Prediction:accept_first_word()
     local first_word
     local inserted_lines = {}
     local BLANK_LINE = ""
-    if word_end == nil then
+    local one_non_word_remains = word_end == nil
+    if one_non_word_remains then
         -- *1 one non-word left
         log:warn("  *1 rest of line is non-word char(s) (matches all of it) => wrap to next line")
 
