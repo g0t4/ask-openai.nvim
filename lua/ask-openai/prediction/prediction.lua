@@ -264,7 +264,6 @@ function Prediction:accept_first_word()
                 --   - then gen until you get prediction to replace ONLY that one word (NO next line)
                 inserted_lines = { first_word }
             else
-                -- add a blank line and move on to next line of prediction
                 inserted_lines = { first_word, BLANK_LINE }
             end
             lines[1] = ""
