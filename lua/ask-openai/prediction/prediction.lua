@@ -168,12 +168,12 @@ end
 local CursorController = require "ask-openai.prediction.cursor_controller"
 local BLANK_LINE = ""
 
-function Prediction:insert_accepted(inserted_lines)
+function Prediction:insert_accepted(lines)
     self.disable_cursor_moved = true
     local cursor = get_cursor_position()
-    self:insert_text_at_cursor(cursor, inserted_lines)
+    self:insert_text_at_cursor(cursor, lines)
     local controller = CursorController:new()
-    controller:move_cursor_after_insert(cursor, inserted_lines)
+    controller:move_cursor_after_insert(cursor, lines)
 end
 
 function Prediction:accept_first_line()
