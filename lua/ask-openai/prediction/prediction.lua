@@ -12,6 +12,7 @@ local log = require("ask-openai.logs.logger").predictions()
 ---@field abandoned boolean         # user aborted prediction
 ---@field disable_cursor_moved boolean
 ---@field has_reasoning boolean
+---@field private reasoning_chunks string[]
 ---@field start_time number
 ---@field generated boolean|nil
 local Prediction = {}
