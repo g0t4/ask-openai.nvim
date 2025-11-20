@@ -168,14 +168,12 @@ function OllamaFimBackend:body_for()
 
         -- TODO! stop token isn't set! should I just remove this... I have them commented out in the other file linked here:
         body.options.stop = fim.qwen25coder.sentinel_tokens.fim_stop_tokens
-        log:error("stop token: " .. vim.inspect(body.options.stop))
     elseif string.find(body.model, "qwen25coder", nil, true) then
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
         -- TODO! stop token isn't set! should I just remove this... I have them commented out in the other file linked here:
         body.options.stop = fim.qwen25coder.sentinel_tokens.fim_stop_tokens
-        log:error("stop token: " .. vim.inspect(body.options.stop))
     elseif string.find(body.model, "bytedance-seed-coder-8b", nil, true) then
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self) -- WORKS FOR repo level using qwen's format entirely! (plus set qwen's stop_tokens to avoid rambles / trailing stop tokens)
@@ -185,7 +183,6 @@ function OllamaFimBackend:body_for()
         -- MUST set qwent's tokens as stop tokens too (when using Qwen's repo level fim format)
         body.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder -- llama-server /completions endpoint uses top-level stop
         body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
-        -- log:error("stop token: " .. vim.inspect(body.options.stop))
     elseif string.find(body.model, "gpt-oss", nil, true) then
         if not use_gptoss_raw then
             -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
