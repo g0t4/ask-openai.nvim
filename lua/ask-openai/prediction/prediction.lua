@@ -160,7 +160,6 @@ end
 ---@param cursor CursorInfo
 ---@param lines string[]
 function Prediction:insert_text_at_cursor(cursor, lines)
-    -- TODO get_cursor_position() in here? (especially if I move the move logic here!)
     -- start = end = cursor position!
     vim.api.nvim_buf_set_text(self.buffer, cursor.line_base0, cursor.col_base0, cursor.line_base0, cursor.col_base0, lines)
 end
@@ -210,20 +209,20 @@ function Prediction:accept_first_word()
     if #lines == 0 then
         return
     end
-    log:warn("lines", vim.inspect(lines))
+    -- log:warn("lines", vim.inspect(lines))
 
     -- PRN add integration testing of these buffer/cursor interactions
 
     local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
-    log:warn("  word_end", vim.inspect(word_end))
+    -- log:warn("  word_end", vim.inspect(word_end))
     local insert_lines = {}
 
     local one_non_word_remains = word_end == nil
     local one_word_remains = word_end == #lines[1] -- word_end == # chars in line ==> full match!
     local accepts_rest_of_line = one_non_word_remains or one_word_remains
     if accepts_rest_of_line then
-        log:warn("  one_non_word_remains", vim.inspect(one_non_word_remains))
-        log:warn("  one_word_remains", vim.inspect(one_word_remains))
+        -- log:warn("  one_non_word_remains", vim.inspect(one_non_word_remains))
+        -- log:warn("  one_word_remains", vim.inspect(one_word_remains))
 
         -- FYI TEST SCENARIOS:
         -- identify one of each:
@@ -252,14 +251,14 @@ function Prediction:accept_first_word()
 
         insert_lines = { first_word }
     end
-    log:warn("  lines[1]", vim.inspect(lines[1]))
-    log:warn("  insert_lines", vim.inspect(insert_lines))
+    -- log:warn("  lines[1]", vim.inspect(lines[1]))
+    -- log:warn("  insert_lines", vim.inspect(insert_lines))
 
     self:insert_accepted(insert_lines)
 
     -- * update prediction
     self.prediction = table.concat(lines, "\n")
-    log:warn("  self.prediction", vim.inspect(self.prediction))
+    -- log:warn("  self.prediction", vim.inspect(self.prediction))
     self:redraw_extmarks()
 end
 
