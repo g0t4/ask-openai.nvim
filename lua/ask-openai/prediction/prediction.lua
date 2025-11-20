@@ -166,6 +166,7 @@ function Prediction:insert_text_at_cursor(cursor, lines)
 end
 
 local CursorController = require "ask-openai.prediction.cursor_controller"
+local BLANK_LINE = ""
 
 function Prediction:accept_first_line()
     -- FYI instead of splitting every time... could make a class that buffers into line splits for me! use a table of chunks until hit \n... flush to the next line and start accumulating next line, etc
@@ -182,7 +183,6 @@ function Prediction:accept_first_line()
 
     self.disable_cursor_moved = true
 
-    local BLANK_LINE = "" -- essential
     local inserted_lines = { first_line, BLANK_LINE }
     self:insert_text_at_cursor(cursor, inserted_lines)
     local controller = CursorController:new()
@@ -224,7 +224,7 @@ function Prediction:accept_first_word()
     log:warn("  word_end", vim.inspect(word_end))
     local last_predicted_line = #lines == 1
     local inserted_lines = {}
-    local BLANK_LINE = ""
+
     local one_non_word_remains = word_end == nil
     log:warn("  one_non_word_remains", vim.inspect(one_non_word_remains))
     local one_word_remains = word_end == #lines[1] -- word_end == # chars in line ==> full match!
