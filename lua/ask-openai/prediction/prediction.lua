@@ -223,7 +223,6 @@ function Prediction:accept_first_word()
     local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
     log:warn("  word_end", vim.inspect(word_end))
     local last_predicted_line = #lines == 1
-    local first_word
     local inserted_lines = {}
     local BLANK_LINE = ""
     local one_non_word_remains = word_end == nil
@@ -246,7 +245,7 @@ function Prediction:accept_first_word()
         --   redo the gen to get a useful scenario (often can get one word gens on lines that really only would have one word/non-word)
 
         -- take rest of line
-        first_word = lines[1]
+        local first_word = lines[1]
         lines[1] = ""
 
         if last_predicted_line then
@@ -256,12 +255,11 @@ function Prediction:accept_first_word()
         end
     else
         -- take next word only
-        first_word = lines[1]:sub(1, word_end)
+        local first_word = lines[1]:sub(1, word_end)
         lines[1] = lines[1]:sub(word_end + 1)
 
         inserted_lines = { first_word }
     end
-    log:warn("  first_word", vim.inspect(first_word))
     log:warn("  lines[1]", vim.inspect(lines[1]))
     log:warn("  inserted_lines", vim.inspect(inserted_lines))
 
