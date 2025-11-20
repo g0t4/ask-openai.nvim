@@ -84,7 +84,7 @@ function M._context_query(parsed_args, callback)
     function on_server_response(err, lsp_result)
         local result = {}
         if err then
-            log:error("Semantic Grep tool_call query failed: " .. tostring(err), vim.inspect(lsp_result))
+            log:luaify_trace("Semantic Grep tool_call query failed: " .. tostring(err), lsp_result)
             result.isError = true
             -- TODO is this how I want to return the error?
             result.error = err.message or "unknown error"
@@ -94,14 +94,14 @@ function M._context_query(parsed_args, callback)
         end
 
         if lsp_result.error ~= nil and lsp_result.error ~= "" then
-            log:error("Semantic Grep tool_call lsp_result error, still calling back: ", vim.inspect(lsp_result))
+            log:luaify_trace("Semantic Grep tool_call lsp_result error, still calling back: ", lsp_result)
             result.isError = true
             result.matches = lsp_result.matches or {}
             callback({ result = result })
             return
         end
 
-        log:info("Semantic Grep tool_call matches (client):", vim.inspect(lsp_result))
+        log:luaify_trace("Semantic Grep tool_call matches (client):", lsp_result)
         -- do not mark isError = false here... that is assumed, might also cause issues if mis-interpreted as an error!
         result.matches = lsp_result.matches
         callback({ result = result }) -- FYI response object sent back to ToolCall/model
