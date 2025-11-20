@@ -263,18 +263,22 @@ function Logger:trace_stdio_read_always(label, read_error, data)
         -- ?? dump colorful stack trace
         self:trace(label .. " read_error:", read_error)
     end
+
+    if data == nil then return end -- do not log EOF (data == nil)
+
     if data == "" then data = "<empty>" end
     self:trace(label, data)
-    -- ftr... nil prints as "nil"
 end
 
 -- less verbose, use this when not troubleshooting
-function Logger:trace_stdio_read_errors(label, read_error, _data)
+function Logger:trace_stdio_read_errors(label, read_error, data)
     -- FYI read_error is only for the read operation on the pipe, not the underlying process itself
     if read_error ~= nil then
         -- ?? dump colorful stack trace
         self:trace(label .. " read_error:", read_error)
     end
+
+    -- if data == nil then return end -- do not log EOF (data == nil) -- * add this line if add logic below
 end
 
 -- *** NOOP LOGGER STUBS TO SHUT DOWN 99% of expense of logging

@@ -43,8 +43,7 @@ function M.ask_for_prediction()
         local stderr = uv.new_pipe(false)
 
         local function on_exit(code, signal)
-            -- log:trace_on_exit_always(code, signal)
-            log:trace_on_exit_errors(code, signal) -- less verbose
+            log:trace_on_exit_errors(code, signal) -- FYI switch _errors/_always
 
             -- TODO mark complete? close? any reason to do this? I vaguely recall there might be a reason I want to do this
             --   i.e. process related?

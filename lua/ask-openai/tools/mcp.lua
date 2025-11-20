@@ -1,4 +1,5 @@
 local log = require("ask-openai.logs.logger").predictions()
+local ansi = require("ask-openai.prediction.ansi")
 local uv = vim.uv
 
 local M = {}
@@ -51,22 +52,25 @@ function start_mcp_server(name, on_message)
     local handle
 
     local function on_exit(code, signal)
-        log:trace("MCP exited with code", code, "and signal", signal)
+        log:trace_on_exit_errors(code, signal) -- FYI switch _errors/_always
+
+        handle:close()
+
+        -- TODO reopen?
+        log:trace(ansi.white_bold(ansi.red_bg("MCP SERVER EXITED... DO YOU NEED TO RESTART IT? (ok to ignore this error if nvim is exiting)")))
     end
 
-    handle, pid = uv.spawn(options.command, {
-        args = options.args,
-        stdio = { stdin, stdout, stderr },
-    }, on_exit)
+    handle, pid = uv.spawn(options.command,
+        ---@diagnostic disable-next-line: missing-fields
+        {
+            args = options.args,
+            stdio = { stdin, stdout, stderr },
+        },
+        on_exit)
 
-    local function on_stdout(err, data)
-        -- log:trace("MCP stdout:", data)
-        assert(not err, err)
-        -- receive messages
-
-        if not data then
-            return
-        end
+    local function on_stdout(read_error, data)
+        log:trace_stdio_read_errors("MCP on_stdout", read_error, data) -- FYI switch _errors/_always
+        if data == nil then return end -- EOF
 
         for line in data:gmatch("[^\r\n]+") do
             local ok, msg = pcall(vim.json.decode, line)
@@ -80,11 +84,9 @@ function start_mcp_server(name, on_message)
 
     uv.read_start(stdout, on_stdout)
 
-    local function on_stderr(err, data)
-        if err then
-            log:trace("MCP stderr error:", err)
-        end
-        log:trace("MCP stderr:", data)
+    local function on_stderr(read_error, data)
+        log:trace_stdio_read_errors("MCP on_stderr", read_error, data) -- FYI switch _errors/_always
+        -- if data == nil then return end -- EOF -- * add this line if add logic below
     end
 
     uv.read_start(stderr, on_stderr)
