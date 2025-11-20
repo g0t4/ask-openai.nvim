@@ -86,8 +86,8 @@ function M.ask_for_prediction()
 
             perf:token_arrived()
 
+            -- FYI use defer_fn w/ 500ms to reproduce "stuck" predictions
             vim.schedule(function()
-                -- vim.defer_fn(function()
                 if this_prediction.abandoned then
                     -- DO NOT update prediction text if it's been abandoned!
                     -- reproduce bug by comment out this check...
@@ -123,7 +123,6 @@ function M.ask_for_prediction()
                 end
                 stats.show_prediction_stats(sse_result, perf)
             end)
-            -- end, 500) -- 500 ms makes it easy to reproduce "stuck" predictions
         end
         stdout:read_start(on_stdout)
         log:info("stdout:read_start FIM curl") -- TODO remove once find culprit 2025-11-17
