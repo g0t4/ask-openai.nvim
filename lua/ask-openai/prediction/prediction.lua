@@ -269,11 +269,7 @@ function Prediction:accept_all()
         return
     end
 
-    self.disable_cursor_moved = true
-    local cursor = get_cursor_position()
-    self:insert_text_at_cursor(cursor, lines)
-    local controller = CursorController:new()
-    controller:move_cursor_after_insert(cursor, lines)
+    self:insert_accepted(lines)
 
     -- FYI KEY TEST SCENARIO: complete to end of generated text
     --   * easy b/c no partial accept... whatever the model generates, insert it
