@@ -87,29 +87,10 @@ function trim(str)
 end
 
 ---@param ps_chunk PrefixSuffixChunk
----@param limit? integer -- number of characters before/after cursor position for Semantic Grep document
 ---@returns string? -- FIM query string, or nil to disable FIM Semantic Grep
-local function fim_concat(ps_chunk, limit)
-    limit = limit or 1500 -- 2000?
-    local half = math.floor(limit / 2)
-
-    -- * warnings so I can investigate
-    --   FYI I think I will just supress these warnings b/c a limit is fine for RAG that is far less than FIM limits
-    --   FYI IT IS OK TO REMOVE THE WARNINGS! OR COMMENT THEM OUT! or set at debug log level
-    local truncated = false
-    if ps_chunk.prefix:len() > half then
-        truncated = true
-        log:warn(string.format("FIM prefix too long for RAG (max %d chars, got %d) – will be truncated", limit, ps_chunk.prefix:len()))
-    end
-    if ps_chunk.suffix:len() > half then
-        truncated = true
-        log:warn(string.format("FIM suffix too long for RAG (max %d chars, got %d) – will be truncated", limit, ps_chunk.suffix:len()))
-    end
-
-    local short_prefix = ps_chunk.prefix:sub(-half) -- take from the end of the prefix (if over limit)
-    local short_suffix = ps_chunk.suffix:sub(1, half) -- take from the start of the suffix (if over limit)
-
-    local lines = vim.split(short_prefix, "\n")
+local function fim_concat(ps_chunk)
+    -- * TESTING FIM+RAG with cursor line ONLY for query
+    local lines = vim.split(ps_chunk.prefix, "\n")
     if #lines < 1 then
         log:trace("fim_concat: no prefix lines, skipping RAG")
         return nil
