@@ -147,7 +147,7 @@ function M.qwen25coder.get_fim_prompt(request)
         current_file_relative_path = ""
     end
 
-    --- @param context_item ContextItem
+    ---@param context_item ContextItem
     local function append_file_non_fim(context_item)
         -- <file_sep>filepath0\ncode0
         local non_fim_file = tokens.file_sep .. context_item.filename .. "\n"
@@ -330,7 +330,7 @@ function M.bytedance_seed_coder.get_fim_prompt_repo_level(request)
         seperator,
     }
 
-    --- @param context_item ContextItem
+    ---@param context_item ContextItem
     local function append_file_non_fim_RepoCoder(context_item)
         any_repo_files = true
         local lines = vim.split(context_item.content, '\n')
@@ -513,7 +513,7 @@ function M.mellum.get_fim_prompt(request)
     local repo_name = request.get_repo_name()
     local prompt = tokens.repo_name .. repo_name
 
-    --- @param context_item ContextItem
+    ---@param context_item ContextItem
     local function append_file_non_fim(context_item)
         -- <filename>filepathX\ncodeX
         local non_fim_file = tokens.file_sep .. context_item.filename .. "\n" .. context_item.content
@@ -593,7 +593,7 @@ function M.starcoder2.get_fim_prompt(request)
     local repo_name = request.get_repo_name()
     local prompt = tokens.repo_name .. repo_name
 
-    --- @param context_item ContextItem
+    ---@param context_item ContextItem
     local function append_file_non_fim(context_item)
         -- <file_sep>filepath0\ncode0
         local non_fim_file = tokens.file_sep .. context_item.filename .. "\n" .. context_item.content

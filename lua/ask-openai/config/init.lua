@@ -22,10 +22,10 @@ local default_options = {
     -- provider = "keyless",
     -- provider = function() ... end,
 
-    --- @class CopilotOptions
-    --- @field timeout number
-    --- @field proxy string|nil
-    --- @field insecure boolean
+    ---@class CopilotOptions
+    ---@field timeout number
+    ---@field proxy string|nil
+    ---@field insecure boolean
     copilot = {
         timeout = 30000,
         proxy = nil,
