@@ -227,7 +227,9 @@ function Prediction:accept_first_word()
     local inserted_lines = {}
     local BLANK_LINE = ""
     local one_non_word_remains = word_end == nil
+    log:warn("  one_non_word_remains", vim.inspect(one_non_word_remains))
     local one_word_remains = word_end == #lines[1] -- word_end == # chars in line ==> full match!
+    log:warn("  one_word_remains", vim.inspect(one_word_remains))
     local matches_rest_of_line = one_non_word_remains or one_word_remains
     if matches_rest_of_line then
         -- *1 one non-word left
