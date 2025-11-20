@@ -1,5 +1,6 @@
 local lualine = require("ask-openai.status.lualine")
 local api = require("ask-openai.api")
+local log = require("ask-openai.logs.logger").predictions()
 
 local M = {}
 
@@ -12,6 +13,7 @@ function M.show_prediction_stats(sse_result, perf)
 
     lualine.set_last_fim_stats(sse_result.stats)
     if not api.are_notify_stats_enabled() then
+        log:luaify_trace("stats", sse_result.stats.parsed_sse.timings)
         return
     end
 
