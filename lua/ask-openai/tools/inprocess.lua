@@ -2,6 +2,7 @@ local log = require("ask-openai.logs.logger").predictions()
 local files = require("ask-openai.helpers.files")
 local semantic_grep_module = require("ask-openai.tools.inproc.semantic_grep")
 local apply_patch_module = require("ask-openai.tools.inproc.apply_patch")
+local plumbing = require("ask-openai.tools.plumbing")
 
 local M = {}
 
@@ -140,7 +141,7 @@ function M.send_tool_call(tool_call, callback)
     end
     -- TODO try other tools from gptoss repo? (python code runner, browser)
 
-    error("in-process tool not implemented yet: " .. name)
+    callback(plumbing.create_tool_call_output_failure("Invalid in-process tool name: " .. name))
 end
 
 ---@param parsed_args table
@@ -149,7 +150,7 @@ function M.apply_patch(parsed_args, callback)
     -- GPTOSS has an apply_patch tool it was trained with
     -- instead of bothering with an MCP server, let's just trigger the python script in-process
     -- later I can move this out to another process (MCP server) if that is worthwhile
-    error("apply_patch not implemented")
+    callback(plumbing.create_tool_call_output_failure("apply_patch command is not yet connected!!! patience"))
 end
 
 return M
