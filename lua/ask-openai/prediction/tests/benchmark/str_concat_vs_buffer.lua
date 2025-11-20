@@ -11,19 +11,6 @@ for _, chunk in ipairs(chunks) do
 end
 
 describe("string concatenation vs luajit buffer benchmark", function()
-    it("concatenates 100 chunks using .. operator", function()
-        local start = vim.uv.hrtime()
-        local total = ""
-        for _, chunk in ipairs(chunks) do
-            total = total .. chunk
-        end
-        local elapsed_ns = vim.uv.hrtime() - start
-        print("concat elapsed ns:", elapsed_ns)
-        print("total len:", #total)
-        assert.equals(expected_length, #total)
-        assert.equals(expected_result, total)
-    end)
-
     it("concatenates 100 chunks using luajit string.buffer", function()
         local start = vim.uv.hrtime()
         local buffer = require("string.buffer").new()
@@ -33,6 +20,18 @@ describe("string concatenation vs luajit buffer benchmark", function()
         local total = buffer:tostring()
         local elapsed_ns = vim.uv.hrtime() - start
         print("buffer elapsed ns:", elapsed_ns)
+        print("total len:", #total)
+        assert.equals(expected_length, #total)
+        assert.equals(expected_result, total)
+    end)
+    it("concatenates 100 chunks using .. operator", function()
+        local start = vim.uv.hrtime()
+        local total = ""
+        for _, chunk in ipairs(chunks) do
+            total = total .. chunk
+        end
+        local elapsed_ns = vim.uv.hrtime() - start
+        print("concat elapsed ns:", elapsed_ns)
         print("total len:", #total)
         assert.equals(expected_length, #total)
         assert.equals(expected_result, total)
