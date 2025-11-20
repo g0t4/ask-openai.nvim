@@ -28,9 +28,8 @@ function Prediction.new()
     self.id = vim.uv.hrtime() -- might not need id if I can use object reference instead, we will see (id is helpful if I need to roundtrip identity outside lua process)
     -- (nanosecond) time based s/b sufficient, esp b/c there should only ever be one prediction at a time.. even if multiple in short time (b/c of keystrokes, there is gonna be 1ms or so between them at most)
 
-    -- TODO! try https://luajit.org/ext_buffer.html StringBuffer
-    -- local buffer = require("string.buffer")
-    --  TODO first though, get timing of current method using luajit so you can understand if string buffer was helpful/same/worse... don't blindly optimize
+    -- FYI AFAICT no timing benefits from using a StringBuffer vs string.__concat... just b/c of my requirement to have full string on every iteration
+    -- see test code: lua/ask-openai/prediction/tests/benchmark/str_concat_vs_buffer.lua
 
     self.buffer = 0 -- 0 == current buffer
     self.prediction = ""
