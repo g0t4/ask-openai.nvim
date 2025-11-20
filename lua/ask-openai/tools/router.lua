@@ -1,5 +1,6 @@
 local mcp = require("ask-openai.tools.mcp")
 local inprocess = require("ask-openai.tools.inprocess")
+local plumbing = require("ask-openai.tools.plumbing")
 
 local M = {}
 
@@ -32,24 +33,7 @@ function M.send_tool_call_router(tool_call, callback)
         return
     end
 
-    ---@param description string
-    ---@return MCPToolCallOutputResult
-    function create_tool_call_plumbing_error_response(description)
-        return {
-            result = {
-                isError = true,
-                content = {
-                    {
-                        type = "text",
-                        text = description,
-                        name = "error",
-                    },
-                },
-            },
-        }
-    end
-
-    callback(create_tool_call_plumbing_error_response("Invalid tool name: " .. tool_name))
+    callback(plumbing.create_tool_call_output_failure("Invalid tool name: " .. tool_name))
 end
 
 return M
