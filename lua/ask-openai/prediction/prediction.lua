@@ -257,7 +257,7 @@ function Prediction:accept_first_word()
     else
         -- take next word only
         first_word = lines[1]:sub(1, word_end)
-        lines[1] = lines[1]:sub(word_end + 1) or "" -- shouldn't need `or ""`
+        lines[1] = lines[1]:sub(word_end + 1)
 
         inserted_lines = { first_word }
     end
