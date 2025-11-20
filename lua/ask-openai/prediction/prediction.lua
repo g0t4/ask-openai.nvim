@@ -218,11 +218,14 @@ function Prediction:accept_all()
     local last_col_0indexed = #lines[#lines]
     local last_row_1indexed = original_row_1indexed + #lines - 1
     vim.api.nvim_win_set_cursor(0, { last_row_1indexed, last_col_0indexed }) -- (1,0)-indexed (row,col)
-    -- TODO! why does cursor not move to end when accept all (often jumps to middle of prediction line?)
-    -- PRN => when accept all.. move cursor based on what is accepted (not always to next line!)
-    -- 1. if only text for middle of line (IOTW there's existing text after the prediction on the current line) then move cursor to end of inserted text (not next line)
-    -- 2. if only one line... probably move to next line
-    -- 3. if multiline...  probably next line too
+    -- TODO review cursor row movement... in different scenarios
+    -- 1. insert text into current line only:
+    --    a. if middle of current line, stay on current line
+    --    b. if accept to end of current line, stay or go to next line?
+    -- 2. if multiline insert...
+    --    a. if last line has no existing text after it... then stay or go to next line?
+    --    b. if last line has existing text after it... then probably stay on that line?
+    -- ** I am leaning toward let's just move cursor to end of accepted text (not ever go beyond that to next line, at least for accept all)... that seems to be my intent too (minus the column bug)
     -- FYI this is a good first example to add some testing!
 
     self.prediction = "" -- strip all lines from the prediction (and update it)
