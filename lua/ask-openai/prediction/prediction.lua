@@ -188,12 +188,13 @@ function Prediction:accept_first_word()
     -- strip first_word:
     lines[1] = lines[1]:sub(word_end + 1) or "" -- shouldn't need `or ""`
 
-    -- TODO adopt renamings based on what I did with get_prefix_suffix after extracing and testing it: original_row => cursor_line, original_col => cursor_col
+    -- TODO adopt renamings based on what I did with get_prefix_suffix: original_row => cursor_line, original_col => cursor_col
     -- insert first word into document
     local original_row_1indexed, original_col_0indexed = unpack(vim.api.nvim_win_get_cursor(0))
     local original_row_0indexed = original_row_1indexed - 1
 
     self.disable_cursor_moved = true
+    -- TODO reduce duplication here with inserting... this is in every accept handler... how about make a PredictionAcceptor class? (tested too): insert text, move cursor, etc?
     -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
     vim.api.nvim_buf_set_text(self.buffer, original_row_0indexed, original_col_0indexed, original_row_0indexed, original_col_0indexed, { first_word })
     vim.api.nvim_win_set_cursor(0, { original_row_1indexed, original_col_0indexed + #first_word }) -- (1,0)-indexed (row,col)
