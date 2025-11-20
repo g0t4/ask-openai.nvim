@@ -140,15 +140,15 @@ function Prediction:mark_generation_failed()
     self.mark_generation_failed = true
 end
 
-function Prediction:insert_accepted(lines)
+function Prediction:insert_accepted(insert_lines)
     self.disable_cursor_moved = true
     local controller = CursorController:new()
     local cursor = controller:get_cursor_position()
 
-    -- start = end = cursor position!
-    vim.api.nvim_buf_set_text(self.buffer, cursor.line_base0, cursor.col_base0, cursor.line_base0, cursor.col_base0, lines)
+    -- INSERT b/c start == end == cursor position! (nothing to replace)
+    vim.api.nvim_buf_set_text(self.buffer, cursor.line_base0, cursor.col_base0, cursor.line_base0, cursor.col_base0, insert_lines)
 
-    local new_cursor = controller:calc_new_position(cursor, lines)
+    local new_cursor = controller:calc_new_position(cursor, insert_lines)
     vim.api.nvim_win_set_cursor(controller.window_id, { new_cursor.line_base1, new_cursor.col_base0 }) -- (1,0)-indexed
 end
 
