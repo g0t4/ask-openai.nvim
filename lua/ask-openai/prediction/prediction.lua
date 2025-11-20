@@ -162,6 +162,8 @@ function Prediction:insert_text_at_cursor(cursor, lines)
     vim.api.nvim_buf_set_text(self.buffer, cursor.line_base0, cursor.col_base0, cursor.line_base0, cursor.col_base0, lines)
 end
 
+local CursorController = require "ask-openai.prediction.cursor_controller"
+
 function Prediction:accept_first_line()
     -- FYI instead of splitting every time... could make a class that buffers into line splits for me! use a table of chunks until hit \n... flush to the next line and start accumulating next line, etc
     local lines = split_lines_to_table(self.prediction)
@@ -176,8 +178,26 @@ function Prediction:accept_first_line()
     local cursor = get_cursor_position()
 
     self.disable_cursor_moved = true
-    self:insert_text_at_cursor(cursor, { first_line, "" })
-    vim.api.nvim_win_set_cursor(0, { cursor.line_base1 + 1, 0 }) -- (1,0)-indexed (row,col)
+
+    local BLANK_LINE = "" -- essential
+    local inserted_lines = { first_line, BLANK_LINE }
+    self:insert_text_at_cursor(cursor, inserted_lines)
+    local controller = CursorController:new()
+    controller:move_cursor_after_insert(cursor, inserted_lines)
+
+    -- PRIOR CURSOR move
+    --    vim.api.nvim_win_set_cursor(0, { cursor.line_base1 + 1, 0 }) -- (1,0)-indexed (row,col) -- **
+    --    - move to start of next line (every time)... b/c then I can naturally accept the next line!
+    --
+    --    1. moving down takes my eyes with the cursor to read the next line (from its start)
+    --    2. and then being on that line means my calculations all work out (if I wound up at end of current line then I'd have to do smth to go down (without losing prediction)...
+    --
+    --    BTW the blank line is important...
+    --    - w/o it, you end up eating one line below per accepted line...
+    --      b/c new code is INSERTED into existing (cursor) line
+    --    - so the new blank just adds the next line to insert into (one at a time)
+    --
+    -- TODO get testing in place, there are some edge cases (i.e. whey I insert a blank line) that I really want to document!
 
     -- * remove first line from prediction
     self.prediction = table.concat(lines, "\n")
@@ -228,24 +248,27 @@ function Prediction:accept_all()
     local cursor = get_cursor_position()
 
     self.disable_cursor_moved = true
-    self:insert_text_at_cursor(cursor, lines)
+    local inserted_lines = lines
+    self:insert_text_at_cursor(cursor, inserted_lines)
+    local controller = CursorController:new()
+    controller:move_cursor_after_insert(cursor, inserted_lines)
 
-    -- TODO cursor column move position calculation has two scenarios:
-    -- 1. inserting text on current line only => cursor moves relative to its current position + len(accepted text) => so this is why I have issues with accept all on a single line prediction! b/c it doesn't include cursor.col_base0 below!
-    -- 2. inserting multiple lines => in this case, cursor moves to last line of inserted text, right after last inserted character (IOTW length of last linei == #lines[#lines])
-    -- cursor should stop at end of inserted text
-    local new_cursor_col_base0 = #lines[#lines]
-    local new_cursor_line_base1 = cursor.line_base1 + #lines - 1
-    vim.api.nvim_win_set_cursor(0, { new_cursor_line_base1, new_cursor_col_base0 }) -- (1,0)-indexed (row,col)
-    -- TODO review cursor line movement... in different scenarios
-    -- 1. insert text into current line only:
-    --    a. if middle of current line, stay on current line
-    --    b. if accept to end of current line, stay or go to next line?
-    -- 2. if multiline insert...
-    --    a. if last line has no existing text after it... then stay or go to next line?
-    --    b. if last line has existing text after it... then probably stay on that line?
-    -- ** I am leaning toward let's just move cursor to end of accepted text (not ever go beyond that to next line, at least for accept all)... that seems to be my intent too (minus the column bug)
-    -- FYI this is a good first example to add some testing!
+    -- -- TODO cursor column move position calculation has two scenarios:
+    -- -- 1. inserting text on current line only => cursor moves relative to its current position + len(accepted text) => so this is why I have issues with accept all on a single line prediction! b/c it doesn't include cursor.col_base0 below!
+    -- -- 2. inserting multiple lines => in this case, cursor moves to last line of inserted text, right after last inserted character (IOTW length of last linei == #lines[#lines])
+    -- -- cursor should stop at end of inserted text
+    -- local new_cursor_col_base0 = #lines[#lines]
+    -- local new_cursor_line_base1 = cursor.line_base1 + #lines - 1
+    -- vim.api.nvim_win_set_cursor(0, { new_cursor_line_base1, new_cursor_col_base0 }) -- (1,0)-indexed (row,col)
+    -- -- TODO review cursor line movement... in different scenarios
+    -- -- 1. insert text into current line only:
+    -- --    a. if middle of current line, stay on current line
+    -- --    b. if accept to end of current line, stay or go to next line?
+    -- -- 2. if multiline insert...
+    -- --    a. if last line has no existing text after it... then stay or go to next line?
+    -- --    b. if last line has existing text after it... then probably stay on that line?
+    -- -- ** I am leaning toward let's just move cursor to end of accepted text (not ever go beyond that to next line, at least for accept all)... that seems to be my intent too (minus the column bug)
+    -- -- FYI this is a good first example to add some testing!
 
     self.prediction = "" -- strip all lines from the prediction (and update it)
     self:redraw_extmarks()
