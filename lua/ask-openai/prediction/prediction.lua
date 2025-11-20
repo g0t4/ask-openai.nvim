@@ -68,7 +68,7 @@ end
 
 ---@param text string
 ---@return string[] lines
-local function split_lines_to_table(text)
+local function split_lines(text)
     ---@type string[]
     local lines = {}
     for line in text:gmatch("[^\r\n]+") do
@@ -106,7 +106,7 @@ function Prediction:redraw_extmarks()
         return
     end
 
-    local lines = split_lines_to_table(self.prediction)
+    local lines = split_lines(self.prediction)
     if #lines == 0 then
         if not self.has_reasoning then
             return
@@ -178,7 +178,7 @@ end
 
 function Prediction:accept_first_line()
     -- FYI instead of splitting every time... could make a class that buffers into line splits for me! use a table of chunks until hit \n... flush to the next line and start accumulating next line, etc
-    local lines = split_lines_to_table(self.prediction)
+    local lines = split_lines(self.prediction)
     if #lines == 0 then
         return
     end
@@ -206,7 +206,7 @@ function Prediction:accept_first_line()
 end
 
 function Prediction:accept_first_word()
-    local lines = split_lines_to_table(self.prediction)
+    local lines = split_lines(self.prediction)
     if #lines == 0 then
         return
     end
@@ -264,7 +264,7 @@ function Prediction:accept_first_word()
 end
 
 function Prediction:accept_all()
-    local lines = split_lines_to_table(self.prediction)
+    local lines = split_lines(self.prediction)
     if #lines == 0 then
         return
     end
