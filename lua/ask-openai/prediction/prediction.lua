@@ -190,13 +190,13 @@ function Prediction:accept_first_word()
 
     -- TODO adopt renamings based on what I did with get_prefix_suffix after extracing and testing it: original_row => cursor_line, original_col => cursor_col
     -- insert first word into document
-    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0)-indexed #s... aka original_row starts at 1, original_col starts at 0
-    local original_row = original_row_1indexed - 1 -- 0-indexed now
+    local original_row_1indexed, original_col_0indexed = unpack(vim.api.nvim_win_get_cursor(0))
+    local original_row_0indexed = original_row_1indexed - 1
 
     self.disable_cursor_moved = true
     -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
-    vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, { first_word })
-    vim.api.nvim_win_set_cursor(0, { original_row_1indexed, original_col + #first_word }) -- (1,0)-indexed (row,col)
+    vim.api.nvim_buf_set_text(self.buffer, original_row_0indexed, original_col_0indexed, original_row_0indexed, original_col_0indexed, { first_word })
+    vim.api.nvim_win_set_cursor(0, { original_row_1indexed, original_col_0indexed + #first_word }) -- (1,0)-indexed (row,col)
 
     self.prediction = table.concat(lines, "\n") -- strip that first line then from the prediction (and update it)
     self:redraw_extmarks()
@@ -208,11 +208,11 @@ function Prediction:accept_all()
         return
     end
 
-    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0)-indexed #s... aka original_row starts at 1, original_col starts at 0
-    local original_row = original_row_1indexed - 1 -- 0-indexed now
+    local original_row_1indexed, original_col_0indexed = unpack(vim.api.nvim_win_get_cursor(0))
+    local original_row_0indexed = original_row_1indexed - 1
 
     self.disable_cursor_moved = true
-    vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, lines)
+    vim.api.nvim_buf_set_text(self.buffer, original_row_0indexed, original_col_0indexed, original_row_0indexed, original_col_0indexed, lines)
 
     -- cursor should stop at end of inserted text
     local last_col = #lines[#lines] --
