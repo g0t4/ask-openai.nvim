@@ -1,5 +1,6 @@
 local dots = require("ask-openai.rewrites.thinking.dots")
 local HLGroups = require("ask-openai.hlgroups")
+local log = require("ask-openai.logs.logger").predictions()
 
 --- @class Prediction
 --- @field id integer
@@ -14,17 +15,13 @@ local HLGroups = require("ask-openai.hlgroups")
 --- @field start_time number
 --- @field generated boolean|nil
 local Prediction = {}
-local uv = vim.uv
-
 local extmarks_ns_id = vim.api.nvim_create_namespace("ask-predictions")
-
-local log = require("ask-openai.logs.logger").predictions()
 
 ---@return Prediction
 function Prediction:new()
     self = self or {}
     -- id was originaly intended to track current prediction and not let past predictions write to extmarks (for example)
-    self.id = uv.hrtime() -- might not need id if I can use object reference instead, we will see (id is helpful if I need to roundtrip identity outside lua process)
+    self.id = vim.uv.hrtime() -- might not need id if I can use object reference instead, we will see (id is helpful if I need to roundtrip identity outside lua process)
     -- (nanosecond) time based s/b sufficient, esp b/c there should only ever be one prediction at a time.. even if multiple in short time (b/c of keystrokes, there is gonna be 1ms or so between them at most)
 
     self.buffer = 0 -- 0 == current buffer
