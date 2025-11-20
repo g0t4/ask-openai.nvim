@@ -157,20 +157,16 @@ function Prediction:mark_generation_failed()
     self.mark_generation_failed = true
 end
 
----@param cursor CursorInfo
----@param lines string[]
-function Prediction:insert_text_at_cursor(cursor, lines)
-    -- start = end = cursor position!
-    vim.api.nvim_buf_set_text(self.buffer, cursor.line_base0, cursor.col_base0, cursor.line_base0, cursor.col_base0, lines)
-end
-
 local CursorController = require "ask-openai.prediction.cursor_controller"
 local BLANK_LINE = ""
 
 function Prediction:insert_accepted(lines)
     self.disable_cursor_moved = true
     local cursor = get_cursor_position()
-    self:insert_text_at_cursor(cursor, lines)
+
+    -- start = end = cursor position!
+    vim.api.nvim_buf_set_text(self.buffer, cursor.line_base0, cursor.col_base0, cursor.line_base0, cursor.col_base0, lines)
+
     local controller = CursorController:new()
     local new_cursor = controller:calc_new_position(cursor, lines)
     vim.api.nvim_win_set_cursor(controller.window_id, { new_cursor.line_base1, new_cursor.col_base0 }) -- (1,0)-indexed
