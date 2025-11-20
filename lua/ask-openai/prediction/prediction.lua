@@ -79,7 +79,10 @@ end
 ---@field line_base1 integer
 ---@field col_base0 integer
 ---@field col_base1 integer
+
+---@return CursorInfo
 local function get_cursor_position()
+    -- TODO make CursorController w/ method to calculate (and maybe even move) it by lines/cols!
     -- TODO move and use elsewhere too!
     local line_base1, col_base0 = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0)-indexed (row,col)
     return {
