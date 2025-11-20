@@ -20,6 +20,7 @@ M.current_prediction = nil -- set on module for now, just so I can inspect it ea
 
 function M.ask_for_prediction()
     M.cancel_current_prediction()
+    -- TODO create this_prediction here?
     local enable_rag = api.is_rag_enabled()
     local ps_chunk = ps.get_prefix_suffix_chunk()
 
@@ -33,9 +34,11 @@ function M.ask_for_prediction()
 
         log:trace("curl", table.concat(spawn_curl_options.args, " ")) -- TODO remove after find hang culprit 2025-11-17
 
+        -- TODO move this_prediction creation above (before RAG too)
         local this_prediction = Prediction:new()
         M.current_prediction = this_prediction
 
+        -- TODO attach stdout/err to this_prediction and call read_stop on abort prediction?
         local stdout = uv.new_pipe(false)
         local stderr = uv.new_pipe(false)
 
