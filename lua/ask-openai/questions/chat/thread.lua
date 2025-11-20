@@ -37,7 +37,7 @@ function ChatThread:add_message(message)
     table.insert(self.messages, message)
 end
 
-----@return table body
+---@return table body
 function ChatThread:next_curl_request_body()
     local body = {
         -- TODO! clone so I can manipulate messages sent back?
