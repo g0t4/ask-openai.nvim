@@ -94,27 +94,20 @@ function Prediction:redraw_extmarks()
         if not self.has_reasoning then
             return
         end
-        -- PRN use thinking dots module w/ strip ability to partially parse harmony response to strip_thinking_tags
-        --   or blend this with the harmony_parser module idea
         lines = { dots:get_still_thinking_message(self.start_time) }
     end
 
-    local first_line = { { table.remove(lines, 1), HLGroups.PREDICTION_TEXT } } -- can add hlgroup too
+    local first_line = { { table.remove(lines, 1), HLGroups.PREDICTION_TEXT } }
 
-    local virt_lines = {} -- FYI is a 3D array,  array of (lines like first_line format above)
-    -- local virt_lines_example = { { { "line1 ..." } }, { { "line2 ..." } } }
-    -- each line has an array of strings to add to the line and each string can have its own hlgroup (that is why)
+    local virt_lines = {}
     for i, line in ipairs(lines) do
-        -- FYI can add hlgroup as second item { line, hlgroup }
         table.insert(virt_lines, { { line, HLGroups.PREDICTION_TEXT } })
     end
 
-    vim.api.nvim_buf_set_extmark(self.buffer, extmarks_ns_id, original_row_0indexed, original_col_0indexed,
-        -- FYI, row,col are 0-indexed! ARGH FML
+    vim.api.nvim_buf_set_extmark(self.buffer, extmarks_ns_id, original_row_0indexed, original_col_0indexed, -- row & col are 0-indexed
         {
             virt_text = first_line,
             virt_lines = virt_lines,
-            -- inline? for my testing? if I am at end of line it won't matter
             virt_text_pos = "inline",
         })
 end
@@ -131,9 +124,7 @@ end
 function Prediction:resume_new_chunks()
     self.paused = false
     self.prediction = self.prediction .. self.buffered_chunks
-    -- add the buffered chunks to the prediction so far (and clear out the buffer)
     self.buffered_chunks = ""
-    -- TODO vim.schedule? not in background AFAIK, so.. no
     self:redraw_extmarks()
 end
 
@@ -142,63 +133,48 @@ function Prediction:mark_as_abandoned()
 end
 
 function Prediction:mark_generation_finished()
-    self.generated = true -- TODO status field
+    self.generated = true
 end
 
 function Prediction:mark_generation_failed()
     self.mark_generation_failed = true
-    -- LEAVE GENERATION visible so I can see it to troubleshoot (cursor move / exit insert mode will clear it)
-    --
-    -- user can trigger a new prediction
-    -- basically behaves just like finishing a prediction
 end
 
 function Prediction:accept_first_line()
-    if not self.generated then
-        -- IT WORKS GREAT! though I always waited for first line to be done... its gonna be an issue mid line :)
-        --    IN FACT IT IS BEAUTIFUL!! accept while its writing!! YESSSS
-        -- what if someone tries to do this while completion is still generating?
-        log:warn("WARNING - accepting completion while still generating, might not be an issue... will see")
-        -- IIAC only one thing can run at a time so it might be ok?
-    end
-
+    -- FYI instead of splitting every time... could make a class that buffers into line splits for me! use a table of chunks until hit \n... flush to the next line and start accumulating next line, etc
     local lines = split_lines_to_table(self.prediction)
     if #lines == 0 then
         return
     end
 
-    local first_line = table.remove(lines, 1) -- mostly just change this to accept 1+ words/lines
+    -- PRN add integration testing of these buffer/cursor interactions
 
-    -- insert first line into document
-    local original_row_1indexed, original_col = unpack(vim.api.nvim_win_get_cursor(0)) -- (1,0)-indexed #s... aka original_row starts at 1, original_col starts at 0
-    local original_row = original_row_1indexed - 1 -- 0-indexed now
+    -- * insert first line
+    local first_line = table.remove(lines, 1) -- mostly just change this to accept 1+ words/lines
+    local original_row_1indexed, original_col_0indexed = unpack(vim.api.nvim_win_get_cursor(0))
+    local original_row_0indexed = original_row_1indexed - 1 -- 0-indexed now
 
     self.disable_cursor_moved = true
     -- INSERT ONLY.. so (row,col)=>(row,col) covers 0 characters (thus this inserts w/o replacing)
-    vim.api.nvim_buf_set_text(self.buffer, original_row, original_col, original_row, original_col, { first_line, "" })
+    vim.api.nvim_buf_set_text(self.buffer, original_row_0indexed, original_col_0indexed, original_row_0indexed, original_col_0indexed, { first_line, "" })
     vim.api.nvim_win_set_cursor(0, { original_row_1indexed + 1, 0 }) -- (1,0)-indexed (row,col)
 
-    self.prediction = table.concat(lines, "\n") -- strip that first line then from the prediction (and update it)
+    -- * remove first line from prediction
+    self.prediction = table.concat(lines, "\n")
     self:redraw_extmarks()
 end
 
 function Prediction:accept_first_word()
-    if not self.generated then
-        -- IT WORKS GREAT! though I always waited for first line to be done... its gonna be an issue mid line :)
-        --    IN FACT IT IS BEAUTIFUL!! accept while its writing!! YESSSS
-        -- what if someone tries to do this while completion is still generating?
-        log:warn("WARNING - accepting completion while still generating, might not be an issue... will see")
-        -- IIAC only one thing can run at a time so it might be ok?
-    end
-
     local lines = split_lines_to_table(self.prediction)
     if #lines == 0 then
         return
     end
 
+    -- PRN add integration testing of these buffer/cursor interactions
+
     local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
     if word_end == nil then
-        -- log:trace("no words in first line, accepting entire line")
+        -- PRN test scenario so I can experiment with how this feels!
         self:accept_first_line()
         return
     end
