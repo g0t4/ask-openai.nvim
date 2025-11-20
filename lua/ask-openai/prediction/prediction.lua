@@ -1,17 +1,13 @@
 local dots = require("ask-openai.rewrites.thinking.dots")
 local HLGroups = require("ask-openai.hlgroups")
 
---- Prediction object – handles streaming LLM completions, rendering them as virtual
---- text/ext‑marks in the current buffer and exposing a small API for pausing,
---- resuming, accepting or abandoning the generation.
----
 --- @class Prediction
 --- @field id integer
 --- @field buffer integer
 --- @field prediction string         # content streamed so far (excluding buffered chunks)
 --- @field extmarks table
 --- @field paused boolean
---- @field buffered_chunks string    # chunks received while `paused` – will be appended once resumed
+--- @field buffered_chunks string    # chunks received while `paused`
 --- @field abandoned boolean         # user aborted prediction
 --- @field disable_cursor_moved boolean
 --- @field has_reasoning boolean
