@@ -140,7 +140,6 @@ function Prediction:mark_generation_failed()
     self.mark_generation_failed = true
 end
 
-local BLANK_LINE = ""
 function Prediction:insert_accepted(lines)
     self.disable_cursor_moved = true
     local controller = CursorController:new()
@@ -153,6 +152,7 @@ function Prediction:insert_accepted(lines)
     vim.api.nvim_win_set_cursor(controller.window_id, { new_cursor.line_base1, new_cursor.col_base0 }) -- (1,0)-indexed
 end
 
+local BLANK_LINE = ""
 function Prediction:accept_first_line()
     -- FYI instead of splitting every time... could make a class that buffers into line splits for me! use a table of chunks until hit \n... flush to the next line and start accumulating next line, etc
     local lines = split_lines(self.prediction)
