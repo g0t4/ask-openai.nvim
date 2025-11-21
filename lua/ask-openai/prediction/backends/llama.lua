@@ -131,10 +131,17 @@ function OllamaFimBackend:body_for()
             -- have it use meta.codellama.sentinel_tokens
         end
 
+        -- -- codellama template:
+        -- --    {{- if .Suffix }}<PRE> {{ .Prompt }} <SUF>{{ .Suffix }} <MID>
+        -- sentinel_tokens = {
+        --     fim_prefix = "<PRE> ",
+        --     fim_suffix = " <SUF>",
+        --     fim_middle = " <MID>",
+        -- }
+
         -- codellama uses <EOT> that seems to not be set as param in modelfile (at least for FIM?)
         --   without this change you will see <EOT> in code at end of completions
         -- ollama show codellama:7b-code-q8_0 --parameters # => no stop param
-        -- PRN move stop and other options to model specific config under fim.model.*
         body.options.stop = { "<EOT>" }
 
         error("review FIM requirements for codellama, make sure you are using expected template, it used to work with qwen like FIM but I changed that to repo level now and would need to test it")

@@ -12,7 +12,6 @@ local lualine = require('ask-openai.status.lualine')
 local stats = require("ask-openai.prediction.stats")
 
 local OllamaFimBackend = require("ask-openai.prediction.backends.llama")
--- local backend = require("ask-openai.prediction.backends.backendsvllm")
 
 local M = {}
 
