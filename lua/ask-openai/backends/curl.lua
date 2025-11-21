@@ -21,7 +21,7 @@ _G.CompletionsEndpoints = {
     v1_chat = "/v1/chat/completions",
 }
 ---@param endpoint CompletionsEndpoints
-function get_extract_func(endpoint)
+function get_extract_generated_text_func(endpoint)
     -- * /completions  CompletionsEndpoints.completions
     --   3rd ExtractGeneratedTextFunction for non-openai /completions endpoint on llama-server
     --     => no sse.choice so I'd have to change how M.on_line_or_lines works to not assume sse.choices
@@ -80,7 +80,7 @@ end
 function M.spawn(body, base_url, endpoint, frontend)
     local url = base_url .. endpoint
     local request = LastRequest:new(body)
-    local extract_generated_text = get_extract_func(endpoint)
+    local extract_generated_text = get_extract_generated_text_func(endpoint)
 
     body.stream = true
 
