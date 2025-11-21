@@ -113,4 +113,11 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         -- PRN parse and extract template
     end)
+
+    -- # TODO try writing a simple eval/test case of asking for the date, given the fixed date in the prompt...
+    --    user: What is the date?
+    --    extract and verify value provided?
+    -- #   TODO and maybe another test of the actual date using tools + run_command
+    --    leave current date in prompt and as it to verify the date?
+    --    remove date and just ask for date w/ tools available
 end)
