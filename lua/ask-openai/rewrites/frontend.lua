@@ -202,7 +202,7 @@ function RewriteFrontend.abort_last_request()
         return
     end
 
-    curl.terminate(RewriteFrontend.last_request)
+    LastRequest.terminate(RewriteFrontend.last_request)
 
     if RewriteFrontend.displayer ~= nil then
         RewriteFrontend.displayer:clear_extmarks()

@@ -6,11 +6,6 @@ local ToolCall = require("ask-openai.questions.chat.tool_call")
 
 local M = {}
 
----@param request LastRequest
-function M.terminate(request)
-    LastRequest.terminate(request)
-end
-
 ---@enum CompletionsEndpoints
 _G.CompletionsEndpoints = {
     -- llama-server non-openai:
@@ -113,7 +108,7 @@ function M.spawn(request, base_url, endpoint, frontend)
         end
 
         -- request stops ASAP, but not immediately
-        M.terminate(request)
+        LastRequest.terminate(request)
         frontend.explain_error("Abort... unhandled exception in curl: " .. tostring(error_message))
     end
 

@@ -16,4 +16,8 @@ describe("LastRequestForThread", function()
         assert.equal(request.terminate, LastRequest.terminate, "should have methods from LastRequest")
         assert.equal(request.test, LastRequestForThread.test, "should have methods from LastRequestForThread too")
     end)
+
+    it("has terminate on class", function()
+        assert.equal(LastRequestForThread.terminate, LastRequest.terminate, "LastRequestForThread.terminate is missing")
+    end)
 end)

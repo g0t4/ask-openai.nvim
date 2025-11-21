@@ -452,7 +452,7 @@ function QuestionsFrontend.abort_last_request()
     if not QuestionsFrontend.thread then
         return
     end
-    curl.terminate(QuestionsFrontend.thread.last_request)
+    LastRequestForThread.terminate(QuestionsFrontend.thread.last_request)
 end
 
 function QuestionsFrontend.follow_up()
