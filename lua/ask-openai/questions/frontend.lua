@@ -298,6 +298,18 @@ function QuestionsFrontend.on_sse_llama_server_timings(sse)
     -- PRN use this to extract timing like in rewrites
 end
 
+---@type OnGeneratedText
+function QuestionsFrontend.on_generated_text(content_chunk, sse_parsed)
+    -- FYI later I will need defensive checks here if not using "choices" SSE results (i.e. /completions llama-server endpoint's SSEs)
+    local first_choice = sse_parsed.choices[1]
+    curl.on_streaming_delta_update_message_history(first_choice, QuestionsFrontend.thread.last_request)
+    -- TODO! LATER move curl.on_streaming_delta_update_message_history() function
+    --    to QuestionsFrontend.on_streaming_delta_update_message_history()
+    --    OK to rename too?
+
+    QuestionsFrontend.handle_rx_messages_updated()
+end
+
 function QuestionsFrontend.handle_rx_messages_updated()
     if not QuestionsFrontend.thread.last_request.accumulated_model_response_messages then
         return

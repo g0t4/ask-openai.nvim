@@ -4,7 +4,7 @@ local log = require('ask-openai.logs.logger').predictions()
 ---@class ChatThread
 ---@field messages TxChatMessage[]
 ---@field params ChatParams
----@field last_request LastRequest
+---@field last_request LastRequestForThread
 ---@field base_url string
 local ChatThread = {}
 
@@ -23,7 +23,7 @@ function ChatThread:new(params, base_url)
     return self
 end
 
----@param request LastRequest
+---@param request LastRequestForThread
 function ChatThread:set_last_request(request)
     self.last_request = request
 end

@@ -69,11 +69,14 @@ local function ensure_new_lines_around(code, response_lines)
     return response_lines
 end
 
-function RewriteFrontend.on_generated_text(chunk)
-    if not chunk then return end
+---@type OnGeneratedText
+function RewriteFrontend.on_generated_text(content_chunk, sse_parsed)
+    -- TODO! LATER MOVE extract_generated_text here! it is specific to RewriteFrontend only
+
+    if not content_chunk then return end
     if not RewriteFrontend.displayer then return end -- else after cancel, if get another SSE, boom
 
-    RewriteFrontend.accumulated_chunks = RewriteFrontend.accumulated_chunks .. chunk
+    RewriteFrontend.accumulated_chunks = RewriteFrontend.accumulated_chunks .. content_chunk
 
     local lines = text_helpers.split_lines(RewriteFrontend.accumulated_chunks)
     lines = RewriteFrontend.strip_md_from_completion(lines)

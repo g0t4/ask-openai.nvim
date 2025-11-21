@@ -64,14 +64,16 @@ local function get_extract_generated_text_func(endpoint)
     error("Not yet implemented: " .. endpoint)
 end
 
+---@alias ExtractGeneratedTextFromChoiceFunction fun(first_choice: table): string
+---@alias OnGeneratedText fun(content_chunk: string, sse_parsed: table)
+
 ---@class StreamingFrontend
----@field on_generated_text fun(content_chunk: string, sse_parsed: table)
+---@field on_generated_text OnGeneratedText
 ---@field on_sse_llama_server_timings fun(sse_parsed: table)
 ---@field handle_rx_messages_updated fun()
 ---@field curl_exited_successfully fun()
 ---@field explain_error fun(text: string)
 
----@alias ExtractGeneratedTextFromChoiceFunction fun(first_choice: table): string
 
 ---@param request LastRequest|LastRequestForThread
 ---@param base_url string
@@ -204,20 +206,15 @@ function M.on_line_or_lines(data_value, frontend, extract_generated_text, reques
         if sse_parsed.choices and sse_parsed.choices[1] then
             local first_choice = sse_parsed.choices[1]
 
-            local is_request_for_thread = request.accumulated_model_response_messages ~= nil
-            if is_request_for_thread then
-                -- WIP pushing thread concerns down into QuestionsFrontend ... maybe into its on_generated_text below?
-                M.on_streaming_delta_update_message_history(first_choice, request)
-                -- * ONLY AskQuestion uses this:
-                frontend.handle_rx_messages_updated()
-            end
-
-            -- * ONLY AskRewrite uses this... and that may not change (not sure denormalizer makes sense for rewrites)
+            -- TODO! LATER move extract_generated_text to  RewriteFrontend (QuestionsFrontend DOES NOT USE extract_generated_text)
+            --   and fix it up so I don't have to pass that above in on_line_or_lines! have RewriteFrontend look it up (using its base_url + endpoint?)
+            --      which means I might not need curl to ever see extract_generated_text parameter?
             local generated_text = extract_generated_text(first_choice)
-            if generated_text and frontend.on_generated_text then
-                -- FYI checks for on_generated_text b/c ask doesn't use this interface anymore
-                frontend.on_generated_text(generated_text, sse_parsed)
-            end
+            -- TODO then only pass sse_parsed to on_generated_text:
+            frontend.on_generated_text(generated_text, sse_parsed)
+            -- TODO rename on_data_parsed_sse(sse_parsed)
+            -- TODO maybe  on_data_parsed_sse_with_choice(sse_parsed)
+            --      use this name for now until I later refactor beyond choice endpoints?
         end
         -- FYI not every SSE has to have generated tokens (choices), no need to warn if no parsed value
 
