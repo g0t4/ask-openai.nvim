@@ -1,5 +1,5 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
-local rewrites = require("ask-openai.rewrites.inline")
+local rewrites = require("ask-openai.rewrites.frontend")
 -- FYI be careful how you import init.lua... must be same if imported in multiple spots (i.e. the tests)
 local thinking = require("ask-openai.rewrites.thinking")
 local assert = require("luassert")

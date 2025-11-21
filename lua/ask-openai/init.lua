@@ -160,7 +160,7 @@ function M.setup(user_options)
         M.start_predictions()
     end
 
-    require("ask-openai.rewrites.inline").setup()
+    require("ask-openai.rewrites.frontend").setup()
     require("ask-openai.questions.ask").setup()
     require("ask-openai.tools.mcp").setup()
     require("ask-openai.rag").setup()

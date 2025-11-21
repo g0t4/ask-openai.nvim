@@ -1,5 +1,5 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
-local rewrites = require("ask-openai.rewrites.inline")
+local rewrites = require("ask-openai.rewrites.frontend")
 local assert = require("luassert")
 
 -- TODO PORT TO WORK WITH inline2
