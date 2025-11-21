@@ -346,6 +346,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         local base_url = "http://ollama:8013"
 
         local endpoint = middle_end.CompletionsEndpoints.v1_chat
+        -- TODO use curl_streaming.lua module directly... move extract_generated_text functions there, as that makes sense
         M.last_request = middle_end.curl_for(body, base_url, endpoint, M)
     end
 

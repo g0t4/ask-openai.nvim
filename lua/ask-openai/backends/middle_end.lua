@@ -2,6 +2,8 @@ local log = require("ask-openai.logs.logger").predictions()
 local curl = require("ask-openai.backends.curl_streaming")
 
 --- TODO! remove this "middle_end", it isn't needed anymore
+---   merge it into frontend/curl_streaming modules
+---   let frontend pick the endpoint => which selects the extract_generated_text function
 ---
 ---@class MiddleEnd
 ---@field terminate function(request: LastRequest, cb: function())

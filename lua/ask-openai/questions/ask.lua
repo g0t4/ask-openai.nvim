@@ -175,6 +175,7 @@ function M.send_messages()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
     local endpoint = middle_end.CompletionsEndpoints.v1_chat
+    -- TODO use curl_streaming.lua module directly... move extract_generated_text functions there, as that makes sense
     local request = middle_end.curl_for(M.thread:next_curl_request_body(), M.thread.base_url, endpoint, M)
     M.thread:set_last_request(request)
 end
