@@ -6,7 +6,7 @@ local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.prediction.ansi")
 local local_share = require("ask-openai.config.local_share")
 local api = require("ask-openai.api")
-local llamacpp_stats = require("ask-openai.prediction.backends.llamacpp.stats")
+local llamacpp_stats = require("ask-openai.backends.llama_cpp.stats")
 
 require("ask-openai.backends.sse")
 
