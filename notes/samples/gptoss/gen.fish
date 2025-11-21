@@ -26,11 +26,13 @@ echo '{
 
 # render chat template to raw prompt
 echo '{
-  "messages": [ { "role": "user", "content": "test" } ],
+  "messages": [ { "role": "user", "content": "what is the date?" } ],
   "max_tokens": 80,
   "stream": false
 }' | curl --fail-with-body -sSL --no-buffer "$base_url/apply-template" -d @- \
     | jq >test.apply-template.json
+
+cat test.apply-template.json | jq .prompt -r # show just the prompt
 
 # %% * raw prompt => /v1/completions
 
