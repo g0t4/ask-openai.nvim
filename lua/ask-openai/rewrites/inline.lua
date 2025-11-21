@@ -344,7 +344,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         })
 
         local base_url = "http://ollama:8013"
-        local endpoint = curl.CompletionsEndpoints.v1_chat
+        local endpoint = CompletionsEndpoints.v1_chat
         local frontend_callbacks = M
         M.last_request = curl.spawn(body, base_url, endpoint, frontend_callbacks)
     end

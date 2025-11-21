@@ -13,7 +13,7 @@ function M.terminate(request)
 end
 
 ---@enum CompletionsEndpoints
-M.CompletionsEndpoints = {
+_G.CompletionsEndpoints = {
     completions = "/completions",
 
     -- OpenAI compatible:
@@ -52,9 +52,9 @@ function get_extract_func(endpoint)
         return choice.delta.content
     end
 
-    if endpoint == M.CompletionsEndpoints.v1_chat then
+    if endpoint == CompletionsEndpoints.v1_chat then
         return extract_generated_text_v1_chat
-    elseif endpoint == M.CompletionsEndpoints.v1_completions then
+    elseif endpoint == CompletionsEndpoints.v1_completions then
         return extract_generated_text_v1_completions
     else
         -- TODO CompletionsEndpoints.completions /completions for 3rd ExtractGeneratedTextFunction
