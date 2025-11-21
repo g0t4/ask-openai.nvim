@@ -71,12 +71,11 @@ end
 
 
 ---@param request LastRequest|LastRequestForThread
----@param base_url string
----@param endpoint CompletionsEndpoints
 ---@param frontend StreamingFrontend
-function M.spawn(request, base_url, endpoint, frontend)
-    local url = base_url .. endpoint
-    local extract_generated_text = get_extract_generated_text_func(endpoint)
+function M.spawn(request, frontend)
+    local base_url = request.base_url
+    local url = base_url .. request.endpoint
+    local extract_generated_text = get_extract_generated_text_func(request.endpoint)
 
     request.body.stream = true
 

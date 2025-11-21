@@ -178,8 +178,8 @@ function QuestionsFrontend.send_messages()
     local endpoint = CompletionsEndpoints.v1_chat
     local frontend_callbacks = QuestionsFrontend
     local body = QuestionsFrontend.thread:next_curl_request_body()
-    local request = LastRequestForThread:new(body)
-    curl.spawn(request, QuestionsFrontend.thread.base_url, endpoint, frontend_callbacks)
+    local request = LastRequestForThread:new(body, QuestionsFrontend.thread.base_url, endpoint)
+    curl.spawn(request, frontend_callbacks)
     QuestionsFrontend.thread:set_last_request(request)
 end
 

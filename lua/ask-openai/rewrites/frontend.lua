@@ -81,6 +81,7 @@ function RewriteFrontend.on_generated_text(content_chunk, sse_parsed)
     local lines = text_helpers.split_lines(RewriteFrontend.accumulated_chunks)
     lines = RewriteFrontend.strip_md_from_completion(lines)
     local thinking_status = nil
+    -- TODO vestigial (stripping think tags), instead use reasoning_content off of SSE now (w/ --jinja on server side)
     lines, thinking_status = thinking.strip_thinking_tags(lines)
     if thinking_status == thinking.ThinkingStatus.Thinking then
         lines = { thinking.dots:get_still_thinking_message(RewriteFrontend.last_request.start_time) }
@@ -341,9 +342,8 @@ function RewriteFrontend.stream_from_ollama(user_prompt, code, file_name)
 
         local base_url = "http://ollama:8013"
         local endpoint = CompletionsEndpoints.v1_chat
-        local frontend_callbacks = RewriteFrontend
-        RewriteFrontend.last_request = LastRequest:new(body)
-        curl.spawn(RewriteFrontend.last_request, base_url, endpoint, frontend_callbacks)
+        RewriteFrontend.last_request = LastRequest:new(body, base_url, endpoint)
+        curl.spawn(RewriteFrontend.last_request, RewriteFrontend)
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then

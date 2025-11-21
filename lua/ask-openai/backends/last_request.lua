@@ -2,6 +2,8 @@ local log = require("ask-openai.logs.logger").predictions()
 
 ---@class LastRequest
 ---@field body table
+---@field base_url string
+---@field endpoint CompletionsEndpoints
 ---@field handle? uv.uv_process_t
 ---@field pid? integer
 ---@field start_time integer -- unix timestamp when request was sent (for timing)
@@ -10,10 +12,14 @@ local LastRequest = {}
 local request_counter = 1
 
 ---@param body table<string, any>
+---@param base_url string
+---@param endpoint CompletionsEndpoints
 ---@return LastRequest
-function LastRequest:new(body)
+function LastRequest:new(body, base_url, endpoint)
     self = setmetatable({}, { __index = self })
     self.body = body
+    self.base_url = base_url
+    self.endpoint = endpoint
     self.handle = nil
     self.pid = nil
     self.start_time = os.time()
