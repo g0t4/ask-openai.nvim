@@ -340,9 +340,11 @@ function RewriteFrontend.stream_from_ollama(user_prompt, code, file_name)
             -- tools = tool_router.openai_tools(),
         })
 
-        local base_url = "http://ollama:8013"
-        local endpoint = CompletionsEndpoints.v1_chat
-        RewriteFrontend.last_request = LastRequest:new(body, base_url, endpoint)
+        RewriteFrontend.last_request = LastRequest:new({
+            body = body,
+            base_url = "http://ollama:8013",
+            endpoint = CompletionsEndpoints.v1_chat,
+        })
         curl.spawn(RewriteFrontend.last_request, RewriteFrontend)
     end
 
@@ -383,7 +385,7 @@ local function simulate_rewrite_stream_chunks(opts)
     -- use this for timing and to test streaming diff!
 
     RewriteFrontend.abort_last_request()
-    RewriteFrontend.last_request = LastRequest:new({})
+    RewriteFrontend.last_request = LastRequest:new({ base_url = "base", })
     vim.cmd("normal! 0V6jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     RewriteFrontend.selection = Selection.get_visual_selection_for_current_window()
@@ -447,7 +449,7 @@ end
 
 local function simulate_rewrite_instant_one_chunk(opts)
     RewriteFrontend.abort_last_request()
-    RewriteFrontend.last_request = LastRequest:new({})
+    RewriteFrontend.last_request = LastRequest:new({ base_url = "base", })
     vim.cmd("normal! 0V6jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     RewriteFrontend.selection = Selection.get_visual_selection_for_current_window()

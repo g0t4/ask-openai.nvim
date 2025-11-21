@@ -11,11 +11,15 @@ local log = require("ask-openai.logs.logger").predictions()
 local LastRequest = {}
 local request_counter = 1
 
----@param body table<string, any>
----@param base_url string
----@param endpoint CompletionsEndpoints
+---@alias LastRequestParams {body: table<string, any>, base_url: string, endpoint: CompletionsEndpoints}
+
+---@param params LastRequestParams
 ---@return LastRequest
-function LastRequest:new(body, base_url, endpoint)
+function LastRequest:new(params)
+    local body = params.body
+    local base_url = params.base_url
+    local endpoint = params.endpoint
+
     self = setmetatable({}, { __index = self })
     self.body = body
 

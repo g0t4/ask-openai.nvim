@@ -175,11 +175,12 @@ function QuestionsFrontend.send_messages()
     QuestionsFrontend.this_turn_chat_start_line_base0 = QuestionsFrontend.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
-    local endpoint = CompletionsEndpoints.v1_chat
-    local frontend_callbacks = QuestionsFrontend
-    local body = QuestionsFrontend.thread:next_curl_request_body()
-    local request = LastRequestForThread:new(body, QuestionsFrontend.thread.base_url, endpoint)
-    curl.spawn(request, frontend_callbacks)
+    local request = LastRequestForThread:new({
+        body = QuestionsFrontend.thread:next_curl_request_body(),
+        base_url = QuestionsFrontend.thread.base_url,
+        endpoint = CompletionsEndpoints.v1_chat
+    })
+    curl.spawn(request, QuestionsFrontend)
     QuestionsFrontend.thread:set_last_request(request)
 end
 
