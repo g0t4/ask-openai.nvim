@@ -18,14 +18,8 @@ M.CompletionsEndpoints = {
     v1_chat = "/v1/chat/completions",
 }
 
----@param body table
----@param base_url string
 ---@param endpoint CompletionsEndpoints
----@param frontend StreamingFrontend
----@return LastRequest?
-function M.curl_for(body, base_url, endpoint, frontend)
-    local url = base_url .. endpoint
-
+function get_extract_func(endpoint)
     -- * /completions  CompletionsEndpoints.completions
     --   3rd ExtractGeneratedTextFunction for non-openai /completions endpoint on llama-server
     --     => no sse.choice so I'd have to change how M.on_line_or_lines works to not assume sse.choices
@@ -56,17 +50,24 @@ function M.curl_for(body, base_url, endpoint, frontend)
         return choice.delta.content
     end
 
-    local use_extract_generated_text
     if endpoint == M.CompletionsEndpoints.v1_chat then
-        use_extract_generated_text = extract_generated_text_v1_chat
+        return extract_generated_text_v1_chat
     elseif endpoint == M.CompletionsEndpoints.v1_completions then
-        use_extract_generated_text = extract_generated_text_v1_completions
+        return extract_generated_text_v1_completions
     else
         -- TODO CompletionsEndpoints.completions /completions for 3rd ExtractGeneratedTextFunction
         error("Not yet implemented: " .. endpoint)
     end
+end
 
-    return curl.reusable_curl_seam(body, url, frontend, use_extract_generated_text)
+---@param body table
+---@param base_url string
+---@param endpoint CompletionsEndpoints
+---@param frontend StreamingFrontend
+---@return LastRequest?
+function M.curl_for(body, base_url, endpoint, frontend)
+    local url = base_url .. endpoint
+    return curl.reusable_curl_seam(body, url, frontend, get_extract_func(endpoint))
 end
 
 M.terminate = curl.terminate
