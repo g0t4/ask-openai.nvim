@@ -295,10 +295,11 @@ function OllamaFimBackend:get_repo_name()
 end
 
 ---@class SSEResult
----@field chunk string?          -- text delta
----@field done boolean           -- true if the stream is finished
----@field done_reason string?    -- reason for completion, if any
----@field stats SSEStats?        -- parsed SSE statistics
+---@field chunk string?
+---@field done boolean
+---@field done_reason string?
+---@field reasoning_content string?
+---@field stats SSEStats
 SSEResult = {}
 
 function SSEResult:new(chunk, done, done_reason, stats, reasoning_content)
