@@ -73,8 +73,6 @@ end
 ---@param request LastRequest|LastRequestForThread
 ---@param frontend StreamingFrontend
 function M.spawn(request, frontend)
-    local base_url = request.base_url
-    local url = base_url .. request.endpoint
     local extract_generated_text = get_extract_generated_text_func(request.endpoint)
 
     request.body.stream = true
@@ -87,7 +85,7 @@ function M.spawn(request, frontend)
             "-sSL",
             "--no-buffer", -- w/o this curl batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
             "-X", "POST",
-            url,
+            request:get_url(),
             "-H", "Content-Type: application/json",
             "-d", json
         },

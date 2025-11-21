@@ -18,14 +18,24 @@ local request_counter = 1
 function LastRequest:new(body, base_url, endpoint)
     self = setmetatable({}, { __index = self })
     self.body = body
+
+    if base_url == nil or base_url == "" then
+        error(string.format("base_url must be set, currently is: %q", base_url))
+    end
     self.base_url = base_url
     self.endpoint = endpoint
+
     self.handle = nil
     self.pid = nil
     self.start_time = os.time()
     self.marks_ns_id = vim.api.nvim_create_namespace("ask.marks." .. request_counter)
     request_counter = request_counter + 1
     return self
+end
+
+---@return string
+function LastRequest:get_url()
+    return self.base_url .. self.endpoint
 end
 
 function LastRequest.terminate(self)
