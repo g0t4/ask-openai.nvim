@@ -11,7 +11,7 @@ function M.start_predictions()
         return
     end
 
-    local prediction_frontend = require("ask-openai.predictions.frontend")
+    local predictions_frontend = require("ask-openai.predictions.frontend")
 
     local predictions = config.get_options().tmp.predictions
     if not predictions.keymaps then
@@ -22,42 +22,42 @@ function M.start_predictions()
     -- keymaps
     if predictions.keymaps.accept_all then
         vim.api.nvim_set_keymap('i', predictions.keymaps.accept_all, "",
-            { noremap = true, callback = prediction_frontend.accept_all_invoked })
+            { noremap = true, callback = predictions_frontend.accept_all_invoked })
     end
 
     if predictions.keymaps.accept_line then
         vim.api.nvim_set_keymap('i', predictions.keymaps.accept_line, "",
-            { noremap = true, callback = prediction_frontend.accept_line_invoked })
+            { noremap = true, callback = predictions_frontend.accept_line_invoked })
     end
 
     if predictions.keymaps.accept_word then
         vim.api.nvim_set_keymap('i', predictions.keymaps.accept_word, "",
-            { noremap = true, callback = prediction_frontend.accept_word_invoked })
+            { noremap = true, callback = predictions_frontend.accept_word_invoked })
     end
 
     if predictions.keymaps.pause_stream then
         vim.api.nvim_set_keymap('i', predictions.keymaps.pause_stream, "", {
             noremap = true,
-            callback = prediction_frontend.pause_stream_invoked,
+            callback = predictions_frontend.pause_stream_invoked,
         })
     end
 
     if predictions.keymaps.resume_stream then
         vim.api.nvim_set_keymap('i', predictions.keymaps.resume_stream, "", {
             noremap = true,
-            callback = prediction_frontend.resume_stream_invoked,
+            callback = predictions_frontend.resume_stream_invoked,
         })
     end
 
     if predictions.keymaps.new_prediction then
         vim.api.nvim_set_keymap('i', predictions.keymaps.new_prediction, "",
-            { noremap = true, callback = prediction_frontend.new_prediction_invoked })
+            { noremap = true, callback = predictions_frontend.new_prediction_invoked })
     end
     -- if predictions.keymaps.new_prediction then
     -- vim.api.nvim_set_keymap('n', "<Esc><Esc><Esc>", "",
     --     -- FYI this is to test a keymap that I can use when a completion somehow renders after I leave insert mode... use triple escape to clear it
     --     --    USE this until I find the culprit in timing, if I can fix it easy enough
-    --     { noremap = true, callback = prediction_frontend.leaving_insert_mode })
+    --     { noremap = true, callback = predictions_frontend.leaving_insert_mode })
     -- -- end
 
     -- FYI why don't I reserve ~ for debug keymap(s) and move it around to w/e I need it for currently?
@@ -69,24 +69,24 @@ function M.start_predictions()
     vim.api.nvim_create_autocmd("InsertLeavePre", {
         group = augroup,
         pattern = "*",
-        callback = prediction_frontend.leaving_insert_mode
+        callback = predictions_frontend.leaving_insert_mode
     })
     vim.api.nvim_create_autocmd("InsertEnter", {
         group = augroup,
         pattern = "*",
-        callback = prediction_frontend.entering_insert_mode
+        callback = predictions_frontend.entering_insert_mode
     })
     -- vim.api.nvim_create_autocmd("CursorMovedI", {
     --     -- TODO TextChangedI intead of cursor moved?
     --     group = augroup,
     --     pattern = "*", -- todo filter?
-    --     callback = prediction_frontend.cursor_moved_in_insert_mode
+    --     callback = predictions_frontend.cursor_moved_in_insert_mode
     -- })
     vim.api.nvim_create_autocmd("TextChangedI", {
         -- FYI been using this for a LONG time now and no issues (AFAICT)
         group = augroup,
         pattern = "*",
-        callback = prediction_frontend.cursor_moved_in_insert_mode,
+        callback = predictions_frontend.cursor_moved_in_insert_mode,
     })
 
     are_predictions_running = true
