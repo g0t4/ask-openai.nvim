@@ -175,8 +175,8 @@ function M.send_messages()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
     local endpoint = curl.CompletionsEndpoints.v1_chat
-    local frontend = M
-    local request = curl.spawn(M.thread:next_curl_request_body(), M.thread.base_url, endpoint, frontend)
+    local frontend_callbacks = M
+    local request = curl.spawn(M.thread:next_curl_request_body(), M.thread.base_url, endpoint, frontend_callbacks)
     M.thread:set_last_request(request)
 end
 
