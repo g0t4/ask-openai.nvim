@@ -19,14 +19,14 @@ local MessageBuilder = require("ask-openai.rewrites.message_builder")
 local HLGroups = require("ask-openai.hlgroups")
 
 ---@class RewriteFrontend : StreamingFrontend
-local RewriteFrontEnd = {}
+local RewriteFrontend = {}
 
 -- Initialize selection position variables at module level
 ---@type Selection|nil
-RewriteFrontEnd.selection = nil
-RewriteFrontEnd.accumulated_chunks = ""
+RewriteFrontend.selection = nil
+RewriteFrontend.accumulated_chunks = ""
 
-function RewriteFrontEnd.strip_md_from_completion(lines)
+function RewriteFrontend.strip_md_from_completion(lines)
     local isFirstLineStartOfCodeBlock = lines[1]:match("^```(%S*)$")
     local isLastLineEndOfCodeBlock = lines[#lines]:match("^```")
 
@@ -69,34 +69,34 @@ local function ensure_new_lines_around(code, response_lines)
     return response_lines
 end
 
-function RewriteFrontEnd.on_generated_text(chunk)
+function RewriteFrontend.on_generated_text(chunk)
     if not chunk then return end
-    if not RewriteFrontEnd.displayer then return end -- else after cancel, if get another SSE, boom
+    if not RewriteFrontend.displayer then return end -- else after cancel, if get another SSE, boom
 
-    RewriteFrontEnd.accumulated_chunks = RewriteFrontEnd.accumulated_chunks .. chunk
+    RewriteFrontend.accumulated_chunks = RewriteFrontend.accumulated_chunks .. chunk
 
-    local lines = text_helpers.split_lines(RewriteFrontEnd.accumulated_chunks)
-    lines = RewriteFrontEnd.strip_md_from_completion(lines)
+    local lines = text_helpers.split_lines(RewriteFrontend.accumulated_chunks)
+    lines = RewriteFrontend.strip_md_from_completion(lines)
     local thinking_status = nil
     lines, thinking_status = thinking.strip_thinking_tags(lines)
     if thinking_status == thinking.ThinkingStatus.Thinking then
-        lines = { thinking.dots:get_still_thinking_message(RewriteFrontEnd.last_request.start_time) }
+        lines = { thinking.dots:get_still_thinking_message(RewriteFrontend.last_request.start_time) }
         -- while thinking, we show the green text w/ ....
-        vim.schedule(function() RewriteFrontEnd.displayer:show_green_preview_text(RewriteFrontEnd.selection, lines) end)
+        vim.schedule(function() RewriteFrontend.displayer:show_green_preview_text(RewriteFrontend.selection, lines) end)
         return
     end
     -- TODO! detect first chunk AFTER thinking section so we can clear the Thinking... message and not need to clear before every token
     -- FYI it looks fine to not add lines with the thinking message... just shows up right where cursor was at
-    lines = ensure_new_lines_around(RewriteFrontEnd.selection.original_text, lines)
+    lines = ensure_new_lines_around(RewriteFrontend.selection.original_text, lines)
 
     -- FYI can switch back to green here is fine! and skip diff if its not ready
     -- vim.schedule(function() M.displayer:show_green_preview_text(M.selection, lines) end)
     vim.schedule(function()
-        RewriteFrontEnd.displayer:on_response(RewriteFrontEnd.selection, lines)
+        RewriteFrontend.displayer:on_response(RewriteFrontend.selection, lines)
     end)
 end
 
-function RewriteFrontEnd.on_sse_llama_server_timings(sse)
+function RewriteFrontend.on_sse_llama_server_timings(sse)
     -- FYI coupled to llama-server timings
     if sse == nil or sse.timings == nil then
         return
@@ -138,7 +138,7 @@ function RewriteFrontEnd.on_sse_llama_server_timings(sse)
             })
         end
 
-        vim.api.nvim_buf_set_extmark(0, RewriteFrontEnd.displayer.marks.namespace_id, current_cursor_row_0based, 0, {
+        vim.api.nvim_buf_set_extmark(0, RewriteFrontend.displayer.marks.namespace_id, current_cursor_row_0based, 0, {
             virt_text = virt_text,
             virt_text_pos = "eol",
             hl_mode = "combine",
@@ -146,18 +146,18 @@ function RewriteFrontEnd.on_sse_llama_server_timings(sse)
     end)
 end
 
-function RewriteFrontEnd.curl_exited_successfully()
+function RewriteFrontend.curl_exited_successfully()
 end
 
-function RewriteFrontEnd.accept_rewrite()
-    RewriteFrontEnd.stop_streaming = true -- go ahead and stop with whatever has been generated so far
-    RewriteFrontEnd.displayer = nil
+function RewriteFrontend.accept_rewrite()
+    RewriteFrontend.stop_streaming = true -- go ahead and stop with whatever has been generated so far
+    RewriteFrontend.displayer = nil
 
     vim.schedule(function()
-        local lines = text_helpers.split_lines(RewriteFrontEnd.accumulated_chunks)
-        lines = RewriteFrontEnd.strip_md_from_completion(lines)
+        local lines = text_helpers.split_lines(RewriteFrontend.accumulated_chunks)
+        lines = RewriteFrontend.strip_md_from_completion(lines)
         lines = thinking.strip_thinking_tags(lines)
-        lines = ensure_new_lines_around(RewriteFrontEnd.selection.original_text, lines)
+        lines = ensure_new_lines_around(RewriteFrontend.selection.original_text, lines)
 
         -- log:info("Accepted rewrite (accumulated_chunks): ", M.accumulated_chunks)
         -- log:info("Accepted rewrite (inserted lines, sanitized): ", table.concat(lines, "\n"))
@@ -179,45 +179,45 @@ function RewriteFrontEnd.accept_rewrite()
         -- Insert (replace) the text right on the empty line added by the Displayer (it already removed the original lines)
         vim.api.nvim_buf_set_text(
             0, -- Current buffer
-            RewriteFrontEnd.selection:start_line_0indexed(), -- Zero-indexed
+            RewriteFrontend.selection:start_line_0indexed(), -- Zero-indexed
             -- set start col to zero always, b/c right now only support full line
             0, -- Zero-indexed
-            RewriteFrontEnd.selection:start_line_0indexed(), -- Zero-indexed
+            RewriteFrontend.selection:start_line_0indexed(), -- Zero-indexed
             -- set end line to zero always, b/c right now only support full line
             0, -- Zero-indexed, end-exclusive column
             lines
         )
 
-        RewriteFrontEnd.accumulated_chunks = ""
+        RewriteFrontend.accumulated_chunks = ""
     end)
 end
 
-function RewriteFrontEnd.abort_last_request()
-    RewriteFrontEnd.stop_streaming = true -- HACK to stop streaming simulations too
+function RewriteFrontend.abort_last_request()
+    RewriteFrontend.stop_streaming = true -- HACK to stop streaming simulations too
 
-    if not RewriteFrontEnd.last_request then
+    if not RewriteFrontend.last_request then
         return
     end
 
-    curl.terminate(RewriteFrontEnd.last_request)
+    curl.terminate(RewriteFrontend.last_request)
 
-    if RewriteFrontEnd.displayer ~= nil then
-        RewriteFrontEnd.displayer:clear_extmarks()
+    if RewriteFrontend.displayer ~= nil then
+        RewriteFrontend.displayer:clear_extmarks()
     end
 end
 
-function RewriteFrontEnd.cleanup_after_cancel()
-    RewriteFrontEnd.abort_last_request()
-    RewriteFrontEnd.displayer = nil
+function RewriteFrontend.cleanup_after_cancel()
+    RewriteFrontend.abort_last_request()
+    RewriteFrontend.displayer = nil
 
     -- PRN store this in a last_accumulated_chunks / canceled_accumulated_chunks?
     -- log:info("Cancel rewrite (accumulated_chunks): ", M.accumulated_chunks)
 
-    RewriteFrontEnd.accumulated_chunks = ""
+    RewriteFrontend.accumulated_chunks = ""
 end
 
-function RewriteFrontEnd.stream_from_ollama(user_prompt, code, file_name)
-    RewriteFrontEnd.abort_last_request()
+function RewriteFrontend.stream_from_ollama(user_prompt, code, file_name)
+    RewriteFrontend.abort_last_request()
 
     -- local enable_rag = false
     local enable_rag = api.is_rag_enabled()
@@ -338,9 +338,9 @@ function RewriteFrontEnd.stream_from_ollama(user_prompt, code, file_name)
 
         local base_url = "http://ollama:8013"
         local endpoint = CompletionsEndpoints.v1_chat
-        local frontend_callbacks = RewriteFrontEnd
-        RewriteFrontEnd.last_request = LastRequest:new(body)
-        curl.spawn(RewriteFrontEnd.last_request, base_url, endpoint, frontend_callbacks)
+        local frontend_callbacks = RewriteFrontend
+        RewriteFrontend.last_request = LastRequest:new(body)
+        curl.spawn(RewriteFrontend.last_request, base_url, endpoint, frontend_callbacks)
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
@@ -350,13 +350,13 @@ function RewriteFrontEnd.stream_from_ollama(user_prompt, code, file_name)
         ---@param rag_failed boolean?
         function on_rag_response(rag_matches, rag_failed)
             -- * make sure prior (canceled) rag request doesn't still respond
-            if RewriteFrontEnd.rag_request_ids ~= this_request_ids then
+            if RewriteFrontend.rag_request_ids ~= this_request_ids then
                 log:trace("possibly stale rag results, skipping: "
-                    .. vim.inspect({ global_rag_request_ids = RewriteFrontEnd.rag_request_ids, this_request_ids = this_request_ids }))
+                    .. vim.inspect({ global_rag_request_ids = RewriteFrontend.rag_request_ids, this_request_ids = this_request_ids }))
                 return
             end
 
-            if RewriteFrontEnd.rag_cancel == nil then
+            if RewriteFrontend.rag_cancel == nil then
                 log:error("rag appears to have been canceled, skipping on_rag_response rag_matches results...")
                 return
             end
@@ -365,29 +365,29 @@ function RewriteFrontEnd.stream_from_ollama(user_prompt, code, file_name)
         end
 
         this_request_ids, cancel = rag_client.context_query_rewrites(user_prompt, code_context, send_rewrite)
-        RewriteFrontEnd.rag_cancel = cancel
-        RewriteFrontEnd.rag_request_ids = this_request_ids
+        RewriteFrontend.rag_cancel = cancel
+        RewriteFrontend.rag_request_ids = this_request_ids
     else
-        RewriteFrontEnd.rag_cancel = nil
-        RewriteFrontEnd.rag_request_ids = nil
+        RewriteFrontend.rag_cancel = nil
+        RewriteFrontend.rag_request_ids = nil
         -- PRN add a promise fwk in here
         send_rewrite({})
     end
 end
 
-RewriteFrontEnd.stop_streaming = false
+RewriteFrontend.stop_streaming = false
 local function simulate_rewrite_stream_chunks(opts)
     -- use this for timing and to test streaming diff!
 
-    RewriteFrontEnd.abort_last_request()
-    RewriteFrontEnd.last_request = LastRequest:new({})
+    RewriteFrontend.abort_last_request()
+    RewriteFrontend.last_request = LastRequest:new({})
     vim.cmd("normal! 0V6jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
-    RewriteFrontEnd.selection = Selection.get_visual_selection_for_current_window()
-    RewriteFrontEnd.accumulated_chunks = ""
-    RewriteFrontEnd.stop_streaming = false
-    RewriteFrontEnd.displayer = Displayer:new(RewriteFrontEnd.accept_rewrite, RewriteFrontEnd.cleanup_after_cancel)
-    RewriteFrontEnd.displayer:set_keymaps()
+    RewriteFrontend.selection = Selection.get_visual_selection_for_current_window()
+    RewriteFrontend.accumulated_chunks = ""
+    RewriteFrontend.stop_streaming = false
+    RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
+    RewriteFrontend.displayer:set_keymaps()
 
     local optional_thinking_text = [[<think>
 foo the bar lorem ipsum toodle doodle banana bie foo the bar bar the foo and foo the bar and bbbbbb the foo the bar bar the
@@ -395,12 +395,12 @@ foobar and foo the bar bar foo the bar lorem ipsum toodle doodle banana bie foo 
 the foo the bar bar the foobar and foo the bar bar foo the bar lorem ipsum toodle doodle banana bie foo the bar bar the foo
 and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
 </think> ]]
-    local rewritten_text = optional_thinking_text .. RewriteFrontEnd.selection.original_text .. "\nSTREAMING w/ THINKING CONTENT"
+    local rewritten_text = optional_thinking_text .. RewriteFrontend.selection.original_text .. "\nSTREAMING w/ THINKING CONTENT"
     -- local rewritten_text = M.selection.original_text .. "\nSTREAMING NEW CONTENT\nthis is fun"
 
     local harmony_gptoss_example =
     [[<|channel|>analysis<|message|>User wrote "test". Likely just a test message. They might want ChatGPT to respond? We should respond politely. Maybe just say "Hello! How can I help?"<|end|>Hello! 👋 How can I assist you today?]]
-    local rewritten_text = harmony_gptoss_example .. RewriteFrontEnd.selection.original_text .. "\nSIMULATED HARMONY EXAMPLE"
+    local rewritten_text = harmony_gptoss_example .. RewriteFrontend.selection.original_text .. "\nSIMULATED HARMONY EXAMPLE"
 
     -- FYI can split on new line to simulate streaming lines instead of words
     local all_words = vim.split(rewritten_text, " ")
@@ -410,7 +410,7 @@ and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
 
     local function stream_words(remaining_words)
         if not remaining_words
-            or RewriteFrontEnd.stop_streaming
+            or RewriteFrontend.stop_streaming
         then
             -- TODO done signal? not sure I have one right now
             return
@@ -433,7 +433,7 @@ and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
                 }
             }
         end
-        RewriteFrontEnd.on_generated_text(cur_word, simulated_sse)
+        RewriteFrontend.on_generated_text(cur_word, simulated_sse)
 
         -- delay and do next
         -- FYI can adjust interval to visually slow down and see what is happening with each chunk, s/b especially helpful with streaming diff
@@ -443,16 +443,16 @@ and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
 end
 
 local function simulate_rewrite_instant_one_chunk(opts)
-    RewriteFrontEnd.abort_last_request()
-    RewriteFrontEnd.last_request = LastRequest:new({})
+    RewriteFrontend.abort_last_request()
+    RewriteFrontend.last_request = LastRequest:new({})
     vim.cmd("normal! 0V6jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
-    RewriteFrontEnd.selection = Selection.get_visual_selection_for_current_window()
-    RewriteFrontEnd.accumulated_chunks = ""
-    RewriteFrontEnd.displayer = Displayer:new(RewriteFrontEnd.accept_rewrite, RewriteFrontEnd.cleanup_after_cancel)
-    RewriteFrontEnd.displayer:set_keymaps()
+    RewriteFrontend.selection = Selection.get_visual_selection_for_current_window()
+    RewriteFrontend.accumulated_chunks = ""
+    RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
+    RewriteFrontend.displayer:set_keymaps()
 
-    local full_rewrite = RewriteFrontEnd.selection.original_text .. "\nINSTANT NEW LINE"
+    local full_rewrite = RewriteFrontend.selection.original_text .. "\nINSTANT NEW LINE"
     local simulated_sse = {
         timings = {
             cache_n = 1000,
@@ -462,7 +462,7 @@ local function simulate_rewrite_instant_one_chunk(opts)
             prompt_n = 400,
         }
     }
-    RewriteFrontEnd.on_generated_text(full_rewrite, simulated_sse)
+    RewriteFrontend.on_generated_text(full_rewrite, simulated_sse)
 end
 
 local function ask_and_stream_from_ollama(opts)
@@ -475,27 +475,27 @@ local function ask_and_stream_from_ollama(opts)
     local user_prompt = opts.args
     local relative_file_path = files.get_current_file_relative_path()
     -- Store selection details for later use
-    RewriteFrontEnd.selection = selection
-    RewriteFrontEnd.accumulated_chunks = ""
-    RewriteFrontEnd.displayer = Displayer:new(RewriteFrontEnd.accept_rewrite, RewriteFrontEnd.cleanup_after_cancel)
-    RewriteFrontEnd.displayer:set_keymaps()
+    RewriteFrontend.selection = selection
+    RewriteFrontend.accumulated_chunks = ""
+    RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
+    RewriteFrontend.displayer:set_keymaps()
 
-    RewriteFrontEnd.stream_from_ollama(user_prompt, selection.original_text, relative_file_path)
+    RewriteFrontend.stream_from_ollama(user_prompt, selection.original_text, relative_file_path)
 end
 
-function RewriteFrontEnd.explain_error(text)
-    if not RewriteFrontEnd.displayer then
+function RewriteFrontend.explain_error(text)
+    if not RewriteFrontend.displayer then
         vim.notify("ERROR, and no displayer, so here goes: " .. text, vim.log.levels.ERROR)
         return
     end
     vim.schedule(function()
-        RewriteFrontEnd.displayer:explain_error(RewriteFrontEnd.selection, text)
+        RewriteFrontend.displayer:explain_error(RewriteFrontend.selection, text)
     end)
 end
 
 local function retry()
-    if RewriteFrontEnd.displayer then
-        RewriteFrontEnd.displayer:reject()
+    if RewriteFrontend.displayer then
+        RewriteFrontend.displayer:reject()
     end
 
     local function run_last_command_that_started_with(filter)
@@ -516,7 +516,7 @@ local function retry()
     end)
 end
 
-function RewriteFrontEnd.setup()
+function RewriteFrontend.setup()
     -- Create commands and keymaps for the rewrite functionality
     vim.api.nvim_create_user_command("AskRewrite", ask_and_stream_from_ollama, { range = true, nargs = 1 })
     vim.keymap.set({ 'n', 'v' }, '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
@@ -541,4 +541,4 @@ function RewriteFrontEnd.setup()
     require("ask-openai.prediction.context").setup()
 end
 
-return RewriteFrontEnd
+return RewriteFrontend

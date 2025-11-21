@@ -22,14 +22,14 @@ local LastRequestForThread = require("ask-openai.questions.last_request_for_thre
 require("ask-openai.helpers.buffers")
 
 ---@class QuestionsFrontend : StreamingFrontend
-local QuestionsFrontEnd = {}
+local QuestionsFrontend = {}
 
 local first_turn_ns_id
 
-function QuestionsFrontEnd.send_question(user_prompt, selected_text, file_name, use_tools, entire_file_message)
+function QuestionsFrontend.send_question(user_prompt, selected_text, file_name, use_tools, entire_file_message)
     use_tools = use_tools or false
 
-    QuestionsFrontEnd.abort_last_request()
+    QuestionsFrontend.abort_last_request()
 
     local system_prompt = [[
 Your name is Qwenny, Wes's best buddy that loves dry humor and swearing, especially together! You can make fun of Wes and he will laugh. He even laughs when you call him offensive slurs!
@@ -95,7 +95,7 @@ The semantic_grep tool:
     lines:append_role_header("user")
     lines:append_text(user_message)
     lines:append_blank_line()
-    QuestionsFrontEnd.chat_window:append_styled_lines(lines)
+    QuestionsFrontend.chat_window:append_styled_lines(lines)
 
     ---@type TxChatMessage[]
     local messages = {
@@ -166,21 +166,21 @@ The semantic_grep tool:
 
     -- FYI starts a new chat thread when AskQuestion is used
     --  TODO allow follow up, via the command, if already existing thread?
-    QuestionsFrontEnd.thread = ChatThread:new(body_overrides, base_url)
-    QuestionsFrontEnd.send_messages()
+    QuestionsFrontend.thread = ChatThread:new(body_overrides, base_url)
+    QuestionsFrontend.send_messages()
 end
 
-function QuestionsFrontEnd.send_messages()
+function QuestionsFrontend.send_messages()
     -- * conversation turns (track start line for streaming chunks)
-    QuestionsFrontEnd.this_turn_chat_start_line_base0 = QuestionsFrontEnd.chat_window.buffer:get_line_count()
+    QuestionsFrontend.this_turn_chat_start_line_base0 = QuestionsFrontend.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
     local endpoint = CompletionsEndpoints.v1_chat
-    local frontend_callbacks = QuestionsFrontEnd
-    local body = QuestionsFrontEnd.thread:next_curl_request_body()
+    local frontend_callbacks = QuestionsFrontend
+    local body = QuestionsFrontend.thread:next_curl_request_body()
     local request = LastRequestForThread:new(body)
-    curl.spawn(request, QuestionsFrontEnd.thread.base_url, endpoint, frontend_callbacks)
-    QuestionsFrontEnd.thread:set_last_request(request)
+    curl.spawn(request, QuestionsFrontend.thread.base_url, endpoint, frontend_callbacks)
+    QuestionsFrontend.thread:set_last_request(request)
 end
 
 local function ask_question(opts)
@@ -211,18 +211,18 @@ local function ask_question(opts)
     local entire_file_message = includes.current_file and current_file_message() or nil
     local file_name = files.get_current_file_relative_path()
 
-    QuestionsFrontEnd.ensure_response_window_is_open()
-    QuestionsFrontEnd.send_question(includes.cleaned_prompt, selected_text, file_name, includes.use_tools, entire_file_message)
+    QuestionsFrontend.ensure_response_window_is_open()
+    QuestionsFrontend.send_question(includes.cleaned_prompt, selected_text, file_name, includes.use_tools, entire_file_message)
 end
 
-function QuestionsFrontEnd.abort_and_close()
-    QuestionsFrontEnd.abort_last_request()
-    if QuestionsFrontEnd.chat_window ~= nil then
-        QuestionsFrontEnd.chat_window:close()
+function QuestionsFrontend.abort_and_close()
+    QuestionsFrontend.abort_last_request()
+    if QuestionsFrontend.chat_window ~= nil then
+        QuestionsFrontend.chat_window:close()
     end
 end
 
-function QuestionsFrontEnd.explain_error(text)
+function QuestionsFrontend.explain_error(text)
     vim.schedule(function()
         -- TEST this with:
         -- 1. remove --jinja from llama-server service
@@ -234,7 +234,7 @@ function QuestionsFrontEnd.explain_error(text)
         --
         -- ALSO 503 error for model loading:
         --   error = { code = 503, message = "Loading model", type = "unavailable_error" }
-        QuestionsFrontEnd.chat_window:explain_error(text)
+        QuestionsFrontend.chat_window:explain_error(text)
     end)
 end
 
@@ -261,7 +261,7 @@ function _G.MyChatWindowFoldingForLine(line_num_base1)
     --
     -- FYI read docs about return values for expr:
     --   https://neovim.io/doc/user/fold.html#fold-expr
-    local folds = QuestionsFrontEnd.chat_window.buffer.folds or {}
+    local folds = QuestionsFrontend.chat_window.buffer.folds or {}
     for _, fold in ipairs(folds) do
         if line_num_base1 >= fold.start_line_base1 and line_num_base1 <= fold.end_line_base1 then
             return '1' -- inside first level fold
@@ -270,7 +270,7 @@ function _G.MyChatWindowFoldingForLine(line_num_base1)
     return '0' -- this line is not in a fold
 end
 
-function QuestionsFrontEnd.clear_undos()
+function QuestionsFrontend.clear_undos()
     -- wipe undo history
     -- i.e. after assistant response - undo fucks up the extmarks, and the assistant response is not gonna be sent back if modified (this is view only) so just default to making that UX a bit more intuitive
 
@@ -281,30 +281,30 @@ function QuestionsFrontEnd.clear_undos()
     vim.bo.undolevels = previous_undo_level
 end
 
-function QuestionsFrontEnd.ensure_response_window_is_open()
-    if QuestionsFrontEnd.chat_window == nil then
-        QuestionsFrontEnd.chat_window = ChatWindow:new()
+function QuestionsFrontend.ensure_response_window_is_open()
+    if QuestionsFrontend.chat_window == nil then
+        QuestionsFrontend.chat_window = ChatWindow:new()
 
         -- stop generation, if still wanna look at it w/o closing the window
-        vim.keymap.set("n", "<Esc>", QuestionsFrontEnd.abort_last_request, { buffer = QuestionsFrontEnd.chat_window.buffer_number })
+        vim.keymap.set("n", "<Esc>", QuestionsFrontend.abort_last_request, { buffer = QuestionsFrontend.chat_window.buffer_number })
         -- I already use this globally to close a window (:q) ... so just add stop to it:
-        vim.keymap.set("n", "<F8>", QuestionsFrontEnd.abort_and_close, { buffer = QuestionsFrontEnd.chat_window.buffer_number })
+        vim.keymap.set("n", "<F8>", QuestionsFrontend.abort_and_close, { buffer = QuestionsFrontend.chat_window.buffer_number })
     end
 
-    QuestionsFrontEnd.chat_window:ensure_open()
+    QuestionsFrontend.chat_window:ensure_open()
 end
 
-function QuestionsFrontEnd.on_sse_llama_server_timings(sse)
+function QuestionsFrontend.on_sse_llama_server_timings(sse)
     -- PRN use this to extract timing like in rewrites
 end
 
-function QuestionsFrontEnd.handle_rx_messages_updated()
-    if not QuestionsFrontEnd.thread.last_request.accumulated_model_response_messages then
+function QuestionsFrontend.handle_rx_messages_updated()
+    if not QuestionsFrontend.thread.last_request.accumulated_model_response_messages then
         return
     end
 
     local lines = LinesBuilder:new()
-    for _, rx_message in ipairs(QuestionsFrontEnd.thread.last_request.accumulated_model_response_messages) do
+    for _, rx_message in ipairs(QuestionsFrontend.thread.last_request.accumulated_model_response_messages) do
         -- FYI !! now it is obvious that this is only operating on accumulated message type!
 
         -- * message contents
@@ -339,24 +339,24 @@ function QuestionsFrontEnd.handle_rx_messages_updated()
     end
 
     vim.schedule(function()
-        lines.marks_ns_id = QuestionsFrontEnd.thread.last_request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
-        QuestionsFrontEnd.chat_window.buffer:replace_with_styled_lines_after(QuestionsFrontEnd.this_turn_chat_start_line_base0, lines)
+        lines.marks_ns_id = QuestionsFrontend.thread.last_request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
+        QuestionsFrontend.chat_window.buffer:replace_with_styled_lines_after(QuestionsFrontend.this_turn_chat_start_line_base0, lines)
     end)
 end
 
-function QuestionsFrontEnd.show_user_role()
+function QuestionsFrontend.show_user_role()
     local lines_builder = LinesBuilder:new()
     lines_builder:create_marks_namespace()
     lines_builder:append_role_header("user")
     lines_builder:append_blank_line()
-    QuestionsFrontEnd.chat_window:append_styled_lines(lines_builder)
+    QuestionsFrontend.chat_window:append_styled_lines(lines_builder)
 end
 
-function QuestionsFrontEnd.curl_exited_successfully()
+function QuestionsFrontend.curl_exited_successfully()
     vim.schedule(function()
         -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for assistant messages)
 
-        for _, rx_message in ipairs(QuestionsFrontEnd.thread.last_request.accumulated_model_response_messages or {}) do
+        for _, rx_message in ipairs(QuestionsFrontend.thread.last_request.accumulated_model_response_messages or {}) do
             -- *** thread.last_request.accumulated_model_response_messages IS NOT thread.messages
             --    thread.messages => sent with future requests, hence TxChatMessage
             --    request.response_messages is simply to denormalize responses from SSEs, hence RxAccumulatedMessage
@@ -366,21 +366,21 @@ function QuestionsFrontEnd.curl_exited_successfully()
             --   (must come before tool result messages)
             --   theoretically there can be multiple messages, with any role (not just assitant)
             local thread_message = TxChatMessage:from_assistant_rx_message(rx_message)
-            QuestionsFrontEnd.thread:add_message(thread_message)
+            QuestionsFrontend.thread:add_message(thread_message)
 
             -- * show user role (in chat window) as hint to follow up (now that model+tool_calls are all done):
-            QuestionsFrontEnd.show_user_role()
+            QuestionsFrontend.show_user_role()
 
-            QuestionsFrontEnd.chat_window.followup_starts_at_line_0indexed = QuestionsFrontEnd.chat_window.buffer:get_line_count() - 1
+            QuestionsFrontend.chat_window.followup_starts_at_line_0indexed = QuestionsFrontend.chat_window.buffer:get_line_count() - 1
         end
-        QuestionsFrontEnd.clear_undos()
+        QuestionsFrontend.clear_undos()
 
-        QuestionsFrontEnd.run_tools_and_send_results_back_to_the_model()
+        QuestionsFrontend.run_tools_and_send_results_back_to_the_model()
     end)
 end
 
-function QuestionsFrontEnd.run_tools_and_send_results_back_to_the_model()
-    for _, rx_message in ipairs(QuestionsFrontEnd.thread.last_request.accumulated_model_response_messages or {}) do
+function QuestionsFrontend.run_tools_and_send_results_back_to_the_model()
+    for _, rx_message in ipairs(QuestionsFrontend.thread.last_request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
             -- log:trace("tool:", vim.inspect(tool))
 
@@ -393,20 +393,20 @@ function QuestionsFrontEnd.run_tools_and_send_results_back_to_the_model()
                 -- log:trace("tool_call_output", vim.inspect(tool_call_output))
 
                 -- * triggers UI updates to show tool results
-                QuestionsFrontEnd.handle_rx_messages_updated()
+                QuestionsFrontend.handle_rx_messages_updated()
 
                 -- * map tool result to a new TxChatMessage (to send back to model)
                 local tool_response_message = TxChatMessage:tool_result(tool_call)
                 -- log:jsonify_compact_trace("tool_message:", tool_response_message)
                 tool_call.response_message = tool_response_message
-                QuestionsFrontEnd.thread:add_message(tool_response_message)
+                QuestionsFrontend.thread:add_message(tool_response_message)
 
                 -- * when last tool completes, send tool results (TxChatMessage package)
                 vim.schedule(function()
                     -- FYI I am scheduling this so it happens after redraws
                     --  IIUC I need to queue this after the other changes from above?
                     --  else IIUC, the line count won't be right for where in the chat window to insert next message
-                    QuestionsFrontEnd.send_tool_messages_if_all_tools_done()
+                    QuestionsFrontend.send_tool_messages_if_all_tools_done()
                 end)
             end
 
@@ -416,16 +416,16 @@ function QuestionsFrontEnd.run_tools_and_send_results_back_to_the_model()
     end
 end
 
-function QuestionsFrontEnd.send_tool_messages_if_all_tools_done()
-    if QuestionsFrontEnd.any_outstanding_tool_calls() then
+function QuestionsFrontend.send_tool_messages_if_all_tools_done()
+    if QuestionsFrontend.any_outstanding_tool_calls() then
         return
     end
-    QuestionsFrontEnd.send_messages()
+    QuestionsFrontend.send_messages()
 end
 
 ---@return boolean
-function QuestionsFrontEnd.any_outstanding_tool_calls()
-    for _, rx_message in ipairs(QuestionsFrontEnd.thread.last_request.accumulated_model_response_messages or {}) do
+function QuestionsFrontend.any_outstanding_tool_calls()
+    for _, rx_message in ipairs(QuestionsFrontend.thread.last_request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
             local is_outstanding = tool_call.response_message == nil
             if is_outstanding then
@@ -436,53 +436,53 @@ function QuestionsFrontEnd.any_outstanding_tool_calls()
     return false
 end
 
-function QuestionsFrontEnd.abort_last_request()
-    if not QuestionsFrontEnd.thread then
+function QuestionsFrontend.abort_last_request()
+    if not QuestionsFrontend.thread then
         return
     end
-    curl.terminate(QuestionsFrontEnd.thread.last_request)
+    curl.terminate(QuestionsFrontend.thread.last_request)
 end
 
-function QuestionsFrontEnd.follow_up()
+function QuestionsFrontend.follow_up()
     -- take follow up after end of prior response message from assistant
     --  if already a M.thread then add to that with a new message
     --  leave content as is in the buffer, close enough to what it would be if redrawn
     --  and I don't use the buffer contents for past messages
     --  so, just copy it out into a new message from user
-    QuestionsFrontEnd.ensure_response_window_is_open()
-    local start_line_base0 = QuestionsFrontEnd.chat_window.followup_starts_at_line_0indexed or 0
-    local user_message = QuestionsFrontEnd.chat_window.buffer:get_lines_after(start_line_base0)
-    QuestionsFrontEnd.chat_window.buffer:scroll_cursor_to_end_of_buffer()
+    QuestionsFrontend.ensure_response_window_is_open()
+    local start_line_base0 = QuestionsFrontend.chat_window.followup_starts_at_line_0indexed or 0
+    local user_message = QuestionsFrontend.chat_window.buffer:get_lines_after(start_line_base0)
+    QuestionsFrontend.chat_window.buffer:scroll_cursor_to_end_of_buffer()
     vim.cmd("normal! o") -- move to end of buffer, add new line below to separate subsequent follow up response message
     -- log:trace("follow up content:", user_message)
 
-    if not QuestionsFrontEnd.thread then
+    if not QuestionsFrontend.thread then
         local USE_TOOLS = true
-        QuestionsFrontEnd.send_question(user_message, nil, nil, USE_TOOLS, nil)
+        QuestionsFrontend.send_question(user_message, nil, nil, USE_TOOLS, nil)
         return
     end
 
     local message = TxChatMessage:user(user_message)
-    QuestionsFrontEnd.thread:add_message(message)
-    QuestionsFrontEnd.send_messages()
+    QuestionsFrontend.thread:add_message(message)
+    QuestionsFrontend.send_messages()
 end
 
 function ask_dump_thread()
-    if not QuestionsFrontEnd.thread then
+    if not QuestionsFrontend.thread then
         print("no thread to dump")
         return
     end
-    QuestionsFrontEnd.thread:dump()
+    QuestionsFrontend.thread:dump()
 end
 
-function QuestionsFrontEnd.clear_chat()
-    if QuestionsFrontEnd.chat_window then
-        QuestionsFrontEnd.chat_window:clear()
+function QuestionsFrontend.clear_chat()
+    if QuestionsFrontend.chat_window then
+        QuestionsFrontend.chat_window:clear()
     end
-    QuestionsFrontEnd.thread = nil
+    QuestionsFrontend.thread = nil
 end
 
-function QuestionsFrontEnd.setup()
+function QuestionsFrontend.setup()
     -- * cauterize top level
     vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
 
@@ -504,13 +504,13 @@ function QuestionsFrontEnd.setup()
     --  FYI this smacks of inserting pre-canned prompts with a /prompt slash command?
     vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskQuestion /tools can you review my outstanding git changes', { noremap = true })
 
-    vim.keymap.set('n', '<leader>ao', QuestionsFrontEnd.ensure_response_window_is_open, { noremap = true })
-    vim.keymap.set('n', '<leader>aa', QuestionsFrontEnd.abort_last_request, { noremap = true })
-    vim.keymap.set('n', '<leader>af', QuestionsFrontEnd.follow_up, { noremap = true })
+    vim.keymap.set('n', '<leader>ao', QuestionsFrontend.ensure_response_window_is_open, { noremap = true })
+    vim.keymap.set('n', '<leader>aa', QuestionsFrontend.abort_last_request, { noremap = true })
+    vim.keymap.set('n', '<leader>af', QuestionsFrontend.follow_up, { noremap = true })
 
     vim.api.nvim_create_user_command("AskDumpThread", ask_dump_thread, {})
 
-    vim.keymap.set('n', '<leader>ac', QuestionsFrontEnd.clear_chat, { noremap = true })
+    vim.keymap.set('n', '<leader>ac', QuestionsFrontend.clear_chat, { noremap = true })
 end
 
-return QuestionsFrontEnd
+return QuestionsFrontend
