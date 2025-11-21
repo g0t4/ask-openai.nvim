@@ -11,15 +11,11 @@ local M = {}
 function M.curl_for(body, base_url, frontend)
     local url = base_url .. "/v1/completions"
 
-    -- FYI! this appears vestigial... b/c I am using oai_chat for BOTH /v1/completions and /v1/chat/completions endpoints (and I don't swap this module in, I only change the URL/prompt)
-    -- TODO can I get rid of this module and simplify oai_chat?
-    -- I am really happen w/ llama-server at this point...
-    --   TODO no reason for ollama any more so let's cleanup the code accordingly
-
-    if body.tools ~= nil then
-        error("tool use was requested, but this backend " .. url .. " does not support tools")
-        return nil
-    end
+    -- TODO detect which ExtractGeneratedTextFunction to use based on URL
+    --   and for URL, set that like predictions and have logic activat eone of the two extract_generated_text alternatives
+    --   FYI could have third ExtractGeneratedTextFunction ... one for non-openai /completions endpoint on llama-server
+    --     => no choice so I'd have to change how this is activated... b/c right now  curl_streaming assumes .choices is set
+    --     whereas with non-openai /completions it would just use top-level to get text (.content)
 
     ---@type ExtractGeneratedTextFunction
     local function extract_generated_text(choice)

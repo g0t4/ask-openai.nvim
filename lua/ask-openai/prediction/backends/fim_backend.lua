@@ -257,6 +257,7 @@ function FimBackend:body_for()
             -- IOTW INFO LOGGING (and below)
             -- HACK: ONLY log last message, around cursor_marker
             -- FYI WON'T WORK WITH non-gptoss models b/c they have different cursor_marker
+            -- TODO just pass along the original lines instead of doing it this way? (splitting)?
             local last_message = body.messages[#body.messages]
             local cursor_marker = '<|fim_middle|>'
             local lines = vim.split(last_message.content, '\n', true)
