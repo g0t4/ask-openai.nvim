@@ -1,6 +1,6 @@
 local log = require("ask-openai.logs.logger").predictions()
 local files = require("ask-openai.helpers.files")
-local ansi = require("ask-openai.prediction.ansi")
+local ansi = require("ask-openai.predictions.ansi")
 
 local M = {}
 

@@ -2,7 +2,7 @@ local assert = require 'luassert'
 require("ask-openai.helpers.test_setup").modify_package_path()
 require("ask-openai.helpers.buffer_testing")
 
-local ps = require("ask-openai.prediction.prefix_suffix")
+local ps = require("ask-openai.predictions.prefix_suffix")
 
 describe("get_prefix_suffix", function()
     local function create_lines(num_lines)
@@ -159,7 +159,7 @@ describe("get_prefix_suffix", function()
 end)
 
 
-local ps = require("ask-openai.prediction.prefix_suffix")
+local ps = require("ask-openai.predictions.prefix_suffix")
 
 describe("determine_line_range", function()
     it("plenty of lines for both prefix and suffix", function()

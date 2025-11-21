@@ -3,7 +3,7 @@ local files = require("ask-openai.helpers.files")
 local semantic_grep_module = require("ask-openai.tools.inproc.semantic_grep")
 local apply_patch_module = require("ask-openai.tools.inproc.apply_patch")
 local plumbing = require("ask-openai.tools.plumbing")
-local ansi = require("ask-openai.prediction.ansi")
+local ansi = require("ask-openai.predictions.ansi")
 
 local M = {}
 

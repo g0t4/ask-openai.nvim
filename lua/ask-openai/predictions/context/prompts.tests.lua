@@ -1,4 +1,4 @@
-local prompts = require("ask-openai.prediction.context.prompts")
+local prompts = require("ask-openai.predictions.context.prompts")
 require('ask-openai.helpers.testing')
 
 describe("parse_includes", function()

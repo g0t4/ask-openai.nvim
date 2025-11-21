@@ -1,5 +1,5 @@
 local log = require("ask-openai.logs.logger").predictions()
-local ansi = require("ask-openai.prediction.ansi")
+local ansi = require("ask-openai.predictions.ansi")
 local plumbing = require("ask-openai.tools.plumbing")
 
 local uv = vim.uv

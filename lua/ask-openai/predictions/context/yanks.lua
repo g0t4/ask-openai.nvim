@@ -1,4 +1,4 @@
-local ContextItem = require("ask-openai.prediction.context.item")
+local ContextItem = require("ask-openai.predictions.context.item")
 local log = require('ask-openai.logs.logger').predictions()
 local messages = require("devtools.messages")
 

@@ -1,4 +1,4 @@
-local ansi = require("ask-openai.prediction.ansi")
+local ansi = require("ask-openai.predictions.ansi")
 local log = require("ask-openai.logs.logger").predictions()
 
 -- TODO track thinking time? and merge thinking dots logic into here

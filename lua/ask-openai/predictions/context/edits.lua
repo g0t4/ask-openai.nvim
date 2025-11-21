@@ -1,4 +1,4 @@
-local RingBuffer = require("ask-openai.prediction.edits.ring_buffer")
+local RingBuffer = require("ask-openai.predictions.edits.ring_buffer")
 local messages = require("devtools.messages")
 
 local edit_log = RingBuffer.new(500)

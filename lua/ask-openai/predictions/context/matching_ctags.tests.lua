@@ -1,6 +1,6 @@
 require('ask-openai.helpers.testing')
-local ctags = require("ask-openai.prediction.context.ctags")
-local matching_ctags = require("ask-openai.prediction.context.matching_ctags")
+local ctags = require("ask-openai.predictions.context.ctags")
+local matching_ctags = require("ask-openai.predictions.context.matching_ctags")
 local should = require("devtools.tests.should")
 
 describe("matching_ctags", function()
@@ -27,7 +27,7 @@ lua/ask-openai/prediction/context/project.lua
 
         -- COOL!... now hopefully this helps suggest to use the requires!
         local hard_git_diff_with_require = [[
-require('ask-openai.prediction.context.git_diff')
+require('ask-openai.predictions.context.git_diff')
     function M.get_context_items()]]
         -- FYI end of [[]] needs to not have extra newlines / chars
         assert.is.not_nil(string.find(item.content, hard_git_diff_with_require, 1, true))

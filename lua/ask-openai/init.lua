@@ -11,7 +11,7 @@ function M.start_predictions()
         return
     end
 
-    local prediction_frontend = require("ask-openai.prediction.frontend")
+    local prediction_frontend = require("ask-openai.predictions.frontend")
 
     local predictions = config.get_options().tmp.predictions
     if not predictions.keymaps then

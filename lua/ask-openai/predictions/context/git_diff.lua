@@ -1,5 +1,5 @@
 local messages = require("devtools.messages")
-local ContextItem = require("ask-openai.prediction.context.item")
+local ContextItem = require("ask-openai.predictions.context.item")
 
 -- get a combined (per file) diff across X recent commits
 --  exclude some files like uv.lock

@@ -1,7 +1,7 @@
 local dots = require("ask-openai.rewrites.thinking.dots")
 local HLGroups = require("ask-openai.hlgroups")
 local log = require("ask-openai.logs.logger").predictions()
-local CursorController = require "ask-openai.prediction.cursor_controller"
+local CursorController = require "ask-openai.predictions.cursor_controller"
 
 ---@class Prediction
 ---@field id integer

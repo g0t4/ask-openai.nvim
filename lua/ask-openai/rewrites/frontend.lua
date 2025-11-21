@@ -6,7 +6,7 @@ local text_helpers = require("ask-openai.helpers.text")
 local thinking = require("ask-openai.rewrites.thinking")
 local Selection = require("ask-openai.helpers.selection")
 local Displayer = require("ask-openai.rewrites.displayer")
-local CurrentContext = require("ask-openai.prediction.context")
+local CurrentContext = require("ask-openai.predictions.context")
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 local files = require("ask-openai.helpers.files")
 local api = require("ask-openai.api")
@@ -538,7 +538,7 @@ function RewriteFrontend.setup()
     -- also prints don't popup if they originated in a lua handler, whereas they do with a vim command
     --   thus w/ a cmd I get to see the vim.inspect(selection) with a pprint json like view of fields
 
-    require("ask-openai.prediction.context").setup()
+    require("ask-openai.predictions.context").setup()
 end
 
 return RewriteFrontend

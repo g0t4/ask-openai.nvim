@@ -1,13 +1,13 @@
-local yanks = require("ask-openai.prediction.context.yanks")
-local ctags = require("ask-openai.prediction.context.ctags")
--- local changelists = require("ask-openai.prediction.context.changelists")
--- local inspect = require("ask-openai.prediction.context.inspect")
-local git_diff = require("ask-openai.prediction.context.git_diff")
-local matching_ctags = require("ask-openai.prediction.context.matching_ctags")
-local prompts = require("ask-openai.prediction.context.prompts")
-local project = require("ask-openai.prediction.context.project")
+local yanks = require("ask-openai.predictions.context.yanks")
+local ctags = require("ask-openai.predictions.context.ctags")
+-- local changelists = require("ask-openai.predictions.context.changelists")
+-- local inspect = require("ask-openai.predictions.context.inspect")
+local git_diff = require("ask-openai.predictions.context.git_diff")
+local matching_ctags = require("ask-openai.predictions.context.matching_ctags")
+local prompts = require("ask-openai.predictions.context.prompts")
+local project = require("ask-openai.predictions.context.project")
 local messages = require("devtools.messages")
-local cmds = require("ask-openai.prediction.context.cmds")
+local cmds = require("ask-openai.predictions.context.cmds")
 
 ---@class CurrentContext
 ---

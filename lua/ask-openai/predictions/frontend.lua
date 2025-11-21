@@ -1,17 +1,17 @@
 local uv = vim.uv
-local Prediction = require("ask-openai.prediction.prediction")
-local ansi = require("ask-openai.prediction.ansi")
+local Prediction = require("ask-openai.predictions.prediction")
+local ansi = require("ask-openai.predictions.ansi")
 local rag_client = require("ask-openai.rag.client")
 local api = require("ask-openai.api")
-local FIMPerformance = require("ask-openai.prediction.fim_performance")
+local FIMPerformance = require("ask-openai.predictions.fim_performance")
 require("devtools.performance")
 local log = require("ask-openai.logs.logger").predictions()
-require("ask-openai.prediction.prefix_suffix")
-local ps = require("ask-openai.prediction.prefix_suffix")
+require("ask-openai.predictions.prefix_suffix")
+local ps = require("ask-openai.predictions.prefix_suffix")
 local lualine = require('ask-openai.status.lualine')
-local stats = require("ask-openai.prediction.stats")
+local stats = require("ask-openai.predictions.stats")
 
-local FimBackend = require("ask-openai.prediction.backends.fim_backend")
+local FimBackend = require("ask-openai.predictions.backends.fim_backend")
 
 -- TODO! WIP - fully port this to be a StreamingFrontend!
 --    FYI! I just added : StreamingFrontend below w/o implementing the interface
@@ -248,7 +248,7 @@ local ignore_buftypes = {
     "nofile", -- rename refactor popup window uses this w/o a filetype, also Dressing rename in nvimtree uses nofile
     "terminal",
 }
-local keys = require("ask-openai.prediction.keys")
+local keys = require("ask-openai.predictions.keys")
 local keypresses, debounced = keys.create_keypresses_observables()
 local keypresses_subscription = keypresses:subscribe(function()
     -- immediately clear/hide prediction, else slides as you type
