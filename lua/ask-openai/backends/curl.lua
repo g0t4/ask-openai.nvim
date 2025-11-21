@@ -14,6 +14,7 @@ end
 
 ---@enum CompletionsEndpoints
 _G.CompletionsEndpoints = {
+    -- llama-server non-openai:
     completions = "/completions",
 
     -- OpenAI compatible:
