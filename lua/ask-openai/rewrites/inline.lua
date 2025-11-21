@@ -347,7 +347,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
         local endpoint = curl_streaming.CompletionsEndpoints.v1_chat
         local url = base_url .. endpoint
-        M.last_request = curl_streaming.reusable_curl_seam(body, url, M, endpoint)
+        M.last_request = curl_streaming.spawn_curl(body, url, M, endpoint)
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then

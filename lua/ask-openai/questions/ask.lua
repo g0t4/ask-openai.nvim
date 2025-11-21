@@ -176,7 +176,7 @@ function M.send_messages()
 
     local endpoint = curl_streaming.CompletionsEndpoints.v1_chat
     local url = M.thread.base_url .. endpoint
-    local request = curl_streaming.reusable_curl_seam(M.thread:next_curl_request_body(), url, M, endpoint)
+    local request = curl_streaming.spawn_curl(M.thread:next_curl_request_body(), url, M, endpoint)
     M.thread:set_last_request(request)
 end
 

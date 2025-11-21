@@ -76,7 +76,7 @@ end
 ---@param frontend StreamingFrontend
 ---@param endpoint CompletionsEndpoints
 ---@return LastRequest
-function M.reusable_curl_seam(body, url, frontend, endpoint)
+function M.spawn_curl(body, url, frontend, endpoint)
     local request = LastRequest:new(body)
     local extract_generated_text = get_extract_func(endpoint)
 
