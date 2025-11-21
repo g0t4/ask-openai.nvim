@@ -11,7 +11,7 @@ local ps = require("ask-openai.prediction.prefix_suffix")
 local lualine = require('ask-openai.status.lualine')
 local stats = require("ask-openai.prediction.stats")
 
-local FimBackend = require("ask-openai.prediction.backends.llama")
+local FimBackend = require("ask-openai.prediction.backends.fim_backend")
 
 local M = {}
 
