@@ -141,7 +141,6 @@ end
 function Curl.on_line_or_lines(data_value, frontend, request)
     -- log:trace("data_value", data_value)
 
-
     if data_value == "[DONE]" then
         -- log:trace("DETECTED DONE")
         return
@@ -151,11 +150,9 @@ function Curl.on_line_or_lines(data_value, frontend, request)
     if success and sse_parsed then
         -- TODO! do I need to even check of choices exists? (if not then drop _with_choice? in new name?)
         if sse_parsed.choices and sse_parsed.choices[1] then
-            -- TODO then only pass sse_parsed to on_generated_text:
             frontend.on_generated_text(sse_parsed)
             -- TODO rename on_data_parsed_sse(sse_parsed)
             -- TODO maybe  on_data_parsed_sse_with_choice(sse_parsed)
-            --      use this name for now until I later refactor beyond choice endpoints?
         end
         -- FYI not every SSE has to have generated tokens (choices), no need to warn if no parsed value
 

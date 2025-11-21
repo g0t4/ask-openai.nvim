@@ -117,7 +117,6 @@ end
 
 ---@type OnGeneratedText
 function RewriteFrontend.on_generated_text(sse_parsed)
-    -- TODO? if no choices?
     local first_choice = sse_parsed.choices[1]
     local extract_generated_text = get_extract_generated_text_func(RewriteFrontend.last_request.endpoint)
     local content_chunk = extract_generated_text(first_choice)
@@ -138,12 +137,12 @@ function RewriteFrontend.on_generated_text(sse_parsed)
         vim.schedule(function() RewriteFrontend.displayer:show_green_preview_text(RewriteFrontend.selection, lines) end)
         return
     end
-    -- TODO! detect first chunk AFTER thinking section so we can clear the Thinking... message and not need to clear before every token
-    -- FYI it looks fine to not add lines with the thinking message... just shows up right where cursor was at
+
+    -- ?? detect first chunk AFTER thinking section so we can clear the Thinking...
+    --    ? and not need to clear before every token
+
     lines = ensure_new_lines_around(RewriteFrontend.selection.original_text, lines)
 
-    -- FYI can switch back to green here is fine! and skip diff if its not ready
-    -- vim.schedule(function() M.displayer:show_green_preview_text(M.selection, lines) end)
     vim.schedule(function()
         RewriteFrontend.displayer:on_response(RewriteFrontend.selection, lines)
     end)
