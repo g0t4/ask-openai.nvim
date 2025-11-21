@@ -12,6 +12,56 @@ function M.terminate(request)
     LastRequest.terminate(request)
 end
 
+---@enum CompletionsEndpoints
+M.CompletionsEndpoints = {
+    completions = "/completions",
+
+    -- OpenAI compatible:
+    v1_completions = "/v1/completions",
+    v1_chat = "/v1/chat/completions",
+}
+---@param endpoint CompletionsEndpoints
+function get_extract_func(endpoint)
+    -- * /completions  CompletionsEndpoints.completions
+    --   3rd ExtractGeneratedTextFunction for non-openai /completions endpoint on llama-server
+    --     => no sse.choice so I'd have to change how M.on_line_or_lines works to not assume sse.choices
+    --     whereas with non-openai /completions it would just use top-level to get text (.content)
+
+    ---@type ExtractGeneratedTextFunction
+    local function extract_generated_text_v1_completions(choice)
+        --- * /v1/completions
+        if choice == nil or choice.text == nil then
+            -- just skip if no (first) choice or no text on it (i.e. last SSE is often timing only)
+            return ""
+        end
+        return choice.text
+    end
+
+    ---@type ExtractGeneratedTextFunction
+    local function extract_generated_text_v1_chat(choice)
+        --- * /v1/chat/completions
+        -- NOW I have access to request (url, body.model, etc) to be able to dynamically swap in the right SSE parser!
+        --   I could even add another function that would handle aggregating and transforming the raw response (i.e. for harmony) into aggregate views (i.e. of thinking and final responses), also trigger events that way
+        if choice == nil
+            or choice.delta == nil
+            or choice.delta.content == nil
+            or choice.delta.content == vim.NIL
+        then
+            return ""
+        end
+        return choice.delta.content
+    end
+
+    if endpoint == M.CompletionsEndpoints.v1_chat then
+        return extract_generated_text_v1_chat
+    elseif endpoint == M.CompletionsEndpoints.v1_completions then
+        return extract_generated_text_v1_completions
+    else
+        -- TODO CompletionsEndpoints.completions /completions for 3rd ExtractGeneratedTextFunction
+        error("Not yet implemented: " .. endpoint)
+    end
+end
+
 ---@class StreamingFrontend
 ---@field on_generated_text fun(content_chunk: string, sse_parsed: table)
 ---@field on_sse_llama_server_timings fun(sse_parsed: table)
@@ -24,10 +74,11 @@ end
 ---@param body table
 ---@param url string
 ---@param frontend StreamingFrontend
----@param extract_generated_text ExtractGeneratedTextFunction
+---@param endpoint CompletionsEndpoints
 ---@return LastRequest
-function M.reusable_curl_seam(body, url, frontend, extract_generated_text)
+function M.reusable_curl_seam(body, url, frontend, endpoint)
     local request = LastRequest:new(body)
+    local extract_generated_text = get_extract_func(endpoint)
 
     body.stream = true
 

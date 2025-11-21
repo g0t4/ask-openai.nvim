@@ -1,5 +1,5 @@
 local buffers = require("ask-openai.helpers.buffers")
-local middle_end = require("ask-openai.backends.middle_end")
+local curl_streaming = require("ask-openai.backends.curl_streaming")
 local log = require("ask-openai.logs.logger").predictions()
 local agentica = require("ask-openai.backends.models.agentica")
 local text_helpers = require("ask-openai.helpers.text")
@@ -206,7 +206,7 @@ function M.abort_last_request()
         return
     end
 
-    middle_end.terminate(M.last_request)
+    curl_streaming.terminate(M.last_request)
 
     if M.displayer ~= nil then
         M.displayer:clear_extmarks()
@@ -345,9 +345,9 @@ function M.stream_from_ollama(user_prompt, code, file_name)
 
         local base_url = "http://ollama:8013"
 
-        local endpoint = middle_end.CompletionsEndpoints.v1_chat
-        -- TODO use curl_streaming.lua module directly... move extract_generated_text functions there, as that makes sense
-        M.last_request = middle_end.curl_for(body, base_url, endpoint, M)
+        local endpoint = curl_streaming.CompletionsEndpoints.v1_chat
+        local url = base_url .. endpoint
+        M.last_request = curl_streaming.reusable_curl_seam(body, url, M, endpoint)
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
