@@ -386,7 +386,7 @@ local function simulate_rewrite_stream_chunks(opts)
     -- use this for timing and to test streaming diff!
 
     M.abort_last_request()
-    M.last_request = LastRequest:new() -- PRN pass fake body?
+    M.last_request = LastRequest:new({})
     vim.cmd("normal! 0V6jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     M.selection = Selection.get_visual_selection_for_current_window()
@@ -450,7 +450,7 @@ end
 
 local function simulate_rewrite_instant_one_chunk(opts)
     M.abort_last_request()
-    M.last_request = LastRequest:new() -- PRN pass fake body?
+    M.last_request = LastRequest:new({})
     vim.cmd("normal! 0V6jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     M.selection = Selection.get_visual_selection_for_current_window()

@@ -211,7 +211,6 @@ function M.cancel_current_prediction()
 
         handle:kill("sigterm")
         handle:close()
-        -- FYI ollama should show that connection closed/aborted
     end
 end
 

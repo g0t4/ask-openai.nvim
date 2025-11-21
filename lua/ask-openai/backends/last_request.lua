@@ -48,9 +48,6 @@ function LastRequest:terminate()
     if handle ~= nil and not handle:is_closing() then
         -- log:trace("Terminating process, pid: ", pid)
 
-        -- PRN :h uv.spawn() for using uv.shutdown/uv.close? and fallback to kill, or does it matter?
-        --   i.e. a callback when its shutdown?
-
         handle:kill("sigterm")
         handle:close()
         -- FYI ollama should show that connection closed/aborted
