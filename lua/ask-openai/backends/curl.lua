@@ -206,7 +206,7 @@ function M.on_line_or_lines(data_value, frontend, extract_generated_text, reques
 
             local is_request_for_thread = request.accumulated_model_response_messages ~= nil
             if is_request_for_thread then
-                -- WIP pushing thread concerns down into AskFrontEnd... maybe into its on_generated_text below?
+                -- WIP pushing thread concerns down into QuestionsFrontend ... maybe into its on_generated_text below?
                 M.on_streaming_delta_update_message_history(first_choice, request)
                 -- * ONLY AskQuestion uses this:
                 frontend.handle_rx_messages_updated()
