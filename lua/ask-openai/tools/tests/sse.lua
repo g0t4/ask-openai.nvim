@@ -57,7 +57,9 @@ data: [DONE]
 
         local function call_on_delta(choices)
             local frontend = FakeFrontend:new()
-            local request = {}
+            local request = {
+                accumulated_model_response_messages = {}
+            }
 
             local deltas = text.split_lines_skip_empties(choices)
             for _, delta_json in pairs(deltas) do
@@ -249,7 +251,7 @@ data: [DONE]
             local sses_json = vim.fn.readfile("lua/ask-openai/tools/tests/captures/weather-mixed-content-toolcall-sses.json")
             -- vim.print(ss_events)
             local frontend = FakeFrontend:new()
-            local request = {}
+            local request = { accumulated_model_response_messages = {} }
 
             local sses = vim.iter(sses_json)
                 :map(function(line)
