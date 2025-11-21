@@ -3,7 +3,6 @@ local LastRequest = require("ask-openai.backends.last_request")
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 local RxAccumulatedMessage = require("ask-openai.questions.chat.messages.rx")
 local ToolCall = require("ask-openai.questions.chat.tool_call")
-local uv = vim.uv
 
 local M = {}
 
@@ -120,8 +119,8 @@ function M.spawn(body, base_url, endpoint, frontend)
         frontend.explain_error("Abort... unhandled exception in curl: " .. tostring(error_message))
     end
 
-    local stdout = uv.new_pipe(false)
-    local stderr = uv.new_pipe(false)
+    local stdout = vim.uv.new_pipe(false)
+    local stderr = vim.uv.new_pipe(false)
 
     local parser = SSEDataOnlyParser.new(on_data_sse)
 
@@ -152,7 +151,7 @@ function M.spawn(body, base_url, endpoint, frontend)
         end
     end
 
-    request.handle, request.pid = uv.spawn(options.command,
+    request.handle, request.pid = vim.uv.spawn(options.command,
         ---@diagnostic disable-next-line: missing-fields
         {
             args = options.args,
