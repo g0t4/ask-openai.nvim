@@ -73,21 +73,17 @@ end
 
 ---@alias ExtractGeneratedTextFromChoiceFunction fun(first_choice: table): string
 
----@param body table
+---@param request LastRequest|LastRequestForThread
 ---@param base_url string
 ---@param endpoint CompletionsEndpoints
 ---@param frontend StreamingFrontend
----@return LastRequest
-function M.spawn(body, base_url, endpoint, frontend)
+function M.spawn(request, base_url, endpoint, frontend)
     local url = base_url .. endpoint
-    local request = LastRequest:new(body)
     local extract_generated_text = get_extract_generated_text_func(endpoint)
 
-    body.stream = true
+    request.body.stream = true
 
-    -- log:jsonify_trace("body:", body)
-
-    local json = vim.json.encode(body)
+    local json = vim.json.encode(request.body)
     local options = {
         command = "curl",
         args = {
@@ -189,14 +185,12 @@ function M.spawn(body, base_url, endpoint, frontend)
         frontend.explain_error(data)
     end
     stderr:read_start(on_stderr)
-
-    return request
 end
 
 ---@param data_value string
 ---@param extract_generated_text ExtractGeneratedTextFromChoiceFunction
 ---@param frontend StreamingFrontend
----@param request LastRequest
+---@param request LastRequest|LastRequestForThread
 function M.on_line_or_lines(data_value, frontend, extract_generated_text, request)
     -- log:trace("data_value", data_value)
 
@@ -209,12 +203,14 @@ function M.on_line_or_lines(data_value, frontend, extract_generated_text, reques
     if success and sse_parsed then
         if sse_parsed.choices and sse_parsed.choices[1] then
             local first_choice = sse_parsed.choices[1]
-            -- OK if no first_choice
 
-            --   ? if I don't need this in rewrites, THEN, push this back down into asks via on_generated_text
-            M.on_streaming_delta_update_message_history(first_choice, request)
-            -- * ONLY AskQuestion uses this:
-            frontend.handle_rx_messages_updated()
+            local is_request_for_thread = request.accumulated_model_response_messages ~= nil
+            if is_request_for_thread then
+                -- WIP pushing thread concerns down into AskFrontEnd... maybe into its on_generated_text below?
+                M.on_streaming_delta_update_message_history(first_choice, request)
+                -- * ONLY AskQuestion uses this:
+                frontend.handle_rx_messages_updated()
+            end
 
             -- * ONLY AskRewrite uses this... and that may not change (not sure denormalizer makes sense for rewrites)
             local generated_text = extract_generated_text(first_choice)

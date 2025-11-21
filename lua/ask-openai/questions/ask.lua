@@ -17,6 +17,7 @@ local prompts = require("ask-openai.prediction.context.prompts")
 local HLGroups = require("ask-openai.hlgroups")
 local formatters = require("ask-openai.questions.chat.formatters")
 local ToolCallOutput = require("ask-openai.questions.chat.tool_call_output")
+local LastRequestForThread = require("ask-openai.questions.last_request_for_thread")
 
 require("ask-openai.helpers.buffers")
 
@@ -176,7 +177,9 @@ function M.send_messages()
 
     local endpoint = CompletionsEndpoints.v1_chat
     local frontend_callbacks = M
-    local request = curl.spawn(M.thread:next_curl_request_body(), M.thread.base_url, endpoint, frontend_callbacks)
+    local body = M.thread:next_curl_request_body()
+    local request = LastRequestForThread:new(body)
+    curl.spawn(request, M.thread.base_url, endpoint, frontend_callbacks)
     M.thread:set_last_request(request)
 end
 

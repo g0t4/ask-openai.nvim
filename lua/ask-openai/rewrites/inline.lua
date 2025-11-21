@@ -69,13 +69,6 @@ local function ensure_new_lines_around(code, response_lines)
     return response_lines
 end
 
-function M.handle_rx_messages_updated()
-    -- ?? replace on_generated_text?...
-    --   get entire current refactor from the denormalizer?
-    --   OR I can pass the latest chunk still...
-    --   do smth in the normalizer for that or still have a sep pathway per delta (no chunkin though?)
-end
-
 function M.on_generated_text(chunk)
     if not chunk then return end
     if not M.displayer then return end -- else after cancel, if get another SSE, boom
@@ -346,7 +339,8 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         local base_url = "http://ollama:8013"
         local endpoint = CompletionsEndpoints.v1_chat
         local frontend_callbacks = M
-        M.last_request = curl.spawn(body, base_url, endpoint, frontend_callbacks)
+        M.last_request = LastRequest:new(body)
+        curl.spawn(M.last_request, base_url, endpoint, frontend_callbacks)
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
