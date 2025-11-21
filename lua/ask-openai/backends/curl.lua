@@ -22,6 +22,7 @@ _G.CompletionsEndpoints = {
     v1_chat = "/v1/chat/completions",
 }
 ---@param endpoint CompletionsEndpoints
+---@return ExtractGeneratedTextFunction
 local function get_extract_generated_text_func(endpoint)
     -- * /completions  CompletionsEndpoints.completions
     --   3rd ExtractGeneratedTextFunction for non-openai /completions endpoint on llama-server
