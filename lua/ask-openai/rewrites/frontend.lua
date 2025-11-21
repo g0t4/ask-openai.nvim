@@ -69,11 +69,60 @@ local function ensure_new_lines_around(code, response_lines)
     return response_lines
 end
 
----@type OnGeneratedText
-function RewriteFrontend.on_generated_text(content_chunk, sse_parsed)
-    -- TODO! LATER MOVE extract_generated_text here! it is specific to RewriteFrontend only
+---@alias ExtractGeneratedTextFromChoiceFunction fun(first_choice: table): string
 
+---@param endpoint CompletionsEndpoints
+---@return ExtractGeneratedTextFromChoiceFunction
+local function get_extract_generated_text_func(endpoint)
+    -- * /completions  CompletionsEndpoints.completions
+    --   3rd ExtractGeneratedTextFromChoiceFunction for non-openai /completions endpoint on llama-server
+    --     => no sse.choice so I'd have to change how M.on_line_or_lines works to not assume sse.choices
+    --     whereas with non-openai /completions it would just use top-level to get text (.content)
+    if endpoint == CompletionsEndpoints.v1_completions then
+        ---@type ExtractGeneratedTextFromChoiceFunction
+        return function(choice)
+            --- * /v1/completions
+            if choice == nil or choice.text == nil then
+                -- just skip if no (first) choice or no text on it (i.e. last SSE is often timing only)
+                return ""
+            end
+            return choice.text
+        end
+    end
+
+    if endpoint == CompletionsEndpoints.v1_chat then
+        ---@type ExtractGeneratedTextFromChoiceFunction
+        return function(choice)
+            --- * /v1/chat/completions
+            -- NOW I have access to request (url, body.model, etc) to be able to dynamically swap in the right SSE parser!
+            --   I could even add another function that would handle aggregating and transforming the raw response (i.e. for harmony) into aggregate views (i.e. of thinking and final responses), also trigger events that way
+            if choice == nil
+                or choice.delta == nil
+                or choice.delta.content == nil
+                or choice.delta.content == vim.NIL
+            then
+                return ""
+            end
+            return choice.delta.content
+        end
+    end
+
+    if endpoint == CompletionsEndpoints.completions then
+        error("TODO /completions endpoint's ExtractGeneratedTextFromChoiceFunction")
+    end
+
+    -- TODO CompletionsEndpoints.completions /completions for 3rd ExtractGeneratedTextFromChoiceFunction
+    error("Not yet implemented: " .. endpoint)
+end
+
+---@type OnGeneratedText
+function RewriteFrontend.on_generated_text(sse_parsed)
+    -- TODO? if no choices?
+    local first_choice = sse_parsed.choices[1]
+    local extract_generated_text = get_extract_generated_text_func(RewriteFrontend.last_request.endpoint)
+    local content_chunk = extract_generated_text(first_choice)
     if not content_chunk then return end
+
     if not RewriteFrontend.displayer then return end -- else after cancel, if get another SSE, boom
 
     RewriteFrontend.accumulated_chunks = RewriteFrontend.accumulated_chunks .. content_chunk
@@ -417,28 +466,29 @@ and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
         if not remaining_words
             or RewriteFrontend.stop_streaming
         then
-            -- TODO done signal? not sure I have one right now
             return
         end
-        -- take out first word
+
         local cur_word = remaining_words[1]
-        table.remove(remaining_words, 1) -- insert current word in middle of line
-        local simulated_sse = {}
+        table.remove(remaining_words, 1)
         if #remaining_words > 0 then
             -- put back the space
             cur_word = cur_word .. " "
-        else
-            simulated_sse = {
-                timings = {
-                    cache_n = 1000,
-                    predicted_per_second = 120,
-                    predicted_n = 100,
-                    prompt_per_second = 200,
-                    prompt_n = 400,
-                }
+        end
+
+        local simulated_sse = { choices = { { delta = { content = cur_word } } } }
+
+        if #remaining_words == 0 then
+            -- fake stats on last SSE
+            simulated_sse.timings = {
+                cache_n = 1000,
+                predicted_per_second = 120,
+                predicted_n = 100,
+                prompt_per_second = 200,
+                prompt_n = 400,
             }
         end
-        RewriteFrontend.on_generated_text(cur_word, simulated_sse)
+        RewriteFrontend.on_generated_text(simulated_sse)
 
         -- delay and do next
         -- FYI can adjust interval to visually slow down and see what is happening with each chunk, s/b especially helpful with streaming diff
@@ -459,6 +509,7 @@ local function simulate_rewrite_instant_one_chunk(opts)
 
     local full_rewrite = RewriteFrontend.selection.original_text .. "\nINSTANT NEW LINE"
     local simulated_sse = {
+        choices = { { delta = { content = full_rewrite } } },
         timings = {
             cache_n = 1000,
             predicted_per_second = 120,
@@ -467,7 +518,7 @@ local function simulate_rewrite_instant_one_chunk(opts)
             prompt_n = 400,
         }
     }
-    RewriteFrontend.on_generated_text(full_rewrite, simulated_sse)
+    RewriteFrontend.on_generated_text(simulated_sse)
 end
 
 local function ask_and_stream_from_ollama(opts)

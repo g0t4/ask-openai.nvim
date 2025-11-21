@@ -300,7 +300,7 @@ function QuestionsFrontend.on_sse_llama_server_timings(sse)
 end
 
 ---@type OnGeneratedText
-function QuestionsFrontend.on_generated_text(content_chunk, sse_parsed)
+function QuestionsFrontend.on_generated_text(sse_parsed)
     -- FYI later I will need defensive checks here if not using "choices" SSE results (i.e. /completions llama-server endpoint's SSEs)
     local first_choice = sse_parsed.choices[1]
     curl.on_streaming_delta_update_message_history(first_choice, QuestionsFrontend.thread.last_request)

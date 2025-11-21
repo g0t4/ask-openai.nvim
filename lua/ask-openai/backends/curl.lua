@@ -15,52 +15,8 @@ _G.CompletionsEndpoints = {
     v1_completions = "/v1/completions",
     v1_chat = "/v1/chat/completions",
 }
----@param endpoint CompletionsEndpoints
----@return ExtractGeneratedTextFromChoiceFunction
-local function get_extract_generated_text_func(endpoint)
-    -- * /completions  CompletionsEndpoints.completions
-    --   3rd ExtractGeneratedTextFromChoiceFunction for non-openai /completions endpoint on llama-server
-    --     => no sse.choice so I'd have to change how M.on_line_or_lines works to not assume sse.choices
-    --     whereas with non-openai /completions it would just use top-level to get text (.content)
-    if endpoint == CompletionsEndpoints.v1_completions then
-        ---@type ExtractGeneratedTextFromChoiceFunction
-        return function(choice)
-            --- * /v1/completions
-            if choice == nil or choice.text == nil then
-                -- just skip if no (first) choice or no text on it (i.e. last SSE is often timing only)
-                return ""
-            end
-            return choice.text
-        end
-    end
 
-    if endpoint == CompletionsEndpoints.v1_chat then
-        ---@type ExtractGeneratedTextFromChoiceFunction
-        return function(choice)
-            --- * /v1/chat/completions
-            -- NOW I have access to request (url, body.model, etc) to be able to dynamically swap in the right SSE parser!
-            --   I could even add another function that would handle aggregating and transforming the raw response (i.e. for harmony) into aggregate views (i.e. of thinking and final responses), also trigger events that way
-            if choice == nil
-                or choice.delta == nil
-                or choice.delta.content == nil
-                or choice.delta.content == vim.NIL
-            then
-                return ""
-            end
-            return choice.delta.content
-        end
-    end
-
-    if endpoint == CompletionsEndpoints.completions then
-        error("TODO /completions endpoint's ExtractGeneratedTextFromChoiceFunction")
-    end
-
-    -- TODO CompletionsEndpoints.completions /completions for 3rd ExtractGeneratedTextFromChoiceFunction
-    error("Not yet implemented: " .. endpoint)
-end
-
----@alias ExtractGeneratedTextFromChoiceFunction fun(first_choice: table): string
----@alias OnGeneratedText fun(content_chunk: string, sse_parsed: table)
+---@alias OnGeneratedText fun(sse_parsed: table)
 
 ---@class StreamingFrontend
 ---@field on_generated_text OnGeneratedText
@@ -193,15 +149,10 @@ function M.on_line_or_lines(data_value, frontend, request)
 
     local success, sse_parsed = pcall(vim.json.decode, data_value)
     if success and sse_parsed then
+        -- TODO! do I need to even check of choices exists? (if not then drop _with_choice? in new name?)
         if sse_parsed.choices and sse_parsed.choices[1] then
-            local first_choice = sse_parsed.choices[1]
-
-            -- TODO! LATER move extract_generated_text to  RewriteFrontend (QuestionsFrontend DOES NOT USE extract_generated_text)
-            --   have RewriteFrontend look it up (using its base_url + endpoint?)
-            local extract_generated_text = get_extract_generated_text_func(request.endpoint)
-            local generated_text = extract_generated_text(first_choice)
             -- TODO then only pass sse_parsed to on_generated_text:
-            frontend.on_generated_text(generated_text, sse_parsed)
+            frontend.on_generated_text(sse_parsed)
             -- TODO rename on_data_parsed_sse(sse_parsed)
             -- TODO maybe  on_data_parsed_sse_with_choice(sse_parsed)
             --      use this name for now until I later refactor beyond choice endpoints?
