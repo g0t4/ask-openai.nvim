@@ -185,7 +185,6 @@ end
 function M.on_line_or_lines(data_value, frontend, request)
     -- log:trace("data_value", data_value)
 
-    local extract_generated_text = get_extract_generated_text_func(request.endpoint)
 
     if data_value == "[DONE]" then
         -- log:trace("DETECTED DONE")
@@ -198,8 +197,8 @@ function M.on_line_or_lines(data_value, frontend, request)
             local first_choice = sse_parsed.choices[1]
 
             -- TODO! LATER move extract_generated_text to  RewriteFrontend (QuestionsFrontend DOES NOT USE extract_generated_text)
-            --   and fix it up so I don't have to pass that above in on_line_or_lines! have RewriteFrontend look it up (using its base_url + endpoint?)
-            --      which means I might not need curl to ever see extract_generated_text parameter?
+            --   have RewriteFrontend look it up (using its base_url + endpoint?)
+            local extract_generated_text = get_extract_generated_text_func(request.endpoint)
             local generated_text = extract_generated_text(first_choice)
             -- TODO then only pass sse_parsed to on_generated_text:
             frontend.on_generated_text(generated_text, sse_parsed)
