@@ -13,7 +13,10 @@ local stats = require("ask-openai.prediction.stats")
 
 local FimBackend = require("ask-openai.prediction.backends.fim_backend")
 
----@class PredictionFrontEnd
+-- TODO! WIP - fully port this to be a StreamingFrontend!
+--    FYI! I just added : StreamingFrontend below w/o implementing the interface
+
+---@class PredictionFrontend : StreamingFrontend
 ---@field handle? uv.uv_process_t
 ---@field pid? integer
 local M = {}
