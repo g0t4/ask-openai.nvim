@@ -11,7 +11,10 @@ local log = require("ask-openai.logs.logger").predictions()
 local LastRequest = {}
 local request_counter = 1
 
----@alias LastRequestParams {body: table<string, any>, base_url: string, endpoint: CompletionsEndpoints}
+---@class LastRequestParams
+---@field body table<string, any>
+---@field base_url string
+---@field endpoint CompletionsEndpoints
 
 ---@param params LastRequestParams
 ---@return LastRequest

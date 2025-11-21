@@ -7,7 +7,6 @@ local LastRequestForThread = {}
 local class_mt = { __index = LastRequest } -- inherit from LastRequest (for reals, not just the type annotations :] )
 setmetatable(LastRequestForThread, class_mt)
 
-
 ---@param params LastRequestParams
 ---@return LastRequestForThread
 function LastRequestForThread:new(params)
