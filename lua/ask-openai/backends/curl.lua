@@ -242,7 +242,7 @@ end
 
 --- think of this as denormalizing SSEs => into aggregate RxAccumulatedMessage
 ---@param choice OpenAIChoice|nil
----@param request LastRequest
+---@param request LastRequestForThread
 function M.on_streaming_delta_update_message_history(choice, request)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
     -- rebuilds message as if sent `stream: false`
@@ -252,7 +252,6 @@ function M.on_streaming_delta_update_message_history(choice, request)
         log:trace("[WARN] skipping b/c choice/choice.delta is nil: '" .. vim.inspect(choice) .. "'")
         return
     end
-    request.accumulated_model_response_messages = request.accumulated_model_response_messages or {}
 
     -- * lookup or create message
     local index_base1 = choice.index + 1

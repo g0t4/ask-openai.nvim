@@ -1,24 +1,16 @@
 local LastRequest = require("ask-openai.backends.last_request")
----@class LastRequestWithThread
+
+---@class LastRequestForThread : LastRequest
 ---@field thread ChatThread
----@field last_request? LastRequest
-local LastRequestWithThread = {}
+---@field accumulated_model_response_messages RxAccumulatedMessage[] -- model "assistant" responses, built from SSEs
+local LastRequestForThread = {}
+
 ---@param thread ChatThread
-function LastRequestWithThread:new(thread)
-    self = setmetatable({}, { __index = LastRequestWithThread })
-    self.thread = thread
-    self.last_request = nil
+function LastRequestForThread:new(thread)
+    self = setmetatable({}, { __index = self })
+    self.thread = nil -- PRN? pass thread in ctor?
+    self.accumulated_model_response_messages = {}
     return self
 end
 
-function LastRequestWithThread:get_last_request()
-    return self.last_request
-end
-
----set the last request
----@param request LastRequest
-function LastRequestWithThread:set_last_request(request)
-    self.last_request = request
-end
-
-return LastRequestWithThread
+return LastRequestForThread

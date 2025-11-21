@@ -4,35 +4,25 @@ local log = require("ask-openai.logs.logger").predictions()
 ---@field body table
 ---@field handle? uv.uv_process_t
 ---@field pid? integer
----@field thread ChatThread
----@field accumulated_model_response_messages RxAccumulatedMessage[] -- model "assistant" responses, built from SSEs
 ---@field start_time integer -- unix timestamp when request was sent (for timing)
 ---@field marks_ns_id
 local LastRequest = {}
-
 local request_counter = 1
+
 ---@param body table<string, any>
 ---@return LastRequest
 function LastRequest:new(body)
-    self = setmetatable({}, { __index = LastRequest })
-    -- PRN some connection back to the thread its a part of so it can communicate status changes (i.e. after termination)
-    -- self.thread = thread -- ??
+    self = setmetatable({}, { __index = self })
     self.body = body
     self.handle = nil
     self.pid = nil
-    self.thread = nil -- TODO pass thread in ctor?
-    self.accumulated_model_response_messages = {}
     self.start_time = os.time()
     self.marks_ns_id = vim.api.nvim_create_namespace("ask.marks." .. request_counter)
     request_counter = request_counter + 1
     return self
 end
 
--- TODO status of request!
-
-function LastRequest:terminate()
-    -- PRN don't terminate if already terminated/completed (done)
-
+function LastRequest.terminate(self)
     if self == nil or self.handle == nil then
         -- FYI self == nil check so I can call w/o check nil using:
         --   LastRequest.terminate(request)
@@ -40,7 +30,6 @@ function LastRequest:terminate()
         return
     end
 
-    -- PRN if I track status I don't need to ever clear the handle/pid
     local handle = self.handle
     local pid = self.pid
     self.handle = nil
@@ -50,7 +39,6 @@ function LastRequest:terminate()
 
         handle:kill("sigterm")
         handle:close()
-        -- FYI ollama should show that connection closed/aborted
     end
 end
 
