@@ -175,8 +175,7 @@ function M.send_messages()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
     local endpoint = curl_streaming.CompletionsEndpoints.v1_chat
-    local url = M.thread.base_url .. endpoint
-    local request = curl_streaming.spawn_curl(M.thread:next_curl_request_body(), url, M, endpoint)
+    local request = curl_streaming.spawn_curl(M.thread:next_curl_request_body(), M.thread.base_url, endpoint, M)
     M.thread:set_last_request(request)
 end
 

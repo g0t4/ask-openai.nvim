@@ -72,11 +72,12 @@ end
 ---@alias ExtractGeneratedTextFunction fun(first_choice: table): string
 
 ---@param body table
----@param url string
----@param frontend StreamingFrontend
+---@param base_url string
 ---@param endpoint CompletionsEndpoints
+---@param frontend StreamingFrontend
 ---@return LastRequest
-function M.spawn_curl(body, url, frontend, endpoint)
+function M.spawn_curl(body, base_url, endpoint, frontend)
+    local url = base_url .. endpoint
     local request = LastRequest:new(body)
     local extract_generated_text = get_extract_func(endpoint)
 
