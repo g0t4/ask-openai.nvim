@@ -57,7 +57,7 @@ function M.start_predictions()
     -- vim.api.nvim_set_keymap('n', "<Esc><Esc><Esc>", "",
     --     -- FYI this is to test a keymap that I can use when a completion somehow renders after I leave insert mode... use triple escape to clear it
     --     --    USE this until I find the culprit in timing, if I can fix it easy enough
-    --     { noremap = true, callback = handlers.leaving_insert_mode })
+    --     { noremap = true, callback = prediction_frontend.leaving_insert_mode })
     -- -- end
 
     -- FYI why don't I reserve ~ for debug keymap(s) and move it around to w/e I need it for currently?
@@ -80,7 +80,7 @@ function M.start_predictions()
     --     -- TODO TextChangedI intead of cursor moved?
     --     group = augroup,
     --     pattern = "*", -- todo filter?
-    --     callback = handlers.cursor_moved_in_insert_mode
+    --     callback = prediction_frontend.cursor_moved_in_insert_mode
     -- })
     vim.api.nvim_create_autocmd("TextChangedI", {
         -- FYI been using this for a LONG time now and no issues (AFAICT)

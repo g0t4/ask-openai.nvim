@@ -263,8 +263,9 @@ function Prediction:accept_all()
     self.prediction = "" -- strip all lines from the prediction (and update it)
     self:redraw_extmarks()
 
-    -- PRN? mark fully accepted?
-    -- TODO? SIGNAL TO handlers to generate next prediction? or not? (same on other accepts if they take last part of prediction)
+    -- TODO SIGNAL next prediction when accept all? (and then consider this for other accept types if they are accepting remainder of prediction too (finishing accepting current prediction)
+    --   frontend.ask_for_prediction()
+    --   FYI can also use Alt+Tab to do this, if I don't want it to be automatic... which is possible I won't like the aggressiveness of back to back predict=>acccept=>predict=>accept...
 end
 
 function Prediction:IDEA_accept_line_with_replace_current_line()
