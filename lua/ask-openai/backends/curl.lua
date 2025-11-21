@@ -114,7 +114,7 @@ function M.spawn(body, base_url, endpoint, frontend)
 
         -- request stops ASAP, but not immediately
         M.terminate(request)
-        frontend.explain_error("Abort... unhandled exception in curl_streaming: " .. tostring(error_message))
+        frontend.explain_error("Abort... unhandled exception in curl: " .. tostring(error_message))
     end
 
     local stdout = uv.new_pipe(false)

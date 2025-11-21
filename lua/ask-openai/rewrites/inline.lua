@@ -1,5 +1,5 @@
 local buffers = require("ask-openai.helpers.buffers")
-local curl_streaming = require("ask-openai.backends.curl_streaming")
+local curl = require("ask-openai.backends.curl")
 local log = require("ask-openai.logs.logger").predictions()
 local agentica = require("ask-openai.backends.models.agentica")
 local text_helpers = require("ask-openai.helpers.text")
@@ -206,7 +206,7 @@ function M.abort_last_request()
         return
     end
 
-    curl_streaming.terminate(M.last_request)
+    curl.terminate(M.last_request)
 
     if M.displayer ~= nil then
         M.displayer:clear_extmarks()
@@ -344,9 +344,9 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         })
 
         local base_url = "http://ollama:8013"
-        local endpoint = curl_streaming.CompletionsEndpoints.v1_chat
+        local endpoint = curl.CompletionsEndpoints.v1_chat
         local frontend = M
-        M.last_request = curl_streaming.spawn(body, base_url, endpoint, frontend)
+        M.last_request = curl.spawn(body, base_url, endpoint, frontend)
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then

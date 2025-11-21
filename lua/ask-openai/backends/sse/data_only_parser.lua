@@ -4,7 +4,7 @@ local log = require("ask-openai.logs.logger").predictions()
 -- this will buffer data fields in multiline scenarios
 -- will split on and emit events when the blank line is detected
 -- will have a clean interface for consumers to subscribe to events/done/etc
--- this will plug into my curl_streaming module (and other chat completion endpoint clients)
+-- this will plug into my curl module (and other chat completion endpoint clients)
 
 -- * FORMAT:
 -- https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#event_stream_format

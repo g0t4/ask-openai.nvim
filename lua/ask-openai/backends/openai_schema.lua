@@ -2,7 +2,7 @@
 -- * CHAT STREAMING SCHEMA (OUTPUT, not INPUT)
 -- FYI it is ok to extend this with llama.cpp server differences (just mark them)
 --  use this to type the incoming parsed SSEs
--- FYI! this was originally setup for curl_streaming's on_streaming_delta_update_message_history parsed SSE inputs
+-- FYI! this was originally setup for curl's on_streaming_delta_update_message_history parsed SSE inputs
 
 ---@alias OpenAIChatCompletionParsedSSE OpenAIChatCompletionChunk
 

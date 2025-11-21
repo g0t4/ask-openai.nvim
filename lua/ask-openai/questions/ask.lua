@@ -1,7 +1,7 @@
 local buffers = require("ask-openai.helpers.buffers")
 local log = require("ask-openai.logs.logger").predictions()
 local tool_router = require("ask-openai.tools.router")
-local curl_streaming = require("ask-openai.backends.curl_streaming")
+local curl = require("ask-openai.backends.curl")
 local agentica = require("ask-openai.backends.models.agentica")
 local ChatWindow = require("ask-openai.questions.chat.window")
 local ChatThread = require("ask-openai.questions.chat.thread")
@@ -174,9 +174,9 @@ function M.send_messages()
     M.this_turn_chat_start_line_base0 = M.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
-    local endpoint = curl_streaming.CompletionsEndpoints.v1_chat
+    local endpoint = curl.CompletionsEndpoints.v1_chat
     local frontend = M
-    local request = curl_streaming.spawn(M.thread:next_curl_request_body(), M.thread.base_url, endpoint, frontend)
+    local request = curl.spawn(M.thread:next_curl_request_body(), M.thread.base_url, endpoint, frontend)
     M.thread:set_last_request(request)
 end
 
@@ -437,7 +437,7 @@ function M.abort_last_request()
     if not M.thread then
         return
     end
-    curl_streaming.terminate(M.thread.last_request)
+    curl.terminate(M.thread.last_request)
 end
 
 function M.follow_up()
