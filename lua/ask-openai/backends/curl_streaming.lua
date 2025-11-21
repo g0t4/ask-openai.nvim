@@ -76,7 +76,7 @@ end
 ---@param endpoint CompletionsEndpoints
 ---@param frontend StreamingFrontend
 ---@return LastRequest
-function M.spawn_curl(body, base_url, endpoint, frontend)
+function M.spawn(body, base_url, endpoint, frontend)
     local url = base_url .. endpoint
     local request = LastRequest:new(body)
     local extract_generated_text = get_extract_func(endpoint)

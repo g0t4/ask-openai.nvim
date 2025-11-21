@@ -346,7 +346,7 @@ function M.stream_from_ollama(user_prompt, code, file_name)
         local base_url = "http://ollama:8013"
         local endpoint = curl_streaming.CompletionsEndpoints.v1_chat
         local frontend = M
-        M.last_request = curl_streaming.spawn_curl(body, base_url, endpoint, frontend)
+        M.last_request = curl_streaming.spawn(body, base_url, endpoint, frontend)
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
