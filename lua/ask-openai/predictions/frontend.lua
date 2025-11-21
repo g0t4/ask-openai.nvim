@@ -19,12 +19,12 @@ local FimBackend = require("ask-openai.predictions.backends.fim_backend")
 ---@class PredictionFrontend : StreamingFrontend
 ---@field handle? uv.uv_process_t
 ---@field pid? integer
-local M = {}
+local PredictionsFrontend = {}
 
-M.current_prediction = nil
+PredictionsFrontend.current_prediction = nil
 
-function M.ask_for_prediction()
-    M.cancel_current_prediction()
+function PredictionsFrontend.ask_for_prediction()
+    PredictionsFrontend.cancel_current_prediction()
     -- TODO create this_prediction here?
     local enable_rag = api.is_rag_enabled()
     local ps_chunk = ps.get_prefix_suffix_chunk()
@@ -41,7 +41,7 @@ function M.ask_for_prediction()
 
         -- TODO move this_prediction creation above (before RAG too)
         local this_prediction = Prediction.new()
-        M.current_prediction = this_prediction
+        PredictionsFrontend.current_prediction = this_prediction
 
         -- TODO attach stdout/err to this_prediction and call read_stop on abort prediction?
         local stdout = uv.new_pipe(false)
@@ -55,13 +55,13 @@ function M.ask_for_prediction()
             -- this_prediction:mark_generation_finished() -- only if zero exit code?
             -- if non-zero exit code => mark failed?
 
-            if M.handle then
+            if PredictionsFrontend.handle then
                 -- FYI! review open lua vim.loop.walk(function(handle) print(handle) end) - handles/timers/etc
                 --     I am seeing alot after I just startup nvim... I wonder if some are from my MCP tool comms?
                 --     and what about my timer/schduling for debounced keyboard events to trigger predictions?
                 -- TODO! REVIEW OTHER uses of uv.spawn (and timers)... for missing cleanup logic!)
                 --    do that after you verify if this is proper way to shutdown?
-                M.handle:close()
+                PredictionsFrontend.handle:close()
                 -- TODO nil out M.handle/M.pid? (right now I will leave them b/c they are overwritten later... and if this close fails... cancel can still send kill to PID)
             end
             -- TODO do I need these if I call handle:closed()?
@@ -69,7 +69,7 @@ function M.ask_for_prediction()
             stderr:close()
         end
 
-        M.handle, M.pid = uv.spawn(spawn_curl_options.command,
+        PredictionsFrontend.handle, PredictionsFrontend.pid = uv.spawn(spawn_curl_options.command,
             ---@diagnostic disable-next-line: missing-fields
             {
                 args = spawn_curl_options.args,
@@ -164,7 +164,7 @@ function M.ask_for_prediction()
             perf:rag_done()
 
             -- * make sure prior (canceled) rag request doesn't still respond
-            if M.rag_request_ids ~= this_request_ids then
+            if PredictionsFrontend.rag_request_ids ~= this_request_ids then
                 -- I bet this is why sometimes I get completions that still fire even after cancel b/c the RAG results aren't actually stopped in time on server and so they come back
                 --  and they arrive after next request started... the mismatch in request_ids will prevent that issue
                 -- log:trace("possibly stale rag results, skipping: "
@@ -172,7 +172,7 @@ function M.ask_for_prediction()
                 return
             end
 
-            if M.rag_cancel == nil then
+            if PredictionsFrontend.rag_cancel == nil then
                 -- log:error("rag appears to have been canceled, skipping on_rag_response rag_matches results...")
                 return
             end
@@ -181,34 +181,34 @@ function M.ask_for_prediction()
         end
 
         this_request_ids, cancel = rag_client.context_query_fim(ps_chunk, on_rag_response, function() send_fim({}) end)
-        M.rag_cancel = cancel
-        M.rag_request_ids = this_request_ids
+        PredictionsFrontend.rag_cancel = cancel
+        PredictionsFrontend.rag_request_ids = this_request_ids
     else
         send_fim({})
     end
 end
 
-function M.cancel_current_prediction()
+function PredictionsFrontend.cancel_current_prediction()
     -- PRN stdout/stderr:read_stop() to halt on_stdout/stderr callbacks from firing again (before handle:close())?!
-    if M.rag_cancel then
-        M.rag_cancel()
-        M.rag_cancel = nil
+    if PredictionsFrontend.rag_cancel then
+        PredictionsFrontend.rag_cancel()
+        PredictionsFrontend.rag_cancel = nil
     end
-    local this_prediction = M.current_prediction
+    local this_prediction = PredictionsFrontend.current_prediction
     if not this_prediction then
         return
     end
-    M.current_prediction = nil
+    PredictionsFrontend.current_prediction = nil
     this_prediction:mark_as_abandoned()
 
     vim.schedule(function()
         this_prediction:clear_extmarks()
     end)
 
-    local handle = M.handle
-    local pid = M.pid
-    M.handle = nil
-    M.pid = nil
+    local handle = PredictionsFrontend.handle
+    local pid = PredictionsFrontend.pid
+    PredictionsFrontend.handle = nil
+    PredictionsFrontend.pid = nil
     if handle ~= nil and not handle:is_closing() then
         -- log:trace("Terminating process, pid: ", pid)
 
@@ -253,7 +253,7 @@ local keypresses, debounced = keys.create_keypresses_observables()
 local keypresses_subscription = keypresses:subscribe(function()
     -- immediately clear/hide prediction, else slides as you type
     vim.schedule(function()
-        M.cancel_current_prediction()
+        PredictionsFrontend.cancel_current_prediction()
     end)
 end)
 local debounced_subscription = debounced:subscribe(function()
@@ -264,14 +264,14 @@ local debounced_subscription = debounced:subscribe(function()
             return
         end
 
-        M.ask_for_prediction()
+        PredictionsFrontend.ask_for_prediction()
     end)
 end)
 
-function M.cursor_moved_in_insert_mode()
-    if M.current_prediction ~= nil and M.current_prediction.disable_cursor_moved == true then
+function PredictionsFrontend.cursor_moved_in_insert_mode()
+    if PredictionsFrontend.current_prediction ~= nil and PredictionsFrontend.current_prediction.disable_cursor_moved == true then
         -- log:trace("Disabled CursorMovedI, skipping...")
-        M.current_prediction.disable_cursor_moved = false -- skip once
+        PredictionsFrontend.current_prediction.disable_cursor_moved = false -- skip once
         -- called after accepting/inserting text (AFAICT only once per accept)
         return
     end
@@ -289,55 +289,55 @@ function M.cursor_moved_in_insert_mode()
     keypresses:onNext({})
 end
 
-function M.leaving_insert_mode()
-    M.cancel_current_prediction()
+function PredictionsFrontend.leaving_insert_mode()
+    PredictionsFrontend.cancel_current_prediction()
 end
 
-function M.entering_insert_mode()
-    M.cursor_moved_in_insert_mode()
+function PredictionsFrontend.entering_insert_mode()
+    PredictionsFrontend.cursor_moved_in_insert_mode()
 end
 
-function M.pause_stream_invoked()
-    if not M.current_prediction then
+function PredictionsFrontend.pause_stream_invoked()
+    if not PredictionsFrontend.current_prediction then
         return
     end
-    M.current_prediction:pause_new_chunks()
+    PredictionsFrontend.current_prediction:pause_new_chunks()
 end
 
-function M.resume_stream_invoked()
-    if not M.current_prediction then
+function PredictionsFrontend.resume_stream_invoked()
+    if not PredictionsFrontend.current_prediction then
         return
     end
-    M.current_prediction:resume_new_chunks()
+    PredictionsFrontend.current_prediction:resume_new_chunks()
 end
 
-function M.accept_all_invoked()
-    if not M.current_prediction then
+function PredictionsFrontend.accept_all_invoked()
+    if not PredictionsFrontend.current_prediction then
         return
     end
-    M.current_prediction:accept_all()
+    PredictionsFrontend.current_prediction:accept_all()
 end
 
-function M.accept_line_invoked()
-    if not M.current_prediction then
+function PredictionsFrontend.accept_line_invoked()
+    if not PredictionsFrontend.current_prediction then
         return
     end
-    M.current_prediction:accept_first_line()
+    PredictionsFrontend.current_prediction:accept_first_line()
 end
 
-function M.accept_word_invoked()
-    if not M.current_prediction then
+function PredictionsFrontend.accept_word_invoked()
+    if not PredictionsFrontend.current_prediction then
         return
     end
-    M.current_prediction:accept_first_word()
+    PredictionsFrontend.current_prediction:accept_first_word()
 end
 
-function M.new_prediction_invoked()
-    M.cursor_moved_in_insert_mode()
+function PredictionsFrontend.new_prediction_invoked()
+    PredictionsFrontend.cursor_moved_in_insert_mode()
 end
 
-function M.vim_is_quitting()
-    M.cancel_current_prediction()
+function PredictionsFrontend.vim_is_quitting()
+    PredictionsFrontend.cancel_current_prediction()
 end
 
-return M
+return PredictionsFrontend
