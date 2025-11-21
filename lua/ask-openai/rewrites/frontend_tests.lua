@@ -1,5 +1,5 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
-local rewrites = require("ask-openai.rewrites.frontend")
+local rewrites_frontend = require("ask-openai.rewrites.frontend")
 -- FYI be careful how you import init.lua... must be same if imported in multiple spots (i.e. the tests)
 local thinking = require("ask-openai.rewrites.thinking")
 local assert = require("luassert")
@@ -8,7 +8,7 @@ describe("test strip markdown from completion responses", function()
     local function test_strip_md_from_completion(input_text, expected_text)
         -- PRN how about create a class that can handle lines <=> text conversions on-demand so I don't have to think about it?
         local input_lines = vim.split(input_text, "\n")
-        local output_lines = rewrites.strip_md_from_completion(input_lines)
+        local output_lines = rewrites_frontend.strip_md_from_completion(input_lines)
         local output_text = table.concat(output_lines, "\n")
         assert.are.same(expected_text, output_text)
     end

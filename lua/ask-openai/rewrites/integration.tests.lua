@@ -1,5 +1,5 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
-local rewrites = require("ask-openai.rewrites.frontend")
+local rewrites_frontend = require("ask-openai.rewrites.frontend")
 local assert = require("luassert")
 
 -- TODO PORT TO WORK WITH inline2
@@ -12,7 +12,7 @@ describe("test model responses", function()
         local code = "def add(x, y):"
         local filename = "add.py"
         local user_prompt = "Finish this function"
-        local response = rewrites.send_to_ollama(user_prompt, code, filename)
+        local response = rewrites_frontend.send_to_ollama(user_prompt, code, filename)
 
         print(response)
 
@@ -31,7 +31,7 @@ describe("test model responses", function()
         local code = "print(1+1)\n# This is a comment\ndef add(x, y):"
         local filename = "add.py"
         local user_prompt = "Finish this function"
-        local response = rewrites.send_to_ollama(user_prompt, code, filename)
+        local response = rewrites_frontend.send_to_ollama(user_prompt, code, filename)
 
         print(response)
 
