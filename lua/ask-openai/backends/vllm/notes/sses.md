@@ -1,3 +1,5 @@
+# legacy completions endpoints
+
 it is ok to discard these notes, just kept in case it helps, i.e. find who does what with SSE fields
 
 ## vllm notes
