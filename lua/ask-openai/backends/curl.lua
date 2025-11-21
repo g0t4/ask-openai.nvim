@@ -73,8 +73,6 @@ end
 ---@param request LastRequest|LastRequestForThread
 ---@param frontend StreamingFrontend
 function M.spawn(request, frontend)
-    local extract_generated_text = get_extract_generated_text_func(request.endpoint)
-
     request.body.stream = true
 
     local json = vim.json.encode(request.body)
@@ -94,7 +92,7 @@ function M.spawn(request, frontend)
     ---@param data_value string
     function on_data_sse(data_value)
         local success, error_message = xpcall(function()
-            M.on_line_or_lines(data_value, frontend, extract_generated_text, request)
+            M.on_line_or_lines(data_value, frontend, request)
         end, function(e)
             -- otherwise only get one line from the traceback frame
             return debug.traceback(e, 3)
@@ -182,11 +180,12 @@ function M.spawn(request, frontend)
 end
 
 ---@param data_value string
----@param extract_generated_text ExtractGeneratedTextFromChoiceFunction
 ---@param frontend StreamingFrontend
 ---@param request LastRequest|LastRequestForThread
-function M.on_line_or_lines(data_value, frontend, extract_generated_text, request)
+function M.on_line_or_lines(data_value, frontend, request)
     -- log:trace("data_value", data_value)
+
+    local extract_generated_text = get_extract_generated_text_func(request.endpoint)
 
     if data_value == "[DONE]" then
         -- log:trace("DETECTED DONE")
