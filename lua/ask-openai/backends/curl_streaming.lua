@@ -25,9 +25,8 @@ end
 ---@param url string
 ---@param frontend StreamingFrontend
 ---@param extract_generated_text ExtractGeneratedTextFunction
----@param backend CurlMiddle -- TODO remove backend unused param?
 ---@return LastRequest
-function M.reusable_curl_seam(body, url, frontend, extract_generated_text, backend)
+function M.reusable_curl_seam(body, url, frontend, extract_generated_text)
     local request = LastRequest:new(body)
 
     body.stream = true

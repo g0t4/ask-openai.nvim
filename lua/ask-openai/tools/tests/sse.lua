@@ -1,5 +1,4 @@
 local curls = require("ask-openai.backends.curl_streaming")
-local oai_chat = require("ask-openai.backends.oai_chat")
 local text = require("ask-openai.helpers.text")
 require("ask-openai.helpers.buffers")
 local test_setup = require("ask-openai.helpers.test_setup")
