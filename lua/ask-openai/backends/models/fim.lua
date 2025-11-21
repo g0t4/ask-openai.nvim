@@ -16,7 +16,7 @@ M.gptoss = {
         -- fim_stop_tokens = [] -- TODO?
     }
 }
----@param request OllamaFimBackend
+---@param request FimBackend
 function M.gptoss.get_fim_raw_prompt_no_thinking(request)
     -- TODO toggle to disable thinking with gptoss?! (none/low/med/high)
     --   need to swap endpoint too
@@ -48,7 +48,7 @@ function M.gptoss.get_fim_raw_prompt_no_thinking(request)
     return builder:build_raw_prompt()
 end
 
----@param request OllamaFimBackend
+---@param request FimBackend
 function M.gptoss.get_fim_chat_messages(request)
     -- TODO! what if I change this to ask gptoss to rewrite the current line (only current line)
     --  and then FIM just replaces that line?
@@ -124,7 +124,7 @@ M.qwen25coder = {
 --     M.qwen25coder.sentinel_tokens.file_sep,
 -- }
 
----@param request OllamaFimBackend
+---@param request FimBackend
 function M.qwen25coder.get_fim_prompt(request)
     -- FYI! see fim.md for extensive FIM notes
     local tokens = M.qwen25coder.sentinel_tokens
@@ -278,7 +278,7 @@ M.bytedance_seed_coder = {
     },
 }
 
----@param request OllamaFimBackend
+---@param request FimBackend
 function M.bytedance_seed_coder.get_fim_prompt_file_level_only(request)
     -- FYI file level works well for Seed-Coder
 
@@ -300,7 +300,7 @@ function M.bytedance_seed_coder.get_fim_prompt_file_level_only(request)
     return file_level_prompt_only
 end
 
----@param request OllamaFimBackend
+---@param request FimBackend
 function M.bytedance_seed_coder.get_fim_prompt_repo_level(request)
     -- FYI this is NOT working well! not yet anyways!
     --    gotta find the format they trained with, for multiple files (repo level training data)

@@ -8,12 +8,12 @@ local local_share = require("ask-openai.config.local_share")
 local api = require("ask-openai.api")
 require("ask-openai.backends.sse")
 
----@class OllamaFimBackend
+---@class FimBackend
 ---@field ps_chunk PrefixSuffixChunk
 ---@field rag_matches LSPRankedMatch[]
 ---@field context CurrentContext
-local OllamaFimBackend = {}
-OllamaFimBackend.__index = OllamaFimBackend
+local FimBackend = {}
+FimBackend.__index = FimBackend
 
 local use_model = ""
 local url = ""
@@ -22,7 +22,7 @@ local endpoint_ollama_api_generate = false
 local endpoint_ollama_api_chat = false
 local endpoint_llama_server_proprietary_completions = false
 local endpoint_openaicompat_chat_completions = false
-function OllamaFimBackend.set_fim_model(model)
+function FimBackend.set_fim_model(model)
     -- FYI right now, given I am using llama-server exclusively, toggling is just about changing between the two instances I run at the same time
     --   so, toggling the port/endpoint :)
     if model == "gptoss" then
@@ -54,13 +54,13 @@ function OllamaFimBackend.set_fim_model(model)
     endpoint_openaicompat_chat_completions = string.match(url, "v1/chat/completions$")
 end
 
-OllamaFimBackend.set_fim_model("qwen25coder") -- default
+FimBackend.set_fim_model("qwen25coder") -- default
 
 ---@param ps_chunk PrefixSuffixChunk
 ---@param rag_matches LSPRankedMatch[]
----@return OllamaFimBackend
-function OllamaFimBackend:new(ps_chunk, rag_matches, model)
-    OllamaFimBackend.set_fim_model(model)
+---@return FimBackend
+function FimBackend:new(ps_chunk, rag_matches, model)
+    FimBackend.set_fim_model(model)
     local always_include = {
         yanks = true,
         matching_ctags = true, -- TODO should RAG replace this by default? and just have more RAG matches (FYI RAG can index the ctags file too)
@@ -77,7 +77,7 @@ function OllamaFimBackend:new(ps_chunk, rag_matches, model)
     return instance
 end
 
-function OllamaFimBackend:request_options()
+function FimBackend:request_options()
     local options = {
         command = "curl",
         args = {
@@ -93,7 +93,7 @@ function OllamaFimBackend:request_options()
     return options
 end
 
-function OllamaFimBackend:body_for()
+function FimBackend:body_for()
     local max_tokens = 200
     local body = {
         -- FYI! keep model notes in MODELS.notes.md
@@ -285,11 +285,11 @@ function OllamaFimBackend:body_for()
     return vim.json.encode(body)
 end
 
-function OllamaFimBackend.inject_file_path_test_seam()
+function FimBackend.inject_file_path_test_seam()
     return files.get_current_file_relative_path()
 end
 
-function OllamaFimBackend:get_repo_name()
+function FimBackend:get_repo_name()
     -- TODO confirm repo naming? is it just basename of repo root? or GH link? or org/repo?
     return vim.fn.getcwd():match("([^/]+)$")
 end
@@ -314,7 +314,7 @@ end
 
 ---@param lines string
 ---@returns SSEResult
-function OllamaFimBackend.process_sse(lines)
+function FimBackend.process_sse(lines)
     -- TODO? replace with data_only_parser
 
     -- split on lines first (each SSE can have 0+ "event" - one per line)
@@ -452,4 +452,4 @@ function parse_llamacpp_stats(parsed_sse)
     return stats
 end
 
-return OllamaFimBackend
+return FimBackend

@@ -78,7 +78,7 @@ function HarmonyRawFimPromptBuilder:developer()
     return self
 end
 
----@param request OllamaFimBackend
+---@param request FimBackend
 function HarmonyRawFimPromptBuilder.context_user_msg(request)
     local context_lines = {
         "Here is context that's automatically provided, that MAY be relevant.",
@@ -132,7 +132,7 @@ General project code rules:
     return table.concat(context_lines, "\n")
 end
 
----@param request OllamaFimBackend
+---@param request FimBackend
 function HarmonyRawFimPromptBuilder.fim_prompt(request)
     -- * user message
     local current_file_relative_path = request.inject_file_path_test_seam()
