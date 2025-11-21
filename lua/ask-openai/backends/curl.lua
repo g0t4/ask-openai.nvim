@@ -22,14 +22,14 @@ _G.CompletionsEndpoints = {
     v1_chat = "/v1/chat/completions",
 }
 ---@param endpoint CompletionsEndpoints
----@return ExtractGeneratedTextFunction
+---@return ExtractGeneratedTextFromChoiceFunction
 local function get_extract_generated_text_func(endpoint)
     -- * /completions  CompletionsEndpoints.completions
-    --   3rd ExtractGeneratedTextFunction for non-openai /completions endpoint on llama-server
+    --   3rd ExtractGeneratedTextFromChoiceFunction for non-openai /completions endpoint on llama-server
     --     => no sse.choice so I'd have to change how M.on_line_or_lines works to not assume sse.choices
     --     whereas with non-openai /completions it would just use top-level to get text (.content)
     if endpoint == CompletionsEndpoints.v1_completions then
-        ---@type ExtractGeneratedTextFunction
+        ---@type ExtractGeneratedTextFromChoiceFunction
         return function(choice)
             --- * /v1/completions
             if choice == nil or choice.text == nil then
@@ -41,7 +41,7 @@ local function get_extract_generated_text_func(endpoint)
     end
 
     if endpoint == CompletionsEndpoints.v1_chat then
-        ---@type ExtractGeneratedTextFunction
+        ---@type ExtractGeneratedTextFromChoiceFunction
         return function(choice)
             --- * /v1/chat/completions
             -- NOW I have access to request (url, body.model, etc) to be able to dynamically swap in the right SSE parser!
@@ -58,10 +58,10 @@ local function get_extract_generated_text_func(endpoint)
     end
 
     if endpoint == CompletionsEndpoints.completions then
-        error("TODO /completions endpoint's ExtractGeneratedTextFunction")
+        error("TODO /completions endpoint's ExtractGeneratedTextFromChoiceFunction")
     end
 
-    -- TODO CompletionsEndpoints.completions /completions for 3rd ExtractGeneratedTextFunction
+    -- TODO CompletionsEndpoints.completions /completions for 3rd ExtractGeneratedTextFromChoiceFunction
     error("Not yet implemented: " .. endpoint)
 end
 
@@ -72,7 +72,7 @@ end
 ---@field curl_exited_successfully fun()
 ---@field explain_error fun(text: string)
 
----@alias ExtractGeneratedTextFunction fun(first_choice: table): string
+---@alias ExtractGeneratedTextFromChoiceFunction fun(first_choice: table): string
 
 ---@param body table
 ---@param base_url string
@@ -195,7 +195,7 @@ function M.spawn(body, base_url, endpoint, frontend)
 end
 
 ---@param data_value string
----@param extract_generated_text ExtractGeneratedTextFunction
+---@param extract_generated_text ExtractGeneratedTextFromChoiceFunction
 ---@param frontend StreamingFrontend
 ---@param request LastRequest
 function M.on_line_or_lines(data_value, frontend, extract_generated_text, request)
