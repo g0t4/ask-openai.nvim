@@ -13,6 +13,9 @@ local stats = require("ask-openai.prediction.stats")
 
 local FimBackend = require("ask-openai.prediction.backends.fim_backend")
 
+---@class PredictionFrontEnd
+---@field handle? uv.uv_process_t
+---@field pid? integer
 local M = {}
 
 M.current_prediction = nil

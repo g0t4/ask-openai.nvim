@@ -2,8 +2,8 @@ local log = require("ask-openai.logs.logger").predictions()
 
 ---@class LastRequest
 ---@field body table
----@field handle uv_process_t
----@field pid integer
+---@field handle? uv.uv_process_t
+---@field pid? integer
 ---@field thread ChatThread
 ---@field accumulated_model_response_messages RxAccumulatedMessage[] -- model "assistant" responses, built from SSEs
 ---@field start_time integer -- unix timestamp when request was sent (for timing)
