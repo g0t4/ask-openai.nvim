@@ -1,7 +1,7 @@
 local log = require('ask-openai.logs.logger').predictions()
 
 local M = {
-    dots = require("ask-openai.rewrites.thinking.dots"),
+    dots = require("ask-openai.frontends.thinking.dots"),
 }
 
 function M.set_thinking_tag_and_patterns(thinking_tag)

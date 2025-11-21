@@ -1,4 +1,4 @@
-local dots = require("ask-openai.rewrites.thinking.dots")
+local dots = require("ask-openai.frontends.thinking.dots")
 local HLGroups = require("ask-openai.hlgroups")
 local log = require("ask-openai.logs.logger").predictions()
 local CursorController = require "ask-openai.predictions.cursor_controller"
