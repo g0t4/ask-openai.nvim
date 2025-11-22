@@ -55,6 +55,8 @@ function LastRequest.terminate(self)
 
     local handle = self.handle
     local pid = self.pid
+    -- TODO do I need to clear handle/pid? certainly PID doesn't matter?
+    --   FYI IIRC this is new for EVERY REQUEST (true in Predictions, isn't it the same in Rewrites/Questions Frontends?
     self.handle = nil
     self.pid = nil
     if handle ~= nil and not handle:is_closing() then
