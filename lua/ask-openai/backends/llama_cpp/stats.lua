@@ -8,16 +8,14 @@
 ---@field draft_tokens integer?                # optional, may be nil
 ---@field draft_tokens_accepted integer?       # optional, may be nil
 ---@field truncated_warning string?            # optional, may be nil
----@field parsed_sse table?                    # raw SSE payload, optional
 ---@field generation_settings table?           # extracted from parsed_sse.generation_settings, optional
 ---@field generation_settings.temperature number?
 ---@field generation_settings.top_p number?
 ---@field generation_settings.max_tokens integer?
 local SSEStats = {}
 
-function SSEStats:new(parsed_sse)
+function SSEStats:new()
     self = setmetatable({}, { __index = SSEStats })
-    self.parsed_sse = parsed_sse
     return self
 end
 
@@ -32,7 +30,7 @@ function M.parse_llamacpp_stats(sse)
     end
 
     local timings = sse.timings
-    local stats = SSEStats:new(sse)
+    local stats = SSEStats:new()
 
     -- commented out data is from example SSE
     -- "tokens_predicted": 7,
