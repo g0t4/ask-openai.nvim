@@ -133,7 +133,7 @@ function PredictionsFrontend.ask_for_prediction()
 
         local request = LastRequest:new({
             body = body,
-            base_url = url,
+            base_url = "http://build21.lan:8013", -- `url` has endpoint in it! -- TODO remove hard coded base_url! once PoC is good
             endpoint = CompletionsEndpoints.v1_chat, -- FYI change this later as needed
             -- FYI FIRST test of this PoC is with /v1/chat/completions endpoint... later I can do others (i.e. non-thinking gptoss using /completions endpoint! or qwen2.5 coder that way too!)
             --    SO YOU will need to use gptoss too as qwen you only have setup IIRC to use manual prompt building /completions
