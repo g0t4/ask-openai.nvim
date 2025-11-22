@@ -119,6 +119,7 @@ function Curl.spawn(request, frontend)
         if read_error or no_data then
             return
         end
+        assert(data ~= nil)
 
         parser:write(data)
     end
@@ -134,6 +135,7 @@ function Curl.spawn(request, frontend)
         if read_error or no_data then
             return
         end
+        assert(data ~= nil)
 
         -- keep in mind... curl errors will show as text in STDERR
         frontend.explain_error(data)
