@@ -60,6 +60,9 @@ function PredictionsFrontend.ask_for_prediction()
                     return
                 end
 
+                -- TODO! the follow can be used in RewriteFrontend and QuestionsFrontend to support multiple backends
+                --   TODO in fact, how about extract out an SSE reader of sorts? that contains this list and extracts minimal parts I need across backends... can always also return SSE for nuanced parsing but s/b able to nail most cases
+                --   and eventually if I want a raw harmony parser... it would just be a new type in the list that sits on top of data SSEs... but right below this new SSEReader?
                 -- log:info("sse_parsed", vim.inspect(sse_parsed))
                 local chunk, done, done_reason, reasoning_content
                 if FimBackend.endpoint == CompletionsEndpoints.llamacpp_completions then
