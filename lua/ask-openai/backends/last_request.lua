@@ -54,6 +54,9 @@ function LastRequest.terminate(request)
 
     -- FYI handle/pid (this entire request object) is PER literal request
     --  so no need to clear handle/pid
+    --  TODO unless... when I call handle:close()... does handle:is_closing() immediately return true?
+    --    if not, I need to clear handle (request.handle = nil) OR add a flag of my own (self._called_close = true)
+    --    * though, if handle:close() is idempotent then none of this matters
     local handle = request.handle
     if handle ~= nil and not handle:is_closing() then
         -- log:trace("Terminating process, pid: ", request.pid)

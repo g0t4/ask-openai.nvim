@@ -178,6 +178,13 @@ function PredictionsFrontend.ask_for_prediction()
 end
 
 function PredictionsFrontend.cancel_current_prediction()
+    -- TODO? PredictionsLastRequest:terminate() ??
+    --  I probably need to extend LastRequest and make a PredictionLastRequest
+    --  and override terminate (in which case I need to start using colon call to pass self)
+    --  and have terminate cancel rag too, as well as flag this as abandoned
+    --     AND clear extmarks! (else I will get stuck extmarks)
+    --  PERHAPS wait and see if you can get stuck extmarks, and then if you can easily repro them?
+
     -- PRN stdout/stderr:read_stop() to halt on_stdout/stderr callbacks from firing again (before handle:close())?!
     if PredictionsFrontend.rag_cancel then
         PredictionsFrontend.rag_cancel()
