@@ -41,8 +41,9 @@ function PredictionsFrontend.ask_for_prediction()
 
         -- TODO rename to FimBodyBuilder? or FimRequestBuilder? or FimPromptBuilder?
         local backend = FimBackend:new(ps_chunk, rag_matches, model)
-        local body = backend:body_for()
+        local body, url = backend:body_for()
         assert(body ~= nil)
+        assert(url ~= nil)
 
         log:info("send_fim.body", vim.inspect(body))
 
@@ -128,9 +129,10 @@ function PredictionsFrontend.ask_for_prediction()
             on_sse_llama_server_timings = on_sse_llama_server_timings,
         }
 
+
         local request = LastRequest:new({
             body = body,
-            base_url = "",
+            base_url = url,
             endpoint = CompletionsEndpoints.v1_chat, -- FYI change this later as needed
             -- FYI FIRST test of this PoC is with /v1/chat/completions endpoint... later I can do others (i.e. non-thinking gptoss using /completions endpoint! or qwen2.5 coder that way too!)
             --    SO YOU will need to use gptoss too as qwen you only have setup IIRC to use manual prompt building /completions

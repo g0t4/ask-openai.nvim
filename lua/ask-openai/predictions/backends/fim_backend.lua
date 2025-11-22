@@ -89,7 +89,7 @@ function FimBackend:request_options()
             "-X", "POST",
             url,
             "-H", "Content-Type: application/json",
-            "-d", self:body_for(),
+            "-d", self:body_for(), -- FYI! this is borked now that it returns URL too
         },
     }
     return options
@@ -285,7 +285,8 @@ function FimBackend:body_for()
         error("you must define either the prompt builder OR messages for chat like FIM for: " .. body.model)
     end
 
-    return body
+    -- FYI hack to send back unencoded body and addidng url here is for PoC on PREDIDCTIONS FRONTEND
+    return body, url
 end
 
 function FimBackend.inject_file_path_test_seam()
