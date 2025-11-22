@@ -47,9 +47,8 @@ end
 
 function LastRequest.terminate(request)
     if request == nil or request.handle == nil then
-        -- FYI self == nil check so I can call w/o check nil using:
-        --   LastRequest.terminate(request)
-        --   instead of request:terminate()   -- would blow up on nil
+        -- FYI prefer LastRequest.terminate(request) b/c no error if request is nil
+        --   NOT request:terminate() -- get an error if request is nil
         return
     end
 
