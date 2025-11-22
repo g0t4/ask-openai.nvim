@@ -124,9 +124,9 @@ function PredictionsFrontend.ask_for_prediction()
             on_sse_llama_server_timings = on_sse_llama_server_timings,
         }
 
-        log:info("hack.body", vim.inspect(body))
-        log:info("hack.base_url", FimBackend.base_url)
-        log:info("hack.endpoint", FimBackend.endpoint)
+        log:luaify_trace("predictions.body", body)
+        log:info("predictions.base_url", FimBackend.base_url)
+        log:info("predictions.endpoint", FimBackend.endpoint)
 
         -- TODO! how does this conflict with Prediction type, notably in cancellation?
         --   TODO use this for cancellation!!! fuse w/ Prediction and remove its handle/pid/etc?
