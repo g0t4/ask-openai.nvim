@@ -36,15 +36,13 @@ function PredictionsFrontend.ask_for_prediction()
         local model = api.get_fim_model()
         local backend = FimBackend:new(ps_chunk, rag_matches, model)
 
-        -- TODO move this_prediction creation above (before RAG too)
+        -- TODO move this_prediction creation above? (before RAG too)
         local this_prediction = Prediction.new()
         PredictionsFrontend.current_prediction = this_prediction
 
         local function on_parsed_data_sse_with_choice(sse_parsed)
-            -- TODO on_stdout (need to get this ported over)... step one is assume most of this is for a parsed SSE handler
-
-            -- TODO bring this back later, skip for now during PoC of Curl module
             -- if read_error then
+            --     FYI bring this back later if it is needed, skip for now during PoC of Curl module
             --     this_prediction:mark_generation_failed()
             --     return
             -- end
@@ -63,16 +61,22 @@ function PredictionsFrontend.ask_for_prediction()
                     return
                 end
 
-                -- TODO get rid of this once stuff is mapped:
-                --   local sse_result = backend.process_sse(data) -- old source of sse_result (review this as needed)
+                -- TODO later support other servers format wise, see:
+                --    lua/ask-openai/predictions/backends/fim_backend.lua:346-358
+                --
+                -- /completions on llama-server:
+                --   local chunk, done, done_reason = parse_llama_cpp_server(sse_parsed) -- /completions non-openai
+                --   -- TO DO => later => verify done here is correct (I set to stop field from /completions backend on llama cpp)
+                --
+                -- FYI for PoC use /v1/chat/completions llama-server:
+                local chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed)
+                -- TODO verify chunk/done/done_reason/reasoning_content are correct
 
-                local chunk = sse_parsed.chunk
-                local generation_done = sse_parsed.done
-                local done_reason = sse_parsed.done_reason
-                if chunk or sse_parsed.reasoning_content then
-                    this_prediction:add_chunk_to_prediction(chunk, sse_parsed.reasoning_content)
+                if chunk or reasoning_content then
+                    this_prediction:add_chunk_to_prediction(chunk, reasoning_content)
                 end
-                if generation_done then
+
+                if done then
                     if this_prediction.has_reasoning then
                         -- log:info(ansi.yellow_bold("REASONING:\n"), ansi.yellow(this_prediction:get_reasoning()))
                     end
@@ -89,17 +93,24 @@ function PredictionsFrontend.ask_for_prediction()
                     end
                     this_prediction:mark_generation_finished()
                 end
-                stats.show_prediction_stats(sse_parsed, perf)
             end)
         end
 
-        local function on_stderr(read_error, data)
-            -- FYI data == nil => EOF
-
-            log:trace_stdio_read_errors("on_stderr", read_error, data)
-            -- log:trace_stdio_read_always("on_stderr", read_error, data)
+        local function on_curl_exited_successfully()
+            -- placeholder, not sure I will even need this
         end
-        stderr:read_start(on_stderr)
+
+        local function explain_error(text)
+            -- TODO figure out this once PoC is working
+            vim.notify("ERROR in new PREDICTIONS FRONTEND PoC: " .. text, vim.log.levels.ERROR)
+        end
+
+        local function on_sse_llama_server_timings(sse_parsed)
+            -- TODO do I need vim.schedule? I just copied this during PoC setup b/c it was used in old on_stdout
+            vim.schedule(function()
+                stats.show_prediction_stats(sse_parsed, perf)
+            end)
+        end
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
