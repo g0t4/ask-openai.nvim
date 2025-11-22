@@ -301,7 +301,6 @@ end
 
 ---@type OnGeneratedText
 function QuestionsFrontend.on_parsed_data_sse_with_choice(sse_parsed)
-    -- FYI later I will need defensive checks here if not using "choices" SSE results (i.e. /completions llama-server endpoint's SSEs)
     local first_choice = sse_parsed.choices[1]
     curl.on_streaming_delta_update_message_history(first_choice, QuestionsFrontend.thread.last_request)
     -- TODO! LATER move curl.on_streaming_delta_update_message_history() function
