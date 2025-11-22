@@ -60,18 +60,18 @@ function PredictionsFrontend.ask_for_prediction()
                     return
                 end
 
-                -- TODO! the follow can be used in RewriteFrontend and QuestionsFrontend to support multiple backends
-                --   TODO in fact, how about extract out an SSE reader of sorts? that contains this list and extracts minimal parts I need across backends... can always also return SSE for nuanced parsing but s/b able to nail most cases
-                --   and eventually if I want a raw harmony parser... it would just be a new type in the list that sits on top of data SSEs... but right below this new SSEReader?
-                -- log:info("sse_parsed", vim.inspect(sse_parsed))
                 local chunk, done, done_reason, reasoning_content
                 if FimBackend.endpoint == CompletionsEndpoints.llamacpp_completions then
+                    -- TODO content parsing works, no reasoning parser (yet)
                     chunk, done, done_reason = parse_sse_llamacpp_completions(sse_parsed)
                 elseif FimBackend.endpoint == CompletionsEndpoints.oai_v1_chat_completions then
+                    -- FYI fully works, including reasoning:
                     chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed)
                 elseif FimBackend.endpoint == CompletionsEndpoints.ollama_api_chat then
+                    -- FYI not a priority to support beyond what it does now:
                     chunk, done, done_reason = parse_sse_ollama_api_chat(sse_parsed)
                 elseif FimBackend.endpoint == CompletionsEndpoints.ollama_api_generate then
+                    -- FYI not a priority to support beyond what it does now:
                     chunk, done, done_reason = parse_sse_ollama_api_generate(sse_parsed)
                 else
                     error("Unsupported FIM endpoint: " .. tostring(FimBackend.endpoint))
