@@ -2,6 +2,7 @@ local log = require("ask-openai.logs.logger"):predictions()
 
 -- logic for parsing SSEs from all completion backends
 
+---@param sse OpenAIChatCompletionChunk
 function parse_sse_oai_chat_completions(sse)
     local content = ""
     local reasoning_content = ""
