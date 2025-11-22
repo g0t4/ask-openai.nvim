@@ -33,7 +33,7 @@ function FimBackend.set_fim_model(model)
             -- manually formatted prompt to disable thinking
             FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions
         else
-            FimBackend.endpoint = CompletionsEndpoints.v1_chat_completions
+            FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
         end
     else
         use_model = "qwen25coder"
@@ -49,7 +49,7 @@ function FimBackend.set_fim_model(model)
     -- FimBackend.url = "http://ollama:11434"
     -- FimBackend.endpoint = CompletionsEndpoints.ollama_api_generate -- raw prompt: qwen2.5-coder(ollama)
     -- FimBackend.endpoint = CompletionsEndpoints.ollama_api_chat -- gpt-oss(ollama works)
-    -- FimBackend.endpoint = CompletionsEndpoints.v1_chat_completions -- gpt-oss(ollama works)
+    -- FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions -- gpt-oss(ollama works)
 end
 
 FimBackend.set_fim_model("qwen25coder") -- default

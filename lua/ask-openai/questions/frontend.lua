@@ -180,7 +180,7 @@ function QuestionsFrontend.send_messages()
     local request = LastRequestForThread:new({
         body = QuestionsFrontend.thread:next_curl_request_body(),
         base_url = QuestionsFrontend.thread.base_url,
-        endpoint = CompletionsEndpoints.v1_chat_completions
+        endpoint = CompletionsEndpoints.oai_v1_chat_completions
     })
     curl.spawn(request, QuestionsFrontend)
     QuestionsFrontend.thread:set_last_request(request)
