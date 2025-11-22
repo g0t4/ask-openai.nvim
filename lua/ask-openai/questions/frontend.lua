@@ -443,7 +443,8 @@ end
 function QuestionsFrontend.on_parsed_data_sse(sse_parsed)
     -- FYI right now this is desingned for /v1/chat/completions only
     --   I added this guard based on review of on-on_streaming_delta_update_message_history that appears (IIRC) to be using /v1/chat/completions ONLY compatible fields
-    if QuestionsFrontend.thread.last_request.endpoint ~= CompletionsEndpoints.oai_v1_chat_completions then
+    local request = QuestionsFrontend.thread.last_request
+    if request.endpoint ~= CompletionsEndpoints.oai_v1_chat_completions then
         -- fail fast in this case
         -- TODO (when I need it)... you very likely can support other endpoints (see what you've done in both PredictionsFrontend and RewriteFrontend (both have some multi endpoint support)
         local message = "QuestionsFrontend SSEs not supported for endpoint: " .. tostring(request.endpoint)
@@ -456,7 +457,7 @@ function QuestionsFrontend.on_parsed_data_sse(sse_parsed)
         return
     end
     local first_choice = sse_parsed.choices[1]
-    QuestionsFrontend.on_streaming_delta_update_message_history(first_choice, QuestionsFrontend.thread.last_request)
+    QuestionsFrontend.on_streaming_delta_update_message_history(first_choice, request)
     handle_rx_messages_updated()
 end
 
