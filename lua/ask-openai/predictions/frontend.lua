@@ -40,12 +40,8 @@ function PredictionsFrontend.ask_for_prediction()
 
         -- TODO rename to FimBodyBuilder? or FimRequestBuilder? or FimPromptBuilder?
         local backend = FimBackend:new(ps_chunk, rag_matches, model)
-        local body, url = backend:body_for()
+        local body = backend:body_for()
         assert(body ~= nil)
-        assert(url ~= nil)
-
-        log:info("hack.body", vim.inspect(body))
-        log:info("hack.url", url)
 
         -- TODO move this_prediction creation above? (before RAG too)
         local this_prediction = Prediction.new()
@@ -80,20 +76,22 @@ function PredictionsFrontend.ask_for_prediction()
                 --   local chunk, done, done_reason = parse_llama_cpp_server(sse_parsed) -- /completions non-openai
                 --   -- TO DO => later => verify done here is correct (I set to stop field from /completions backend on llama cpp)
                 --
-                --  TODO code in FimBackend's process_sse that needs ported: (some already done)
-                --             if endpoint_llama_server_proprietary_completions then
-                --                 parsed_chunk, done, done_reason = parse_llama_cpp_server(parsed_sse)
-                --             elseif endpoint_openaicompat_chat_completions then
-                --                 parsed_chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(parsed_sse)
-                --             elseif endpoint_ollama_api_chat then
-                --                 parsed_chunk, done, done_reason = parse_sse_ollama_chat(parsed_sse)
-                --             else
-                --                 parsed_chunk, done, done_reason = parse_ollama_api_generate(parsed_sse)
-                --             end
 
-                -- FYI for PoC use /v1/chat/completions llama-server:
                 -- log:info("sse_parsed", vim.inspect(sse_parsed))
-                local chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed)
+                local chunk, done, done_reason, reasoning_content
+                if FimBackend.endpoint_llama_server_proprietary_completions then
+                    -- TODO test
+                    chunk, done, done_reason = parse_llama_cpp_server(sse_parsed)
+                elseif FimBackend.endpoint_openaicompat_chat_completions then
+                    -- FYI for PoC use /v1/chat/completions llama-server:
+                    chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed) -- * WORKS!
+                elseif FimBackend.endpoint_ollama_api_chat then
+                    -- TODO test
+                    chunk, done, done_reason = parse_sse_ollama_chat(sse_parsed)
+                else
+                    -- TODO test
+                    chunk, done, done_reason = parse_ollama_api_generate(sse_parsed)
+                end
 
                 if chunk or reasoning_content then
                     this_prediction:add_chunk_to_prediction(chunk, reasoning_content)
@@ -141,11 +139,14 @@ function PredictionsFrontend.ask_for_prediction()
             on_sse_llama_server_timings = on_sse_llama_server_timings,
         }
 
+        log:info("hack.body", vim.inspect(body))
+        log:info("hack.url", FimBackend.base_url)
+        log:info("hack.endpoint", FimBackend.endpoint)
 
         local request = LastRequest:new({
             body = body,
-            base_url = "http://build21.lan:8013", -- `url` has endpoint in it! -- TODO remove hard coded base_url! once PoC is good
-            endpoint = CompletionsEndpoints.v1_chat, -- FYI change this later as needed
+            base_url = FimBackend.base_url,
+            endpoint = FimBackend.endpoint,
             -- FYI FIRST test of this PoC is with /v1/chat/completions endpoint... later I can do others (i.e. non-thinking gptoss using /completions endpoint! or qwen2.5 coder that way too!)
             --    SO YOU will need to use gptoss too as qwen you only have setup IIRC to use manual prompt building /completions
         })

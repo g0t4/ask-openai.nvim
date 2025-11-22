@@ -17,7 +17,11 @@ local FimBackend = {}
 FimBackend.__index = FimBackend
 
 local use_model = ""
-local url = ""
+
+FimBackend.base_url = ""
+---@type CompletionsEndpoints
+FimBackend.endpoint = nil
+
 local use_gptoss_raw = false
 FimBackend.endpoint_ollama_api_generate = false
 FimBackend.endpoint_ollama_api_chat = false
@@ -28,14 +32,17 @@ function FimBackend.set_fim_model(model)
     --   so, toggling the port/endpoint :)
     if model == "gptoss" then
         use_model = "gpt-oss:120b"
+        FimBackend.base_url = "http://build21.lan:8013"
         if use_gptoss_raw then
-            url = "http://ollama:8013/completions" -- manually formatted prompt to disable thinking
+            -- manually formatted prompt to disable thinking
+            FimBackend.endpoint = CompletionsEndpoints.completions
         else
-            url = "http://ollama:8013/v1/chat/completions"
+            FimBackend.endpoint = CompletionsEndpoints.v1_chat
         end
     else
         use_model = "qwen25coder"
-        url = "http://ollama:8012/completions" -- * preferred for qwen2.5-coder
+        FimBackend.base_url = "http://build21.lan:8012"
+        FimBackend.endpoint = CompletionsEndpoints.completions -- * preferred for qwen2.5-coder
         -- /completions - raw prompt # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
     end
     -- add new options in config so I no longer have to switch in code;
@@ -43,16 +50,16 @@ function FimBackend.set_fim_model(model)
     -- use_model = "qwen3-coder:30b-a3b-q8_0" -- just call this qwen3coder
 
     -- * ollama
-    -- url = "http://ollama:11434/api/generate" -- raw prompt: qwen2.5-coder(ollama)
-    -- url = "http://ollama:11434/api/chat" -- gpt-oss(ollama works)
-    -- url = "http://ollama:11434/v1/chat/completions" -- gpt-oss(ollama works)
+    -- FimBackend.url = "http://ollama:11434"
+    -- FimBackend.endpoint = CompletionsEndpoints.ollama_api_generate -- raw prompt: qwen2.5-coder(ollama)
+    -- FimBackend.endpoint = CompletionsEndpoints.ollama_api_chat -- gpt-oss(ollama works)
+    -- FimBackend.endpoint = CompletionsEndpoints.v1_chat -- gpt-oss(ollama works)
 
     -- * parser toggles
-    --   (make based on url/model so not have to explicitly config too)
-    FimBackend.endpoint_ollama_api_generate = string.match(url, "/api/generate$")
-    FimBackend.endpoint_ollama_api_chat = string.match(url, "/api/chat$")
-    FimBackend.endpoint_llama_server_proprietary_completions = string.match(url, ":801%d/completions$")
-    FimBackend.endpoint_openaicompat_chat_completions = string.match(url, "v1/chat/completions$")
+    FimBackend.endpoint_ollama_api_generate = FimBackend.endpoint == CompletionsEndpoints.ollama_api_generate
+    FimBackend.endpoint_ollama_api_chat = FimBackend.endpoint == CompletionsEndpoints.ollama_api_chat
+    FimBackend.endpoint_llama_server_proprietary_completions = FimBackend.endpoint == CompletionsEndpoints.completions
+    FimBackend.endpoint_openaicompat_chat_completions = FimBackend.endpoint == CompletionsEndpoints.v1_chat
 end
 
 FimBackend.set_fim_model("qwen25coder") -- default
@@ -268,8 +275,7 @@ function FimBackend:body_for()
         error("you must define either the prompt builder OR messages for chat like FIM for: " .. body.model)
     end
 
-    -- FYI hack to send back unencoded body and addidng url here is for PoC on PREDIDCTIONS FRONTEND
-    return body, url
+    return body
 end
 
 function FimBackend.inject_file_path_test_seam()
