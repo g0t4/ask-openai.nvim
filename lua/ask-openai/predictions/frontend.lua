@@ -12,7 +12,6 @@ local lualine = require('ask-openai.status.lualine')
 local stats = require("ask-openai.predictions.stats")
 local Curl = require("ask-openai.backends.curl")
 local LastRequest = require("ask-openai.backends.last_request")
-
 local FimBackend = require("ask-openai.predictions.backends.fim_backend")
 
 -- TODO! WIP - fully port this to be a StreamingFrontend!
@@ -136,16 +135,7 @@ function PredictionsFrontend.ask_for_prediction()
 
         ---@type OnParsedSSE
         local function on_sse_llama_server_timings(sse_parsed)
-            -- TODO do I need vim.schedule? I just copied this during PoC setup b/c it was used in old on_stdout
-            vim.schedule(function()
-                -- TODO use this code to build stats object and then pass it to below
-                if sse_parsed.timings then
-                    -- TODO fix this to work (this came from FimBackend's process_sse that I nuked)
-                    stats = llamacpp_stats.parse_llamacpp_stats(parsed_sse)
-                end
-                -- FYI I might've altered this: just make sure it work with above
-                stats.show_prediction_stats(sse_parsed, perf)
-            end)
+            stats.show_prediction_stats(sse_parsed, perf)
         end
         local frontend = {
             on_parsed_data_sse_with_choice = on_parsed_data_sse_with_choice,

@@ -1,25 +1,27 @@
-local lualine = require("ask-openai.status.lualine")
 local api = require("ask-openai.api")
+local llamacpp_stats = require("ask-openai.backends.llama_cpp.stats")
 local log = require("ask-openai.logs.logger").predictions()
+local lualine = require("ask-openai.status.lualine")
 
 local M = {}
 
----@param sse_result SSEResult
+---@param sse_parsed table
 ---@param perf FIMPerformance
-function M.show_prediction_stats(sse_result, perf)
-    if not sse_result.stats then
+function M.show_prediction_stats(sse_parsed, perf)
+    local parsed_stats = llamacpp_stats.parse_llamacpp_stats(sse_parsed)
+    if not parsed_stats then
         return
     end
 
-    lualine.set_last_fim_stats(sse_result.stats)
+    lualine.set_last_fim_stats(parsed_stats)
     if not api.are_notify_stats_enabled() then
-        log:luaify_trace("stats", sse_result.stats.parsed_sse.timings)
+        log:luaify_trace("stats", sse_parsed.timings)
         return
     end
 
     local messages = {}
     table.insert(messages, "FIM Stats")
-    local stats = sse_result.stats
+    local stats = parsed_stats
     table.insert(messages, string.format("in: %d tokens @ %.2f tokens/sec", stats.prompt_tokens, stats.prompt_tokens_per_second))
     table.insert(messages, string.format("out: %d tokens @ %.2f tokens/sec", stats.predicted_tokens, stats.predicted_tokens_per_second))
 
@@ -39,19 +41,8 @@ function M.show_prediction_stats(sse_result, perf)
         table.insert(messages, string.format("truncated: %s", stats.truncated_warning))
     end
 
-
-    -- lets report back some generation settings so I can see values used (defaults)
-    local parsed_sse = stats.parsed_sse
-    -- disable model for now, I forgot that llama-server echos back w/e you tell it... not what it is actually running!
-    -- local model = parsed_sse.model
-    -- if model then
-    --     table.insert(messages, "model: " .. model)
-    -- end
-
-    if parsed_sse.generation_settings then
-        -- for now just go directly to generation settings, I am fine with that until I settle on what I want...
-        --  and actually, until I parse other backends for these values (if/when I get those setup)
-        local gen = parsed_sse.generation_settings
+    if sse_parsed.generation_settings then
+        local gen = sse_parsed.generation_settings
         table.insert(messages, "") -- blank line to split out gen inputs
         -- temperature
         table.insert(messages, string.format("temperature: %.2f", gen.temperature))
