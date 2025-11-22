@@ -143,6 +143,7 @@ function Curl.on_one_data_value(data_value, frontend, request)
         return
     end
 
+    -- * PARSE DATA VALUE (JSON) => sse_parsed object
     local success, sse_parsed = pcall(vim.json.decode, data_value)
     if success and sse_parsed then
         -- TODO when I expand support to llama-server's /completions endpoint, I can either add a new event on_parsed_data_sse (no choices required) or broaden existing handler:
@@ -152,7 +153,7 @@ function Curl.on_one_data_value(data_value, frontend, request)
         -- FYI not every SSE has to have generated tokens (choices), no need to warn if no parsed value
 
         if sse_parsed.error then
-            -- only confirmed this on llama_server, rename if other backends follow suit
+            -- only confirmed this on llama_server
             -- {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
             -- DO NOT LOG HERE TOO
             frontend.explain_error("found error on what looks like an SSE:" .. vim.inspect(sse_parsed))
@@ -162,6 +163,9 @@ function Curl.on_one_data_value(data_value, frontend, request)
             frontend.on_sse_llama_server_timings(sse_parsed)
         end
     else
+        -- PRN in the spirit of triggering events for scenarios, I could add:
+        --  frontend:on_data_value_parse_failure(data_value)
+        --  but central logging has been fine so far
         log:warn("SSE json parse failed for data_value: ", data_value)
     end
 end
