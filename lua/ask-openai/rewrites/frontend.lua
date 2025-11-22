@@ -115,7 +115,7 @@ local function get_extract_generated_text_func(endpoint)
     error("Not yet implemented: " .. endpoint)
 end
 
----@type OnParsedSSEWithChoice
+---@type OnParsedSSE
 function RewriteFrontend.on_parsed_data_sse_with_choice(sse_parsed)
     local first_choice = sse_parsed.choices[1]
     local extract_generated_text = get_extract_generated_text_func(RewriteFrontend.last_request.endpoint)
@@ -148,6 +148,7 @@ function RewriteFrontend.on_parsed_data_sse_with_choice(sse_parsed)
     end)
 end
 
+---@type OnParsedSSE
 function RewriteFrontend.on_sse_llama_server_timings(sse)
     -- FYI coupled to llama-server timings
     if sse == nil or sse.timings == nil then
@@ -198,6 +199,7 @@ function RewriteFrontend.on_sse_llama_server_timings(sse)
     end)
 end
 
+---@type OnCurlExitedSuccessfully
 function RewriteFrontend.on_curl_exited_successfully()
 end
 
@@ -538,6 +540,7 @@ local function ask_and_stream_from_ollama(opts)
     RewriteFrontend.stream_from_ollama(user_prompt, selection.original_text, relative_file_path)
 end
 
+---@type ExplainError
 function RewriteFrontend.explain_error(text)
     if not RewriteFrontend.displayer then
         vim.notify("ERROR, and no displayer, so here goes: " .. text, vim.log.levels.ERROR)

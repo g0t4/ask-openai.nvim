@@ -25,13 +25,16 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         --   but for now I need the closure to get to "self" which is "f" here
         --   b/c I am not calling with ":" and likely wont ever
 
-        function f.on_parsed_data_sse_with_choice(chunk)
-            table.insert(f.on_parsed_data_sse_with_choice_calls, chunk)
+        ---@type OnParsedSSE
+        function f.on_parsed_data_sse_with_choice(sse_parsed)
+            table.insert(f.on_parsed_data_sse_with_choice_calls, sse_parsed)
         end
 
+        ---@type OnParsedSSE
         function f.on_sse_llama_server_timings(sse_parsed)
         end
 
+        ---@type ExplainError
         function f.explain_error(text)
         end
 

@@ -14,13 +14,15 @@ _G.CompletionsEndpoints = {
     v1_chat = "/v1/chat/completions",
 }
 
----@alias OnParsedSSEWithChoice fun(sse_parsed: table)
+---@alias OnParsedSSE fun(sse_parsed: table)
+---@alias ExplainError fun(text: string)
+---@alias OnCurlExitedSuccessfully fun()
 
 ---@class StreamingFrontend
----@field on_parsed_data_sse_with_choice OnParsedSSEWithChoice
----@field on_sse_llama_server_timings fun(sse_parsed: table)
----@field on_curl_exited_successfully fun()
----@field explain_error fun(text: string)
+---@field on_parsed_data_sse_with_choice OnParsedSSE
+---@field on_sse_llama_server_timings OnParsedSSE
+---@field on_curl_exited_successfully OnCurlExitedSuccessfully
+---@field explain_error ExplainError
 
 
 ---@param request LastRequest|LastRequestForThread

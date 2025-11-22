@@ -52,6 +52,7 @@ function PredictionsFrontend.ask_for_prediction()
         local this_prediction = Prediction.new()
         PredictionsFrontend.current_prediction = this_prediction
 
+        ---@type OnParsedSSE
         local function on_parsed_data_sse_with_choice(sse_parsed)
             -- if read_error then
             --     FYI bring this back later if it is needed, skip for now during PoC of Curl module
@@ -122,15 +123,18 @@ function PredictionsFrontend.ask_for_prediction()
             end)
         end
 
+        ---@type OnCurlExitedSuccessfully
         local function on_curl_exited_successfully()
             -- placeholder, not sure I will even need this
         end
 
+        ---@type ExplainError
         local function explain_error(text)
             -- TODO figure out this once PoC is working
             vim.notify("ERROR in new PREDICTIONS FRONTEND PoC: " .. text, vim.log.levels.ERROR)
         end
 
+        ---@type OnParsedSSE
         local function on_sse_llama_server_timings(sse_parsed)
             -- TODO do I need vim.schedule? I just copied this during PoC setup b/c it was used in old on_stdout
             vim.schedule(function()

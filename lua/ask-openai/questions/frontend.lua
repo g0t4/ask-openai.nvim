@@ -225,6 +225,7 @@ function QuestionsFrontend.abort_and_close()
     end
 end
 
+---@type ExplainError
 function QuestionsFrontend.explain_error(text)
     vim.schedule(function()
         -- TEST this with:
@@ -297,11 +298,12 @@ function QuestionsFrontend.ensure_response_window_is_open()
     QuestionsFrontend.chat_window:ensure_open()
 end
 
+---@type OnParsedSSE
 function QuestionsFrontend.on_sse_llama_server_timings(sse)
     -- PRN use this to extract timing like in rewrites
 end
 
----@type OnParsedSSEWithChoice
+---@type OnParsedSSE
 function QuestionsFrontend.on_parsed_data_sse_with_choice(sse_parsed)
     local first_choice = sse_parsed.choices[1]
     QuestionsFrontend.on_streaming_delta_update_message_history(first_choice, QuestionsFrontend.thread.last_request)
@@ -449,6 +451,7 @@ function QuestionsFrontend.show_user_role()
     QuestionsFrontend.chat_window:append_styled_lines(lines_builder)
 end
 
+---@type OnCurlExitedSuccessfully
 function QuestionsFrontend.on_curl_exited_successfully()
     vim.schedule(function()
         -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for assistant messages)

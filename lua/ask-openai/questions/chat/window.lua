@@ -87,6 +87,7 @@ function ChatWindow:ensure_open()
     vim.opt_local.foldlevel = 0 -- CLOSE all folds with higher number, thus 0 == ALL (equiv to zM => foldenable + foldlevel=0)
 end
 
+---@type ExplainError
 function ChatWindow:explain_error(text)
     local lines = LinesBuilder:new()
     lines:create_marks_namespace()
