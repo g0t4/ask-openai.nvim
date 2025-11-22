@@ -76,7 +76,7 @@ end
 local function get_extract_generated_text_func(endpoint)
     -- * /completions  CompletionsEndpoints.completions
     --   3rd ExtractGeneratedTextFromChoiceFunction for non-openai /completions endpoint on llama-server
-    --     => no sse.choice so I'd have to change how M.on_line_or_lines works to not assume sse.choices
+    --     => no sse.choice so I'd have to change how M.on_one_data_value works to not assume sse.choices
     --     whereas with non-openai /completions it would just use top-level to get text (.content)
     if endpoint == CompletionsEndpoints.v1_completions then
         ---@type ExtractGeneratedTextFromChoiceFunction

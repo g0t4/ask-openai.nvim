@@ -45,7 +45,7 @@ function Curl.spawn(request, frontend)
     ---@param data_value string
     function on_data_sse(data_value)
         local success, error_message = xpcall(function()
-            Curl.on_line_or_lines(data_value, frontend, request)
+            Curl.on_one_data_value(data_value, frontend, request)
         end, function(e)
             -- otherwise only get one line from the traceback frame
             return debug.traceback(e, 3)
@@ -135,7 +135,7 @@ end
 ---@param data_value string
 ---@param frontend StreamingFrontend
 ---@param request LastRequest|LastRequestForThread
-function Curl.on_line_or_lines(data_value, frontend, request)
+function Curl.on_one_data_value(data_value, frontend, request)
     -- log:trace("data_value", data_value)
 
     if data_value == "[DONE]" then
