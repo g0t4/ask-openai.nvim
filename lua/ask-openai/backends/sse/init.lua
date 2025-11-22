@@ -3,7 +3,8 @@ local log = require("ask-openai.logs.logger"):predictions()
 -- logic for parsing SSEs from all completion backends
 
 function parse_sse_oai_chat_completions(sse)
-    content = ""
+    local content = ""
+    local reasoning_content = ""
     if sse.choices and sse.choices[1] then
         content = sse.choices[1].delta.content
         if content == nil or content == vim.NIL then
@@ -17,8 +18,8 @@ function parse_sse_oai_chat_completions(sse)
         -- ollama's uses delta.reasoning
         reasoning_content = sse.choices[1].delta.reasoning or sse.choices[1].delta.reasoning_content
     end
-    done = sse.finish_reason ~= nil -- or "null"? or vim.NIL
-    finish_reason = sse.finish_reason
+    local done = sse.finish_reason ~= nil -- or "null"? or vim.NIL
+    local finish_reason = sse.finish_reason
     return content, done, finish_reason, reasoning_content
 end
 
@@ -33,7 +34,7 @@ function parse_sse_ollama_chat(sse)
     -- gpt-oss:
     --   "message":{"role":"assistant","content":"","thinking":"   "},"done":false}
 
-    message = ""
+    local message = ""
     if sse.message then
         message = sse.message.content
     end
