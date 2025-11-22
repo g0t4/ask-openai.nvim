@@ -23,7 +23,7 @@ _G.CompletionsEndpoints = {
 ---@alias OnCurlExitedSuccessfully fun()
 
 ---@class StreamingFrontend
----@field on_parsed_data_sse_with_choice OnParsedSSE
+---@field on_parsed_data_sse OnParsedSSE
 ---@field on_sse_llama_server_timings OnParsedSSE
 ---@field on_curl_exited_successfully OnCurlExitedSuccessfully
 ---@field explain_error ExplainError
@@ -160,10 +160,7 @@ function Curl.on_one_data_value(data_value, frontend)
     -- * PARSE DATA VALUE (JSON) => sse_parsed object
     local success, sse_parsed = pcall(vim.json.decode, data_value)
     if success and sse_parsed then
-        -- TODO when I expand support to llama-server's /completions endpoint, I can either add a new event on_parsed_data_sse (no choices required) or broaden existing handler:
-        if sse_parsed.choices and sse_parsed.choices[1] then
-            frontend.on_parsed_data_sse_with_choice(sse_parsed)
-        end
+        frontend.on_parsed_data_sse(sse_parsed)
         -- FYI not every SSE has to have generated tokens (choices), no need to warn if no parsed value
 
         if sse_parsed.error then

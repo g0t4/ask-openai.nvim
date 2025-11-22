@@ -18,7 +18,7 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         -- create a table and attach methods
         local f = setmetatable({}, { __index = self })
 
-        f.on_parsed_data_sse_with_choice_calls = {}
+        f.on_parsed_data_sse_calls = {}
         f.process_finish_reason_calls = {}
 
         -- if I make actual frontends into a class.. then I can break these out:
@@ -26,8 +26,8 @@ describe("tool use SSE parsing in /v1/chat/completions", function()
         --   b/c I am not calling with ":" and likely wont ever
 
         ---@type OnParsedSSE
-        function f.on_parsed_data_sse_with_choice(sse_parsed)
-            table.insert(f.on_parsed_data_sse_with_choice_calls, sse_parsed)
+        function f.on_parsed_data_sse(sse_parsed)
+            table.insert(f.on_parsed_data_sse_calls, sse_parsed)
         end
 
         ---@type OnParsedSSE

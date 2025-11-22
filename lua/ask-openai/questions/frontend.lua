@@ -437,7 +437,10 @@ function QuestionsFrontend.on_sse_llama_server_timings(sse)
 end
 
 ---@type OnParsedSSE
-function QuestionsFrontend.on_parsed_data_sse_with_choice(sse_parsed)
+function QuestionsFrontend.on_parsed_data_sse(sse_parsed)
+    if sse_parsed.choices == nil or sse_parsed.choices[1] == nil then
+        return
+    end
     local first_choice = sse_parsed.choices[1]
     QuestionsFrontend.on_streaming_delta_update_message_history(first_choice, QuestionsFrontend.thread.last_request)
     handle_rx_messages_updated()

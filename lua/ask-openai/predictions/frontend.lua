@@ -48,7 +48,7 @@ function PredictionsFrontend.ask_for_prediction()
         PredictionsFrontend.current_prediction = this_prediction
 
         ---@type OnParsedSSE
-        local function on_parsed_data_sse_with_choice(sse_parsed)
+        local function on_parsed_data_sse(sse_parsed)
             -- if read_error then
             --     FYI bring this back later if it is needed, skip for now during PoC of Curl module
             --     this_prediction:mark_generation_failed()
@@ -132,7 +132,7 @@ function PredictionsFrontend.ask_for_prediction()
             stats.show_prediction_stats(sse, perf)
         end
         local frontend = {
-            on_parsed_data_sse_with_choice = on_parsed_data_sse_with_choice,
+            on_parsed_data_sse = on_parsed_data_sse,
             on_curl_exited_successfully = on_curl_exited_successfully,
             explain_error = explain_error,
             on_sse_llama_server_timings = on_sse_llama_server_timings,
