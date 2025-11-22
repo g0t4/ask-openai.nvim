@@ -111,6 +111,12 @@ function PredictionsFrontend.ask_for_prediction()
                 stats.show_prediction_stats(sse_parsed, perf)
             end)
         end
+        local frontend = {
+            on_parsed_data_sse_with_choice = on_parsed_data_sse_with_choice,
+            on_curl_exited_successfully = on_curl_exited_successfully,
+            explain_error = explain_error,
+            on_sse_llama_server_timings = on_sse_llama_server_timings,
+        }
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
