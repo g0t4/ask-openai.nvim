@@ -90,10 +90,7 @@ function PredictionsFrontend.ask_for_prediction()
                 --             else
                 --                 parsed_chunk, done, done_reason = parse_ollama_api_generate(parsed_sse)
                 --             end
-                --             if parsed_sse.timings then
-                --                 stats = llamacpp_stats.parse_llamacpp_stats(parsed_sse)
-                --             end
-                --
+
                 -- FYI for PoC use /v1/chat/completions llama-server:
                 local chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed)
                 -- TODO verify chunk/done/done_reason/reasoning_content are correct
