@@ -301,7 +301,7 @@ function QuestionsFrontend.on_sse_llama_server_timings(sse)
     -- PRN use this to extract timing like in rewrites
 end
 
----@type OnGeneratedText
+---@type OnParsedSSEWithChoice
 function QuestionsFrontend.on_parsed_data_sse_with_choice(sse_parsed)
     local first_choice = sse_parsed.choices[1]
     QuestionsFrontend.on_streaming_delta_update_message_history(first_choice, QuestionsFrontend.thread.last_request)

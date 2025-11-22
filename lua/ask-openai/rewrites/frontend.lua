@@ -115,7 +115,7 @@ local function get_extract_generated_text_func(endpoint)
     error("Not yet implemented: " .. endpoint)
 end
 
----@type OnGeneratedText
+---@type OnParsedSSEWithChoice
 function RewriteFrontend.on_parsed_data_sse_with_choice(sse_parsed)
     local first_choice = sse_parsed.choices[1]
     local extract_generated_text = get_extract_generated_text_func(RewriteFrontend.last_request.endpoint)
