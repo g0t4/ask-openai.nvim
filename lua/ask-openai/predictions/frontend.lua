@@ -45,7 +45,8 @@ function PredictionsFrontend.ask_for_prediction()
         assert(body ~= nil)
         assert(url ~= nil)
 
-        log:info("send_fim.body", vim.inspect(body))
+        log:info("hack.body", vim.inspect(body))
+        log:info("hack.url", url)
 
         -- TODO move this_prediction creation above? (before RAG too)
         local this_prediction = Prediction.new()
