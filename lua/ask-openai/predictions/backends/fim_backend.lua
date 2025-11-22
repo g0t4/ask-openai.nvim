@@ -23,8 +23,6 @@ FimBackend.base_url = ""
 FimBackend.endpoint = nil
 
 local use_gptoss_raw = false
-FimBackend.endpoint_ollama_api_chat = false
-FimBackend.endpoint_openaicompat_chat_completions = false
 function FimBackend.set_fim_model(model)
     -- FYI right now, given I am using llama-server exclusively, toggling is just about changing between the two instances I run at the same time
     --   so, toggling the port/endpoint :)
@@ -52,10 +50,6 @@ function FimBackend.set_fim_model(model)
     -- FimBackend.endpoint = CompletionsEndpoints.ollama_api_generate -- raw prompt: qwen2.5-coder(ollama)
     -- FimBackend.endpoint = CompletionsEndpoints.ollama_api_chat -- gpt-oss(ollama works)
     -- FimBackend.endpoint = CompletionsEndpoints.v1_chat -- gpt-oss(ollama works)
-
-    -- * parser toggles
-    FimBackend.endpoint_ollama_api_chat = FimBackend.endpoint == CompletionsEndpoints.ollama_api_chat
-    FimBackend.endpoint_openaicompat_chat_completions = FimBackend.endpoint == CompletionsEndpoints.v1_chat
 end
 
 FimBackend.set_fim_model("qwen25coder") -- default

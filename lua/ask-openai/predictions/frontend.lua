@@ -82,10 +82,10 @@ function PredictionsFrontend.ask_for_prediction()
                 if FimBackend.endpoint == CompletionsEndpoints.completions then
                     -- TODO test
                     chunk, done, done_reason = parse_llama_cpp_server(sse_parsed)
-                elseif FimBackend.endpoint_openaicompat_chat_completions then
+                elseif FimBackend.endpoint == CompletionsEndpoints.v1_chat then
                     -- FYI for PoC use /v1/chat/completions llama-server:
                     chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed) -- * WORKS!
-                elseif FimBackend.endpoint_ollama_api_chat then
+                elseif FimBackend.endpoint == CompletionsEndpoints.ollama_api_chat then
                     -- TODO test
                     chunk, done, done_reason = parse_sse_ollama_chat(sse_parsed)
                 else
