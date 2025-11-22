@@ -18,6 +18,8 @@ local HLGroups = require("ask-openai.hlgroups")
 local formatters = require("ask-openai.questions.chat.formatters")
 local ToolCallOutput = require("ask-openai.questions.chat.tool_call_output")
 local LastRequestForThread = require("ask-openai.questions.last_request_for_thread")
+local RxAccumulatedMessage = require("ask-openai.questions.chat.messages.rx")
+local ToolCall = require("ask-openai.questions.chat.tool_call")
 
 require("ask-openai.helpers.buffers")
 
@@ -302,11 +304,7 @@ end
 ---@type OnGeneratedText
 function QuestionsFrontend.on_parsed_data_sse_with_choice(sse_parsed)
     local first_choice = sse_parsed.choices[1]
-    curl.on_streaming_delta_update_message_history(first_choice, QuestionsFrontend.thread.last_request)
-    -- TODO! LATER move curl.on_streaming_delta_update_message_history() function
-    --    to QuestionsFrontend.on_streaming_delta_update_message_history()
-    --    OK to rename too?
-
+    QuestionsFrontend.on_streaming_delta_update_message_history(first_choice, QuestionsFrontend.thread.last_request)
     QuestionsFrontend.handle_rx_messages_updated()
 end
 
@@ -359,7 +357,7 @@ end
 --- think of this as denormalizing SSEs => into aggregate RxAccumulatedMessage
 ---@param choice OpenAIChoice|nil
 ---@param request LastRequestForThread
-function Curl.on_streaming_delta_update_message_history(choice, request)
+function QuestionsFrontend.on_streaming_delta_update_message_history(choice, request)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
     -- rebuilds message as if sent `stream: false`
     -- for message history / follow up
