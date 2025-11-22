@@ -8,12 +8,12 @@ local M = {}
 ---@param sse_parsed table
 ---@param perf FIMPerformance
 function M.show_prediction_stats(sse_parsed, perf)
-    local parsed_stats = llamacpp_stats.parse_llamacpp_stats(sse_parsed)
-    if not parsed_stats then
+    local stats = llamacpp_stats.parse_llamacpp_stats(sse_parsed)
+    if not stats then
         return
     end
 
-    lualine.set_last_fim_stats(parsed_stats)
+    lualine.set_last_fim_stats(stats)
     if not api.are_notify_stats_enabled() then
         log:luaify_trace("stats", sse_parsed.timings)
         return
@@ -21,7 +21,6 @@ function M.show_prediction_stats(sse_parsed, perf)
 
     local messages = {}
     table.insert(messages, "FIM Stats")
-    local stats = parsed_stats
     table.insert(messages, string.format("in: %d tokens @ %.2f tokens/sec", stats.prompt_tokens, stats.prompt_tokens_per_second))
     table.insert(messages, string.format("out: %d tokens @ %.2f tokens/sec", stats.predicted_tokens, stats.predicted_tokens_per_second))
 
