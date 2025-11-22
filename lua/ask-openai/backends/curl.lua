@@ -19,7 +19,6 @@ _G.CompletionsEndpoints = {
 ---@class StreamingFrontend
 ---@field on_parsed_data_sse_with_choice OnParsedSSEWithChoice
 ---@field on_sse_llama_server_timings fun(sse_parsed: table)
----@field handle_rx_messages_updated fun()
 ---@field curl_exited_successfully fun()
 ---@field explain_error fun(text: string)
 
