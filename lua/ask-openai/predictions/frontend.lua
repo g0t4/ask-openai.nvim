@@ -87,7 +87,7 @@ function PredictionsFrontend.ask_for_prediction()
                     chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed) -- * WORKS!
                 elseif FimBackend.endpoint == CompletionsEndpoints.ollama_api_chat then
                     -- TODO test
-                    chunk, done, done_reason = parse_sse_ollama_chat(sse_parsed)
+                    chunk, done, done_reason = parse_sse_ollama_api_chat(sse_parsed)
                 else
                     -- TODO test
                     chunk, done, done_reason = parse_ollama_api_generate(sse_parsed)

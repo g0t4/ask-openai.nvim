@@ -30,7 +30,7 @@ function parse_sse_oai_chat_completions(sse)
     return content, done, finish_reason, reasoning_content
 end
 
-function parse_sse_ollama_chat(sse)
+function parse_sse_ollama_api_chat(sse)
     -- vim.print(sse)
     --   created_at = "2025-08-06T03:41:18.754207861Z",
     --   done = true,
