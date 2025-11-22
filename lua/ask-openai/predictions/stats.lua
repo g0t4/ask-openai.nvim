@@ -15,7 +15,7 @@ function M.show_prediction_stats(sse, perf)
 
     lualine.set_last_fim_stats(stats)
     if not api.are_notify_stats_enabled() then
-        log:luaify_trace("stats", sse.timings)
+        -- log:luaify_trace("stats", sse.timings)
         return
     end
 
