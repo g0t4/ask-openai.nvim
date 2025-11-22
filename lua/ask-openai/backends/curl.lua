@@ -19,7 +19,7 @@ _G.CompletionsEndpoints = {
 ---@alias OnGeneratedText fun(sse_parsed: table)
 
 ---@class StreamingFrontend
----@field on_generated_text OnGeneratedText
+---@field on_parsed_data_sse_with_choice OnGeneratedText
 ---@field on_sse_llama_server_timings fun(sse_parsed: table)
 ---@field handle_rx_messages_updated fun()
 ---@field curl_exited_successfully fun()
@@ -148,11 +148,9 @@ function Curl.on_line_or_lines(data_value, frontend, request)
 
     local success, sse_parsed = pcall(vim.json.decode, data_value)
     if success and sse_parsed then
-        -- TODO! do I need to even check of choices exists? (if not then drop _with_choice? in new name?)
+        -- TODO when I expand support to llama-server's /completions endpoint, I can either add a new event on_parsed_data_sse (no choices required) or broaden existing handler:
         if sse_parsed.choices and sse_parsed.choices[1] then
-            frontend.on_generated_text(sse_parsed)
-            -- TODO rename on_data_parsed_sse(sse_parsed)
-            -- TODO maybe  on_data_parsed_sse_with_choice(sse_parsed)
+            frontend.on_parsed_data_sse_with_choice(sse_parsed)
         end
         -- FYI not every SSE has to have generated tokens (choices), no need to warn if no parsed value
 

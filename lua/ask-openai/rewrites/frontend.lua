@@ -116,7 +116,7 @@ local function get_extract_generated_text_func(endpoint)
 end
 
 ---@type OnGeneratedText
-function RewriteFrontend.on_generated_text(sse_parsed)
+function RewriteFrontend.on_parsed_data_sse_with_choice(sse_parsed)
     local first_choice = sse_parsed.choices[1]
     local extract_generated_text = get_extract_generated_text_func(RewriteFrontend.last_request.endpoint)
     local content_chunk = extract_generated_text(first_choice)
@@ -487,7 +487,7 @@ and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
                 prompt_n = 400,
             }
         end
-        RewriteFrontend.on_generated_text(simulated_sse)
+        RewriteFrontend.on_parsed_data_sse_with_choice(simulated_sse)
 
         -- delay and do next
         -- FYI can adjust interval to visually slow down and see what is happening with each chunk, s/b especially helpful with streaming diff
@@ -517,7 +517,7 @@ local function simulate_rewrite_instant_one_chunk(opts)
             prompt_n = 400,
         }
     }
-    RewriteFrontend.on_generated_text(simulated_sse)
+    RewriteFrontend.on_parsed_data_sse_with_choice(simulated_sse)
 end
 
 local function ask_and_stream_from_ollama(opts)
