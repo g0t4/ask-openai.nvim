@@ -35,47 +35,10 @@ function PredictionsFrontend.ask_for_prediction()
     function send_fim(rag_matches)
         local model = api.get_fim_model()
         local backend = FimBackend:new(ps_chunk, rag_matches, model)
-        local spawn_curl_options = backend:request_options()
-
-        -- log:trace("curl", table.concat(spawn_curl_options.args, " "))
 
         -- TODO move this_prediction creation above (before RAG too)
         local this_prediction = Prediction.new()
         PredictionsFrontend.current_prediction = this_prediction
-
-        -- TODO attach stdout/err to this_prediction and call read_stop on abort prediction?
-        local stdout = uv.new_pipe(false)
-        local stderr = uv.new_pipe(false)
-
-        local function on_exit(code, signal)
-            log:trace_on_exit_errors(code, signal) -- FYI switch _errors/_always
-
-            -- TODO mark complete? close? any reason to do this? I vaguely recall there might be a reason I want to do this
-            --   i.e. process related?
-            -- this_prediction:mark_generation_finished() -- only if zero exit code?
-            -- if non-zero exit code => mark failed?
-
-            if PredictionsFrontend.handle then
-                -- FYI! review open lua vim.loop.walk(function(handle) print(handle) end) - handles/timers/etc
-                --     I am seeing alot after I just startup nvim... I wonder if some are from my MCP tool comms?
-                --     and what about my timer/schduling for debounced keyboard events to trigger predictions?
-                -- TODO! REVIEW OTHER uses of uv.spawn (and timers)... for missing cleanup logic!)
-                --    do that after you verify if this is proper way to shutdown?
-                PredictionsFrontend.handle:close()
-                -- TODO nil out M.handle/M.pid? (right now I will leave them b/c they are overwritten later... and if this close fails... cancel can still send kill to PID)
-            end
-            -- TODO do I need these if I call handle:closed()?
-            stdout:close()
-            stderr:close()
-        end
-
-        PredictionsFrontend.handle, PredictionsFrontend.pid = uv.spawn(spawn_curl_options.command,
-            ---@diagnostic disable-next-line: missing-fields
-            {
-                args = spawn_curl_options.args,
-                stdio = { nil, stdout, stderr },
-            },
-            on_exit)
 
         local function on_stdout(read_error, data)
             -- FYI data == nil => EOF
