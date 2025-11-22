@@ -449,7 +449,7 @@ function QuestionsFrontend.show_user_role()
     QuestionsFrontend.chat_window:append_styled_lines(lines_builder)
 end
 
-function QuestionsFrontend.curl_exited_successfully()
+function QuestionsFrontend.on_curl_exited_successfully()
     vim.schedule(function()
         -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for assistant messages)
 

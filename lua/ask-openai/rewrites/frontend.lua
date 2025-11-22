@@ -198,7 +198,7 @@ function RewriteFrontend.on_sse_llama_server_timings(sse)
     end)
 end
 
-function RewriteFrontend.curl_exited_successfully()
+function RewriteFrontend.on_curl_exited_successfully()
 end
 
 function RewriteFrontend.accept_rewrite()

@@ -19,7 +19,7 @@ _G.CompletionsEndpoints = {
 ---@class StreamingFrontend
 ---@field on_parsed_data_sse_with_choice OnParsedSSEWithChoice
 ---@field on_sse_llama_server_timings fun(sse_parsed: table)
----@field curl_exited_successfully fun()
+---@field on_curl_exited_successfully fun()
 ---@field explain_error fun(text: string)
 
 
@@ -78,7 +78,7 @@ function Curl.spawn(request, frontend)
         request.handle = nil
         request.pid = nil
 
-        -- flush dregs before curl_exited_successfully
+        -- flush dregs before on_curl_exited_successfully
         -- - which may depend on, for example, a tool_call in dregs
         local error_text = parser:flush_dregs()
         if error_text then
@@ -88,7 +88,7 @@ function Curl.spawn(request, frontend)
         if code == 0 then
             -- FYI this has to come after dregs which may have data used by exit handler!
             --  i.e. triggering tool_calls
-            frontend.curl_exited_successfully()
+            frontend.on_curl_exited_successfully()
         end
     end
 
