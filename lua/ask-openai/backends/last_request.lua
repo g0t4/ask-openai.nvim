@@ -52,15 +52,12 @@ function LastRequest.terminate(request)
         return
     end
 
+    -- FYI handle/pid (this entire request object) is PER literal request
+    --  so no need to clear handle/pid
     local handle = request.handle
-    local pid = request.pid
-    -- TODO do I need to clear handle/pid? certainly PID doesn't matter?
-    --   FYI IIRC this is new for EVERY REQUEST (true in Predictions, isn't it the same in Rewrites/Questions Frontends?
-    request.handle = nil
-    request.pid = nil
     if handle ~= nil and not handle:is_closing() then
-        -- log:trace("Terminating process, pid: ", pid)
-
+        -- log:trace("Terminating process, pid: ", request.pid)
+        -- sigterm is important to tell curl to stop the request, so the server doesn't keep generating!
         handle:kill("sigterm")
         handle:close()
     end
