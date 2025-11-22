@@ -80,6 +80,20 @@ function PredictionsFrontend.ask_for_prediction()
                 --   local chunk, done, done_reason = parse_llama_cpp_server(sse_parsed) -- /completions non-openai
                 --   -- TO DO => later => verify done here is correct (I set to stop field from /completions backend on llama cpp)
                 --
+                --  TODO code in FimBackend's process_sse that needs ported: (some already done)
+                --             if endpoint_llama_server_proprietary_completions then
+                --                 parsed_chunk, done, done_reason = parse_llama_cpp_server(parsed_sse)
+                --             elseif endpoint_openaicompat_chat_completions then
+                --                 parsed_chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(parsed_sse)
+                --             elseif endpoint_ollama_api_chat then
+                --                 parsed_chunk, done, done_reason = parse_sse_ollama_chat(parsed_sse)
+                --             else
+                --                 parsed_chunk, done, done_reason = parse_ollama_api_generate(parsed_sse)
+                --             end
+                --             if parsed_sse.timings then
+                --                 stats = llamacpp_stats.parse_llamacpp_stats(parsed_sse)
+                --             end
+                --
                 -- FYI for PoC use /v1/chat/completions llama-server:
                 local chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed)
                 -- TODO verify chunk/done/done_reason/reasoning_content are correct
@@ -120,6 +134,12 @@ function PredictionsFrontend.ask_for_prediction()
         local function on_sse_llama_server_timings(sse_parsed)
             -- TODO do I need vim.schedule? I just copied this during PoC setup b/c it was used in old on_stdout
             vim.schedule(function()
+                -- TODO use this code to build stats object and then pass it to below
+                if sse_parsed.timings then
+                    -- TODO fix this to work (this came from FimBackend's process_sse that I nuked)
+                    stats = llamacpp_stats.parse_llamacpp_stats(parsed_sse)
+                end
+                -- FYI I might've altered this: just make sure it work with above
                 stats.show_prediction_stats(sse_parsed, perf)
             end)
         end

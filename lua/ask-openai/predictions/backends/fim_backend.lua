@@ -79,22 +79,6 @@ function FimBackend:new(ps_chunk, rag_matches, model)
     return instance
 end
 
-function FimBackend:request_options()
-    local options = {
-        command = "curl",
-        args = {
-            "--fail-with-body",
-            "-sSL",
-            "--no-buffer", -- test w/ `curl *` vs `curl * | cat`
-            "-X", "POST",
-            url,
-            "-H", "Content-Type: application/json",
-            "-d", self:body_for(), -- FYI! this is borked now that it returns URL too
-        },
-    }
-    return options
-end
-
 function FimBackend:body_for()
     local max_tokens = 200
     local body = {
@@ -296,72 +280,6 @@ end
 function FimBackend:get_repo_name()
     -- TODO confirm repo naming? is it just basename of repo root? or GH link? or org/repo?
     return vim.fn.getcwd():match("([^/]+)$")
-end
-
----@class SSEResult
----@field chunk string?
----@field done boolean
----@field done_reason string?
----@field reasoning_content string?
----@field stats SSEStats
-local SSEResult = {}
-
-function SSEResult:new(chunk, done, done_reason, stats, reasoning_content)
-    self = setmetatable({}, { __index = SSEResult })
-    self.chunk = chunk
-    self.done = done
-    self.done_reason = done_reason
-    self.reasoning_content = reasoning_content
-    self.stats = stats
-    return self
-end
-
----@param lines string
----@returns SSEResult
-function FimBackend.process_sse(lines)
-    -- TODO? replace with data_only_parser
-
-    -- split on lines first (each SSE can have 0+ "event" - one per line)
-    -- FYI use nil to indicate nothing in the SSE... vs empty line which is a valid thingy right?
-    local chunk = nil -- combine all chunks into one string and check for done
-    local done = false
-    local done_reason = nil
-    local reasoning_content = nil
-    local stats = nil
-    for ss_event in lines:gmatch("[^\r\n]+") do
-        if ss_event:match("^data:%s*%[DONE%]$") then
-            -- can land here when last SSE (i.e. with timings) is bundled with [DONE]
-            return SSEResult:new(chunk, true, "[DONE]", stats, reasoning_content)
-        end
-
-        --  strip leading "data: " (if present)
-        local event_json = ss_event
-        if ss_event:sub(1, 6) == "data: " then
-            -- ollama /api/generate doesn't prefix each SSE with 'data: '
-            event_json = ss_event:sub(7)
-        end
-        local success, parsed_sse = pcall(vim.json.decode, event_json)
-
-        if success and parsed_sse then
-            local parsed_chunk
-            if endpoint_llama_server_proprietary_completions then
-                parsed_chunk, done, done_reason = parse_llama_cpp_server(parsed_sse)
-            elseif endpoint_openaicompat_chat_completions then
-                parsed_chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(parsed_sse)
-            elseif endpoint_ollama_api_chat then
-                parsed_chunk, done, done_reason = parse_sse_ollama_chat(parsed_sse)
-            else
-                parsed_chunk, done, done_reason = parse_ollama_api_generate(parsed_sse)
-            end
-            chunk = (chunk or "") .. parsed_chunk
-            if parsed_sse.timings then
-                stats = llamacpp_stats.parse_llamacpp_stats(parsed_sse)
-            end
-        else
-            log:warn("SSE json parse failed for ss_event: ", ss_event)
-        end
-    end
-    return SSEResult:new(chunk, done, done_reason, stats, reasoning_content)
 end
 
 return FimBackend
