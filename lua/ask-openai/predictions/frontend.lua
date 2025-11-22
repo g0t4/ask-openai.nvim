@@ -10,6 +10,8 @@ require("ask-openai.predictions.prefix_suffix")
 local ps = require("ask-openai.predictions.prefix_suffix")
 local lualine = require('ask-openai.status.lualine')
 local stats = require("ask-openai.predictions.stats")
+local Curl = require("ask-openai.backends.curl")
+local LastRequest = require("ask-openai.backends.last_request")
 
 local FimBackend = require("ask-openai.predictions.backends.fim_backend")
 
@@ -117,6 +119,16 @@ function PredictionsFrontend.ask_for_prediction()
             explain_error = explain_error,
             on_sse_llama_server_timings = on_sse_llama_server_timings,
         }
+
+        local request = LastRequest:new({
+            body = {}, -- TODO! map BODY
+            base_url = "",
+            endpoint = CompletionsEndpoints.v1_chat, -- FYI change this later as needed
+            -- FYI FIRST test of this PoC is with /v1/chat/completions endpoint... later I can do others (i.e. non-thinking gptoss using /completions endpoint! or qwen2.5 coder that way too!)
+            --    SO YOU will need to use gptoss too as qwen you only have setup IIRC to use manual prompt building /completions
+        })
+
+        Curl.spawn(request, frontend)
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
