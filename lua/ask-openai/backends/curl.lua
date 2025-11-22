@@ -44,6 +44,8 @@ function Curl.spawn(request, frontend)
 
     ---@param data_value string
     function on_data_sse(data_value)
+        -- FYI right now this function exists to catch errors and terminate
+
         local success, error_message = xpcall(function()
             Curl.on_one_data_value(data_value, frontend)
         end, function(e)
