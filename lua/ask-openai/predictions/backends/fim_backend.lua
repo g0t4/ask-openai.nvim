@@ -19,10 +19,10 @@ FimBackend.__index = FimBackend
 local use_model = ""
 local url = ""
 local use_gptoss_raw = false
-local endpoint_ollama_api_generate = false
-local endpoint_ollama_api_chat = false
-local endpoint_llama_server_proprietary_completions = false
-local endpoint_openaicompat_chat_completions = false
+FimBackend.endpoint_ollama_api_generate = false
+FimBackend.endpoint_ollama_api_chat = false
+FimBackend.endpoint_llama_server_proprietary_completions = false
+FimBackend.endpoint_openaicompat_chat_completions = false
 function FimBackend.set_fim_model(model)
     -- FYI right now, given I am using llama-server exclusively, toggling is just about changing between the two instances I run at the same time
     --   so, toggling the port/endpoint :)
@@ -49,10 +49,10 @@ function FimBackend.set_fim_model(model)
 
     -- * parser toggles
     --   (make based on url/model so not have to explicitly config too)
-    endpoint_ollama_api_generate = string.match(url, "/api/generate$")
-    endpoint_ollama_api_chat = string.match(url, "/api/chat$")
-    endpoint_llama_server_proprietary_completions = string.match(url, ":801%d/completions$")
-    endpoint_openaicompat_chat_completions = string.match(url, "v1/chat/completions$")
+    FimBackend.endpoint_ollama_api_generate = string.match(url, "/api/generate$")
+    FimBackend.endpoint_ollama_api_chat = string.match(url, "/api/chat$")
+    FimBackend.endpoint_llama_server_proprietary_completions = string.match(url, ":801%d/completions$")
+    FimBackend.endpoint_openaicompat_chat_completions = string.match(url, "v1/chat/completions$")
 end
 
 FimBackend.set_fim_model("qwen25coder") -- default
