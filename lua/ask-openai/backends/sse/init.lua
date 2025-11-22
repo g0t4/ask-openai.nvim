@@ -49,7 +49,7 @@ function parse_sse_ollama_api_chat(sse)
     return message, sse.done, sse.done_reason
 end
 
-function parse_llamacpp_completions(sse)
+function parse_sse_llamacpp_completions(sse)
     -- FYI response_fields limits fields per SSE...
     --    I set it to stop prompt and generation_settings on final SSE
 
@@ -64,7 +64,7 @@ function parse_llamacpp_completions(sse)
     return sse.content, sse.stop, sse.stop_type
 end
 
-function parse_ollama_api_generate(sse)
+function parse_sse_ollama_api_generate(sse)
     -- *** examples /api/generate:
     --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.1915236Z","response":"\n","done":false}
     --  done example:
