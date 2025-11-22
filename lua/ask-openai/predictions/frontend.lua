@@ -113,6 +113,8 @@ function PredictionsFrontend.ask_for_prediction()
         local function on_sse_llama_server_timings(sse)
             stats.show_prediction_stats(sse, perf)
         end
+
+        ---@type StreamingFrontend
         local frontend = {
             on_parsed_data_sse = on_parsed_data_sse,
             on_curl_exited_successfully = on_curl_exited_successfully,
@@ -124,6 +126,7 @@ function PredictionsFrontend.ask_for_prediction()
         log:info("hack.base_url", FimBackend.base_url)
         log:info("hack.endpoint", FimBackend.endpoint)
 
+        -- TODO! how does this conflict with Prediction type, notably in cancellation?
         local request = LastRequest:new({
             body = body,
             base_url = FimBackend.base_url,
