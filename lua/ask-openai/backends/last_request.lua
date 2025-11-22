@@ -45,20 +45,20 @@ function LastRequest:get_url()
     return self.base_url .. self.endpoint
 end
 
-function LastRequest.terminate(self)
-    if self == nil or self.handle == nil then
+function LastRequest.terminate(request)
+    if request == nil or request.handle == nil then
         -- FYI self == nil check so I can call w/o check nil using:
         --   LastRequest.terminate(request)
         --   instead of request:terminate()   -- would blow up on nil
         return
     end
 
-    local handle = self.handle
-    local pid = self.pid
+    local handle = request.handle
+    local pid = request.pid
     -- TODO do I need to clear handle/pid? certainly PID doesn't matter?
     --   FYI IIRC this is new for EVERY REQUEST (true in Predictions, isn't it the same in Rewrites/Questions Frontends?
-    self.handle = nil
-    self.pid = nil
+    request.handle = nil
+    request.pid = nil
     if handle ~= nil and not handle:is_closing() then
         -- log:trace("Terminating process, pid: ", pid)
 
