@@ -80,8 +80,8 @@ function PredictionsFrontend.ask_for_prediction()
                 -- log:info("sse_parsed", vim.inspect(sse_parsed))
                 local chunk, done, done_reason, reasoning_content
                 if FimBackend.endpoint == CompletionsEndpoints.completions then
-                    -- TODO test
-                    chunk, done, done_reason = parse_llama_cpp_server(sse_parsed)
+                    -- TODO test with qwen25coder
+                    chunk, done, done_reason = parse_llama_cpp_server_completions(sse_parsed)
                 elseif FimBackend.endpoint == CompletionsEndpoints.v1_chat then
                     chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed)
                 elseif FimBackend.endpoint == CompletionsEndpoints.ollama_api_chat then
