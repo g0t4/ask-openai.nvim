@@ -356,6 +356,93 @@ function QuestionsFrontend.handle_rx_messages_updated()
     end)
 end
 
+--- think of this as denormalizing SSEs => into aggregate RxAccumulatedMessage
+---@param choice OpenAIChoice|nil
+---@param request LastRequestForThread
+function Curl.on_streaming_delta_update_message_history(choice, request)
+    -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
+    -- rebuilds message as if sent `stream: false`
+    -- for message history / follow up
+
+    if choice == nil or choice.delta == nil then
+        log:trace("[WARN] skipping b/c choice/choice.delta is nil: '" .. vim.inspect(choice) .. "'")
+        return
+    end
+
+    -- * lookup or create message
+    local index_base1 = choice.index + 1
+    local rx_message = request.accumulated_model_response_messages[index_base1]
+    if rx_message == nil then
+        rx_message = RxAccumulatedMessage:new(choice.delta.role, "")
+        rx_message.index = choice.index
+        rx_message._verbatim_content = ""
+        -- assumes contiguous indexes, s/b almost always 0 index only, 1 too with dual tool call IIRC
+        request.accumulated_model_response_messages[index_base1] = rx_message
+    end
+
+    if choice.delta.content ~= nil and choice.delta.content ~= vim.NIL then
+        -- by tracking _verbatim_content, I can trim the end every single time
+        -- and if it is not a full match it will show back up once it's past the match point
+        rx_message._verbatim_content = (rx_message._verbatim_content or "") .. choice.delta.content
+    end
+
+    if choice.delta.reasoning_content ~= nil and choice.delta.reasoning_content ~= vim.NIL then
+        rx_message.reasoning_content =
+            (rx_message.reasoning_content or "") .. choice.delta.reasoning_content
+    end
+
+    if choice.finish_reason ~= nil then
+        -- FYI this is vim.NIL on first too
+        rx_message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
+    end
+
+    -- * strip leaked tool call tokens (bug in llama.cpp)
+    rx_message.content = rx_message._verbatim_content:gsub("\n<tool_call>\n<function=[%w_]+", "")
+    if rx_message.content ~= rx_message._verbatim_content then
+        log:error("stripping LEAKED TOOL CALL!")
+    end
+
+    local calls = choice.delta.tool_calls
+    if not calls then
+        return
+    end
+
+    -- * parse tool calls (streaming)
+    for _, call_delta in ipairs(calls) do
+        -- * lookup or create new parsed_call
+        local parsed_call = rx_message.tool_calls[call_delta.index + 1]
+        if parsed_call == nil then
+            -- create ToolCall to populate across SSEs
+            parsed_call = ToolCall:new {
+                -- assume these fields are always on first SSE for each tool call
+                id    = call_delta.id,
+                index = call_delta.index,
+                type  = call_delta.type,
+            }
+            table.insert(rx_message.tool_calls, parsed_call)
+        end
+
+        local func = call_delta["function"] -- FYI "function" is keyword (lua)
+        if func ~= nil then
+            parsed_call["function"] = parsed_call["function"] or {}
+
+            -- * function.name is entirely in first delta (in my testing)
+            if func.name ~= nil then
+                --   => if that changes, add unit tests to verify observed splits
+                parsed_call["function"].name = func.name
+            end
+
+            -- * funtion.arguments is split across deltas
+            if func.arguments ~= nil then
+                -- accumuluate each chunk
+                parsed_call["function"].arguments =
+                    (parsed_call["function"].arguments or "")
+                    .. func.arguments
+            end
+        end
+    end
+end
+
 function QuestionsFrontend.show_user_role()
     local lines_builder = LinesBuilder:new()
     lines_builder:create_marks_namespace()
