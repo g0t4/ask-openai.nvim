@@ -49,7 +49,7 @@ function parse_sse_ollama_api_chat(sse)
     return message, sse.done, sse.done_reason
 end
 
-function parse_llama_cpp_server_completions(sse)
+function parse_llamacpp_completions(sse)
     -- FYI response_fields limits fields per SSE...
     --    I set it to stop prompt and generation_settings on final SSE
 

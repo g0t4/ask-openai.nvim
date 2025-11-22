@@ -81,7 +81,7 @@ function PredictionsFrontend.ask_for_prediction()
                 local chunk, done, done_reason, reasoning_content
                 if FimBackend.endpoint == CompletionsEndpoints.llamacpp_completions then
                     -- TODO test with qwen25coder
-                    chunk, done, done_reason = parse_llama_cpp_server_completions(sse_parsed)
+                    chunk, done, done_reason = parse_llamacpp_completions(sse_parsed)
                 elseif FimBackend.endpoint == CompletionsEndpoints.oai_v1_chat_completions then
                     chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed)
                 elseif FimBackend.endpoint == CompletionsEndpoints.ollama_api_chat then
