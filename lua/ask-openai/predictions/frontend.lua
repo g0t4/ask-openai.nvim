@@ -60,18 +60,9 @@ function PredictionsFrontend.ask_for_prediction()
                     return
                 end
 
-                -- TODO later support other servers format wise, see:
-                --    lua/ask-openai/predictions/backends/fim_backend.lua:346-358
-                --
-                -- /completions on llama-server:
-                --   local chunk, done, done_reason = parse_llama_cpp_server(sse_parsed) -- /completions non-openai
-                --   -- TO DO => later => verify done here is correct (I set to stop field from /completions backend on llama cpp)
-                --
-
                 -- log:info("sse_parsed", vim.inspect(sse_parsed))
                 local chunk, done, done_reason, reasoning_content
                 if FimBackend.endpoint == CompletionsEndpoints.llamacpp_completions then
-                    -- TODO test with qwen25coder
                     chunk, done, done_reason = parse_sse_llamacpp_completions(sse_parsed)
                 elseif FimBackend.endpoint == CompletionsEndpoints.oai_v1_chat_completions then
                     chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed)
