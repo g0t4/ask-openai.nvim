@@ -15,8 +15,6 @@ local LastRequest = require("ask-openai.backends.last_request")
 local FimBackend = require("ask-openai.predictions.backends.fim_backend")
 
 ---@class PredictionsFrontend : StreamingFrontend
----@field handle? uv.uv_process_t
----@field pid? integer
 local PredictionsFrontend = {}
 
 PredictionsFrontend.current_prediction = nil
