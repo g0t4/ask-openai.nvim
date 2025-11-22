@@ -139,7 +139,7 @@ function PredictionsFrontend.ask_for_prediction()
         }
 
         log:info("hack.body", vim.inspect(body))
-        log:info("hack.url", FimBackend.base_url)
+        log:info("hack.base_url", FimBackend.base_url)
         log:info("hack.endpoint", FimBackend.endpoint)
 
         local request = LastRequest:new({

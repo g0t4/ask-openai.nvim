@@ -60,7 +60,7 @@ function parse_sse_llamacpp_completions(sse)
     -- "stopping_word": "", -- FYI this is for last token that stopped generation (if applicable) ... and IIRC it does not get added into the content
     -- log:info("sse /completions", vim.inspect(sse))
 
-    -- TODO reasoning_content (and/or parse harmony here or nearby!)
+    -- ?? reasoning_content ... is there a way for this to be parsed in legacy completions endpoint?
     return sse.content, sse.stop, sse.stop_type
 end
 
