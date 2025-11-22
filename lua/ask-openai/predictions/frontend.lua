@@ -38,20 +38,18 @@ function PredictionsFrontend.ask_for_prediction()
         local body = backend:body_for()
         assert(body ~= nil)
 
-        -- TODO move this_prediction creation above? (before RAG too)
-        local this_prediction = Prediction.new()
-        PredictionsFrontend.current_prediction = this_prediction
-
         log:luaify_trace("predictions.body", body)
         log:info("predictions.base_url", FimBackend.base_url)
         log:info("predictions.endpoint", FimBackend.endpoint)
-        -- TODO! how does this conflict with Prediction type, notably in cancellation?
-        --   TODO use this for cancellation!!! fuse w/ Prediction and remove its handle/pid/etc?
+
         local request = LastRequest:new({
             body = body,
             base_url = FimBackend.base_url,
             endpoint = FimBackend.endpoint,
         })
+
+        local this_prediction = Prediction.new(request)
+        PredictionsFrontend.current_prediction = this_prediction
 
         ---@type OnParsedSSE
         local function on_parsed_data_sse(sse_parsed)

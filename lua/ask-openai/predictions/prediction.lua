@@ -15,14 +15,17 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@field has_reasoning boolean
 ---@field private reasoning_chunks string[]
 ---@field start_time number
+---@field request LastRequest
 local Prediction = {}
 local instance_metatable = { __index = Prediction }
 local extmarks_ns_id = vim.api.nvim_create_namespace("ask-predictions")
 
+---@param request LastRequest
 ---@return Prediction
-function Prediction.new()
+function Prediction.new(request)
     local self = {} -- FYI after changing to self being a new instance per prediction... instead of all using Prediction singleton... I might have issues w/ cancel/abort/back2back predictions as I type... just keep that in mind
 
+    self.request = request
     -- id was originaly intended to track current prediction and not let past predictions write to extmarks (for example)
     self.id = vim.uv.hrtime() -- might not need id if I can use object reference instead, we will see (id is helpful if I need to roundtrip identity outside lua process)
     -- (nanosecond) time based s/b sufficient, esp b/c there should only ever be one prediction at a time.. even if multiple in short time (b/c of keystrokes, there is gonna be 1ms or so between them at most)
