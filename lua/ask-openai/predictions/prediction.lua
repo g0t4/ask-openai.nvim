@@ -139,10 +139,6 @@ function Prediction:mark_generation_finished()
     self.generated = true
 end
 
-function Prediction:mark_generation_failed()
-    self.mark_generation_failed = true
-end
-
 function Prediction:insert_accepted(insert_lines)
     self.disable_cursor_moved = true
     local controller = CursorController:new()

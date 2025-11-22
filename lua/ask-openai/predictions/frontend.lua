@@ -49,12 +49,6 @@ function PredictionsFrontend.ask_for_prediction()
 
         ---@type OnParsedSSE
         local function on_parsed_data_sse(sse_parsed)
-            -- if read_error then
-            --     FYI bring this back later if it is needed, skip for now during PoC of Curl module
-            --     this_prediction:mark_generation_failed()
-            --     return
-            -- end
-
             perf:token_arrived()
 
             -- use defer_fn w/ 500ms to reproduce "stuck" predictions
