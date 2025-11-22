@@ -89,7 +89,7 @@ function PredictionsFrontend.ask_for_prediction()
                 elseif FimBackend.endpoint == CompletionsEndpoints.ollama_api_generate then
                     chunk, done, done_reason = parse_sse_ollama_api_generate(sse_parsed)
                 else
-                    error("Unsupported FIM endpoint: ", FimBackend.endpoint)
+                    error("Unsupported FIM endpoint: " .. tostring(FimBackend.endpoint))
                 end
 
                 if chunk or reasoning_content then
