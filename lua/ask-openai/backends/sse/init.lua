@@ -6,8 +6,11 @@ local log = require("ask-openai.logs.logger"):predictions()
 function parse_sse_oai_chat_completions(sse)
     local content = ""
     local reasoning_content = ""
+    local done = false
+    local finish_reason = nil
     if sse.choices and sse.choices[1] then
-        content = sse.choices[1].delta.content
+        local first_choice = sse.choices[1]
+        content = first_choice.delta.content
         if content == nil or content == vim.NIL then
             -- content == vim.NIL => with llama-server the first response is content: null b/c it is setting the role to asssistant (maybe to do with roles/channels in harmony parser)... doesn't matter, just ignore it
             --    vim.NIL == "content": null (in the JSON)
@@ -16,11 +19,14 @@ function parse_sse_oai_chat_completions(sse)
             content = ""
         end
         -- llama-server's /v1/chat/comppletions endpoint uses delta.reasoning_content
-        -- ollama's uses delta.reasoning
-        reasoning_content = sse.choices[1].delta.reasoning or sse.choices[1].delta.reasoning_content
+        reasoning_content = first_choice.delta.reasoning_content
+        if not reasoning_content then
+            -- ollama's uses delta.reasoning
+            reasoning_content = first_choice.delta.reasoning
+        end
+        finish_reason = first_choice.finish_reason
+        done = finish_reason ~= nil and finish_reason ~= vim.NIL -- vim.NIL == JSON null
     end
-    local done = sse.finish_reason ~= nil -- or "null"? or vim.NIL
-    local finish_reason = sse.finish_reason
     return content, done, finish_reason, reasoning_content
 end
 

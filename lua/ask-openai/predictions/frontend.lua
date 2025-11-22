@@ -92,8 +92,8 @@ function PredictionsFrontend.ask_for_prediction()
                 --             end
 
                 -- FYI for PoC use /v1/chat/completions llama-server:
+                -- log:info("sse_parsed", vim.inspect(sse_parsed))
                 local chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed)
-                -- TODO verify chunk/done/done_reason/reasoning_content are correct
 
                 if chunk or reasoning_content then
                     this_prediction:add_chunk_to_prediction(chunk, reasoning_content)
