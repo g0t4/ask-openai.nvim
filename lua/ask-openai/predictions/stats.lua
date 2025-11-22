@@ -5,17 +5,17 @@ local lualine = require("ask-openai.status.lualine")
 
 local M = {}
 
----@param sse_parsed table
+---@param sse table
 ---@param perf FIMPerformance
-function M.show_prediction_stats(sse_parsed, perf)
-    local stats = llamacpp_stats.parse_llamacpp_stats(sse_parsed)
+function M.show_prediction_stats(sse, perf)
+    local stats = llamacpp_stats.parse_llamacpp_stats(sse)
     if not stats then
         return
     end
 
     lualine.set_last_fim_stats(stats)
     if not api.are_notify_stats_enabled() then
-        log:luaify_trace("stats", sse_parsed.timings)
+        log:luaify_trace("stats", sse.timings)
         return
     end
 
@@ -40,8 +40,8 @@ function M.show_prediction_stats(sse_parsed, perf)
         table.insert(messages, string.format("truncated: %s", stats.truncated_warning))
     end
 
-    if sse_parsed.generation_settings then
-        local gen = sse_parsed.generation_settings
+    if sse.generation_settings then
+        local gen = sse.generation_settings
         table.insert(messages, "") -- blank line to split out gen inputs
         -- temperature
         table.insert(messages, string.format("temperature: %.2f", gen.temperature))

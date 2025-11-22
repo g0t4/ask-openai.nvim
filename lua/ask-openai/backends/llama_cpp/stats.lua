@@ -23,28 +23,28 @@ end
 
 local M = {}
 
----@param parsed_sse table
+---@param sse table
 ---@returns SSEStats?
-function M.parse_llamacpp_stats(parsed_sse)
+function M.parse_llamacpp_stats(sse)
     -- *** currently only llama-server stats from its last SSE
-    if not parsed_sse or not parsed_sse.timings then
+    if not sse or not sse.timings then
         return
     end
 
-    local timings = parsed_sse.timings
-    local stats = SSEStats:new(parsed_sse)
+    local timings = sse.timings
+    local stats = SSEStats:new(sse)
 
     -- commented out data is from example SSE
     -- "tokens_predicted": 7,
     -- "tokens_evaluated": 53,
     -- "has_new_line": false,
     -- "truncate": false,
-    stats.truncated = parsed_sse.truncated
+    stats.truncated = sse.truncated
     -- * warn about truncated input
-    if parsed_sse.truncated then
+    if sse.truncated then
         local warning = "FIM Input Truncated!!!\n"
 
-        local gen = parsed_sse.generation_settings
+        local gen = sse.generation_settings
         if gen then
             -- "generation_settings": {
             --   "n_keep": 0,

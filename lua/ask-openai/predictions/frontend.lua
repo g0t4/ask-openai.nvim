@@ -134,8 +134,8 @@ function PredictionsFrontend.ask_for_prediction()
         end
 
         ---@type OnParsedSSE
-        local function on_sse_llama_server_timings(sse_parsed)
-            stats.show_prediction_stats(sse_parsed, perf)
+        local function on_sse_llama_server_timings(sse)
+            stats.show_prediction_stats(sse, perf)
         end
         local frontend = {
             on_parsed_data_sse_with_choice = on_parsed_data_sse_with_choice,
