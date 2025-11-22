@@ -298,19 +298,7 @@ function QuestionsFrontend.ensure_response_window_is_open()
     QuestionsFrontend.chat_window:ensure_open()
 end
 
----@type OnParsedSSE
-function QuestionsFrontend.on_sse_llama_server_timings(sse)
-    -- PRN use this to extract timing like in rewrites
-end
-
----@type OnParsedSSE
-function QuestionsFrontend.on_parsed_data_sse_with_choice(sse_parsed)
-    local first_choice = sse_parsed.choices[1]
-    QuestionsFrontend.on_streaming_delta_update_message_history(first_choice, QuestionsFrontend.thread.last_request)
-    QuestionsFrontend.handle_rx_messages_updated()
-end
-
-function QuestionsFrontend.handle_rx_messages_updated()
+local function handle_rx_messages_updated()
     if not QuestionsFrontend.thread.last_request.accumulated_model_response_messages then
         return
     end
@@ -443,6 +431,18 @@ function QuestionsFrontend.on_streaming_delta_update_message_history(choice, req
     end
 end
 
+---@type OnParsedSSE
+function QuestionsFrontend.on_sse_llama_server_timings(sse)
+    -- PRN use this to extract timing like in rewrites
+end
+
+---@type OnParsedSSE
+function QuestionsFrontend.on_parsed_data_sse_with_choice(sse_parsed)
+    local first_choice = sse_parsed.choices[1]
+    QuestionsFrontend.on_streaming_delta_update_message_history(first_choice, QuestionsFrontend.thread.last_request)
+    handle_rx_messages_updated()
+end
+
 function QuestionsFrontend.show_user_role()
     local lines_builder = LinesBuilder:new()
     lines_builder:create_marks_namespace()
@@ -493,7 +493,7 @@ function QuestionsFrontend.run_tools_and_send_results_back_to_the_model()
                 -- log:trace("tool_call_output", vim.inspect(tool_call_output))
 
                 -- * triggers UI updates to show tool results
-                QuestionsFrontend.handle_rx_messages_updated()
+                handle_rx_messages_updated()
 
                 -- * map tool result to a new TxChatMessage (to send back to model)
                 local tool_response_message = TxChatMessage:tool_result(tool_call)
