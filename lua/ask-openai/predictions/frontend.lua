@@ -44,6 +44,17 @@ function PredictionsFrontend.ask_for_prediction()
         local this_prediction = Prediction.new()
         PredictionsFrontend.current_prediction = this_prediction
 
+        log:luaify_trace("predictions.body", body)
+        log:info("predictions.base_url", FimBackend.base_url)
+        log:info("predictions.endpoint", FimBackend.endpoint)
+        -- TODO! how does this conflict with Prediction type, notably in cancellation?
+        --   TODO use this for cancellation!!! fuse w/ Prediction and remove its handle/pid/etc?
+        local request = LastRequest:new({
+            body = body,
+            base_url = FimBackend.base_url,
+            endpoint = FimBackend.endpoint,
+        })
+
         ---@type OnParsedSSE
         local function on_parsed_data_sse(sse_parsed)
             perf:token_arrived()
@@ -122,20 +133,6 @@ function PredictionsFrontend.ask_for_prediction()
             explain_error = explain_error,
             on_sse_llama_server_timings = on_sse_llama_server_timings,
         }
-
-        log:luaify_trace("predictions.body", body)
-        log:info("predictions.base_url", FimBackend.base_url)
-        log:info("predictions.endpoint", FimBackend.endpoint)
-
-        -- TODO! how does this conflict with Prediction type, notably in cancellation?
-        --   TODO use this for cancellation!!! fuse w/ Prediction and remove its handle/pid/etc?
-        local request = LastRequest:new({
-            body = body,
-            base_url = FimBackend.base_url,
-            endpoint = FimBackend.endpoint,
-            -- FYI FIRST test of this PoC is with /v1/chat/completions endpoint... later I can do others (i.e. non-thinking gptoss using /completions endpoint! or qwen2.5 coder that way too!)
-            --    SO YOU will need to use gptoss too as qwen you only have setup IIRC to use manual prompt building /completions
-        })
 
         Curl.spawn(request, frontend)
     end
