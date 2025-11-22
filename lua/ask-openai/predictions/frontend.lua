@@ -196,7 +196,7 @@ function PredictionsFrontend.cancel_current_prediction()
 
     -- FYI each prediction results in a new this_prediction instance
     -- and thus a new LastRequest (this_prediction.request)
-    this_prediction.request:terminate()
+    LastRequest.terminate(this_prediction.request)
 end
 
 local ignore_filetypes = {
