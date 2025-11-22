@@ -23,7 +23,6 @@ FimBackend.base_url = ""
 FimBackend.endpoint = nil
 
 local use_gptoss_raw = false
-FimBackend.endpoint_ollama_api_generate = false
 FimBackend.endpoint_ollama_api_chat = false
 FimBackend.endpoint_llama_server_proprietary_completions = false
 FimBackend.endpoint_openaicompat_chat_completions = false
@@ -56,7 +55,6 @@ function FimBackend.set_fim_model(model)
     -- FimBackend.endpoint = CompletionsEndpoints.v1_chat -- gpt-oss(ollama works)
 
     -- * parser toggles
-    FimBackend.endpoint_ollama_api_generate = FimBackend.endpoint == CompletionsEndpoints.ollama_api_generate
     FimBackend.endpoint_ollama_api_chat = FimBackend.endpoint == CompletionsEndpoints.ollama_api_chat
     FimBackend.endpoint_llama_server_proprietary_completions = FimBackend.endpoint == CompletionsEndpoints.completions
     FimBackend.endpoint_openaicompat_chat_completions = FimBackend.endpoint == CompletionsEndpoints.v1_chat
