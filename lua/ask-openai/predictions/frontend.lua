@@ -40,20 +40,14 @@ function PredictionsFrontend.ask_for_prediction()
         local this_prediction = Prediction.new()
         PredictionsFrontend.current_prediction = this_prediction
 
-        local function on_stdout(read_error, data)
-            -- FYI data == nil => EOF
+        local function on_parsed_data_sse_with_choice(sse_parsed)
+            -- TODO on_stdout (need to get this ported over)... step one is assume most of this is for a parsed SSE handler
 
-            log:trace_stdio_read_errors("on_stdout", read_error, data)
-            -- log:trace_stdio_read_always("on_stdout", read_error, data)
-
-            if read_error then
-                this_prediction:mark_generation_failed()
-                return
-            end
-
-            if not data then
-                return
-            end
+            -- TODO bring this back later, skip for now during PoC of Curl module
+            -- if read_error then
+            --     this_prediction:mark_generation_failed()
+            --     return
+            -- end
 
             perf:token_arrived()
 
@@ -69,12 +63,14 @@ function PredictionsFrontend.ask_for_prediction()
                     return
                 end
 
-                local sse_result = backend.process_sse(data)
-                local chunk = sse_result.chunk
-                local generation_done = sse_result.done
-                local done_reason = sse_result.done_reason
-                if chunk or sse_result.reasoning_content then
-                    this_prediction:add_chunk_to_prediction(chunk, sse_result.reasoning_content)
+                -- TODO get rid of this once stuff is mapped:
+                --   local sse_result = backend.process_sse(data) -- old source of sse_result (review this as needed)
+
+                local chunk = sse_parsed.chunk
+                local generation_done = sse_parsed.done
+                local done_reason = sse_parsed.done_reason
+                if chunk or sse_parsed.reasoning_content then
+                    this_prediction:add_chunk_to_prediction(chunk, sse_parsed.reasoning_content)
                 end
                 if generation_done then
                     if this_prediction.has_reasoning then
@@ -93,10 +89,9 @@ function PredictionsFrontend.ask_for_prediction()
                     end
                     this_prediction:mark_generation_finished()
                 end
-                stats.show_prediction_stats(sse_result, perf)
+                stats.show_prediction_stats(sse_parsed, perf)
             end)
         end
-        stdout:read_start(on_stdout)
 
         local function on_stderr(read_error, data)
             -- FYI data == nil => EOF
