@@ -10,7 +10,7 @@ _G.CompletionsEndpoints = {
     llamacpp_completions = "/completions",
 
     -- OpenAI compatible:
-    v1_completions = "/v1/completions",
+    oai_v1_completions = "/v1/completions",
     oai_v1_chat_completions = "/v1/chat/completions",
 
     -- ollama specific
