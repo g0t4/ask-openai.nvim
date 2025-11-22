@@ -108,7 +108,6 @@ function PredictionsFrontend.ask_for_prediction()
 
         ---@type ExplainError
         local function explain_error(text)
-            -- TODO figure out this once PoC is working
             vim.notify("ERROR in new PREDICTIONS FRONTEND PoC: " .. text, vim.log.levels.ERROR)
         end
 
@@ -130,6 +129,7 @@ function PredictionsFrontend.ask_for_prediction()
         log:info("hack.endpoint", FimBackend.endpoint)
 
         -- TODO! how does this conflict with Prediction type, notably in cancellation?
+        --   TODO use this for cancellation!!! fuse w/ Prediction and remove its handle/pid/etc?
         local request = LastRequest:new({
             body = body,
             base_url = FimBackend.base_url,
