@@ -7,7 +7,7 @@ local ansi = require("ask-openai.predictions.ansi")
 local local_share = require("ask-openai.config.local_share")
 local api = require("ask-openai.api")
 
-require("ask-openai.backends.sse")
+require("ask-openai.backends.sse.parsers")
 
 ---@class FimBackend
 ---@field ps_chunk PrefixSuffixChunk
