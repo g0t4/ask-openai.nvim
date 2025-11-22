@@ -194,16 +194,9 @@ function PredictionsFrontend.cancel_current_prediction()
         this_prediction:clear_extmarks()
     end)
 
-    local handle = this_prediction.request.handle
-    local pid = this_prediction.request.pid
-    -- FYI each prediction results in a new this_prediction instance, so there's no need to clear the handle/pid
-    --  as each handle/pid are associated with one this_prediction/LastRequest pair
-    if handle ~= nil and not handle:is_closing() then
-        log:trace("Terminating process, pid: ", pid)
-
-        handle:kill("sigterm")
-        handle:close()
-    end
+    -- FYI each prediction results in a new this_prediction instance
+    -- and thus a new LastRequest (this_prediction.request)
+    this_prediction.request:terminate()
 end
 
 local ignore_filetypes = {
