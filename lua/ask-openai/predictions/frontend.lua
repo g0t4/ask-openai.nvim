@@ -63,7 +63,7 @@ function PredictionsFrontend.ask_for_prediction()
                     -- reproduce bug by comment out this check...
                     -- then set 500ms delay using defer_fn
                     -- then trigger a prediction and cancel it midway and it'll be stuck!
-                    log:trace(ansi.yellow_bold("skipping on_stdout chunk b/c prediction is abandoned"))
+                    log:trace(ansi.yellow_bold("skipping on_stdout chunk b/c prediction is abandoned, if you see many of these in a row... that likely means the request wasn't canceled!"))
                     return
                 end
 
@@ -194,8 +194,7 @@ function PredictionsFrontend.cancel_current_prediction()
         this_prediction:clear_extmarks()
     end)
 
-    -- FYI each prediction results in a new this_prediction instance
-    -- and thus a new LastRequest (this_prediction.request)
+    -- FYI both this_prediction and request are new with each keystroke
     LastRequest.terminate(this_prediction.request)
 end
 
