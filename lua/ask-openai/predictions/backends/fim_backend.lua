@@ -24,7 +24,6 @@ FimBackend.endpoint = nil
 
 local use_gptoss_raw = false
 FimBackend.endpoint_ollama_api_chat = false
-FimBackend.endpoint_llama_server_proprietary_completions = false
 FimBackend.endpoint_openaicompat_chat_completions = false
 function FimBackend.set_fim_model(model)
     -- FYI right now, given I am using llama-server exclusively, toggling is just about changing between the two instances I run at the same time
@@ -56,7 +55,6 @@ function FimBackend.set_fim_model(model)
 
     -- * parser toggles
     FimBackend.endpoint_ollama_api_chat = FimBackend.endpoint == CompletionsEndpoints.ollama_api_chat
-    FimBackend.endpoint_llama_server_proprietary_completions = FimBackend.endpoint == CompletionsEndpoints.completions
     FimBackend.endpoint_openaicompat_chat_completions = FimBackend.endpoint == CompletionsEndpoints.v1_chat
 end
 

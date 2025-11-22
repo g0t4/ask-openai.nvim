@@ -79,7 +79,7 @@ function PredictionsFrontend.ask_for_prediction()
 
                 -- log:info("sse_parsed", vim.inspect(sse_parsed))
                 local chunk, done, done_reason, reasoning_content
-                if FimBackend.endpoint_llama_server_proprietary_completions then
+                if FimBackend.endpoint == CompletionsEndpoints.completions then
                     -- TODO test
                     chunk, done, done_reason = parse_llama_cpp_server(sse_parsed)
                 elseif FimBackend.endpoint_openaicompat_chat_completions then
