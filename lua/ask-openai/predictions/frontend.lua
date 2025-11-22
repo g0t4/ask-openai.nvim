@@ -83,14 +83,13 @@ function PredictionsFrontend.ask_for_prediction()
                     -- TODO test
                     chunk, done, done_reason = parse_llama_cpp_server(sse_parsed)
                 elseif FimBackend.endpoint == CompletionsEndpoints.v1_chat then
-                    -- FYI for PoC use /v1/chat/completions llama-server:
-                    chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed) -- * WORKS!
+                    chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed)
                 elseif FimBackend.endpoint == CompletionsEndpoints.ollama_api_chat then
-                    -- TODO test
                     chunk, done, done_reason = parse_sse_ollama_api_chat(sse_parsed)
-                else
-                    -- TODO test
+                elseif FimBackend.endpoint == CompletionsEndpoints.ollama_api_generate then
                     chunk, done, done_reason = parse_ollama_api_generate(sse_parsed)
+                else
+                    error("Unsupported FIM endpoint: ", FimBackend.endpoint)
                 end
 
                 if chunk or reasoning_content then
