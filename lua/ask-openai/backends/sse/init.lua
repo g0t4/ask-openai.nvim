@@ -50,14 +50,11 @@ function parse_llama_cpp_server(sse)
     -- stop: true => a few fields (it returns entire prompt too so it's huge!... maybe skip logging the prompt field?)
     -- "truncated": false,
     -- "stop_type": "eos",
-    -- "stopping_word": "", -- TODO what is this for?
+    -- "stopping_word": "", -- FYI this is for last token that stopped generation (if applicable) ... and IIRC it does not get added into the content
     -- log:info("sse /completions", vim.inspect(sse))
 
-
-
-    -- TODO why am I returning content for done?!
-    -- TODO reasoning_content
-    return sse.content, sse.content, sse.stop_type
+    -- TODO reasoning_content (and/or parse harmony here or nearby!)
+    return sse.content, sse.stop, sse.stop_type
 end
 
 function parse_ollama_api_generate(sse)
