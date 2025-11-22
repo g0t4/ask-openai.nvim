@@ -285,7 +285,7 @@ function FimBackend:body_for()
         error("you must define either the prompt builder OR messages for chat like FIM for: " .. body.model)
     end
 
-    return vim.json.encode(body)
+    return body
 end
 
 function FimBackend.inject_file_path_test_seam()

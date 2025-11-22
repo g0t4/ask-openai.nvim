@@ -35,8 +35,16 @@ function PredictionsFrontend.ask_for_prediction()
 
     ---@param rag_matches LSPRankedMatch[]
     function send_fim(rag_matches)
+        -- FYI! PoC is chat completions only => so gptoss (w/ thinking) for now is it (NOT qwen2.5coder)
+
         local model = api.get_fim_model()
+
+        -- TODO rename to FimBodyBuilder? or FimRequestBuilder? or FimPromptBuilder?
         local backend = FimBackend:new(ps_chunk, rag_matches, model)
+        local body = backend:body_for()
+        assert(body ~= nil)
+
+        log:info("send_fim.body", vim.inspect(body))
 
         -- TODO move this_prediction creation above? (before RAG too)
         local this_prediction = Prediction.new()
@@ -121,7 +129,7 @@ function PredictionsFrontend.ask_for_prediction()
         }
 
         local request = LastRequest:new({
-            body = {}, -- TODO! map BODY
+            body = body,
             base_url = "",
             endpoint = CompletionsEndpoints.v1_chat, -- FYI change this later as needed
             -- FYI FIRST test of this PoC is with /v1/chat/completions endpoint... later I can do others (i.e. non-thinking gptoss using /completions endpoint! or qwen2.5 coder that way too!)
