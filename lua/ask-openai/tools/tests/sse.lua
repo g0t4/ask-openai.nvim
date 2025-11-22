@@ -1,4 +1,4 @@
-local curls = require("ask-openai.backends.curl")
+local questions_frontend = require("ask-openai.questions.frontend")
 local text = require("ask-openai.helpers.text")
 require("ask-openai.helpers.buffers")
 local test_setup = require("ask-openai.helpers.test_setup")
@@ -64,7 +64,7 @@ data: [DONE]
             local deltas = text.split_lines_skip_empties(choices)
             for _, delta_json in pairs(deltas) do
                 local delta_table = vim.json.decode(delta_json)
-                curls.on_streaming_delta_update_message_history(delta_table, request)
+                questions_frontend.on_streaming_delta_update_message_history(delta_table, request)
             end
             return request, frontend
         end
@@ -262,7 +262,7 @@ data: [DONE]
                 end)
                 :each(function(sse)
                     -- vim.print(sse[1])
-                    curls.on_streaming_delta_update_message_history(sse[1], request)
+                    questions_frontend.on_streaming_delta_update_message_history(sse[1], request)
                 end)
 
             should.be_equal(1, #request.accumulated_model_response_messages)
