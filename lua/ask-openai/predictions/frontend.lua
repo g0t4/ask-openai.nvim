@@ -14,9 +14,6 @@ local Curl = require("ask-openai.backends.curl")
 local LastRequest = require("ask-openai.backends.last_request")
 local FimBackend = require("ask-openai.predictions.backends.fim_backend")
 
--- TODO! WIP - fully port this to be a StreamingFrontend!
---    FYI! I just added : StreamingFrontend below w/o implementing the interface
-
 ---@class PredictionsFrontend : StreamingFrontend
 ---@field handle? uv.uv_process_t
 ---@field pid? integer
