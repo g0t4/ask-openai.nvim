@@ -15,7 +15,6 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@field has_reasoning boolean
 ---@field private reasoning_chunks string[]
 ---@field start_time number
----@field generated boolean|nil
 local Prediction = {}
 local instance_metatable = { __index = Prediction }
 local extmarks_ns_id = vim.api.nvim_create_namespace("ask-predictions")
@@ -133,10 +132,6 @@ end
 
 function Prediction:mark_as_abandoned()
     self.abandoned = true
-end
-
-function Prediction:mark_generation_finished()
-    self.generated = true
 end
 
 function Prediction:insert_accepted(insert_lines)

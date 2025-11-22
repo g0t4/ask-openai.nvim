@@ -96,7 +96,6 @@ function PredictionsFrontend.ask_for_prediction()
                         -- FYI might have a similar issue in other spots... maybe parlay this into a final cleanup step?
                         this_prediction:clear_extmarks()
                     end
-                    this_prediction:mark_generation_finished()
                 end
             end)
         end
