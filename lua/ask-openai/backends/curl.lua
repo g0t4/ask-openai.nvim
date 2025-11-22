@@ -92,6 +92,12 @@ function Curl.spawn(request, frontend)
             --  i.e. triggering tool_calls
             frontend.on_curl_exited_successfully()
         end
+
+        -- FYI review proper uv.spawn cleanup LATER:
+        -- - review:   vim.loop.walk(function(handle) print(handle) end)
+        --   - I am seeing alot after I just startup nvim... I wonder if some are from my MCP tool comms?
+        --   - and what about my timer/schduling for debounced keyboard events to trigger predictions?
+        -- - REVIEW OTHER uses of uv.spawn (and timers)... for missing cleanup logic!)
     end
 
     request.handle, request.pid = vim.uv.spawn(options.command,
