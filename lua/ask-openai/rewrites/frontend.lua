@@ -122,6 +122,8 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
     end
 
     local first_choice = sse_parsed.choices[1]
+    -- FYI get_extract_generated_text_func shows support for both OpenAI endpoints: /v1/chat/completions and /v1/completions !
+    --   TODO and you can add others, just provide a relevant extractor function!
     local extract_generated_text = get_extract_generated_text_func(RewriteFrontend.last_request.endpoint)
     local content_chunk = extract_generated_text(first_choice)
     if not content_chunk then return end

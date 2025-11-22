@@ -352,15 +352,6 @@ function QuestionsFrontend.on_streaming_delta_update_message_history(choice, req
     -- rebuilds message as if sent `stream: false`
     -- for message history / follow up
 
-    -- FYI right now this is desingned for /v1/chat/completions only
-    if request.endpoint ~= CompletionsEndpoints.oai_v1_chat_completions then
-        -- fail fast in this case
-        local message = "questionsFrontend SSEs not supported for endpoint: " .. tostring(request.endpoint)
-        log:error(message)
-        vim.notify(message, vim.log.levels.ERROR)
-        return
-    end
-
     if choice == nil or choice.delta == nil then
         log:trace("[WARN] skipping b/c choice/choice.delta is nil: '" .. vim.inspect(choice) .. "'")
         return
@@ -450,6 +441,17 @@ end
 
 ---@type OnParsedSSE
 function QuestionsFrontend.on_parsed_data_sse(sse_parsed)
+    -- FYI right now this is desingned for /v1/chat/completions only
+    --   I added this guard based on review of on-on_streaming_delta_update_message_history that appears (IIRC) to be using /v1/chat/completions ONLY compatible fields
+    if QuestionsFrontend.thread.last_request.endpoint ~= CompletionsEndpoints.oai_v1_chat_completions then
+        -- fail fast in this case
+        -- TODO (when I need it)... you very likely can support other endpoints (see what you've done in both PredictionsFrontend and RewriteFrontend (both have some multi endpoint support)
+        local message = "QuestionsFrontend SSEs not supported for endpoint: " .. tostring(request.endpoint)
+        log:error(message)
+        vim.notify(message, vim.log.levels.ERROR)
+        return
+    end
+
     if sse_parsed.choices == nil or sse_parsed.choices[1] == nil then
         return
     end
