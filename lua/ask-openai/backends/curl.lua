@@ -7,7 +7,7 @@ local Curl = {}
 ---@enum CompletionsEndpoints
 _G.CompletionsEndpoints = {
     -- llama-server non-openai:
-    completions = "/completions",
+    llamacpp_completions = "/completions",
 
     -- OpenAI compatible:
     v1_completions = "/v1/completions",

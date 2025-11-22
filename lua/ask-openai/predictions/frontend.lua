@@ -79,7 +79,7 @@ function PredictionsFrontend.ask_for_prediction()
 
                 -- log:info("sse_parsed", vim.inspect(sse_parsed))
                 local chunk, done, done_reason, reasoning_content
-                if FimBackend.endpoint == CompletionsEndpoints.completions then
+                if FimBackend.endpoint == CompletionsEndpoints.llamacpp_completions then
                     -- TODO test with qwen25coder
                     chunk, done, done_reason = parse_llama_cpp_server_completions(sse_parsed)
                 elseif FimBackend.endpoint == CompletionsEndpoints.v1_chat_completions then
