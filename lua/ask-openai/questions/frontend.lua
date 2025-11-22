@@ -352,19 +352,31 @@ function QuestionsFrontend.on_streaming_delta_update_message_history(choice, req
     -- rebuilds message as if sent `stream: false`
     -- for message history / follow up
 
+    -- FYI right now this is desingned for /v1/chat/completions only
+    if request.endpoint ~= CompletionsEndpoints.oai_v1_chat_completions then
+        -- fail fast in this case
+        local message = "questionsFrontend SSEs not supported for endpoint: " .. tostring(request.endpoint)
+        log:error(message)
+        vim.notify(message, vim.log.levels.ERROR)
+        return
+    end
+
     if choice == nil or choice.delta == nil then
         log:trace("[WARN] skipping b/c choice/choice.delta is nil: '" .. vim.inspect(choice) .. "'")
         return
     end
 
     -- * lookup or create message
+    -- FYI this is not well vetted for multi message responses, in fact is this using choice.index for message.index?!
+    --   that said, one message per request is it... unless I am doing something funky with the raw prompt to trigger mulitple messages?
     local index_base1 = choice.index + 1
+
     local rx_message = request.accumulated_model_response_messages[index_base1]
     if rx_message == nil then
         rx_message = RxAccumulatedMessage:new(choice.delta.role, "")
         rx_message.index = choice.index
         rx_message._verbatim_content = ""
-        -- assumes contiguous indexes, s/b almost always 0 index only, 1 too with dual tool call IIRC
+        -- assumes contiguous indexes, s/b almost always 0 index only, 1 too with dual tool call IIRC (gptoss doesn't do dual tool at once)
         request.accumulated_model_response_messages[index_base1] = rx_message
     end
 
