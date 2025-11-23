@@ -3,7 +3,6 @@ local Selection = require('ask-openai.helpers.selection')
 local should = require('devtools.tests.should')
 local log = require("ask-openai.logs.logger").predictions()
 require('ask-openai.helpers.buffer_testing')
-require('ask-openai.helpers.wrap_getpos')
 
 
 -- TODO split out these tests... I need a new wrapper around the low level methods I really never wanna touch ever again

@@ -6,13 +6,14 @@ local GetPos = {}
 
 -- TODO! ! use this for selection in frontends: rewrites, questions, predictions, etc?
 
+function setup_for_testing()
+    -- Map <leader>b to print the cursor position.
+    vim.keymap.set({ 'n', 'v' }, '<leader>b', function()
+        vim.print(GetPos.CurrentSelection())
+    end, { desc = "Print cursor position (getpos)" })
+end
 
--- Map <leader>b to print the cursor position.
-vim.keymap.set({ 'n', 'v' }, '<leader>b', function()
-    vim.print(GetPos.CurrentSelection())
-end, { desc = "Print cursor position (getpos)" })
-
-
+setup_for_testing()
 
 ---@class GetPosPosition
 ---@field line_b1 integer
