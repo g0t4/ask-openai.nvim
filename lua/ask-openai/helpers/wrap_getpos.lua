@@ -66,6 +66,22 @@ function GetPosSelectionRange:line_count()
     return self.end_line_b1 - self.start_line_b1 + 1
 end
 
+function GetPosSelectionRange:start_line_b0()
+    return self.start_line_b1 - 1
+end
+
+function GetPosSelectionRange:end_line_b0()
+    return self.end_line_b1 - 1
+end
+
+function GetPosSelectionRange:start_col_b0()
+    return self.start_col_b1 - 1
+end
+
+function GetPosSelectionRange:end_col_b0()
+    return self.end_col_b1 - 1
+end
+
 -- TODO GetPosSelectionRange:*_base0() calculations
 
 ---Returns the selection range in 1‑indexed line/column coordinates.

@@ -385,12 +385,15 @@ _describe("GetPosSelectionRange", function()
         it(":start_line_b0()", function()
             assert.equal(selection:start_line_b0(), 9)
         end)
+
         it(":end_line_b0()", function()
             assert.equal(selection:end_line_b0(), 19)
         end)
+
         it(":start_col_b0()", function()
             assert.equal(selection:start_col_b0(), 29)
         end)
+
         it(":end_col_b0()", function()
             assert.equal(selection:end_col_b0(), 39)
         end)
