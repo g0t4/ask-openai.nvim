@@ -321,6 +321,7 @@ _describe("GetPosSelectionRange", function()
         -- TODO! FINISH THE TEST CASE HERE... I passed out instead of continuing this...
         --   BTW I am using this in my code notes plugin idea and other parts of dotfiles repo
     end)
+
     _describe("check return types", function()
         it("GetPos.CurrentSelection() returns GetPosSelectionRange", function()
             new_buffer_with_lines({ "one", "two", "three", "four", "five" })
@@ -330,8 +331,9 @@ _describe("GetPosSelectionRange", function()
             -- vim.print(instance)
 
             assert.not_nil(getmetatable(instance))
-            assert.equal(getmetatable(instance), GetPosSelectionRange)
+            assert.equal(getmetatable(instance).__index, GetPosSelectionRange)
         end)
+
         it("GetPos.LastSelection() returns GetPosSelectionRange", function()
             new_buffer_with_lines({ "one", "two", "three", "four", "five" })
             vim.cmd("normal Vj") -- make a selection (one line)
