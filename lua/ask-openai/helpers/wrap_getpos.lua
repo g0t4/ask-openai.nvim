@@ -1,14 +1,18 @@
+--- wrapper for getpos(expr)
+--- take the pain out of getting cursor position and selections (last/current)
+---@class GetPosModule
+local GetPos = {}
+
+
+-- TODO! ! use this for selection in frontends: rewrites, questions, predictions, etc?
+
+
 -- Map <leader>b to print the cursor position.
 vim.keymap.set({ 'n', 'v' }, '<leader>b', function()
     vim.print(GetPos.CurrentSelection())
 end, { desc = "Print cursor position (getpos)" })
 
 
--- TODO! ! use this with selection logic and class in rewrites  (maybe predictions too)
-
-
---- wrapper for getpos(expr)
-_G.GetPos = {}
 
 ---@class GetPosPosition
 ---@field line_b1 integer
@@ -41,13 +45,16 @@ end
 ---@field end_col_b1 integer
 _G.GetPosSelectionRange = {}
 
--- TODO ctor + functions
--- function _G.GetPosSelectionRange:new()
--- end
+local instance_mt = { __index = GetPosSelectionRange }
+function GetPosSelectionRange:new(range)
+    -- ❤️ naming this "instance"
+    -- doesn't clobber "self" (which in this case is the GetPosSelectionRange class object)
+    local instance = range or {}
+    setmetatable(instance, instance_mt)
+    return instance
+end
 
--- function _G.GetPosSelectionRange:___()
--- end
-
+-- TODO GetPosSelectionRange.*_base0() calculations
 
 ---Returns the selection range in 1‑indexed line/column coordinates.
 ---The order is always start → end regardless of cursor direction.
@@ -121,3 +128,5 @@ end
 function GetPos.FirstVisibleLine()
     return getpos_only_line_and_column("w0")
 end
+
+return GetPos

@@ -12,6 +12,8 @@ describe("GetPos wrappers", function()
     --   :h * selection
     --   :h * virtualedit=all - position cursor past actual characters (i.e. g$ - end of screen line)
 
+    local GetPos = require('ask-openai.helpers.wrap_getpos')
+
     it("edge case - no selection yet", function()
         new_buffer_with_lines({ "one", "two", "three", "four", "five" })
         vim.cmd(':1')
@@ -279,5 +281,32 @@ describe("GetPos wrappers", function()
                 should.be_same_colorful_diff(expected, sel)
             end)
         end)
+    end)
+end)
+
+
+describe("GetPosSelectionRange", function()
+    it(":new(range) uses range object fields", function()
+        local range = {
+            start_line_b1 = 1,
+            start_col_b1  = 2,
+            end_line_b1   = 3,
+            end_col_b1    = 4,
+            -- TODO others? I don't know if these should be on the wrapper type or not?
+            -- mode             = mode,
+            -- last_visual_mode = last_visual_mode,
+            -- linewise         = linewise,
+        }
+
+        local instance = GetPosSelectionRange:new(range)
+
+        assert.not_equal(instance, GetPosSelectionRange, ":new() should return a new instance")
+        local instance_metatable = getmetatable(instance)
+        assert.not_equal(instance_metatable, nil, "instance should have a defined metatable")
+        assert.equal(instance_metatable.__index, GetPosSelectionRange, "instance should inherit behavior from GetPosSelectionRange")
+        assert.equal(instance.start_line_b1, 1)
+        assert.equal(instance.start_col_b1, 2)
+        assert.equal(instance.end_line_b1, 3)
+        assert.equal(instance.end_col_b1, 4)
     end)
 end)
