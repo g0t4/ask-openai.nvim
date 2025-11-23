@@ -373,4 +373,26 @@ _describe("GetPosSelectionRange", function()
 
         assert.equal(selection:line_count(), 3)
     end)
+
+    describe("base0() methods", function()
+        local selection = GetPosSelectionRange:new({
+            start_line_b1 = 10,
+            end_line_b1 = 20,
+            start_col_b1 = 30,
+            end_col_b1 = 40,
+        })
+
+        it(":start_line_b0()", function()
+            assert.equal(selection:start_line_b0(), 9)
+        end)
+        it(":end_line_b0()", function()
+            assert.equal(selection:end_line_b0(), 19)
+        end)
+        it(":start_col_b0()", function()
+            assert.equal(selection:start_col_b0(), 29)
+        end)
+        it(":end_col_b0()", function()
+            assert.equal(selection:end_col_b0(), 39)
+        end)
+    end)
 end)
