@@ -61,6 +61,8 @@ end
 --- which ignores column offsets within each line
 ---@return integer num_lines_touched
 function GetPosSelectionRange:line_count()
+    -- FYI this is moreso intended for a linewise selection
+    -- but could be useful in a charwise too
     return self.end_line_b1 - self.start_line_b1 + 1
 end
 
