@@ -312,4 +312,15 @@ describe("GetPosSelectionRange", function()
         -- TODO! FINISH THE TEST CASE HERE... I passed out instead of continuing this...
         --   BTW I am using this in my code notes plugin idea and other parts of dotfiles repo
     end)
+
+    it(":line_count() returns number of lines the selection spans, without considering column offsets within each line", function()
+        local selection = GetPosSelectionRange:new({
+            start_line_b1 = 1,
+            -- start_col_b1 = ,
+            end_line_b1 = 3,
+            -- end_col_b1 = ,
+        })
+
+        assert.equal(selection:line_count(), 3)
+    end)
 end)
