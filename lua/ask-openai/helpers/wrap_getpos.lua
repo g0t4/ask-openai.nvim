@@ -48,6 +48,8 @@ _G.GetPosSelectionRange = {}
 
 local instance_mt = { __index = GetPosSelectionRange }
 function GetPosSelectionRange:new(range)
+    assert(range ~= nil, "Missing required argument `range`, did you forgot to use :new()? do not use .new() without passing GetPosSelectionRange as first arg!")
+
     -- ❤️ naming this "instance"
     -- doesn't clobber "self" (which in this case is the GetPosSelectionRange class object)
     local instance = range or {}
@@ -62,7 +64,7 @@ function GetPosSelectionRange:line_count()
     return self.end_line_b1 - self.start_line_b1 + 1
 end
 
--- TODO GetPosSelectionRange.*_base0() calculations
+-- TODO GetPosSelectionRange:*_base0() calculations
 
 ---Returns the selection range in 1‑indexed line/column coordinates.
 ---The order is always start → end regardless of cursor direction.
@@ -111,7 +113,7 @@ function GetPos.LastSelection()
     local mode = vim.fn.mode()
     local last_visual_mode = vim.fn.visualmode()
     local linewise = mode == "V" or (mode ~= "v" and last_visual_mode == "V")
-    return {
+    return GetPosSelectionRange:new {
         start_line_b1 = lt.line_b1,
         start_col_b1 = lt.col_b1,
         end_line_b1 = gt.line_b1,

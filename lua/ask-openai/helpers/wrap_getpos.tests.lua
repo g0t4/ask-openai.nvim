@@ -6,6 +6,13 @@ require('ask-openai.helpers.buffer_testing')
 local GetPos = require('ask-openai.helpers.wrap_getpos')
 local _describe = require('devtools.tests._describe')
 
+function ignore(a, b)
+end
+
+only = it
+it = ignore -- uncomment to run "only" tests, otherwise, comment out to run all again (regardless if marked only/it)
+
+
 -- TODO split out these tests... I need a new wrapper around the low level methods I really never wanna touch ever again
 _describe("GetPos wrappers", function()
     -- PRN incorporate settings for obscure details (when the need arises):
@@ -18,9 +25,9 @@ _describe("GetPos wrappers", function()
         vim.cmd('normal! 0l') -- move one char from start of line
         should.be_equal(vim.fn.mode(), "n")
 
-        it("LastSelection is all zeros", function()
+        only("LastSelection is all zeros", function()
             local selection = GetPos.LastSelection()
-            should.be_same_colorful_diff({
+            should.be_same_colorful_diff(GetPosSelectionRange:new {
                 start_line_b1    = 0,
                 end_line_b1      = 0,
                 start_col_b1     = 0,
