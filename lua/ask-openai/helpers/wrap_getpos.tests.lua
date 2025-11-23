@@ -3,15 +3,13 @@ local Selection = require('ask-openai.helpers.selection')
 local should = require('devtools.tests.should')
 local log = require("ask-openai.logs.logger").predictions()
 require('ask-openai.helpers.buffer_testing')
-
+local GetPos = require('ask-openai.helpers.wrap_getpos')
 
 -- TODO split out these tests... I need a new wrapper around the low level methods I really never wanna touch ever again
 describe("GetPos wrappers", function()
     -- PRN incorporate settings for obscure details (when the need arises):
     --   :h * selection
     --   :h * virtualedit=all - position cursor past actual characters (i.e. g$ - end of screen line)
-
-    local GetPos = require('ask-openai.helpers.wrap_getpos')
 
     it("edge case - no selection yet", function()
         new_buffer_with_lines({ "one", "two", "three", "four", "five" })
@@ -312,6 +310,19 @@ describe("GetPosSelectionRange", function()
         -- TODO! FINISH THE TEST CASE HERE... I passed out instead of continuing this...
         --   BTW I am using this in my code notes plugin idea and other parts of dotfiles repo
     end)
+
+    it("GetPos.CurrentSelection() returns GetPosSelectionRange", function()
+        vim.cmd("normal Vj") -- make a selection (one line)
+        local instance = GetPos.CurrentSelection()
+        -- vim.print(instance)
+        should.be_true(getmetatable(instance).__index == GetPosSelectionRange)
+    end)
+    it("GetPos.LastSelection() returns GetPosSelectionRange", function()
+        vim.cmd("normal Vj") -- make a selection (one line)
+        local instance = GetPos.LastSelection()
+        should.be_true(getmetatable(instance).__index == GetPosSelectionRange)
+    end)
+
 
     it(":line_count() returns number of lines the selection spans, without considering column offsets within each line", function()
         local selection = GetPosSelectionRange:new({
