@@ -4,14 +4,15 @@ local should = require('devtools.tests.should')
 local log = require("ask-openai.logs.logger").predictions()
 require('ask-openai.helpers.buffer_testing')
 local GetPos = require('ask-openai.helpers.wrap_getpos')
+local _describe = require('devtools.tests._describe')
 
 -- TODO split out these tests... I need a new wrapper around the low level methods I really never wanna touch ever again
-describe("GetPos wrappers", function()
+_describe("GetPos wrappers", function()
     -- PRN incorporate settings for obscure details (when the need arises):
     --   :h * selection
     --   :h * virtualedit=all - position cursor past actual characters (i.e. g$ - end of screen line)
 
-    it("edge case - no selection yet", function()
+    _describe("edge case - no selection yet", function()
         new_buffer_with_lines({ "one", "two", "three", "four", "five" })
         vim.cmd(':1')
         vim.cmd('normal! 0l') -- move one char from start of line
@@ -44,8 +45,8 @@ describe("GetPos wrappers", function()
         end)
     end)
 
-    it("LastSelection", function()
-        it("selection was closed", function()
+    _describe("LastSelection", function()
+        _describe("selection was closed", function()
             it("cursor was at END of linewise selection", function()
                 new_buffer_with_lines({ "one", "two", "three", "four", "five" })
                 vim.cmd(':2')
@@ -155,8 +156,8 @@ describe("GetPos wrappers", function()
         end)
     end)
 
-    it("CurrentSelection", function()
-        it("still selected", function()
+    _describe("CurrentSelection", function()
+        _describe("still selected", function()
             -- FYI this is probably rare to happen... I really should just close the mode and thus capture into '< and '>
             it("cursor at end of linewise selection - same as reverse", function()
                 new_buffer_with_lines({ "one", "two", "three", "four", "five" })
@@ -255,7 +256,7 @@ describe("GetPos wrappers", function()
             end)
         end)
 
-        it("still selected after previous selection too", function()
+        _describe("still selected after previous selection too", function()
             it("first is linewise V one line, then charwise two l (2 chars right)", function()
                 new_buffer_with_lines({ "one", "two", "three", "four", "five" })
                 vim.cmd(':2')
@@ -282,7 +283,7 @@ describe("GetPos wrappers", function()
 end)
 
 
-describe("GetPosSelectionRange", function()
+_describe("GetPosSelectionRange", function()
     it(":new(range) uses range object fields", function()
         local range = {
             start_line_b1 = 1,
