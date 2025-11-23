@@ -53,6 +53,9 @@ _describe("GetPos wrappers", function()
     end)
 
     _describe("LastSelection", function()
+        -- TODO! what about when I don't make any selection before calling LastSelection?
+        --   it will work but I should add some verification around what it's doing and make sure it is what I want
+
         _describe("selection was closed", function()
             it("cursor was at END of linewise selection", function()
                 new_buffer_with_lines({ "one", "two", "three", "four", "five" })
@@ -335,12 +338,12 @@ _describe("GetPosSelectionRange", function()
             vim.cmd("normal <esc>") -- stop selection (so it becomes LastSelection)
 
             local instance = GetPos.LastSelection()
+            -- vim.print(instance)
 
             assert.not_nil(getmetatable(instance))
             assert.equal(getmetatable(instance).__index, GetPosSelectionRange)
         end)
     end)
-
 
     it(":line_count() returns number of lines the selection spans, without considering column offsets within each line", function()
         local selection = GetPosSelectionRange:new({
