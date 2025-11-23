@@ -323,15 +323,31 @@ _describe("GetPosSelectionRange", function()
     end)
 
     _describe("check return types", function()
-        it("GetPos.CurrentSelection() returns GetPosSelectionRange", function()
-            new_buffer_with_lines({ "one", "two", "three", "four", "five" })
-            vim.cmd("normal Vj") -- make a selection (one line)
+        _describe("start of selection is before end", function()
+            it("GetPos.CurrentSelection() returns GetPosSelectionRange", function()
+                new_buffer_with_lines({ "one", "two", "three", "four", "five" })
+                vim.cmd("normal Vj") -- make a selection (one line)
 
-            local instance = GetPos.CurrentSelection()
-            -- vim.print(instance)
+                local instance = GetPos.CurrentSelection()
+                -- vim.print(instance)
 
-            assert.not_nil(getmetatable(instance))
-            assert.equal(getmetatable(instance).__index, GetPosSelectionRange)
+                assert.not_nil(getmetatable(instance))
+                assert.equal(getmetatable(instance).__index, GetPosSelectionRange)
+            end)
+        end)
+
+        _describe("end of selection is before start (aka reversed)", function()
+            it("GetPos.CurrentSelection() returns GetPosSelectionRange", function()
+                new_buffer_with_lines({ "one", "two", "three", "four", "five" })
+                vim.cmd(":3") -- make a selection (one line)
+                vim.cmd("normal Vk") -- reverse search
+
+                local instance = GetPos.CurrentSelection()
+                -- vim.print(instance)
+
+                assert.not_nil(getmetatable(instance))
+                assert.equal(getmetatable(instance).__index, GetPosSelectionRange)
+            end)
         end)
 
         it("GetPos.LastSelection() returns GetPosSelectionRange", function()

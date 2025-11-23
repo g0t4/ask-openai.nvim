@@ -81,7 +81,7 @@ function GetPos.CurrentSelection()
     if dot.line_b1 < v.line_b1 or (dot.line_b1 == v.line_b1 and dot.col_b1 <= v.col_b1) then
         -- do the selection points refer to a linewise range OR charwise
         -- charwise = opposite linewise
-        return {
+        return GetPosSelectionRange:new {
             start_line_b1    = dot.line_b1,
             start_col_b1     = dot.col_b1,
             end_line_b1      = v.line_b1,
