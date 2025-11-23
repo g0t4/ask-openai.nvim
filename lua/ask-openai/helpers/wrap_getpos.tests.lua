@@ -307,5 +307,9 @@ describe("GetPosSelectionRange", function()
         assert.equal(instance.start_col_b1, 2)
         assert.equal(instance.end_line_b1, 3)
         assert.equal(instance.end_col_b1, 4)
+
+
+        -- TODO! FINISH THE TEST CASE HERE... I passed out instead of continuing this...
+        --   BTW I am using this in my code notes plugin idea and other parts of dotfiles repo
     end)
 end)
