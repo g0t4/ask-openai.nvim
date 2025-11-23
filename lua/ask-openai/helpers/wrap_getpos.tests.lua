@@ -322,15 +322,20 @@ _describe("GetPosSelectionRange", function()
         it("GetPos.CurrentSelection() returns GetPosSelectionRange", function()
             new_buffer_with_lines({ "one", "two", "three", "four", "five" })
             vim.cmd("normal Vj") -- make a selection (one line)
+
             local instance = GetPos.CurrentSelection()
             -- vim.print(instance)
+
             assert.not_nil(getmetatable(instance))
             assert.equal(getmetatable(instance), GetPosSelectionRange)
         end)
         it("GetPos.LastSelection() returns GetPosSelectionRange", function()
             new_buffer_with_lines({ "one", "two", "three", "four", "five" })
             vim.cmd("normal Vj") -- make a selection (one line)
+            vim.cmd("normal <esc>") -- stop selection (so it becomes LastSelection)
+
             local instance = GetPos.LastSelection()
+
             assert.not_nil(getmetatable(instance))
             assert.equal(getmetatable(instance).__index, GetPosSelectionRange)
         end)
