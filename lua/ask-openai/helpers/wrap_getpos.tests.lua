@@ -27,7 +27,7 @@ _describe("GetPos wrappers", function()
 
         only("LastSelection is all zeros", function()
             local selection = GetPos.LastSelection()
-            should.be_same_colorful_diff(GetPosSelectionRange:new {
+            should.be_same_colorful_diff({
                 start_line_b1    = 0,
                 end_line_b1      = 0,
                 start_col_b1     = 0,
