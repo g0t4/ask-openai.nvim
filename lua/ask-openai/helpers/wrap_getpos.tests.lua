@@ -375,6 +375,24 @@ _describe("GetPosSelectionRange", function()
         assert.equal(selection:line_count(), 3)
     end)
 
+    describe("prior selection helpers", function()
+        it(":no_prior_selection()", function()
+            buffers.new_buffer_with_lines({ "one", "two", "three", "four", "five" })
+            local selection = GetPos.last_selection()
+
+            assert.equal(selection:no_prior_selection(), true)
+        end)
+
+        it(":no_prior_selection()", function()
+            buffers.new_buffer_with_lines({ "one", "two", "three", "four", "five" })
+            vim.cmd("normal vk")
+            vim.cmd("normal <esc>")
+            local selection = GetPos.last_selection()
+
+            assert.equal(selection:no_prior_selection(), false)
+        end)
+    end)
+
     describe("base0() methods", function()
         local selection = GetPosSelectionRange:new({
             start_line_base1 = 10,

@@ -83,6 +83,11 @@ function GetPosSelectionRange:end_col_base0()
     return self.end_col_base1 - 1
 end
 
+--- helper to determine if there was a prior selection (or not)
+function GetPosSelectionRange:no_prior_selection()
+    return self.last_visual_mode == ""
+end
+
 -- TODO GetPosSelectionRange:*_base0() calculations
 
 ---Returns the selection range in 1‑indexed line/column coordinates.
