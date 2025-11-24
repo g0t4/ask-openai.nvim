@@ -35,7 +35,7 @@ function GetPos.cursor_position()
 end
 
 ---@return GetPosPosition
-function GetPos.OtherEndOfSelection()
+function GetPos.other_end_of_selection()
     -- if not in visual mode, this will return CursorPosition (same as ".")
     return getpos_only_line_and_column("v")
 end
@@ -145,17 +145,17 @@ function GetPos.last_selection()
 end
 
 ---@return GetPosPosition
-function GetPos.LastLineOfBuffer()
+function GetPos.last_line_of_buffer()
     return getpos_only_line_and_column("$")
 end
 
 ---@return GetPosPosition
-function GetPos.LastVisibleLine()
+function GetPos.last_visible_line()
     return getpos_only_line_and_column("w$")
 end
 
 ---@return GetPosPosition
-function GetPos.FirstVisibleLine()
+function GetPos.first_visible_line()
     return getpos_only_line_and_column("w0")
 end
 
