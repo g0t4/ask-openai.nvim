@@ -25,6 +25,7 @@ mkdir -p tmp
 # * prefill (default on)
 # normally a message ends with smth like this (this is gptoss):
 #    <|start|>assistant
+
 echo '{
   "messages": [
      { "role": "user", "content": "test" }
@@ -33,8 +34,8 @@ echo '{
   "stream": false
 }' | curl --fail-with-body -sSL --no-buffer "$base_url/v1/chat/completions" -d @- \
     | string replace --regex "^data: (\[DONE\])*" "" \
-    # null entries for records w/o choices[0].delta.content
     | jq >tmp/prefill1-default-prefill.json
+
 # btw here is raw prompt w/ system message cut out (...) for space:
 #    "prompt": "<|start|>system<|message|>You are ChatGPT...<|end|><|start|>user<|message|>test<|end|><|start|>assistant",
 #      NOTICE on the end is the standard prefill: <|start|>assistant
@@ -59,8 +60,8 @@ echo '{
   "stream": false
 }' | curl --fail-with-body -sSL --no-buffer "$base_url/v1/chat/completions" -d @- \
     | string replace --regex "^data: (\[DONE\])*" "" \
-    # null entries for records w/o choices[0].delta.content
     | jq >tmp/prefill2-inject-broken-prefill.json
+
 # BTW what I INJECTED here breaks the typical flow and in this case the model responds with multiple messages, almost ignoring what I INJECTED
 #  __verbose:
 #     "prompt": "<|start|>system<|message|>You are ChatGPT...<|end|><|start|>user<|message|>test<|end|><|start|>assistantINJECTED RIGHT INTO PROMPT!!",
@@ -81,6 +82,7 @@ echo '{
 # here's the code where I found this:
 #   https://github.com/ggml-org/llama.cpp/blob/7d77f0732/tools/server/utils.hpp#L753-L762
 #
+
 echo '{
   "messages": [
      { "role": "user", "content": "test" },
@@ -90,8 +92,8 @@ echo '{
   "stream": false
 }' | curl --fail-with-body -sSL --no-buffer "$base_url/v1/chat/completions" -d @- \
     | string replace --regex "^data: (\[DONE\])*" "" \
-    # null entries for records w/o choices[0].delta.content
     | jq >tmp/prefill3-force-no-thinking.json
+
 # BINGO! in this case I just get
 #     "prompt": "<|start|>system<|message|>You are ChatGPT...<|end|><|start|>user<|message|>test<|end|><|start|>assistant<|channel|>analysis<|message|>no thoughts for you<|end|><|start|>assistant<|channel|>final",
 #        NOTE my prefill additions force the model to produce a final response and NOTHING else
