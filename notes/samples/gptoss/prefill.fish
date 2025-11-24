@@ -143,6 +143,15 @@ demo_prefill "<|channel|>commentary to" >tmp/prefill5-force-tool-call.json
 cat tmp/prefill5-force-tool-call.json | jq ".__verbose | { prompt, content }"
 # response:
 #   "content": "=functions.run_command <|constrain|>json{\n  \"command\": \"date\",\n  \"workdir\": \"/\"\n}"
+#   NOTE this is not a valid message (AFAICT... though I am not versed in typical harmony response formatting and deviations from spec)
+
+# now force commentary after analysis:
+demo_prefill "<|channel|>analysis<|message|>do as I am told<|end|><|start|>assistant<|channel|>commentary" >tmp/prefill6-force-tool-call.json
+cat tmp/prefill6-force-tool-call.json | jq ".__verbose | { prompt, content }"
+# response:
+#   "content": " to=functions.run_command<|channel|>analysis<|message|>{\n  \"command\": \"date\",\n  \"workdir\": \"/\"\n}"
+#   NOTE ok that looks better (has <|message|>
+#   FYI I am not versed in parsing harmony... it is possible the case 5 above is fine too and not unexpected
 
 # better yet would be to provide empty thinking, the model will try to add analysis if its not there
 
