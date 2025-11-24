@@ -183,15 +183,22 @@ echo '{
     | string replace --regex "^data: (\[DONE\])*" "" \
     # null entries for records w/o choices[0].delta.content
     | jq > prefill2.json
-
-# <|channel|>analysis<|message|>
+# BTW what I INJECTED here breaks the typical flow and in this case the model responds with multiple messages, almost ignoring what I INJECTED
+#  here is its response:
+#     "content": " \n\nIt looks ...<|end|><|start|>assistant<|channel|>analysis<|message|>The user just wrote \"test\". Likely they are testing. Should respond politely. Probably just echo or respond. As ChatGPT, respond \"Hello! How can I assist you today?\"<|end|><|start|>assistant<|channel|>final<|message|>Hello! How can I help you today?",
 
 
 # * use it to set part or all of thinking:
 # in gptoss, add_generation_prompt injects this on end (and before any prefill):
 # <|start|>assistant
-#
 # which allows gptoss to respond with analysis channel first, optionally tool calls on commentary channel, finally final channel w/ final message for the turn
+#   btw I am not appending <|message|> after final b/c IIRC llama-cpp uses <|message|> as part of its partial processing for this prefilled message when then on the output side doesn't have a header
+#
+#   FTR can also pass array of content items instead of just one string
+#
+# here's the code where I found this:
+#   https://github.com/ggml-org/llama.cpp/blob/7d77f0732/tools/server/utils.hpp#L753-L762
+#
 echo '{
   "messages": [
      { "role": "user", "content": "test" },
@@ -202,4 +209,6 @@ echo '{
 }' | curl --fail-with-body -sSL --no-buffer "$base_url/v1/chat/completions" -d @- \
     | string replace --regex "^data: (\[DONE\])*" "" \
     # null entries for records w/o choices[0].delta.content
-    | jq > prefill2.json
+    | jq > prefill3.json
+# BINGO! in this case I just get
+#     "content": "<|message|>Test successful! 🎉 Let me know if there's anything you'd like to explore or discuss.",
