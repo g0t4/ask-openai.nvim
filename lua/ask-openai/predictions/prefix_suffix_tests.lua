@@ -1,8 +1,7 @@
-local assert = require 'luassert'
 require("ask-openai.helpers.test_setup").modify_package_path()
-
+local assert = require 'luassert'
 local buffers = require('devtools.tests.buffers')
-local new_buffer_with_lines = buffers.new_buffer_with_lines
+
 
 local ps = require("ask-openai.predictions.prefix_suffix")
 
@@ -21,7 +20,7 @@ describe("get_prefix_suffix", function()
     }
 
     it("in middle of buffer, returns prefix and suffix", function()
-        local bufnr = new_buffer_with_lines(seven_lines)
+        local bufnr = buffers.new_buffer_with_lines(seven_lines)
         local line_base1 = 4 -- 4th line
         local col_base0 = 0 -- cursor in first col
         vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
@@ -39,7 +38,7 @@ describe("get_prefix_suffix", function()
     end)
 
     it("cursor is at start of buffer, first line, first col", function()
-        local bufnr = new_buffer_with_lines(seven_lines)
+        local bufnr = buffers.new_buffer_with_lines(seven_lines)
         local line_base1 = 1
         local col_base0 = 0
         vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
@@ -52,7 +51,7 @@ describe("get_prefix_suffix", function()
     end)
 
     it("cursor is at end of buffer, last line, last col", function()
-        local bufnr = new_buffer_with_lines(seven_lines)
+        local bufnr = buffers.new_buffer_with_lines(seven_lines)
         local line_base1 = 7
         local col_base0 = 5
         vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
@@ -77,7 +76,7 @@ describe("get_prefix_suffix", function()
     describe("plenty of lines both ways", function()
         describe("cursor line is not empty", function()
             it("cursor is at start of line", function()
-                local bufnr = new_buffer_with_lines(seven_lines)
+                local bufnr = buffers.new_buffer_with_lines(seven_lines)
                 local line_base1 = 4 -- 'line 4'
                 local col_base0 = 0 -- 'l' in 'line'
                 vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
@@ -90,7 +89,7 @@ describe("get_prefix_suffix", function()
             end)
 
             it("cursor is in middle of line", function()
-                local bufnr = new_buffer_with_lines(seven_lines)
+                local bufnr = buffers.new_buffer_with_lines(seven_lines)
                 local line_base1 = 4 -- 'line 4'
                 local col_base0 = 3 -- 3 is the 'e' in 'line'
                 vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
@@ -103,7 +102,7 @@ describe("get_prefix_suffix", function()
             end)
 
             it("cursor is on last char of line (means before the last char)", function()
-                local bufnr = new_buffer_with_lines(seven_lines)
+                local bufnr = buffers.new_buffer_with_lines(seven_lines)
                 local line_base1 = 4 -- 'line 4'
                 local col_base0 = 5 -- 5 ==> '4'
                 vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
@@ -119,7 +118,7 @@ describe("get_prefix_suffix", function()
                 -- FYI docs on coroutines and plenary tests:
                 --   https://github.com/nvim-lua/plenary.nvim/blob/master/TESTS_README.md#asynchronous-testing
 
-                local bufnr = new_buffer_with_lines(seven_lines)
+                local bufnr = buffers.new_buffer_with_lines(seven_lines)
                 -- move to 4th line, and go into insert mode at end of line
                 -- that way the cursor will be PAST the last '4' char and so it will end up in prefix (assuming the splitter code works)
                 vim.api.nvim_command(":4")
@@ -149,7 +148,7 @@ describe("get_prefix_suffix", function()
 
         describe("cursor line is empty", function()
             it("cursor is at start of the empty line", function()
-                local bufnr = new_buffer_with_lines({ "one", "two", "", "four", "five" })
+                local bufnr = buffers.new_buffer_with_lines({ "one", "two", "", "four", "five" })
                 local line_base1 = 3
                 local col_base0 = 0
                 vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })

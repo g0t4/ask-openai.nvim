@@ -2,9 +2,7 @@ require('ask-openai.helpers.testing')
 local Selection = require('ask-openai.helpers.selection')
 local should = require('devtools.tests.should')
 local log = require("ask-openai.logs.logger").predictions()
-
 local buffers = require('devtools.tests.buffers')
-local new_buffer_with_lines = buffers.new_buffer_with_lines
 
 local function get_selection()
     return Selection.get_visual_selection_for_current_window()
@@ -23,7 +21,7 @@ describe("get_visual_selection()", function()
         end
 
         before_each(function()
-            new_buffer_with_lines({ "foo the bar" })
+            buffers.new_buffer_with_lines({ "foo the bar" })
         end)
 
         it("no selections yet, should map to empty selection", function()
@@ -59,7 +57,7 @@ describe("get_visual_selection()", function()
         end)
 
         it("linewise visual mode - selected last two lines thru end of file", function()
-            new_buffer_with_lines({ "one", "two", "three", "four", "five" })
+            buffers.new_buffer_with_lines({ "one", "two", "three", "four", "five" })
 
             vim.cmd(':4')
             vim.cmd(':normal! VjV') -- second V exits
@@ -69,7 +67,7 @@ describe("get_visual_selection()", function()
         end)
 
         it("linewise visual mode - selected first two lines - start of file", function()
-            new_buffer_with_lines({ "one", "two", "three", "four", "five" })
+            buffers.new_buffer_with_lines({ "one", "two", "three", "four", "five" })
 
             vim.cmd(':1')
             vim.cmd('normal! VjV') -- second V exits
@@ -79,7 +77,7 @@ describe("get_visual_selection()", function()
         end)
 
         it("linewise visual mode - multiple lines selected in middle of buffer", function()
-            new_buffer_with_lines({ "one", "two", "three", "four", "five" })
+            buffers.new_buffer_with_lines({ "one", "two", "three", "four", "five" })
 
             vim.cmd(':2')
             vim.cmd('normal! V2jV') -- second V exits
@@ -188,7 +186,7 @@ describe("get_visual_selection()", function()
                 "line 13",
                 "line 14 the cow is over there",
             }
-            new_buffer_with_lines(lines)
+            buffers.new_buffer_with_lines(lines)
         end)
 
         describe("linewise selections", function()
