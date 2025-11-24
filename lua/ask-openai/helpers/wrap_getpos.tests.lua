@@ -52,6 +52,7 @@ _describe("GetPos wrappers", function()
 
     _describe("LastSelection", function()
         _describe("selection was closed", function()
+            _describe("linewise", function()
                 it("cursor was at END of linewise selection", function()
                     new_buffer_with_lines({ "one", "two", "three", "four", "five" })
                     vim.cmd(':2')
@@ -88,6 +89,7 @@ _describe("GetPos wrappers", function()
                         linewise         = true,
                     }, sel)
                 end)
+            end)
 
 
             it("cursor was at START of charwise selection - on same line", function()
