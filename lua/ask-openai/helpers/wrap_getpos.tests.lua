@@ -91,7 +91,7 @@ _describe("GetPos wrappers", function()
                 end)
             end)
 
-
+            _describe("charwise", function()
                 it("cursor was at START of charwise selection - on same line", function()
                     new_buffer_with_lines({ "one", "two", "three", "four", "five" })
                     vim.cmd(':2')
@@ -160,6 +160,7 @@ _describe("GetPos wrappers", function()
 
                 it("cursor was at END of charwise selection - across two lines", function()
                 end)
+            end)
         end)
     end)
 
