@@ -1,10 +1,13 @@
+-- testing modules:
 require("ask-openai.helpers.test_setup").modify_package_path()
-local Selection = require('ask-openai.helpers.selection')
+local assert = require 'luassert'
 local should = require('devtools.tests.should')
-local log = require("ask-openai.logs.logger").predictions()
-local GetPos = require('ask-openai.helpers.wrap_getpos')
 local _describe = require('devtools.tests._describe')
 local buffers = require('devtools.tests.buffers')
+-- system under test:
+local log = require("ask-openai.logs.logger").predictions()
+local Selection = require('ask-openai.helpers.selection')
+local GetPos = require('ask-openai.helpers.wrap_getpos')
 
 function ignore(a, b)
 end

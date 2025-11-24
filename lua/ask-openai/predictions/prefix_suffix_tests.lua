@@ -1,8 +1,8 @@
+-- testing modules:
 require("ask-openai.helpers.test_setup").modify_package_path()
 local assert = require 'luassert'
 local buffers = require('devtools.tests.buffers')
-
-
+-- system under test:
 local ps = require("ask-openai.predictions.prefix_suffix")
 
 describe("get_prefix_suffix", function()
