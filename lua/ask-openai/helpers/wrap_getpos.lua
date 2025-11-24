@@ -45,6 +45,9 @@ end
 ---@field start_col_base1 integer
 ---@field end_line_base1 integer
 ---@field end_col_base1 integer
+---@field mode string
+---@field last_visual_mode string
+---@field linewise boolean
 _G.GetPosSelectionRange = {}
 
 local instance_mt = { __index = GetPosSelectionRange }
