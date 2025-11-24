@@ -66,19 +66,19 @@ function GetPosSelectionRange:line_count()
     return self.end_line_b1 - self.start_line_b1 + 1
 end
 
-function GetPosSelectionRange:start_line_b0()
+function GetPosSelectionRange:start_line_base0()
     return self.start_line_b1 - 1
 end
 
-function GetPosSelectionRange:end_line_b0()
+function GetPosSelectionRange:end_line_base0()
     return self.end_line_b1 - 1
 end
 
-function GetPosSelectionRange:start_col_b0()
+function GetPosSelectionRange:start_col_base0()
     return self.start_col_b1 - 1
 end
 
-function GetPosSelectionRange:end_col_b0()
+function GetPosSelectionRange:end_col_base0()
     return self.end_col_b1 - 1
 end
 
