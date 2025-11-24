@@ -158,8 +158,8 @@ _describe("GetPos wrappers", function()
                     }, sel)
                 end)
 
-            it("cursor was at END of charwise selection - across two lines", function()
-            end)
+                it("cursor was at END of charwise selection - across two lines", function()
+                end)
         end)
     end)
 
