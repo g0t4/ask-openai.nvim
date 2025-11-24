@@ -36,7 +36,7 @@ _describe("GetPos wrappers", function()
             }, selection)
         end)
 
-        it("CurrentSelection() returns coords of cursor for both start and end positions", function()
+        it("current_selection() returns coords of cursor for both start and end positions", function()
             local sel = GetPos.current_selection()
             should.be_same_colorful_diff({
                 start_line_base1 = 1,
@@ -164,7 +164,7 @@ _describe("GetPos wrappers", function()
         end)
     end)
 
-    _describe("CurrentSelection", function()
+    _describe("current_selection", function()
         _describe("still selected", function()
             -- FYI this is probably rare to happen... I really should just close the mode and thus capture into '< and '>
             it("cursor at end of linewise selection - same as reverse", function()
@@ -322,7 +322,7 @@ _describe("GetPosSelectionRange", function()
 
     _describe("check return types", function()
         _describe("start of selection is before end", function()
-            it("GetPos.CurrentSelection() returns GetPosSelectionRange", function()
+            it("GetPos.current_selection() returns GetPosSelectionRange", function()
                 new_buffer_with_lines({ "one", "two", "three", "four", "five" })
                 vim.cmd("normal Vj") -- make a selection (one line)
 
@@ -335,7 +335,7 @@ _describe("GetPosSelectionRange", function()
         end)
 
         _describe("end of selection is before start (aka reversed)", function()
-            it("GetPos.CurrentSelection() returns GetPosSelectionRange", function()
+            it("GetPos.current_selection() returns GetPosSelectionRange", function()
                 new_buffer_with_lines({ "one", "two", "three", "four", "five" })
                 vim.cmd(":3") -- make a selection (one line)
                 vim.cmd("normal Vk") -- reverse search
