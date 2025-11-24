@@ -218,21 +218,31 @@ function M.set_reasoning_level(level)
     save()
 end
 
----@return string|nil
+---@enum FimReasoningLevel
+M.FimReasoningLevel = {
+    off = "off",
+    low = "low",
+    medium = "medium",
+    high = "high"
+}
+
+---@return FimReasoningLevel
 function M.get_reasoning_level()
     local cfg = get()
-    return cfg.reasoning_level or "low"
+    return cfg.reasoning_level or M.FimReasoningLevel.low
 end
 
 function M.cycle_reasoning_level()
     local current = M.get_reasoning_level()
     local next_level = ""
-    if current == "low" then
-        next_level = "medium"
-    elseif current == "medium" then
-        next_level = "high"
+    if current == M.FimReasoningLevel.off then
+        next_level = M.FimReasoningLevel.low
+    elseif current == M.FimReasoningLevel.low then
+        next_level = M.FimReasoningLevel.medium
+    elseif current == M.FimReasoningLevel.medium then
+        next_level = M.FimReasoningLevel.high
     else
-        next_level = "low"
+        next_level = M.FimReasoningLevel.off
     end
     M.set_reasoning_level(next_level)
     return next_level

@@ -1,5 +1,6 @@
 local log = require("ask-openai.logs.logger").predictions()
 local api = require("ask-openai.api")
+local local_share = require("ask-openai.config.local_share")
 
 local M = {}
 
@@ -19,7 +20,9 @@ end
 function M.new_gptoss_chat_body_llama_server(request_body)
     throw_if_no_messages(request_body)
     local level = api.get_reasoning_level()
-    local max_tokens = level == "high" and 8192 or level == "medium" and 4096 or 2048
+    local max_tokens = level == local_share.FimReasoningLevel.high and 8192
+        or level == local_share.FimReasoningLevel.medium and 4096
+        or 2048
 
     local recommended = {
         -- https://huggingface.co/openai/gpt-oss-20b/blob/main/generation_config.json

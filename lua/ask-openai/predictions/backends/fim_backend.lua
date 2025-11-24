@@ -181,14 +181,13 @@ function FimBackend:body_for()
             body.chat_template_kwargs = {
                 reasoning_effort = level
             }
-            if level == "high" then
+            if level == local_share.FimReasoningLevel.high then
                 body.max_tokens = 8192 -- high thinking
-            elseif level == "medium" then
+            elseif level == local_share.FimReasoningLevel.medium then
                 body.max_tokens = 4096 -- medium thinking
             else
                 body.max_tokens = 2048 -- low thinking
             end
-        else
             -- * /completions legacy endpoint:
             builder = function()
                 -- * raw prompt /completions, no thinking (I could have model think too, just need to parse that then)
