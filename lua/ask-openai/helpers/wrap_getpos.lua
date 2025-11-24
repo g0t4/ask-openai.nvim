@@ -100,20 +100,20 @@ function GetPos.CurrentSelection()
         -- do the selection points refer to a linewise range OR charwise
         -- charwise = opposite linewise
         return GetPosSelectionRange:new {
-            start_line_base1    = dot.line_base1,
-            start_col_base1     = dot.col_base1,
-            end_line_base1      = v.line_base1,
-            end_col_base1       = v.col_base1,
+            start_line_base1 = dot.line_base1,
+            start_col_base1  = dot.col_base1,
+            end_line_base1   = v.line_base1,
+            end_col_base1    = v.col_base1,
             mode             = mode,
             last_visual_mode = last_visual_mode,
             linewise         = linewise,
         }
     else
         return GetPosSelectionRange:new {
-            start_line_base1    = v.line_base1,
-            start_col_base1     = v.col_base1,
-            end_line_base1      = dot.line_base1,
-            end_col_base1       = dot.col_base1,
+            start_line_base1 = v.line_base1,
+            start_col_base1  = v.col_base1,
+            end_line_base1   = dot.line_base1,
+            end_col_base1    = dot.col_base1,
             mode             = mode,
             last_visual_mode = last_visual_mode,
             linewise         = linewise,
