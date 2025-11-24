@@ -16,8 +16,8 @@ end
 setup_for_testing()
 
 ---@class GetPosPosition
----@field line_b1 integer
----@field col_b1 integer
+---@field line_base1 integer
+---@field col_base1 integer
 _G.GetPosPosition = {}
 
 ---@param expr string
@@ -25,7 +25,7 @@ _G.GetPosPosition = {}
 local function getpos_only_line_and_column(expr)
     -- FYI offset has to do with virtualedit (when cursor is allowed to stop on non-char positions)
     local bufnr, line_base1, col_base1, offset = unpack(vim.fn.getpos(expr))
-    return { line_b1 = line_base1, col_b1 = col_base1 }
+    return { line_base1 = line_base1, col_base1 = col_base1 }
 end
 
 ---@return GetPosPosition
@@ -40,10 +40,10 @@ function GetPos.OtherEndOfSelection()
 end
 
 ---@class GetPosSelectionRange
----@field start_line_b1 integer
----@field start_col_b1 integer
----@field end_line_b1 integer
----@field end_col_b1 integer
+---@field start_line_base1 integer
+---@field start_col_base1 integer
+---@field end_line_base1 integer
+---@field end_col_base1 integer
 _G.GetPosSelectionRange = {}
 
 local instance_mt = { __index = GetPosSelectionRange }
@@ -63,23 +63,23 @@ end
 function GetPosSelectionRange:line_count()
     -- FYI this is moreso intended for a linewise selection
     -- but could be useful in a charwise too
-    return self.end_line_b1 - self.start_line_b1 + 1
+    return self.end_line_base1 - self.start_line_base1 + 1
 end
 
 function GetPosSelectionRange:start_line_base0()
-    return self.start_line_b1 - 1
+    return self.start_line_base1 - 1
 end
 
 function GetPosSelectionRange:end_line_base0()
-    return self.end_line_b1 - 1
+    return self.end_line_base1 - 1
 end
 
 function GetPosSelectionRange:start_col_base0()
-    return self.start_col_b1 - 1
+    return self.start_col_base1 - 1
 end
 
 function GetPosSelectionRange:end_col_base0()
-    return self.end_col_b1 - 1
+    return self.end_col_base1 - 1
 end
 
 -- TODO GetPosSelectionRange:*_base0() calculations
@@ -96,24 +96,24 @@ function GetPos.CurrentSelection()
     local linewise = mode == "V" or (mode ~= "v" and last_visual_mode == "V")
 
     local start_line, start_col, end_line, end_col
-    if dot.line_b1 < v.line_b1 or (dot.line_b1 == v.line_b1 and dot.col_b1 <= v.col_b1) then
+    if dot.line_base1 < v.line_base1 or (dot.line_base1 == v.line_base1 and dot.col_base1 <= v.col_base1) then
         -- do the selection points refer to a linewise range OR charwise
         -- charwise = opposite linewise
         return GetPosSelectionRange:new {
-            start_line_b1    = dot.line_b1,
-            start_col_b1     = dot.col_b1,
-            end_line_b1      = v.line_b1,
-            end_col_b1       = v.col_b1,
+            start_line_base1    = dot.line_base1,
+            start_col_base1     = dot.col_base1,
+            end_line_base1      = v.line_base1,
+            end_col_base1       = v.col_base1,
             mode             = mode,
             last_visual_mode = last_visual_mode,
             linewise         = linewise,
         }
     else
         return GetPosSelectionRange:new {
-            start_line_b1    = v.line_b1,
-            start_col_b1     = v.col_b1,
-            end_line_b1      = dot.line_b1,
-            end_col_b1       = dot.col_b1,
+            start_line_base1    = v.line_base1,
+            start_col_base1     = v.col_base1,
+            end_line_base1      = dot.line_base1,
+            end_col_base1       = dot.col_base1,
             mode             = mode,
             last_visual_mode = last_visual_mode,
             linewise         = linewise,
@@ -132,10 +132,10 @@ function GetPos.LastSelection()
     local last_visual_mode = vim.fn.visualmode()
     local linewise = mode == "V" or (mode ~= "v" and last_visual_mode == "V")
     return GetPosSelectionRange:new {
-        start_line_b1 = lt.line_b1,
-        start_col_b1 = lt.col_b1,
-        end_line_b1 = gt.line_b1,
-        end_col_b1 = gt.col_b1,
+        start_line_base1 = lt.line_base1,
+        start_col_base1 = lt.col_base1,
+        end_line_base1 = gt.line_base1,
+        end_col_base1 = gt.col_base1,
         mode = mode,
         last_visual_mode = last_visual_mode,
         linewise = linewise,

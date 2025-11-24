@@ -28,10 +28,10 @@ _describe("GetPos wrappers", function()
         it("LastSelection is all zeros", function()
             local selection = GetPos.LastSelection()
             should.be_same_colorful_diff({
-                start_line_b1    = 0,
-                end_line_b1      = 0,
-                start_col_b1     = 0,
-                end_col_b1       = 0,
+                start_line_base1    = 0,
+                end_line_base1      = 0,
+                start_col_base1     = 0,
+                end_col_base1       = 0,
                 mode             = "n",
                 last_visual_mode = "",
                 linewise         = false,
@@ -41,10 +41,10 @@ _describe("GetPos wrappers", function()
         it("CurrentSelection() returns coords of cursor for both start and end positions", function()
             local sel = GetPos.CurrentSelection()
             should.be_same_colorful_diff({
-                start_line_b1    = 1,
-                end_line_b1      = 1,
-                start_col_b1     = 2,
-                end_col_b1       = 2,
+                start_line_base1    = 1,
+                end_line_base1      = 1,
+                start_col_base1     = 2,
+                end_col_base1       = 2,
                 mode             = "n",
                 last_visual_mode = "",
                 linewise         = false,
@@ -65,10 +65,10 @@ _describe("GetPos wrappers", function()
 
                 local sel = GetPos.LastSelection()
                 should.be_same_colorful_diff({
-                    start_line_b1    = 2,
-                    end_line_b1      = 3,
-                    start_col_b1     = 1,
-                    end_col_b1       = 2147483647,
+                    start_line_base1    = 2,
+                    end_line_base1      = 3,
+                    start_col_base1     = 1,
+                    end_col_base1       = 2147483647,
                     mode             = "n",
                     last_visual_mode = "V",
                     linewise         = true,
@@ -82,12 +82,12 @@ _describe("GetPos wrappers", function()
                 should.be_equal(vim.fn.mode(), "n")
                 local sel = GetPos.LastSelection()
                 should.be_same_colorful_diff({
-                    start_line_b1    = 2,
-                    end_line_b1      = 3,
-                    start_col_b1     = 1,
+                    start_line_base1    = 2,
+                    end_line_base1      = 3,
+                    start_col_base1     = 1,
                     -- TODO map to -1 for end col (aka end of line)... in fact that works in many test cases
                     --   TODO OR map cols to nil when in V visual linewise mode?
-                    end_col_b1       = 2147483647, -- this is fine actually... since I am in line wise mode anyways... col is meaningless
+                    end_col_base1       = 2147483647, -- this is fine actually... since I am in line wise mode anyways... col is meaningless
                     mode             = "n",
                     last_visual_mode = "V",
                     linewise         = true,
@@ -102,10 +102,10 @@ _describe("GetPos wrappers", function()
                 should.be_equal(vim.fn.mode(), "n")
                 local sel = GetPos.LastSelection()
                 should.be_same_colorful_diff({
-                    start_line_b1    = 2,
-                    end_line_b1      = 2,
-                    start_col_b1     = 1,
-                    end_col_b1       = 3,
+                    start_line_base1    = 2,
+                    end_line_base1      = 2,
+                    start_col_base1     = 1,
+                    end_col_base1       = 3,
                     mode             = "n",
                     last_visual_mode = "v",
                     linewise         = false,
@@ -118,10 +118,10 @@ _describe("GetPos wrappers", function()
                 should.be_equal(vim.fn.mode(), "n")
                 local sel = GetPos.LastSelection()
                 should.be_same_colorful_diff({
-                    start_line_b1    = 3,
-                    end_line_b1      = 3,
-                    start_col_b1     = 3,
-                    end_col_b1       = 5,
+                    start_line_base1    = 3,
+                    end_line_base1      = 3,
+                    start_col_base1     = 3,
+                    end_col_base1       = 5,
                     mode             = "n",
                     last_visual_mode = "v",
                     linewise         = false,
@@ -134,10 +134,10 @@ _describe("GetPos wrappers", function()
                 should.be_equal(vim.fn.mode(), "n")
                 local sel = GetPos.LastSelection()
                 should.be_same_colorful_diff({
-                    start_line_b1    = 3,
-                    end_line_b1      = 4,
-                    start_col_b1     = 1,
-                    end_col_b1       = 1, -- started on col 1 so still on it in next row
+                    start_line_base1    = 3,
+                    end_line_base1      = 4,
+                    start_col_base1     = 1,
+                    end_col_base1       = 1, -- started on col 1 so still on it in next row
                     mode             = "n",
                     last_visual_mode = "v",
                     linewise         = false,
@@ -151,10 +151,10 @@ _describe("GetPos wrappers", function()
                 should.be_equal(vim.fn.mode(), "n")
                 local sel = GetPos.LastSelection()
                 should.be_same_colorful_diff({
-                    start_line_b1    = 3,
-                    end_line_b1      = 4,
-                    start_col_b1     = 5, -- line 3 has 5 chars (thre[e])
-                    end_col_b1       = 5, -- ?? line 4 only has 4 chars but still b/c I was in col 5 I am still in it on line 4 after down
+                    start_line_base1    = 3,
+                    end_line_base1      = 4,
+                    start_col_base1     = 5, -- line 3 has 5 chars (thre[e])
+                    end_col_base1       = 5, -- ?? line 4 only has 4 chars but still b/c I was in col 5 I am still in it on line 4 after down
                     mode             = "n",
                     last_visual_mode = "v",
                     linewise         = false,
@@ -178,17 +178,17 @@ _describe("GetPos wrappers", function()
                 -- TODO remove this lower level test? should I also remove the API for it
                 local cursor_pos = GetPos.CursorPosition()
                 local expected_pos = {
-                    line_b1 = 3,
-                    col_b1  = 1,
+                    line_base1 = 3,
+                    col_base1  = 1,
                 }
                 should.be_same_colorful_diff(expected_pos, cursor_pos)
 
                 local sel = GetPos.CurrentSelection()
                 local expected = {
-                    start_line_b1    = 2,
-                    start_col_b1     = 1,
-                    end_line_b1      = 3,
-                    end_col_b1       = 1,
+                    start_line_base1    = 2,
+                    start_col_base1     = 1,
+                    end_line_base1      = 3,
+                    end_col_base1       = 1,
                     mode             = "V",
                     last_visual_mode = "",
                     linewise         = true,
@@ -204,10 +204,10 @@ _describe("GetPos wrappers", function()
 
                 local sel = GetPos.CurrentSelection()
                 should.be_same_colorful_diff({
-                    start_line_b1    = 2,
-                    start_col_b1     = 1,
-                    end_line_b1      = 3,
-                    end_col_b1       = 1,
+                    start_line_base1    = 2,
+                    start_col_base1     = 1,
+                    end_line_base1      = 3,
+                    end_col_base1       = 1,
                     mode             = "V",
                     last_visual_mode = "",
                     linewise         = true,
@@ -222,10 +222,10 @@ _describe("GetPos wrappers", function()
                 local sel = GetPos.CurrentSelection()
                 -- FYI start_line=end_line, start_col=end_col for single line selection
                 should.be_same_colorful_diff({
-                    start_line_b1    = 3,
-                    start_col_b1     = 1,
-                    end_line_b1      = 3,
-                    end_col_b1       = 1,
+                    start_line_base1    = 3,
+                    start_col_base1     = 1,
+                    end_line_base1      = 3,
+                    end_col_base1       = 1,
                     mode             = "V",
                     last_visual_mode = "",
                     linewise         = true,
@@ -241,10 +241,10 @@ _describe("GetPos wrappers", function()
                 -- FYI start_line=end_line, start_col=end_col for single line selection
                 -- nice thing about be_same and hash => shows sorted keys in output diff view
                 should.be_same_colorful_diff({
-                    start_line_b1    = 3,
-                    end_line_b1      = 4,
-                    start_col_b1     = 1,
-                    end_col_b1       = 1,
+                    start_line_base1    = 3,
+                    end_line_base1      = 4,
+                    start_col_base1     = 1,
+                    end_col_base1       = 1,
                     mode             = "V",
                     last_visual_mode = "",
                     linewise         = true,
@@ -253,12 +253,12 @@ _describe("GetPos wrappers", function()
                 -- * move 2 chars right on second line, just tests how col works in linewise visual selection
                 vim.cmd(":normal! 2l") -- move 2 chars right (only changes col of end position
                 sel = GetPos.CurrentSelection()
-                -- should.be_equal(3, sel.end_col_b1)
+                -- should.be_equal(3, sel.end_col_base1)
                 should.be_same_colorful_diff({
-                    start_line_b1    = 3,
-                    end_line_b1      = 4,
-                    start_col_b1     = 1,
-                    end_col_b1       = 3,
+                    start_line_base1    = 3,
+                    end_line_base1      = 4,
+                    start_col_base1     = 1,
+                    end_col_base1       = 3,
                     mode             = "V",
                     last_visual_mode = "",
                     linewise         = true,
@@ -278,10 +278,10 @@ _describe("GetPos wrappers", function()
 
                 local sel = GetPos.CurrentSelection()
                 local expected = {
-                    start_line_b1    = 4,
-                    start_col_b1     = 1,
-                    end_line_b1      = 4,
-                    end_col_b1       = 2,
+                    start_line_base1    = 4,
+                    start_col_base1     = 1,
+                    end_line_base1      = 4,
+                    end_col_base1       = 2,
                     mode             = "v", -- currently in a selection
                     last_visual_mode = "V", -- last selection was V... but doesn't  matter b/c we are currently selecting in v! and when its done it'll become last_visualmode
                     linewise         = false,
@@ -296,10 +296,10 @@ end)
 _describe("GetPosSelectionRange", function()
     it(":new(range) uses range object fields", function()
         local range = {
-            start_line_b1 = 1,
-            start_col_b1  = 2,
-            end_line_b1   = 3,
-            end_col_b1    = 4,
+            start_line_base1 = 1,
+            start_col_base1  = 2,
+            end_line_base1   = 3,
+            end_col_base1    = 4,
             -- TODO others? I don't know if these should be on the wrapper type or not?
             -- mode             = mode,
             -- last_visual_mode = last_visual_mode,
@@ -312,10 +312,10 @@ _describe("GetPosSelectionRange", function()
         local instance_metatable = getmetatable(instance)
         assert.not_equal(instance_metatable, nil, "instance should have a defined metatable")
         assert.equal(instance_metatable.__index, GetPosSelectionRange, "instance should inherit behavior from GetPosSelectionRange")
-        assert.equal(instance.start_line_b1, 1)
-        assert.equal(instance.start_col_b1, 2)
-        assert.equal(instance.end_line_b1, 3)
-        assert.equal(instance.end_col_b1, 4)
+        assert.equal(instance.start_line_base1, 1)
+        assert.equal(instance.start_col_base1, 2)
+        assert.equal(instance.end_line_base1, 3)
+        assert.equal(instance.end_col_base1, 4)
 
 
         -- TODO! FINISH THE TEST CASE HERE... I passed out instead of continuing this...
@@ -365,10 +365,10 @@ _describe("GetPosSelectionRange", function()
 
     it(":line_count() returns number of lines the selection spans, without considering column offsets within each line", function()
         local selection = GetPosSelectionRange:new({
-            start_line_b1 = 1,
-            -- start_col_b1 = ,
-            end_line_b1 = 3,
-            -- end_col_b1 = ,
+            start_line_base1 = 1,
+            -- start_col_base1 = ,
+            end_line_base1 = 3,
+            -- end_col_base1 = ,
         })
 
         assert.equal(selection:line_count(), 3)
@@ -376,10 +376,10 @@ _describe("GetPosSelectionRange", function()
 
     describe("base0() methods", function()
         local selection = GetPosSelectionRange:new({
-            start_line_b1 = 10,
-            end_line_b1 = 20,
-            start_col_b1 = 30,
-            end_col_b1 = 40,
+            start_line_base1 = 10,
+            end_line_base1 = 20,
+            start_col_base1 = 30,
+            end_col_base1 = 40,
         })
 
         it(":start_line_base0()", function()
