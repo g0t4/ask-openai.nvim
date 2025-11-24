@@ -107,6 +107,7 @@ function GetPos.CurrentSelection()
             mode             = mode,
             last_visual_mode = last_visual_mode,
             linewise         = linewise,
+            -- PRN add reversed = true/false... if I need to know direction at some point (was dot before v, or v before dot)
         }
     else
         return GetPosSelectionRange:new {
