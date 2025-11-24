@@ -1,6 +1,8 @@
 local assert = require 'luassert'
 require("ask-openai.helpers.test_setup").modify_package_path()
-require("ask-openai.helpers.buffer_testing")
+
+local buffers = require('devtools.tests.buffers')
+local new_buffer_with_lines = buffers.new_buffer_with_lines
 
 local ps = require("ask-openai.predictions.prefix_suffix")
 

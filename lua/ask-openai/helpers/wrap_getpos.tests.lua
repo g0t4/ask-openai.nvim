@@ -2,10 +2,10 @@ require('ask-openai.helpers.testing')
 local Selection = require('ask-openai.helpers.selection')
 local should = require('devtools.tests.should')
 local log = require("ask-openai.logs.logger").predictions()
-local buffers = require('devtools.tests.buffers')
 local GetPos = require('ask-openai.helpers.wrap_getpos')
 local _describe = require('devtools.tests._describe')
 
+local buffers = require('devtools.tests.buffers')
 local new_buffer_with_lines = buffers.new_buffer_with_lines
 
 function ignore(a, b)

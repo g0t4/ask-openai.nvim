@@ -1,8 +1,8 @@
 local assert = require 'luassert'
 require("ask-openai.helpers.test_setup").modify_package_path()
-require("ask-openai.helpers.buffer_testing")
 
-
+local buffers = require('devtools.tests.buffers')
+local new_buffer_with_lines = buffers.new_buffer_with_lines
 
 it("benchmark setpos vs nvim_win_set_cursor", function()
     -- ***! TLDR difference is negligible at 490ns vs 150ns... only matters if calling alot in a tight loop

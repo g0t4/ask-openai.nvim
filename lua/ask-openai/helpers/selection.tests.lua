@@ -2,7 +2,9 @@ require('ask-openai.helpers.testing')
 local Selection = require('ask-openai.helpers.selection')
 local should = require('devtools.tests.should')
 local log = require("ask-openai.logs.logger").predictions()
-require('ask-openai.helpers.buffer_testing')
+
+local buffers = require('devtools.tests.buffers')
+local new_buffer_with_lines = buffers.new_buffer_with_lines
 
 local function get_selection()
     return Selection.get_visual_selection_for_current_window()
@@ -17,7 +19,7 @@ describe("get_visual_selection()", function()
         ---@diagnostic disable-next-line: unused-function
         local function print_all_lines_troubleshoot()
             -- for testing only
-            vim.print(vim.api.nvim_buf_get_lines(0, 0, -1, False))
+            vim.print(vim.api.nvim_buf_get_lines(0, 0, -1, false))
         end
 
         before_each(function()
