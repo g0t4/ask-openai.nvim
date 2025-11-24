@@ -134,3 +134,72 @@ curl build21.lan:8013/props | jq 'del(.chat_template)'
 
 # only chat_template:
 curl build21.lan:8013/props | jq .chat_template
+
+
+
+# %% ** TEST prefill_assistant_message
+#  s/b able to modify last assistant message instead of it being generated?
+#  looks like I can provide literal prompt text too?
+#
+#  see chat args parsing logic here:
+#    https://github.com/ggml-org/llama.cpp/blob/7d77f0732/tools/server/utils.hpp#L727-L748
+#  for /v1/chat/completions endpoint (obviously)
+#    https://github.com/ggml-org/llama.cpp/blob/7d77f0732/tools/server/utils.hpp#L727-L763
+#    TODO test w/ verbose-prompt on
+#
+#  IIUC it only is enabled via CLI arg?
+#    https://github.com/ggml-org/llama.cpp/blob/7d77f0732/common/arg.cpp#L2534
+#
+
+# * prefill (default on)
+echo '{
+  "messages": [
+     { "role": "user", "content": "test" }
+],
+  "max_tokens": 80,
+  "stream": false
+}' | curl --fail-with-body -sSL --no-buffer "$base_url/v1/chat/completions" -d @- \
+    | string replace --regex "^data: (\[DONE\])*" "" \
+    # null entries for records w/o choices[0].delta.content
+    | jq > prefill1.json
+
+# normally a message ends with smth like this (this is gptoss):
+#    <|start|>assistant
+#
+# (b/c of add_generation_prompt in templates)
+
+
+# ***! prefill + assistant is last message w/ content string or array, injects values (i.e. to control thinking)
+#  this allow you to prefill part of the assistant message! (i.e. disable thinking)
+
+echo '{
+  "messages": [
+     { "role": "user", "content": "test" },
+     { "role": "assistant", "content": "INJECTED RIGHT INTO PROMPT!!" }
+],
+  "max_tokens": 80,
+  "stream": false
+}' | curl --fail-with-body -sSL --no-buffer "$base_url/v1/chat/completions" -d @- \
+    | string replace --regex "^data: (\[DONE\])*" "" \
+    # null entries for records w/o choices[0].delta.content
+    | jq > prefill2.json
+
+# <|channel|>analysis<|message|>
+
+
+# * use it to set part or all of thinking:
+# in gptoss, add_generation_prompt injects this on end (and before any prefill):
+# <|start|>assistant
+#
+# which allows gptoss to respond with analysis channel first, optionally tool calls on commentary channel, finally final channel w/ final message for the turn
+echo '{
+  "messages": [
+     { "role": "user", "content": "test" },
+     { "role": "assistant", "content": "<|channel|>analysis<|message|>no thoughts for you<|end|><|start|>assistant<|channel|>final" }
+],
+  "max_tokens": 80,
+  "stream": false
+}' | curl --fail-with-body -sSL --no-buffer "$base_url/v1/chat/completions" -d @- \
+    | string replace --regex "^data: (\[DONE\])*" "" \
+    # null entries for records w/o choices[0].delta.content
+    | jq > prefill2.json
