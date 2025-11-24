@@ -182,11 +182,11 @@ function FimBackend:body_for()
                 reasoning_effort = level
             }
             if level == local_share.FimReasoningLevel.high then
-                body.max_tokens = 8192 -- high thinking
+                body.max_tokens = 16384 -- high thinking
             elseif level == local_share.FimReasoningLevel.medium then
-                body.max_tokens = 4096 -- medium thinking
+                body.max_tokens = 8192 -- medium thinking
             else
-                body.max_tokens = 2048 -- low thinking
+                body.max_tokens = 4096 -- low thinking
             end
             -- * /completions legacy endpoint:
             builder = function()
@@ -194,7 +194,6 @@ function FimBackend:body_for()
                 return fim.gptoss.get_fim_raw_prompt_no_thinking(self)
             end
             body.max_tokens = 200 -- FYI if I cut off all thinking
-            -- body.max_tokens = 2048 -- low thinking (if/when I allow thinking and use my harmoney_parser)
         end
 
         -- body.options.stop = fim.gptoss.sentinel_tokens.fim_stop_tokens -- TODO?
