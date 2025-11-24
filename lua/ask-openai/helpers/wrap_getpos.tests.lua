@@ -51,9 +51,6 @@ _describe("GetPos wrappers", function()
     end)
 
     _describe("LastSelection", function()
-        -- TODO! what about when I don't make any selection before calling LastSelection?
-        --   it will work but I should add some verification around what it's doing and make sure it is what I want
-
         _describe("selection was closed", function()
             it("cursor was at END of linewise selection", function()
                 new_buffer_with_lines({ "one", "two", "three", "four", "five" })
