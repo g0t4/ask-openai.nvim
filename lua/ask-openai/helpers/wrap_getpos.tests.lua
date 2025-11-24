@@ -92,22 +92,22 @@ _describe("GetPos wrappers", function()
             end)
 
 
-            it("cursor was at START of charwise selection - on same line", function()
-                new_buffer_with_lines({ "one", "two", "three", "four", "five" })
-                vim.cmd(':2')
-                vim.cmd(':normal! 0v2lv') -- two chars right
-                should.be_equal(vim.fn.mode(), "n")
-                local sel = GetPos.LastSelection()
-                should.be_same_colorful_diff({
-                    start_line_base1 = 2,
-                    end_line_base1   = 2,
-                    start_col_base1  = 1,
-                    end_col_base1    = 3,
-                    mode             = "n",
-                    last_visual_mode = "v",
-                    linewise         = false,
-                }, sel)
-            end)
+                it("cursor was at START of charwise selection - on same line", function()
+                    new_buffer_with_lines({ "one", "two", "three", "four", "five" })
+                    vim.cmd(':2')
+                    vim.cmd(':normal! 0v2lv') -- two chars right
+                    should.be_equal(vim.fn.mode(), "n")
+                    local sel = GetPos.LastSelection()
+                    should.be_same_colorful_diff({
+                        start_line_base1 = 2,
+                        end_line_base1   = 2,
+                        start_col_base1  = 1,
+                        end_col_base1    = 3,
+                        mode             = "n",
+                        last_visual_mode = "v",
+                        linewise         = false,
+                    }, sel)
+                end)
             it("cursor was at END of charwise selection - on same line", function()
                 new_buffer_with_lines({ "one", "two", "three", "four", "five" })
                 vim.cmd(':3')
