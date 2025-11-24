@@ -37,7 +37,7 @@ _describe("GetPos wrappers", function()
         end)
 
         it("CurrentSelection() returns coords of cursor for both start and end positions", function()
-            local sel = GetPos.CurrentSelection()
+            local sel = GetPos.current_selection()
             should.be_same_colorful_diff({
                 start_line_base1 = 1,
                 end_line_base1   = 1,
@@ -181,7 +181,7 @@ _describe("GetPos wrappers", function()
                 }
                 should.be_same_colorful_diff(expected_pos, cursor_pos)
 
-                local sel = GetPos.CurrentSelection()
+                local sel = GetPos.current_selection()
                 local expected = {
                     start_line_base1 = 2,
                     start_col_base1  = 1,
@@ -200,7 +200,7 @@ _describe("GetPos wrappers", function()
                 vim.cmd(':normal! 0Vk')
                 should.be_equal(vim.fn.mode(), "V")
 
-                local sel = GetPos.CurrentSelection()
+                local sel = GetPos.current_selection()
                 should.be_same_colorful_diff({
                     start_line_base1 = 2,
                     start_col_base1  = 1,
@@ -217,7 +217,7 @@ _describe("GetPos wrappers", function()
                 vim.cmd(':normal! 0V')
                 should.be_equal(vim.fn.mode(), "V")
 
-                local sel = GetPos.CurrentSelection()
+                local sel = GetPos.current_selection()
                 -- FYI start_line=end_line, start_col=end_col for single line selection
                 should.be_same_colorful_diff({
                     start_line_base1 = 3,
@@ -235,7 +235,7 @@ _describe("GetPos wrappers", function()
                 vim.cmd(':normal! 0Vj')
                 should.be_equal(vim.fn.mode(), "V")
 
-                local sel = GetPos.CurrentSelection()
+                local sel = GetPos.current_selection()
                 -- FYI start_line=end_line, start_col=end_col for single line selection
                 -- nice thing about be_same and hash => shows sorted keys in output diff view
                 should.be_same_colorful_diff({
@@ -250,7 +250,7 @@ _describe("GetPos wrappers", function()
 
                 -- * move 2 chars right on second line, just tests how col works in linewise visual selection
                 vim.cmd(":normal! 2l") -- move 2 chars right (only changes col of end position
-                sel = GetPos.CurrentSelection()
+                sel = GetPos.current_selection()
                 -- should.be_equal(3, sel.end_col_base1)
                 should.be_same_colorful_diff({
                     start_line_base1 = 3,
@@ -274,7 +274,7 @@ _describe("GetPos wrappers", function()
                 vim.cmd(':normal! 0vl') -- charise, 2 chars
                 should.be_equal(vim.fn.mode(), "v")
 
-                local sel = GetPos.CurrentSelection()
+                local sel = GetPos.current_selection()
                 local expected = {
                     start_line_base1 = 4,
                     start_col_base1  = 1,
@@ -326,7 +326,7 @@ _describe("GetPosSelectionRange", function()
                 new_buffer_with_lines({ "one", "two", "three", "four", "five" })
                 vim.cmd("normal Vj") -- make a selection (one line)
 
-                local instance = GetPos.CurrentSelection()
+                local instance = GetPos.current_selection()
                 -- vim.print(instance)
 
                 assert.not_nil(getmetatable(instance))
@@ -340,7 +340,7 @@ _describe("GetPosSelectionRange", function()
                 vim.cmd(":3") -- make a selection (one line)
                 vim.cmd("normal Vk") -- reverse search
 
-                local instance = GetPos.CurrentSelection()
+                local instance = GetPos.current_selection()
                 -- vim.print(instance)
 
                 assert.not_nil(getmetatable(instance))

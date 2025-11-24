@@ -9,7 +9,7 @@ local GetPos = {}
 function setup_for_testing()
     -- Map <leader>b to print the cursor position.
     vim.keymap.set({ 'n', 'v' }, '<leader>b', function()
-        vim.print(GetPos.CurrentSelection())
+        vim.print(GetPos.current_selection())
     end, { desc = "Print cursor position (getpos)" })
 end
 
@@ -87,7 +87,7 @@ end
 ---Returns the selection range in 1‑indexed line/column coordinates.
 ---The order is always start → end regardless of cursor direction.
 ---@return GetPosSelectionRange
-function GetPos.CurrentSelection()
+function GetPos.current_selection()
     local dot = getpos_only_line_and_column(".")
     local v = getpos_only_line_and_column("v")
 
