@@ -22,7 +22,7 @@ set base_url 'http://build21:8013'
 
 mkdir -p tmp
 
-# * prefill (default on)
+# * prefill (default on) - NO assistant prefill message sent
 # normally a message ends with smth like this (this is gptoss):
 #    <|start|>assistant
 
@@ -132,28 +132,40 @@ function demo_prefill
 
 end
 
-# first prefill w/ final message, even though there are tools, the model doesn't use them b/c prefil locks in final response
+# * 4 - first prefill w/ final message, even though there are tools, the model doesn't use them b/c prefil locks in final response
 demo_prefill "<|channel|>analysis<|message|>no thoughts for you<|end|><|start|>assistant<|channel|>final" >tmp/prefill4-final-ignores-tool-calls.json
 cat tmp/prefill4-final-ignores-tool-calls.json | jq ".__verbose | { prompt, content }"
 # response:
 #   "content": "<|message|>It’s currently **2025‑11‑24 03:31 UTC**."
+#     "prompt": "...<|start|>user<|message|>what time is it?<|end|><|start|>assistant<|channel|>analysis<|message|>no thoughts for you<|end|><|start|>assistant<|channel|>final",
 
-# now force commentary:
+# * 5 - now force commentary:
 demo_prefill "<|channel|>commentary to" >tmp/prefill5-force-tool-call.json
 cat tmp/prefill5-force-tool-call.json | jq ".__verbose | { prompt, content }"
 # response:
+#   "prompt": "...<|start|>user<|message|>what time is it?<|end|><|start|>assistant<|channel|>commentary to",
 #   "content": "=functions.run_command <|constrain|>json{\n  \"command\": \"date\",\n  \"workdir\": \"/\"\n}"
 #   NOTE this is not a valid message (AFAICT... though I am not versed in typical harmony response formatting and deviations from spec)
+# FYI better yet would be to provide empty thinking, the model will try to add analysis if its not there
 
-# now force commentary after analysis:
+# * 6 - now force commentary after analysis:
 demo_prefill "<|channel|>analysis<|message|>do as I am told<|end|><|start|>assistant<|channel|>commentary" >tmp/prefill6-force-tool-call.json
 cat tmp/prefill6-force-tool-call.json | jq ".__verbose | { prompt, content }"
 # response:
+#   "prompt": "...<|start|>user<|message|>what time is it?<|end|><|start|>assistant<|channel|>analysis<|message|>do as I am told<|end|><|start|>assistant<|channel|>commentary",
 #   "content": " to=functions.run_command<|channel|>analysis<|message|>{\n  \"command\": \"date\",\n  \"workdir\": \"/\"\n}"
 #   NOTE ok that looks better (has <|message|>
 #   FYI I am not versed in parsing harmony... it is possible the case 5 above is fine too and not unexpected
 
-# better yet would be to provide empty thinking, the model will try to add analysis if its not there
+# * 7 - default prefill with tool call suggestive request
+#  FYI can remove the assistant turn entirely, but to provide tools I'll just set it empty and reuse demo_prefill func
+demo_prefill "" >tmp/prefill7-default-prefill-with-tools.json
+cat tmp/prefill7-default-prefill-with-tools.json | jq ".__verbose | { prompt, content }"
+
+# "prompt": "...<|start|>user<|message|>what time is it?<|end|><|start|>assistant",
+
+# "content": "<|channel|>analysis<|message|>User asks \"what time is it?\" We need to give current time. Could compute using system. Use run_command to date.<|end|><|start|>assistant<|channel|>commentary to=functions.run_command <|constrain|>json<|message|>{\n  \"command\": \"date '+%Y-%m-%d %H:%M:%S %Z'\"\n}"
+
 
 # %%
 
