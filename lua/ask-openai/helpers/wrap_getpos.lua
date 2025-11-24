@@ -125,7 +125,7 @@ end
 ---Returns the current selection in 1‑indexed line/column coordinates.
 ---The order is always start → end regardless of cursor direction.
 ---@return GetPosSelectionRange
-function GetPos.LastSelection()
+function GetPos.last_selection()
     local lt = getpos_only_line_and_column("'<")
     local gt = getpos_only_line_and_column("'>")
 

@@ -23,8 +23,8 @@ _describe("GetPos wrappers", function()
         vim.cmd('normal! 0l') -- move one char from start of line
         should.be_equal(vim.fn.mode(), "n")
 
-        it("LastSelection is all zeros", function()
-            local selection = GetPos.LastSelection()
+        it("last_selection is all zeros", function()
+            local selection = GetPos.last_selection()
             should.be_same_colorful_diff({
                 start_line_base1 = 0,
                 end_line_base1   = 0,
@@ -50,7 +50,7 @@ _describe("GetPos wrappers", function()
         end)
     end)
 
-    _describe("LastSelection", function()
+    _describe("last_selection", function()
         _describe("selection was closed", function()
             _describe("linewise", function()
                 it("cursor was at END of linewise selection", function()
@@ -59,7 +59,7 @@ _describe("GetPos wrappers", function()
                     vim.cmd(':normal! 0VjV') -- select this line and next
                     should.be_equal(vim.fn.mode(), "n")
 
-                    local sel = GetPos.LastSelection()
+                    local sel = GetPos.last_selection()
                     should.be_same_colorful_diff({
                         start_line_base1 = 2,
                         end_line_base1   = 3,
@@ -76,7 +76,7 @@ _describe("GetPos wrappers", function()
                     vim.cmd(':3')
                     vim.cmd(':normal! VkV') -- select this line and line above
                     should.be_equal(vim.fn.mode(), "n")
-                    local sel = GetPos.LastSelection()
+                    local sel = GetPos.last_selection()
                     should.be_same_colorful_diff({
                         start_line_base1 = 2,
                         end_line_base1   = 3,
@@ -97,7 +97,7 @@ _describe("GetPos wrappers", function()
                     vim.cmd(':2')
                     vim.cmd(':normal! 0v2lv') -- two chars right
                     should.be_equal(vim.fn.mode(), "n")
-                    local sel = GetPos.LastSelection()
+                    local sel = GetPos.last_selection()
                     should.be_same_colorful_diff({
                         start_line_base1 = 2,
                         end_line_base1   = 2,
@@ -113,7 +113,7 @@ _describe("GetPos wrappers", function()
                     vim.cmd(':3')
                     vim.cmd(':normal! $v2hv') -- two chars left (from end of line)
                     should.be_equal(vim.fn.mode(), "n")
-                    local sel = GetPos.LastSelection()
+                    local sel = GetPos.last_selection()
                     should.be_same_colorful_diff({
                         start_line_base1 = 3,
                         end_line_base1   = 3,
@@ -129,7 +129,7 @@ _describe("GetPos wrappers", function()
                     vim.cmd(':3')
                     vim.cmd(':normal! 0vjv')
                     should.be_equal(vim.fn.mode(), "n")
-                    local sel = GetPos.LastSelection()
+                    local sel = GetPos.last_selection()
                     should.be_same_colorful_diff({
                         start_line_base1 = 3,
                         end_line_base1   = 4,
@@ -146,7 +146,7 @@ _describe("GetPos wrappers", function()
                     vim.cmd(':3')
                     vim.cmd(':normal! $vjv') -- 2j = down two lines
                     should.be_equal(vim.fn.mode(), "n")
-                    local sel = GetPos.LastSelection()
+                    local sel = GetPos.last_selection()
                     should.be_same_colorful_diff({
                         start_line_base1 = 3,
                         end_line_base1   = 4,
@@ -348,12 +348,12 @@ _describe("GetPosSelectionRange", function()
             end)
         end)
 
-        it("GetPos.LastSelection() returns GetPosSelectionRange", function()
+        it("GetPos.last_selection() returns GetPosSelectionRange", function()
             new_buffer_with_lines({ "one", "two", "three", "four", "five" })
             vim.cmd("normal Vj") -- make a selection (one line)
-            vim.cmd("normal <esc>") -- stop selection (so it becomes LastSelection)
+            vim.cmd("normal <esc>") -- stop selection (so it becomes last_selection)
 
-            local instance = GetPos.LastSelection()
+            local instance = GetPos.last_selection()
             -- vim.print(instance)
 
             assert.not_nil(getmetatable(instance))
