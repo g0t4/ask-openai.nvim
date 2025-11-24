@@ -29,7 +29,7 @@ local function getpos_only_line_and_column(expr)
 end
 
 ---@return GetPosPosition
-function GetPos.CursorPosition()
+function GetPos.cursor_position()
     return getpos_only_line_and_column(".")
 end
 
