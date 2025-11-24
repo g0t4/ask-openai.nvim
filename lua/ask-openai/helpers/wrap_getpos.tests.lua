@@ -70,24 +70,24 @@ _describe("GetPos wrappers", function()
                     }, sel)
                 end)
 
-            it("cursor was at START of linewise selection", function()
-                new_buffer_with_lines({ "one", "two", "three", "four", "five" })
-                vim.cmd(':3')
-                vim.cmd(':normal! VkV') -- select this line and line above
-                should.be_equal(vim.fn.mode(), "n")
-                local sel = GetPos.LastSelection()
-                should.be_same_colorful_diff({
-                    start_line_base1 = 2,
-                    end_line_base1   = 3,
-                    start_col_base1  = 1,
-                    -- TODO map to -1 for end col (aka end of line)... in fact that works in many test cases
-                    --   TODO OR map cols to nil when in V visual linewise mode?
-                    end_col_base1    = 2147483647, -- this is fine actually... since I am in line wise mode anyways... col is meaningless
-                    mode             = "n",
-                    last_visual_mode = "V",
-                    linewise         = true,
-                }, sel)
-            end)
+                it("cursor was at START of linewise selection", function()
+                    new_buffer_with_lines({ "one", "two", "three", "four", "five" })
+                    vim.cmd(':3')
+                    vim.cmd(':normal! VkV') -- select this line and line above
+                    should.be_equal(vim.fn.mode(), "n")
+                    local sel = GetPos.LastSelection()
+                    should.be_same_colorful_diff({
+                        start_line_base1 = 2,
+                        end_line_base1   = 3,
+                        start_col_base1  = 1,
+                        -- TODO map to -1 for end col (aka end of line)... in fact that works in many test cases
+                        --   TODO OR map cols to nil when in V visual linewise mode?
+                        end_col_base1    = 2147483647, -- this is fine actually... since I am in line wise mode anyways... col is meaningless
+                        mode             = "n",
+                        last_visual_mode = "V",
+                        linewise         = true,
+                    }, sel)
+                end)
 
 
             it("cursor was at START of charwise selection - on same line", function()
