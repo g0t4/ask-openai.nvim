@@ -94,6 +94,7 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
 
     local tx_message = TxChatMessage:new(rx_message.role, rx_message.content) --[[@as OpenAIChatCompletion_Assistant_TxChatMessage]]
 
+    -- FYI qwen3-8b's template exploded after tool call w/ reasoning_content included: (smth about lstrip).. if I comment out next line, then it works fine (tool calls and all):
     tx_message.reasoning_content = rx_message.reasoning_content
     -- FYI llama-server populates message.thinking via message.reasoning_content (for gptoss):
     --   https://github.com/ggml-org/llama.cpp/blob/0de8878c9/common/chat.cpp#L1813-L1817
