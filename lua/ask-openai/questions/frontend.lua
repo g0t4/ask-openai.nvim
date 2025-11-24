@@ -99,7 +99,7 @@ The semantic_grep tool:
     lines:append_blank_line()
     QuestionsFrontend.chat_window:append_styled_lines(lines)
 
-    ---@type TxChatMessage[]
+    ---@type OpenAIChatCompletion_TxChatMessage[]
     local messages = {
         TxChatMessage:system(system_prompt)
     }
