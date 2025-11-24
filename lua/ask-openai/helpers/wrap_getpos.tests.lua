@@ -52,23 +52,23 @@ _describe("GetPos wrappers", function()
 
     _describe("LastSelection", function()
         _describe("selection was closed", function()
-            it("cursor was at END of linewise selection", function()
-                new_buffer_with_lines({ "one", "two", "three", "four", "five" })
-                vim.cmd(':2')
-                vim.cmd(':normal! 0VjV') -- select this line and next
-                should.be_equal(vim.fn.mode(), "n")
+                it("cursor was at END of linewise selection", function()
+                    new_buffer_with_lines({ "one", "two", "three", "four", "five" })
+                    vim.cmd(':2')
+                    vim.cmd(':normal! 0VjV') -- select this line and next
+                    should.be_equal(vim.fn.mode(), "n")
 
-                local sel = GetPos.LastSelection()
-                should.be_same_colorful_diff({
-                    start_line_base1 = 2,
-                    end_line_base1   = 3,
-                    start_col_base1  = 1,
-                    end_col_base1    = 2147483647,
-                    mode             = "n",
-                    last_visual_mode = "V",
-                    linewise         = true,
-                }, sel)
-            end)
+                    local sel = GetPos.LastSelection()
+                    should.be_same_colorful_diff({
+                        start_line_base1 = 2,
+                        end_line_base1   = 3,
+                        start_col_base1  = 1,
+                        end_col_base1    = 2147483647,
+                        mode             = "n",
+                        last_visual_mode = "V",
+                        linewise         = true,
+                    }, sel)
+                end)
 
             it("cursor was at START of linewise selection", function()
                 new_buffer_with_lines({ "one", "two", "three", "four", "five" })
