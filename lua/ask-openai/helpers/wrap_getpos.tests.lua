@@ -1,4 +1,4 @@
-require('ask-openai.helpers.testing')
+require("ask-openai.helpers.test_setup").modify_package_path()
 local Selection = require('ask-openai.helpers.selection')
 local should = require('devtools.tests.should')
 local log = require("ask-openai.logs.logger").predictions()
