@@ -107,3 +107,44 @@ echo '{
 #            can't really do anything without first finishing the message
 #            and then the end of the finished message will stop generation (IIRC results in <|return|>
 #
+
+# %% * force tool call
+
+function demo_prefill
+    set prefill $argv[1]
+
+    set tools '"tools": [ { "type": "function", "function": { "description": "Run a command on this darwin machine", "parameters": { "properties": { "workdir": { "description": "Optional, current working directory", "type": "string" }, "stdin": { "description": "Optional, text to pipe into the command STDIN. For example, pass a python script to python3. Or, pass text for a new file to the cat command to create it!", "type": "string" }, "command": { "description": "Command with args", "type": "string" } }, "required": [ "command" ], "type": "object" }, "name": "run_command" } }],'
+
+    echo '{
+        '$tools'
+
+        "messages": [
+            { "role": "user", "content": "what time is it?" },
+            { "role": "assistant", "content": "'$prefill'" }
+        ],
+
+        "max_tokens": 80,
+        "stream": false
+    }' \
+        | curl --fail-with-body -sSL --no-buffer "$base_url/v1/chat/completions" -d @- \
+        | string replace --regex "^data: (\[DONE\])*" "" \
+        | jq
+
+end
+
+# first prefill w/ final message, even though there are tools, the model doesn't use them b/c prefil locks in final response
+demo_prefill "<|channel|>analysis<|message|>no thoughts for you<|end|><|start|>assistant<|channel|>final" >tmp/prefill4-final-ignores-tool-calls.json
+cat tmp/prefill4-final-ignores-tool-calls.json | jq ".__verbose | { prompt, content }"
+# response:
+#   "content": "<|message|>It’s currently **2025‑11‑24 03:31 UTC**."
+
+# now force commentary:
+demo_prefill "<|channel|>commentary to" >tmp/prefill5-force-tool-call.json
+cat tmp/prefill5-force-tool-call.json | jq ".__verbose | { prompt, content }"
+# response:
+#   "content": "=functions.run_command <|constrain|>json{\n  \"command\": \"date\",\n  \"workdir\": \"/\"\n}"
+
+# better yet would be to provide empty thinking, the model will try to add analysis if its not there
+
+# %%
+
