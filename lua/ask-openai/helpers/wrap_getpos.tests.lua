@@ -176,7 +176,7 @@ _describe("GetPos wrappers", function()
                 vim.cmd(':normal! 0Vj') -- 0 = start of line, then V select and j=down a line
                 should.be_equal(vim.fn.mode(), "V")
 
-                -- TODO remove this lower level test? should I also remove the API for it
+                -- TODO promote this as a top level test, I like it for consistency with base1/base0
                 local cursor_pos = GetPos.cursor_position()
                 local expected_pos = {
                     line_base1 = 3,

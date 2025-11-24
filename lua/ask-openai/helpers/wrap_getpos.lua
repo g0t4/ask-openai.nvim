@@ -30,6 +30,7 @@ end
 
 ---@return GetPosPosition
 function GetPos.cursor_position()
+    -- TODO add behavior to the result => i.e. cursor:base0() methods (like what I did with GetPosSelectionRange)
     return getpos_only_line_and_column(".")
 end
 
