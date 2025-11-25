@@ -11,7 +11,7 @@ local ps = require("ask-openai.predictions.prefix_suffix")
 local lualine = require('ask-openai.status.lualine')
 local stats = require("ask-openai.predictions.stats")
 local Curl = require("ask-openai.backends.curl")
-local LastRequest = require("ask-openai.backends.last_request")
+local CurlRequest = require("ask-openai.backends.last_request")
 local FimBackend = require("ask-openai.predictions.backends.fim_backend")
 
 ---@class PredictionsFrontend : StreamingFrontend
@@ -46,7 +46,7 @@ function PredictionsFrontend.ask_for_prediction()
         log:info("predictions.base_url", FimBackend.base_url)
         log:info("predictions.endpoint", FimBackend.endpoint)
 
-        local fim_request = LastRequest:new({
+        local fim_request = CurlRequest:new({
             body = body,
             base_url = FimBackend.base_url,
             endpoint = FimBackend.endpoint,
@@ -197,7 +197,7 @@ function PredictionsFrontend.cancel_current_prediction()
     end)
 
     -- FYI both this_prediction and request are new with each keystroke
-    LastRequest.terminate(this_prediction.fim_request)
+    CurlRequest.terminate(this_prediction.fim_request)
 end
 
 local ignore_filetypes = {

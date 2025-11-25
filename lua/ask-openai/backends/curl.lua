@@ -1,5 +1,5 @@
 local log = require("ask-openai.logs.logger").predictions()
-local LastRequest = require("ask-openai.backends.last_request")
+local CurlRequest = require("ask-openai.backends.last_request")
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 
 local Curl = {}
@@ -28,7 +28,7 @@ _G.CompletionsEndpoints = {
 ---@field on_curl_exited_successfully OnCurlExitedSuccessfully
 ---@field explain_error ExplainError
 
----@param request LastRequest|CurlRequestForThread
+---@param request CurlRequest|CurlRequestForThread
 ---@param frontend StreamingFrontend
 function Curl.spawn(request, frontend)
     request.body.stream = true
@@ -63,7 +63,7 @@ function Curl.spawn(request, frontend)
         end
 
         -- request stops ASAP, but not immediately
-        LastRequest.terminate(request)
+        CurlRequest.terminate(request)
         frontend.explain_error("Abort... unhandled exception in curl: " .. tostring(error_message))
     end
 

@@ -1,6 +1,6 @@
 local log = require("ask-openai.logs.logger").predictions()
 
----@class LastRequest
+---@class CurlRequest
 ---@field body table
 ---@field base_url string
 ---@field endpoint CompletionsEndpoints
@@ -8,17 +8,17 @@ local log = require("ask-openai.logs.logger").predictions()
 ---@field pid? integer
 ---@field start_time integer -- unix timestamp when request was sent (for timing)
 ---@field marks_ns_id
-local LastRequest = {}
+local CurlRequest = {}
 local request_counter = 1
 
----@class LastRequestParams
+---@class CurlRequestParams
 ---@field body table<string, any>
 ---@field base_url string
 ---@field endpoint CompletionsEndpoints
 
----@param params LastRequestParams
----@return LastRequest
-function LastRequest:new(params)
+---@param params CurlRequestParams
+---@return CurlRequest
+function CurlRequest:new(params)
     local body = params.body
     local base_url = params.base_url
     local endpoint = params.endpoint
@@ -41,13 +41,13 @@ function LastRequest:new(params)
 end
 
 ---@return string
-function LastRequest:get_url()
+function CurlRequest:get_url()
     return self.base_url .. self.endpoint
 end
 
-function LastRequest.terminate(request)
+function CurlRequest.terminate(request)
     if request == nil or request.handle == nil then
-        -- FYI prefer LastRequest.terminate(request) b/c no error if request is nil
+        -- FYI prefer CurlRequest.terminate(request) b/c no error if request is nil
         --   NOT request:terminate() -- get an error if request is nil
         return
     end
@@ -63,4 +63,4 @@ function LastRequest.terminate(request)
     end
 end
 
-return LastRequest
+return CurlRequest

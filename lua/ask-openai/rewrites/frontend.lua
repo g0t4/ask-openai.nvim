@@ -11,7 +11,7 @@ local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 local files = require("ask-openai.helpers.files")
 local api = require("ask-openai.api")
 local rag_client = require("ask-openai.rag.client")
-local LastRequest = require("ask-openai.backends.last_request")
+local CurlRequest = require("ask-openai.backends.last_request")
 local human = require("devtools.humanize")
 local tool_router = require("ask-openai.tools.router")
 local model_params = require("ask-openai.questions.models.params")
@@ -259,7 +259,7 @@ function RewriteFrontend.abort_last_request()
         return
     end
 
-    LastRequest.terminate(RewriteFrontend.last_request)
+    CurlRequest.terminate(RewriteFrontend.last_request)
 
     if RewriteFrontend.displayer ~= nil then
         RewriteFrontend.displayer:clear_extmarks()
@@ -396,7 +396,7 @@ function RewriteFrontend.stream_from_ollama(user_prompt, code, file_name)
             -- tools = tool_router.openai_tools(),
         })
 
-        RewriteFrontend.last_request = LastRequest:new({
+        RewriteFrontend.last_request = CurlRequest:new({
             body = body,
             base_url = "http://ollama:8013",
             endpoint = CompletionsEndpoints.oai_v1_chat_completions,
@@ -441,7 +441,7 @@ local function simulate_rewrite_stream_chunks(opts)
     -- use this for timing and to test streaming diff!
 
     RewriteFrontend.abort_last_request()
-    RewriteFrontend.last_request = LastRequest:new({ body = {}, base_url = "base", endpoint = CompletionsEndpoints.oai_v1_chat_completions, })
+    RewriteFrontend.last_request = CurlRequest:new({ body = {}, base_url = "base", endpoint = CompletionsEndpoints.oai_v1_chat_completions, })
     vim.cmd("normal! 0V6jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     RewriteFrontend.selection = Selection.get_visual_selection_for_current_window()
@@ -506,7 +506,7 @@ end
 
 local function simulate_rewrite_instant_one_chunk(opts)
     RewriteFrontend.abort_last_request()
-    RewriteFrontend.last_request = LastRequest:new({ body = {}, base_url = "base", endpoint = CompletionsEndpoints.oai_v1_chat_completions, })
+    RewriteFrontend.last_request = CurlRequest:new({ body = {}, base_url = "base", endpoint = CompletionsEndpoints.oai_v1_chat_completions, })
     vim.cmd("normal! 0V6jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     RewriteFrontend.selection = Selection.get_visual_selection_for_current_window()
