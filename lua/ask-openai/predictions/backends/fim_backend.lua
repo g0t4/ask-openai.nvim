@@ -188,11 +188,13 @@ function FimBackend:body_for()
             else
                 body.max_tokens = 4096 -- low thinking
             end
+        else
             -- * /completions legacy endpoint:
             builder = function()
                 -- * raw prompt /completions, no thinking (I could have model think too, just need to parse that then)
                 return fim.gptoss.get_fim_raw_prompt_no_thinking(self)
             end
+            body.raw = true
             body.max_tokens = 200 -- FYI if I cut off all thinking
         end
 
