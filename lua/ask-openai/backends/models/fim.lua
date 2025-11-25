@@ -49,8 +49,9 @@ function M.gptoss.get_fim_raw_prompt_no_thinking(request)
 end
 
 ---@param request FimBackend
-function M.gptoss.get_fim_chat_messages(request)
-    -- TODO! what if I change this to ask gptoss to rewrite the current line (only current line)
+---@param level FimReasoningLevel
+function M.gptoss.get_fim_chat_messages(request, level)
+    -- TODO what if I change this to ask gptoss to rewrite the current line (only current line)
     --  and then FIM just replaces that line?
     --  OR, add a shortcut key to accept FIM as replace current line?
     --  not always, but sometimes gptoss still suggests entire line (espeically for partial lines)
@@ -67,8 +68,21 @@ Make sure to practice the code change before you return a suggestion. Take the c
         TxChatMessage:developer(dev), -- FYI developer or system message must be first, and ONLY ONE is allowed
         TxChatMessage:user(HarmonyRawFimPromptBuilder.context_user_msg(request)),
         TxChatMessage:user(HarmonyRawFimPromptBuilder.fim_prompt(request)),
-        -- TODO provide the thinking from raw as more instructions in developer or user messages
     }
+
+    if level == "off" then
+        local fixed_thoughts = HarmonyRawFimPromptBuilder.deep_thoughts_about_fim
+
+        -- FYI "<|start|>assistant" is already added, so move right into analysis channel first:
+        local prefill = "<|channel|>analysis<|message|>" .. fixed_thoughts .. "<|end|>"
+            .. "<|start|>assistant<|channel|>final<|message|>"
+
+        -- llama-cpp uses this last assistant message for prefill purposes (will not terminate with <|end|>)
+        table.insert(messages, TxChatMessage:assistant(prefill))
+
+        -- TODO add nvim command to verify prompts:
+        --   TODO AskDumpApplyTemplates (dump all in one go is probably best to compare)
+    end
 
     return messages
 end

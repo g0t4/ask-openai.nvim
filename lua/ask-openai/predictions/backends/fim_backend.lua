@@ -175,9 +175,9 @@ function FimBackend:body_for()
             body.max_tokens = 200 -- FYI if I cut off all thinking
         else
             -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
-            body.messages = fim.gptoss.get_fim_chat_messages(self)
-            body.raw = false -- not used in chat -- FYI hacky
             local level = api.get_reasoning_level()
+            body.messages = fim.gptoss.get_fim_chat_messages(self, level)
+            body.raw = false -- set here even though was set above
             body.chat_template_kwargs = {
                 reasoning_effort = level
             }
