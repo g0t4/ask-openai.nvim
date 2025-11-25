@@ -17,7 +17,7 @@ local prompts = require("ask-openai.predictions.context.prompts")
 local HLGroups = require("ask-openai.hlgroups")
 local formatters = require("ask-openai.questions.chat.formatters")
 local ToolCallOutput = require("ask-openai.questions.chat.tool_call_output")
-local CurlRequestForThread = require("ask-openai.questions.last_request_for_thread")
+local CurlRequestForThread = require("ask-openai.questions.curl_request_for_thread")
 local RxAccumulatedMessage = require("ask-openai.questions.chat.messages.rx")
 local ToolCall = require("ask-openai.questions.chat.tool_call")
 

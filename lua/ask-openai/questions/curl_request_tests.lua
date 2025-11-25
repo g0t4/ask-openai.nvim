@@ -1,4 +1,4 @@
-local CurlRequestForThread = require("ask-openai.questions.last_request_for_thread")
+local CurlRequestForThread = require("ask-openai.questions.curl_request_for_thread")
 local LastRequest = require("ask-openai.backends.last_request")
 require("ask-openai.backends.curl") -- for _G.CompletionsEndpoints
 
