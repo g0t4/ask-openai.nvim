@@ -92,11 +92,13 @@ function FimBackend:body_for()
         -- options.num_predict = max_tokens, -- ollama's /api/generate
 
         -- * llama-server /completions endpoint
-        response_fields = {
-            -- set fields so the rest are skipped, else the SSEs are HUGE, and last has entire prompt too
-            "content", "timings", "truncated", "stop_type", "stopping_word",
-            "generation_settings", -- for last SSE to reflect inputs
-        },
+        -- response_fields = {
+        --     -- FYI this primarily limits what shows in the final SSE under .__verbose (when --verbose-prompt is enabled)
+        --     --   previously I didn't have "prompt" in the list, so it was eliminating that in .__verbose and for a second I assumed I couldn't see .__verbose.prompt in my SSE scenario which was not true!
+        --     -- set fields so the rest are skipped, else the SSEs are HUGE, and last has entire prompt too
+        --     "content", "timings", "truncated", "stop_type", "stopping_word",
+        --     "generation_settings", "prompt" -- for last SSE to reflect inputs
+        -- },
         -- these seem to be included regardless: "index","content","tokens","stop","id_slot","tokens_predicted","tokens_evaluated"
         --
         -- timings_per_token = false, -- default false, shows timings on every SSE, BTW doesn't seem to control tokens_predicted, tokens_evaluated per SSE
