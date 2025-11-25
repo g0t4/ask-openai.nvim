@@ -46,12 +46,12 @@ function PredictionsFrontend.ask_for_prediction()
         log:info("predictions.base_url", FimBackend.base_url)
         log:info("predictions.endpoint", FimBackend.endpoint)
 
-        local request = LastRequest:new({
+        local fim_request = LastRequest:new({
             body = body,
             base_url = FimBackend.base_url,
             endpoint = FimBackend.endpoint,
         })
-        this_prediction.request = request
+        this_prediction.fim_request = fim_request
 
         ---@type OnParsedSSE
         local function on_parsed_data_sse(sse_parsed)
@@ -132,7 +132,7 @@ function PredictionsFrontend.ask_for_prediction()
             on_sse_llama_server_timings = on_sse_llama_server_timings,
         }
 
-        Curl.spawn(request, frontend)
+        Curl.spawn(fim_request, frontend)
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
@@ -204,7 +204,7 @@ function PredictionsFrontend.cancel_current_prediction()
     end)
 
     -- FYI both this_prediction and request are new with each keystroke
-    LastRequest.terminate(this_prediction.request)
+    LastRequest.terminate(this_prediction.fim_request)
 end
 
 local ignore_filetypes = {

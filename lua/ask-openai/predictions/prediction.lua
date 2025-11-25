@@ -17,7 +17,7 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@field private reasoning_chunks string[]
 ---
 ---@field start_time number
----@field request? LastRequest
+---@field fim_request? LastRequest
 ---
 ---@field apply_template_only boolean -- true means send FIM to /apply-template endpoint (not real FIM) and just log the prompt (saves me from running --verbose-prompt with llama-server which is heavy for all requests and not easily toggled)
 ---
