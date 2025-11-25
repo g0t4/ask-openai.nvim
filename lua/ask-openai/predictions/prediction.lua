@@ -12,20 +12,23 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@field buffered_chunks string    # chunks received while `paused`
 ---@field abandoned boolean         # user aborted prediction
 ---@field disable_cursor_moved boolean
+---
 ---@field has_reasoning boolean
 ---@field private reasoning_chunks string[]
+---
 ---@field start_time number
----@field request LastRequest
+---@field request? LastRequest
+---
+---@field apply_template_only boolean -- true means send FIM to /apply-template endpoint (not real FIM) and just log the prompt (saves me from running --verbose-prompt with llama-server which is heavy for all requests and not easily toggled)
+---
 local Prediction = {}
 local instance_metatable = { __index = Prediction }
 local extmarks_ns_id = vim.api.nvim_create_namespace("ask-predictions")
 
----@param request LastRequest
 ---@return Prediction
-function Prediction.new(request)
+function Prediction.new()
     local self = {} -- FYI after changing to self being a new instance per prediction... instead of all using Prediction singleton... I might have issues w/ cancel/abort/back2back predictions as I type... just keep that in mind
 
-    self.request = request
     -- id was originaly intended to track current prediction and not let past predictions write to extmarks (for example)
     self.id = vim.uv.hrtime() -- might not need id if I can use object reference instead, we will see (id is helpful if I need to roundtrip identity outside lua process)
     -- (nanosecond) time based s/b sufficient, esp b/c there should only ever be one prediction at a time.. even if multiple in short time (b/c of keystrokes, there is gonna be 1ms or so between them at most)
@@ -43,6 +46,8 @@ function Prediction.new(request)
     self.has_reasoning = false
     self.reasoning_chunks = {}
     self.start_time = os.time()
+
+    self.apply_template_only = true
     setmetatable(self, instance_metatable)
     return self
 end

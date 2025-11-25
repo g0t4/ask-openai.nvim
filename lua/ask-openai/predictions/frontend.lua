@@ -15,17 +15,21 @@ local LastRequest = require("ask-openai.backends.last_request")
 local FimBackend = require("ask-openai.predictions.backends.fim_backend")
 
 ---@class PredictionsFrontend : StreamingFrontend
+---@field current_prediction Prediction|nil
 local PredictionsFrontend = {}
 
 PredictionsFrontend.current_prediction = nil
 
 function PredictionsFrontend.ask_for_prediction()
     PredictionsFrontend.cancel_current_prediction()
-    -- TODO create this_prediction here?
+
+    local this_prediction = Prediction.new()
+    PredictionsFrontend.current_prediction = this_prediction
+
     local enable_rag = api.is_rag_enabled()
     local ps_chunk = ps.get_prefix_suffix_chunk()
 
-    local perf = FIMPerformance:new()
+    local perf = FIMPerformance:new() -- PRN move to this_prediction and turn into a state tracker (i.e. pre-rag/rag sent/rag done/fim-sent/thinking/fim-first-token/fim-done/fim-cancel (if it makes sense)
 
     ---@param rag_matches LSPRankedMatch[]
     function send_fim(rag_matches)
@@ -47,9 +51,7 @@ function PredictionsFrontend.ask_for_prediction()
             base_url = FimBackend.base_url,
             endpoint = FimBackend.endpoint,
         })
-
-        local this_prediction = Prediction.new(request)
-        PredictionsFrontend.current_prediction = this_prediction
+        this_prediction.request = request
 
         ---@type OnParsedSSE
         local function on_parsed_data_sse(sse_parsed)
