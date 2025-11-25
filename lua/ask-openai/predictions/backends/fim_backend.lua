@@ -173,7 +173,15 @@ function FimBackend:body_for()
         body.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder -- llama-server /completions endpoint uses top-level stop
         body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
     elseif string.find(body.model, "gpt-oss", nil, true) then
-        if not use_gptoss_raw then
+        if use_gptoss_raw then
+            -- * /completions legacy endpoint:
+            builder = function()
+                -- * raw prompt /completions, no thinking (I could have model think too, just need to parse that then)
+                return fim.gptoss.get_fim_raw_prompt_no_thinking(self)
+            end
+            body.raw = true
+            body.max_tokens = 200 -- FYI if I cut off all thinking
+        else
             -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
             body.messages = fim.gptoss.get_fim_chat_messages(self)
             body.raw = false -- not used in chat -- FYI hacky
@@ -188,14 +196,6 @@ function FimBackend:body_for()
             else
                 body.max_tokens = 4096 -- low thinking
             end
-        else
-            -- * /completions legacy endpoint:
-            builder = function()
-                -- * raw prompt /completions, no thinking (I could have model think too, just need to parse that then)
-                return fim.gptoss.get_fim_raw_prompt_no_thinking(self)
-            end
-            body.raw = true
-            body.max_tokens = 200 -- FYI if I cut off all thinking
         end
 
         -- body.options.stop = fim.gptoss.sentinel_tokens.fim_stop_tokens -- TODO?
