@@ -33,8 +33,6 @@ function PredictionsFrontend.ask_for_prediction()
 
     ---@param rag_matches LSPRankedMatch[]
     function send_fim(rag_matches)
-        -- FYI! PoC is chat completions only => so gptoss (w/ thinking) for now is it (NOT qwen2.5coder)
-
         local model = api.get_fim_model()
 
         -- TODO rename to FimBodyBuilder? or FimRequestBuilder? or FimPromptBuilder?
