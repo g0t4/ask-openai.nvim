@@ -11,7 +11,7 @@ local ps = require("ask-openai.predictions.prefix_suffix")
 local lualine = require('ask-openai.status.lualine')
 local stats = require("ask-openai.predictions.stats")
 local Curl = require("ask-openai.backends.curl")
-local CurlRequest = require("ask-openai.backends.last_request")
+local CurlRequest = require("ask-openai.backends.curl_request")
 local FimBackend = require("ask-openai.predictions.backends.fim_backend")
 
 ---@class PredictionsFrontend : StreamingFrontend

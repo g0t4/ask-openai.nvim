@@ -1,5 +1,5 @@
 local log = require("ask-openai.logs.logger").predictions()
-local CurlRequest = require("ask-openai.backends.last_request")
+local CurlRequest = require("ask-openai.backends.curl_request")
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 
 local Curl = {}

@@ -1,4 +1,4 @@
-local CurlRequest = require("ask-openai.backends.last_request")
+local CurlRequest = require("ask-openai.backends.curl_request")
 
 ---@class CurlRequestForThread : CurlRequest
 ---@field thread ChatThread
