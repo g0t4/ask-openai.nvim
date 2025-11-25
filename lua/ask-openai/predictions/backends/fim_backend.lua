@@ -174,6 +174,7 @@ function FimBackend:body_for()
         body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
     elseif string.find(body.model, "gpt-oss", nil, true) then
         if use_gptoss_raw then
+            -- TODO use prefill instead of raw prompt! (keep raw around in case I want to go that route for another reason)
             -- * /completions legacy endpoint:
             builder = function()
                 -- * raw prompt /completions, no thinking (I could have model think too, just need to parse that then)
