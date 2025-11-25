@@ -190,6 +190,12 @@ function FimBackend:body_for()
             end
         end
 
+        -- * common settings
+        --   PRN share with other tools that use same values (i.e. AskRewrite/AskQuestion)
+        --   https://github.com/openai/gpt-oss?tab=readme-ov-file#recommended-sampling-parameters
+        body.temperature = 1.0
+        body.top_p = 1.0
+
         -- body.options.stop = fim.gptoss.sentinel_tokens.fim_stop_tokens -- TODO?
     elseif string.find(body.model, "codestral", nil, true) then
         builder = function()
