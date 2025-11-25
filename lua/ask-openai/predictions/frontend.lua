@@ -29,7 +29,7 @@ function PredictionsFrontend.ask_for_prediction()
     local enable_rag = api.is_rag_enabled()
     local ps_chunk = ps.get_prefix_suffix_chunk()
 
-    local perf = FIMPerformance:new() -- PRN move to this_prediction and turn into a state tracker (i.e. pre-rag/rag sent/rag done/fim-sent/thinking/fim-first-token/fim-done/fim-cancel (if it makes sense)
+    local perf = FIMPerformance:new()
 
     ---@param rag_matches LSPRankedMatch[]
     function send_fim(rag_matches)
