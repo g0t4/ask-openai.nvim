@@ -28,7 +28,7 @@ _G.CompletionsEndpoints = {
 ---@field on_curl_exited_successfully OnCurlExitedSuccessfully
 ---@field explain_error ExplainError
 
----@param request LastRequest|LastRequestForThread
+---@param request LastRequest|CurlRequestForThread
 ---@param frontend StreamingFrontend
 function Curl.spawn(request, frontend)
     request.body.stream = true

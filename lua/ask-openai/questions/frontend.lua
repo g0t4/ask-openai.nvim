@@ -17,7 +17,7 @@ local prompts = require("ask-openai.predictions.context.prompts")
 local HLGroups = require("ask-openai.hlgroups")
 local formatters = require("ask-openai.questions.chat.formatters")
 local ToolCallOutput = require("ask-openai.questions.chat.tool_call_output")
-local LastRequestForThread = require("ask-openai.questions.last_request_for_thread")
+local CurlRequestForThread = require("ask-openai.questions.last_request_for_thread")
 local RxAccumulatedMessage = require("ask-openai.questions.chat.messages.rx")
 local ToolCall = require("ask-openai.questions.chat.tool_call")
 
@@ -177,7 +177,7 @@ function QuestionsFrontend.send_messages()
     QuestionsFrontend.this_turn_chat_start_line_base0 = QuestionsFrontend.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
-    local request = LastRequestForThread:new({
+    local request = CurlRequestForThread:new({
         body = QuestionsFrontend.thread:next_curl_request_body(),
         base_url = QuestionsFrontend.thread.base_url,
         endpoint = CompletionsEndpoints.oai_v1_chat_completions
@@ -346,7 +346,7 @@ end
 
 --- think of this as denormalizing SSEs => into aggregate RxAccumulatedMessage
 ---@param choice OpenAIChoice|nil
----@param request LastRequestForThread
+---@param request CurlRequestForThread
 function QuestionsFrontend.on_streaming_delta_update_message_history(choice, request)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
     -- rebuilds message as if sent `stream: false`
@@ -558,7 +558,7 @@ function QuestionsFrontend.abort_last_request()
     if not QuestionsFrontend.thread then
         return
     end
-    LastRequestForThread.terminate(QuestionsFrontend.thread.last_request)
+    CurlRequestForThread.terminate(QuestionsFrontend.thread.last_request)
 end
 
 function QuestionsFrontend.follow_up()
