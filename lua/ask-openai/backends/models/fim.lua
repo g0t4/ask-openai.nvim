@@ -17,9 +17,9 @@ M.gptoss = {
     }
 }
 ---@param request FimBackend
-function M.gptoss.get_fim_raw_prompt_no_thinking(request)
-    -- TODO toggle to disable thinking with gptoss?! (none/low/med/high)
-    --   need to swap endpoint too
+function M.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(request)
+    -- FYI this builder might be useful if I want to work with raw prompts for another use case...
+    --  but I found prefill in llama-cpp (llama-server) so I don't need raw anymore for FIM w/o thinking purposes
 
     -- TODO experiment 2 - combination of fixed thinking start + partial thinking finish
     --   add my thinking reflections from above...
@@ -71,6 +71,7 @@ Make sure to practice the code change before you return a suggestion. Take the c
     }
 
     if level == "off" then
+        -- TODO get rid of raw prompt approach above? or just keep it around as "RETIRED" ??
         local fixed_thoughts = HarmonyRawFimPromptBuilder.deep_thoughts_about_fim
 
         -- FYI "<|start|>assistant" is already added, so move right into analysis channel first:
