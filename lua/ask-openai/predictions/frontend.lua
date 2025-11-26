@@ -13,6 +13,7 @@ local stats = require("ask-openai.predictions.stats")
 local Curl = require("ask-openai.backends.curl")
 local CurlRequest = require("ask-openai.backends.curl_request")
 local FimBackend = require("ask-openai.predictions.backends.fim_backend")
+local llama_server_client = require("ask-openai.backends.llama_cpp.llama_server_client")
 
 ---@class PredictionsFrontend : StreamingFrontend
 ---@field current_prediction Prediction|nil
@@ -20,10 +21,11 @@ local PredictionsFrontend = {}
 
 PredictionsFrontend.current_prediction = nil
 
-function PredictionsFrontend.ask_for_prediction()
+---@param params? PredictionParameters
+function PredictionsFrontend.ask_for_prediction(params)
     PredictionsFrontend.cancel_current_prediction()
 
-    local this_prediction = Prediction.new()
+    local this_prediction = Prediction.new(params)
     PredictionsFrontend.current_prediction = this_prediction
 
     local enable_rag = api.is_rag_enabled()
@@ -40,9 +42,16 @@ function PredictionsFrontend.ask_for_prediction()
         local body = backend:body_for()
         assert(body ~= nil)
 
-        log:luaify_trace("predictions.body", body)
-        log:info("predictions.base_url", FimBackend.base_url)
-        log:info("predictions.endpoint", FimBackend.endpoint)
+        if this_prediction.apply_template_only then
+            -- log:luaify_trace("predictions.body", body) -- luaify logs later
+            log:info("predictions.base_url", FimBackend.base_url)
+            log:info("predictions.endpoint", FimBackend.endpoint)
+
+            local response = llama_server_client.apply_template(FimBackend.base_url, body)
+            local separator = string.rep("*", 100) -- ? get width from rich log handler?
+            log:info("\n", separator, "\nFIM /apply-template\n", separator, "\n", response.body.prompt, "\n\n", separator, "\n")
+            return
+        end
 
         local fim_request = CurlRequest:new({
             body = body,

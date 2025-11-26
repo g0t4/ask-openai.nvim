@@ -53,16 +53,14 @@ function M.start_predictions()
         vim.api.nvim_set_keymap('i', predictions.keymaps.new_prediction, "",
             { noremap = true, callback = predictions_frontend.new_prediction_invoked })
     end
-    -- if predictions.keymaps.new_prediction then
-    -- vim.api.nvim_set_keymap('n', "<Esc><Esc><Esc>", "",
-    --     -- FYI this is to test a keymap that I can use when a completion somehow renders after I leave insert mode... use triple escape to clear it
-    --     --    USE this until I find the culprit in timing, if I can fix it easy enough
-    --     { noremap = true, callback = predictions_frontend.leaving_insert_mode })
-    -- -- end
 
-    -- FYI why don't I reserve ~ for debug keymap(s) and move it around to w/e I need it for currently?
-    --   ~ not intended as a permanent keymap here
-    vim.keymap.set("n", "<leader>~", "<cmd>AskDumpEdits<CR>", {})
+    -- vim.keymap.set("n", "<leader>~", "<cmd>AskDumpEdits<CR>", {})
+
+    function trigger_apply_template_dump()
+        predictions_frontend.ask_for_prediction({ apply_template_only = true })
+    end
+
+    vim.keymap.set("n", "<leader>temp", trigger_apply_template_dump, {})
 
     -- event subscriptions
     vim.api.nvim_create_augroup(augroup, { clear = true })

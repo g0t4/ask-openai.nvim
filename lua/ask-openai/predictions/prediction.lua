@@ -25,8 +25,11 @@ local Prediction = {}
 local instance_metatable = { __index = Prediction }
 local extmarks_ns_id = vim.api.nvim_create_namespace("ask-predictions")
 
+---@alias PredictionParameters { apply_template_only: boolean, }
+
+---@param params? PredictionParameters
 ---@return Prediction
-function Prediction.new()
+function Prediction.new(params)
     local self = {} -- FYI after changing to self being a new instance per prediction... instead of all using Prediction singleton... I might have issues w/ cancel/abort/back2back predictions as I type... just keep that in mind
 
     -- id was originaly intended to track current prediction and not let past predictions write to extmarks (for example)
@@ -47,7 +50,10 @@ function Prediction.new()
     self.reasoning_chunks = {}
     self.start_time = os.time()
 
-    self.apply_template_only = true
+    params = params or {}
+    self.apply_template_only = params.apply_template_only
+
+
     setmetatable(self, instance_metatable)
     return self
 end
