@@ -229,14 +229,21 @@ function FimBackend:body_for()
         -- log:info(ansi.green_bold('body.prompt:\n'), ansi.green(body.prompt))
     elseif body.messages then
         local _, log_threshold = local_share.get_log_threshold()
-        -- TODO if verbose then log all messages
         -- log:info('body.messages', vim.inspect(body.messages))
         if log_threshold < local_share.LOG_LEVEL_NUMBERS.WARN then
-            -- IOTW INFO LOGGING (and below)
             -- HACK: ONLY log last message, around cursor_marker
+            --  why? to quickly see and reason about FIM input/outputs
             -- FYI WON'T WORK WITH non-gptoss models b/c they have different cursor_marker
-            -- TODO just pass along the original lines instead of doing it this way? (splitting)?
+            -- TODO! just pass along the original lines ... will also fix issue with assistant prefill!
             local last_message = body.messages[#body.messages]
+
+            local last_is_prefill = last_message.role == "assistant"
+            if last_is_prefill then
+                -- need to take the message before the prefill assistant message
+                local second_to_last_index = #body.messages - 1
+                last_message = body.messages[second_to_last_index]
+            end
+
             local cursor_marker = '<|fim_middle|>'
             local lines = vim.split(last_message.content, '\n', true)
             local cursor_index = nil
