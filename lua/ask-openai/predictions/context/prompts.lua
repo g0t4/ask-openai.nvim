@@ -10,6 +10,7 @@
 ---@field git_diff? boolean
 ---@field cleaned_prompt string
 ---@field use_tools? boolean
+---@field apply_template_only? boolean
 ---@field include_selection? boolean
 local M = {}
 
@@ -51,6 +52,7 @@ function M.parse_includes(prompt)
         current_file = has("/file"),
         open_files = has("/files"),
         use_tools = has("/tools"),
+        apply_template_only = has("/template"), -- TODO for AskRewrite/AskQuestion (popup window with colorful prompt?)
         include_selection = has("/selection"),
         cleaned_prompt = prompt,
     }
@@ -63,7 +65,7 @@ function M.parse_includes(prompt)
         -- ? do I want all to include tools/selection too? for now leave them off (all doesn't have to mean every slash command)
     end
 
-    local slash_commands = { "/yanks", "/all", "/commits", "/file", "/files", "/tools", "/selection", }
+    local slash_commands = { "/yanks", "/all", "/commits", "/file", "/files", "/tools", "/selection", "/template", }
     for _, k in ipairs(slash_commands) do
         includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, k)
     end
