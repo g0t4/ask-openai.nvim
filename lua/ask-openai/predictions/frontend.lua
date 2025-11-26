@@ -43,15 +43,17 @@ function PredictionsFrontend.ask_for_prediction(params)
         assert(body ~= nil)
 
         if this_prediction.apply_template_only then
+            -- PRN? move this out into its own module, composed with new open_float
             -- log:luaify_trace("predictions.body", body) -- luaify logs later
             log:info("predictions.base_url", FimBackend.base_url)
             log:info("predictions.endpoint", FimBackend.endpoint)
 
             local response = llama_server_client.apply_template(FimBackend.base_url, body)
-            local separator = string.rep("*", 100) -- ? get width from rich log handler?
-            log:info("\n", separator, "\nFIM /apply-template\n", separator, "\n", response.body.prompt, "\n\n", separator, "\n")
-            -- FYI never ran request, so no need to cancel.. doesn't hurt to do so though:
-            -- PredictionsFrontend:cancel_current_prediction() -- this is 100% not needed currently
+            local windows = require("ask-openai.helpers.float_window")
+            local lines = vim.split(response.body.prompt, '\n')
+            local buf, win = windows.open_float(lines, { width = 0.8, height = 0.8 })
+            -- PRN? setup harmony grammar for filetype + coloring with treesitter?
+            -- PRN? or use LinesBuilder for lines w/ extmarks using LinesBuilder (not hard to do either, and would get me to setup a simple parser!)
             return
         end
 
