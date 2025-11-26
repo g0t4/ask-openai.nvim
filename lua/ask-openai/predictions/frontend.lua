@@ -50,6 +50,8 @@ function PredictionsFrontend.ask_for_prediction(params)
             local response = llama_server_client.apply_template(FimBackend.base_url, body)
             local separator = string.rep("*", 100) -- ? get width from rich log handler?
             log:info("\n", separator, "\nFIM /apply-template\n", separator, "\n", response.body.prompt, "\n\n", separator, "\n")
+            -- FYI never ran request, so no need to cancel.. doesn't hurt to do so though:
+            -- PredictionsFrontend:cancel_current_prediction() -- this is 100% not needed currently
             return
         end
 
