@@ -91,8 +91,4 @@ function FloatWindow:open()
     self.win_id = vim.api.nvim_open_win(self.buffer_number, true, self.centered_window(self.opts))
 end
 
-function FloatWindow:ensure_open()
-    self:open()
-end
-
 return FloatWindow

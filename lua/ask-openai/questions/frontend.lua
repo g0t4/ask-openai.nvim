@@ -295,7 +295,7 @@ function QuestionsFrontend.ensure_response_window_is_open()
         vim.keymap.set("n", "<F8>", QuestionsFrontend.abort_and_close, { buffer = QuestionsFrontend.chat_window.buffer_number })
     end
 
-    QuestionsFrontend.chat_window:ensure_open()
+    QuestionsFrontend.chat_window:open()
 end
 
 local function handle_rx_messages_updated()
