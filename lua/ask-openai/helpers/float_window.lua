@@ -32,10 +32,10 @@ end
 ---@field height_ratio? number -- ratio 0 to 1
 ---@field filetype? string
 
----@param initial_lines? string[]
 ---@param opts FloatWindowOptions
+---@param initial_lines? string[]
 ---@return FloatWindow
-function FloatWindow:new(initial_lines, opts)
+function FloatWindow:new(opts, initial_lines)
     local instance_mt = { __index = self }
     local instance = setmetatable({}, instance_mt)
     self.opts = opts or {}

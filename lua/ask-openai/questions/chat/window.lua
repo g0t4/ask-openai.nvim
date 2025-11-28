@@ -16,8 +16,7 @@ function ChatWindow:new()
     local opts = { width_ratio = 0.5, height_ratio = 0.8, filetype = "markdown" }
 
     local instance_mt = { __index = self } -- FYI self is likely ChatWindow here
-    local lines = nil
-    local instance = setmetatable(FloatWindow:new(lines, opts), instance_mt)
+    local instance = setmetatable(FloatWindow:new(opts), instance_mt)
 
     instance.buffer = BufferController:new(instance.buffer_number)
     vim.api.nvim_buf_set_name(instance.buffer_number, 'Question Response')

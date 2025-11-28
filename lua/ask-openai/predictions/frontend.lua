@@ -53,7 +53,7 @@ function PredictionsFrontend.ask_for_prediction(params)
             local lines = vim.split(response.body.prompt, '\n')
             ---@type FloatWindowOptions
             local opts = { width_ratio = 0.8, height_ratio = 0.8, filetype = "harmony" }
-            local buf, win = FloatWindow:new(lines, opts)
+            local buf, win = FloatWindow:new(opts, lines)
             -- PRN? setup harmony grammar for filetype + coloring with treesitter?
             -- PRN? or use LinesBuilder for lines w/ extmarks using LinesBuilder (not hard to do either, and would get me to setup a simple parser!)
             return
