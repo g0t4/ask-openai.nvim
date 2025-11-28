@@ -12,10 +12,9 @@ local ChatWindow = {}
 function ChatWindow:new()
     self = setmetatable({}, { __index = ChatWindow })
 
-    local listed_buffer = false
-    local scratch_buffer = true -- must be scratch, otherwise have to save contents or trash it on exit
-
-    self.buffer_number = vim.api.nvim_create_buf(listed_buffer, scratch_buffer)
+    local NOT_LISTED_BUFFER = false
+    local IS_SCRATCH_BUFFER = true -- must be scratch, otherwise have to save contents or trash it on exit
+    self.buffer_number = vim.api.nvim_create_buf(NOT_LISTED_BUFFER, IS_SCRATCH_BUFFER)
 
     self.buffer = BufferController:new(self.buffer_number)
     vim.api.nvim_buf_set_name(self.buffer_number, 'Question Response')

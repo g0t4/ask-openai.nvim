@@ -41,9 +41,9 @@ function FloatWindow:new(lines, opts)
     opts = opts or {}
 
     -- * create a scratch buffer
-    local listed_buffer = false
-    local scratch_buffer = true -- must be scratch, otherwise have to save contents or trash it on exit
-    self.buffer_number = vim.api.nvim_create_buf(listed_buffer, scratch_buffer)
+    local NOT_LISTED_BUFFER = false
+    local IS_SCRATCH_BUFFER = true -- must be scratch, otherwise have to save contents or trash it on exit
+    self.buffer_number = vim.api.nvim_create_buf(NOT_LISTED_BUFFER, IS_SCRATCH_BUFFER)
 
     -- * lines to buffer
     vim.api.nvim_buf_set_lines(self.buffer_number, 0, -1, false, lines)
