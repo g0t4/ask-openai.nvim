@@ -8,15 +8,16 @@ local FloatWindow = require("ask-openai.helpers.float_window")
 ---@field buffer BufferController
 ---@field win_id number
 local ChatWindow = {}
+local class_mt = { __index = FloatWindow }
+setmetatable(ChatWindow, class_mt)
 
 function ChatWindow:new()
-    local instance_mt = { __index = self }
-    local instance = setmetatable({}, instance_mt)
-    -- instance = setmetatable({}, { __index = ChatWindow })
+    ---@type FloatWindowOptions
+    local opts = { width_ratio = 0.5, height_ratio = 0.8, filetype = "markdown" }
 
-    local NOT_LISTED_BUFFER = false
-    local IS_SCRATCH_BUFFER = true -- must be scratch, otherwise have to save contents or trash it on exit
-    instance.buffer_number = vim.api.nvim_create_buf(NOT_LISTED_BUFFER, IS_SCRATCH_BUFFER)
+    local instance_mt = { __index = self } -- FYI self is likely ChatWindow here
+    local lines = nil
+    local instance = setmetatable(FloatWindow:new(lines, opts), instance_mt)
 
     instance.buffer = BufferController:new(instance.buffer_number)
     vim.api.nvim_buf_set_name(instance.buffer_number, 'Question Response')
@@ -24,40 +25,15 @@ function ChatWindow:new()
     -- * buffer local keymaps
     vim.keymap.set('n', '<leader>c', function() instance:clear() end, { buffer = instance.buffer_number, desc = "clear the chat window, and eventually the message history" })
 
-    return instance
-end
-
-function ChatWindow:open()
-    ---@type FloatWindowOptions
-    local opts = { width_ratio = 0.5, height_ratio = 0.8, filetype = "markdown" }
-
-    self.win_id = vim.api.nvim_open_win(self.buffer_number, true, FloatWindow.centered_window(opts))
-
-    -- set FileType after creating window, otherwise the default wrap option (vim.o.wrap) will override any ftplugin mods to wrap (and the same for other window-local options like wrap)
-    vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = self.buffer_number })
-
     -- manually trigger LSP attach, b/c scratch buffers are normally not auto attached
     local client = vim.lsp.get_clients({ name = "ask_language_server" })[1]
     if client then vim.lsp.buf_attach_client(self.buffer_number, client.id) end
 
-    -- * make window resizable
-    local gid = vim.api.nvim_create_augroup("ChatWindow_" .. self.win_id, { clear = true })
-    vim.api.nvim_create_autocmd("VimResized", {
-        group = gid,
-        callback = function()
-            if not vim.api.nvim_win_is_valid(self.win_id) then return end
-            vim.api.nvim_win_set_config(self.win_id, FloatWindow.centered_window(opts))
-        end,
-    })
-    vim.api.nvim_create_autocmd("WinClosed", {
-        group = gid,
-        pattern = tostring(self.win_id),
-        callback = function()
-            -- when THIS window closes, drop its autocmds
-            pcall(vim.api.nvim_del_augroup_by_id, gid)
-        end,
-        once = true,
-    })
+    return instance
+end
+
+function ChatWindow:open()
+    -- TODO GET RID OF THIS?
 end
 
 function ChatWindow:ensure_open()

@@ -32,13 +32,14 @@ end
 ---@field height_ratio? number -- ratio 0 to 1
 ---@field filetype? string
 
----@param lines string[]
+---@param lines? string[]
 ---@param opts FloatWindowOptions
 ---@return FloatWindow
 function FloatWindow:new(lines, opts)
     local instance_mt = { __index = self }
     local instance = setmetatable({}, instance_mt)
-    opts = opts or {}
+    self.opts = opts or {}
+    local opts = self.opts
 
     -- * create a scratch buffer
     local NOT_LISTED_BUFFER = false
@@ -46,7 +47,9 @@ function FloatWindow:new(lines, opts)
     instance.buffer_number = vim.api.nvim_create_buf(NOT_LISTED_BUFFER, IS_SCRATCH_BUFFER)
 
     -- * lines to buffer
-    vim.api.nvim_buf_set_lines(instance.buffer_number, 0, -1, false, lines)
+    if lines then
+        vim.api.nvim_buf_set_lines(instance.buffer_number, 0, -1, false, lines)
+    end
     vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = instance.buffer_number })
 
     -- * open the floating window
