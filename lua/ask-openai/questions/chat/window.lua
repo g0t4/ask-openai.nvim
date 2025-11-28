@@ -6,7 +6,7 @@ local FloatWindow = require("ask-openai.helpers.float_window")
 ---@class ChatWindow
 ---@field buffer_number number
 ---@field buffer BufferController
----@field winid number
+---@field win_id number
 local ChatWindow = {}
 
 function ChatWindow:new()
@@ -30,8 +30,8 @@ function ChatWindow:open()
     ---@type FloatWindowOptions
     local opts = { width_ratio = 0.5, height_ratio = 0.8, filetype = "markdown" }
 
-    self.winid = vim.api.nvim_open_win(self.buffer_number, true, FloatWindow.centered_window(opts))
-    local win = self.winid
+    self.win_id = vim.api.nvim_open_win(self.buffer_number, true, FloatWindow.centered_window(opts))
+    local win = self.win_id
 
     -- set FileType after creating window, otherwise the default wrap option (vim.o.wrap) will override any ftplugin mods to wrap (and the same for other window-local options like wrap)
     vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = self.buffer_number })
@@ -61,7 +61,7 @@ function ChatWindow:open()
 end
 
 function ChatWindow:ensure_open()
-    if self.winid and vim.api.nvim_win_is_valid(self.winid) then
+    if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
         return
     end
     self:open()
