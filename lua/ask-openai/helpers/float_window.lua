@@ -59,8 +59,7 @@ function FloatWindow:new(opts, initial_lines)
         vim.api.nvim_buf_set_name(instance.buffer_number, opts.buffer_name)
     end
 
-    -- * open the floating window
-    instance.win_id = vim.api.nvim_open_win(instance.buffer_number, true, instance.centered_window(opts))
+    instance:open()
 
     -- * make window resizable
     local gid = vim.api.nvim_create_augroup("float_window_" .. instance.win_id, { clear = true })
