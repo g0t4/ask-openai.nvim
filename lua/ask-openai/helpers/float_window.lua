@@ -31,6 +31,7 @@ end
 ---@field width_ratio? number -- ratio 0 to 1
 ---@field height_ratio? number -- ratio 0 to 1
 ---@field filetype? string
+---@field buffer_name? string
 
 ---@param opts FloatWindowOptions
 ---@param initial_lines? string[]
@@ -51,6 +52,10 @@ function FloatWindow:new(opts, initial_lines)
         vim.api.nvim_buf_set_lines(instance.buffer_number, 0, -1, false, initial_lines)
     end
     vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = instance.buffer_number })
+
+    if opts.buffer_name then
+        vim.api.nvim_buf_set_name(instance.buffer_number, opts.buffer_name)
+    end
 
     -- * open the floating window
     instance.win_id = vim.api.nvim_open_win(instance.buffer_number, true, instance.centered_window(opts))

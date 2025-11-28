@@ -13,13 +13,17 @@ setmetatable(ChatWindow, class_mt)
 
 function ChatWindow:new()
     ---@type FloatWindowOptions
-    local opts = { width_ratio = 0.5, height_ratio = 0.8, filetype = "markdown" }
+    local opts = {
+        width_ratio = 0.5,
+        height_ratio = 0.8,
+        filetype = "markdown",
+        buffer_name = 'AskQuestion',
+    }
 
     local instance_mt = { __index = self } -- FYI self is likely ChatWindow here
     local instance = setmetatable(FloatWindow:new(opts), instance_mt)
 
     instance.buffer = BufferController:new(instance.buffer_number)
-    vim.api.nvim_buf_set_name(instance.buffer_number, 'Question Response')
 
     -- * buffer local keymaps
     vim.keymap.set('n', '<leader>c', function() instance:clear() end, { buffer = instance.buffer_number, desc = "clear the chat window, and eventually the message history" })
