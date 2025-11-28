@@ -32,6 +32,7 @@ function M.open_float(lines, opts)
         style = "minimal",
         border = opts.border or "rounded",
     })
+    vim.bo.filetype = opts.filetype
 
     return buf, win
 end

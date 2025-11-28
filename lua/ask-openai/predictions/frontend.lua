@@ -51,7 +51,7 @@ function PredictionsFrontend.ask_for_prediction(params)
             local response = llama_server_client.apply_template(FimBackend.base_url, body)
             local windows = require("ask-openai.helpers.float_window")
             local lines = vim.split(response.body.prompt, '\n')
-            local buf, win = windows.open_float(lines, { width = 0.8, height = 0.8 })
+            local buf, win = windows.open_float(lines, { width = 0.8, height = 0.8, filetype = "harmony" })
             -- PRN? setup harmony grammar for filetype + coloring with treesitter?
             -- PRN? or use LinesBuilder for lines w/ extmarks using LinesBuilder (not hard to do either, and would get me to setup a simple parser!)
             return
