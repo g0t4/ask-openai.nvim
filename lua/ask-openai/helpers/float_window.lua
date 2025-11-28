@@ -51,8 +51,8 @@ function FloatWindow:new(lines, opts)
     vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = buffer_number })
 
     -- * open the floating window
-    local win = vim.api.nvim_open_win(buffer_number, true, self.centered_window(opts))
-    self.win_id = win
+    self.win_id = vim.api.nvim_open_win(buffer_number, true, self.centered_window(opts))
+    local win = self.win_id
 
     -- * make window resizable
     local gid = vim.api.nvim_create_augroup("float_window_" .. win, { clear = true })
