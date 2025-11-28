@@ -38,9 +38,7 @@ end
 ---@return FloatWindow
 function FloatWindow:new(opts, initial_lines)
     local instance_mt = { __index = self }
-    local instance = setmetatable({}, instance_mt)
-    self.opts = opts or {}
-    local opts = self.opts
+    local instance = setmetatable({ opts = opts, }, instance_mt)
 
     -- * create a scratch buffer
     local NOT_LISTED_BUFFER = false
