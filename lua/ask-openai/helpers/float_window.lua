@@ -44,14 +44,13 @@ function FloatWindow:new(lines, opts)
     local listed_buffer = false
     local scratch_buffer = true -- must be scratch, otherwise have to save contents or trash it on exit
     self.buffer_number = vim.api.nvim_create_buf(listed_buffer, scratch_buffer)
-    local buffer_number = self.buffer_number
 
     -- * lines to buffer
-    vim.api.nvim_buf_set_lines(buffer_number, 0, -1, false, lines)
-    vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = buffer_number })
+    vim.api.nvim_buf_set_lines(self.buffer_number, 0, -1, false, lines)
+    vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = self.buffer_number })
 
     -- * open the floating window
-    self.win_id = vim.api.nvim_open_win(buffer_number, true, self.centered_window(opts))
+    self.win_id = vim.api.nvim_open_win(self.buffer_number, true, self.centered_window(opts))
 
     -- * make window resizable
     local gid = vim.api.nvim_create_augroup("float_window_" .. self.win_id, { clear = true })
