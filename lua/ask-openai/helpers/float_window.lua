@@ -33,11 +33,13 @@ function M.open_float(lines, opts)
 
     -- * lines to buffer
     vim.api.nvim_buf_set_lines(buffer_number, 0, -1, false, lines)
-    vim.api.nvim_buf_set_option(buffer_number, "filetype", opts.filetype or "")
+    vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = buffer_number })
 
     -- * open the floating window
     local win = vim.api.nvim_open_win(buffer_number, true, centered_window(opts))
 
+    -- * make window resizable
+    local gid = vim.api.nvim_create_augroup("float_window_" .. win, { clear = true })
     vim.api.nvim_create_autocmd("VimResized", {
         group = gid,
         callback = function()
@@ -45,12 +47,11 @@ function M.open_float(lines, opts)
             vim.api.nvim_win_set_config(win, centered_window(opts))
         end,
     })
-
-    -- when THIS window closes, drop its autocmds
     vim.api.nvim_create_autocmd("WinClosed", {
         group = gid,
         pattern = tostring(win),
         callback = function()
+            -- when THIS window closes, drop its autocmds
             pcall(vim.api.nvim_del_augroup_by_id, gid)
         end,
         once = true,

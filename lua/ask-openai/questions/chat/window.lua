@@ -53,8 +53,8 @@ function ChatWindow:open()
     local client = vim.lsp.get_clients({ name = "ask_language_server" })[1]
     if client then vim.lsp.buf_attach_client(self.buffer_number, client.id) end
 
+    -- * make window resizable
     local gid = vim.api.nvim_create_augroup("ChatWindow_" .. win, { clear = true })
-
     vim.api.nvim_create_autocmd("VimResized", {
         group = gid,
         callback = function()
@@ -62,12 +62,11 @@ function ChatWindow:open()
             vim.api.nvim_win_set_config(win, centered_window())
         end,
     })
-
-    -- when THIS window closes, drop its autocmds
     vim.api.nvim_create_autocmd("WinClosed", {
         group = gid,
         pattern = tostring(win),
         callback = function()
+            -- when THIS window closes, drop its autocmds
             pcall(vim.api.nvim_del_augroup_by_id, gid)
         end,
         once = true,
