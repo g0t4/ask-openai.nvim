@@ -62,20 +62,20 @@ function FloatWindow:new(opts, initial_lines)
     instance:open()
 
     -- * make window resizable
-    local gid = vim.api.nvim_create_augroup("float_window_" .. instance.win_id, { clear = true })
+    local group_id = vim.api.nvim_create_augroup("float_window_" .. instance.win_id, { clear = true })
     vim.api.nvim_create_autocmd("VimResized", {
-        group = gid,
+        group = group_id,
         callback = function()
             if not vim.api.nvim_win_is_valid(instance.win_id) then return end
             vim.api.nvim_win_set_config(instance.win_id, instance.centered_window(opts))
         end,
     })
     vim.api.nvim_create_autocmd("WinClosed", {
-        group = gid,
+        group = group_id,
         pattern = tostring(instance.win_id),
         callback = function()
             -- when THIS window closes, drop its autocmds
-            pcall(vim.api.nvim_del_augroup_by_id, gid)
+            pcall(vim.api.nvim_del_augroup_by_id, group_id)
         end,
         once = true,
     })
