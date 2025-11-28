@@ -27,13 +27,15 @@ function M.open_float(lines, opts)
     opts = opts or {}
 
     -- create a scratch buffer
-    local buf = vim.api.nvim_create_buf(false, true) -- nofile, scratch
+    local listed_buffer = false
+    local scratch_buffer = true -- must be scratch, otherwise have to save contents or trash it on exit
+    local buffer_number = vim.api.nvim_create_buf(listed_buffer, scratch_buffer)
 
     -- fill the buffer
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+    vim.api.nvim_buf_set_lines(buffer_number, 0, -1, false, lines)
 
     -- open the floating window
-    local win = vim.api.nvim_open_win(buf, true, centered_window(opts))
+    local win = vim.api.nvim_open_win(buffer_number, true, centered_window(opts))
     vim.bo.filetype = opts.filetype
 
     vim.api.nvim_create_autocmd("VimResized", {
@@ -54,7 +56,7 @@ function M.open_float(lines, opts)
         once = true,
     })
 
-    return buf, win
+    return buffer_number, win
 end
 
 return M
