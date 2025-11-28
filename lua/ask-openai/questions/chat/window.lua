@@ -28,13 +28,13 @@ end
 
 function ChatWindow:open()
     ---@type FloatWindowOptions
-    local opts = { width_ratio = 0.5, height_ratio = 0.8 }
+    local opts = { width_ratio = 0.5, height_ratio = 0.8, filetype = "markdown" }
 
     local win = vim.api.nvim_open_win(self.buffer_number, true, FloatWindow.centered_window(opts))
     self.winid = win
 
     -- set FileType after creating window, otherwise the default wrap option (vim.o.wrap) will override any ftplugin mods to wrap (and the same for other window-local options like wrap)
-    vim.api.nvim_set_option_value('filetype', 'markdown', { buf = self.buffer_number })
+    vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = self.buffer_number })
 
     -- manually trigger LSP attach, b/c scratch buffers are normally not auto attached
     local client = vim.lsp.get_clients({ name = "ask_language_server" })[1]
