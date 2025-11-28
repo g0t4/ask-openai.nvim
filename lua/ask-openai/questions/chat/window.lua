@@ -14,9 +14,10 @@ function ChatWindow:new()
 
     local listed_buffer = false
     local scratch_buffer = true -- must be scratch, otherwise have to save contents or trash it on exit
-    local buffer_number = vim.api.nvim_create_buf(listed_buffer, scratch_buffer)
 
-    self.buffer_number = buffer_number
+    self.buffer_number = vim.api.nvim_create_buf(listed_buffer, scratch_buffer)
+    local buffer_number = self.buffer_number
+
     self.buffer = BufferController:new(self.buffer_number)
     vim.api.nvim_buf_set_name(self.buffer_number, 'Question Response')
 
