@@ -31,7 +31,6 @@ function ChatWindow:open()
     local opts = { width_ratio = 0.5, height_ratio = 0.8, filetype = "markdown" }
 
     self.win_id = vim.api.nvim_open_win(self.buffer_number, true, FloatWindow.centered_window(opts))
-    local win = self.win_id
 
     -- set FileType after creating window, otherwise the default wrap option (vim.o.wrap) will override any ftplugin mods to wrap (and the same for other window-local options like wrap)
     vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = self.buffer_number })
@@ -41,17 +40,17 @@ function ChatWindow:open()
     if client then vim.lsp.buf_attach_client(self.buffer_number, client.id) end
 
     -- * make window resizable
-    local gid = vim.api.nvim_create_augroup("ChatWindow_" .. win, { clear = true })
+    local gid = vim.api.nvim_create_augroup("ChatWindow_" .. self.win_id, { clear = true })
     vim.api.nvim_create_autocmd("VimResized", {
         group = gid,
         callback = function()
-            if not vim.api.nvim_win_is_valid(win) then return end
-            vim.api.nvim_win_set_config(win, FloatWindow.centered_window(opts))
+            if not vim.api.nvim_win_is_valid(self.win_id) then return end
+            vim.api.nvim_win_set_config(self.win_id, FloatWindow.centered_window(opts))
         end,
     })
     vim.api.nvim_create_autocmd("WinClosed", {
         group = gid,
-        pattern = tostring(win),
+        pattern = tostring(self.win_id),
         callback = function()
             -- when THIS window closes, drop its autocmds
             pcall(vim.api.nvim_del_augroup_by_id, gid)
