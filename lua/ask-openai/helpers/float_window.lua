@@ -49,7 +49,10 @@ function FloatWindow:new(opts, initial_lines)
     if initial_lines then
         vim.api.nvim_buf_set_lines(instance.buffer_number, 0, -1, false, initial_lines)
     end
-    vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = instance.buffer_number })
+
+    if opts.filetype then
+        vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = instance.buffer_number })
+    end
 
     if opts.buffer_name then
         vim.api.nvim_buf_set_name(instance.buffer_number, opts.buffer_name)
