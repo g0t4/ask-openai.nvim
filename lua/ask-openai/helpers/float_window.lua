@@ -1,6 +1,7 @@
 ---@class FloatWindow
 ---@field buffer_number? integer
 ---@field win_id? integer
+---@field opts FloatWindowOptions
 local FloatWindow = {}
 
 ---@param opts FloatWindowOptions
@@ -84,13 +85,13 @@ function FloatWindow:new(opts, initial_lines)
 end
 
 function FloatWindow:open()
-    -- TODO GET RID OF THIS?
-end
-
-function FloatWindow:ensure_open()
     if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
         return
     end
+    self.win_id = vim.api.nvim_open_win(self.buffer_number, true, self.centered_window(self.opts))
+end
+
+function FloatWindow:ensure_open()
     self:open()
 end
 
