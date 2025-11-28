@@ -3,26 +3,28 @@ local BufferController = require("ask-openai.questions.buffers")
 local HLGroups = require("ask-openai.hlgroups")
 local FloatWindow = require("ask-openai.helpers.float_window")
 
----@class ChatWindow
+---@class ChatWindow : FloatWindow
 ---@field buffer_number number
 ---@field buffer BufferController
 ---@field win_id number
 local ChatWindow = {}
 
 function ChatWindow:new()
-    self = setmetatable({}, { __index = ChatWindow })
+    local instance_mt = { __index = self }
+    local instance = setmetatable({}, instance_mt)
+    -- instance = setmetatable({}, { __index = ChatWindow })
 
     local NOT_LISTED_BUFFER = false
     local IS_SCRATCH_BUFFER = true -- must be scratch, otherwise have to save contents or trash it on exit
-    self.buffer_number = vim.api.nvim_create_buf(NOT_LISTED_BUFFER, IS_SCRATCH_BUFFER)
+    instance.buffer_number = vim.api.nvim_create_buf(NOT_LISTED_BUFFER, IS_SCRATCH_BUFFER)
 
-    self.buffer = BufferController:new(self.buffer_number)
-    vim.api.nvim_buf_set_name(self.buffer_number, 'Question Response')
+    instance.buffer = BufferController:new(instance.buffer_number)
+    vim.api.nvim_buf_set_name(instance.buffer_number, 'Question Response')
 
     -- * buffer local keymaps
-    vim.keymap.set('n', '<leader>c', function() self:clear() end, { buffer = self.buffer_number, desc = "clear the chat window, and eventually the message history" })
+    vim.keymap.set('n', '<leader>c', function() instance:clear() end, { buffer = instance.buffer_number, desc = "clear the chat window, and eventually the message history" })
 
-    return self
+    return instance
 end
 
 function ChatWindow:open()

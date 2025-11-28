@@ -43,27 +43,27 @@ function FloatWindow:new(lines, opts)
     -- * create a scratch buffer
     local NOT_LISTED_BUFFER = false
     local IS_SCRATCH_BUFFER = true -- must be scratch, otherwise have to save contents or trash it on exit
-    self.buffer_number = vim.api.nvim_create_buf(NOT_LISTED_BUFFER, IS_SCRATCH_BUFFER)
+    instance.buffer_number = vim.api.nvim_create_buf(NOT_LISTED_BUFFER, IS_SCRATCH_BUFFER)
 
     -- * lines to buffer
-    vim.api.nvim_buf_set_lines(self.buffer_number, 0, -1, false, lines)
-    vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = self.buffer_number })
+    vim.api.nvim_buf_set_lines(instance.buffer_number, 0, -1, false, lines)
+    vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = instance.buffer_number })
 
     -- * open the floating window
-    self.win_id = vim.api.nvim_open_win(self.buffer_number, true, self.centered_window(opts))
+    instance.win_id = vim.api.nvim_open_win(instance.buffer_number, true, instance.centered_window(opts))
 
     -- * make window resizable
-    local gid = vim.api.nvim_create_augroup("float_window_" .. self.win_id, { clear = true })
+    local gid = vim.api.nvim_create_augroup("float_window_" .. instance.win_id, { clear = true })
     vim.api.nvim_create_autocmd("VimResized", {
         group = gid,
         callback = function()
-            if not vim.api.nvim_win_is_valid(self.win_id) then return end
-            vim.api.nvim_win_set_config(self.win_id, self.centered_window(opts))
+            if not vim.api.nvim_win_is_valid(instance.win_id) then return end
+            vim.api.nvim_win_set_config(instance.win_id, instance.centered_window(opts))
         end,
     })
     vim.api.nvim_create_autocmd("WinClosed", {
         group = gid,
-        pattern = tostring(self.win_id),
+        pattern = tostring(instance.win_id),
         callback = function()
             -- when THIS window closes, drop its autocmds
             pcall(vim.api.nvim_del_augroup_by_id, gid)
