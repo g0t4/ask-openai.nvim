@@ -4,7 +4,7 @@
 local FloatWindow = {}
 
 ---@param opts FloatWindowOptions
-local function centered_window(opts)
+function FloatWindow.centered_window(opts)
     opts.width_ratio = opts.width_ratio or 0.6
     opts.height_ratio = opts.height_ratio or 0.6
 
@@ -51,7 +51,7 @@ function FloatWindow:new(lines, opts)
     vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = buffer_number })
 
     -- * open the floating window
-    local win = vim.api.nvim_open_win(buffer_number, true, centered_window(opts))
+    local win = vim.api.nvim_open_win(buffer_number, true, self.centered_window(opts))
     self.win_id = win
 
     -- * make window resizable
@@ -60,7 +60,7 @@ function FloatWindow:new(lines, opts)
         group = gid,
         callback = function()
             if not vim.api.nvim_win_is_valid(win) then return end
-            vim.api.nvim_win_set_config(win, centered_window(opts))
+            vim.api.nvim_win_set_config(win, self.centered_window(opts))
         end,
     })
     vim.api.nvim_create_autocmd("WinClosed", {

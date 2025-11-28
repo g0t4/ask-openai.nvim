@@ -1,6 +1,7 @@
 local LinesBuilder = require("ask-openai.questions.lines_builder")
 local BufferController = require("ask-openai.questions.buffers")
 local HLGroups = require("ask-openai.hlgroups")
+local FloatWindow = require("ask-openai.helpers.float_window")
 
 ---@class ChatWindow
 ---@field buffer_number number
@@ -25,25 +26,11 @@ function ChatWindow:new()
     return self
 end
 
-local function centered_window()
-    -- TODO? minimum width? basically a point at which the window is allowed to cover more than 50% wide and 80% tall
-    local win_height = math.ceil(0.8 * vim.o.lines)
-    local win_width = math.ceil(0.5 * vim.o.columns)
-    local top_is_at_row = math.floor((vim.o.lines - win_height) / 2)
-    local left_is_at_col = math.floor((vim.o.columns - win_width) / 2)
-    return {
-        relative = "editor",
-        width = win_width,
-        height = win_height,
-        row = top_is_at_row,
-        col = left_is_at_col,
-        style = "minimal",
-        border = "single",
-    }
-end
-
 function ChatWindow:open()
-    local win = vim.api.nvim_open_win(self.buffer_number, true, centered_window())
+    ---@type FloatWindowOptions
+    local opts = { width_ratio = 0.5, height_ratio = 0.8 }
+
+    local win = vim.api.nvim_open_win(self.buffer_number, true, FloatWindow.centered_window(opts))
     self.winid = win
 
     -- set FileType after creating window, otherwise the default wrap option (vim.o.wrap) will override any ftplugin mods to wrap (and the same for other window-local options like wrap)
@@ -59,7 +46,7 @@ function ChatWindow:open()
         group = gid,
         callback = function()
             if not vim.api.nvim_win_is_valid(win) then return end
-            vim.api.nvim_win_set_config(win, centered_window())
+            vim.api.nvim_win_set_config(win, FloatWindow.centered_window(opts))
         end,
     })
     vim.api.nvim_create_autocmd("WinClosed", {
