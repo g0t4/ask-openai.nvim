@@ -61,25 +61,6 @@ function FloatWindow:new(opts, initial_lines)
 
     instance:open()
 
-    -- * make window resizable
-    local group_id = vim.api.nvim_create_augroup("float_window_" .. instance.win_id, { clear = true })
-    vim.api.nvim_create_autocmd("VimResized", {
-        group = group_id,
-        callback = function()
-            if not vim.api.nvim_win_is_valid(instance.win_id) then return end
-            vim.api.nvim_win_set_config(instance.win_id, instance.centered_window(opts))
-        end,
-    })
-    vim.api.nvim_create_autocmd("WinClosed", {
-        group = group_id,
-        pattern = tostring(instance.win_id),
-        callback = function()
-            -- when THIS window closes, drop its autocmds
-            pcall(vim.api.nvim_del_augroup_by_id, group_id)
-        end,
-        once = true,
-    })
-
     return instance
 end
 
@@ -88,6 +69,25 @@ function FloatWindow:open()
         return
     end
     self.win_id = vim.api.nvim_open_win(self.buffer_number, true, self.centered_window(self.opts))
+
+    -- * make window resizable
+    local group_id = vim.api.nvim_create_augroup("float_window_" .. self.win_id, { clear = true })
+    vim.api.nvim_create_autocmd("VimResized", {
+        group = group_id,
+        callback = function()
+            if not vim.api.nvim_win_is_valid(self.win_id) then return end
+            vim.api.nvim_win_set_config(self.win_id, self.centered_window(self.opts))
+        end,
+    })
+    vim.api.nvim_create_autocmd("WinClosed", {
+        group = group_id,
+        pattern = tostring(self.win_id),
+        callback = function()
+            -- when THIS window closes, drop its autocmds
+            pcall(vim.api.nvim_del_augroup_by_id, group_id)
+        end,
+        once = true,
+    })
 end
 
 return FloatWindow
