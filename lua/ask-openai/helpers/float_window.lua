@@ -83,4 +83,15 @@ function FloatWindow:new(opts, initial_lines)
     return instance
 end
 
+function FloatWindow:open()
+    -- TODO GET RID OF THIS?
+end
+
+function FloatWindow:ensure_open()
+    if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
+        return
+    end
+    self:open()
+end
+
 return FloatWindow

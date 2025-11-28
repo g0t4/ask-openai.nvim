@@ -33,24 +33,13 @@ function ChatWindow:new()
     local client = vim.lsp.get_clients({ name = "ask_language_server" })[1]
     if client then vim.lsp.buf_attach_client(instance.buffer_number, client.id) end
 
-    return instance
-end
-
-function ChatWindow:open()
-    -- TODO GET RID OF THIS?
-end
-
-function ChatWindow:ensure_open()
-    if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
-        return
-    end
-    self:open()
-
     -- * folding options
     vim.opt_local.foldmethod = "expr"
     vim.opt_local.foldexpr = "v:lua.MyChatWindowFolding()"
     vim.opt_local.foldenable = true
     vim.opt_local.foldlevel = 0 -- CLOSE all folds with higher number, thus 0 == ALL (equiv to zM => foldenable + foldlevel=0)
+
+    return instance
 end
 
 ---@type ExplainError
