@@ -26,11 +26,12 @@ function ChatWindow:new()
     instance.buffer = BufferController:new(instance.buffer_number)
 
     -- * buffer local keymaps
-    vim.keymap.set('n', '<leader>c', function() instance:clear() end, { buffer = instance.buffer_number, desc = "clear the chat window, and eventually the message history" })
+    vim.keymap.set('n', '<leader>c', function() instance:clear() end,
+        { buffer = instance.buffer_number, desc = "clear the chat window, and eventually the message history" })
 
     -- manually trigger LSP attach, b/c scratch buffers are normally not auto attached
     local client = vim.lsp.get_clients({ name = "ask_language_server" })[1]
-    if client then vim.lsp.buf_attach_client(self.buffer_number, client.id) end
+    if client then vim.lsp.buf_attach_client(instance.buffer_number, client.id) end
 
     return instance
 end
