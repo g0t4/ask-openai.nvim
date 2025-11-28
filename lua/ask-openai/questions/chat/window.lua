@@ -8,7 +8,7 @@ local FloatWindow = require("ask-openai.helpers.float_window")
 ---@field buffer BufferController
 ---@field win_id number
 local ChatWindow = {}
-local class_mt = { __index = FloatWindow }
+local class_mt = { __index = FloatWindow } -- inherit FloatWindow behavior too
 setmetatable(ChatWindow, class_mt)
 
 function ChatWindow:new()
