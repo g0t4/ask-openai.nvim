@@ -1,35 +1,50 @@
-local M = {}
+---@class FloatWindow
+---@field buffer_number? integer
+---@field win_id? integer
+local FloatWindow = {}
 
--- PRN use this as base for ChatWindow?
-
+---@param opts FloatWindowOptions
 local function centered_window(opts)
-    opts.width = opts.width or 0.6
-    opts.height = opts.height or 0.6
+    opts.width_ratio = opts.width_ratio or 0.6
+    opts.height_ratio = opts.height_ratio or 0.6
 
     -- PRN minimum width? basically a point at which the window is allowed to cover more than 50% wide and 80% tall
-    local win_height = math.ceil(opts.height * vim.o.lines)
-    local win_width = math.ceil(opts.width * vim.o.columns)
+    local win_height = math.ceil(opts.height_ratio * vim.o.lines)
+    local win_width = math.ceil(opts.width_ratio * vim.o.columns)
     local top_is_at_row = math.floor((vim.o.lines - win_height) / 2)
     local left_is_at_col = math.floor((vim.o.columns - win_width) / 2)
     return {
-        relative = "editor",
-        width = win_width,
-        height = win_height,
-
+        -- position:
         row = top_is_at_row,
         col = left_is_at_col,
+        -- size:
+        width = win_width,
+        height = win_height,
+        -- attributes:
+        relative = "editor",
         style = "minimal",
         border = "single", -- "rounded"
     }
 end
 
-function M.open_float(lines, opts)
+---@class FloatWindowOptions
+---@field width_ratio? number -- ratio 0 to 1
+---@field height_ratio? number -- ratio 0 to 1
+---@field filetype? string
+
+---@param lines string[]
+---@param opts FloatWindowOptions
+---@return FloatWindow
+function FloatWindow:new(lines, opts)
+    local instance_mt = { __index = self }
+    local instance = setmetatable({}, instance_mt)
     opts = opts or {}
 
     -- * create a scratch buffer
     local listed_buffer = false
     local scratch_buffer = true -- must be scratch, otherwise have to save contents or trash it on exit
     local buffer_number = vim.api.nvim_create_buf(listed_buffer, scratch_buffer)
+    self.buffer_number = buffer_number
 
     -- * lines to buffer
     vim.api.nvim_buf_set_lines(buffer_number, 0, -1, false, lines)
@@ -37,6 +52,7 @@ function M.open_float(lines, opts)
 
     -- * open the floating window
     local win = vim.api.nvim_open_win(buffer_number, true, centered_window(opts))
+    self.win_id = win
 
     -- * make window resizable
     local gid = vim.api.nvim_create_augroup("float_window_" .. win, { clear = true })
@@ -57,7 +73,7 @@ function M.open_float(lines, opts)
         once = true,
     })
 
-    return buffer_number, win
+    return instance
 end
 
-return M
+return FloatWindow
