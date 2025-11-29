@@ -202,7 +202,7 @@ _describe("GetPos wrappers", function()
                 if include_bytes then
                     error("include_bytes not supported")
                 end
-                return self._range
+                return self._range[1], self._range[2], self._range[3], self._range[4]
             end
 
             local node = FakeTSNode:new({

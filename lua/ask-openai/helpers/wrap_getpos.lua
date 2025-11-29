@@ -36,12 +36,8 @@ function GetPosPosition:col_base0()
 end
 
 function GetPosPosition:in_range(ts_node)
-    local range = ts_node:range()
-    local start_line_base0 = range[1]
-    local start_col_base0 = range[2]
-    local end_line_base0 = range[3]
-    local end_col_base0 = range[4]
-
+    -- FYI :range(true) will return 6 values, I am not (yet anyways) using that mode (include_bytes)
+    local start_line_base0, start_col_base0, end_line_base0, end_col_base0 = ts_node:range()
     local before_start_line = self:line_base0() < start_line_base0
     local after_end_line = self:line_base0() > end_line_base0
     if before_start_line or after_end_line then
