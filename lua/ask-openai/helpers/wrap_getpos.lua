@@ -43,7 +43,7 @@ function GetPosPosition:in_range(ts_node)
         return false
     end
     if self:line_base0() == start_line_base0 then
-        if self:col_base0() > start_col_base0 then
+        if self:col_base0() >= start_col_base0 then
             return true
         end
         return false
