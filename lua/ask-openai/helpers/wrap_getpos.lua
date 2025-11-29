@@ -37,10 +37,12 @@ end
 
 function GetPosPosition:in_range(ts_node)
     local range = ts_node:range()
-    if self.line_base1 < range[1] then
+    local start_line_base0 = range[1]
+    if self.line_base1 < start_line_base0 then
         return false
     end
-    if self.line_base1 > range[3] then
+    local end_line_base0 = range[3]
+    if self.line_base1 > end_line_base0 then
         return false
     end
     return true
