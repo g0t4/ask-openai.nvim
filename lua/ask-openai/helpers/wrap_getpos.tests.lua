@@ -167,6 +167,45 @@ _describe("GetPos wrappers", function()
         end)
     end)
 
+    _describe("GetPosPosition", function()
+        it("GetPosPosition:new(point) returns GetPosPosition w/ line/column", function()
+            local original_position = { line_base1 = 1, col_base1 = 2 }
+
+            local position = GetPos.GetPosPosition:new(original_position)
+
+            -- type must be GetPosPosition
+            local position_mt = getmetatable(position)
+            assert.is_not_nil(position_mt)
+
+            -- must copy original point's line/column
+            assert.equal(position.line_base1, 1)
+            assert.equal(position.col_base1, 2)
+        end)
+
+        -- TODO line_base0()
+        -- TODO col_base0()
+        -- TODO in_range(ts_node: TSNode)
+        it("GetPos.other_end_of_selection() returns GetPosPosition type", function()
+            local other = GetPos.other_end_of_selection()
+
+            local other_mmt = getmetatable(other)
+            assert.is_not_nil(other_mmt)
+
+            assert.is_number(other.line_base1)
+            assert.is_number(other.col_base1)
+        end)
+
+        it("GetPos.cursor_position() returns GetPosPosition type", function()
+            local cursor = GetPos.cursor_position()
+
+            local cursor_mt = getmetatable(cursor)
+            assert.is_not_nil(cursor_mt)
+
+            assert.is_number(cursor.line_base1)
+            assert.is_number(cursor.col_base1)
+        end)
+    end)
+
     _describe("current_selection", function()
         _describe("still selected", function()
             -- FYI this is probably rare to happen... I really should just close the mode and thus capture into '< and '>

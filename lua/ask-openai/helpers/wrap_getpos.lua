@@ -18,14 +18,21 @@ setup_for_testing()
 ---@class GetPosPosition
 ---@field line_base1 integer
 ---@field col_base1 integer
-_G.GetPosPosition = {}
+local GetPosPosition = {}
+GetPos.GetPosPosition = GetPosPosition -- TODO how do I want to expose this? separate module or?
+
+function GetPosPosition:new(position)
+    local instance_mt = {}
+    local instance = setmetatable(position or {}, instance_mt)
+    return instance
+end
 
 ---@param expr string
 ---@return GetPosPosition
 local function getpos_only_line_and_column(expr)
     -- FYI offset has to do with virtualedit (when cursor is allowed to stop on non-char positions)
     local bufnr, line_base1, col_base1, offset = unpack(vim.fn.getpos(expr))
-    return { line_base1 = line_base1, col_base1 = col_base1 }
+    return GetPosPosition:new { line_base1 = line_base1, col_base1 = col_base1 }
 end
 
 ---@return GetPosPosition
