@@ -241,8 +241,9 @@ _describe("GetPos wrappers", function()
                 end)
             end)
 
-            it("position is after the end line", function()
-                local position = GetPos.GetPosPosition:new({ line_base1 = 25, col_base1 = 1 })
+            it("position is right after the end line", function()
+                -- base0=21 (line after end of range) ==> base1=22
+                local position = GetPos.GetPosPosition:new({ line_base1 = 22, col_base1 = 1 })
                 assert.is_false(position:in_range(node))
             end)
         end)
