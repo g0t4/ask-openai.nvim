@@ -39,20 +39,12 @@ function GetPosPosition:in_range(ts_node)
     local range = ts_node:range()
     local start_line_base0 = range[1]
     local start_col_base0 = range[2]
+    local end_line_base0 = range[3]
+    local end_col_base0 = range[4]
+
     local before_start_line = self:line_base0() < start_line_base0
     if before_start_line then
         return false
-    end
-    local on_start_line = self:line_base0() == start_line_base0
-    if on_start_line then
-        return self:col_base0() >= start_col_base0
-    end
-
-    local end_line_base0 = range[3]
-    local end_col_base0 = range[4]
-    local on_end_line = self:line_base0() == end_line_base0
-    if on_end_line then
-        return self:col_base0() <= end_col_base0
     end
     local after_end_line = self:line_base0() > end_line_base0
     if after_end_line then
@@ -60,6 +52,15 @@ function GetPosPosition:in_range(ts_node)
         return false
     end
 
+    local on_start_line = self:line_base0() == start_line_base0
+    if on_start_line then
+        return self:col_base0() >= start_col_base0
+    end
+
+    local on_end_line = self:line_base0() == end_line_base0
+    if on_end_line then
+        return self:col_base0() <= end_col_base0
+    end
     -- in between
     return true
 end
