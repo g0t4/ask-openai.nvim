@@ -43,6 +43,7 @@ function GetPosPosition:in_range(ts_node)
     end
     local end_line_base0 = range[3]
     if self.line_base1 > end_line_base0 then
+        -- TODO test to drive use of :line_base0() here
         return false
     end
     return true
