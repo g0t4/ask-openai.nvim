@@ -36,6 +36,10 @@ function GetPosPosition:col_base0()
 end
 
 function GetPosPosition:in_range(ts_node)
+    local range = ts_node:range()
+    if self.line_base1 < range[1] then
+        return false
+    end
     return true
 end
 
