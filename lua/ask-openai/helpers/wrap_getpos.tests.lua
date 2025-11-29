@@ -190,12 +190,7 @@ _describe("GetPos wrappers", function()
         end)
 
         describe("in_range(ts_node: TSNode)", function()
-            it("position is between start line and end line, not on either", function()
-            end)
-
             it("position is before the start line", function()
-            end)
-            it("position is after the end line", function()
             end)
 
             describe("position is on the start line", function()
@@ -207,6 +202,9 @@ _describe("GetPos wrappers", function()
                 end)
             end)
 
+            it("position is between start line and end line, not on either", function()
+            end)
+
             describe("position is on the end line", function()
                 it("before the end_col", function()
                 end)
@@ -214,6 +212,9 @@ _describe("GetPos wrappers", function()
                 end)
                 it("after the end_col", function()
                 end)
+            end)
+
+            it("position is after the end line", function()
             end)
         end)
 
