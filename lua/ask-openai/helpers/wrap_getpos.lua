@@ -57,7 +57,8 @@ function GetPosPosition:in_range(ts_node)
     if on_end_line then
         return self:col_base0() <= end_col_base0
     end
-    -- in between
+
+    -- on line between start and end:
     return true
 end
 
