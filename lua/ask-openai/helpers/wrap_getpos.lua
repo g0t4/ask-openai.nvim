@@ -48,8 +48,6 @@ function GetPosPosition:in_range(ts_node)
         return self:col_base0() >= start_col_base0
     end
 
-    -- in between
-
     local end_line_base0 = range[3]
     local end_col_base0 = range[4]
     local on_end_line = self:line_base0() == end_line_base0
@@ -61,6 +59,8 @@ function GetPosPosition:in_range(ts_node)
         -- TODO test to drive use of :line_base0() here
         return false
     end
+
+    -- in between
     return true
 end
 
