@@ -22,9 +22,20 @@ local GetPosPosition = {}
 GetPos.GetPosPosition = GetPosPosition -- TODO how do I want to expose this? separate module or?
 
 function GetPosPosition:new(position)
-    local instance_mt = {}
+    local instance_mt = { __index = self }
     local instance = setmetatable(position or {}, instance_mt)
     return instance
+end
+
+function GetPosPosition:line_base0()
+    return self.line_base1 - 1
+end
+
+function GetPosPosition:col_base0()
+    return self.col_base1 - 1
+end
+
+function GetPosPosition:in_range(ts_node)
 end
 
 ---@param expr string

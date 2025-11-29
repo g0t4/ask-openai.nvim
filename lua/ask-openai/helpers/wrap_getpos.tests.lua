@@ -183,9 +183,10 @@ _describe("GetPos wrappers", function()
         end)
 
         it(":base0() helpers", function()
+            -- FYI a test of setting the right metatable too!
             local position = GetPos.GetPosPosition:new({ line_base1 = 10, col_base1 = 20 })
-            assert.equal(position.line_base0, 9)
-            assert.equal(position.col_base0, 19)
+            assert.equal(position:line_base0(), 9)
+            assert.equal(position:col_base0(), 19)
         end)
 
         it("in_range(ts_node: TSNode)", function()
