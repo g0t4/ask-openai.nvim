@@ -309,9 +309,9 @@ _describe("GetPosSelectionRange", function()
 
         local instance = GetPosSelectionRange:new(range)
 
-        assert.not_equal(instance, GetPosSelectionRange, ":new() should return a new instance")
+        assert.are_not_equal(instance, GetPosSelectionRange, ":new() should return a new instance")
         local instance_metatable = getmetatable(instance)
-        assert.not_equal(instance_metatable, nil, "instance should have a defined metatable")
+        assert.is_not_nil(instance_metatable)
         assert.equal(instance_metatable.__index, GetPosSelectionRange, "instance should inherit behavior from GetPosSelectionRange")
         assert.equal(instance.start_line_base1, 1)
         assert.equal(instance.start_col_base1, 2)
