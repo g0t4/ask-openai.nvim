@@ -182,9 +182,16 @@ _describe("GetPos wrappers", function()
             assert.equal(position.col_base1, 2)
         end)
 
-        -- TODO line_base0()
-        -- TODO col_base0()
-        -- TODO in_range(ts_node: TSNode)
+        it(":base0() helpers", function()
+            local position = GetPos.GetPosPosition:new({ line_base1 = 10, col_base1 = 20 })
+            assert.equal(position.line_base0, 9)
+            assert.equal(position.col_base0, 19)
+        end)
+
+        it("in_range(ts_node: TSNode)", function()
+            -- TODO
+        end)
+
         it("GetPos.other_end_of_selection() returns GetPosPosition type", function()
             local other = GetPos.other_end_of_selection()
 
