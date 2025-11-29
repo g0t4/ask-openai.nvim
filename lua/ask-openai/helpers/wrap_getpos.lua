@@ -40,6 +40,9 @@ function GetPosPosition:in_range(ts_node)
     if self.line_base1 < range[1] then
         return false
     end
+    if self.line_base1 > range[3] then
+        return false
+    end
     return true
 end
 
