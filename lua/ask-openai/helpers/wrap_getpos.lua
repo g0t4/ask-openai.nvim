@@ -36,6 +36,7 @@ function GetPosPosition:col_base0()
 end
 
 function GetPosPosition:in_range(ts_node)
+    return true
 end
 
 ---@param expr string

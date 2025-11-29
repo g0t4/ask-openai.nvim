@@ -190,6 +190,28 @@ _describe("GetPos wrappers", function()
         end)
 
         describe("in_range(ts_node: TSNode)", function()
+            ---@class FakeTSNode : TSNode
+            ---@field _range integer[] -- start_line, start_col, end_line, end_col (0-indexed)
+            local FakeTSNode = {}
+
+            function FakeTSNode:new(range)
+                return setmetatable({ _range = range }, { __index = FakeTSNode })
+            end
+
+            function FakeTSNode:range(include_bytes)
+                if include_bytes then
+                    error("include_bytes not supported")
+                end
+                return self._range
+            end
+
+            local node = FakeTSNode:new({
+                10, -- start_line_base0
+                5, -- start_col_base0
+                20, -- end_line_base0
+                30, -- end_col_base0
+            })
+
             it("position is before the start line", function()
             end)
 
@@ -203,6 +225,8 @@ _describe("GetPos wrappers", function()
             end)
 
             it("position is between start line and end line, not on either", function()
+                local position = GetPos.GetPosPosition:new({ line_base1 = 15, col_base1 = 1 })
+                assert.is_true(position:in_range(node))
             end)
 
             describe("position is on the end line", function()
