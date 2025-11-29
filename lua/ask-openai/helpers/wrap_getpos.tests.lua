@@ -213,6 +213,8 @@ _describe("GetPos wrappers", function()
             })
 
             it("position is before the start line", function()
+                local position = GetPos.GetPosPosition:new({ line_base1 = 1, col_base1 = 1 })
+                assert.is_false(position:in_range(node))
             end)
 
             describe("position is on the start line", function()
@@ -239,6 +241,8 @@ _describe("GetPos wrappers", function()
             end)
 
             it("position is after the end line", function()
+                local position = GetPos.GetPosPosition:new({ line_base1 = 25, col_base1 = 1 })
+                assert.is_false(position:in_range(node))
             end)
         end)
 
