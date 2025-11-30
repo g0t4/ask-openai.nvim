@@ -62,8 +62,48 @@ function M.call(parsed_args, callback)
     -- callback(result[1] or "")
 end
 
--- test call
-local patch = [[
+-- BTW it is NOT possible w/ the current jinja template to create a tool that takes a single string arg! YIKES
+--  and that's a BIG deal b/c otherwise it has to wrap it in JSON... and it can do that but if it wasn't fine tuned on that, it's gonna be less reliable
+--   especially when modifying a file and needing to escape chars like " and ' etc
+--   why did OpenAI release a jinja template that doesn't even support using their apply_patch tool?!?!
+
+-- TODO any issues having two Tools sections in developer message (if I pass some tools via body.tools?)
+local developer_message_apply_patch_tool_definition_only = [[
+# Tools
+
+## functions
+
+namespace functions {
+
+// Patch a file
+type apply_patch = (_: string) => any;
+
+} // namespace functions<|end|>
+]]
+
+-- FYI I rendered the message from the gpt-oss repo's chat.py and get the following (as I suspected)...
+--  so, I need to inject this into the developer message myself, shouldn't hurt to have functions twice
+--  OR how about I just build the # Tools section and not even pass tools to the API!
+local FYI_chat_py_dev_message = [[
+<|start|>developer<|message|># Instructions
+
+foo
+
+# Tools
+
+## functions
+
+namespace functions {
+
+// Patch a file
+type apply_patch = (_: string) => any;
+
+} // namespace functions<|end|>
+]]
+
+function manual_test()
+    -- test call
+    local patch = [[
 *** Begin Patch
 *** Add File: new_module.py
 +def hello():
@@ -71,9 +111,10 @@ local patch = [[
 +    print("Hello, world!")
 *** End Patch
 ]]
-M.call({
-    patch = patch,
-}, function()
-end)
+    M.call({
+        patch = patch,
+    }, function()
+    end)
+end
 
 return M
