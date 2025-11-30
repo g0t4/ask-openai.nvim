@@ -182,6 +182,7 @@ function QuestionsFrontend.send_messages()
         base_url = QuestionsFrontend.thread.base_url,
         endpoint = CompletionsEndpoints.oai_v1_chat_completions
     })
+    log:luaify_trace("body:", request.body)
     curl.spawn(request, QuestionsFrontend)
     QuestionsFrontend.thread:set_last_request(request)
 end
