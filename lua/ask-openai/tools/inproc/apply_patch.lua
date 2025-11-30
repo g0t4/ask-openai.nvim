@@ -50,4 +50,30 @@ M.ToolDefinition = {
     type = "function"
 }
 
+---@param parsed_args table
+---@param callback ToolCallDoneCallback
+function M.call(parsed_args, callback)
+    local patch = parsed_args.patch
+    -- cat ~/repos/github/g0t4/gpt-oss/gpt_oss/tools/example-add.patch | ~/repos/github/g0t4/gpt-oss/.venv/bin/python3 ~/repos/github/g0t4/gpt-oss/gpt_oss/tools/apply_patch.py
+    local python = vim.fn.expand("~/repos/github/g0t4/gpt-oss/.venv/bin/python3")
+    local apply_patch_py = vim.fn.expand("~/repos/github/g0t4/gpt-oss/gpt_oss/tools/apply_patch.py")
+    -- local result = vim.fn.systemlist({ python, apply_patch_py }, patch)
+    local result = vim.fn.system({ python, apply_patch_py }, patch)
+    -- callback(result[1] or "")
+end
+
+-- test call
+local patch = [[
+*** Begin Patch
+*** Add File: new_module.py
++def hello():
++    """Simple hello function."""
++    print("Hello, world!")
+*** End Patch
+]]
+M.call({
+    patch = patch,
+}, function()
+end)
+
 return M
