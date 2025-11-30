@@ -1,41 +1,43 @@
 local log = require("ask-openai.logs.logger").predictions()
 local ansi = require("ask-openai.predictions.ansi")
 
-local M = {}
-
----@type OpenAITool
-M.ToolDefinition = {
-    ["function"] = {
-        description = "Retrieval tool (the R in RAG) for code and documents in the current workspace. Uses a vector store with embeddings of the entire codebase. And a re-ranker for sorting results.",
-        name = "semantic_grep",
-        parameters = {
-            properties = {
-                filetype = {
-                    type = "string",
-                    description = "limit matches to a vim compatible filetype. Leave unset for all indexed filetypes in a workspace."
+---@class InprocessTool
+---@field ToolDefinition OpenAITool;
+local M = {
+    ToolDefinition = {
+        ["function"] = {
+            description =
+            "Retrieval tool (the R in RAG) for code and documents in the current workspace. Uses a vector store with embeddings of the entire codebase. And a re-ranker for sorting results.",
+            name = "semantic_grep",
+            parameters = {
+                properties = {
+                    filetype = {
+                        type = "string",
+                        description = "limit matches to a vim compatible filetype. Leave unset for all indexed filetypes in a workspace."
+                    },
+                    query = {
+                        type = "string",
+                        description = "query text, what you are looking for"
+                    },
+                    instruct = {
+                        type = "string",
+                        description = "instructions for the query"
+                    },
+                    top_k = {
+                        type = "number",
+                        description = "number of results to return (post reranking)"
+                    },
+                    embed_top_k = {
+                        type = "number",
+                        description = "number of embeddings to consider for reranking"
+                    },
                 },
-                query = {
-                    type = "string",
-                    description = "query text, what you are looking for"
-                },
-                instruct = {
-                    type = "string",
-                    description = "instructions for the query"
-                },
-                top_k = {
-                    type = "number",
-                    description = "number of results to return (post reranking)"
-                },
-                embed_top_k = {
-                    type = "number",
-                    description = "number of embeddings to consider for reranking"
-                },
-            },
-            required = { "query" },
-            type = "object"
-        }
-    },
-    type = "function"
+                required = { "query" },
+                type = "object"
+            }
+        },
+        type = "function"
+    }
 }
 
 ---@param parsed_args table
@@ -151,6 +153,5 @@ function M.call(parsed_args, callback)
     _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", params, on_server_response)
     return _client_request_ids, _cancel_all_requests
 end
-
 
 return M

@@ -1,3 +1,5 @@
+---@type InprocessTool
+---@diagnostic disable-next-line: missing-fields
 local M = {}
 
 ---@type OpenAITool
