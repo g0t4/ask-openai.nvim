@@ -40,7 +40,7 @@ M.ToolDefinition = {
 
 ---@param parsed_args table
 ---@param callback ToolCallDoneCallback
-function M.semantic_grep(parsed_args, callback)
+function M.call(parsed_args, callback)
     local languages = ""
     if not parsed_args.filetype then
         -- PRN use EVERYTHING instead of GLOBAL?

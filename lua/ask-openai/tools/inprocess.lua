@@ -25,7 +25,7 @@ function M.send_tool_call(tool_call, callback)
 
     local name = tool_call["function"].name
     if name == "semantic_grep" then
-        semantic_grep_tool.semantic_grep(parsed_args, callback)
+        semantic_grep_tool.call(parsed_args, callback)
     elseif name == "apply_patch" then
         M.apply_patch(parsed_args, callback)
         -- TODO try other tools from gptoss repo? (python code runner, browser)
