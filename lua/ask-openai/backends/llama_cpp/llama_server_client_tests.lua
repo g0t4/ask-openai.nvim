@@ -86,7 +86,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         -- TODO tool call test the same thing
         -- TODO test formatting of tool definition in gptoss
 
-        local body = read_json_file("models/llama_cpp/templates/gptoss/tests/full_date_run_command.json")
+        local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/full_date_run_command.json")
 
         -- * action
         local response = LlamaServerClient.apply_template(base_url, body)
@@ -100,7 +100,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         --   2. date in system message changes
         -- MOSTLY I saved the file so you can visualize the big picture w/o re-runing the request
         --
-        -- local actual_prompt = files.read_file_string("models/llama_cpp/templates/gptoss/tests/full_date_run_command_prompt.harmony")
+        -- local actual_prompt = files.read_file_string("lua/ask-openai/backends/llama_cpp/jinja/tests/full_date_run_command_prompt.harmony")
         -- should.be_same_colorful_diff(actual_prompt, prompt) -- FYI don't directly compare
 
         str(prompt):should_start_with("<|start|>")
