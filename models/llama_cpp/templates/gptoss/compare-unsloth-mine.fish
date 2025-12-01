@@ -1,3 +1,3 @@
 #!/usr/bin/env fish
 
-icdiff unsloth-fixes.jinja ask-fixes.jinja
+icdiff unsloth.jinja ask-fixes.jinja

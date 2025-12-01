@@ -1,3 +1,3 @@
 #!/usr/bin/env fish
 
-icdiff openai.jinja unsloth-fixes.jinja
+icdiff openai.jinja unsloth.jinja

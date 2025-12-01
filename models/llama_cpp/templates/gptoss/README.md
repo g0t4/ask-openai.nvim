@@ -13,7 +13,7 @@ wget https://huggingface.co/openai/gpt-oss-120b/raw/main/chat_template.jinja -O 
 
 # * unsloth's "fixes"
 # https://huggingface.co/unsloth/gpt-oss-120b/raw/main/chat_template.jinja
-wget https://huggingface.co/unsloth/gpt-oss-120b/raw/main/chat_template.jinja -O unsloth-fixes.jinja
+wget https://huggingface.co/unsloth/gpt-oss-120b/raw/main/chat_template.jinja -O unsloth.jinja
 
 
 ```
