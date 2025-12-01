@@ -34,15 +34,18 @@ function M.new_gptoss_chat_body_llama_server(request_body)
         --   ],
         --   "pad_token_id": 199999,
         --   "transformers_version": "4.55.0.dev0"
-        bos_token_id = gptoss_tokenizer.special_tokens.STARTOFTEXT,
-        do_sample = true,
-        eos_token_id = {
-            gptoss_tokenizer.special_tokens.RETURN,
-            gptoss_tokenizer.special_tokens.END,
-            gptoss_tokenizer.special_tokens.CALL,
-            gptoss_tokenizer.special_tokens.ENDOFTEXT,
-        },
-        pad_token_id = gptoss_tokenizer.special_tokens.ENDOFTEXT,
+
+        -- -- THESE aren't used afaict... just drop them if I don't know wtf is supposed to happen and what the real param names are... let the model's defaults kick in until there's an issue
+        -- bos_token_id = gptoss_tokenizer.special_tokens.STARTOFTEXT,
+        -- do_sample = true,
+        -- eos_token_id = {
+        --     -- FYI 99% sure llama-server is not using this for stop tokens
+        --     gptoss_tokenizer.special_tokens.RETURN,
+        --     -- gptoss_tokenizer.special_tokens.END, -- umm I don't think I want this set for gptoss else multi harmony response should theoretically stop on end of first message (i.e. end of analysis)
+        --     gptoss_tokenizer.special_tokens.CALL,
+        --     gptoss_tokenizer.special_tokens.ENDOFTEXT,
+        -- },
+        -- pad_token_id = gptoss_tokenizer.special_tokens.ENDOFTEXT,
 
         -- gh repo has more recommends
         --   We recommend sampling with temperature=1.0 and top_p=1.0.
