@@ -294,8 +294,8 @@
             {%- elif message.thinking and not future_final_message.found %}
                 {{- "<|start|>assistant<|channel|>analysis<|message|>" + message.thinking + "<|end|>" }}
             {%- endif %}
-            {{- "<|start|>assistant to=" }}
-            {{- "functions." + tool_call.name + "<|channel|>commentary " }}
+            {{- "<|start|>assistant<|channel|>commentary to=" }}
+            {{- "functions." + tool_call.name + " " }}
             {{- (tool_call.content_type if tool_call.content_type is defined else "json") + "<|message|>" }}
             {%- if tool_call.arguments is string %}
                 {{- tool_call.arguments }}
