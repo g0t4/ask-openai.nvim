@@ -4,6 +4,7 @@ local should = require("devtools.tests.should")
 local str = require("devtools.tests.str")
 local json_client = require("ask-openai.backends.json_client")
 local LlamaServerClient = require("ask-openai.backends.llama_cpp.llama_server_client")
+local files = require("ask-openai.helpers.files")
 
 describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
     local base_url = "http://build21.lan:8013"
@@ -73,10 +74,62 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         -- PRN parse and extract template
     end)
 
-    -- # TODO try writing a simple eval/test case of asking for the date, given the fixed date in the prompt...
-    --    user: What is the date?
-    --    extract and verify value provided?
-    -- #   TODO and maybe another test of the actual date using tools + run_command
-    --    leave current date in prompt and as it to verify the date?
-    --    remove date and just ask for date w/ tools available
+    local function read_json_file(filename)
+        local text = files.read_file_string(filename)
+        if not text then
+            return nil
+        end
+        return vim.json.decode(text)
+    end
+
+    it("tool result renders w/o double encoded json", function()
+        -- TODO tool call test the same thing
+        -- TODO test formatting of tool definition in gptoss
+
+        local body = read_json_file("models/llama_cpp/templates/gptoss/tests/full_date_run_command.json")
+
+        -- * action
+        local response = LlamaServerClient.apply_template(base_url, body)
+
+        -- * assertions:
+        local prompt = response.body.prompt
+        -- print_prompt(prompt)
+
+        -- Full file is available should you want to diff but it won't work reliably b/c:
+        --   1. tool args order is non-deterministic... randomly rearranges on every request!
+        --   2. date in system message changes
+        -- MOSTLY I saved the file so you can visualize the big picture w/o re-runing the request
+        --
+        -- local actual_prompt = files.read_file_string("models/llama_cpp/templates/gptoss/tests/full_date_run_command_prompt.harmony")
+        -- should.be_same_colorful_diff(actual_prompt, prompt) -- FYI don't directly compare
+
+        str(prompt):should_start_with("<|start|>")
+
+        local expected_tool_call_request =
+        [[<|start|>assistant to=functions.run_command<|channel|>commentary json<|message|>{"command":"date"}<|call|>]]
+
+        local expected_tool_result =
+        [[<|start|>functions.run_command to=assistant<|channel|>commentary<|message|>{"content":[{"text":"Sun Nov 30 19:35:10 CST 2025\n","type":"text","name":"STDOUT"}]}<|end|>]]
+
+        --- split response so that it divides each message when it sees a <|start|> token
+        ---  DOES NOT return str() instances (easier to compare raw strings... only use str() for find etc)
+        ---  SKIPS fake first message when <|start|> is right at the start
+        local function split_messages_keep_start(prompt)
+            local messages = vim.split(prompt, "<|start|>")
+            if messages[1] == "" then
+                -- this happens when the first message appropirately starts at the start of the prompt
+                table.remove(messages, 1)
+            end
+            return vim.iter(messages):map(function(m) return "<|start|>" .. m end):totable()
+        end
+        local messages = split_messages_keep_start(prompt)
+
+        -- add back start token split point
+        local actual_system = messages[2]
+        local actual_tool_call_request = messages[5]
+        local actual_tool_result = messages[6]
+
+        expect(actual_tool_call_request == expected_tool_call_request)
+        expect(actual_tool_result == expected_tool_result)
+    end)
 end)
