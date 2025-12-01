@@ -83,7 +83,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     end
 
     -- TODO! FIXES FOR JINJA OVERALL
-    -- *. history end token usage:
+    -- *. lower priority - history end token usage:
     --      call and return are INFERENCE/DECODE time only, not for inputting chat history
     --   *. tool call request => use <|end|> and not <|call|>, right?
     --   *. use <|end|> and not <|return|> right? (IIRC at end of assistant final message
