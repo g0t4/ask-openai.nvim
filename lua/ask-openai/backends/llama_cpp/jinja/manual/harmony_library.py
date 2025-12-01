@@ -61,6 +61,23 @@ developer_message = (
                     }
                 ),
             ])
+            # # Tools
+            #
+            # ## functions
+            #
+            # namespace functions {
+            #
+            # // Gets the current weather in the provided location.
+            # type get_current_weather = (_: {
+            # // The city and state, e.g. San Francisco, CA
+            # location: string,
+            # format?: "celsius" | "fahrenheit", // default: celsius
+            # }) => any;
+            #
+            # // Patch a file
+            # type apply_patch = (_: string) => any;
+            #
+            # } // namespace functions
 )
 
 convo = Conversation.from_messages(
