@@ -1,0 +1,7 @@
+[project]
+name = "manual"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "openai-harmony>=0.0.8",
+]
