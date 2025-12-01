@@ -29,7 +29,7 @@ apply_patch_instructions = (Path(os.environ["WES_REPOS"])
 
 developer_message = (
     DeveloperContent.new()
-        .with_instructions("Always respond in riddles")
+        .with_instructions(apply_patch_instructions)
         .with_function_tools(
             [
                 ToolDescription.new(
