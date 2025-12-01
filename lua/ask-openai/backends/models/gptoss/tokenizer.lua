@@ -1,5 +1,25 @@
+local local_share = require("ask-openai.config.local_share")
 local M = {}
 
+---@param level any
+---@return number
+function M.get_gptoss_max_tokens_for_level(level)
+    -- FYI if you want separate levels for say FIM vs AskQuestion/AskRewrite...
+    --   consider passing the type here so it is all in one spot still.. the levels are?
+    --   or just duplicate this function below and keep it all together
+
+    if level == local_share.FimReasoningLevel.high then
+        return 16384
+    elseif level == local_share.FimReasoningLevel.medium then
+        return 8192
+    elseif level == local_share.FimReasoningLevel.low then
+        return 4096
+    elseif level == local_share.FimReasoningLevel.off then
+        return 2048
+    else
+        return 2048
+    end
+end
 
 
 -- NOTES:

@@ -6,6 +6,7 @@ local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.predictions.ansi")
 local local_share = require("ask-openai.config.local_share")
 local api = require("ask-openai.api")
+local gptoss_tokenizer = require("ask-openai.backends.models.gptoss.tokenizer")
 
 require("ask-openai.backends.sse.parsers")
 
@@ -182,23 +183,7 @@ function FimBackend:body_for()
                 reasoning_effort = level
             }
 
-            ---@param level any
-            ---@return number
-            local function get_gptoss_max_tokens_for_level(level)
-                if level == local_share.FimReasoningLevel.high then
-                    return 16384
-                elseif level == local_share.FimReasoningLevel.medium then
-                    return 8192
-                elseif level == local_share.FimReasoningLevel.low then
-                    return 4096
-                elseif level == local_share.FimReasoningLevel.off then
-                    return 2048
-                else
-                    return 2048
-                end
-            end
-
-            body.max_tokens = get_gptoss_max_tokens_for_level(level)
+            body.max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(level)
         end
 
         -- * common settings
