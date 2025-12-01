@@ -89,6 +89,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     --   *. use <|end|> and not <|return|> right? (IIRC at end of assistant final message
     --
     -- *. finish unsloth compare and diffputs
+    --     :vert diffsplit lua/ask-openai/backends/llama_cpp/jinja/ask-fixes.jinja
     --
     -- TODO add test of formatting of tool definition for apply_patch tool (single string param)
     --   TODO and then implement the template change to support it - not even unsloth has this yet btw
