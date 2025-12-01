@@ -115,18 +115,26 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         str(prompt):should_start_with("<|start|>")
 
-        local expected_tool_call_request =
-        [[<|start|>assistant<|channel|>commentary to=functions.run_command <|constrain|>json<|message|>{"command":"date"}<|call|>]]
-        -- CONFIRMED per spec, for assistant requets, `to` comes AFTER <|channel|>commentary (NOT BEFORE)
+        local expected_tool_call_request
+        = [[<|start|>assistant<|channel|>commentary to=functions.run_command <|constrain|>json<|message|>{"command":"date"}<|call|>]]
+        -- CONFIRMED per spec, assistant tool call _REQUESTS_, recipient `to=` comes _AFTER_ <|channel|>commentary
+        --    but, it can also come before (in role) ...
+        --    in testing:
+        --      model generates AFTER  (see test below)
+        --      harmony python+rust library generates BEFORE (see manual/harmony_library.py)
+        --    so,
+        --      I setup the ask-fixes.jinja to generate AFTER (so it matches model's gen)
+        --      and my tree-sitter grammar handles both
 
-        local expected_tool_result =
-        [[<|start|>functions.run_command to=assistant<|channel|>commentary<|message|>{"content":[{"text":"Sun Nov 30 19:35:10 CST 2025\n","type":"text","name":"STDOUT"}]}<|end|>]]
-        -- CONFIRMED per spec, for tool results, `to` comes BEFOR <|channel|>commentary (NOT AFTER)
+        local expected_tool_result
+        = [[<|start|>functions.run_command to=assistant<|channel|>commentary<|message|>{"content":[{"text":"Sun Nov 30 19:35:10 CST 2025\n","type":"text","name":"STDOUT"}]}<|end|>]]
+        -- CONFIRMED per spec, for tool results, recipient `to=` comes _BEFORE_ <|channel|>commentary
+        --   IIRC spec doesn't mention recipient in the channel (after channel/commentary) for tool result messages
 
-        --- split response so that it divides each message when it sees a <|start|> token
-        ---  DOES NOT return str() instances (easier to compare raw strings... only use str() for find etc)
-        ---  SKIPS fake first message when <|start|> is right at the start
         local function split_messages_keep_start(prompt)
+            --- split response so that it divides each message when it sees a <|start|> token
+            ---  DOES NOT return str() instances (easier to compare raw strings... only use str() for find etc)
+            ---  SKIPS fake first message when <|start|> is right at the start
             local messages = vim.split(prompt, "<|start|>")
             if messages[1] == "" then
                 -- this happens when the first message appropirately starts at the start of the prompt
