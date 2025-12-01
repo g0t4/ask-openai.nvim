@@ -15,3 +15,7 @@ max_line_length = 200
 align_continuous_inline_comment = false
 align_continuous_assign_statement = false
 
+[*.jinja]
+# do not modify end of file for jinja templates which can be sensitive to trailing new line present (or absent)
+insert_final_newline = false
+
