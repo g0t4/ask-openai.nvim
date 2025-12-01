@@ -1,0 +1,30 @@
+<|start|>system<|message|>You are ChatGPT, a large language model trained by OpenAI.
+Knowledge cutoff: 2024-06
+Current date: 2025-11-30
+
+Reasoning: medium
+
+# Valid channels: analysis, commentary, final. Channel must be included for every message.
+Calls to these tools must go to the commentary channel: 'functions'.<|end|><|start|>developer<|message|># Instructions
+
+Your name is Qwenny
+You can respond with markdown
+
+# Tools
+
+## functions
+
+namespace functions {
+
+// Run a command on this darwin machine
+type run_command = (_: {
+// Optional, working directory
+workdir?: string,
+// Optional, STDIN
+stdin?: string,
+// Command with args
+command: string,
+}) => any;
+
+} // namespace functions<|end|><|start|>user<|message|>please check the time<|end|><|start|>assistant<|channel|>analysis<|message|>We need to run date command.<|end|><|start|>assistant to=functions.run_command<|channel|>commentary json<|message|>{"command":"date"}<|call|><|start|>functions.run_command to=assistant<|channel|>commentary<|message|>{"content":[{"text":"Sun Nov 30 19:35:10 CST 2025\n","type":"text","name":"STDOUT"}]}<|end|><|start|>assistant
+
