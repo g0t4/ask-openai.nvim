@@ -23,7 +23,9 @@ function M.new_gptoss_chat_body_llama_server(request_body)
     local level = api.get_reasoning_level()
     local max_tokens = level == local_share.FimReasoningLevel.high and 16384
         or level == local_share.FimReasoningLevel.medium and 8192
-        or level == local_share.FimReasoningLevel.low or 4096
+        or level == local_share.FimReasoningLevel.low and 4096
+        or level == local_share.FimReasoningLevel.off and 2048
+        or 2048 -- default if using different value
 
     local recommended = {
         -- https://huggingface.co/openai/gpt-oss-20b/blob/main/generation_config.json

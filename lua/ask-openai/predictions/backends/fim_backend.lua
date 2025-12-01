@@ -185,8 +185,12 @@ function FimBackend:body_for()
                 body.max_tokens = 16384 -- high thinking
             elseif level == local_share.FimReasoningLevel.medium then
                 body.max_tokens = 8192 -- medium thinking
-            else
+            elseif level == local_share.FimReasoningLevel.low then
                 body.max_tokens = 4096 -- low thinking
+            elseif level == local_share.FimReasoningLevel.off then
+                body.max_tokens = 2048
+            else
+                body.max_tokens = 2048
             end
         end
 
