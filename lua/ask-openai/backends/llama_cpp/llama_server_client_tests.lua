@@ -97,7 +97,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     --       is it a bug fix or do they actually intend to always keep thinking?
     --
     --
-    it("add support for single parameter tool calling with string param - for apply_patch", function()
+    it("apply_patch - with single, string argument only (not dict)", function()
         local expected_tool_definition = [[
 <|start|>developer<|message|># Instructions
 
@@ -114,6 +114,18 @@ type apply_patch = (_: string) => any;
 
 } // namespace functions<|end|>
 ]]
+        local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition.json")
+        -- TODO add v1_chat_completions REAL TEST to see how model responds (probably need to add dev message with apply_patch.md to get a realistic response? maybe not?)
+
+        -- * action
+        local response = LlamaServerClient.apply_template(base_url, body)
+
+        -- * assertions:
+        local prompt = response.body.prompt
+        print_prompt(prompt)
+
+
+
         -- FYI! also see notes in lua/ask-openai/tools/inproc/apply_patch.lua
         -- this will just be a test to make sure the template can render just this for string param:
         --   (_: string)
@@ -136,6 +148,17 @@ type apply_patch = (_: string) => any;
         --   TODO and then implement the template change to support it - not even unsloth has this yet btw
         --   TODO s/b simple check if type==string and if so then just (string)... I started this somewhere already
     end)
+    it("apply_patch - with single property in a dictionary", function()
+        local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition-dict.json")
+
+        -- * action
+        local response = LlamaServerClient.apply_template(base_url, body)
+
+        -- * assertions:
+        local prompt = response.body.prompt
+        print_prompt(prompt)
+    end)
+
 
 
     it("tool call request and result both avoid double encoding JSON arguments", function()
