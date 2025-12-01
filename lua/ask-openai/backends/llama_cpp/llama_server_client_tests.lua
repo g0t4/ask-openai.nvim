@@ -87,6 +87,9 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     --      call and return are INFERENCE/DECODE time only, not for inputting chat history
     --   *. tool call request => use <|end|> and not <|call|>, right?
     --   *. use <|end|> and not <|return|> right? (IIRC at end of assistant final message
+    -- * TODO revert to " to=functions.xyz" before <|channel|>commentary ... since that was the way the template worked and it is allowed per spec
+    --    AND the openai harmony library's generator puts recipient before channel/commentary too
+    --    TODO check what the model generates? and use that?
     --
     -- *. finish unsloth compare and diffputs
     --
