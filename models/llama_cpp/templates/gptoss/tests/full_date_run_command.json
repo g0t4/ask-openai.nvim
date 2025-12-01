@@ -1,0 +1,61 @@
+{
+  "messages": [
+    {
+      "content": "Your name is Qwenny\nYou can respond with markdown",
+      "role": "system"
+    },
+    {
+      "content": "please check the time",
+      "role": "user"
+    },
+    {
+      "tool_calls": [
+        {
+          "id": "rYFP",
+          "function": {
+            "name": "run_command",
+            "arguments": "{\"command\":\"date\"}"
+          },
+          "type": "function"
+        }
+      ],
+      "content": "",
+      "reasoning_content": "We need to run date command.",
+      "role": "assistant"
+    },
+    {
+      "tool_call_id": "rYFP",
+      "content": "{\"content\":[{\"text\":\"Sun Nov 30 19:35:10 CST 2025\\n\",\"type\":\"text\",\"name\":\"STDOUT\"}]}",
+      "role": "tool"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "description": "Run a command on this darwin machine",
+        "name": "run_command",
+        "parameters": {
+          "properties": {
+            "workdir": {
+              "description": "Optional, working directory",
+              "type": "string"
+            },
+            "stdin": {
+              "description": "Optional, STDIN",
+              "type": "string"
+            },
+            "command": {
+              "description": "Command with args",
+              "type": "string"
+            }
+          },
+          "type": "object",
+          "required": [
+            "command"
+          ]
+        }
+      }
+    }
+  ]
+}
