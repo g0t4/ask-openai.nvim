@@ -1,4 +1,6 @@
 # FYI! this is useful to verify harmony spec docs... as a double check to seee if this library's output matches
+import os
+from pathlib import Path
 
 from openai_harmony import (
     Author,
@@ -20,6 +22,10 @@ system_message = (
         .with_reasoning_effort(ReasoningEffort.HIGH)
         .with_conversation_start_date("2025-06-28")
 )
+
+apply_patch_instructions = (Path(os.environ["WES_REPOS"])
+    / "github/g0t4/ask-openai.nvim"
+    / "lua/ask-openai/tools/inproc/apply_patch.md").read_text()
 
 developer_message = (
     DeveloperContent.new()
@@ -45,8 +51,16 @@ developer_message = (
                         "required": ["location"],
                     },
                 ),
-            ]
-	)
+                ToolDescription.new(
+                    "apply_patch",
+                    "Patch a file",
+                    parameters={
+                        "type": "string",
+                        "description": "Formatted patch code",
+                        "default": "*** Begin Patch\n*** End Patch\n",
+                    }
+                ),
+            ])
 )
 
 convo = Conversation.from_messages(
