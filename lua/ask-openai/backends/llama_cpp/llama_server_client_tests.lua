@@ -82,8 +82,17 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         return vim.json.decode(text)
     end
 
-    it("tool result renders w/o double encoded json", function()
-        -- TODO tool call test the same thing
+    -- TODO! FIXES FOR JINJA OVERALL
+    -- *. fix to=functions to come AFTER commentary
+    -- *. fix <|constrain|>json<|message|>
+    --     - NOT just "json<|message|>"
+    -- *. history end token usage:
+    --      call and return are INFERENCE/DECODE time only, not for inputting chat history
+    --   *. tool call request => use <|end|> and not <|call|>, right?
+    --   *. use <|end|> and not <|return|> right? (IIRC at end of assistant final message
+    --
+    -- *. finish unsloth compare and diffputs
+    it("tool call request and result both avoid double encoding JSON arguments", function()
         -- TODO test formatting of tool definition in gptoss
 
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/full_date_run_command.json")
@@ -105,11 +114,14 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         str(prompt):should_start_with("<|start|>")
 
+        -- TODO! need to fix missing <|constrain|> right in the jinja next, right? ... just shows json here, which is wrong?
         local expected_tool_call_request =
-        [[<|start|>assistant to=functions.run_command<|channel|>commentary json<|message|>{"command":"date"}<|call|>]]
+        [[<|start|>assistant<|channel|>commentary to=functions.run_command json<|message|>{"command":"date"}<|call|>]]
+        -- CONFIRMED per spec, for assistant requets, `to` comes AFTER <|channel|>commentary (NOT BEFORE)
 
         local expected_tool_result =
         [[<|start|>functions.run_command to=assistant<|channel|>commentary<|message|>{"content":[{"text":"Sun Nov 30 19:35:10 CST 2025\n","type":"text","name":"STDOUT"}]}<|end|>]]
+        -- CONFIRMED per spec, for tool results, `to` comes BEFOR <|channel|>commentary (NOT AFTER)
 
         --- split response so that it divides each message when it sees a <|start|> token
         ---  DOES NOT return str() instances (easier to compare raw strings... only use str() for find etc)
