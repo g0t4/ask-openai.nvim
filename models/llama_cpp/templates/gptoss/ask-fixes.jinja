@@ -324,7 +324,11 @@
             {{- raise_exception("Message has tool role, but there was no previous assistant message with a tool call!") }}
         {%- endif %}
         {{- "<|start|>functions." + last_tool_call.name }}
-        {{- " to=assistant<|channel|>commentary<|message|>" + message.content|tojson + "<|end|>" }}
+        {%- if message.content is string %}
+            {{- " to=assistant<|channel|>commentary<|message|>" + message.content + "<|end|>" }}
+        {%- else %}
+            {{- " to=assistant<|channel|>commentary<|message|>" + message.content|tojson + "<|end|>" }}
+        {%- endif %}
     {%- elif message.role == 'user' -%}
         {{- "<|start|>user<|message|>" + message.content + "<|end|>" }}
     {%- endif -%}
