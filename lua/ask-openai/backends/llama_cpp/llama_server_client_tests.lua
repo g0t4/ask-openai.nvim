@@ -117,9 +117,8 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         str(prompt):should_start_with("<|start|>")
 
-        -- TODO! need to fix missing <|constrain|> right in the jinja next, right? ... just shows json here, which is wrong?
         local expected_tool_call_request =
-        [[<|start|>assistant<|channel|>commentary to=functions.run_command json<|message|>{"command":"date"}<|call|>]]
+        [[<|start|>assistant<|channel|>commentary to=functions.run_command <|constrain|>json<|message|>{"command":"date"}<|call|>]]
         -- CONFIRMED per spec, for assistant requets, `to` comes AFTER <|channel|>commentary (NOT BEFORE)
 
         local expected_tool_result =
