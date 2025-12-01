@@ -181,17 +181,24 @@ function FimBackend:body_for()
             body.chat_template_kwargs = {
                 reasoning_effort = level
             }
-            if level == local_share.FimReasoningLevel.high then
-                body.max_tokens = 16384 -- high thinking
-            elseif level == local_share.FimReasoningLevel.medium then
-                body.max_tokens = 8192 -- medium thinking
-            elseif level == local_share.FimReasoningLevel.low then
-                body.max_tokens = 4096 -- low thinking
-            elseif level == local_share.FimReasoningLevel.off then
-                body.max_tokens = 2048
-            else
-                body.max_tokens = 2048
+
+            ---@param level any
+            ---@return number
+            local function get_gptoss_max_tokens_for_level(level)
+                if level == local_share.FimReasoningLevel.high then
+                    return 16384
+                elseif level == local_share.FimReasoningLevel.medium then
+                    return 8192
+                elseif level == local_share.FimReasoningLevel.low then
+                    return 4096
+                elseif level == local_share.FimReasoningLevel.off then
+                    return 2048
+                else
+                    return 2048
+                end
             end
+
+            body.max_tokens = get_gptoss_max_tokens_for_level(level)
         end
 
         -- * common settings
