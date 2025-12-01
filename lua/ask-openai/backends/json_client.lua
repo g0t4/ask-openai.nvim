@@ -1,4 +1,5 @@
-local http = require("socket.http") -- luarocks install --lua-version=5.1  luasocket
+local http = require("socket.http") -- luarocks install --local --lua-version=5.1 luasocket
+-- BTW arch: sudo pacman --noconfirm -S lua51   -- to install lua 5.1
 local ltn12 = require("ltn12") -- also from luasocket
 
 local JsonClient = {
