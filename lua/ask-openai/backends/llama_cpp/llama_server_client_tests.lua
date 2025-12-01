@@ -114,6 +114,8 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         -- should.be_same_colorful_diff(actual_prompt, prompt) -- FYI don't directly compare
 
         str(prompt):should_start_with("<|start|>")
+        local expected_thinking
+        = [[<|start|>assistant<|channel|>analysis<|message|>We need to run date command.<|end|>]]
 
         local expected_tool_call_request
         = [[<|start|>assistant<|channel|>commentary to=functions.run_command <|constrain|>json<|message|>{"command":"date"}<|call|>]]
@@ -146,9 +148,11 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         -- add back start token split point
         local actual_system = messages[2]
+        local actual_thinking = messages[4]
         local actual_tool_call_request = messages[5]
         local actual_tool_result = messages[6]
 
+        should.be_same_colorful_diff(actual_thinking, expected_thinking)
         should.be_same_colorful_diff(actual_tool_call_request, expected_tool_call_request)
         should.be_same_colorful_diff(actual_tool_result, expected_tool_result)
     end)
