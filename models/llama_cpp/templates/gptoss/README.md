@@ -14,6 +14,6 @@ wget https://huggingface.co/openai/gpt-oss-120b/raw/main/chat_template.jinja -O 
 # * unsloth's "fixes"
 # https://huggingface.co/unsloth/gpt-oss-120b/raw/main/chat_template.jinja
 wget https://huggingface.co/unsloth/gpt-oss-120b/raw/main/chat_template.jinja -O unsloth.jinja
-
+# blog w/ explanations: https://unsloth.ai/blog/gpt-oss
 
 ```
