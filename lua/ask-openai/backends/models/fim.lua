@@ -12,9 +12,7 @@ local M = {}
 --   really these are the fim related special tokens
 
 M.gptoss = {
-    sentinel_tokens = {
-        -- fim_stop_tokens = [] -- TODO?
-    }
+    sentinel_tokens = { }
 }
 ---@param request FimBackend
 function M.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(request)

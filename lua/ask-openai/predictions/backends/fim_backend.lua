@@ -192,7 +192,6 @@ function FimBackend:body_for()
         body.temperature = 1.0
         body.top_p = 1.0
 
-        -- body.options.stop = fim.gptoss.sentinel_tokens.fim_stop_tokens -- TODO?
     elseif string.find(body.model, "codestral", nil, true) then
         builder = function()
             return fim.codestral.get_fim_prompt(self)
