@@ -1,6 +1,7 @@
 local log = require("ask-openai.logs.logger").predictions()
 local api = require("ask-openai.api")
 local local_share = require("ask-openai.config.local_share")
+local gptoss_tokenizer = require("ask-openai.backends.models.gptoss.tokenizer")
 
 local M = {}
 
@@ -35,10 +36,15 @@ function M.new_gptoss_chat_body_llama_server(request_body)
         --   ],
         --   "pad_token_id": 199999,
         --   "transformers_version": "4.55.0.dev0"
-        bos_token_id = 199998,
+        bos_token_id = gptoss_tokenizer.special_tokens.STARTOFTEXT,
         do_sample = true,
-        eos_token_id = { 200002, 199999, 200012 },
-        pad_token_id = 199999,
+        eos_token_id = {
+            gptoss_tokenizer.special_tokens.RETURN,
+            gptoss_tokenizer.special_tokens.END,
+            gptoss_tokenizer.special_tokens.CALL,
+            gptoss_tokenizer.special_tokens.ENDOFTEXT,
+        },
+        pad_token_id = gptoss_tokenizer.special_tokens.ENDOFTEXT,
 
         -- gh repo has more recommends
         --   We recommend sampling with temperature=1.0 and top_p=1.0.
