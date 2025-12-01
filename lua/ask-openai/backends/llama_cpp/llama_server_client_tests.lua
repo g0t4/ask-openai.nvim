@@ -129,7 +129,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         local actual_tool_call_request = messages[5]
         local actual_tool_result = messages[6]
 
-        expect(actual_tool_call_request == expected_tool_call_request)
-        expect(actual_tool_result == expected_tool_result)
+        should.be_same_colorful_diff(actual_tool_call_request, expected_tool_call_request)
+        should.be_same_colorful_diff(actual_tool_result, expected_tool_result)
     end)
 end)
