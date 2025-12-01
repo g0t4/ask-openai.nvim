@@ -82,21 +82,10 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         return vim.json.decode(text)
     end
 
-    -- TODO! FIXES FOR JINJA OVERALL
-    -- *. lower priority - history end token usage:
-    --      call and return are INFERENCE/DECODE time only, not for inputting chat history
-    --   *. tool call request => use <|end|> and not <|call|>, right?
-    --   *. use <|end|> and not <|return|> right? (IIRC at end of assistant final message
-    --
-    -- DONE - review unsloth changes "fixes"
-    --     :vert diffsplit lua/ask-openai/backends/llama_cpp/jinja/ask-fixes.jinja
-    --     1. only two primary ones I skipped => moving the \n\n double new line formulation in developer message
-    --       this would be ok to move but not critical
-    --     2. toward the end, it appears unsloth setup to always keep thinking message?
-    --       TODO review this one more closely later... and lookup their rational...
-    --       is it a bug fix or do they actually intend to always keep thinking?
-    --
-    --
+    -- FYI check jinja differnces:
+    --   :e unsloth.jinja
+    --   :vert diffsplit lua/ask-openai/backends/llama_cpp/jinja/ask-fixes.jinja
+
     it("apply_patch - with single, string argument only (not dict)", function()
         local expected_tool_definition = [[
 <|start|>developer<|message|># Instructions
@@ -158,8 +147,6 @@ type apply_patch = (_: string) => any;
         local prompt = response.body.prompt
         print_prompt(prompt)
     end)
-
-
 
     it("tool call request and result both avoid double encoding JSON arguments", function()
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/full_date_run_command.json")
