@@ -88,10 +88,15 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     --   *. tool call request => use <|end|> and not <|call|>, right?
     --   *. use <|end|> and not <|return|> right? (IIRC at end of assistant final message
     --
-    -- *. finish unsloth compare and diffputs
+    -- DONE - review unsloth changes "fixes"
     --     :vert diffsplit lua/ask-openai/backends/llama_cpp/jinja/ask-fixes.jinja
+    --     1. only two primary ones I skipped => moving the \n\n double new line formulation in developer message
+    --       this would be ok to move but not critical
+    --     2. toward the end, it appears unsloth setup to always keep thinking message?
+    --       TODO review this one more closely later... and lookup their rational...
+    --       is it a bug fix or do they actually intend to always keep thinking?
     --
-    -- TODO add test of formatting of tool definition for apply_patch tool (single string param)
+    -- TODO! add test of formatting of tool definition for apply_patch tool (single string param)
     --   TODO and then implement the template change to support it - not even unsloth has this yet btw
     --   TODO s/b simple check if type==string and if so then just (string)... I started this somewhere already
     --
