@@ -92,9 +92,12 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     --   *. use <|end|> and not <|return|> right? (IIRC at end of assistant final message
     --
     -- *. finish unsloth compare and diffputs
+    --
+    -- TODO add test of formatting of tool definition for apply_patch tool (single string param)
+    --   TODO and then implement the template change to support it - not even unsloth has this yet btw
+    --   TODO s/b simple check if type==string and if so then just (string)... I started this somewhere already
+    --
     it("tool call request and result both avoid double encoding JSON arguments", function()
-        -- TODO test formatting of tool definition in gptoss
-
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/full_date_run_command.json")
 
         -- * action
