@@ -1,0 +1,41 @@
+{
+  "messages": [
+    {
+      "content": "Your name is Qwenny\nYou can respond with markdown",
+      "role": "system"
+    },
+    {
+      "content": "please check the time",
+      "role": "user"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "description": "Run a command on this darwin machine",
+        "name": "run_command",
+        "parameters": {
+          "properties": {
+            "workdir": {
+              "description": "Optional, working directory",
+              "type": "string"
+            },
+            "stdin": {
+              "description": "Optional, STDIN",
+              "type": "string"
+            },
+            "command": {
+              "description": "Command with args",
+              "type": "string"
+            }
+          },
+          "type": "object",
+          "required": [
+            "command"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -87,9 +87,6 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     --      call and return are INFERENCE/DECODE time only, not for inputting chat history
     --   *. tool call request => use <|end|> and not <|call|>, right?
     --   *. use <|end|> and not <|return|> right? (IIRC at end of assistant final message
-    -- * TODO revert to " to=functions.xyz" before <|channel|>commentary ... since that was the way the template worked and it is allowed per spec
-    --    AND the openai harmony library's generator puts recipient before channel/commentary too
-    --    TODO check what the model generates? and use that?
     --
     -- *. finish unsloth compare and diffputs
     --
@@ -145,5 +142,33 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
         should.be_same_colorful_diff(actual_tool_call_request, expected_tool_call_request)
         should.be_same_colorful_diff(actual_tool_result, expected_tool_result)
+    end)
+
+    it("model formats tool call request with recipient AFTER <|channel|>commentary to=functions.xyz (not before/in the role)", function()
+        local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/request_tool_call.json")
+
+        local response = LlamaServerClient.v1_chat_completions(base_url, body)
+        -- vim.print(response)
+
+        -- FYI must be running w/ --verbose-prompt else won't get __verbose
+        expect(response.body ~= nil)
+        expect(response.body.__verbose ~= nil)
+        expect(response.body.__verbose.content ~= nil)
+
+        -- FYI PER SPEC, recipient can be in role or in channel
+        --   => it is possible the model could generate it before, so far I have not seen it with this particular request
+        --   and I do see different thinking (analysis) so it's not a seeding issue
+        --   o
+        --   if need be (operative words) => use different user message requests and/or different tool definitions and see if it changes placement
+
+        local raw = response.body.__verbose.content
+        vim.print(raw)
+        -- FYI sample full response:
+        -- <|channel|>analysis<|message|>The user asks to check the time. We need to get current system time. Use run_command to execute date. Use appropriate command. On macOS (darwin) 'date' prints. We'll run.<|end|><|start|>assistant<|channel|>commentary to=functions.run_command <|constrain|>json<|message|>{
+        -- "command": "date"
+        -- }
+
+        local likely = [[<|start|>assistant<|channel|>commentary to=functions.run_command <|constrain|>json<|message|>]]
+        str(raw):should_contain(likely)
     end)
 end)

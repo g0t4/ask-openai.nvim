@@ -10,6 +10,13 @@ local LlamaServerClient = {
 
 ---@param base_url string
 ---@return JsonClientResponse?
+function LlamaServerClient.v1_chat_completions(base_url, body)
+    local url = base_url .. LlamaServerClient.ENDPOINTS.URL_V1_CHAT_COMPLETIONS
+    return json_client.get_response_body(url, json_client.Methods.POST, body)
+end
+
+---@param base_url string
+---@return JsonClientResponse?
 function LlamaServerClient.apply_template(base_url, body)
     local url = base_url .. LlamaServerClient.ENDPOINTS.URL_APPLY_TEMPLATE
     return json_client.get_response_body(url, json_client.Methods.POST, body)
