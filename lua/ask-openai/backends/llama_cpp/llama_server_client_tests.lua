@@ -96,10 +96,48 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     --       TODO review this one more closely later... and lookup their rational...
     --       is it a bug fix or do they actually intend to always keep thinking?
     --
-    -- TODO! add test of formatting of tool definition for apply_patch tool (single string param)
-    --   TODO and then implement the template change to support it - not even unsloth has this yet btw
-    --   TODO s/b simple check if type==string and if so then just (string)... I started this somewhere already
     --
+    it("add support for single parameter tool calling with string param - for apply_patch", function()
+        local expected_tool_definition = [[
+<|start|>developer<|message|># Instructions
+
+foo
+
+# Tools
+
+## functions
+
+namespace functions {
+
+// Patch a file
+type apply_patch = (_: string) => any;
+
+} // namespace functions<|end|>
+]]
+        -- FYI! also see notes in lua/ask-openai/tools/inproc/apply_patch.lua
+        -- this will just be a test to make sure the template can render just this for string param:
+        --   (_: string)
+        -- TODO also check what the model generates for constrain|> (if anything)...
+        --    TODO? I wonder what model will put in <|constrain|>string<|message|> ?
+        --
+        -- FYI I found a case where code suggests "code" is a format:
+        --    src/tests.rs:182:18:                .with_content_type("code"),
+        --
+        -- TODO can I just set it empty (include field .content_type set to "")
+        --  the jinja suggests that should be fine as-is
+        --    {{- (tool_call.content_type if tool_call.content_type is defined else "<|constrain|>json") + "<|message|>" }}
+        --   can I find anymore info about apply_patch tool and how that was used during training?
+        --    any sample prompts?
+        --
+        -- TODO then when returning prior tool call, make sure content_type is set appropriately and that the template maps it correctly
+        --    this is the return trip for <|constrain|>string (or w/e the model uses)
+
+        -- TODO! add test of formatting of tool definition for apply_patch tool (single string param)
+        --   TODO and then implement the template change to support it - not even unsloth has this yet btw
+        --   TODO s/b simple check if type==string and if so then just (string)... I started this somewhere already
+    end)
+
+
     it("tool call request and result both avoid double encoding JSON arguments", function()
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/full_date_run_command.json")
 
