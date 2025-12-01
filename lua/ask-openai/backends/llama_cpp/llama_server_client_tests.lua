@@ -194,6 +194,21 @@ type apply_patch = (_: string) => any;
         local actual_thinking = messages[4]
         local actual_tool_call_request = messages[5]
         local actual_tool_result = messages[6]
+        -- * chat message history is NOT 1-to-1 w/ harmony messages
+        --   For example, this example's request.body.messages has 4 "input"/"chat" messages
+        --   1. input message 1 - is role=system (could be role=developer too)
+        --     BUT, the template renders two harmony messages: system and developer
+        --     - what you pass in as role=system/developer (first message only) => maps to the harmony developer message
+        --     - harmony system message is minimally configurable... basically has just date and reasoning level
+        --   2. input message 2 is role=user => maps to harmony user role (1 to 1)
+        --   3. input message 3 maps has both message.tool_calls and message.reasoning_content
+        --      thus results in two harmony messages:
+        --      1. role=assistant channel=analysis (thinking)
+        --      2. role=assistant channel=commentary to=functions.run_command (tool call request)
+        --   4. input message 4 is role=tool (tool call result, back to model)
+        --      maps to 1 harmony message (1 to 1 basically)
+        --      => role=functions.run_command to=assistant(recipient) channel=commentary
+        --  TLDR 4 input messages => result in 6 harmony messages (7 if you count the prefill at the end to prompt final assistant response)
 
         should.be_same_colorful_diff(actual_thinking, expected_thinking)
         should.be_same_colorful_diff(actual_tool_call_request, expected_tool_call_request)
