@@ -39,6 +39,10 @@ end
 
 ---@return table body
 function ChatThread:next_curl_request_body()
+    -- TODO add support for FimReasoningLevel.off => do the same as I am doing in FIM by setting last message w/ role==assistant and the message can prefill to force no thinking
+    --   TODO see this in fim code:
+    --     local fixed_thoughts = HarmonyRawFimPromptBuilder.deep_thoughts_about_fim
+
     local body = {
         -- TODO! clone so I can manipulate messages sent back?
         messages = self.messages,
