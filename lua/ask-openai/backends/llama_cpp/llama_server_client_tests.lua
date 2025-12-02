@@ -1,12 +1,13 @@
 require('ask-openai.helpers.test_setup').modify_package_path()
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 local should = require("devtools.tests.should")
+local _describe = require("devtools.tests._describe")
 local str = require("devtools.tests.str")
 local json_client = require("ask-openai.backends.json_client")
 local LlamaServerClient = require("ask-openai.backends.llama_cpp.llama_server_client")
 local files = require("ask-openai.helpers.files")
 
-describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
+_describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
     local base_url = "http://build21.lan:8013"
 
     it("check model is gpt-oss", function()
