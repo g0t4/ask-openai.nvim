@@ -145,7 +145,7 @@ type apply_patch = (_: string) => any;
         -- 4. TODO then when returning prior tool call, make sure content_type is set appropriately and that the template maps it correctly
         --    - this is the return trip for <|constrain|>string (or w/e the model uses)
     end)
-    it("apply_patch - with single property in a dictionary", function()
+    it("apply_patch - with single patch property in a dictionary", function()
         local expected_dev_apply_patch_with_dict_arg = [[
 <|start|>developer<|message|># Instructions
 
