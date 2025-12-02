@@ -106,16 +106,42 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         }
 
         -- * action
+        -- local response = LlamaServerClient.v1_chat_completions(base_url, body)
+
+        -- * assertions:
+        -- vim.print(response)
+        -- vim.print(response.body.__verbose.content)
+        -- FYI my bad, it is a JSON string and not double encoded, I was looking at JSON response and forgot I needed to decode it once to get rid of llama-server's wrapper basically
+        --   once I did that it was just "foo the bar" and had some " inside that were escaped:
+        --    <|channel|>analysis<|message|>We need to edit hello.lua. Use apply_patch.<|end|><|start|>assistant<|channel|>commentary to=functions.apply_patch <|constrain|>json<|message|>"*** Begin Patch\n*** Update File: hello.lua\n@@\n-print(\"Hello\")\n+print(\"Hello Wor
+    end)
+
+
+    it("apply_patch - with single, dict w/ patch property - v1_chat_completions", function()
+        local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition-dict.json")
+        body.chat_template_kwargs = {
+            reasoning_effort = "low"
+        }
+
+        -- * action
         local response = LlamaServerClient.v1_chat_completions(base_url, body)
 
         -- * assertions:
         vim.print(response)
+
         vim.print(response.body.__verbose.content)
-        -- FYI my bad, it is a JSON string and not double encoded, I was looking at JSON response and forgot I needed to decode it once to get rid of llama-server's wrapper basically
-        --   once I did that it was just "foo the bar" and had some " inside that were escaped:
-        --    <|channel|>analysis<|message|>We need to edit hello.lua. Use apply_patch.<|end|><|start|>assistant<|channel|>commentary to=functions.apply_patch <|constrain|>json<|message|>"*** Begin Patch\n*** Update File: hello.lua\n@@\n-print(\"Hello\")\n+print(\"Hello Wor
+        -- FYI here is sample model output (it isn't double encoded) and it is a JSON object now:
+        --  and duh wes, it doesn't really matter either way b/c if its a JSON object it needs the exact same escaping of "... will look the same
+        --   my thinking I need string was like... raw string (not JSON at all)... but the model doesn't seem to want to do that
+        --   though, maybe I can coerce it to!
+        --   TODO I need to test with full apply_patch.md dev message mods to see how models respond
+        --
+        -- <|channel|>analysis<|message|>We need to modify hello.lua. Use apply_patch.<|end|><|start|>assistant<|channel|>commentary to=functions.apply_patch <|constrain|>json<|message|>{
+        --   "patch": "*** Begin Patch\n*** Update File: hello.lua\n@@\n-print(\"Hello\")\n+print(\"Hello World\")\n*** End Patch"
+        -- }
 
     end)
+
     it("apply_patch - with single, string argument only (not dict)", function()
         local expected_dev_apply_patch_with_string_arg = [[
 <|start|>developer<|message|># Instructions
