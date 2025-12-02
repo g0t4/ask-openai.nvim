@@ -146,6 +146,27 @@ type apply_patch = (_: string) => any;
         --    - this is the return trip for <|constrain|>string (or w/e the model uses)
     end)
     it("apply_patch - with single property in a dictionary", function()
+        local expected_dev_with_tool_definition_as_string_arg = [[
+<|start|>developer<|message|># Instructions
+
+Your name is Qwenny
+You can respond with markdown
+
+# Tools
+
+## functions
+
+namespace functions {
+
+// Apply a patch
+type apply_patch = (_: {
+// file changes in custom diff format
+patch: string,
+}) => any;
+
+} // namespace functions<|end|>]]
+
+
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition-dict.json")
 
         -- * action
@@ -153,7 +174,12 @@ type apply_patch = (_: string) => any;
 
         -- * assertions:
         local prompt = response.body.prompt
-        print_prompt(prompt)
+        -- print_prompt(prompt)
+
+        local messages = split_messages_keep_start(prompt)
+        local dev = messages[2]
+        -- vim.print(dev)
+        str(dev):should_contain(expected_dev_with_tool_definition_as_string_arg)
     end)
 
     it("tool call request and result both avoid double encoding JSON arguments", function()
