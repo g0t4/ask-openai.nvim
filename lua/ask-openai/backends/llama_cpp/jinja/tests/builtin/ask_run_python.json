@@ -1,0 +1,13 @@
+{
+  "messages": [
+    {
+      "content": "Your name is Qwenny\nYou can respond with markdown",
+      "role": "system"
+    },
+    {
+      "content": "test the python tool, tell me if it works",
+      "role": "user"
+    }
+  ]
+}
+

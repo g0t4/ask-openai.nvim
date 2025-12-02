@@ -95,6 +95,36 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         return vim.iter(messages):map(function(m) return "<|start|>" .. m end):totable()
     end
 
+    it("builtin_tools => python v1_chat_completions", function()
+        do return end -- comment out to run
+
+        local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/builtin/ask_run_python.json")
+        body.chat_template_kwargs = {
+            reasoning_effort = "low",
+            builtin_tools = { "python" },
+        }
+
+        -- * action
+        local response = LlamaServerClient.v1_chat_completions(base_url, body)
+
+        -- * assertions:
+        vim.print("\n\n****************************** prompt ***********************************", response.body.__verbose.prompt)
+        vim.print("\n\n****************************** responsee (content) ***********************************", response.body.__verbose.content)
+        -- * rendered _SYSTEM MESSAGE_ (not developer message) has 2 blurbs about the python tool but no tool definition in developer message (like you get with apply_patch in tools list) ... builtin tools are treated different
+        -- # Tools
+        --
+        -- ## python
+        --
+        -- Use this tool to execute Python code in your chain of thought. The code will not be shown to the user. This tool should be used for internal reasoning, but not for code that is intended to be visible to the user (e.g. when creating plots, tables, or files).
+        --
+        -- When you send a message containing Python code to python, it will be executed in a stateful Jupyter notebook environment. python will respond with the output of the execution or time out after 120.0 seconds. The drive at '/mnt/data' can be used to save and persist user files. Internet access for this session is UNKNOWN. Depends on the cluster.
+
+
+        -- * response (note no <|constrain|> but "code" format is set:
+        -- <|channel|>analysis<|message|>We need to test python tool. We'll run a simple command.<|end|><|start|>assistant<|channel|>commentary to=python code<|message|>print("Hello from python")
+
+    end)
+
     -- FYI check jinja differnces:
     --   :e unsloth.jinja
     --   :vert diffsplit lua/ask-openai/backends/llama_cpp/jinja/ask-fixes.jinja
@@ -111,8 +141,9 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         local response = LlamaServerClient.v1_chat_completions(base_url, body)
 
         -- * assertions:
-        vim.print(response)
-        vim.print(response.body.__verbose.content)
+        vim.print("\n\n****************************** prompt ***********************************", response.body.__verbose.prompt)
+        vim.print("\n\n****************************** responsee (content) ***********************************", response.body.__verbose.content)
+        -- vim.print(response)
         -- FYI my bad, it is a JSON string and not double encoded, I was looking at JSON response and forgot I needed to decode it once to get rid of llama-server's wrapper basically
         --   once I did that it was just "foo the bar" and had some " inside that were escaped:
         --    <|channel|>analysis<|message|>We need to edit hello.lua. Use apply_patch.<|end|><|start|>assistant<|channel|>commentary to=functions.apply_patch <|constrain|>json<|message|>"*** Begin Patch\n*** Update File: hello.lua\n@@\n-print(\"Hello\")\n+print(\"Hello Wor
