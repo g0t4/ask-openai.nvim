@@ -56,8 +56,7 @@ function GetPosPosition:in_range(ts_node)
 
     local on_end_line = self:line_base0() == end_line_base0
     if on_end_line then
-        -- TODO is TSNode's end_col_base0 inclusive or exclusive?
-        return self:col_base0() <= end_col_base0
+        return self:col_base0() < end_col_base0
     end
 
     -- on line between start and end:
