@@ -99,7 +99,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
     --   :vert diffsplit lua/ask-openai/backends/llama_cpp/jinja/ask-fixes.jinja
 
     it("apply_patch - with single, string argument only (not dict)", function()
-        local expected_tool_definition = [[
+        local expected_dev_with_tool_definition_as_string_arg = [[
 <|start|>developer<|message|># Instructions
 
 Your name is Qwenny
@@ -130,8 +130,8 @@ type apply_patch = (_: string) => any;
         -- str(prompt):should_contain(expected_tool_definition)
         local messages = split_messages_keep_start(prompt)
         local dev = messages[2]
-        vim.print(dev)
-        str(dev):should_contain(expected_tool_definition)
+        -- vim.print(dev)
+        str(dev):should_contain(expected_dev_with_tool_definition_as_string_arg)
 
         -- 1. TODO! implement template change to support (_: string) for param
         --    FYI template treats this as () => any    ... NO ARGS!
