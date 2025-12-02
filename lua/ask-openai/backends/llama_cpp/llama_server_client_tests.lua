@@ -115,8 +115,11 @@ namespace functions {
 // Patch a file
 type apply_patch = (_: string) => any;
 
-} // namespace functions<|end|>
-]]
+} // namespace functions<|end|>]]
+
+        -- TODO how about (patch: string) => any;
+        --   and/or how can I put the description of the arg on it?
+        --   interesting harmony library drops description/name of arg if its type==string too!
 
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition.json")
         -- TODO add v1_chat_completions REAL TEST to see how model responds (probably need to add dev message with apply_patch.md to get a realistic response? maybe not?)

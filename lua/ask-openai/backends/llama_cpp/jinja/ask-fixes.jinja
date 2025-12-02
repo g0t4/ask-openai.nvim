@@ -141,6 +141,8 @@
                 {%- endif -%}
             {%- endfor %}
             {{- "}) => any;\n\n" }}
+        {%- elif tool.parameters and tool.parameters.type == "string" %}
+            {{- "(_: string) => any;\n\n" }}
         {%- else -%}
             {{- "() => any;\n\n" }}
         {%- endif -%}
