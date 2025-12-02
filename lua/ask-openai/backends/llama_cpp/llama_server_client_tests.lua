@@ -137,12 +137,9 @@ type apply_patch = (_: string) => any;
         -- vim.print(dev)
         str(dev):should_contain(expected_dev_apply_patch_with_string_arg)
 
-        -- 1. TODO! implement template change to support (_: string) for param
-        --    FYI template treats this as () => any    ... NO ARGS!
-        --    TODO s/b simple check if type==string and if so then just (string)... I started this somewhere already
         -- 2. FYI! also see notes in lua/ask-openai/tools/inproc/apply_patch.lua
         -- 3. TODO? content type
-        --    TODO check what the model generates for constrain|> (if anything)...
+        --    FYI MODEL responds with <|constrain|>json in both cases dict/string... former is as double encoded dict (yikes) and later is as double encoded standalone string
         --    TODO can I just set it empty (include field .content_type set to "")
         --
         -- 4. TODO then when returning prior tool call, make sure content_type is set appropriately and that the template maps it correctly
