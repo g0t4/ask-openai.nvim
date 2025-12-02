@@ -121,17 +121,15 @@ type apply_patch = (_: string) => any;
         --   and/or how can I put the description of the arg on it?
         --   interesting harmony library drops description/name of arg if its type==string too!
 
-        local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition-dict.json")
+        local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition.json")
         -- TODO add v1_chat_completions REAL TEST to see how model responds (probably need to add dev message with apply_patch.md to get a realistic response? maybe not?)
 
         -- * action
-        -- local response = LlamaServerClient.apply_template(base_url, body)
-        local response = LlamaServerClient.v1_chat_completions(base_url, body)
+        local response = LlamaServerClient.apply_template(base_url, body)
 
         -- * assertions:
         local prompt = response.body.prompt
         -- print_prompt(prompt)
-        vim.print(response.body)
 
         -- str(prompt):should_contain(expected_tool_definition)
         local messages = split_messages_keep_start(prompt)
