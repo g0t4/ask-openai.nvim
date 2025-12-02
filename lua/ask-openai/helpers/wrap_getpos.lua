@@ -36,6 +36,11 @@ function GetPosPosition:col_base0()
 end
 
 function GetPosPosition:in_range(ts_node)
+    -- do
+    --     -- FYI end_line/end_col is NOT INCLUSIVE... that's fine, I changed my test
+    --     return vim.treesitter.is_in_node_range(ts_node, self:line_base0(), self:col_base0())
+    -- end
+
     -- FYI :range(true) will return 6 values, I am not (yet anyways) using that mode (include_bytes)
     local start_line_base0, start_col_base0, end_line_base0, end_col_base0 = ts_node:range()
     local before_start_line = self:line_base0() < start_line_base0
