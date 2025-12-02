@@ -100,17 +100,19 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
     --   :vert diffsplit lua/ask-openai/backends/llama_cpp/jinja/ask-fixes.jinja
 
     it("apply_patch - with single, string argument only (not dict) - v1_chat_completions", function()
+        do return end -- comment out to run
+
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition.json")
         body.chat_template_kwargs = {
             reasoning_effort = "low"
         }
 
         -- * action
-        -- local response = LlamaServerClient.v1_chat_completions(base_url, body)
+        local response = LlamaServerClient.v1_chat_completions(base_url, body)
 
         -- * assertions:
-        -- vim.print(response)
-        -- vim.print(response.body.__verbose.content)
+        vim.print(response)
+        vim.print(response.body.__verbose.content)
         -- FYI my bad, it is a JSON string and not double encoded, I was looking at JSON response and forgot I needed to decode it once to get rid of llama-server's wrapper basically
         --   once I did that it was just "foo the bar" and had some " inside that were escaped:
         --    <|channel|>analysis<|message|>We need to edit hello.lua. Use apply_patch.<|end|><|start|>assistant<|channel|>commentary to=functions.apply_patch <|constrain|>json<|message|>"*** Begin Patch\n*** Update File: hello.lua\n@@\n-print(\"Hello\")\n+print(\"Hello Wor
@@ -118,6 +120,8 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
 
 
     it("apply_patch - with single, dict w/ patch property - v1_chat_completions", function()
+        do return end -- comment out to run
+
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition-dict.json")
         body.chat_template_kwargs = {
             reasoning_effort = "low"
@@ -139,7 +143,6 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         -- <|channel|>analysis<|message|>We need to modify hello.lua. Use apply_patch.<|end|><|start|>assistant<|channel|>commentary to=functions.apply_patch <|constrain|>json<|message|>{
         --   "patch": "*** Begin Patch\n*** Update File: hello.lua\n@@\n-print(\"Hello\")\n+print(\"Hello World\")\n*** End Patch"
         -- }
-
     end)
 
     it("apply_patch - with single, string argument only (not dict)", function()
