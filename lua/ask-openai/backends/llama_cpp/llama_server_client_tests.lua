@@ -239,7 +239,7 @@ type apply_patch = (_: string) => any;
         --   if need be (operative words) => use different user message requests and/or different tool definitions and see if it changes placement
 
         local raw = response.body.__verbose.content
-        vim.print(raw)
+        -- vim.print(raw)
         -- FYI sample full response:
         -- <|channel|>analysis<|message|>The user asks to check the time. We need to get current system time. Use run_command to execute date. Use appropriate command. On macOS (darwin) 'date' prints. We'll run.<|end|><|start|>assistant<|channel|>commentary to=functions.run_command <|constrain|>json<|message|>{
         -- "command": "date"
