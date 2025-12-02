@@ -82,6 +82,18 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         return vim.json.decode(text)
     end
 
+    local function split_messages_keep_start(prompt)
+        --- split response so that it divides each message when it sees a <|start|> token
+        ---  DOES NOT return str() instances (easier to compare raw strings... only use str() for find etc)
+        ---  SKIPS fake first message when <|start|> is right at the start
+        local messages = vim.split(prompt, "<|start|>")
+        if messages[1] == "" then
+            -- this happens when the first message appropirately starts at the start of the prompt
+            table.remove(messages, 1)
+        end
+        return vim.iter(messages):map(function(m) return "<|start|>" .. m end):totable()
+    end
+
     -- FYI check jinja differnces:
     --   :e unsloth.jinja
     --   :vert diffsplit lua/ask-openai/backends/llama_cpp/jinja/ask-fixes.jinja
@@ -90,7 +102,8 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
         local expected_tool_definition = [[
 <|start|>developer<|message|># Instructions
 
-foo
+Your name is Qwenny
+You can respond with markdown
 
 # Tools
 
@@ -103,6 +116,7 @@ type apply_patch = (_: string) => any;
 
 } // namespace functions<|end|>
 ]]
+
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition.json")
         -- TODO add v1_chat_completions REAL TEST to see how model responds (probably need to add dev message with apply_patch.md to get a realistic response? maybe not?)
 
@@ -111,31 +125,24 @@ type apply_patch = (_: string) => any;
 
         -- * assertions:
         local prompt = response.body.prompt
-        print_prompt(prompt)
+        -- print_prompt(prompt)
 
+        -- str(prompt):should_contain(expected_tool_definition)
+        local messages = split_messages_keep_start(prompt)
+        local dev = messages[2]
+        vim.print(dev)
+        str(dev):should_contain(expected_tool_definition)
 
-
-        -- FYI! also see notes in lua/ask-openai/tools/inproc/apply_patch.lua
-        -- this will just be a test to make sure the template can render just this for string param:
-        --   (_: string)
-        -- TODO also check what the model generates for constrain|> (if anything)...
-        --    TODO? I wonder what model will put in <|constrain|>string<|message|> ?
+        -- 1. TODO! implement template change to support (_: string) for param
+        --    FYI template treats this as () => any    ... NO ARGS!
+        --    TODO s/b simple check if type==string and if so then just (string)... I started this somewhere already
+        -- 2. FYI! also see notes in lua/ask-openai/tools/inproc/apply_patch.lua
+        -- 3. TODO? content type
+        --    TODO check what the model generates for constrain|> (if anything)...
+        --    TODO can I just set it empty (include field .content_type set to "")
         --
-        -- FYI I found a case where code suggests "code" is a format:
-        --    src/tests.rs:182:18:                .with_content_type("code"),
-        --
-        -- TODO can I just set it empty (include field .content_type set to "")
-        --  the jinja suggests that should be fine as-is
-        --    {{- (tool_call.content_type if tool_call.content_type is defined else "<|constrain|>json") + "<|message|>" }}
-        --   can I find anymore info about apply_patch tool and how that was used during training?
-        --    any sample prompts?
-        --
-        -- TODO then when returning prior tool call, make sure content_type is set appropriately and that the template maps it correctly
-        --    this is the return trip for <|constrain|>string (or w/e the model uses)
-
-        -- TODO! add test of formatting of tool definition for apply_patch tool (single string param)
-        --   TODO and then implement the template change to support it - not even unsloth has this yet btw
-        --   TODO s/b simple check if type==string and if so then just (string)... I started this somewhere already
+        -- 4. TODO then when returning prior tool call, make sure content_type is set appropriately and that the template maps it correctly
+        --    - this is the return trip for <|constrain|>string (or w/e the model uses)
     end)
     it("apply_patch - with single property in a dictionary", function()
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition-dict.json")
@@ -186,17 +193,6 @@ type apply_patch = (_: string) => any;
         -- CONFIRMED per spec, for tool results, recipient `to=` comes _BEFORE_ <|channel|>commentary
         --   IIRC spec doesn't mention recipient in the channel (after channel/commentary) for tool result messages
 
-        local function split_messages_keep_start(prompt)
-            --- split response so that it divides each message when it sees a <|start|> token
-            ---  DOES NOT return str() instances (easier to compare raw strings... only use str() for find etc)
-            ---  SKIPS fake first message when <|start|> is right at the start
-            local messages = vim.split(prompt, "<|start|>")
-            if messages[1] == "" then
-                -- this happens when the first message appropirately starts at the start of the prompt
-                table.remove(messages, 1)
-            end
-            return vim.iter(messages):map(function(m) return "<|start|>" .. m end):totable()
-        end
         local messages = split_messages_keep_start(prompt)
 
         -- add back start token split point
