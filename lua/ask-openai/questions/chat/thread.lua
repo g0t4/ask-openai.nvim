@@ -43,6 +43,16 @@ function ChatThread:next_curl_request_body()
     --   TODO see this in fim code:
     --     local fixed_thoughts = HarmonyFimPromptBuilder.deep_thoughts_about_fim
 
+    ---@param array any[]
+    ---@return any[]
+    function clone_array_container_not_items(array)
+        local copy = {}
+        for i = 1, #array do
+            copy[i] = array[i]
+        end
+        return copy
+    end
+
     local body = {
         -- FYI keep in mind the messages you send DO not mirror the ones you've received...
         --  each turn adds one assistant response message and then you feed in a user message (follow up)...
@@ -53,7 +63,7 @@ function ChatThread:next_curl_request_body()
         --        thse are the two likely paths right now
         --        you can prefill that analysis
         --        you can actually prefill bogus messages too!
-        messages = self.messages,
+        messages = clone_array_container_not_items(self.messages)
     }
     -- PRN keep/drop thinking myself? btw clone messages before changing them
     -- merge params onto root of body:
