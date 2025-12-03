@@ -124,6 +124,7 @@ M.qwen25coder = {
         -- https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct/blob/main/tokenizer_config.json
         fim_prefix = qwen_tag("fim_prefix"), -- 151659
         fim_middle = qwen_tag("fim_middle"), -- 151660
+        FIM_MIDDLE = qwen_tag("fim_middle"), -- 151660 -- TODO rename lower case fim_middle later, start using uppercase now in new code
         fim_suffix = qwen_tag("fim_suffix"), -- 151661
         -- fim_pad = qwen_tag("fim_pad"), -- 151662
         repo_name = qwen_tag("repo_name"), -- 151663

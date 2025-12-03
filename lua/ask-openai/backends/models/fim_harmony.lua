@@ -2,6 +2,7 @@ local log = require("ask-openai.logs.logger")
 local api = require("ask-openai.api")
 local dedupe = require("ask-openai.rag.client.dedupe")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
+local qwen = require("ask-openai.backends.models.fim").qwen25coder.sentinel_tokens
 
 ---@class HarmonyRawFimPromptBuilder
 ---@field _parts string[]
@@ -47,17 +48,17 @@ end
 
 HarmonyRawFimPromptBuilder.developer_message = vim.trim([[
 You are completing code from a Neovim plugin.
-As the user types, the plugin suggests code completions based on their cursor position marked with: <|fim_middle|>
-The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near <|fim_middle|>
+As the user types, the plugin suggests code completions based on their cursor position marked with: ]] .. qwen.FIM_MIDDLE .. [[
+The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near ]] .. qwen.FIM_MIDDLE .. [[
 Do NOT explain your decisions. Do NOT return markdown blocks ```
 Do NOT repeat surrounding code (suffix/prefix)
-ONLY return valid code at the <|fim_middle|> position
+ONLY return valid code at the ]] .. qwen.FIM_MIDDLE .. [[ position
 PAY attention to existing whitespace.
 YOU ARE ONLY INSERTING CODE, DO NOT REPEAT PREFIX/SUFFIX. Think about overlap before finishing your thoughts.
 
 For example, if you see this in a python file:
 def adder(a, b):
-    return <|fim_middle|> + b
+    return ]] .. qwen.FIM_MIDDLE .. [[ + b
 
 The correct completion is:
 a
@@ -148,9 +149,9 @@ function HarmonyRawFimPromptBuilder.fim_prompt(request)
     --    might want to find a fine tune too that actually has training for PSM/SPM
     --    would need to reword some instructions above (including examples)
     local fim_user_message = file_prefix
-        .. "Please complete <|fim_middle|> in the following code (which has carefully preserved indentation):\n"
+        .. "Please complete " .. qwen.FIM_MIDDLE .. " in the following code (which has carefully preserved indentation):\n"
         .. request.ps_chunk.prefix
-        .. "<|fim_middle|>"
+        .. qwen.FIM_MIDDLE
         .. request.ps_chunk.suffix
     return fim_user_message
 end
@@ -188,8 +189,8 @@ end
 -- - also harmony has no \n between messages, \n should only come within a message text field
 HarmonyRawFimPromptBuilder.deep_thoughts_about_fim = vim.trim([[
 The user is asking for a code completion.
-They provided the existing code with a <|fim_middle|> tag where their cursor is currently located. Whatever I provide will replace <|fim_middle|>
-To clarify, the code before <|fim_middle|> is the prefix. The code after is the suffix.
+They provided the existing code with a ]] .. qwen.FIM_MIDDLE .. [[ tag where their cursor is currently located. Whatever I provide will replace ]] .. qwen.FIM_MIDDLE .. [[
+To clarify, the code before ]] .. qwen.FIM_MIDDLE .. [[ is the prefix. The code after is the suffix.
 I am not changing the prefix nor the suffix.
 I will NOT wrap my response in ``` markdown blocks.
 I will not explain anything.
