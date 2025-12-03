@@ -72,6 +72,10 @@ function M.harmony.msg_assistant_analysis(thoughts)
     return M.harmony.START .. "assistant" .. M.harmony.CHANNEL .. "analysis" .. M.harmony.MESSAGE .. thoughts .. M.harmony.END
 end
 
+function M.harmony.msg_assistant_final(contents)
+    return M.harmony.START .. "assistant" .. M.harmony.CHANNEL .. "final" .. M.harmony.MESSAGE .. contents .. M.harmony.END
+end
+
 function M.harmony.msg_developer(contents)
     return M.harmony.START .. "developer" .. M.harmony.MESSAGE .. contents .. M.harmony.END
 end
