@@ -240,12 +240,7 @@ General project code rules:
     -- end
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
-    --
-    -- TODO ESCAPE presence of any sentinel tokens? i.e. should be rare but if someone is working on LLM code it may not be!
-    --
     -- FYI carefully observe the format:
-    --   <file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid
-    --   <fim_prefix> comes BEFORE filepath!
     local fim_file_contents = tokens.file_sep
         .. current_file_relative_path
         .. "\n"
@@ -254,8 +249,6 @@ General project code rules:
         .. tokens.fim_suffix
         .. request.ps_chunk.suffix
         .. tokens.fim_middle
-
-    -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
 
     return prompt .. fim_file_contents
 end
@@ -312,7 +305,6 @@ function M.bytedance_seed_coder.get_fim_prompt_file_level_only(request)
         -- .. current_file_relative_path
         -- .. "\n"
         --
-        -- fyi, no newlines
         .. tokens.fim_suffix
         .. request.ps_chunk.suffix
         .. tokens.fim_prefix
