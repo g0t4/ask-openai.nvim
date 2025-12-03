@@ -266,7 +266,7 @@ M.bytedance_seed_coder = {
             -- observed these generaeted by Seed-Coder:
             M.qwen25coder.sentinel_tokens.endoftext, -- stops on this
             M.qwen25coder.sentinel_tokens.file_sep, -- rambles past this, so a good stop point... rambles b/c of repeating file pattern
-            "<|end|>", -- bytedance_seed_coder stops on this at times too, not sure this is a qwen25coder token...
+            M.qwen_tag("end"), -- bytedance_seed_coder stops on this at times too, not sure this is a qwen25coder token...
 
             -- haven't seen Seed-Coder generate these but they don't hurt to add:
             M.qwen25coder.sentinel_tokens.im_end,
@@ -284,7 +284,8 @@ M.bytedance_seed_coder = {
         -- https://huggingface.co/ByteDance-Seed/Seed-Coder-8B-Base/blob/main/tokenizer_config.json
         -- {'bos_token': '<[begin▁of▁sentence]>', 'eos_token': '<[end▁of▁sentence]>', 'sep_token': '<[SEP▁TOKEN]>', 'pad_token': '<[PAD▁TOKEN]>'}
         --
-        -- TODO!!!!!! THEIR TECHINCAL PAPER SAYS THEY USED REPO LEVEL training data.... WHAT WAS THE FORMAT!!!! did it have tokens too.. it had to have a filename at least?
+        -- THEIR TECHINCAL PAPER SAYS THEY USED REPO LEVEL training data....
+        --   WHAT WAS THE FORMAT!!!! did it have tokens too.. it had to have a filename at least?
         --   https://arxiv.org/abs/2506.03524
         --     "repository-level variant preserved the project structure, enabling more coherent long-context learning"
         --     "Each repository was mapped to a single string sequence"
@@ -295,30 +296,7 @@ M.bytedance_seed_coder = {
         --     - PromptBuilder is key part, shows format used for retrieved code samples:
         --        https://github.com/microsoft/CodeT/blob/35f54d60b152cc31d134b788e702878ad613d9f7/RepoCoder/build_prompt.py#L24-L84
         --     - by the way RepoCoder primarily tested a two stage retrieve + gen process... whereby the model gets a second pass to generate the code after seeing the first pass
-        --   FYI I put the format below to try out
         --     - just a hypothesis that Seed-Coder's repo level training data used the same/similar format... or something else amenable b/c they refer to the eval in the SeedCoder paper and link to RepoCoder for that
-        --
-        --
-        -- repo_name = "<|repo_name|>", --
-        -- file_sep = "<|file_sep|>", --
-        --
-        -- 0: <[begin▁of▁sentence]>
-        -- 1: <[PAD▁TOKEN]>
-        -- 2: <[end▁of▁sentence]>
-        -- 3: <[UNK_never_used_51bce0c785ca2f68081bfa7d91973934]>
-        -- 4: <[CLS_never_used_51bce0c785ca2f68081bfa7d91973934]>
-        -- 5: <[MASK_never_used_51bce0c785ca2f68081bfa7d91973934]>
-        -- 6: <[SEP▁TOKEN]>
-        -- 7: <[PLHD7_never_used_51bce0c785ca2f68081bfa7d91973934]>
-        -- 8: <[PLHD8_never_used_51bce0c785ca2f68081bfa7d91973934]>
-        -- 9: <[PLHD9_never_used_51bce0c785ca2f68081bfa7d91973934]>
-        -- 10: <[PLHD10_never_used_51bce0c785ca2f68081bfa7d91973934]>
-        --
-        --
-        -- endoftext = "<|endoftext|>", --
-
-        -- * other tokens in logs, consider as needed:
-
     },
 }
 
