@@ -57,6 +57,16 @@ function M.harmony.message_end(contents)
     return M.harmony.MESSAGE .. contents .. M.harmony.END
 end
 
+function M.harmony.message_call(contents)
+    -- decode only during inference (stop token after tool call request)
+    return M.harmony.MESSAGE .. contents .. M.harmony.CALL
+end
+
+function M.harmony.message_return(contents)
+    -- decode only during inference (stop token after final message)
+    return M.harmony.MESSAGE .. contents .. M.harmony.RETURN
+end
+
 -- * full message builders:
 function M.harmony.msg_assistant_analysis(thoughts)
     return M.harmony.START .. "assistant" .. M.harmony.CHANNEL .. "analysis" .. M.harmony.MESSAGE .. thoughts .. M.harmony.END

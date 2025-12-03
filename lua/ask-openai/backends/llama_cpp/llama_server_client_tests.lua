@@ -271,8 +271,7 @@ patch: string,
 
         str(prompt):should_start_with(harmony.START)
         local expected_thinking = harmony.msg_assistant_analysis "We need to run date command."
-        local expected_tool_call_request
-        = harmony.start_assistant_json_tool_call("functions.run_command") .. harmony.MESSAGE .. [[{"command":"date"}]] .. harmony.CALL
+        local expected_tool_call = harmony.start_assistant_json_tool_call("functions.run_command") .. harmony.message_call('{"command":"date"}')
         -- CONFIRMED per spec, assistant tool call _REQUESTS_, recipient `to=` comes _AFTER_ (harmony.CHANNEL)commentary
         --    but, it can also come before (in role) ...
         --    in testing:
@@ -311,7 +310,7 @@ patch: string,
         --  TLDR 4 input messages => result in 6 harmony messages (7 if you count the prefill at the end to prompt final assistant response)
 
         should.be_same_colorful_diff(actual_thinking, expected_thinking)
-        should.be_same_colorful_diff(actual_tool_call_request, expected_tool_call_request)
+        should.be_same_colorful_diff(actual_tool_call_request, expected_tool_call)
         should.be_same_colorful_diff(actual_tool_result, expected_tool_result)
     end)
 
