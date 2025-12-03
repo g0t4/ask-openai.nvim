@@ -6,11 +6,6 @@ local M = {}
 -- PRN try other MCP based tools from gptoss repo (python code runner, browser)...
 --   use their system message descriptions but route them through MCP in here
 
--- TODO extra instructions for system message (goes into developer message for gptoss)
-M.SystemMessageInstructions = {
-
-}
-
 local string_arg = {
     -- model generates JSON string for args
     type = "string",
@@ -49,6 +44,18 @@ M.ToolDefinition = {
     },
     type = "function"
 }
+
+M.DevMessageInstructions = nil
+
+function M.get_dev_message_instructions()
+    if M.DevMessageInstructions then
+        return M.DevMessageInstructions
+    end
+    local md_path = vim.fn.expand("~/repos/github/g0t4/ask-openai/lua/ask-openai/tools/inproc/apply_patch.md")
+    local lines = vim.fn.readfile(md_path)
+    M.DevMessageInstructions = table.concat(lines, "\n")
+    return M.DevMessageInstructions
+end
 
 ---@param parsed_args string|table
 ---@param callback ToolCallDoneCallback
