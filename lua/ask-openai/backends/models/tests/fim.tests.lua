@@ -61,13 +61,13 @@ describe("starcoder2", function()
     -- by the way, the following would be used if I didn't have "raw" on the request (that's PSM right there!)
     --    ollama show --template starcoder2:7b-q8_0
     --
-    -- <file_sep>
+    -- (starcoder.FILE_SEP)
     -- {{- if .Suffix }}(starcoder.FIM_PREFIX)
     -- {{ .Prompt }}(starcoder.FIM_SUFFIX){{ .Suffix }}(starcoder.FIM_MIDDLE)
     -- {{- else }}{{ .Prompt }}
-    -- {{- end }}<|end_of_text|>
+    -- {{- end }}(starcoder.END_OF_TEXT)
     --
-    --  BUT... <|end_of_text|> is not the right tag?! its' <|endoftext|>
+    --  BUT... (starcoder.END_OF_TEXT) is not the right tag?! its' (starcoder.ENDOFTEXT)
     --   i.e. https://github.com/bigcode-project/starcoder2/issues/10#issuecomment-1979014959
 
     it("get_fim_prompt", function()
@@ -106,28 +106,28 @@ describe("mellum", function()
     --
     -- - https://huggingface.co/JetBrains/Mellum-4b-base/commit/b7d42cacc4ea2889f32479777266fb731248a3d8
     --     * oldest => initial add of example
-    --     encoded_input = tokenizer(f"<fim_suffix>suffix<fim_prefix>{prefix}<fim_middle>", return_tensors='pt', return_token_type_ids=False)
+    --     encoded_input = tokenizer(f"(mellum.FIM_SUFFIX)suffix(mellum.FIM_PREFIX){prefix}(mellum.FIM_MIDDLE)", return_tensors='pt', return_token_type_ids=False)
     --
     -- - https://huggingface.co/JetBrains/Mellum-4b-base/commit/4179e39f97ed12c1de07de86f3e194e36badec23
     --     * just fixed {} around suffix
     --     FYI seems to be an alterante format for no repo_name/filepaths
-    --     encoded_input = tokenizer(f"<fim_suffix>{suffix}<fim_prefix>{prefix}<fim_middle>", return_tensors='pt', return_token_type_ids=False)
+    --     encoded_input = tokenizer(f"(mellum.FIM_SUFFIX){suffix}(mellum.FIM_PREFIX){prefix}(mellum.FIM_MIDDLE)", return_tensors='pt', return_token_type_ids=False)
     --
     -- - https://huggingface.co/JetBrains/Mellum-4b-base/commit/ddf77ce4289722d1bfd59a34b8899500c2ce87c8
     --     * introduced the repo level FIM template
-    --     example = """<filename>utils.py
+    --     example = """(mellum.FILENAME)utils.py
     --     def multiply(x, y):
     --         return x * y
-    --     <filename>config.py
+    --     (mellum.FILENAME)config.py
     --     DEBUG = True
     --     MAX_VALUE = 100
-    --     <filename>example.py
-    --     <fim_suffix>
+    --     (mellum.FILENAME)example.py
+    --     (mellum.FIM_SUFFIX)
     --
     --     # Test the function
     --     result = calculate_sum(5, 10)
-    --     print(result)<fim_prefix>def calculate_sum(a, b):
-    --     <fim_middle>"""
+    --     print(result)(mellum.FIM_PREFIX)def calculate_sum(a, b):
+    --     (mellum.FIM_MIDDLE)"""
     --
     --     encoded_input = tokenizer(example, return_tensors='pt', return_token_type_ids=False)
     --

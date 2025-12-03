@@ -17,21 +17,16 @@ end
 M.qwen25coder = {
     sentinel_tokens = {
         -- https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct/blob/main/tokenizer_config.json
-        fim_prefix = qwen_tag("fim_prefix"), -- 151659 -- TODO RENAME/REMOVE
         FIM_PREFIX = qwen_tag("fim_prefix"), -- 151659
-        fim_middle = qwen_tag("fim_middle"), -- 151660 -- TODO RENAME/REMOVE
         FIM_MIDDLE = qwen_tag("fim_middle"), -- 151660
-        fim_suffix = qwen_tag("fim_suffix"), -- 151661 -- TODO RENAME/REMOVE
         FIM_SUFFIX = qwen_tag("fim_suffix"), -- 151661
         -- fim_pad = qwen_tag("fim_pad"), -- 151662
-        repo_name = qwen_tag("repo_name"), -- 151663 -- TODO RENAME/REMOVE
         REPO_NAME = qwen_tag("repo_name"), -- 151663
-        file_sep = qwen_tag("file_sep"), -- 151664 -- TODO RENAME/REMOVE
         FILE_SEP = qwen_tag("file_sep"), -- 151664
 
-        im_start = qwen_tag("im_start"), -- 151644
-        im_end = qwen_tag("im_end"), -- 151645
-        endoftext = qwen_tag("endoftext"), -- 151643
+        IM_START = qwen_tag("im_start"), -- 151644
+        IM_END = qwen_tag("im_end"), -- 151645
+        ENDOFTEXT = qwen_tag("endoftext"), -- 151643
     },
 }
 
@@ -44,7 +39,7 @@ function M.qwen25coder.get_fim_prompt(request)
     --   I see this in the example files: https://github.com/QwenLM/Qwen2.5-Coder/blob/f20915b77910de5ba8463547e7654beb056ec7d0/examples/Qwen2.5-Coder-repolevel-fim.py
     --   it might not matter?
     local repo_name = request:get_repo_name()
-    local prompt = tokens.repo_name .. repo_name .. "\n"
+    local prompt = tokens.REPO_NAME .. repo_name .. "\n"
 
     -- * FIM file
     local current_file_relative_path = request.inject_file_path_test_seam()
@@ -61,7 +56,7 @@ function M.qwen25coder.get_fim_prompt(request)
     ---@param context_item ContextItem
     local function append_file_non_fim(context_item)
         -- {FILE_SEP}filepath0\ncode0
-        local non_fim_file = tokens.file_sep .. context_item.filename .. "\n"
+        local non_fim_file = tokens.FILE_SEP .. context_item.filename .. "\n"
             .. context_item.content
         prompt = prompt .. non_fim_file
     end
@@ -92,7 +87,7 @@ General project code rules:
             :each(function(chunk)
                 ---@cast chunk LSPRankedMatch
                 local file_name = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
-                local non_fim_file = tokens.file_sep .. file_name .. "\n" .. chunk.text
+                local non_fim_file = tokens.FILE_SEP .. file_name .. "\n" .. chunk.text
                 prompt = prompt .. non_fim_file
             end)
     end
@@ -108,14 +103,14 @@ General project code rules:
     -- raw_prompt = recent_changes .. "\n\n" .. raw_prompt
 
     -- FYI carefully observe the format:
-    local fim_file_contents = tokens.file_sep
+    local fim_file_contents = tokens.FILE_SEP
         .. current_file_relative_path
         .. "\n"
-        .. tokens.fim_prefix
+        .. tokens.FIM_PREFIX
         .. request.ps_chunk.prefix
-        .. tokens.fim_suffix
+        .. tokens.FIM_SUFFIX
         .. request.ps_chunk.suffix
-        .. tokens.fim_middle
+        .. tokens.FIM_MIDDLE
 
     return prompt .. fim_file_contents
 end
@@ -127,15 +122,15 @@ M.bytedance_seed_coder = {
     qwen_sentinels = {
         fim_stop_tokens_from_qwen25_coder = {
             -- observed these generaeted by Seed-Coder:
-            M.qwen25coder.sentinel_tokens.endoftext, -- stops on this
-            M.qwen25coder.sentinel_tokens.file_sep, -- rambles past this, so a good stop point... rambles b/c of repeating file pattern
+            M.qwen25coder.sentinel_tokens.ENDOFTEXT, -- stops on this
+            M.qwen25coder.sentinel_tokens.FILE_SEP, -- rambles past this, so a good stop point... rambles b/c of repeating file pattern
             qwen_tag("end"), -- bytedance_seed_coder stops on this at times too, not sure this is a qwen25coder token...
 
             -- haven't seen Seed-Coder generate these but they don't hurt to add:
-            M.qwen25coder.sentinel_tokens.im_end,
-            M.qwen25coder.sentinel_tokens.fim_prefix,
-            M.qwen25coder.sentinel_tokens.fim_suffix,
-            M.qwen25coder.sentinel_tokens.repo_name,
+            M.qwen25coder.sentinel_tokens.IM_END,
+            M.qwen25coder.sentinel_tokens.FIM_PREFIX,
+            M.qwen25coder.sentinel_tokens.FIM_SUFFIX,
+            M.qwen25coder.sentinel_tokens.REPO_NAME,
         },
     },
     sentinel_tokens = {
@@ -343,20 +338,13 @@ M.starcoder2 = {
     -- PRN did starcoder v1 have diff special tokens?
     sentinel_tokens = {
         -- https://huggingface.co/bigcode/starcoder2-15b/blob/main/special_tokens_map.json
-        fim_prefix = starcoder_tag("fim_prefix"), -- TODO get rid of lowercase later
         FIM_PREFIX = starcoder_tag("fim_prefix"),
-        fim_middle = starcoder_tag("fim_middle"), -- TODO get rid of lowercase later
         FIM_MIDDLE = starcoder_tag("fim_middle"),
-        fim_suffix = starcoder_tag("fim_suffix"), -- TODO get rid of lowercase later
         FIM_SUFFIX = starcoder_tag("fim_suffix"),
-        fim_pad = starcoder_tag("fim_pad"), -- TODO get rid of lowercase later
         FIM_PAD = starcoder_tag("fim_pad"),
-        file_sep = starcoder_tag("file_sep"), -- TODO get rid of lowercase later
         FILE_SEP = starcoder_tag("file_sep"),
-        repo_name = starcoder_tag("repo_name"), -- TODO get rid of lowercase later
         REPO_NAME = starcoder_tag("repo_name"),
 
-        endoftext = starcoder_tag("endoftext"), -- TODO get rid of lowercase later
         ENDOFTEXT = starcoder_tag("endoftext"),
         issue_start = starcoder_tag("issue_start"),
         issue_comment = starcoder_tag("issue_comment"),
@@ -461,12 +449,12 @@ function M.starcoder2.get_fim_prompt(request)
     -- * repo_name
     -- TODO confirm repo naming? is it just basename of repo root? or GH link? or org/repo?
     local repo_name = request.get_repo_name()
-    local prompt = starcoder.repo_name .. repo_name
+    local prompt = starcoder.REPO_NAME .. repo_name
 
     ---@param context_item ContextItem
     local function append_file_non_fim(context_item)
         -- {FILE_SEP}filepath0\ncode0
-        local non_fim_file = starcoder.file_sep .. context_item.filename .. "\n" .. context_item.content
+        local non_fim_file = starcoder.FILE_SEP .. context_item.filename .. "\n" .. context_item.content
         prompt = prompt .. non_fim_file
     end
 
@@ -488,15 +476,15 @@ function M.starcoder2.get_fim_prompt(request)
     --   FYI for special tokens I replaced <> with {} and UPPERCASE
     --   {FILE_SEP}{FIM_PREFIX}filepath1\ncode1_pre{FIM_SUFFIX}code1_suf{FIM_MIDDLE}code1_mid
     --   {FIM_PREFIX} comes BEFORE filepath!
-    local fim_file_contents = starcoder.fim_prefix
+    local fim_file_contents = starcoder.FIM_PREFIX
         .. current_file_path
         .. "\n"
         .. request.prefix
-        .. starcoder.fim_suffix
+        .. starcoder.FIM_SUFFIX
         .. request.suffix
-        .. starcoder.fim_middle
+        .. starcoder.FIM_MIDDLE
 
-    return prompt .. starcoder.file_sep .. fim_file_contents
+    return prompt .. starcoder.FILE_SEP .. fim_file_contents
 end
 
 local function codestral_tag(type)
