@@ -418,9 +418,10 @@ M.mellum = {
         commit_before = mellum_tag("commit_before"),
         commit_msg = mellum_tag("commit_msg"),
 
-        issue_start = "<issue_start>",
-        issue_comment = "<issue_comment>",
-        issue_closed = "<issue_closed>",
+        issue_start = mellum_tag("issue_start"),
+        issue_comment = mellum_tag("issue_comment"),
+        issue_closed = mellum_tag("issue_closed"),
+
 
         jupyter_start = "<jupyter_start>",
         jupyter_code = "<jupyter_code>",
