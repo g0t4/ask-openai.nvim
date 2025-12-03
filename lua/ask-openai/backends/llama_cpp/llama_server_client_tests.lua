@@ -280,8 +280,8 @@ patch: string,
         --      I setup the ask-fixes.jinja to generate AFTER (so it matches model's gen)
         --      and my tree-sitter grammar handles both
 
-        local expected_tool_result = harmony.START .. [[functions.run_command to=assistant]] .. harmony.CHANNEL .. [[commentary]]
-            .. harmony.message_end [[{"content":[{"text":"Sun Nov 30 19:35:10 CST 2025\n","type":"text","name":"STDOUT"}]}]]
+        local expected_tool_result = harmony.START .. 'functions.run_command to=assistant' .. harmony.CHANNEL .. 'commentary'
+            .. harmony.message_end '{"content":[{"text":"Sun Nov 30 19:35:10 CST 2025\\n","type":"text","name":"STDOUT"}]}'
         -- CONFIRMED per spec, for tool results, recipient `to=` comes _BEFORE_ (harmony.CHANNEL)commentary
         --   IIRC spec doesn't mention recipient in the channel (after channel/commentary) for tool result messages
 
