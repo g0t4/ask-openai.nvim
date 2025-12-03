@@ -549,17 +549,17 @@ function M.starcoder2.get_fim_prompt(request)
     -- FYI for special tokens I replaced <> with {} and UPPERCASE
     -- {REPO_NAME}reponame{FILE_SEP}filepath0\ncode0{FILE_SEP}{FIM_PREFIX}filepath1\ncode1_pre{FIM_SUFFIX}code1_suf{FIM_MIDDLE}code1_mid{FILE_SEP} ...{ENDOFTEXT}:
     -- https://github.com/bigcode-project/starcoder2/issues/10#issuecomment-2214157190
-    local tokens = M.starcoder2.sentinel_tokens
+    local starcoder = M.starcoder2.sentinel_tokens
 
     -- * repo_name
     -- TODO confirm repo naming? is it just basename of repo root? or GH link? or org/repo?
     local repo_name = request.get_repo_name()
-    local prompt = tokens.repo_name .. repo_name
+    local prompt = starcoder.repo_name .. repo_name
 
     ---@param context_item ContextItem
     local function append_file_non_fim(context_item)
         -- {FILE_SEP}filepath0\ncode0
-        local non_fim_file = tokens.file_sep .. context_item.filename .. "\n" .. context_item.content
+        local non_fim_file = starcoder.file_sep .. context_item.filename .. "\n" .. context_item.content
         prompt = prompt .. non_fim_file
     end
 
@@ -581,15 +581,15 @@ function M.starcoder2.get_fim_prompt(request)
     --   FYI for special tokens I replaced <> with {} and UPPERCASE
     --   {FILE_SEP}{FIM_PREFIX}filepath1\ncode1_pre{FIM_SUFFIX}code1_suf{FIM_MIDDLE}code1_mid
     --   {FIM_PREFIX} comes BEFORE filepath!
-    local fim_file_contents = tokens.fim_prefix
+    local fim_file_contents = starcoder.fim_prefix
         .. current_file_path
         .. "\n"
         .. request.prefix
-        .. tokens.fim_suffix
+        .. starcoder.fim_suffix
         .. request.suffix
-        .. tokens.fim_middle
+        .. starcoder.fim_middle
 
-    return prompt .. tokens.file_sep .. fim_file_contents
+    return prompt .. starcoder.file_sep .. fim_file_contents
 end
 
 local function codestral_tag(type)
