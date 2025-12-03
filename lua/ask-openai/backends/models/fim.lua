@@ -219,6 +219,9 @@ General project code rules:
     return prompt .. fim_file_contents
 end
 
+local function bytedance_seed_coder_fim_tag(name)
+    return "<[" .. name .. "]>"
+end
 M.bytedance_seed_coder = {
     qwen_sentinels = {
         fim_stop_tokens_from_qwen25_coder = {
@@ -235,9 +238,9 @@ M.bytedance_seed_coder = {
         },
     },
     sentinel_tokens = {
-        fim_suffix = "<[fim-suffix]>", --
-        fim_prefix = "<[fim-prefix]>", --
-        fim_middle = "<[fim-middle]>", --
+        fim_suffix = bytedance_seed_coder_fim_tag("fim-suffix"), --
+        fim_prefix = bytedance_seed_coder_fim_tag("fim-prefix"), --
+        fim_middle = bytedance_seed_coder_fim_tag("fim-middle"), --
         -- https://huggingface.co/ByteDance-Seed/Seed-Coder-8B-Base/blob/main/tokenizer_config.json
 
         -- THEIR TECHINCAL PAPER SAYS THEY USED REPO LEVEL training data....
