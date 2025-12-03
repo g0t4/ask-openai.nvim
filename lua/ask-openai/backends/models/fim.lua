@@ -4,6 +4,7 @@ local ansi = require("ask-openai.predictions.ansi")
 local ChatThread = require("ask-openai.questions.chat.thread")
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 local HarmonyRawFimPromptBuilder = require("ask-openai.backends.models.fim_harmony")
+local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 
 local M = {}
 
@@ -73,12 +74,13 @@ Make sure to practice the code change before you return a suggestion. Take the c
         local fixed_thoughts = HarmonyRawFimPromptBuilder.deep_thoughts_about_fim
 
         -- FYI "|start|assistant" is at end of prompt (see add_generation_prompt in jinja template + in chat logic)
+        --   FYI using || to delimit special tokens like |start|... that seems safe to use in notes and then only use read start/end via wrapper functions
         --   https://github.com/ggml-org/llama.cpp/blob/7d77f0732/models/templates/openai-gpt-oss-120b.jinja#L328-L330
         --   thus my `prefill` (below) starts with a channel
         --   BTW my `prefill` is appended to the raw prompt (after jinja is rendered):
         --     https://github.com/ggml-org/llama.cpp/blob/7d77f0732/tools/server/utils.hpp#L754-L762
-        local prefill = "<|channel|>analysis<|message|>" .. fixed_thoughts .. "<|end|>"
-            .. "<|start|>assistant" -- WORKS!
+        local prefill = harmony.CHANNEL .. "analysis" .. harmony.MESSAGE .. fixed_thoughts .. harmony.END
+            .. harmony.START .. "assistant" -- WORKS!
 
         -- *** notes w.r.t. final prefill text (last message)
         -- .. "|start|assistant" -- * WORKS!
