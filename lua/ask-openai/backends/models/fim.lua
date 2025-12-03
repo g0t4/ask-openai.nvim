@@ -552,11 +552,9 @@ end
 function M.starcoder2.get_fim_prompt(request)
     -- FYI! see notes in starcoder2.md
 
-    -- <repo_name>reponame<file_sep>filepath0\ncode0<file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid<file_sep> ...<|endoftext|>
-    -- TODO <|endoftext|> to stop tokens? must already be set IIGC cuz I get completions that terminate appropriately, quite often
-    --   TODO add <file_sep> to STOP tokens?
-    --      https://github.com/bigcode-project/starcoder2/issues/10#issuecomment-2214157190
-    --      is it already setup that way?
+    -- FYI swapped < > for | | on tokens, also uppercased them:
+    -- |REPO_NAME|reponame|FILE_SEP|filepath0\ncode0|FILE_SEP||FIM_PREFIX|filepath1\ncode1_pre|FIM_SUFFIX|code1_suf|FIM_MIDDLE|code1_mid|FILE_SEP| ...|ENDOFTEXT|:
+    -- https://github.com/bigcode-project/starcoder2/issues/10#issuecomment-2214157190
     local tokens = M.starcoder2.sentinel_tokens
 
     -- * repo_name
@@ -566,7 +564,7 @@ function M.starcoder2.get_fim_prompt(request)
 
     ---@param context_item ContextItem
     local function append_file_non_fim(context_item)
-        -- <file_sep>filepath0\ncode0
+        -- |FILE_SEP|filepath0\ncode0
         local non_fim_file = tokens.file_sep .. context_item.filename .. "\n" .. context_item.content
         prompt = prompt .. non_fim_file
     end
