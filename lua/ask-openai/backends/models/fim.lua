@@ -471,10 +471,12 @@ M.starcoder2 = {
 
         pr_diff_hunk_comment_line = starcoder_tag("pr_diff_hunk_comment_line"),
 
-        -- "<NAME>",
-        -- "<EMAIL>",
-        -- "<KEY>",
-        -- "<PASSWORD>"
+
+        -- starcoder_tag("NAME"),
+        -- starcoder_tag("EMAIL"),
+        -- starcoder_tag("KEY"),
+        -- starcoder_tag("PASSWORD"),
+
     }
 }
 
