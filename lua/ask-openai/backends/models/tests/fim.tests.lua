@@ -37,7 +37,14 @@ describe("qwen2.5-coder", function()
 
         -- TODO confirm \n after each file contents? or not?
         --    is it required? otherwise if optional, then it doesn't matter
+        local instructions = [[
+General project code rules:
+- Never add comments to the end of a line.
+- NEVER add TODO comments for me.
+]]
+
         local expected = "<|repo_name|>my_repo_name\n" -- TODO confirm if \n after repo name
+            .. qwen.FILE_SEP .. "instructions.txt\n" .. instructions
             .. qwen.FILE_SEP .. "nvim-recent-yanks.txt\nyanks"
             .. "<|file_sep|>path/to/current.lua\n"
             .. "<|fim_prefix|>foo\nthe\nprefix"
