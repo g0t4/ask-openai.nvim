@@ -462,12 +462,12 @@ M.starcoder2 = {
         pr_diff_hunk = starcoder_tag("pr_diff_hunk"),
         pr_comment = starcoder_tag("pr_comment"),
 
-        pr_event_id = "<pr_event_id>",
-        pr_review = "<pr_review>",
-        pr_review_state = "<pr_review_state>",
-        pr_review_comment = "<pr_review_comment>",
-        pr_in_reply_to_review_id = "<pr_in_reply_to_review_id>",
-        pr_in_reply_to_comment_id = "<pr_in_reply_to_comment_id>",
+        pr_event_id = starcoder_tag("pr_event_id"),
+        pr_review = starcoder_tag("pr_review"),
+        pr_review_state = starcoder_tag("pr_review_state"),
+        pr_review_comment = starcoder_tag("pr_review_comment"),
+        pr_in_reply_to_review_id = starcoder_tag("pr_in_reply_to_review_id"),
+        pr_in_reply_to_comment_id = starcoder_tag("pr_in_reply_to_comment_id"),
 
         pr_diff_hunk_comment_line = "<pr_diff_hunk_comment_line>",
 
