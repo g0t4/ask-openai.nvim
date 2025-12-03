@@ -469,7 +469,7 @@ M.starcoder2 = {
         pr_in_reply_to_review_id = starcoder_tag("pr_in_reply_to_review_id"),
         pr_in_reply_to_comment_id = starcoder_tag("pr_in_reply_to_comment_id"),
 
-        pr_diff_hunk_comment_line = "<pr_diff_hunk_comment_line>",
+        pr_diff_hunk_comment_line = starcoder_tag("pr_diff_hunk_comment_line"),
 
         -- "<NAME>",
         -- "<EMAIL>",
