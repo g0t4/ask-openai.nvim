@@ -423,11 +423,11 @@ M.mellum = {
         issue_closed = mellum_tag("issue_closed"),
 
 
-        jupyter_start   = mellum_tag("jupyter_start"),
-        jupyter_code    = mellum_tag("jupyter_code"),
-        jupyter_text    = mellum_tag("jupyter_text"),
-        jupyter_output  = mellum_tag("jupyter_output"),
-        empty_output    = mellum_tag("empty_output"),
+        jupyter_start  = mellum_tag("jupyter_start"),
+        jupyter_code   = mellum_tag("jupyter_code"),
+        jupyter_text   = mellum_tag("jupyter_text"),
+        jupyter_output = mellum_tag("jupyter_output"),
+        empty_output   = mellum_tag("empty_output"),
 
     },
 }
