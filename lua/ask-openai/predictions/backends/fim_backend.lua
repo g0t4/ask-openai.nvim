@@ -103,22 +103,15 @@ function FimBackend:body_for()
 
     if string.find(body.model, "codellama") then
         builder = function()
-            return fim.codellama.get_fim_prompt(self)
+            return meta.codellama.get_fim_prompt(self)
             -- have it use meta.codellama.sentinel_tokens
         end
 
-        -- -- codellama template:
-        -- --    {{- if .Suffix }}<PRE> {{ .Prompt }} <SUF>{{ .Suffix }} <MID>
-        -- sentinel_tokens = {
-        --     fim_prefix = "<PRE> ",
-        --     fim_suffix = " <SUF>",
-        --     fim_middle = " <MID>",
-        -- }
 
         -- codellama uses <EOT> that seems to not be set as param in modelfile (at least for FIM?)
         --   without this change you will see <EOT> in code at end of completions
         -- ollama show codellama:7b-code-q8_0 --parameters # => no stop param
-        body.options.stop = { "<EOT>" }
+        body.options.stop = { meta.codellama.sentinel_tokens.EOT }
 
         error("review FIM requirements for codellama, make sure you are using expected template, it used to work with qwen like FIM but I changed that to repo level now and would need to test it")
         -- FYI also ollama warns about:
@@ -193,7 +186,6 @@ function FimBackend:body_for()
         --   https://github.com/openai/gpt-oss?tab=readme-ov-file#recommended-sampling-parameters
         body.temperature = 1.0
         body.top_p = 1.0
-
     elseif string.find(body.model, "codestral", nil, true) then
         builder = function()
             return fim.codestral.get_fim_prompt(self)
@@ -260,7 +252,7 @@ function FimBackend:body_for()
                 local snippet = table.concat(vim.list_slice(lines, start_idx, end_idx), '\n')
                 log:info(ansi.red_bold('CURSOR CONTEXT:\n'), ansi.red(snippet))
             else
-                log:info(ansi.yellow('No ' .. qwen.FIM_MIDDLE ..  ' marker found, you messed up big time!'))
+                log:info(ansi.yellow('No ' .. qwen.FIM_MIDDLE .. ' marker found, you messed up big time!'))
             end
         end
     else
