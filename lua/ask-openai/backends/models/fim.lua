@@ -297,37 +297,33 @@ M.mellum = {
         FILE_SEP   = mellum_tag("filename"),
         REPO_NAME  = mellum_tag("reponame"),
 
-
         -- roles:
-        system = mellum_tag("system"),
-        slash_system = mellum_tag("/system"),
-        assistant = mellum_tag("assistant"),
-        slash_assistant = mellum_tag("/assistant"),
-        user = mellum_tag("user"),
-        slash_user = mellum_tag("/user"),
+        -- system = mellum_tag("system"),
+        -- slash_system = mellum_tag("/system"),
+        -- assistant = mellum_tag("assistant"),
+        -- slash_assistant = mellum_tag("/assistant"),
+        -- user = mellum_tag("user"),
+        -- slash_user = mellum_tag("/user"),
 
+        -- think = mellum_tag("think"),
+        -- slash_think = mellum_tag("/think"),
 
-        think = mellum_tag("think"),
-        slash_think = mellum_tag("/think"),
-
-        gh_stars = mellum_tag("gh_stars"),
+        -- gh_stars = mellum_tag("gh_stars"),
 
         -- PRN was base trained on commit messages? or were these just reserved for future use?
-        commit_after = mellum_tag("commit_after"),
-        commit_before = mellum_tag("commit_before"),
-        commit_msg = mellum_tag("commit_msg"),
+        -- commit_after = mellum_tag("commit_after"),
+        -- commit_before = mellum_tag("commit_before"),
+        -- commit_msg = mellum_tag("commit_msg"),
 
-        issue_start = mellum_tag("issue_start"),
-        issue_comment = mellum_tag("issue_comment"),
-        issue_closed = mellum_tag("issue_closed"),
+        -- issue_start = mellum_tag("issue_start"),
+        -- issue_comment = mellum_tag("issue_comment"),
+        -- issue_closed = mellum_tag("issue_closed"),
 
-
-        jupyter_start  = mellum_tag("jupyter_start"),
-        jupyter_code   = mellum_tag("jupyter_code"),
-        jupyter_text   = mellum_tag("jupyter_text"),
-        jupyter_output = mellum_tag("jupyter_output"),
-        empty_output   = mellum_tag("empty_output"),
-
+        -- jupyter_start  = mellum_tag("jupyter_start"),
+        -- jupyter_code   = mellum_tag("jupyter_code"),
+        -- jupyter_text   = mellum_tag("jupyter_text"),
+        -- jupyter_output = mellum_tag("jupyter_output"),
+        -- empty_output   = mellum_tag("empty_output"),
     },
 }
 
