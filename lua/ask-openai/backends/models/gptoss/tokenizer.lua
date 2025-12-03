@@ -24,6 +24,7 @@ end
 local open_tag = "<|"
 local close_tag = "|>"
 
+-- FYI token text values
 M.harmony = {
     RETURN = open_tag .. "return" .. close_tag,
     CONSTRAIN = open_tag .. "constrain" .. close_tag,
@@ -34,52 +35,61 @@ M.harmony = {
     CALL = open_tag .. "call" .. close_tag,
 }
 
-M.special_tokens = {
+-- local lesser_used = {
+--     -- move to harmony above when used externally
+--     ENDOFTEXT = close_tag .. "endoftext" .. open_tag,
+--     ENDOFPROMPT = close_tag .. "endofprompt" .. open_tag,
+--     STARTOFTEXT = close_tag .. "startoftext" .. open_tag,
+-- }
 
-    -- https://huggingface.co/openai/gpt-oss-20b/blob/main/tokenizer_config.json
-    -- "tokenizer_class": "PreTrainedTokenizerFast"
+-- FYI token ID (integer) values (to/from text values)
+-- local token_ids = {
+--
+--     -- https://huggingface.co/openai/gpt-oss-20b/blob/main/tokenizer_config.json
+--     -- "tokenizer_class": "PreTrainedTokenizerFast"
+--
+--     -- top level tokens mapped:
+--     bos_token = lesser_used.STARTOFTEXT,
+--     eos_token = M.harmony.RETURN,
+--     pad_token = lesser_used.ENDOFTEXT,
+--
+--     -- cat tokenizer_config.json | jq .'added_tokens_decoder | to_entries | .[] | "[\"\(.key)\"]=\"\(.value.content)\"," ' -r
+--     -- ID => token
+--     [199998] = lesser_used.STARTOFTEXT,
+--     [199999] = lesser_used.ENDOFTEXT,
+--     [200002] = M.harmony.RETURN,
+--     [200003] = M.harmony.CONSTRAIN,
+--     [200005] = M.harmony.CHANNEL,
+--     [200006] = M.harmony.START,
+--     [200007] = M.harmony.END,
+--     [200008] = M.harmony.MESSAGE,
+--     [200012] = M.harmony.CALL,
+--     [200018] = lesser_used.ENDOFPROMPT,
+--
+--     -- cat tokenizer_config.json | jq .'added_tokens_decoder | to_entries | .[] | "[\"\(.value.content)\"]=\(.key)," ' -r
+--     -- token => ID
+--     [lesser_used.STARTOFTEXT] = 199998,
+--     [lesser_used.ENDOFTEXT] = 199999,
+--     [M.harmony.RETURN] = 200002,
+--     [M.harmony.CONSTRAIN] = 200003,
+--     [M.harmony.CHANNEL] = 200005,
+--     [M.harmony.START] = 200006,
+--     [M.harmony.END] = 200007,
+--     [M.harmony.MESSAGE] = 200008,
+--     [M.harmony.CALL] = 200012,
+--     [lesser_used.ENDOFPROMPT] = 200018,
+--
+--     -- convenient constants:
+--     STARTOFTEXT = 199998,
+--     ENDOFTEXT = 199999,
+--     RETURN = 200002,
+--     CONSTRAIN = 200003,
+--     CHANNEL = 200005,
+--     START = 200006,
+--     END = 200007,
+--     MESSAGE = 200008,
+--     CALL = 200012,
+--     ENDOFPROMPT = 200018,
+-- }
 
-    -- top level tokens mapped:
-    bos_token = "<|startoftext|>",
-    eos_token = M.harmony.RETURN,
-    pad_token = "<|endoftext|>",
-
-    -- cat tokenizer_config.json | jq .'added_tokens_decoder | to_entries | .[] | "[\"\(.key)\"]=\"\(.value.content)\"," ' -r
-    -- ID => token
-    ["199998"] = "<|startoftext|>",
-    ["199999"] = "<|endoftext|>",
-    ["200002"] = "<|return|>",
-    ["200003"] = "<|constrain|>",
-    ["200005"] = "<|channel|>",
-    ["200006"] = "<|start|>",
-    ["200007"] = "<|end|>",
-    ["200008"] = "<|message|>",
-    ["200012"] = "<|call|>",
-    ["200018"] = "<|endofprompt|>",
-
-    -- cat tokenizer_config.json | jq .'added_tokens_decoder | to_entries | .[] | "[\"\(.value.content)\"]=\(.key)," ' -r
-    -- token => ID
-    ["<|startoftext|>"] = 199998,
-    ["<|endoftext|>"] = 199999,
-    ["<|return|>"] = 200002,
-    ["<|constrain|>"] = 200003,
-    ["<|channel|>"] = 200005,
-    ["<|start|>"] = 200006,
-    ["<|end|>"] = 200007,
-    ["<|message|>"] = 200008,
-    ["<|call|>"] = 200012,
-    ["<|endofprompt|>"] = 200018,
-
-    -- convenient constants:
-    STARTOFTEXT = 199998,
-    ENDOFTEXT = 199999,
-    RETURN = 200002,
-    CONSTRAIN = 200003,
-    CHANNEL = 200005,
-    START = 200006,
-    END = 200007,
-    MESSAGE = 200008,
-    CALL = 200012,
-    ENDOFPROMPT = 200018,
-}
 return M
