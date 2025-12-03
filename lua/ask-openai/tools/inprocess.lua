@@ -28,7 +28,7 @@ function M.send_tool_call(tool_call, callback)
         semantic_grep_tool.call(parsed_args, callback)
     elseif name == "apply_patch" then
         M.apply_patch(parsed_args, callback)
-        -- TODO try other tools from gptoss repo? (python code runner, browser)
+        -- TODO try other MCP based tools from gptoss repo (python code runner, browser)... use their system message descriptions but route them through MCP in here
     else
         callback(plumbing.create_tool_call_output_failure("Invalid in-process tool name: " .. name))
     end
