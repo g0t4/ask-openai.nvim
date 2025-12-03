@@ -131,42 +131,8 @@ M.qwen25coder = {
         im_start = qwen_tag("im_start"), -- 151644
         im_end = qwen_tag("im_end"), -- 151645
         endoftext = qwen_tag("endoftext"), -- 151643
-
-        -- * other tokens in logs, consider as needed:
-        -- LF token         = 198 'Ċ'
-        -- 151653 qwen_tag('vision_end')
-        -- 151648 qwen_tag('box_start')
-        -- 151646 qwen_tag('object_ref_start')
-        -- 151649 qwen_tag('box_end')
-        -- 151655 qwen_tag('image_pad')
-        -- 151651 qwen_tag('quad_end')
-        -- 151647 qwen_tag('object_ref_end')
-        -- 151652 qwen_tag('vision_start')
-        -- 151654 qwen_tag('vision_pad')
-        -- 151656 qwen_tag('video_pad')
-        -- 151650 qwen_tag('quad_start')
     },
 }
-
--- TODO VERIFY if this is default set to EOT as I suspect (and even llama-server shows eos as stop type)
--- -- FYI I am not convinced this has any impact, nor is needed... EOT should be it and that is there by default AFAICT
--- M.qwen25coder.sentinel_tokens.fim_stop_tokens = {
---     -- FIM examples show setting several stop tokens
---     -- https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-fim.py
---     --   eos_token_ids = [ 151643, 151645, 151659, 151660, 151661, 151662, 151663, 151664 ]
---     --       only extra token here: 151660  (fim_middle)
---     -- https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel-fim.py
---     --   eos_token_ids = [    151643, 151645,     151659,     151661,  151662,    151663,   151664, ]
---     --                     endoftext, im_end, fim_prefix, fim_suffix, fim_pad, repo_name, file_sep,
---     M.qwen25coder.sentinel_tokens.endoftext,
---     TODO... also why exclude these tokens... doesn't make sense to me... unless a mistake is made and model skips EOS?!?
---     M.qwen25coder.sentinel_tokens.im_end,
---     M.qwen25coder.sentinel_tokens.fim_prefix,
---     M.qwen25coder.sentinel_tokens.fim_suffix,
---     -- M.qwen25coder.sentinel_tokens.fim_pad, -- shows as null in llama-cpp request body verbose output?!
---     M.qwen25coder.sentinel_tokens.repo_name,
---     M.qwen25coder.sentinel_tokens.file_sep,
--- }
 
 ---@param request FimBackend
 function M.qwen25coder.get_fim_prompt(request)
@@ -259,7 +225,7 @@ M.bytedance_seed_coder = {
             -- observed these generaeted by Seed-Coder:
             M.qwen25coder.sentinel_tokens.endoftext, -- stops on this
             M.qwen25coder.sentinel_tokens.file_sep, -- rambles past this, so a good stop point... rambles b/c of repeating file pattern
-            M.qwen_tag("end"), -- bytedance_seed_coder stops on this at times too, not sure this is a qwen25coder token...
+            qwen_tag("end"), -- bytedance_seed_coder stops on this at times too, not sure this is a qwen25coder token...
 
             -- haven't seen Seed-Coder generate these but they don't hurt to add:
             M.qwen25coder.sentinel_tokens.im_end,
@@ -272,11 +238,8 @@ M.bytedance_seed_coder = {
         fim_suffix = "<[fim-suffix]>", --
         fim_prefix = "<[fim-prefix]>", --
         fim_middle = "<[fim-middle]>", --
-        --
-        -- TODO update rest from:
         -- https://huggingface.co/ByteDance-Seed/Seed-Coder-8B-Base/blob/main/tokenizer_config.json
-        -- {'bos_token': '<[begin▁of▁sentence]>', 'eos_token': '<[end▁of▁sentence]>', 'sep_token': '<[SEP▁TOKEN]>', 'pad_token': '<[PAD▁TOKEN]>'}
-        --
+
         -- THEIR TECHINCAL PAPER SAYS THEY USED REPO LEVEL training data....
         --   WHAT WAS THE FORMAT!!!! did it have tokens too.. it had to have a filename at least?
         --   https://arxiv.org/abs/2506.03524
@@ -459,12 +422,6 @@ M.mellum = {
         jupyter_text = "<jupyter_text>",
         jupyter_output = "<jupyter_output>",
         empty_output = "<empty_output>",
-
-        bos_token = "<|endoftext|>",
-        eos_token = "<|endoftext|>",
-        pad_token = "<|endoftext|>",
-        unk_token = "<|endoftext|>",
-
     },
 }
 
@@ -645,17 +602,13 @@ function M.starcoder2.get_fim_prompt(request)
     return prompt .. tokens.file_sep .. fim_file_contents
 end
 
+local function codestral_tag(type)
+    return "[" .. type .. "]"
+end
 M.codestral = {
     -- https://docs.mistral.ai/capabilities/code_generation/
     -- by the way this repo might have reference templates for several models
     --   https://github.com/continuedev/continue/blob/main/core/llm/templates/edit/codestral.ts#L1
-    --
-    --
-    -- TODO try codestra-2501 via API - s/b a material update to codestral 2405 (IIRC, 2024)
-    --   watch for a release of it
-    -- TODO try mamba-codestral via API (or its on hf and should work w/ mlx but can't figure it out yet)
-    -- TODO devstral, can it do FIM?
-
 
     sentinel_tokens = {
         -- TODO is there a paper?
@@ -663,14 +616,11 @@ M.codestral = {
         --   * https://huggingface.co/mistralai/Codestral-22B-v0.1/blob/main/tokenizer_config.json
         --   https://huggingface.co/mistralai/Codestral-22B-v0.1/blob/main/special_tokens_map.json
         --   [PREFIX]
-        fim_prefix = "[PREFIX]",
-        fim_middle = "[MIDDLE]",
-        fim_suffix = "[SUFFIX]",
+        fim_prefix = codestral_tag("PREFIX"),
+        fim_middle = codestral_tag("MIDDLE"),
+        fim_suffix = codestral_tag("SUFFIX"),
 
-        bos_token = "<s>",
         eos_token = "</s>",
-        unk_token = "<unk>",
-
     },
 
 }
@@ -678,12 +628,11 @@ M.codestral = {
 function M.codestral.get_fim_prompt(request)
     local tokens = M.codestral.sentinel_tokens
 
-    -- TODO! VERIFY THE FORMAT!!!! this is just a GH issue that suggested it
     -- found suggestion:
     --   https://github.com/ollama/ollama/issues/5403
-    --   <s>[SUFFIX] {{ suffix }} [PREFIX] {{ prefix }}
-    --    TODO this doesn't include [MIDDLE]... should I add it?
-    -- TODO! try PSM format next... sometimes in calc.lua I am getting [SUFFIX] on end of response!
+    --   FYI dropped off [] surrounding tags:
+    --   <s>SUFFIX {{ suffix }} PREFIX {{ prefix }}
+    --    TODO this doesn't include MIDDLE... should I add it?
     local fim_file_contents = tokens.fim_suffix
         .. request.suffix
         .. tokens.fim_prefix
@@ -694,6 +643,10 @@ function M.codestral.get_fim_prompt(request)
     return fim_file_contents
 end
 
+local function deepseek_tag(type)
+    -- FYI it's not spaces around the pipe char:
+    return "<｜" .. type .. "｜>"
+end
 M.deepseek_coder_v2 = {
     -- https://github.com/deepseek-ai/DeepSeek-Coder-V2
     -- https://github.com/deepseek-ai/DeepSeek-Coder-V2?tab=readme-ov-file#code-insertion
@@ -703,40 +656,21 @@ M.deepseek_coder_v2 = {
     -- ** FAST MoE
     -- 217 TPS! first load OMFG
     -- model = "deepseek-coder-v2:16b-lite-base-q8_0", # **** 217 TPS!
-    -- model = "deepseek-coder-v2:16b-lite-base-fp16" # TODO TRY THIS ONE
-    -- TODO can I get fp in memory?!
 
     sentinel_tokens = {
-        --
-        -- FYI it's not spaces around the pipe char:
-        fim_begin = "<｜fim▁begin｜>",
-        fim_hole = "<｜fim▁hole｜>",
-        fim_end = "<｜fim▁end｜>",
+        fim_begin = deepseek_tag("fim▁begin"),
+        fim_hole = deepseek_tag("fim▁hole"),
+        fim_end = deepseek_tag("fim▁end"),
 
-        -- TODO what name for this?
-        fim_stop_tokens = { "<|eos_token|>" }
+        fim_stop_tokens = { qwen_tag("eos_token") }
     }
 
 }
-
--- input_text = """<｜fim▁begin｜>def quick_sort(arr):
---     if len(arr) <= 1:
---         return arr
---     pivot = arr[0]
---     left = []
---     right = []
--- <｜fim▁hole｜>
---         if arr[i] < pivot:
---             left.append(arr[i])
---         else:
---             right.append(arr[i])
---     return quick_sort(left) + [pivot] + quick_sort(right)<｜fim▁end｜>"""
 
 function M.deepseek_coder_v2.get_fim_prompt(request)
     local tokens = M.deepseek_coder_v2.sentinel_tokens
 
     -- PSM format:
-    -- <｜fim_begin｜> 𝑓𝑝𝑟𝑒<｜fim_hole｜> 𝑓𝑠𝑢 𝑓<｜fim_end｜> 𝑓𝑚𝑖𝑑𝑑𝑙𝑒<|eos_token|>
     local fim_file_contents = tokens.fim_begin
         .. request.prefix
         .. tokens.fim_hole
@@ -746,7 +680,7 @@ function M.deepseek_coder_v2.get_fim_prompt(request)
     return fim_file_contents
 
     -- ** paper also says at "document level" ...
-    -- * can I include fileanme? (if so => yanks/edits/etc)
+    -- * can I include filename? (if so => yanks/edits/etc)
     -- * multiple files?
     -- return prompt .. tokens.file_sep .. fim_file_contents
 end
