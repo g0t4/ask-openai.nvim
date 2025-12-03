@@ -105,6 +105,11 @@ function M.call(parsed_args, callback)
     }))
 end
 
+-- NOTES apply_patch.py
+-- - w/o dev message => generated Delete Then Add to update a file and that only deletes it! apply_patch has a bug in delete/add same file...  WTF?!?
+--    likely fix is to add dev message instructions to remind about UpdateFile... and might need to fix this bug if it comes up still
+--      yikes how the F does this happen with an official tool?!  that was used to fine tune?!?!
+
 function manual_test()
     -- test call
     local patch = [[
