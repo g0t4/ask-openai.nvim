@@ -497,11 +497,11 @@ M.codestral = {
         --   * https://huggingface.co/mistralai/Codestral-22B-v0.1/blob/main/tokenizer_config.json
         --   https://huggingface.co/mistralai/Codestral-22B-v0.1/blob/main/special_tokens_map.json
         --   [PREFIX]
-        fim_prefix = codestral_tag("PREFIX"),
-        fim_middle = codestral_tag("MIDDLE"),
-        fim_suffix = codestral_tag("SUFFIX"),
+        FIM_PREFIX = codestral_tag("PREFIX"),
+        FIM_MIDDLE = codestral_tag("MIDDLE"),
+        FIM_SUFFIX = codestral_tag("SUFFIX"),
 
-        eos_token = "</s>",
+        EOS_TOKEN = "</s>",
     },
 
 }
@@ -514,11 +514,11 @@ function M.codestral.get_fim_prompt(request)
     --   -- FYI using conventional {} and uppercase for tokens in comments:
     --   <s>{SUFFIX}suffix{PREFIX}prefix
     --    TODO this doesn't include MIDDLE... should I add it?
-    local fim_file_contents = tokens.fim_suffix
+    local fim_file_contents = tokens.FIM_SUFFIX
         .. request.suffix
-        .. tokens.fim_prefix
+        .. tokens.FIM_PREFIX
         .. request.prefix
-        .. tokens.fim_middle -- TODO! find out about MIDDLE? completions work well enough w/ and w/o this
+        .. tokens.FIM_MIDDLE -- TODO! find out about MIDDLE? completions work well enough w/ and w/o this
 
     -- TODO filename, multi-file, etc?
     return fim_file_contents
