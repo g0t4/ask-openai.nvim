@@ -400,12 +400,13 @@ M.mellum = {
 
 
         -- roles:
-        system = "<system>",
-        slash_system = "</system>",
-        assistant = "<assistant>",
-        slash_assistant = "</assistant>",
-        user = "<user>",
-        slash_user = "</user>",
+        system = mellum_tag("system"),
+        slash_system = mellum_tag("/system"),
+        assistant = mellum_tag("assistant"),
+        slash_assistant = mellum_tag("/assistant"),
+        user = mellum_tag("user"),
+        slash_user = mellum_tag("/user"),
+
 
         think = "<think>",
         slash_think = "</think>",
