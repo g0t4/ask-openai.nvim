@@ -212,8 +212,8 @@ end
 
 ---@return HarmonyRawFimPromptBuilder self
 function HarmonyRawFimPromptBuilder:start_assistant_final_response()
-    -- make it so the model only ends with the prediction and maybe <|end|>
-    -- FYI in testing <|end|> is not showing up, which is fine by me!
+    -- make it so the model only ends with the prediction and maybe harmony.END
+    -- FYI in testing harmony.END is not showing up, which is fine by me! 99% sure llama-server detects that as stop token and it normally won't return those unless configured to do so
     table.insert(self._parts, harmony.START .. "assistant" .. harmony.CHANNEL .. "final" .. harmony.MESSAGE)
     return self
 end
