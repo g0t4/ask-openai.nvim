@@ -3,6 +3,18 @@ local HLGroups = require("ask-openai.hlgroups")
 
 local M = {}
 
+function try_decode_json_string(json_str, message)
+    if message:is_still_streaming() then
+        return json_str
+    end
+
+    local ok, decoded = pcall(vim.json.decode, json_str)
+    if ok and type(decoded) == "table" then
+        return vim.inspect(decoded, { newline = "", indent = "  " })
+    end
+    return json_str
+end
+
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
     -- if message:is_still_streaming() then
@@ -27,7 +39,15 @@ function M.format(lines, tool_call, message)
     -- * tool args
     local args = tool_call["function"].arguments
     if args then
-        lines:append_text(args)
+        local appears_to_be_json_dict = args:find("^{")
+        if appears_to_be_json_dict then
+            -- print verbatim, no changes (NOT YET).. PRN could pretty print once done streaming
+            lines:append_text(args)
+        else
+            -- assume JSON string
+            local result = try_decode_json_string(args, message)
+            lines:append_text(result)
+        end
     end
     -- PRN mark outputs somehow? or just dump them? (I hate to waste space)
 
