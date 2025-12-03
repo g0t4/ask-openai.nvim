@@ -72,7 +72,7 @@ Make sure to practice the code change before you return a suggestion. Take the c
         -- TODO get rid of raw prompt approach above? or just keep it around as "RETIRED" ??
         local fixed_thoughts = HarmonyRawFimPromptBuilder.deep_thoughts_about_fim
 
-        -- FYI "<|start|>assistant" is at end of prompt (see add_generation_prompt in jinja template + in chat logic)
+        -- FYI "|start|assistant" is at end of prompt (see add_generation_prompt in jinja template + in chat logic)
         --   https://github.com/ggml-org/llama.cpp/blob/7d77f0732/models/templates/openai-gpt-oss-120b.jinja#L328-L330
         --   thus my `prefill` (below) starts with a channel
         --   BTW my `prefill` is appended to the raw prompt (after jinja is rendered):
@@ -81,31 +81,31 @@ Make sure to practice the code change before you return a suggestion. Take the c
             .. "<|start|>assistant" -- WORKS!
 
         -- *** notes w.r.t. final prefill text (last message)
-        -- .. "<|start|>assistant" -- * WORKS!
-        --   luckily, finishing prefill with `<|start|>assistant` is enough for gptoss to produce the final message!
+        -- .. "|start|assistant" -- * WORKS!
+        --   luckily, finishing prefill with `|start|assistant` is enough for gptoss to produce the final message!
         --   IIAC you can't have back to back analysis channel messages, or at least not normally?
         --     and commentary channel doesn't make sense because no tools passed
         --     so the model is only left with the final channel! (phew)
         --   (btw... this is the same as it would add w/o my prefill)
 
         -- * FAILED:
-        -- .. "<|start|>assistant<|channel|>final<|message|>" -- FAIL
+        -- .. "|start|assistant|channel|final|message|" -- FAIL
         -- along the way shows:
         --   llama-server: Partial parse: incomplete header
         -- at end it does recognize generated text as the content (net effect is as if it were not a streaming response b/c it all arrives on last delta!)
         --   llama-server: Partial parse: incomplete header
         --   llama-server: Parsed message: {"role":"assistant","content":"function M.mul(a, b)\n    return a * b\nend\n\nfunction M.div(a, b)\n    if b == 0 then\n        error(\"division by zero\")\n    end\n    return a / b\nend"}
         --
-        -- .. "<|start|>assistant<|channel|>final"  -- FAIL
+        -- .. "|start|assistant|channel|final"  -- FAIL
         --
-        -- .. "<|start|>assistant<|channel|>" -- FAIL results in these key messages:
+        -- .. "|start|assistant|channel|" -- FAIL results in these key messages:
         --   llama-server: common_chat_parse_gpt_oss: unknown header from message: final
-        --   llama-server: common_chat_parse_gpt_oss: content after last message: final<|message|>function M.mul(a, b)
+        --   llama-server: common_chat_parse_gpt_oss: content after last message: final|message|function M.mul(a, b)
         --
 
 
 
-        -- llama-cpp uses this last assistant message for prefill purposes (will not terminate with <|end|>)
+        -- llama-cpp uses this last assistant message for prefill purposes (will not terminate with |end|)
         table.insert(messages, TxChatMessage:assistant(prefill))
 
         -- TODO add nvim command to verify prompts:
@@ -159,7 +159,7 @@ function M.qwen25coder.get_fim_prompt(request)
 
     ---@param context_item ContextItem
     local function append_file_non_fim(context_item)
-        -- <file_sep>filepath0\ncode0
+        -- |FILE_SEP|filepath0\ncode0
         local non_fim_file = tokens.file_sep .. context_item.filename .. "\n"
             .. context_item.content
         prompt = prompt .. non_fim_file
