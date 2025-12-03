@@ -154,7 +154,7 @@ describe("mellum", function()
         -- TODO is repo_name ok here? or was it not trained with?
         --  only spot I've seen mention: https://huggingface.co/JetBrains/Mellum-4b-base/blob/main/special_tokens_map.json
         local expected = mellum.REPO_NAME .. "my_mellum_repo" .. mellum.FILE_SEP .. "nvim-recent-yanks.txt\nyanks"
-            -- NOTE the filename comes before the fim_suffix tag (unlike StarCoder2 where filename comes after fim_prefix tag)
+            -- NOTE the filename comes before the FIM_SUFFIX tag (unlike StarCoder2 where filename comes after FIM_PREFIX tag)
             .. mellum.FILE_SEP .. "path/to/current.lua\n"
             .. mellum.FIM_SUFFIX .. "bar\nbaz"
             .. mellum.FIM_PREFIX .. "foo\nthe\nprefix"

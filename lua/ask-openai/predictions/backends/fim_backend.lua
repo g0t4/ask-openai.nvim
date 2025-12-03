@@ -118,8 +118,8 @@ function FimBackend:body_for()
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
     elseif string.find(body.model, "Mellum") then
         -- body.options.stop = {
-        --     fim.mellum.sentinel_tokens.eos_token,
-        --     fim.mellum.sentinel_tokens.file_sep
+        --     fim.mellum.sentinel_tokens.EOS_TOKEN,
+        --     fim.mellum.sentinel_tokens.FILE_SEP
         -- }
         builder = function()
             return fim.mellum.get_fim_prompt(self)
@@ -198,7 +198,7 @@ function FimBackend:body_for()
         -- TODO! investigate temp (etc) for all models
 
         -- TODO set stop token to EOS? IIAC this is already set?!
-        -- body.options.stop = { fim.codestral.sentinel_tokens.eos_token }
+        -- body.options.stop = { fim.codestral.sentinel_tokens.EOS_TOKEN }
     elseif string.find(body.model, "deepseek-coder-v2", nil, true) then
         builder = function()
             return fim.deepseek_coder_v2.get_fim_prompt(self)

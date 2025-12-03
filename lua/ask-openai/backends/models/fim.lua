@@ -292,7 +292,7 @@ M.mellum = {
         FIM_MIDDLE = mellum_tag("fim_middle"),
         FIM_SUFFIX = mellum_tag("fim_suffix"),
         FIM_PAD    = mellum_tag("fim_pad"),
-        -- FYI file_sep => filename, repo_name => reponame... can put that back if the prompt is unique to mellum anyways
+        -- FYI FILE_SEP => FILENAME, REPO_NAME => REPONAME... can put that back if the prompt is unique to mellum anyways
         --  but right now I suspect it will be the same as qwen25coder and starcoder2
         FILE_SEP   = mellum_tag("filename"),
         REPO_NAME  = mellum_tag("reponame"),
@@ -539,11 +539,11 @@ M.deepseek_coder_v2 = {
     -- model = "deepseek-coder-v2:16b-lite-base-q8_0", # **** 217 TPS!
 
     sentinel_tokens = {
-        fim_begin = deepseek_tag("fim▁begin"),
-        fim_hole = deepseek_tag("fim▁hole"),
-        fim_end = deepseek_tag("fim▁end"),
+        FIM_BEGIN = deepseek_tag("fim▁begin"),
+        FIM_HOLD = deepseek_tag("fim▁hole"),
+        FIM_END = deepseek_tag("fim▁end"),
 
-        fim_stop_tokens = { qwen_tag("eos_token") }
+        fim_stop_tokens = { qwen_tag("eos_token") } -- TODO is it a fancy underscore here too? ==>    ▁
     }
 
 }
@@ -552,11 +552,11 @@ function M.deepseek_coder_v2.get_fim_prompt(request)
     local tokens = M.deepseek_coder_v2.sentinel_tokens
 
     -- PSM format:
-    local fim_file_contents = tokens.fim_begin
+    local fim_file_contents = tokens.FIM_BEGIN
         .. request.prefix
-        .. tokens.fim_hole
+        .. tokens.FIM_HOLD
         .. request.suffix
-        .. tokens.fim_end
+        .. tokens.FIM_END
 
     return fim_file_contents
 
