@@ -12,7 +12,7 @@ local M = {}
 --   really these are the fim related special tokens
 
 M.gptoss = {
-    sentinel_tokens = { }
+    sentinel_tokens = {}
 }
 ---@param request FimBackend
 function M.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(request)
@@ -115,34 +115,36 @@ Make sure to practice the code change before you return a suggestion. Take the c
     return messages
 end
 
+local function qwen_tag(type)
+    return "<|" .. type .. "|>"
+end
 M.qwen25coder = {
     sentinel_tokens = {
         -- https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct/blob/main/tokenizer_config.json
-        fim_prefix = "<|fim_prefix|>", -- 151659
-        fim_middle = "<|fim_middle|>", -- 151660
-        fim_suffix = "<|fim_suffix|>", -- 151661
-        -- fim_pad = "<|fim_pad|>", -- 151662
-        repo_name = "<|repo_name|>", -- 151663
-        file_sep = "<|file_sep|>", -- 151664
+        fim_prefix = qwen_tag("fim_prefix"), -- 151659
+        fim_middle = qwen_tag("fim_middle"), -- 151660
+        fim_suffix = qwen_tag("fim_suffix"), -- 151661
+        -- fim_pad = qwen_tag("fim_pad"), -- 151662
+        repo_name = qwen_tag("repo_name"), -- 151663
+        file_sep = qwen_tag("file_sep"), -- 151664
 
-        im_start = "<|im_start|>", -- 151644
-        im_end = "<|im_end|>", -- 151645
-        endoftext = "<|endoftext|>", -- 151643
+        im_start = qwen_tag("im_start"), -- 151644
+        im_end = qwen_tag("im_end"), -- 151645
+        endoftext = qwen_tag("endoftext"), -- 151643
 
         -- * other tokens in logs, consider as needed:
         -- LF token         = 198 'Ċ'
-        -- 151653 '<|vision_end|>'
-        -- 151648 '<|box_start|>'
-        -- 151646 '<|object_ref_start|>'
-        -- 151649 '<|box_end|>'
-        -- 151655 '<|image_pad|>'
-        -- 151651 '<|quad_end|>'
-        -- 151647 '<|object_ref_end|>'
-        -- 151652 '<|vision_start|>'
-        -- 151654 '<|vision_pad|>'
-        -- 151656 '<|video_pad|>'
-        -- 151650 '<|quad_start|>'
-
+        -- 151653 qwen_tag('vision_end')
+        -- 151648 qwen_tag('box_start')
+        -- 151646 qwen_tag('object_ref_start')
+        -- 151649 qwen_tag('box_end')
+        -- 151655 qwen_tag('image_pad')
+        -- 151651 qwen_tag('quad_end')
+        -- 151647 qwen_tag('object_ref_end')
+        -- 151652 qwen_tag('vision_start')
+        -- 151654 qwen_tag('vision_pad')
+        -- 151656 qwen_tag('video_pad')
+        -- 151650 qwen_tag('quad_start')
     },
 }
 
