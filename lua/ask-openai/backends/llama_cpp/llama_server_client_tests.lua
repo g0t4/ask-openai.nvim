@@ -6,6 +6,7 @@ local str = require("devtools.tests.str")
 local json_client = require("ask-openai.backends.json_client")
 local LlamaServerClient = require("ask-openai.backends.llama_cpp.llama_server_client")
 local files = require("ask-openai.helpers.files")
+local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 
 _describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
     local base_url = "http://build21.lan:8013"
@@ -35,10 +36,7 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
     end
 
     local function split_messages(prompt)
-        local messages = vim.split(prompt, "<|start|>")
-        -- for i, message in ipairs(messages) do
-        --     print(string.format("MESSAGE: <|start|>%q", message))
-        -- end
+        local messages = vim.split(prompt, harmony.START)
         -- PRN get rid of first empty? maybe after asserting it exists?
         return vim.iter(messages):map(function(m) return str(m) end):totable()
     end
@@ -55,12 +53,12 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         local prompt = response.body.prompt
         -- print_prompt(prompt)
 
-        str(prompt):should_start_with("<|start|>")
+        str(prompt):should_start_with(harmony.START)
 
         local messages = split_messages(prompt)
 
         local first = messages[1]
-        expect(first == str("")) -- b/c started with <|start|>
+        expect(first == str("")) -- b/c started with harmony.START
         local system = messages[2]
 
         -- TODO str() needs to map string methods to the string! use it's instance_mt and selectively forward based on name?
@@ -84,15 +82,16 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
     end
 
     local function split_messages_keep_start(prompt)
-        --- split response so that it divides each message when it sees a <|start|> token
+        --- split response so that it divides each message when it sees a harmony.START token
+        ---     FYI I think I like this better in comments: harmony.START for the special token! TODO I can setup qwen.FIM_PREFIX etc! and use it in comments! for back to back tokens => try wrap in parens? (harmony.END)(harmony.START) key will be to have same name as I would use if using that same token in code via its constant... i.e. harmony.START!
         ---  DOES NOT return str() instances (easier to compare raw strings... only use str() for find etc)
-        ---  SKIPS fake first message when <|start|> is right at the start
-        local messages = vim.split(prompt, "<|start|>")
+        ---  SKIPS fake first message when harmony.START is right at the start
+        local messages = vim.split(prompt, harmony.START)
         if messages[1] == "" then
             -- this happens when the first message appropirately starts at the start of the prompt
             table.remove(messages, 1)
         end
-        return vim.iter(messages):map(function(m) return "<|start|>" .. m end):totable()
+        return vim.iter(messages):map(function(m) return harmony.START .. m end):totable()
     end
 
     it("builtin_tools => python v1_chat_completions", function()
@@ -120,8 +119,8 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         -- When you send a message containing Python code to python, it will be executed in a stateful Jupyter notebook environment. python will respond with the output of the execution or time out after 120.0 seconds. The drive at '/mnt/data' can be used to save and persist user files. Internet access for this session is UNKNOWN. Depends on the cluster.
 
 
-        -- * response (note no <|constrain|> but "code" format is set:
-        -- <|channel|>analysis<|message|>We need to test python tool. We'll run a simple command.<|end|><|start|>assistant<|channel|>commentary to=python code<|message|>print("Hello from python")
+        -- * response - note no (harmony.CONSTRAIN) but "code" format is set:
+        -- (harmony.CHANNEL)analysis(harmony.MESSAGE)We need to test python tool. We'll run a simple command.(harmony.END)(harmony.START)assistant(harmony.CHANNEL)commentary to=python code(harmony.MESSAGE)print("Hello from python")
 
     end)
 
@@ -146,7 +145,7 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         -- vim.print(response)
         -- FYI my bad, it is a JSON string and not double encoded, I was looking at JSON response and forgot I needed to decode it once to get rid of llama-server's wrapper basically
         --   once I did that it was just "foo the bar" and had some " inside that were escaped:
-        --    <|channel|>analysis<|message|>We need to edit hello.lua. Use apply_patch.<|end|><|start|>assistant<|channel|>commentary to=functions.apply_patch <|constrain|>json<|message|>"*** Begin Patch\n*** Update File: hello.lua\n@@\n-print(\"Hello\")\n+print(\"Hello Wor
+        --    (harmony.CHANNEL)analysis(harmony.MESSAGE)We need to edit hello.lua. Use apply_patch.(harmony.END)(harmony.START)assistant(harmony.CHANNEL)commentary to=functions.apply_patch (harmony.CONSTRAIN)json(harmony.MESSAGE)"*** Begin Patch\n*** Update File: hello.lua\n@@\n-print(\"Hello\")\n+print(\"Hello Wor
     end)
 
 
@@ -171,14 +170,14 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         --   though, maybe I can coerce it to!
         --   TODO I need to test with full apply_patch.md dev message mods to see how models respond
         --
-        -- <|channel|>analysis<|message|>We need to modify hello.lua. Use apply_patch.<|end|><|start|>assistant<|channel|>commentary to=functions.apply_patch <|constrain|>json<|message|>{
+        -- (harmony.CHANNEL)analysis(harmony.MESSAGE)We need to modify hello.lua. Use apply_patch.(harmony.END)(harmony.START)assistant(harmony.CHANNEL)commentary to=functions.apply_patch (harmony.CONSTRAIN)json(harmony.MESSAGE){
         --   "patch": "*** Begin Patch\n*** Update File: hello.lua\n@@\n-print(\"Hello\")\n+print(\"Hello World\")\n*** End Patch"
         -- }
     end)
 
     it("apply_patch - with single, string argument only (not dict)", function()
         local expected_dev_apply_patch_with_string_arg = [[
-<|start|>developer<|message|># Instructions
+]].. harmony.START .. [[developer]] .. harmony.MESSAGE .. [[# Instructions
 
 Your name is Qwenny
 You can respond with markdown
@@ -192,7 +191,7 @@ namespace functions {
 // Patch a file
 type apply_patch = (_: string) => any;
 
-} // namespace functions<|end|>]]
+} // namespace functions]] .. harmony.END
 
 
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition.json")
@@ -212,15 +211,15 @@ type apply_patch = (_: string) => any;
 
         -- 2. FYI! also see notes in lua/ask-openai/tools/inproc/apply_patch.lua
         -- 3. TODO? content type
-        --    FYI MODEL responds with <|constrain|>json in both cases dict/string... former is as double encoded dict (yikes) and later is as double encoded standalone string
+        --    FYI MODEL responds with (harmony.CONSTRAIN)json in both cases dict/string... former is as double encoded dict (yikes) and later is as double encoded standalone string
         --    TODO can I just set it empty (include field .content_type set to "")
         --
         -- 4. TODO then when returning prior tool call, make sure content_type is set appropriately and that the template maps it correctly
-        --    - this is the return trip for <|constrain|>string (or w/e the model uses)
+        --    - this is the return trip for (harmony.CONSTRAIN)string (or w/e the model uses)
     end)
     it("apply_patch - with single patch property in a dictionary", function()
-        local expected_dev_apply_patch_with_dict_arg = [[
-<|start|>developer<|message|># Instructions
+        local expected_dev_apply_patch_with_dict_arg = harmony.START .. [[
+developer]] .. harmony.MESSAGE .. [[# Instructions
 
 Your name is Qwenny
 You can respond with markdown
@@ -237,7 +236,7 @@ type apply_patch = (_: {
 patch: string,
 }) => any;
 
-} // namespace functions<|end|>]]
+} // namespace functions]] .. harmony.END
 
 
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition-dict.json")
@@ -273,13 +272,13 @@ patch: string,
         -- local actual_prompt = files.read_file_string("lua/ask-openai/backends/llama_cpp/jinja/tests/full_date_run_command_prompt.harmony")
         -- should.be_same_colorful_diff(actual_prompt, prompt) -- FYI don't directly compare
 
-        str(prompt):should_start_with("<|start|>")
+        str(prompt):should_start_with(harmony.START)
         local expected_thinking
-        = [[<|start|>assistant<|channel|>analysis<|message|>We need to run date command.<|end|>]]
+        = harmony.START .. [[assistant]] .. harmony.CHANNEL .. [[analysis]] .. harmony.MESSAGE .. [[We need to run date command.]] .. harmony.END
 
         local expected_tool_call_request
-        = [[<|start|>assistant<|channel|>commentary to=functions.run_command <|constrain|>json<|message|>{"command":"date"}<|call|>]]
-        -- CONFIRMED per spec, assistant tool call _REQUESTS_, recipient `to=` comes _AFTER_ <|channel|>commentary
+        = harmony.START .. [[assistant]] .. harmony.CHANNEL .. [[commentary to=functions.run_command ]] .. harmony.CONSTRAIN .. [[json]] .. harmony.MESSAGE .. [[{"command":"date"}]] .. harmony.CALL
+        -- CONFIRMED per spec, assistant tool call _REQUESTS_, recipient `to=` comes _AFTER_ (harmony.CHANNEL)commentary
         --    but, it can also come before (in role) ...
         --    in testing:
         --      model generates AFTER  (see test below)
@@ -289,8 +288,8 @@ patch: string,
         --      and my tree-sitter grammar handles both
 
         local expected_tool_result
-        = [[<|start|>functions.run_command to=assistant<|channel|>commentary<|message|>{"content":[{"text":"Sun Nov 30 19:35:10 CST 2025\n","type":"text","name":"STDOUT"}]}<|end|>]]
-        -- CONFIRMED per spec, for tool results, recipient `to=` comes _BEFORE_ <|channel|>commentary
+        = harmony.START .. [[functions.run_command to=assistant]] .. harmony.CHANNEL .. [[commentary]] .. harmony.MESSAGE .. [[{"content":[{"text":"Sun Nov 30 19:35:10 CST 2025\n","type":"text","name":"STDOUT"}]}]] .. harmony.END
+        -- CONFIRMED per spec, for tool results, recipient `to=` comes _BEFORE_ (harmony.CHANNEL)commentary
         --   IIRC spec doesn't mention recipient in the channel (after channel/commentary) for tool result messages
 
         local messages = split_messages_keep_start(prompt)
@@ -321,7 +320,7 @@ patch: string,
         should.be_same_colorful_diff(actual_tool_result, expected_tool_result)
     end)
 
-    it("model formats tool call request with recipient AFTER <|channel|>commentary to=functions.xyz (not before/in the role)", function()
+    it("model formats tool call request with recipient AFTER " .. harmony.CHANNEL .. "commentary to=functions.xyz (not before/in the role)", function()
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/request_tool_call.json")
 
         local response = LlamaServerClient.v1_chat_completions(base_url, body)
@@ -341,11 +340,11 @@ patch: string,
         local raw = response.body.__verbose.content
         -- vim.print(raw)
         -- FYI sample full response:
-        -- <|channel|>analysis<|message|>The user asks to check the time. We need to get current system time. Use run_command to execute date. Use appropriate command. On macOS (darwin) 'date' prints. We'll run.<|end|><|start|>assistant<|channel|>commentary to=functions.run_command <|constrain|>json<|message|>{
+        -- (harmony.CHANNEL)analysis(harmony.MESSAGE)The user asks to check the time. We need to get current system time. Use run_command to execute date. Use appropriate command. On macOS (darwin) 'date' prints. We'll run.(harmony.END)(harmony.START)assistant(harmony.CHANNEL)commentary to=functions.run_command (harmony.CONSTRAIN)json(harmony.MESSAGE){
         -- "command": "date"
         -- }
 
-        local likely = [[<|start|>assistant<|channel|>commentary to=functions.run_command <|constrain|>json<|message|>]]
+        local likely = harmony.START .. [[assistant]] .. harmony.CHANNEL .. [[commentary to=functions.run_command ]] .. harmony.CONSTRAIN .. [[json]] .. harmony.MESSAGE
         str(raw):should_contain(likely)
     end)
 end)
