@@ -21,14 +21,17 @@ function M.get_gptoss_max_tokens_for_level(level)
     end
 end
 
+local open_tag = "<|"
+local close_tag = "|>"
+
 M.harmony = {
-    RETURN = "<|return|>",
-    CONSTRAIN = "<|constrain|>",
-    CHANNEL = "<|channel|>",
-    START = "<|start|>",
-    END = "<|end|>",
-    MESSAGE = "<|message|>",
-    CALL = "<|call|>",
+    RETURN = open_tag .. "return" .. close_tag,
+    CONSTRAIN = open_tag .. "constrain" .. close_tag,
+    CHANNEL = open_tag .. "channel" .. close_tag,
+    START = open_tag .. "start" .. close_tag,
+    END = open_tag .. "end" .. close_tag,
+    MESSAGE = open_tag .. "message" .. close_tag,
+    CALL = open_tag .. "call" .. close_tag,
 }
 
 M.special_tokens = {
