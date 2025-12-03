@@ -21,6 +21,16 @@ function M.get_gptoss_max_tokens_for_level(level)
     end
 end
 
+M.harmony = {
+    RETURN = "<|return|>",
+    CONSTRAIN = "<|constrain|>",
+    CHANNEL = "<|channel|>",
+    START = "<|start|>",
+    END = "<|end|>",
+    MESSAGE = "<|message|>",
+    CALL = "<|call|>",
+}
+
 M.special_tokens = {
 
     -- https://huggingface.co/openai/gpt-oss-20b/blob/main/tokenizer_config.json
@@ -28,7 +38,7 @@ M.special_tokens = {
 
     -- top level tokens mapped:
     bos_token = "<|startoftext|>",
-    eos_token = "<|return|>",
+    eos_token = M.harmony.RETURN,
     pad_token = "<|endoftext|>",
 
     -- cat tokenizer_config.json | jq .'added_tokens_decoder | to_entries | .[] | "[\"\(.key)\"]=\"\(.value.content)\"," ' -r

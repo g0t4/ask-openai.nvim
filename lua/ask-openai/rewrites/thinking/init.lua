@@ -1,4 +1,5 @@
 local log = require('ask-openai.logs.logger').predictions()
+local harmony = require('ask-openai.backends.models.gptoss.tokenizer').harmony
 
 local M = {
     dots = require("ask-openai.frontends.thinking.dots"),
@@ -29,20 +30,19 @@ function M.strip_thinking_tags(lines)
     -- * allow either <think> or harmony!
     local open_start, open_end = text:find("^%s*<" .. M.thinking_tag .. ">") -- <think> approach
     if open_start == nil then
-        open_start, open_end = text:find("^<|channel|>analysis<|message|>")
+        open_start, open_end = text:find("^" .. harmony.CHANNEL .. "analysis" .. harmony.MESSAGE)
     end
     -- log:trace("combined_text", text)
     if not open_start then
         return lines, M.ThinkingStatus.NoThinkingTags
     end
 
-
     -- PRN ensure same ending type as start type, NBD unless talking to <think> model about harmony :)
 
     -- * allow either </think> or harmony!
     local close_start, close_end = text:find("</" .. M.thinking_tag .. ">", open_end + 1) -- </think>
     if not close_start then
-        close_start, close_end = text:find("<|end|>", open_end + 1)
+        close_start, close_end = text:find(harmony.END, open_end + 1)
     end
 
     if not close_start then

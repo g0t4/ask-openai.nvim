@@ -24,33 +24,9 @@ function M.new_gptoss_chat_body_llama_server(request_body)
     local max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(level)
 
     local recommended = {
-        -- https://huggingface.co/openai/gpt-oss-20b/blob/main/generation_config.json
-        --   "bos_token_id": 199998,
-        --   "do_sample": true,
-        --   "eos_token_id": [
-        --     200002,
-        --     199999,
-        --     200012
-        --   ],
-        --   "pad_token_id": 199999,
-        --   "transformers_version": "4.55.0.dev0"
 
-        -- -- THESE aren't used afaict... just drop them if I don't know wtf is supposed to happen and what the real param names are... let the model's defaults kick in until there's an issue
-        -- bos_token_id = gptoss_tokenizer.special_tokens.STARTOFTEXT,
-        -- do_sample = true,
-        -- eos_token_id = {
-        --     -- FYI 99% sure llama-server is not using this for stop tokens
-        --     gptoss_tokenizer.special_tokens.RETURN,
-        --     -- gptoss_tokenizer.special_tokens.END, -- umm I don't think I want this set for gptoss else multi harmony response should theoretically stop on end of first message (i.e. end of analysis)
-        --     gptoss_tokenizer.special_tokens.CALL,
-        --     gptoss_tokenizer.special_tokens.ENDOFTEXT,
-        -- },
-        -- pad_token_id = gptoss_tokenizer.special_tokens.ENDOFTEXT,
-
-        -- gh repo has more recommends
-        --   We recommend sampling with temperature=1.0 and top_p=1.0.
+        -- We recommend sampling with temperature=1.0 and top_p=1.0.
         --   https://github.com/openai/gpt-oss?tab=readme-ov-file#recommended-sampling-parameters
-        --
         temperature = 1.0,
         top_p = 1.0,
 
@@ -58,10 +34,6 @@ function M.new_gptoss_chat_body_llama_server(request_body)
             reasoning_effort = level,
         },
         max_tokens = max_tokens
-
-
-        -- TODO test/validate these settings
-        -- TODO also adjust per circumstance? (pass to override then)
     }
     return default_to_recommended(request_body, recommended)
 end
@@ -72,20 +44,10 @@ function M.new_qwen3coder_llama_server_chat_body(request_body) -- this is a dupl
     local recommended = {
         -- official recommended settings (for transformers):
         -- https://huggingface.co/Qwen/Qwen3-Coder-480B-A35B-Instruct/blob/main/generation_config.json
-        --   "pad_token_id": 151643,
-        --   "do_sample": true,
-        --   "eos_token_id": [
-        --     151645,
-        --     151643
-        --   ],
         --   "repetition_penalty": 1.05,
         --   "temperature": 0.7,
         --   "top_p": 0.8,
         --   "top_k": 20
-        --
-        -- pad_token_id = 151643, -- no param in llama-server
-        -- do_sample = true, -- no param in llama-server
-        -- eos_token_id = { 151645, 151643 }, -- no param in llama-server
         repeat_penalty = 1.05,
         temperature = 0.7,
         top_p = 0.8,
