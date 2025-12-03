@@ -80,6 +80,11 @@ function M.harmony.msg_assistant_json_tool_call(tool_name, output)
     return M.harmony.start_assistant_json_tool_call(tool_name) .. M.harmony.message_call(output)
 end
 
+-- * prefill builders
+function M.harmony.force_final()
+    return M.harmony.START .. "assistant" .. M.harmony.CHANNEL .. "final" .. M.harmony.MESSAGE
+end
+
 -- local lesser_used = {
 --     -- move to harmony above when used externally
 --     ENDOFTEXT = close_tag .. "endoftext" .. open_tag,
