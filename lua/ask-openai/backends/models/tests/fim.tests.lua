@@ -88,11 +88,12 @@ describe("starcoder2", function()
         }
         local prompt = fim.starcoder2.get_fim_prompt(request)
 
-        local expected = "<repo_name>my_repo_name<file_sep>nvim-recent-yanks.txt\nyanks"
-            .. "<file_sep><fim_prefix>path/to/current.lua\n"
+        local expected = starcoder.REPO_NAME .. "my_repo_name" .. starcoder.FILE_SEP .. "nvim-recent-yanks.txt\nyanks"
+            .. starcoder.FILE_SEP .. starcoder.FIM_PREFIX .. "path/to/current.lua\n"
             .. "foo\nthe\nprefix"
-            .. "<fim_suffix>bar\nbaz"
-            .. "<fim_middle>"
+            .. starcoder.FIM_SUFFIX .. "bar\nbaz"
+            .. starcoder.FIM_MIDDLE
+
 
         should.be_equal(expected, prompt)
     end)
