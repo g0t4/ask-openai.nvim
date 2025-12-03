@@ -408,10 +408,10 @@ M.mellum = {
         slash_user = mellum_tag("/user"),
 
 
-        think = "<think>",
-        slash_think = "</think>",
+        think = mellum_tag("think"),
+        slash_think = mellum_tag("/think"),
 
-        gh_stars = "<gh_stars>",
+        gh_stars = mellum_tag("gh_stars"),
 
         -- PRN was base trained on commit messages? or were these just reserved for future use?
         commit_after = "<commit_after>",
