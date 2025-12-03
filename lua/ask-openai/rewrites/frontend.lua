@@ -17,6 +17,7 @@ local tool_router = require("ask-openai.tools.router")
 local model_params = require("ask-openai.questions.models.params")
 local MessageBuilder = require("ask-openai.rewrites.message_builder")
 local HLGroups = require("ask-openai.hlgroups")
+local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 
 ---@class RewriteFrontend : StreamingFrontend
 local RewriteFrontend = {}
@@ -460,7 +461,10 @@ and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
     -- local rewritten_text = M.selection.original_text .. "\nSTREAMING NEW CONTENT\nthis is fun"
 
     local harmony_gptoss_example =
-    [[<|channel|>analysis<|message|>User wrote "test". Likely just a test message. They might want ChatGPT to respond? We should respond politely. Maybe just say "Hello! How can I help?"<|end|>Hello! 👋 How can I assist you today?]]
+        harmony.CHANNEL .. "analysis" ..
+        harmony.MESSAGE .. [[User wrote "test". Likely just a test message. They might want ChatGPT to respond? We should respond politely. Maybe just say "Hello! How can I help?"]] ..
+        harmony.END .. [[Hello! 👋 How can I assist you today?]]
+
     local rewritten_text = harmony_gptoss_example .. RewriteFrontend.selection.original_text .. "\nSIMULATED HARMONY EXAMPLE"
 
     -- FYI can split on new line to simulate streaming lines instead of words

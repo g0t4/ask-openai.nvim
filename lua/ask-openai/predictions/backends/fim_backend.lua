@@ -108,8 +108,8 @@ function FimBackend:body_for()
         end
 
 
-        -- codellama uses <EOT> that seems to not be set as param in modelfile (at least for FIM?)
-        --   without this change you will see <EOT> in code at end of completions
+        -- codellama uses (codellama.EOT) that seems to not be set as param in modelfile (at least for FIM?)
+        --   without this change you will see (codellama.EOT) in code at end of completions
         -- ollama show codellama:7b-code-q8_0 --parameters # => no stop param
         body.options.stop = { meta.codellama.sentinel_tokens.EOT }
 
