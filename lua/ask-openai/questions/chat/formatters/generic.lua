@@ -38,6 +38,9 @@ function M.format(lines, tool_call, message)
         return
     end
 
+    -- TODO add failure recovery to building messages for logs... do not kill things b/c a formatter failed!
+    --  allow agent to continue even if formatters are FUUUUU
+
     local is_mcp_like_output = tool_call.call_output and tool_call.call_output:is_mcp()
     if is_mcp_like_output then
         ---@type MCPToolResultContent[]
@@ -47,7 +50,14 @@ function M.format(lines, tool_call, message)
         for _, output in ipairs(content) do
             local name = output.name
             local text = tostring(output.text or "")
-            if name == "STDOUT" then
+            if not text then
+                -- PRN log and/or skip?
+                if name then
+                    lines:append_text(name)
+                else
+                    lines:append_text("[ empty text ]")
+                end
+            elseif name == "STDOUT" then
                 if text then
                     lines:append_STDOUT(text)
                 end
@@ -59,11 +69,17 @@ function M.format(lines, tool_call, message)
                 if output.type == "text" then
                     local is_multi_line = text:match("\n")
                     if is_multi_line then
-                        lines:append_text(name)
+                        if name then
+                            lines:append_text(name .. ":")
+                        end
                         lines:append_text(text)
                     else
                         -- single line
-                        lines:append_text(name .. ": " .. text)
+                        if name then
+                            lines:append_text(name .. ": " .. text)
+                        else
+                            lines:append_text(text)
+                        end
                     end
                 else
                     lines:append_unexpected_text("  UNEXPECTED type: \n" .. vim.inspect(output))
