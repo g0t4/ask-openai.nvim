@@ -176,8 +176,7 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
     end)
 
     it("apply_patch - with single, string argument only (not dict)", function()
-        local expected_dev_apply_patch_with_string_arg = [[
-]] .. harmony.msg_developer [[# Instructions
+        local expected_dev_apply_patch_with_string_arg = harmony.msg_developer [[# Instructions
 
 Your name is Qwenny
 You can respond with markdown
