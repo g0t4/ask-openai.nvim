@@ -44,10 +44,18 @@ function ChatThread:next_curl_request_body()
     --     local fixed_thoughts = HarmonyRawFimPromptBuilder.deep_thoughts_about_fim
 
     local body = {
-        -- TODO! clone so I can manipulate messages sent back?
+        -- FYI keep in mind the messages you send DO not mirror the ones you've received...
+        --  each turn adds one assistant response message and then you feed in a user message (follow up)...
+        --    but if you send prefill assistant message... you'll want to discard that in your response messages (if it were kept somehow, not sure it is, cannot quite recall)
+        --      you only want to collect the synthetic, rendered assistant message into ONE new assistant message
+        --        could be analysis + final
+        --        could be analysis + tool call
+        --        thse are the two likely paths right now
+        --        you can prefill that analysis
+        --        you can actually prefill bogus messages too!
         messages = self.messages,
     }
-    -- TODO! YES DROP THINKING HERE WHEN NO LONGER NEEDED (FOR ANY MESSAGE TYPE, NOT JUST gptoss Tool Calls in CoT
+    -- PRN keep/drop thinking myself? btw clone messages before changing them
     -- merge params onto root of body:
     for k, v in pairs(self.params) do
         body[k] = v
