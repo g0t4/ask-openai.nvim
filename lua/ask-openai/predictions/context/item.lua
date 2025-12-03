@@ -1,13 +1,13 @@
 ---@class ContextItem
----@field content string
 ---@field filename string
+---@field content string
 ContextItem = {}
 ContextItem.__index = ContextItem
 
----@param content string
 ---@param filename string
+---@param content string
 ---@return ContextItem
-function ContextItem:new(content, filename)
+function ContextItem:new(filename, content)
     local instance = {
         content = content,
         filename = filename

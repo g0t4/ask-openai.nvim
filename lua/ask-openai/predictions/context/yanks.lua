@@ -113,7 +113,7 @@ function M.get_context_item()
             ".. yanked from " .. yank.file .. ":\n" ..
             table.concat(yank.content, '\n') .. '\n\n'
     end
-    return ContextItem:new(content, "nvim-recent-yanks.txt")
+    return ContextItem:new("nvim-recent-yanks.txt", content)
 end
 
 function M.get_prompt()

@@ -57,16 +57,16 @@ function M.get_context_items()
     M.ensure_read()
     local contexts = {}
     if M._global_context then
-        table.insert(contexts, ContextItem:new(M._global_context, "global.md"))
+        table.insert(contexts, ContextItem:new("global.md", M._global_context))
     end
 
     local ft = vim.bo.filetype
     if ft and M._filetype_contexts[ft] then
-        table.insert(contexts, ContextItem:new(M._filetype_contexts[ft], ft .. ".md"))
+        table.insert(contexts, ContextItem:new(ft .. ".md", M._filetype_contexts[ft]))
     end
 
     if M._project_context then
-        table.insert(contexts, ContextItem:new(M._project_context, "project.md"))
+        table.insert(contexts, ContextItem:new("project.md", M._project_context))
     end
 
     return contexts

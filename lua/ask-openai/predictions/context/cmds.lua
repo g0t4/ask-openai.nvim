@@ -9,7 +9,7 @@ function M.get_context_items()
     local items = {}
     for _, cmd in ipairs(M.commands) do
         local output = vim.api.nvim_exec(cmd, true)
-        table.insert(items, ContextItem:new(output, cmd))
+        table.insert(items, ContextItem:new(cmd, output))
     end
     return items
 end

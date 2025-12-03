@@ -53,7 +53,7 @@ function M.get_context_items()
         -- TODO parse the diff into hunks and then each hunk into a ContextItem
         -- NOTE: the diff is already split into hunks, so we can just use the diff_text
         --       for each hunk
-        local context_item = ContextItem:new(diff_text, file_name)
+        local context_item = ContextItem:new(file_name, diff_text)
         table.insert(items, context_item)
     end
     return items
