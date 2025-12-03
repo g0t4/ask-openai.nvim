@@ -39,6 +39,9 @@ function ChatWindow:new()
     vim.opt_local.foldenable = true
     vim.opt_local.foldlevel = 0 -- CLOSE all folds with higher number, thus 0 == ALL (equiv to zM => foldenable + foldlevel=0)
 
+    -- assistants tend to write long paragraphs w/o \n line breaks, definitely need to wrap!
+    vim.opt_local.wrap = true
+
     return instance
 end
 
