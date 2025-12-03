@@ -1,6 +1,7 @@
 local fim = require("ask-openai.backends.models.fim")
 local qwen = fim.qwen25coder.sentinel_tokens
 local starcoder = fim.starcoder2.sentinel_tokens
+local mellum = fim.mellum.sentinel_tokens
 local PrefixSuffixChunk = require("ask-openai.predictions.prefix_suffix")
 
 local test_setup = require("ask-openai.helpers.test_setup")
@@ -152,12 +153,13 @@ describe("mellum", function()
 
         -- TODO is repo_name ok here? or was it not trained with?
         --  only spot I've seen mention: https://huggingface.co/JetBrains/Mellum-4b-base/blob/main/special_tokens_map.json
-        local expected = "<reponame>my_mellum_repo<filename>nvim-recent-yanks.txt\nyanks"
+        local expected = mellum.REPO_NAME .. "my_mellum_repo" .. mellum.FILE_SEP .. "nvim-recent-yanks.txt\nyanks"
             -- NOTE the filename comes before the fim_suffix tag (unlike StarCoder2 where filename comes after fim_prefix tag)
-            .. "<filename>path/to/current.lua\n"
-            .. "<fim_suffix>bar\nbaz"
-            .. "<fim_prefix>foo\nthe\nprefix"
-            .. "<fim_middle>"
+            .. mellum.FILE_SEP .. "path/to/current.lua\n"
+            .. mellum.FIM_SUFFIX .. "bar\nbaz"
+            .. mellum.FIM_PREFIX .. "foo\nthe\nprefix"
+            .. mellum.FIM_MIDDLE
+
         should.be_equal(expected, prompt)
     end)
 

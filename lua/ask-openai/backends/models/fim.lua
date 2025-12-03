@@ -288,14 +288,14 @@ M.mellum = {
     sentinel_tokens = {
 
         -- FIM
-        fim_prefix = mellum_tag("fim_prefix"),
-        fim_middle = mellum_tag("fim_middle"),
-        fim_suffix = mellum_tag("fim_suffix"),
-        fim_pad    = mellum_tag("fim_pad"),
+        FIM_PREFIX = mellum_tag("fim_prefix"),
+        FIM_MIDDLE = mellum_tag("fim_middle"),
+        FIM_SUFFIX = mellum_tag("fim_suffix"),
+        FIM_PAD    = mellum_tag("fim_pad"),
         -- FYI file_sep => filename, repo_name => reponame... can put that back if the prompt is unique to mellum anyways
         --  but right now I suspect it will be the same as qwen25coder and starcoder2
-        file_sep   = mellum_tag("filename"),
-        repo_name  = mellum_tag("reponame"),
+        FILE_SEP   = mellum_tag("filename"),
+        REPO_NAME  = mellum_tag("reponame"),
 
 
         -- roles:
@@ -390,11 +390,11 @@ function M.mellum.get_fim_prompt(request)
 
     -- * repo_name
     local repo_name = request.get_repo_name()
-    local prompt = tokens.repo_name .. repo_name
+    local prompt = tokens.REPO_NAME .. repo_name
 
     ---@param context_item ContextItem
     local function append_file_non_fim(context_item)
-        local non_fim_file = tokens.file_sep .. context_item.filename .. "\n" .. context_item.content
+        local non_fim_file = tokens.FILE_SEP .. context_item.filename .. "\n" .. context_item.content
         prompt = prompt .. non_fim_file
     end
 
@@ -410,14 +410,14 @@ function M.mellum.get_fim_prompt(request)
         current_file_path = ""
     end
 
-    local fim_file_contents = tokens.file_sep
+    local fim_file_contents = tokens.FILE_SEP
         .. current_file_path
         .. "\n"
-        .. tokens.fim_suffix
+        .. tokens.FIM_SUFFIX
         .. request.suffix
-        .. tokens.fim_prefix
+        .. tokens.FIM_PREFIX
         .. request.prefix
-        .. tokens.fim_middle
+        .. tokens.FIM_MIDDLE
 
     prompt = prompt .. fim_file_contents
 
