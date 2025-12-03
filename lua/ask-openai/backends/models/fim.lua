@@ -3,7 +3,7 @@ local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.predictions.ansi")
 local ChatThread = require("ask-openai.questions.chat.thread")
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
-local HarmonyRawFimPromptBuilder = require("ask-openai.backends.models.fim_harmony")
+local fim_harmony = require("ask-openai.backends.models.fim_harmony")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 
 local M = {}
@@ -36,10 +36,10 @@ function M.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(request)
     -- So the correct insertion is 'a'.
     -- {CHANNEL}final{MESSAGE}
 
-    local builder = HarmonyRawFimPromptBuilder.new()
+    local builder = fim_harmony.new()
         :developer()
-        :user(HarmonyRawFimPromptBuilder.context_user_msg(request))
-        :user(HarmonyRawFimPromptBuilder.fim_prompt(request))
+        :user(fim_harmony.context_user_msg(request))
+        :user(fim_harmony.fim_prompt(request))
         :set_thinking()
         :start_assistant_final_response() -- this forces the model to respond w/o any further thinking
 
@@ -56,7 +56,7 @@ function M.gptoss.get_fim_chat_messages(request, level)
     --    why not work around that or encourage that?
     --    I can even diff the current line vs the generated to see what to insert so I don't have to do extmarks that replace the full line
 
-    local dev = HarmonyRawFimPromptBuilder.developer_message
+    local dev = fim_harmony.developer_message
     -- FYI if/when you test out using partial thinking with raw template above, then put this into the shared developer message
     dev = dev .. [[
 Make sure to practice the code change before you return a suggestion. Take the cursor line (at least) and type it out with the new code and make sure it is valid, correct code.
@@ -64,13 +64,13 @@ Make sure to practice the code change before you return a suggestion. Take the c
 
     local messages = {
         TxChatMessage:developer(dev), -- FYI developer or system message must be first, and ONLY ONE is allowed
-        TxChatMessage:user(HarmonyRawFimPromptBuilder.context_user_msg(request)),
-        TxChatMessage:user(HarmonyRawFimPromptBuilder.fim_prompt(request)),
+        TxChatMessage:user(fim_harmony.context_user_msg(request)),
+        TxChatMessage:user(fim_harmony.fim_prompt(request)),
     }
 
     if level == "off" then
         -- TODO get rid of raw prompt approach above? or just keep it around as "RETIRED" ??
-        local fixed_thoughts = HarmonyRawFimPromptBuilder.deep_thoughts_about_fim
+        local fixed_thoughts = fim_harmony.deep_thoughts_about_fim
 
         -- FYI "{START}assistant" is at end of prompt (see add_generation_prompt in jinja template + in chat logic)
         --   https://github.com/ggml-org/llama.cpp/blob/7d77f0732/models/templates/openai-gpt-oss-120b.jinja#L328-L330

@@ -4,16 +4,16 @@ local dedupe = require("ask-openai.rag.client.dedupe")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 local qwen = require("ask-openai.backends.models.fim").qwen25coder.sentinel_tokens
 
----@class HarmonyRawFimPromptBuilder
+---@class HarmonyFimPromptBuilder
 ---@field _parts string[]
-local HarmonyRawFimPromptBuilder = {}
-HarmonyRawFimPromptBuilder.__index = HarmonyRawFimPromptBuilder
+local HarmonyFimPromptBuilder = {}
+HarmonyFimPromptBuilder.__index = HarmonyFimPromptBuilder
 
----@return HarmonyRawFimPromptBuilder self
-function HarmonyRawFimPromptBuilder.new()
+---@return HarmonyFimPromptBuilder self
+function HarmonyFimPromptBuilder.new()
     local self = setmetatable({
         _parts = {}
-    }, HarmonyRawFimPromptBuilder)
+    }, HarmonyFimPromptBuilder)
     return self
 end
 
@@ -22,8 +22,8 @@ end
 --- - meta information like
 ---   - knowledge cutoff
 ---   - built-in tools
----@return HarmonyRawFimPromptBuilder self
-function HarmonyRawFimPromptBuilder:system()
+---@return HarmonyFimPromptBuilder self
+function HarmonyFimPromptBuilder:system()
     -- reasoning level: high/medium/low - https://arxiv.org/html/2508.10925v1#S2.SS5.SSS2
     -- I could add a streamdeck button/toggle to switch level
     -- - And instead of forcing instant response, I could start the thoughts section and let it finish it.
@@ -46,7 +46,7 @@ Reasoning: ]] .. api.get_reasoning_level() [[
     return self
 end
 
-HarmonyRawFimPromptBuilder.developer_message = vim.trim([[
+HarmonyFimPromptBuilder.developer_message = vim.trim([[
 You are completing code from a Neovim plugin.
 As the user types, the plugin suggests code completions based on their cursor position marked with: ]] .. qwen.FIM_MIDDLE .. [[
 The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near ]] .. qwen.FIM_MIDDLE .. [[
@@ -74,14 +74,14 @@ and NOT:
 --- developer message (harmony spec):
 --- - instructions for the model (what is normally considered the “system prompt”)
 --- - and available function tools
----@return HarmonyRawFimPromptBuilder self
-function HarmonyRawFimPromptBuilder:developer()
-    table.insert(self._parts, harmony.START .. "developer" .. harmony.MESSAGE .. HarmonyRawFimPromptBuilder.developer_message .. harmony.END)
+---@return HarmonyFimPromptBuilder self
+function HarmonyFimPromptBuilder:developer()
+    table.insert(self._parts, harmony.START .. "developer" .. harmony.MESSAGE .. HarmonyFimPromptBuilder.developer_message .. harmony.END)
     return self
 end
 
 ---@param request FimBackend
-function HarmonyRawFimPromptBuilder.context_user_msg(request)
+function HarmonyFimPromptBuilder.context_user_msg(request)
     local context_lines = {
         "Here is context that's automatically provided, that MAY be relevant.",
         "repo: " .. request:get_repo_name(),
@@ -135,7 +135,7 @@ General project code rules:
 end
 
 ---@param request FimBackend
-function HarmonyRawFimPromptBuilder.fim_prompt(request)
+function HarmonyFimPromptBuilder.fim_prompt(request)
     -- * user message
     local current_file_relative_path = request.inject_file_path_test_seam()
     local file_prefix = ""
@@ -159,8 +159,8 @@ end
 --- user message (harmony spec):
 --- - Typically representing the input to the model
 ---@param message string
----@return HarmonyRawFimPromptBuilder self
-function HarmonyRawFimPromptBuilder:user(message)
+---@return HarmonyFimPromptBuilder self
+function HarmonyFimPromptBuilder:user(message)
     if not message then
         -- don't add an empty message
         return self
@@ -187,7 +187,7 @@ end
 --
 -- vim.trim - strip leading/trailing whitespace so I can format my [[ ]] literal as I see fit
 -- - also harmony has no \n between messages, \n should only come within a message text field
-HarmonyRawFimPromptBuilder.deep_thoughts_about_fim = vim.trim([[
+HarmonyFimPromptBuilder.deep_thoughts_about_fim = vim.trim([[
 The user is asking for a code completion.
 They provided the existing code with a ]] .. qwen.FIM_MIDDLE .. [[ tag where their cursor is currently located. Whatever I provide will replace ]] .. qwen.FIM_MIDDLE .. [[
 To clarify, the code before ]] .. qwen.FIM_MIDDLE .. [[ is the prefix. The code after is the suffix.
@@ -205,15 +205,15 @@ I will fill-in-the-middles in the most awesome way!
 --   MAYBE mention its indentation too instead of other indentation comments above (I can say this line has X indent so I need to respect that)
 --   IF there's code before and after the cursor on the current line, reflect that this is likely just a fill in the middle of this line only, not a multi line response (not likely anyways)
 
----@return HarmonyRawFimPromptBuilder self
-function HarmonyRawFimPromptBuilder:set_thinking()
+---@return HarmonyFimPromptBuilder self
+function HarmonyFimPromptBuilder:set_thinking()
     table.insert(self._parts,
-        harmony.msg_assistant_analysis(HarmonyRawFimPromptBuilder.deep_thoughts_about_fim))
+        harmony.msg_assistant_analysis(HarmonyFimPromptBuilder.deep_thoughts_about_fim))
     return self
 end
 
----@return HarmonyRawFimPromptBuilder self
-function HarmonyRawFimPromptBuilder:start_assistant_final_response()
+---@return HarmonyFimPromptBuilder self
+function HarmonyFimPromptBuilder:start_assistant_final_response()
     -- make it so the model only ends with the prediction and maybe harmony.END
     -- FYI in testing harmony.END is not showing up, which is fine by me! 99% sure llama-server detects that as stop token and it normally won't return those unless configured to do so
     table.insert(self._parts, harmony.force_final())
@@ -221,9 +221,9 @@ function HarmonyRawFimPromptBuilder:start_assistant_final_response()
 end
 
 ---@return string prompt
-function HarmonyRawFimPromptBuilder:build_raw_prompt()
+function HarmonyFimPromptBuilder:build_raw_prompt()
     -- join w/ no character (do not use \n)
     return table.concat(self._parts, "")
 end
 
-return HarmonyRawFimPromptBuilder
+return HarmonyFimPromptBuilder
