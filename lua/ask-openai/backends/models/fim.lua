@@ -134,9 +134,9 @@ M.bytedance_seed_coder = {
         },
     },
     sentinel_tokens = {
-        fim_suffix = bytedance_seed_coder_fim_tag("fim-suffix"), --
-        fim_prefix = bytedance_seed_coder_fim_tag("fim-prefix"), --
-        fim_middle = bytedance_seed_coder_fim_tag("fim-middle"), --
+        FIM_SUFFIX = bytedance_seed_coder_fim_tag("fim-suffix"), --
+        FIM_PREFIX = bytedance_seed_coder_fim_tag("fim-prefix"), --
+        FIM_MIDDLE = bytedance_seed_coder_fim_tag("fim-middle"), --
         -- https://huggingface.co/ByteDance-Seed/Seed-Coder-8B-Base/blob/main/tokenizer_config.json
 
         -- THEIR TECHINCAL PAPER SAYS THEY USED REPO LEVEL training data....
@@ -167,11 +167,11 @@ function M.bytedance_seed_coder.get_fim_prompt_file_level_only(request)
         -- .. current_file_relative_path
         -- .. "\n"
         --
-        .. tokens.fim_suffix
+        .. tokens.FIM_SUFFIX
         .. request.ps_chunk.suffix
-        .. tokens.fim_prefix
+        .. tokens.FIM_PREFIX
         .. request.ps_chunk.prefix
-        .. tokens.fim_middle
+        .. tokens.FIM_MIDDLE
 
     return file_level_prompt_only
 end
@@ -264,11 +264,11 @@ function M.bytedance_seed_coder.get_fim_prompt_repo_level(request)
         -- .. "\n"
         --
         -- fyi, no newlines
-        .. tokens.fim_suffix
+        .. tokens.FIM_SUFFIX
         .. request.ps_chunk.suffix
-        .. tokens.fim_prefix
+        .. tokens.FIM_PREFIX
         .. request.ps_chunk.prefix
-        .. tokens.fim_middle
+        .. tokens.FIM_MIDDLE
 
     local prompt_lines = {}
     if any_repo_files then
