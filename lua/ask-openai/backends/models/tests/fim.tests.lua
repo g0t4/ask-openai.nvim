@@ -1,4 +1,6 @@
 local fim = require("ask-openai.backends.models.fim")
+local qwen = fim.qwen25coder.sentinel_tokens
+local PrefixSuffixChunk = require("ask-openai.predictions.prefix_suffix")
 
 local test_setup = require("ask-openai.helpers.test_setup")
 test_setup.modify_package_path()
@@ -6,7 +8,7 @@ local should = require("devtools.tests.should")
 
 describe("qwen2.5-coder", function()
     -- *** File-level FIM template:
-    --   <|fim_prefix|>{code_pre}<|fim_suffix|>{code_suf}<|fim_middle|>{code_mid}<|endoftext|>
+    --   (qwen.FIM_PREFIX)code_pre(qwen.FIM_SUFFIX)code_suf(qwen.FIM_MIDDLE)code_mid(qwen.ENDOFTEXT)
     --   from Tech Report: https://arxiv.org/pdf/2409.12187
     --   official example: https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-fim.py
 
@@ -14,9 +16,12 @@ describe("qwen2.5-coder", function()
         -- USE example:
         --   https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel-fim.py
 
+        local ps_chunk = PrefixSuffixChunk:new()
+        ps_chunk.prefix = "foo\nthe\nprefix"
+        ps_chunk.suffix = "bar\nbaz"
+        -- TODO set lines if needed for test?
         local request = {
-            prefix = "foo\nthe\nprefix",
-            suffix = "bar\nbaz",
+            ps_chunk = ps_chunk,
             context = {
                 yanks = { filename = "nvim-recent-yanks.txt", content = "yanks" },
                 includes = { yanks = true },
@@ -33,11 +38,12 @@ describe("qwen2.5-coder", function()
         -- TODO confirm \n after each file contents? or not?
         --    is it required? otherwise if optional, then it doesn't matter
         local expected = "<|repo_name|>my_repo_name\n" -- TODO confirm if \n after repo name
-            .. "<|file_sep|>nvim-recent-yanks.txt\nyanks"
+            .. qwen.FILE_SEP .. "nvim-recent-yanks.txt\nyanks"
             .. "<|file_sep|>path/to/current.lua\n"
             .. "<|fim_prefix|>foo\nthe\nprefix"
             .. "<|fim_suffix|>bar\nbaz"
-            .. "<|fim_middle|>"
+            .. qwen.FIM_MIDDLE
+
 
         should.be_equal(expected, prompt)
     end)

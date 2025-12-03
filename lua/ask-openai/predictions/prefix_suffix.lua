@@ -1,5 +1,4 @@
 local IGNORE_BOUNDARIES = false
-local M = {}
 
 ---@class PrefixSuffixChunk
 ---TODO base1 or base0 here?
@@ -20,7 +19,7 @@ end
 --- Determine range of lines to take before/after cursor position.
 --- Try taking X lines in both directions.
 --- If one direction doesn't have X lines, try taking the difference from the other side.
-function M.determine_line_range_base0(current_row_b0, take_num_lines_each_way, buffer_line_count)
+function PrefixSuffixChunk.determine_line_range_base0(current_row_b0, take_num_lines_each_way, buffer_line_count)
     -- separate logic for finding range of lines to use as prefix/suffix
     -- - the math here can be off by a smidge and won't matter b/c separate code reads the lines
     -- - assuming cursor line stays in range, you're good to go
@@ -53,7 +52,7 @@ end
 
 ---@param take_num_lines_each_way? integer
 ---@return PrefixSuffixChunk ps_chunk
-function M.get_prefix_suffix_chunk(take_num_lines_each_way)
+function PrefixSuffixChunk.get_prefix_suffix_chunk(take_num_lines_each_way)
     take_num_lines_each_way = take_num_lines_each_way or 80
     -- presently, this only works with current buffer/window:
     local current_win_id = 0
@@ -65,7 +64,7 @@ function M.get_prefix_suffix_chunk(take_num_lines_each_way)
 
     -- * READ LINES AROUND CURSOR LINE
     local line_count = vim.api.nvim_buf_line_count(current_bufnr)
-    local take_start_row_base0, take_end_row_base0 = M.determine_line_range_base0(cursor_line_base0, take_num_lines_each_way, line_count)
+    local take_start_row_base0, take_end_row_base0 = PrefixSuffixChunk.determine_line_range_base0(cursor_line_base0, take_num_lines_each_way, line_count)
 
     local cursor_row_text = vim.api.nvim_buf_get_lines(current_bufnr,
         -- 0indexed, END-EXCLUSIVE
@@ -111,9 +110,9 @@ function M.get_prefix_suffix_chunk(take_num_lines_each_way)
     return ps_chunk
 end
 
-function M.get_prefix_suffix(take_num_lines_each_way)
-    local ps_chunk = M.get_prefix_suffix_chunk(take_num_lines_each_way)
+function PrefixSuffixChunk.get_prefix_suffix(take_num_lines_each_way)
+    local ps_chunk = PrefixSuffixChunk.get_prefix_suffix_chunk(take_num_lines_each_way)
     return ps_chunk.prefix, ps_chunk.suffix
 end
 
-return M
+return PrefixSuffixChunk

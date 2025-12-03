@@ -3,6 +3,7 @@ local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.predictions.ansi")
 local ChatThread = require("ask-openai.questions.chat.thread")
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
+local ContextItem = require("ask-openai.predictions.context.item")
 
 local M = {}
 
@@ -16,13 +17,17 @@ end
 M.qwen25coder = {
     sentinel_tokens = {
         -- https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct/blob/main/tokenizer_config.json
-        fim_prefix = qwen_tag("fim_prefix"), -- 151659
-        fim_middle = qwen_tag("fim_middle"), -- 151660
-        FIM_MIDDLE = qwen_tag("fim_middle"), -- 151660 -- TODO rename lower case fim_middle later, start using uppercase now in new code
-        fim_suffix = qwen_tag("fim_suffix"), -- 151661
+        fim_prefix = qwen_tag("fim_prefix"), -- 151659 -- TODO RENAME/REMOVE
+        FIM_PREFIX = qwen_tag("fim_prefix"), -- 151659
+        fim_middle = qwen_tag("fim_middle"), -- 151660 -- TODO RENAME/REMOVE
+        FIM_MIDDLE = qwen_tag("fim_middle"), -- 151660
+        fim_suffix = qwen_tag("fim_suffix"), -- 151661 -- TODO RENAME/REMOVE
+        FIM_SUFFIX = qwen_tag("fim_suffix"), -- 151661
         -- fim_pad = qwen_tag("fim_pad"), -- 151662
-        repo_name = qwen_tag("repo_name"), -- 151663
-        file_sep = qwen_tag("file_sep"), -- 151664
+        repo_name = qwen_tag("repo_name"), -- 151663 -- TODO RENAME/REMOVE
+        REPO_NAME = qwen_tag("repo_name"), -- 151663
+        file_sep = qwen_tag("file_sep"), -- 151664 -- TODO RENAME/REMOVE
+        FILE_SEP = qwen_tag("file_sep"), -- 151664
 
         im_start = qwen_tag("im_start"), -- 151644
         im_end = qwen_tag("im_end"), -- 151645

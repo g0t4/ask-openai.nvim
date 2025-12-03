@@ -1,6 +1,7 @@
 local log = require("ask-openai.logs.logger").predictions()
 local CurrentContext = require("ask-openai.predictions.context")
 local fim = require("ask-openai.backends.models.fim")
+local qwen = fim.qwen25coder.sentinel_tokens
 local harmony_fim = require("ask-openai.backends.models.fim_harmony")
 local meta = require("ask-openai.backends.models.meta")
 local files = require("ask-openai.helpers.files")
@@ -240,7 +241,7 @@ function FimBackend:body_for()
                 last_message = body.messages[second_to_last_index]
             end
 
-            local cursor_marker = '<|fim_middle|>'
+            local cursor_marker = qwen.FIM_MIDDLE
             local lines = vim.split(last_message.content, '\n', true)
             local cursor_index = nil
             local cursor_count = 0
@@ -259,7 +260,7 @@ function FimBackend:body_for()
                 local snippet = table.concat(vim.list_slice(lines, start_idx, end_idx), '\n')
                 log:info(ansi.red_bold('CURSOR CONTEXT:\n'), ansi.red(snippet))
             else
-                log:info(ansi.yellow('No <|fim_middle|> marker found, you messed up big time!'))
+                log:info(ansi.yellow('No ' .. qwen.FIM_MIDDLE ..  ' marker found, you messed up big time!'))
             end
         end
     else
