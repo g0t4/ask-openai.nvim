@@ -272,7 +272,7 @@ patch: string,
         str(prompt):should_start_with(harmony.START)
         local expected_thinking = harmony.msg_assistant_analysis "We need to run date command."
         local expected_tool_call_request
-        = harmony.START .. [[assistant]] .. harmony.CHANNEL .. [[commentary to=functions.run_command ]] .. harmony.CONSTRAIN .. [[json]] .. harmony.MESSAGE .. [[{"command":"date"}]] .. harmony.CALL
+        = harmony.start_assistant_json_tool_call("functions.run_command") .. harmony.MESSAGE .. [[{"command":"date"}]] .. harmony.CALL
         -- CONFIRMED per spec, assistant tool call _REQUESTS_, recipient `to=` comes _AFTER_ (harmony.CHANNEL)commentary
         --    but, it can also come before (in role) ...
         --    in testing:

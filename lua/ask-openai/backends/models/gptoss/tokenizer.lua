@@ -48,6 +48,7 @@ function M.harmony.start_assistant_analysis()
 end
 
 function M.harmony.start_assistant_json_tool_call(tool_name)
+    -- FYI recipient is in the channel (only add to name if you need the opposite builder at some point)
     return M.harmony.START .. "assistant" .. M.harmony.CHANNEL .. "commentary to=" .. tool_name .. " " .. M.harmony.CONSTRAIN .. "json"
 end
 
