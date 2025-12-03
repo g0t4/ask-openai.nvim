@@ -414,9 +414,9 @@ M.mellum = {
         gh_stars = mellum_tag("gh_stars"),
 
         -- PRN was base trained on commit messages? or were these just reserved for future use?
-        commit_after = "<commit_after>",
-        commit_before = "<commit_before>",
-        commit_msg = "<commit_msg>",
+        commit_after = mellum_tag("commit_after"),
+        commit_before = mellum_tag("commit_before"),
+        commit_msg = mellum_tag("commit_msg"),
 
         issue_start = "<issue_start>",
         issue_comment = "<issue_comment>",
