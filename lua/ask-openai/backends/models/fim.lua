@@ -343,14 +343,21 @@ M.starcoder2 = {
     -- PRN did starcoder v1 have diff special tokens?
     sentinel_tokens = {
         -- https://huggingface.co/bigcode/starcoder2-15b/blob/main/special_tokens_map.json
-        fim_prefix = starcoder_tag("fim_prefix"),
-        fim_middle = starcoder_tag("fim_middle"),
-        fim_suffix = starcoder_tag("fim_suffix"),
-        fim_pad = starcoder_tag("fim_pad"),
-        file_sep = starcoder_tag("file_sep"),
-        repo_name = starcoder_tag("repo_name"),
+        fim_prefix = starcoder_tag("fim_prefix"), -- TODO get rid of lowercase later
+        FIM_PREFIX = starcoder_tag("fim_prefix"),
+        fim_middle = starcoder_tag("fim_middle"), -- TODO get rid of lowercase later
+        FIM_MIDDLE = starcoder_tag("fim_middle"),
+        fim_suffix = starcoder_tag("fim_suffix"), -- TODO get rid of lowercase later
+        FIM_SUFFIX = starcoder_tag("fim_suffix"),
+        fim_pad = starcoder_tag("fim_pad"), -- TODO get rid of lowercase later
+        FIM_PAD = starcoder_tag("fim_pad"),
+        file_sep = starcoder_tag("file_sep"), -- TODO get rid of lowercase later
+        FILE_SEP = starcoder_tag("file_sep"),
+        repo_name = starcoder_tag("repo_name"), -- TODO get rid of lowercase later
+        REPO_NAME = starcoder_tag("repo_name"),
 
-        endoftext = starcoder_tag("endoftext"),
+        endoftext = starcoder_tag("endoftext"), -- TODO get rid of lowercase later
+        ENDOFTEXT = starcoder_tag("endoftext"),
         issue_start = starcoder_tag("issue_start"),
         issue_comment = starcoder_tag("issue_comment"),
         issue_closed = starcoder_tag("issue_closed"),

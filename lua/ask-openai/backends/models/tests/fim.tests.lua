@@ -1,5 +1,6 @@
 local fim = require("ask-openai.backends.models.fim")
 local qwen = fim.qwen25coder.sentinel_tokens
+local starcoder = fim.starcoder2.sentinel_tokens
 local PrefixSuffixChunk = require("ask-openai.predictions.prefix_suffix")
 
 local test_setup = require("ask-openai.helpers.test_setup")
@@ -43,12 +44,12 @@ General project code rules:
 - NEVER add TODO comments for me.
 ]]
 
-        local expected = "<|repo_name|>my_repo_name\n" -- TODO confirm if \n after repo name
+        local expected = qwen.REPO_NAME .. "my_repo_name\n" -- TODO confirm if \n after repo name
             .. qwen.FILE_SEP .. "instructions.txt\n" .. instructions
             .. qwen.FILE_SEP .. "nvim-recent-yanks.txt\nyanks"
-            .. "<|file_sep|>path/to/current.lua\n"
-            .. "<|fim_prefix|>foo\nthe\nprefix"
-            .. "<|fim_suffix|>bar\nbaz"
+            .. qwen.FILE_SEP .. "path/to/current.lua\n"
+            .. qwen.FIM_PREFIX .. "foo\nthe\nprefix"
+            .. qwen.FIM_SUFFIX .. "bar\nbaz"
             .. qwen.FIM_MIDDLE
 
 
@@ -61,8 +62,8 @@ describe("starcoder2", function()
     --    ollama show --template starcoder2:7b-q8_0
     --
     -- <file_sep>
-    -- {{- if .Suffix }}<fim_prefix>
-    -- {{ .Prompt }}<fim_suffix>{{ .Suffix }}<fim_middle>
+    -- {{- if .Suffix }}(starcoder.FIM_PREFIX)
+    -- {{ .Prompt }}(starcoder.FIM_SUFFIX){{ .Suffix }}(starcoder.FIM_MIDDLE)
     -- {{- else }}{{ .Prompt }}
     -- {{- end }}<|end_of_text|>
     --
