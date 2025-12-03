@@ -40,7 +40,11 @@ Concise is best, Wes is a human, he cannot read fast like you, and even if he co
 If a longer response is needed, please add a TLDR. Even better, respond with the TLDR alone! Wes will ask for clarification if needed.
 ]]
 
+    local tools
     if use_tools then
+        local system_message_instructions
+        tools, system_message_instructions = tool_router.openai_tools()
+
         -- TODO build out more detailed guidance, you have plenty of "tokenspace" available!
         --   MORE like Claude code's prompt!
 
@@ -58,6 +62,10 @@ The semantic_grep tool:
 - It includes a re-ranker to sort the results
 - AND, it's really fast... so don't hesitate to use it!
 ]]
+        if system_message_instructions then
+            system_prompt = system_prompt .. "\n" .. table.concat(system_message_instructions, "\n")
+        end
+
         -- TODO on mac show diff tools: i.e. gsed and gawk when on mac where that would be useful to know
         -- TODO on linux show awk/sed (maybe mention GNU variant)
     end
@@ -159,12 +167,8 @@ The semantic_grep tool:
         -- local body_overrides = model_params.new_qwen3coder_llama_server_chat_body({
         messages = messages,
         model = "", -- irrelevant for llama-server
-        -- tools = tool_router.openai_tools(),
+        tools = tools,
     })
-
-    if use_tools then
-        body_overrides.tools = tool_router.openai_tools()
-    end
 
     -- FYI starts a new chat thread when AskQuestion is used
     --  TODO allow follow up, via the command, if already existing thread?

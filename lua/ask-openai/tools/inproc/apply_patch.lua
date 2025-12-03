@@ -47,11 +47,11 @@ M.ToolDefinition = {
 
 M.DevMessageInstructions = nil
 
-function M.get_dev_message_instructions()
+function M.get_system_message_instructions()
     if M.DevMessageInstructions then
         return M.DevMessageInstructions
     end
-    local md_path = vim.fn.expand("~/repos/github/g0t4/ask-openai/lua/ask-openai/tools/inproc/apply_patch.md")
+    local md_path = vim.fn.expand("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/apply_patch.md")
     local lines = vim.fn.readfile(md_path)
     M.DevMessageInstructions = table.concat(lines, "\n")
     return M.DevMessageInstructions
