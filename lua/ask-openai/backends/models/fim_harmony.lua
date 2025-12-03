@@ -197,9 +197,9 @@ They also carefully preserved indentation, so I need to carefully consider inden
 I will fill-in-the-middles in the most awesome way!
 ]])
 -- FYI adding blurb about no ``` and markdown worked well to stop that!
--- TODO! detect line break before/after <|fim_middle|> and adjust the thought about modifying an existing line of code accordingly?
+-- TODO! detect line break before/after (qwen.FIM_MIDDLE) and adjust the thought about modifying an existing line of code accordingly?
 --   present this as a reflective thought from the model:
---     If there's no line break before <|fim_middle|> and/or after, then that means I am completing code on a line of existing code. Do not repeat the rest of the line either!
+--     If there's no line break before (qwen.FIM_MIDDLE) and/or after, then that means I am completing code on a line of existing code. Do not repeat the rest of the line either!
 -- YES! repeat the CURRENT LINE HERE as an observation!!! And maybe even state what I shouldn't duplicate! (this might help with repeating on same line (almost always right now when there's code on same line after cursor)
 --   MAYBE mention its indentation too instead of other indentation comments above (I can say this line has X indent so I need to respect that)
 --   IF there's code before and after the cursor on the current line, reflect that this is likely just a fill in the middle of this line only, not a multi line response (not likely anyways)
