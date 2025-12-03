@@ -76,6 +76,10 @@ function M.harmony.msg_developer(contents)
     return M.harmony.START .. "developer" .. M.harmony.MESSAGE .. contents .. M.harmony.END
 end
 
+function M.harmony.msg_assistant_json_tool_call(tool_name, output)
+    return M.harmony.start_assistant_json_tool_call(tool_name) .. M.harmony.message_call(output)
+end
+
 -- local lesser_used = {
 --     -- move to harmony above when used externally
 --     ENDOFTEXT = close_tag .. "endoftext" .. open_tag,
