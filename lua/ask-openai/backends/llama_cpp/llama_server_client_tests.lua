@@ -178,7 +178,7 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
 
     it("apply_patch - with single, string argument only (not dict)", function()
         local expected_dev_apply_patch_with_string_arg = [[
-]].. harmony.START .. [[developer]] .. harmony.MESSAGE .. [[# Instructions
+]] .. harmony.msg_developer [[# Instructions
 
 Your name is Qwenny
 You can respond with markdown
@@ -192,8 +192,7 @@ namespace functions {
 // Patch a file
 type apply_patch = (_: string) => any;
 
-} // namespace functions]] .. harmony.END
-
+} // namespace functions]]
 
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition.json")
 
@@ -219,8 +218,7 @@ type apply_patch = (_: string) => any;
         --    - this is the return trip for (harmony.CONSTRAIN)string (or w/e the model uses)
     end)
     it("apply_patch - with single patch property in a dictionary", function()
-        local expected_dev_apply_patch_with_dict_arg = harmony.START .. [[
-developer]] .. harmony.MESSAGE .. [[# Instructions
+        local expected_dev_apply_patch_with_dict_arg = harmony.msg_developer [[# Instructions
 
 Your name is Qwenny
 You can respond with markdown
@@ -237,9 +235,7 @@ type apply_patch = (_: {
 patch: string,
 }) => any;
 
-} // namespace functions]] .. harmony.END
-
-
+} // namespace functions]]
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition-dict.json")
 
         -- * action
@@ -274,9 +270,7 @@ patch: string,
         -- should.be_same_colorful_diff(actual_prompt, prompt) -- FYI don't directly compare
 
         str(prompt):should_start_with(harmony.START)
-        local expected_thinking
-        = harmony.START .. [[assistant]] .. harmony.CHANNEL .. [[analysis]] .. harmony.MESSAGE .. [[We need to run date command.]] .. harmony.END
-
+        local expected_thinking = harmony.msg_assistant_analysis "We need to run date command."
         local expected_tool_call_request
         = harmony.START .. [[assistant]] .. harmony.CHANNEL .. [[commentary to=functions.run_command ]] .. harmony.CONSTRAIN .. [[json]] .. harmony.MESSAGE .. [[{"command":"date"}]] .. harmony.CALL
         -- CONFIRMED per spec, assistant tool call _REQUESTS_, recipient `to=` comes _AFTER_ (harmony.CHANNEL)commentary
@@ -345,7 +339,9 @@ patch: string,
         -- "command": "date"
         -- }
 
-        local likely = harmony.START .. [[assistant]] .. harmony.CHANNEL .. [[commentary to=functions.run_command ]] .. harmony.CONSTRAIN .. [[json]] .. harmony.MESSAGE
+        -- FYI I am not 100% sold on using builders in tests... we shall see... it's ok to rip these out!
+        -- local likely = harmony.START .. [[assistant]] .. harmony.CHANNEL .. [[commentary to=functions.run_command ]] .. harmony.CONSTRAIN .. [[json]] .. harmony.MESSAGE
+        local likely = harmony.start_assistant_json_tool_call("functions.run_command") .. harmony.MESSAGE
         str(raw):should_contain(likely)
     end)
 end)

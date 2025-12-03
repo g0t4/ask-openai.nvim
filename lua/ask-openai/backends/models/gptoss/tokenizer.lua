@@ -37,6 +37,30 @@ M.harmony = {
     CALL = open_tag .. "call" .. close_tag,
 }
 
+function M.harmony.start_developer()
+    return M.harmony.START .. "developer"
+end
+
+function M.harmony.start_assistant_analysis()
+    return M.harmony.START .. "assistant" .. M.harmony.CHANNEL .. "analysis"
+end
+
+function M.harmony.message_end(contents)
+    return M.harmony.MESSAGE .. contents .. M.harmony.END
+end
+
+function M.harmony.msg_assistant_analysis(thoughts)
+    return M.harmony.START .. "assistant" .. M.harmony.CHANNEL .. "analysis" .. M.harmony.MESSAGE .. thoughts .. M.harmony.END
+end
+
+function M.harmony.msg_developer(contents)
+    return M.harmony.START .. "developer" .. M.harmony.MESSAGE .. contents .. M.harmony.END
+end
+
+function M.harmony.start_assistant_json_tool_call(tool_name)
+    return M.harmony.START .. "assistant" .. M.harmony.CHANNEL .. "commentary to=" .. tool_name .. " " .. M.harmony.CONSTRAIN .. "json"
+end
+
 -- local lesser_used = {
 --     -- move to harmony above when used externally
 --     ENDOFTEXT = close_tag .. "endoftext" .. open_tag,
