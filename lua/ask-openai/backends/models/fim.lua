@@ -499,7 +499,6 @@ function M.mellum.get_fim_prompt(request)
 
     ---@param context_item ContextItem
     local function append_file_non_fim(context_item)
-        -- <filename>filepathX\ncodeX
         local non_fim_file = tokens.file_sep .. context_item.filename .. "\n" .. context_item.content
         prompt = prompt .. non_fim_file
     end
@@ -584,9 +583,9 @@ function M.starcoder2.get_fim_prompt(request)
     -- TODO ESCAPE presence of any sentinel tokens? i.e. should be rare but if someone is working on LLM code it may not be!
     --
     -- FYI carefully observe the format:
-    --   FYI I replaced <> with __ and then uppercased tag name => _FIM_PREFIX_ (replace outer _ _ with <> and lowercase name)
-    --   _FILE_SEP__FIM_PREFIX_filepath1\ncode1_pre_FIM_SUFFIX_code1_suf_FIM_MIDDLE_code1_mid
-    --   _FIM_PREFIX_ comes BEFORE filepath!
+    --   FYI I replaced < > with | | and uppercase
+    --   |FILE_SEP||FIM_PREFIX|filepath1\ncode1_pre|FIM_SUFFIX|code1_suf|FIM_MIDDLE|code1_mid
+    --   |FIM_PREFIX| comes BEFORE filepath!
     local fim_file_contents = tokens.fim_prefix
         .. current_file_path
         .. "\n"
@@ -594,9 +593,6 @@ function M.starcoder2.get_fim_prompt(request)
         .. tokens.fim_suffix
         .. request.suffix
         .. tokens.fim_middle
-
-
-    -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
 
     return prompt .. tokens.file_sep .. fim_file_contents
 end
