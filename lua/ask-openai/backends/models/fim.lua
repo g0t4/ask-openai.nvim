@@ -28,13 +28,13 @@ function M.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(request)
     -- TODO if I allow the model to finish the reasoning... that might be best!
     --   Ask it to practice its change before it decides
     -- I could update my example too:
-    -- |channel|analysis|message|
+    -- {CHANNEL}analysis{MESSAGE}
     -- Let's practice the change first.
     -- I need to insert a variable name between 'return' and '+ b'.
     -- Candidate: a
     -- Check: would that make 'return a + b'? Yes.
     -- So the correct insertion is 'a'.
-    -- |channel|final|message|
+    -- {CHANNEL}final{MESSAGE}
 
     local builder = HarmonyRawFimPromptBuilder.new()
         :developer()
@@ -72,8 +72,7 @@ Make sure to practice the code change before you return a suggestion. Take the c
         -- TODO get rid of raw prompt approach above? or just keep it around as "RETIRED" ??
         local fixed_thoughts = HarmonyRawFimPromptBuilder.deep_thoughts_about_fim
 
-        -- FYI "|start|assistant" is at end of prompt (see add_generation_prompt in jinja template + in chat logic)
-        --   FYI using || to delimit special tokens like |start|... that seems safe to use in notes and then only use read start/end via wrapper functions
+        -- FYI "{START}assistant" is at end of prompt (see add_generation_prompt in jinja template + in chat logic)
         --   https://github.com/ggml-org/llama.cpp/blob/7d77f0732/models/templates/openai-gpt-oss-120b.jinja#L328-L330
         --   thus my `prefill` (below) starts with a channel
         --   BTW my `prefill` is appended to the raw prompt (after jinja is rendered):
@@ -82,31 +81,32 @@ Make sure to practice the code change before you return a suggestion. Take the c
             .. harmony.START .. "assistant" -- WORKS!
 
         -- *** notes w.r.t. final prefill text (last message)
-        -- .. "|start|assistant" -- * WORKS!
-        --   luckily, finishing prefill with `|start|assistant` is enough for gptoss to produce the final message!
+        -- FYI using special token universal convention: {} and uppercase
+        -- .. "{START}assistant" -- * WORKS!
+        --   luckily, finishing prefill with `{START}assistant` is enough for gptoss to produce the final message!
         --   IIAC you can't have back to back analysis channel messages, or at least not normally?
         --     and commentary channel doesn't make sense because no tools passed
         --     so the model is only left with the final channel! (phew)
         --   (btw... this is the same as it would add w/o my prefill)
 
         -- * FAILED:
-        -- .. "|start|assistant|channel|final|message|" -- FAIL
+        -- .. "{START}assistant{CHANNEL}final{MESSAGE}" -- FAIL
         -- along the way shows:
         --   llama-server: Partial parse: incomplete header
         -- at end it does recognize generated text as the content (net effect is as if it were not a streaming response b/c it all arrives on last delta!)
         --   llama-server: Partial parse: incomplete header
         --   llama-server: Parsed message: {"role":"assistant","content":"function M.mul(a, b)\n    return a * b\nend\n\nfunction M.div(a, b)\n    if b == 0 then\n        error(\"division by zero\")\n    end\n    return a / b\nend"}
         --
-        -- .. "|start|assistant|channel|final"  -- FAIL
+        -- .. "{START}assistant{CHANNEL}final"  -- FAIL
         --
-        -- .. "|start|assistant|channel|" -- FAIL results in these key messages:
+        -- .. "{START}assistant{CHANNEL}" -- FAIL results in these key messages:
         --   llama-server: common_chat_parse_gpt_oss: unknown header from message: final
-        --   llama-server: common_chat_parse_gpt_oss: content after last message: final|message|function M.mul(a, b)
+        --   llama-server: common_chat_parse_gpt_oss: content after last message: final{MESSAGE}function M.mul(a, b)
         --
 
 
 
-        -- llama-cpp uses this last assistant message for prefill purposes (will not terminate with |end|)
+        -- llama-cpp uses this last assistant message for prefill purposes (will not terminate with {END})
         table.insert(messages, TxChatMessage:assistant(prefill))
 
         -- TODO add nvim command to verify prompts:
@@ -160,7 +160,7 @@ function M.qwen25coder.get_fim_prompt(request)
 
     ---@param context_item ContextItem
     local function append_file_non_fim(context_item)
-        -- |FILE_SEP|filepath0\ncode0
+        -- {FILE_SEP}filepath0\ncode0
         local non_fim_file = tokens.file_sep .. context_item.filename .. "\n"
             .. context_item.content
         prompt = prompt .. non_fim_file
@@ -526,10 +526,6 @@ function M.mellum.get_fim_prompt(request)
 
     prompt = prompt .. fim_file_contents
 
-    -- alt format example (with <> not ||)
-    -- f"|fim_suffix|{suffix}|fim_prefix|{prefix}|fim_middle|"
-
-
     return prompt
 end
 
@@ -537,7 +533,6 @@ function M.starcoder2.get_spm_fim_prompt(request)
     -- TODO look into setting STOP token... I am noticing it often goes on for a very long time, endlessly
     -- esp in these comments and in test case code
 
-    -- TODO add support for SPM (also)...
     -- investigate perf differences
     -- i.e. kv cache impact
     --
@@ -551,8 +546,8 @@ end
 function M.starcoder2.get_fim_prompt(request)
     -- FYI! see notes in starcoder2.md
 
-    -- FYI swapped < > for | | on tokens, also uppercased them:
-    -- |REPO_NAME|reponame|FILE_SEP|filepath0\ncode0|FILE_SEP||FIM_PREFIX|filepath1\ncode1_pre|FIM_SUFFIX|code1_suf|FIM_MIDDLE|code1_mid|FILE_SEP| ...|ENDOFTEXT|:
+    -- FYI for special tokens I replaced <> with {} and UPPERCASE
+    -- {REPO_NAME}reponame{FILE_SEP}filepath0\ncode0{FILE_SEP}{FIM_PREFIX}filepath1\ncode1_pre{FIM_SUFFIX}code1_suf{FIM_MIDDLE}code1_mid{FILE_SEP} ...{ENDOFTEXT}:
     -- https://github.com/bigcode-project/starcoder2/issues/10#issuecomment-2214157190
     local tokens = M.starcoder2.sentinel_tokens
 
@@ -563,7 +558,7 @@ function M.starcoder2.get_fim_prompt(request)
 
     ---@param context_item ContextItem
     local function append_file_non_fim(context_item)
-        -- |FILE_SEP|filepath0\ncode0
+        -- {FILE_SEP}filepath0\ncode0
         local non_fim_file = tokens.file_sep .. context_item.filename .. "\n" .. context_item.content
         prompt = prompt .. non_fim_file
     end
@@ -583,9 +578,9 @@ function M.starcoder2.get_fim_prompt(request)
     -- TODO ESCAPE presence of any sentinel tokens? i.e. should be rare but if someone is working on LLM code it may not be!
     --
     -- FYI carefully observe the format:
-    --   FYI I replaced < > with | | and uppercase
-    --   |FILE_SEP||FIM_PREFIX|filepath1\ncode1_pre|FIM_SUFFIX|code1_suf|FIM_MIDDLE|code1_mid
-    --   |FIM_PREFIX| comes BEFORE filepath!
+    --   FYI for special tokens I replaced <> with {} and UPPERCASE
+    --   {FILE_SEP}{FIM_PREFIX}filepath1\ncode1_pre{FIM_SUFFIX}code1_suf{FIM_MIDDLE}code1_mid
+    --   {FIM_PREFIX} comes BEFORE filepath!
     local fim_file_contents = tokens.fim_prefix
         .. current_file_path
         .. "\n"
@@ -625,8 +620,8 @@ function M.codestral.get_fim_prompt(request)
 
     -- found suggestion:
     --   https://github.com/ollama/ollama/issues/5403
-    --   FYI dropped off [] surrounding tags:
-    --   <s>SUFFIX {{ suffix }} PREFIX {{ prefix }}
+    --   -- FYI using conventional {} and uppercase for tokens in comments:
+    --   <s>{SUFFIX}suffix{PREFIX}prefix
     --    TODO this doesn't include MIDDLE... should I add it?
     local fim_file_contents = tokens.fim_suffix
         .. request.suffix
