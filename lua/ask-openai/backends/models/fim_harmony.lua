@@ -1,6 +1,7 @@
 local log = require("ask-openai.logs.logger")
 local api = require("ask-openai.api")
 local dedupe = require("ask-openai.rag.client.dedupe")
+local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 
 ---@class HarmonyRawFimPromptBuilder
 ---@field _parts string[]
@@ -40,7 +41,7 @@ Reasoning: ]] .. api.get_reasoning_level() [[
 # Valid channels: analysis, commentary, final. Channel must be included for every message.
 ]]
 
-    table.insert(self._parts, "<|start|>system<|message|>" .. message .. "<|end|>")
+    table.insert(self._parts, harmony.START .. "system" .. harmony.MESSAGE .. message .. harmony.END)
     return self
 end
 
@@ -74,7 +75,7 @@ and NOT:
 --- - and available function tools
 ---@return HarmonyRawFimPromptBuilder self
 function HarmonyRawFimPromptBuilder:developer()
-    table.insert(self._parts, "<|start|>developer<|message|>" .. HarmonyRawFimPromptBuilder.developer_message .. "<|end|>")
+    table.insert(self._parts, harmony.START .. "developer" .. harmony.MESSAGE .. HarmonyRawFimPromptBuilder.developer_message .. harmony.END)
     return self
 end
 
@@ -164,10 +165,9 @@ function HarmonyRawFimPromptBuilder:user(message)
         return self
     end
 
-    table.insert(self._parts, "<|start|>user<|message|>" .. message .. "<|end|>")
+    table.insert(self._parts, harmony.START .. "user" .. harmony.MESSAGE .. message .. harmony.END)
     return self
 end
-
 
 -- * deep_thoughts_about_fim
 -- TODO try qwen25coder format? and thinking to explain it?
@@ -206,7 +206,7 @@ I will fill-in-the-middles in the most awesome way!
 
 ---@return HarmonyRawFimPromptBuilder self
 function HarmonyRawFimPromptBuilder:set_thinking()
-    table.insert(self._parts, "<|start|>assistant<|channel|>analysis<|message|>" .. HarmonyRawFimPromptBuilder.deep_thoughts_about_fim .. "<|end|>")
+    table.insert(self._parts, harmony.START .. "assistant" .. harmony.CHANNEL .. "analysis" .. harmony.MESSAGE .. HarmonyRawFimPromptBuilder.deep_thoughts_about_fim .. harmony.END)
     return self
 end
 
@@ -214,7 +214,7 @@ end
 function HarmonyRawFimPromptBuilder:start_assistant_final_response()
     -- make it so the model only ends with the prediction and maybe <|end|>
     -- FYI in testing <|end|> is not showing up, which is fine by me!
-    table.insert(self._parts, "<|start|>assistant<|channel|>final<|message|>")
+    table.insert(self._parts, harmony.START .. "assistant" .. harmony.CHANNEL .. "final" .. harmony.MESSAGE)
     return self
 end
 
