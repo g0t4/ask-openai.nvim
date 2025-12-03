@@ -120,7 +120,8 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
 
 
         -- * response - note no (harmony.CONSTRAIN) but "code" format is set:
-        -- (harmony.CHANNEL)analysis(harmony.MESSAGE)We need to test python tool. We'll run a simple command.(harmony.END)(harmony.START)assistant(harmony.CHANNEL)commentary to=python code(harmony.MESSAGE)print("Hello from python")
+        --  FYI new convention uses (harmony.SPECIAL) in comments! I like it better than {START} - ? convert {UPPERCASE} to this?
+        -- (harmony.CHANNEL)analysis(harmony.MESSAGE) We need to test python tool. We'll run a simple command.(harmony.END)(harmony.START)assistant(harmony.CHANNEL)commentary to=python code(harmony.MESSAGE)print("Hello from python")
 
     end)
 
