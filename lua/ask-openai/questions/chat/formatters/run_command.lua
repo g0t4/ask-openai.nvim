@@ -58,9 +58,9 @@ function M.format(lines, tool_call, message)
         ---@field structuredContent?              # structured output, has inputSchema/outputSchema
 
         ---@class MCPToolResultContent
-        ---@field type string      # "text", "image", "audio", "resource_link", "resource" ...
+        ---@field type string      # "text", "image", "audio", "resource_link", "resource" …
         ---@field text? string     # for type=text
-        ---@field name? string     # IIUC this is considered optional metadata...  I am using this with my run_command tool for: "STDOUT", "STDERR", "EXIT_CODE"
+        ---@field name? string     # i.e.: "STDOUT", "STDERR", "EXIT_CODE" … describe the text value
 
         -- * TESTING:
         -- - date command is one liner

@@ -225,7 +225,7 @@ function M.send_tool_call(tool_call, callback)
     local name = tool_call["function"].name
     local tool = M.tools_available[name]
     if tool == nil then
-        callback(plumbing.create_tool_call_output_failure("Invalid MCP tool name: " .. name))
+        callback(plumbing.create_tool_call_output_for_error_message("Invalid MCP tool name: " .. name))
         return
     end
 

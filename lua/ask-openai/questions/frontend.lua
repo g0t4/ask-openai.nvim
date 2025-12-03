@@ -509,7 +509,7 @@ function QuestionsFrontend.run_tools_and_send_results_back_to_the_model()
             local function when_tool_is_done(tool_call_output)
                 -- * store output on rx_message
                 tool_call.call_output = ToolCallOutput:new(tool_call_output)
-                -- log:trace("tool_call_output", vim.inspect(tool_call_output))
+                log:trace("tool_call_output", vim.inspect(tool_call_output))
 
                 -- * triggers UI updates to show tool results
                 handle_rx_messages_updated()

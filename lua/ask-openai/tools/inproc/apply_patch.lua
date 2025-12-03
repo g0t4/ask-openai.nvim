@@ -1,78 +1,109 @@
----@type InprocessTool
----@diagnostic disable-next-line: missing-fields
+local plumbing = require("ask-openai.tools.plumbing")
+local log = require("ask-openai.logs.logger").predictions()
+
 local M = {}
 
+-- PRN try other MCP based tools from gptoss repo (python code runner, browser)...
+--   use their system message descriptions but route them through MCP in here
+
 -- TODO extra instructions for system message (goes into developer message for gptoss)
-M.SystemMessageExplanation = {
+M.SystemMessageInstructions = {
 
 }
 
+local string_arg = {
+    -- model generates JSON string for args
+    type = "string",
+}
+
+local alternative_dict_args = {
+    -- model generates dict w/ single patch arg...
+    --  this might be good if model doesn't reliably generate JSON string
+    --  I wish openai published some training examples to better understand formats to consider
+    type = "object",
+    properties = {
+        patch = {
+            description = "file changes in custom diff format",
+            type = "string"
+        }
+    },
+    required = { "patch" }
+}
+
+-- type = "object", properties={patch ={ description=""...}} -- FYI can set type = "object" and template will use a dict... I fixed template to support string arg only (like you get when you use opeani-harmony repo's tool config so I want to go with that)
+--  and JSON is ok btw... b/c then generated code is escaped as a JSON string (or dict if you go type=object)
+--  which means anything inside the string won't conflict with gptoss message format (which is also XML and so JSON is a wise choice for args and results)
+
+---@type OpenAITool;
 M.ToolDefinition = {
-    -- FYI confirmed jinja expects tool.function: https://github.com/ggml-org/llama.cpp/blob/10e978015/models/templates/openai-gpt-oss-120b.jinja#L108-L149
+
+    -- FYI gpt-oss apply_patch definition example:
+    --   https://github.com/g0t4/gpt-oss/blob/017c732/gpt_oss/chat.py#L111-L119
+
     ["function"] = {
         description = "Patch a file",
         name = "apply_patch",
         ---@diagnostic disable-next-line: missing-fields
-        parameters = {
-            type = "string",
-            -- FYI I had to patch the jinja template to support string only arg (otherwise it forces to use dict which means needless JSON wrapper)
-        }
+        parameters = string_arg,
+        -- parameters = alternative_dict_args
     },
     type = "function"
 }
 
----@param parsed_args table
+---@param parsed_args string|table
 ---@param callback ToolCallDoneCallback
 function M.call(parsed_args, callback)
-    local patch = parsed_args.patch
+    local patch
+    if type(parsed_args) == "table" then
+        patch = parsed_args.patch
+    elseif type(parsed_args) == "string" then
+        patch = parsed_args
+    else
+        callback(plumbing.create_tool_call_output_for_error_message("Invalid parsed_args: " .. vim.inspect(parsed_args)))
+        return
+    end
+
     -- cat ~/repos/github/g0t4/gpt-oss/gpt_oss/tools/example-add.patch | ~/repos/github/g0t4/gpt-oss/.venv/bin/python3 ~/repos/github/g0t4/gpt-oss/gpt_oss/tools/apply_patch.py
     local python = vim.fn.expand("~/repos/github/g0t4/gpt-oss/.venv/bin/python3")
     local apply_patch_py = vim.fn.expand("~/repos/github/g0t4/gpt-oss/gpt_oss/tools/apply_patch.py")
-    -- local result = vim.fn.systemlist({ python, apply_patch_py }, patch)
+
+    -- PRN use async and get callback?
+    -- FYI do not differentiate STDOUT/STDERR unless you can prove it fixes a problem with model performance
     local result = vim.fn.system({ python, apply_patch_py }, patch)
-    -- callback(result[1] or "")
+    log:info("apply_patch - vim.v.shell_error", vim.v.shell_error)
+
+    -- apply_patch tool behaviors:
+    --   STDERR used for DiffError, and in this case it doesn't set non-zero exit code
+
+    -- chat.py app reference implementation does this for apply_patch tool call:
+    --   https://github.com/g0t4/gpt-oss/blob/017c732/gpt_oss/chat.py#L189-L221
+    --
+    --   OK so it doesn't show non-zero exit codes
+    --   only returns one item... the STDOUT/ERR or if an error then it returns error message as if it were STDOUT/ERR
+    --     does not label anything STDOUT/STDERR so I will mirror that
+    --
+    --     content=[TextContent(text=tool_output)]
+    --     maps to =>  return {"type": "text", "text": self.text}
+
+    local exit_code = vim.v.shell_error
+    if exit_code ~= 0 then
+        -- keep EXIT_CODE/isError here for your glue code at least... i.e. apply_patch.py file is missing! or no venv, or deps, etc...
+        callback(plumbing.create_tool_call_output_for_error({
+            -- do not name first result.. could be STDOUT or STDERR!
+            plumbing.text_content(result),
+            plumbing.text_content(tostring(exit_code), "EXIT_CODE"),
+        }))
+        return
+    end
+
+    callback(plumbing.create_tool_call_output_for_success({
+        -- do not send EXIT_CODE if zero, because:
+        -- 1. chat.py app doesn't...
+        -- 2. apply_patch on DiffError still returns RC=0 w/ error message in output text (instead of STDOUT/ERR)
+        --    thus, showing zero might confuse the model => causing it to ignore the error message text!
+        plumbing.text_content(result)
+    }))
 end
-
--- BTW it is NOT possible w/ the current jinja template to create a tool that takes a single string arg! YIKES
---  and that's a BIG deal b/c otherwise it has to wrap it in JSON... and it can do that but if it wasn't fine tuned on that, it's gonna be less reliable
---   especially when modifying a file and needing to escape chars like " and ' etc
---   why did OpenAI release a jinja template that doesn't even support using their apply_patch tool?!?!
-
--- TODO any issues having two Tools sections in developer message (if I pass some tools via body.tools?)
---   FYI I rendered this via: https://github.com/g0t4/gpt-oss/blob/017c732/gpt_oss/chat.py#L129-L133
---     also https://github.com/g0t4/gpt-oss/blob/2cb651c/gpt_oss/chat.py#L101-L123
-local developer_message_apply_patch_tool_definition_only = [[
-# Tools
-
-## functions
-
-namespace functions {
-
-// Patch a file
-type apply_patch = (_: string) => any;
-
-} // namespace functions<|end|>
-]]
-
--- FYI I rendered the message from the gpt-oss repo's chat.py and get the following (as I suspected)...
---  so, I need to inject this into the developer message myself, shouldn't hurt to have functions twice
---  OR how about I just build the # Tools section and not even pass tools to the API!
-local FYI_chat_py_dev_message = [[
-<|start|>developer<|message|># Instructions
-
-foo
-
-# Tools
-
-## functions
-
-namespace functions {
-
-// Patch a file
-type apply_patch = (_: string) => any;
-
-} // namespace functions<|end|>
-]]
 
 function manual_test()
     -- test call
@@ -84,10 +115,16 @@ function manual_test()
 +    print("Hello, world!")
 *** End Patch
 ]]
-    M.call({
-        patch = patch,
-    }, function()
-    end)
+
+    function log_it(call_output)
+        log:info("manual_test() result", vim.inspect(call_output))
+    end
+
+    -- make sure it can execute via either string or dict:
+    M.call({ patch = patch, }, log_it)
+    M.call(patch, log_it)
 end
+
+manual_test()
 
 return M

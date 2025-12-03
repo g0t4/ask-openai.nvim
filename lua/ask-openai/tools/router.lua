@@ -33,7 +33,7 @@ function M.send_tool_call_router(tool_call, callback)
         return
     end
 
-    callback(plumbing.create_tool_call_output_failure("Invalid tool name: " .. tool_name))
+    callback(plumbing.create_tool_call_output_for_error_message("Invalid tool name: " .. tool_name))
 end
 
 return M

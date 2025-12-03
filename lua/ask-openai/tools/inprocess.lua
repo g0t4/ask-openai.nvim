@@ -6,9 +6,10 @@ local M = {}
 
 ---@type OpenAITool[]
 M.tools_available = {
-    semantic_grep = semantic_grep_tool.ToolDefinition
-    -- apply_patch = apply_patch_module.ToolDefinition -- TODO
+    semantic_grep = semantic_grep_tool.ToolDefinition,
+    apply_patch = apply_patch_tool.ToolDefinition,
 }
+
 
 ---@param tool_name string
 ---@return boolean
@@ -27,20 +28,10 @@ function M.send_tool_call(tool_call, callback)
     if name == "semantic_grep" then
         semantic_grep_tool.call(parsed_args, callback)
     elseif name == "apply_patch" then
-        M.apply_patch(parsed_args, callback)
-        -- TODO try other MCP based tools from gptoss repo (python code runner, browser)... use their system message descriptions but route them through MCP in here
+        apply_patch_tool.call(parsed_args, callback)
     else
-        callback(plumbing.create_tool_call_output_failure("Invalid in-process tool name: " .. name))
+        callback(plumbing.create_tool_call_output_for_error_message("Invalid in-process tool name: " .. name))
     end
-end
-
----@param parsed_args table
----@param callback ToolCallDoneCallback
-function M.apply_patch(parsed_args, callback)
-    -- GPTOSS has an apply_patch tool it was trained with
-    -- instead of bothering with an MCP server, let's just trigger the python script in-process
-    -- later I can move this out to another process (MCP server) if that is worthwhile
-    callback(plumbing.create_tool_call_output_failure("apply_patch command is not yet connected!!! patience"))
 end
 
 return M

@@ -1,9 +1,8 @@
 local log = require("ask-openai.logs.logger").predictions()
 local ansi = require("ask-openai.predictions.ansi")
 
----@class InprocessTool
----@field ToolDefinition OpenAITool;
 local M = {
+    ---@type OpenAITool;
     ToolDefinition = {
         ["function"] = {
             description =
