@@ -425,16 +425,19 @@ M.mellum = {
     },
 }
 
+local function starcoder_tag(type)
+    return "<" .. type .. ">"
+end
 M.starcoder2 = {
     -- PRN did starcoder v1 have diff special tokens?
     sentinel_tokens = {
         -- https://huggingface.co/bigcode/starcoder2-15b/blob/main/special_tokens_map.json
-        fim_prefix = "<fim_prefix>",
-        fim_middle = "<fim_middle>",
-        fim_suffix = "<fim_suffix>",
-        fim_pad = "<fim_pad>",
-        file_sep = "<file_sep>",
-        repo_name = "<repo_name>",
+        fim_prefix = starcoder_tag("fim_prefix"),
+        fim_middle = starcoder_tag("fim_middle"),
+        fim_suffix = starcoder_tag("fim_suffix"),
+        fim_pad = starcoder_tag("fim_pad"),
+        file_sep = starcoder_tag("file_sep"),
+        repo_name = starcoder_tag("repo_name"),
 
         endoftext = "<|endoftext|>",
         issue_start = "<issue_start>",
@@ -586,8 +589,9 @@ function M.starcoder2.get_fim_prompt(request)
     -- TODO ESCAPE presence of any sentinel tokens? i.e. should be rare but if someone is working on LLM code it may not be!
     --
     -- FYI carefully observe the format:
-    --   <file_sep><fim_prefix>filepath1\ncode1_pre<fim_suffix>code1_suf<fim_middle>code1_mid
-    --   <fim_prefix> comes BEFORE filepath!
+    --   FYI I replaced <> with __ and then uppercased tag name => _FIM_PREFIX_ (replace outer _ _ with <> and lowercase name)
+    --   _FILE_SEP__FIM_PREFIX_filepath1\ncode1_pre_FIM_SUFFIX_code1_suf_FIM_MIDDLE_code1_mid
+    --   _FIM_PREFIX_ comes BEFORE filepath!
     local fim_file_contents = tokens.fim_prefix
         .. current_file_path
         .. "\n"
