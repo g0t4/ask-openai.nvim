@@ -206,7 +206,8 @@ I will fill-in-the-middles in the most awesome way!
 
 ---@return HarmonyRawFimPromptBuilder self
 function HarmonyRawFimPromptBuilder:set_thinking()
-    table.insert(self._parts, harmony.START .. "assistant" .. harmony.CHANNEL .. "analysis" .. harmony.MESSAGE .. HarmonyRawFimPromptBuilder.deep_thoughts_about_fim .. harmony.END)
+    table.insert(self._parts,
+        harmony.msg_assistant_analysis(HarmonyRawFimPromptBuilder.deep_thoughts_about_fim))
     return self
 end
 
