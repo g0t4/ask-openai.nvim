@@ -122,7 +122,6 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         -- * response - note no (harmony.CONSTRAIN) but "code" format is set:
         --  FYI new convention uses (harmony.SPECIAL) in comments! I like it better than {START} - ? convert {UPPERCASE} to this?
         -- (harmony.CHANNEL)analysis(harmony.MESSAGE) We need to test python tool. We'll run a simple command.(harmony.END)(harmony.START)assistant(harmony.CHANNEL)commentary to=python code(harmony.MESSAGE)print("Hello from python")
-
     end)
 
     -- FYI check jinja differnces:
@@ -281,8 +280,8 @@ patch: string,
         --      I setup the ask-fixes.jinja to generate AFTER (so it matches model's gen)
         --      and my tree-sitter grammar handles both
 
-        local expected_tool_result
-        = harmony.START .. [[functions.run_command to=assistant]] .. harmony.CHANNEL .. [[commentary]] .. harmony.MESSAGE .. [[{"content":[{"text":"Sun Nov 30 19:35:10 CST 2025\n","type":"text","name":"STDOUT"}]}]] .. harmony.END
+        local expected_tool_result = harmony.START .. [[functions.run_command to=assistant]] .. harmony.CHANNEL .. [[commentary]]
+            .. harmony.message_end [[{"content":[{"text":"Sun Nov 30 19:35:10 CST 2025\n","type":"text","name":"STDOUT"}]}]]
         -- CONFIRMED per spec, for tool results, recipient `to=` comes _BEFORE_ (harmony.CHANNEL)commentary
         --   IIRC spec doesn't mention recipient in the channel (after channel/commentary) for tool result messages
 
