@@ -38,27 +38,23 @@ function M.format(lines, tool_call, message)
         return
     end
 
-    local is_mcp = tool_call.call_output and tool_call.call_output:is_mcp()
-    if is_mcp then
+    local is_mcp_like_output = tool_call.call_output and tool_call.call_output:is_mcp()
+    if is_mcp_like_output then
         ---@type MCPToolResultContent[]
         local content = tool_call.call_output.result.content
 
+        local multiple_outputs = #content > 1
         for _, output in ipairs(content) do
             local name = output.name
             local text = tostring(output.text or "")
-            -- PRN dict. lookup of formatter functions by type (name), w/ registerType(), esp. as the list of types grows
             if name == "STDOUT" then
-                -- TODO! I want tool specific formatters... b/c for run_command, I want the command (esp if its small) to be the header! I don't need to see run_command ever, right?
                 if text then
                     lines:append_STDOUT(text)
-                else
-                    -- PRN skip STDOUT entirely if empty?
-                    lines:append_unexpected_line("UNEXPECTED empty STDOUT?")
                 end
             else
                 -- GENERIC output type
-                if name == nil or name == "" then
-                    name = "[NO NAME]" -- heads up for now so I can identify scenarios/tools, can remove this later
+                if (name == nil or name == "") and multiple_outputs then
+                    name = "[NO NAME] and multiple outputs" -- heads up for now so I can identify scenarios/tools, can remove this later
                 end
                 if output.type == "text" then
                     local is_multi_line = text:match("\n")
