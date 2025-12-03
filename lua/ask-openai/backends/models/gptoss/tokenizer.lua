@@ -37,6 +37,8 @@ M.harmony = {
     CALL = open_tag .. "call" .. close_tag,
 }
 
+-- * start+header builders
+--  header is everything between start and message tokens == (harmony.START)header(header.MESSAGE)...
 function M.harmony.start_developer()
     return M.harmony.START .. "developer"
 end
@@ -45,20 +47,22 @@ function M.harmony.start_assistant_analysis()
     return M.harmony.START .. "assistant" .. M.harmony.CHANNEL .. "analysis"
 end
 
+function M.harmony.start_assistant_json_tool_call(tool_name)
+    return M.harmony.START .. "assistant" .. M.harmony.CHANNEL .. "commentary to=" .. tool_name .. " " .. M.harmony.CONSTRAIN .. "json"
+end
+
+-- * message contents builder
 function M.harmony.message_end(contents)
     return M.harmony.MESSAGE .. contents .. M.harmony.END
 end
 
+-- * full message builders:
 function M.harmony.msg_assistant_analysis(thoughts)
     return M.harmony.START .. "assistant" .. M.harmony.CHANNEL .. "analysis" .. M.harmony.MESSAGE .. thoughts .. M.harmony.END
 end
 
 function M.harmony.msg_developer(contents)
     return M.harmony.START .. "developer" .. M.harmony.MESSAGE .. contents .. M.harmony.END
-end
-
-function M.harmony.start_assistant_json_tool_call(tool_name)
-    return M.harmony.START .. "assistant" .. M.harmony.CHANNEL .. "commentary to=" .. tool_name .. " " .. M.harmony.CONSTRAIN .. "json"
 end
 
 -- local lesser_used = {
