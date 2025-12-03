@@ -121,8 +121,8 @@ function manual_test()
     end
 
     -- make sure it can execute via either string or dict:
-    M.call({ patch = patch, }, log_it)
-    M.call(patch, log_it)
+    -- M.call({ patch = patch, }, log_it)
+    -- M.call(patch, log_it)
 end
 
 manual_test()
