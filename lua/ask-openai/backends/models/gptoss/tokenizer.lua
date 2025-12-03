@@ -21,6 +21,8 @@ function M.get_gptoss_max_tokens_for_level(level)
     end
 end
 
+-- FYI goal is to minimize exposure to key tags for any model, in my codebase
+--  will boost FIM and RAG utility when touching these files
 local open_tag = "<|"
 local close_tag = "|>"
 
