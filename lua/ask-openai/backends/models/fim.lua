@@ -182,7 +182,7 @@ function M.bytedance_seed_coder.get_fim_prompt_repo_level(request)
     --    gotta find the format they trained with, for multiple files (repo level training data)
 
     -- FYI! see bytedance_seed_coder_notes.md
-    local tokens = M.bytedance_seed_coder.sentinel_tokens
+    local seed_coder = M.bytedance_seed_coder.sentinel_tokens
     -- TLDR => issues with stop_token... rambles endlessly so this format must not be that close too what was trained
     --   whereas some initial testing with file_sep showed it was stopping (only issue was stop token / text changed a few times but it stopped)
     --   NEXT UP... go back to qwen25coder format and try that
@@ -264,11 +264,11 @@ function M.bytedance_seed_coder.get_fim_prompt_repo_level(request)
         -- .. "\n"
         --
         -- fyi, no newlines
-        .. tokens.FIM_SUFFIX
+        .. seed_coder.FIM_SUFFIX
         .. request.ps_chunk.suffix
-        .. tokens.FIM_PREFIX
+        .. seed_coder.FIM_PREFIX
         .. request.ps_chunk.prefix
-        .. tokens.FIM_MIDDLE
+        .. seed_coder.FIM_MIDDLE
 
     local prompt_lines = {}
     if any_repo_files then
