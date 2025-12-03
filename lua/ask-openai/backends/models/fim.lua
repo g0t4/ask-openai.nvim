@@ -380,20 +380,24 @@ function M.bytedance_seed_coder.get_fim_prompt_repo_level(request)
     return table.concat(prompt_lines, "\n")
 end
 
+local function mellum_tag(type)
+    return "<" .. type .. ">"
+end
 M.mellum = {
     -- https://huggingface.co/JetBrains/Mellum-4b-base/blob/main/special_tokens_map.json
     -- much in common with starcoder2
     sentinel_tokens = {
 
         -- FIM
-        fim_prefix = "<fim_prefix>",
-        fim_middle = "<fim_middle>",
-        fim_suffix = "<fim_suffix>",
-        fim_pad = "<fim_pad>",
+        fim_prefix = mellum_tag("fim_prefix"),
+        fim_middle = mellum_tag("fim_middle"),
+        fim_suffix = mellum_tag("fim_suffix"),
+        fim_pad    = mellum_tag("fim_pad"),
         -- FYI file_sep => filename, repo_name => reponame... can put that back if the prompt is unique to mellum anyways
         --  but right now I suspect it will be the same as qwen25coder and starcoder2
-        file_sep = "<filename>",
-        repo_name = "<reponame>",
+        file_sep   = mellum_tag("filename"),
+        repo_name  = mellum_tag("reponame"),
+
 
         -- roles:
         system = "<system>",
