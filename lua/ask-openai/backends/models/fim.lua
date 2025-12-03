@@ -28,14 +28,13 @@ function M.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(request)
     -- TODO if I allow the model to finish the reasoning... that might be best!
     --   Ask it to practice its change before it decides
     -- I could update my example too:
-    -- <analysis>
+    -- |channel|analysis|message|
     -- Let's practice the change first.
     -- I need to insert a variable name between 'return' and '+ b'.
     -- Candidate: a
     -- Check: would that make 'return a + b'? Yes.
     -- So the correct insertion is 'a'.
-    -- </analysis>
-    -- <final>
+    -- |channel|final|message|
 
     local builder = HarmonyRawFimPromptBuilder.new()
         :developer()
@@ -516,17 +515,7 @@ function M.mellum.get_fim_prompt(request)
         -- log:warn("current_file_name is nil")
         current_file_path = ""
     end
-    --
-    -- TODO ESCAPE sentinal tokens?
-    --
-    -- FYI carefully observe the format:
-    --     <filename>example.py
-    --     <fim_suffix>
-    --
-    --     # Test the function
-    --     result = calculate_sum(5, 10)
-    --     print(result)<fim_prefix>def calculate_sum(a, b):
-    --     <fim_middle>"""
+
     local fim_file_contents = tokens.file_sep
         .. current_file_path
         .. "\n"
@@ -538,11 +527,8 @@ function M.mellum.get_fim_prompt(request)
 
     prompt = prompt .. fim_file_contents
 
-    -- WARNING: anything after <|fim_middle|> is seen as part of the completion!
-
-
-    -- alt format example
-    -- f"<fim_suffix>{suffix}<fim_prefix>{prefix}<fim_middle>"
+    -- alt format example (with <> not ||)
+    -- f"|fim_suffix|{suffix}|fim_prefix|{prefix}|fim_middle|"
 
 
     return prompt
