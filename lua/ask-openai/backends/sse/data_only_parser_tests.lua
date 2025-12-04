@@ -146,7 +146,7 @@ describe("data-only events", function()
                 local error_text = parser:flush_dregs()
 
                 assert.are.same({}, events)
-                assert.are.same("invalid json: notvalidjson\n", error_text)
+                assert.are.same("invalid json in dregs: notvalidjson\n", error_text)
             end)
 
             it("NO newline at end => logs warning", function()
@@ -156,7 +156,7 @@ describe("data-only events", function()
                 local error_text = parser:flush_dregs()
 
                 assert.are.same({}, events)
-                assert.are.same("invalid json: notvalidjson", error_text)
+                assert.are.same("invalid json in dregs: notvalidjson", error_text)
             end)
         end)
     end)
