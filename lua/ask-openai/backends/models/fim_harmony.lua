@@ -50,6 +50,7 @@ end
 HarmonyFimPromptBuilder.developer_message = vim.trim([[
 You are completing code from a Neovim plugin.
 As the user types, the plugin suggests code completions based on their cursor position marked with: ]] .. qwen.FIM_MIDDLE .. [[
+
 The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near ]] .. qwen.FIM_MIDDLE .. [[
 Do NOT explain your decisions. Do NOT return markdown blocks ```
 Do NOT repeat surrounding code (suffix/prefix)
@@ -272,8 +273,11 @@ function HarmonyFimPromptBuilder.gptoss.get_fim_chat_messages(request, level)
     --    I can even diff the current line vs the generated to see what to insert so I don't have to do extmarks that replace the full line
 
     local dev = HarmonyFimPromptBuilder.developer_message
+    -- FYI! first line of [[ not included if it is empty, so no trailing \n on first line! Thus I had to add some blank lines I wanted in my prompt
     -- FYI if/when you test out using partial thinking with raw template above, then put this into the shared developer message
     dev = dev .. [[
+
+
 Make sure to practice the code change before you return a suggestion. Take the cursor line (at least) and type it out with the new code and make sure it is valid, correct code.
 ]]
 
