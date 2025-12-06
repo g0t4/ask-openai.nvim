@@ -39,8 +39,8 @@ M.ToolDefinition = {
         description = "Patch a file",
         name = "apply_patch",
         ---@diagnostic disable-next-line: missing-fields
-        parameters = string_arg,
-        -- parameters = alternative_dict_args
+        -- parameters = string_arg, -- a few examples of missing " on the end of json dict (even though I say string it makes dict with patch proeprty, often)... fux it all up... I should add some error recovery?
+        parameters = alternative_dict_args
     },
     type = "function"
 }
