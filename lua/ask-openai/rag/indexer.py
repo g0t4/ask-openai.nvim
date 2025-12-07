@@ -84,11 +84,15 @@ class IncrementalRAGIndexer:
         if not rag_yaml.exists():
             logger.info(f"no rag config found {rag_yaml}, using default config")
             return self.get_default_indexed_file_extensions()
+
         async with aiofiles.open(rag_yaml, mode="r") as f:
             content = await f.read()
         config = yaml.safe_load(content)
         logger.pp_debug(f"found rag config: {rag_yaml}", config)
-        return config["include"]
+
+        if "include" in config and config["include"]:
+            return config["include"]
+        return self.get_default_indexed_file_extensions()
 
     def warn_about_other_extensions(self, index_languages: list[str]):
 
