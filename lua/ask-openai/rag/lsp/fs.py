@@ -1,33 +1,11 @@
-from dataclasses import dataclass, field
 from typing import Optional
 import aiofiles
 from pathlib import Path
 
-import yaml
 from .logs import get_logger
+from .config import Config, load_config
 
 logger = get_logger(__name__)
-
-@dataclass
-class Config:
-    ignores: list[str] = field(default_factory=list)
-    include: list[str] = field(default_factory=list)
-    global_languages: list[str] = field(default_factory=list)
-
-    @staticmethod
-    def default() -> "Config":
-        return Config(
-            include=["lua", "py", "fish"],  #
-        )
-
-def load_config(yaml_text: str) -> Config:
-    raw = yaml.safe_load(yaml_text)
-
-    return Config(
-        ignores=raw.get("ignores") or [],
-        include=raw.get("include") or [],
-        global_languages=raw.get("global_languages") or [],
-    )
 
 root_path: Path | None = None
 dot_rag_dir: Path | None = None

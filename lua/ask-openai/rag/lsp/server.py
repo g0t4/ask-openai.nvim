@@ -79,8 +79,8 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
     # server.workspace.folders
 
     fs.set_root_dir(params.root_path)
-
-    if fs.is_no_rag_dir():
+    config = fs.get_config()
+    if not config.enabled or fs.is_no_rag_dir():
         # DO NOT notify yet, that has to come after server responds to initialize request
         return types.InitializeResult(capabilities=types.ServerCapabilities())
 
@@ -97,6 +97,12 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #  then, client sends initialized (this) request => waits for completion
     #    does not send other requests until initialized is done
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
+
+    config = fs.get_config()
+    if not config.enabled:
+        logger.info("RAG disabled, notifying LSP client to shutdown")
+        tell_client_to_shut_that_shit_down_now()
+        return
 
     if fs.is_no_rag_dir():
         # TODO allow building the index from scratch?

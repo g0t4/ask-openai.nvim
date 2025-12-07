@@ -22,6 +22,7 @@ from pydants import write_json
 import fs
 from lsp.storage import Chunk, FileStat, load_prior_data
 from lsp.chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
+from lsp.config import Config, load_config
 
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False
@@ -89,6 +90,10 @@ class IncrementalRAGIndexer:
             content = await f.read()
         config = yaml.safe_load(content)
         logger.pp_debug(f"found rag config: {rag_yaml}", config)
+
+        if "enabled" in config and not config["enabled"]:
+            logger.info(f"RAG indexing disabled in {rag_yaml}, hack just returns no supported file extension to stop (fine for now)")
+            return []
 
         if "include" in config and config["include"]:
             return config["include"]

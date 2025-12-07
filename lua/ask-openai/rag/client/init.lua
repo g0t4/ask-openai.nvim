@@ -4,11 +4,48 @@ local ansi = require("ask-openai.predictions.ansi")
 
 local M = {}
 
-local function check_supported_dirs()
-    local cwd = vim.fn.getcwd()
-    local dot_rag_dir = cwd .. "/.rag"
+---@param work_dir string
+---@return table|nil rag_yaml_config
+local function load_rag_yaml_config(work_dir)
+    -- FYI
+    -- luarocks install --lua-version=5.1  lyaml
 
-    local is_rag_dir = files.exists(dot_rag_dir)
+    local rag_yaml_path = work_dir .. "/.rag.yaml"
+    if not files.exists(rag_yaml_path) then
+        log:error("no .rag.yaml found at", rag_yaml_path)
+        return nil
+    end
+
+    local yaml_content = vim.fn.readfile(rag_yaml_path)
+    if not yaml_content then
+        log:error("failed to read file contents", rag_yaml_path)
+        return nil
+    end
+
+    local yaml_str = table.concat(yaml_content, "\n")
+
+    local lyaml = require("lyaml")
+    local ok, parsed = pcall(lyaml.load, yaml_str)
+    if ok then
+        return parsed
+    end
+
+    log:warn("Failed to parse yaml" .. rag_yaml_path)
+    return nil
+end
+
+local function check_supported_dirs()
+    local work_dir = vim.fn.getcwd()
+    local dot_rag_dir = work_dir .. "/.rag"
+
+    local is_rag_dir = files.exists(work_dir)
+    M.rag_yaml = load_rag_yaml_config(work_dir)
+    -- log:info("RAG", vim.inspect(M.rag_yaml))
+
+    if M.rag_yaml and not M.rag_yaml.enabled then
+        log:error("RAG is disabled in .rag.yaml")
+        return
+    end
 
     if not is_rag_dir then
         -- fallback check git repo root
@@ -71,8 +108,21 @@ function M.get_filetypes_for_workspace()
         :totable()
 end
 
+function M.is_rag_supported()
+    if M.rag_yaml and not M.rag_yaml.enabled then
+        -- FYI this was a rushed addition, to toggle RAG on/off in .rag.yaml...
+        --   don't be surprised if you have to fix some bugs
+        --   I didn't care to spend too much time making sure this was done "right"
+        return false
+    end
+    return M.is_rag_indexed_workspace == true
+end
+
 function M.is_rag_supported_in_current_file()
-    if not M.is_rag_indexed_workspace then
+    -- TODO add a virtual toggle so LSP failure stops requests too
+    --   can I detect non-connected LSP (w/o hugh perf hit?)
+
+    if not M.is_rag_supported() then
         return false
     end
 

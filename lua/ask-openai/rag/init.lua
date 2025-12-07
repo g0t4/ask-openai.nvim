@@ -13,13 +13,21 @@ function M.setup_lsp()
     -- TMP disable, i.e. when working on lsp itself :)
     --  HRMm wont be easy to enable/disable this though, will have to restart if LSP wasn't started and rag is toggled?
     if not api.is_rag_enabled() then
-        log:trace("NOT starting LSP (b/c RAG is disabled)")
+        log:trace("NOT starting LSP (b/c RAG is toggled off)")
+        return
+    end
+    local rag_client = require("ask-openai.rag.client")
+    if not rag_client.is_rag_supported() then
+        log:error("NOT starting LSP for RAG")
         return
     end
 
     local lspconfig = require("lspconfig")
     local configs = require("lspconfig.configs")
-    local rag_client = require("ask-openai.rag.client")
+
+    -- TODO detect initial failure to start LSP => stop trying... so when embeddings server is down
+    --  FYI see rag_client.is_rag_supported_in_current_file() for ideas
+    --  maybe even set some failure flag from initial setup here (or in a callback)
 
     if not configs.ask_language_server then
         configs.ask_language_server = {
