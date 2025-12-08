@@ -118,19 +118,19 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     loop = asyncio.get_event_loop()
     update_queue = FileUpdateQueue(config, server, loop)
 
-async def update_rag_for_text_doc(doc_uri: str):
+async def schedule_update(doc_uri: str):
     if fs.is_no_rag_dir():
         return
     update_queue.push(doc_uri)
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 async def doc_saved(params: types.DidSaveTextDocumentParams):
-    await update_rag_for_text_doc(params.text_document.uri)
+    await schedule_update(params.text_document.uri)
 
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 async def doc_opened(params: types.DidOpenTextDocumentParams):
     # imports.on_open(params)
-    await update_rag_for_text_doc(params.text_document.uri)
+    await schedule_update(params.text_document.uri)
 
 # @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
 # async def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
