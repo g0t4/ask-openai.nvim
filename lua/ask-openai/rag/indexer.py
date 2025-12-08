@@ -91,6 +91,7 @@ class IncrementalRAGIndexer:
         config = yaml.safe_load(content)
         logger.pp_debug(f"found rag config: {rag_yaml}", config)
 
+        # TODO reuse the lsp.config / set_root_dir logic from server?
         if "enabled" in config and not config["enabled"]:
             logger.info(f"RAG indexing disabled in {rag_yaml}, hack just returns no supported file extension to stop (fine for now)")
             return []
