@@ -35,31 +35,28 @@ class FileUpdateQueue:
 
         return self.streams[uri]
 
-    def push(self, uri: str):
-        """Push an update event for a file (fire-and-forget)."""
+    def fire_and_forget(self, uri: str):
+
         self._get_stream(uri).on_next({})  # no event details, will lookup doc when callback runs
 
     def _schedule(self, uri):
-        """Cancel stale work, schedule new async job."""
-        logger.info(f"_schedule' {uri}")
 
         old = self.tasks.get(uri)
         if old and not old.done():
-            logger.info(f"old task is not done: {old}")
-            old.cancel()  # TODO setup cooperative cancellation?
+            logger.info(f"old task is NOT done: {old}")
+            old.cancel()  # PRN setup cooperative cancellation?
 
         task = self.loop.create_task(self._worker(uri))
         self.tasks[uri] = task
 
     async def _worker(self, uri):
-        logger.info(f"_worker' {uri}")
+        # logger.info(f"_worker' {uri}")
         try:
             await self.update_embeddings(uri)
         except asyncio.CancelledError:
             logger.debug(f"update cancelled for {uri}")  # TODO comment out once happy its working
-            pass
         except Exception as exc:
-            print(f"[update error] {uri}: {exc}")
+            logger.error(f"[update error] {uri}: {exc}")
 
     async def update_embeddings(self, doc_uri: str):
         doc_path = uris.to_fs_path(doc_uri)
