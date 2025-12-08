@@ -145,9 +145,15 @@ local function fim_concat(ps_chunk)
     local query = ps_chunk.rag_cursor_line_before_cursor
 
     if trim(query) == "" then
-        -- log:trace(ansi.white_bold(ansi.red_bg("SKIPPING Semantic Grep b/c no query (nothing on cursor line before cursor)")))
-        -- PRN previous line? with a non-empty value? if so, pass all lines or a subset from ps_chunk builder (on ps_chunk)
-        return nil
+        local few_before_text = table.concat(ps_chunk.few_lines_before or {}, "\n") or ""
+        if vim.trim(few_before_text) ~= "" then
+            query = few_before_text
+        else
+            log:trace(ansi.white_bold(ansi.red_bg("SKIPPING RAG in FIM b/c cursor line is empty (before cursor) and nothing in a few lines above either")))
+            -- PRN allow suffix if empty prefix line? OR take a few lines around it?
+            -- PRN previous line? with a non-empty value? if so, pass all lines or a subset from ps_chunk builder (on ps_chunk)
+            return nil
+        end
     end
 
     log:trace(string.format("fim_concat: query=%q", query))

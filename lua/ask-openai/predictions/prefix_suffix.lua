@@ -6,7 +6,8 @@ local IGNORE_BOUNDARIES = false
 ---@field end_line_base1 integer
 ---@field prefix string
 ---@field suffix string
----@field rag_cursor_line_before_cursor string
+---@field rag_cursor_line_before_cursor string -- for semantic_grep
+---@field few_lines_before string[] -- for semantic_grep
 local PrefixSuffixChunk = {}
 
 function PrefixSuffixChunk:new(o)
@@ -82,7 +83,7 @@ function PrefixSuffixChunk.get_prefix_suffix_chunk(take_num_lines_each_way)
     local lines_before_cursor_line = vim.api.nvim_buf_get_lines(current_bufnr, take_start_row_base0, cursor_line_base0, IGNORE_BOUNDARIES) -- 0indexed, END-EXCLUSIVE
 
     local prefix_text = table.concat(lines_before_cursor_line, "\n") .. "\n" .. cursor_row_text_before_cursor
-
+    local few_lines_before = vim.list_slice(lines_before_cursor_line, #lines_before_cursor_line - 4)
 
     -- * SUFFIX
     -- FYI char under the cursor is in the suffix
@@ -107,6 +108,7 @@ function PrefixSuffixChunk.get_prefix_suffix_chunk(take_num_lines_each_way)
     ps_chunk.start_line_base1 = take_start_row_base0 + 1
     ps_chunk.end_line_base1 = take_end_row_base0 + 1
     ps_chunk.rag_cursor_line_before_cursor = cursor_row_text_before_cursor
+    ps_chunk.few_lines_before = few_lines_before
     return ps_chunk
 end
 
