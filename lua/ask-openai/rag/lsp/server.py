@@ -69,11 +69,9 @@ async def sleepy(_ls: LanguageServer, args: dict):
     finally:
         remove_stopper(msg_id)
 
-update_queue: FileUpdateQueue
-
 @server.feature(types.INITIALIZE)
 def on_initialize(_: LanguageServer, params: types.InitializeParams):
-    global dot_rag_dir, config, update_queue
+    global dot_rag_dir, config
 
     # # PRN use workspace folders if multi-workspace ...
     # # FYI could also get me CWD, round about way, if I wanted to prioritize that for .rag dir over git repo root
@@ -86,16 +84,14 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
         # DO NOT notify yet, that has to come after server responds to initialize request
         return types.InitializeResult(capabilities=types.ServerCapabilities())
 
-    ignores.use_pygls_workspace(fs.root_path)
-
-    loop = asyncio.get_event_loop()
-    update_queue = FileUpdateQueue(config, server, loop)
-
 def tell_client_to_shut_that_shit_down_now():
     server.protocol.notify("fuu/no_dot_rag__do_the_right_thing_wink")
 
+update_queue: FileUpdateQueue
+
 @server.feature(types.INITIALIZED)
 def on_initialized(_: LanguageServer, _params: types.InitializedParams):
+    global update_queue
     #  FYI server is managed by the client!
     #  client sends initialize request first => waits for server to send InitializeResult
     #    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialize
@@ -116,6 +112,11 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
 
     rag.load_model_and_indexes(fs.dot_rag_dir)  # TODO! ASYNC?
     rag.validate_rag_indexes()  # TODO! ASYNC?
+
+    ignores.use_pygls_workspace(fs.root_path)
+
+    loop = asyncio.get_event_loop()
+    update_queue = FileUpdateQueue(config, server, loop)
 
 async def update_rag_for_text_doc(doc_uri: str):
     if fs.is_no_rag_dir():
