@@ -61,9 +61,7 @@ async def handle_semantic_grep_ls_command(args: LSPSemanticGrepRequest) -> LSPSe
 async def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions):
     file_path = Path(lsp_doc.path)
 
-    hash = get_file_hash_from_lines(lsp_doc.lines)
-
-    new_chunks = build_chunks_from_lines(file_path, hash, lsp_doc.lines, options)  # PRN await
-
     with logger.timer(f"update_file {fs.get_loggable_path(file_path)}"):
+        hash = get_file_hash_from_lines(lsp_doc.lines)
+        new_chunks = build_chunks_from_lines(file_path, hash, lsp_doc.lines, options)  # PRN await
         await datasets.update_file(file_path, new_chunks)
