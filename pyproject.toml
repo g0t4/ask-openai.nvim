@@ -25,6 +25,7 @@ dependencies = [
     "rank-bm25>=0.2.2",
     "requests>=2.32.3",
     "rich>=14.0.0",
+    "rx>=3.2.0",
     "sentence-transformers>=4.1.0",
     "setuptools>=80.9.0",
     "tree-sitter>=0.25.2",
