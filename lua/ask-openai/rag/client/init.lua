@@ -4,21 +4,24 @@ local ansi = require("ask-openai.predictions.ansi")
 
 local M = {}
 
+---@class RagYamlConfig
+---@field enabled boolean
+
 ---@param work_dir string
----@return table|nil rag_yaml_config
+---@return RagYamlConfig?
 local function load_rag_yaml_config(work_dir)
     -- FYI
     -- luarocks install --lua-version=5.1  lyaml
 
     local rag_yaml_path = work_dir .. "/.rag.yaml"
     if not files.exists(rag_yaml_path) then
-        log:error("no .rag.yaml found at", rag_yaml_path)
+        log:info("no .rag.yaml found at", rag_yaml_path)
         return nil
     end
 
     local yaml_content = vim.fn.readfile(rag_yaml_path)
     if not yaml_content then
-        log:error("failed to read file contents", rag_yaml_path)
+        error("failed to read file contents", rag_yaml_path)
         return nil
     end
 
@@ -27,11 +30,18 @@ local function load_rag_yaml_config(work_dir)
     local lyaml = require("lyaml")
     local ok, parsed = pcall(lyaml.load, yaml_str)
     if not ok then
-        log:warn("Failed to parse yaml" .. rag_yaml_path)
+        error("Failed to parse yaml" .. rag_yaml_path)
         return nil
     end
 
-    return parsed
+    ---@type RagYamlConfig
+    local parsed_config = parsed or {}
+
+    -- AS NEEDED load defaults
+    if parsed_config.enabled == nil then
+        parsed_config.enabled = true
+    end
+    return parsed_config
 end
 
 local function check_supported_dirs()
