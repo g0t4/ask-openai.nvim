@@ -64,27 +64,11 @@ class IncrementalRAGIndexer:
         self.warn_about_other_extensions(index_these_file_extensions)
         await signal_hotpath_done_in_background()
 
-    def get_default_indexed_file_extensions(self):
-        # TODO I need to create groupings of related extensions... i.e. fish+zsh+bash+sh as 'shell' type
-        #   TODO! combine alt file extensions that are the same: yaml/yml
-        #   PRN also use shebang when chunking files? and look at plaintext, extensionless files w/ a shebang (esp chmod +x files)
-        return [
-            "lua", "py", "java", "js", "ts", "html",
-            "md", "json", "yaml", "yml",
-            "fish", "zsh", "sh", # shells
-            "cpp", "cc", "c", "h", "hpp", # c related
-            "m", "mm", # objective c
-            "cu", "cuh", "cl", # GPU
-            "rs",
-            "go",
-        ] # yapf: disable
-
-
     async def get_indexed_file_extensions(self):
         rag_yaml = self.source_code_dir / ".rag.yaml"
         if not rag_yaml.exists():
             logger.info(f"no rag config found {rag_yaml}, using default config")
-            return self.get_default_indexed_file_extensions()
+            return Config.default().include
 
         async with aiofiles.open(rag_yaml, mode="r") as f:
             content = await f.read()
@@ -96,8 +80,6 @@ class IncrementalRAGIndexer:
             return []
 
         return config.include
-        # TODO move default list to config module?? right?
-        # return self.get_default_indexed_file_extensions()
 
     def warn_about_other_extensions(self, index_languages: list[str]):
 

@@ -2,9 +2,22 @@ import yaml
 
 from dataclasses import dataclass, field
 
-default_includes: list[str] = ["lua", "py", "fish"]
+# TODO I need to create groupings of related extensions... i.e. fish+zsh+bash+sh as 'shell' type
+#   TODO! combine alt file extensions that are the same: yaml/yml
+#   PRN also use shebang when chunking files? and look at plaintext, extensionless files w/ a shebang (esp chmod +x files)
+default_includes: list[str] = [
+        "lua", "py", "java", "js", "ts", "html",
+        "md", "json", "yaml", "yml",
+        "fish", "zsh", "sh", # shells
+        "cpp", "cc", "c", "h", "hpp", # c related
+        "m", "mm", # objective c
+        "cu", "cuh", "cl", # GPU
+        "rs",
+        "go",
+    ] # yapf: disable
+
 default_ignores: list[str] = []
-default_global_languages: list[str] = []
+default_global_languages: list[str] = []  # no defaults b/c if you don't set it, you get all indexed file types (includes)
 default_enabled: bool = True
 
 @dataclass
