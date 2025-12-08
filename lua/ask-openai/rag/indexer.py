@@ -88,17 +88,16 @@ class IncrementalRAGIndexer:
 
         async with aiofiles.open(rag_yaml, mode="r") as f:
             content = await f.read()
-        config = yaml.safe_load(content)
+        config = load_config(content)
         logger.pp_debug(f"found rag config: {rag_yaml}", config)
 
-        # TODO reuse the lsp.config / set_root_dir logic from server?
-        if "enabled" in config and not config["enabled"]:
+        if not config.enabled:
             logger.info(f"RAG indexing disabled in {rag_yaml}, hack just returns no supported file extension to stop (fine for now)")
             return []
 
-        if "include" in config and config["include"]:
-            return config["include"]
-        return self.get_default_indexed_file_extensions()
+        return config.include
+        # TODO move default list to config module?? right?
+        # return self.get_default_indexed_file_extensions()
 
     def warn_about_other_extensions(self, index_languages: list[str]):
 
