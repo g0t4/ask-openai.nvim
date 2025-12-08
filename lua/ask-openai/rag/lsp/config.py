@@ -36,6 +36,15 @@ class Config:
             enabled=default_enabled,
         )
 
+    def is_file_type_supported(self, doc_path: str) -> bool:
+        _, ext = os.path.splitext(doc_path)
+        file_type = ext.lstrip('.').lower()
+
+        # TODO is this file extension or was filetype vim filetype? if so you'll have to use a lookup!
+        #   FYI can fix that later, just get this started for now so I don't log false positives in LSP server for Unsupported files (most of the time anyways)
+        return file_type in self.include
+        # and (file_type not in self.ignores) # TODO ignores need a method that does the match check
+
 def load_config(yaml_text: str) -> Config:
     raw = yaml.safe_load(yaml_text)
 

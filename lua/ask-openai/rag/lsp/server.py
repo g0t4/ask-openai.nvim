@@ -71,7 +71,7 @@ async def sleepy(_ls: LanguageServer, args: dict):
 
 @server.feature(types.INITIALIZE)
 def on_initialize(_: LanguageServer, params: types.InitializeParams):
-    global dot_rag_dir
+    global dot_rag_dir, config
 
     # # PRN use workspace folders if multi-workspace ...
     # # FYI could also get me CWD, round about way, if I wanted to prioritize that for .rag dir over git repo root
@@ -98,7 +98,6 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #    does not send other requests until initialized is done
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
 
-    config = fs.get_config()
     if not config.enabled:
         logger.info("RAG disabled, notifying LSP client to shutdown")
         tell_client_to_shut_that_shit_down_now()
@@ -120,8 +119,12 @@ async def update_rag_for_text_doc(doc_uri: str):
         return
 
     doc_path = uris.to_fs_path(doc_uri)
+    # logger.error(f"doc_path: {doc_path}")
     if doc_path == None:
         logger.warning(f"abort update rag... to_fs_path returned {doc_path}")
+        return
+    if not config.is_file_type_supported(doc_path):
+        logger.debug(f"filetype not supported: {doc_path}")
         return
     if ignores.is_ignored(doc_path, server):
         logger.debug(f"rag ignored doc: {doc_path}")
