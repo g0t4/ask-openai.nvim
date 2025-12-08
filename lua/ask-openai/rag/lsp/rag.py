@@ -63,7 +63,7 @@ async def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerO
 
     hash = get_file_hash_from_lines(lsp_doc.lines)
 
-    new_chunks = build_chunks_from_lines(file_path, hash, lsp_doc.lines, options)
+    new_chunks = build_chunks_from_lines(file_path, hash, lsp_doc.lines, options)  # PRN await
 
     with logger.timer(f"update_file {fs.get_loggable_path(file_path)}"):
         await datasets.update_file(file_path, new_chunks)

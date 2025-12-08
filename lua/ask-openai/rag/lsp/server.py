@@ -5,15 +5,15 @@ import signal
 from pathlib import Path
 
 import lsprotocol.types as types
-from pygls import uris
 from pygls.lsp.server import LanguageServer
 from pygls.protocol.json_rpc import MsgId
 
-from lsp.chunks.chunker import RAGChunkerOptions
-from lsp import ignores, rag
 from lsp import fs
+from lsp import ignores, rag
+from lsp.chunks.chunker import RAGChunkerOptions
 from lsp.context.imports import imports
 from lsp.logs import get_logger, logging_fwk_to_language_server_log_file, disable_printtmp
+from lsp.updates.file_queue import FileUpdateQueue
 
 disable_printtmp()  # LSP uses STDOUT for comms!
 
@@ -69,9 +69,11 @@ async def sleepy(_ls: LanguageServer, args: dict):
     finally:
         remove_stopper(msg_id)
 
+update_queue: FileUpdateQueue
+
 @server.feature(types.INITIALIZE)
 def on_initialize(_: LanguageServer, params: types.InitializeParams):
-    global dot_rag_dir, config
+    global dot_rag_dir, config, update_queue
 
     # # PRN use workspace folders if multi-workspace ...
     # # FYI could also get me CWD, round about way, if I wanted to prioritize that for .rag dir over git repo root
@@ -85,6 +87,9 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
         return types.InitializeResult(capabilities=types.ServerCapabilities())
 
     ignores.use_pygls_workspace(fs.root_path)
+
+    loop = asyncio.get_event_loop()
+    update_queue = FileUpdateQueue(config, server, loop)
 
 def tell_client_to_shut_that_shit_down_now():
     server.protocol.notify("fuu/no_dot_rag__do_the_right_thing_wink")
@@ -113,36 +118,9 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     rag.validate_rag_indexes()  # TODO! ASYNC?
 
 async def update_rag_for_text_doc(doc_uri: str):
-    # TODO! add buffer_with_time or throttle or debounce... I save frequently and I don't need to rebuild right away, every time
-    #  mostly due to doc_saved which I have a habit of saving rapidly and I don't wanna change that
     if fs.is_no_rag_dir():
         return
-
-    doc_path = uris.to_fs_path(doc_uri)
-    # logger.error(f"doc_path: {doc_path}")
-    if doc_path == None:
-        logger.warning(f"abort update rag... to_fs_path returned {doc_path}")
-        return
-    if not config.is_file_type_supported(doc_path):
-        logger.debug(f"filetype not supported: {doc_path}")
-        return
-    if ignores.is_ignored(doc_path, server):
-        logger.debug(f"rag ignored doc: {doc_path}")
-        return
-    if Path(doc_path).suffix == "":
-        #  i.e. githooks
-        # currently I don't index extensionless anwyways, so skip for now in updates
-        # would need to pass vim_filetype from client (like I do for FIM queries within them)
-        #   alternatively I could parse shebang?
-        # but, I want to avoid extensionless so lets not make it possible to use them easily :)
-        logger.info(f"skip extensionless files {doc_path}")
-        return
-
-    doc = server.workspace.get_text_document(doc_uri)  # TODO! async
-    if doc is None:
-        logger.error(f"abort... doc not found {doc_uri}")
-        return
-    await rag.update_file_from_pygls_doc(doc, RAGChunkerOptions.ProductionOptions())  # TODO! ASYNC REVIEW
+    update_queue.push(doc_uri)
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 async def doc_saved(params: types.DidSaveTextDocumentParams):
