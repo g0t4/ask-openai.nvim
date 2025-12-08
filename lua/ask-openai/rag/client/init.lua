@@ -26,12 +26,12 @@ local function load_rag_yaml_config(work_dir)
 
     local lyaml = require("lyaml")
     local ok, parsed = pcall(lyaml.load, yaml_str)
-    if ok then
-        return parsed
+    if not ok then
+        log:warn("Failed to parse yaml" .. rag_yaml_path)
+        return nil
     end
 
-    log:warn("Failed to parse yaml" .. rag_yaml_path)
-    return nil
+    return parsed
 end
 
 local function check_supported_dirs()
