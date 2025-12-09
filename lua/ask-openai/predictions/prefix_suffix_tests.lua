@@ -32,6 +32,7 @@ describe("get_prefix_suffix", function()
             suffix = "line 4\nline 5\nline 6\nline 7",
             -- FYI rag_cursor_line_before_cursor is WIP so just nuke this assertion if causing issues (these tests were not designed with this in mind, I just added it to make tests pass again)
             rag_cursor_line_before_cursor = "", -- no text before cursor, since col_base0 = 0
+            few_lines_before = { "line 1", "line 2", "line 3" },
             start_line_base1 = 1,
             end_line_base1 = 7,
         }, ps_chunk)
@@ -68,6 +69,7 @@ describe("get_prefix_suffix", function()
             suffix = "7\n",
             -- FYI rag_cursor_line_before_cursor can be nuked (see above):
             rag_cursor_line_before_cursor = "line ", -- cursor is on the last char of the line, so that would be the number in this case
+            few_lines_before = { "line 4", "line 5", "line 6" },
             start_line_base1 = 4,
             end_line_base1 = 7,
         }, ps_chunk)
