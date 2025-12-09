@@ -99,7 +99,7 @@ function PrefixSuffixChunk.get_prefix_suffix_chunk(take_num_lines_each_way)
     )
 
     local suffix_text = cursor_row_text_cursor_plus
-        .. "\n" -- TODO! doesn't cursor row have a newline already? why am I adding that here?
+        .. "\n"
         .. table.concat(lines_after_cursor_line, "\n")
 
     local ps_chunk = PrefixSuffixChunk:new()
@@ -108,7 +108,8 @@ function PrefixSuffixChunk.get_prefix_suffix_chunk(take_num_lines_each_way)
     ps_chunk.start_line_base1 = take_start_row_base0 + 1
     ps_chunk.end_line_base1 = take_end_row_base0 + 1
     ps_chunk.cursor_line = {
-        before_cursor = cursor_row_text_before_cursor
+        before_cursor = cursor_row_text_before_cursor,
+        after_cursor = cursor_row_text_cursor_plus
     }
     ps_chunk.few_lines_before = few_lines_before
     return ps_chunk

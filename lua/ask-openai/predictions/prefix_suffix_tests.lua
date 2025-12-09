@@ -32,6 +32,7 @@ describe("get_prefix_suffix", function()
             suffix = "line 4\nline 5\nline 6\nline 7",
             cursor_line = {
                 before_cursor = "", -- no text before cursor, since col_base0 = 0
+                after_cursor = "line 4", -- cursor is on first column, thus all text on the line comes after it
             },
             few_lines_before = { "line 1", "line 2", "line 3" },
             start_line_base1 = 1,
@@ -70,6 +71,7 @@ describe("get_prefix_suffix", function()
             suffix = "7\n",
             cursor_line = {
                 before_cursor = "line ", -- cursor is on the last char of the line, so that would be the number in this case
+                after_cursor = "7", -- cursor is on col_base1==6 => so the 7 is under the cursor (means it is after the cursor, too)
             },
             few_lines_before = { "line 4", "line 5", "line 6" },
             start_line_base1 = 4,
