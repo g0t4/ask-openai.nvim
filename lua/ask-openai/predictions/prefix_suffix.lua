@@ -6,8 +6,7 @@ local IGNORE_BOUNDARIES = false
 ---@field end_line_base1 integer
 ---@field prefix string
 ---@field suffix string
----@field cursor_line { before_cursor: string }
----@field few_lines_before string[] -- for semantic_grep
+---@field cursor_line { before_cursor: string, after_cursor: string, few_lines_before: string[] }
 local PrefixSuffixChunk = {}
 
 function PrefixSuffixChunk:new(o)
@@ -108,10 +107,11 @@ function PrefixSuffixChunk.get_prefix_suffix_chunk(take_num_lines_each_way)
     ps_chunk.start_line_base1 = take_start_row_base0 + 1
     ps_chunk.end_line_base1 = take_end_row_base0 + 1
     ps_chunk.cursor_line = {
+        -- currently intended for RAG + future user message/prompt customization based on current line's cursor position
+        few_lines_before = few_lines_before,
         before_cursor = cursor_row_text_before_cursor,
-        after_cursor = cursor_row_text_cursor_plus
+        after_cursor = cursor_row_text_cursor_plus,
     }
-    ps_chunk.few_lines_before = few_lines_before
     return ps_chunk
 end
 

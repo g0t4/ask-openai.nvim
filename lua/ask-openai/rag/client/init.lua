@@ -154,8 +154,13 @@ local function fim_concat(ps_chunk)
     -- * TESTING FIM+RAG with cursor line ONLY for query
     local query = ps_chunk.cursor_line.before_cursor
 
+    -- TODO add last user message custom instructions based on cursor_line situation for FIM...
+    --     in middle of line => suggest intra line completion, rarely multiline
+    --     at end of line => suggest finish current line and/or multiline
+    --     blank line => suggest multiline
+
     if trim(query) == "" then
-        local few_before_text = table.concat(ps_chunk.few_lines_before or {}, "\n") or ""
+        local few_before_text = table.concat(ps_chunk.cursor_line.few_lines_before or {}, "\n") or ""
         if vim.trim(few_before_text) ~= "" then
             query = few_before_text
         else
