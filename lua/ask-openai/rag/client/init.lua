@@ -152,7 +152,7 @@ local function fim_concat(ps_chunk)
     -- FYI see fim_query_notes.md for past and future ideas for Semantic Grep selection w.r.t. RAG+FIM
 
     -- * TESTING FIM+RAG with cursor line ONLY for query
-    local query = ps_chunk.rag_cursor_line_before_cursor
+    local query = ps_chunk.cursor_line.before_cursor
 
     if trim(query) == "" then
         local few_before_text = table.concat(ps_chunk.few_lines_before or {}, "\n") or ""
