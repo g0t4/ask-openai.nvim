@@ -73,6 +73,38 @@ def format_tool(msg: Dict[str, Any]) -> str:
     reset_code = "\x1b[0m"
     return f"{color_code}TOOL{reset_code}:\n{content}\n"
 
+def _handle_apply_patch(arguments: str) -> str:
+    import json
+
+    try:
+        parsed = json.loads(arguments)
+    except Exception:
+        return arguments
+
+    if isinstance(parsed, dict):
+        if "patch" in parsed:
+            return str(parsed["patch"])
+        return json.dumps(parsed, ensure_ascii=False)
+    return str(parsed)
+
+def _handle_run_command(arguments: str) -> str:
+    return arguments
+
+def _handle_semantic_grep(arguments: str) -> str:
+    return arguments
+
+def _handle_unknown_tool(arguments: str) -> str:
+    return arguments
+
+def _format_tool_arguments(func_name: str, arguments: str) -> str:
+    if func_name == "apply_patch":
+        return _handle_apply_patch(arguments)
+    if func_name == "run_command":
+        return _handle_run_command(arguments)
+    if func_name == "semantic_grep":
+        return _handle_semantic_grep(arguments)
+    return _handle_unknown_tool(arguments)
+
 def format_assistant(msg: dict) -> str:
     content = msg.get("content", "")
     if isinstance(content, dict) and "text" in content:
@@ -84,7 +116,7 @@ def format_assistant(msg: dict) -> str:
 
     reasoning = msg.get("reasoning_content")
     if reasoning:
-        reasoning_formatted = _format_text(reasoning) if isinstance(reasoning, str) else _format_json(reasoning)
+        reasoning_formatted = (_format_text(reasoning) if isinstance(reasoning, str) else _format_json(reasoning))
         reasoning_section = f"\nReasoning:\n{reasoning_formatted}"
     else:
         reasoning_section = ""
@@ -98,7 +130,8 @@ def format_assistant(msg: dict) -> str:
             function = call.get("function", {})
             func_name = function.get("name", "")
             arguments = function.get("arguments", "")
-            formatted_calls.append(f"- ID: {call_id}\n  Type: {call_type}\n  Function: {func_name}\n  Arguments: {arguments}")
+            displayed_args = _format_tool_arguments(func_name, arguments)
+            formatted_calls.append(f"- ID: {call_id}\n  Type: {call_type}\n  Function: {func_name}\n  Arguments: {displayed_args}")
         tool_section = "\nTool Calls:\n" + "\n".join(formatted_calls)
     else:
         tool_section = ""
