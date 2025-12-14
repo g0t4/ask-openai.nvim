@@ -74,7 +74,7 @@ def format_tool(msg: Dict[str, Any]) -> str:
     reset_code = "\x1b[0m"
     return f"{color_code}TOOL{reset_code}:\n{content}\n"
 
-def _handle_apply_patch(arguments: str) -> str:
+def _handle_apply_patch(arguments: str) -> str | Syntax:
 
     try:
         parsed = json.loads(arguments)
@@ -85,7 +85,7 @@ def _handle_apply_patch(arguments: str) -> str:
         patch_content = str(parsed["patch"])
         try:
             syntax = Syntax(patch_content, "diff", theme="ansi_dark", line_numbers=False)
-            return str(syntax)
+            return syntax
         except Exception:
             return patch_content
     if isinstance(parsed, dict):
@@ -101,7 +101,7 @@ def _handle_semantic_grep(arguments: str) -> str:
 def _handle_unknown_tool(arguments: str) -> str:
     return arguments
 
-def _format_tool_arguments(func_name: str, arguments: str) -> str:
+def _format_tool_arguments(func_name: str, arguments: str) -> str | Syntax:
     if func_name == "apply_patch":
         return _handle_apply_patch(arguments)
     if func_name == "run_command":
