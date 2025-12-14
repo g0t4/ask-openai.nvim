@@ -24,7 +24,7 @@ def load_thread(file_path: Path) -> List[Dict[str, Any]]:
         return data["messages"]
     return data if isinstance(data, list) else []
 
-def _format_text(content: str) -> str:
+def insert_newlines(content: str) -> str:
     return content.replace("\\n", "\n")
 
 def _format_json(content: Any) -> str:
@@ -41,7 +41,7 @@ def _extract_content(msg: dict) -> str:
 
 def _format_content(content: Any) -> str:
     if isinstance(content, str):
-        return _format_text(content)
+        return insert_newlines(content)
     return _format_json(content)
 
 def print_role_markdown(msg: dict, role: str):
@@ -58,7 +58,7 @@ def print_tool(msg: Dict[str, Any]):
             parsed = json.loads(content)
             content = _format_json(parsed)
         except Exception:
-            content = _format_text(content)
+            content = insert_newlines(content)
     else:
         content = _format_json(content)
 
@@ -127,16 +127,16 @@ def print_assistant(msg: dict):
         if isinstance(content, dict) and "text" in content:
             content = content["text"]
         if isinstance(content, str):
-            content = _format_text(content)
+            content = insert_newlines(content)
         else:
             content = _format_json(content)
         text.append(content)
 
     reasoning = msg.get("reasoning_content")
     if reasoning:
-        reasoning_formatted = (_format_text(reasoning) if isinstance(reasoning, str) else _format_json(reasoning))
-        reasoning_section = f"Reasoning:\n{reasoning_formatted}"
-        text.append(reasoning_section, style="bright_black")
+        reasoning = insert_newlines(reasoning)
+        reasoning_section = f"{reasoning}"
+        text.append(reasoning_section, style="bright_black italic")
 
     tool_calls = yank(msg, "tool_calls", [])
     _console.print(text)
