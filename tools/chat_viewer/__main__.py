@@ -77,7 +77,7 @@ def print_tool(msg: Dict[str, Any]):
     reset_code = "\x1b[0m"
     _console.print(f"{color_code}TOOL{reset_code}:\n{content}\n")
 
-def _handle_apply_patch(arguments: str) -> str | Syntax:
+def _handle_apply_patch(arguments: str):
 
     try:
         parsed = json.loads(arguments)
@@ -95,10 +95,26 @@ def _handle_apply_patch(arguments: str) -> str | Syntax:
         return json.dumps(parsed, ensure_ascii=False)
     return str(parsed)
 
-def _handle_run_command(arguments: str) -> str:
-    return arguments
+def _handle_run_command(arguments: str):
+    try:
+        loaded = json.loads(arguments)
+        command = Syntax(loaded["command"], "fish", theme="ansi_dark", line_numbers=False)
+        del loaded["command"]
 
-def handle_json_args(arguments: str) -> str | Syntax:
+        if len(loaded.keys()) == 0:
+            return command
+
+        remaining_keys = Syntax(
+            json.dumps(loaded, ensure_ascii=False, indent=2),
+            "json",
+            theme="ansi_dark",
+            line_numbers=False,
+        )
+        return [command, "unformatted keys:", remaining_keys]
+    except json.JSONDecodeError as e:
+        return [Text(arguments)]
+
+def handle_json_args(arguments: str):
     try:
         loaded = json.loads(arguments)
         pretty = json.dumps(loaded, ensure_ascii=False, indent=2)
@@ -106,10 +122,10 @@ def handle_json_args(arguments: str) -> str | Syntax:
     except json.JSONDecodeError as e:
         return arguments
 
-def _handle_unknown_tool(arguments: str) -> str:
+def _handle_unknown_tool(arguments: str):
     return arguments
 
-def _format_tool_arguments(func_name: str, arguments: str) -> str | Syntax:
+def _format_tool_arguments(func_name: str, arguments: str):
     if func_name == "apply_patch":
         return _handle_apply_patch(arguments)
     if func_name == "run_command":
@@ -149,7 +165,7 @@ def print_assistant(msg: dict):
             function = call.get("function", {})
             func_name = function.get("name", "")
             arguments = function.get("arguments", "")
-            displayed_args = _format_tool_arguments(func_name, arguments)
+            args = _format_tool_arguments(func_name, arguments)
 
             # TODO if log error if any unexpected fields besides the ones above... that way I am not missing something critical/sensitive when doing a review
             #  TODO for function
@@ -160,7 +176,11 @@ def print_assistant(msg: dict):
             else:
                 _console.print(f"- ID: {call_id}\n  Type: {call_type}\n  Function: {func_name}\n  Arguments:\n")
 
-            _console.print(Padding(displayed_args, (0, 0, 0, 4)))
+            if isinstance(args, list):
+                for part in args:
+                    _console.print(Padding(part, (0, 0, 0, 4)))
+            else:
+                _console.print(Padding(args, (0, 0, 0, 4)))
             _console.print()
 
 def print_message(msg: dict):
