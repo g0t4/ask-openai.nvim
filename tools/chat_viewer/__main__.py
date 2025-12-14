@@ -122,31 +122,22 @@ def _format_tool_arguments(func_name: str, arguments: str):
 
 def print_assistant(msg: dict):
     content = msg.get("content", "")
-    text = Text()
     if content:
-        if isinstance(content, dict) and "text" in content:
-            content = content["text"]
-        if isinstance(content, str):
-            content = insert_newlines(content)
-        else:
-            content = _format_json(content)
-        text.append(content)
+        _console.print(insert_newlines(content))
 
     reasoning = msg.get("reasoning_content")
     if reasoning:
         reasoning = insert_newlines(reasoning)
         reasoning_section = f"{reasoning}"
-        text.append(reasoning_section, style="bright_black italic")
+        _console.print(reasoning_section, style="bright_black italic")
 
-    tool_calls = yank(msg, "tool_calls", [])
-    _console.print(text)
-
-    if tool_calls:
-        for call in tool_calls:
+    requests = yank(msg, "tool_calls", [])
+    if requests:
+        for call in requests:
             call_id = yank(call, "id")
             type = yank(call, "type")
             if type != "function":
-                _console.print(f"- UNHANDLED TYPE '{type}' on tool call")
+                # text.append(f"- UNHANDLED TYPE '{type}' on tool call")
                 _console.print_json(json.dumps(call))
                 continue
 
