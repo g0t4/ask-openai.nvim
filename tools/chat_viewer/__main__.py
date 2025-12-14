@@ -50,10 +50,7 @@ def get_color(role: str) -> str:
 
 def _format_markdown(msg: dict, role: str) -> str:
     raw_content = _extract_content(msg)
-    md = Markdown(raw_content)
-    with _console.capture() as capture:
-        _console.print(md)
-    formatted = capture.get()
+    formatted = raw_content
 
     color_code = get_color(role)
     reset_code = "\x1b[0m"
