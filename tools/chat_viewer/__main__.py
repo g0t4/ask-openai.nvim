@@ -89,19 +89,17 @@ def format_assistant(msg: dict) -> str:
     reset_code = "\x1b[0m"
     return f"{color_code}ASSISTANT{reset_code}:\n{content}\n"
 
-def format_message(msg: Dict[str, Any]) -> str:
+def format_message(msg: dict) -> str:
     role = msg.get("role", "").lower()
-    if role == "system":
-        return _format_markdown(msg, "SYSTEM")
-    if role == "developer":
-        return _format_markdown(msg, "DEVELOPER")
-    if role == "user":
-        return _format_markdown(msg, "USER")
-    if role == "tool":
-        return format_tool(msg)
-    if role == "assistant":
-        return format_assistant(msg)
-    return format_fallback(msg)
+    match role:
+        case "system" | "developer" | "user":
+            return _format_markdown(msg, role.upper())
+        case "tool":
+            return format_tool(msg)
+        case "assistant":
+            return format_assistant(msg)
+        case _:
+            return format_fallback(msg)
 
 def format_fallback(msg: Dict[str, Any]) -> str:
     role = msg.get("role", "").upper()
