@@ -43,15 +43,6 @@ def _format_markdown(msg: dict, role: str) -> str:
     formatted = capture.get()
     return f"{role}:\n{formatted}\n"
 
-def format_system(msg: dict) -> str:
-    return _format_markdown(msg, "SYSTEM")
-
-def format_developer(msg: dict) -> str:
-    return _format_markdown(msg, "DEVELOPER")
-
-def format_user(msg: dict) -> str:
-    return _format_markdown(msg, "USER")
-
 def format_tool(msg: Dict[str, Any]) -> str:
     content = msg.get("content", "")
     if isinstance(content, dict):
@@ -79,11 +70,11 @@ def format_assistant(msg: Dict[str, Any]) -> str:
 def format_message(msg: Dict[str, Any]) -> str:
     role = msg.get("role", "").lower()
     if role == "system":
-        return format_system(msg)
+        return _format_markdown(msg, "SYSTEM")
     if role == "developer":
-        return format_developer(msg)
+        return _format_markdown(msg, "DEVELOPER")
     if role == "user":
-        return format_user(msg)
+        return _format_markdown(msg, "USER")
     if role == "tool":
         return format_tool(msg)
     if role == "assistant":
