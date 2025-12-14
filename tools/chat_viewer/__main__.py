@@ -122,21 +122,20 @@ def _format_tool_arguments(func_name: str, arguments: str):
 
 def print_assistant(msg: dict):
     content = msg.get("content", "")
-    if isinstance(content, dict) and "text" in content:
-        content = content["text"]
-    if isinstance(content, str):
-        content = _format_text(content)
-    else:
-        content = _format_json(content)
-    _console.print(content)
+    if content:
+        if isinstance(content, dict) and "text" in content:
+            content = content["text"]
+        if isinstance(content, str):
+            content = _format_text(content)
+        else:
+            content = _format_json(content)
+        _console.print(content)
 
     reasoning = msg.get("reasoning_content")
     if reasoning:
         reasoning_formatted = (_format_text(reasoning) if isinstance(reasoning, str) else _format_json(reasoning))
-        reasoning_section = f"\nReasoning:\n{reasoning_formatted}"
-    else:
-        reasoning_section = ""
-    _console.print(reasoning_section)
+        reasoning_section = f"Reasoning:\n{reasoning_formatted}"
+        _console.print(reasoning_section)
 
     # In tools/chat_viewer/__main__.py replace the original block with:
     tool_calls = msg.get("tool_calls", [])
