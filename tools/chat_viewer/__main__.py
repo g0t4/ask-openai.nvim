@@ -49,15 +49,15 @@ def get_color(role: str) -> str:
         return "\x1b[31m"
     return "\x1b[37m"
 
-def _format_markdown(msg: dict, role: str) -> str:
+def print_role_markdown(msg: dict, role: str):
     raw_content = _extract_content(msg)
     formatted = raw_content
 
     color_code = get_color(role)
     reset_code = "\x1b[0m"
-    return f"{color_code}{role}{reset_code}:\n{formatted}\n"
+    _console.print(f"{color_code}{role}{reset_code}:\n{formatted}\n")
 
-def format_tool(msg: Dict[str, Any]) -> str:
+def print_tool(msg: Dict[str, Any]):
     content = msg.get("content", "")
     if isinstance(content, dict):
         content = _format_json(content)
@@ -72,7 +72,7 @@ def format_tool(msg: Dict[str, Any]) -> str:
 
     color_code = get_color("tool")
     reset_code = "\x1b[0m"
-    return f"{color_code}TOOL{reset_code}:\n{content}\n"
+    _console.print(f"{color_code}TOOL{reset_code}:\n{content}\n")
 
 def _handle_apply_patch(arguments: str) -> str | Syntax:
 
@@ -110,7 +110,7 @@ def _format_tool_arguments(func_name: str, arguments: str) -> str | Syntax:
         return _handle_semantic_grep(arguments)
     return _handle_unknown_tool(arguments)
 
-def format_assistant(msg: dict) -> str:
+def print_assistant(msg: dict):
     content = msg.get("content", "")
     if isinstance(content, dict) and "text" in content:
         content = content["text"]
@@ -151,27 +151,27 @@ def format_assistant(msg: dict) -> str:
 
     color_code = get_color("assistant")
     reset_code = "\x1b[0m"
-    return f"{color_code}ASSISTANT{reset_code}:\n{content}{reasoning_section}{tool_section}\n"
+    _console.print(f"{color_code}ASSISTANT{reset_code}:\n{content}{reasoning_section}{tool_section}\n")
 
-def format_message(msg: dict) -> str:
+def print_message(msg: dict):
     role = msg.get("role", "").lower()
     match role:
         case "system" | "developer" | "user":
-            return _format_markdown(msg, role.upper())
+            print_role_markdown(msg, role)
         case "tool":
-            return format_tool(msg)
+            print_tool(msg)
         case "assistant":
-            return format_assistant(msg)
+            print_assistant(msg)
         case _:
-            return format_fallback(msg)
+            print_fallback(msg)
 
-def format_fallback(msg: Dict[str, Any]) -> str:
-    role = msg.get("role", "").upper()
+def print_fallback(msg: Dict[str, Any]):
+    role = msg.get("role", "")
     color_code = get_color(role.lower())
     reset_code = "\x1b[0m"
     content = msg.get("content", "")
     formatted = _format_content(content)
-    return f"{color_code}{role}{reset_code}:\n{formatted}\n"
+    _console.print(f"{color_code}{role.upper()}{reset_code}:\n{formatted}\n")
 
 def main() -> None:
     if len(sys.argv) < 2:
@@ -185,8 +185,7 @@ def main() -> None:
 
     messages = load_thread(thread_file)
     for message in messages:
-        formatted = format_message(message)
-        print(formatted)
+        print_message(message)
 
 if __name__ == "__main__":
     main()
