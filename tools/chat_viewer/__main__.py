@@ -121,6 +121,10 @@ def format_assistant(msg: dict) -> str:
     else:
         reasoning_section = ""
 
+    def _indent_multiline(text: str, prefix: str = "    ") -> str:
+        return "\n".join(f"{prefix}{line}" if line else "" for line in text.splitlines())
+
+    # In tools/chat_viewer/__main__.py replace the original block with:
     tool_calls = msg.get("tool_calls", [])
     if tool_calls:
         formatted_calls = []
@@ -131,7 +135,11 @@ def format_assistant(msg: dict) -> str:
             func_name = function.get("name", "")
             arguments = function.get("arguments", "")
             displayed_args = _format_tool_arguments(func_name, arguments)
-            formatted_calls.append(f"- ID: {call_id}\n  Type: {call_type}\n  Function: {func_name}\n  Arguments: {displayed_args}")
+            indented_args = _indent_multiline(displayed_args)
+            formatted_calls.append(f"- ID: {call_id}\n"
+                                   f"  Type: {call_type}\n"
+                                   f"  Function: {func_name}\n"
+                                   f"  Arguments:\n{indented_args}")
         tool_section = "\nTool Calls:\n" + "\n".join(formatted_calls)
     else:
         tool_section = ""
