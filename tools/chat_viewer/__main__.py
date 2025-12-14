@@ -188,9 +188,10 @@ def get_color(role: str) -> str:
 def print_message(msg: dict):
     role = msg.get("role", "").lower()
 
-    _console.rule()
-    _console.print(role.upper(), style=get_color(role) + " bold")
-    _console.rule()
+    color = get_color(role)
+    _console.rule(style=color)
+    _console.print(role.upper(), style=color + " bold")
+    _console.rule(style=color)
 
     match role:
         case "system" | "developer" | "user":
