@@ -34,14 +34,28 @@ def _format_content(content: Any) -> str:
         return _format_text(content)
     return _format_json(content)
 
+def get_color(role: str) -> str:
+    role_lower = role.lower()
+    if role_lower == "system":
+        return "magenta"
+    if role_lower == "developer":
+        return "cyan"
+    if role_lower == "user":
+        return "green"
+    if role_lower == "assistant":
+        return "yellow"
+    if role_lower == "tool":
+        return "red"
+    return "white"
+
 def _format_markdown(msg: dict, role: str) -> str:
     raw_content = _extract_content(msg)
-    # Render markdown to a string using a temporary console
     md = Markdown(raw_content)
     with _console.capture() as capture:
         _console.print(md)
     formatted = capture.get()
-    return f"{role}:\n{formatted}\n"
+    color = get_color(role)
+    return f"[{color}]{role}[/]:\n{formatted}\n"
 
 def format_tool(msg: Dict[str, Any]) -> str:
     content = msg.get("content", "")
