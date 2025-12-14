@@ -81,9 +81,14 @@ def _handle_apply_patch(arguments: str) -> str:
     except Exception:
         return arguments
 
+    if isinstance(parsed, dict) and "patch" in parsed:
+        patch_content = str(parsed["patch"])
+        try:
+            syntax = Syntax(patch_content, "diff", theme="ansi_dark", line_numbers=False)
+            return str(syntax)
+        except Exception:
+            return patch_content
     if isinstance(parsed, dict):
-        if "patch" in parsed:
-            return str(parsed["patch"])
         return json.dumps(parsed, ensure_ascii=False)
     return str(parsed)
 
