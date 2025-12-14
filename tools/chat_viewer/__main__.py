@@ -147,6 +147,10 @@ def print_assistant(msg: dict):
             arguments = function.get("arguments", "")
             displayed_args = _format_tool_arguments(func_name, arguments)
 
+            # TODO if log error if any unexpected fields besides the ones above... that way I am not missing something critical/sensitive when doing a review
+            #  TODO for function
+            #  TODO for call too (above it)
+
             if call_type == "function":
                 _console.print(f"- ID: {call_id}\n  {func_name}:\n")
             else:
