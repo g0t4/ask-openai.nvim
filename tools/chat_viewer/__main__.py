@@ -37,16 +37,16 @@ def _format_content(content: Any) -> str:
 def get_color(role: str) -> str:
     role_lower = role.lower()
     if role_lower == "system":
-        return "magenta"
+        return "\x1b[35m"
     if role_lower == "developer":
-        return "cyan"
+        return "\x1b[36m"
     if role_lower == "user":
-        return "green"
+        return "\x1b[32m"
     if role_lower == "assistant":
-        return "yellow"
+        return "\x1b[33m"
     if role_lower == "tool":
-        return "red"
-    return "white"
+        return "\x1b[31m"
+    return "\x1b[37m"
 
 def _format_markdown(msg: dict, role: str) -> str:
     raw_content = _extract_content(msg)
@@ -54,8 +54,9 @@ def _format_markdown(msg: dict, role: str) -> str:
     with _console.capture() as capture:
         _console.print(md)
     formatted = capture.get()
-    color = get_color(role)
-    return f"[{color}]{role}[/]:\n{formatted}\n"
+    color_code = get_color(role)
+    reset_code = "\x1b[0m"
+    return f"{color_code}{role}{reset_code}:\n{formatted}\n"
 
 def format_tool(msg: Dict[str, Any]) -> str:
     content = msg.get("content", "")
