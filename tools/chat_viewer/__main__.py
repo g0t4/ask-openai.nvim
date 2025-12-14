@@ -135,7 +135,7 @@ def print_assistant(msg: dict):
     if reasoning:
         reasoning_formatted = (_format_text(reasoning) if isinstance(reasoning, str) else _format_json(reasoning))
         reasoning_section = f"Reasoning:\n{reasoning_formatted}"
-        _console.print(reasoning_section)
+        _console.print(reasoning_section, style="bright_black")
 
     # In tools/chat_viewer/__main__.py replace the original block with:
     tool_calls = msg.get("tool_calls", [])
