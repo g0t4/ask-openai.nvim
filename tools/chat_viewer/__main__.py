@@ -140,7 +140,9 @@ def print_assistant(msg: dict):
 
     # In tools/chat_viewer/__main__.py replace the original block with:
     tool_calls = msg.get("tool_calls", [])
-    _console.print("\nTool Calls:\n")
+    # if len(tool_calls) > 1:
+    _console.print("\nTool Calls:")
+
     if tool_calls:
         for call in tool_calls:
             call_id = yank(call, "id")
@@ -160,7 +162,7 @@ def print_assistant(msg: dict):
             #  TODO for function
             #  TODO for call too (above it)
 
-            _console.print(f"- [bold]{func_name}[/]:\n")
+            _console.print(f"- [bold]{func_name}[/]:")
 
             if isinstance(args, list):
                 for part in args:
