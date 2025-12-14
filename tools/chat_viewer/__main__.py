@@ -98,9 +98,13 @@ def _handle_apply_patch(arguments: str) -> str | Syntax:
 def _handle_run_command(arguments: str) -> str:
     return arguments
 
-def _handle_semantic_grep(arguments: str) -> str:
-    # "arguments": "{\"query\":\"plot\",\"filetype\":\"py\",\"top_k\":10}",
-    return Syntax(arguments, "json", theme="ansi_dark", line_numbers=False)
+def handle_json_args(arguments: str) -> str | Syntax:
+    try:
+        loaded = json.loads(arguments)
+        pretty = json.dumps(loaded, ensure_ascii=False, indent=2)
+        return Syntax(pretty, "json", theme="ansi_dark", indent_guides=True, line_numbers=False)
+    except json.JSONDecodeError as e:
+        return arguments
 
 def _handle_unknown_tool(arguments: str) -> str:
     return arguments
@@ -110,9 +114,8 @@ def _format_tool_arguments(func_name: str, arguments: str) -> str | Syntax:
         return _handle_apply_patch(arguments)
     if func_name == "run_command":
         return _handle_run_command(arguments)
-    if func_name == "semantic_grep":
-        return _handle_semantic_grep(arguments)
-    return _handle_unknown_tool(arguments)
+    # semantic_grep has a few json args, that's fine to show
+    return handle_json_args(arguments)
 
 def print_assistant(msg: dict):
     color_code = get_color("assistant")
