@@ -9,7 +9,7 @@ from typing import Any, Dict, List
 
 from rich.text import Text
 
-_console = Console()
+_console = Console(color_system="truecolor")
 
 def yank(mapping, key: str, default=None):
     value = mapping.get(key, default)
@@ -63,8 +63,9 @@ def print_role_markdown(msg: dict, role: str):
     formatted = raw_content
 
     color_code = get_color(role)
-    reset_code = "\x1b[0m"
-    _console.print(f"{color_code}{role}{reset_code}:\n{formatted}\n")
+    justify = "right" if role.lower() == "user" else "left"
+    _console.print(f"[green]{role.upper()}[/]", justify=justify)
+    _console.print(formatted, justify=justify, markup=False)
 
 def print_tool(msg: Dict[str, Any]):
     content = msg.get("content", "")
