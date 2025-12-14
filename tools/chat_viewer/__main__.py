@@ -54,6 +54,7 @@ def _format_markdown(msg: dict, role: str) -> str:
     with _console.capture() as capture:
         _console.print(md)
     formatted = capture.get()
+
     color_code = get_color(role)
     reset_code = "\x1b[0m"
     return f"{color_code}{role}{reset_code}:\n{formatted}\n"
@@ -70,9 +71,12 @@ def format_tool(msg: Dict[str, Any]) -> str:
             content = _format_text(content)
     else:
         content = _format_json(content)
-    return f"TOOL:\n{content}\n"
 
-def format_assistant(msg: Dict[str, Any]) -> str:
+    color_code = get_color("tool")
+    reset_code = "\x1b[0m"
+    return f"{color_code}TOOL{reset_code}:\n{content}\n"
+
+def format_assistant(msg: dict) -> str:
     content = msg.get("content", "")
     if isinstance(content, dict) and "text" in content:
         content = content["text"]
@@ -80,7 +84,10 @@ def format_assistant(msg: Dict[str, Any]) -> str:
         content = _format_text(content)
     else:
         content = _format_json(content)
-    return f"ASSISTANT:\n{content}\n"
+
+    color_code = get_color("assistant")
+    reset_code = "\x1b[0m"
+    return f"{color_code}ASSISTANT{reset_code}:\n{content}\n"
 
 def format_message(msg: Dict[str, Any]) -> str:
     role = msg.get("role", "").lower()
@@ -94,7 +101,15 @@ def format_message(msg: Dict[str, Any]) -> str:
         return format_tool(msg)
     if role == "assistant":
         return format_assistant(msg)
-    return f"{role.upper()}:\n{msg.get('content', '')}\n"
+    return format_fallback(msg)
+
+def format_fallback(msg: Dict[str, Any]) -> str:
+    role = msg.get("role", "").upper()
+    color_code = get_color(role.lower())
+    reset_code = "\x1b[0m"
+    content = msg.get("content", "")
+    formatted = _format_content(content)
+    return f"{color_code}{role}{reset_code}:\n{formatted}\n"
 
 def main() -> None:
     if len(sys.argv) < 2:
