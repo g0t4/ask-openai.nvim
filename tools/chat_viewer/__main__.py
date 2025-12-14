@@ -127,9 +127,10 @@ def print_assistant(msg: dict):
 
     reasoning = msg.get("reasoning_content")
     if reasoning:
-        reasoning = insert_newlines(reasoning)
-        reasoning_section = f"{reasoning}"
-        _console.print(reasoning_section, style="bright_black italic")
+        _console.print(
+            insert_newlines(reasoning),
+            style="bright_black italic",
+        )
 
     requests = yank(msg, "tool_calls", [])
     if requests:
