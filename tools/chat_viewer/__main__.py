@@ -63,7 +63,7 @@ def print_role_markdown(msg: dict, role: str):
     formatted = raw_content
 
     color_code = get_color(role)
-    _console.print(f"[green]{role.upper()}[/]")
+    _console.print(f"[green bold]{role.upper()}[/]")
     _console.print(formatted, markup=False)
 
 def print_tool(msg: Dict[str, Any]):
@@ -79,7 +79,7 @@ def print_tool(msg: Dict[str, Any]):
     else:
         content = _format_json(content)
 
-    _console.print(f"[blue]TOOL[/]")
+    _console.print(f"[blue bold]TOOL[/]")
     _console.print(content, markup=False)
 
 def _handle_apply_patch(arguments: str):
@@ -167,8 +167,9 @@ def print_assistant(msg: dict):
         for call in tool_calls:
             call_id = yank(call, "id")
             type = yank(call, "type")
-            if type != "functin":
-                _console.print(f"- UNHANDLED TYPE '{type}' on tool call: {call}")
+            if type != "function":
+                _console.print(f"- UNHANDLED TYPE '{type}' on tool call")
+                _console.print_json(json.dumps(call))
                 continue
 
             function = yank(call, "function")
@@ -181,7 +182,7 @@ def print_assistant(msg: dict):
             #  TODO for function
             #  TODO for call too (above it)
 
-            _console.print(f"- ID: {call_id}\n  {func_name}:\n")
+            _console.print(f"- [bold]{func_name}[/]:\n")
 
             if isinstance(args, list):
                 for part in args:
