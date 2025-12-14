@@ -44,26 +44,9 @@ def _format_content(content: Any) -> str:
         return _format_text(content)
     return _format_json(content)
 
-def get_color(role: str) -> str:
-    role_lower = role.lower()
-    if role_lower == "system":
-        return "\x1b[35m"
-    if role_lower == "developer":
-        return "\x1b[36m"
-    if role_lower == "user":
-        return "\x1b[32m"
-    if role_lower == "assistant":
-        return "\x1b[33m"
-    if role_lower == "tool":
-        return "\x1b[31m"
-    return "\x1b[37m"
-
 def print_role_markdown(msg: dict, role: str):
     raw_content = _extract_content(msg)
     formatted = raw_content
-
-    color_code = get_color(role)
-    _console.print(f"[green bold]{role.upper()}[/]")
     _console.print(formatted, markup=False)
 
 def print_tool(msg: Dict[str, Any]):
@@ -79,7 +62,6 @@ def print_tool(msg: Dict[str, Any]):
     else:
         content = _format_json(content)
 
-    _console.print(f"[blue bold]TOOL[/]")
     _console.print(content, markup=False)
 
 def _handle_apply_patch(arguments: str):
@@ -139,10 +121,6 @@ def _format_tool_arguments(func_name: str, arguments: str):
     return handle_json_args(arguments)
 
 def print_assistant(msg: dict):
-    color_code = get_color("assistant")
-    reset_code = "\x1b[0m"
-    _console.print(f"{color_code}ASSISTANT{reset_code}:")
-
     content = msg.get("content", "")
     if isinstance(content, dict) and "text" in content:
         content = content["text"]
@@ -191,8 +169,27 @@ def print_assistant(msg: dict):
                 _console.print(Padding(args, (0, 0, 0, 4)))
             _console.print()
 
+def get_color(role: str) -> str:
+    role_lower = role.lower()
+    if role_lower == "system":
+        return "magenta"
+    if role_lower == "developer":
+        return "cyan"
+    if role_lower == "user":
+        return "green"
+    if role_lower == "assistant":
+        return "yellow"
+    if role_lower == "tool":
+        return "red"
+    return "white"
+
 def print_message(msg: dict):
     role = msg.get("role", "").lower()
+
+    _console.rule()
+    _console.print(role.upper(), style=get_color(role) + " bold")
+    _console.rule()
+
     match role:
         case "system" | "developer" | "user":
             print_role_markdown(msg, role)
@@ -205,11 +202,8 @@ def print_message(msg: dict):
 
 def print_fallback(msg: Dict[str, Any]):
     role = msg.get("role", "")
-    color_code = get_color(role.lower())
-    reset_code = "\x1b[0m"
     content = msg.get("content", "")
     formatted = _format_content(content)
-    _console.print(f"{color_code}{role.upper()}{reset_code}:\n{formatted}\n")
 
 def main() -> None:
     if len(sys.argv) < 2:
