@@ -10,20 +10,82 @@ def load_thread(file_path: Path) -> List[Dict[str, Any]]:
         return data["messages"]
     return data if isinstance(data, list) else []
 
-def format_message(msg: Dict[str, Any]) -> str:
-    role = msg.get("role", "unknown")
+def _format_text(content: str) -> str:
+    return content.replace("\\n", "\n")
+
+def _format_json(content: Any) -> str:
+    try:
+        return json.dumps(content, indent=2)
+    except Exception:
+        return str(content)
+
+def format_system(msg: Dict[str, Any]) -> str:
     content = msg.get("content", "")
     if isinstance(content, dict) and "text" in content:
         content = content["text"]
     if isinstance(content, str):
-        content = content.replace("\\n", "\n")
+        content = _format_text(content)
     else:
+        content = _format_json(content)
+    return f"SYSTEM:\n{content}\n"
+
+def format_developer(msg: Dict[str, Any]) -> str:
+    content = msg.get("content", "")
+    if isinstance(content, dict) and "text" in content:
+        content = content["text"]
+    if isinstance(content, str):
+        content = _format_text(content)
+    else:
+        content = _format_json(content)
+    return f"DEVELOPER:\n{content}\n"
+
+def format_user(msg: Dict[str, Any]) -> str:
+    content = msg.get("content", "")
+    if isinstance(content, dict) and "text" in content:
+        content = content["text"]
+    if isinstance(content, str):
+        content = _format_text(content)
+    else:
+        content = _format_json(content)
+    return f"USER:\n{content}\n"
+
+def format_tool(msg: Dict[str, Any]) -> str:
+    content = msg.get("content", "")
+    if isinstance(content, dict):
+        content = _format_json(content)
+    elif isinstance(content, str):
         try:
-            content = json.dumps(content, indent=2)
+            parsed = json.loads(content)
+            content = _format_json(parsed)
         except Exception:
-            content = str(content)
-    header = f"{role.upper()}:"
-    return f"{header}\n{content}\n"
+            content = _format_text(content)
+    else:
+        content = _format_json(content)
+    return f"TOOL:\n{content}\n"
+
+def format_assistant(msg: Dict[str, Any]) -> str:
+    content = msg.get("content", "")
+    if isinstance(content, dict) and "text" in content:
+        content = content["text"]
+    if isinstance(content, str):
+        content = _format_text(content)
+    else:
+        content = _format_json(content)
+    return f"ASSISTANT:\n{content}\n"
+
+def format_message(msg: Dict[str, Any]) -> str:
+    role = msg.get("role", "").lower()
+    if role == "system":
+        return format_system(msg)
+    if role == "developer":
+        return format_developer(msg)
+    if role == "user":
+        return format_user(msg)
+    if role == "tool":
+        return format_tool(msg)
+    if role == "assistant":
+        return format_assistant(msg)
+    return f"{role.upper()}:\n{msg.get('content', '')}\n"
 
 def main() -> None:
     if len(sys.argv) < 2:
