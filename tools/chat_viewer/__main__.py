@@ -1,4 +1,3 @@
-
 import json
 import sys
 from pathlib import Path
@@ -30,17 +29,16 @@ def main() -> None:
     if len(sys.argv) < 2:
         print("Usage: python -m tools.chat_viewer <thread.json>")
         sys.exit(1)
+
     thread_file = Path(sys.argv[1])
     if not thread_file.is_file():
         print(f"File not found: {thread_file}")
         sys.exit(1)
+
     messages = load_thread(thread_file)
-    for msg in messages:
-        formatted = format_message(msg)
+    for message in messages:
+        formatted = format_message(message)
         print(formatted)
 
 if __name__ == "__main__":
     main()
-
-
-
