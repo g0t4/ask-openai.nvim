@@ -19,35 +19,30 @@ def _format_json(content: Any) -> str:
     except Exception:
         return str(content)
 
-def format_system(msg: Dict[str, Any]) -> str:
+def _extract_content(msg: dict) -> str:
     content = msg.get("content", "")
     if isinstance(content, dict) and "text" in content:
-        content = content["text"]
-    if isinstance(content, str):
-        content = _format_text(content)
-    else:
-        content = _format_json(content)
-    return f"SYSTEM:\n{content}\n"
+        return content["text"]
+    return content  # type: ignore
 
-def format_developer(msg: Dict[str, Any]) -> str:
-    content = msg.get("content", "")
-    if isinstance(content, dict) and "text" in content:
-        content = content["text"]
+def _format_content(content: Any) -> str:
     if isinstance(content, str):
-        content = _format_text(content)
-    else:
-        content = _format_json(content)
-    return f"DEVELOPER:\n{content}\n"
+        return _format_text(content)
+    return _format_json(content)
 
-def format_user(msg: Dict[str, Any]) -> str:
-    content = msg.get("content", "")
-    if isinstance(content, dict) and "text" in content:
-        content = content["text"]
-    if isinstance(content, str):
-        content = _format_text(content)
-    else:
-        content = _format_json(content)
-    return f"USER:\n{content}\n"
+def _format_role(msg: dict, role: str) -> str:
+    raw_content = _extract_content(msg)
+    formatted = _format_content(raw_content)
+    return f"{role}:\n{formatted}\n"
+
+def format_system(msg: dict) -> str:
+    return _format_role(msg, "SYSTEM")
+
+def format_developer(msg: dict) -> str:
+    return _format_role(msg, "DEVELOPER")
+
+def format_user(msg: dict) -> str:
+    return _format_role(msg, "USER")
 
 def format_tool(msg: Dict[str, Any]) -> str:
     content = msg.get("content", "")
