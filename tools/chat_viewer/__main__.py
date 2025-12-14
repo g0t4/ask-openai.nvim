@@ -5,6 +5,8 @@ from rich.console import Console
 from rich.markdown import Markdown
 from rich.padding import Padding
 from rich.syntax import Syntax
+from rich.panel import Panel
+from rich.pretty import Pretty, pprint
 from typing import Any, Dict, List
 
 from rich.text import Text
@@ -135,11 +137,11 @@ def print_assistant(msg: dict):
     requests = yank(msg, "tool_calls", [])
     if requests:
         for call in requests:
-            call_id = yank(call, "id")
-            type = yank(call, "type")
-            if type != "function":
-                # text.append(f"- UNHANDLED TYPE '{type}' on tool call")
-                _console.print_json(json.dumps(call))
+            id = yank(call, "id")
+            call_type = yank(call, "type")
+            if call_type != "function":
+                _console.print(f"- UNHANDLED TYPE '{call_type}' on tool call id: '{id}'")
+                pprint(call, expand_all=True, indent_guides=False)
                 continue
 
             function = yank(call, "function")
