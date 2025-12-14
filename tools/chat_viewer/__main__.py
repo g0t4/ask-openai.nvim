@@ -30,19 +30,19 @@ def _format_content(content: Any) -> str:
         return _format_text(content)
     return _format_json(content)
 
-def _format_role(msg: dict, role: str) -> str:
+def _format_markdown(msg: dict, role: str) -> str:
     raw_content = _extract_content(msg)
     formatted = _format_content(raw_content)
     return f"{role}:\n{formatted}\n"
 
 def format_system(msg: dict) -> str:
-    return _format_role(msg, "SYSTEM")
+    return _format_markdown(msg, "SYSTEM")
 
 def format_developer(msg: dict) -> str:
-    return _format_role(msg, "DEVELOPER")
+    return _format_markdown(msg, "DEVELOPER")
 
 def format_user(msg: dict) -> str:
-    return _format_role(msg, "USER")
+    return _format_markdown(msg, "USER")
 
 def format_tool(msg: Dict[str, Any]) -> str:
     content = msg.get("content", "")
