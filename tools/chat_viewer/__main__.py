@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from rich.console import Console
 from rich.markdown import Markdown
+from rich.syntax import Syntax
 from typing import Any, Dict, List
 
 _console = Console()
@@ -74,7 +75,6 @@ def format_tool(msg: Dict[str, Any]) -> str:
     return f"{color_code}TOOL{reset_code}:\n{content}\n"
 
 def _handle_apply_patch(arguments: str) -> str:
-    import json
 
     try:
         parsed = json.loads(arguments)
