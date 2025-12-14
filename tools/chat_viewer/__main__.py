@@ -1,7 +1,11 @@
 import json
 import sys
 from pathlib import Path
+from rich.console import Console
+from rich.markdown import Markdown
 from typing import Any, Dict, List
+
+_console = Console()
 
 def load_thread(file_path: Path) -> List[Dict[str, Any]]:
     with file_path.open("r", encoding="utf-8") as f:
@@ -29,11 +33,6 @@ def _format_content(content: Any) -> str:
     if isinstance(content, str):
         return _format_text(content)
     return _format_json(content)
-
-from rich.console import Console
-from rich.markdown import Markdown
-
-_console = Console()
 
 def _format_markdown(msg: dict, role: str) -> str:
     raw_content = _extract_content(msg)
