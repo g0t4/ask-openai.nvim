@@ -146,13 +146,20 @@ def print_assistant(msg: dict):
 
             function = yank(call, "function")
             func_name = yank(function, "name")
-            arguments = yank(function, "arguments")
+            # arguments = yank(function, "arguments")
+            arguments = function["arguments"]
 
             args = _format_tool_arguments(func_name, arguments)
 
-            # TODO if log error if any unexpected fields besides the ones above... that way I am not missing something critical/sensitive when doing a review
-            #  TODO for function
-            #  TODO for call too (above it)
+            if any(function.keys()):
+                remaining_keys = Syntax(
+                    json.dumps(function, ensure_ascii=False, indent=2),
+                    "json",
+                    theme="ansi_dark",
+                    line_numbers=False,
+                )
+                _console.print("[red bold]MISSED KEYS in function object:[/]")
+                _console.print(remaining_keys)
 
             _console.print(f"- [bold]{func_name}[/]:")
 
