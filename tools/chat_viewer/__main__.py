@@ -99,7 +99,8 @@ def _handle_run_command(arguments: str) -> str:
     return arguments
 
 def _handle_semantic_grep(arguments: str) -> str:
-    return arguments
+    # "arguments": "{\"query\":\"plot\",\"filetype\":\"py\",\"top_k\":10}",
+    return Syntax(arguments, "json", theme="ansi_dark", line_numbers=False)
 
 def _handle_unknown_tool(arguments: str) -> str:
     return arguments
