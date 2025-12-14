@@ -11,6 +11,12 @@ from rich.text import Text
 
 _console = Console()
 
+def yank(mapping, key: str, default=None):
+    value = mapping.get(key, default)
+    if key in mapping:
+        del mapping[key]
+    return value
+
 def load_thread(file_path: Path) -> List[Dict[str, Any]]:
     with file_path.open("r", encoding="utf-8") as f:
         data = json.load(f)
@@ -98,8 +104,8 @@ def _handle_apply_patch(arguments: str):
 def _handle_run_command(arguments: str):
     try:
         loaded = json.loads(arguments)
-        command = Syntax(loaded["command"], "fish", theme="ansi_dark", line_numbers=False)
-        del loaded["command"]
+        loaded["cwd"] = "foo"
+        command = Syntax(yank(loaded, "command"), "fish", theme="ansi_dark", line_numbers=False)
 
         if len(loaded.keys()) == 0:
             return command
@@ -160,21 +166,23 @@ def print_assistant(msg: dict):
     _console.print("\nTool Calls:\n")
     if tool_calls:
         for call in tool_calls:
-            call_id = call.get("id", "")
-            call_type = call.get("type", "")
-            function = call.get("function", {})
-            func_name = function.get("name", "")
-            arguments = function.get("arguments", "")
+            call_id = yank(call, "id")
+            type = yank(call, "type")
+            if type != "functin":
+                _console.print(f"- UNHANDLED TYPE '{type}' on tool call: {call}")
+                continue
+
+            function = yank(call, "function")
+            func_name = yank(function, "name")
+            arguments = yank(function, "arguments")
+
             args = _format_tool_arguments(func_name, arguments)
 
             # TODO if log error if any unexpected fields besides the ones above... that way I am not missing something critical/sensitive when doing a review
             #  TODO for function
             #  TODO for call too (above it)
 
-            if call_type == "function":
-                _console.print(f"- ID: {call_id}\n  {func_name}:\n")
-            else:
-                _console.print(f"- ID: {call_id}\n  Type: {call_type}\n  Function: {func_name}\n  Arguments:\n")
+            _console.print(f"- ID: {call_id}\n  {func_name}:\n")
 
             if isinstance(args, list):
                 for part in args:
