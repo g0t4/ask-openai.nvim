@@ -63,9 +63,8 @@ def print_role_markdown(msg: dict, role: str):
     formatted = raw_content
 
     color_code = get_color(role)
-    justify = "right" if role.lower() == "user" else "left"
-    _console.print(f"[green]{role.upper()}[/]", justify=justify)
-    _console.print(formatted, justify=justify, markup=False)
+    _console.print(f"[green]{role.upper()}[/]")
+    _console.print(formatted, markup=False)
 
 def print_tool(msg: Dict[str, Any]):
     content = msg.get("content", "")
@@ -80,9 +79,8 @@ def print_tool(msg: Dict[str, Any]):
     else:
         content = _format_json(content)
 
-    color_code = get_color("tool")
-    reset_code = "\x1b[0m"
-    _console.print(f"{color_code}TOOL{reset_code}:\n{content}\n")
+    _console.print(f"[blue]TOOL[/]")
+    _console.print(content, markup=False)
 
 def _handle_apply_patch(arguments: str):
 
