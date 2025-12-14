@@ -30,9 +30,18 @@ def _format_content(content: Any) -> str:
         return _format_text(content)
     return _format_json(content)
 
+from rich.console import Console
+from rich.markdown import Markdown
+
+_console = Console()
+
 def _format_markdown(msg: dict, role: str) -> str:
     raw_content = _extract_content(msg)
-    formatted = _format_content(raw_content)
+    # Render markdown to a string using a temporary console
+    md = Markdown(raw_content)
+    with _console.capture() as capture:
+        _console.print(md)
+    formatted = capture.get()
     return f"{role}:\n{formatted}\n"
 
 def format_system(msg: dict) -> str:
