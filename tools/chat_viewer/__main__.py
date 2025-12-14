@@ -122,6 +122,7 @@ def _format_tool_arguments(func_name: str, arguments: str):
 
 def print_assistant(msg: dict):
     content = msg.get("content", "")
+    text = Text()
     if content:
         if isinstance(content, dict) and "text" in content:
             content = content["text"]
@@ -129,18 +130,16 @@ def print_assistant(msg: dict):
             content = _format_text(content)
         else:
             content = _format_json(content)
-        _console.print(content)
+        text.append(content)
 
     reasoning = msg.get("reasoning_content")
     if reasoning:
         reasoning_formatted = (_format_text(reasoning) if isinstance(reasoning, str) else _format_json(reasoning))
         reasoning_section = f"Reasoning:\n{reasoning_formatted}"
-        _console.print(reasoning_section, style="bright_black")
+        text.append(reasoning_section, style="bright_black")
 
-    # In tools/chat_viewer/__main__.py replace the original block with:
-    tool_calls = msg.get("tool_calls", [])
-    # if len(tool_calls) > 1:
-    _console.print("\nTool Calls:")
+    tool_calls = yank(msg, "tool_calls", [])
+    _console.print(text)
 
     if tool_calls:
         for call in tool_calls:
