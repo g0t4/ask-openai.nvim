@@ -82,9 +82,30 @@ def format_assistant(msg: dict) -> str:
     else:
         content = _format_json(content)
 
+    reasoning = msg.get("reasoning_content")
+    if reasoning:
+        reasoning_formatted = _format_text(reasoning) if isinstance(reasoning, str) else _format_json(reasoning)
+        reasoning_section = f"\nReasoning:\n{reasoning_formatted}"
+    else:
+        reasoning_section = ""
+
+    tool_calls = msg.get("tool_calls", [])
+    if tool_calls:
+        formatted_calls = []
+        for call in tool_calls:
+            call_id = call.get("id", "")
+            call_type = call.get("type", "")
+            function = call.get("function", {})
+            func_name = function.get("name", "")
+            arguments = function.get("arguments", "")
+            formatted_calls.append(f"- ID: {call_id}\n  Type: {call_type}\n  Function: {func_name}\n  Arguments: {arguments}")
+        tool_section = "\nTool Calls:\n" + "\n".join(formatted_calls)
+    else:
+        tool_section = ""
+
     color_code = get_color("assistant")
     reset_code = "\x1b[0m"
-    return f"{color_code}ASSISTANT{reset_code}:\n{content}\n"
+    return f"{color_code}ASSISTANT{reset_code}:\n{content}{reasoning_section}{tool_section}\n"
 
 def format_message(msg: dict) -> str:
     role = msg.get("role", "").lower()
