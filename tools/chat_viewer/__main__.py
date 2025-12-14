@@ -3,8 +3,11 @@ import sys
 from pathlib import Path
 from rich.console import Console
 from rich.markdown import Markdown
+from rich.padding import Padding
 from rich.syntax import Syntax
 from typing import Any, Dict, List
+
+from rich.text import Text
 
 _console = Console()
 
@@ -111,6 +114,10 @@ def _format_tool_arguments(func_name: str, arguments: str) -> str | Syntax:
     return _handle_unknown_tool(arguments)
 
 def print_assistant(msg: dict):
+    color_code = get_color("assistant")
+    reset_code = "\x1b[0m"
+    _console.print(f"{color_code}ASSISTANT{reset_code}:")
+
     content = msg.get("content", "")
     if isinstance(content, dict) and "text" in content:
         content = content["text"]
@@ -118,6 +125,7 @@ def print_assistant(msg: dict):
         content = _format_text(content)
     else:
         content = _format_json(content)
+    _console.print(content)
 
     reasoning = msg.get("reasoning_content")
     if reasoning:
@@ -125,14 +133,12 @@ def print_assistant(msg: dict):
         reasoning_section = f"\nReasoning:\n{reasoning_formatted}"
     else:
         reasoning_section = ""
-
-    def _indent_multiline(text: str, prefix: str = "    ") -> str:
-        return "\n".join(f"{prefix}{line}" if line else "" for line in text.splitlines())
+    _console.print(reasoning_section)
 
     # In tools/chat_viewer/__main__.py replace the original block with:
     tool_calls = msg.get("tool_calls", [])
+    _console.print("\nTool Calls:\n")
     if tool_calls:
-        formatted_calls = []
         for call in tool_calls:
             call_id = call.get("id", "")
             call_type = call.get("type", "")
@@ -140,18 +146,14 @@ def print_assistant(msg: dict):
             func_name = function.get("name", "")
             arguments = function.get("arguments", "")
             displayed_args = _format_tool_arguments(func_name, arguments)
-            indented_args = _indent_multiline(displayed_args)
-            formatted_calls.append(f"- ID: {call_id}\n"
-                                   f"  Type: {call_type}\n"
-                                   f"  Function: {func_name}\n"
-                                   f"  Arguments:\n{indented_args}")
-        tool_section = "\nTool Calls:\n" + "\n".join(formatted_calls)
-    else:
-        tool_section = ""
 
-    color_code = get_color("assistant")
-    reset_code = "\x1b[0m"
-    _console.print(f"{color_code}ASSISTANT{reset_code}:\n{content}{reasoning_section}{tool_section}\n")
+            if call_type == "function":
+                _console.print(f"- ID: {call_id}\n  {func_name}:\n")
+            else:
+                _console.print(f"- ID: {call_id}\n  Type: {call_type}\n  Function: {func_name}\n  Arguments:\n")
+
+            _console.print(Padding(displayed_args, (0, 0, 0, 4)))
+            _console.print()
 
 def print_message(msg: dict):
     role = msg.get("role", "").lower()
