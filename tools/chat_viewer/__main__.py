@@ -66,11 +66,11 @@ def decode_if_json(content):
 def print_tool(msg: Dict[str, Any]):
     content = msg.get("content", "")
     content = decode_if_json(content)
-    if isinstance(content, dict):
-        _console.print(content, markup=False)
+    if not isinstance(content, dict):
+        pprint(content, expand_all=True, indent_guides=False)
         return
 
-    pprint(content, expand_all=True, indent_guides=False)
+    _console.print(content, markup=False)
 
 def _handle_apply_patch(arguments: str):
 
