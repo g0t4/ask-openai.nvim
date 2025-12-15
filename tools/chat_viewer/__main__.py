@@ -63,7 +63,7 @@ def decode_if_json(content):
     # keep w/e type (dict, list, etc... don't care)
     return content
 
-def print_tool(msg: dict[str, Any]):
+def print_tool_call_result(msg: dict[str, Any]):
     content = msg.get("content", "")
     content = decode_if_json(content)
     if not isinstance(content, dict):
@@ -206,7 +206,7 @@ def print_message(msg: dict):
         case "system" | "developer" | "user":
             print_role_markdown(msg, role)
         case "tool":
-            print_tool(msg)
+            print_tool_call_result(msg)
         case "assistant":
             print_assistant(msg)
         case _:
