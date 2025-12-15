@@ -63,6 +63,17 @@ def decode_if_json(content):
     # keep w/e type (dict, list, etc... don't care)
     return content
 
+def print_rag_matches(content):
+    has_rag_matches = "matches" in content and isinstance(content["matches"], list)
+    if not has_rag_matches:
+        return False
+
+    pprint(content)
+    return True
+
+def print_result_unrecognized(content):
+    pprint(content)
+
 def print_tool_call_result(msg: dict[str, Any]):
     content = msg.get("content", "")
     content = decode_if_json(content)
@@ -70,24 +81,30 @@ def print_tool_call_result(msg: dict[str, Any]):
         pprint(content, expand_all=True, indent_guides=False)
         return
 
+    print_rag_matches(content) or print_mcp_result(content) or print_result_unrecognized(content)
+
+def print_mcp_result(content):
     has_mcp_content_list = "content" in content and isinstance(content["content"], list)
-    if has_mcp_content_list:
-        content_list = content["content"]
-        for item in content_list:
-            item_type = yank(item, "type")
-            name = yank(item, "name")
-            padding = None
-            if name:
-                _console.print(f"[white]{name}:[/]")
-            if item_type == "text":
-                item_text = yank(item, "text")
-                item_text = insert_newlines(item_text)
-                if padding:
-                    _console.print(Padding(item_text, (0, 0, 0, 4)))
-                else:
-                    _console.print(item_text)
+    if not has_mcp_content_list:
+        return False
+
+    content_list = content["content"]
+    for item in content_list:
+        item_type = yank(item, "type")
+        name = yank(item, "name")
+        padding = None
+        if name:
+            _console.print(f"[white]{name}:[/]")
+        if item_type == "text":
+            item_text = yank(item, "text")
+            item_text = insert_newlines(item_text)
+            if padding:
+                _console.print(Padding(item_text, (0, 0, 0, 4)))
+            else:
+                _console.print(item_text)
 
     _console.print(content, markup=False)
+    return True
 
 def _handle_apply_patch(arguments: str):
 
