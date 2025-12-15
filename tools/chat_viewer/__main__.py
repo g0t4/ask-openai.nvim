@@ -122,6 +122,13 @@ def _format_tool_arguments(func_name: str, arguments: str):
     # semantic_grep has a few json args, that's fine to show
     return handle_json_args(arguments)
 
+def print_if_missing_keys(obj, name):
+    if not any(obj.keys()):
+        return
+
+    _console.print(f"[red bold]MISSED KEYS on {name}:[/]")
+    pprint(obj, expand_all=True, indent_guides=False)
+
 def print_assistant(msg: dict):
     content = msg.get("content", "")
     if content:
@@ -151,15 +158,8 @@ def print_assistant(msg: dict):
 
             args = _format_tool_arguments(func_name, arguments)
 
-            if any(function.keys()):
-                remaining_keys = Syntax(
-                    json.dumps(function, ensure_ascii=False, indent=2),
-                    "json",
-                    theme="ansi_dark",
-                    line_numbers=False,
-                )
-                _console.print("[red bold]MISSED KEYS in function object:[/]")
-                _console.print(remaining_keys)
+            print_if_missing_keys(function, "function")
+            print_if_missing_keys(call, "call")
 
             _console.print(f"- [bold]{func_name}[/]:")
 
