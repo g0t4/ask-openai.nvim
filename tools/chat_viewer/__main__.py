@@ -1,4 +1,5 @@
 import json
+import os
 import sys
 from pathlib import Path
 from rich.console import Console
@@ -67,8 +68,29 @@ def print_rag_matches(content):
     has_rag_matches = "matches" in content and isinstance(content["matches"], list)
     if not has_rag_matches:
         return False
+    matches = content["matches"]
+    for match in matches:
 
-    pprint(content)
+        file = match.get("file")
+        text = match.get("text", "")
+        # FYI no need to show other fields, just file/text are relevant for review, nor warn...
+        # unless some other tool at some point has similar matches list and I'd be hiding something
+
+        # TODO! warn if sensitive path
+
+        if file:
+            _console.print(f"## [bold]{file}[/]")
+        if isinstance(text, str):
+            ext = os.path.splitext(file)[1].lstrip('.').lower() if file else ""
+            # YES! this is why this review tool rocks... language specific syntax highlighting!
+            syntax = Syntax(text, ext or "text", theme="ansi_dark", line_numbers=False)
+            _console.print(syntax)
+        else:
+            _console.print(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]")
+            pprint(text)
+
+    #  FYI could add a verbose flag to dump full matches (so can see all fields):
+    # pprint(content) # for dumping full content
     return True
 
 def print_result_unrecognized(content):
