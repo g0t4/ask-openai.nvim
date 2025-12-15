@@ -251,7 +251,7 @@ def get_color(role: str) -> str:
         return "red"
     return "white"
 
-def print_message(msg: dict):
+def print_message(msg: dict, idx: int):
     role = msg.get("role", "").lower()
 
     color = get_color(role)
@@ -259,7 +259,8 @@ def print_message(msg: dict):
     display_role = role.upper()
     if display_role == "TOOL":
         display_role = "TOOL RESULT"
-    _console.print(display_role, style=color + " bold")
+    title = f"{idx}: {display_role}"
+    _console.print(title, style=color + " bold", highlight=False) # highlight: False so the number stays the same color as the role
     _console.rule(style=color)
 
     match role:
@@ -288,8 +289,9 @@ def main() -> None:
         sys.exit(1)
 
     messages = load_thread(thread_file)
-    for message in messages:
-        print_message(message)
+
+    for idx, message in enumerate(messages, start=1):
+        print_message(message, idx)
 
 if __name__ == "__main__":
     main()
