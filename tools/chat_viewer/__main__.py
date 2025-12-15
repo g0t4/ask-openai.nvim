@@ -70,9 +70,10 @@ def print_tool_call_result(msg: dict[str, Any]):
         pprint(content, expand_all=True, indent_guides=False)
         return
 
-    if "content" in content:
-        # MCP like format for result
-        return content["content"]
+    has_mcp_content_list = "content" in content and isinstance(content["content"], list)
+    if has_mcp_content_list:
+        _content = content["content"]
+        pprint(_content)
 
     _console.print(content, markup=False)
 
