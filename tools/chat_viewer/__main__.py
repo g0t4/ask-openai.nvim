@@ -51,20 +51,26 @@ def print_role_markdown(msg: dict, role: str):
     formatted = raw_content
     _console.print(formatted, markup=False)
 
+def decode_if_json(content):
+    if isinstance(content, str):
+        try:
+            # return dict/object (or w/e it parses into, if it parses)
+            return json.loads(content)
+        except Exception:
+            # return as str if parse fails
+            return insert_newlines(content)
+
+    # keep w/e type (dict, list, etc... don't care)
+    return content
+
 def print_tool(msg: Dict[str, Any]):
     content = msg.get("content", "")
+    content = decode_if_json(content)
     if isinstance(content, dict):
-        content = _format_json(content)
-    elif isinstance(content, str):
-        try:
-            parsed = json.loads(content)
-            content = _format_json(parsed)
-        except Exception:
-            content = insert_newlines(content)
-    else:
-        content = _format_json(content)
+        _console.print(content, markup=False)
+        return
 
-    _console.print(content, markup=False)
+    pprint(content, expand_all=True, indent_guides=False)
 
 def _handle_apply_patch(arguments: str):
 
