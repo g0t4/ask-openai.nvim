@@ -72,8 +72,20 @@ def print_tool_call_result(msg: dict[str, Any]):
 
     has_mcp_content_list = "content" in content and isinstance(content["content"], list)
     if has_mcp_content_list:
-        _content = content["content"]
-        pprint(_content)
+        content_list = content["content"]
+        for item in content_list:
+            item_type = yank(item, "type")
+            name = yank(item, "name")
+            padding = None
+            if name:
+                _console.print(f"[white]{name}:[/]")
+            if item_type == "text":
+                item_text = yank(item, "text")
+                item_text = insert_newlines(item_text)
+                if padding:
+                    _console.print(Padding(item_text, (0, 0, 0, 4)))
+                else:
+                    _console.print(item_text)
 
     _console.print(content, markup=False)
 
@@ -200,7 +212,10 @@ def print_message(msg: dict):
 
     color = get_color(role)
     _console.rule(style=color)
-    _console.print(role.upper(), style=color + " bold")
+    display_role = role.upper()
+    if display_role == "TOOL":
+        display_role = "TOOL RESULT"
+    _console.print(display_role, style=color + " bold")
     _console.rule(style=color)
 
     match role:
