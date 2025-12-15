@@ -7,7 +7,7 @@ from rich.padding import Padding
 from rich.syntax import Syntax
 from rich.panel import Panel
 from rich.pretty import Pretty, pprint
-from typing import Any, Dict, List
+from typing import Any
 
 from rich.text import Text
 
@@ -19,7 +19,7 @@ def yank(mapping, key: str, default=None):
         del mapping[key]
     return value
 
-def load_thread(file_path: Path) -> List[Dict[str, Any]]:
+def load_thread(file_path: Path) -> list[dict[str, Any]]:
     with file_path.open("r", encoding="utf-8") as f:
         data = json.load(f)
     if isinstance(data, dict) and "messages" in data:
@@ -63,7 +63,7 @@ def decode_if_json(content):
     # keep w/e type (dict, list, etc... don't care)
     return content
 
-def print_tool(msg: Dict[str, Any]):
+def print_tool(msg: dict[str, Any]):
     content = msg.get("content", "")
     content = decode_if_json(content)
     if not isinstance(content, dict):
@@ -208,7 +208,7 @@ def print_message(msg: dict):
         case _:
             print_fallback(msg)
 
-def print_fallback(msg: Dict[str, Any]):
+def print_fallback(msg: dict[str, Any]):
     role = msg.get("role", "")
     content = msg.get("content", "")
     formatted = _format_content(content)
