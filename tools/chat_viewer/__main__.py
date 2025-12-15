@@ -130,7 +130,8 @@ def print_mcp_result(content):
             else:
                 _console.print(item_text)
 
-    _console.print(content, markup=False)
+    # verbose dump?
+    # _console.print(content, markup=False)
     return True
 
 def _handle_apply_patch(arguments: str):
@@ -260,7 +261,7 @@ def print_message(msg: dict, idx: int):
     if display_role == "TOOL":
         display_role = "TOOL RESULT"
     title = f"{idx}: {display_role}"
-    _console.print(title, style=color + " bold", highlight=False) # highlight: False so the number stays the same color as the role
+    _console.print(title, style=color + " bold", highlight=False)  # highlight: False so the number stays the same color as the role
     _console.rule(style=color)
 
     match role:
