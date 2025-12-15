@@ -69,7 +69,7 @@ def print_rag_matches(content):
     if not has_rag_matches:
         return False
     matches = content["matches"]
-    counter = 1 # show counter for easily tracking where I am at in the list
+    counter = 1  # show counter for easily tracking where I am at in the list
     for match in matches:
 
         file = match.get("file")
@@ -97,6 +97,8 @@ def print_rag_matches(content):
     return True
 
 def print_result_unrecognized(content):
+    # FYI this is just a warning to consider adding handlers for it
+    _console.print(f"[yellow bold]UNRECOGNIZED RESULT TYPE:[/]")
     pprint(content)
 
 def print_tool_call_result(msg: dict[str, Any]):
