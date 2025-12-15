@@ -69,6 +69,7 @@ def print_rag_matches(content):
     if not has_rag_matches:
         return False
     matches = content["matches"]
+    counter = 1 # show counter for easily tracking where I am at in the list
     for match in matches:
 
         file = match.get("file")
@@ -79,7 +80,7 @@ def print_rag_matches(content):
         # TODO! warn if sensitive path
 
         if file:
-            _console.print(f"## [bold]{file}[/]")
+            _console.print(f"## MATCH {counter}: [bold]{file}[/]")
         if isinstance(text, str):
             ext = os.path.splitext(file)[1].lstrip('.').lower() if file else ""
             # YES! this is why this review tool rocks... language specific syntax highlighting!
@@ -88,6 +89,8 @@ def print_rag_matches(content):
         else:
             _console.print(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]")
             pprint(text)
+
+        counter += 1
 
     #  FYI could add a verbose flag to dump full matches (so can see all fields):
     # pprint(content) # for dumping full content
