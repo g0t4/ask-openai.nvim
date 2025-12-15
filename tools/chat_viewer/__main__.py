@@ -80,7 +80,7 @@ def print_rag_matches(content):
         # TODO! warn if sensitive path
 
         if file:
-            _console.print(f"## MATCH {counter}: [bold]{file}[/]")
+            _console.print(f"\n## MATCH {counter}: [bold]{file}[/]")
         if isinstance(text, str):
             ext = os.path.splitext(file)[1].lstrip('.').lower() if file else ""
             # YES! this is why this review tool rocks... language specific syntax highlighting!
