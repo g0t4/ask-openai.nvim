@@ -70,6 +70,10 @@ def print_tool(msg: dict[str, Any]):
         pprint(content, expand_all=True, indent_guides=False)
         return
 
+    if "content" in content:
+        # MCP like format for result
+        return content["content"]
+
     _console.print(content, markup=False)
 
 def _handle_apply_patch(arguments: str):
