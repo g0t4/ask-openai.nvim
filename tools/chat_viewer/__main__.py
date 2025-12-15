@@ -108,7 +108,7 @@ def print_tool_call_result(msg: dict[str, Any]):
         pprint(content, expand_all=True, indent_guides=False)
         return
 
-    print_rag_matches(content) or print_mcp_result(content) or print_result_unrecognized(content)
+    return print_rag_matches(content) or print_mcp_result(content) or print_result_unrecognized(content)
 
 def print_mcp_result(content):
     has_mcp_content_list = "content" in content and isinstance(content["content"], list)
