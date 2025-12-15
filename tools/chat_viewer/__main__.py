@@ -153,8 +153,8 @@ def print_assistant(msg: dict):
 
             function = yank(call, "function")
             func_name = yank(function, "name")
-            # arguments = yank(function, "arguments")
-            arguments = function["arguments"]
+            arguments = yank(function, "arguments")
+            # arguments = function["arguments"]
 
             args = _format_tool_arguments(func_name, arguments)
 
