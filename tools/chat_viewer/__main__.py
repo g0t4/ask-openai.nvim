@@ -18,8 +18,7 @@ def print_asis(what, **kwargs):
     _console.print(what, markup=False, **kwargs)
 
 def pprint_asis(what):
-    # TODO do I need to disable anything like markup?
-    pprint(what, indent_guides=False)
+    pprint(what, expand_all=True, indent_guides=False)
 
 def yank(mapping, key: str, default=None):
     value = mapping.get(key, default)
@@ -95,24 +94,24 @@ def print_rag_matches(content):
             print_asis(syntax)
         else:
             _console.print(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]")
-            pprint(text)
+            pprint_asis(text)
 
         counter += 1
 
     #  FYI could add a verbose flag to dump full matches (so can see all fields):
-    # pprint(content) # for dumping full content
+    # pprint_asis(content) # for dumping full content
     return True
 
 def print_result_unrecognized(content):
     # FYI this is just a warning to consider adding handlers for it
     _console.print(f"[yellow bold]UNRECOGNIZED RESULT TYPE:[/]")
-    pprint(content)
+    pprint_asis(content)
 
 def print_tool_call_result(msg: dict[str, Any]):
     content = msg.get("content", "")
     content = decode_if_json(content)
     if not isinstance(content, dict):
-        pprint(content, expand_all=True, indent_guides=False)
+        pprint_asis(content)
         return
 
     return print_rag_matches(content) or print_mcp_result(content) or print_result_unrecognized(content)
@@ -202,7 +201,7 @@ def print_if_missing_keys(obj, name):
         return
 
     _console.print(f"[red bold]MISSED KEYS on {name}:[/]")
-    pprint(obj, expand_all=True, indent_guides=False)
+    pprint_asis(obj)
 
 def print_assistant(msg: dict):
     content = msg.get("content", "")
@@ -223,7 +222,7 @@ def print_assistant(msg: dict):
             call_type = yank(call, "type")
             if call_type != "function":
                 _console.print(f"- UNHANDLED TYPE '{call_type}' on tool call id: '{id}'")
-                pprint(call, expand_all=True, indent_guides=False)
+                pprint_asis(call)
                 continue
 
             function = yank(call, "function")
