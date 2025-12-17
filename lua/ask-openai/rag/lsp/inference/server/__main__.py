@@ -10,6 +10,7 @@ import rich
 import signal
 import socket
 import sys
+from pathlib import Path
 
 from . import qwen3_embeddings
 
@@ -30,6 +31,22 @@ info = "--info" in sys.argv
 level = logging.DEBUG if verbose else (logging.INFO if info else logging.WARNING)
 logging_fwk_to_console(level)
 logger = get_logger(__name__)
+
+# ----------------------------------------------------------------------
+# Global token counter
+# ----------------------------------------------------------------------
+total_tokens: int = 0  # cumulative tokens processed during this run
+TOKEN_COUNTER_FILE = Path(__file__).with_name("token_counter.txt")
+
+def _persist_token_counter() -> None:
+    """Append the run's token total to a persistent file."""
+    try:
+        previous = int(TOKEN_COUNTER_FILE.read_text().strip() or "0")
+    except (FileNotFoundError, ValueError):
+        previous = 0
+    new_total = previous + total_tokens
+    TOKEN_COUNTER_FILE.write_text(str(new_total))
+    rich.print(f"[magenta]Total tokens processed (cumulative): {new_total}[/]")
 
 def clear_iterm_scrollback():
     clear_iterm_scrolback = "\x1b]1337;ClearScrollback\a"
@@ -132,6 +149,8 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
             texts = request['texts']
             # PRN async encode?... really all I want async for is in the LSP to cancel pending buf_requests... this server side was just practice for asyncifying socket
             embeddings, input_ids = qwen3_embeddings.encode(texts)
+            global total_tokens
+            total_tokens += sum(len(seq) for seq in input_ids)
             response = {'embeddings': embeddings.tolist()}
 
             def after_send():
@@ -147,6 +166,8 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
             docs: list[str] = request['docs']
             # PRN async rerank?
             scores, input_ids = qwen3_rerank.rerank(instruct, query, docs)
+            global total_tokens
+            total_tokens += sum(len(seq) for seq in input_ids)
             response = {'scores': scores}
 
             def after_send():
@@ -207,6 +228,7 @@ async def main():
     def graceful_stop(message):
         rich.print("[red bold] " + message + "\n  Shutting down server...")
         stop.set()
+        _persist_token_counter()
 
     # adding signal handler via loop means the handler can interact with the event loop (unlike using signal.signal())
     loop.add_signal_handler(signal.SIGINT, graceful_stop, f"received signal SIGINT - Ctrl-C")
