@@ -28,7 +28,7 @@ def yank(mapping, key: str, default=None):
         del mapping[key]
     return value
 
-def load_thread(file_path: Path) -> list[dict[str, Any]]:
+def load_thread_messages(file_path: Path) -> list[dict[str, Any]]:
     with file_path.open("r", encoding="utf-8") as f:
         data = json.load(f)
     # TODO! also dump other parts like tools
@@ -299,7 +299,7 @@ def main() -> None:
         print(f"File not found: {thread_file}")
         sys.exit(1)
 
-    messages = load_thread(thread_file)
+    messages = load_thread_messages(thread_file)
 
     for idx, message in enumerate(messages, start=1):
         print_message(message, idx)
