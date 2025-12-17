@@ -29,6 +29,8 @@ def yank(mapping, key: str, default=None):
 def load_thread(file_path: Path) -> list[dict[str, Any]]:
     with file_path.open("r", encoding="utf-8") as f:
         data = json.load(f)
+    # TODO! also dump other parts like tools
+    pprint_asis(data)
     if isinstance(data, dict) and "messages" in data:
         return data["messages"]
     return data if isinstance(data, list) else []
