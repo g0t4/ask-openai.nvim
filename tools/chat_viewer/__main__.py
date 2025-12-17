@@ -282,12 +282,11 @@ def print_section_header(title, color):
 def print_message(msg: dict, idx: int):
     role = msg.get("role", "").lower()
 
-    color = get_color(role)
     display_role = role.upper()
     if display_role == "TOOL":
         display_role = "TOOL RESULT"
     title = f"{idx}: {display_role}"
-    print_section_header(title, color)
+    print_section_header(title, get_color(role))
 
     match role:
         case "system" | "developer" | "user":
