@@ -173,7 +173,6 @@ def _handle_apply_patch(arguments: str):
 def _handle_run_command(arguments: str):
     try:
         loaded = json.loads(arguments)
-        loaded["cwd"] = "foo"
         command = Syntax(yank(loaded, "command"), "fish", theme="ansi_dark", line_numbers=False)
 
         if len(loaded.keys()) == 0:
