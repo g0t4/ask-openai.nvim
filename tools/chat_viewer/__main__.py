@@ -272,20 +272,22 @@ def get_color(role: str) -> str:
 
 def print_section_header(title, color):
     _console.rule(style=color)
-    _console.print(title, style=color + " bold", highlight=False)
+    _console.print(
+        title,
+        style=color + " bold",
+        highlight=False,
+    )  # highlight: False so message numbers stay the same color
     _console.rule(style=color)
 
 def print_message(msg: dict, idx: int):
     role = msg.get("role", "").lower()
 
     color = get_color(role)
-    _console.rule(style=color)
     display_role = role.upper()
     if display_role == "TOOL":
         display_role = "TOOL RESULT"
     title = f"{idx}: {display_role}"
-    _console.print(title, style=color + " bold", highlight=False)  # highlight: False so the number stays the same color as the role
-    _console.rule(style=color)
+    print_section_header(title, color)
 
     match role:
         case "system" | "developer" | "user":
