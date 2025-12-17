@@ -18,6 +18,8 @@ def print_asis(what, **kwargs):
     _console.print(what, markup=False, **kwargs)
 
 def pprint_asis(what):
+    # btw expand_all=False is the default and will truncate some sections (shown w/ yellow bg on black text with "...")
+    #   for now just always show everything given the review is supposed to be exhaustive and so far I haven't noticed much that is a huge burden
     pprint(what, expand_all=True, indent_guides=False)
 
 def yank(mapping, key: str, default=None):
