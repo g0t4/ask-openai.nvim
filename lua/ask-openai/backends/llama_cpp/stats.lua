@@ -97,19 +97,14 @@ function M.parse_llamacpp_stats(sse)
     stats.draft_tokens = timings.draft_n
     stats.draft_tokens_accepted = timings.draft_n_accepted
     -- }
-    -- If this SSE marks the end of a generation (final), aggregate into totals.
-    -- A final SSE is indicated by the presence of a "stop_type" field in the
-    -- incoming data. This mirrors the behaviour of llama.cpp's server where the
-    -- last event includes the termination reason.
-    if sse.stop_type then
-        M.totals.prompt_tokens = M.totals.prompt_tokens + (stats.prompt_tokens or 0)
-        M.totals.predicted_tokens = M.totals.predicted_tokens + (stats.predicted_tokens or 0)
-        M.totals.cached_tokens = M.totals.cached_tokens + (stats.cached_tokens or 0)
-        M.totals.draft_tokens = M.totals.draft_tokens + (stats.draft_tokens or 0)
-        M.totals.draft_tokens_accepted = M.totals.draft_tokens_accepted + (stats.draft_tokens_accepted or 0)
-        if sse.truncated then
-            M.totals.truncated = M.totals.truncated + 1
-        end
+
+    M.totals.prompt_tokens = M.totals.prompt_tokens + (stats.prompt_tokens or 0)
+    M.totals.predicted_tokens = M.totals.predicted_tokens + (stats.predicted_tokens or 0)
+    M.totals.cached_tokens = M.totals.cached_tokens + (stats.cached_tokens or 0)
+    M.totals.draft_tokens = M.totals.draft_tokens + (stats.draft_tokens or 0)
+    M.totals.draft_tokens_accepted = M.totals.draft_tokens_accepted + (stats.draft_tokens_accepted or 0)
+    if sse.truncated then
+        M.totals.truncated = M.totals.truncated + 1
     end
 
     return stats
