@@ -19,7 +19,18 @@ function SSEStats:new()
     return self
 end
 
-local M = {}
+local M = {
+
+    totals = {
+        prompt_tokens = 0,
+        predicted_tokens = 0,
+        cached_tokens = 0,
+        draft_tokens = 0,
+        draft_tokens_accepted = 0,
+        truncated = 0
+    }
+
+}
 
 ---@param sse table
 ---@returns SSEStats?
