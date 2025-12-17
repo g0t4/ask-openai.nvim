@@ -14,6 +14,13 @@ from rich.text import Text
 
 _console = Console(color_system="truecolor")
 
+def print_asis(what, **kwargs):
+    _console.print(what, markup=False, **kwargs)
+
+def pprint_asis(what):
+    # TODO do I need to disable anything like markup?
+    pprint(what, indent_guides=False)
+
 def yank(mapping, key: str, default=None):
     value = mapping.get(key, default)
     if key in mapping:
@@ -50,7 +57,7 @@ def _format_content(content: Any) -> str:
 def print_role_markdown(msg: dict, role: str):
     raw_content = _extract_content(msg)
     formatted = raw_content
-    _console.print(formatted, markup=False)
+    print_asis(formatted)
 
 def decode_if_json(content):
     if isinstance(content, str):
@@ -85,7 +92,7 @@ def print_rag_matches(content):
             ext = os.path.splitext(file)[1].lstrip('.').lower() if file else ""
             # YES! this is why this review tool rocks... language specific syntax highlighting!
             syntax = Syntax(text, ext or "text", theme="ansi_dark", line_numbers=False)
-            _console.print(syntax)
+            print_asis(syntax)
         else:
             _console.print(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]")
             pprint(text)
@@ -126,12 +133,12 @@ def print_mcp_result(content):
             item_text = yank(item, "text")
             item_text = insert_newlines(item_text)
             if padding:
-                _console.print(Padding(item_text, (0, 0, 0, 4)))
+                print_asis(Padding(item_text, (0, 0, 0, 4)))
             else:
-                _console.print(item_text)
+                print_asis(item_text)
 
     # verbose dump?
-    # _console.print(content, markup=False)
+    # print_asis(content)
     return True
 
 def _handle_apply_patch(arguments: str):
@@ -200,11 +207,11 @@ def print_if_missing_keys(obj, name):
 def print_assistant(msg: dict):
     content = msg.get("content", "")
     if content:
-        _console.print(insert_newlines(content))
+        print_asis(insert_newlines(content))
 
     reasoning = msg.get("reasoning_content")
     if reasoning:
-        _console.print(
+        print_asis(
             insert_newlines(reasoning),
             style="bright_black italic",
         )
@@ -233,10 +240,10 @@ def print_assistant(msg: dict):
 
             if isinstance(args, list):
                 for part in args:
-                    _console.print(Padding(part, (0, 0, 0, 4)))
+                    print_asis(Padding(part, (0, 0, 0, 4)))
             else:
-                _console.print(Padding(args, (0, 0, 0, 4)))
-            _console.print()
+                print_asis(Padding(args, (0, 0, 0, 4)))
+            _console.print()  # blank line
 
 def get_color(role: str) -> str:
     role_lower = role.lower()
