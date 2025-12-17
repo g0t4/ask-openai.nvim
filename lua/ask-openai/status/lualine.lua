@@ -1,5 +1,6 @@
 local local_share = require('ask-openai.config.local_share')
 local human = require('devtools.humanize')
+local llama_stats = require('ask-openai.backends.llama_cpp.stats')
 
 ---@class lualine
 ---@field last_stats SSEStats|nil
@@ -76,6 +77,15 @@ function M.lualine_components()
                 end
             end
             table.insert(icons, ']')
+
+            -- * aggregate stats (across requests)
+            local totals = llama_stats.totals
+            if totals.prompt_tokens ~= 0 then
+                local summary = string.format("%s/%s",
+                    human.format_num(totals.prompt_tokens, 0),
+                    human.format_num(totals.predicted_tokens, 0))
+                table.insert(icons, summary)
+            end
 
             return table.concat(icons, ' ')
         end,
