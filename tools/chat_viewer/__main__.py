@@ -38,6 +38,7 @@ def load_thread_messages(file_path: Path) -> list[dict[str, Any]]:
         del data["messages"]
         # FYI print other properties at the top (i.e. tools)... if some of these nag me I can always write handlers for them to make them pretty too
         #   primary is going to be tools list and that tends to look good as is in JSON b/c it is itself a JSON schema
+        print_section_header("UNPROCESSED Request Properties", color="cyan")
         pprint_asis(data)
         return messages
 
@@ -268,6 +269,11 @@ def get_color(role: str) -> str:
     if role_lower == "tool":
         return "red"
     return "white"
+
+def print_section_header(title, color):
+    _console.rule(style=color)
+    _console.print(title, style=color + " bold", highlight=False)
+    _console.rule(style=color)
 
 def print_message(msg: dict, idx: int):
     role = msg.get("role", "").lower()
