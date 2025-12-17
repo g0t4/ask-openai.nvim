@@ -78,32 +78,14 @@ function M.lualine_components()
             end
             table.insert(icons, ']')
 
-            function humanize_count(count)
-                if count < 500 then
-                    return count
-                end
-                local suffixes = { 'K', 'M', 'B', 'T' }
-                local suffix_idx = 1
-                while count >= 1000 and suffix_idx <= #suffixes do
-                    count = count / 1000
-                    suffix_idx = suffix_idx + 1
-                end
-                local count_str = string.format("%.1f", count) -- use one decimal place
-                if count_str:sub(-2) == '.0' then
-                    count_str = count_str:sub(1, -3) -- remove trailing '.0'
-                end
-                result = count_str .. suffixes[suffix_idx - 1]
-                return result
-            end
-
             -- * aggregate stats (across requests)
             local totals = llama_stats.totals
 
             if totals.prompt_tokens ~= 0 then
                 -- FYI right now only predictions updates the counters so call it ptot until others use this
                 local summary = string.format("ptot: %sin %sout",
-                    humanize_count(totals.prompt_tokens),
-                    humanize_count(totals.predicted_tokens)
+                    human.count(totals.prompt_tokens),
+                    human.count(totals.predicted_tokens)
                 )
                 table.insert(icons, summary)
             end
