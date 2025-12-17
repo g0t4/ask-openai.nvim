@@ -31,10 +31,17 @@ def yank(mapping, key: str, default=None):
 def load_thread_messages(file_path: Path) -> list[dict[str, Any]]:
     with file_path.open("r", encoding="utf-8") as f:
         data = json.load(f)
-    # TODO! also dump other parts like tools
-    pprint_asis(data)
+
     if isinstance(data, dict) and "messages" in data:
-        return data["messages"]
+        # typical request body, has messages, tools, temp, etc
+        messages = data["messages"]
+        del data["messages"]
+        # FYI print other properties at the top (i.e. tools)... if some of these nag me I can always write handlers for them to make them pretty too
+        #   primary is going to be tools list and that tends to look good as is in JSON b/c it is itself a JSON schema
+        pprint_asis(data)
+        return messages
+
+    # assume list of messages is all we have
     return data if isinstance(data, list) else []
 
 def insert_newlines(content: str) -> str:
