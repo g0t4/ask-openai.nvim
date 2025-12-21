@@ -5,7 +5,9 @@ local M = {}
 ---@param sse_parsed table
 ---@param request CurlRequest
 function M.log_full_request(sse_parsed, request, frontend)
-    log:info("LOGGING COMPLETION")
+    log:error("TODO FINISH LOGGING COMPLETIONS LATER")
+    do return end
+
     -- TODO GET CONTENT/RESPONSE TOO (IIRC this is frontend specific?...
     --   TODO how about add a mechanism to track the deltas on the request object too?)
     --  b/c you want to save the output message that you parsed too (content + reasoning) along with this
