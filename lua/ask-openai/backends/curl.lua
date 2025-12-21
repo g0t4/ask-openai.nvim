@@ -1,6 +1,7 @@
 local log = require("ask-openai.logs.logger").predictions()
 local CurlRequest = require("ask-openai.backends.curl_request")
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
+local completion_logger = require('ask-openai.logs.completion_logger')
 
 local Curl = {}
 
@@ -52,7 +53,7 @@ function Curl.spawn(request, frontend)
         -- FYI right now this function exists to catch errors and terminate
 
         local success, error_message = xpcall(function()
-            Curl.on_one_data_value(data_value, frontend)
+            Curl.on_one_data_value(data_value, frontend, request)
         end, function(e)
             -- otherwise only get one line from the traceback frame
             return debug.traceback(e, 3)
@@ -149,7 +150,7 @@ end
 
 ---@param data_value string
 ---@param frontend StreamingFrontend
-function Curl.on_one_data_value(data_value, frontend)
+function Curl.on_one_data_value(data_value, frontend, request)
     -- log:trace("data_value", data_value)
 
     if data_value == "[DONE]" then
@@ -172,6 +173,7 @@ function Curl.on_one_data_value(data_value, frontend)
 
         if sse_parsed.timings then
             frontend.on_sse_llama_server_timings(sse_parsed)
+            completion_logger.log_full_request(sse_parsed, request, frontend)
         end
     else
         -- PRN in the spirit of triggering events for scenarios, I could add:

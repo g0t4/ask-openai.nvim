@@ -4,8 +4,10 @@ local M = {}
 
 ---@param sse_parsed table
 ---@param request CurlRequest
-function M.log_full_request(sse_parsed, request)
-    -- TODO HOOK THIS UP IN EACH FRONT END
+function M.log_full_request(sse_parsed, request, frontend)
+    log:info("LOGGING COMPLETION")
+    -- TODO GET CONTENT/RESPONSE TOO (IIRC this is frontend specific?...
+    --   TODO how about add a mechanism to track the deltas on the request object too?)
     --  b/c you want to save the output message that you parsed too (content + reasoning) along with this
     --   would be nice to get the content again in the final response? raw prompt? I think there might be a setting for that?
     --      in __verbose.content ... it isn't set on streaming requests AFAICT... but there is a toggle IIRC (maybe)
