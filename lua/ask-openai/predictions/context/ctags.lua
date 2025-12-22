@@ -13,9 +13,9 @@ end
 ---@alias ParsedTagLine { tag_name: string, file_name: string, ex_command : string }
 
 ---@param lines string[]
----@param language string
+---@param file_ext string
 ---@return ParsedTagLine[]
-function M.parse_tag_lines(lines, language)
+function M.parse_tag_lines(lines, file_ext)
     return vim.iter(lines)
         -- filter on raw lines
         :filter(function(line)
@@ -34,7 +34,7 @@ function M.parse_tag_lines(lines, language)
         -- filter on fields
         :filter(function(tag)
             return not tag.ex_command:match("/^%s*local")
-                and tag.file_name:match("." .. language .. "$")
+                and tag.file_name:match("." .. file_ext .. "$")
         end)
         :totable()
 end
