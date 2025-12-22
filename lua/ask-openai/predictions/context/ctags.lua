@@ -111,6 +111,8 @@ end
 function M.all_reassembled_tags()
     local file_extension = M.get_language_for_current_buffer()
     local reassembeds = {
+        -- TODO how about use ctags for luarc libs?
+        --  load on first use? (if exist)
         -- todo more than one lib prompts!
         M.reassembled_tags_for_this_workspace(file_extension),
     }
