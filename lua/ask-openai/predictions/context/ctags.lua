@@ -17,13 +17,15 @@ end
 ---@return ParsedTagLine[]
 function M.parse_tag_lines(lines, file_ext)
     return vim.iter(lines)
-        -- filter on raw lines
         :filter(function(line)
+            -- filter on raw line
+            -- IIAC I was filtering out comments (!)... not sure # is a comment though?
             return not line:match("^[#!]")
+                -- PRN was I filtering out tests here? i.e. lua tests? OR?
                 and not line:match("%.tests%.")
         end)
-        -- split her up!
         :map(function(line)
+            -- slit each line into fields
             local splits = vim.split(line, "\t", { plain = true, n = 2 })
             return {
                 tag_name = splits[1],
@@ -31,9 +33,13 @@ function M.parse_tag_lines(lines, file_ext)
                 ex_command = splits[3]:gsub(';"$', "")
             }
         end)
-        -- filter on fields
         :filter(function(tag)
+            -- filter on line's fields
+            -- FYI I was probably designing filters for lua at the time I built this:
+            -- IIGC remove locals b/c those would already be covered by including current file as context
+            --   OR they aren't relevant b/c only public exports from a module would be relevant in other modules (at least w.r.t. imports and usage)
             return not tag.ex_command:match("/^%s*local")
+                -- match on file extension
                 and tag.file_name:match("." .. file_ext .. "$")
         end)
         :totable()
