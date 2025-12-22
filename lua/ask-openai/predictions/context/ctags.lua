@@ -142,6 +142,25 @@ function M.get_language_for_current_buffer()
     -- FYI vim filetypes for enabling the LSP client for RAG purposes
     local filetype_to_extension = {
         python = "py",
+        lua = "lua",
+        sh = "sh",
+        javascript = "js",
+        typescript = "ts",
+        yaml = "yml",
+        markdown = "md",
+        json = "json",
+        rust = "rs",
+        go = "go",
+        cpp = "cpp",
+        c = "c",
+        java = "java",
+        php = "php",
+        ruby = "rb",
+        perl = "pl",
+        swift = "swift",
+        kotlin = "kt",
+        html = "html",
+        css = "css",
     }
 
     local file_ext = filetype_to_extension[ft] or ft
