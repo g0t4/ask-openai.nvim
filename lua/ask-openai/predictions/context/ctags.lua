@@ -134,8 +134,73 @@ function M.parsed_tag_lines_for_this_workspace(file_extension)
 end
 
 function M.get_language_for_current_buffer()
-    -- PRN can add logic to map here
-    return vim.bo.filetype
+    -- TODO centralize a single lookup between file ext and filetype
+    -- TODO also support multiple extensions per filetype b/c some languages are not limited to a single ext (i.e. header files in c)
+    local filetype = vim.bo.filetype
+    local ft = vim.bo.filetype
+
+    -- local ext_to_filetype = {
+    --     -- extension = filetype
+    --     bash = "sh", -- *
+    --     clj = "clojure",
+    --     coffee = "coffeescript",
+    --     conf = "cfg",
+    --     cs = "csharp",
+    --     h = "c",
+    --     hh = "cpp",
+    --     hpp = "cpp",
+    --     hs = "haskell",
+    --     htm = "html",
+    --     jade = "pug",
+    --     js = "javascript", -- *
+    --     julia = "julia",
+    --     kt = "kotlin",
+    --     lhs = "lhaskell",
+    --     m = "objc", -- others for objc?
+    --     mm = "objc",
+    --     pl = "perl",
+    --     pm = "perl",
+    --     rb = "ruby",
+    --     rs = "rust",
+    --     scm = "scheme",
+    --     shtml = "html",
+    --     swift = "swift",
+    --     ts = "typescript",
+    --     tsx = "typescriptreact",
+    --     vimrc = "vim",
+    --     yml = "yaml", -- *
+    -- }
+    --
+
+    -- FYI vim filetypes for enabling the LSP client for RAG purposes
+    local filetype_to_extension = {
+        python = "py",
+        csharp = "cs",
+        markdown = "md",
+        yaml = "yml",
+        vim = "vimrc",
+        sh = "bash",
+        javascript = "js",
+        typescript = "ts",
+        typescriptreact = "tsx",
+        html = "htm",
+        pug = "jade",
+        clojure = "clj",
+        coffeescript = "coffee",
+        cfg = "conf",
+        c = "c",
+        cpp = "cpp",
+        haskell = "hs",
+        lua = "lua",
+        ruby = "rb",
+        rust = "rs",
+        scheme = "scm",
+        perl = "pl",
+        swift = "swift",
+    }
+
+    local file_ext = filetype_to_extension[ft] or ft
+    return file_ext
 end
 
 function M.dump_this()
