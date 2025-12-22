@@ -136,7 +136,6 @@ end
 function M.get_language_for_current_buffer()
     -- TODO centralize a single lookup between file ext and filetype
     -- TODO also support multiple extensions per filetype b/c some languages are not limited to a single ext (i.e. header files in c)
-    local filetype = vim.bo.filetype
     local ft = vim.bo.filetype
 
     -- FYI vim filetypes for enabling the LSP client for RAG purposes
@@ -163,8 +162,7 @@ function M.get_language_for_current_buffer()
         css = "css",
     }
 
-    local file_ext = filetype_to_extension[ft] or ft
-    return file_ext
+    return filetype_to_extension[ft] or ft
 end
 
 function M.dump_this()
