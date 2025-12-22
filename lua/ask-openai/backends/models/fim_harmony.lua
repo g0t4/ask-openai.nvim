@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger")
+local log = require("ask-openai.logs.logger").predictions()
 local api = require("ask-openai.api")
 local dedupe = require("ask-openai.rag.client.dedupe")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
@@ -99,9 +99,12 @@ General project code rules:
     if context.includes.yanks and context.yanks then
         table.insert(context_lines, context.yanks.content)
     end
-    -- if context.includes.matching_ctags and context.matching_ctags then
-    --     table.insert(context_lines, context.matching_ctags)
-    -- end
+
+    log:info("context.includes", vim.inspect(context.includes))
+    log:info("context.matching_ctags", vim.inspect(context.matching_ctags))
+    if context.includes.matching_ctags and context.matching_ctags then
+        table.insert(context_lines, context.matching_ctags.content)
+    end
     if context.includes.project and context.project then
         vim.iter(context.project)
             :each(function(value)
@@ -227,6 +230,7 @@ function HarmonyFimPromptBuilder:build_raw_prompt()
     -- join w/ no character (do not use \n)
     return table.concat(self._parts, "")
 end
+
 HarmonyFimPromptBuilder.gptoss = {
     sentinel_tokens = {}
 }
@@ -334,6 +338,5 @@ Make sure to practice the code change before you return a suggestion. Take the c
 
     return messages
 end
-
 
 return HarmonyFimPromptBuilder
