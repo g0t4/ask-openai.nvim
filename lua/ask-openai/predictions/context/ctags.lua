@@ -151,6 +151,7 @@ function M.get_language_for_current_buffer()
         rust = "rs",
         go = "go",
         cpp = "cpp",
+        -- TODO c would be a good case for multiple extensions (later)
         c = "c",
         java = "java",
         php = "php",
