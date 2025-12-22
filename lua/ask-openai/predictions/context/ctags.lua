@@ -13,9 +13,9 @@ end
 ---@alias ParsedTagLine { tag_name: string, file_name: string, ex_command : string }
 
 ---@param lines string[]
----@param file_ext string
+---@param file_extension string
 ---@return ParsedTagLine[]
-function M.parse_tag_lines(lines, file_ext)
+function M.parse_tag_lines(lines, file_extension)
     return vim.iter(lines)
         :filter(function(line)
             -- filter on raw line
@@ -40,7 +40,7 @@ function M.parse_tag_lines(lines, file_ext)
             --   OR they aren't relevant b/c only public exports from a module would be relevant in other modules (at least w.r.t. imports and usage)
             return not tag.ex_command:match("/^%s*local")
                 -- match on file extension
-                and tag.file_name:match("." .. file_ext .. "$")
+                and tag.file_name:match("." .. file_extension .. "$")
         end)
         :totable()
 end
@@ -73,17 +73,17 @@ function M.reassemble_tags(parsed_tag_lines, file_name_func)
 end
 
 ---@param file_path string
----@param language string
+---@param file_extension string
 ---@return ParsedTagLine[]
-function M.get_parsed_tag_lines(file_path, language)
-    return M.parse_tag_lines(files.read_file_lines(file_path), language)
+function M.get_parsed_tag_lines(file_path, file_extension)
+    return M.parse_tag_lines(files.read_file_lines(file_path), file_extension)
 end
 
 ---@param file_path string
----@param language string
+---@param file_extension string
 ---@return string tags_reassembled
-function M.get_reassembled_text(file_path, language)
-    return M.reassemble_tags(M.get_parsed_tag_lines(file_path, language))
+function M.get_reassembled_text(file_path, file_extension)
+    return M.reassemble_tags(M.get_parsed_tag_lines(file_path, file_extension))
 end
 
 ---@return string file_path
@@ -101,20 +101,20 @@ function M.reassembled_tags_for_lua_devtools()
 end
 
 ---@return string
-function M.reassembled_tags_for_this_workspace(language)
+function M.reassembled_tags_for_this_workspace(file_extension)
     local tags = M.find_tags_file_for_this_workspace()
-    return M.get_reassembled_text(tags, language)
+    return M.get_reassembled_text(tags, file_extension)
 end
 
 -- TODO fix ctags context to use this new all_reassembled_tags method
 ---@return string[]
 function M.all_reassembled_tags()
-    local language = M.get_language_for_current_buffer()
+    local file_extension = M.get_language_for_current_buffer()
     local reassembeds = {
         -- todo more than one lib prompts!
-        M.reassembled_tags_for_this_workspace(language),
+        M.reassembled_tags_for_this_workspace(file_extension),
     }
-    if language == "lua" then
+    if file_extension == "lua" then
         table.insert(reassembeds, M.reassembled_tags_for_lua_devtools())
     end
     return reassembeds
@@ -127,8 +127,8 @@ function M.parsed_tag_lines_for_lua_devtools()
 end
 
 ---@return ParsedTagLine[]
-function M.parsed_tag_lines_for_this_workspace(language)
-    return M.parse_tag_lines(files.read_file_lines(M.find_tags_file_for_this_workspace()), language)
+function M.parsed_tag_lines_for_this_workspace(file_extension)
+    return M.parse_tag_lines(files.read_file_lines(M.find_tags_file_for_this_workspace()), file_extension)
 end
 
 function M.get_language_for_current_buffer()
@@ -138,11 +138,11 @@ end
 
 function M.dump_this()
     -- get current file's type
-    local language = M.get_language_for_current_buffer()
+    local file_extension = M.get_language_for_current_buffer()
 
-    messages.header("Parsed lines for `" .. language .. "`")
+    messages.header("Parsed lines for `" .. file_extension .. "`")
     messages.ensure_open()
-    messages.append(M.reassembled_tags_for_this_workspace(language))
+    messages.append(M.reassembled_tags_for_this_workspace(file_extension))
     messages.scroll_back_before_last_append()
 end
 
