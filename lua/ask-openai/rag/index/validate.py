@@ -117,8 +117,15 @@ class DatasetsValidator:
                     mismatches.append(f"hash: {stored_stat.hash[:8]} != {recomputed_stat.hash[:8]}")
                 if recomputed_stat.mtime != stored_stat.mtime:
                     age_seconds = abs(stored_stat.mtime - recomputed_stat.mtime)
-                    age_human = humanize.naturaldelta(age_seconds)
-                    mismatches.append(f"age difference: {age_human}")
+                    # show age first, most prominent
+                    if age_seconds > 7 * 24 * 60 * 60:
+                        age_str = f"[red]{humanize.naturaldelta(age_seconds)}[/]"  # red > 1 week
+                    elif age_seconds > 2 * 24 * 60 * 60:
+                        age_str = f"[yellow]{humanize.naturaldelta(age_seconds)}[/]"  # yellow > 2 days
+                    else:
+                        age_str = f"[green]{humanize.naturaldelta(age_seconds)}[/]"  # green otherwise
+
+                    mismatches.append(f"age difference: {age_str}")
                 if recomputed_stat.size != stored_stat.size:
                     mismatches.append(f"size: {stored_stat.size} != {recomputed_stat.size}")
                 if mismatches:
