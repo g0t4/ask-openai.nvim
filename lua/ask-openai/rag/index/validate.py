@@ -1,11 +1,14 @@
-from pathlib import Path
+import os
+import rich
 import subprocess
 import sys
-from lsp.storage import load_all_datasets, Datasets
-from lsp.logs import get_logger, logging_fwk_to_console
-import os
+
 from collections import Counter
+from pathlib import Path
 from typing import Set
+
+from lsp.logs import get_logger, logging_fwk_to_console
+from lsp.storage import load_all_datasets, Datasets
 
 logger = get_logger(__name__)
 
@@ -98,6 +101,12 @@ class DatasetsValidator:
         else:
             logger.debug("All good, no missing extensions, you lucky motherf***er")
 
+    def warn_about_stale_files(self, datasets: Datasets) -> None:
+        for dataset in datasets.all_datasets.values():
+            for stat in dataset.stat_by_path.values():
+                rich.inspect(stat)
+
+
 def main():
     # usage:
     #   python3 -m index.validate $(_repo_root)/.rag
@@ -109,8 +118,8 @@ def main():
 
     validator = DatasetsValidator(ds)
     validator.validate_datasets()
-
     validator.warn_about_unindexed_languages(ds)
+    validator.warn_about_stale_files(ds)
 
     if validator.any_problems:
         sys.exit(1)
