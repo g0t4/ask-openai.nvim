@@ -222,7 +222,7 @@ function FimBackend:body_for()
         if log_threshold < local_share.LOG_LEVEL_NUMBERS.WARN then
             -- HACK: ONLY log last message, around cursor_marker
             --  why? to quickly see and reason about FIM input/outputs
-            -- FYI WON'T WORK WITH non-gptoss models b/c they have different cursor_marker
+            -- FYI WON'T WORK WITH non-gptoss models if they have different cursor_marker
             -- TODO! just pass along the original lines ... will also fix issue with assistant prefill!
             local last_message = body.messages[#body.messages]
 

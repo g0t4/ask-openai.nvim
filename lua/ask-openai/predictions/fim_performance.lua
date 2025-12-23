@@ -45,6 +45,7 @@ function FIMPerformance:rag_started()
 end
 
 function FIMPerformance:rag_done()
+    -- log:info("rag_done called, start has rag_duration_ms: '" .. vim.inspect(self.rag_duration_ms) .. "'")
     if self.rag_duration_ms ~= nil then
         error("rag_done called a second time, timings might be wrong, aborting...")
     end

@@ -164,8 +164,14 @@ function PredictionsFrontend.ask_for_prediction(params)
         ---@param rag_matches LSPRankedMatch[]
         ---@param rag_failed boolean?
         function on_rag_response(rag_matches, rag_failed)
+            -- can this be called twice? one for done/cancel and a race condition b/w the two?
+            -- log:info("on_rag_response(rag_matches:'"
+            --     .. vim.inspect(rag_matches) .. "', rag_failed:'"
+            --     .. vim.inspect(rag_failed) .. "'")
+
             -- FYI unroll all rag specific safeguards here so that logic doesn't live inside send_fim
             perf:rag_done()
+
 
             -- * make sure prior (canceled) rag request doesn't still respond
             if PredictionsFrontend.rag_request_ids ~= this_request_ids then
