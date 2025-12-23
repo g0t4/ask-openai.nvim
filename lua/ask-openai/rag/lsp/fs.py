@@ -50,16 +50,17 @@ def set_root_dir(root_dir: str | Path | None):
 def get_config():
     return config
 
-def relative_to_workspace(path: Path | str) -> Path:
+def relative_to_workspace(path: Path | str, override_root_path: Path | None = None) -> Path:
     path = Path(path)
+    use_root_path = override_root_path or root_path
 
-    if root_path is None:
+    if use_root_path is None:
         return path
 
-    if not path.is_relative_to(root_path):
+    if not path.is_relative_to(use_root_path):
         return path
 
-    return path.relative_to(root_path)
+    return path.relative_to(use_root_path)
 
 def get_loggable_path(path: Path | str) -> str:
     if not isinstance(path, str):

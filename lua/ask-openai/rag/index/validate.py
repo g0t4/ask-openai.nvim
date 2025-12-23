@@ -102,11 +102,11 @@ class DatasetsValidator:
         else:
             logger.debug("All good, no missing extensions, you lucky motherf***er")
 
-    def warn_about_stale_files(self, datasets: Datasets) -> None:
+    def warn_about_stale_files(self, datasets: Datasets, root_dir: Path) -> None:
         for dataset in datasets.all_datasets.values():
             for path_str, stored_stat in dataset.stat_by_path.items():
                 file_path = Path(path_str)
-                display_path = relative_to_workspace(file_path)
+                display_path = relative_to_workspace(file_path, override_root_path=root_dir)
                 if not file_path.is_file():
                     logger.warning(f"File in index ({display_path}) is not present on disk, was it deleted?")
                     continue
@@ -133,7 +133,9 @@ def main():
     validator = DatasetsValidator(ds)
     validator.validate_datasets()
     validator.warn_about_unindexed_languages(ds)
-    validator.warn_about_stale_files(ds)
+    # TODO FIX DETERMINING root_dir=rag_dir.parent ... look at logic in indexer and mirror it (in fact, share that logic)... OR always show absolute paths to files in index
+    #   TODO I should be printing context for what is validated (i.e. rag_dir and/or root_dir)
+    validator.warn_about_stale_files(ds, rag_dir.parent)
 
     if validator.any_problems:
         sys.exit(1)
