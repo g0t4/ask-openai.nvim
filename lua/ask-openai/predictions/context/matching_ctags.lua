@@ -77,8 +77,12 @@ function M.get_context_item_for(word, language)
         file_name_transformer = function() end
     end
 
-    local reassembled_content = ctags.reassemble_tags(matches, file_name_transformer)
-    local result = ContextItem:new("tags", reassembled_content)
+    local content = ctags.reassemble_tags(matches, file_name_transformer)
+    if content ~= nil and content ~= "" then
+        content = "## Matching ctags entries (match <cword>)\n" .. content
+    end
+
+    local result = ContextItem:new("tags", content)
 
     if M.tracing then
         messages.header("Matching Ctags")

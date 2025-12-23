@@ -11,7 +11,7 @@ describe("matching_ctags", function()
 
     it("get_context_item()", function()
         local item = matching_ctags.get_context_item_for("get_context_items", "lua")
-        vim.print(item.content)
+        -- vim.print(item.content)
 
         local hardcoded = [[
 lua/ask-openai/prediction/context/git_diff.lua
@@ -42,7 +42,7 @@ lua/ask-openai/prediction/context/git_diff.lua
     -- separtely distill all requires into a list (not filtered)
     it("matches on file_name too", function()
         local item = matching_ctags.get_context_item_for("messages", "lua")
-        vim.print(item.content)
+        -- vim.print(item.content)
 
         local hard_git_diff_with_require = [[
 require('devtools.messages')]]
