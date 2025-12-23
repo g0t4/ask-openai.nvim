@@ -104,6 +104,26 @@ class DatasetsValidator:
             logger.debug("All good, no missing extensions, you lucky motherf***er")
 
     def warn_about_stale_files(self, datasets: Datasets, root_dir: Path) -> None:
+        # CHANGES PLEASE: two branches I want to consider for files:
+        # 1. First check file hash to see if contents are the same
+        #    A. if file hashes match, then
+        #         check stat.mtime
+        #           if those match, skip these entirely
+        #           if they don't match, it should be ovious in the final report that these are different ONLY by stat.mtime (not contents)
+        #    B. if file hashes don't match,
+        #         primary emphasis on age difference (b/c primary purpose of validation is to find out if the index is out of date, i.e. not updated recently!)
+        #         mention size difference (delta not both amounts, humanize it)
+        #         mention hash mismatch (this is least important and assumed if size differs anyways)
+        #
+        # To display this info, I want files grouped based on hash matching status:
+        #    First, show files that differ on stat.mtime but not hash
+        #        sort by age descending
+        #    Then, show changed files
+        #        sort by age descending
+        #        show age on the left (color by thresholds already in use)
+        #        show file path next
+        #        then, show size delta and maybe hashes on right
+
         for dataset in datasets.all_datasets.values():
             for path_str, stored_stat in dataset.stat_by_path.items():
                 file_path = Path(path_str)
