@@ -89,30 +89,38 @@ function HarmonyFimPromptBuilder.context_user_msg(request)
         "repo: " .. request:get_repo_name(),
         "",
         vim.trim([[
-General project code rules:
+## General project code rules:
 - Never add comments to the end of a line.
 - NEVER add TODO comments for me.
 ]]),
     }
+    local function add_blank_line()
+        table.insert(context_lines, "")
+    end
 
     local context = request.context
+    if context.includes.project and context.project then
+        vim.iter(context.project)
+            :each(function(value)
+                add_blank_line()
+                table.insert(context_lines, value.content)
+            end)
+    end
+
     if context.includes.yanks and context.yanks then
+        add_blank_line()
         table.insert(context_lines, context.yanks.content)
     end
 
     log:info("context.includes", vim.inspect(context.includes))
     log:info("context.matching_ctags", vim.inspect(context.matching_ctags))
     if context.includes.matching_ctags and context.matching_ctags then
+        add_blank_line()
         table.insert(context_lines, context.matching_ctags.content)
     end
-    if context.includes.project and context.project then
-        vim.iter(context.project)
-            :each(function(value)
-                table.insert(context_lines, value.content)
-            end)
-    end
-
     if request.rag_matches and #request.rag_matches > 0 then
+        add_blank_line()
+
         local rag_parts = {}
         if #request.rag_matches == 1 then
             heading = "# Semantic Grep match:\n"
