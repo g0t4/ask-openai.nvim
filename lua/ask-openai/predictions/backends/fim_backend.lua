@@ -73,15 +73,13 @@ function FimBackend:new(ps_chunk, rag_matches, model)
         context = CurrentContext:items("", always_include)
     }
     setmetatable(instance, self)
-    -- log:trace("context: ", vim.inspect(instance.context))
     return instance
 end
 
 function FimBackend:body_for()
     local max_tokens = 200
     local body = {
-        -- FYI! keep model notes in MODELS.notes.md
-        -- for llama-server this is only to select the right prompt/chat builder below
+        -- FYI keep model notes in MODELS.notes.md
         model = use_model,
 
         raw = true, -- bypass templates (only /api/generate, not /v1/completions)
@@ -93,12 +91,8 @@ function FimBackend:body_for()
         -- n_predict = max_tokens, -- llama-server specific (avoid for consistency)
         -- options.num_predict = max_tokens, -- ollama's /api/generate
 
-
-        -- TODO temperature, top_p,
         options = {} -- empty so I can set stop_tokens below (IIRC for ollama only?)
     }
-
-    -- FYI some models have a bundled (or in ollama Modelfile, IIRC) prompt template that will handle the format, if you set raw=false
 
     if string.find(body.model, "codellama") then
         builder = function()
@@ -106,14 +100,13 @@ function FimBackend:body_for()
             -- have it use meta.codellama.sentinel_tokens
         end
 
-
         -- codellama uses (codellama.EOT) that seems to not be set as param in modelfile (at least for FIM?)
         --   without this change you will see (codellama.EOT) in code at end of completions
         -- ollama show codellama:7b-code-q8_0 --parameters # => no stop param
         body.options.stop = { meta.codellama.sentinel_tokens.EOT }
 
         error("review FIM requirements for codellama, make sure you are using expected template, it used to work with qwen like FIM but I changed that to repo level now and would need to test it")
-        -- FYI also ollama warns about:
+        -- also ollama warns about:
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
     elseif string.find(body.model, "Mellum") then
         -- body.options.stop = {
@@ -124,13 +117,10 @@ function FimBackend:body_for()
             return fim.mellum.get_fim_prompt(self)
         end
     elseif string.find(body.model, "starcoder2") then
-        -- TODO double check stop is correct by default (completions seem to stop appropirately, so I'm fine with it as is)
-        -- body.options.stop = { file_sep? }
         builder = function()
             return fim.starcoder2.get_fim_prompt(self)
         end
     elseif string.find(body.model, "qwen3coder", nil, true) then
-        -- TODO verify this is compatible with Qwen2.5-Coder FIM tokens, I believe it is
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
@@ -140,15 +130,10 @@ function FimBackend:body_for()
         body.top_p = 0.8
         body.top_k = 20
         -- PRN new_qwen3coder_llama_server_legacy_body (or w/e to call it, the old endpoint to do raw FIM prompts)
-
-        -- TODO! stop token isn't set! should I just remove this... I have them commented out in the other file linked here:
-        body.options.stop = fim.qwen25coder.sentinel_tokens.fim_stop_tokens
     elseif string.find(body.model, "qwen25coder", nil, true) then
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
-        -- TODO! stop token isn't set! should I just remove this... I have them commented out in the other file linked here:
-        body.options.stop = fim.qwen25coder.sentinel_tokens.fim_stop_tokens
     elseif string.find(body.model, "bytedance-seed-coder-8b", nil, true) then
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self) -- WORKS FOR repo level using qwen's format entirely! (plus set qwen's stop_tokens to avoid rambles / trailing stop tokens)
@@ -160,10 +145,10 @@ function FimBackend:body_for()
         body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
     elseif string.find(body.model, "gpt-oss", nil, true) then
         if use_gptoss_raw then
-            -- TODO use prefill instead of raw prompt! (keep raw around in case I want to go that route for another reason)
             -- * /completions legacy endpoint:
             builder = function()
                 -- * raw prompt /completions, no thinking (I could have model think too, just need to parse that then)
+                -- TODO? get rid of raw approach entirely now that prefix is working
                 return harmony_fim.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(self)
             end
             body.raw = true
@@ -181,7 +166,6 @@ function FimBackend:body_for()
         end
 
         -- * common settings
-        --   PRN share with other tools that use same values (i.e. AskRewrite/AskQuestion)
         --   https://github.com/openai/gpt-oss?tab=readme-ov-file#recommended-sampling-parameters
         body.temperature = 1.0
         body.top_p = 1.0
@@ -193,10 +177,6 @@ function FimBackend:body_for()
         --   https://github.com/ollama/ollama/issues/4709
         --   make it more repeatable?
         -- body.options.temperature = 0.0
-
-        -- TODO! investigate temp (etc) for all models
-
-        -- TODO set stop token to EOS? IIAC this is already set?!
         -- body.options.stop = { fim.codestral.sentinel_tokens.EOS_TOKEN }
     elseif string.find(body.model, "deepseek-coder-v2", nil, true) then
         builder = function()
@@ -205,10 +185,7 @@ function FimBackend:body_for()
 
         body.options.stop = fim.deepseek_coder_v2.sentinel_tokens.fim_stop_tokens
     else
-        -- warn that FIM tokens need to be set
-        local message = "MISSING FIM SENTINEL TOKENS for this model " .. body.model
-        log:error(message)
-        error(message)
+        error("MODEL NOT SUPPORTED")
         return
     end
 
