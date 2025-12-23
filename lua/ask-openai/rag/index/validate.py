@@ -113,7 +113,7 @@ class DatasetsValidator:
                 recomputed_stat = get_file_stat(file_path)
                 mismatches = []
                 if recomputed_stat.hash != stored_stat.hash:
-                    mismatches.append(f"hash: {stored_stat.hash} != {recomputed_stat.hash}")
+                    mismatches.append(f"hash: {stored_stat.hash[:8]} != {recomputed_stat.hash[:8]}")
                 if recomputed_stat.mtime != stored_stat.mtime:
                     mismatches.append(f"mtime: {stored_stat.mtime} != {recomputed_stat.mtime}")
                 if recomputed_stat.size != stored_stat.size:
