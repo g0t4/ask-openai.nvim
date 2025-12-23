@@ -112,13 +112,11 @@ function HarmonyFimPromptBuilder.context_user_msg(request)
         table.insert(context_lines, context.yanks.content)
     end
 
-    log:info("context.includes", vim.inspect(context.includes))
-    log:info("context.matching_ctags", vim.inspect(context.matching_ctags))
-    if context.includes.matching_ctags and context.matching_ctags then
-        add_blank_line()
-        log:info("ctags.content", context.matching_ctags.content)
-        table.insert(context_lines, context.matching_ctags.content)
-    end
+    -- if context.includes.matching_ctags and context.matching_ctags then
+    --     add_blank_line()
+    --     table.insert(context_lines, context.matching_ctags.content)
+    -- end
+
     if request.rag_matches and #request.rag_matches > 0 then
         add_blank_line()
 
