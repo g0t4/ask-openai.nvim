@@ -10,7 +10,7 @@ from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.storage import load_all_datasets, Datasets
 from lsp.chunks.chunker import get_file_stat
 
-logger = get_logger(__name__)
+logger = get_logger("validator")
 
 class DatasetsValidator:
 
@@ -106,6 +106,7 @@ class DatasetsValidator:
             for path_str, stored_stat in dataset.stat_by_path.items():
                 file_path = Path(path_str)
                 if not file_path.is_file():
+                    logger.warning(f"File in index ({path_str}) is not present on disk, was it deleted?")
                     continue
                 recomputed_stat = get_file_stat(file_path)
                 mismatches = []
@@ -116,9 +117,7 @@ class DatasetsValidator:
                 if recomputed_stat.size != stored_stat.size:
                     mismatches.append(f"size: {stored_stat.size} != {recomputed_stat.size}")
                 if mismatches:
-                    print(f"Stale stat for {path_str}:")
-                    for msg in mismatches:
-                        print(f"  {msg}")
+                    logger.warning(f"Stale stat for {path_str}: {'; '.join(mismatches)}")
 
 def main():
     # usage:
