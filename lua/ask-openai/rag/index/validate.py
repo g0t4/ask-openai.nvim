@@ -109,7 +109,7 @@ class DatasetsValidator:
                 file_path = Path(path_str)
                 display_path = relative_to_workspace(file_path, override_root_path=root_dir)
                 if not file_path.is_file():
-                    logger.warning(f"File in index ({display_path}) is not present on disk, was it deleted?")
+                    logger.warning(f"Index file deleted? [red strike]{display_path}[/]")
                     continue
                 recomputed_stat = get_file_stat(file_path)
                 mismatches = []
