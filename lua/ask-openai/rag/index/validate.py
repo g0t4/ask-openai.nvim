@@ -108,6 +108,13 @@ class DatasetsValidator:
         mtime_only: list[tuple[float, str, str]] = []  # (age_seconds, display_path, details)
         changed: list[tuple[float, str, str]] = []    # (age_seconds, display_path, details)
 
+        def _format_age(age_seconds: int) -> str:
+            if age_seconds > 7 * 24 * 60 * 60:
+                return f"[red]{humanize.naturaldelta(age_seconds)}[/]"
+            if age_seconds > 2 * 24 * 60 * 60:
+                return f"[yellow]{humanize.naturaldelta(age_seconds)}[/]"
+            return f"[green]{humanize.naturaldelta(age_seconds)}[/]"
+
         for dataset in datasets.all_datasets.values():
             for path_str, stored_stat in dataset.stat_by_path.items():
                 file_path = Path(path_str)
@@ -128,12 +135,7 @@ class DatasetsValidator:
                 if not hash_match:
                     # Primary emphasis on age difference
                     if age_seconds:
-                        if age_seconds > 7 * 24 * 60 * 60:
-                            age_str = f"[red]{humanize.naturaldelta(age_seconds)}[/]"
-                        elif age_seconds > 2 * 24 * 60 * 60:
-                            age_str = f"[yellow]{humanize.naturaldelta(age_seconds)}[/]"
-                        else:
-                            age_str = f"[green]{humanize.naturaldelta(age_seconds)}[/]"
+                        age_str = _format_age(age_seconds)
                         details_parts.append(f"age: {age_str}")
 
                     # Size difference
@@ -151,17 +153,12 @@ class DatasetsValidator:
                 else:
                     # Hash matches; only consider mtime difference
                     if age_seconds:
-                        if age_seconds > 7 * 24 * 60 * 60:
-                            age_str = f"[red]{humanize.naturaldelta(age_seconds)}[/]"
-                        elif age_seconds > 2 * 24 * 60 * 60:
-                            age_str = f"[yellow]{humanize.naturaldelta(age_seconds)}[/]"
-                        else:
-                            age_str = f"[green]{humanize.naturaldelta(age_seconds)}[/]"
+                        age_str = _format_age(age_seconds)
                         details_parts.append(f"age: {age_str}")
 
                         entry = (age_seconds, display_path, "; ".join(details_parts))
                         mtime_only.append(entry)
-                    # If no age difference, nothing to report
+
 
         # Sort groups by descending age
         mtime_only.sort(key=lambda x: x[0], reverse=True)
