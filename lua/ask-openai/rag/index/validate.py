@@ -2,6 +2,7 @@ import os
 import rich
 import subprocess
 import sys
+import humanize
 
 from collections import Counter
 from pathlib import Path
@@ -115,8 +116,9 @@ class DatasetsValidator:
                 if recomputed_stat.hash != stored_stat.hash:
                     mismatches.append(f"hash: {stored_stat.hash[:8]} != {recomputed_stat.hash[:8]}")
                 if recomputed_stat.mtime != stored_stat.mtime:
-                    age_diff = abs(stored_stat.mtime - recomputed_stat.mtime)
-                    mismatches.append(f"age difference: {age_diff} seconds")
+                    age_seconds = abs(stored_stat.mtime - recomputed_stat.mtime)
+                    age_human = humanize.naturaldelta(age_seconds)
+                    mismatches.append(f"age difference: {age_human}")
                 if recomputed_stat.size != stored_stat.size:
                     mismatches.append(f"size: {stored_stat.size} != {recomputed_stat.size}")
                 if mismatches:
