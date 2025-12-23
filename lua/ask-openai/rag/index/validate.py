@@ -101,11 +101,24 @@ class DatasetsValidator:
         else:
             logger.debug("All good, no missing extensions, you lucky motherf***er")
 
-    def warn_about_stale_files(self, datasets: Datasets) -> None:
-        for dataset in datasets.all_datasets.values():
-            for stat in dataset.stat_by_path.values():
-                rich.inspect(stat)
-
+def recompute_and_check_stats(datasets: Datasets) -> None:
+    for dataset in datasets.all_datasets.values():
+        for path_str, stored_stat in dataset.stat_by_path.items():
+            file_path = Path(path_str)
+            if not file_path.is_file():
+                continue
+            recomputed_stat = get_file_stat(file_path)
+            mismatches = []
+            if recomputed_stat.hash != stored_stat.hash:
+                mismatches.append(f"hash: {stored_stat.hash} != {recomputed_stat.hash}")
+            if recomputed_stat.mtime != stored_stat.mtime:
+                mismatches.append(f"mtime: {stored_stat.mtime} != {recomputed_stat.mtime}")
+            if recomputed_stat.size != stored_stat.size:
+                mismatches.append(f"size: {stored_stat.size} != {recomputed_stat.size}")
+            if mismatches:
+                print(f"Stale stat for {path_str}:")
+                for msg in mismatches:
+                    print(f"  {msg}")
 
 def main():
     # usage:
