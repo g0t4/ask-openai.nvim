@@ -106,7 +106,7 @@ class DatasetsValidator:
     def warn_about_stale_files(self, datasets: Datasets, root_dir: Path) -> None:
         # Collect entries with their comparison details
         mtime_only: list[tuple[float, str, str]] = []  # (age_seconds, display_path, details)
-        changed: list[tuple[float, str, str]] = []    # (age_seconds, display_path, details)
+        changed: list[tuple[float, str, str]] = []  # (age_seconds, display_path, details)
 
         def _format_age(age_seconds: int) -> str:
             days = 24 * 60 * 60
@@ -146,9 +146,7 @@ class DatasetsValidator:
                         details_parts.append(f"size: {size_str}")
 
                     # Hash mismatch (least important)
-                    details_parts.append(
-                        f"hash: {stored_stat.hash[:8]}→{recomputed_stat.hash[:8]}"
-                    )
+                    details_parts.append(f"hash: {stored_stat.hash[:8]}→{recomputed_stat.hash[:8]}")
                     entry = (age_seconds, display_path, "; ".join(details_parts))
                     changed.append(entry)
                 else:
@@ -159,7 +157,6 @@ class DatasetsValidator:
 
                         entry = (age_seconds, display_path, "; ".join(details_parts))
                         mtime_only.append(entry)
-
 
         # Sort groups by descending age
         mtime_only.sort(key=lambda x: x[0], reverse=True)
@@ -172,7 +169,6 @@ class DatasetsValidator:
         # Report changed files
         for _, display_path, details in changed:
             logger.warning(f"Changed {display_path}: {details}")
-
 
 def main():
     # usage:
