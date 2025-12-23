@@ -109,9 +109,10 @@ class DatasetsValidator:
         changed: list[tuple[float, str, str]] = []    # (age_seconds, display_path, details)
 
         def _format_age(age_seconds: int) -> str:
-            if age_seconds > 7 * 24 * 60 * 60:
+            days = 24 * 60 * 60
+            if age_seconds > 7 * days:
                 return f"[red]{humanize.naturaldelta(age_seconds)}[/]"
-            if age_seconds > 2 * 24 * 60 * 60:
+            if age_seconds > 2 * days:
                 return f"[yellow]{humanize.naturaldelta(age_seconds)}[/]"
             return f"[green]{humanize.naturaldelta(age_seconds)}[/]"
 
