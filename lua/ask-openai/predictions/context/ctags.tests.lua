@@ -1,6 +1,7 @@
 require('ask-openai.helpers.testing')
 local ctags = require("ask-openai.predictions.context.ctags")
 local should = require("devtools.tests.should")
+local files = require("ask-openai.helpers.files")
 
 describe("integration test tags file", function()
     it("find_tag_file PLACEHOLDER", function()
@@ -10,7 +11,7 @@ describe("integration test tags file", function()
     end)
 
     it("get_tag_lines", function()
-        local lines = ctags.read_file_lines("tags")
+        local lines = files.read_file_lines("tags")
         local num_tags = #lines -- use for expect which only handles showing primitives (not tables nor operations)
         print("original tag count: " .. tostring(num_tags))
         expect(num_tags > 0)
@@ -20,11 +21,12 @@ describe("integration test tags file", function()
         expect(#filtered > 0)
 
         -- dump reassembled to file to inspect manually
-        local reassembled = ctags.reassemble_tags(filtered)
-        local filename = "tmp/reassembled_tags.txt"
-        local handle = io.open(filename, "w")
-        handle:write(reassembled)
-        handle:close()
+        --  FYI need to make tmp dir
+        -- local reassembled = ctags.reassemble_tags(filtered)
+        -- local filename = "tmp/reassembled_tags.txt"
+        -- local handle = io.open(filename, "w")
+        -- handle:write(reassembled)
+        -- handle:close()
     end)
 end)
 
