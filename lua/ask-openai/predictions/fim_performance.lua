@@ -45,9 +45,16 @@ function FIMPerformance:rag_started()
 end
 
 function FIMPerformance:rag_done()
+    -- FYI add this back when you can repro the random bug with rag_done called twice?
+    --  it was happeningg but I can't repro it
+    --  seems to be that bug that sometimes happens when starting up and adding blank lines and canceling quickly
+    --  I wonder if somehoww rag_done is dispatched right when I am canceling and if the two happen to call back to this
+    --    TODO also enable logging in on_rag_response... which calls this, and yes if that is called both for cancel and done, then that would explain double call here
     -- log:info("rag_done called, start has rag_duration_ms: '" .. vim.inspect(self.rag_duration_ms) .. "'")
     if self.rag_duration_ms ~= nil then
-        error("rag_done called a second time, timings might be wrong, aborting...")
+        local message = "rag_done might have been called twice b/c " .. vim.inspect(self.rag_duration_ms) .. " is NOT NIL when it should be, timings might be wrong, aborting..."
+        log:error(message)
+        error(message)
     end
     if self._rag_start_time_ns == nil then
         error("rag_done called before rag_started, aborting...")
