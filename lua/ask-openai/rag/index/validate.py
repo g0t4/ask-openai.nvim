@@ -104,25 +104,9 @@ class DatasetsValidator:
             logger.debug("All good, no missing extensions, you lucky motherf***er")
 
     def warn_about_stale_files(self, datasets: Datasets, root_dir: Path) -> None:
-        # CHANGES PLEASE: two branches I want to consider for files:
-        # 1. First check file hash to see if contents are the same
-        #    A. if file hashes match, then
-        #         check stat.mtime
-        #           if those match, skip these entirely
-        #           if they don't match, it should be ovious in the final report that these are different ONLY by stat.mtime (not contents)
-        #    B. if file hashes don't match,
-        #         primary emphasis on age difference (b/c primary purpose of validation is to find out if the index is out of date, i.e. not updated recently!)
-        #         mention size difference (delta not both amounts, humanize it)
-        #         mention hash mismatch (this is least important and assumed if size differs anyways)
-        #
-        # To display this info, I want files grouped based on hash matching status:
-        #    First, show files that differ on stat.mtime but not hash
-        #        sort by age descending
-        #    Then, show changed files
-        #        sort by age descending
-        #        show age on the left (color by thresholds already in use)
-        #        show file path next
-        #        then, show size delta and maybe hashes on right
+        # Collect entries with their comparison details
+        mtime_only: list[tuple[float, str, str]] = []  # (age_seconds, display_path, details)
+        changed: list[tuple[float, str, str]] = []    # (age_seconds, display_path, details)
 
         for dataset in datasets.all_datasets.values():
             for path_str, stored_stat in dataset.stat_by_path.items():
@@ -131,25 +115,66 @@ class DatasetsValidator:
                 if not file_path.is_file():
                     logger.warning(f"Index file deleted? [red strike]{display_path}[/]")
                     continue
-                recomputed_stat = get_file_stat(file_path)
-                mismatches = []
-                if recomputed_stat.hash != stored_stat.hash:
-                    mismatches.append(f"hash: {stored_stat.hash[:8]} != {recomputed_stat.hash[:8]}")
-                if recomputed_stat.mtime != stored_stat.mtime:
-                    age_seconds = abs(stored_stat.mtime - recomputed_stat.mtime)
-                    # show age first, most prominent
-                    if age_seconds > 7 * 24 * 60 * 60:
-                        age_str = f"[red]{humanize.naturaldelta(age_seconds)}[/]"  # red > 1 week
-                    elif age_seconds > 2 * 24 * 60 * 60:
-                        age_str = f"[yellow]{humanize.naturaldelta(age_seconds)}[/]"  # yellow > 2 days
-                    else:
-                        age_str = f"[green]{humanize.naturaldelta(age_seconds)}[/]"  # green otherwise
 
-                    mismatches.append(f"age difference: {age_str}")
-                if recomputed_stat.size != stored_stat.size:
-                    mismatches.append(f"size: {stored_stat.size} != {recomputed_stat.size}")
-                if mismatches:
-                    logger.warning(f"Stale {display_path}: {'; '.join(mismatches)}")
+                recomputed_stat = get_file_stat(file_path)
+                age_seconds = abs(stored_stat.mtime - recomputed_stat.mtime)
+
+                # Determine hash match
+                hash_match = recomputed_stat.hash == stored_stat.hash
+
+                # Build detail string
+                details_parts: list[str] = []
+
+                if not hash_match:
+                    # Primary emphasis on age difference
+                    if age_seconds:
+                        if age_seconds > 7 * 24 * 60 * 60:
+                            age_str = f"[red]{humanize.naturaldelta(age_seconds)}[/]"
+                        elif age_seconds > 2 * 24 * 60 * 60:
+                            age_str = f"[yellow]{humanize.naturaldelta(age_seconds)}[/]"
+                        else:
+                            age_str = f"[green]{humanize.naturaldelta(age_seconds)}[/]"
+                        details_parts.append(f"age: {age_str}")
+
+                    # Size difference
+                    if recomputed_stat.size != stored_stat.size:
+                        size_delta = recomputed_stat.size - stored_stat.size
+                        size_str = f"{stored_stat.size}→{recomputed_stat.size}"
+                        details_parts.append(f"size: {size_str}")
+
+                    # Hash mismatch (least important)
+                    details_parts.append(
+                        f"hash: {stored_stat.hash[:8]}→{recomputed_stat.hash[:8]}"
+                    )
+                    entry = (age_seconds, display_path, "; ".join(details_parts))
+                    changed.append(entry)
+                else:
+                    # Hash matches; only consider mtime difference
+                    if age_seconds:
+                        if age_seconds > 7 * 24 * 60 * 60:
+                            age_str = f"[red]{humanize.naturaldelta(age_seconds)}[/]"
+                        elif age_seconds > 2 * 24 * 60 * 60:
+                            age_str = f"[yellow]{humanize.naturaldelta(age_seconds)}[/]"
+                        else:
+                            age_str = f"[green]{humanize.naturaldelta(age_seconds)}[/]"
+                        details_parts.append(f"age: {age_str}")
+
+                        entry = (age_seconds, display_path, "; ".join(details_parts))
+                        mtime_only.append(entry)
+                    # If no age difference, nothing to report
+
+        # Sort groups by descending age
+        mtime_only.sort(key=lambda x: x[0], reverse=True)
+        changed.sort(key=lambda x: x[0], reverse=True)
+
+        # Report mtime‑only differences
+        for _, display_path, details in mtime_only:
+            logger.warning(f"Stale {display_path}: {details}")
+
+        # Report changed files
+        for _, display_path, details in changed:
+            logger.warning(f"Changed {display_path}: {details}")
+
 
 def main():
     # usage:
