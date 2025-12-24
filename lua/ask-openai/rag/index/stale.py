@@ -2,6 +2,8 @@ import logging
 import humanize
 from dataclasses import dataclass
 from pathlib import Path
+from rich.table import Table
+from rich.console import Console
 from lsp.storage import Datasets
 from lsp.fs import relative_to_workspace
 from lsp.chunks.chunker import get_file_stat
@@ -55,16 +57,23 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
                 # Hash matches; only consider mtime difference
                 mtime_only.append(FileIssue(mtime_diff, display_path, ""))
 
-    # Sort groups by descending age
     mtime_only.sort(key=lambda x: x.mtime_diff, reverse=True)
     changed.sort(key=lambda x: x.mtime_diff, reverse=True)
 
-    # Report mtime‑only differences
-    for issue in mtime_only:
-        age = format_age(issue.mtime_diff)
-        logger.warning(f"Stale {issue.display_path}: {age}")
+    # console.print(table) is fine for now, this is not run in backend (not yet)
+    console = Console()
 
-    # Report changed files
+    if any(mtime_only):
+        console.print()
+        table = Table(width=100)
+        table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
+        table.add_column(justify="left", header="only mtime differs, contents match")
+        for issue in mtime_only:
+            age = format_age(issue.mtime_diff)
+            table.add_row(age, str(issue.display_path))
+        console.print(table)
+        console.print()
+
     for issue in changed:
         age = format_age(issue.mtime_diff)
         logger.warning(f"Changed {issue.display_path}: {age} {issue.details}")
