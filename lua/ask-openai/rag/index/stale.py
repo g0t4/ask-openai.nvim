@@ -58,12 +58,10 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
             last_indexed = format_age(time.time() - stored_stat.mtime)
             table.add_row(last_indexed, str(file))
         console.print(table)
-        console.print()
 
     if any(mtime_only):
         mtime_only.sort(key=lambda x: x.stored_stat.mtime, reverse=True)
 
-        console.print()
         table = Table(width=100)
         table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
         table.add_column(justify="left", header="only mtime differs, contents match")
@@ -71,7 +69,6 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
             last_indexed = format_age(time.time() - issue.stored_stat.mtime)
             table.add_row(last_indexed, str(issue.display_path))
         console.print(table)
-        console.print()
 
     if any(changed):
         changed.sort(key=lambda x: x.stored_stat.mtime, reverse=True)
@@ -94,4 +91,3 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
             hash_str = f"{issue.stored_stat.hash[:8]}→{issue.current_stat.hash[:8]}"
             table.add_row(last_indexed, str(issue.display_path), size_str, hash_str)
         console.print(table)
-        console.print()
