@@ -53,6 +53,7 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
     console = Console()
 
     if any(deleted_files):
+        deleted_files.sort()
         table = Table(width=100)
         table.add_column(justify="left", header="deleted files")
         for file in deleted_files:
