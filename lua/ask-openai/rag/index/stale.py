@@ -1,5 +1,6 @@
 import logging
 import humanize
+from dataclasses import dataclass
 from pathlib import Path
 from lsp.storage import Datasets
 from lsp.fs import relative_to_workspace
@@ -7,13 +8,19 @@ from lsp.chunks.chunker import get_file_stat
 
 logger = logging.getLogger(__name__)
 
-def _format_age(age_seconds: int) -> str:
+def _format_age(age_seconds: float) -> str:
     days = 24 * 60 * 60
     if age_seconds > 7 * days:
         return f"[red]{humanize.naturaldelta(age_seconds)}[/]"
     if age_seconds > 2 * days:
         return f"[yellow]{humanize.naturaldelta(age_seconds)}[/]"
     return f"[green]{humanize.naturaldelta(age_seconds)}[/]"
+
+@dataclass(frozen=True)
+class FileIssue:
+    age_seconds: float
+    display_path: str
+    details: str
 
 def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
 
@@ -31,10 +38,8 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
             recomputed_stat = get_file_stat(file_path)
             age_seconds = abs(stored_stat.mtime - recomputed_stat.mtime)
 
-            # Determine hash match
             hash_match = recomputed_stat.hash == stored_stat.hash
 
-            # Build detail string
             details_parts: list[str] = []
 
             if not hash_match:
