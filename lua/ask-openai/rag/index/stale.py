@@ -66,8 +66,8 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
         table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
         table.add_column(justify="left", header="only mtime differs, contents match")
         for issue in mtime_only:
-            age = format_age(issue.mtime_diff)
-            table.add_row(age, str(issue.display_path))
+            last_indexed = format_age(issue.mtime_diff)
+            table.add_row(last_indexed, str(issue.display_path))
         console.print(table)
         console.print()
 
@@ -80,12 +80,12 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
         table.add_column(justify="left", header="size")
         table.add_column(justify="left", header="hash")
         for issue in changed:
-            age = format_age(issue.mtime_diff)
+            last_indexed = format_age(issue.mtime_diff)
             if issue.new_stat.size != issue.stored_stat.size:
                 size_str = f"{issue.stored_stat.size}→{issue.new_stat.size}"
             else:
                 size_str = ""
             hash_str = f"{issue.stored_stat.hash[:8]}→{issue.new_stat.hash[:8]}"
-            table.add_row(age, str(issue.display_path), size_str, hash_str)
+            table.add_row(last_indexed, str(issue.display_path), size_str, hash_str)
         console.print(table)
         console.print()
