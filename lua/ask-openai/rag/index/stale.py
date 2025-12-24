@@ -46,9 +46,6 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
             elif mtime_diff:
                 mtime_only.append(FileIssue(mtime_diff, display_path, stored_stat, new_stat))
 
-    mtime_only.sort(key=lambda x: x.mtime_diff, reverse=True)
-    changed.sort(key=lambda x: x.mtime_diff, reverse=True)
-
     # console.print(table) is fine for now, this is not run in backend (not yet)
     console = Console()
 
@@ -62,6 +59,8 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
         console.print()
 
     if any(mtime_only):
+        mtime_only.sort(key=lambda x: x.mtime_diff, reverse=True)
+
         console.print()
         table = Table(width=100)
         table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
@@ -72,14 +71,17 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
         console.print(table)
         console.print()
 
-    for issue in changed:
-        age = format_age(issue.mtime_diff)
-        if issue.new_stat.size != issue.stored_stat.size:
-            size_delta = issue.new_stat.size - issue.stored_stat.size
-            size_str = f"{issue.stored_stat.size}→{issue.new_stat.size}"
-        else:
-            size_str = ""
+    if any(changed):
+        changed.sort(key=lambda x: x.mtime_diff, reverse=True)
 
-        hash = f"hash: {issue.stored_stat.hash[:8]}→{issue.new_stat.hash[:8]}"
+        for issue in changed:
+            age = format_age(issue.mtime_diff)
+            if issue.new_stat.size != issue.stored_stat.size:
+                size_delta = issue.new_stat.size - issue.stored_stat.size
+                size_str = f"{issue.stored_stat.size}→{issue.new_stat.size}"
+            else:
+                size_str = ""
 
-        logger.warning(f"Changed {issue.display_path}: {age} {size_str} {hash}")
+            hash = f"hash: {issue.stored_stat.hash[:8]}→{issue.new_stat.hash[:8]}"
+
+            logger.warning(f"Changed {issue.display_path}: {age} {size_str} {hash}")
