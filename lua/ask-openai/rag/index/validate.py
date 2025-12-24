@@ -11,6 +11,7 @@ from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.storage import load_all_datasets, Datasets
 from lsp.chunks.chunker import get_file_stat
 from lsp.fs import relative_to_workspace
+from index.stale import warn_about_stale_files
 
 logger = get_logger("validator")
 
@@ -117,7 +118,7 @@ def main():
     validator.warn_about_unindexed_languages(ds)
     # TODO FIX DETERMINING root_dir=rag_dir.parent ... look at logic in indexer and mirror it (in fact, share that logic)... OR always show absolute paths to files in index
     #   TODO I should be printing context for what is validated (i.e. rag_dir and/or root_dir)
-    validator.warn_about_stale_files(ds, rag_dir.parent)
+    warn_about_stale_files(ds, rag_dir.parent)
 
     if validator.any_problems:
         sys.exit(1)
