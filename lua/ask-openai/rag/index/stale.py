@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from rich.table import Table
 from rich.console import Console
-from lsp.storage import Datasets
+from lsp.storage import Datasets, FileStat
 from lsp.fs import relative_to_workspace
 from lsp.chunks.chunker import get_file_stat
 
@@ -22,7 +22,8 @@ def format_age(age_seconds: float) -> str:
 class FileIssue:
     mtime_diff: float
     display_path: Path
-    details: str
+    stored_stat: FileStat
+    new_stat: FileStat
 
 def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
     mtime_only: list[FileIssue] = []
@@ -36,26 +37,13 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
                 logger.warning(f"Index file deleted? [red strike]{display_path}[/]")
                 continue
 
-            recomputed_stat = get_file_stat(file_path)
-            mtime_diff = abs(stored_stat.mtime - recomputed_stat.mtime)
+            new_stat = get_file_stat(file_path)
+            mtime_diff = abs(stored_stat.mtime - new_stat.mtime)
 
-            hash_match = recomputed_stat.hash == stored_stat.hash
-
-            details_parts: list[str] = []
-
-            if not hash_match:
-                # Size difference
-                if recomputed_stat.size != stored_stat.size:
-                    size_delta = recomputed_stat.size - stored_stat.size
-                    size_str = f"{stored_stat.size}→{recomputed_stat.size}"
-                    details_parts.append(f"size: {size_str}")
-
-                # Hash mismatch (least important)
-                details_parts.append(f"hash: {stored_stat.hash[:8]}→{recomputed_stat.hash[:8]}")
-                changed.append(FileIssue(mtime_diff, display_path, "; ".join(details_parts)))
+            if not new_stat.hash == stored_stat.hash:
+                changed.append(FileIssue(mtime_diff, display_path, stored_stat, new_stat))
             elif mtime_diff:
-                # Hash matches; only consider mtime difference
-                mtime_only.append(FileIssue(mtime_diff, display_path, ""))
+                mtime_only.append(FileIssue(mtime_diff, display_path, stored_stat, new_stat))
 
     mtime_only.sort(key=lambda x: x.mtime_diff, reverse=True)
     changed.sort(key=lambda x: x.mtime_diff, reverse=True)
@@ -76,4 +64,12 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
 
     for issue in changed:
         age = format_age(issue.mtime_diff)
-        logger.warning(f"Changed {issue.display_path}: {age} {issue.details}")
+        if issue.new_stat.size != issue.stored_stat.size:
+            size_delta = issue.new_stat.size - issue.stored_stat.size
+            size_str = f"{issue.stored_stat.size}→{issue.new_stat.size}"
+        else:
+            size_str = ""
+
+        hash = f"hash: {issue.stored_stat.hash[:8]}→{issue.new_stat.hash[:8]}"
+
+        logger.warning(f"Changed {issue.display_path}: {age} {size_str} {hash}")
