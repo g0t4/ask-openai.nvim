@@ -74,14 +74,18 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
     if any(changed):
         changed.sort(key=lambda x: x.mtime_diff, reverse=True)
 
+        table = Table(width=100)
+        table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
+        table.add_column(justify="left", header="path")
+        table.add_column(justify="left", header="size")
+        table.add_column(justify="left", header="hash")
         for issue in changed:
             age = format_age(issue.mtime_diff)
             if issue.new_stat.size != issue.stored_stat.size:
-                size_delta = issue.new_stat.size - issue.stored_stat.size
                 size_str = f"{issue.stored_stat.size}→{issue.new_stat.size}"
             else:
                 size_str = ""
-
-            hash = f"hash: {issue.stored_stat.hash[:8]}→{issue.new_stat.hash[:8]}"
-
-            logger.warning(f"Changed {issue.display_path}: {age} {size_str} {hash}")
+            hash_str = f"{issue.stored_stat.hash[:8]}→{issue.new_stat.hash[:8]}"
+            table.add_row(age, str(issue.display_path), size_str, hash_str)
+        console.print(table)
+        console.print()
