@@ -1,4 +1,5 @@
 import logging
+import time
 import humanize
 from dataclasses import dataclass
 from pathlib import Path
@@ -28,14 +29,14 @@ class FileIssue:
 def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
     mtime_only: list[FileIssue] = []
     changed: list[FileIssue] = []
-    deleted_files: list[Path] = []
+    deleted_files: dict[Path, FileStat] = {}
 
     for dataset in datasets.all_datasets.values():
         for path_str, stored_stat in dataset.stat_by_path.items():
             file_path = Path(path_str)
             display_path = relative_to_workspace(file_path, override_root_path=root_dir)
             if not file_path.is_file():
-                deleted_files.append(display_path)
+                deleted_files[display_path] = stored_stat
                 continue
 
             new_stat = get_file_stat(file_path)
@@ -50,11 +51,13 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
     console = Console()
 
     if any(deleted_files):
-        deleted_files.sort()
         table = Table(width=100)
+        table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
         table.add_column(justify="left", header="deleted files")
-        for file in deleted_files:
-            table.add_row(str(file))
+        for file in sorted(deleted_files.keys()):
+            stored_stat = deleted_files[file]
+            last_indexed = format_age(time.time() - stored_stat.mtime)
+            table.add_row(last_indexed, str(file))
         console.print(table)
         console.print()
 
