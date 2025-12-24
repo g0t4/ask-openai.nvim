@@ -28,13 +28,14 @@ class FileIssue:
 def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
     mtime_only: list[FileIssue] = []
     changed: list[FileIssue] = []
+    deleted_files: list[Path] = []
 
     for dataset in datasets.all_datasets.values():
         for path_str, stored_stat in dataset.stat_by_path.items():
             file_path = Path(path_str)
             display_path = relative_to_workspace(file_path, override_root_path=root_dir)
             if not file_path.is_file():
-                logger.warning(f"Index file deleted? [red strike]{display_path}[/]")
+                deleted_files.append(display_path)
                 continue
 
             new_stat = get_file_stat(file_path)
@@ -50,6 +51,9 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
 
     # console.print(table) is fine for now, this is not run in backend (not yet)
     console = Console()
+
+    for file in deleted_files:
+        logger.warning(f"Index file deleted? [red strike]{file}[/]")
 
     if any(mtime_only):
         console.print()
