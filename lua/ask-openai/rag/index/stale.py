@@ -23,7 +23,7 @@ def format_age(age_seconds: float) -> str:
 class FileIssue:
     display_path: Path
     stored_stat: FileStat
-    new_stat: FileStat
+    current_stat: FileStat
 
 def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
     mtime_only: list[FileIssue] = []
@@ -38,13 +38,13 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
                 deleted_files[display_path] = stored_stat
                 continue
 
-            new_stat = get_file_stat(file_path)
-            mtime_diff = abs(stored_stat.mtime - new_stat.mtime)
+            current_stat = get_file_stat(file_path)
+            mtime_diff = abs(stored_stat.mtime - current_stat.mtime)
 
-            if not new_stat.hash == stored_stat.hash:
-                changed.append(FileIssue(display_path, stored_stat, new_stat))
+            if not current_stat.hash == stored_stat.hash:
+                changed.append(FileIssue(display_path, stored_stat, current_stat))
             elif mtime_diff:
-                mtime_only.append(FileIssue(display_path, stored_stat, new_stat))
+                mtime_only.append(FileIssue(display_path, stored_stat, current_stat))
 
     # console.print(table) is fine for now, this is not run in backend (not yet)
     console = Console()
@@ -84,14 +84,14 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
         for issue in changed:
             last_indexed = format_age(time.time() - issue.stored_stat.mtime)
 
-            if issue.new_stat.size != issue.stored_stat.size:
-                delta = issue.new_stat.size - issue.stored_stat.size
+            if issue.current_stat.size != issue.stored_stat.size:
+                delta = issue.current_stat.size - issue.stored_stat.size
                 sign = "+" if delta > 0 else "-"
                 size_str = f"{sign}{humanize.naturalsize(abs(delta), binary=True)}"
             else:
                 size_str = ""
 
-            hash_str = f"{issue.stored_stat.hash[:8]}→{issue.new_stat.hash[:8]}"
+            hash_str = f"{issue.stored_stat.hash[:8]}→{issue.current_stat.hash[:8]}"
             table.add_row(last_indexed, str(issue.display_path), size_str, hash_str)
         console.print(table)
         console.print()
