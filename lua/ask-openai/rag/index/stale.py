@@ -18,7 +18,7 @@ def format_age(age_seconds: float) -> str:
 
 @dataclass(frozen=True)
 class FileIssue:
-    age_seconds: float
+    mtime_diff: float
     display_path: Path
     details: str
 
@@ -35,12 +35,11 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
                 continue
 
             recomputed_stat = get_file_stat(file_path)
-            age_seconds = abs(stored_stat.mtime - recomputed_stat.mtime)
+            mtime_diff = abs(stored_stat.mtime - recomputed_stat.mtime)
 
             hash_match = recomputed_stat.hash == stored_stat.hash
 
             details_parts: list[str] = []
-            details_parts.append(f"age: {format_age(age_seconds)}")
 
             if not hash_match:
                 # Size difference
@@ -51,20 +50,21 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
 
                 # Hash mismatch (least important)
                 details_parts.append(f"hash: {stored_stat.hash[:8]}→{recomputed_stat.hash[:8]}")
-                changed.append(FileIssue(age_seconds, display_path, "; ".join(details_parts)))
-            else:
+                changed.append(FileIssue(mtime_diff, display_path, "; ".join(details_parts)))
+            elif mtime_diff:
                 # Hash matches; only consider mtime difference
-                if age_seconds:
-                    mtime_only.append(FileIssue(age_seconds, display_path, "; ".join(details_parts)))
+                mtime_only.append(FileIssue(mtime_diff, display_path, ""))
 
     # Sort groups by descending age
-    mtime_only.sort(key=lambda x: x.age_seconds, reverse=True)
-    changed.sort(key=lambda x: x.age_seconds, reverse=True)
+    mtime_only.sort(key=lambda x: x.mtime_diff, reverse=True)
+    changed.sort(key=lambda x: x.mtime_diff, reverse=True)
 
     # Report mtime‑only differences
     for issue in mtime_only:
-        logger.warning(f"Stale {issue.display_path}: {issue.details}")
+        age = format_age(issue.mtime_diff)
+        logger.warning(f"Stale {issue.display_path}: {age}")
 
     # Report changed files
     for issue in changed:
-        logger.warning(f"Changed {issue.display_path}: {issue.details}")
+        age = format_age(issue.mtime_diff)
+        logger.warning(f"Changed {issue.display_path}: {age} {issue.details}")
