@@ -46,8 +46,14 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
             elif mtime_diff:
                 mtime_only.append(FileIssue(display_path, stored_stat, current_stat))
 
+    if not (mtime_only or changed or deleted_files):
+        return
+
     # console.print(table) is fine for now, this is not run in backend (not yet)
     console = Console()
+    console.print()
+    console.print("[bold white]STALE FILES:[/]")
+    console.print("[italic]  run [bold]rag_indexer[/bold] to update the index...[/]")
 
     if any(deleted_files):
         table = Table(width=100)
