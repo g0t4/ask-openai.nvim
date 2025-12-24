@@ -83,10 +83,14 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
         table.add_column(justify="left", header="hash")
         for issue in changed:
             last_indexed = format_age(time.time() - issue.stored_stat.mtime)
+
             if issue.new_stat.size != issue.stored_stat.size:
-                size_str = f"{issue.stored_stat.size}→{issue.new_stat.size}"
+                delta = issue.new_stat.size - issue.stored_stat.size
+                sign = "+" if delta > 0 else "-"
+                size_str = f"{sign}{humanize.naturalsize(abs(delta), binary=True)}"
             else:
                 size_str = ""
+
             hash_str = f"{issue.stored_stat.hash[:8]}→{issue.new_stat.hash[:8]}"
             table.add_row(last_indexed, str(issue.display_path), size_str, hash_str)
         console.print(table)
