@@ -23,9 +23,8 @@ class FileIssue:
     details: str
 
 def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
-
-    mtime_only: list[tuple[float, str, str]] = []  # (age_seconds, display_path, details)
-    changed: list[tuple[float, str, str]] = []  # (age_seconds, display_path, details)
+    mtime_only: list[FileIssue] = []
+    changed: list[FileIssue] = []
 
     for dataset in datasets.all_datasets.values():
         for path_str, stored_stat in dataset.stat_by_path.items():
@@ -56,25 +55,23 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
 
                 # Hash mismatch (least important)
                 details_parts.append(f"hash: {stored_stat.hash[:8]}→{recomputed_stat.hash[:8]}")
-                entry = (age_seconds, display_path, "; ".join(details_parts))
-                changed.append(entry)
+                changed.append(FileIssue(age_seconds, display_path, "; ".join(details_parts)))
             else:
                 # Hash matches; only consider mtime difference
                 if age_seconds:
                     age_str = _format_age(age_seconds)
                     details_parts.append(f"age: {age_str}")
 
-                    entry = (age_seconds, display_path, "; ".join(details_parts))
-                    mtime_only.append(entry)
+                    mtime_only.append(FileIssue(age_seconds, display_path, "; ".join(details_parts)))
 
     # Sort groups by descending age
-    mtime_only.sort(key=lambda x: x[0], reverse=True)
-    changed.sort(key=lambda x: x[0], reverse=True)
+    mtime_only.sort(key=lambda x: x.age_seconds, reverse=True)
+    changed.sort(key=lambda x: x.age_seconds, reverse=True)
 
     # Report mtime‑only differences
-    for _, display_path, details in mtime_only:
-        logger.warning(f"Stale {display_path}: {details}")
+    for issue in mtime_only:
+        logger.warning(f"Stale {issue.display_path}: {issue.details}")
 
     # Report changed files
-    for _, display_path, details in changed:
-        logger.warning(f"Changed {display_path}: {details}")
+    for issue in changed:
+        logger.warning(f"Changed {issue.display_path}: {issue.details}")
