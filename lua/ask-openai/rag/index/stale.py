@@ -32,8 +32,8 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
     deleted_files: dict[Path, FileStat] = {}
 
     for dataset in datasets.all_datasets.values():
-        for path_str, stored_stat in dataset.stat_by_path.items():
-            file_path = Path(path_str)
+        for path, stored_stat in dataset.stat_by_path.items():
+            file_path = Path(path)
             display_path = relative_to_workspace(file_path, override_root_path=root_dir)
             if not file_path.is_file():
                 deleted_files[display_path] = stored_stat
