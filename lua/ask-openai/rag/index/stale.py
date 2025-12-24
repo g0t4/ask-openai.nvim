@@ -8,7 +8,7 @@ from lsp.chunks.chunker import get_file_stat
 
 logger = logging.getLogger(__name__)
 
-def _format_age(age_seconds: float) -> str:
+def format_age(age_seconds: float) -> str:
     days = 24 * 60 * 60
     if age_seconds > 7 * days:
         return f"[red]{humanize.naturaldelta(age_seconds)}[/]"
@@ -40,13 +40,9 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
             hash_match = recomputed_stat.hash == stored_stat.hash
 
             details_parts: list[str] = []
+            details_parts.append(f"age: {format_age(age_seconds)}")
 
             if not hash_match:
-                # Primary emphasis on age difference
-                if age_seconds:
-                    age_str = _format_age(age_seconds)
-                    details_parts.append(f"age: {age_str}")
-
                 # Size difference
                 if recomputed_stat.size != stored_stat.size:
                     size_delta = recomputed_stat.size - stored_stat.size
@@ -59,9 +55,6 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
             else:
                 # Hash matches; only consider mtime difference
                 if age_seconds:
-                    age_str = _format_age(age_seconds)
-                    details_parts.append(f"age: {age_str}")
-
                     mtime_only.append(FileIssue(age_seconds, display_path, "; ".join(details_parts)))
 
     # Sort groups by descending age
