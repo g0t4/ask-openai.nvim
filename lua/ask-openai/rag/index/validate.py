@@ -116,9 +116,9 @@ def main():
     validator = DatasetsValidator(ds)
     validator.validate_datasets()
     validator.warn_about_unindexed_languages(ds)
-    # TODO FIX DETERMINING root_dir=rag_dir.parent ... look at logic in indexer and mirror it (in fact, share that logic)... OR always show absolute paths to files in index
-    #   TODO I should be printing context for what is validated (i.e. rag_dir and/or root_dir)
-    warn_about_stale_files(ds, rag_dir.parent)
+
+    root_dir = rag_dir.parent  # for validation purposes, safe assumption
+    warn_about_stale_files(ds, root_dir)
 
     if validator.any_problems:
         sys.exit(1)
