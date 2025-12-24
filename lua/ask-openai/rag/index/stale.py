@@ -21,7 +21,6 @@ def format_age(age_seconds: float) -> str:
 
 @dataclass(frozen=True)
 class FileIssue:
-    mtime_diff: float
     display_path: Path
     stored_stat: FileStat
     new_stat: FileStat
@@ -43,9 +42,9 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
             mtime_diff = abs(stored_stat.mtime - new_stat.mtime)
 
             if not new_stat.hash == stored_stat.hash:
-                changed.append(FileIssue(mtime_diff, display_path, stored_stat, new_stat))
+                changed.append(FileIssue(display_path, stored_stat, new_stat))
             elif mtime_diff:
-                mtime_only.append(FileIssue(mtime_diff, display_path, stored_stat, new_stat))
+                mtime_only.append(FileIssue(display_path, stored_stat, new_stat))
 
     # console.print(table) is fine for now, this is not run in backend (not yet)
     console = Console()
@@ -62,20 +61,20 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
         console.print()
 
     if any(mtime_only):
-        mtime_only.sort(key=lambda x: x.mtime_diff, reverse=True)
+        mtime_only.sort(key=lambda x: x.stored_stat.mtime, reverse=True)
 
         console.print()
         table = Table(width=100)
         table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
         table.add_column(justify="left", header="only mtime differs, contents match")
         for issue in mtime_only:
-            last_indexed = format_age(issue.mtime_diff)
+            last_indexed = format_age(time.time() - issue.stored_stat.mtime)
             table.add_row(last_indexed, str(issue.display_path))
         console.print(table)
         console.print()
 
     if any(changed):
-        changed.sort(key=lambda x: x.mtime_diff, reverse=True)
+        changed.sort(key=lambda x: x.stored_stat.mtime, reverse=True)
 
         table = Table(width=100)
         table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
@@ -83,7 +82,7 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
         table.add_column(justify="left", header="size")
         table.add_column(justify="left", header="hash")
         for issue in changed:
-            last_indexed = format_age(issue.mtime_diff)
+            last_indexed = format_age(time.time() - issue.stored_stat.mtime)
             if issue.new_stat.size != issue.stored_stat.size:
                 size_str = f"{issue.stored_stat.size}→{issue.new_stat.size}"
             else:
