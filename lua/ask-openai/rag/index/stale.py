@@ -19,7 +19,7 @@ def _format_age(age_seconds: float) -> str:
 @dataclass(frozen=True)
 class FileIssue:
     age_seconds: float
-    display_path: str
+    display_path: Path
     details: str
 
 def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
