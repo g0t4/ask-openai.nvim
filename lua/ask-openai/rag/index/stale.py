@@ -52,8 +52,13 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
     # console.print(table) is fine for now, this is not run in backend (not yet)
     console = Console()
 
-    for file in deleted_files:
-        logger.warning(f"Index file deleted? [red strike]{file}[/]")
+    if any(deleted_files):
+        table = Table(width=100)
+        table.add_column(justify="left", header="deleted files")
+        for file in deleted_files:
+            table.add_row(str(file))
+        console.print(table)
+        console.print()
 
     if any(mtime_only):
         console.print()
