@@ -60,9 +60,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             frontend = frontend,
         }
 
-        local nvim_state_dir = vim.fn.stdpath("state")
-        local ask_dir = nvim_state_dir .. "/ask-openai"
-        local request_dir = ask_dir .. "/" .. tostring(sse_parsed.created)
+        local request_dir = vim.fn.stdpath("state") .. "/ask-openai" .. "/" .. tostring(sse_parsed.created)
         log:error("request_dir", request_dir)
 
         vim.defer_fn(function()
