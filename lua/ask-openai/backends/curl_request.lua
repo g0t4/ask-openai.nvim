@@ -21,19 +21,16 @@ local request_counter = 1
 ---@param params CurlRequestParams
 ---@return CurlRequest
 function CurlRequest:new(params)
-    local body = params.body
-    local base_url = params.base_url
-    local endpoint = params.endpoint
-
     self = setmetatable({}, { __index = self })
-    self.body = body
+    self.body = params.body
+    self.endpoint = params.endpoint
     self.name = params.name or ""
 
+    local base_url = params.base_url
     if base_url == nil or base_url == "" then
         error(string.format("base_url must be set, currently is: %q", base_url))
     end
     self.base_url = base_url
-    self.endpoint = endpoint
 
     self.handle = nil
     self.pid = nil
