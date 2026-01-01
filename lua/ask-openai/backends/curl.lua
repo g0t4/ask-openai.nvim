@@ -163,6 +163,7 @@ function Curl.on_one_data_value(data_value, frontend, request)
     if success and sse_parsed then
         frontend.on_parsed_data_sse(sse_parsed)
         -- FYI not every SSE has to have generated tokens (choices), no need to warn if no parsed value
+        completion_logger.log_sse_to_request(sse_parsed, request, frontend)
 
         if sse_parsed.error then
             -- only confirmed this on llama_server
@@ -173,7 +174,6 @@ function Curl.on_one_data_value(data_value, frontend, request)
 
         if sse_parsed.timings then
             frontend.on_sse_llama_server_timings(sse_parsed)
-            completion_logger.log_full_request(sse_parsed, request, frontend)
         end
     else
         -- PRN in the spirit of triggering events for scenarios, I could add:
