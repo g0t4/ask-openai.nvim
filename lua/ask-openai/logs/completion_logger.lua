@@ -1,7 +1,9 @@
 local log = require('ask-openai.logs.logger').predictions()
 
 local M = {
-    last_done = {}
+    last_done = {},
+    LOG_ALL_SSEs = true,
+    -- LOG_ALL_SSEs = false,
 }
 
 ---@param sse_parsed table
@@ -25,6 +27,13 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
 
     accum = request.accum or {}
     request.accum = accum
+
+    if M.LOG_ALL_SSEs then
+        all_sses = request.all_sses or {}
+        request.all_sses = all_sses
+
+        all_sses[#all_sses + 1] = sse_parsed
+    end
 
     choices = sse_parsed.choices
     if not choices then
@@ -94,6 +103,14 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             if request_file then
                 request_file:write(vim.json.encode(sse_parsed))
                 request_file:close()
+            end
+
+            if M.LOG_ALL_SSEs then
+                local all_file = io.open(request_dir .. "/all_sses.json", "w")
+                if all_file then
+                    all_file:write(vim.json.encode(all_sses))
+                    all_file:close()
+                end
             end
         end, 0)
     end
