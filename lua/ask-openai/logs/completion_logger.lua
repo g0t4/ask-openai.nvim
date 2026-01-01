@@ -101,36 +101,40 @@ function M.auto_save_to_disk(sse_parsed, request, frontend)
     local nvim_state_dir = vim.fn.stdpath("state")
     local ask_dir = nvim_state_dir .. "/ask-openai"
     local request_dir = ask_dir .. "/" .. tostring(sse_parsed.created)
+    log:error("request_dir", request_dir)
 
-    vim.fn.mkdir(request_dir, "p")
+    vim.defer_fn(function()
+        vim.fn.mkdir(request_dir, "p")
 
-    local request_json_path = request_dir .. "/request.json"
-    local input_messages_path = request_dir .. "/input-messages.json"
-    local input_prompt_path = request_dir .. "/input-prompt.json"
+        local request_file = io.open(request_dir .. "/output.json", "w")
+        if request_file then
+            request_file:write(vim.json.encode(request.accum))
+            request_file:close()
+        end
 
-    local request_file = io.open(request_json_path, "w")
-    if request_file then
-        request_file:write(vim.inspect(request))
-        request_file:close()
-    end
+        local input_messages_file = io.open(request_dir .. "/input-body.json", "w")
+        if input_messages_file then
+            input_messages_file:write(vim.json.encode(request.body))
+            input_messages_file:close()
+        end
 
-    local input_messages_file = io.open(input_messages_path, "w")
-    if input_messages_file then
-        input_messages_file:write(vim.inspect(request.body))
-        input_messages_file:close()
-    end
+        if sse_parsed.__verbose then
+            -- PRN do I really want this separate, too?
+            local input_prompt_file = io.open(request_dir .. "/input-prompt.txt", "w")
+            if input_prompt_file then
+                input_prompt_file:write(sse_parsed.__verbose.prompt)
+                input_prompt_file:close()
+            end
+        end
 
-    local input_prompt_file = io.open(input_prompt_path, "w")
-    if input_prompt_file then
-        input_prompt_file:write(vim.inspect(sse_parsed.__verbose.prompt))
-        input_prompt_file:close()
-    end
-
-    log:error("created", sse_parsed.created)
-    log:error("final SSE", vim.inspect(sse_parsed))
-    log:error("request.json", vim.inspect(request))
-    log:error("input-messages.json", vim.inspect(request.body))
-    log:error("input-prompt.json", vim.inspect(sse_parsed.__verbose.prompt))
+        -- .timings (top-level and under __verbose)
+        -- __verbose.(prompt, generation_settings)
+        local request_file = io.open(request_dir .. "/last_sse.json", "w")
+        if request_file then
+            request_file:write(vim.json.encode(sse_parsed))
+            request_file:close()
+        end
+    end, 0)
 
     -- FYI if stream=false, then the last SSE has .__verbose.content (but not for streaming)
 end
