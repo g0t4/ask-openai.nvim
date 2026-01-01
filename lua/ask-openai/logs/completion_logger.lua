@@ -70,8 +70,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         }
 
         local save_to = vim.fn.stdpath("state") .. "/ask-openai"
-        if request.name ~= "" then
-            save_to = save_to .. "/" .. request.name
+        if request.type ~= "" then
+            save_to = save_to .. "/" .. request.type
         end
         save_to = save_to .. "/" .. tostring(sse_parsed.created)
         log:error("save_to", save_to)

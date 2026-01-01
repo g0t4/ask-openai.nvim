@@ -63,7 +63,7 @@ function PredictionsFrontend.ask_for_prediction(params)
             body = body,
             base_url = FimBackend.base_url,
             endpoint = FimBackend.endpoint,
-            name = "fim",
+            type = "fim",
         })
         this_prediction.fim_request = fim_request
 

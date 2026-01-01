@@ -401,7 +401,7 @@ function RewriteFrontend.stream_from_ollama(user_prompt, code, file_name)
             body = body,
             base_url = "http://ollama:8013",
             endpoint = CompletionsEndpoints.oai_v1_chat_completions,
-            name = "rewrite",
+            type = "rewrite",
         })
         curl.spawn(RewriteFrontend.last_request, RewriteFrontend)
     end
