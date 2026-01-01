@@ -2,8 +2,8 @@ local log = require('ask-openai.logs.logger').predictions()
 
 local M = {
     last_done = {},
-    LOG_ALL_SSEs = true,
-    -- LOG_ALL_SSEs = false,
+    -- LOG_ALL_SSEs = true,
+    LOG_ALL_SSEs = false,
 }
 
 ---@param sse_parsed table
