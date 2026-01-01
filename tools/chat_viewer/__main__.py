@@ -30,11 +30,10 @@ def yank(mapping, key: str, default=None):
 
 def load_thread_messages_from_path(argv1: str) -> list[dict[str, Any]]:
     thread_file = Path(argv1)
-    file_path = thread_file
     if not thread_file.is_file():
         print(f"File not found: {thread_file}")
         sys.exit(1)
-    with file_path.open("r", encoding="utf-8") as f:
+    with thread_file.open("r", encoding="utf-8") as f:
         data = json.load(f)
     return load_messages(data)
 
