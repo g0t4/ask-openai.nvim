@@ -4,7 +4,6 @@ local M = {
     last = {}
 }
 
-
 ---@param sse_parsed table
 ---@param request CurlRequest
 ---@param frontend StreamingFrontend
@@ -26,7 +25,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
 
     accum = request.accum or {}
     request.accum = accum
-
 
     choices = sse_parsed.choices
     if not choices then
@@ -57,35 +55,9 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     end
 
     if sse_parsed.timings then
-        -- TODO log_sse_non_blocking => auto-save to disk (as long as it is not blocking)
         M.auto_save_to_disk(sse_parsed, request, frontend)
     end
 end
-
--- TODO can I use this approach for building the diff too? and if new tokens arrive then discard the diff, and increase the throttle?
---   would it meaningfully help perf?
---   TODO only add this if I can measure perf benefit
---
--- function M.log_sse_non_blocking(???)
---     -- Run the potentially blocking logger in a libuv thread pool.
---     vim.loop.new_thread(function()
---         -- This runs in a worker thread; keep it pure Lua.
---         -- TODO expensive, i.e. file write
---     end, function(_, result)
---         -- This callback runs back on the main thread.
---         -- If the logger returns data that needs to be processed,
---         -- do it here (e.g., update UI buffers, flash messages, etc.).
---         if result then
---             -- Example: refresh a buffer displaying the completion.
---             vim.schedule(function()
---                 -- Assuming `frontend:update` refreshes the UI.
---                 if frontend.update then
---                     frontend:update(result)
---                 end
---             end)
---         end
---     end)
--- end
 
 ---@param sse_parsed table
 ---@param request CurlRequest
@@ -127,16 +99,15 @@ function M.auto_save_to_disk(sse_parsed, request, frontend)
             end
         end
 
-        -- .timings (top-level and under __verbose)
-        -- __verbose.(prompt, generation_settings)
+        -- .timings (top-level and under .__verbose.timings)
+        -- .__verbose.(prompt, generation_settings)
+        -- .__verbose.content (generated raw outputs, but ONLY for stream=false)
         local request_file = io.open(request_dir .. "/last_sse.json", "w")
         if request_file then
             request_file:write(vim.json.encode(sse_parsed))
             request_file:close()
         end
     end, 0)
-
-    -- FYI if stream=false, then the last SSE has .__verbose.content (but not for streaming)
 end
 
 return M
