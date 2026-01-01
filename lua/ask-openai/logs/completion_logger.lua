@@ -100,7 +100,7 @@ function M.auto_save_to_disk(sse_parsed, request, frontend)
 
     local nvim_state_dir = vim.fn.stdpath("state")
     local ask_dir = nvim_state_dir .. "/ask-openai"
-    local request_dir = ask_dir .. "/" .. tostring(created)
+    local request_dir = ask_dir .. "/" .. tostring(sse_parsed.created)
 
     vim.fn.mkdir(request_dir, "p")
 
@@ -126,12 +126,11 @@ function M.auto_save_to_disk(sse_parsed, request, frontend)
         input_prompt_file:close()
     end
 
-    log:error("created", created)
+    log:error("created", sse_parsed.created)
     log:error("final SSE", vim.inspect(sse_parsed))
     log:error("request.json", vim.inspect(request))
     log:error("input-messages.json", vim.inspect(request.body))
     log:error("input-prompt.json", vim.inspect(sse_parsed.__verbose.prompt))
-
 
     -- FYI if stream=false, then the last SSE has .__verbose.content (but not for streaming)
 end
