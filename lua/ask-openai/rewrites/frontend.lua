@@ -444,8 +444,8 @@ local function simulate_rewrite_stream_chunks(opts)
 
     RewriteFrontend.abort_last_request()
     RewriteFrontend.last_request = CurlRequest:new({ body = {}, base_url = "base", endpoint = CompletionsEndpoints.oai_v1_chat_completions, })
-    vim.cmd("normal! 0V6jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
-    vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
+    vim.cmd("normal! 0V60jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
+    vim.cmd("normal! 59k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     RewriteFrontend.selection = Selection.get_visual_selection_for_current_window()
     RewriteFrontend.accumulated_chunks = ""
     RewriteFrontend.stop_streaming = false
@@ -458,15 +458,18 @@ foobar and foo the bar bar foo the bar lorem ipsum toodle doodle banana bie foo 
 the foo the bar bar the foobar and foo the bar bar foo the bar lorem ipsum toodle doodle banana bie foo the bar bar the foo
 and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
 </think> ]]
-    local rewritten_text = optional_thinking_text .. RewriteFrontend.selection.original_text .. "\nSTREAMING w/ THINKING CONTENT"
+    -- local rewritten_text = optional_thinking_text .. RewriteFrontend.selection.original_text .. "\nSTREAMING w/ THINKING CONTENT"
     -- local rewritten_text = M.selection.original_text .. "\nSTREAMING NEW CONTENT\nthis is fun"
+
+    -- local jumble = RewriteFrontend.selection.original_text:gsub("(%S+)%s+(%S+)", "%1 (%2)")
+    local jumble = table.concat(vim.fn.reverse(vim.split(RewriteFrontend.selection.original_text, "\n")))
 
     local harmony_gptoss_example =
         harmony.CHANNEL .. "analysis" ..
         harmony.MESSAGE .. [[User wrote "test". Likely just a test message. They might want ChatGPT to respond? We should respond politely. Maybe just say "Hello! How can I help?"]] ..
         harmony.END .. [[Hello! 👋 How can I assist you today?]]
 
-    local rewritten_text = harmony_gptoss_example .. RewriteFrontend.selection.original_text .. "\nSIMULATED HARMONY EXAMPLE"
+    local rewritten_text = harmony_gptoss_example .. jumble .. "\nSIMULATED HARMONY EXAMPLE"
 
     -- FYI can split on new line to simulate streaming lines instead of words
     local all_words = vim.split(rewritten_text, " ")
