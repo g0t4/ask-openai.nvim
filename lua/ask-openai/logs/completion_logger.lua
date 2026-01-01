@@ -1,7 +1,7 @@
 local log = require('ask-openai.logs.logger').predictions()
 
 local M = {
-    last = {}
+    last_done = {}
 }
 
 ---@param sse_parsed table
@@ -54,7 +54,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
 
     if sse_parsed.timings then
         -- store for convenient access in-memory, that way if smth fails on save I can still see it here
-        M.last = {
+        M.last_done = {
             sse_parsed = sse_parsed,
             request = request,
             frontend = frontend,
