@@ -98,15 +98,40 @@ function M.auto_save_to_disk(sse_parsed, request, frontend)
         frontend = frontend,
     }
 
-    -- let's do it by time so I can easily find a specific request based on timeframe
-    --   and purge them too that way
-    local created = sse_parsed.created
-    log:error("created", created)
+    local nvim_state_dir = vim.fn.stdpath("state")
+    local ask_dir = nvim_state_dir .. "/ask-openai"
+    local request_dir = ask_dir .. "/" .. tostring(created)
 
+    vim.fn.mkdir(request_dir, "p")
+
+    local request_json_path = request_dir .. "/request.json"
+    local input_messages_path = request_dir .. "/input-messages.json"
+    local input_prompt_path = request_dir .. "/input-prompt.json"
+
+    local request_file = io.open(request_json_path, "w")
+    if request_file then
+        request_file:write(vim.inspect(request))
+        request_file:close()
+    end
+
+    local input_messages_file = io.open(input_messages_path, "w")
+    if input_messages_file then
+        input_messages_file:write(vim.inspect(request.body))
+        input_messages_file:close()
+    end
+
+    local input_prompt_file = io.open(input_prompt_path, "w")
+    if input_prompt_file then
+        input_prompt_file:write(vim.inspect(sse_parsed.__verbose.prompt))
+        input_prompt_file:close()
+    end
+
+    log:error("created", created)
     log:error("final SSE", vim.inspect(sse_parsed))
-    log:error("request.json", vim.inspect(request)) -- for reasoning+ content (parsed output message) + body (input-messages)
-    log:error("input-messages.json", vim.inspect(request.body)) -- keep this to reproduce issues with template rendering
-    log:error("input-prompt.json", vim.inspect(sse_parsed.__verbose.prompt)) -- this is the raw prompt into the model
+    log:error("request.json", vim.inspect(request))
+    log:error("input-messages.json", vim.inspect(request.body))
+    log:error("input-prompt.json", vim.inspect(sse_parsed.__verbose.prompt))
+
 
     -- FYI if stream=false, then the last SSE has .__verbose.content (but not for streaming)
 end
