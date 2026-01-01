@@ -184,7 +184,8 @@ function QuestionsFrontend.send_messages()
     local request = CurlRequestForThread:new({
         body = QuestionsFrontend.thread:next_curl_request_body(),
         base_url = QuestionsFrontend.thread.base_url,
-        endpoint = CompletionsEndpoints.oai_v1_chat_completions
+        endpoint = CompletionsEndpoints.oai_v1_chat_completions,
+        name = "questions",
     })
     log:luaify_trace("body:", request.body)
     curl.spawn(request, QuestionsFrontend)

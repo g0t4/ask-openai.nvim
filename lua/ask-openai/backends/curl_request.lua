@@ -7,7 +7,8 @@ local log = require("ask-openai.logs.logger").predictions()
 ---@field handle? uv.uv_process_t
 ---@field pid? integer
 ---@field start_time integer -- unix timestamp when request was sent (for timing)
----@field marks_ns_id
+---@field marks_ns_id integer
+---@field name string
 local CurlRequest = {}
 local request_counter = 1
 
@@ -15,6 +16,7 @@ local request_counter = 1
 ---@field body table<string, any>
 ---@field base_url string
 ---@field endpoint CompletionsEndpoints
+---@field name string
 
 ---@param params CurlRequestParams
 ---@return CurlRequest
@@ -25,6 +27,7 @@ function CurlRequest:new(params)
 
     self = setmetatable({}, { __index = self })
     self.body = body
+    self.name = params.name or ""
 
     if base_url == nil or base_url == "" then
         error(string.format("base_url must be set, currently is: %q", base_url))

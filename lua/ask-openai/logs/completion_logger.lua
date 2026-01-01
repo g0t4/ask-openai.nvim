@@ -69,19 +69,23 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             frontend = frontend,
         }
 
-        local request_dir = vim.fn.stdpath("state") .. "/ask-openai" .. "/" .. tostring(sse_parsed.created)
-        log:error("request_dir", request_dir)
+        local save_to = vim.fn.stdpath("state") .. "/ask-openai"
+        if request.name ~= "" then
+            save_to = save_to .. "/" .. request.name
+        end
+        save_to = save_to .. "/" .. tostring(sse_parsed.created)
+        log:error("save_to", save_to)
 
         vim.defer_fn(function()
-            vim.fn.mkdir(request_dir, "p")
+            vim.fn.mkdir(save_to, "p")
 
-            local request_file = io.open(request_dir .. "/output.json", "w")
+            local request_file = io.open(save_to .. "/output.json", "w")
             if request_file then
                 request_file:write(vim.json.encode(request.accum))
                 request_file:close()
             end
 
-            local input_messages_file = io.open(request_dir .. "/input-body.json", "w")
+            local input_messages_file = io.open(save_to .. "/input-body.json", "w")
             if input_messages_file then
                 input_messages_file:write(vim.json.encode(request.body))
                 input_messages_file:close()
@@ -89,7 +93,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
 
             if sse_parsed.__verbose then
                 -- PRN do I really want this separate, too?
-                local input_prompt_file = io.open(request_dir .. "/input-prompt.txt", "w")
+                local input_prompt_file = io.open(save_to .. "/input-prompt.txt", "w")
                 if input_prompt_file then
                     input_prompt_file:write(sse_parsed.__verbose.prompt)
                     input_prompt_file:close()
@@ -99,14 +103,14 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             -- .timings (top-level and under .__verbose.timings)
             -- .__verbose.(prompt, generation_settings)
             -- .__verbose.content (generated raw outputs, but ONLY for stream=false)
-            local request_file = io.open(request_dir .. "/last_sse.json", "w")
+            local request_file = io.open(save_to .. "/last_sse.json", "w")
             if request_file then
                 request_file:write(vim.json.encode(sse_parsed))
                 request_file:close()
             end
 
             if M.LOG_ALL_SSEs then
-                local all_file = io.open(request_dir .. "/all_sses.json", "w")
+                local all_file = io.open(save_to .. "/all_sses.json", "w")
                 if all_file then
                     all_file:write(vim.json.encode(all_sses))
                     all_file:close()
