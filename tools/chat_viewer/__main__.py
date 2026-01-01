@@ -28,7 +28,7 @@ def yank(mapping, key: str, default=None):
         del mapping[key]
     return value
 
-def load_thread_messages(file_path: Path) -> list[dict[str, Any]]:
+def load_thread_messages_from_path(file_path: Path) -> list[dict[str, Any]]:
     with file_path.open("r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -42,7 +42,18 @@ def load_thread_messages(file_path: Path) -> list[dict[str, Any]]:
         pprint_asis(data)
         return messages
 
-    # assume list of messages is all we have
+    return data if isinstance(data, list) else []
+
+def load_thread_messages_from_stream(stream) -> list[dict[str, Any]]:
+    data = json.load(stream)
+
+    if isinstance(data, dict) and "messages" in data:
+        messages = data["messages"]
+        del data["messages"]
+        print_section_header("UNPROCESSED Request Properties", color="cyan")
+        pprint_asis(data)
+        return messages
+
     return data if isinstance(data, list) else []
 
 def insert_newlines(content: str) -> str:
@@ -304,18 +315,18 @@ def print_fallback(msg: dict[str, Any]):
 
 def main() -> None:
     if len(sys.argv) < 2:
-        print("Usage: python -m tools.chat_viewer <thread.json>")
-        sys.exit(1)
-
-    thread_file = Path(sys.argv[1])
-    if not thread_file.is_file():
-        print(f"File not found: {thread_file}")
-        sys.exit(1)
-
-    messages = load_thread_messages(thread_file)
+        messages = load_thread_messages_from_stream(sys.stdin)
+    else:
+        thread_file = Path(sys.argv[1])
+        if not thread_file.is_file():
+            print(f"File not found: {thread_file}")
+            sys.exit(1)
+        messages = load_thread_messages_from_path(thread_file)
 
     for idx, message in enumerate(messages, start=1):
         print_message(message, idx)
 
 if __name__ == "__main__":
     main()
+
+
