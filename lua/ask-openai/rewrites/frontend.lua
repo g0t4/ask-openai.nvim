@@ -151,6 +151,8 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
     lines = ensure_new_lines_around(RewriteFrontend.selection.original_text, lines)
 
     vim.schedule(function()
+        -- FYI the diff tool can handle massive changes to many, many lines... not sure what is slowing things down at times w/ llama-server and some bigger requests?
+        --   almost wonder if it is the verbose logging b/c that actually ends up failing (the logs) midway and I never see final messages, (--verbose and --verbose-prompt)
         RewriteFrontend.displayer:on_response(RewriteFrontend.selection, lines)
     end)
 end
