@@ -28,7 +28,12 @@ def yank(mapping, key: str, default=None):
         del mapping[key]
     return value
 
-def load_thread_messages_from_path(file_path: Path) -> list[dict[str, Any]]:
+def load_thread_messages_from_path(argv1: str) -> list[dict[str, Any]]:
+    thread_file = Path(argv1)
+    file_path = thread_file
+    if not thread_file.is_file():
+        print(f"File not found: {thread_file}")
+        sys.exit(1)
     with file_path.open("r", encoding="utf-8") as f:
         data = json.load(f)
     return load_messages(data)
@@ -311,11 +316,7 @@ def main() -> None:
     if len(sys.argv) < 2:
         messages = load_thread_messages_from_stream(sys.stdin)
     else:
-        thread_file = Path(sys.argv[1])
-        if not thread_file.is_file():
-            print(f"File not found: {thread_file}")
-            sys.exit(1)
-        messages = load_thread_messages_from_path(thread_file)
+        messages = load_thread_messages_from_path(sys.argv[1])
 
     for idx, message in enumerate(messages, start=1):
         print_message(message, idx)
