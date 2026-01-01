@@ -92,6 +92,11 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             end
 
             if sse_parsed.__verbose then
+                -- FYI you must have --verbose flag passed to llama-server to get .__verbose.*
+                --   w/o --verbose, this code will still capture both input-body.json & output.json which is ALL I NEED 99% of the time!
+                --   to troubleshoot a prompt, you can also use llama-server's /apply-template endpoint
+                --   ALSO, FYI... --verbose-prompt DOES NOTHING with llama-server, ignore it
+                --
                 -- PRN do I really want this separate, too?
                 local input_prompt_file = io.open(save_to .. "/input-prompt.txt", "w")
                 if input_prompt_file then
