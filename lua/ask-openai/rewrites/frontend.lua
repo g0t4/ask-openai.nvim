@@ -145,9 +145,6 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
         return
     end
 
-    -- ?? detect first chunk AFTER thinking section so we can clear the Thinking...
-    --    ? and not need to clear before every token
-
     lines = ensure_new_lines_around(RewriteFrontend.selection.original_text, lines)
 
     vim.schedule(function()
