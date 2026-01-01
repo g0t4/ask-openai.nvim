@@ -29,11 +29,11 @@ def yank(mapping, key: str, default=None):
     return value
 
 def load_thread_messages_from_path(argv1: str) -> list[dict[str, Any]]:
-    thread_file = Path(argv1)
-    if not thread_file.is_file():
-        print(f"File not found: {thread_file}")
+    request_file = Path(argv1)
+    if not request_file.is_file():
+        print(f"File not found: {request_file}")
         sys.exit(1)
-    with thread_file.open("r", encoding="utf-8") as f:
+    with request_file.open("r", encoding="utf-8") as f:
         data = json.load(f)
     return load_messages(data)
 
@@ -47,7 +47,6 @@ def load_messages(data) -> list[dict[str, Any]]:
         print_section_header("UNPROCESSED Request Properties", color="cyan")
         pprint_asis(data)
         return messages
-
     return data if isinstance(data, list) else []
 
 def load_thread_messages_from_stream(stream) -> list[dict[str, Any]]:
