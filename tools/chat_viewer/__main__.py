@@ -31,7 +31,9 @@ def yank(mapping, key: str, default=None):
 def load_thread_messages_from_path(file_path: Path) -> list[dict[str, Any]]:
     with file_path.open("r", encoding="utf-8") as f:
         data = json.load(f)
+    return load_messages(data)
 
+def load_messages(data) -> list[dict[str, Any]]:
     if isinstance(data, dict) and "messages" in data:
         # typical request body, has messages, tools, temp, etc
         messages = data["messages"]
@@ -46,15 +48,7 @@ def load_thread_messages_from_path(file_path: Path) -> list[dict[str, Any]]:
 
 def load_thread_messages_from_stream(stream) -> list[dict[str, Any]]:
     data = json.load(stream)
-
-    if isinstance(data, dict) and "messages" in data:
-        messages = data["messages"]
-        del data["messages"]
-        print_section_header("UNPROCESSED Request Properties", color="cyan")
-        pprint_asis(data)
-        return messages
-
-    return data if isinstance(data, list) else []
+    return load_messages(data)
 
 def insert_newlines(content: str) -> str:
     return content.replace("\\n", "\n")
