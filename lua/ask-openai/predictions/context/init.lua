@@ -8,6 +8,7 @@ local prompts = require("ask-openai.predictions.context.prompts")
 local project = require("ask-openai.predictions.context.project")
 local messages = require("devtools.messages")
 local cmds = require("ask-openai.predictions.context.cmds")
+-- local learn_diagnostics = require("ask-openai.predictions.context.coc.learn.diagnostics")
 
 ---@class CurrentContext
 ---
@@ -80,6 +81,7 @@ function CurrentContext.setup()
     ctags.setup()
     matching_ctags.setup()
     project.setup()
+    -- learn_diagnostics.setup()
     -- changelists.setup()
     -- cocs.setup()
     vim.api.nvim_create_user_command("AskDumpTraceContext", CurrentContext.toggle_trace_context, {})
