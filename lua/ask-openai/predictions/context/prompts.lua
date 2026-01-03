@@ -12,6 +12,7 @@
 ---@field use_tools? boolean
 ---@field apply_template_only? boolean
 ---@field include_selection? boolean
+---@field top_k? integer
 local M = {}
 
 ---@param prompt string
@@ -27,10 +28,29 @@ local function clean_prompt(prompt, command)
     return cleaned
 end
 
+---@param prompt string
+---@return integer?, string
+local function extract_top_k(prompt)
+    -- Extract /k=<number> pattern (e.g., /k=10)
+    local top_k = prompt:match("/k=(%d+)")
+    if top_k then
+        top_k = tonumber(top_k)
+        -- Clean the /k=<number> from the prompt
+        prompt = prompt:gsub("%s*/k=%d+%s*", " ")
+        prompt = prompt:gsub("^/k=%d+%s*", "")
+        prompt = prompt:gsub("%s*/k=%d+$", "")
+    end
+    return top_k, prompt
+end
+
 ---@param prompt? string
 ---@return ParseIncludesResult
 function M.parse_includes(prompt)
     prompt = prompt or ""
+
+    -- Extract /k=<number> first, before other processing
+    local top_k, prompt_without_k = extract_top_k(prompt)
+    prompt = prompt_without_k
 
     ---@param command string
     ---@return boolean
@@ -54,6 +74,7 @@ function M.parse_includes(prompt)
         use_tools = has("/tools"),
         apply_template_only = has("/template"), -- TODO for AskRewrite/AskQuestion (popup window with colorful prompt?)
         include_selection = has("/selection"),
+        top_k = top_k,
         cleaned_prompt = prompt,
     }
 

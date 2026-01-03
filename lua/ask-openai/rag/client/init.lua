@@ -217,12 +217,13 @@ _G.LSPRankedMatch = {}
 ---@param user_prompt string
 ---@param code_context string
 ---@param callback fun(matches: LSPRankedMatch[], failed: boolean)
-function M.context_query_rewrites(user_prompt, code_context, callback)
+---@param topK? integer
+function M.context_query_rewrites(user_prompt, code_context, callback, topK)
     -- FYI use user message for now as Instruct and selected code as the Query
     local query = code_context
     local instruct = user_prompt
     -- TODO! pass line ranges for limiting same file skips
-    return M._context_query(query, instruct, callback)
+    return M._context_query(query, instruct, callback, topK)
 end
 
 ---@param ps_chunk PrefixSuffixChunk
@@ -243,7 +244,8 @@ end
 ---@param query string # Query section only, no Instruct/Document
 ---@param instruct string # Instruct section only
 ---@param callback fun(matches: LSPRankedMatch[], failed: boolean)
-function M._context_query(query, instruct, callback)
+---@param topK? integer
+function M._context_query(query, instruct, callback, topK)
     ---@type LSPSemanticGrepRequest
     local semantic_grep_request = {
         query = query,
@@ -251,7 +253,7 @@ function M._context_query(query, instruct, callback)
         currentFileAbsolutePath = files.get_current_file_absolute_path(),
         vimFiletype = vim.bo.filetype,
         skipSameFile = true,
-        topK = 5, -- TODO what do I want for FIM vs REWRITE? maybe a dial too?
+        topK = topK or 5, -- default to 5, override with /k=<number> slash command
         embedTopK = 18, -- consider more so that re-ranker picks topK best matches
         -- TODO pass line range for same file to allow outside that range
         -- FYI some rewrites I might not want ANY RAG... maybe no context too

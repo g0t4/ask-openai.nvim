@@ -426,7 +426,7 @@ function RewriteFrontend.stream_from_ollama(user_prompt, code, file_name)
             send_rewrite(rag_matches)
         end
 
-        this_request_ids, cancel = rag_client.context_query_rewrites(user_prompt, code_context, send_rewrite)
+        this_request_ids, cancel = rag_client.context_query_rewrites(user_prompt, code_context, send_rewrite, context.includes.top_k)
         RewriteFrontend.rag_cancel = cancel
         RewriteFrontend.rag_request_ids = this_request_ids
     else
