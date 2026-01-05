@@ -35,7 +35,18 @@ def load_thread_messages_from_path(argv1: str) -> list[dict[str, Any]]:
         sys.exit(1)
     with request_file.open("r", encoding="utf-8") as f:
         data = json.load(f)
-    return load_messages(data)
+    messages = load_messages(data)
+
+    # * include response message at end of thread
+    output_path = request_file.parent / "output.json"
+    if output_path.is_file():
+        with output_path.open("r", encoding="utf-8") as f:
+            response = json.load(f)
+            if isinstance(response, dict):
+                response["output.json"] = True
+                messages.append(response)
+
+    return messages
 
 def load_messages(data) -> list[dict[str, Any]]:
     if isinstance(data, dict) and "messages" in data:
@@ -73,7 +84,7 @@ def _format_content(content: Any) -> str:
         return insert_newlines(content)
     return _format_json(content)
 
-def print_role_markdown(msg: dict, role: str):
+def print_markdown_content(msg: dict, role: str):
     raw_content = _extract_content(msg)
     formatted = raw_content
     print_asis(formatted)
@@ -293,11 +304,13 @@ def print_message(msg: dict, idx: int):
     if display_role == "TOOL":
         display_role = "TOOL RESULT"
     title = f"{idx}: {display_role}"
+    if "output.json" in msg:
+        title = f"{title} (output.json)"
     print_section_header(title, get_color(role))
 
     match role:
         case "system" | "developer" | "user":
-            print_role_markdown(msg, role)
+            print_markdown_content(msg, role)
         case "tool":
             print_tool_call_result(msg)
         case "assistant":
