@@ -38,27 +38,42 @@ def load_thread_messages_from_path(argv1: str) -> list[dict[str, Any]]:
     messages = load_messages(data)
 
     # * include response message at end of thread
-    output_path = request_file.parent / "output.json"
-    if output_path.is_file():
-        with output_path.open("r", encoding="utf-8") as f:
-            response = json.load(f)
-            if isinstance(response, dict):
-                response["output.json"] = True
-                messages.append(response)
+    if "response_message" in data:
+        # * thread.json
+        response = data["response_message"]
+        if isinstance(response, dict):
+            response["output.json"] = True
+            messages.append(response)
+    else:
+        # * legacy output.json
+        output_path = request_file.parent / "output.json"
+        if output_path.is_file():
+            with output_path.open("r", encoding="utf-8") as f:
+                response = json.load(f)
+                if isinstance(response, dict):
+                    response["output.json"] = True
+                    messages.append(response)
 
     return messages
 
 def load_messages(data) -> list[dict[str, Any]]:
-    if isinstance(data, dict) and "messages" in data:
-        # typical request body, has messages, tools, temp, etc
-        messages = data["messages"]
-        del data["messages"]
-        # FYI print other properties at the top (i.e. tools)... if some of these nag me I can always write handlers for them to make them pretty too
-        #   primary is going to be tools list and that tends to look good as is in JSON b/c it is itself a JSON schema
-        print_section_header("UNPROCESSED Request Properties", color="cyan")
-        pprint_asis(data)
-        return messages
-    return data if isinstance(data, list) else []
+    if isinstance(data, list):
+        # * only has list of messages
+        return data
+    if isinstance(data, dict):
+        if "request_body" in data:
+            # * thread.json has request_body.messages
+            data = data["request_body"]
+        if "messages" in data:
+            # typical request body, has messages, tools, temp, etc
+            messages = data["messages"]
+            del data["messages"]
+            # FYI print other properties at the top (i.e. tools)... if some of these nag me I can always write handlers for them to make them pretty too
+            #   primary is going to be tools list and that tends to look good as is in JSON b/c it is itself a JSON schema
+            print_section_header("UNPROCESSED Request Properties", color="cyan")
+            pprint_asis(data)
+            return messages
+    return []
 
 def load_thread_messages_from_stream(stream) -> list[dict[str, Any]]:
     data = json.load(stream)
