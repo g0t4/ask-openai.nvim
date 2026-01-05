@@ -86,11 +86,12 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
                 save_to = save_to .. "/" .. tostring(group_id)
             end
         end
+        -- chat turn id uniquely identifies each "turn" or exchange of user request + model response
+        local chat_turn_id = tostring(sse_parsed.created)
         local is_multi_file = M.LOG_ALL_SSEs
-        local sse_created = tostring(sse_parsed.created)
         if is_multi_file then
             -- only create dir if multiple files
-            save_to = save_to .. "/" .. sse_created
+            save_to = save_to .. "/" .. chat_turn_id
         end
         log:info("save_to", save_to)
 
@@ -99,7 +100,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
 
             local thread_json_path = save_to .. "/thread.json"
             if not is_multi_file then
-                thread_json_path = save_to .. "/" .. sse_created .. "-thread.json"
+                thread_json_path = save_to .. "/" .. chat_turn_id .. "-thread.json"
             end
             local thread_file = io.open(thread_json_path, "w")
 
