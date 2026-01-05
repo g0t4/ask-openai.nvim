@@ -18,6 +18,7 @@ function ChatThread:new(params, base_url)
     self.params = params or {}
     -- if I want a history of requests I can build that separately
     self.last_request = nil
+    self.start_time = os.time() -- use as identifier for grouping and writing to disk
 
     self.base_url = base_url
     return self

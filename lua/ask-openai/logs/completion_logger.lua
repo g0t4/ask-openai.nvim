@@ -74,13 +74,21 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         if request.type ~= "" then
             save_to = save_to .. "/" .. request.type
         end
+        if request.type == "questions" then
+            -- * group multi-turn chat thread log files
+            -- multi turn chats should be grouped b/c each is written to disk after each response is generated
+            -- only for QuestionsFrontend currently b/c FIM/AskRewrite are single turn chats
+            if frontend and frontend.thread then
+                -- convenient to use start_time b/c it sorts with all other logs that use starttime on per turn basis
+                local group_id = frontend.thread.start_time
+                save_to = save_to .. "/" .. tostring(group_id)
+            end
+        end
         save_to = save_to .. "/" .. tostring(sse_parsed.created)
         log:error("save_to", save_to)
 
         vim.defer_fn(function()
             vim.fn.mkdir(save_to, "p")
-
-            -- TODO group same threads into one dir (or overwrite so only one thread file each chat turn?)
 
             -- TODO! tack output (response message) onto end of thread and get rid of separate output.json file
 
