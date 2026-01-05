@@ -60,7 +60,9 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     if first.finish_reason and first.finish_reason ~= vim.NIL then
         accum.finish_reason = first.finish_reason
     end
-    -- PRN track tool call deltas too? on the response? OR, skip that b/c on next turn, the tool call will already be captured via thread directly (input-body.json)?
+    -- PRN track tool call deltas too? on the response (for output.json)?
+    --   FYI request.body, on next turn, already has the tool call
+    --   so for now, this is not urgent to add to logs here... I can grab thread logs for after model responds to tool call result
 
     if sse_parsed.timings then
         -- store for convenient access in-memory, that way if smth fails on save I can still see it here
