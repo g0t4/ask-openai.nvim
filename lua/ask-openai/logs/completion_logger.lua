@@ -98,12 +98,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         vim.defer_fn(function()
             vim.fn.mkdir(save_to, "p")
 
-            local thread_json_path = save_to .. "/thread.json"
-            if not is_multi_file then
-                thread_json_path = save_to .. "/" .. chat_turn_id .. "-thread.json"
-            end
+            local thread_json_path = save_to .. "/" .. chat_turn_id .. "-thread.json"
             local thread_file = io.open(thread_json_path, "w")
-
             if thread_file then
                 local thread_data = {
                     -- 99.99% of the time this is all I need (input messages thread + output message):
