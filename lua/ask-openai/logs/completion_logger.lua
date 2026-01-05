@@ -60,6 +60,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     if first.finish_reason and first.finish_reason ~= vim.NIL then
         accum.finish_reason = first.finish_reason
     end
+    -- PRN track tool call deltas too? on the response? OR, skip that b/c on next turn, the tool call will already be captured via thread directly (input-body.json)?
 
     if sse_parsed.timings then
         -- store for convenient access in-memory, that way if smth fails on save I can still see it here
@@ -78,6 +79,10 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
 
         vim.defer_fn(function()
             vim.fn.mkdir(save_to, "p")
+
+            -- TODO group same threads into one dir (or overwrite so only one thread file each chat turn?)
+
+            -- TODO! tack output (response message) onto end of thread and get rid of separate output.json file
 
             local request_file = io.open(save_to .. "/output.json", "w")
             if request_file then
