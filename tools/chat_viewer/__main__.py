@@ -76,8 +76,22 @@ def load_messages(data) -> list[dict[str, Any]]:
     return []
 
 def load_thread_messages_from_stream(stream) -> list[dict[str, Any]]:
+    # assume stream can be:
+    #   jq .messages | this
+    #   cat *-thread.json | this
+    #   cat input-messages.json | this
     data = json.load(stream)
-    return load_messages(data)
+    messages = load_messages(data)
+
+    if "response_message" in data:
+        # * thread.json
+        response = data["response_message"]
+        if isinstance(response, dict):
+            response["output.json"] = True
+            messages.append(response)
+    # FYI cannot assume output.json is related (or any othe file) given this data is from STDIN
+
+    return messages
 
 def insert_newlines(content: str) -> str:
     return content.replace("\\n", "\n")
