@@ -95,8 +95,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             --  why write out to three files when I could just stuff it all into one (and update viewer to handle one file)
             --  and then name it starttime.thread.json or thread-starttime.json?
 
-            -- TODO! tack output (response message) onto end of thread and get rid of separate output.json file
-
             local request_file = io.open(save_to .. "/output.json", "w")
             if request_file then
                 request_file:write(vim.json.encode(request.accum))
