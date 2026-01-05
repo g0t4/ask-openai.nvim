@@ -86,15 +86,23 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
                 save_to = save_to .. "/" .. tostring(group_id)
             end
         end
-        save_to = save_to .. "/" .. tostring(sse_parsed.created)
-        log:error("save_to", save_to)
+        local is_multi_file = M.LOG_ALL_SSEs
+        local sse_created = tostring(sse_parsed.created)
+        if is_multi_file then
+            -- only create dir if multiple files
+            save_to = save_to .. "/" .. sse_created
+        end
+        log:info("save_to", save_to)
 
         vim.defer_fn(function()
             vim.fn.mkdir(save_to, "p")
 
-            -- TODO only write thread.json file unles LOG_ALL_SSEs is enabled
+            local thread_json_path = save_to .. "/thread.json"
+            if not is_multi_file then
+                thread_json_path = save_to .. "/" .. sse_created .. "-thread.json"
+            end
+            local thread_file = io.open(thread_json_path, "w")
 
-            local thread_file = io.open(save_to .. "/thread.json", "w")
             if thread_file then
                 local thread_data = {
                     -- 99.99% of the time this is all I need (input messages thread + output message):
