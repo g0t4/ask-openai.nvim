@@ -91,43 +91,32 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
 
         vim.defer_fn(function()
             vim.fn.mkdir(save_to, "p")
-            -- PRN how about a new thread.json single file w/ request and response objects?
-            --  why write out to three files when I could just stuff it all into one (and update viewer to handle one file)
-            --  and then name it starttime.thread.json or thread-starttime.json?
 
-            local request_file = io.open(save_to .. "/output.json", "w")
-            if request_file then
-                request_file:write(vim.json.encode(request.accum))
-                request_file:close()
-            end
+            -- TODO only write thread.json file unles LOG_ALL_SSEs is enabled
 
-            local input_messages_file = io.open(save_to .. "/input-body.json", "w")
-            if input_messages_file then
-                input_messages_file:write(vim.json.encode(request.body))
-                input_messages_file:close()
-            end
-
-            if sse_parsed.__verbose then
-                -- FYI you must have --verbose flag passed to llama-server to get .__verbose.*
-                --   w/o --verbose, this code will still capture both input-body.json & output.json which is ALL I NEED 99% of the time!
-                --   to troubleshoot a prompt, you can also use llama-server's /apply-template endpoint
-                --   ALSO, FYI... --verbose-prompt DOES NOTHING with llama-server, ignore it
-                --
-                -- PRN do I really want this separate, too?
-                local input_prompt_file = io.open(save_to .. "/input-prompt.txt", "w")
-                if input_prompt_file then
-                    input_prompt_file:write(sse_parsed.__verbose.prompt)
-                    input_prompt_file:close()
+            local thread_file = io.open(save_to .. "/thread.json", "w")
+            if thread_file then
+                local thread_data = {
+                    -- 99.99% of the time this is all I need (input messages thread + output message):
+                    request_body = request.body,
+                    response_message = request.accum,
+                    --
+                    -- FYI must use llama-server's --verbose flag .__verbose.* on last_sse
+                    --   __verbose.prompt basically repeats request.body, thus not needed
+                    --   rendered prompt can be nice for reproducibility
+                    --     but, you can also use /apply-template endpoint to generate it too
+                    --     obviously won't capture template changes when rendering
+                    --
+                    -- last_sse has:
+                    --   .timings (top-level and under .__verbose.timings)
+                    --   .__verbose.(prompt, generation_settings)
+                    --   .__verbose.content (generated raw outputs, but ONLY for stream=false)
+                    last_sse = sse_parsed,
+                }
+                if sse_parsed.__verbose then
                 end
-            end
-
-            -- .timings (top-level and under .__verbose.timings)
-            -- .__verbose.(prompt, generation_settings)
-            -- .__verbose.content (generated raw outputs, but ONLY for stream=false)
-            local request_file = io.open(save_to .. "/last_sse.json", "w")
-            if request_file then
-                request_file:write(vim.json.encode(sse_parsed))
-                request_file:close()
+                thread_file:write(vim.json.encode(thread_data))
+                thread_file:close()
             end
 
             if M.LOG_ALL_SSEs then
