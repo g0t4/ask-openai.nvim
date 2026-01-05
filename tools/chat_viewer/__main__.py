@@ -70,7 +70,7 @@ def load_messages(data) -> list[dict[str, Any]]:
             del data["messages"]
             # FYI print other properties at the top (i.e. tools)... if some of these nag me I can always write handlers for them to make them pretty too
             #   primary is going to be tools list and that tends to look good as is in JSON b/c it is itself a JSON schema
-            print_section_header("UNPROCESSED Request Properties", color="cyan")
+            print_section_header("UNPROCESSED request.body properties", color="cyan")
             pprint_asis(data)
             return messages
     return []
