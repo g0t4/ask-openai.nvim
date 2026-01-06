@@ -263,16 +263,16 @@ def print_if_missing_keys(obj, name):
     pprint_asis(obj)
 
 def print_assistant(msg: dict):
-    content = msg.get("content", "")
-    if content:
-        print_asis(insert_newlines(content))
-
     reasoning = msg.get("reasoning_content")
     if reasoning:
         print_asis(
             insert_newlines(reasoning),
             style="bright_black italic",
         )
+
+    content = msg.get("content", "")
+    if content:
+        print_asis(insert_newlines(content))
 
     requests = yank(msg, "tool_calls", [])
     if requests:
