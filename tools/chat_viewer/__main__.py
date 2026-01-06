@@ -266,9 +266,15 @@ def print_assistant(msg: dict):
     reasoning = msg.get("reasoning_content")
     if reasoning:
         print_asis(
-            insert_newlines(reasoning),
+            Padding(
+                insert_newlines(reasoning),
+                (0, 0, 0, 2),  # top, right, bottom, left
+            ),
+            # PRN "dim" style would work too, instead of bright_black (only works b/c my theme has that as a white-ish)
             style="bright_black italic",
         )
+        # btw nothing wrong with going back to no blank line between reasoning and content... given text style differences:
+        print()
 
     content = msg.get("content", "")
     if content:
