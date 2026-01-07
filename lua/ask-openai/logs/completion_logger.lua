@@ -1,4 +1,5 @@
 local log = require('ask-openai.logs.logger').predictions()
+local json = require('dkjson')
 
 local M = {
     last_done = {},
@@ -120,14 +121,14 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
                 }
                 if sse_parsed.__verbose then
                 end
-                thread_file:write(vim.json.encode(thread_data))
+                thread_file:write(json.encode(thread_data, { indent = true }))
                 thread_file:close()
             end
 
             if M.LOG_ALL_SSEs then
                 local all_file = io.open(save_to .. "/all_sses.json", "w")
                 if all_file then
-                    all_file:write(vim.json.encode(all_sses))
+                    all_file:write(json.encode(all_sses, { indent = true }))
                     all_file:close()
                 end
             end
