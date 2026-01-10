@@ -276,7 +276,7 @@ function RewriteFrontend.cleanup_after_cancel()
     RewriteFrontend.accumulated_chunks = ""
 end
 
-function RewriteFrontend.stream_from_ollama(user_prompt, code, file_name)
+function RewriteFrontend.send_rewrite(user_prompt, code, file_name)
     RewriteFrontend.abort_last_request()
 
     -- local enable_rag = false
@@ -550,7 +550,7 @@ local function send_rewrite(opts)
     RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
     RewriteFrontend.displayer:set_keymaps()
 
-    RewriteFrontend.stream_from_ollama(user_prompt, selection.original_text, relative_file_path)
+    RewriteFrontend.send_rewrite(user_prompt, selection.original_text, relative_file_path)
 end
 
 ---@type ExplainError
