@@ -278,6 +278,8 @@ end
 
 ---@param opts {args:string}
 local function ask_rewrite_command(opts)
+    RewriteFrontend.abort_last_request()
+
     local selection = Selection.get_visual_selection_for_current_window()
 
     local user_prompt = opts.args
@@ -288,8 +290,6 @@ local function ask_rewrite_command(opts)
     RewriteFrontend.accumulated_chunks = ""
     RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
     RewriteFrontend.displayer:set_keymaps()
-
-    RewriteFrontend.abort_last_request()
 
     -- local enable_rag = false
     local enable_rag = api.is_rag_enabled()
