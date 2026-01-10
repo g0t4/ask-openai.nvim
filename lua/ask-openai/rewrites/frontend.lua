@@ -292,9 +292,6 @@ local function ask_rewrite_command(opts)
     RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
     RewriteFrontend.displayer:set_keymaps()
 
-    -- TODO inline?
-    code = selection.original_text
-
     RewriteFrontend.abort_last_request()
 
     -- local enable_rag = false
@@ -324,6 +321,7 @@ local function ask_rewrite_command(opts)
     -- make sure to remove slash commands like /yanks (hence cleaned_prompt)
     local user_prompt = context.cleaned_prompt
     local code_context = ""
+    local code = selection.original_text
     if code ~= nil and code ~= "" then
         -- FYI I added the note about "carefully preserved indentation" to attempt to improve chances the indented code is correct
         --   TODO ? add manual test to verify % accuracy preserving indentation
