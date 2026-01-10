@@ -276,6 +276,24 @@ function RewriteFrontend.cleanup_after_cancel()
     RewriteFrontend.accumulated_chunks = ""
 end
 
+local function ask_rewrite_command(opts)
+    local selection = Selection.get_visual_selection_for_current_window()
+    -- if selection:is_empty() then
+    --     error("No visual selection found.")
+    --     return
+    -- end
+
+    local user_prompt = opts.args
+    local relative_file_path = files.get_current_file_relative_path()
+    -- Store selection details for later use
+    RewriteFrontend.selection = selection
+    RewriteFrontend.accumulated_chunks = ""
+    RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
+    RewriteFrontend.displayer:set_keymaps()
+
+    RewriteFrontend.send_rewrite(user_prompt, selection.original_text, relative_file_path)
+end
+
 function RewriteFrontend.send_rewrite(user_prompt, code, file_name)
     RewriteFrontend.abort_last_request()
 
@@ -533,24 +551,6 @@ local function send_simulated_rewrite_instant(opts)
         }
     }
     RewriteFrontend.on_parsed_data_sse(simulated_sse)
-end
-
-local function ask_rewrite_command(opts)
-    local selection = Selection.get_visual_selection_for_current_window()
-    -- if selection:is_empty() then
-    --     error("No visual selection found.")
-    --     return
-    -- end
-
-    local user_prompt = opts.args
-    local relative_file_path = files.get_current_file_relative_path()
-    -- Store selection details for later use
-    RewriteFrontend.selection = selection
-    RewriteFrontend.accumulated_chunks = ""
-    RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
-    RewriteFrontend.displayer:set_keymaps()
-
-    RewriteFrontend.send_rewrite(user_prompt, selection.original_text, relative_file_path)
 end
 
 ---@type ExplainError

@@ -28,6 +28,38 @@ local QuestionsFrontend = {}
 
 local first_turn_ns_id
 
+local function ask_question_command(opts)
+    local user_prompt = opts.args
+    local includes = prompts.parse_includes(user_prompt)
+
+    -- * /selection
+    local selected_text = nil
+    if includes.include_selection then
+        -- FYI include_selection basically captures if user had selection when they first invoked a keymap to submit this command
+        --   b/c submitting command switches modes, also user might unselect text on accident (or want to repeat w/ prev selection)
+        --   thus it is useful to capture intent with /selection early on
+        local selection = Selection.get_visual_selection_for_current_window()
+        if selection:is_empty() then
+            error("No /selection found (no current, nor prior, selection).")
+            return
+        end
+        selected_text = selection.original_text
+    end
+
+    -- * /file - current file
+    local function current_file_message()
+        return MessageBuilder:new()
+            :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request:")
+            :md_current_buffer()
+            :to_text()
+    end
+    local entire_file_message = includes.current_file and current_file_message() or nil
+    local file_name = files.get_current_file_relative_path()
+
+    QuestionsFrontend.ensure_response_window_is_open()
+    QuestionsFrontend.send_question(includes.cleaned_prompt, selected_text, file_name, includes.use_tools, entire_file_message)
+end
+
 function QuestionsFrontend.send_question(user_prompt, selected_text, file_name, use_tools, entire_file_message)
     QuestionsFrontend.abort_last_request()
     use_tools = use_tools or false
@@ -203,38 +235,6 @@ function QuestionsFrontend.send_messages()
     log:luaify_trace("body:", request.body)
     curl.spawn(request, QuestionsFrontend)
     QuestionsFrontend.thread:set_last_request(request)
-end
-
-local function ask_question_command(opts)
-    local user_prompt = opts.args
-    local includes = prompts.parse_includes(user_prompt)
-
-    -- * /selection
-    local selected_text = nil
-    if includes.include_selection then
-        -- FYI include_selection basically captures if user had selection when they first invoked a keymap to submit this command
-        --   b/c submitting command switches modes, also user might unselect text on accident (or want to repeat w/ prev selection)
-        --   thus it is useful to capture intent with /selection early on
-        local selection = Selection.get_visual_selection_for_current_window()
-        if selection:is_empty() then
-            error("No /selection found (no current, nor prior, selection).")
-            return
-        end
-        selected_text = selection.original_text
-    end
-
-    -- * /file - current file
-    local function current_file_message()
-        return MessageBuilder:new()
-            :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request:")
-            :md_current_buffer()
-            :to_text()
-    end
-    local entire_file_message = includes.current_file and current_file_message() or nil
-    local file_name = files.get_current_file_relative_path()
-
-    QuestionsFrontend.ensure_response_window_is_open()
-    QuestionsFrontend.send_question(includes.cleaned_prompt, selected_text, file_name, includes.use_tools, entire_file_message)
 end
 
 function QuestionsFrontend.abort_and_close()
