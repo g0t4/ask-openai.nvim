@@ -294,11 +294,30 @@ local function ask_rewrite_command(opts)
     -- local enable_rag = false
     local enable_rag = api.is_rag_enabled()
 
+    -- TODO revisit messaging around:
+    -- TODO fix issues with indentation? not sure this is concrete!
+    -- TODO gptoss prompt review:
+    --   TODO review system (dev) message vs user message...
+    --     ? incomplete code (not to generate surrounding code if I didn't select it to start!)
+    --     markdown code block prohibition... should I flip this and assert it should be there?
+    --        only one code block and it should be added always?
+    --        this might help structure the response in a more intuitive way!
+    --        I already strip it around full response
+    --        I could add logic to strip multiple
+    --   TODO be assertive
+    --   TODO do not strive for concise instructions, explain it well
+    --   TODO track gptoss specific instructions (dev msg, user msg, etc)?
+    --   TODO review indentation instructions
+    --      explain when there is a selection, that has indentation carefully preserved
+    --      TODO document examples of problematic indentation (flag them) in my dataset repo
+    --        TODO reproduce? cases where response preview looks correct for indentation, but then de-indents on accept?
+
     local markdown_exclusion = "\n- DO NOT wrap answers in markdown code blocks, which"
         .. " means no triple backticks like ``` nor single backtick like ` ."
     if file_name:match(".*.md$") then
         markdown_exclusion = ""
     end
+    -- TODO do I have coding rules in user messages too? should that go into system message?
     local system_prompt = "You are an expert coder. Ground rules:"
         .. "\n- Follow the user's instructions. "
         .. markdown_exclusion
