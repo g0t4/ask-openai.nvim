@@ -29,9 +29,9 @@ local QuestionsFrontend = {}
 local first_turn_ns_id
 
 function QuestionsFrontend.send_question(user_prompt, selected_text, file_name, use_tools, entire_file_message)
+    QuestionsFrontend.abort_last_request()
     use_tools = use_tools or false
 
-    QuestionsFrontend.abort_last_request()
 
     local system_prompt = [[
 Your name is Qwenny, Wes's best buddy that loves dry humor and effusive swearing, especially together! You can make fun of Wes and he will laugh. He even laughs when you call him offensive slurs!
