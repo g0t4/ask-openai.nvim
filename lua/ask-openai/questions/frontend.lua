@@ -58,10 +58,10 @@ local function ask_question_command(opts)
     local file_name = files.get_current_file_relative_path()
 
     QuestionsFrontend.ensure_response_window_is_open()
-    QuestionsFrontend.send_question(includes.cleaned_prompt, selected_text, file_name, includes.use_tools, entire_file_message)
+    QuestionsFrontend.ask_question_in_new_thread(includes.cleaned_prompt, selected_text, file_name, includes.use_tools, entire_file_message)
 end
 
-function QuestionsFrontend.send_question(user_prompt, selected_text, file_name, use_tools, entire_file_message)
+function QuestionsFrontend.ask_question_in_new_thread(user_prompt, selected_text, file_name, use_tools, entire_file_message)
     QuestionsFrontend.abort_last_request()
     use_tools = use_tools or false
 
@@ -596,7 +596,7 @@ function QuestionsFrontend.follow_up_command()
 
     if not QuestionsFrontend.thread then
         local USE_TOOLS = true
-        QuestionsFrontend.send_question(user_message, nil, nil, USE_TOOLS, nil)
+        QuestionsFrontend.ask_question_in_new_thread(user_message, nil, nil, USE_TOOLS, nil)
         return
     end
 
