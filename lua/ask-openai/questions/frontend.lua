@@ -125,41 +125,48 @@ The semantic_grep tool:
             system_prompt = system_prompt .. "\n" .. table.concat(system_message_instructions, "\n")
         end
     end
+
+    -- * display system message in chat window
+    if not first_turn_ns_id then
+        first_turn_ns_id = vim.api.nvim_create_namespace("ask.marks.chat.window.first.turn")
+    end
+    local lines = LinesBuilder:new(first_turn_ns_id)
+    lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
+    lines:append_folded_styled_text("system\n" .. system_prompt, "")
+
     local always_include = {
         yanks = true,
         project = true,
     }
     local context = CurrentContext:items(user_prompt, always_include)
 
+    -- * display user message in chat window
+    lines:append_role_header("user")
+    lines:append_text(user_prompt)
+
     local user_message = user_prompt
     if selected_text then
-        -- would make sense to fold the code initially
-
-        -- TODO do not wrap in ``` block if the text has ``` in it? i.e. from markdown file
-        --    I could easily drop the ``` block part, I just thought it would be nice for display in the chat history (since I use md formatting there)
-        --    but AFAICT qwen does perfectly fine w/o it (I didn't have it initially and loved the responses, likely b/c I always had the file name which told the file type)
-
-        user_message = user_message .. "\n\n"
+        local msg = "\n\n"
             .. "I selected the following\n"
             .. "```" .. file_name .. "\n"
             .. selected_text .. "\n"
             .. "```"
+
+        -- PRN count \n in selected_text and only fold if > 10
+        local fold = false -- = newline_count > 10
+        if fold then
+            lines:append_folded_styled_text(msg, "")
+        else
+            lines:append_styled_text(msg, "")
+        end
+        user_message = user_message .. msg
     end
     if entire_file_message then
-        user_message = user_message .. "\n\n" .. entire_file_message
+        local msg = "\n\n" .. entire_file_message
+        lines:append_folded_styled_text(msg, "")
+        user_message = user_message .. msg
     end
 
-    -- * show user's initial prompt
-    if not first_turn_ns_id then
-        first_turn_ns_id = vim.api.nvim_create_namespace("ask.marks.chat.window.first.turn")
-    end
-    local lines = LinesBuilder:new(first_turn_ns_id)
-
-    lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
-    lines:append_folded_styled_text("system\n" .. system_prompt, "")
-
-    lines:append_role_header("user")
-    lines:append_text(user_message)
     lines:append_blank_line()
     QuestionsFrontend.chat_window:append_styled_lines(lines)
 
@@ -169,6 +176,7 @@ The semantic_grep tool:
     }
 
     if context.includes.yanks and context.yanks then
+        -- PRN anything I want to show about auto context? (not just yanks)
         table.insert(messages, TxChatMessage:user_context(context.yanks.content))
     end
     if context.includes.commits and context.commits then
@@ -177,6 +185,7 @@ The semantic_grep tool:
         end
     end
     if context.includes.project and context.project then
+        -- TODO does any of this belong in the system_message?
         vim.iter(context.project)
             :each(function(value)
                 table.insert(messages, TxChatMessage:user_context(value.content))
