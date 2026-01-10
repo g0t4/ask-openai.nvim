@@ -66,12 +66,10 @@ function CurrentContext.toggle_trace_context_command(prompt)
     ctags.tracing = CurrentContext.tracing
     matching_ctags.tracing = CurrentContext.tracing
     project.tracing = CurrentContext.tracing
-    -- PRN others
+    -- ? others
 
     if CurrentContext.tracing then
         messages.ensure_open()
-    else
-        messages.ensure_closed()
     end
 end
 
