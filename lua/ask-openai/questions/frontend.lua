@@ -642,13 +642,12 @@ function QuestionsFrontend.setup()
     --  FYI this smacks of inserting pre-canned prompts with a /prompt slash command?
     vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskQuestion /tools can you review my outstanding git changes', { noremap = true })
 
-    vim.keymap.set('n', '<leader>ao', QuestionsFrontend.ensure_response_window_is_open, { noremap = true })
     vim.keymap.set('n', '<leader>aa', QuestionsFrontend.abort_last_request, { noremap = true })
+    vim.keymap.set('n', '<leader>ac', QuestionsFrontend.clear_chat_command, { noremap = true })
     vim.keymap.set('n', '<leader>af', QuestionsFrontend.follow_up_command, { noremap = true })
+    vim.keymap.set('n', '<leader>ao', QuestionsFrontend.ensure_response_window_is_open, { noremap = true })
 
     vim.api.nvim_create_user_command("AskDumpThread", ask_dump_thread_command, {})
-
-    vim.keymap.set('n', '<leader>ac', QuestionsFrontend.clear_chat_command, { noremap = true })
 end
 
 return QuestionsFrontend
