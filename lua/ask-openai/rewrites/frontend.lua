@@ -588,7 +588,6 @@ local function retry_last_rewrite()
 end
 
 function RewriteFrontend.setup()
-    -- Create commands and keymaps for the rewrite functionality
     vim.api.nvim_create_user_command("AskRewrite", send_rewrite, { range = true, nargs = 1 })
     vim.keymap.set({ 'n', 'v' }, '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
 
