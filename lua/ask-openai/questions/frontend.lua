@@ -206,7 +206,7 @@ function QuestionsFrontend.send_messages()
     QuestionsFrontend.thread:set_last_request(request)
 end
 
-local function ask_question(opts)
+local function send_question(opts)
     local user_prompt = opts.args
     local includes = prompts.parse_includes(user_prompt)
 
@@ -624,7 +624,7 @@ function QuestionsFrontend.setup()
     -- * cauterize top level
     vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
 
-    vim.api.nvim_create_user_command("AskQuestion", ask_question, { range = true, nargs = 1 })
+    vim.api.nvim_create_user_command("AskQuestion", send_question, { range = true, nargs = 1 })
     -- * AskQuestion
     vim.keymap.set('n', '<Leader>q', ':AskQuestion ', { noremap = true })
     vim.keymap.set('v', '<Leader>q', ':<C-u>AskQuestion /selection ', { noremap = true })
