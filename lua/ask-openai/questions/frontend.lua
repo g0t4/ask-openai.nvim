@@ -624,8 +624,9 @@ function QuestionsFrontend.setup()
     -- * cauterize top level
     vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
 
-    vim.api.nvim_create_user_command("AskQuestion", ask_question_command, { range = true, nargs = 1 })
     -- * AskQuestion
+    vim.api.nvim_create_user_command("AskQuestion", ask_question_command, { range = true, nargs = 1 })
+    -- * prefill argument combos:
     vim.keymap.set('n', '<Leader>q', ':AskQuestion ', { noremap = true })
     vim.keymap.set('v', '<Leader>q', ':<C-u>AskQuestion /selection ', { noremap = true })
     -- * /file
