@@ -24,16 +24,18 @@ local function code(content, language)
 end
 
 local function handle_apply_patch_args(lines, args, message)
-    local function try_decode_json_and_get_patch(json_str)
-        local ok, decoded = pcall(vim.json.decode, json_str)
+    -- FYI I am on the fence w.r.t. markdown diff codeblock
+    -- and probably not JSON, though that is a fallback I have yet to encounter
+    local function json_decode_patch(args)
+        local ok, decoded = pcall(vim.json.decode, args)
         if ok and type(decoded) == "table" and decoded.patch then
             return code(decoded.patch, "diff")
         end
-        return code(json_str, "json")
+        return args
     end
 
     if message:is_done_streaming() then
-        lines:append_text(try_decode_json_and_get_patch(args))
+        lines:append_text(json_decode_patch(args))
         return
     end
 
@@ -52,7 +54,7 @@ local function handle_apply_patch_args(lines, args, message)
     else
         -- FYI if I have a few deltas where it's not yet marked message done...
         --  strip the prefix and just show whatever after that
-        lines:append_text(try_decode_json_and_get_patch(args))
+        lines:append_text(json_decode_patch(args))
     end
 end
 
