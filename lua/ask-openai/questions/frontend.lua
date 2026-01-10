@@ -234,10 +234,10 @@ The semantic_grep tool:
     -- FYI starts a new chat thread when AskQuestion is used
     --  TODO allow follow up, via the command, if already existing thread?
     QuestionsFrontend.thread = ChatThread:new(body_overrides, base_url)
-    QuestionsFrontend.send_messages()
+    QuestionsFrontend.then_send_messages()
 end
 
-function QuestionsFrontend.send_messages()
+function QuestionsFrontend.then_send_messages()
     -- * conversation turns (track start line for streaming chunks)
     QuestionsFrontend.this_turn_chat_start_line_base0 = QuestionsFrontend.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
@@ -573,7 +573,7 @@ function QuestionsFrontend.send_tool_messages_if_all_tools_done()
     if QuestionsFrontend.any_outstanding_tool_calls() then
         return
     end
-    QuestionsFrontend.send_messages()
+    QuestionsFrontend.then_send_messages()
 end
 
 ---@return boolean
@@ -617,7 +617,7 @@ function QuestionsFrontend.follow_up_command()
 
     local message = TxChatMessage:user(user_message)
     QuestionsFrontend.thread:add_message(message)
-    QuestionsFrontend.send_messages()
+    QuestionsFrontend.then_send_messages()
 end
 
 function ask_dump_thread_command()
