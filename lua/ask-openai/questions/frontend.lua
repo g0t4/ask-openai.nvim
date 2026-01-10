@@ -605,7 +605,7 @@ function QuestionsFrontend.follow_up()
     QuestionsFrontend.send_messages()
 end
 
-function ask_dump_thread()
+function ask_dump_thread_command()
     if not QuestionsFrontend.thread then
         print("no thread to dump")
         return
@@ -646,7 +646,7 @@ function QuestionsFrontend.setup()
     vim.keymap.set('n', '<leader>aa', QuestionsFrontend.abort_last_request, { noremap = true })
     vim.keymap.set('n', '<leader>af', QuestionsFrontend.follow_up, { noremap = true })
 
-    vim.api.nvim_create_user_command("AskDumpThread", ask_dump_thread, {})
+    vim.api.nvim_create_user_command("AskDumpThread", ask_dump_thread_command, {})
 
     vim.keymap.set('n', '<leader>ac', QuestionsFrontend.clear_chat, { noremap = true })
 end

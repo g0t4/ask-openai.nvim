@@ -451,7 +451,7 @@ local function ask_rewrite_command(opts)
 end
 
 RewriteFrontend.stop_streaming = false
-local function send_simulated_rewrite_stream(opts)
+local function simulate_streaming_rewrite_command(opts)
     -- use this for timing and to test streaming diff!
 
     RewriteFrontend.abort_last_request()
@@ -524,7 +524,7 @@ and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
     stream_words(all_words)
 end
 
-local function send_simulated_rewrite_instant(opts)
+local function simulate_instant_rewrite_command(opts)
     RewriteFrontend.abort_last_request()
     RewriteFrontend.last_request = CurlRequest:new({ body = {}, base_url = "base", endpoint = CompletionsEndpoints.oai_v1_chat_completions, })
     vim.cmd("normal! 0V6jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
@@ -589,10 +589,10 @@ function RewriteFrontend.setup()
     vim.keymap.set({ 'n', 'v' }, '<Leader>ry', retry_last_rewrite, { noremap = true })
 
     -- * simulations
-    vim.api.nvim_create_user_command("AskRewriteSimulateInstant", send_simulated_rewrite_instant, {})
+    vim.api.nvim_create_user_command("AskRewriteSimulateInstant", simulate_instant_rewrite_command, {})
     vim.keymap.set({ 'n' }, '<Leader>rt', ':<C-u>AskRewriteSimulateInstant<CR>', { noremap = true })
     --
-    vim.api.nvim_create_user_command("AskRewriteSimulateStream", send_simulated_rewrite_stream, {})
+    vim.api.nvim_create_user_command("AskRewriteSimulateStream", simulate_streaming_rewrite_command, {})
     vim.keymap.set({ 'n' }, '<Leader>rs', ':<C-u>AskRewriteSimulateStream<CR>', { noremap = true })
 
     -- dump helpers while building this tooling - [a]sk [d]ump last [s]election
