@@ -341,7 +341,7 @@ function RewriteFrontend.send_rewrite(user_prompt, code, file_name)
     user_message_with_code = user_prompt .. "\n" .. code_context
 
     ---@param rag_matches LSPRankedMatch[]
-    local function send_rewrite(rag_matches)
+    local function then_send_rewrite(rag_matches)
         local messages = {
             TxChatMessage:system(system_prompt)
         }
@@ -441,17 +441,17 @@ function RewriteFrontend.send_rewrite(user_prompt, code, file_name)
                 return
             end
 
-            send_rewrite(rag_matches)
+            then_send_rewrite(rag_matches)
         end
 
-        this_request_ids, cancel = rag_client.context_query_rewrites(user_prompt, code_context, send_rewrite, context.includes.top_k)
+        this_request_ids, cancel = rag_client.context_query_rewrites(user_prompt, code_context, then_send_rewrite, context.includes.top_k)
         RewriteFrontend.rag_cancel = cancel
         RewriteFrontend.rag_request_ids = this_request_ids
     else
         RewriteFrontend.rag_cancel = nil
         RewriteFrontend.rag_request_ids = nil
         -- PRN add a promise fwk in here
-        send_rewrite({})
+        then_send_rewrite({})
     end
 end
 
