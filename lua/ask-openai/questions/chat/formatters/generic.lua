@@ -23,26 +23,24 @@ local function code(content, language)
     return "```" .. lang_prefix .. "\n" .. content .. "\n```"
 end
 
-local function handle_apply_patch_args(lines, args, message)
+local function handle_apply_patch_args(args, message)
     -- FYI I am on the fence w.r.t. markdown diff codeblock
     -- and probably not JSON, though that is a fallback I have yet to encounter
-    local function json_decode_patch(args)
-        local ok, decoded = pcall(vim.json.decode, args)
+    local function json_decode_patch(arg_str)
+        local ok, decoded = pcall(vim.json.decode, arg_str)
         if ok and type(decoded) == "table" and decoded.patch then
             return code(decoded.patch, "diff")
         end
-        return args
+        return arg_str
     end
 
     if message:is_done_streaming() then
-        lines:append_text(json_decode_patch(args))
-        return
+        return json_decode_patch(args)
     end
 
     local json_prefix = args:match('^{%s*"patch"%s*:%s*"')
     if not json_prefix then
-        lines:append_text(args)
-        return
+        return args
     end
 
     -- * try to complete the JSON string and decode it
@@ -50,11 +48,11 @@ local function handle_apply_patch_args(lines, args, message)
     local try_json = args .. '"}'
     local ok, decoded = pcall(vim.json.decode, try_json)
     if ok and type(decoded) == "table" and decoded.patch then
-        lines:append_text(code(decoded.patch, "diff"))
+        return code(decoded.patch, "diff")
     else
         -- FYI if I have a few deltas where it's not yet marked message done...
         --  strip the prefix and just show whatever after that
-        lines:append_text(json_decode_patch(args))
+        return json_decode_patch(args)
     end
 end
 
@@ -84,7 +82,7 @@ function M.format(lines, tool_call, message)
     local args = tool_call["function"].arguments
     if args then
         if func_name == "apply_patch" then
-            handle_apply_patch_args(lines, args, message)
+            lines:append_text(handle_apply_patch_args(args, message))
         else
             lines:append_text(try_decode_json_string(args, message))
         end
