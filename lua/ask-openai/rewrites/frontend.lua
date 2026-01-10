@@ -291,10 +291,9 @@ local function ask_rewrite_command(opts)
     RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
     RewriteFrontend.displayer:set_keymaps()
 
-    RewriteFrontend.send_rewrite(user_prompt, selection.original_text, relative_file_path)
-end
+    -- RewriteFrontend.send_rewrite(user_prompt, selection.original_text, relative_file_path)
+    -- function RewriteFrontend.send_rewrite(user_prompt, code, file_name)
 
-function RewriteFrontend.send_rewrite(user_prompt, code, file_name)
     RewriteFrontend.abort_last_request()
 
     -- local enable_rag = false
