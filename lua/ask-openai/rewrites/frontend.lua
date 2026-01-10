@@ -291,8 +291,9 @@ local function ask_rewrite_command(opts)
     RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
     RewriteFrontend.displayer:set_keymaps()
 
-    -- RewriteFrontend.send_rewrite(selection.original_text, relative_file_path)
-    -- function RewriteFrontend.send_rewrite(code, file_name)
+    -- RewriteFrontend.send_rewrite(relative_file_path)
+    -- function RewriteFrontend.send_rewrite(file_name)
+    code = selection.original_text
 
     RewriteFrontend.abort_last_request()
 
