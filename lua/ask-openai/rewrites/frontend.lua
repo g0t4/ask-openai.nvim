@@ -602,8 +602,6 @@ function RewriteFrontend.setup()
     -- FYI see notes in M.get_visual_selection about you don't want a lua func handler that calls dump
     -- also prints don't popup if they originated in a lua handler, whereas they do with a vim command
     --   thus w/ a cmd I get to see the vim.inspect(selection) with a pprint json like view of fields
-
-    require("ask-openai.predictions.context").setup()
 end
 
 return RewriteFrontend

@@ -11,6 +11,8 @@ local cmds = require("ask-openai.predictions.context.cmds")
 -- local learn_diagnostics = require("ask-openai.predictions.context.coc.learn.diagnostics")
 -- local coc_context = require("ask-openai.predictions.context.coc.context")
 
+-- TODO move this out of just predictions dir
+
 ---@class CurrentContext
 ---
 ---@field yanks ContextItem
