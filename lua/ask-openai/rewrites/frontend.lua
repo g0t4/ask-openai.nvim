@@ -382,6 +382,7 @@ local function ask_rewrite_command(opts)
             end
         end
         if context.includes.project and context.project then
+            -- TODO does any of this belong in the system_message?
             vim.iter(context.project)
                 :each(function(value)
                     table.insert(messages, TxChatMessage:user_context(value.content))

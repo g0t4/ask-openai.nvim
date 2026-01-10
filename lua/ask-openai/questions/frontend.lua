@@ -175,6 +175,7 @@ The semantic_grep tool:
         TxChatMessage:system(system_prompt)
     }
 
+    -- ? context.includes.open_files
     if context.includes.yanks and context.yanks then
         -- PRN anything I want to show about auto context? (not just yanks)
         table.insert(messages, TxChatMessage:user_context(context.yanks.content))
@@ -191,6 +192,7 @@ The semantic_grep tool:
                 table.insert(messages, TxChatMessage:user_context(value.content))
             end)
     end
+    -- TODO RAG
 
     table.insert(messages, TxChatMessage:user(user_message))
 
@@ -220,14 +222,8 @@ The semantic_grep tool:
     -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
     -- PRN split agentica into messages and params
 
-    -- ollama:
-    -- local base_url = "http://ollama:11434"
     local base_url = "http://build21:8013"
-    --
-    -- vllm:
-    -- local base_url = "http://build21:8000"
 
-    -- TODO setup a way to auto switch model based on what's hosted when using llama_server?
     local body_overrides = model_params.new_gptoss_chat_body_llama_server({
         -- local body_overrides = model_params.new_qwen3coder_llama_server_chat_body({
         messages = messages,
