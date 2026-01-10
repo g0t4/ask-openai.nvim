@@ -112,20 +112,20 @@ The semantic_grep tool:
         TxChatMessage:system(system_prompt)
     }
 
-    -- TODO add this back and optional RAG?
-    -- if context.includes.yanks and context.yanks then
-    --     table.insert(messages, TxChatMessage:user_context(context.yanks.content))
-    -- end
-    -- if context.includes.commits and context.commits then
-    --     for _, commit in pairs(context.commits) do
-    --         table.insert(messages, TxChatMessage:user_context(commit.content))
-    --     end
-    -- end
-    -- if context.includes.project and context.project then
-    --     for _, value in pairs(context.project) do
-    --         table.insert(messages, TxChatMessage:user_context(value.content))
-    --     end
-    -- end
+    if context.includes.yanks and context.yanks then
+        table.insert(messages, TxChatMessage:user_context(context.yanks.content))
+    end
+    if context.includes.commits and context.commits then
+        for _, commit in pairs(context.commits) do
+            table.insert(messages, TxChatMessage:user_context(commit.content))
+        end
+    end
+    if context.includes.project and context.project then
+        vim.iter(context.project)
+            :each(function(value)
+                table.insert(messages, TxChatMessage:user_context(value.content))
+            end)
+    end
 
     table.insert(messages, TxChatMessage:user(user_message))
 
