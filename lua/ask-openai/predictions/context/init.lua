@@ -58,7 +58,7 @@ function CurrentContext:items(prompt, always_include)
     return items
 end
 
-function CurrentContext.toggle_trace_context(prompt)
+function CurrentContext.toggle_trace_context_command(prompt)
     CurrentContext.tracing = not CurrentContext.tracing
 
     yanks.tracing = CurrentContext.tracing
@@ -86,7 +86,7 @@ function CurrentContext.setup()
     -- coc_context.setup()
     -- changelists.setup()
     -- cocs.setup()
-    vim.api.nvim_create_user_command("AskDumpTraceContext", CurrentContext.toggle_trace_context, {})
+    vim.api.nvim_create_user_command("AskDumpTraceContext", CurrentContext.toggle_trace_context_command, {})
 end
 
 return CurrentContext

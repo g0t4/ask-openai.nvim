@@ -596,7 +596,7 @@ function RewriteFrontend.setup()
     vim.keymap.set({ 'n' }, '<Leader>rs', ':<C-u>AskRewriteSimulateStream<CR>', { noremap = true })
 
     -- dump helpers while building this tooling - [a]sk [d]ump last [s]election
-    vim.api.nvim_create_user_command("AskDumpLastSelection", buffers.dump_last_seletion, {})
+    vim.api.nvim_create_user_command("AskDumpLastSelection", buffers.dump_last_seletion_command, {})
     vim.api.nvim_set_keymap('n', '<Leader>ads', ':AskDumpLastSelection<CR>', { noremap = true })
     vim.api.nvim_set_keymap('v', '<Leader>ads', ':<C-u>AskDumpLastSelection<CR>', { noremap = true })
     -- FYI see notes in M.get_visual_selection about you don't want a lua func handler that calls dump

@@ -29,7 +29,7 @@ function M.get_text_in_all_buffers()
     return text_by_file
 end
 
-function M.dump_last_seletion()
+function M.dump_last_seletion_command()
     local selection = Selection.get_visual_selection_for_current_window()
     print(vim.inspect(selection))
 end
