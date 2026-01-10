@@ -276,6 +276,7 @@ function RewriteFrontend.cleanup_after_cancel()
     RewriteFrontend.accumulated_chunks = ""
 end
 
+---@param opts {args:string}
 local function ask_rewrite_command(opts)
     local selection = Selection.get_visual_selection_for_current_window()
 
