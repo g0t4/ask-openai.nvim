@@ -535,7 +535,7 @@ local function send_simulated_rewrite_instant(opts)
     RewriteFrontend.on_parsed_data_sse(simulated_sse)
 end
 
-local function send_rewrite(opts)
+local function ask_rewrite_command(opts)
     local selection = Selection.get_visual_selection_for_current_window()
     -- if selection:is_empty() then
     --     error("No visual selection found.")
@@ -588,7 +588,7 @@ local function retry_last_rewrite()
 end
 
 function RewriteFrontend.setup()
-    vim.api.nvim_create_user_command("AskRewrite", send_rewrite, { range = true, nargs = 1 })
+    vim.api.nvim_create_user_command("AskRewrite", ask_rewrite_command, { range = true, nargs = 1 })
     vim.keymap.set({ 'n', 'v' }, '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
 
     vim.keymap.set({ 'n', 'v' }, '<Leader>ry', retry_last_rewrite, { noremap = true })
