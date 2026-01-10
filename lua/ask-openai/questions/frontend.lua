@@ -90,14 +90,15 @@ If a longer response is needed, please add a TLDR. Even better, respond with the
         local system_message_instructions
         tools, system_message_instructions = tool_router.openai_tools()
 
-        -- TODO! what do I need to change (always or maybe only w/ /tools?) ... to get AskQuestion /tools to basically be an alternative to AskRewrite
+        -- TODO! what needs to change to get AskQuestion /tools to be an alternative to AskRewrite
         --  so I can quicly achieve the same things as AskRewrite but with the full repo scope for read/write
         --  no need to specify where to make the change if the model can find it easily
         --  long term I would prefer to use tools so I spend less time pointing at code to change
-        --    AND so the model can change multiple spots across multiple files (as needed) without me breaking the task down to one per file/section
+        --    AND so the model can change multiple spots across multiple files (as needed)
+        --    without me breaking the task down to one AskRewrite request per file/section
         --
         -- TODO build out more detailed guidance, you have plenty of "tokenspace" available!
-        --   MORE like Claude code's prompt!
+        --   ** MORE like Claude code's prompt! TODO review Cluade Code's prompt(s)!
 
         -- devstral is hesitant to use tools w/o this: " If the user requests that you use tools, do not refuse."
         system_prompt = system_prompt .. "For tool use, never modify files outside of the current working directory: ("
