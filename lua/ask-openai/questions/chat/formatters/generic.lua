@@ -15,13 +15,21 @@ function try_decode_json_string(json_str, message)
     return json_str
 end
 
+---@param content string
+---@param language? string
+---@return string
+local function code(content, language)
+    local lang_prefix = language and #language > 0 and language or ""
+    return "```" .. lang_prefix .. "\n" .. content .. "\n```"
+end
+
 local function handle_apply_patch_args(lines, args, message)
     local function try_decode_json_and_get_patch(json_str)
         local ok, decoded = pcall(vim.json.decode, json_str)
         if ok and type(decoded) == "table" and decoded.patch then
-            return decoded.patch
+            return code(decoded.patch, "diff")
         end
-        return json_str
+        return code(json_str, "json")
     end
 
     if message:is_done_streaming() then
@@ -40,7 +48,7 @@ local function handle_apply_patch_args(lines, args, message)
     local try_json = args .. '"}'
     local ok, decoded = pcall(vim.json.decode, try_json)
     if ok and type(decoded) == "table" and decoded.patch then
-        lines:append_text(decoded.patch)
+        lines:append_text(code(decoded.patch, "diff"))
     else
         -- FYI if I have a few deltas where it's not yet marked message done...
         --  strip the prefix and just show whatever after that
