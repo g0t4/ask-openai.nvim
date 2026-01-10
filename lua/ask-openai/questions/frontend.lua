@@ -45,6 +45,20 @@ If a longer response is needed, please add a TLDR. Even better, respond with the
         local system_message_instructions
         tools, system_message_instructions = tool_router.openai_tools()
 
+        -- TODO! MAKE SURE TO PROVIDE GUIDANCE THAT STERNLY ARTICULATES:
+        --   no changing unrelated code
+        --   no changing unrelated comments
+        --   explain I like small, focused commits, and that I will ask for a subsequent set of changes to address other problems
+        --     you are welcome to list egregious problems (as a checklist for me) when you're done w/ the task at hand
+        --     consquently, don't make unrelated changes!
+        --  TODO sync changes w/ RewriteFrontend
+        --
+        -- TODO! what do I need to change (always or maybe only w/ /tools?) ... to get AskQuestion /tools to basically be an alternative to AskRewrite
+        --  so I can quicly achieve the same things as AskRewrite but with the full repo scope for read/write
+        --  no need to specify where to make the change if the model can find it easily
+        --  long term I would prefer to use tools so I spend less time pointing at code to change
+        --    AND so the model can change multiple spots across multiple files (as needed) without me breaking the task down to one per file/section
+        --
         -- TODO build out more detailed guidance, you have plenty of "tokenspace" available!
         --   MORE like Claude code's prompt!
 
