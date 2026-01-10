@@ -65,6 +65,11 @@ function RxAccumulatedMessage:is_still_streaming()
     return self.finish_reason == nil or self.finish_reason == vim.NIL
 end
 
+---@return boolean
+function RxAccumulatedMessage:is_done_streaming()
+    return not self:is_still_streaming()
+end
+
 ---@enum RX_LIFECYCLE
 RxAccumulatedMessage.RX_LIFECYCLE = {
     -- FYI I merged two concepts: message from model + managing requested tool_call object(s)

@@ -15,6 +15,39 @@ function try_decode_json_string(json_str, message)
     return json_str
 end
 
+local function handle_apply_patch_args(lines, args, message)
+    local function try_decode_json_and_get_patch(json_str)
+        local ok, decoded = pcall(vim.json.decode, json_str)
+        if ok and type(decoded) == "table" and decoded.patch then
+            return decoded.patch
+        end
+        return json_str
+    end
+
+    if message:is_done_streaming() then
+        lines:append_text(try_decode_json_and_get_patch(args))
+        return
+    end
+
+    local json_prefix = args:match('^{%s*"patch"%s*:%s*"')
+    if not json_prefix then
+        lines:append_text(args)
+        return
+    end
+
+    -- * try to complete the JSON string and decode it
+    -- assumption is, if final '"}' is present then it would be done streaming (sans maybe one delta?)
+    local try_json = args .. '"}'
+    local ok, decoded = pcall(vim.json.decode, try_json)
+    if ok and type(decoded) == "table" and decoded.patch then
+        lines:append_text(decoded.patch)
+    else
+        -- FYI if I have a few deltas where it's not yet marked message done...
+        --  strip the prefix and just show whatever after that
+        lines:append_text(try_decode_json_and_get_patch(args))
+    end
+end
+
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
     -- if message:is_still_streaming() then
@@ -23,7 +56,8 @@ function M.format(lines, tool_call, message)
     --     return
     -- end
 
-    local tool_header = tool_call["function"].name or ""
+    local func_name = tool_call["function"].name
+    local tool_header = func_name or ""
 
     local hl_group = HLGroups.TOOL_SUCCESS
     if tool_call.call_output then
@@ -39,14 +73,10 @@ function M.format(lines, tool_call, message)
     -- * tool args
     local args = tool_call["function"].arguments
     if args then
-        local appears_to_be_json_dict = args:find("^{")
-        if appears_to_be_json_dict then
-            -- print verbatim, no changes (NOT YET).. PRN could pretty print once done streaming
-            lines:append_text(args)
+        if func_name == "apply_patch" then
+            handle_apply_patch_args(lines, args, message)
         else
-            -- assume JSON string
-            local result = try_decode_json_string(args, message)
-            lines:append_text(result)
+            lines:append_text(try_decode_json_string(args, message))
         end
     end
     -- PRN mark outputs somehow? or just dump them? (I hate to waste space)
