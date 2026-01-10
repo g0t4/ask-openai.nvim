@@ -284,7 +284,8 @@ local function ask_rewrite_command(opts)
     -- end
 
     local user_prompt = opts.args
-    local relative_file_path = files.get_current_file_relative_path()
+    local file_name = files.get_current_file_relative_path()
+
     -- Store selection details for later use
     RewriteFrontend.selection = selection
     RewriteFrontend.accumulated_chunks = ""
@@ -293,7 +294,6 @@ local function ask_rewrite_command(opts)
 
     -- TODO inline?
     code = selection.original_text
-    file_name = relative_file_path
 
     RewriteFrontend.abort_last_request()
 
