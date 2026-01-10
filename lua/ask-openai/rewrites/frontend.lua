@@ -559,7 +559,7 @@ function RewriteFrontend.explain_error(text)
     end)
 end
 
-local function retry_last_rewrite()
+local function retry_last_rewrite_command()
     if RewriteFrontend.displayer then
         RewriteFrontend.displayer:reject()
     end
@@ -586,7 +586,7 @@ function RewriteFrontend.setup()
     vim.api.nvim_create_user_command("AskRewrite", ask_rewrite_command, { range = true, nargs = 1 })
     vim.keymap.set({ 'n', 'v' }, '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
 
-    vim.keymap.set({ 'n', 'v' }, '<Leader>ry', retry_last_rewrite, { noremap = true })
+    vim.keymap.set({ 'n', 'v' }, '<Leader>ry', retry_last_rewrite_command, { noremap = true })
 
     -- * simulations
     vim.api.nvim_create_user_command("AskRewriteSimulateInstant", simulate_instant_rewrite_command, {})
