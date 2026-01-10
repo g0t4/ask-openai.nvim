@@ -71,20 +71,25 @@ You can respond with markdown and it will show up rendered in neovim in a floati
 Concise is best, Wes is a human, he cannot read fast like you, and even if he could he would still just skim it. Why waste your time writing things he won't read?!
 If a longer response is needed, please add a TLDR. Even better, respond with the TLDR alone! Wes will ask for clarification if needed.
 ]]
+    -- TODO verify if these are helping (comments are notoriously an issue w/ tool use, also abbreviated variable names)
+    -- TODO sync changes with RewriteFrontend/PredictionsFrontend? or create a shared spot for some/all of these (line by line function builder... run once on startup)
+    system_prompt = system_prompt .. "\n## Ground rules when writing code:"
+        .. "\n- Follow the user's instructions. "
+        -- .. "\n- Do not explain answers, just give me code. " -- answers are fine for questions
+        .. "\n- If changing existing code, preserve unrelated code and comments. "
+        .. "\n- Never add comments to the end of a line. "
+        .. "\n- Never add stupid comments."
+        .. "\n- Be considerate with indentation. "
+        .. "\n- Prefer readable code over of comments. "
+        .. "\n- Prefer meaningful names for variables, functions, etc. Avoid ambiguous names." -- TODO add and test
+        .. "\n"
+    --  TODO? explain I like small, focused commits... consequently hold off on other changes, until I ask specifically about them
 
     local tools
     if use_tools then
         local system_message_instructions
         tools, system_message_instructions = tool_router.openai_tools()
 
-        -- TODO! MAKE SURE TO PROVIDE GUIDANCE THAT STERNLY ARTICULATES:
-        --   no changing unrelated code
-        --   no changing unrelated comments
-        --   explain I like small, focused commits, and that I will ask for a subsequent set of changes to address other problems
-        --     you are welcome to list egregious problems (as a checklist for me) when you're done w/ the task at hand
-        --     consquently, don't make unrelated changes!
-        --  TODO sync changes w/ RewriteFrontend
-        --
         -- TODO! what do I need to change (always or maybe only w/ /tools?) ... to get AskQuestion /tools to basically be an alternative to AskRewrite
         --  so I can quicly achieve the same things as AskRewrite but with the full repo scope for read/write
         --  no need to specify where to make the change if the model can find it easily

@@ -321,11 +321,13 @@ local function ask_rewrite_command(opts)
         .. "\n- Follow the user's instructions. "
         .. markdown_exclusion
         .. "\n- Do not explain answers, just give me code. "
+        .. "\n- If changing existing code, preserve unrelated code and comments. "
         .. "\n- Never add comments to the end of a line. "
-        .. "\n- Never add comments."
-        .. "\n- Preserve indentation. "
-        .. "\n- If rewriting code, preserve unrelated code and comments. "
+        -- IIRC I had to add "Never add comments" to get gptoss to knock it off! PRN verify and add it back if it starts again
+        .. "\n- Never add stupid comments."
+        .. "\n- Be considerate with indentation. "
         .. "\n- Prefer readable code over of comments. "
+        .. "\n- Prefer meaningful names for variables, functions, etc. Avoid ambiguous names."
 
     local always_include = {
         yanks = true,
