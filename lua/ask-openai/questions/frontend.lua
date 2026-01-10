@@ -581,7 +581,7 @@ function QuestionsFrontend.abort_last_request()
     CurlRequestForThread.terminate(QuestionsFrontend.thread.last_request)
 end
 
-function QuestionsFrontend.follow_up()
+function QuestionsFrontend.follow_up_command()
     -- take follow up after end of prior response message from assistant
     --  if already a M.thread then add to that with a new message
     --  leave content as is in the buffer, close enough to what it would be if redrawn
@@ -613,7 +613,7 @@ function ask_dump_thread_command()
     QuestionsFrontend.thread:dump()
 end
 
-function QuestionsFrontend.clear_chat()
+function QuestionsFrontend.clear_chat_command()
     if QuestionsFrontend.chat_window then
         QuestionsFrontend.chat_window:clear()
     end
@@ -644,11 +644,11 @@ function QuestionsFrontend.setup()
 
     vim.keymap.set('n', '<leader>ao', QuestionsFrontend.ensure_response_window_is_open, { noremap = true })
     vim.keymap.set('n', '<leader>aa', QuestionsFrontend.abort_last_request, { noremap = true })
-    vim.keymap.set('n', '<leader>af', QuestionsFrontend.follow_up, { noremap = true })
+    vim.keymap.set('n', '<leader>af', QuestionsFrontend.follow_up_command, { noremap = true })
 
     vim.api.nvim_create_user_command("AskDumpThread", ask_dump_thread_command, {})
 
-    vim.keymap.set('n', '<leader>ac', QuestionsFrontend.clear_chat, { noremap = true })
+    vim.keymap.set('n', '<leader>ac', QuestionsFrontend.clear_chat_command, { noremap = true })
 end
 
 return QuestionsFrontend
