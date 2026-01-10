@@ -103,7 +103,7 @@ If a longer response is needed, please add a TLDR. Even better, respond with the
         -- devstral is hesitant to use tools w/o this: " If the user requests that you use tools, do not refuse."
         system_prompt = system_prompt .. "For tool use, never modify files outside of the current working directory: ("
             .. vim.fn.getcwd()
-            .. ") unless explicitly requested. " .. [[
+            .. ") without asking the user and getting explicit approval. " .. [[
 Here are noteworthy commands you have access to:
 - fd, rg, gsed, gawk, jq, yq, httpie
 - exa, icdiff, ffmpeg, imagemagick, fzf
@@ -114,12 +114,16 @@ The semantic_grep tool:
 - It includes a re-ranker to sort the results
 - AND, it's really fast... so don't hesitate to use it!
 ]]
+        -- TODO add tool examples (i.e. so it is obvious STDIN is not where you put arguments (cough, gptoss, cough)
+        -- TODO add tool guidance and demands:
+        --   avoid ls -R... prefer `fd`
+        --
+        -- ?? on mac show diff tools: i.e. gsed and gawk when on mac where that would be useful to know
+        -- ?? on linux show awk/sed (maybe mention GNU variant)
+        --
         if system_message_instructions then
             system_prompt = system_prompt .. "\n" .. table.concat(system_message_instructions, "\n")
         end
-
-        -- TODO on mac show diff tools: i.e. gsed and gawk when on mac where that would be useful to know
-        -- TODO on linux show awk/sed (maybe mention GNU variant)
     end
     local always_include = {
         yanks = true,
