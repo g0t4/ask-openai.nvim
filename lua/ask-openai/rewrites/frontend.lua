@@ -278,10 +278,6 @@ end
 
 local function ask_rewrite_command(opts)
     local selection = Selection.get_visual_selection_for_current_window()
-    -- if selection:is_empty() then
-    --     error("No visual selection found.")
-    --     return
-    -- end
 
     local user_prompt = opts.args
     local file_name = files.get_current_file_relative_path()
