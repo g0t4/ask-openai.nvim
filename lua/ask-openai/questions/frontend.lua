@@ -57,7 +57,7 @@ local function ask_question_command(opts)
     local entire_file_message = includes.current_file and current_file_message() or nil
     local file_name = files.get_current_file_relative_path()
 
-    QuestionsFrontend.ensure_response_window_is_open()
+    QuestionsFrontend.ensure_chat_window_is_open()
     QuestionsFrontend.ask_question_in_new_thread(includes.cleaned_prompt, selected_text, file_name, includes.use_tools, entire_file_message)
 end
 
@@ -305,7 +305,7 @@ function QuestionsFrontend.clear_undos()
     vim.bo.undolevels = previous_undo_level
 end
 
-function QuestionsFrontend.ensure_response_window_is_open()
+function QuestionsFrontend.ensure_chat_window_is_open()
     if QuestionsFrontend.chat_window == nil then
         QuestionsFrontend.chat_window = ChatWindow:new()
 
@@ -587,7 +587,7 @@ function QuestionsFrontend.follow_up_command()
     --  leave content as is in the buffer, close enough to what it would be if redrawn
     --  and I don't use the buffer contents for past messages
     --  so, just copy it out into a new message from user
-    QuestionsFrontend.ensure_response_window_is_open()
+    QuestionsFrontend.ensure_chat_window_is_open()
     local start_line_base0 = QuestionsFrontend.chat_window.followup_starts_at_line_0indexed or 0
     local user_message = QuestionsFrontend.chat_window.buffer:get_lines_after(start_line_base0)
     QuestionsFrontend.chat_window.buffer:scroll_cursor_to_end_of_buffer()
@@ -646,7 +646,7 @@ function QuestionsFrontend.setup()
     vim.keymap.set('n', '<leader>aa', QuestionsFrontend.abort_last_request, { noremap = true })
     vim.keymap.set('n', '<leader>ac', QuestionsFrontend.clear_chat_command, { noremap = true })
     vim.keymap.set('n', '<leader>af', QuestionsFrontend.follow_up_command, { noremap = true })
-    vim.keymap.set('n', '<leader>ao', QuestionsFrontend.ensure_response_window_is_open, { noremap = true })
+    vim.keymap.set('n', '<leader>ao', QuestionsFrontend.ensure_chat_window_is_open, { noremap = true })
 
     vim.api.nvim_create_user_command("AskDumpThread", ask_dump_thread_command, {})
 end
