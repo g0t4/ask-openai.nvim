@@ -291,7 +291,6 @@ local function ask_rewrite_command(opts)
     RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
     RewriteFrontend.displayer:set_keymaps()
 
-    -- local enable_rag = false
     local enable_rag = api.is_rag_enabled()
 
     -- TODO revisit messaging around:
@@ -325,7 +324,7 @@ local function ask_rewrite_command(opts)
         .. "\n- Never add comments to the end of a line. "
         .. "\n- Never add comments."
         .. "\n- Preserve indentation. "
-        .. "\n- If rewriting code, preserve unrelated code. "
+        .. "\n- If rewriting code, preserve unrelated code and comments. "
         .. "\n- Prefer readable code over of comments. "
 
     local always_include = {
