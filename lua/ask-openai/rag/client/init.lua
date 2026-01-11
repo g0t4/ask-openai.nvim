@@ -228,12 +228,13 @@ end
 
 ---@param ps_chunk PrefixSuffixChunk
 ---@param callback fun(matches: LSPRankedMatch[], failed: boolean)
----@param skip_rag fun()
-function M.context_query_fim(ps_chunk, callback, skip_rag)
+---@param on_query_build_failure fun()
+function M.context_query_fim(ps_chunk, callback, on_query_build_failure)
     local fim_specific_instruct = "Complete the missing portion of code (FIM) based on the surrounding context (Fill-in-the-middle)"
     local query = fim_concat(ps_chunk)
     if query == nil then
-        skip_rag()
+        -- TODO why is this even here? this is super hacky crap
+        on_query_build_failure()
         return
     end
     -- PRN pass fim.semantic_grep.all_files settings (create an options object and pass that instead of a dozen args)
