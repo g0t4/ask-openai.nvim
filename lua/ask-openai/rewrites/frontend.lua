@@ -346,8 +346,9 @@ local function ask_rewrite_command(opts)
         --   FYI - huge, uninteneded effect, mentioning carefully indented resulted in the model not generating markdown wrapers and explanations! (gptoss120b)
         --     :AskRewrite please review and just fix spelling only
         --     - previously I'd get markdown and explanations! now I only get the fixed code!
-        code_context = "Here is code I selected (with carefully preserved indentation) from " .. file_name
-            .. ":\n" .. code
+        code_context = "Here is the code I selected:"
+            .. "\n```" .. file_name
+            .. "\n" .. code .. "\n```"
         -- TODO? try wrapping code in markdown block here to increase likelihood of preserving indentation?
         --    yes I am asking for it NOT to generate markdown blocks... but this helps me distinguish the code vs the above requests
     else
