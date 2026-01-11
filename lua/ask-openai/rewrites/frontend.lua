@@ -343,6 +343,7 @@ local function ask_rewrite_command(opts)
             .. "\n```" .. file_name
             .. "\n" .. code .. "\n```"
         code_caveat = "\n\nThis is not necessarily a complete selection of nearby code, this is just the part I want help with. Preserve indentation!"
+        -- TODO add separate reasoning level for rewrites/questions vs predictions... that should help here and with tool calls too!
         -- * response indentation:
         -- - ALTERNATIVELY, if I could show more of the surrounding code, that would likely help too/instead
         -- - FYI mentioning "carefully preserved indentation" resulted in the model not generating markdown wrapers and explanations! (gptoss120b)
