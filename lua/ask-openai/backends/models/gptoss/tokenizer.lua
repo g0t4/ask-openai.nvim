@@ -8,13 +8,13 @@ function M.get_gptoss_max_tokens_for_level(level)
     --   consider passing the type here so it is all in one spot still.. the levels are?
     --   or just duplicate this function below and keep it all together
 
-    if level == local_share.FimReasoningLevel.high then
+    if level == local_share.GptOssReasoningLevel.high then
         return 16384
-    elseif level == local_share.FimReasoningLevel.medium then
+    elseif level == local_share.GptOssReasoningLevel.medium then
         return 8192
-    elseif level == local_share.FimReasoningLevel.low then
+    elseif level == local_share.GptOssReasoningLevel.low then
         return 4096
-    elseif level == local_share.FimReasoningLevel.off then
+    elseif level == local_share.GptOssReasoningLevel.off then
         return 2048
     else
         return 2048

@@ -275,7 +275,7 @@ function HarmonyFimPromptBuilder.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(r
 end
 
 ---@param request FimBackend
----@param level FimReasoningLevel
+---@param level GptOssReasoningLevel
 function HarmonyFimPromptBuilder.gptoss.get_fim_chat_messages(request, level)
     -- TODO what if I change this to ask gptoss to rewrite the current line (only current line)
     --  and then FIM just replaces that line?

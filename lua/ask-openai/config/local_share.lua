@@ -218,31 +218,31 @@ function M.set_reasoning_level(level)
     save()
 end
 
----@enum FimReasoningLevel
-M.FimReasoningLevel = {
+---@enum GptOssReasoningLevel
+M.GptOssReasoningLevel = {
     off = "off",
     low = "low",
     medium = "medium",
     high = "high"
 }
 
----@return FimReasoningLevel
+---@return GptOssReasoningLevel
 function M.get_reasoning_level()
     local cfg = get()
-    return cfg.reasoning_level or M.FimReasoningLevel.low
+    return cfg.reasoning_level or M.GptOssReasoningLevel.low
 end
 
 function M.cycle_reasoning_level()
     local current = M.get_reasoning_level()
     local next_level = ""
-    if current == M.FimReasoningLevel.off then
-        next_level = M.FimReasoningLevel.low
-    elseif current == M.FimReasoningLevel.low then
-        next_level = M.FimReasoningLevel.medium
-    elseif current == M.FimReasoningLevel.medium then
-        next_level = M.FimReasoningLevel.high
+    if current == M.GptOssReasoningLevel.off then
+        next_level = M.GptOssReasoningLevel.low
+    elseif current == M.GptOssReasoningLevel.low then
+        next_level = M.GptOssReasoningLevel.medium
+    elseif current == M.GptOssReasoningLevel.medium then
+        next_level = M.GptOssReasoningLevel.high
     else
-        next_level = M.FimReasoningLevel.off
+        next_level = M.GptOssReasoningLevel.off
     end
     M.set_reasoning_level(next_level)
     return next_level
@@ -260,21 +260,21 @@ end
 -- Get the Rewrite frontend reasoning level, defaulting to the low level.
 function M.get_rewrite_reasoning_level()
     local cfg = get()
-    return cfg.rewrite_reasoning_level or M.FimReasoningLevel.low
+    return cfg.rewrite_reasoning_level or M.GptOssReasoningLevel.low
 end
 
 -- Cycle the Rewrite frontend reasoning level through the defined levels.
 function M.cycle_rewrite_reasoning_level()
     local current = M.get_rewrite_reasoning_level()
     local next_level = ""
-    if current == M.FimReasoningLevel.off then
-        next_level = M.FimReasoningLevel.low
-    elseif current == M.FimReasoningLevel.low then
-        next_level = M.FimReasoningLevel.medium
-    elseif current == M.FimReasoningLevel.medium then
-        next_level = M.FimReasoningLevel.high
+    if current == M.GptOssReasoningLevel.off then
+        next_level = M.GptOssReasoningLevel.low
+    elseif current == M.GptOssReasoningLevel.low then
+        next_level = M.GptOssReasoningLevel.medium
+    elseif current == M.GptOssReasoningLevel.medium then
+        next_level = M.GptOssReasoningLevel.high
     else
-        next_level = M.FimReasoningLevel.off
+        next_level = M.GptOssReasoningLevel.off
     end
     M.set_rewrite_reasoning_level(next_level)
     return next_level
