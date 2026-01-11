@@ -192,6 +192,9 @@ The semantic_grep tool:
     end
     if context.includes.project and context.project then
         -- TODO does any of this belong in the system_message?
+        --  ? actually test if repeating some of this here helps
+        --    i.e. my global project instructions include not touching unrelated code too
+        --  perhaps leave the system_message for coding instructions specific to AskQuestion...?
         vim.iter(context.project)
             :each(function(value)
                 table.insert(messages, TxChatMessage:user_context(value.content))
