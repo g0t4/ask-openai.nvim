@@ -227,18 +227,20 @@ function M.context_query_rewrites(user_prompt, code_context, callback, topK)
 end
 
 ---@param ps_chunk PrefixSuffixChunk
----@param callback fun(matches: LSPRankedMatch[], failed: boolean)
----@param on_query_build_failure fun()
-function M.context_query_fim(ps_chunk, callback, on_query_build_failure)
+---@param callback fun(matches: LSPRankedMatch[])
+function M.context_query_fim(ps_chunk, callback)
+    -- FYI IIRC I put the query building here to consolidate query/instruct logic across frontends
+    --   it would be fine to push this out into PredictionsFrontend too...
+
     local fim_specific_instruct = "Complete the missing portion of code (FIM) based on the surrounding context (Fill-in-the-middle)"
     local query = fim_concat(ps_chunk)
     if query == nil then
-        -- TODO why is this even here? this is super hacky crap
-        on_query_build_failure()
+        callback({}) -- no results if no query (not a failure)
         return
     end
+
     -- PRN pass fim.semantic_grep.all_files settings (create an options object and pass that instead of a dozen args)
-    -- PRN pass ps_chunk start/end lines to limit same file skips
+    -- TODO! pass ps_chunk start/end (line range) to limit same file skips
     return M._context_query(query, fim_specific_instruct, callback)
 end
 
