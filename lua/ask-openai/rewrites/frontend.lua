@@ -389,12 +389,13 @@ local function ask_rewrite_command(opts)
                 end)
         end
         if rag_matches ~= nil and #rag_matches > 0 then
-            rag_message_parts = {}
+            local rag_message_parts = {}
             if #rag_matches == 1 then
                 heading = "# Semantic Grep match: \n"
             elseif #rag_matches > 1 then
                 heading = "# Semantic Grep matches: " .. #rag_matches .. "\n"
             end
+            -- PRN add explanation like QuestionsFrontend here for what exactly a Semantic Grep match means?
             table.insert(rag_message_parts, heading)
             -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
             vim.iter(rag_matches)

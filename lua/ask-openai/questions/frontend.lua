@@ -9,6 +9,8 @@ local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 local ChatParams = require("ask-openai.questions.chat.params")
 local Selection = require("ask-openai.helpers.selection")
 local CurrentContext = require("ask-openai.predictions.context")
+local api = require("ask-openai.api")
+local rag_client = require("ask-openai.rag.client")
 local files = require("ask-openai.helpers.files")
 local model_params = require("ask-openai.questions.models.params")
 local LinesBuilder = require("ask-openai.questions.lines_builder")
@@ -200,21 +202,79 @@ The semantic_grep tool:
                 table.insert(messages, TxChatMessage:user_context(value.content))
             end)
     end
-    -- TODO RAG
 
     table.insert(messages, TxChatMessage:user(user_message))
 
-    local base_url = "http://build21:8013"
+    local function then_generate_completion(rag_matches)
+        if rag_matches ~= nil and #rag_matches > 0 then
+            local rag_message_parts = {}
+            if #rag_matches == 1 then
+                heading = "# Semantic Grep match: \n"
+            elseif #rag_matches > 1 then
+                heading = "# Semantic Grep matches: " .. #rag_matches .. "\n"
+            end
+            table.insert(rag_message_parts, heading)
+            -- TODO is this explanation helpful? Did I really not include something like this in other frontends?
+            -- PRN if useful, add this explanation (or similar) to other frontends:
+            table.insert(rag_message_parts,
+                "This is automatic context from my neovim AI tools. The user's request is used to query for relevant code. Only the top results are included. These may or may not be relevant.")
+            -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
+            vim.iter(rag_matches)
+                :each(function(chunk)
+                    ---@cast chunk LSPRankedMatch
+                    local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
+                    local code_chunk = chunk.text
+                    table.insert(rag_message_parts,
+                        "## " .. file .. "\n"
+                        .. code_chunk .. "\n"
+                    )
+                end)
+            table.insert(messages, TxChatMessage:user_context(table.concat(rag_message_parts, "\n")))
+        end
 
-    local body_overrides = model_params.new_gptoss_chat_body_llama_server({
-        -- local body_overrides = model_params.new_qwen3coder_llama_server_chat_body({
-        messages = messages,
-        model = "", -- irrelevant for llama-server
-        tools = tools,
-    })
+        local base_url = "http://build21:8013"
+        local body_overrides = model_params.new_gptoss_chat_body_llama_server({
+            -- local body_overrides = model_params.new_qwen3coder_llama_server_chat_body({
+            messages = messages,
+            model = "", -- irrelevant for llama-server
+            tools = tools,
+        })
 
-    QuestionsFrontend.thread = ChatThread:new(body_overrides, base_url)
-    QuestionsFrontend.then_send_messages()
+        QuestionsFrontend.thread = ChatThread:new(body_overrides, base_url)
+        QuestionsFrontend.then_send_messages()
+    end
+
+    if api.is_rag_enabled() and rag_client.is_rag_supported_in_current_file() then
+        local this_request_ids, cancel -- declare in advance for closure
+
+        ---@param rag_matches LSPRankedMatch[]
+        function on_rag_response(rag_matches)
+            -- * make sure prior (canceled) rag request doesn't still respond
+            if QuestionsFrontend.rag_request_ids ~= this_request_ids then
+                log:trace("possibly stale rag results, skipping: " .. vim.inspect({
+                    global_rag_request_ids = QuestionsFrontend.rag_request_ids,
+                    this_request_ids = this_request_ids,
+                }))
+                return
+            end
+
+            if QuestionsFrontend.rag_cancel == nil then
+                log:error("rag appears canceled, skipping on_rag_response...")
+                return
+            end
+
+            then_generate_completion(rag_matches)
+        end
+
+        rag_client.context_query_questions(user_prompt, "", on_rag_response, context.includes.top_k)
+        QuestionsFrontend.rag_cancel = cancel
+        QuestionsFrontend.rag_request_ids = this_request_ids
+        -- TODO! add cancelation logic to other parts of this QuestionsFrontend besides right here (review rewrites/predictions)
+    else
+        QuestionsFrontend.rag_cancel = nil
+        QuestionsFrontend.rag_request_ids = nil
+        then_generate_completion({})
+    end
 end
 
 function QuestionsFrontend.then_send_messages()

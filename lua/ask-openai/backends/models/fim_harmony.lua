@@ -126,6 +126,7 @@ function HarmonyFimPromptBuilder.context_user_msg(request)
         elseif #request.rag_matches > 1 then
             heading = "# Semantic Grep matches: " .. #request.rag_matches .. "\n"
         end
+        -- PRN add explanation like QuestionsFrontend here for what exactly a Semantic Grep match means?
         table.insert(rag_parts, heading)
 
         -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
