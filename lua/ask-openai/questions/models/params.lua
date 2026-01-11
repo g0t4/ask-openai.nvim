@@ -20,7 +20,7 @@ end
 
 function M.new_gptoss_chat_body_llama_server(request_body)
     throw_if_no_messages(request_body)
-    local level = api.get_reasoning_level()
+    local level = api.get_rewrite_reasoning_level()
     local max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(level)
 
     local recommended = {
