@@ -57,15 +57,18 @@ function M.lualine_components()
             if local_share.is_rag_enabled() then
                 table.insert(icons, '󰵉')
             end
+
+            -- * FIM reasoning level
             local fim_model = local_share.get_fim_model()
             if fim_model == "gptoss" then
                 local level = local_share.get_reasoning_level()
-                fim_model = fim_model .. "." .. level
-            else
-                local level = local_share.get_reasoning_level()
-                fim_model = fim_model .. " " .. level
+                fim_model = "fim/" .. fim_model .. "." .. level
             end
             table.insert(icons, fim_model)
+
+            -- * rewrite reasoning level
+            table.insert(icons, "rewrite/gptoss." .. local_share.get_rewrite_reasoning_level())
+
             if M.last_stats then
                 if M.last_stats.prompt_tokens_per_second then
                     local text = "in@" .. human.format_num(M.last_stats.prompt_tokens_per_second, 0) .. "tps"
