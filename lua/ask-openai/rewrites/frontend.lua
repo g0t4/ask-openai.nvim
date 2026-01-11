@@ -291,8 +291,6 @@ local function ask_rewrite_command(opts)
     RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
     RewriteFrontend.displayer:set_keymaps()
 
-    local enable_rag = api.is_rag_enabled()
-
     -- TODO revisit messaging around:
     -- TODO fix issues with indentation? not sure this is concrete!
     -- TODO gptoss prompt review:
@@ -390,7 +388,7 @@ local function ask_rewrite_command(opts)
                     table.insert(messages, TxChatMessage:user_context(value.content))
                 end)
         end
-        if enable_rag and rag_matches ~= nil and #rag_matches > 0 then
+        if rag_matches ~= nil and #rag_matches > 0 then
             rag_message_parts = {}
             if #rag_matches == 1 then
                 heading = "# Semantic Grep match: \n"
@@ -441,7 +439,7 @@ local function ask_rewrite_command(opts)
         curl.spawn(RewriteFrontend.last_request, RewriteFrontend)
     end
 
-    if enable_rag and rag_client.is_rag_supported_in_current_file() then
+    if api.is_rag_enabled() and rag_client.is_rag_supported_in_current_file() then
         local this_request_ids, cancel -- declare in advance for closure
 
         ---@param rag_matches LSPRankedMatch[]
