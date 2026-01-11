@@ -171,7 +171,7 @@ local function fim_concat(ps_chunk)
         end
     end
 
-    log:trace(string.format("fim_concat: query=%q", query))
+    -- log:trace(string.format("fim_concat: query=%q", query))
     return query
 end
 
@@ -275,7 +275,14 @@ function M._context_query(query, instruct, callback, topK)
         end
 
         if result.error ~= nil and result.error ~= "" then
+            if result.error == "Client cancelled query" then
+                -- do not log if its just a cancel (this is my server side error)
+                -- no caller would need to get a callback in this case
+                -- ?? maybe the server should not even bother responding?
+                return
+            end
             log:error("RAG response error, still calling back: ", vim.inspect(result))
+
             -- in the event matches are still returned, process them too... if server returns matches, use them!
             callback(result.matches or {}, true)
             return
