@@ -464,7 +464,7 @@ local function ask_rewrite_command(opts)
             then_send_rewrite(rag_matches)
         end
 
-        this_request_ids, cancel = rag_client.context_query_rewrites(user_prompt, code_context, then_send_rewrite, context.includes.top_k)
+        this_request_ids, cancel = rag_client.context_query_rewrites(user_prompt, code_context, on_rag_response, context.includes.top_k)
         RewriteFrontend.rag_cancel = cancel
         RewriteFrontend.rag_request_ids = this_request_ids
     else
