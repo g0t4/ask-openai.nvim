@@ -131,6 +131,11 @@ The semantic_grep tool:
         first_turn_ns_id = vim.api.nvim_create_namespace("ask.marks.chat.window.first.turn")
     end
     local lines = LinesBuilder:new(first_turn_ns_id)
+    if QuestionsFrontend.thread then
+        -- keep old chat history for reference, but make it clear this is a new thread?
+        lines:append_styled_lines({ "--- New Thread Started ---" }, HLGroups.SYSTEM_PROMPT)
+        -- or:   QuestionsFrontend.clear_chat_command()
+    end
     lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
     lines:append_folded_styled_text("system\n" .. system_prompt, "")
 
@@ -231,8 +236,6 @@ The semantic_grep tool:
         tools = tools,
     })
 
-    -- FYI starts a new chat thread when AskQuestion is used
-    --  TODO allow follow up, via the command, if already existing thread?
     QuestionsFrontend.thread = ChatThread:new(body_overrides, base_url)
     QuestionsFrontend.then_send_messages()
 end
