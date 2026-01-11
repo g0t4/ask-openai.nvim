@@ -447,6 +447,7 @@ local function ask_rewrite_command(opts)
         ---@param rag_matches LSPRankedMatch[]
         ---@param rag_failed boolean?
         function on_rag_response(rag_matches, rag_failed)
+            -- PRN I think this could be shared with all frontends... if they pass themself for access to ID/cancel refs
             -- * make sure prior (canceled) rag request doesn't still respond
             if RewriteFrontend.rag_request_ids ~= this_request_ids then
                 log:trace("possibly stale rag results, skipping: " .. vim.inspect({
@@ -459,6 +460,17 @@ local function ask_rewrite_command(opts)
             if RewriteFrontend.rag_cancel == nil then
                 log:error("rag appears canceled, skipping on_rag_response...")
                 return
+            end
+
+            if rag_failed then
+                -- TODO mirror this into other frontends
+                log:error("rag failed, skipping on_rag_response...")
+                log:error("rag_failed", rag_failed)
+                log:error("rag_matches", rag_matches)
+                error("rag_failed... I am throwing this so I can find out if/when this ever happens, and reproduce it and decide how to handle it here")
+                -- TODO allow w/o matches?
+                -- then_send_rewrite({})
+                -- return
             end
 
             then_send_rewrite(rag_matches)
