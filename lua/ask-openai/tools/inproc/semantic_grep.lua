@@ -101,7 +101,7 @@ function M.call(parsed_args, callback)
 
 
     ---@param lsp_result LSPSemanticGrepResult
-    function on_server_response(err, lsp_result)
+    local function on_server_response(err, lsp_result)
         local result = {}
         if err then
             log:luaify_trace("Semantic Grep tool_call query failed: " .. tostring(err), lsp_result)

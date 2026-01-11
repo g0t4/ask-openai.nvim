@@ -263,7 +263,7 @@ function M._context_query(query, instruct, callback, topK)
     local _client_request_ids, _cancel_all_requests -- declare in advance for closure:
 
     ---@param result LSPSemanticGrepResult
-    function on_server_response(err, result)
+    local function on_server_response(err, result)
         -- FYI do your best to log errors here so that code is not duplicated downstream
         if err then
             vim.notify("Semantic Grep failed: " .. err.message, vim.log.levels.ERROR)
