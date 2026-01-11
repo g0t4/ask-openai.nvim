@@ -193,6 +193,8 @@ function PredictionsFrontend.ask_for_prediction(params)
         PredictionsFrontend.rag_cancel = cancel
         PredictionsFrontend.rag_request_ids = this_request_ids
     else
+        PredictionsFrontend.rag_cancel = nil
+        PredictionsFrontend.rag_request_ids = nil
         send_fim({})
     end
 end
