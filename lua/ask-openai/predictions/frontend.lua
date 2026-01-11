@@ -34,7 +34,7 @@ function PredictionsFrontend.ask_for_prediction(params)
     local perf = FIMPerformance:new()
 
     ---@param rag_matches LSPRankedMatch[]
-    function send_fim(rag_matches)
+    function then_send_fim(rag_matches)
         local model = api.get_fim_model()
 
         -- TODO rename to FimBodyBuilder? or FimRequestBuilder? or FimPromptBuilder?
@@ -154,7 +154,7 @@ function PredictionsFrontend.ask_for_prediction(params)
             -- FYI this check of client ready, must have immaterial overhead for working clients
             --  would be better to do no checks than slow down normal use
             log:error("RAG not available in current LSP, when it should be, so, sending FIM w/o RAG")
-            send_fim({})
+            then_send_fim({})
             return
         end
         -- FYI vim.lsp.get_clients is taking ~3us for case when the LSP is operational, imperceptible overhead
@@ -186,7 +186,7 @@ function PredictionsFrontend.ask_for_prediction(params)
                 return
             end
 
-            send_fim(rag_matches)
+            then_send_fim(rag_matches)
         end
 
         this_request_ids, cancel = rag_client.context_query_fim(ps_chunk, on_rag_response)
@@ -195,7 +195,7 @@ function PredictionsFrontend.ask_for_prediction(params)
     else
         PredictionsFrontend.rag_cancel = nil
         PredictionsFrontend.rag_request_ids = nil
-        send_fim({})
+        then_send_fim({})
     end
 end
 
