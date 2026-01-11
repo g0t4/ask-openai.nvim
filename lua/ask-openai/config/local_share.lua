@@ -248,6 +248,38 @@ function M.cycle_reasoning_level()
     return next_level
 end
 
+-- * separate reasoning level for RewriteFrontend
+
+-- Set the reasoning level used specifically for the Rewrite frontend.
+function M.set_rewrite_reasoning_level(level)
+    local cfg = get()
+    cfg.rewrite_reasoning_level = level
+    save()
+end
+
+-- Get the Rewrite frontend reasoning level, defaulting to the low level.
+function M.get_rewrite_reasoning_level()
+    local cfg = get()
+    return cfg.rewrite_reasoning_level or M.FimReasoningLevel.low
+end
+
+-- Cycle the Rewrite frontend reasoning level through the defined levels.
+function M.cycle_rewrite_reasoning_level()
+    local current = M.get_rewrite_reasoning_level()
+    local next_level = ""
+    if current == M.FimReasoningLevel.off then
+        next_level = M.FimReasoningLevel.low
+    elseif current == M.FimReasoningLevel.low then
+        next_level = M.FimReasoningLevel.medium
+    elseif current == M.FimReasoningLevel.medium then
+        next_level = M.FimReasoningLevel.high
+    else
+        next_level = M.FimReasoningLevel.off
+    end
+    M.set_rewrite_reasoning_level(next_level)
+    return next_level
+end
+
 function M.setup()
 end
 
