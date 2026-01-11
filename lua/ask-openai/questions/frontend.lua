@@ -132,7 +132,7 @@ The semantic_grep tool:
     end
     local lines = LinesBuilder:new(first_turn_ns_id)
     if QuestionsFrontend.thread then
-        -- keep old chat history for reference, but make it clear this is a new thread?
+        -- FYI some previous extmarks are "dropped", fine by me to "turn off the colors"... but, probably want it for all previous chat extmarks
         lines:append_styled_lines({ "--- New Thread Started ---" }, HLGroups.SYSTEM_PROMPT)
         -- or:   QuestionsFrontend.clear_chat_command()
     end
