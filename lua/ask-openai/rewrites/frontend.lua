@@ -315,7 +315,7 @@ local function ask_rewrite_command(opts)
         markdown_exclusion = ""
     end
 
-    local system_prompt = "You are an expert coder. Ground rules:"
+    local system_prompt = "## Ground rules:"
         .. "\n- Follow the user's instructions. "
         .. markdown_exclusion
         .. "\n- Do not explain answers, just give me code. "
