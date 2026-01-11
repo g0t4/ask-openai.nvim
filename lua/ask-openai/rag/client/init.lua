@@ -219,7 +219,7 @@ _G.LSPRankedMatch = {}
 ---@param callback fun(matches: LSPRankedMatch[], failed: boolean)
 ---@param topK? integer
 function M.context_query_rewrites(user_prompt, code_context, callback, topK)
-    -- FYI use user message for now as Instruct and selected code as the Query
+    -- instruct==user_prompt (what user types to AskRewrite command) + query=selected_code ... WORKS VERY VERY WELL SO FAR
     local query = code_context
     local instruct = user_prompt
     -- TODO! pass line ranges for limiting same file skips
