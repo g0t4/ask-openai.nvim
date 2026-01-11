@@ -432,7 +432,7 @@ local function ask_rewrite_command(opts)
 
         RewriteFrontend.last_request = CurlRequest:new({
             body = body,
-            base_url = "http://ollama:8013",
+            base_url = "http://build21:8013",
             endpoint = CompletionsEndpoints.oai_v1_chat_completions,
             type = "rewrite",
         })
