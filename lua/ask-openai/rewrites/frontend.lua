@@ -336,6 +336,7 @@ local function ask_rewrite_command(opts)
     -- make sure to remove slash commands like /yanks (hence cleaned_prompt)
     local user_prompt = context.cleaned_prompt
     local code_context = ""
+    local code_caveat = ""
     local code = selection.original_text
     if code ~= nil and code ~= "" then
         -- FYI I added the note about "carefully preserved indentation" to attempt to improve chances the indented code is correct
@@ -349,12 +350,13 @@ local function ask_rewrite_command(opts)
         code_context = "Here is the code I selected:"
             .. "\n```" .. file_name
             .. "\n" .. code .. "\n```"
-        -- TODO? try wrapping code in markdown block here to increase likelihood of preserving indentation?
-        --    yes I am asking for it NOT to generate markdown blocks... but this helps me distinguish the code vs the above requests
+        -- FYI code caveat worked w/ medium reasoning gptoss120b
+        code_caveat =
+        "\n\nThis is not necessarily a complete selection of nearby code, this is just the part I want help with. Please preseve indentation so your code can be replace this code without me needing to make indentation changes. Thanks!"
     else
         code_context = "I am working on this file: " .. file_name
     end
-    user_message_with_code = user_prompt .. "\n\n" .. code_context
+    user_message_with_code = user_prompt .. "\n\n" .. code_context .. code_caveat
 
     ---@param rag_matches LSPRankedMatch[]
     local function then_send_rewrite(rag_matches)
