@@ -350,10 +350,12 @@ local function ask_rewrite_command(opts)
         --     - previously I'd get markdown and explanations! now I only get the fixed code!
         code_context = "Here is code I selected (with carefully preserved indentation) from " .. file_name
             .. ":\n" .. code
+        -- TODO? try wrapping code in markdown block here to increase likelihood of preserving indentation?
+        --    yes I am asking for it NOT to generate markdown blocks... but this helps me distinguish the code vs the above requests
     else
         code_context = "I am working on this file: " .. file_name
     end
-    user_message_with_code = user_prompt .. "\n" .. code_context
+    user_message_with_code = user_prompt .. "\n\n" .. code_context
 
     ---@param rag_matches LSPRankedMatch[]
     local function then_send_rewrite(rag_matches)
