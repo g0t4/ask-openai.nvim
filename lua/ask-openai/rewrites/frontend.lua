@@ -350,8 +350,8 @@ local function ask_rewrite_command(opts)
         code_context = "Here is the code I selected:"
             .. "\n```" .. file_name
             .. "\n" .. code .. "\n```"
-        -- FYI code caveat worked w/ medium reasoning gptoss120b
-        -- code_caveat = "\n\nThis is not necessarily a complete selection of nearby code, this is just the part I want help with. Please preseve indentation so your code can be replace this code without me needing to make indentation changes. Thanks!"
+        -- FYI code caveat worked w/ medium reasoning gptoss120b, medium didn't work w/o this caveat.
+        code_caveat = "\n\nThis is not necessarily a complete selection of nearby code, this is just the part I want help with. Preserve indentation!"
     else
         code_context = "I am working on this file: " .. file_name
     end
