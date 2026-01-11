@@ -316,7 +316,7 @@ local function ask_rewrite_command(opts)
     if file_name:match(".*.md$") then
         markdown_exclusion = ""
     end
-    -- TODO do I have coding rules in user messages too? should that go into system message?
+
     local system_prompt = "You are an expert coder. Ground rules:"
         .. "\n- Follow the user's instructions. "
         .. markdown_exclusion
