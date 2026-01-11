@@ -178,13 +178,15 @@ function PredictionsFrontend.ask_for_prediction(params)
             if PredictionsFrontend.rag_request_ids ~= this_request_ids then
                 -- I bet this is why sometimes I get completions that still fire even after cancel b/c the RAG results aren't actually stopped in time on server and so they come back
                 --  and they arrive after next request started... the mismatch in request_ids will prevent that issue
-                -- log:trace("possibly stale rag results, skipping: "
-                --     .. vim.inspect({ global_rag_request_ids = M.rag_request_ids, this_request_ids = this_request_ids }))
+                -- log:trace("possibly stale rag results, skipping: " .. vim.inspect({
+                --     global_rag_request_ids = PredictionsFrontend.rag_request_ids,
+                --     this_request_ids = this_request_ids,
+                -- }))
                 return
             end
 
             if PredictionsFrontend.rag_cancel == nil then
-                -- log:error("rag appears to have been canceled, skipping on_rag_response rag_matches results...")
+                -- log:error("rag appears canceled, skipping on_rag_response...")
                 return
             end
 
