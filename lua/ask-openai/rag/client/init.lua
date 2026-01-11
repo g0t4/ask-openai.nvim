@@ -128,7 +128,7 @@ function M.is_rag_supported()
     return M.is_rag_indexed_workspace == true
 end
 
-function M.is_rag_supported_in_current_file()
+function M.is_rag_supported_in_current_file(bufnr)
     -- TODO add a virtual toggle so LSP failure stops requests too
     --   can I detect non-connected LSP (w/o hugh perf hit?)
 
@@ -136,8 +136,14 @@ function M.is_rag_supported_in_current_file()
         return false
     end
 
-    local current_file_extension = vim.fn.expand("%:e")
-    return vim.tbl_contains(M.rag_extensions, current_file_extension)
+    bufnr = bufnr or 0
+    local buffer_name = vim.api.nvim_buf_get_name(bufnr)
+    local extension = vim.fn.fnamemodify(buffer_name, ":e")
+    -- TODO use filetype instead?
+    --  i.e. .yaml/.yml
+    --  or c: .h/.c/.cpp ...
+    --  or node: .js/.mjs
+    return vim.tbl_contains(M.rag_extensions, extension)
 end
 
 ---@param str string
@@ -214,16 +220,55 @@ _G.LSPSemanticGrepResult = {}
 ---@field signature string
 _G.LSPRankedMatch = {}
 
+---@param same_file_bufnr integer - chat window will pooch finding current filename/type, so pass bufnr to use for same file lookup
+---@param user_prompt string
+---@param code_context? string
+---@param top_k? integer
+---@param callback fun(matches: LSPRankedMatch[])
+function M.context_query_questions(same_file_bufnr, user_prompt, code_context, top_k, callback)
+    top_k = top_k or 5
+    local file = vim.api.nvim_buf_get_name(same_file_bufnr)
+    -- PRN do something else when no code_context (nothing selected intentionally by user)?
+    local query = code_context or ("I have this file open: " .. file)
+
+    ---@type LSPSemanticGrepRequest
+    local request = {
+        query = query,
+        instruct = user_prompt,
+
+        currentFileAbsolutePath = file,
+        vimFiletype = vim.bo[same_file_bufnr].filetype,
+        skipSameFile = true, -- PRN allow same file, i.e. if no code_context (and not including entire file)
+        -- TODO pass line ranges for limiting same file skips
+
+        topK = top_k,
+        embedTopK = top_k * 4,
+    }
+    return M._context_query(request, callback)
+end
+
 ---@param user_prompt string
 ---@param code_context string
+---@param top_k? integer
 ---@param callback fun(matches: LSPRankedMatch[])
----@param topK? integer
-function M.context_query_rewrites(user_prompt, code_context, callback, topK)
-    -- instruct==user_prompt (what user types to AskRewrite command) + query=selected_code ... WORKS VERY VERY WELL SO FAR
-    local query = code_context
-    local instruct = user_prompt
-    -- TODO! pass line ranges for limiting same file skips
-    return M._context_query(query, instruct, callback, topK)
+function M.context_query_rewrites(user_prompt, code_context, top_k, callback)
+    top_k = top_k or 5
+    ---@type LSPSemanticGrepRequest
+    local request = {
+        query = code_context,
+        instruct = user_prompt,
+        -- very happy w/ instruct==user_prompt + query=selected_code
+
+        currentFileAbsolutePath = files.get_current_file_absolute_path(),
+        vimFiletype = vim.bo.filetype,
+        skipSameFile = true,
+        -- TODO pass line ranges for limiting same file skips
+
+        topK = top_k,
+        embedTopK = top_k * 4,
+        -- very happy w/ AskRewrite rag_matches w/ top_k=5 + embed_top_k=18
+    }
+    return M._context_query(request, callback)
 end
 
 ---@param ps_chunk PrefixSuffixChunk
@@ -241,28 +286,22 @@ function M.context_query_fim(ps_chunk, callback)
 
     -- PRN pass fim.semantic_grep.all_files settings (create an options object and pass that instead of a dozen args)
     -- TODO! pass ps_chunk start/end (line range) to limit same file skips
-    return M._context_query(query, fim_specific_instruct, callback)
-end
-
----@param query string # Query section only, no Instruct/Document
----@param instruct string # Instruct section only
----@param callback fun(matches: LSPRankedMatch[], failed: boolean)
----@param topK? integer
-function M._context_query(query, instruct, callback, topK)
     ---@type LSPSemanticGrepRequest
-    local semantic_grep_request = {
+    local request = {
         query = query,
-        instruct = instruct,
+        instruct = fim_specific_instruct,
         currentFileAbsolutePath = files.get_current_file_absolute_path(),
         vimFiletype = vim.bo.filetype,
         skipSameFile = true,
-        topK = topK or 5, -- default to 5, override with /k=<number> slash command
-        embedTopK = 18, -- consider more so that re-ranker picks topK best matches
-        -- TODO pass line range for same file to allow outside that range
-        -- FYI some rewrites I might not want ANY RAG... maybe no context too
-        -- PRN other file types? languages=all? knob too?
+        topK = 5,
+        embedTopK = 18,
     }
+    return M._context_query(request, callback)
+end
 
+---@param request LSPSemanticGrepRequest
+---@param callback fun(matches: LSPRankedMatch[])
+function M._context_query(request, callback)
     local _client_request_ids, _cancel_all_requests -- declare in advance for closure:
 
     ---@param result LSPSemanticGrepResult
@@ -270,7 +309,7 @@ function M._context_query(query, instruct, callback, topK)
         -- FYI do your best to log errors here so that code is not duplicated downstream
         if err then
             vim.notify("Semantic Grep failed: " .. err.message, vim.log.levels.ERROR)
-            callback({}, true) -- still callback w/ no results
+            callback({}) -- still callback w/ no results
             return
         end
 
@@ -284,18 +323,19 @@ function M._context_query(query, instruct, callback, topK)
             log:error("RAG response error, still calling back: ", vim.inspect(result))
 
             -- in the event matches are still returned, process them too... if server returns matches, use them!
-            callback(result.matches or {}, true)
+            callback(result.matches or {})
             return
         end
         -- log:info(ansi.white_bold(ansi.red_bg("RAG matches (client):")), vim.inspect(result))
         -- TODO use log_semantic_grep_matches(result) instead of luaify_trace/vim.inspect ... move the func and make it useful here
-        callback(result.matches or {}, false)
+        callback(result.matches or {})
     end
 
+    log:error("_context_query.request", vim.inspect(request)) -- TODO comment out later
     local params = {
         command = "semantic_grep",
         -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
-        arguments = { semantic_grep_request },
+        arguments = { request },
     }
 
     _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", params, on_server_response)

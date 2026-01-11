@@ -464,7 +464,8 @@ local function ask_rewrite_command(opts)
             then_send_rewrite(rag_matches)
         end
 
-        this_request_ids, cancel = rag_client.context_query_rewrites(user_prompt, code_context, on_rag_response, context.includes.top_k)
+        -- TODO should abort logic also clear rag_cancel/rag_request_ids?
+        this_request_ids, cancel = rag_client.context_query_rewrites(user_prompt, code_context, context.includes.top_k, on_rag_response)
         RewriteFrontend.rag_cancel = cancel
         RewriteFrontend.rag_request_ids = this_request_ids
     else

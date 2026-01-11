@@ -152,9 +152,10 @@ The semantic_grep tool:
     lines:append_text(user_prompt)
 
     local user_message = user_prompt
+    local code_context = nil
     if selected_text then
-        local msg = "\n\n"
-            .. "I selected the following\n"
+        code_context =
+            "I selected the following\n"
             .. "```" .. file_name .. "\n"
             .. selected_text .. "\n"
             .. "```"
@@ -162,16 +163,16 @@ The semantic_grep tool:
         -- PRN count \n in selected_text and only fold if > 10
         local fold = false -- = newline_count > 10
         if fold then
-            lines:append_folded_styled_text(msg, "")
+            lines:append_folded_styled_text(code_context, "")
         else
-            lines:append_styled_text(msg, "")
+            lines:append_styled_text(code_context, "")
         end
-        user_message = user_message .. msg
+        user_message = user_message .. "\n\n" .. code_context
     end
     if entire_file_message then
-        local msg = "\n\n" .. entire_file_message
-        lines:append_folded_styled_text(msg, "")
-        user_message = user_message .. msg
+        -- skip code_context if entire file selected (user intent matters, entire file is vague)
+        lines:append_folded_styled_text(entire_file_message, "")
+        user_message = user_message .. "\n\n" .. entire_file_message
     end
 
     lines:append_blank_line()
@@ -244,7 +245,17 @@ The semantic_grep tool:
         QuestionsFrontend.then_send_messages()
     end
 
-    if api.is_rag_enabled() and rag_client.is_rag_supported_in_current_file() then
+    -- * chat window should always be open, nonetheless check:
+    local same_file_bufnr = 0 -- if chat not open, use 0 for current buffer then
+    local buffer_name = vim.api.nvim_buf_get_name(0)
+    local chat_window_is_open = buffer_name:match("AskQuestion$")
+    if chat_window_is_open then
+        -- * chat window is open, get prior window's bufnr
+        local win_id = vim.fn.win_getid(vim.fn.winnr('#'))
+        same_file_bufnr = vim.api.nvim_win_get_buf(win_id)
+    end
+
+    if api.is_rag_enabled() and rag_client.is_rag_supported_in_current_file(same_file_bufnr) then
         local this_request_ids, cancel -- declare in advance for closure
 
         ---@param rag_matches LSPRankedMatch[]
@@ -266,7 +277,7 @@ The semantic_grep tool:
             then_generate_completion(rag_matches)
         end
 
-        rag_client.context_query_questions(user_prompt, "", on_rag_response, context.includes.top_k)
+        this_request_ids, cancel = rag_client.context_query_questions(same_file_bufnr, user_prompt, code_context, context.includes.top_k, on_rag_response)
         QuestionsFrontend.rag_cancel = cancel
         QuestionsFrontend.rag_request_ids = this_request_ids
         -- TODO! add cancelation logic to other parts of this QuestionsFrontend besides right here (review rewrites/predictions)
