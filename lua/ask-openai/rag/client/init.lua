@@ -216,7 +216,7 @@ _G.LSPRankedMatch = {}
 
 ---@param user_prompt string
 ---@param code_context string
----@param callback fun(matches: LSPRankedMatch[], failed: boolean)
+---@param callback fun(matches: LSPRankedMatch[])
 ---@param topK? integer
 function M.context_query_rewrites(user_prompt, code_context, callback, topK)
     -- instruct==user_prompt (what user types to AskRewrite command) + query=selected_code ... WORKS VERY VERY WELL SO FAR
