@@ -1,28 +1,25 @@
 local log = require("ask-openai.logs.logger").predictions()
 local HLGroups = require("ask-openai.hlgroups")
+local safely = require("ask-openai.questions.chat.formatters.safely")
 
 local M = {}
 
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
     local args_json = tool_call["function"].arguments
-
     local tool_header = args_json -- default show the JSON as the tool call is streamed in
-    if not message:is_still_streaming() then
-        local json_args_parsed, args = xpcall(function()
-            return vim.json.decode(args_json)
-        end, function() end) -- TODO is there an xpcall alternative that doesn't expect on failure (b/c I don't need a callback in that case)
-        if not json_args_parsed then
-            -- TODO is this the random command failure I've encountered?
-            log:error("Failed to parse tool call arguments: ", vim.inspect(args_json))
-            lines:append_styled_text("Failed to parse tool call arguments: " .. vim.inspect(args_json))
+
+    if message:is_done_streaming() then
+        -- * safely means I can solely focus on chat window here
+        local success, object = safely.decode_json_always_logged(args_json)
+        if not success then
+            tool_header = "json decode failure: " .. args_json
         else
-            if args.command then
-                tool_header = args.command
+            if object.command then
+                tool_header = object.command
             else
-                log:error("Missing command in tool call arguments: ", vim.inspect(args_json))
-                lines:append_styled_text("Missing command in tool call arguments: " .. vim.inspect(args_json))
-                -- TODO add more defensive checks, and can I wrap the full formatter to catch unhandled exceptions outside of these xpcalls?
+                log:error("missing object.command", vim.inspect(object))
+                tool_header = "missing object.command: " .. args_json
             end
         end
     end
