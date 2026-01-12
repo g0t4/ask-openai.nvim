@@ -61,12 +61,13 @@ function M.lualine_components()
             -- * FIM reasoning level
             local fim_model = local_share.get_fim_model()
             if fim_model == "gptoss" then
-                local level = local_share.get_reasoning_level()
+                local level = local_share.get_fim_reasoning_level()
                 fim_model = "fim/" .. fim_model .. "." .. level
             end
             table.insert(icons, fim_model)
 
             -- * rewrite reasoning level
+            -- btw gray out on rewrite level does not mean it is disabled, it will still work fine even when FIM is disabled
             table.insert(icons, "rewrite/gptoss." .. local_share.get_rewrite_reasoning_level())
 
             if M.last_stats then

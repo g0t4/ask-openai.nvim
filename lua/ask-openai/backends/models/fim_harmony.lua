@@ -38,7 +38,7 @@ You are ChatGPT, a large language model trained by OpenAI.
 Knowledge cutoff: 2024-06
 Current date: 2025-11-07
 
-Reasoning: ]] .. api.get_reasoning_level() [[
+Reasoning: ]] .. api.get_fim_reasoning_level() [[
 
 # Valid channels: analysis, commentary, final. Channel must be included for every message.
 ]]

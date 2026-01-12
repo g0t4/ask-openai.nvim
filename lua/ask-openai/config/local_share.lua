@@ -49,6 +49,7 @@ local function load_config()
         rag = { enabled = true },
         log_threshold_text = LEVEL_NUMBER_TO_TEXT[DEFAULT_LOG_LEVEL_NUMBER],
         fim = { semantic_grep = { all_files = false } },
+        gptoss = {} -- allow downstream to define defaults
     }
 
     if file_exists(config_path) then
@@ -162,7 +163,6 @@ function M.toggle_rag()
 end
 
 -- * FIM model
-
 function M.get_fim_model()
     local cfg = get()
     local model = cfg.fim and cfg.fim.model or nil
@@ -189,8 +189,6 @@ function M.toggle_fim_model()
 end
 
 -- * FIM semantic_grep's file type(s)
-
-
 function M.get_fim_semantic_grep_all_files()
     -- TODO IF I KEEP THIS, I have to add it to settings b/c I wanna see when it is on/off (could affect regular FIM's semantic_grep which in many cases doesn't need cross language matches)
     local cfg = get()
@@ -209,12 +207,12 @@ function M.toggle_fim_semantic_grep_all_files()
     return cfg.fim.semantic_grep.all_files
 end
 
--- * reasoning level
-
+-- * gptoss FIM reasoning level
 -- thinking model's reasoning level (for thinking models, including FIM)
-function M.set_reasoning_level(level)
+function M.set_fim_reasoning_level(level)
     local cfg = get()
-    cfg.reasoning_level = level
+    cfg.gptoss = cfg.gptoss or {}
+    cfg.gptoss.fim_reasoning_level = level
     save()
 end
 
@@ -227,13 +225,15 @@ M.GptOssReasoningLevel = {
 }
 
 ---@return GptOssReasoningLevel
-function M.get_reasoning_level()
+function M.get_fim_reasoning_level()
+    -- TODO rename to get_fim_reasoning_level (and related code too)
     local cfg = get()
-    return cfg.reasoning_level or M.GptOssReasoningLevel.low
+    cfg.gptoss = cfg.gptoss or {}
+    return cfg.gptoss.fim_reasoning_level or M.GptOssReasoningLevel.low
 end
 
-function M.cycle_reasoning_level()
-    local current = M.get_reasoning_level()
+function M.cycle_fim_reasoning_level()
+    local current = M.get_fim_reasoning_level()
     local next_level = ""
     if current == M.GptOssReasoningLevel.off then
         next_level = M.GptOssReasoningLevel.low
@@ -244,26 +244,26 @@ function M.cycle_reasoning_level()
     else
         next_level = M.GptOssReasoningLevel.off
     end
-    M.set_reasoning_level(next_level)
+    M.set_fim_reasoning_level(next_level)
     return next_level
 end
 
--- * separate reasoning level for RewriteFrontend
-
--- Set the reasoning level used specifically for the Rewrite frontend.
+-- * separate reasoning level for RewriteFrontend and QuestionsFrontend
 function M.set_rewrite_reasoning_level(level)
+    -- FYI I wanted a separate setting largely because I intend to leave this normally on a different level vs FIM...
+    --  FIM will normally be low/off, Rewrite/Questions will be medium/high
     local cfg = get()
-    cfg.rewrite_reasoning_level = level
+    cfg.gptoss = cfg.gptoss or {}
+    cfg.gptoss.rewrite_reasoning_level = level
     save()
 end
 
--- Get the Rewrite frontend reasoning level, defaulting to the low level.
 function M.get_rewrite_reasoning_level()
     local cfg = get()
-    return cfg.rewrite_reasoning_level or M.GptOssReasoningLevel.low
+    cfg.gptoss = cfg.gptoss or {}
+    return cfg.gptoss.rewrite_reasoning_level or M.GptOssReasoningLevel.low
 end
 
--- Cycle the Rewrite frontend reasoning level through the defined levels.
 function M.cycle_rewrite_reasoning_level()
     local current = M.get_rewrite_reasoning_level()
     local next_level = ""

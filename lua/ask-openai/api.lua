@@ -45,8 +45,8 @@ function M.toggle_fim_model()
 end
 
 -- * reasoning level (universal - FIM, Ask*)
-function M.set_reasoning_level(level)
-    config.local_share.set_reasoning_level(level)
+function M.set_fim_reasoning_level(level)
+    config.local_share.set_fim_reasoning_level(level)
 end
 
 -- Set the reasoning level for the Rewrite frontend (separate from the universal setting).
@@ -54,16 +54,16 @@ function M.set_rewrite_reasoning_level(level)
     config.local_share.set_rewrite_reasoning_level(level)
 end
 
-function M.get_reasoning_level()
-    return config.local_share.get_reasoning_level()
+function M.get_fim_reasoning_level()
+    return config.local_share.get_fim_reasoning_level()
 end
 
 function M.get_rewrite_reasoning_level()
     return config.local_share.get_rewrite_reasoning_level()
 end
 
-function M.cycle_reasoning_level()
-    return config.local_share.cycle_reasoning_level()
+function M.cycle_fim_reasoning_level()
+    return config.local_share.cycle_fim_reasoning_level()
 end
 
 function M.cycle_rewrite_reasoning_level()
