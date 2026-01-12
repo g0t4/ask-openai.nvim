@@ -2,6 +2,7 @@ local log = require("ask-openai.logs.logger").predictions()
 local CurlRequest = require("ask-openai.backends.curl_request")
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 local completion_logger = require('ask-openai.logs.completion_logger')
+local safely = require("ask-openai.helpers.safely")
 
 local Curl = {}
 
@@ -50,14 +51,10 @@ function Curl.spawn(request, frontend)
 
     ---@param data_value string
     function on_data_sse(data_value)
-        -- FYI right now this function exists to catch errors and terminate
-
+        -- FYI right now this function exists to catch unhandled errors and terminate
         local success, error_message = xpcall(function()
             Curl.on_one_data_value(data_value, frontend, request)
-        end, function(e)
-            -- otherwise only get one line from the traceback frame
-            return debug.traceback(e, 3)
-        end)
+        end, safely.xpcall_log_failures)
 
         if success then
             return
