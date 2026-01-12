@@ -52,6 +52,8 @@ local function ask_question_command(opts)
     end
 
     -- * /selection
+    -- TODO! get window id and pass to get_visual_selection_for_current_window(?win_id?) below
+    --   TODO! then I can move this closer to its only usage and simplify things
     local selected_text = nil
     if context.includes.include_selection then
         -- FYI include_selection basically captures if user had selection when they first invoked a keymap to submit this command
