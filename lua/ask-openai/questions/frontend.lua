@@ -40,7 +40,27 @@ local function ask_question_command(opts)
     local context = CurrentContext:items(user_prompt, always_include)
     local cleaned_prompt = context.includes.cleaned_prompt
 
+    -- * /selection (currently needs current window to be code window)
+    local selected_text = nil
+    if context.includes.include_selection then
+        -- FYI include_selection basically captures if user had selection when they first invoked a keymap to submit this command
+        --   b/c submitting command switches modes, also user might unselect text on accident (or want to repeat w/ prev selection)
+        --   thus it is useful to capture intent with /selection early on
+
+        -- FYI my Selection helper only works on current window... so I can't put this off I need it way up high:
+        -- NOT IMPLEMENTED (yet?) local selection = Selection._get_visual_selection_for_window_id(code_win_id)
+        local selection = Selection.get_visual_selection_for_current_window()
+        if selection:is_empty() then
+            error("No /selection found (no current, nor prior, selection).")
+            return
+        end
+        selected_text = selection.original_text
+        log:error("selected_text", selected_text)
+    end
+
+    -- FYI! do not move opening window higher, unless above code supports code_win_id/code_bufnr:
     QuestionsFrontend.ensure_chat_window_is_open()
+    --
     -- * chat window should always be open, nonetheless check:
     local buffer_name = vim.api.nvim_buf_get_name(0)
     local chat_window_is_open = buffer_name:match("AskQuestion$")
@@ -51,21 +71,8 @@ local function ask_question_command(opts)
         code_win_id = vim.fn.win_getid(vim.fn.winnr('#'))
         code_bufnr = vim.api.nvim_win_get_buf(code_win_id)
     end
-
-    -- * /selection
-    --   TODO! then I can move this closer to its only usage and simplify things
-    local selected_text = nil
-    if context.includes.include_selection then
-        -- FYI include_selection basically captures if user had selection when they first invoked a keymap to submit this command
-        --   b/c submitting command switches modes, also user might unselect text on accident (or want to repeat w/ prev selection)
-        --   thus it is useful to capture intent with /selection early on
-        local selection = Selection._get_visual_selection_for_window_id(code_win_id)
-        if selection:is_empty() then
-            error("No /selection found (no current, nor prior, selection).")
-            return
-        end
-        selected_text = selection.original_text
-    end
+    log:error("code_win_id", code_win_id)
+    log:error("code_bufnr", code_bufnr)
 
     QuestionsFrontend.abort_last_request()
     use_tools = context.includes.use_tools or false

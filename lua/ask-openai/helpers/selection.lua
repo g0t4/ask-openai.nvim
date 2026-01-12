@@ -65,7 +65,7 @@ function Selection:log_info(message)
     log:info(message, self:to_str())
 end
 
-function Selection._get_visual_selection_for_window_id(window_id)
+function Selection._get_visual_selection_for_window_id(not_implemented_yet_window_id)
     local current_mode = vim.fn.mode()
     local last_visualmode = vim.fn.visualmode()
     -- print(vim.inspect({ current_mode = current_mode, last_visualmode = last_visualmode }))
@@ -119,8 +119,8 @@ function Selection._get_visual_selection_for_window_id(window_id)
 
     --   change all of this to conside this when getting last selection
     --
-    -- TODO I am not yet using window_id/buffer_number... maybe comment it out until I absolutely need it?
-    local buffer_number = vim.api.nvim_win_get_buf(window_id)
+    -- TODO I am not yet using not_implemented_yet_window_id/buffer_number... maybe comment it out until I absolutely need it?
+    -- local buffer_number = vim.api.nvim_win_get_buf(not_implemented_yet_window_id)
 
     -- getpos returns a byte index, getcharpos() returns a char index
     -- * getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
@@ -183,8 +183,10 @@ end
 
 ---@return Selection
 function Selection.get_visual_selection_for_current_window()
-    local current_window_id = vim.api.nvim_get_current_win()
-    return Selection._get_visual_selection_for_window_id(current_window_id)
+    -- FYI not_implemented_yet_window_id is not used below
+    -- local not_implemented_yet_window_id = vim.api.nvim_get_current_win()
+    -- return Selection._get_visual_selection_for_window_id(not_implemented_yet_window_id)
+    return Selection._get_visual_selection_for_window_id()
 end
 
 --- Set the selection and get a reference to it.
