@@ -55,7 +55,7 @@ local function ask_question_command(opts)
             return
         end
         selected_text = selection.original_text
-        log:error("selected_text", selected_text)
+        -- log:error("selected_text", selected_text)
     end
 
     -- FYI! do not move opening window higher, unless above code supports code_win_id/code_bufnr:
@@ -71,8 +71,8 @@ local function ask_question_command(opts)
         code_win_id = vim.fn.win_getid(vim.fn.winnr('#'))
         code_bufnr = vim.api.nvim_win_get_buf(code_win_id)
     end
-    log:error("code_win_id", code_win_id)
-    log:error("code_bufnr", code_bufnr)
+    -- log:error("code_win_id", code_win_id)
+    -- log:error("code_bufnr", code_bufnr)
 
     QuestionsFrontend.abort_last_request()
     use_tools = context.includes.use_tools or false
@@ -259,7 +259,7 @@ The semantic_grep tool:
         QuestionsFrontend.then_send_messages()
     end
 
-    log:error("context.includes", vim.inspect(context.includes))
+    -- log:error("context.includes", vim.inspect(context.includes))
     if api.is_rag_enabled() and not context.includes.norag and rag_client.is_rag_supported_in_current_file(code_bufnr) then
         local this_request_ids, cancel -- declare in advance for closure
 
