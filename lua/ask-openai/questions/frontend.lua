@@ -204,7 +204,6 @@ The semantic_grep tool:
             end)
     end
 
-    table.insert(messages, TxChatMessage:user(user_message))
 
     local function then_generate_completion(rag_matches)
         if rag_matches ~= nil and #rag_matches > 0 then
@@ -231,6 +230,10 @@ The semantic_grep tool:
                     )
                 end)
             table.insert(messages, TxChatMessage:user_context(table.concat(rag_message_parts, "\n")))
+
+            -- user request should be last
+            -- FYI I had this before RAG matches and it was working fine too
+            table.insert(messages, TxChatMessage:user(user_message))
         end
 
         local base_url = "http://build21:8013"
