@@ -65,6 +65,7 @@ local function ask_question_command(opts)
     local entire_file_message = context.includes.current_file and current_file_message() or nil
     local file_name = files.get_current_file_relative_path()
 
+    -- FYI! careful if you move above code below opening the chat window, make sure to pass same_file_bufnr to get the right bffer after dchat window opens
     QuestionsFrontend.ensure_chat_window_is_open()
     QuestionsFrontend.abort_last_request()
     use_tools = context.includes.use_tools or false
