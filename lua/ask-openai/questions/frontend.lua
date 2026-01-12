@@ -662,8 +662,9 @@ function QuestionsFrontend.follow_up_command()
     -- log:trace("follow up content:", user_message)
 
     if not QuestionsFrontend.thread then
-        local USE_TOOLS = true
-        QuestionsFrontend.ask_question_in_new_thread(user_message, nil, nil, USE_TOOLS, nil)
+        -- for now just use follow up for existing chat, not a new one...
+        error("revisit code for using chat window to open initial chat turn")
+        -- FYI careful w/ chat window already open here
         return
     end
 
