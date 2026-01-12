@@ -56,6 +56,7 @@ local function ask_question_command(opts)
         end
         selected_text = selection.original_text
         -- log:error("selected_text", selected_text)
+        -- TODO once I get Selection working w/ non-current windows, move this code down and cleanup/simplify the spot that uses selected_text
     end
 
     -- FYI! do not move opening window higher, unless above code supports code_win_id/code_bufnr:
