@@ -1,6 +1,7 @@
 local log = require("ask-openai.logs.logger").predictions()
 local ansi = require("ask-openai.predictions.ansi")
 local plumbing = require("ask-openai.tools.plumbing")
+local safely = require("ask-openai.helpers.safely")
 
 local uv = vim.uv
 
@@ -75,7 +76,7 @@ function start_mcp_server(name, on_message)
         if data == nil then return end -- EOF
 
         for line in data:gmatch("[^\r\n]+") do
-            local ok, msg = pcall(vim.json.decode, line)
+            local ok, msg = safely.decode_json(line)
             if ok and on_message then
                 on_message(msg)
             else
