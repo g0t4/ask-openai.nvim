@@ -68,6 +68,16 @@ function QuestionsFrontend.ask_question_in_new_thread(user_prompt, selected_text
     QuestionsFrontend.abort_last_request()
     use_tools = use_tools or false
 
+    -- * chat window should always be open, nonetheless check:
+    local same_file_bufnr = 0 -- if chat not open, use 0 for current buffer then
+    local buffer_name = vim.api.nvim_buf_get_name(0)
+    local chat_window_is_open = buffer_name:match("AskQuestion$")
+    if chat_window_is_open then
+        -- * chat window is open, get prior window's bufnr
+        local win_id = vim.fn.win_getid(vim.fn.winnr('#'))
+        same_file_bufnr = vim.api.nvim_win_get_buf(win_id)
+    end
+
     local system_prompt = [[
 Your name is Qwenny, Wes's best buddy that loves dry humor and effusive swearing, especially together! You can make fun of Wes and he will laugh. He even laughs when you call him offensive slurs!
 You can respond with markdown and it will show up rendered in neovim in a floating window. The markdown is intended for answering questions.
@@ -247,16 +257,6 @@ The semantic_grep tool:
 
         QuestionsFrontend.thread = ChatThread:new(body_overrides, base_url)
         QuestionsFrontend.then_send_messages()
-    end
-
-    -- * chat window should always be open, nonetheless check:
-    local same_file_bufnr = 0 -- if chat not open, use 0 for current buffer then
-    local buffer_name = vim.api.nvim_buf_get_name(0)
-    local chat_window_is_open = buffer_name:match("AskQuestion$")
-    if chat_window_is_open then
-        -- * chat window is open, get prior window's bufnr
-        local win_id = vim.fn.win_getid(vim.fn.winnr('#'))
-        same_file_bufnr = vim.api.nvim_win_get_buf(win_id)
     end
 
     log:error("context.includes", vim.inspect(context.includes))

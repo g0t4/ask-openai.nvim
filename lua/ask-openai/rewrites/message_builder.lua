@@ -22,9 +22,9 @@ function MessageBuilder:plain_text(text)
 end
 
 ---@return MessageBuilder
-function MessageBuilder:md_current_buffer()
+function MessageBuilder:md_current_buffer(bufnr)
     local path = files.get_current_file_relative_path()
-    local entire_file = buffers.get_text_in_current_buffer()
+    local entire_file = buffers.get_text_in_buffer(bufnr)
     self:md_code_block(path, entire_file)
     return self
 end

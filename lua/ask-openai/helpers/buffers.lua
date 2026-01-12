@@ -1,12 +1,6 @@
 local Selection = require("ask-openai.helpers.selection")
 local M = {}
 
----@return string
-function M.get_text_in_current_buffer()
-    bufnr = bufnr or 0
-    return M.get_text_in_buffer(bufnr)
-end
-
 ---@param bufnr? integer
 ---@return string
 function M.get_text_in_buffer(bufnr)
