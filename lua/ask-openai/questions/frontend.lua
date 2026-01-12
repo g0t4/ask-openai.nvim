@@ -37,7 +37,7 @@ local function ask_question_command(opts)
         yanks = true,
         project = true,
     }
-    -- TODO run through a few tests of expecations for /file /selection /etc slash commands /norag
+    -- TODO run through a few tests of expecations for /etc slash commands /norag
     local context = CurrentContext:items(user_prompt, always_include)
     local cleaned_prompt = context.includes.cleaned_prompt
 
