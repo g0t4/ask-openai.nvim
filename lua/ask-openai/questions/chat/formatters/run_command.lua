@@ -8,23 +8,21 @@ local M = {}
 ---@param message RxAccumulatedMessage
 ---@return string
 local function get_tool_header(args_json, message)
-    local header = args_json -- default show the JSON as the tool call is streamed in
-
-    if message:is_done_streaming() then
-        local success, object = safely.decode_json_always_logged(args_json)
-        if not success then
-            header = "json decode failure: " .. args_json
-        else
-            if object.command then
-                header = object.command
-            else
-                log:error("missing object.command", vim.inspect(object))
-                header = "missing object.command: " .. args_json
-            end
-        end
+    if not message:is_done_streaming() then
+        return args_json
     end
 
-    return header
+    local success, object = safely.decode_json_always_logged(args_json)
+    if not success then
+        return "json decode failure: " .. args_json
+    end
+
+    if object.command then
+        return object.command
+    end
+
+    log:error("missing object.command", vim.inspect(object))
+    return "missing object.command: " .. args_json
 end
 
 ---@type ToolCallFormatter
