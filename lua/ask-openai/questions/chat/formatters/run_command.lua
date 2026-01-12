@@ -7,7 +7,7 @@ local M = {}
 ---@param args_json string
 ---@param message RxAccumulatedMessage
 ---@return string
-local function get_tool_header(args_json, message)
+local function get_tool_header_text(args_json, message)
     if message:is_still_streaming() then
         return args_json
     end
@@ -27,14 +27,13 @@ end
 
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
-    local tool_header = get_tool_header(tool_call["function"].arguments, message)
-
     --   TODO if LONG then fold the one line b/c with my fold setup a long line can be collapsed
     --      and then the first part of command will be visible
     --   TODO args.command (has full command)
     --   TODO args.workdir
     --   TODO args.STDIN show collapsed?
 
+    local tool_header = get_tool_header_text(tool_call["function"].arguments, message)
     local hl_group = HLGroups.TOOL_SUCCESS
     if tool_call.call_output then
         if tool_call.call_output.result.isError then
