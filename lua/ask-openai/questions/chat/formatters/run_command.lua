@@ -29,18 +29,18 @@ end
 
 ---@type ToolCallFormatter
 local function add_tool_header(lines, tool_call, message)
-    local tool_header = get_tool_header_text(tool_call["function"].arguments, message)
+    local header = get_tool_header_text(tool_call["function"].arguments, message)
     local hl_group = HLGroups.TOOL_SUCCESS
     if tool_call.call_output then
         if tool_call.call_output.result.isError then
-            tool_header = "❌ " .. tool_header
+            header = "❌ " .. header
             hl_group = HLGroups.TOOL_FAILED
         else
-            tool_header = "✅ " .. tool_header
+            header = "✅ " .. header
         end
     end
     -- gptoss uses a heredoc for a python script (with \n between python statements) in the command! (anything to not use the stdin arg lol)...
-    lines:append_styled_text(tool_header, hl_group)
+    lines:append_styled_text(header, hl_group)
 end
 
 ---@type ToolCallFormatter
