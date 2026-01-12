@@ -1,6 +1,6 @@
 local log = require("ask-openai.logs.logger").predictions()
 local HLGroups = require("ask-openai.hlgroups")
-local safely = require("ask-openai.questions.chat.formatters.safely")
+local safely = require("ask-openai.helpers.safely")
 
 local M = {}
 
