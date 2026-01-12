@@ -9,7 +9,7 @@ function try_decode_json_string(json_str, message)
         return json_str
     end
 
-    local ok, decoded = safely.call(vim.json.decode, json_str)
+    local ok, decoded = safely.decode_json(json_str)
     if ok and type(decoded) == "table" then
         return vim.inspect(decoded, { newline = "", indent = "  " })
     end
@@ -28,7 +28,7 @@ local function handle_apply_patch_args(args, message)
     -- FYI I am on the fence w.r.t. markdown diff codeblock
     -- and probably not JSON, though that is a fallback I have yet to encounter
     local function json_decode_patch(arg_str)
-        local ok, decoded = safely.call(vim.json.decode, arg_str)
+        local ok, decoded = safely.decode_json(arg_str)
         if ok and type(decoded) == "table" and decoded.patch then
             return code(decoded.patch, "diff")
         end
@@ -47,7 +47,7 @@ local function handle_apply_patch_args(args, message)
     -- * try to complete the JSON string and decode it
     -- assumption is, if final '"}' is present then it would be done streaming (sans maybe one delta?)
     local try_json = args .. '"}'
-    local ok, decoded = safely.call(vim.json.decode, try_json)
+    local ok, decoded = safely.decode_json(try_json)
     if ok and type(decoded) == "table" and decoded.patch then
         return code(decoded.patch, "diff")
     else
