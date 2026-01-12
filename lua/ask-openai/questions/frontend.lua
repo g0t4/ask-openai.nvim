@@ -33,7 +33,6 @@ local first_turn_ns_id
 ---@param opts {args:string}
 local function ask_question_command(opts)
     local user_prompt = opts.args
-    local includes = prompts.parse_includes(user_prompt)
 
     -- * /selection
     local selected_text = nil
