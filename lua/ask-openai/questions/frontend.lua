@@ -33,6 +33,18 @@ local first_turn_ns_id
 ---@param opts {args:string}
 local function ask_question_command(opts)
     local user_prompt = opts.args
+    local always_include = {
+        yanks = true,
+        project = true,
+    }
+    -- TODO REVIEW double cleaning... and how I went back to not cleaned_prompt here...
+    --  I think it's fine, b/c before the precursor to this function ask_question_command was clearing all slash commands
+    --   while only doing something with a few of them
+    --   now I should be back to supporting all of them
+    --   TODO just run through a few tests of expecations for /file /selection /etc
+    local context = CurrentContext:items(user_prompt, always_include)
+    local cleaned_prompt = context.includes.cleaned_prompt
+
 
     -- * /selection
     local selected_text = nil
@@ -147,12 +159,6 @@ The semantic_grep tool:
     lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
     lines:append_folded_styled_text("system\n" .. system_prompt, "")
 
-    local always_include = {
-        yanks = true,
-        project = true,
-    }
-    local context = CurrentContext:items(user_prompt, always_include)
-    local cleaned_prompt = context.includes.cleaned_prompt
 
     -- * display user message in chat window
     lines:append_role_header("user")
