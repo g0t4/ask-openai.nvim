@@ -42,13 +42,13 @@ local function ask_question_command(opts)
 
     QuestionsFrontend.ensure_chat_window_is_open()
     -- * chat window should always be open, nonetheless check:
-    local same_file_bufnr = 0 -- if chat not open, use 0 for current buffer then
+    local code_bufnr = 0 -- if chat not open, use 0 for current buffer then
     local buffer_name = vim.api.nvim_buf_get_name(0)
     local chat_window_is_open = buffer_name:match("AskQuestion$")
     if chat_window_is_open then
         -- * chat window is open, get prior window's bufnr
         local win_id = vim.fn.win_getid(vim.fn.winnr('#'))
-        same_file_bufnr = vim.api.nvim_win_get_buf(win_id)
+        code_bufnr = vim.api.nvim_win_get_buf(win_id)
     end
 
     -- * /selection
@@ -67,7 +67,7 @@ local function ask_question_command(opts)
         selected_text = selection.original_text
     end
 
-    -- FYI! careful if you move above code below opening the chat window, make sure to pass same_file_bufnr to get the right bffer after dchat window opens
+    -- FYI! careful if you move above code below opening the chat window, make sure to pass code_bufnr to get the right buffer after dchat window opens
     QuestionsFrontend.abort_last_request()
     use_tools = context.includes.use_tools or false
 
@@ -153,7 +153,7 @@ The semantic_grep tool:
     local user_message = cleaned_prompt
     local code_context = nil
     if selected_text then
-        local file_name = files.get_file_relative_path(same_file_bufnr)
+        local file_name = files.get_file_relative_path(code_bufnr)
         code_context =
             "I selected the following\n"
             .. "```" .. file_name .. "\n"
@@ -173,7 +173,7 @@ The semantic_grep tool:
     if context.includes.current_file then
         local entire_file_message = MessageBuilder:new()
             :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request:")
-            :md_current_buffer(same_file_bufnr)
+            :md_current_buffer(code_bufnr)
             :to_text()
 
         -- skip code_context if entire file selected (user intent matters, entire file is vague)
@@ -254,7 +254,7 @@ The semantic_grep tool:
     end
 
     log:error("context.includes", vim.inspect(context.includes))
-    if api.is_rag_enabled() and not context.includes.norag and rag_client.is_rag_supported_in_current_file(same_file_bufnr) then
+    if api.is_rag_enabled() and not context.includes.norag and rag_client.is_rag_supported_in_current_file(code_bufnr) then
         local this_request_ids, cancel -- declare in advance for closure
 
         ---@param rag_matches LSPRankedMatch[]
@@ -276,7 +276,7 @@ The semantic_grep tool:
             then_generate_completion(rag_matches)
         end
 
-        this_request_ids, cancel = rag_client.context_query_questions(same_file_bufnr, cleaned_prompt, code_context, context.includes.top_k, on_rag_response)
+        this_request_ids, cancel = rag_client.context_query_questions(code_bufnr, cleaned_prompt, code_context, context.includes.top_k, on_rag_response)
         QuestionsFrontend.rag_cancel = cancel
         QuestionsFrontend.rag_request_ids = this_request_ids
         -- TODO! add cancelation logic to other parts of this QuestionsFrontend besides right here (review rewrites/predictions)
