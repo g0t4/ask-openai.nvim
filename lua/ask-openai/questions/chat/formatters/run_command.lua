@@ -18,6 +18,8 @@ local function get_tool_header_text(args_json, message)
     end
 
     if object.command then
+        -- PRN? if LONG then fold the one line b/c with my fold setup a long line can be collapsed
+        -- and then the first part of command will be visible
         return object.command
     end
 
@@ -26,13 +28,7 @@ local function get_tool_header_text(args_json, message)
 end
 
 ---@type ToolCallFormatter
-function M.format(lines, tool_call, message)
-    --   TODO if LONG then fold the one line b/c with my fold setup a long line can be collapsed
-    --      and then the first part of command will be visible
-    --   TODO args.command (has full command)
-    --   TODO args.workdir
-    --   TODO args.STDIN show collapsed?
-
+local function add_tool_header(lines, tool_call, message)
     local tool_header = get_tool_header_text(tool_call["function"].arguments, message)
     local hl_group = HLGroups.TOOL_SUCCESS
     if tool_call.call_output then
@@ -45,6 +41,13 @@ function M.format(lines, tool_call, message)
     end
     -- gptoss uses a heredoc for a python script (with \n between python statements) in the command! (anything to not use the stdin arg lol)...
     lines:append_styled_text(tool_header, hl_group)
+end
+
+---@type ToolCallFormatter
+function M.format(lines, tool_call, message)
+    add_tool_header(lines, tool_call, message)
+    --   TODO args.workdir
+    --   TODO args.STDIN show collapsed?
 
     if not tool_call.call_output then
         -- tool not yet run/running
