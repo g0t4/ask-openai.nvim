@@ -231,11 +231,11 @@ The semantic_grep tool:
                     )
                 end)
             table.insert(messages, TxChatMessage:user_context(table.concat(rag_message_parts, "\n")))
-
-            -- user request should be last
-            -- FYI I had this before RAG matches and it was working fine too
-            table.insert(messages, TxChatMessage:user(user_message))
         end
+
+        -- * user request should be last
+        -- FYI I had this before RAG matches and it was working fine too
+        table.insert(messages, TxChatMessage:user(user_message))
 
         local base_url = "http://build21:8013"
         local body_overrides = model_params.new_gptoss_chat_body_llama_server({
