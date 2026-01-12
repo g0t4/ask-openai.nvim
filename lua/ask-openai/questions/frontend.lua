@@ -37,7 +37,6 @@ local function ask_question_command(opts)
         yanks = true,
         project = true,
     }
-    -- TODO run through a few tests of expecations for /etc slash commands /norag
     local context = CurrentContext:items(user_prompt, always_include)
     local cleaned_prompt = context.includes.cleaned_prompt
 
@@ -56,7 +55,7 @@ local function ask_question_command(opts)
     end
 
     -- * /file - current file
-    -- FYI could use same_file_bufnr to move this to  ask_question_in_new_thread
+    -- FYI could use same_file_bufnr to move this down (past ensure_chat_window_is_open)
     local function current_file_message()
         return MessageBuilder:new()
             :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request:")
@@ -65,8 +64,6 @@ local function ask_question_command(opts)
     end
     local entire_file_message = context.includes.current_file and current_file_message() or nil
     local file_name = files.get_current_file_relative_path()
-
-    -- QuestionsFrontend.ask_question_in_new_thread(user_prompt, selected_text, file_name, includes.use_tools, entire_file_message)
 
     QuestionsFrontend.ensure_chat_window_is_open()
     QuestionsFrontend.abort_last_request()
