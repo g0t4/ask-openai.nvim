@@ -70,11 +70,11 @@ local function ask_question_command(opts)
     local function current_file_message()
         return MessageBuilder:new()
             :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request:")
-            :md_current_buffer()
+            :md_current_buffer(same_file_bufnr)
             :to_text()
     end
     local entire_file_message = context.includes.current_file and current_file_message() or nil
-    local file_name = files.get_current_file_relative_path()
+    local file_name = files.get_file_relative_path(same_file_bufnr)
 
     -- FYI! careful if you move above code below opening the chat window, make sure to pass same_file_bufnr to get the right bffer after dchat window opens
     QuestionsFrontend.abort_last_request()

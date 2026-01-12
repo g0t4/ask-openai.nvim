@@ -23,7 +23,7 @@ end
 
 ---@return MessageBuilder
 function MessageBuilder:md_current_buffer(bufnr)
-    local path = files.get_current_file_relative_path()
+    local path = files.get_file_relative_path(bufnr)
     local entire_file = buffers.get_text_in_buffer(bufnr)
     self:md_code_block(path, entire_file)
     return self
