@@ -34,8 +34,7 @@ function M.format(lines, tool_call, message)
             tool_header = "✅ " .. tool_header
         end
     end
-    -- If the command (or JSON) contains newlines, split it so each line is rendered separately.
-    -- `vim.split` preserves empty lines which is useful for multi‑line commands.
+    -- gptoss uses a heredoc for a python script (with \n between python statements) in the command! (anything to not use the stdin arg lol)...
     local header_lines = vim.split(tool_header, "\n")
     lines:append_styled_lines(header_lines, hl_group)
 
