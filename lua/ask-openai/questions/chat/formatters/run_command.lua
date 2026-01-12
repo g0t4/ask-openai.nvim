@@ -14,7 +14,7 @@ local function get_tool_header(args_json, message)
 
     local success, object = safely.decode_json_always_logged(args_json)
     if not success then
-        return "json decode failure: " .. args_json
+        return "json decode failure (see logs): " .. args_json
     end
 
     if object.command then
@@ -22,13 +22,12 @@ local function get_tool_header(args_json, message)
     end
 
     log:error("missing object.command", vim.inspect(object))
-    return "missing object.command: " .. args_json
+    return "missing object.command: " .. vim.inspect(object)
 end
 
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
-    local args_json = tool_call["function"].arguments
-    local tool_header = get_tool_header(args_json, message)
+    local tool_header = get_tool_header(tool_call["function"].arguments, message)
 
     --   TODO if LONG then fold the one line b/c with my fold setup a long line can be collapsed
     --      and then the first part of command will be visible
