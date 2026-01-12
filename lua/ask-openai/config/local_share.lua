@@ -54,7 +54,9 @@ local function load_config()
 
     if file_exists(config_path) then
         local content = io.open(config_path, 'r'):read('*a')
-        local ok, parsed_config = pcall(vim.json.decode, content)
+        -- require here to avoid loop:
+        local safely = require('ask-openai.helpers.safely')
+        local ok, parsed_config = safely.decode_json(content)
         if ok and type(parsed_config) == 'table' then
             return vim.tbl_deep_extend('force', default, parsed_config)
         end
