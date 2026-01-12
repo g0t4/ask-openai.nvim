@@ -35,8 +35,7 @@ function M.format(lines, tool_call, message)
         end
     end
     -- gptoss uses a heredoc for a python script (with \n between python statements) in the command! (anything to not use the stdin arg lol)...
-    local header_lines = vim.split(tool_header, "\n")
-    lines:append_styled_lines(header_lines, hl_group)
+    lines:append_styled_text(tool_header, hl_group)
 
     if not tool_call.call_output then
         -- tool not yet run/running
