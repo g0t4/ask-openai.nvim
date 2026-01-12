@@ -48,7 +48,7 @@ local function ask_question_command(opts)
 
     -- * /selection
     local selected_text = nil
-    if includes.include_selection then
+    if context.includes.include_selection then
         -- FYI include_selection basically captures if user had selection when they first invoked a keymap to submit this command
         --   b/c submitting command switches modes, also user might unselect text on accident (or want to repeat w/ prev selection)
         --   thus it is useful to capture intent with /selection early on
@@ -68,12 +68,14 @@ local function ask_question_command(opts)
             :md_current_buffer()
             :to_text()
     end
-    local entire_file_message = includes.current_file and current_file_message() or nil
+    local entire_file_message = context.includes.current_file and current_file_message() or nil
     local file_name = files.get_current_file_relative_path()
+
+    -- QuestionsFrontend.ask_question_in_new_thread(user_prompt, selected_text, file_name, includes.use_tools, entire_file_message)
 
     QuestionsFrontend.ensure_chat_window_is_open()
     QuestionsFrontend.abort_last_request()
-    use_tools = use_tools or false
+    use_tools = context.includes.use_tools or false
 
     -- * chat window should always be open, nonetheless check:
     local same_file_bufnr = 0 -- if chat not open, use 0 for current buffer then
