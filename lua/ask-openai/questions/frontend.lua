@@ -50,6 +50,7 @@ local function ask_question_command(opts)
     end
 
     -- * /file - current file
+    -- FYI could use same_file_bufnr to move this to  ask_question_in_new_thread
     local function current_file_message()
         return MessageBuilder:new()
             :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request:")
@@ -204,7 +205,6 @@ The semantic_grep tool:
                 table.insert(messages, TxChatMessage:user_context(value.content))
             end)
     end
-
 
     local function then_generate_completion(rag_matches)
         if rag_matches ~= nil and #rag_matches > 0 then
