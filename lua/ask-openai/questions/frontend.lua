@@ -42,24 +42,24 @@ local function ask_question_command(opts)
 
     QuestionsFrontend.ensure_chat_window_is_open()
     -- * chat window should always be open, nonetheless check:
-    local code_bufnr = 0 -- if chat not open, use 0 for current buffer then
     local buffer_name = vim.api.nvim_buf_get_name(0)
     local chat_window_is_open = buffer_name:match("AskQuestion$")
+    local code_win_id = vim.api.nvim_get_current_win()
+    local code_bufnr = 0 -- 0 == current
     if chat_window_is_open then
-        -- * chat window is open, get prior window's bufnr
-        local win_id = vim.fn.win_getid(vim.fn.winnr('#'))
-        code_bufnr = vim.api.nvim_win_get_buf(win_id)
+        -- * chat window is open, get prior window's code_win_id and code_bufnr
+        code_win_id = vim.fn.win_getid(vim.fn.winnr('#'))
+        code_bufnr = vim.api.nvim_win_get_buf(code_win_id)
     end
 
     -- * /selection
-    -- TODO! get window id and pass to get_visual_selection_for_current_window(?win_id?) below
     --   TODO! then I can move this closer to its only usage and simplify things
     local selected_text = nil
     if context.includes.include_selection then
         -- FYI include_selection basically captures if user had selection when they first invoked a keymap to submit this command
         --   b/c submitting command switches modes, also user might unselect text on accident (or want to repeat w/ prev selection)
         --   thus it is useful to capture intent with /selection early on
-        local selection = Selection.get_visual_selection_for_current_window()
+        local selection = Selection._get_visual_selection_for_window_id(code_win_id)
         if selection:is_empty() then
             error("No /selection found (no current, nor prior, selection).")
             return
@@ -67,7 +67,6 @@ local function ask_question_command(opts)
         selected_text = selection.original_text
     end
 
-    -- FYI! careful if you move above code below opening the chat window, make sure to pass code_bufnr to get the right buffer after dchat window opens
     QuestionsFrontend.abort_last_request()
     use_tools = context.includes.use_tools or false
 
