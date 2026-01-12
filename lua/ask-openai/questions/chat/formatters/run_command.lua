@@ -4,27 +4,34 @@ local safely = require("ask-openai.questions.chat.formatters.safely")
 
 local M = {}
 
----@type ToolCallFormatter
-function M.format(lines, tool_call, message)
-    local args_json = tool_call["function"].arguments
-    local tool_header = args_json -- default show the JSON as the tool call is streamed in
+---@param args_json string
+---@param message RxAccumulatedMessage
+---@return string
+local function get_tool_header(args_json, message)
+    local header = args_json -- default show the JSON as the tool call is streamed in
 
     if message:is_done_streaming() then
-        -- * safely means I can solely focus on chat window here
         local success, object = safely.decode_json_always_logged(args_json)
         if not success then
-            tool_header = "json decode failure: " .. args_json
+            header = "json decode failure: " .. args_json
         else
             if object.command then
-                tool_header = object.command
+                header = object.command
             else
                 log:error("missing object.command", vim.inspect(object))
-                tool_header = "missing object.command: " .. args_json
+                header = "missing object.command: " .. args_json
             end
         end
     end
 
-    -- TODO extract command from JSON and show if reasonable length?
+    return header
+end
+
+---@type ToolCallFormatter
+function M.format(lines, tool_call, message)
+    local args_json = tool_call["function"].arguments
+    local tool_header = get_tool_header(args_json, message)
+
     --   TODO if LONG then fold the one line b/c with my fold setup a long line can be collapsed
     --      and then the first part of command will be visible
     --   TODO args.command (has full command)
