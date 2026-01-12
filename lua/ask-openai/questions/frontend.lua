@@ -60,7 +60,7 @@ local function ask_question_command(opts)
     local file_name = files.get_current_file_relative_path()
 
     QuestionsFrontend.ensure_chat_window_is_open()
-    QuestionsFrontend.ask_question_in_new_thread(includes.cleaned_prompt, selected_text, file_name, includes.use_tools, entire_file_message)
+    QuestionsFrontend.ask_question_in_new_thread(user_prompt, selected_text, file_name, includes.use_tools, entire_file_message)
 end
 
 function QuestionsFrontend.ask_question_in_new_thread(user_prompt, selected_text, file_name, use_tools, entire_file_message)
@@ -146,12 +146,13 @@ The semantic_grep tool:
         project = true,
     }
     local context = CurrentContext:items(user_prompt, always_include)
+    local cleaned_prompt = context.includes.cleaned_prompt
 
     -- * display user message in chat window
     lines:append_role_header("user")
-    lines:append_text(user_prompt)
+    lines:append_text(cleaned_prompt)
 
-    local user_message = user_prompt
+    local user_message = cleaned_prompt
     local code_context = nil
     if selected_text then
         code_context =
@@ -258,7 +259,8 @@ The semantic_grep tool:
         same_file_bufnr = vim.api.nvim_win_get_buf(win_id)
     end
 
-    if api.is_rag_enabled() and rag_client.is_rag_supported_in_current_file(same_file_bufnr) then
+    log:error("context.includes", vim.inspect(context.includes))
+    if api.is_rag_enabled() and not context.includes.norag and rag_client.is_rag_supported_in_current_file(same_file_bufnr) then
         local this_request_ids, cancel -- declare in advance for closure
 
         ---@param rag_matches LSPRankedMatch[]
@@ -280,7 +282,7 @@ The semantic_grep tool:
             then_generate_completion(rag_matches)
         end
 
-        this_request_ids, cancel = rag_client.context_query_questions(same_file_bufnr, user_prompt, code_context, context.includes.top_k, on_rag_response)
+        this_request_ids, cancel = rag_client.context_query_questions(same_file_bufnr, cleaned_prompt, code_context, context.includes.top_k, on_rag_response)
         QuestionsFrontend.rag_cancel = cancel
         QuestionsFrontend.rag_request_ids = this_request_ids
         -- TODO! add cancelation logic to other parts of this QuestionsFrontend besides right here (review rewrites/predictions)

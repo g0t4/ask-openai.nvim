@@ -1,3 +1,4 @@
+local log = require("ask-openai.logs.logger").predictions()
 ---@class ParseIncludesResult
 ---@field all boolean
 ---@field yanks boolean
@@ -6,6 +7,7 @@
 ---@field open_files boolean
 ---@field ctags? boolean
 ---@field matching_ctags? boolean
+---@field norag? boolean
 ---@field project? boolean
 ---@field git_diff? boolean
 ---@field cleaned_prompt string
@@ -76,6 +78,7 @@ function M.parse_includes(prompt)
         include_selection = has("/selection"),
         top_k = top_k,
         cleaned_prompt = prompt,
+        norag = has("/norag"),
     }
 
     if includes.all then
@@ -86,11 +89,12 @@ function M.parse_includes(prompt)
         -- ? do I want all to include tools/selection too? for now leave them off (all doesn't have to mean every slash command)
     end
 
-    local slash_commands = { "/yanks", "/all", "/commits", "/file", "/files", "/tools", "/selection", "/template", }
+    local slash_commands = { "/yanks", "/all", "/commits", "/file", "/files", "/tools", "/selection", "/template", "/norag", }
     for _, k in ipairs(slash_commands) do
         includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, k)
     end
 
+    log:info("includes", vim.inspect(includes))
     return includes
 end
 
