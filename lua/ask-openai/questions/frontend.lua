@@ -60,10 +60,6 @@ local function ask_question_command(opts)
     local entire_file_message = includes.current_file and current_file_message() or nil
     local file_name = files.get_current_file_relative_path()
 
-    QuestionsFrontend.ask_question_in_new_thread(user_prompt, selected_text, file_name, includes.use_tools, entire_file_message)
-end
-
-function QuestionsFrontend.ask_question_in_new_thread(user_prompt, selected_text, file_name, use_tools, entire_file_message)
     QuestionsFrontend.ensure_chat_window_is_open()
     QuestionsFrontend.abort_last_request()
     use_tools = use_tools or false
