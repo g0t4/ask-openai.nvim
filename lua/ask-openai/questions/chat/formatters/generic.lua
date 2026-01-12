@@ -76,6 +76,7 @@ function M.format(lines, tool_call, message)
             tool_header = "✅ " .. tool_header
         end
     end
+    -- same bug as run_command:
     lines:append_styled_lines({ tool_header }, hl_group)
 
     -- * tool args
