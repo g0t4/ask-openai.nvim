@@ -73,7 +73,6 @@ local function ask_question_command(opts)
             :md_current_buffer(same_file_bufnr)
             :to_text()
     end
-    local entire_file_message = context.includes.current_file and current_file_message() or nil
 
     -- FYI! careful if you move above code below opening the chat window, make sure to pass same_file_bufnr to get the right bffer after dchat window opens
     QuestionsFrontend.abort_last_request()
@@ -177,6 +176,7 @@ The semantic_grep tool:
         end
         user_message = user_message .. "\n\n" .. code_context
     end
+    local entire_file_message = context.includes.current_file and current_file_message() or nil
     if entire_file_message then
         -- skip code_context if entire file selected (user intent matters, entire file is vague)
         lines:append_folded_styled_text(entire_file_message, "")
