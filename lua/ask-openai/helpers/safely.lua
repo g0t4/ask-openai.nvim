@@ -2,15 +2,15 @@ local log = require("ask-openai.logs.logger").predictions()
 
 local M = {}
 
-function M.xpcall_log_failures(message)
+function M.xpcall_log_failures(error_message)
     -- * capture more than just the message
     -- consitent logging of failure details here, then consumers can merely focus on their context on an error (args they passed)
-    local traceback = debug.traceback("foooo", 3)
-    log:error("on_xpcall_error.message", message)
-    log:error("on_xpcall_error.traceback", debug.traceback("on_xpcall_error", 3))
+    local trace = debug.traceback("safely.xpcall_log_failures", 3)
+    log:error("on_xpcall_error.message", error_message)
+    log:error("on_xpcall_error.traceback", trace)
     return {
-        message = message,
-        traceback = traceback
+        message = error_message,
+        traceback = trace
     }
 end
 
