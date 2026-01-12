@@ -156,7 +156,7 @@ function Curl.on_one_data_value(data_value, frontend, request)
     end
 
     -- * PARSE DATA VALUE (JSON) => sse_parsed object
-    local success, sse_parsed = pcall(vim.json.decode, data_value)
+    local success, sse_parsed = safely.decode_json(data_value)
     if success and sse_parsed then
         frontend.on_parsed_data_sse(sse_parsed)
         -- FYI not every SSE has to have generated tokens (choices), no need to warn if no parsed value
