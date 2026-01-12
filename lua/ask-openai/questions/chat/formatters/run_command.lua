@@ -8,7 +8,7 @@ local M = {}
 ---@param message RxAccumulatedMessage
 ---@return string
 local function get_tool_header(args_json, message)
-    if not message:is_done_streaming() then
+    if message:is_still_streaming() then
         return args_json
     end
 
