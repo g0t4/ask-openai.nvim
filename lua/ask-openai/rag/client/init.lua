@@ -1,6 +1,7 @@
 local log = require("ask-openai.logs.logger").predictions()
 local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.predictions.ansi")
+local safely = require("ask-openai.helpers.safely")
 
 local M = {}
 
@@ -26,9 +27,7 @@ local function load_rag_yaml_config(work_dir)
     end
 
     local yaml_str = table.concat(yaml_content, "\n")
-
-    local lyaml = require("lyaml")
-    local ok, parsed = pcall(lyaml.load, yaml_str)
+    local ok, parsed = safely.decode_yaml(yaml_str)
     if not ok then
         error("Failed to parse yaml" .. rag_yaml_path)
         return nil

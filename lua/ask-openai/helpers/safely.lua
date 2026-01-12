@@ -34,6 +34,19 @@ function M.decode_json_always_logged(json_string)
     return success, object
 end
 
+function M.decode_yaml(yaml_string)
+    local function load()
+        -- embed require call too, that way if lyaml is not installed locally, that gets logged too
+        local lyaml = require("lyaml")
+        lyaml.load(yaml_string)
+    end
+    local success, object = xpcall(load, M.xpcall_log_failures)
+    if not success then
+        log:error("failed to decode yaml: ", yaml_string)
+    end
+    return success, object
+end
+
 --- call function with xpcall and log failures
 --- callers can focus on handling errors, not recording them
 ---
