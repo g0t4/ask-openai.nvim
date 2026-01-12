@@ -12,9 +12,18 @@ function M.format(lines, tool_call, message)
         local json_args_parsed, args = xpcall(function()
             return vim.json.decode(args_json)
         end, function() end) -- TODO is there an xpcall alternative that doesn't expect on failure (b/c I don't need a callback in that case)
-
-        if json_args_parsed and args.command then
-            tool_header = args.command
+        if not json_args_parsed then
+            -- TODO is this the random command failure I've encountered?
+            log:error("Failed to parse tool call arguments: ", vim.inspect(args_json))
+            lines:append_styled_text("Failed to parse tool call arguments: " .. vim.inspect(args_json))
+        else
+            if args.command then
+                tool_header = args.command
+            else
+                log:error("Missing command in tool call arguments: ", vim.inspect(args_json))
+                lines:append_styled_text("Missing command in tool call arguments: " .. vim.inspect(args_json))
+                -- TODO add more defensive checks, and can I wrap the full formatter to catch unhandled exceptions outside of these xpcalls?
+            end
         end
     end
 
