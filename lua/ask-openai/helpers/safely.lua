@@ -2,7 +2,7 @@ local log = require("ask-openai.logs.logger").predictions()
 
 local M = {}
 
-local function xpcall_log_failures(message)
+function M.xpcall_log_failures(message)
     -- * capture more than just the message
     -- consitent logging of failure details here, then consumers can merely focus on their context on an error (args they passed)
     local traceback = debug.traceback("foooo", 3)
@@ -18,7 +18,7 @@ function M.decode_json(json_string)
     local decode = function()
         return vim.json.decode(json_string)
     end
-    local success, object = xpcall(decode, xpcall_log_failures)
+    local success, object = xpcall(decode, M.xpcall_log_failures)
     if not success then
         log:error("failed to decode json: ", json_string)
     end
