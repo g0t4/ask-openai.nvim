@@ -39,7 +39,10 @@ local function add_tool_header(lines, tool_call, message)
             header = "✅ " .. header
         end
     end
-    -- gptoss uses a heredoc for a python script (with \n between python statements) in the command! (anything to not use the stdin arg lol)...
+    -- gptoss sometimes uses a heredoc for a python script
+    --   with \n between python statements
+    --   stuffed in the command field!
+    --   (anything to not use the stdin arg, lol)
     lines:append_styled_text(header, hl_group)
 end
 
