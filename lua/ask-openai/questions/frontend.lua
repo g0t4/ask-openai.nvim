@@ -427,11 +427,6 @@ local function handle_rx_messages_updated()
     vim.schedule(function()
         lines.marks_ns_id = QuestionsFrontend.thread.last_request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
         QuestionsFrontend.chat_window.buffer:replace_with_styled_lines_after(QuestionsFrontend.this_turn_chat_start_line_base0, lines)
-        -- TODO bug here with: 'replacement string' item contains newlines
-        --    if I read logs right, this seems to cause it:
-        --      {"command":"python - <<'PY'\nimport sys, pathlib\nsys.path.append('auto_edit')\nfrom new_silence.player import plot_helpers\nprint('module loaded')\nPY"}
-        --       that is it... question though, is it putting a tool call into the final assistant message?
-        --         I vaguely recall issues with role not provided too (not sure if overlapping bug or different)
     end)
 end
 
