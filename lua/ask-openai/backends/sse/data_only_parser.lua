@@ -57,7 +57,7 @@ function SSEDataOnlyParser:flush_dregs()
         return nil
     end
 
-    local success, sse_parsed = safely.call(vim.json.decode, self._buffer)
+    local success, sse_parsed = safely.decode_json(self._buffer)
     if not success then
         return "invalid json in dregs: " .. self._buffer
     end
