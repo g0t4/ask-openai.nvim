@@ -170,15 +170,12 @@ The semantic_grep tool:
         user_message = user_message .. "\n\n" .. code_context
     end
 
-    -- * /file - current file
-    local function current_file_message()
-        return MessageBuilder:new()
+    if context.includes.current_file then
+        local entire_file_message = MessageBuilder:new()
             :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request:")
             :md_current_buffer(same_file_bufnr)
             :to_text()
-    end
-    local entire_file_message = context.includes.current_file and current_file_message() or nil
-    if entire_file_message then
+
         -- skip code_context if entire file selected (user intent matters, entire file is vague)
         lines:append_folded_styled_text(entire_file_message, "")
         user_message = user_message .. "\n\n" .. entire_file_message
