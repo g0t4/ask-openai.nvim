@@ -1,4 +1,5 @@
 local log = require("ask-openai.logs.logger").predictions()
+local safely = require("ask-openai.helpers.safely")
 
 -- stream parser will sit BELOW a chat completions client
 -- this will buffer data fields in multiline scenarios
@@ -56,7 +57,7 @@ function SSEDataOnlyParser:flush_dregs()
         return nil
     end
 
-    local success, sse_parsed = pcall(vim.json.decode, self._buffer)
+    local success, sse_parsed = safely.call(vim.json.decode, self._buffer)
     if not success then
         return "invalid json in dregs: " .. self._buffer
     end
