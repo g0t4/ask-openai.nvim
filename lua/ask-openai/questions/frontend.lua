@@ -65,15 +65,6 @@ local function ask_question_command(opts)
         selected_text = selection.original_text
     end
 
-    -- * /file - current file
-    -- FYI could use same_file_bufnr to move this down (past ensure_chat_window_is_open)
-    local function current_file_message()
-        return MessageBuilder:new()
-            :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request:")
-            :md_current_buffer(same_file_bufnr)
-            :to_text()
-    end
-
     -- FYI! careful if you move above code below opening the chat window, make sure to pass same_file_bufnr to get the right bffer after dchat window opens
     QuestionsFrontend.abort_last_request()
     use_tools = context.includes.use_tools or false
@@ -175,6 +166,14 @@ The semantic_grep tool:
             lines:append_styled_text(code_context, "")
         end
         user_message = user_message .. "\n\n" .. code_context
+    end
+
+    -- * /file - current file
+    local function current_file_message()
+        return MessageBuilder:new()
+            :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request:")
+            :md_current_buffer(same_file_bufnr)
+            :to_text()
     end
     local entire_file_message = context.includes.current_file and current_file_message() or nil
     if entire_file_message then
