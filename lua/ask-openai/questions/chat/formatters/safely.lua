@@ -30,6 +30,7 @@ function M.decode_json_always_logged(json_string)
     if success then
         log:info("decoded object: " .. vim.inspect(object))
     end
+    return success, object
 end
 
 return M
