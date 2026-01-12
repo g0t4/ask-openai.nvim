@@ -74,7 +74,6 @@ local function ask_question_command(opts)
             :to_text()
     end
     local entire_file_message = context.includes.current_file and current_file_message() or nil
-    local file_name = files.get_file_relative_path(same_file_bufnr)
 
     -- FYI! careful if you move above code below opening the chat window, make sure to pass same_file_bufnr to get the right bffer after dchat window opens
     QuestionsFrontend.abort_last_request()
@@ -162,6 +161,7 @@ The semantic_grep tool:
     local user_message = cleaned_prompt
     local code_context = nil
     if selected_text then
+        local file_name = files.get_file_relative_path(same_file_bufnr)
         code_context =
             "I selected the following\n"
             .. "```" .. file_name .. "\n"
