@@ -2,13 +2,16 @@ local log = require("ask-openai.logs.logger").predictions()
 
 local M = {}
 
+--- * consistent failure logs
+--- callers should focus on handling errors, not on recording them!
 function M.xpcall_log_failures(error_message)
-    -- * capture more than just the message
-    -- consitent logging of failure details here, then consumers can merely focus on their context on an error (args they passed)
     local trace = debug.traceback("safely.xpcall_log_failures", 3)
     log:error("on_xpcall_error.message", error_message)
     log:error("on_xpcall_error.traceback", trace)
     return {
+        -- this is returned to callers of xpcall
+        -- normally you'd only get the error_message with .pcall()
+        -- now callers get message and traceback
         message = error_message,
         traceback = trace
     }
@@ -25,6 +28,7 @@ end
 function M.decode_json_always_logged(json_string)
     local success, object = M.decode_json(json_string)
     if success then
+        -- * key difference, this logs success too:
         log:info("decoded object: " .. vim.inspect(object))
     end
     return success, object
