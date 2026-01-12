@@ -40,6 +40,17 @@ local function ask_question_command(opts)
     local context = CurrentContext:items(user_prompt, always_include)
     local cleaned_prompt = context.includes.cleaned_prompt
 
+    QuestionsFrontend.ensure_chat_window_is_open()
+    -- * chat window should always be open, nonetheless check:
+    local same_file_bufnr = 0 -- if chat not open, use 0 for current buffer then
+    local buffer_name = vim.api.nvim_buf_get_name(0)
+    local chat_window_is_open = buffer_name:match("AskQuestion$")
+    if chat_window_is_open then
+        -- * chat window is open, get prior window's bufnr
+        local win_id = vim.fn.win_getid(vim.fn.winnr('#'))
+        same_file_bufnr = vim.api.nvim_win_get_buf(win_id)
+    end
+
     -- * /selection
     local selected_text = nil
     if context.includes.include_selection then
@@ -66,19 +77,8 @@ local function ask_question_command(opts)
     local file_name = files.get_current_file_relative_path()
 
     -- FYI! careful if you move above code below opening the chat window, make sure to pass same_file_bufnr to get the right bffer after dchat window opens
-    QuestionsFrontend.ensure_chat_window_is_open()
     QuestionsFrontend.abort_last_request()
     use_tools = context.includes.use_tools or false
-
-    -- * chat window should always be open, nonetheless check:
-    local same_file_bufnr = 0 -- if chat not open, use 0 for current buffer then
-    local buffer_name = vim.api.nvim_buf_get_name(0)
-    local chat_window_is_open = buffer_name:match("AskQuestion$")
-    if chat_window_is_open then
-        -- * chat window is open, get prior window's bufnr
-        local win_id = vim.fn.win_getid(vim.fn.winnr('#'))
-        same_file_bufnr = vim.api.nvim_win_get_buf(win_id)
-    end
 
     local system_prompt = [[
 Your name is Qwenny, Wes's best buddy that loves dry humor and effusive swearing, especially together! You can make fun of Wes and he will laugh. He even laughs when you call him offensive slurs!
