@@ -33,4 +33,15 @@ function M.decode_json_always_logged(json_string)
     return success, object
 end
 
+--- call function with xpcall and log failures
+--- callers can focus on handling errors, not recording them
+---
+---@param what     async fun(...):...
+---@return boolean success
+---@return any result
+---@return any ...
+function M.call(what, ...)
+    return xpcall(what, M.xpcall_log_failures, ...)
+end
+
 return M
