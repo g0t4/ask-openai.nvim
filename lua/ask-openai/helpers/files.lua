@@ -29,6 +29,18 @@ function M.read_file_string(file_path)
     return content
 end
 
+function M.get_file_absolute_path(bufnr)
+    bufnr = bufnr or 0
+    return vim.api.nvim_buf_get_name(bufnr)
+end
+
+function M.get_file_relative_path(bufnr)
+    bufnr = bufnr or 0
+    local absolute_path = vim.api.nvim_buf_get_name(bufnr)
+    local relative_path = vim.fn.fnamemodify(absolute_path, ":.")
+    return relative_path
+end
+
 function M.get_current_file_relative_path()
     -- returns full path to files outside of PWD
     return vim.fn.expand("%")
