@@ -24,6 +24,9 @@ local function code(content, language)
     return "```" .. lang_prefix .. "\n" .. content .. "\n```"
 end
 
+---@param args string
+---@param message RxAccumulatedMessage
+---@return string text -- note, not lines
 local function handle_apply_patch_args(args, message)
     if message:is_done_streaming() then
         -- FYI this is the only time to log failures, when done streaming:
@@ -32,8 +35,8 @@ local function handle_apply_patch_args(args, message)
             return code(decoded.patch, "diff")
         end
         -- * fallback is to show unparsed, final args
-        -- TODO warn user?
-        return args
+        -- also add a warning that will show in the chat window
+        return args .. "\n\nFailed to decode as JSON"
     end
 
     local json_prefix = args:match('^{%s*"patch"%s*:%s*"')
