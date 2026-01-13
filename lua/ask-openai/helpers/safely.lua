@@ -34,6 +34,14 @@ function M.decode_json_always_logged(json_string)
     return success, object
 end
 
+--- use this when you are unsure if the JSON is valid
+--- and you don't need to know a reason why if it fails
+--- i.e. when parsing partial args from streaming tool call request
+function M.decode_json_ignore_failure(json_string)
+    local success, object = pcall(vim.json.decode, json_string)
+    return success, object
+end
+
 function M.decode_yaml(yaml_string)
     local function load()
         -- embed require call too, that way if lyaml is not installed locally, that gets logged too

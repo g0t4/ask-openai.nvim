@@ -25,18 +25,13 @@ local function code(content, language)
 end
 
 local function handle_apply_patch_args(args, message)
-    -- FYI I am on the fence w.r.t. markdown diff codeblock
-    -- and probably not JSON, though that is a fallback I have yet to encounter
-    local function json_decode_patch(arg_str)
-        local ok, decoded = safely.decode_json(arg_str)
+    if message:is_done_streaming() then
+        -- FYI this is the only time to log failures, when done streaming:
+        local ok, decoded = safely.decode_json(args)
         if ok and type(decoded) == "table" and decoded.patch then
             return code(decoded.patch, "diff")
         end
-        return arg_str
-    end
-
-    if message:is_done_streaming() then
-        return json_decode_patch(args)
+        return args
     end
 
     local json_prefix = args:match('^{%s*"patch"%s*:%s*"')
@@ -46,14 +41,16 @@ local function handle_apply_patch_args(args, message)
 
     -- * try to complete the JSON string and decode it
     -- assumption is, if final '"}' is present then it would be done streaming (sans maybe one delta?)
-    local try_json = args .. '"}'
-    local ok, decoded = safely.decode_json(try_json)
+    local try_finish_args = args .. '"}'
+    local ok, decoded = safely.decode_json_ignore_failure(try_finish_args)
     if ok and type(decoded) == "table" and decoded.patch then
         return code(decoded.patch, "diff")
     else
-        -- FYI if I have a few deltas where it's not yet marked message done...
-        --  strip the prefix and just show whatever after that
-        return json_decode_patch(args)
+        local ok, decoded = safely.decode_json_ignore_failure(args)
+        if ok and type(decoded) == "table" and decoded.patch then
+            return code(decoded.patch, "diff")
+        end
+        return args
     end
 end
 
