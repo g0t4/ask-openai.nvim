@@ -21,6 +21,7 @@
 import subprocess
 import sys
 import re
+from pathlib import Path
 
 # cat lua/ask-openai/tools/inproc/test-multi-patch.patch | python3 lua/ask-openai/tools/inproc/apply_patch_splitter.py
 
@@ -50,7 +51,8 @@ def main() -> None:
         for line in patch.split("\n"):
             print(f"  {line}")
         print()
-        subprocess.run(["apply_patch"], input=patch, text=True, check=True)
+        cmd = Path("~/repos/github/openai/codex/codex-rs/target/release/apply_patch").expanduser()
+        subprocess.run([cmd], input=patch, text=True, check=True)
 
 if __name__ == "__main__":
     main()
