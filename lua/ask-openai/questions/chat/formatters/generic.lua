@@ -31,6 +31,8 @@ local function handle_apply_patch_args(args, message)
         if ok and type(decoded) == "table" and decoded.patch then
             return code(decoded.patch, "diff")
         end
+        -- * fallback is to show unparsed, final args
+        -- TODO warn user?
         return args
     end
 
@@ -46,10 +48,12 @@ local function handle_apply_patch_args(args, message)
     if ok and type(decoded) == "table" and decoded.patch then
         return code(decoded.patch, "diff")
     else
+        -- * fallback => try parse as-is
         local ok, decoded = safely.decode_json_ignore_failure(args)
         if ok and type(decoded) == "table" and decoded.patch then
             return code(decoded.patch, "diff")
         end
+        -- * fallback => return unparsed
         return args
     end
 end
