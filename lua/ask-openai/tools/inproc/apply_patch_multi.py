@@ -29,9 +29,10 @@ def main() -> None:
     # Read all input from STDIN
     content = sys.stdin.read()
 
+    apply_patch_rs = Path("~/repos/github/openai/codex/codex-rs/target/release/apply_patch").expanduser()
     count_begins = len(re.findall(r"^\*\*\* Begin Patch$", content, re.MULTILINE))
     if count_begins <= 1:
-        subprocess.run(["apply_patch"], input=content, text=True, check=True)
+        subprocess.run([apply_patch_rs], input=content, text=True, check=True)
         return
 
     # Split the content on each "*** Begin Patch" marker
@@ -51,8 +52,7 @@ def main() -> None:
         for line in patch.split("\n"):
             print(f"  {line}")
         print()
-        cmd = Path("~/repos/github/openai/codex/codex-rs/target/release/apply_patch").expanduser()
-        subprocess.run([cmd], input=patch, text=True, check=True)
+        subprocess.run([apply_patch_rs], input=patch, text=True, check=True)
 
 if __name__ == "__main__":
     main()
