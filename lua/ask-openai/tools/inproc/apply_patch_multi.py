@@ -47,6 +47,9 @@ def main() -> None:
 
     for i, patch in enumerate(patches, start=1):
         print(f"Applying patch #{i}...")
+        for line in patch.split("\n"):
+            print(f"  {line}")
+        print()
         subprocess.run(["apply_patch"], input=patch, text=True, check=True)
 
 if __name__ == "__main__":
