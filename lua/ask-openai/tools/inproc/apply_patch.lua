@@ -84,14 +84,16 @@ function M.call(parsed_args, callback)
 
     -- * python variant in gptoss repo:
     -- cat ~/repos/github/g0t4/gpt-oss/gpt_oss/tools/example-add.patch | ~/repos/github/g0t4/gpt-oss/.venv/bin/python3 ~/repos/github/g0t4/gpt-oss/gpt_oss/tools/apply_patch.py
-    -- local python = vim.fn.expand("~/repos/github/g0t4/gpt-oss/.venv/bin/python3")
+    local python = vim.fn.expand("~/repos/github/g0t4/gpt-oss/.venv/bin/python3")
     -- local apply_patch_py = vim.fn.expand("~/repos/github/g0t4/gpt-oss/gpt_oss/tools/apply_patch.py")
+    local apply_patch_multi = vim.fn.expand("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/apply_patch_multi.py")
 
-    local apply_patch_rs = vim.fn.expand("~/repos/github/openai/codex/codex-rs/target/release/apply_patch")
+    -- local apply_patch_rs = vim.fn.expand("~/repos/github/openai/codex/codex-rs/target/release/apply_patch")
+    -- local result = vim.fn.system({ apply_patch_rs }, patch)
 
     -- PRN use async and get callback?
     -- FYI do not differentiate STDOUT/STDERR unless you can prove it fixes a problem with model performance
-    local result = vim.fn.system({ apply_patch_rs }, patch)
+    local result = vim.fn.system({ python, apply_patch_multi }, patch)
     log:info("apply_patch - vim.v.shell_error", vim.v.shell_error)
 
     -- apply_patch tool behaviors:
