@@ -16,7 +16,6 @@ def _get_cached_parser(language):
     return parser
 
 def get_cached_parser_for_path(path) -> tuple[Parser | None, str]:
-
     language = path.suffix[1:]
     if language is None:
         # PRN shebang?
@@ -57,7 +56,11 @@ def get_cached_parser_for_path(path) -> tuple[Parser | None, str]:
         # not (yet?): zsh, snippet, applescript?
 
         # PRN attempt to use extension as is? as fallback?
-        logger.warning(f'no tree-sitter parser for: {language=}')
-        return None, language
+        if language not in _warned_languages:
+            logger.warning(f'no tree-sitter parser for: {language=}')
+            _warned_languages.add(language)
 
+        return None, language
     return _get_cached_parser(language), language
+
+_warned_languages = set()
