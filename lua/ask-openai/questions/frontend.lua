@@ -93,17 +93,17 @@ local function ask_question_command(opts)
     local system = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/questions/prompts/system_message.md")
     -- PRN "NEVER add copyright or license headers unless specifically requested."
 
-    local tools
+    local tool_definitions
     if use_tools then
         -- PRN build out more detailed guidance: review Claude Code and Codex prompts
-        local tools_instructions = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/questions/prompts/tools.md")
-        tools_instructions = tools_instructions:gsub("INSERT_CWD", vim.fn.getcwd())
-        system = system .. "\n\n" .. tools_instructions
+        local tool_instructs = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/questions/prompts/tools.md")
+        tool_instructs = tool_instructs:gsub("INSERT_CWD", vim.fn.getcwd())
+        system = system .. "\n\n" .. tool_instructs
 
-        local system_message_instructions
-        tools, system_message_instructions = tool_router.openai_tools()
-        if system_message_instructions then
-            system = system .. "\n\n" .. table.concat(system_message_instructions, "\n")
+        local tool_provided_instructs
+        tool_definitions, tool_provided_instructs = tool_router.openai_tools()
+        if tool_provided_instructs then
+            system = system .. "\n\n" .. table.concat(tool_provided_instructs, "\n")
         end
     end
 
@@ -221,7 +221,7 @@ local function ask_question_command(opts)
             -- local body_overrides = model_params.new_qwen3coder_llama_server_chat_body({
             messages = messages,
             model = "", -- irrelevant for llama-server
-            tools = tools,
+            tools = tool_definitions,
         })
 
         QuestionsFrontend.thread = ChatThread:new(body_overrides, base_url)
