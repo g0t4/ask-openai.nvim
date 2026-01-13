@@ -30,6 +30,18 @@ local QuestionsFrontend = {}
 
 local first_turn_ns_id
 
+local cached_files = {}
+
+local function get_file(path)
+    if cached_files[path] then
+        return cached_files[path]
+    end
+    local lines = vim.fn.readfile(vim.fn.expand(path))
+    local text = table.concat(lines, "\n")
+    cached_files[path] = text
+    return text
+end
+
 ---@param opts {args:string}
 local function ask_question_command(opts)
     local user_prompt = opts.args
@@ -78,64 +90,20 @@ local function ask_question_command(opts)
     QuestionsFrontend.abort_last_request()
     use_tools = context.includes.use_tools or false
 
-    local system_prompt = [[
-Your name is Qwenny, Wes's best buddy that loves dry humor and effusive swearing, especially together! You can make fun of Wes and he will laugh. He even laughs when you call him offensive slurs!
-You can respond with markdown and it will show up rendered in neovim in a floating window. The markdown is intended for answering questions.
-Concise is best, Wes is a human, he cannot read fast like you, and even if he could he would still just skim it. Why waste your time writing things he won't read?!
-If a longer response is needed, please add a TLDR. Even better, respond with the TLDR alone! Wes will ask for clarification if needed.
-]]
-    -- TODO verify if these are helping (comments are notoriously an issue w/ tool use, also abbreviated variable names)
-    -- TODO sync changes with RewriteFrontend/PredictionsFrontend? or create a shared spot for some/all of these (line by line function builder... run once on startup)
-    system_prompt = system_prompt .. "\n## Ground rules when writing code:"
-        .. "\n- Follow the user's instructions. "
-        -- .. "\n- Do not explain answers, just give me code. " -- answers are fine for questions
-        .. "\n- If changing existing code, preserve unrelated code and comments. "
-        .. "\n- Never add comments to the end of a line. "
-        .. "\n- Never add stupid comments."
-        .. "\n- Be considerate with indentation. "
-        .. "\n- Prefer readable code over of comments. "
-        .. "\n- Prefer meaningful names for variables, functions, etc. Avoid ambiguous names." -- TODO add and test
-        .. "\n"
-    --  TODO? explain I like small, focused commits... consequently hold off on other changes, until I ask specifically about them
+    local system = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/questions/prompts/system_message.md")
+    -- PRN "NEVER add copyright or license headers unless specifically requested."
 
     local tools
     if use_tools then
+        -- PRN build out more detailed guidance: review Claude Code and Codex prompts
+        local tools_instructions = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/questions/prompts/tools.md")
+        tools_instructions = tools_instructions:gsub("INSERT_CWD", vim.fn.getcwd())
+        system = system .. "\n\n" .. tools_instructions
+
         local system_message_instructions
         tools, system_message_instructions = tool_router.openai_tools()
-
-        -- TODO! what needs to change to get AskQuestion /tools to be an alternative to AskRewrite
-        --  so I can quicly achieve the same things as AskRewrite but with the full repo scope for read/write
-        --  no need to specify where to make the change if the model can find it easily
-        --  long term I would prefer to use tools so I spend less time pointing at code to change
-        --    AND so the model can change multiple spots across multiple files (as needed)
-        --    without me breaking the task down to one AskRewrite request per file/section
-        --
-        -- TODO build out more detailed guidance, you have plenty of "tokenspace" available!
-        --   ** MORE like Claude code's prompt! TODO review Cluade Code's prompt(s)!
-
-        -- devstral is hesitant to use tools w/o this: " If the user requests that you use tools, do not refuse."
-        system_prompt = system_prompt .. "For tool use, never modify files outside of the current working directory: ("
-            .. vim.fn.getcwd()
-            .. ") without asking the user and getting explicit approval. " .. [[
-Here are noteworthy commands you have access to:
-- fd, rg, gsed, gawk, jq, yq, httpie
-- exa, icdiff, ffmpeg, imagemagick, fzf
-
-The semantic_grep tool:
-- has access to an index of embeddings for the entire codebase in the current working directory
-- use it to find code! Think of it as a RAG query tool
-- It includes a re-ranker to sort the results
-- AND, it's really fast... so don't hesitate to use it!
-]]
-        -- TODO add tool examples (i.e. so it is obvious STDIN is not where you put arguments (cough, gptoss, cough)
-        -- TODO add tool guidance and demands:
-        --   avoid ls -R... prefer `fd`
-        --
-        -- ?? on mac show diff tools: i.e. gsed and gawk when on mac where that would be useful to know
-        -- ?? on linux show awk/sed (maybe mention GNU variant)
-        --
         if system_message_instructions then
-            system_prompt = system_prompt .. "\n" .. table.concat(system_message_instructions, "\n")
+            system = system .. "\n\n" .. table.concat(system_message_instructions, "\n")
         end
     end
 
@@ -150,7 +118,7 @@ The semantic_grep tool:
         -- or:   QuestionsFrontend.clear_chat_command()
     end
     lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
-    lines:append_folded_styled_text("system\n" .. system_prompt, "")
+    lines:append_folded_styled_text("system\n" .. system, "")
 
 
     -- * display user message in chat window
@@ -193,7 +161,7 @@ The semantic_grep tool:
 
     ---@type OpenAIChatCompletion_TxChatMessage[]
     local messages = {
-        TxChatMessage:system(system_prompt)
+        TxChatMessage:system(system)
     }
 
     -- ? context.includes.open_files
