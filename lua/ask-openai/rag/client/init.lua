@@ -101,6 +101,7 @@ function M.get_filetypes_for_workspace()
         pl = "perl",
         pm = "perl",
         py = "python", -- *
+        patch = "diff",
         rb = "ruby",
         rs = "rust",
         scm = "scheme",

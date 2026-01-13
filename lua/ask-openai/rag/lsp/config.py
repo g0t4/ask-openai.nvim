@@ -15,6 +15,7 @@ default_includes: list[str] = [
         "cu", "cuh", "cl", # GPU
         "rs",
         "go",
+        "patch",
     ] # yapf: disable
 
 default_ignores: list[str] = []
