@@ -46,7 +46,7 @@ def main() -> None:
     print(f"Found {count_begins} patch blocks, running one at a time...")
 
     for i, patch in enumerate(patches, start=1):
-        print(f"Applying patch #{i}...")
+        print(f"Applying patch #{i}:")
         for line in patch.split("\n"):
             print(f"  {line}")
         print()
