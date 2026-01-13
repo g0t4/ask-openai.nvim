@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Add File: foo.py
++ foo
+*** End Patch
+*** Begin Patch
+*** Add File: bar.py
++ bar
+*** End Patch
