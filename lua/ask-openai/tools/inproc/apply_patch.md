@@ -1,14 +1,4 @@
-When requested to perform coding-related tasks, you MUST adhere to the following criteria when executing the task:
-
-- Use `apply_patch` to edit files.
-- If completing the user's task requires writing or modifying files:
-  - Your code and final answer should follow these _CODING GUIDELINES_:
-    - Avoid unneeded complexity in your solution. Minimize program size.
-    - Keep changes consistent with the style of the existing codebase. Changes should be minimal and focused on the task.
-    - NEVER add copyright or license headers unless specifically requested.
-- Never implement function stubs. Provide complete working implementations.
-
-§ `apply_patch` Specification
+## Use `apply_patch` to edit files.
 
 Your patch language is a stripped‑down, file‑oriented diff format designed to be easy to parse and safe to apply. You can think of it as a high‑level envelope:
 
