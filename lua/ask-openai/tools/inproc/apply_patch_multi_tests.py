@@ -15,22 +15,26 @@ def load_module():
     loader.exec_module(mod)
     return mod
 
-def test_de_dupe_end_patch(monkeypatch, capsys):
-    """Consecutive *** End Patch lines should collapse to a single line (dry‑run)."""
-    content = "*** Begin Patch\n+foo\n*** End Patch\n*** End Patch\n*** End Patch\n"
-    monkeypatch.setattr(sys, "stdin", StringIO(content))
-    monkeypatch.setattr(sys, "argv", ["apply_patch_multi.py", "--dry-run"])
-
-    mod = load_module()
-    mod.main()
-
-    out = capsys.readouterr().out
-    assert out.count("*** End Patch") == 1
-
-def test_multi_patch_split(monkeypatch, capsys):
-    """A file with multiple patches should be split and each applied separately (dry‑run)."""
-    content = ("*** Begin Patch\n+foo\n*** End Patch\n"
-               "*** Begin Patch\n+bar\n*** End Patch\n")
+def test_de_dupe_in_middle_between_multiple_patches(monkeypatch, capsys):
+    # key parts:
+    # 1. two Ends in the middle (with a Begin after)...
+    #    ensure replace two Ends with one End doesn't mess up splitting out second Patch block
+    # 2. ends with multiple End Patch lines... make sure they collapse into one
+    #    last one has no \n at end of line, curveball too
+    # 3. two Patch blocks, must be split apart and echo'd back what they will do
+    #
+    # FYI careful, don't try to patch this file ;)
+    content = ("""*** Begin Patch
+*** Add File: foo.py
++ foo
+*** End Patch
+*** End Patch
+*** Begin Patch
+*** Add File: bar.py
++ bar
+*** End Patch
+*** End Patch
+*** End Patch""")
     monkeypatch.setattr(sys, "stdin", StringIO(content))
     monkeypatch.setattr(sys, "argv", ["apply_patch_multi.py", "--dry-run"])
 
@@ -39,5 +43,30 @@ def test_multi_patch_split(monkeypatch, capsys):
 
     out = capsys.readouterr().out
     assert "Found 2 patch blocks" in out
-    assert "Applying patch #1:" in out
-    assert "Applying patch #2:" in out
+    assert """*** Begin Patch
+*** Add File: foo.py
++ foo
+*** End Patch
+*** Begin Patch
+*** Add File: bar.py
++ bar
+*** End Patch
+
+
+Found 2 patch blocks, running one at a time...
+## Applying patch #1:
+*** Begin Patch
+*** Add File: foo.py
++ foo
+*** End Patch
+
+
+## Applying patch #2:
+*** Begin Patch
+*** Add File: bar.py
++ bar
+*** End Patch
+
+""" in out
+
+    # print(out)

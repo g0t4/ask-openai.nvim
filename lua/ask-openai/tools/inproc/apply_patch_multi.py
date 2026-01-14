@@ -48,7 +48,6 @@ def main() -> None:
 
     apply_patch_rs = Path("~/repos/github/openai/codex/codex-rs/target/release/apply_patch").expanduser()  # https://regexr.com/8j95m
     count_begins = len(re.findall(r"^\*\*\* Begin Patch$", content, flags=re.MULTILINE))
-    print(f'{count_begins=}')
     if count_begins <= 1:
         if not args.dry_run:
             subprocess.run([apply_patch_rs], input=content, text=True, check=True)
@@ -67,9 +66,9 @@ def main() -> None:
     print(f"Found {count_begins} patch blocks, running one at a time...")
 
     for i, patch in enumerate(patches, start=1):
-        print(f"Applying patch #{i}:")
+        print(f"## Applying patch #{i}:")
         for line in patch.split("\n"):
-            print(f"  {line}")
+            print(f"{line}")
         print()
         if not args.dry_run:
             subprocess.run([apply_patch_rs], input=patch, text=True, check=True)
