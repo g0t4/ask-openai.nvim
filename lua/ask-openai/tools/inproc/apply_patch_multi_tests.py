@@ -5,15 +5,7 @@ import importlib.util
 import importlib.machinery
 
 import pytest
-
-def load_module():
-    """Load the apply_patch_multi module from its source file."""
-    module_path = Path(__file__).parent / "apply_patch_multi.py"
-    loader = importlib.machinery.SourceFileLoader("apply_patch_multi", str(module_path))
-    spec = importlib.util.spec_from_loader(loader.name, loader)
-    mod = importlib.util.module_from_spec(spec)
-    loader.exec_module(mod)
-    return mod
+import apply_patch_multi
 
 def test_de_dupe_in_middle_between_multiple_patches(monkeypatch, capsys):
     # key parts:
@@ -35,11 +27,10 @@ def test_de_dupe_in_middle_between_multiple_patches(monkeypatch, capsys):
 *** End Patch
 *** End Patch
 *** End Patch""")
+
     monkeypatch.setattr(sys, "stdin", StringIO(content))
     monkeypatch.setattr(sys, "argv", ["apply_patch_multi.py", "--dry-run"])
-
-    mod = load_module()
-    mod.main()
+    apply_patch_multi.main()
 
     out = capsys.readouterr().out
     assert "Found 2 patch blocks" in out
