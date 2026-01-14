@@ -47,7 +47,7 @@ def main() -> None:
         print()
 
     apply_patch_rs = Path("~/repos/github/openai/codex/codex-rs/target/release/apply_patch").expanduser()  # https://regexr.com/8j95m
-    count_begins = len(re.findall(r"\*\*\* Begin Patch", content))
+    count_begins = len(re.findall(r"^\*\*\* Begin Patch$", content))
     if count_begins <= 1:
         if not args.dry_run:
             subprocess.run([apply_patch_rs], input=content, text=True, check=True)
@@ -55,7 +55,7 @@ def main() -> None:
 
     # Split the content on each "*** Begin Patch" marker
     # Keep the marker with each subsequent chunk
-    raw_patches = re.split(r"(\*\*\* Begin Patch)", content)
+    raw_patches = re.split(r"(^\*\*\* Begin Patch$)", content)
     # Recombine the split parts so each patch starts with the marker
     patches = []
     for i in range(1, len(raw_patches), 2):
