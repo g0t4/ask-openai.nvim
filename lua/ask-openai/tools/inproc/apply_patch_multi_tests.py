@@ -10,7 +10,10 @@ import pytest
 # Fixture to replace subprocess.run with a dummy that records calls
 @pytest.fixture(autouse=True)
 def mock_subprocess_run(monkeypatch):
-    calls = []
+    """Patch ``subprocess.run`` to a dummy that records its arguments."""
+    import subprocess
+
+    calls: list[dict] = []
 
     def dummy_run(cmd, input=None, text=None, check=None):  # noqa: D401
         calls.append({"cmd": cmd, "input": input, "text": text, "check": check})
@@ -18,7 +21,7 @@ def mock_subprocess_run(monkeypatch):
             returncode = 0
         return Result()
 
-    monkeypatch.setattr("subprocess.run", dummy_run)
+    monkeypatch.setattr(subprocess, "run", dummy_run)
     return calls
 
 
@@ -65,4 +68,3 @@ def test_multi_patch_split(monkeypatch, capsys, mock_subprocess_run):
     assert "Applying patch #2:" in out
     # In dry‑run mode subprocess.run should not have been called
     assert mock_subprocess_run == []
-
