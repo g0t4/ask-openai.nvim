@@ -13,11 +13,6 @@
 # ...
 # *** End Patch
 
-# for now I just want to split on Begin Patch
-# and then call apply_patch for each
-
-# read over STDIN
-
 import subprocess
 import sys
 import re
@@ -26,7 +21,7 @@ from pathlib import Path
 # cat lua/ask-openai/tools/inproc/test-multi-patch.patch | python3 lua/ask-openai/tools/inproc/apply_patch_splitter.py
 
 def main() -> None:
-    # Read all input from STDIN
+
     content = sys.stdin.read()
 
     apply_patch_rs = Path("~/repos/github/openai/codex/codex-rs/target/release/apply_patch").expanduser()
