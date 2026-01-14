@@ -47,7 +47,7 @@ def main() -> None:
         print()
 
     apply_patch_rs = Path("~/repos/github/openai/codex/codex-rs/target/release/apply_patch").expanduser()  # https://regexr.com/8j95m
-    count_begins = len(re.findall(r"^\*\*\* Begin Patch$", content, re.MULTILINE))
+    count_begins = len(re.findall(r"\*\*\* Begin Patch", content))
     if count_begins <= 1:
         if not args.dry_run:
             subprocess.run([apply_patch_rs], input=content, text=True, check=True)
