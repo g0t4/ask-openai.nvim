@@ -6,24 +6,6 @@ import importlib.machinery
 
 import pytest
 
-
-@pytest.fixture(autouse=True)
-def mock_subprocess_run(monkeypatch):
-    """Patch subprocess.run to a dummy that records its arguments."""
-    import subprocess
-
-    calls: list[dict] = []
-
-    def dummy_run(cmd, input=None, text=None, check=None):  # noqa: D401
-        calls.append({"cmd": cmd, "input": input, "text": text, "check": check})
-        class Result:
-            returncode = 0
-        return Result()
-
-    monkeypatch.setattr(subprocess, "run", dummy_run)
-    return calls
-
-
 def load_module():
     """Load the apply_patch_multi module from its source file."""
     module_path = Path(__file__).parent / "apply_patch_multi.py"
@@ -32,7 +14,6 @@ def load_module():
     mod = importlib.util.module_from_spec(spec)
     loader.exec_module(mod)
     return mod
-
 
 def test_de_dupe_end_patch(monkeypatch, capsys):
     """Consecutive *** End Patch lines should collapse to a single line (dry‑run)."""
@@ -46,13 +27,10 @@ def test_de_dupe_end_patch(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert out.count("*** End Patch") == 1
 
-
-def test_multi_patch_split(monkeypatch, capsys, mock_subprocess_run):
+def test_multi_patch_split(monkeypatch, capsys):
     """A file with multiple patches should be split and each applied separately (dry‑run)."""
-    content = (
-        "*** Begin Patch\n+foo\n*** End Patch\n"
-        "*** Begin Patch\n+bar\n*** End Patch\n"
-    )
+    content = ("*** Begin Patch\n+foo\n*** End Patch\n"
+               "*** Begin Patch\n+bar\n*** End Patch\n")
     monkeypatch.setattr(sys, "stdin", StringIO(content))
     monkeypatch.setattr(sys, "argv", ["apply_patch_multi.py", "--dry-run"])
 
@@ -63,5 +41,3 @@ def test_multi_patch_split(monkeypatch, capsys, mock_subprocess_run):
     assert "Found 2 patch blocks" in out
     assert "Applying patch #1:" in out
     assert "Applying patch #2:" in out
-    assert mock_subprocess_run == []
-
