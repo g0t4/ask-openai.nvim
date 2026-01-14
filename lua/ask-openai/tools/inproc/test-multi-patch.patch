@@ -2,7 +2,10 @@
 *** Add File: foo.py
 + foo
 *** End Patch
+*** End Patch
 *** Begin Patch
 *** Add File: bar.py
 + bar
+*** End Patch
+*** End Patch
 *** End Patch

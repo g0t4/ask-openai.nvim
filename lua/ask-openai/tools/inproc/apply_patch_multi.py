@@ -13,21 +13,44 @@
 # ...
 # *** End Patch
 
+import argparse
+import re
 import subprocess
 import sys
-import re
 from pathlib import Path
 
 # cat lua/ask-openai/tools/inproc/test-multi-patch.patch | python3 lua/ask-openai/tools/inproc/apply_patch_splitter.py
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the patch content without applying it",
+    )
+    args = parser.parse_args()
 
     content = sys.stdin.read()
+
+    # de-duplicate consecutive "*** End Patch" lines (collapse into one)
+    #  often happens w/ gptoss at the end of a patch file
+    #  really no reason not to just ignore this
+    #    maybe a sign that the model "forgot" something...
+    #    more likely just a mistake in "closing" out the patch
+    #    I've noticed this with mutli Patch examples
+    content = re.sub(r"(^\*\*\* End Patch$\n*){2,}", "*** End Patch", content, flags=re.MULTILINE)  # https://regexr.com/8j95j
+
+    if args.dry_run:
+        import rich
+        rich.print("[blue]de-dupe End Patch:[/]")
+        print(content)
+        print()
 
     apply_patch_rs = Path("~/repos/github/openai/codex/codex-rs/target/release/apply_patch").expanduser()
     count_begins = len(re.findall(r"^\*\*\* Begin Patch$", content, re.MULTILINE))
     if count_begins <= 1:
-        subprocess.run([apply_patch_rs], input=content, text=True, check=True)
+        if not args.dry_run:
+            subprocess.run([apply_patch_rs], input=content, text=True, check=True)
         return
 
     # Split the content on each "*** Begin Patch" marker
@@ -47,7 +70,8 @@ def main() -> None:
         for line in patch.split("\n"):
             print(f"  {line}")
         print()
-        subprocess.run([apply_patch_rs], input=patch, text=True, check=True)
+        if not args.dry_run:
+            subprocess.run([apply_patch_rs], input=patch, text=True, check=True)
 
 if __name__ == "__main__":
     main()
