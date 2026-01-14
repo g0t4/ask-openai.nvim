@@ -44,8 +44,6 @@ def test_de_dupe_end_patch(monkeypatch, capsys):
     mod.main()
 
     out = capsys.readouterr().out
-    # De‑duped content printed after the header includes exactly one End Patch line.
-    # The script also prints the header line, so total count should be 2.
     assert out.count("*** End Patch") == 2
 
 
@@ -65,6 +63,5 @@ def test_multi_patch_split(monkeypatch, capsys, mock_subprocess_run):
     assert "Found 2 patch blocks" in out
     assert "Applying patch #1:" in out
     assert "Applying patch #2:" in out
-    # In dry‑run mode subprocess.run should not have been called.
     assert mock_subprocess_run == []
 
