@@ -46,7 +46,7 @@ def test_de_dupe_end_patch(monkeypatch, capsys):
     mod.main()
 
     out = capsys.readouterr().out
-    assert out.count(end) == 2
+    assert out.count(end) == 1
 
 
 def test_multi_patch_split(monkeypatch, capsys, mock_subprocess_run):
