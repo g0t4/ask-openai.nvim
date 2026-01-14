@@ -1,0 +1,32 @@
+*** Begin Patch
+*** Update File: lua/ask-openai/tools/inproc/apply_patch_multi_tests.py
+@@
+-@pytest.fixture(autouse=True)
+-def mock_subprocess_run(monkeypatch):
+-    calls = []
+-
+-    def dummy_run(cmd, input=None, text=None, check=None):  # noqa: D401
+-        calls.append({"cmd": cmd, "input": input, "text": text, "check": check})
+-        class Result:
+-            returncode = 0
+-        return Result()
+-
+-    monkeypatch.setattr("subprocess.run", dummy_run)
+-    return calls
++@pytest.fixture(autouse=True)
++def mock_subprocess_run(monkeypatch):
++    """Patch ``subprocess.run`` to a dummy that records its arguments."""
++    import subprocess
++
++    calls: list[dict] = []
++
++    def dummy_run(cmd, input=None, text=None, check=None):  # noqa: D401
++        calls.append({"cmd": cmd, "input": input, "text": text, "check": check})
++        class Result:
++            returncode = 0
++        return Result()
++
++    monkeypatch.setattr(subprocess, "run", dummy_run)
++    return calls
+*** End Patch
+*** End Patch
