@@ -7,12 +7,10 @@ import importlib.machinery
 import pytest
 
 
+# Fixture to replace subprocess.run with a dummy that records calls
 @pytest.fixture(autouse=True)
 def mock_subprocess_run(monkeypatch):
-    """Patch subprocess.run to a dummy that records its arguments."""
-    import subprocess
-
-    calls: list[dict] = []
+    calls = []
 
     def dummy_run(cmd, input=None, text=None, check=None):  # noqa: D401
         calls.append({"cmd": cmd, "input": input, "text": text, "check": check})
@@ -20,7 +18,7 @@ def mock_subprocess_run(monkeypatch):
             returncode = 0
         return Result()
 
-    monkeypatch.setattr(subprocess, "run", dummy_run)
+    monkeypatch.setattr("subprocess.run", dummy_run)
     return calls
 
 
@@ -36,9 +34,7 @@ def load_module():
 
 def test_de_dupe_end_patch(monkeypatch, capsys):
     """Consecutive *** End Patch lines should collapse to a single line (dry‑run)."""
-    begin = "*" * 3 + " Begin Patch"
-    end = "*" * 3 + " End Patch"
-    content = f"{begin}\n+foo\n{end}\n{end}\n{end}\n"
+    content = "*** Begin Patch\n+foo\n*** End Patch\n*** End Patch\n*** End Patch\n"
     monkeypatch.setattr(sys, "stdin", StringIO(content))
     monkeypatch.setattr(sys, "argv", ["apply_patch_multi.py", "--dry-run"])
 
@@ -46,16 +42,16 @@ def test_de_dupe_end_patch(monkeypatch, capsys):
     mod.main()
 
     out = capsys.readouterr().out
-    assert out.count(end) == 1
+    # The de‑duped content printed after the blue header should contain exactly one End Patch line
+    # There is also the header line printed by the script, so total count should be 2
+    assert out.count("*** End Patch") == 2
 
 
 def test_multi_patch_split(monkeypatch, capsys, mock_subprocess_run):
     """A file with multiple patches should be split and each applied separately (dry‑run)."""
-    begin = "*" * 3 + " Begin Patch"
-    end = "*" * 3 + " End Patch"
     content = (
-        f"{begin}\n+foo\n{end}\n"
-        f"{begin}\n+bar\n{end}\n"
+        "*** Begin Patch\n+foo\n*** End Patch\n"
+        "*** Begin Patch\n+bar\n*** End Patch\n"
     )
     monkeypatch.setattr(sys, "stdin", StringIO(content))
     monkeypatch.setattr(sys, "argv", ["apply_patch_multi.py", "--dry-run"])
@@ -67,5 +63,6 @@ def test_multi_patch_split(monkeypatch, capsys, mock_subprocess_run):
     assert "Found 2 patch blocks" in out
     assert "Applying patch #1:" in out
     assert "Applying patch #2:" in out
+    # In dry‑run mode subprocess.run should not have been called
     assert mock_subprocess_run == []
 
