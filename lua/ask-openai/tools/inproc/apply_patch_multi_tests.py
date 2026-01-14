@@ -36,9 +36,7 @@ def load_module():
 
 def test_de_dupe_end_patch(monkeypatch, capsys):
     """Consecutive *** End Patch lines should collapse to a single line (dry‑run)."""
-    begin = "*" * 3 + " Begin Patch"
-    end = "*" * 3 + " End Patch"
-    content = f"{begin}\n+foo\n{end}\n{end}\n{end}\n"
+    content = "*** Begin Patch\n+foo\n*** End Patch\n*** End Patch\n*** End Patch\n"
     monkeypatch.setattr(sys, "stdin", StringIO(content))
     monkeypatch.setattr(sys, "argv", ["apply_patch_multi.py", "--dry-run"])
 
@@ -46,16 +44,14 @@ def test_de_dupe_end_patch(monkeypatch, capsys):
     mod.main()
 
     out = capsys.readouterr().out
-    assert out.count(end) == 2
+    assert out.count("*** End Patch") == 2
 
 
 def test_multi_patch_split(monkeypatch, capsys, mock_subprocess_run):
     """A file with multiple patches should be split and each applied separately (dry‑run)."""
-    begin = "*" * 3 + " Begin Patch"
-    end = "*" * 3 + " End Patch"
     content = (
-        f"{begin}\n+foo\n{end}\n"
-        f"{begin}\n+bar\n{end}\n"
+        "*** Begin Patch\n+foo\n*** End Patch\n"
+        "*** Begin Patch\n+bar\n*** End Patch\n"
     )
     monkeypatch.setattr(sys, "stdin", StringIO(content))
     monkeypatch.setattr(sys, "argv", ["apply_patch_multi.py", "--dry-run"])
