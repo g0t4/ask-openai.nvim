@@ -38,7 +38,7 @@ def main() -> None:
     #    maybe a sign that the model "forgot" something...
     #    more likely just a mistake in "closing" out the patch
     #    I've noticed this with mutli Patch examples
-    content = re.sub(r"(^\*\*\* End Patch$\n*){2,}", "*** End Patch", content, flags=re.MULTILINE)  # https://regexr.com/8j95j
+    content = re.sub(r"(^\*\*\* End Patch$\n*){2,}", "*** End Patch\n", content, flags=re.MULTILINE)  # https://regexr.com/8j95j
 
     if args.dry_run:
         import rich
