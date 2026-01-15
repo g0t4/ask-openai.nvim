@@ -149,7 +149,54 @@ def _format_content(content: Any) -> str:
     return _format_json(content)
 
 def print_markdown_content(msg: dict, role: str):
+    """Render markdown content from a message.
+
+    If the markdown originates from an automatic RAG context (it starts with
+    ``# Semantic Grep matches:``), we split the content on file headings of the
+    form ``## /path/to/file:line-start-line-end``. For each section we check the
+    file against the pre‑approved list; unapproved files are displayed, while
+    approved ones are hidden unless the ``--all`` flag is used. Unhidden sections
+    are rendered as a fenced code block with a language derived from the file
+    extension, preserving the original text.
+    """
     raw_content = _extract_content(msg)
+
+    # Detect auto‑generated RAG context blocks.
+    if raw_content.startswith("# Semantic Grep matches:"):
+        lines = raw_content.splitlines()
+        # Skip the first summary line.
+        idx = 1
+        while idx < len(lines):
+            header = lines[idx]
+            match = re.match(r"^##\s+(.+?):(\d+)-(\d+)", header)
+            if not match:
+                # If the line does not match a file heading, just move on.
+                idx += 1
+                continue
+
+            file_path = match.group(1)
+            # Collect the following lines until the next heading or end of input.
+            idx += 1
+            snippet_lines: list[str] = []
+            while idx < len(lines) and not lines[idx].startswith("## "):
+                snippet_lines.append(lines[idx])
+                idx += 1
+            snippet = "\n".join(snippet_lines).strip("\n")
+
+            # Skip pre‑approved files unless the user asked to show all.
+            if not SHOW_ALL_FILES and file_path and is_preapproved(str(file_path)):
+                continue
+
+            # Render a heading for the match.
+            _console.print(f"\n## MATCH {file_path}")
+            # Determine a language based on the file extension for syntax highlighting.
+            ext = os.path.splitext(file_path)[1].lstrip('.').lower()
+            # Use a fenced code block; Syntax provides colourised output.
+            syntax = Syntax(snippet, ext or "text", theme="ansi_dark")
+            print_asis(syntax)
+        return
+
+    # Default handling – render the entire content as markdown.
     highlighted = Syntax(raw_content, "markdown", theme="dracula")
     Console().print(highlighted)
 
