@@ -37,9 +37,9 @@ def _load_preapproved() -> None:
         if line.startswith("re:"):
             try:
                 PREAPPROVED_FILES.append(re.compile(line[3:]))
-            except re.error:
-                # ignore malformed regexes
-                pass
+            except re.error as exc:
+                # stop so I can fix it, otherwise I could easily miss this:
+                sys.exit(f"Invalid regular expression '{line[3:]}': {exc}\n\nFix this (or comment out the line) to continue")
         else:
             PREAPPROVED_FILES.append(line)
 
