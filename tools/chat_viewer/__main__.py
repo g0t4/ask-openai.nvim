@@ -29,8 +29,11 @@ def _load_preapproved() -> None:
         return
     for raw in preapproved_path.read_text(encoding="utf-8").splitlines():
         line = raw.strip()
-        if not line or line.startswith("#"):
+
+        is_comment_line = bool(re.match(r'\s*#', line))
+        if not line or is_comment_line:
             continue
+
         if line.startswith("re:"):
             try:
                 PREAPPROVED_FILES.append(re.compile(line[3:]))
