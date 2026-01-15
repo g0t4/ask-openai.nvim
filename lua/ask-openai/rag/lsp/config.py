@@ -3,6 +3,12 @@ import os
 
 import yaml
 
+# map aliased/alternative extensions to a primary extension
+ALIASED_EXTENSIONS: dict[str, str] = {
+    # used: preferred
+    "yml": "yaml",
+}
+
 # TODO I need to create groupings of related extensions... i.e. fish+zsh+bash+sh as 'shell' type
 #   TODO! combine alt file extensions that are the same: yaml/yml
 #   PRN also use shebang when chunking files? and look at plaintext, extensionless files w/ a shebang (esp chmod +x files)
@@ -44,6 +50,9 @@ class Config:
 
         # TODO is this file extension or was filetype vim filetype? if so you'll have to use a lookup!
         #   FYI can fix that later, just get this started for now so I don't log false positives in LSP server for Unsupported files (most of the time anyways)
+
+        file_type = ALIASED_EXTENSIONS.get(file_type, file_type)
+
         return file_type in self.include
         # and (file_type not in self.ignores) # TODO ignores need a method that does the match check
 
