@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import re
 from pathlib import Path
 from rich.console import Console
 from rich.markdown import Markdown
@@ -13,6 +14,49 @@ from typing import Any
 from rich.text import Text
 
 _console = Console(color_system="truecolor")
+
+# Global flag to show all matches, even those marked as pre‑approved (safe)
+SHOW_ALL = False
+
+# List of patterns (strings or compiled regex) that denote safe files/dirs.
+PREAPPROVED_PATTERNS: list[re.Pattern | str] = []
+
+def _load_preapproved() -> None:
+    """Load pre‑approved patterns from a file named 'preapproved.txt' next to this script.
+
+    Each non‑empty line is interpreted as either a literal path prefix or a regular
+    expression when prefixed with ``re:``. Regex lines are compiled and stored.
+    """
+    preapproved_path = Path(__file__).with_name("preapproved.txt")
+    if not preapproved_path.is_file():
+        return
+    for raw in preapproved_path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("re:"):
+            try:
+                PREAPPROVED_PATTERNS.append(re.compile(line[3:]))
+            except re.error:
+                # ignore malformed regexes
+                pass
+        else:
+            PREAPPROVED_PATTERNS.append(line)
+
+def _is_preapproved(file_path: str) -> bool:
+    """Return ``True`` if *file_path* matches any pre‑approved pattern.
+
+    Literal strings are matched as a prefix (or exact match). Regex patterns are
+    searched within the path.
+    """
+    for pat in PREAPPROVED_PATTERNS:
+        if isinstance(pat, re.Pattern):
+            if pat.search(file_path):
+                return True
+        else:
+            if file_path == pat or file_path.startswith(pat):
+                return True
+    return False
 
 def print_asis(what, **kwargs):
     _console.print(what, markup=False, **kwargs)
@@ -143,7 +187,9 @@ def print_rag_matches(content):
         # FYI no need to show other fields, just file/text are relevant for review, nor warn...
         # unless some other tool at some point has similar matches list and I'd be hiding something
 
-        # TODO! warn if sensitive path
+        # Skip pre‑approved (safe) files unless the user explicitly asked for all.
+        if not SHOW_ALL and file and _is_preapproved(str(file)):
+            continue
 
         if file:
             _console.print(f"\n## MATCH {counter}: [bold]{file}[/]")
@@ -359,6 +405,17 @@ def print_fallback(msg: dict[str, Any]):
     formatted = _format_content(content)
 
 def main() -> None:
+    global SHOW_ALL
+
+    # Simple flag handling: ``--all`` forces display of every match.
+    if "--all" in sys.argv:
+        SHOW_ALL = True
+        # Remove the flag so positional arguments stay predictable.
+        sys.argv.remove("--all")
+
+    # Load any pre‑approved patterns from the companion file.
+    _load_preapproved()
+
     if len(sys.argv) < 2:
         messages = load_thread_messages_from_stream(sys.stdin)
     else:
