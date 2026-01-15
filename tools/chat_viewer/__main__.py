@@ -197,7 +197,7 @@ def print_markdown_content(msg: dict, role: str):
         return
 
     # Default handling – render the entire content as markdown.
-    highlighted = Syntax(raw_content, "markdown", theme="dracula")
+    highlighted = Syntax(raw_content, "markdown", theme="ansi_dark")
     Console().print(highlighted)
 
 def decode_if_json(content):
