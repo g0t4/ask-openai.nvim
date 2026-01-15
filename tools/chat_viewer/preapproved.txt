@@ -1,1 +1,0 @@
-re:repos/github/g0t4/ask-openai.nvim/lua/ask-openai/questions/chat/formatters/[^\/]*.lua
