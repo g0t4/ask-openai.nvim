@@ -15,11 +15,8 @@ from rich.text import Text
 
 _console = Console(color_system="truecolor")
 
-# Global flag to show all matches, even those marked as pre‑approved (safe)
-SHOW_ALL = False
-
-# List of patterns (strings or compiled regex) that denote safe files/dirs.
-PREAPPROVED_PATTERNS: list[re.Pattern | str] = []
+PREAPPROVED_FILES: list[re.Pattern | str] = []
+SHOW_ALL_FILES = False
 
 def _load_preapproved() -> None:
     """Load pre‑approved patterns from a file named 'preapproved.txt' next to this script.
@@ -36,12 +33,12 @@ def _load_preapproved() -> None:
             continue
         if line.startswith("re:"):
             try:
-                PREAPPROVED_PATTERNS.append(re.compile(line[3:]))
+                PREAPPROVED_FILES.append(re.compile(line[3:]))
             except re.error:
                 # ignore malformed regexes
                 pass
         else:
-            PREAPPROVED_PATTERNS.append(line)
+            PREAPPROVED_FILES.append(line)
 
 def _is_preapproved(file_path: str) -> bool:
     """Return ``True`` if *file_path* matches any pre‑approved pattern.
@@ -49,7 +46,7 @@ def _is_preapproved(file_path: str) -> bool:
     Literal strings are matched as a prefix (or exact match). Regex patterns are
     searched within the path.
     """
-    for pat in PREAPPROVED_PATTERNS:
+    for pat in PREAPPROVED_FILES:
         if isinstance(pat, re.Pattern):
             if pat.search(file_path):
                 return True
@@ -188,7 +185,7 @@ def print_rag_matches(content):
         # unless some other tool at some point has similar matches list and I'd be hiding something
 
         # Skip pre‑approved (safe) files unless the user explicitly asked for all.
-        if not SHOW_ALL and file and _is_preapproved(str(file)):
+        if not SHOW_ALL_FILES and file and _is_preapproved(str(file)):
             continue
 
         if file:
@@ -405,11 +402,11 @@ def print_fallback(msg: dict[str, Any]):
     formatted = _format_content(content)
 
 def main() -> None:
-    global SHOW_ALL
+    global SHOW_ALL_FILES
 
     # Simple flag handling: ``--all`` forces display of every match.
     if "--all" in sys.argv:
-        SHOW_ALL = True
+        SHOW_ALL_FILES = True
         # Remove the flag so positional arguments stay predictable.
         sys.argv.remove("--all")
 
