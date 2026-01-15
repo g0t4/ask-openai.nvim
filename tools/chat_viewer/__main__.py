@@ -187,8 +187,10 @@ def print_markdown_content(msg: dict, role: str):
             if not SHOW_ALL_FILES and file_path and is_preapproved(str(file_path)):
                 continue
 
-            # Render a heading for the match.
-            _console.print(f"\n## MATCH {file_path}")
+            # Render a heading for the match, including the line range.
+            start_line = match.group(2)
+            end_line = match.group(3)
+            _console.print(f"\n## MATCH {file_path}:{start_line}-{end_line}")
             # Determine a language based on the file extension for syntax highlighting.
             ext = os.path.splitext(file_path)[1].lstrip('.').lower()
             # Use a fenced code block; Syntax provides colourised output.
