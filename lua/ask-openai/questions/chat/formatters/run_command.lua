@@ -53,7 +53,8 @@ function M.format(lines, tool_call, message)
     --   TODO args.STDIN show collapsed?
 
     if not tool_call.call_output then
-        -- tool not yet run/running
+        -- tool not yet run/running – indicate pending state
+        lines:append_unexpected_line("Tool call in progress...")
         return
     end
 
