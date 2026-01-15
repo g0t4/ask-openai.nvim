@@ -18,12 +18,7 @@ _console = Console(color_system="truecolor")
 PREAPPROVED_FILES: list[re.Pattern | str] = []
 SHOW_ALL_FILES = False
 
-def _load_preapproved() -> None:
-    """Load pre‑approved patterns from a file named 'preapproved.txt' next to this script.
-
-    Each non‑empty line is interpreted as either a literal path prefix or a regular
-    expression when prefixed with ``re:``. Regex lines are compiled and stored.
-    """
+def load_preapproved_files() -> None:
     preapproved_path = Path(__file__).with_name("preapproved.txt")
     if not preapproved_path.is_file():
         return
@@ -39,21 +34,17 @@ def _load_preapproved() -> None:
                 PREAPPROVED_FILES.append(re.compile(line[3:]))
             except re.error as exc:
                 # stop so I can fix it, otherwise I could easily miss this:
-                sys.exit(f"Invalid regular expression '{line[3:]}': {exc}\n\nFix this (or comment out the line) to continue")
+                sys.exit(f"Invalid regular expression '{line[3:]}': {exc}\n\nFix this (or comment out the line) to continue...")
         else:
             PREAPPROVED_FILES.append(line)
 
-def _is_preapproved(file_path: str) -> bool:
-    """Return ``True`` if *file_path* matches any pre‑approved pattern.
-
-    Literal strings are matched as a prefix (or exact match). Regex patterns are
-    searched within the path.
-    """
+def is_preapproved(file_path: str) -> bool:
     for pat in PREAPPROVED_FILES:
         if isinstance(pat, re.Pattern):
             if pat.search(file_path):
                 return True
         else:
+            # strings can be an exact match, or prefix match (startswith)
             if file_path == pat or file_path.startswith(pat):
                 return True
     return False
@@ -187,8 +178,9 @@ def print_rag_matches(content):
         # FYI no need to show other fields, just file/text are relevant for review, nor warn...
         # unless some other tool at some point has similar matches list and I'd be hiding something
 
-        # Skip pre‑approved (safe) files unless the user explicitly asked for all.
-        if not SHOW_ALL_FILES and file and _is_preapproved(str(file)):
+        # Skip pre‑approved files unless the user explicitly asked for all.
+        if not SHOW_ALL_FILES and file and is_preapproved(str(file)):
+            # TODO integrate preapproved file filters elsewhere (i.e. role=user messages have a list of rag matches too in a markdown format                                                        u
             continue
 
         if file:
@@ -407,14 +399,11 @@ def print_fallback(msg: dict[str, Any]):
 def main() -> None:
     global SHOW_ALL_FILES
 
-    # Simple flag handling: ``--all`` forces display of every match.
     if "--all" in sys.argv:
         SHOW_ALL_FILES = True
-        # Remove the flag so positional arguments stay predictable.
         sys.argv.remove("--all")
 
-    # Load any pre‑approved patterns from the companion file.
-    _load_preapproved()
+    load_preapproved_files()
 
     if len(sys.argv) < 2:
         messages = load_thread_messages_from_stream(sys.stdin)
