@@ -150,7 +150,7 @@ def _format_content(content: Any) -> str:
 
 def print_markdown_content(msg: dict, role: str):
     raw_content = _extract_content(msg)
-    highlighted = Syntax(raw_content, "markdown", theme="one-dark")
+    highlighted = Syntax(raw_content, "markdown", theme="dracula")
     Console().print(highlighted)
 
 def decode_if_json(content):
