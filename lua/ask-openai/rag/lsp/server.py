@@ -119,22 +119,22 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     logger.info(f'{loop=} {id(loop)=}')  # sanity check loop used when scheduling
     update_queue = FileUpdateQueue(config, server, loop)
 
+@server.feature(types.TEXT_DOCUMENT_DID_SAVE)
+async def doc_saved(params: types.DidSaveTextDocumentParams):
+    # logger.info(f"doc_saved called with params: {params}")
+    await schedule_update(params.text_document.uri)
+
+@server.feature(types.TEXT_DOCUMENT_DID_OPEN)
+async def doc_opened(params: types.DidOpenTextDocumentParams):
+    # logger.info(f"doc_opened called with params: {params}")
+    # imports.on_open(params)
+    await schedule_update(params.text_document.uri)
+
 async def schedule_update(doc_uri: str):
     if fs.is_no_rag_dir():
         return
     logger.info(f"schedule_update {doc_uri=}")
     await update_queue.fire_and_forget(doc_uri)
-
-@server.feature(types.TEXT_DOCUMENT_DID_SAVE)
-async def doc_saved(params: types.DidSaveTextDocumentParams):
-    logger.info(f"doc_saved called with params: {params}")
-    await schedule_update(params.text_document.uri)
-
-@server.feature(types.TEXT_DOCUMENT_DID_OPEN)
-async def doc_opened(params: types.DidOpenTextDocumentParams):
-    logger.info(f"doc_opened called with params: {params}")
-    # imports.on_open(params)
-    await schedule_update(params.text_document.uri)
 
 # @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
 # async def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
