@@ -28,9 +28,8 @@ def set_root_dir(root_dir: str | Path | None):
         logger.error(f"aborting on_initialize b/c missing client workspace dir, {root_dir=}")
         raise ValueError("root_uri is None")
 
+    logger.info(f"{root_dir=}")
     root_path = Path(root_dir)
-    logger.info(f"{root_path=}")
-
     dot_rag_dir = Path(root_path) / ".rag"
     if is_no_rag_dir():
         logger.error(f"abort on_initialize b/c no .rag dir, {dot_rag_dir=}")
