@@ -31,18 +31,19 @@ class FileUpdateEmbeddingsQueue:
         self.loop = loop
 
     async def fire_and_forget(self, uri: str):
-        self._get_stream(uri).on_next({})  # no event details, will lookup doc when callback runs
 
-    def _get_stream(self, uri):
-        if uri not in self.streams:
-            subj = Subject()
-            self.streams[uri] = subj
+        def get_stream(uri):
+            if uri not in self.streams:
+                subj = Subject()
+                self.streams[uri] = subj
 
-            subj.pipe(
-                ops.debounce(self.debounce_sec),  # strictly not necessary b/c work can be canceled too... but it won't hurt either and will save my server from thrashing between repeated saves back to back (don't even start in that case)
-            ).subscribe(lambda item: self._schedule_onto_asyncio_loop(uri))
+                subj.pipe(
+                    ops.debounce(self.debounce_sec),  # strictly not necessary b/c work can be canceled too... but it won't hurt either and will save my server from thrashing between repeated saves back to back (don't even start in that case)
+                ).subscribe(lambda item: self._schedule_onto_asyncio_loop(uri))
 
-        return self.streams[uri]
+            return self.streams[uri]
+
+        get_stream(uri).on_next({})  # no event details, will lookup doc when callback runs
 
     def _schedule_onto_asyncio_loop(self, uri):
         # Use loop.call_soon_threadsafe to schedule the coroutine (`_schedule` in this case) from another thread.
