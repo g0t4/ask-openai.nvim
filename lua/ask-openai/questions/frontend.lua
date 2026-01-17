@@ -53,7 +53,6 @@ local function ask_question_command(opts)
     local cleaned_prompt = context.includes.cleaned_prompt
 
     -- * /selection (currently needs current window to be code window)
-    local selected_text = nil
     local selection = nil
     if context.includes.include_selection then
         -- FYI include_selection basically captures if user had selection when they first invoked a keymap to submit this command
@@ -67,9 +66,7 @@ local function ask_question_command(opts)
             error("No /selection found (no current, nor prior, selection).")
             return
         end
-        selected_text = selection.original_text
-        -- log:error("selected_text", selected_text)
-        -- TODO once I get Selection working w/ non-current windows, move this code down and cleanup/simplify the spot that uses selected_text
+        -- TODO once I get Selection working w/ non-current windows, move this code down and cleanup/simplify the spot that uses selection below
     end
 
     -- FYI! do not move opening window higher, unless above code supports code_win_id/code_bufnr:
@@ -128,7 +125,7 @@ local function ask_question_command(opts)
 
     local user_message = cleaned_prompt
     local code_context = nil
-    if selected_text then
+    if selection then
         local file_name = files.get_file_relative_path(code_bufnr)
         -- include line range in the filename like foo.py:10-20
         local line_range = selection:start_line_1indexed()
@@ -139,10 +136,10 @@ local function ask_question_command(opts)
         code_context =
             "I selected the following\n"
             .. "```" .. file_display .. "\n"
-            .. selected_text .. "\n"
+            .. selection.original_text .. "\n"
             .. "```"
 
-        -- PRN count \n in selected_text and only fold if > 10
+        -- PRN count \n in selection.original_text and only fold if > 10
         local fold = false -- = newline_count > 10
         if fold then
             lines:append_folded_styled_text(code_context, "")
