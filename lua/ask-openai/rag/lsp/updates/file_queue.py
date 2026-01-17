@@ -16,7 +16,13 @@ logger = get_logger(__name__)
 
 class FileUpdateQueue:
 
-    def __init__(self, config: Config, server: LanguageServer, loop: asyncio.AbstractEventLoop, debounce_sec=0.3):
+    def __init__(
+        self,
+        config: Config,
+        server: LanguageServer,
+        loop: asyncio.AbstractEventLoop,
+        debounce_sec=0.3,
+    ):
         self.debounce_sec = debounce_sec
         self.streams = {}  # uri -> Subject()
         self.tasks: dict[str, asyncio.Task] = {}  # uri -> current asyncio.Task
