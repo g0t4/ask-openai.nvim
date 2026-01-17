@@ -58,10 +58,13 @@ class FileUpdateEmbeddingsQueue:
     def _schedule(self, uri):
         # logger.info(f"_schedule: {uri}")
 
+        # * cancel outstanding update
         old = self.tasks.get(uri)
         if old and not old.done():
+            # FYI currently no cooperative cancellation
+            # - this is mostly about stopping a task that is not yet started
             logger.info(f"old task is NOT done: {old}")
-            old.cancel()  # PRN setup cooperative cancellation?
+            old.cancel()
 
         task = self.loop.create_task(self._embeddings_worker(uri))
         self.tasks[uri] = task
