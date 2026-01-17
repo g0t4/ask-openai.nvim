@@ -32,7 +32,7 @@ class FileUpdateEmbeddingsQueue:
 
     async def fire_and_forget(self, uri: str):
 
-        def get_stream(uri):
+        def get_uri_subject(uri):
             if uri in self.streams:
                 return self.streams[uri]
 
@@ -43,7 +43,7 @@ class FileUpdateEmbeddingsQueue:
             ).subscribe(lambda item: self._schedule_onto_asyncio_loop(uri))
             return subject
 
-        get_stream(uri).on_next({})  # no event details, will lookup doc when callback runs
+        get_uri_subject(uri).on_next({})  # no event details, will lookup doc when callback runs
 
     def _schedule_onto_asyncio_loop(self, uri):
         # Use loop.call_soon_threadsafe to schedule the coroutine (`_schedule` in this case) from another thread.
