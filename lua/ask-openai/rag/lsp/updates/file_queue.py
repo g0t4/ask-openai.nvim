@@ -33,15 +33,15 @@ class FileUpdateEmbeddingsQueue:
     async def fire_and_forget(self, uri: str):
 
         def get_stream(uri):
-            if uri not in self.streams:
-                subj = Subject()
-                self.streams[uri] = subj
+            if uri in self.streams:
+                return self.streams[uri]
 
-                subj.pipe(
-                    ops.debounce(self.debounce_sec),  # strictly not necessary b/c work can be canceled too... but it won't hurt either and will save my server from thrashing between repeated saves back to back (don't even start in that case)
-                ).subscribe(lambda item: self._schedule_onto_asyncio_loop(uri))
-
-            return self.streams[uri]
+            subj = Subject()
+            self.streams[uri] = subj
+            subj.pipe(
+                ops.debounce(self.debounce_sec),  # strictly not necessary b/c work can be canceled too... but it won't hurt either and will save my server from thrashing between repeated saves back to back (don't even start in that case)
+            ).subscribe(lambda item: self._schedule_onto_asyncio_loop(uri))
+            return subj
 
         get_stream(uri).on_next({})  # no event details, will lookup doc when callback runs
 
