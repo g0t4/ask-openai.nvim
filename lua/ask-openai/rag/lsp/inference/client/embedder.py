@@ -16,10 +16,7 @@ async def signal_hotpath_done_in_background() -> None:
     asyncio.create_task(send_hotpath_in_background())
 
 async def _encode_batch(texts: list[str]) -> np.ndarray:
-    # TODO can I just load numpy upfront? or is it a huge hit on load times?
-
-    # FYI for now lets leave batch_size at 8?
-    # TODO capture some sequence length distribution data so I can see how variable it is
+    # PRN capture sequence length distribution data so I can see how variable it is
     #   and if small batch size would help to avoid padding for longest sequence in a bigger batch?
     async def batched_encode(texts: list[str], batch_size: int = 8) -> np.ndarray:
         # PRN? allow multiple encodes per connection! right now server closes after one!
