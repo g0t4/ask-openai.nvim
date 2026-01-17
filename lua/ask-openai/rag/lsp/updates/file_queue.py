@@ -46,6 +46,7 @@ class FileUpdateQueue:
         self._get_stream(uri).on_next({})  # no event details, will lookup doc when callback runs
 
     def _schedule(self, uri):
+        logger.info(f"_schedule: {uri}")
 
         old = self.tasks.get(uri)
         if old and not old.done():
@@ -56,7 +57,7 @@ class FileUpdateQueue:
         self.tasks[uri] = task
 
     async def _worker(self, uri):
-        # logger.info(f"_worker' {uri}")
+        logger.info(f"_worker started {uri}")
         try:
             await self.update_embeddings(uri)
         except asyncio.CancelledError:
