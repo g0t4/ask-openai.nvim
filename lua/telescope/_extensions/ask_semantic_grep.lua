@@ -84,6 +84,24 @@ end
 
 local ns = vim.api.nvim_create_namespace("rag_preview")
 
+-- Helper to add a static footer line at the bottom of the preview buffer.
+-- It inserts a new line (if needed) and highlights it to blend with the UI.
+---@param bufnr integer Buffer handle
+---@param text string Text to display in the footer
+local function add_footer(bufnr, text)
+    -- Ensure there is a blank line at the end of the buffer before adding the footer.
+    local line_count = vim.api.nvim_buf_line_count(bufnr)
+    -- If the last line already contains something, append a new empty line.
+    if line_count == 0 or vim.api.nvim_buf_get_lines(bufnr, line_count - 1, line_count, false)[1] ~= "" then
+        vim.api.nvim_buf_set_lines(bufnr, line_count, line_count, false, { "" })
+        line_count = line_count + 1
+    end
+    -- Replace the (now empty) last line with the footer text.
+    vim.api.nvim_buf_set_lines(bufnr, line_count - 1, line_count, false, { text })
+    -- Highlight the whole footer line using the same border highlight as Telescope.
+    vim.api.nvim_buf_add_highlight(bufnr, ns, "TelescopeResultsBorder", line_count - 1, 0, -1)
+end
+
 local preview_content_type = 0
 local function is_file_preview()
     return preview_content_type == 0
@@ -216,6 +234,16 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
 
             vim.api.nvim_win_call(winid, scroll_to_first_highlight)
         end)
+        end)
+
+        -- ---------------------------------------------------------------------
+        -- Footer: display which preview mode is active (file, debug, or chunk).
+        -- This appears just above the bottom border of the preview window.
+        local mode_label = is_file_preview() and "FILE" or
+            is_entry_debug_preview() and "DEBUG" or
+            is_chunk_text_preview() and "CHUNK" or "UNKNOWN"
+        add_footer(bufnr, "[ " .. mode_label .. " ]")
+        -- ---------------------------------------------------------------------
     end,
 })
 
