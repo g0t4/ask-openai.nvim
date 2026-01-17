@@ -54,6 +54,7 @@ local function ask_question_command(opts)
 
     -- * /selection (currently needs current window to be code window)
     local selected_text = nil
+    local selection = nil
     if context.includes.include_selection then
         -- FYI include_selection basically captures if user had selection when they first invoked a keymap to submit this command
         --   b/c submitting command switches modes, also user might unselect text on accident (or want to repeat w/ prev selection)
@@ -61,7 +62,7 @@ local function ask_question_command(opts)
 
         -- FYI my Selection helper only works on current window... so I can't put this off I need it way up high:
         -- NOT IMPLEMENTED (yet?) local selection = Selection._get_visual_selection_for_window_id(code_win_id)
-        local selection = Selection.get_visual_selection_for_current_window()
+        selection = Selection.get_visual_selection_for_current_window()
         if selection:is_empty() then
             error("No /selection found (no current, nor prior, selection).")
             return
