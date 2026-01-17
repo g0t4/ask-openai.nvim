@@ -31,6 +31,8 @@ class FileUpdateEmbeddingsQueue:
         self.loop = loop
 
     async def fire_and_forget(self, uri: str):
+        # * BTW best way to test this... open LS logs and then ctrl-s in a doc repeatedly, should only see update after last save (depending on debounce interval)
+        #    or yeah, change debounce interval and see if it takes a while but does update
 
         def get_uri_subject():
             if uri in self.uri_subjects:
