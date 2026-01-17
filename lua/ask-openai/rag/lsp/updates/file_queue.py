@@ -54,18 +54,18 @@ class FileUpdateEmbeddingsQueue:
         self.loop.call_soon_threadsafe(self._schedule, uri)
 
     def _schedule(self, uri):
-        logger.info(f"_schedule: {uri}")
+        # logger.info(f"_schedule: {uri}")
 
         old = self.tasks.get(uri)
         if old and not old.done():
             logger.info(f"old task is NOT done: {old}")
             old.cancel()  # PRN setup cooperative cancellation?
 
-        task = self.loop.create_task(self._worker(uri))
+        task = self.loop.create_task(self._embeddings_worker(uri))
         self.tasks[uri] = task
 
-    async def _worker(self, uri):
-        logger.info(f"_worker started {uri}")
+    async def _embeddings_worker(self, uri):
+        # logger.info(f"_embeddings_worker started {uri}")
         try:
             await self.update_embeddings(uri)
         except asyncio.CancelledError:
