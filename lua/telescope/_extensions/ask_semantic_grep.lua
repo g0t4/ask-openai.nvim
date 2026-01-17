@@ -234,7 +234,6 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
 
             vim.api.nvim_win_call(winid, scroll_to_first_highlight)
         end)
-        end)
 
         -- ---------------------------------------------------------------------
         -- Footer: display which preview mode is active (file, debug, or chunk).
