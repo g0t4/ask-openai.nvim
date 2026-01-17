@@ -24,7 +24,7 @@ class FileUpdateEmbeddingsQueue:
         debounce_sec=0.3,
     ):
         self.debounce_sec = debounce_sec
-        self.streams = {}  # uri -> Subject()
+        self.uri_subjects = {}  # uri -> Subject()
         self.tasks: dict[str, asyncio.Task] = {}  # uri -> current asyncio.Task
         self.config = config
         self.server = server
@@ -33,11 +33,11 @@ class FileUpdateEmbeddingsQueue:
     async def fire_and_forget(self, uri: str):
 
         def get_uri_subject(uri):
-            if uri in self.streams:
-                return self.streams[uri]
+            if uri in self.uri_subjects:
+                return self.uri_subjects[uri]
 
             subject = Subject()
-            self.streams[uri] = subject
+            self.uri_subjects[uri] = subject
             subject.pipe(
                 ops.debounce(self.debounce_sec),  # strictly not necessary b/c work can be canceled too... but it won't hurt either and will save my server from thrashing between repeated saves back to back (don't even start in that case)
             ).subscribe(lambda item: self._schedule_onto_asyncio_loop(uri))
