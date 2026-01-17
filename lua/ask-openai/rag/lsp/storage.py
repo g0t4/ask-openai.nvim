@@ -248,9 +248,8 @@ class Datasets:
         prior_selector = faiss.IDSelectorArray(np.array(prior_faiss_ids, dtype="int64"))
         dataset.index.remove_ids(prior_selector)
 
-        with logger.timer("Encode new vectors"):
-            passages = [chunk.text for chunk in new_chunks]
-            vecs_np = await encode_passages(passages)
+        passages = [chunk.text for chunk in new_chunks]
+        vecs_np = await encode_passages(passages)
 
         faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
 
