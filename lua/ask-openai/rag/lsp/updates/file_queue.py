@@ -30,6 +30,9 @@ class FileUpdateQueue:
         self.server = server
         self.loop = loop
 
+    async def fire_and_forget(self, uri: str):
+        self._get_stream(uri).on_next({})  # no event details, will lookup doc when callback runs
+
     def _get_stream(self, uri):
         if uri not in self.streams:
             subj = Subject()
@@ -41,9 +44,6 @@ class FileUpdateQueue:
 
         return self.streams[uri]
 
-    def fire_and_forget(self, uri: str):
-
-        self._get_stream(uri).on_next({})  # no event details, will lookup doc when callback runs
 
     def _schedule(self, uri):
         logger.info(f"_schedule: {uri}")

@@ -123,7 +123,7 @@ async def schedule_update(doc_uri: str):
     if fs.is_no_rag_dir():
         return
     logger.info(f"schedule_update {doc_uri=}")
-    update_queue.fire_and_forget(doc_uri)
+    await update_queue.fire_and_forget(doc_uri)
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 async def doc_saved(params: types.DidSaveTextDocumentParams):
