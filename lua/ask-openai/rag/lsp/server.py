@@ -115,7 +115,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
 
     ignores.use_pygls_workspace(fs.root_path)
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     update_queue = FileUpdateQueue(config, server, loop)
 
 async def schedule_update(doc_uri: str):
