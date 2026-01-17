@@ -137,7 +137,6 @@ async def doc_opened(params: types.DidOpenTextDocumentParams):
 async def schedule_update(doc_uri: str):
     if fs.is_no_rag_dir():
         return
-    # logger.info(f"schedule_update {doc_uri=}")
     await update_queue.fire_and_forget(doc_uri)
 
 # @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
