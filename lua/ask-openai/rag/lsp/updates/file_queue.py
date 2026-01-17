@@ -40,10 +40,17 @@ class FileUpdateQueue:
 
             subj.pipe(
                 ops.debounce(self.debounce_sec),  # strictly not necessary b/c work can be canceled too... but it won't hurt either and will save my server from thrashing between repeated saves back to back (don't even start in that case)
-            ).subscribe(lambda item: self._schedule(uri))
+            ).subscribe(lambda item: self._schedule_onto_asyncio_loop(uri))
 
         return self.streams[uri]
 
+    def _schedule_onto_asyncio_loop(self, uri):
+        # Use loop.call_soon_threadsafe to schedule the coroutine (`_schedule` in this case) from another thread.
+        # create_task only creates the task; it won’t start until the event loop runs,
+        # and RxPY callbacks execute outside the asyncio loop,
+        # so we must safely push the coroutine onto the loop to both create the task and make sure the new task runs
+        #  else last update to embeddings won't run until something else triggers event loop!
+        self.loop.call_soon_threadsafe(self._schedule, uri)
 
     def _schedule(self, uri):
         logger.info(f"_schedule: {uri}")
