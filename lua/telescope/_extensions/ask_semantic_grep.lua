@@ -410,6 +410,9 @@ function semantic_grep_current_filetype_picker(opts)
                 picker:refresh_previewer()
             end)
             keymap({ 'i', 'n' }, '<Tab>', function()
+                vim.notify("use Tab or Shift-Tab to cycle previewer")
+            end)
+            keymap({ 'i', 'n' }, '<Tab>', function()
                 -- PRN add keymap to jump to specific view?
                 cycle_preview_content()
 
