@@ -129,9 +129,15 @@ local function ask_question_command(opts)
     local code_context = nil
     if selected_text then
         local file_name = files.get_file_relative_path(code_bufnr)
+        -- include line range in the filename like foo.py:10-20
+        local line_range = selection:start_line_1indexed()
+        if selection:end_line_1indexed() ~= selection:start_line_1indexed() then
+            line_range = line_range .. "-" .. selection:end_line_1indexed()
+        end
+        local file_display = file_name .. ":" .. line_range
         code_context =
             "I selected the following\n"
-            .. "```" .. file_name .. "\n"
+            .. "```" .. file_display .. "\n"
             .. selected_text .. "\n"
             .. "```"
 
