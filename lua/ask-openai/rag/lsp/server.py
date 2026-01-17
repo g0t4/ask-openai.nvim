@@ -121,14 +121,18 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 async def doc_saved(params: types.DidSaveTextDocumentParams):
-    # logger.info(f"doc_saved called with params: {params}")
-    await schedule_update(params.text_document.uri)
+    uri = params.text_document.uri
+    # logger.info(f"doc_saved {params=}")
+    # logger.info(f"doc_saved {uri}")
+    await schedule_update(uri)
 
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 async def doc_opened(params: types.DidOpenTextDocumentParams):
-    # logger.info(f"doc_opened called with params: {params}")
+    uri = params.text_document.uri
+    # logger.info(f"doc_opened {params=}")
+    # logger.info(f"doc_opened {uri}")
+    await schedule_update(uri)
     # imports.on_open(params)
-    await schedule_update(params.text_document.uri)
 
 async def schedule_update(doc_uri: str):
     if fs.is_no_rag_dir():
