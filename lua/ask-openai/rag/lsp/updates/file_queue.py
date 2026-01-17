@@ -32,7 +32,7 @@ class FileUpdateEmbeddingsQueue:
 
     async def fire_and_forget(self, uri: str):
 
-        def get_uri_subject(uri):
+        def get_uri_subject():
             if uri in self.uri_subjects:
                 return self.uri_subjects[uri]
 
@@ -43,7 +43,7 @@ class FileUpdateEmbeddingsQueue:
             ).subscribe(lambda item: self._schedule_onto_asyncio_loop(uri))
             return subject
 
-        get_uri_subject(uri).on_next({})  # no event details, will lookup doc when callback runs
+        get_uri_subject().on_next({})  # empty event, b/c closure has uri (above)
 
     def _schedule_onto_asyncio_loop(self, uri):
         # Use loop.call_soon_threadsafe to schedule the coroutine (`_schedule` in this case) from another thread.
