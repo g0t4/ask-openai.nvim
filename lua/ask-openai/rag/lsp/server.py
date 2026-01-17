@@ -116,7 +116,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     ignores.use_pygls_workspace(fs.root_path)
 
     loop = asyncio.get_running_loop()  # btw RuntimeError if no current loop (a good thing)
-    logger.info(f'{loop=} {id(loop)=}')  # sanity check loop used when scheduling
+    # logger.info(f'{loop=} {id(loop)=}')  # sanity check loop used when scheduling
     update_queue = FileUpdateEmbeddingsQueue(config, server, loop)
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
