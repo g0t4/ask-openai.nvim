@@ -10,9 +10,9 @@ parsers_by_language = {}
 def _get_cached_parser(language):
     if language in parsers_by_language:
         return parsers_by_language[language]
-    with logger.timer('get_parser' + language):
-        parser = get_parser(language)
-        parsers_by_language[language] = parser
+
+    parser = get_parser(language)
+    parsers_by_language[language] = parser
     return parser
 
 def get_cached_parser_for_path(path) -> tuple[Parser | None, str]:
