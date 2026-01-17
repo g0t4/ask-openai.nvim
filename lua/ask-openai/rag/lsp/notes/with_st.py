@@ -40,7 +40,12 @@ with LogTimer("load model/tokenizer", logger):
         model_name,
         model_kwargs={"torch_dtype": "auto"},  # else float32 which RUINs perf and outputs! on both CUDA and MPS backends
     )
-    logger.dump_sentence_transformers_model(model)
+
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug(f'Modules: %r', model.modules)
+        auto_model = model._first_module().auto_model
+        logger.debug(f"auto_model: %r", auto_model)
+        logger.debug(f"auto_model.dtype: [bold red]%s", auto_model.dtype)
 
 logger.info(f"loaded on device: {model.device=}")
 
@@ -75,5 +80,6 @@ logger.info(f'{scores2.T=}')
 from assertpy import assert_that
 
 from numpy.testing import assert_array_equal
+
 logger.info("about to assert equal")
 assert_array_equal(scores, scores2.T)
