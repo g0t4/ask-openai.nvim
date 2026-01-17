@@ -14,7 +14,7 @@ from lsp import ignores, rag
 
 logger = get_logger(__name__)
 
-class FileUpdateQueue:
+class FileUpdateEmbeddingsQueue:
 
     def __init__(
         self,

@@ -13,7 +13,7 @@ from lsp import ignores, rag
 from lsp.chunks.chunker import RAGChunkerOptions
 from lsp.context.imports import imports
 from lsp.logs import get_logger, logging_fwk_to_language_server_log_file, disable_printtmp
-from lsp.updates.file_queue import FileUpdateQueue
+from lsp.updates.file_queue import FileUpdateEmbeddingsQueue
 
 disable_printtmp()  # LSP uses STDOUT for comms!
 
@@ -87,7 +87,7 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
 def tell_client_to_shut_that_shit_down_now():
     server.protocol.notify("fuu/no_dot_rag__do_the_right_thing_wink")
 
-update_queue: FileUpdateQueue
+update_queue: FileUpdateEmbeddingsQueue
 
 @server.feature(types.INITIALIZED)
 def on_initialized(_: LanguageServer, _params: types.InitializedParams):
@@ -117,7 +117,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
 
     loop = asyncio.get_running_loop()  # btw RuntimeError if no current loop (a good thing)
     logger.info(f'{loop=} {id(loop)=}')  # sanity check loop used when scheduling
-    update_queue = FileUpdateQueue(config, server, loop)
+    update_queue = FileUpdateEmbeddingsQueue(config, server, loop)
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 async def doc_saved(params: types.DidSaveTextDocumentParams):
