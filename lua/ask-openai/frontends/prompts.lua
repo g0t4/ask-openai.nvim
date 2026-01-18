@@ -10,6 +10,8 @@ local function semantic_grep_header_lines(rag_matches)
     }
 end
 
+---@param rag_matches LSPRankedMatch[]
+---@return TxChatMessage
 function M.semantic_grep_user_message(rag_matches)
     local lines = semantic_grep_header_lines(rag_matches)
     -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
