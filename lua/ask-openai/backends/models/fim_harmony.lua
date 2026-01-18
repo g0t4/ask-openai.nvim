@@ -122,11 +122,6 @@ function HarmonyFimPromptBuilder.context_user_msg(request)
 end
 
 ---@param request FimBackend
-function HarmonyFimPromptBuilder.context_semantic_grep(request)
-    return prompts.semantic_grep_user_message(request.rag_matches)
-end
-
----@param request FimBackend
 function HarmonyFimPromptBuilder.fim_prompt(request)
     -- * user message
     local current_file_relative_path = request.inject_file_path_test_seam()
@@ -250,7 +245,7 @@ function HarmonyFimPromptBuilder.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(r
     local builder = HarmonyFimPromptBuilder.new()
         :developer()
         :user(HarmonyFimPromptBuilder.context_user_msg(request))
-        :user(HarmonyFimPromptBuilder.context_semantic_grep(request))
+        :user(prompts.semantic_grep_user_message(request.rag_matches))
         :user(HarmonyFimPromptBuilder.fim_prompt(request))
         :set_thinking()
         :start_assistant_final_response() -- this forces the model to respond w/o any further thinking
@@ -281,7 +276,7 @@ Make sure to practice the code change before you return a suggestion. Take the c
         TxChatMessage:developer(dev), -- FYI developer or system message must be first, and ONLY ONE is allowed
         TxChatMessage:user(HarmonyFimPromptBuilder.context_user_msg(request)),
     }
-    local rag_msg = HarmonyFimPromptBuilder.context_semantic_grep(request)
+    local rag_msg = prompts.semantic_grep_user_message(request.rag_matches)
     if rag_msg then
         table.insert(messages, rag_msg)
     end
