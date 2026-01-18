@@ -1,9 +1,10 @@
 <script lang="ts">
   import type { Message } from '../lib/types'
   import { getRoleColor, extractContent } from '../lib/types'
+  import { getMessageId } from '../lib/hash-nav'
   import ToolCalls from './ToolCalls.svelte'
   import ToolResult from './ToolResult.svelte'
-  import CodeBlock from './CodeBlock.svelte'
+  import LinkButton from './LinkButton.svelte'
 
   interface Props {
     message: Message
@@ -18,12 +19,13 @@
   const content = $derived(extractContent(message))
   const reasoning = $derived(message.reasoning_content)
   const toolCalls = $derived(message.tool_calls)
+  const msgId = $derived(getMessageId(index))
 </script>
 
-<article class="border border-gray-700 rounded-lg overflow-hidden">
+<article id={msgId} class="border border-gray-700 rounded-lg overflow-hidden scroll-mt-4 transition-colors duration-500">
   <!-- Header -->
   <header
-    class="px-4 py-2 font-semibold border-b border-gray-700"
+    class="group px-4 py-2 font-semibold border-b border-gray-700 flex items-center justify-between"
     class:bg-role-system={role === 'system'}
     class:bg-role-developer={role === 'developer'}
     class:bg-role-user={role === 'user'}
@@ -32,12 +34,13 @@
     style="--tw-bg-opacity: 0.2"
   >
     <span class="text-{colorClass}">{index}: {displayRole}</span>
+    <LinkButton id={msgId} />
   </header>
 
   <!-- Content -->
   <div class="p-4 bg-gray-800/50">
     {#if role === 'tool'}
-      <ToolResult {content} />
+      <ToolResult {content} msgIndex={index} />
     {:else}
       <!-- Reasoning (for assistant messages with extended thinking) -->
       {#if reasoning}
@@ -55,7 +58,7 @@
 
       <!-- Tool calls (for assistant) -->
       {#if toolCalls && toolCalls.length > 0}
-        <ToolCalls calls={toolCalls} />
+        <ToolCalls calls={toolCalls} msgIndex={index} />
       {/if}
     {/if}
   </div>

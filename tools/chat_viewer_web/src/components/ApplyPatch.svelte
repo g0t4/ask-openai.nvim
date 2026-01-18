@@ -1,12 +1,16 @@
 <script lang="ts">
   import { parsePatch, groupChanges } from '../lib/patch-parser'
+  import { getFileId } from '../lib/hash-nav'
   import CodeBlock from './CodeBlock.svelte'
+  import LinkButton from './LinkButton.svelte'
 
   interface Props {
     patch: string
+    msgIndex?: number
+    toolIndex?: number
   }
 
-  let { patch }: Props = $props()
+  let { patch, msgIndex = 0, toolIndex = 1 }: Props = $props()
 
   let showWordDiff = $state(true)
 
@@ -50,15 +54,19 @@
 
   {#if showWordDiff}
     <!-- Word diff view -->
-    {#each parsed.files as file}
-      <div class="border border-gray-600 rounded overflow-hidden">
-        <div class="px-3 py-1.5 bg-gray-700/50 text-sm font-mono border-b border-gray-600 flex gap-2">
-          <span class="{getActionColor(file.action)} font-bold">[{getActionLabel(file.action)}]</span>
-          <span class="text-blue-400">{file.path}</span>
-          {#if file.newPath}
-            <span class="text-gray-500">→</span>
-            <span class="text-purple-400">{file.newPath}</span>
-          {/if}
+    {#each parsed.files as file, idx}
+      {@const fileId = getFileId(msgIndex, idx + 1)}
+      <div id={fileId} class="border border-gray-600 rounded overflow-hidden scroll-mt-4">
+        <div class="group px-3 py-1.5 bg-gray-700/50 text-sm font-mono border-b border-gray-600 flex gap-2 items-center justify-between">
+          <div class="flex gap-2">
+            <span class="{getActionColor(file.action)} font-bold">[{getActionLabel(file.action)}]</span>
+            <span class="text-blue-400">{file.path}</span>
+            {#if file.newPath}
+              <span class="text-gray-500">→</span>
+              <span class="text-purple-400">{file.newPath}</span>
+            {/if}
+          </div>
+          <LinkButton id={fileId} />
         </div>
         <div class="p-2 bg-gray-900 font-mono text-sm overflow-x-auto">
           {#each file.hunks as hunk}

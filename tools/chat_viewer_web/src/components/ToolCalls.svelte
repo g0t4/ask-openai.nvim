@@ -1,13 +1,16 @@
 <script lang="ts">
   import type { ToolCall } from '../lib/types'
+  import { getToolCallId } from '../lib/hash-nav'
   import CodeBlock from './CodeBlock.svelte'
   import ApplyPatch from './ApplyPatch.svelte'
+  import LinkButton from './LinkButton.svelte'
 
   interface Props {
     calls: ToolCall[]
+    msgIndex: number
   }
 
-  let { calls }: Props = $props()
+  let { calls, msgIndex }: Props = $props()
 
   interface FormattedArgs {
     type: 'code' | 'patch'
@@ -39,15 +42,17 @@
 </script>
 
 <div class="mt-4 space-y-3">
-  {#each calls as call}
+  {#each calls as call, idx}
     {@const formatted = formatArguments(call.function.name, call.function.arguments)}
-    <div class="border border-gray-600 rounded">
-      <div class="px-3 py-1.5 bg-gray-700/50 text-sm font-mono text-yellow-400 border-b border-gray-600">
-        {call.function.name}
+    {@const toolId = getToolCallId(msgIndex, idx + 1)}
+    <div id={toolId} class="border border-gray-600 rounded scroll-mt-4">
+      <div class="group px-3 py-1.5 bg-gray-700/50 text-sm font-mono text-yellow-400 border-b border-gray-600 flex items-center justify-between">
+        <span>{call.function.name}</span>
+        <LinkButton id={toolId} />
       </div>
       <div class="p-2">
         {#if formatted.type === 'patch' && formatted.patch}
-          <ApplyPatch patch={formatted.patch} />
+          <ApplyPatch patch={formatted.patch} {msgIndex} toolIndex={idx + 1} />
         {:else if formatted.code}
           <CodeBlock code={formatted.code} language={formatted.language ?? 'text'} />
         {/if}

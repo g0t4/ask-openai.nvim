@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ThreadJson, Message } from './lib/types'
+  import { scrollToHash, setupHashListener } from './lib/hash-nav'
   import MessageView from './components/MessageView.svelte'
   import 'highlight.js/styles/github-dark.css'
 
@@ -41,6 +42,19 @@
       loading = false
       error = 'No ?url= parameter provided. Pass a URL to a thread.json file.'
     }
+  })
+
+  // Scroll to hash after content loads
+  $effect(() => {
+    if (!loading && messages.length > 0) {
+      // Delay to ensure DOM is rendered
+      setTimeout(scrollToHash, 100)
+    }
+  })
+
+  // Listen for hash changes
+  $effect(() => {
+    return setupHashListener()
   })
 </script>
 

@@ -5,3 +5,17 @@
 body {
   @apply bg-gray-900 text-gray-100;
 }
+
+/* Hash link highlight animation */
+.hash-highlight {
+  animation: highlight-pulse 2s ease-out;
+}
+
+@keyframes highlight-pulse {
+  0% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.8);
+  }
+  100% {
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0);
+  }
+}

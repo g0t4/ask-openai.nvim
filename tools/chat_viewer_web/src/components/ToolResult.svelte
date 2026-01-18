@@ -1,13 +1,16 @@
 <script lang="ts">
   import type { RagResult, RagMatch } from '../lib/types'
+  import { getMatchId } from '../lib/hash-nav'
   import CodeBlock from './CodeBlock.svelte'
+  import LinkButton from './LinkButton.svelte'
   import { getLanguageFromPath } from '../lib/highlight'
 
   interface Props {
     content: string
+    msgIndex: number
   }
 
-  let { content }: Props = $props()
+  let { content, msgIndex }: Props = $props()
 
   // Try to parse as JSON to check for RAG matches
   const parsed = $derived.by(() => {
@@ -28,12 +31,16 @@
 {#if isRagResult && ragMatches.length > 0}
   <div class="space-y-4">
     {#each ragMatches as match, idx}
-      <div class="border border-gray-600 rounded">
-        <div class="px-3 py-1.5 bg-gray-700/50 text-sm font-mono text-red-400 border-b border-gray-600 flex justify-between">
+      {@const matchId = getMatchId(msgIndex, idx + 1)}
+      <div id={matchId} class="border border-gray-600 rounded scroll-mt-4">
+        <div class="group px-3 py-1.5 bg-gray-700/50 text-sm font-mono text-red-400 border-b border-gray-600 flex justify-between items-center">
           <span>Match {idx + 1}: {match.file}</span>
-          {#if match.rerank_score !== undefined}
-            <span class="text-gray-500">score: {match.rerank_score.toFixed(3)}</span>
-          {/if}
+          <div class="flex items-center gap-2">
+            {#if match.rerank_score !== undefined}
+              <span class="text-gray-500">score: {match.rerank_score.toFixed(3)}</span>
+            {/if}
+            <LinkButton id={matchId} />
+          </div>
         </div>
         <div class="p-2">
           <CodeBlock code={match.text} language={getLanguageFromPath(match.file)} />
