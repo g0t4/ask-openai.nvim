@@ -31,6 +31,10 @@ function TxChatMessage:new(role, content)
     return self
 end
 
+function TxChatMessage.is_instance(value)
+    return getmetatable(value) == TxChatMessage
+end
+
 ---@param tool_call ToolCall
 ---@return OpenAIChatCompletion_ToolResult_TxChatMessage
 function TxChatMessage:tool_result(tool_call)

@@ -155,9 +155,12 @@ end
 
 --- user message (harmony spec):
 --- - Typically representing the input to the model
----@param message? string - nil so consumers can always call even if empty message (and it won't be added)
+---@param message? string|TxChatMessage - nil/empty so consumers can always call (and it won't be added), TxChatMessage will extract message.content
 ---@return HarmonyFimPromptBuilder self
 function HarmonyFimPromptBuilder:user(message)
+    if TxChatMessage.is_instance(message) then
+        message = message.content
+    end
     if message == nil or message == "" then
         -- don't add an empty message
         return self
