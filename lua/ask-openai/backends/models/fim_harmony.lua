@@ -121,7 +121,6 @@ function HarmonyFimPromptBuilder.context_user_msg(request)
 end
 
 function HarmonyFimPromptBuilder.context_semantic_grep(request)
-    local context_lines = {}
 
     local rag_matches = request.rag_matches
     if not rag_matches or #rag_matches == 0 then
@@ -149,9 +148,8 @@ function HarmonyFimPromptBuilder.context_semantic_grep(request)
                 )
             end)
         local rag_context = table.concat(rag_parts, "\n")
-        table.insert(context_lines, rag_context)
 
-    return table.concat(context_lines, "\n")
+    return rag_context
 end
 
 ---@param request FimBackend
