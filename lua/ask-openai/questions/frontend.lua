@@ -189,12 +189,16 @@ local function ask_question_command(opts)
             end)
     end
 
+    local function build_semantic_grep_header(rag_matches)
+        return {
+            "# Semantic Grep matches: " .. #rag_matches .. "\n",
+            "This is automatic context from my neovim AI tools. The user's request is used to query for relevant code. Only the top results are included. These may or may not be relevant."
+        }
+    end
+
     local function then_generate_completion(rag_matches)
         if rag_matches ~= nil and #rag_matches > 0 then
-            local rag_message_parts = {
-                "# Semantic Grep matches: " .. #rag_matches .. "\n",
-                "This is automatic context from my neovim AI tools. The user's request is used to query for relevant code. Only the top results are included. These may or may not be relevant."
-            }
+            local rag_message_parts = build_semantic_grep_header(rag_matches)
             -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
             vim.iter(rag_matches)
                 :each(function(chunk)
