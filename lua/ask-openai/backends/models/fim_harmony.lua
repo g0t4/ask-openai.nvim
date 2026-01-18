@@ -127,11 +127,7 @@ function HarmonyFimPromptBuilder.context_semantic_grep(request)
     end
 
     local rag_parts = {}
-    if #request.rag_matches == 1 then
-        heading = "# Semantic Grep match:\n"
-    elseif #request.rag_matches > 1 then
-        heading = "# Semantic Grep matches: " .. #request.rag_matches .. "\n"
-    end
+    local heading = "# Semantic Grep matches: " .. #request.rag_matches .. "\n"
     -- PRN add explanation like QuestionsFrontend here for what exactly a Semantic Grep match means?
     table.insert(rag_parts, heading)
 

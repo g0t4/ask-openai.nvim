@@ -192,11 +192,7 @@ local function ask_question_command(opts)
     local function then_generate_completion(rag_matches)
         if rag_matches ~= nil and #rag_matches > 0 then
             local rag_message_parts = {}
-            if #rag_matches == 1 then
-                heading = "# Semantic Grep match: \n"
-            elseif #rag_matches > 1 then
-                heading = "# Semantic Grep matches: " .. #rag_matches .. "\n"
-            end
+            local heading = "# Semantic Grep matches: " .. #rag_matches .. "\n"
             table.insert(rag_message_parts, heading)
             -- TODO is this explanation helpful? Did I really not include something like this in other frontends?
             -- PRN if useful, add this explanation (or similar) to other frontends:
