@@ -1,14 +1,14 @@
 local M = {}
 
-function M.semantic_grep_header(rag_matches)
+local function semantic_grep_header_lines(rag_matches)
     return {
         "# Semantic Grep matches: " .. #rag_matches .. "\n",
         "This is automatic context based on my request. These may or may not be relevant."
     }
 end
 
-function M.semantic_grep_user_message(rag_matches)
-    local lines = M.semantic_grep_header(rag_matches)
+function M.semantic_grep_user_message_text(rag_matches)
+    local lines = semantic_grep_header_lines(rag_matches)
     -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
     vim.iter(rag_matches)
         :each(function(chunk)
