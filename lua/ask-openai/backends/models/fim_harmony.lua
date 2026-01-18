@@ -276,9 +276,9 @@ Make sure to practice the code change before you return a suggestion. Take the c
         TxChatMessage:developer(dev), -- FYI developer or system message must be first, and ONLY ONE is allowed
         TxChatMessage:user(HarmonyFimPromptBuilder.context_user_msg(request)),
     }
-    local rag_msg = prompts.semantic_grep_user_message(request.rag_matches)
-    if rag_msg then
-        table.insert(messages, rag_msg)
+    local rag_message = prompts.semantic_grep_user_message(request.rag_matches)
+    if rag_message then
+        table.insert(messages, rag_message)
     end
     table.insert(messages, TxChatMessage:user(HarmonyFimPromptBuilder.fim_prompt(request)))
     if level == "off" then
