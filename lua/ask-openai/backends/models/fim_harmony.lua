@@ -121,7 +121,6 @@ function HarmonyFimPromptBuilder.context_user_msg(request)
 end
 
 function HarmonyFimPromptBuilder.context_semantic_grep(request)
-
     local rag_matches = request.rag_matches
     if not rag_matches or #rag_matches == 0 then
         return nil
