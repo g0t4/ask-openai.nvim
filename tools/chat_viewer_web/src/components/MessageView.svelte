@@ -4,6 +4,7 @@
   import { getMessageId } from '../lib/hash-nav'
   import ToolCalls from './ToolCalls.svelte'
   import ToolResult from './ToolResult.svelte'
+  import Markdown from './Markdown.svelte'
   import LinkButton, { copy } from './LinkButton.svelte'
 
   interface Props {
@@ -20,6 +21,14 @@
   const reasoning = $derived(message.reasoning_content)
   const toolCalls = $derived(message.tool_calls)
   const msgId = $derived(getMessageId(index))
+
+  // Check if content looks like markdown (starts with heading)
+  const looksLikeMarkdown = $derived(
+    content && /^#{1,6}\s/.test(content.trim())
+  )
+  const shouldRenderMarkdown = $derived(
+    role === 'system' || (role === 'user' && looksLikeMarkdown)
+  )
 </script>
 
 <article id={msgId} class="border border-gray-700 rounded-lg overflow-hidden scroll-mt-4 transition-colors duration-500">
@@ -52,9 +61,13 @@
 
       <!-- Main content -->
       {#if content}
-        <div class="whitespace-pre-wrap text-gray-200">
-          {content}
-        </div>
+        {#if shouldRenderMarkdown}
+          <Markdown {content} />
+        {:else}
+          <div class="whitespace-pre-wrap text-gray-200">
+            {content}
+          </div>
+        {/if}
       {/if}
 
       <!-- Tool calls (for assistant) -->
