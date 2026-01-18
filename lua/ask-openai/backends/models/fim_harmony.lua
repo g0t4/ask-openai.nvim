@@ -284,8 +284,7 @@ Make sure to practice the code change before you return a suggestion. Take the c
     }
     local rag_msg = HarmonyFimPromptBuilder.context_semantic_grep(request)
     if rag_msg then
-        -- rag_msg is a TxChatMessage; we need its raw content for the raw prompt flow
-        table.insert(messages, TxChatMessage:user(rag_msg.content))
+        table.insert(messages, rag_msg)
     end
     table.insert(messages, TxChatMessage:user(HarmonyFimPromptBuilder.fim_prompt(request)))
     if level == "off" then
