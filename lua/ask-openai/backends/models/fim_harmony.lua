@@ -281,9 +281,12 @@ Make sure to practice the code change before you return a suggestion. Take the c
     local messages = {
         TxChatMessage:developer(dev), -- FYI developer or system message must be first, and ONLY ONE is allowed
         TxChatMessage:user(HarmonyFimPromptBuilder.context_user_msg(request)),
-        TxChatMessage:user(HarmonyFimPromptBuilder.fim_prompt(request)),
     }
-
+    local text = HarmonyFimPromptBuilder.context_semantic_grep(request)
+    if text then
+        table.insert(messages, TxChatMessage:user(text))
+    end
+    table.insert(messages, TxChatMessage:user(HarmonyFimPromptBuilder.fim_prompt(request)))
     if level == "off" then
         -- TODO get rid of raw prompt approach above? or just keep it around as "RETIRED" ??
         local fixed_thoughts = HarmonyFimPromptBuilder.deep_thoughts_about_fim
