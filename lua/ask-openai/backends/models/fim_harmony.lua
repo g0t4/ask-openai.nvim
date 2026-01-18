@@ -155,10 +155,10 @@ end
 
 --- user message (harmony spec):
 --- - Typically representing the input to the model
----@param message string
+---@param message? string - nil so consumers can always call even if empty message (and it won't be added)
 ---@return HarmonyFimPromptBuilder self
 function HarmonyFimPromptBuilder:user(message)
-    if not message then
+    if message == nil or message == "" then
         -- don't add an empty message
         return self
     end
