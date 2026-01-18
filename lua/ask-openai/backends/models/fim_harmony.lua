@@ -128,7 +128,7 @@ function HarmonyFimPromptBuilder.context_semantic_grep(request)
         return nil
     end
 
-    return prompts.semantic_grep_user_message_text(rag_matches)
+    return prompts.semantic_grep_user_message(rag_matches)
 end
 
 ---@param request FimBackend
