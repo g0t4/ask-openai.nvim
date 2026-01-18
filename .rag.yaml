@@ -6,8 +6,12 @@ include:
     - py
     - fish
     - txt
-    - ts
     - rs
+    - ts
+    - html
+    - svelte
+    - css
+    - js
 ignores:
     - "notes/"
 global_languages:
