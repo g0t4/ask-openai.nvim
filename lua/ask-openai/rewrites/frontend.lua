@@ -391,7 +391,7 @@ local function ask_rewrite_command(opts)
         if rag_matches ~= nil and #rag_matches > 0 then
             local rag_message_parts = {
                 "# Semantic Grep matches: " .. #rag_matches .. "\n",
-                -- PRN add explanation like QuestionsFrontend here for what exactly a Semantic Grep match means?
+                "This is automatic context from my neovim AI tools. The user's request is used to query for relevant code. Only the top results are included. These may or may not be relevant."
             }
             -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
             vim.iter(rag_matches)
