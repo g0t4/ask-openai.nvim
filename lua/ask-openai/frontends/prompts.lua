@@ -11,8 +11,12 @@ local function semantic_grep_header_lines(rag_matches)
 end
 
 ---@param rag_matches LSPRankedMatch[]
----@return TxChatMessage
+---@return TxChatMessage|nil
 function M.semantic_grep_user_message(rag_matches)
+    if rag_matches == nil or #rag_matches == 0 then
+        return nil
+    end
+
     local lines = semantic_grep_header_lines(rag_matches)
     -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
     vim.iter(rag_matches)
@@ -26,7 +30,6 @@ function M.semantic_grep_user_message(rag_matches)
             )
         end)
     local content = table.concat(lines, "\n")
-    -- Return a TxChatMessage representing user context
     return TxChatMessage:user_context(content)
 end
 

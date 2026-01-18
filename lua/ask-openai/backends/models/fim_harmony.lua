@@ -123,12 +123,7 @@ end
 
 ---@param request FimBackend
 function HarmonyFimPromptBuilder.context_semantic_grep(request)
-    local rag_matches = request.rag_matches
-    if not rag_matches or #rag_matches == 0 then
-        return nil
-    end
-
-    return prompts.semantic_grep_user_message(rag_matches)
+    return prompts.semantic_grep_user_message(request.rag_matches)
 end
 
 ---@param request FimBackend

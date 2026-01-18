@@ -191,11 +191,9 @@ local function ask_question_command(opts)
     end
 
     local function then_generate_completion(rag_matches)
-        if rag_matches ~= nil and #rag_matches > 0 then
-            local message = prompts.semantic_grep_user_message(rag_matches)
-            if message then
-                table.insert(messages, message)
-            end
+        local rag_message = prompts.semantic_grep_user_message(rag_matches)
+        if rag_message then
+            table.insert(messages, rag_message)
         end
 
         -- * user request should be last
