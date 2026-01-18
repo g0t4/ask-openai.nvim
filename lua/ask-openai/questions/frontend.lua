@@ -198,19 +198,19 @@ local function ask_question_command(opts)
 
     local function then_generate_completion(rag_matches)
         if rag_matches ~= nil and #rag_matches > 0 then
-            local rag_message_parts = build_semantic_grep_header(rag_matches)
+            local lines = build_semantic_grep_header(rag_matches)
             -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
             vim.iter(rag_matches)
                 :each(function(chunk)
                     ---@cast chunk LSPRankedMatch
                     local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
                     local code_chunk = chunk.text
-                    table.insert(rag_message_parts,
+                    table.insert(lines,
                         "## " .. file .. "\n"
                         .. code_chunk .. "\n"
                     )
                 end)
-            table.insert(messages, TxChatMessage:user_context(table.concat(rag_message_parts, "\n")))
+            table.insert(messages, TxChatMessage:user_context(table.concat(lines, "\n")))
         end
 
         -- * user request should be last

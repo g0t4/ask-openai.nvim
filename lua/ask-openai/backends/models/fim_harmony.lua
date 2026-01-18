@@ -126,7 +126,7 @@ function HarmonyFimPromptBuilder.context_semantic_grep(request)
         return nil
     end
 
-    local rag_parts = {
+    local lines = {
         "# Semantic Grep matches: " .. #request.rag_matches .. "\n",
         "This is automatic context from my neovim AI tools. The user's request is used to query for relevant code. Only the top results are included. These may or may not be relevant."
     }
@@ -136,12 +136,12 @@ function HarmonyFimPromptBuilder.context_semantic_grep(request)
             ---@cast chunk LSPRankedMatch
             local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
             local code_chunk = chunk.text
-            table.insert(rag_parts,
+            table.insert(lines,
                 "## " .. file .. "\n"
                 .. code_chunk .. "\n"
             )
         end)
-    return table.concat(rag_parts, "\n")
+    return table.concat(lines, "\n")
 end
 
 ---@param request FimBackend

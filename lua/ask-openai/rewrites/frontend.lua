@@ -389,7 +389,7 @@ local function ask_rewrite_command(opts)
                 end)
         end
         if rag_matches ~= nil and #rag_matches > 0 then
-            local rag_message_parts = {
+            local lines = {
                 "# Semantic Grep matches: " .. #rag_matches .. "\n",
                 "This is automatic context from my neovim AI tools. The user's request is used to query for relevant code. Only the top results are included. These may or may not be relevant."
             }
@@ -399,12 +399,12 @@ local function ask_rewrite_command(opts)
                     ---@cast chunk LSPRankedMatch
                     local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
                     local code_chunk = chunk.text
-                    table.insert(rag_message_parts,
+                    table.insert(lines,
                         "## " .. file .. "\n"
                         .. code_chunk .. "\n"
                     )
                 end)
-            table.insert(messages, TxChatMessage:user_context(table.concat(rag_message_parts, "\n")))
+            table.insert(messages, TxChatMessage:user_context(table.concat(lines, "\n")))
         end
 
         table.insert(messages, TxChatMessage:user(user_message_with_code))
