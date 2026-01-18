@@ -117,8 +117,13 @@ function HarmonyFimPromptBuilder.context_user_msg(request)
     --     table.insert(context_lines, context.matching_ctags.content)
     -- end
 
+    return table.concat(context_lines, "\n")
+end
+
+function HarmonyFimPromptBuilder.context_semantic_grep(request)
+    local context_lines = {}
+
     if request.rag_matches and #request.rag_matches > 0 then
-        add_blank_line()
 
         local rag_parts = {}
         if #request.rag_matches == 1 then
@@ -267,6 +272,7 @@ function HarmonyFimPromptBuilder.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(r
     local builder = HarmonyFimPromptBuilder.new()
         :developer()
         :user(HarmonyFimPromptBuilder.context_user_msg(request))
+        :user(HarmonyFimPromptBuilder.context_semantic_grep(request))
         :user(HarmonyFimPromptBuilder.fim_prompt(request))
         :set_thinking()
         :start_assistant_final_response() -- this forces the model to respond w/o any further thinking
