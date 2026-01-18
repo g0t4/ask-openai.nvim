@@ -136,18 +136,18 @@ function HarmonyFimPromptBuilder.context_semantic_grep(request)
     -- PRN add explanation like QuestionsFrontend here for what exactly a Semantic Grep match means?
     table.insert(rag_parts, heading)
 
-        -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
-        vim.iter(request.rag_matches)
-            :each(function(chunk)
-                ---@cast chunk LSPRankedMatch
-                local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
-                local code_chunk = chunk.text
-                table.insert(rag_parts,
-                    "## " .. file .. "\n"
-                    .. code_chunk .. "\n"
-                )
-            end)
-        local rag_context = table.concat(rag_parts, "\n")
+    -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
+    vim.iter(request.rag_matches)
+        :each(function(chunk)
+            ---@cast chunk LSPRankedMatch
+            local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
+            local code_chunk = chunk.text
+            table.insert(rag_parts,
+                "## " .. file .. "\n"
+                .. code_chunk .. "\n"
+            )
+        end)
+    local rag_context = table.concat(rag_parts, "\n")
 
     return rag_context
 end
