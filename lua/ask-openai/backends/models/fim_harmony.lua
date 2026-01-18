@@ -127,14 +127,14 @@ function HarmonyFimPromptBuilder.context_semantic_grep(request)
         return nil
     end
 
-        local rag_parts = {}
-        if #request.rag_matches == 1 then
-            heading = "# Semantic Grep match:\n"
-        elseif #request.rag_matches > 1 then
-            heading = "# Semantic Grep matches: " .. #request.rag_matches .. "\n"
-        end
-        -- PRN add explanation like QuestionsFrontend here for what exactly a Semantic Grep match means?
-        table.insert(rag_parts, heading)
+    local rag_parts = {}
+    if #request.rag_matches == 1 then
+        heading = "# Semantic Grep match:\n"
+    elseif #request.rag_matches > 1 then
+        heading = "# Semantic Grep matches: " .. #request.rag_matches .. "\n"
+    end
+    -- PRN add explanation like QuestionsFrontend here for what exactly a Semantic Grep match means?
+    table.insert(rag_parts, heading)
 
         -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
         vim.iter(request.rag_matches)
