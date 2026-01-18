@@ -1,0 +1,99 @@
+import logging
+import time
+import humanize
+from dataclasses import dataclass
+from pathlib import Path
+from rich.table import Table
+from rich.console import Console
+from lsp.storage import Datasets, FileStat
+from lsp.fs import relative_to_workspace
+from lsp.chunks.chunker import get_file_stat
+
+logger = logging.getLogger(__name__)
+
+def format_age(age_seconds: float) -> str:
+    days = 24 * 60 * 60
+    if age_seconds > 7 * days:
+        return f"[red]{humanize.naturaldelta(age_seconds)}[/]"
+    if age_seconds > 2 * days:
+        return f"[yellow]{humanize.naturaldelta(age_seconds)}[/]"
+    return f"[green]{humanize.naturaldelta(age_seconds)}[/]"
+
+@dataclass(frozen=True)
+class FileIssue:
+    display_path: Path
+    stored_stat: FileStat
+    current_stat: FileStat
+
+def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
+    mtime_only: list[FileIssue] = []
+    changed: list[FileIssue] = []
+    deleted_files: dict[Path, FileStat] = {}
+
+    for dataset in datasets.all_datasets.values():
+        for path, stored_stat in dataset.stat_by_path.items():
+            file_path = Path(path)
+            display_path = relative_to_workspace(file_path, override_root_path=root_dir)
+            if not file_path.is_file():
+                deleted_files[display_path] = stored_stat
+                continue
+
+            current_stat = get_file_stat(file_path)
+            mtime_diff = abs(stored_stat.mtime - current_stat.mtime)
+
+            if not current_stat.hash == stored_stat.hash:
+                changed.append(FileIssue(display_path, stored_stat, current_stat))
+            elif mtime_diff:
+                mtime_only.append(FileIssue(display_path, stored_stat, current_stat))
+
+    if not (mtime_only or changed or deleted_files):
+        return
+
+    # console.print(table) is fine for now, this is not run in backend (not yet)
+    console = Console()
+    console.print()
+    console.print("[bold white]STALE FILES:[/]")
+    console.print("[italic]  run [bold]rag_indexer[/bold] to update the index...[/]")
+
+    if any(deleted_files):
+        table = Table(width=100)
+        table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
+        table.add_column(justify="left", header="deleted files")
+        for file in sorted(deleted_files.keys()):
+            stored_stat = deleted_files[file]
+            last_indexed = format_age(time.time() - stored_stat.mtime)
+            table.add_row(last_indexed, str(file))
+        console.print(table)
+
+    if any(mtime_only):
+        mtime_only.sort(key=lambda x: x.stored_stat.mtime, reverse=True)
+
+        table = Table(width=100)
+        table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
+        table.add_column(justify="left", header="only mtime differs, contents match")
+        for issue in mtime_only:
+            last_indexed = format_age(time.time() - issue.stored_stat.mtime)
+            table.add_row(last_indexed, str(issue.display_path))
+        console.print(table)
+
+    if any(changed):
+        changed.sort(key=lambda x: x.stored_stat.mtime, reverse=True)
+
+        table = Table(width=100)
+        table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
+        table.add_column(justify="left", header="path")
+        table.add_column(justify="left", header="size")
+        table.add_column(justify="left", header="hash")
+        for issue in changed:
+            last_indexed = format_age(time.time() - issue.stored_stat.mtime)
+
+            if issue.current_stat.size != issue.stored_stat.size:
+                delta = issue.current_stat.size - issue.stored_stat.size
+                sign = "+" if delta > 0 else "-"
+                size_str = f"{sign}{humanize.naturalsize(abs(delta), binary=True)}"
+            else:
+                size_str = ""
+
+            hash_str = f"{issue.stored_stat.hash[:8]}→{issue.current_stat.hash[:8]}"
+            table.add_row(last_indexed, str(issue.display_path), size_str, hash_str)
+        console.print(table)

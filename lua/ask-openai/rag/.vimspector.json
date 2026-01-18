@@ -1,0 +1,42 @@
+// from: https://github.com/puremourning/vimspector/tree/master/support/test/lua/simple
+// config reference:
+//   https://puremourning.github.io/vimspector/configuration.html#specifying-a-default-configuration
+// make sure to:
+
+//   uv add setuptools  # in your python venv for neovim
+//     check with  :=vim.g.python3_host_prog
+//
+{
+    "$schema": "https://puremourning.github.io/vimspector/schema/vimspector.schema.json#",
+    "configurations": {
+        "Attach to Python REPL": {
+            "adapter": "debugpy",
+            "configuration": {
+                "request": "attach",
+                "connect": {
+                    "host": "localhost",
+                    "port": 5678
+                },
+                "justMyCode": false
+            }
+        },
+        "Run transformers qwen3": {
+            "adapter": "debugpy",
+            "default": true,
+            "configuration": {
+                "request": "launch",
+                "program": "${workspaceRoot}/lsp/notes/transformers_qwen3.py",
+                "cwd": "${workspaceRoot}",
+                "stopOnEntry": true
+            },
+            "breakpoints": {
+                "exception": {
+                    "raised": "N",
+                    "uncaught": "",
+                    "userUnhandled": ""
+                }
+            }
+
+        }
+    }
+}

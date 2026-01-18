@@ -1,0 +1,92 @@
+local yanks = require("ask-openai.predictions.context.yanks")
+local ctags = require("ask-openai.predictions.context.ctags")
+-- local changelists = require("ask-openai.predictions.context.changelists")
+-- local inspect = require("ask-openai.predictions.context.inspect")
+local git_diff = require("ask-openai.predictions.context.git_diff")
+local matching_ctags = require("ask-openai.predictions.context.matching_ctags")
+local prompts = require("ask-openai.predictions.context.prompts")
+local project = require("ask-openai.predictions.context.project")
+local messages = require("devtools.messages")
+local cmds = require("ask-openai.predictions.context.cmds")
+-- local learn_diagnostics = require("ask-openai.predictions.context.coc.learn.diagnostics")
+-- local coc_context = require("ask-openai.predictions.context.coc.context")
+
+-- TODO move this out of just predictions dir
+
+---@class CurrentContext
+---
+---@field yanks ContextItem
+---@field commits ContextItem[]
+---@field ctags ContextItem
+---@field matching_ctags ContextItem
+---@field project ContextItem
+---
+---@field includes ParseIncludesResult
+---@field cleaned_prompt string
+local CurrentContext = {}
+
+---@param prompt string
+---@param always_include table
+---@return CurrentContext
+function CurrentContext:items(prompt, always_include)
+    local items = {}
+    local includes = prompts.parse_includes(prompt)
+
+    -- allow override to force include context items
+    always_include = always_include or {}
+    includes.yanks = includes.yanks or (always_include.yanks == true)
+    includes.commits = includes.commits or (always_include.commits == true)
+    includes.matching_ctags = includes.matching_ctags or (always_include.matching_ctags == true)
+    includes.project = includes.project or (always_include.project == true)
+
+    if includes.yanks then
+        items.yanks = yanks.get_context_item()
+    end
+    -- if includes.commits then
+    --     items.commits = git_diff.get_context_items()
+    -- end
+    -- if includes.ctags then
+    --     items.ctags = ctags.get_context_items()
+    -- end
+    if includes.matching_ctags then
+        items.matching_ctags = matching_ctags.get_context_item()
+    end
+    if includes.project then
+        items.project = project.get_context_items()
+    end
+
+    items.includes = includes
+    items.cleaned_prompt = includes.cleaned_prompt
+    return items
+end
+
+function CurrentContext.toggle_trace_context_command(prompt)
+    CurrentContext.tracing = not CurrentContext.tracing
+
+    yanks.tracing = CurrentContext.tracing
+    git_diff.tracing = CurrentContext.tracing
+    ctags.tracing = CurrentContext.tracing
+    matching_ctags.tracing = CurrentContext.tracing
+    project.tracing = CurrentContext.tracing
+    -- ? others
+
+    if CurrentContext.tracing then
+        messages.ensure_open()
+    end
+end
+
+function CurrentContext.setup()
+    yanks.setup()
+    git_diff.setup()
+    -- TODO git outstanding changes == edits! let LS handle that? then encode and query it too?
+    ctags.setup()
+    matching_ctags.setup()
+    project.setup()
+    -- learn_diagnostics.setup()
+    -- coc_context.setup()
+    -- changelists.setup()
+    -- cocs.setup()
+    vim.api.nvim_create_user_command("AskDumpTraceContext", CurrentContext.toggle_trace_context_command, {})
+end
+
+return CurrentContext

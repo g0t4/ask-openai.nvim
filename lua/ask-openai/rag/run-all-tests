@@ -1,0 +1,5 @@
+#!/usr/bin/env fish
+
+# use --capture=no to see print() output
+# use --log-cli-level=___ to set pytest's root logger level
+ptw **/*_tests.py -- --capture=no --log-cli-level=INFO

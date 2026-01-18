@@ -1,0 +1,1 @@
+gsed -Ei -n 's/,"created":.*id.*model.*system_fingerprint.*object":"chat.completion.chunk"//p' lua/ask-openai/tools/tests/captures/weather-mixed-content-toolcall-sses.json

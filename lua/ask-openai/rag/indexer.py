@@ -1,0 +1,349 @@
+import aiofiles
+import asyncio
+from lsp.logs import disable_printtmp, get_logger, disable_printtmp
+from lsp.inference.client.embedder import get_shape, encode_passages, signal_hotpath_done_in_background
+
+logger = get_logger(__name__)
+
+import argparse
+import logging
+import subprocess
+import sys
+import yaml
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Optional, Set
+
+import faiss
+import numpy as np
+
+from pydants import write_json
+
+import fs
+from lsp.storage import Chunk, FileStat, load_prior_data
+from lsp.chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
+from lsp.config import Config, load_config
+
+# constants for subprocess.run for readability
+IGNORE_FAILURE = False
+STOP_ON_FAILURE = True
+
+@dataclass
+class FilesDiff:
+    # FYI type mismatch IS FINE with type hints... LEAVE IT!
+    changed: Set[Path]
+    deleted: Set[str]
+    not_changed: Set[str]
+
+@dataclass
+class ProgramArgs:
+    verbose: bool
+    info: bool
+    in_githook: bool
+    rebuild: bool
+    level: int
+    only_extension: str | None = None
+
+class IncrementalRAGIndexer:
+
+    def __init__(self, dot_rag_dir, source_code_dir, options: RAGChunkerOptions, program_args: ProgramArgs | None = None):
+        self.options = options
+        self.dot_rag_dir = Path(dot_rag_dir)
+        self.source_code_dir = Path(source_code_dir)
+        self.program_args = program_args
+
+    async def main(self):
+        index_these_file_extensions = await self.get_indexed_file_extensions()
+
+        if self.program_args and self.program_args.only_extension:
+            index_these_file_extensions = [self.program_args.only_extension]
+            logger.info(f"Indexing only extension: {index_these_file_extensions[0]}")
+
+        for file_extension in index_these_file_extensions:
+            await self.build_index(file_extension)
+        self.warn_about_other_extensions(index_these_file_extensions)
+        await signal_hotpath_done_in_background()
+
+    async def get_indexed_file_extensions(self):
+        rag_yaml = self.source_code_dir / ".rag.yaml"
+        if not rag_yaml.exists():
+            logger.info(f"no rag config found {rag_yaml}, using default config")
+            return Config.default().include
+
+        async with aiofiles.open(rag_yaml, mode="r") as f:
+            content = await f.read()
+        config = load_config(content)
+        logger.pp_debug(f"found rag config: {rag_yaml}", config)
+
+        if not config.enabled:
+            logger.info(f"RAG indexing disabled in {rag_yaml}, hack just returns no supported file extension to stop (fine for now)")
+            return []
+
+        return config.include
+
+    def warn_about_other_extensions(self, index_languages: list[str]):
+
+        result = subprocess.run(
+            ["fish", "-c", f"fd {self.source_code_dir} --exclude='\\.ctags\\.d' --exclude='\\.rag' --exec basename"],
+            stdout=subprocess.PIPE,
+            text=True,
+            check=STOP_ON_FAILURE,
+        )
+        basenames = result.stdout.strip().splitlines()
+
+        ignore_files = ["ctags", "ctags.d"]
+
+        extensions = [basename.split(".")[-1] \
+            for basename in basenames \
+            if basename and "." in basename \
+            and basename not in ignore_files
+        ]
+
+        import itertools
+        unindexed_extensions = [(ext, len(list(group))) \
+            for ext, group in itertools.groupby(sorted(extensions)) \
+            if ext not in index_languages
+        ]
+
+        # TODO pair with an ignore style file for what not to index in a given repo
+
+        # require at least 2 of a file before warning
+        #   within one file you don't need RAG for context :)
+        noteworthy_extensions = [ \
+            f"{ext}={count}" \
+            for ext, count in unindexed_extensions \
+            if count > 1
+        ]
+
+        if noteworthy_extensions:
+            logger.debug(f"Found unindexed extensions: {' '.join(noteworthy_extensions)}")
+
+    def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
+        """Split files into: changed (added/updated), unchagned, deleted"""
+
+        # PRN add in gitignore detection, right now I am using fd so I s/b mostly fine, still might want explicit checks here too
+        #   use whatever I come up with from LS's text document events to filter... i.e. files in a .venv that I open (F12)
+        #    though that again isn't an issue for this part of indexing
+        # PRN add .ask.config or similar w/ ignore section to block things like manual_prompting folder! in ask-openai repo!
+
+        # * current files
+        result = subprocess.run(
+            ["fd", f".*\\.{language_extension}$", str(self.source_code_dir), "--absolute-path", "--type", "f"],
+            stdout=subprocess.PIPE,
+            text=True,
+            check=True,
+        )
+        current_path_strs = set(result.stdout.strip().splitlines())
+
+        # * added, modified (aka changed)
+        changed_paths: Set[Path] = set()
+        for file_path_str in current_path_strs:
+            file_path = Path(file_path_str)
+            is_new_file = file_path_str not in prior_stat_by_path
+            if is_new_file:
+                changed_paths.add(file_path)
+                logger.debug(f"[green]New file: {file_path}")
+            else:
+                current_mod_time = file_path.stat().st_mtime
+                prior_mod_time = prior_stat_by_path[file_path_str].mtime
+                if current_mod_time > prior_mod_time:
+                    changed_paths.add(file_path)
+                    logger.debug(f"[blue]Modified file: {file_path}")
+
+        prior_path_strs: Set[str] = set(prior_stat_by_path.keys())
+
+        # * deleted
+        deleted_path_strs = prior_path_strs - current_path_strs
+        for deleted_file in deleted_path_strs:
+            logger.debug(f"[red]Deleted file: {deleted_file}")
+
+        # * not changed
+        changed_path_strs = set(str(f) for f in changed_paths)
+        not_changed_path_strs = prior_path_strs - changed_path_strs - deleted_path_strs
+
+        return FilesDiff(changed_paths, deleted_path_strs, not_changed_path_strs)
+
+    async def update_faiss_index_incrementally(
+        self,
+        index: Optional[faiss.Index],
+        not_changed_chunks_by_file: dict[str, list[Chunk]],
+        updated_chunks_by_file: dict[str, list[Chunk]],
+    ) -> faiss.Index:
+        """Update FAISS index incrementally using IndexIDMap"""
+
+        # Create base index if it doesn't exist
+        if index is None:
+            shape = await get_shape()
+            # 768 for "intfloat/e5-base-v2"
+            # 1024 for Qwen3
+            base_index = faiss.IndexFlatIP(shape)
+            index = faiss.IndexIDMap(base_index)
+            # FYI if someone deletes the vectors file... this won't recreate it if stat still exists...
+
+        new_chunks: list[Chunk] = []
+        new_faiss_ids: list[int] = []
+        for file_chunks in updated_chunks_by_file.values():
+            for chunk in file_chunks:
+                new_chunks.append(chunk)
+                new_faiss_ids.append(chunk.faiss_id)
+
+        # FYI FIX THE updated check logic... don't try to work around it here
+        #  fix it so a chunk that is VERBATIM same content is NOT marked updated just b/c another part of the file is... OR just b/c timestamp on file changes!
+        keep_ids = []  # why was I keeping things that are marked updated?!
+        logger.pp_debug("keep_ids - before", keep_ids)
+        for _, file_chunks in not_changed_chunks_by_file.items():
+            for chunk in file_chunks:
+                keep_ids.append(chunk.faiss_id)
+        logger.pp_debug("keep_ids - after", keep_ids)
+
+        # BUG: currently updated files, the chunks that don't change (or entire thing if just msec updated)...
+        #   these chunks IDs are put into keep_ids AND chunks go into new_chunks
+        #   and so we insert them again (double them up)
+        keep_selector = faiss.IDSelectorArray(np.array(keep_ids, dtype="int64"))
+        not_keep_selector = faiss.IDSelectorNot(keep_selector)
+        index.remove_ids(not_keep_selector)
+
+        if new_chunks:
+            logger.pp_debug("new_faiss_ids", new_faiss_ids)
+
+            with logger.timer("Encode new vectors"):
+                passages = [chunk.text for chunk in new_chunks]
+                vecs_np = await encode_passages(passages)
+
+            faiss_ids_np = np.array(new_faiss_ids, dtype="int64")
+
+            index.add_with_ids(vecs_np, faiss_ids_np)
+
+        return index
+
+    async def build_index(self, language_extension: str = "lua"):
+        """Build or update the RAG index incrementally"""
+
+        prior = load_prior_data(self.dot_rag_dir, language_extension)
+
+        paths = self.get_files_diff(language_extension, prior.stat_by_path)
+
+        # TODO add test to assert delete last file is fine and wipes the data set
+
+        logger.pp_debug("paths", paths)
+
+        if not paths.changed and not paths.deleted:
+            logger.debug("[green]No changes detected, index is up to date!")
+            return
+
+        all_stat_by_path = {path_str: prior.stat_by_path[path_str] for path_str in paths.not_changed}
+        not_changed_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.not_changed}
+        logger.info(f'{len(paths.changed)} changed, {len(paths.deleted)} deleted')
+
+        updated_chunks_by_file: dict[str, list[Chunk]] = {}
+        for file_path in paths.changed:
+            file_path_str = str(file_path)
+
+            stat = get_file_stat(file_path)
+            all_stat_by_path[file_path_str] = stat
+
+            # Create new chunks for this file
+            chunks = build_chunks_from_file(file_path, stat.hash, self.options)
+            updated_chunks_by_file[file_path_str] = chunks
+
+        logger.pp_debug("Deleted chunks", paths.deleted)
+        logger.pp_debug("Updated chunks", updated_chunks_by_file)
+        logger.pp_debug("NOT changed chunks", not_changed_chunks_by_file)
+
+        # * Incrementally update the FAISS index
+        if paths.changed or paths.deleted:
+            index = await self.update_faiss_index_incrementally(
+                prior.index,
+                not_changed_chunks_by_file,
+                updated_chunks_by_file,
+            )
+        else:
+            index = prior.index
+
+        if index is None:
+            return
+
+        # Save everything
+        index_dir = self.dot_rag_dir / language_extension
+        index_dir.mkdir(exist_ok=True, parents=True)
+
+        faiss.write_index(index, str(index_dir / "vectors.index"))
+
+        logger.pp_debug("ids: ", prior.index_view.ids)
+
+        with logger.timer("Save chunks"):
+            all_chunks_by_file = not_changed_chunks_by_file.copy()
+            all_chunks_by_file.update(updated_chunks_by_file)
+            logger.pp_debug("all_chunks_by_file", all_chunks_by_file)
+            logger.pp_debug("all_stat_by_path", all_stat_by_path)
+
+        with logger.timer("Save chunks"):
+            write_json(all_chunks_by_file, index_dir / "chunks.json")
+
+        with logger.timer("Save file stats"):
+            write_json(all_stat_by_path, index_dir / "files.json")
+
+        logger.debug(f"[green]Index updated successfully!")
+        if paths.changed:
+            logger.debug(f"[green]Processed {len(paths.changed)} changed files")
+        if paths.deleted:
+            logger.debug(f"[green]Removed {len(paths.deleted)} deleted files")
+
+def trash_dot_rag(dot_rag_dir):
+    dot_rag_dir = Path(dot_rag_dir)
+    if not dot_rag_dir.exists():
+        return
+    subprocess.run(["trash", dot_rag_dir], check=IGNORE_FAILURE)
+
+async def main():
+    from lsp.logs import logging_fwk_to_console
+
+    def parse_program_args() -> ProgramArgs:
+        parser = argparse.ArgumentParser()
+        parser.add_argument("--verbose", "--debug", action="store_true", help="Enable verbose logging")
+        parser.add_argument("--info", action="store_true", help="Enable info logging")
+        parser.add_argument("--rebuild", action="store_true", help="Rebuild index")
+        parser.add_argument("--githook", action="store_true", help="Run in git hook mode")
+        parser.add_argument("--only-extension", type=str, help="Only process files with the specified extension")
+
+        args = parser.parse_args()
+
+        program_args = ProgramArgs(
+            verbose=args.verbose,
+            info=args.info,
+            in_githook=args.githook,
+            rebuild=args.rebuild,
+            level=logging.WARNING,
+            only_extension=args.only_extension,
+        )
+        if args.githook:
+            level = logging.INFO
+        else:
+            program_args.level = logging.DEBUG if args.verbose else (logging.INFO if args.info else logging.WARNING)
+
+        return program_args
+
+    disable_printtmp()  # output intended for testing only
+
+    args = parse_program_args()
+    # print("args", args)
+
+    logging_fwk_to_console(args.level)
+
+    with logger.timer("Total indexing time"):
+        # PRN make this work in CWD first, fallback to repo root? like lua code? only when I only want a subset of a repo or non-repos
+        repo_root_dir = fs.get_cwd_repo_root()
+        if not repo_root_dir:
+            logger.error("[red]No Git repository found in current working directory, cannot build RAG index.")
+            sys.exit(1)
+        dot_rag_dir = repo_root_dir / ".rag"
+        source_code_dir = "."  # TODO make this repo_root_dir always? has been nice to test a subset of files by cd to nested dir
+        logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
+        if args.rebuild:
+            trash_dot_rag(dot_rag_dir)
+        options = RAGChunkerOptions.ProductionOptions()
+        indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, options, args)
+        await indexer.main()
+
+if __name__ == "__main__":
+    asyncio.run(main())

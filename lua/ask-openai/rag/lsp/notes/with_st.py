@@ -1,0 +1,85 @@
+#!/usr/bin/env python3 -m lsp.notes.with_st
+
+import logging
+import os
+from lsp.logs import get_logger, logging_fwk_to_console, LogTimer
+
+logger = get_logger("drop_ST")
+logging_fwk_to_console(logging.DEBUG)
+
+with LogTimer("import torch.nn.functional as F", logger):
+    import torch.nn.functional as F
+
+# from torch import Tensor # only needed for type hints... so not really needed
+
+# unfortunately, at best this saves 100ms of 2300ms total on import timing...
+#   this is most useful to understand how embeddings are calculated using last_hidden, etc.
+
+with logger.timer("importing sentence transformers"):
+
+    # do not check hugging face for newer version, use offline cache only
+    #   550ms load time vs 1200ms for =>    model = SentenceTransformer(model_name)
+    # FYI must be set BEFORE importing SentenceTransformer, setting after (even if before model load) doesn't work
+    os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
+    from sentence_transformers import SentenceTransformer  # 2+ seconds to import (mostly torch/transformer deps that even if I use BertModel directly, I cannot avoid the import timing)
+
+# Each input text should start with "query: " or "passage: ".
+# For tasks other than retrieval, you can simply use the "query: " prefix.
+input_texts = [
+    'query: how much protein should a female eat',
+    'query: summit define',
+    "passage: As a general guideline, the CDC's average requirement of protein for women ages 19 to 70 is 46 grams per day. But, as you can see from this chart, you'll need to increase that if you're expecting or training for a marathon. Check out the chart below to see how much protein you should be eating each day.",
+    "passage: Definition of summit for English Language Learners. : 1  the highest point of a mountain : the top of a mountain. : 2  the highest level. : 3  a meeting or series of meetings between the leaders of two or more governments.",
+]
+
+with LogTimer("load model/tokenizer", logger):
+    # model_name = "intfloat/e5-base-v2"
+    model_name = "Qwen/Qwen3-Embedding-0.6B"
+    model = SentenceTransformer(
+        model_name,
+        model_kwargs={"torch_dtype": "auto"},  # else float32 which RUINs perf and outputs! on both CUDA and MPS backends
+    )
+
+    if logger.isEnabledFor(logging.DEBUG):
+        logger.debug(f'Modules: %r', model.modules)
+        auto_model = model._first_module().auto_model
+        logger.debug(f"auto_model: %r", auto_model)
+        logger.debug(f"auto_model.dtype: [bold red]%s", auto_model.dtype)
+
+logger.info(f"loaded on device: {model.device=}")
+
+with LogTimer("encode", logger):
+    embeddings = model.encode(
+        input_texts,
+        normalize_embeddings=True,
+        convert_to_numpy=True,
+        # convert_to_tensor=True,
+        # device = "cpu",
+        # device="cpu", # TODO! verify timing differences (if any) are not due to device selection
+    )
+
+    two_queries = embeddings[:2]
+    two_passages = embeddings[2:]
+    scores = (two_queries @ two_passages.T) * 100
+    # FOR FUN:
+    scores2 = (two_passages @ two_queries.T) * 100
+
+print(type(embeddings))
+logger.info(f"{two_queries=} {two_queries.shape=}")
+logger.info(f"{two_passages=} {two_passages.shape=}")
+logger.info(f"loaded on device: {next(model.parameters()).device}")
+logger.info(f'{embeddings=}')
+logger.info(f'{scores=}')
+logger.info(f'  {scores.shape=}')
+logger.info(f'{scores2=}')  # transpose of scores
+logger.info(f'  {scores2.shape=}')  # transpose of scores
+# Btw scores and scores2 are transposes
+logger.info(f'{scores2.T=}')
+
+from assertpy import assert_that
+
+from numpy.testing import assert_array_equal
+
+logger.info("about to assert equal")
+assert_array_equal(scores, scores2.T)

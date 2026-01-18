@@ -1,3 +1,121 @@
+local M = {}
+
+local config = require("ask-openai.config")
+
+local are_predictions_running = false
+
+local augroup = "ask-openai.prediction"
+
+function M.start_predictions()
+    if are_predictions_running then
+        return
+    end
+
+    local predictions_frontend = require("ask-openai.predictions.frontend")
+
+    local predictions = config.get_options().tmp.predictions
+    if not predictions.keymaps then
+        config.print_verbose("predictions.keymaps is disabled, skipping")
+        return
+    end
+
+    -- keymaps
+    if predictions.keymaps.accept_all then
+        vim.api.nvim_set_keymap('i', predictions.keymaps.accept_all, "",
+            { noremap = true, callback = predictions_frontend.accept_all_invoked })
+    end
+
+    if predictions.keymaps.accept_line then
+        vim.api.nvim_set_keymap('i', predictions.keymaps.accept_line, "",
+            { noremap = true, callback = predictions_frontend.accept_line_invoked })
+    end
+
+    if predictions.keymaps.accept_word then
+        vim.api.nvim_set_keymap('i', predictions.keymaps.accept_word, "",
+            { noremap = true, callback = predictions_frontend.accept_word_invoked })
+    end
+
+    if predictions.keymaps.pause_stream then
+        vim.api.nvim_set_keymap('i', predictions.keymaps.pause_stream, "", {
+            noremap = true,
+            callback = predictions_frontend.pause_stream_invoked,
+        })
+    end
+
+    if predictions.keymaps.resume_stream then
+        vim.api.nvim_set_keymap('i', predictions.keymaps.resume_stream, "", {
+            noremap = true,
+            callback = predictions_frontend.resume_stream_invoked,
+        })
+    end
+
+    if predictions.keymaps.new_prediction then
+        vim.api.nvim_set_keymap('i', predictions.keymaps.new_prediction, "",
+            { noremap = true, callback = predictions_frontend.new_prediction_invoked })
+    end
+
+    -- vim.keymap.set("n", "<leader>~", "<cmd>AskDumpEdits<CR>", {})
+
+    function trigger_apply_template_dump()
+        predictions_frontend.ask_for_prediction({ apply_template_only = true })
+    end
+
+    vim.keymap.set("n", "<leader>temp", trigger_apply_template_dump, {})
+
+    -- event subscriptions
+    vim.api.nvim_create_augroup(augroup, { clear = true })
+    vim.api.nvim_create_autocmd("InsertLeavePre", {
+        group = augroup,
+        pattern = "*",
+        callback = predictions_frontend.leaving_insert_mode
+    })
+    vim.api.nvim_create_autocmd("InsertEnter", {
+        group = augroup,
+        pattern = "*",
+        callback = predictions_frontend.entering_insert_mode
+    })
+    -- vim.api.nvim_create_autocmd("CursorMovedI", {
+    --     -- TODO TextChangedI intead of cursor moved?
+    --     group = augroup,
+    --     pattern = "*", -- todo filter?
+    --     callback = predictions_frontend.cursor_moved_in_insert_mode
+    -- })
+    vim.api.nvim_create_autocmd("TextChangedI", {
+        -- FYI been using this for a LONG time now and no issues (AFAICT)
+        group = augroup,
+        pattern = "*",
+        callback = predictions_frontend.cursor_moved_in_insert_mode,
+    })
+
+    are_predictions_running = true
+end
+
+function M.stop_predictions()
+    if not are_predictions_running then
+        return
+    end
+
+    -- FYI pcall blocks error propagation (returns status code, though in this case I don't care about that)
+    -- remove event triggers
+    pcall(vim.api.nvim_del_augroup_by_name, augroup) -- most del methods will throw if doesn't exist... so just ignore that
+
+    local predictions = config.get_options().tmp.predictions
+    if not predictions.keymaps then
+        config.print_verbose("predictions.keymaps is disabled, skipping")
+        return
+    end
+
+    -- remove keymaps
+    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_all)
+    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_line)
+    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_word)
+    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.pause_stream)
+    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.resume_stream)
+    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.new_prediction)
+
+    are_predictions_running = false
+end
+
 local function trim_null_characters(input)
     -- Replace null characters (\x00) with an empty string
     -- was getting ^@ at end of command output w/ system call (below)
@@ -7,7 +125,7 @@ local function trim_null_characters(input)
     return input:gsub("%z", "")
 end
 
-local function ask_openai()
+function M.ask_openai()
     local cmdline = vim.fn.getcmdline()
     print("asking...") -- overwrites showing luaeval("...") in cmdline
 
@@ -19,25 +137,32 @@ local function ask_openai()
     return trim_null_characters(result)
 end
 
---- @param options AskOpenAIOptions
-local function setup(options)
-    -- MAYBE remove setup and let it be implicit? that said I like only wirting up the key if someone calls this
-    local config = require("ask-openai.config")
-    config.set_user_options(options) -- MAYBE I can move this out to elsewhere, isn't there a config method for this?
+---@param user_options AskOpenAIOptions
+function M.setup(user_options)
+    -- FYI this is called by the plugin consumer... passing their options
+    config.setup(user_options)
 
+    -- PRN feels like this belongs in cmdline_ask.setup()
     local lhs = config.get_options().keymaps.cmdline_ask
-    if not lhs then
+    if lhs then
+        -- [e]valuate vimscript expression luaeval("...") which runs nested lua code
+        -- DO NOT SET silent=true, messes up putting result into cmdline, also I wanna see print messages, IIUC that would be affected
+        -- FYI `<C-\>e` is critical in the following, don't remove the `e` and `\\` is to escape the `\` in lua
+        vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai\').ask_openai()")<CR>', { noremap = true, })
+    else
         config.print_verbose("cmdline_ask keymap is disabled, skipping")
-        return
     end
 
-    -- [e]valuate vimscript expression luaeval("...") which runs nested lua code
-    -- DO NOT SET silent=true, messes up putting result into cmdline, also I wanna see print messages, IIUC that would be affected
-    -- FYI `<C-\>e` is critical in the following, don't remove the `e` and `\\` is to escape the `\` in lua
-    vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai\').ask_openai()")<CR>', { noremap = true, })
+    -- PRN feels like this belongs in predictions.setup()
+    if config.local_share.are_predictions_enabled() then
+        M.start_predictions()
+    end
+
+    require("ask-openai.predictions.context").setup()
+    require("ask-openai.rewrites.frontend").setup()
+    require("ask-openai.questions.frontend").setup()
+    require("ask-openai.tools.mcp").setup()
+    require("ask-openai.rag").setup()
 end
 
-return {
-    setup = setup,
-    ask_openai = ask_openai,
-}
+return M

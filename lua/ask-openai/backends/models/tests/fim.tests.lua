@@ -1,0 +1,172 @@
+local fim = require("ask-openai.backends.models.fim")
+local qwen = fim.qwen25coder.sentinel_tokens
+local starcoder = fim.starcoder2.sentinel_tokens
+local mellum = fim.mellum.sentinel_tokens
+local PrefixSuffixChunk = require("ask-openai.predictions.prefix_suffix")
+
+local test_setup = require("ask-openai.helpers.test_setup")
+test_setup.modify_package_path()
+local should = require("devtools.tests.should")
+
+describe("qwen2.5-coder", function()
+    -- *** File-level FIM template:
+    --   (qwen.FIM_PREFIX)code_pre(qwen.FIM_SUFFIX)code_suf(qwen.FIM_MIDDLE)code_mid(qwen.ENDOFTEXT)
+    --   from Tech Report: https://arxiv.org/pdf/2409.12187
+    --   official example: https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-fim.py
+
+    it("get_fim_prompt", function()
+        -- USE example:
+        --   https://github.com/QwenLM/Qwen2.5-Coder/blob/main/examples/Qwen2.5-Coder-repolevel-fim.py
+
+        local ps_chunk = PrefixSuffixChunk:new()
+        ps_chunk.prefix = "foo\nthe\nprefix"
+        ps_chunk.suffix = "bar\nbaz"
+        -- TODO set lines if needed for test?
+        local request = {
+            ps_chunk = ps_chunk,
+            context = {
+                yanks = { filename = "nvim-recent-yanks.txt", content = "yanks" },
+                includes = { yanks = true },
+            },
+            inject_file_path_test_seam = function()
+                return "path/to/current.lua"
+            end,
+            get_repo_name = function()
+                return "my_repo_name"
+            end
+        }
+        local prompt = fim.qwen25coder.get_fim_prompt(request)
+
+        -- TODO confirm \n after each file contents? or not?
+        --    is it required? otherwise if optional, then it doesn't matter
+        local instructions = [[
+General project code rules:
+- Never add comments to the end of a line.
+- NEVER add TODO comments for me.
+]]
+
+        local expected = qwen.REPO_NAME .. "my_repo_name\n" -- TODO confirm if \n after repo name
+            .. qwen.FILE_SEP .. "instructions.txt\n" .. instructions
+            .. qwen.FILE_SEP .. "nvim-recent-yanks.txt\nyanks"
+            .. qwen.FILE_SEP .. "path/to/current.lua\n"
+            .. qwen.FIM_PREFIX .. "foo\nthe\nprefix"
+            .. qwen.FIM_SUFFIX .. "bar\nbaz"
+            .. qwen.FIM_MIDDLE
+
+
+        should.be_equal(expected, prompt)
+    end)
+end)
+
+describe("starcoder2", function()
+    -- by the way, the following would be used if I didn't have "raw" on the request (that's PSM right there!)
+    --    ollama show --template starcoder2:7b-q8_0
+    --
+    -- (starcoder.FILE_SEP)
+    -- {{- if .Suffix }}(starcoder.FIM_PREFIX)
+    -- {{ .Prompt }}(starcoder.FIM_SUFFIX){{ .Suffix }}(starcoder.FIM_MIDDLE)
+    -- {{- else }}{{ .Prompt }}
+    -- {{- end }}(starcoder.END_OF_TEXT)
+    --
+    --  BUT... (starcoder.END_OF_TEXT) is not the right tag?! its' (starcoder.ENDOFTEXT)
+    --   i.e. https://github.com/bigcode-project/starcoder2/issues/10#issuecomment-1979014959
+
+    it("get_fim_prompt", function()
+        local request = {
+            -- TODO add type def for this request/backend/builder type
+            prefix = "foo\nthe\nprefix",
+            suffix = "bar\nbaz",
+            context = {
+                yanks = { filename = "nvim-recent-yanks.txt", content = "yanks" },
+                includes = { yanks = true },
+            },
+            inject_file_path_test_seam = function()
+                return "path/to/current.lua"
+            end,
+            get_repo_name = function()
+                return "my_repo_name"
+            end
+        }
+        local prompt = fim.starcoder2.get_fim_prompt(request)
+
+        local expected = starcoder.REPO_NAME .. "my_repo_name" .. starcoder.FILE_SEP .. "nvim-recent-yanks.txt\nyanks"
+            .. starcoder.FILE_SEP .. starcoder.FIM_PREFIX .. "path/to/current.lua\n"
+            .. "foo\nthe\nprefix"
+            .. starcoder.FIM_SUFFIX .. "bar\nbaz"
+            .. starcoder.FIM_MIDDLE
+
+        should.be_equal(expected, prompt)
+    end)
+end)
+
+describe("mellum", function()
+    -- TODO! WOA! mellum docs show an SPM FIM!!! (not PSM)
+    -- I will assume it was trained on both... b/c its working right now with PSM
+
+    -- * docs commit history => all SPM
+    --
+    -- - https://huggingface.co/JetBrains/Mellum-4b-base/commit/b7d42cacc4ea2889f32479777266fb731248a3d8
+    --     * oldest => initial add of example
+    --     encoded_input = tokenizer(f"(mellum.FIM_SUFFIX)suffix(mellum.FIM_PREFIX){prefix}(mellum.FIM_MIDDLE)", return_tensors='pt', return_token_type_ids=False)
+    --
+    -- - https://huggingface.co/JetBrains/Mellum-4b-base/commit/4179e39f97ed12c1de07de86f3e194e36badec23
+    --     * just fixed {} around suffix
+    --     FYI seems to be an alterante format for no repo_name/filepaths
+    --     encoded_input = tokenizer(f"(mellum.FIM_SUFFIX){suffix}(mellum.FIM_PREFIX){prefix}(mellum.FIM_MIDDLE)", return_tensors='pt', return_token_type_ids=False)
+    --
+    -- - https://huggingface.co/JetBrains/Mellum-4b-base/commit/ddf77ce4289722d1bfd59a34b8899500c2ce87c8
+    --     * introduced the repo level FIM template
+    --     example = """(mellum.FILENAME)utils.py
+    --     def multiply(x, y):
+    --         return x * y
+    --     (mellum.FILENAME)config.py
+    --     DEBUG = True
+    --     MAX_VALUE = 100
+    --     (mellum.FILENAME)example.py
+    --     (mellum.FIM_SUFFIX)
+    --
+    --     # Test the function
+    --     result = calculate_sum(5, 10)
+    --     print(result)(mellum.FIM_PREFIX)def calculate_sum(a, b):
+    --     (mellum.FIM_MIDDLE)"""
+    --
+    --     encoded_input = tokenizer(example, return_tensors='pt', return_token_type_ids=False)
+    --
+
+    it("get_fim_prompt", function()
+        local request = {
+            -- TODO add type def for this request/backend/builder type
+            prefix = "foo\nthe\nprefix",
+            suffix = "bar\nbaz",
+            context = {
+                yanks = { filename = "nvim-recent-yanks.txt", content = "yanks" },
+                includes = { yanks = true },
+            },
+            inject_file_path_test_seam = function()
+                return "path/to/current.lua"
+            end,
+            get_repo_name = function()
+                return "my_mellum_repo"
+            end
+        }
+        local prompt = fim.mellum.get_fim_prompt(request)
+
+        -- TODO is repo_name ok here? or was it not trained with?
+        --  only spot I've seen mention: https://huggingface.co/JetBrains/Mellum-4b-base/blob/main/special_tokens_map.json
+        local expected = mellum.REPO_NAME .. "my_mellum_repo" .. mellum.FILE_SEP .. "nvim-recent-yanks.txt\nyanks"
+            -- NOTE the filename comes before the FIM_SUFFIX tag (unlike StarCoder2 where filename comes after FIM_PREFIX tag)
+            .. mellum.FILE_SEP .. "path/to/current.lua\n"
+            .. mellum.FIM_SUFFIX .. "bar\nbaz"
+            .. mellum.FIM_PREFIX .. "foo\nthe\nprefix"
+            .. mellum.FIM_MIDDLE
+
+        should.be_equal(expected, prompt)
+    end)
+
+    -- btw
+    -- no hints in prompt template:
+    --   ollama show --template huggingface.co/JetBrains/Mellum-4b-base-gguf:latest
+    -- {{ .Prompt }}
+    --
+    --  TLDR => raw!
+end)

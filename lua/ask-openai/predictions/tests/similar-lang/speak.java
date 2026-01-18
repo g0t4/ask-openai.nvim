@@ -1,0 +1,7 @@
+class Animal {
+    void speak() {
+
+
+
+    }
+}

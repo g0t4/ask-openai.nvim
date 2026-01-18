@@ -1,0 +1,9 @@
+[project]
+name = "manual"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "ipykernel>=7.1.0",
+    "openai-harmony>=0.0.8",
+    "yapf>=0.43.0",
+]

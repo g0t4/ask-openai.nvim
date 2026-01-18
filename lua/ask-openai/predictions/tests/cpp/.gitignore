@@ -1,0 +1,24 @@
+]1337;RemoteHost=wesdemos@mbp21]1337;CurrentDir=/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/prediction/tests/cpp]1337;ShellIntegrationVersion=14;shell=zsh# Created by https://www.toptal.com/developers/gitignore/api/cmake
+# Edit at https://www.toptal.com/developers/gitignore?templates=cmake
+
+### CMake ###
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+### CMake Patch ###
+CMakeUserPresets.json
+
+# External projects
+*-prefix/
+
+# End of https://www.toptal.com/developers/gitignore/api/cmake
+

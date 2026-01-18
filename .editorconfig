@@ -1,0 +1,21 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+# end_of_line = lf
+
+[*.lua]
+# https://github.com/CppCXY/EmmyLuaCodeStyle/blob/master/docs/format_config_EN.md
+# https://github.com/CppCXY/EmmyLuaCodeStyle/blob/master/lua.template.editorconfig
+indent_size = 4
+max_line_length = 200
+align_continuous_inline_comment = false
+align_continuous_assign_statement = false
+
+[*.jinja]
+# do not modify end of file for jinja templates which can be sensitive to trailing new line present (or absent)
+insert_final_newline = false
+

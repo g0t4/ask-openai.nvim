@@ -65,9 +65,14 @@ This works with any plugin manager. The plugin repo name `g0t4/ask-openai.nvim` 
         require("ask-openai").setup { }
     end,
 
-    dependencies = { "nvim-lua/plenary.nvim" },
+    dependencies = {
+        "nvim-lua/plenary.nvim"
+        -- predictions (WIP) depends on rxlua now, if I keep it, then copy over dotfiles config (including package.path fix)
+    },
 
-    event = { "CmdlineEnter" }, -- optional, for startup speed
+    event = { "CmdlineEnter", "InsertEnter" }, -- optional, for startup speed
+    -- "CmdlineEnter" is for command line suggestions
+    -- "InsertEnter" is for predictions
     -- FYI most of the initial performance hit doesn't happen until the first use
 }
 ```
@@ -111,7 +116,7 @@ opts = {
     provider = "keyless",
     model = "llama3.2-vision:11b",
     use_api_ollama = true, -- use ollama default, OR:
-    -- api_url = "http://localhost:11434/api/chat" -- override default for ollama
+    -- api_url = "http://localhost:11434/v1/chat/completions" -- override default for ollama
 }
 ```
 
@@ -170,9 +175,18 @@ opts = {
 Enable verbose logging:
 
 ```lua
-opts = {
-    verbose = true,
-}
+-- cycle log level: WARN (default) -> INFO -> TRACE
+-- saves in ~/.local/share/nvim/ask-openai/config.json and persists across nvim restarts
+require("ask-openai.api").cycle_log_verbosity()
+```
+
+```sh
+# when verbose logs are enabled, lots of predictions logs here:
+cat ~/.local/share/nvim/ask-openai/ask-predictions.log
+tail -F ~/.local/share/nvim/ask-openai/ask-predictions.log
+# this file is wiped each time nvim starts, it uses `w` to open the file thus wiping history
+# so this file won't grow unreasonably large
+# meant for session based troubleshooting, not long-term
 ```
 
 Then, make a request, then check messages for verbose logs:
@@ -194,6 +208,3 @@ And help:
 :help ask-openai<Tab>
 " Lazy plugin manager turns this README.md into helptags. If your using a different plugin manager, you might not see these help docs.
 ```
-
-## TODOs
-- ollama has /v1/chat/completions too (see my single.py in fish ask openai), use that instead of that custom thing I did

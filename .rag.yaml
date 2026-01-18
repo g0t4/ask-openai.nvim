@@ -1,0 +1,22 @@
+enabled: true
+include:
+    - lua
+    - c
+    - cpp
+    - py
+    - fish
+    - txt
+    - ts
+    - rs
+ignores:
+    - "notes/"
+global_languages:
+    - lua
+    - py
+    # honestly I'd like a web group and nest these underneath so they're allocated 1 unit of focus in semantic_grep, here they'll be over-represented as 5 separate languages
+    #  wait until I use search and get a feel for an issue though
+    - ts
+    - html
+    - svelte
+    - css
+    - js

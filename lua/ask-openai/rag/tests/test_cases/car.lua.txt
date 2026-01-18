@@ -1,0 +1,32 @@
+Car = {
+    make = nil,
+    model = nil,
+    year = nil,
+    color = nil,
+    engineRunning = false
+}
+
+function Car:new(o)
+    o = o or {}
+    setmetatable(o, { __index = self })
+    self.make = o.make or "Unknown"
+    self.model = o.model or "Model X"
+    self.year = o.year or 2020
+    self.color = o.color or "Black"
+    self.engineRunning = false
+    return o
+end
+
+function Car:startEngine()
+    self.engineRunning = true
+    print("Engine started")
+end
+
+function Car:stopEngine()
+    self.engineRunning = false
+    print("Engine stopped")
+end
+
+function Car:displayInfo()
+    print(string.format("Car: %s %s (%d) - %s", self.make, self.model, self.year, self.color))
+end

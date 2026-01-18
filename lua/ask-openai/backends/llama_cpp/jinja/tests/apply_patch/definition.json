@@ -1,0 +1,25 @@
+{
+  "messages": [
+    {
+      "content": "Your name is Qwenny\nYou can respond with markdown",
+      "role": "system"
+    },
+    {
+      "content": "please modify hello.lua to print hello world",
+      "role": "user"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "description": "Patch a file",
+        "name": "apply_patch",
+        "parameters": {
+          "type": "string"
+        }
+      }
+    }
+  ]
+}
+

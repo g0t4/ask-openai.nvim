@@ -1,0 +1,254 @@
+-- testing modules:
+require("ask-openai.helpers.test_setup").modify_package_path()
+local assert = require 'luassert'
+local buffers = require('devtools.tests.buffers')
+-- system under test:
+local ps = require("ask-openai.predictions.prefix_suffix")
+
+describe("get_prefix_suffix", function()
+    local function create_lines(num_lines)
+        local lines = {}
+        for i = 1, num_lines do
+            lines[i] = "line " .. i
+        end
+        return lines
+    end
+
+    local seven_lines = {
+        "line 1", "line 2", "line 3", "line 4", "line 5",
+        "line 6", "line 7"
+    }
+
+    it("in middle of buffer, returns prefix and suffix", function()
+        local bufnr = buffers.new_buffer_with_lines(seven_lines)
+        local line_base1 = 4 -- 4th line
+        local col_base0 = 0 -- cursor in first col
+        vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+
+        local ps_chunk = ps.get_prefix_suffix_chunk()
+
+        assert.are_same({
+            prefix = "line 1\nline 2\nline 3\n",
+            suffix = "line 4\nline 5\nline 6\nline 7",
+            cursor_line = {
+                before_cursor = "", -- no text before cursor, since col_base0 = 0
+                after_cursor = "line 4", -- cursor is on first column, thus all text on the line comes after it
+                few_lines_before = { "line 1", "line 2", "line 3" },
+            },
+            start_line_base1 = 1,
+            end_line_base1 = 7,
+        }, ps_chunk)
+    end)
+
+    it("cursor is at start of buffer, first line, first col", function()
+        local bufnr = buffers.new_buffer_with_lines(seven_lines)
+        local line_base1 = 1
+        local col_base0 = 0
+        vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+
+        local take_lines = 2
+        local prefix, suffix = ps.get_prefix_suffix(take_lines)
+
+        -- assert.equal("", prefix) -- TODO FIX FOR new line not expected!
+        assert.equal("line 1\nline 2\nline 3\nline 4\nline 5", suffix)
+    end)
+
+    it("cursor is at end of buffer, last line, last col", function()
+        local bufnr = buffers.new_buffer_with_lines(seven_lines)
+        local line_base1 = 7
+        local col_base0 = 5
+        vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+
+        local take_lines = 2
+        local ps_chunk = ps.get_prefix_suffix_chunk(2)
+
+        -- to make this consistent I probably should make line range take 3 to 7 here
+        --  like with start of doc, which takes 1 to 5
+        --   right now this takes 4 lines only when it s/b 2 on either side of cursor line
+        --   thus in this case all 4 before cursor line so 3 to 7 (5 lines)
+        assert.same({
+            prefix = "line 4\nline 5\nline 6\nline ",
+            suffix = "7\n",
+            cursor_line = {
+                before_cursor = "line ", -- cursor is on the last char of the line, so that would be the number in this case
+                after_cursor = "7", -- cursor is on col_base1==6 => so the 7 is under the cursor (means it is after the cursor, too)
+                few_lines_before = { "line 4", "line 5", "line 6" },
+            },
+            start_line_base1 = 4,
+            end_line_base1 = 7,
+        }, ps_chunk)
+    end)
+
+    describe("plenty of lines both ways", function()
+        describe("cursor line is not empty", function()
+            it("cursor is at start of line", function()
+                local bufnr = buffers.new_buffer_with_lines(seven_lines)
+                local line_base1 = 4 -- 'line 4'
+                local col_base0 = 0 -- 'l' in 'line'
+                vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+
+                local take_lines = 2 -- mostly focus on cursor line
+                local prefix, suffix = ps.get_prefix_suffix(take_lines)
+
+                assert.equal("line 2\nline 3\n", prefix)
+                assert.equal("line 4\nline 5\nline 6", suffix)
+            end)
+
+            it("cursor is in middle of line", function()
+                local bufnr = buffers.new_buffer_with_lines(seven_lines)
+                local line_base1 = 4 -- 'line 4'
+                local col_base0 = 3 -- 3 is the 'e' in 'line'
+                vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+
+                local take_lines = 2
+                local prefix, suffix = ps.get_prefix_suffix(take_lines)
+
+                assert.equal("line 2\nline 3\nlin", prefix)
+                assert.equal("e 4\nline 5\nline 6", suffix)
+            end)
+
+            it("cursor is on last char of line (means before the last char)", function()
+                local bufnr = buffers.new_buffer_with_lines(seven_lines)
+                local line_base1 = 4 -- 'line 4'
+                local col_base0 = 5 -- 5 ==> '4'
+                vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+
+                local take_lines = 2
+                local prefix, suffix = ps.get_prefix_suffix(take_lines)
+
+                assert.equal("line 2\nline 3\nline ", prefix)
+                assert.equal("4\nline 5\nline 6", suffix)
+            end)
+
+            it("in INSERT mode, after typing 'A' to append, cursor is past the last character ('4') and now prefix will have last char ('4')", function()
+                -- FYI docs on coroutines and plenary tests:
+                --   https://github.com/nvim-lua/plenary.nvim/blob/master/TESTS_README.md#asynchronous-testing
+
+                local bufnr = buffers.new_buffer_with_lines(seven_lines)
+                -- move to 4th line, and go into insert mode at end of line
+                -- that way the cursor will be PAST the last '4' char and so it will end up in prefix (assuming the splitter code works)
+                vim.api.nvim_command(":4")
+                vim.api.nvim_feedkeys("A", "n", false)
+
+                -- wait for insert mode... a clock tick
+                local co = coroutine.running()
+                vim.schedule(function()
+                    local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+                    -- vim.print(lines)
+                    local mode = vim.api.nvim_get_mode().mode
+                    assert.equal("i", mode) -- ensure in insert mode
+                    local cusror = vim.api.nvim_win_get_cursor(0)
+
+                    local take_lines = 2
+                    local prefix, suffix = ps.get_prefix_suffix(take_lines)
+
+                    assert.equal("line 2\nline 3\nline 4", prefix)
+                    assert.equal("\nline 5\nline 6", suffix)
+
+                    coroutine.resume(co) -- test is done now
+                end)
+
+                coroutine.yield()
+            end)
+        end)
+
+        describe("cursor line is empty", function()
+            it("cursor is at start of the empty line", function()
+                local bufnr = buffers.new_buffer_with_lines({ "one", "two", "", "four", "five" })
+                local line_base1 = 3
+                local col_base0 = 0
+                vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
+
+                local take_lines = 2
+                local prefix, suffix = ps.get_prefix_suffix(take_lines)
+
+                assert.equal("one\ntwo\n", prefix)
+                assert.equal("\nfour\nfive", suffix)
+            end)
+        end)
+    end)
+end)
+
+
+local ps = require("ask-openai.predictions.prefix_suffix")
+
+describe("determine_line_range", function()
+    it("plenty of lines for both prefix and suffix", function()
+        local current_row_base0 = 40
+        local take_num_lines_each_way = 10
+        local buffer_line_count = 100
+
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
+
+        assert.equal(30, start_row_base0)
+        assert.equal(50, end_row_base0)
+    end)
+
+    it("unused prefix lines are added to the suffix", function()
+        local current_row_base0 = 4
+        local take_num_lines_each_way = 10
+        local buffer_line_count = 100
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
+        assert.equal(0, start_row_base0)
+        -- 6 extra overflow lines from before, 10+6==16
+        --    16+4 = 20
+        --    (note 21 rows total with current_row)
+        assert.equal(20, end_row_base0)
+    end)
+
+    it("unused suffix lines are added to the prefix", function()
+        local current_row_base0 = 95
+        local take_num_lines_each_way = 10
+        local buffer_line_count = 100
+
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
+        -- 5 extra overflow lines from after, 10+5==15
+        -- 95-15==80
+        assert.equal(80, start_row_base0)
+        assert.equal(99, end_row_base0)
+    end)
+
+    it("current_row is before the start of the document, takes start of document", function()
+        local current_row_base0 = -5
+        local take_num_lines_each_way = 10
+        local buffer_line_count = 100
+
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
+        -- 5 extra overflow lines from after, 10+5==15
+        -- 95-15==80
+        assert.equal(0, start_row_base0)
+        assert.equal(20, end_row_base0)
+    end)
+
+    it("current_row is past the end of the document, still takes end of document", function()
+        local current_row_base0 = 115
+        local take_num_lines_each_way = 10
+        local buffer_line_count = 100
+
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
+        -- 5 extra overflow lines from after, 10+5==15
+        -- 95-15==80
+        -- PRN should this be 79 too since the cursor line could be added to prefix too :)... NBD for now
+        assert.equal(80, start_row_base0)
+        assert.equal(99, end_row_base0)
+    end)
+
+    it("buffer line count is less than allowed lines in both directions, takes all lines", function()
+        local current_row_base0 = 4
+        local take_num_lines_each_way = 10
+        local buffer_line_count = 8
+        local start_row_base0, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
+        assert.equal(0, start_row_base0)
+        assert.equal(7, end_row_base0)
+    end)
+
+    it("suffix has remainder of document through exactly the last line", function()
+        -- arguably redundant, boundary condition
+        local current_row_base0 = 89
+        local take_num_lines_each_way = 10
+        local buffer_line_count = 100
+        local start_row, end_row_base0 = ps.determine_line_range_base0(current_row_base0, take_num_lines_each_way, buffer_line_count)
+        assert.equal(79, start_row)
+        assert.equal(99, end_row_base0)
+    end)
+end)
