@@ -74,12 +74,18 @@
 {:else if isToolResultMessage}
   <!-- Tool result with message structure - show text by default, with toggle to JSON -->
   <div class="space-y-2">
-    <div class="flex justify-end">
+    <div class="flex items-center gap-2 text-sm">
       <button
-        onclick={() => (showRawJson = !showRawJson)}
-        class="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors"
+        class="px-2 py-1 rounded {showRawJson ? 'bg-gray-600 text-white' : 'bg-gray-800 text-gray-400'}"
+        onclick={() => (showRawJson = true)}
       >
-        {showRawJson ? 'Show Message' : 'Show JSON'}
+        Raw JSON
+      </button>
+      <button
+        class="px-2 py-1 rounded {showRawJson ? 'bg-gray-800 text-gray-400' : 'bg-gray-600 text-white'}"
+        onclick={() => (showRawJson = false)}
+      >
+        Show Message
       </button>
     </div>
     {#if showRawJson}
