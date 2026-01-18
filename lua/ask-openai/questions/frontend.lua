@@ -191,13 +191,10 @@ local function ask_question_command(opts)
 
     local function then_generate_completion(rag_matches)
         if rag_matches ~= nil and #rag_matches > 0 then
-            local rag_message_parts = {}
-            local heading = "# Semantic Grep matches: " .. #rag_matches .. "\n"
-            table.insert(rag_message_parts, heading)
-            -- TODO is this explanation helpful? Did I really not include something like this in other frontends?
-            -- PRN if useful, add this explanation (or similar) to other frontends:
-            table.insert(rag_message_parts,
-                "This is automatic context from my neovim AI tools. The user's request is used to query for relevant code. Only the top results are included. These may or may not be relevant.")
+            local rag_message_parts = {
+                "# Semantic Grep matches: " .. #rag_matches .. "\n",
+                "This is automatic context from my neovim AI tools. The user's request is used to query for relevant code. Only the top results are included. These may or may not be relevant."
+            }
             -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
             vim.iter(rag_matches)
                 :each(function(chunk)
