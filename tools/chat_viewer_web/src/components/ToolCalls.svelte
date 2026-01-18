@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { ToolCall } from '../lib/types'
   import CodeBlock from './CodeBlock.svelte'
+  import ApplyPatch from './ApplyPatch.svelte'
 
   interface Props {
     calls: ToolCall[]
@@ -8,24 +9,31 @@
 
   let { calls }: Props = $props()
 
-  function formatArguments(name: string, argsJson: string): { code: string; language: string } {
+  interface FormattedArgs {
+    type: 'code' | 'patch'
+    code?: string
+    language?: string
+    patch?: string
+  }
+
+  function formatArguments(name: string, argsJson: string): FormattedArgs {
     try {
       const parsed = JSON.parse(argsJson)
 
-      // Special handling for apply_patch - show the diff
+      // Special handling for apply_patch - use dedicated component
       if (name === 'apply_patch' && parsed.patch) {
-        return { code: parsed.patch, language: 'diff' }
+        return { type: 'patch', patch: parsed.patch }
       }
 
       // Special handling for run_command - show the command
       if (name === 'run_command' && parsed.command) {
-        return { code: parsed.command, language: 'bash' }
+        return { type: 'code', code: parsed.command, language: 'bash' }
       }
 
       // Default: pretty print JSON
-      return { code: JSON.stringify(parsed, null, 2), language: 'json' }
+      return { type: 'code', code: JSON.stringify(parsed, null, 2), language: 'json' }
     } catch {
-      return { code: argsJson, language: 'text' }
+      return { type: 'code', code: argsJson, language: 'text' }
     }
   }
 </script>
@@ -38,7 +46,11 @@
         {call.function.name}
       </div>
       <div class="p-2">
-        <CodeBlock code={formatted.code} language={formatted.language} />
+        {#if formatted.type === 'patch' && formatted.patch}
+          <ApplyPatch patch={formatted.patch} />
+        {:else if formatted.code}
+          <CodeBlock code={formatted.code} language={formatted.language ?? 'text'} />
+        {/if}
       </div>
     </div>
   {/each}
