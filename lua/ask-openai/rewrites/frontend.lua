@@ -391,7 +391,9 @@ local function ask_rewrite_command(opts)
         end
         if rag_matches ~= nil and #rag_matches > 0 then
             local message = prompts.semantic_grep_user_message_text(rag_matches)
-            table.insert(messages, TxChatMessage:user_context(message))
+            if message then
+                table.insert(messages, message)
+            end
         end
 
         table.insert(messages, TxChatMessage:user(user_message_with_code))

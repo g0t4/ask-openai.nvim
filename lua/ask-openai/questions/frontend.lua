@@ -193,7 +193,9 @@ local function ask_question_command(opts)
     local function then_generate_completion(rag_matches)
         if rag_matches ~= nil and #rag_matches > 0 then
             local message = prompts.semantic_grep_user_message_text(rag_matches)
-            table.insert(messages, TxChatMessage:user_context(message))
+            if message then
+                table.insert(messages, message)
+            end
         end
 
         -- * user request should be last

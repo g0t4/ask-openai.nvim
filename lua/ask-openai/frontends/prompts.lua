@@ -1,5 +1,8 @@
 local M = {}
 
+-- TxChatMessage is used to wrap the generated semantic grep content as a user context message
+local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
+
 local function semantic_grep_header_lines(rag_matches)
     return {
         "# Semantic Grep matches: " .. #rag_matches .. "\n",
@@ -20,7 +23,9 @@ function M.semantic_grep_user_message_text(rag_matches)
                 .. code_chunk .. "\n"
             )
         end)
-    return table.concat(lines, "\n")
+    local content = table.concat(lines, "\n")
+    -- Return a TxChatMessage representing user context
+    return TxChatMessage:user_context(content)
 end
 
 return M

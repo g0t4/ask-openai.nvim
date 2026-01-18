@@ -282,9 +282,10 @@ Make sure to practice the code change before you return a suggestion. Take the c
         TxChatMessage:developer(dev), -- FYI developer or system message must be first, and ONLY ONE is allowed
         TxChatMessage:user(HarmonyFimPromptBuilder.context_user_msg(request)),
     }
-    local text = HarmonyFimPromptBuilder.context_semantic_grep(request)
-    if text then
-        table.insert(messages, TxChatMessage:user(text))
+    local rag_msg = HarmonyFimPromptBuilder.context_semantic_grep(request)
+    if rag_msg then
+        -- rag_msg is a TxChatMessage; we need its raw content for the raw prompt flow
+        table.insert(messages, TxChatMessage:user(rag_msg.content))
     end
     table.insert(messages, TxChatMessage:user(HarmonyFimPromptBuilder.fim_prompt(request)))
     if level == "off" then
