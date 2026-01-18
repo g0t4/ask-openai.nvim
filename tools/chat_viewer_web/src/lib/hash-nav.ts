@@ -32,7 +32,7 @@ export function scrollToHash(): void {
   requestAnimationFrame(() => {
     const el = document.getElementById(hash)
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      el.scrollIntoView({ behavior: 'instant', block: 'start' })
       // Add highlight effect
       el.classList.add('hash-highlight')
       setTimeout(() => el.classList.remove('hash-highlight'), 2000)
