@@ -22,6 +22,7 @@ local ToolCallOutput = require("ask-openai.questions.chat.tool_call_output")
 local CurlRequestForThread = require("ask-openai.questions.curl_request_for_thread")
 local RxAccumulatedMessage = require("ask-openai.questions.chat.messages.rx")
 local ToolCall = require("ask-openai.questions.chat.tool_call")
+local prompts = require("ask-openai.frontends.prompts")
 
 require("ask-openai.helpers.buffers")
 
@@ -189,16 +190,9 @@ local function ask_question_command(opts)
             end)
     end
 
-    local function build_semantic_grep_header(rag_matches)
-        return {
-            "# Semantic Grep matches: " .. #rag_matches .. "\n",
-            "This is automatic context from my neovim AI tools. The user's request is used to query for relevant code. Only the top results are included. These may or may not be relevant."
-        }
-    end
-
     local function then_generate_completion(rag_matches)
         if rag_matches ~= nil and #rag_matches > 0 then
-            local lines = build_semantic_grep_header(rag_matches)
+            local lines = prompts.semantic_grep_header(rag_matches)
             -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
             vim.iter(rag_matches)
                 :each(function(chunk)

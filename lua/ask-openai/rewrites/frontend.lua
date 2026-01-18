@@ -18,6 +18,7 @@ local model_params = require("ask-openai.questions.models.params")
 local MessageBuilder = require("ask-openai.rewrites.message_builder")
 local HLGroups = require("ask-openai.hlgroups")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
+local prompts = require("ask-openai.frontends.prompts")
 
 ---@class RewriteFrontend : StreamingFrontend
 local RewriteFrontend = {}
@@ -389,10 +390,7 @@ local function ask_rewrite_command(opts)
                 end)
         end
         if rag_matches ~= nil and #rag_matches > 0 then
-            local lines = {
-                "# Semantic Grep matches: " .. #rag_matches .. "\n",
-                "This is automatic context from my neovim AI tools. The user's request is used to query for relevant code. Only the top results are included. These may or may not be relevant."
-            }
+            local lines = prompts.semantic_grep_header(rag_matches)
             -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
             vim.iter(rag_matches)
                 :each(function(chunk)

@@ -4,6 +4,7 @@ local dedupe = require("ask-openai.rag.client.dedupe")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 local qwen = require("ask-openai.backends.models.fim").qwen25coder.sentinel_tokens
+local prompts = require("ask-openai.frontends.prompts")
 
 ---@class HarmonyFimPromptBuilder
 ---@field _parts string[]
@@ -126,10 +127,7 @@ function HarmonyFimPromptBuilder.context_semantic_grep(request)
         return nil
     end
 
-    local lines = {
-        "# Semantic Grep matches: " .. #request.rag_matches .. "\n",
-        "This is automatic context from my neovim AI tools. The user's request is used to query for relevant code. Only the top results are included. These may or may not be relevant."
-    }
+    local lines = prompts.semantic_grep_header(rag_matches)
     -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
     vim.iter(request.rag_matches)
         :each(function(chunk)
