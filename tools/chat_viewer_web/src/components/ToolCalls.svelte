@@ -3,7 +3,7 @@
   import { getToolCallId } from '../lib/hash-nav'
   import CodeBlock from './CodeBlock.svelte'
   import ApplyPatch from './ApplyPatch.svelte'
-  import LinkButton from './LinkButton.svelte'
+  import LinkButton, { copy } from './LinkButton.svelte'
 
   interface Props {
     calls: ToolCall[]
@@ -46,7 +46,10 @@
     {@const formatted = formatArguments(call.function.name, call.function.arguments)}
     {@const toolId = getToolCallId(msgIndex, idx + 1)}
     <div id={toolId} class="border border-gray-600 rounded scroll-mt-4">
-      <div class="group px-3 py-1.5 bg-gray-700/50 text-sm font-mono text-yellow-400 border-b border-gray-600 flex items-center justify-between">
+      <div
+        class="group px-3 py-1.5 bg-gray-700/50 text-sm font-mono text-yellow-400 border-b border-gray-600 flex items-center justify-between cursor-pointer"
+        onclick={() => copy(toolId)}
+      >
         <span>{call.function.name}</span>
         <LinkButton id={toolId} />
       </div>

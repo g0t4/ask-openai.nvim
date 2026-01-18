@@ -2,7 +2,7 @@
   import type { RagResult, RagMatch } from '../lib/types'
   import { getMatchId } from '../lib/hash-nav'
   import CodeBlock from './CodeBlock.svelte'
-  import LinkButton from './LinkButton.svelte'
+  import LinkButton, { copy } from './LinkButton.svelte'
   import { getLanguageFromPath } from '../lib/highlight'
 
   interface Props {
@@ -33,7 +33,10 @@
     {#each ragMatches as match, idx}
       {@const matchId = getMatchId(msgIndex, idx + 1)}
       <div id={matchId} class="border border-gray-600 rounded scroll-mt-4">
-        <div class="group px-3 py-1.5 bg-gray-700/50 text-sm font-mono text-red-400 border-b border-gray-600 flex justify-between items-center">
+        <div
+          class="group px-3 py-1.5 bg-gray-700/50 text-sm font-mono text-red-400 border-b border-gray-600 flex justify-between items-center cursor-pointer"
+          onclick={() => copy(matchId)}
+        >
           <span>Match {idx + 1}: {match.file}</span>
           <div class="flex items-center gap-2">
             {#if match.rerank_score !== undefined}

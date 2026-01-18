@@ -4,7 +4,7 @@
   import { getMessageId } from '../lib/hash-nav'
   import ToolCalls from './ToolCalls.svelte'
   import ToolResult from './ToolResult.svelte'
-  import LinkButton from './LinkButton.svelte'
+  import LinkButton, { copy } from './LinkButton.svelte'
 
   interface Props {
     message: Message
@@ -25,13 +25,14 @@
 <article id={msgId} class="border border-gray-700 rounded-lg overflow-hidden scroll-mt-4 transition-colors duration-500">
   <!-- Header -->
   <header
-    class="group px-4 py-2 font-semibold border-b border-gray-700 flex items-center justify-between"
+    class="group px-4 py-2 font-semibold border-b border-gray-700 flex items-center justify-between cursor-pointer"
     class:bg-role-system={role === 'system'}
     class:bg-role-developer={role === 'developer'}
     class:bg-role-user={role === 'user'}
     class:bg-role-assistant={role === 'assistant'}
     class:bg-role-tool={role === 'tool'}
     style="--tw-bg-opacity: 0.2"
+    onclick={() => copy(msgId)}
   >
     <span class="text-{colorClass}">{index}: {displayRole}</span>
     <LinkButton id={msgId} />

@@ -2,7 +2,7 @@
   import { parsePatch, groupChanges } from '../lib/patch-parser'
   import { getFileId } from '../lib/hash-nav'
   import CodeBlock from './CodeBlock.svelte'
-  import LinkButton from './LinkButton.svelte'
+  import LinkButton, { copy } from './LinkButton.svelte'
 
   interface Props {
     patch: string
@@ -57,7 +57,10 @@
     {#each parsed.files as file, idx}
       {@const fileId = getFileId(msgIndex, idx + 1)}
       <div id={fileId} class="border border-gray-600 rounded overflow-hidden scroll-mt-4">
-        <div class="group px-3 py-1.5 bg-gray-700/50 text-sm font-mono border-b border-gray-600 flex gap-2 items-center justify-between">
+        <div
+          class="group px-3 py-1.5 bg-gray-700/50 text-sm font-mono border-b border-gray-600 flex gap-2 items-center justify-between cursor-pointer"
+          onclick={() => copy(fileId)}
+        >
           <div class="flex gap-2">
             <span class="{getActionColor(file.action)} font-bold">[{getActionLabel(file.action)}]</span>
             <span class="text-blue-400">{file.path}</span>
