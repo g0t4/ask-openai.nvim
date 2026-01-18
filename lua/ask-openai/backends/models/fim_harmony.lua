@@ -155,10 +155,11 @@ end
 
 --- user message (harmony spec):
 --- - Typically representing the input to the model
----@param message? string|TxChatMessage - nil/empty so consumers can always call (and it won't be added), TxChatMessage will extract message.content
+---@param message? string|{content:string}|TxChatMessage -- nil/empty so consumers can always call (and it won't be added), TxChatMessage will extract message.content
 ---@return HarmonyFimPromptBuilder self
 function HarmonyFimPromptBuilder:user(message)
-    if TxChatMessage.is_instance(message) then
+    if message.content then
+        -- for TxChatMessage
         message = message.content
     end
     if message == nil or message == "" then
