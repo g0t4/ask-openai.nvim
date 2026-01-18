@@ -146,9 +146,7 @@ function HarmonyFimPromptBuilder.context_semantic_grep(request)
                 .. code_chunk .. "\n"
             )
         end)
-    local rag_context = table.concat(rag_parts, "\n")
-
-    return rag_context
+    return table.concat(rag_parts, "\n")
 end
 
 ---@param request FimBackend
