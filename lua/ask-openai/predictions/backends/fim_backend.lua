@@ -24,7 +24,7 @@ FimBackend.base_url = ""
 ---@type CompletionsEndpoints
 FimBackend.endpoint = nil
 
-local use_gptoss_raw = true
+local use_gptoss_raw = false
 function FimBackend.set_fim_model(model)
     -- FYI right now, given I am using llama-server exclusively, toggling is just about changing between the two instances I run at the same time
     --   so, toggling the port/endpoint :)
