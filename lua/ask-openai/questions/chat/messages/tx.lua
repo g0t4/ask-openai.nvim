@@ -32,7 +32,7 @@ function TxChatMessage:new(role, content)
 end
 
 function TxChatMessage.is_instance(value)
-    return getmetatable(value) == TxChatMessage
+    return getmetatable(value).__index == TxChatMessage
 end
 
 ---@param tool_call ToolCall
