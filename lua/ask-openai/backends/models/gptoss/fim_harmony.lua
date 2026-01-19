@@ -116,6 +116,44 @@ function HarmonyFimPromptBuilder.context_user_msg(request)
 end
 
 ---@param request FimBackend
+local function get_reminder_nudges(request)
+    local ps_chunk = request.ps_chunk
+    local cursor_line = request and request.ps_chunk and request.ps_chunk.cursor_line -- stops at first nil, else has value of last
+    if not cursor_line then
+        error("missing request.ps_chunk.cursor_line, shouldn't happen")
+    end
+
+    local reminders = {}
+    -- FYI I think it's intuitive that `` are delimiters in these reminders, cuz the actual code is all there too (right above)
+
+    before = cursor_line.before_cursor
+    if before ~= "" then
+        table.insert(reminders, "Text before cursor: `" .. before .. "`")
+        local is_all_whitespace = before:match("^%s*$") ~= nil
+        if is_all_whitespace then
+            table.insert(reminders, "Text before cursor is all whitespace (do not ignore this)")
+        end
+    end
+
+    after = cursor_line.after_cursor
+    if after ~= "" then
+        table.insert(reminders, "Text after cursor: `" .. after .. "`")
+    end
+
+    if not reminders then
+        return ""
+    end
+    -- some things are useful if re-iterated when the situation arises
+    -- TODO eval test these are doing anything useful
+    --  ok I just did manual tests and OMG every time (1 out of 30 had one extra tab, the rest were all perfect).. BOTH fixed: indentation w/ empty line (Cursor is indented) ... AND, whitespace around FIM in the middle of a line
+    --     ALSO not seeming to FIM duplicate prefix/suffix... I have to test more to see! that will rock if so
+    local heading = "\n\n"
+        .. "## Reminders about the cursor line:"
+    return heading .. "\n"
+        .. table.concat(reminders, "\n")
+end
+
+---@param request FimBackend
 function HarmonyFimPromptBuilder.fim_prompt(request)
     -- * user message
     local current_file_relative_path = request.inject_file_path_test_seam()
@@ -123,34 +161,7 @@ function HarmonyFimPromptBuilder.fim_prompt(request)
         log:warn("current_file_name is nil")
     end
 
-    -- FYI, file_prefix has been empty for a while now and FIM worked great!
-    local warnings = {}
-    -- Detect non‑empty (including whitespace) prefix on the cursor line
-    local has_prefix = request.ps_chunk.prefix ~= nil and request.ps_chunk.prefix ~= ""
-    if has_prefix then
-        local trimmed = vim.trim(request.ps_chunk.prefix)
-        if trimmed ~= "" then
-            table.insert(warnings, "⚠️ Prefix on the cursor line may be duplicated in the completion. Here is the exact prefix (including whitespace):")
-            table.insert(warnings, "```" .. request.ps_chunk.prefix .. "```")
-        end
-    end
-    -- Detect non‑empty suffix on the cursor line
-    local has_suffix = request.ps_chunk.suffix ~= nil and request.ps_chunk.suffix ~= ""
-    if has_suffix then
-        local trimmed = vim.trim(request.ps_chunk.suffix)
-        if trimmed ~= "" then
-            table.insert(warnings, "⚠️ Suffix on the cursor line may be duplicated in the completion. Here is the exact suffix (including whitespace):")
-            table.insert(warnings, "```" .. request.ps_chunk.suffix .. "```")
-        end
-    end
-
-    local warning_text = table.concat(warnings, "\n")
-    if warning_text ~= "" then
-        warning_text = warning_text .. "\n\n"
-    end
-
     local fim_user_message =
-        -- warning_text ..
         "Please suggest text to replace "
         .. qwen.FIM_MIDDLE
         .. ":\n\n```"
@@ -159,6 +170,7 @@ function HarmonyFimPromptBuilder.fim_prompt(request)
         .. qwen.FIM_MIDDLE
         .. request.ps_chunk.suffix
         .. "\n```"
+        .. get_reminder_nudges(request)
     return fim_user_message
 end
 
