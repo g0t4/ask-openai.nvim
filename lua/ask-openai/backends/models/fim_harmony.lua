@@ -135,6 +135,7 @@ function HarmonyFimPromptBuilder.fim_prompt(request)
         file_prefix = "I am editing this file: " .. current_file_relative_path .. "\n\n"
     end
 
+    -- FYI, file_prefix has been empty for a while now and FIM worked great!
     local fim_user_message = file_prefix
         .. "Please complete " .. qwen.FIM_MIDDLE .. " in the following code (which has carefully preserved indentation):\n"
         .. request.ps_chunk.prefix
