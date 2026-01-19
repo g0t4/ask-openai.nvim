@@ -50,12 +50,12 @@ end
 
 HarmonyFimPromptBuilder.developer_message = vim.trim([[
 You are completing code from a Neovim plugin.
-As the user types, the plugin suggests code completions based on their cursor position marked with: ]] .. qwen.FIM_MIDDLE .. [[
+As the user types, the plugin suggests code completions based on their cursor position marked with: FIM_MIDDLE
 
-The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near ]] .. qwen.FIM_MIDDLE .. [[
+The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near FIM_MIDDLE
 Do NOT explain your decisions. Do NOT return markdown blocks ```
 Do NOT repeat surrounding code (suffix/prefix)
-ONLY return valid code at the ]] .. qwen.FIM_MIDDLE .. [[ position
+ONLY return valid code at the FIM_MIDDLE position
 PAY attention to existing whitespace. Especially on the cursor line!
 YOU ARE ONLY INSERTING CODE, DO NOT REPEAT PREFIX/SUFFIX.
 
@@ -64,7 +64,7 @@ Here are a few examples of tricky completions:
 ### When the cursor line has both prefix and suffix:
 ```python
 def area(width, height):
-    return ]] .. qwen.FIM_MIDDLE .. [[ * height
+    return FIM_MIDDLE * height
 
 # The correct completion is:
 width
@@ -82,7 +82,7 @@ width * height
 function print_sign(number)
     if number > 0 then
         print("Positive")
-    ]] .. qwen.FIM_MIDDLE .. [[
+    FIM_MIDDLE
     end
 end
 
@@ -132,7 +132,7 @@ else
 print("Non‑positive")
 
 ```
-]])
+]]):gsub("FIM_MIDDLE", qwen.FIM_MIDDLE)
 -- TODO ideas if indent issues persist:
 --   show the result of each of the above completions in the input code so it is very clear why it is wrong
 
