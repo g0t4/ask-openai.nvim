@@ -18,9 +18,9 @@ end
 
 ---@param file_path string
 ---@return string?
-function M.read_file_string(file_path)
+function M.read_file_text(file_path)
     if vim.fn.filereadable(file_path) == 0 then
-        log:info("read_file_string failed to read: " .. tostring(file_path) .. " does not exist!")
+        log:info("read_file_text failed to read: " .. tostring(file_path) .. " does not exist!")
         return nil
     end
     local file = io.open(file_path, "r")
