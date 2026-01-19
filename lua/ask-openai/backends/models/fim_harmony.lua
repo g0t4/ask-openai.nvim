@@ -323,24 +323,8 @@ end
 ---@param request FimBackend
 ---@param level GptOssReasoningLevel
 function HarmonyFimPromptBuilder.gptoss.get_fim_chat_messages(request, level)
-    -- TODO what if I change this to ask gptoss to rewrite the current line (only current line)
-    --  and then FIM just replaces that line?
-    --  OR, add a shortcut key to accept FIM as replace current line?
-    --  not always, but sometimes gptoss still suggests entire line (espeically for partial lines)
-    --    why not work around that or encourage that?
-    --    I can even diff the current line vs the generated to see what to insert so I don't have to do extmarks that replace the full line
-
-    local dev = HarmonyFimPromptBuilder.developer_message
-    -- FYI! first line of [[ not included if it is empty, so no trailing \n on first line! Thus I had to add some blank lines I wanted in my prompt
-    -- FYI if/when you test out using partial thinking with raw template above, then put this into the shared developer message
-    dev = dev .. [[
-
-
-Make sure to practice the code change before you return a suggestion. Take the cursor line (at least) and type it out with the new code and make sure it is valid, correct code.
-]]
-
     local messages = {
-        TxChatMessage:developer(dev), -- FYI developer or system message must be first, and ONLY ONE is allowed
+        TxChatMessage:developer(HarmonyFimPromptBuilder.developer_message), -- FYI developer or system message must be first, and ONLY ONE is allowed
         TxChatMessage:user(HarmonyFimPromptBuilder.context_user_msg(request)),
     }
     local rag_message = prompts.semantic_grep_user_message(request.rag_matches)
