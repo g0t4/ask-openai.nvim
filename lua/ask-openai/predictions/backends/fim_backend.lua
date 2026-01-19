@@ -2,7 +2,7 @@ local log = require("ask-openai.logs.logger").predictions()
 local CurrentContext = require("ask-openai.predictions.context")
 local fim = require("ask-openai.backends.models.fim")
 local qwen = fim.qwen25coder.sentinel_tokens
-local harmony_fim = require("ask-openai.backends.models.fim_harmony")
+local fim_harmony = require("ask-openai.backends.models.fim_harmony")
 local meta = require("ask-openai.backends.models.meta")
 local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.predictions.ansi")
@@ -149,14 +149,14 @@ function FimBackend:body_for()
             builder = function()
                 -- * raw prompt /completions, no thinking (I could have model think too, just need to parse that then)
                 -- TODO? get rid of raw approach entirely now that prefix is working
-                return harmony_fim.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(self)
+                return fim_harmony.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(self)
             end
             body.raw = true
             body.max_tokens = 200 -- FYI if I cut off all thinking
         else
             -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
             local level = api.get_fim_reasoning_level()
-            body.messages = harmony_fim.gptoss.get_fim_chat_messages(self, level)
+            body.messages = fim_harmony.gptoss.get_fim_chat_messages(self, level)
             body.raw = false -- set here even though was set above
             body.chat_template_kwargs = {
                 reasoning_effort = level
