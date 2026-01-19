@@ -117,9 +117,9 @@ function HarmonyFimPromptBuilder.fim_prompt(request)
 
     -- FYI, file_prefix has been empty for a while now and FIM worked great!
     local fim_user_message =
-        "Please suggest text to replace the cursor placeholder "
+        "Please suggest text to replace "
         .. qwen.FIM_MIDDLE
-        .. "\n\n```"
+        .. ":\n\n```"
         .. current_file_relative_path .. "\n"
         .. request.ps_chunk.prefix
         .. qwen.FIM_MIDDLE
