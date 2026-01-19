@@ -6,6 +6,7 @@ Do NOT explain your decisions. Do NOT return markdown blocks ```
 ONLY return valid code at the <<FIM_CURSOR_MARKER>> position
 PAY attention to existing whitespace. Especially on the cursor line!
 YOU ARE ONLY INSERTING CODE. DO NOT REPEAT PREFIX. DO NOT REPEAT SUFFIX.
+Complete as little or as much code as is necessary to help the user. That means part of a line, a full line or even multiple lines! Goal is to help the user as much as is possible and reasonable.
 
 Here are a few examples of tricky completions:
 
@@ -42,7 +43,7 @@ end
 else
         print("Non‑positive")
 
--- results in:
+-- results in good code:
 function print_sign(number)
     if number > 0 then
         print("Positive")
@@ -56,7 +57,7 @@ end
     else
         print("Non‑positive")
 
--- results in:
+-- results in bad code:
 function print_sign(number)
     if number > 0 then
         print("Positive")
@@ -70,7 +71,7 @@ end
 else
     print("Non‑positive")
 
--- results in:
+-- results in bad code:
 function print_sign(number)
     if number > 0 then
         print("Positive")
@@ -84,7 +85,7 @@ end
 else
 print("Non‑positive")
 
--- results in:
+-- results in bad code:
 function print_sign(number)
     if number > 0 then
         print("Positive")

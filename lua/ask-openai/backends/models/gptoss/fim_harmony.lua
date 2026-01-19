@@ -49,8 +49,13 @@ Reasoning: ]] .. api.get_fim_reasoning_level() [[
     return self
 end
 
-local loaded = files.read_file_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/backends/models/gptoss/prompts/fim_dev.md")
-HarmonyFimPromptBuilder.developer_message = loaded:gsub("<<FIM_CURSOR_MARKER>>", qwen.FIM_MIDDLE)
+HarmonyFimPromptBuilder.developer_message =
+    files
+    .read_file_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/backends/models/gptoss/prompts/fim_dev.md")
+    :gsub("<<FIM_CURSOR_MARKER>>", qwen.FIM_MIDDLE)
+-- TODO for fim_dev.md:
+--   remove "results in" if that's not helping... or worse if it hurts
+--
 -- TODO ideas if indent issues persist:
 --   show the result of each of the above completions in the input code so it is very clear why it is wrong
 -- TODO possible additional examples:
