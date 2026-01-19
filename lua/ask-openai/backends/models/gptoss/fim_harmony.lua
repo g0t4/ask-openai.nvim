@@ -55,9 +55,8 @@ HarmonyFimPromptBuilder.developer_message =
     :gsub("<<FIM_CURSOR_MARKER>>", qwen.FIM_MIDDLE)
 -- TODO ideas if indent issues persist:
 --   *** deal with it, most of the time you can format to fix if its just indent
---   ? could treat empty line as cursor at col0 always... instead of showing it nested at all
---      that is the routine spot that trips up gptoss
---      but again, format the code works most of the time!
+--   FYI medium thinking is working very well with your new prompt (it wasn't a giant waste of time, lol!!)
+--      PRN! consider detect scenarios to kick up reasoning effort to medium/high ... i.e. blank line w/ indented cursor!
 --   ***! you need an eval test set before you waste more time on this... you have no way to know really!!!!
 --   ***!   short of fixing all your annoyances in one prompt which is totally unlikely
 
