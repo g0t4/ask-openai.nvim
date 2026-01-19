@@ -10,35 +10,48 @@ Complete as little or as much code as is necessary to help the user. That means 
 
 Here are a few examples of tricky completions:
 
-## Example: cursor line has both prefix and suffix text:
+## Example: suggest middle of line (cursor has existing code before and after it)
 
 ```python
-# input
 def area(width, height):
     return <<FIM_CURSOR_MARKER>> * height
+```
 
-# 1. CORRECT completion:
-width
-
-# 2. WRONG (because repeats the suffix):
-width * height
-
-# 3. WRONG (because repeats both suffix and prefix):
+Say this is your desired result:
+```python
+def area(width, height):
     return width * height
 ```
 
-## Example: cursor line has indentation in the prefix
+1. thent he CORRECT completion is (do not include backticks, those are just to delimit included whitespace):
+`width`
+
+2. WRONG (because repeats the suffix):
+`width * height`
+results in:
+`    return width * height * height`
+
+3. WRONG (because repeats both suffix and prefix):
+`    return width * height`
+results in:
+`    return     return width * height * height`
+
+
+## Example: cursor is indented
 
 ```lua
--- input
 function print_sign(number)
     if number > 0 then
         print("Positive")
     <<FIM_CURSOR_MARKER>>
     end
 end
+```
 
--- if this is your desired final result
+*Keep in mind, the indent will be there before the suggested code too.*
+
+Say this is your desired result:
+```lua
 function print_sign(number)
     if number > 0 then
         print("Positive")
@@ -46,16 +59,22 @@ function print_sign(number)
         print("Non‑positive")
     end
 end
+```
 
--- 1. CORRECT completion:
+1. then the CORRECT completion is:
+```lua
 else
         print("Non‑positive")
+```
 
--- 2. WRONG (because `else` ends up double indented):
+2. WRONG (`else` ends up indented two levels when it should be only one):
+```lua
     else
         print("Non‑positive")
+```
 
--- 3. WRONG (`print` should be double indented, not single)
+3. WRONG (`print` ends up single indent, when it should be double):
+```lua
 else
     print("Non‑positive")
 ```
