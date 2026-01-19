@@ -5,6 +5,7 @@ local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 local qwen = require("ask-openai.backends.models.fim").qwen25coder.sentinel_tokens
 local prompts = require("ask-openai.frontends.prompts")
+local files = require("ask-openai.helpers.files")
 
 ---@class HarmonyFimPromptBuilder
 ---@field _parts string[]
@@ -48,91 +49,8 @@ Reasoning: ]] .. api.get_fim_reasoning_level() [[
     return self
 end
 
-HarmonyFimPromptBuilder.developer_message = vim.trim([[
-You are completing code from a Neovim plugin.
-As the user types, the plugin suggests code completions based on their cursor position marked with: FIM_MIDDLE
-
-The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near FIM_MIDDLE
-Do NOT explain your decisions. Do NOT return markdown blocks ```
-Do NOT repeat surrounding code (suffix/prefix)
-ONLY return valid code at the FIM_MIDDLE position
-PAY attention to existing whitespace. Especially on the cursor line!
-YOU ARE ONLY INSERTING CODE, DO NOT REPEAT PREFIX/SUFFIX.
-
-Here are a few examples of tricky completions:
-
-### When the cursor line has both prefix and suffix:
-```python
-def area(width, height):
-    return FIM_MIDDLE * height
-
-# The correct completion is:
-width
-
-# NOT repeating the suffix:
-width * height
-
-# and NOT repeating both suffix and prefix:
-    return width * height
-```
-
-### Cursor line has indentation in the prefix
-
-```lua
-function print_sign(number)
-    if number > 0 then
-        print("Positive")
-    FIM_MIDDLE
-    end
-end
-
-# 1. Correct indentation (because the cursor line has one indent already):
-else
-        print("Non‑positive")
-
-# which results in:
-function print_sign(number)
-    if number > 0 then
-        print("Positive")
-    else
-        print("Non‑positive")
-    end
-end
-
-
-# 2. NOT duplicating cursor line's prefix:
-    else
-        print("Non‑positive")
-
-# which results in:
-function print_sign(number)
-    if number > 0 then
-        print("Positive")
-        else
-        print("Non‑positive")
-    end
-end
-
-
-# 3. NOT indenting as if cursor was at column 0
-else
-    print("Non‑positive")
-
-# which results in:
-function print_sign(number)
-    if number > 0 then
-        print("Positive")
-    else
-    print("Non‑positive")
-    end
-end
-
-# 4. NOT forgetting indentation altogether:
-else
-print("Non‑positive")
-
-```
-]]):gsub("FIM_MIDDLE", qwen.FIM_MIDDLE)
+local loaded = files.read_file_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/backends/models/gptoss/prompts/fim_dev.md")
+HarmonyFimPromptBuilder.developer_message = loaded:gsub("FIM_MIDDLE", qwen.FIM_MIDDLE)
 -- TODO ideas if indent issues persist:
 --   show the result of each of the above completions in the input code so it is very clear why it is wrong
 -- TODO possible additional examples:
