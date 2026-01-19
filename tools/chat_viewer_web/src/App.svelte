@@ -63,8 +63,11 @@
       loadThread(source)
     } else {
       loading = false
+      // Show a concise message in production (no mention of ?path=)
       error =
-        'Provide a ?url= or (dev only) ?path= parameter pointing to a thread.json file.'
+        import.meta.env.MODE === 'development'
+          ? 'Provide a ?url= or ?path= parameter pointing to a thread.json file.'
+          : 'Provide a ?url= parameter pointing to a thread.json file.'
     }
   })
 
