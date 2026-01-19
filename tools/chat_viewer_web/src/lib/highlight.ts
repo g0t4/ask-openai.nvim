@@ -1,4 +1,8 @@
 import hljs from 'highlight.js'
+import hljsSvelte from 'highlightjs-svelte'
+
+// Register additional languages
+hljs.registerLanguage('svelte', hljsSvelte)
 
 // Map file extensions to highlight.js language names
 const extToLang: Record<string, string> = {
@@ -35,6 +39,7 @@ const extToLang: Record<string, string> = {
   vim: 'vim',
   diff: 'diff',
   patch: 'diff',
+  svelte: 'svelte',
 }
 
 export function getLanguageFromPath(filePath: string): string {
