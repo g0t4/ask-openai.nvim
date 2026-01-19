@@ -135,6 +135,13 @@ print("Non‑positive")
 ]]):gsub("FIM_MIDDLE", qwen.FIM_MIDDLE)
 -- TODO ideas if indent issues persist:
 --   show the result of each of the above completions in the input code so it is very clear why it is wrong
+-- TODO possible additional examples:
+--   cursor line has prefix/suffix => and completion adds multiple lines such that prefix of cursor line is completed
+--      and then the suffix of the cursor line turns into the suffix of the last line generated
+--      IOTW cursor line has start of first line and end of last line already in it...
+--      naturally there can be any number of lines between first/last too!
+--      Use this if your example above biases FIM such that it only does middle of line completions and not multiline when appropriate
+--         BTW... only add this if you can capture a real failure example (to know this is even an issue, plus something to demonstrate!)
 
 --- developer message (harmony spec):
 --- - instructions for the model (what is normally considered the “system prompt”)
