@@ -15,6 +15,8 @@
 
   let { message, index }: Props = $props()
 
+  let showRaw = $state(false)
+
   const role = $derived(message.role)
   const colorClass = $derived(getRoleColor(role))
   const displayRole = $derived(role === 'tool' ? 'TOOL RESULT' : role.toUpperCase())
@@ -71,7 +73,30 @@
         {#if isSemanticGrepMatches}
           <SemanticGrepMatches {content} />
         {:else if shouldRenderMarkdown}
-          <Markdown {content} />
+          <!-- Markdown content with toggle -->
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 text-sm">
+              <button
+                class="px-2 py-1 rounded {showRaw ? 'bg-gray-600 text-white' : 'bg-gray-800 text-gray-400'}"
+                onclick={() => (showRaw = true)}
+              >
+                Raw
+              </button>
+              <button
+                class="px-2 py-1 rounded {showRaw ? 'bg-gray-800 text-gray-400' : 'bg-gray-600 text-white'}"
+                onclick={() => (showRaw = false)}
+              >
+                Markdown
+              </button>
+            </div>
+            {#if showRaw}
+              <div class="whitespace-pre-wrap text-gray-200">
+                {content}
+              </div>
+            {:else}
+              <Markdown {content} />
+            {/if}
+          </div>
         {:else}
           <div class="whitespace-pre-wrap text-gray-200">
             {content}
