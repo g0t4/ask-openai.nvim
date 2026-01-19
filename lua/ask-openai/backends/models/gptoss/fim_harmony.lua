@@ -54,6 +54,8 @@ HarmonyFimPromptBuilder.developer_message =
     .read_file_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/backends/models/gptoss/prompts/fim_dev.md")
     :gsub("<<FIM_CURSOR_MARKER>>", qwen.FIM_MIDDLE)
 -- TODO ideas if indent issues persist:
+--   for blank lines (sans indents at start, before cursor)... run FIM as if empty line entirely
+--      COLLECT EVALS first though
 --   *** deal with it, most of the time you can format to fix if its just indent
 --   FYI medium thinking is working very well with your new prompt (it wasn't a giant waste of time, lol!!)
 --      PRN! consider detect scenarios to kick up reasoning effort to medium/high ... i.e. blank line w/ indented cursor!
