@@ -2,7 +2,7 @@ name: Deploy Chat Viewer to GitHub Pages
 
 on:
   push:
-    branches: [master, feat-predictions]
+    branches: [master]
     paths:
       - 'tools/chat_viewer_web/**'
   workflow_dispatch:
