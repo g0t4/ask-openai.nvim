@@ -46,13 +46,13 @@
   // Load from URL param on mount
   $effect(() => {
     const params = new URLSearchParams(window.location.search)
-    // Accept either a full URL via ?url= or a local filesystem path via ?path=
+    // Accept either a full URL via ?url= or a local filesystem path via ?path= (dev only)
     const urlParam = params.get('url')
     const pathParam = params.get('path')
     let source: string | null = null
     if (urlParam) {
       source = urlParam
-    } else if (pathParam) {
+    } else if (pathParam && import.meta.env.MODE === 'development') {
       // Vite dev server can serve files from the project root when strict mode is disabled.
       // Use a relative path directly; fetch will resolve it against the current origin.
       source = pathParam
@@ -63,7 +63,8 @@
       loadThread(source)
     } else {
       loading = false
-      error = 'Provide a ?url= or ?path= parameter pointing to a thread.json file.'
+      error =
+        'Provide a ?url= or (dev only) ?path= parameter pointing to a thread.json file.'
     }
   })
 
