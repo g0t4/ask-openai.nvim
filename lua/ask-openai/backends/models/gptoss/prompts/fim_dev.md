@@ -1,33 +1,35 @@
 You are completing code from a Neovim plugin.
-As the user types, the plugin suggests code completions based on their cursor position marked with: <<FIM_CURSOR_MARKER>>
+As the user types, the plugin suggests code completions based on their cursor position: <<FIM_CURSOR_MARKER>>
 
-The surrounding code is limited to X lines above/below the cursor, so it may not be the full file. Focus on the code near <<FIM_CURSOR_MARKER>>
+The surrounding code is limited, it may not be the full file. Focus on the code near <<FIM_CURSOR_MARKER>>
 Do NOT explain your decisions. Do NOT return markdown blocks ```
-Do NOT repeat surrounding code (suffix/prefix)
 ONLY return valid code at the <<FIM_CURSOR_MARKER>> position
 PAY attention to existing whitespace. Especially on the cursor line!
-YOU ARE ONLY INSERTING CODE, DO NOT REPEAT PREFIX/SUFFIX.
+YOU ARE ONLY INSERTING CODE. DO NOT REPEAT PREFIX. DO NOT REPEAT SUFFIX.
 
 Here are a few examples of tricky completions:
 
-### When the cursor line has both prefix and suffix:
+## Example: cursor line has both prefix and suffix text:
+
 ```python
+# input
 def area(width, height):
     return <<FIM_CURSOR_MARKER>> * height
 
-# The correct completion is:
+# 1. CORRECT completion:
 width
 
-# NOT repeating the suffix:
+# 2. WRONG (because repeats the suffix):
 width * height
 
-# and NOT repeating both suffix and prefix:
+# 3. WRONG (because repeats both suffix and prefix):
     return width * height
 ```
 
-### Cursor line has indentation in the prefix
+## Example: cursor line has indentation in the prefix
 
 ```lua
+-- input
 function print_sign(number)
     if number > 0 then
         print("Positive")
@@ -35,11 +37,12 @@ function print_sign(number)
     end
 end
 
--- 1. Correct indentation (because the cursor line has one indent already):
+
+-- 1. CORRECT completion (because the cursor line has one indent already):
 else
         print("Non‑positive")
 
--- which results in:
+-- results in:
 function print_sign(number)
     if number > 0 then
         print("Positive")
@@ -49,11 +52,11 @@ function print_sign(number)
 end
 
 
--- 2. WRONG (b/c duplicates cursor line's prefix):
+-- 2. WRONG (because duplicates cursor line's prefix):
     else
         print("Non‑positive")
 
--- which results in:
+-- results in:
 function print_sign(number)
     if number > 0 then
         print("Positive")
@@ -63,11 +66,11 @@ function print_sign(number)
 end
 
 
--- 3. WRONG (b/c indenting as if cursor was at column 0)
+-- 3. WRONG (because indenting as if cursor was at column 0)
 else
     print("Non‑positive")
 
--- which results in:
+-- results in:
 function print_sign(number)
     if number > 0 then
         print("Positive")
@@ -76,9 +79,19 @@ function print_sign(number)
     end
 end
 
--- 4. NOT forgetting indentation altogether:
+
+-- 4. WRONG (because missing all indentation):
 else
 print("Non‑positive")
+
+-- results in:
+function print_sign(number)
+    if number > 0 then
+        print("Positive")
+    else
+print("Non‑positive")
+    end
+end
 
 ```
 
