@@ -55,12 +55,18 @@ HarmonyFimPromptBuilder.developer_message =
     :gsub("<<FIM_CURSOR_MARKER>>", qwen.FIM_MIDDLE)
 -- TODO ideas if indent issues persist:
 --   for blank lines (sans indents at start, before cursor)... run FIM as if empty line entirely
---      COLLECT EVALS first though
+--      in cursory testing, this is markedly better about completing things at a higher level of indent than where cursor is currently at
+--      TODO! COLLECT EVALS first though
+--        1. `def sub(a, b):\n\t<CURSOR>` - completing subtract function (cursor nested one indent under func signature)... nothing beyond func signature
+--            vs `def sub(a, b):\n<CURSOR>` - no indent before cursor, just at start of line => measure completion of func (sans proper formatting and w/ proper formatting - measure both)
+--            1b. `return <CURSOR> - b` => should only be `a`
+--        2. repeat sub w/ add func? can that help measure reliability?
 --   *** deal with it, most of the time you can format to fix if its just indent
 --   FYI medium thinking is working very well with your new prompt (it wasn't a giant waste of time, lol!!)
---      PRN! consider detect scenarios to kick up reasoning effort to medium/high ... i.e. blank line w/ indented cursor!
---   ***! you need an eval test set before you waste more time on this... you have no way to know really!!!!
---   ***!   short of fixing all your annoyances in one prompt which is totally unlikely
+--      PRN?? consider detect scenarios to kick up reasoning effort to medium/high ... i.e. blank line w/ indented cursor!
+--       could also detect and warn about specific problem scenarios based on cursor line's prefix/suffix
+--          and/or warn to not duplicate the existing parts and call them out
+--          prefix: `...` \n suffix: `...` \n make sure not to duplicate these!
 
 --- developer message (harmony spec):
 --- - instructions for the model (what is normally considered the “system prompt”)
