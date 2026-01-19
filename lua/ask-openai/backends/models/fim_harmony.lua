@@ -128,7 +128,7 @@ function HarmonyFimPromptBuilder.fim_prompt(request)
     local file_prefix = ""
     if current_file_relative_path == nil then
         log:warn("current_file_name is nil")
-        current_file_relative_path = ""
+    else
         file_prefix = "I am editing this file: " .. current_file_relative_path .. "\n\n"
     end
 
