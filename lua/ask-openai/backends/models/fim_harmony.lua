@@ -57,22 +57,25 @@ Do NOT explain your decisions. Do NOT return markdown blocks ```
 Do NOT repeat surrounding code (suffix/prefix)
 ONLY return valid code at the ]] .. qwen.FIM_MIDDLE .. [[ position
 PAY attention to existing whitespace.
-YOU ARE ONLY INSERTING CODE, DO NOT REPEAT PREFIX/SUFFIX. Think about overlap before finishing your thoughts.
+YOU ARE ONLY INSERTING CODE, DO NOT REPEAT PREFIX/SUFFIX.
 
-For example, if you see this in a python file:
-def adder(a, b):
-    return ]] .. qwen.FIM_MIDDLE .. [[ + b
+For example, when the current line has both prefix and suffix:
+```python
+def area(width, height):
+    return ]] .. qwen.FIM_MIDDLE .. [[ * height
 
-The correct completion is:
-a
+# The correct completion is:
+width
 
-NOT:
-a + b
+# NOT repeating the suffix:
+width * height
 
-and NOT:
-    return a + b
+# and NOT repeating both suffix and prefix:
+    return width * height
+```
 
 ]])
+-- TODO add example of indentation
 
 --- developer message (harmony spec):
 --- - instructions for the model (what is normally considered the “system prompt”)
