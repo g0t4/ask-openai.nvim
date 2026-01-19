@@ -147,6 +147,7 @@ local function get_reminder_nudges(request)
     -- TODO eval test these are doing anything useful
     --  ok I just did manual tests and OMG every time (1 out of 30 had one extra tab, the rest were all perfect).. BOTH fixed: indentation w/ empty line (Cursor is indented) ... AND, whitespace around FIM in the middle of a line
     --     ALSO not seeming to FIM duplicate prefix/suffix... I have to test more to see! that will rock if so
+    --     if issues w/ this stealing focus from FIM'ing the full code example above this... you could try making these into "thoughts" that you prefill into the think message (don't finish it, just start it)
     local heading = "\n\n"
         .. "## Reminders about the cursor line:"
     return heading .. "\n"
