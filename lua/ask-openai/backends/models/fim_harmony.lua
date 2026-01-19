@@ -132,9 +132,6 @@ function HarmonyFimPromptBuilder.fim_prompt(request)
         file_prefix = "I am editing this file: " .. current_file_relative_path .. "\n\n"
     end
 
-    --  TODO try PSM format anyways! I think it might help with repeating the suffix?
-    --    might want to find a fine tune too that actually has training for PSM/SPM
-    --    would need to reword some instructions above (including examples)
     local fim_user_message = file_prefix
         .. "Please complete " .. qwen.FIM_MIDDLE .. " in the following code (which has carefully preserved indentation):\n"
         .. request.ps_chunk.prefix
