@@ -49,7 +49,7 @@ function print_sign(number)
 end
 
 
--- 2. NOT duplicating cursor line's prefix:
+-- 2. WRONG (b/c duplicates cursor line's prefix):
     else
         print("Non‑positive")
 
@@ -63,7 +63,7 @@ function print_sign(number)
 end
 
 
--- 3. NOT indenting as if cursor was at column 0
+-- 3. WRONG (b/c indenting as if cursor was at column 0)
 else
     print("Non‑positive")
 
