@@ -67,14 +67,36 @@ else
         print("Non‑positive")
 ```
 
-2. WRONG (`else` ends up indented two levels when it should be only one):
+2. WRONG (`else` ends up double indented when it should be single):
 ```lua
     else
         print("Non‑positive")
 ```
+results in:
+```lua
+function print_sign(number)
+    if number > 0 then
+        print("Positive")
+        else
+        print("Non‑positive")
+    end
+end
+```
 
-3. WRONG (`print` ends up single indent, when it should be double):
+3. WRONG (`print` ends up single indented when it should be double):
 ```lua
 else
     print("Non‑positive")
 ```
+results in:
+```lua
+function print_sign(number)
+    if number > 0 then
+        print("Positive")
+    else
+    print("Non‑positive")
+    end
+end
+```
+
+
