@@ -53,18 +53,13 @@ HarmonyFimPromptBuilder.developer_message =
     files
     .read_file_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/backends/models/gptoss/prompts/fim_dev.md")
     :gsub("<<FIM_CURSOR_MARKER>>", qwen.FIM_MIDDLE)
--- TODO for fim_dev.md:
---   remove "results in" if that's not helping... or worse if it hurts
---
 -- TODO ideas if indent issues persist:
---   show the result of each of the above completions in the input code so it is very clear why it is wrong
--- TODO possible additional examples:
---   cursor line has prefix/suffix => and completion adds multiple lines such that prefix of cursor line is completed
---      and then the suffix of the cursor line turns into the suffix of the last line generated
---      IOTW cursor line has start of first line and end of last line already in it...
---      naturally there can be any number of lines between first/last too!
---      Use this if your example above biases FIM such that it only does middle of line completions and not multiline when appropriate
---         BTW... only add this if you can capture a real failure example (to know this is even an issue, plus something to demonstrate!)
+--   *** deal with it, most of the time you can format to fix if its just indent
+--   ? could treat empty line as cursor at col0 always... instead of showing it nested at all
+--      that is the routine spot that trips up gptoss
+--      but again, format the code works most of the time!
+--   ***! you need an eval test set before you waste more time on this... you have no way to know really!!!!
+--   ***!   short of fixing all your annoyances in one prompt which is totally unlikely
 
 --- developer message (harmony spec):
 --- - instructions for the model (what is normally considered the “system prompt”)
