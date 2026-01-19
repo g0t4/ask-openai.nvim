@@ -28,12 +28,13 @@
     content && content.trim().startsWith('# Semantic Grep matches:')
   )
 
-  // Check if content looks like markdown (starts with heading)
+  // Check if content looks like markdown (starts with heading or contains code blocks)
   const looksLikeMarkdown = $derived(
-    content && /^#{1,6}\s/.test(content.trim())
+    content && (/^#{1,6}\s/.test(content.trim()) || content.includes('```'))
   )
   const shouldRenderMarkdown = $derived(
-    role === 'system' || (role === 'user' && looksLikeMarkdown && !isSemanticGrepMatches)
+    role === 'system' ||
+    ((role === 'user' || role === 'assistant') && looksLikeMarkdown && !isSemanticGrepMatches)
   )
 </script>
 
