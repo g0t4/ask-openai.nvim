@@ -9,6 +9,17 @@
   let error = $state<string | null>(null)
   let threadUrl = $state<string | null>(null)
 
+  // Derive title from thread URL
+  const pageTitle = $derived.by(() => {
+    if (!threadUrl) return 'Chat Viewer'
+    const url = threadUrl.toLowerCase()
+    if (url.includes('rewrite')) return ':AskRewrite'
+    if (url.includes('tools')) return ':AskQuestion /tools'
+    if (url.includes('question')) return ':AskQuestion'
+    if (url.includes('fim')) return ':AskPredict'
+    return 'Chat Viewer'
+  })
+
   async function loadThread(url: string) {
     loading = true
     error = null
@@ -56,11 +67,16 @@
   $effect(() => {
     return setupHashListener()
   })
+
+  // Update document title when pageTitle changes
+  $effect(() => {
+    document.title = pageTitle
+  })
 </script>
 
 <main class="max-w-7xl mx-auto p-4">
   <header class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-100">Chat Viewer</h1>
+    <h1 class="text-2xl font-bold text-gray-100">{pageTitle}</h1>
     {#if threadUrl}
       <p class="text-sm text-gray-500 truncate mt-1">{threadUrl}</p>
     {/if}
