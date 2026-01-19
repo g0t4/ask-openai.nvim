@@ -124,7 +124,34 @@ function HarmonyFimPromptBuilder.fim_prompt(request)
     end
 
     -- FYI, file_prefix has been empty for a while now and FIM worked great!
+    -- Prepare warnings about potential duplicate prefix/suffix on the cursor line
+    local warnings = {}
+    -- Detect non‑empty (including whitespace) prefix on the cursor line
+    local has_prefix = request.ps_chunk.prefix ~= nil and request.ps_chunk.prefix ~= ""
+    if has_prefix then
+        local trimmed = vim.trim(request.ps_chunk.prefix)
+        if trimmed ~= "" then
+            table.insert(warnings, "⚠️ Prefix on the cursor line may be duplicated in the completion. Here is the exact prefix (including whitespace):")
+            table.insert(warnings, "```" .. request.ps_chunk.prefix .. "```")
+        end
+    end
+    -- Detect non‑empty suffix on the cursor line
+    local has_suffix = request.ps_chunk.suffix ~= nil and request.ps_chunk.suffix ~= ""
+    if has_suffix then
+        local trimmed = vim.trim(request.ps_chunk.suffix)
+        if trimmed ~= "" then
+            table.insert(warnings, "⚠️ Suffix on the cursor line may be duplicated in the completion. Here is the exact suffix (including whitespace):")
+            table.insert(warnings, "```" .. request.ps_chunk.suffix .. "```")
+        end
+    end
+
+    local warning_text = table.concat(warnings, "\n")
+    if warning_text ~= "" then
+        warning_text = warning_text .. "\n\n"
+    end
+
     local fim_user_message =
+        warning_text ..
         "Please suggest text to replace "
         .. qwen.FIM_MIDDLE
         .. ":\n\n```"
