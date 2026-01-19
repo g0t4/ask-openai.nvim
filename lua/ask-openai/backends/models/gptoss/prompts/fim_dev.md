@@ -47,20 +47,15 @@ function print_sign(number)
     end
 end
 
--- 1. then this is the CORRECT completion (because the cursor line has one indent already):
+-- 1. CORRECT completion:
 else
         print("Non‑positive")
 
--- 2. WRONG completion (because `else` ends up double indented once this is _inserted_):
+-- 2. WRONG (because `else` ends up double indented):
     else
         print("Non‑positive")
 
--- 3. WRONG completion (`print` should be double indented, not single)
+-- 3. WRONG (`print` should be double indented, not single)
 else
     print("Non‑positive")
-
--- 4. WRONG completion (because missing all indentation):
-else
-print("Non‑positive")
-
 ```
