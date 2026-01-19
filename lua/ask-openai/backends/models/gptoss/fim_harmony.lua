@@ -50,7 +50,7 @@ Reasoning: ]] .. api.get_fim_reasoning_level() [[
 end
 
 local loaded = files.read_file_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/backends/models/gptoss/prompts/fim_dev.md")
-HarmonyFimPromptBuilder.developer_message = loaded:gsub("FIM_MIDDLE", qwen.FIM_MIDDLE)
+HarmonyFimPromptBuilder.developer_message = loaded:gsub("<<FIM_CURSOR_MARKER>>", qwen.FIM_MIDDLE)
 -- TODO ideas if indent issues persist:
 --   show the result of each of the above completions in the input code so it is very clear why it is wrong
 -- TODO possible additional examples:
