@@ -5,6 +5,7 @@
   import ToolCalls from './ToolCalls.svelte'
   import ToolResult from './ToolResult.svelte'
   import Markdown from './Markdown.svelte'
+  import SemanticGrepMatches from './SemanticGrepMatches.svelte'
   import LinkButton, { copy } from './LinkButton.svelte'
 
   interface Props {
@@ -22,12 +23,17 @@
   const toolCalls = $derived(message.tool_calls)
   const msgId = $derived(getMessageId(index))
 
+  // Check if this is semantic grep matches
+  const isSemanticGrepMatches = $derived(
+    content && content.trim().startsWith('# Semantic Grep matches:')
+  )
+
   // Check if content looks like markdown (starts with heading)
   const looksLikeMarkdown = $derived(
     content && /^#{1,6}\s/.test(content.trim())
   )
   const shouldRenderMarkdown = $derived(
-    role === 'system' || (role === 'user' && looksLikeMarkdown)
+    role === 'system' || (role === 'user' && looksLikeMarkdown && !isSemanticGrepMatches)
   )
 </script>
 
@@ -61,7 +67,9 @@
 
       <!-- Main content -->
       {#if content}
-        {#if shouldRenderMarkdown}
+        {#if isSemanticGrepMatches}
+          <SemanticGrepMatches {content} />
+        {:else if shouldRenderMarkdown}
           <Markdown {content} />
         {:else}
           <div class="whitespace-pre-wrap text-gray-200">
