@@ -117,19 +117,20 @@ end
 function HarmonyFimPromptBuilder.fim_prompt(request)
     -- * user message
     local current_file_relative_path = request.inject_file_path_test_seam()
-    local file_prefix = ""
     if current_file_relative_path == nil then
         log:warn("current_file_name is nil")
-    else
-        file_prefix = "I am editing this file: " .. current_file_relative_path .. "\n\n"
     end
 
     -- FYI, file_prefix has been empty for a while now and FIM worked great!
-    local fim_user_message = file_prefix
-        .. "Please complete " .. qwen.FIM_MIDDLE .. " in the following code (which has carefully preserved indentation):\n"
+    local fim_user_message =
+        "Please suggest text to replace the cursor placeholder "
+        .. qwen.FIM_MIDDLE
+        .. "\n\n```"
+        .. current_file_relative_path .. "\n"
         .. request.ps_chunk.prefix
         .. qwen.FIM_MIDDLE
         .. request.ps_chunk.suffix
+        .. "\n```"
     return fim_user_message
 end
 
