@@ -35,11 +35,11 @@ function print_sign(number)
     end
 end
 
-# 1. Correct indentation (because the cursor line has one indent already):
+-- 1. Correct indentation (because the cursor line has one indent already):
 else
         print("Non‑positive")
 
-# which results in:
+-- which results in:
 function print_sign(number)
     if number > 0 then
         print("Positive")
@@ -49,11 +49,11 @@ function print_sign(number)
 end
 
 
-# 2. NOT duplicating cursor line's prefix:
+-- 2. NOT duplicating cursor line's prefix:
     else
         print("Non‑positive")
 
-# which results in:
+-- which results in:
 function print_sign(number)
     if number > 0 then
         print("Positive")
@@ -63,11 +63,11 @@ function print_sign(number)
 end
 
 
-# 3. NOT indenting as if cursor was at column 0
+-- 3. NOT indenting as if cursor was at column 0
 else
     print("Non‑positive")
 
-# which results in:
+-- which results in:
 function print_sign(number)
     if number > 0 then
         print("Positive")
@@ -76,7 +76,7 @@ function print_sign(number)
     end
 end
 
-# 4. NOT forgetting indentation altogether:
+-- 4. NOT forgetting indentation altogether:
 else
 print("Non‑positive")
 
