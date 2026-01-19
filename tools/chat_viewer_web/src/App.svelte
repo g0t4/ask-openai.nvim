@@ -1,3 +1,4 @@
+<!-- Gippity took dibs -->
 <script lang="ts">
   import type { ThreadJson, Message } from './lib/types'
   import { scrollToHash, setupHashListener } from './lib/hash-nav'
@@ -45,13 +46,24 @@
   // Load from URL param on mount
   $effect(() => {
     const params = new URLSearchParams(window.location.search)
-    const url = params.get('url')
-    if (url) {
-      threadUrl = url
-      loadThread(url)
+    // Accept either a full URL via ?url= or a local filesystem path via ?path=
+    const urlParam = params.get('url')
+    const pathParam = params.get('path')
+    let source: string | null = null
+    if (urlParam) {
+      source = urlParam
+    } else if (pathParam) {
+      // Vite dev server can serve files from the project root when strict mode is disabled.
+      // Use a relative path directly; fetch will resolve it against the current origin.
+      source = pathParam
+    }
+
+    if (source) {
+      threadUrl = source
+      loadThread(source)
     } else {
       loading = false
-      error = 'No ?url= parameter provided. Pass a URL to a thread.json file.'
+      error = 'Provide a ?url= or ?path= parameter pointing to a thread.json file.'
     }
   })
 
