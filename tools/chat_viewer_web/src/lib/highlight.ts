@@ -2,7 +2,8 @@ import hljs from 'highlight.js'
 import hljsSvelte from 'highlightjs-svelte'
 
 // Register additional languages
-hljs.registerLanguage('svelte', hljsSvelte)
+// highlightjs-svelte exports a function that calls registerLanguage internally
+hljsSvelte(hljs)
 
 // Map file extensions to highlight.js language names
 const extToLang: Record<string, string> = {
