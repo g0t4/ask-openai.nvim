@@ -43,56 +43,17 @@ end
 else
         print("Non‑positive")
 
--- results in good code:
-function print_sign(number)
-    if number > 0 then
-        print("Positive")
-    else
-        print("Non‑positive")
-    end
-end
-
-
--- 2. WRONG (because duplicates cursor line's prefix):
+-- 2. WRONG (because `else` ends up double indented once this is _inserted_):
     else
         print("Non‑positive")
 
--- results in bad code:
-function print_sign(number)
-    if number > 0 then
-        print("Positive")
-        else
-        print("Non‑positive")
-    end
-end
-
-
--- 3. WRONG (because indenting as if cursor was at column 0)
+-- 3. WRONG (`print` should be double indented, not single)
 else
     print("Non‑positive")
-
--- results in bad code:
-function print_sign(number)
-    if number > 0 then
-        print("Positive")
-    else
-    print("Non‑positive")
-    end
-end
-
 
 -- 4. WRONG (because missing all indentation):
 else
 print("Non‑positive")
-
--- results in bad code:
-function print_sign(number)
-    if number > 0 then
-        print("Positive")
-    else
-print("Non‑positive")
-    end
-end
 
 ```
 
