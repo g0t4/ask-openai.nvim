@@ -65,9 +65,10 @@
     }
 
     try {
-      // Use GitHub API instead of HTML scraping (works on static sites)
-      // https://api.github.com/repos/owner/repo/contents/path?ref=branch
-      const apiUrl = `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/contents/${parsed.path}?ref=${parsed.branch}`
+      // Use jsDelivr API for directory listings (great CORS support, no rate limits)
+      // https://data.jsdelivr.com/v1/packages/gh/user/repo@branch/files/path
+      const pathSegment = parsed.path ? `/${parsed.path}` : ''
+      const apiUrl = `https://data.jsdelivr.com/v1/packages/gh/${parsed.owner}/${parsed.repo}@${parsed.branch}/files${pathSegment}`
 
       const response = await fetch(apiUrl)
 
@@ -77,22 +78,28 @@
 
       const data = await response.json()
 
-      // GitHub API returns an array for directories
-      if (Array.isArray(data)) {
-        items = data
-          .filter((item: any) => item.type === 'file' || item.type === 'dir')
-          .map((item: any) => ({
-            name: item.name,
-            path: item.path,
-            type: item.type === 'dir' ? 'dir' : 'file',
-          }))
+      // jsDelivr returns {files: [...]} structure
+      if (data.files && Array.isArray(data.files)) {
+        items = data.files
+          .map((item: any) => {
+            // item has: {name, hash, size, time} for files
+            // item has: {name, hash, time, type: "directory"} for dirs
+            const isDir = item.type === 'directory'
+            const fullPath = parsed.path ? `${parsed.path}/${item.name}` : item.name
+
+            return {
+              name: item.name,
+              path: fullPath,
+              type: isDir ? 'dir' : 'file',
+            }
+          })
           .sort((a, b) => {
             // Directories first, then alphabetically
             if (a.type !== b.type) return a.type === 'dir' ? -1 : 1
             return a.name.localeCompare(b.name)
           })
       } else {
-        throw new Error('URL does not point to a directory')
+        throw new Error('Invalid response from jsDelivr')
       }
     } catch (e) {
       error = e instanceof Error ? e.message : 'Unknown error'

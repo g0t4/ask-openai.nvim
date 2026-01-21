@@ -116,10 +116,10 @@
         // Directory - will use GitHubBrowser
         loading = false
       } else {
-        // File - fetch from raw.githubusercontent.com
-        const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`
-        threadUrl = rawUrl
-        loadThread(rawUrl)
+        // File - fetch from jsDelivr CDN
+        const cdnUrl = `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}`
+        threadUrl = cdnUrl
+        loadThread(cdnUrl)
       }
     } else if (urlParam) {
       // Legacy url= parameter (files only, no directory browsing)
