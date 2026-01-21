@@ -65,41 +65,53 @@
     }
 
     try {
-      // Use jsDelivr API for directory listings (great CORS support, no rate limits)
-      // https://data.jsdelivr.com/v1/packages/gh/user/repo@branch/files/path
+      // Fetch HTML directory listing from jsDelivr CDN
+      // https://cdn.jsdelivr.net/gh/user/repo@branch/path/
       const pathSegment = parsed.path ? `/${parsed.path}` : ''
-      const apiUrl = `https://data.jsdelivr.com/v1/packages/gh/${parsed.owner}/${parsed.repo}@${parsed.branch}/files${pathSegment}`
+      const cdnUrl = `https://cdn.jsdelivr.net/gh/${parsed.owner}/${parsed.repo}@${parsed.branch}${pathSegment}/`
 
-      const response = await fetch(apiUrl)
+      const response = await fetch(cdnUrl)
 
       if (!response.ok) {
         throw new Error(`Failed to fetch directory: ${response.status}`)
       }
 
-      const data = await response.json()
+      const html = await response.text()
 
-      // jsDelivr returns {files: [...]} structure
-      if (data.files && Array.isArray(data.files)) {
-        items = data.files
-          .map((item: any) => {
-            // item has: {name, hash, size, time} for files
-            // item has: {name, hash, time, type: "directory"} for dirs
-            const isDir = item.type === 'directory'
-            const fullPath = parsed.path ? `${parsed.path}/${item.name}` : item.name
+      // Parse HTML to extract file/folder listings
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(html, 'text/html')
 
-            return {
-              name: item.name,
-              path: fullPath,
-              type: isDir ? 'dir' : 'file',
-            }
-          })
-          .sort((a, b) => {
-            // Directories first, then alphabetically
-            if (a.type !== b.type) return a.type === 'dir' ? -1 : 1
-            return a.name.localeCompare(b.name)
-          })
-      } else {
-        throw new Error('Invalid response from jsDelivr')
+      // Find all links with rel="nofollow" (these are the files/folders)
+      const links = doc.querySelectorAll('a[rel="nofollow"]')
+
+      const extractedItems: GitHubItem[] = []
+
+      links.forEach((link) => {
+        const href = link.getAttribute('href') || ''
+        const name = link.textContent?.trim() || ''
+
+        if (!name) return
+
+        // Directories end with /, files don't
+        const isDir = href.endsWith('/')
+        const fullPath = parsed.path ? `${parsed.path}/${name}` : name
+
+        extractedItems.push({
+          name,
+          path: fullPath,
+          type: isDir ? 'dir' : 'file',
+        })
+      })
+
+      // Sort: directories first, then alphabetically
+      items = extractedItems.sort((a, b) => {
+        if (a.type !== b.type) return a.type === 'dir' ? -1 : 1
+        return a.name.localeCompare(b.name)
+      })
+
+      if (items.length === 0) {
+        error = 'No files or folders found'
       }
     } catch (e) {
       error = e instanceof Error ? e.message : 'Unknown error'
