@@ -58,66 +58,41 @@
     error = null
     items = []
 
-    if (!githubUrl || !parsed) {
+    if (!parsed) {
       error = 'Invalid GitHub path'
       loading = false
       return
     }
 
     try {
-      // Try fetching HTML directly from GitHub
-      // GitHub pages might allow CORS, but if not we'll get an error
-      const response = await fetch(githubUrl)
+      // Use GitHub API instead of HTML scraping (works on static sites)
+      // https://api.github.com/repos/owner/repo/contents/path?ref=branch
+      const apiUrl = `https://api.github.com/repos/${parsed.owner}/${parsed.repo}/contents/${parsed.path}?ref=${parsed.branch}`
+
+      const response = await fetch(apiUrl)
 
       if (!response.ok) {
         throw new Error(`Failed to fetch directory: ${response.status}`)
       }
 
-      const html = await response.text()
+      const data = await response.json()
 
-      // Parse HTML to extract file/folder listings
-      // GitHub uses a specific structure in their tree view
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(html, 'text/html')
-
-      // Find all rows in the file table
-      // GitHub uses role="rowgroup" for the file listing
-      const rows = doc.querySelectorAll('div[role="rowgroup"] div[role="row"]')
-
-      const extractedItems: GitHubItem[] = []
-
-      rows.forEach((row) => {
-        // Each row has a link with aria-label that contains the file/folder name
-        const link = row.querySelector('a[aria-label]')
-        if (!link) return
-
-        const ariaLabel = link.getAttribute('aria-label') || ''
-        const href = link.getAttribute('href') || ''
-
-        // Extract name from aria-label (format: "filename" or "foldername, (Directory)")
-        let name = ariaLabel.replace(/, \(Directory\)$/, '').trim()
-        const isDir = ariaLabel.includes('(Directory)')
-
-        // Build full path
-        const fullItemPath = parsed.path ? `${parsed.path}/${name}` : name
-
-        if (name) {
-          extractedItems.push({
-            name,
-            path: fullItemPath,
-            type: isDir ? 'dir' : 'file',
+      // GitHub API returns an array for directories
+      if (Array.isArray(data)) {
+        items = data
+          .filter((item: any) => item.type === 'file' || item.type === 'dir')
+          .map((item: any) => ({
+            name: item.name,
+            path: item.path,
+            type: item.type === 'dir' ? 'dir' : 'file',
+          }))
+          .sort((a, b) => {
+            // Directories first, then alphabetically
+            if (a.type !== b.type) return a.type === 'dir' ? -1 : 1
+            return a.name.localeCompare(b.name)
           })
-        }
-      })
-
-      // Sort: directories first, then alphabetically
-      items = extractedItems.sort((a, b) => {
-        if (a.type !== b.type) return a.type === 'dir' ? -1 : 1
-        return a.name.localeCompare(b.name)
-      })
-
-      if (items.length === 0) {
-        error = 'No files or folders found (or unable to parse GitHub page structure)'
+      } else {
+        throw new Error('URL does not point to a directory')
       }
     } catch (e) {
       error = e instanceof Error ? e.message : 'Unknown error'
