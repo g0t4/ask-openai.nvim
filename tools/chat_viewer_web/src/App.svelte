@@ -4,6 +4,7 @@
   import { scrollToHash, setupHashListener } from './lib/hash-nav'
   import MessageView from './components/MessageView.svelte'
   import FileBrowser from './components/FileBrowser.svelte'
+  import GitHubBrowser from './components/GitHubBrowser.svelte'
   import 'highlight.js/styles/github-dark.css'
 
   let messages: Message[] = $state([])
@@ -11,9 +12,16 @@
   let error = $state<string | null>(null)
   let threadUrl = $state<string | null>(null)
   let isDirectory = $state(false)
+  let githubPath = $state<string | null>(null) // e.g., "g0t4/dataset-gfy/master/path/to/file"
 
   // Decoded URL for display
-  const displayUrl = $derived(threadUrl ? decodeURIComponent(threadUrl) : null)
+  const displayUrl = $derived(
+    githubPath
+      ? `github.com/${githubPath.split('/').slice(0, 2).join('/')} → ${githubPath.split('/').slice(3).join('/')}`
+      : threadUrl
+        ? decodeURIComponent(threadUrl)
+        : null
+  )
 
   // Derive title from thread URL
   const pageTitle = $derived.by(() => {
@@ -76,37 +84,61 @@
   // Load from URL param on mount
   $effect(() => {
     const params = new URLSearchParams(window.location.search)
-    // Accept either a full URL via ?url= or a local filesystem path via ?path= (dev only)
-    const urlParam = params.get('url')
-    const pathParam = params.get('path')
-    let source: string | null = null
-    if (urlParam) {
-      source = urlParam
-    } else if (pathParam && import.meta.env.MODE === 'development') {
-      // Vite dev server can serve files from the project root when strict mode is disabled.
-      // Use a relative path directly; fetch will resolve it against the current origin.
-      source = pathParam
-    }
 
-    if (source) {
-      threadUrl = source
+    // New github= parameter (e.g., ?github=g0t4/dataset-gfy/master/path/to/file)
+    const githubParam = params.get('github')
+
+    // Legacy url= parameter (backward compat, files only)
+    const urlParam = params.get('url')
+
+    // Dev-only path= parameter
+    const pathParam = params.get('path')
+
+    if (githubParam) {
+      // Parse github=owner/repo/branch/path
+      githubPath = githubParam
+      const parts = githubParam.split('/')
+      if (parts.length < 3) {
+        error = 'Invalid github parameter format. Expected: owner/repo/branch/path'
+        loading = false
+        return
+      }
+
+      const owner = parts[0]
+      const repo = parts[1]
+      const branch = parts[2]
+      const path = parts.slice(3).join('/')
+
       // Use path heuristics to detect directory
-      isDirectory = isDirectoryUrl(source)
+      isDirectory = isDirectoryUrl(path)
 
       if (isDirectory) {
-        // For directories, just set loading to false - FileBrowser handles its own loading
+        // Directory - will use GitHubBrowser
         loading = false
       } else {
-        // For files, load the thread
-        loadThread(source)
+        // File - fetch from raw.githubusercontent.com
+        const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`
+        threadUrl = rawUrl
+        loadThread(rawUrl)
       }
+    } else if (urlParam) {
+      // Legacy url= parameter (files only, no directory browsing)
+      threadUrl = urlParam
+      githubPath = null
+      isDirectory = false
+      loadThread(urlParam)
+    } else if (pathParam && import.meta.env.MODE === 'development') {
+      // Dev-only local path
+      threadUrl = pathParam
+      githubPath = null
+      isDirectory = false
+      loadThread(pathParam)
     } else {
       loading = false
-      // Show a concise message in production (no mention of ?path=)
       error =
         import.meta.env.MODE === 'development'
-          ? 'Provide a ?url= or ?path= parameter pointing to a thread.json file or directory.'
-          : 'Provide a ?url= parameter pointing to a thread.json file or directory.'
+          ? 'Provide a ?github=, ?url=, or ?path= parameter.'
+          : 'Provide a ?github= or ?url= parameter.'
     }
   })
 
@@ -141,6 +173,8 @@
     <div class="text-gray-400">Loading...</div>
   {:else if error}
     <div class="text-red-400 bg-red-900/20 p-4 rounded">{error}</div>
+  {:else if isDirectory && githubPath}
+    <GitHubBrowser githubPath={githubPath} />
   {:else if isDirectory && threadUrl}
     <FileBrowser url={threadUrl} />
   {:else}
