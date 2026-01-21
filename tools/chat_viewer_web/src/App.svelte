@@ -29,7 +29,17 @@
     error = null
     try {
       const res = await fetch(url)
-      if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`)
+      if (!res.ok) {
+        // If 404, might be a directory without trailing slash
+        if (res.status === 404 && url.includes('raw.githubusercontent.com')) {
+          // Try as directory
+          isDirectory = true
+          threadUrl = url.endsWith('/') ? url : url + '/'
+          loading = false
+          return
+        }
+        throw new Error(`Failed to fetch: ${res.status}`)
+      }
       const data: ThreadJson = await res.json()
 
       // Extract messages from request_body
@@ -40,6 +50,17 @@
         messages = [...messages, data.response_message]
       }
     } catch (e) {
+      // If JSON parse fails on a GitHub URL, might be a directory
+      if (
+        e instanceof Error &&
+        e.message.includes('JSON') &&
+        url.includes('raw.githubusercontent.com')
+      ) {
+        isDirectory = true
+        threadUrl = url.endsWith('/') ? url : url + '/'
+        loading = false
+        return
+      }
       error = e instanceof Error ? e.message : 'Unknown error'
     } finally {
       loading = false
