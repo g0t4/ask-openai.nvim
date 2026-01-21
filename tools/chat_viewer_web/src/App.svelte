@@ -12,6 +12,9 @@
   let threadUrl = $state<string | null>(null)
   let isDirectory = $state(false)
 
+  // Decoded URL for display
+  const displayUrl = $derived(threadUrl ? decodeURIComponent(threadUrl) : null)
+
   // Derive title from thread URL
   const pageTitle = $derived.by(() => {
     if (!threadUrl) return 'Chat Viewer'
@@ -29,17 +32,7 @@
     error = null
     try {
       const res = await fetch(url)
-      if (!res.ok) {
-        // If 404, might be a directory without trailing slash
-        if (res.status === 404 && url.includes('raw.githubusercontent.com')) {
-          // Try as directory
-          isDirectory = true
-          threadUrl = url.endsWith('/') ? url : url + '/'
-          loading = false
-          return
-        }
-        throw new Error(`Failed to fetch: ${res.status}`)
-      }
+      if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`)
       const data: ThreadJson = await res.json()
 
       // Extract messages from request_body
@@ -50,20 +43,33 @@
         messages = [...messages, data.response_message]
       }
     } catch (e) {
-      // If JSON parse fails on a GitHub URL, might be a directory
-      if (
-        e instanceof Error &&
-        e.message.includes('JSON') &&
-        url.includes('raw.githubusercontent.com')
-      ) {
-        isDirectory = true
-        threadUrl = url.endsWith('/') ? url : url + '/'
-        loading = false
-        return
-      }
       error = e instanceof Error ? e.message : 'Unknown error'
     } finally {
       loading = false
+    }
+  }
+
+  // Detect if URL is a directory based on path heuristics
+  function isDirectoryUrl(url: string): boolean {
+    // Ends with / = directory
+    if (url.endsWith('/')) return true
+
+    // Extract path from URL
+    try {
+      const urlObj = new URL(url)
+      const path = urlObj.pathname
+      const lastSegment = path.split('/').filter(Boolean).pop() || ''
+
+      // No extension = directory (e.g., "2026-01-19_002")
+      // Has .json extension = file
+      if (!lastSegment.includes('.')) return true
+      if (lastSegment.endsWith('.json')) return false
+
+      // Other extensions default to file
+      return false
+    } catch {
+      // If URL parsing fails, fallback to slash check
+      return url.endsWith('/')
     }
   }
 
@@ -84,10 +90,14 @@
 
     if (source) {
       threadUrl = source
-      // Check if URL ends with / to detect directory
-      isDirectory = source.endsWith('/')
+      // Use path heuristics to detect directory
+      isDirectory = isDirectoryUrl(source)
 
       if (isDirectory) {
+        // Ensure directory URL ends with /
+        if (!threadUrl.endsWith('/')) {
+          threadUrl = threadUrl + '/'
+        }
         // For directories, just set loading to false - FileBrowser handles its own loading
         loading = false
       } else {
@@ -126,8 +136,8 @@
 <main class="max-w-7xl mx-auto p-4">
   <header class="mb-6">
     <h1 class="text-2xl font-bold text-gray-100">{pageTitle}</h1>
-    {#if threadUrl}
-      <p class="text-sm text-gray-500 truncate mt-1">{threadUrl}</p>
+    {#if displayUrl}
+      <p class="text-sm text-gray-500 truncate mt-1">{displayUrl}</p>
     {/if}
   </header>
 
