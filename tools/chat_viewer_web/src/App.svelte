@@ -3,16 +3,19 @@
   import type { ThreadJson, Message } from './lib/types'
   import { scrollToHash, setupHashListener } from './lib/hash-nav'
   import MessageView from './components/MessageView.svelte'
+  import FileBrowser from './components/FileBrowser.svelte'
   import 'highlight.js/styles/github-dark.css'
 
   let messages: Message[] = $state([])
   let loading = $state(true)
   let error = $state<string | null>(null)
   let threadUrl = $state<string | null>(null)
+  let isDirectory = $state(false)
 
   // Derive title from thread URL
   const pageTitle = $derived.by(() => {
     if (!threadUrl) return 'Chat Viewer'
+    if (isDirectory) return 'File Browser'
     const url = threadUrl.toLowerCase()
     if (url.includes('rewrite')) return ':AskRewrite'
     if (url.includes('tools')) return ':AskQuestion /tools'
@@ -60,14 +63,23 @@
 
     if (source) {
       threadUrl = source
-      loadThread(source)
+      // Check if URL ends with / to detect directory
+      isDirectory = source.endsWith('/')
+
+      if (isDirectory) {
+        // For directories, just set loading to false - FileBrowser handles its own loading
+        loading = false
+      } else {
+        // For files, load the thread
+        loadThread(source)
+      }
     } else {
       loading = false
       // Show a concise message in production (no mention of ?path=)
       error =
         import.meta.env.MODE === 'development'
-          ? 'Provide a ?url= or ?path= parameter pointing to a thread.json file.'
-          : 'Provide a ?url= parameter pointing to a thread.json file.'
+          ? 'Provide a ?url= or ?path= parameter pointing to a thread.json file or directory.'
+          : 'Provide a ?url= parameter pointing to a thread.json file or directory.'
     }
   })
 
@@ -102,6 +114,8 @@
     <div class="text-gray-400">Loading...</div>
   {:else if error}
     <div class="text-red-400 bg-red-900/20 p-4 rounded">{error}</div>
+  {:else if isDirectory && threadUrl}
+    <FileBrowser url={threadUrl} />
   {:else}
     <div class="space-y-4">
       {#each messages as msg, idx}
