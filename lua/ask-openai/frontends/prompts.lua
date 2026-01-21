@@ -1,5 +1,26 @@
 local M = {}
 
+--- Completion function for slash commands used by user commands.
+-- Returns a list of possible completions matching the lead entered.
+---@param arglead string The current argument lead typed by the user.
+---@param cmdline string The full command line.
+---@param cursorpos number The cursor position.
+---@return string[] List of matching completions.
+function M.SlashCommandCompletion(arglead, cmdline, cursorpos)
+    -- Use the public slash command list defined in this module.
+    local completions = M.slash_commands or {}
+    local result = {}
+
+    -- Escape any pattern magic characters in the lead.
+    local escaped = vim.pesc(arglead)
+    for _, c in ipairs(completions) do
+        if c:find('^' .. escaped) then
+            table.insert(result, c)
+        end
+    end
+    return result
+end
+
 -- TxChatMessage is used to wrap the generated semantic grep content as a user context message
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 

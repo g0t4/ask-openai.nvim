@@ -650,7 +650,11 @@ function QuestionsFrontend.setup()
     vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
 
     -- * AskQuestion
-    vim.api.nvim_create_user_command("AskQuestion", ask_question_command, { range = true, nargs = 1 })
+    vim.api.nvim_create_user_command(
+        "AskQuestion",
+        ask_question_command,
+        { range = true, nargs = 1, complete = require("ask-openai.frontends.prompts").SlashCommandCompletion }
+    )
     -- * prefill argument combos:
     vim.keymap.set('n', '<Leader>q', ':AskQuestion ', { noremap = true })
     vim.keymap.set('v', '<Leader>q', ':<C-u>AskQuestion /selection ', { noremap = true })

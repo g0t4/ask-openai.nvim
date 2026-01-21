@@ -591,31 +591,13 @@ local function retry_last_rewrite_command()
     end)
 end
 
-function AskRewriteComplete(arglead, cmdline, cursorpos)
-    -- only offer our own completions, never fall back to file‑path completion
-    -- use the public slash command list from the prompts module
-    local prompts = require("ask-openai.predictions.context.prompts")
-    local completions = prompts.slash_commands or {}
-    local result = {}
-
-    -- escape special pattern characters in the typed lead
-    local escaped_lead = vim.pesc(arglead)
-
-    for _, c in ipairs(completions) do
-        if c:find("^" .. escaped_lead) then
-            table.insert(result, c)
-        end
-    end
-
-    -- if nothing matches, return an empty list to suppress default file‑path completion
-    return result
-end
+-- Completion for the AskRewrite command now delegated to the prompts module.
 
 function RewriteFrontend.setup()
     vim.api.nvim_create_user_command(
         "AskRewrite",
         ask_rewrite_command,
-        { range = true, nargs = "*", complete = AskRewriteComplete }
+        { range = true, nargs = "*", complete = require("ask-openai.frontends.prompts").SlashCommandCompletion }
     )
 
     vim.keymap.set({ 'n', 'v' }, '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
