@@ -48,6 +48,24 @@ end
 -- expose the slash commands list publicly for reuse elsewhere
 M.slash_commands = { "/yanks", "/all", "/commits", "/file", "/files", "/tools", "/selection", "/template", "/norag", }
 
+--- Completion function for slash commands used by user commands.
+-- Returns a list of completions matching the lead entered.
+---@param arglead string The current argument lead typed by the user.
+---@param cmdline string The full command line.
+---@param cursorpos number The cursor position.
+---@return string[] List of matching completions.
+function M.SlashCommandCompletion(arglead, cmdline, cursorpos)
+    local completions = M.slash_commands or {}
+    local result = {}
+    local escaped = vim.pesc(arglead)
+    for _, c in ipairs(completions) do
+        if c:find('^' .. escaped) then
+            table.insert(result, c)
+        end
+    end
+    return result
+end
+
 ---@param prompt? string
 ---@return ParseIncludesResult
 function M.parse_includes(prompt)

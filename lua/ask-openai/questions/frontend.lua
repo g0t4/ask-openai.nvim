@@ -653,7 +653,7 @@ function QuestionsFrontend.setup()
     vim.api.nvim_create_user_command(
         "AskQuestion",
         ask_question_command,
-        { range = true, nargs = 1, complete = require("ask-openai.frontends.prompts").SlashCommandCompletion }
+        { range = true, nargs = 1, complete = require("ask-openai.predictions.context.prompts").SlashCommandCompletion }
     )
     -- * prefill argument combos:
     vim.keymap.set('n', '<Leader>q', ':AskQuestion ', { noremap = true })

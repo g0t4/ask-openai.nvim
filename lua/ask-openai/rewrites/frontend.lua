@@ -597,7 +597,7 @@ function RewriteFrontend.setup()
     vim.api.nvim_create_user_command(
         "AskRewrite",
         ask_rewrite_command,
-        { range = true, nargs = "*", complete = require("ask-openai.frontends.prompts").SlashCommandCompletion }
+        { range = true, nargs = "*", complete = require("ask-openai.predictions.context.prompts").SlashCommandCompletion }
     )
 
     vim.keymap.set({ 'n', 'v' }, '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
