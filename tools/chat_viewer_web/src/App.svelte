@@ -94,10 +94,6 @@
       isDirectory = isDirectoryUrl(source)
 
       if (isDirectory) {
-        // Ensure directory URL ends with /
-        if (!threadUrl.endsWith('/')) {
-          threadUrl = threadUrl + '/'
-        }
         // For directories, just set loading to false - FileBrowser handles its own loading
         loading = false
       } else {
