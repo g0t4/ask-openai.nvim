@@ -40,7 +40,8 @@
   function buildAppUrl(itemPath: string, isDir: boolean): string {
     if (!parsed) return ''
     const newGithubPath = `${parsed.owner}/${parsed.repo}/${parsed.branch}/${itemPath}`
-    return `${window.location.pathname}?github=${encodeURIComponent(newGithubPath)}${window.location.hash}`
+    // Don't encode slashes - keep URLs readable
+    return `${window.location.pathname}?github=${newGithubPath}${window.location.hash}`
   }
 
   // Get parent directory path
@@ -95,7 +96,10 @@
 
         // Directories end with /, files don't
         const isDir = href.endsWith('/')
-        const fullPath = parsed.path ? `${parsed.path}/${name}` : name
+
+        // Build fullPath, avoiding double slashes
+        const basePath = parsed.path ? parsed.path.replace(/\/$/, '') : ''
+        const fullPath = basePath ? `${basePath}/${name}` : name
 
         extractedItems.push({
           name,
