@@ -591,8 +591,33 @@ local function retry_last_rewrite_command()
     end)
 end
 
+function AskRewriteComplete(arglead, cmdline, cursorpos)
+    -- only offer our own completions, never fall back to file‑path completion
+    -- use the public slash command list from the prompts module
+    local prompts = require("ask-openai.predictions.context.prompts")
+    local completions = prompts.slash_commands or {}
+    local result = {}
+
+    -- escape special pattern characters in the typed lead
+    local escaped_lead = vim.pesc(arglead)
+
+    for _, c in ipairs(completions) do
+        if c:find("^" .. escaped_lead) then
+            table.insert(result, c)
+        end
+    end
+
+    -- if nothing matches, return an empty list to suppress default file‑path completion
+    return result
+end
+
 function RewriteFrontend.setup()
-    vim.api.nvim_create_user_command("AskRewrite", ask_rewrite_command, { range = true, nargs = 1 })
+    vim.api.nvim_create_user_command(
+        "AskRewrite",
+        ask_rewrite_command,
+        { range = true, nargs = "*", complete = AskRewriteComplete }
+    )
+
     vim.keymap.set({ 'n', 'v' }, '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
 
     vim.keymap.set({ 'n', 'v' }, '<Leader>ry', retry_last_rewrite_command, { noremap = true })
@@ -608,6 +633,7 @@ function RewriteFrontend.setup()
     vim.api.nvim_create_user_command("AskDumpLastSelection", buffers.dump_last_seletion_command, {})
     vim.api.nvim_set_keymap('n', '<Leader>ads', ':AskDumpLastSelection<CR>', { noremap = true })
     vim.api.nvim_set_keymap('v', '<Leader>ads', ':<C-u>AskDumpLastSelection<CR>', { noremap = true })
+
     -- FYI see notes in M.get_visual_selection about you don't want a lua func handler that calls dump
     -- also prints don't popup if they originated in a lua handler, whereas they do with a vim command
     --   thus w/ a cmd I get to see the vim.inspect(selection) with a pprint json like view of fields

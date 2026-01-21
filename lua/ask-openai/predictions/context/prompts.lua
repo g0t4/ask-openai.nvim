@@ -45,6 +45,9 @@ local function extract_top_k(prompt)
     return top_k, prompt
 end
 
+-- expose the slash commands list publicly for reuse elsewhere
+M.slash_commands = { "/yanks", "/all", "/commits", "/file", "/files", "/tools", "/selection", "/template", "/norag", }
+
 ---@param prompt? string
 ---@return ParseIncludesResult
 function M.parse_includes(prompt)
@@ -89,8 +92,7 @@ function M.parse_includes(prompt)
         -- ? do I want all to include tools/selection too? for now leave them off (all doesn't have to mean every slash command)
     end
 
-    local slash_commands = { "/yanks", "/all", "/commits", "/file", "/files", "/tools", "/selection", "/template", "/norag", }
-    for _, k in ipairs(slash_commands) do
+    for _, k in ipairs(M.slash_commands) do
         includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, k)
     end
 
