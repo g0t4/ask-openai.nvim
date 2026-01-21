@@ -39,7 +39,9 @@
   // Build app URL for navigation
   function buildAppUrl(itemPath: string, isDir: boolean): string {
     if (!parsed) return ''
-    const newGithubPath = `${parsed.owner}/${parsed.repo}/${parsed.branch}/${itemPath}`
+    // Add trailing slash for directories
+    const pathWithSlash = isDir && !itemPath.endsWith('/') ? itemPath + '/' : itemPath
+    const newGithubPath = `${parsed.owner}/${parsed.repo}/${parsed.branch}/${pathWithSlash}`
     // Don't encode slashes - keep URLs readable
     return `${window.location.pathname}?github=${newGithubPath}${window.location.hash}`
   }
@@ -83,8 +85,9 @@
       const parser = new DOMParser()
       const doc = parser.parseFromString(html, 'text/html')
 
-      // Find all links with rel="nofollow" (these are the files/folders)
-      const links = doc.querySelectorAll('a[rel="nofollow"]')
+      // Find all links with rel="nofollow" within the .listing div (skip breadcrumbs)
+      const listing = doc.querySelector('.listing')
+      const links = listing ? listing.querySelectorAll('a[rel="nofollow"]') : []
 
       const extractedItems: GitHubItem[] = []
 
