@@ -36,6 +36,7 @@
   )
   const shouldRenderMarkdown = $derived(
     role === 'system' ||
+    role === 'developer' ||
     ((role === 'user' || role === 'assistant') && looksLikeMarkdown && !isSemanticGrepMatches)
   )
 </script>
