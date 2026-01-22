@@ -11,16 +11,17 @@ let { userMessage, assistantResponse }: Props = $props()
 
 // Parse the user message to extract the code with <|fim_middle|> marker
 const parsedCode = $derived.by(() => {
-  // Look for markdown code block first
-  const markdownMatch = userMessage.match(/```[\w]*\n([\s\S]+?)```/)
+  // Look for markdown code block first (handles ```filename.foo format)
+  const markdownMatch = userMessage.match(/```[^\n]*\n([\s\S]+?)```/)
   if (markdownMatch) {
     return markdownMatch[1]
   }
 
-  // Fall back to text after "Please complete <|fim_middle|> in the following code"
+  // Fall back to text after trigger phrases
   const lines = userMessage.split('\n')
   const startIdx = lines.findIndex(line =>
-    line.includes('Please complete') && line.includes('<|fim_middle|>')
+    (line.includes('Please complete') && line.includes('<|fim_middle|>')) ||
+    (line.includes('Please suggest text to replace') && line.includes('<|fim_middle|>'))
   )
 
   if (startIdx === -1) return null
