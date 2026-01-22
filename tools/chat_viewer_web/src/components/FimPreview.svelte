@@ -41,21 +41,18 @@ const codeParts = $derived.by(() => {
   return { before, middle: assistantResponse.trim(), after }
 })
 
-// Generate merged code with line-by-line tracking for highlighting
-const mergedLines = $derived.by(() => {
-  if (!codeParts) return []
+// Track line ranges for highlighting
+const lineRanges = $derived.by(() => {
+  if (!codeParts) return null
 
-  const beforeLines = codeParts.before.split('\n')
-  const middleLines = codeParts.middle.split('\n')
-  const afterLines = codeParts.after.split('\n')
+  // Count lines in each section (a string with n newlines has n+1 lines, but we need to be careful with empty strings)
+  const beforeLineCount = codeParts.before ? codeParts.before.split('\n').length : 0
+  const middleLineCount = codeParts.middle ? codeParts.middle.split('\n').length : 0
 
-  const result: { text: string; isInserted: boolean }[] = []
-
-  beforeLines.forEach(line => result.push({ text: line, isInserted: false }))
-  middleLines.forEach(line => result.push({ text: line, isInserted: true }))
-  afterLines.forEach(line => result.push({ text: line, isInserted: false }))
-
-  return result
+  return {
+    insertStart: beforeLineCount,
+    insertEnd: beforeLineCount + middleLineCount - 1
+  }
 })
 
 // Full merged code for syntax highlighting
@@ -68,10 +65,12 @@ const highlightedCode = $derived(highlight(mergedCode, 'auto'))
 
 // Split highlighted code back into lines and match with insertion markers
 const highlightedLines = $derived.by(() => {
+  if (!lineRanges) return []
+
   const lines = highlightedCode.split('\n')
   return lines.map((html, idx) => ({
     html,
-    isInserted: mergedLines[idx]?.isInserted || false,
+    isInserted: idx >= lineRanges.insertStart && idx <= lineRanges.insertEnd,
     lineNum: idx + 1
   }))
 })
@@ -87,11 +86,8 @@ const highlightedLines = $derived.by(() => {
     </div>
 
     <div class="overflow-x-auto">
-      <pre class="!m-0 !bg-transparent"><code class="hljs">{#each highlightedLines as line}
-<span class="flex {line.isInserted ? 'bg-green-500/20' : ''}">
-  <span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">{line.lineNum}</span>
-  <span class="pl-3 flex-1">{@html line.html}</span>
-</span>{/each}</code></pre>
+      <pre class="!m-0 !bg-transparent"><code class="hljs">{#each highlightedLines as line}<span class="flex {line.isInserted ? 'bg-green-500/20' : ''}"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">{line.lineNum}</span><span class="pl-3 flex-1">{@html line.html}</span></span>
+{/each}</code></pre>
     </div>
   </div>
 {/if}
