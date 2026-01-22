@@ -64,36 +64,38 @@ const codeParts = $derived.by(() => {
   }
 })
 
-// Track line ranges for highlighting
-const lineRanges = $derived.by(() => {
+// Build the merged code and track which lines are inserted
+const mergedData = $derived.by(() => {
   if (!codeParts) return null
 
-  // Count lines in each section (a string with n newlines has n+1 lines, but we need to be careful with empty strings)
-  const beforeLineCount = codeParts.before ? codeParts.before.split('\n').length : 0
-  const middleLineCount = codeParts.middle ? codeParts.middle.split('\n').length : 0
+  const beforeLines = codeParts.before.split('\n')
+  const middleLines = codeParts.middle.split('\n')
+  const afterLines = codeParts.after.split('\n')
 
-  return {
-    insertStart: beforeLineCount,
-    insertEnd: beforeLineCount + middleLineCount - 1
-  }
+  // Track which lines are inserted
+  const allLines: { line: string; isInserted: boolean }[] = []
+
+  beforeLines.forEach(line => allLines.push({ line, isInserted: false }))
+  middleLines.forEach(line => allLines.push({ line, isInserted: true }))
+  afterLines.forEach(line => allLines.push({ line, isInserted: false }))
+
+  const mergedCode = allLines.map(l => l.line).join('\n')
+
+  return { allLines, mergedCode }
 })
 
-// Full merged code for syntax highlighting
-const mergedCode = $derived(
-  codeParts ? `${codeParts.before}${codeParts.middle}${codeParts.after}` : ''
-)
-
 // Detect language from the code or use auto-detection
-const highlightedCode = $derived(highlight(mergedCode, 'auto'))
+const highlightedCode = $derived(mergedData ? highlight(mergedData.mergedCode, 'auto') : '')
 
 // Split highlighted code back into lines and match with insertion markers
 const highlightedLines = $derived.by(() => {
-  if (!lineRanges || !codeParts) return []
+  if (!mergedData || !codeParts) return []
 
-  const lines = highlightedCode.split('\n')
-  return lines.map((html, idx) => ({
+  const htmlLines = highlightedCode.split('\n')
+
+  return htmlLines.map((html, idx) => ({
     html,
-    isInserted: idx >= lineRanges.insertStart && idx <= lineRanges.insertEnd,
+    isInserted: mergedData.allLines[idx]?.isInserted || false,
     lineNum: idx + codeParts.startLineNum
   }))
 })
@@ -112,10 +114,7 @@ const highlightedLines = $derived.by(() => {
     </div>
 
     <div class="overflow-x-auto">
-      <pre class="!m-0 !bg-transparent"><code class="hljs">{#if codeParts.beforeOmitted > 0}<span class="flex"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">⋮</span><span class="pl-3 flex-1 text-gray-500 italic">... ({codeParts.beforeOmitted} lines omitted)</span></span>
-{/if}{#each highlightedLines as line}<span class="flex {line.isInserted ? 'bg-green-500/20' : ''}"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">{line.lineNum}</span><span class="pl-3 flex-1">{@html line.html}</span></span>
-{/each}{#if codeParts.afterOmitted > 0}<span class="flex"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">⋮</span><span class="pl-3 flex-1 text-gray-500 italic">... ({codeParts.afterOmitted} lines omitted)</span></span>
-{/if}</code></pre>
+      <pre class="!m-0 !bg-transparent"><code class="hljs">{#if codeParts.beforeOmitted > 0}<span class="flex"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">⋮</span><span class="pl-3 flex-1 text-gray-500 italic">... ({codeParts.beforeOmitted} lines omitted)</span></span>{'\n'}{/if}{#each highlightedLines as line, idx}<span class="flex {line.isInserted ? 'bg-green-500/20' : ''}"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">{line.lineNum}</span><span class="pl-3 flex-1">{@html line.html}</span></span>{idx < highlightedLines.length - 1 ? '\n' : ''}{/each}{#if codeParts.afterOmitted > 0}{'\n'}<span class="flex"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">⋮</span><span class="pl-3 flex-1 text-gray-500 italic">... ({codeParts.afterOmitted} lines omitted)</span></span>{/if}</code></pre>
     </div>
   </div>
 {/if}
