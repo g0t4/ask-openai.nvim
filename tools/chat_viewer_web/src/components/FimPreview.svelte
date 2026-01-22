@@ -28,17 +28,40 @@ const parsedCode = $derived.by(() => {
   return lines.slice(startIdx + 1).join('\n')
 })
 
-// Split code into before/middle/after parts
+// Split code into before/middle/after parts, limiting context
 const codeParts = $derived.by(() => {
   if (!parsedCode) return null
 
   const markerIdx = parsedCode.indexOf('<|fim_middle|>')
   if (markerIdx === -1) return null
 
-  const before = parsedCode.substring(0, markerIdx)
-  const after = parsedCode.substring(markerIdx + '<|fim_middle|>'.length)
+  const CONTEXT_LINES = 10
 
-  return { before, middle: assistantResponse.trim(), after }
+  const beforeFull = parsedCode.substring(0, markerIdx)
+  const afterFull = parsedCode.substring(markerIdx + '<|fim_middle|>'.length)
+
+  // Limit before context to last N lines
+  const beforeLines = beforeFull.split('\n')
+  const beforeOmitted = beforeLines.length > CONTEXT_LINES ? beforeLines.length - CONTEXT_LINES : 0
+  const before = beforeLines.length > CONTEXT_LINES
+    ? beforeLines.slice(-CONTEXT_LINES).join('\n')
+    : beforeFull
+
+  // Limit after context to first N lines
+  const afterLines = afterFull.split('\n')
+  const afterOmitted = afterLines.length > CONTEXT_LINES ? afterLines.length - CONTEXT_LINES : 0
+  const after = afterLines.length > CONTEXT_LINES
+    ? afterLines.slice(0, CONTEXT_LINES).join('\n')
+    : afterFull
+
+  return {
+    before,
+    middle: assistantResponse.trim(),
+    after,
+    beforeOmitted,
+    afterOmitted,
+    startLineNum: beforeOmitted + 1
+  }
 })
 
 // Track line ranges for highlighting
@@ -65,13 +88,13 @@ const highlightedCode = $derived(highlight(mergedCode, 'auto'))
 
 // Split highlighted code back into lines and match with insertion markers
 const highlightedLines = $derived.by(() => {
-  if (!lineRanges) return []
+  if (!lineRanges || !codeParts) return []
 
   const lines = highlightedCode.split('\n')
   return lines.map((html, idx) => ({
     html,
     isInserted: idx >= lineRanges.insertStart && idx <= lineRanges.insertEnd,
-    lineNum: idx + 1
+    lineNum: idx + codeParts.startLineNum
   }))
 })
 </script>
@@ -82,12 +105,17 @@ const highlightedLines = $derived.by(() => {
       <h3 class="text-sm font-semibold text-cyan-400">FIM Preview (Fill-in-the-Middle)</h3>
       <p class="text-xs text-gray-400 mt-1">
         Green highlighted lines show the assistant's completion inserted at <code class="text-cyan-300">&lt;|fim_middle|&gt;</code>
+        {#if codeParts.beforeOmitted > 0 || codeParts.afterOmitted > 0}
+          <span class="text-gray-500"> • Showing 10 lines of context before/after</span>
+        {/if}
       </p>
     </div>
 
     <div class="overflow-x-auto">
-      <pre class="!m-0 !bg-transparent"><code class="hljs">{#each highlightedLines as line}<span class="flex {line.isInserted ? 'bg-green-500/20' : ''}"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">{line.lineNum}</span><span class="pl-3 flex-1">{@html line.html}</span></span>
-{/each}</code></pre>
+      <pre class="!m-0 !bg-transparent"><code class="hljs">{#if codeParts.beforeOmitted > 0}<span class="flex"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">⋮</span><span class="pl-3 flex-1 text-gray-500 italic">... ({codeParts.beforeOmitted} lines omitted)</span></span>
+{/if}{#each highlightedLines as line}<span class="flex {line.isInserted ? 'bg-green-500/20' : ''}"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">{line.lineNum}</span><span class="pl-3 flex-1">{@html line.html}</span></span>
+{/each}{#if codeParts.afterOmitted > 0}<span class="flex"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">⋮</span><span class="pl-3 flex-1 text-gray-500 italic">... ({codeParts.afterOmitted} lines omitted)</span></span>
+{/if}</code></pre>
     </div>
   </div>
 {/if}
