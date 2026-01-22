@@ -7,6 +7,7 @@
   import GitHubBrowser from './components/GitHubBrowser.svelte'
   import LocalBrowser from './components/LocalBrowser.svelte'
   import FimPreview from './components/FimPreview.svelte'
+  import RewritePreview from './components/RewritePreview.svelte'
   import 'highlight.js/styles/github-dark.css'
 
   let messages: Message[] = $state([])
@@ -71,6 +72,38 @@
     return {
       userMessage: content,
       assistantResponse: assistantContent.trim()
+    }
+  })
+
+  // Detect if this is an AskRewrite thread and extract data for preview
+  const rewriteData = $derived.by(() => {
+    if (pageTitle !== ':AskRewrite' || messages.length === 0) return null
+
+    // Find the last user message
+    const lastUserMessage = messages.findLast(msg => msg.role === 'user')
+    if (!lastUserMessage) return null
+
+    const userContent = typeof lastUserMessage.content === 'string' ? lastUserMessage.content : ''
+
+    // Find the assistant's response
+    const assistantMessage = messages.find(msg => msg.role === 'assistant')
+    if (!assistantMessage) return null
+
+    // Extract the non-thinking content from assistant response
+    let assistantContent = ''
+    if (typeof assistantMessage.content === 'string') {
+      assistantContent = assistantMessage.content
+    } else if (Array.isArray(assistantMessage.content)) {
+      // Filter out thinking blocks
+      assistantContent = assistantMessage.content
+        .filter((block: any) => block.type === 'text')
+        .map((block: any) => block.text)
+        .join('')
+    }
+
+    return {
+      userMessage: userContent,
+      assistantResponse: assistantContent
     }
   })
 
@@ -232,6 +265,10 @@
   {:else}
     {#if fimData}
       <FimPreview userMessage={fimData.userMessage} assistantResponse={fimData.assistantResponse} />
+    {/if}
+
+    {#if rewriteData}
+      <RewritePreview userMessage={rewriteData.userMessage} assistantResponse={rewriteData.assistantResponse} />
     {/if}
 
     <div class="space-y-4">
