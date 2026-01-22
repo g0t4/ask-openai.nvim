@@ -5,6 +5,7 @@
   import MessageView from './components/MessageView.svelte'
   import FileBrowser from './components/FileBrowser.svelte'
   import GitHubBrowser from './components/GitHubBrowser.svelte'
+  import LocalBrowser from './components/LocalBrowser.svelte'
   import 'highlight.js/styles/github-dark.css'
 
   let messages: Message[] = $state([])
@@ -13,14 +14,17 @@
   let threadUrl = $state<string | null>(null)
   let isDirectory = $state(false)
   let githubPath = $state<string | null>(null) // e.g., "g0t4/dataset-gfy/master/path/to/file"
+  let localPath = $state<string | null>(null) // e.g., "semantic_grep_auto_context/fims"
 
   // Decoded URL for display
   const displayUrl = $derived(
-    githubPath
-      ? `github.com/${githubPath.split('/').slice(0, 2).join('/')} → ${githubPath.split('/').slice(3).join('/')}`
-      : threadUrl
-        ? decodeURIComponent(threadUrl)
-        : null
+    localPath
+      ? `local → ${localPath || '(root)'}`
+      : githubPath
+        ? `github.com/${githubPath.split('/').slice(0, 2).join('/')} → ${githubPath.split('/').slice(3).join('/')}`
+        : threadUrl
+          ? decodeURIComponent(threadUrl)
+          : null
   )
 
   // Derive title from thread URL
@@ -88,15 +92,16 @@
     // New github= parameter (e.g., ?github=g0t4/dataset-gfy/master/path/to/file)
     const githubParam = params.get('github')
 
+    // Dev-only local= parameter (e.g., ?local=semantic_grep_auto_context/fims)
+    const localParam = params.get('local')
+
     // Legacy url= parameter (backward compat, files only)
     const urlParam = params.get('url')
-
-    // Dev-only path= parameter
-    const pathParam = params.get('path')
 
     if (githubParam) {
       // Parse github=owner/repo/branch/path
       githubPath = githubParam
+      localPath = null
       const parts = githubParam.split('/')
       if (parts.length < 3) {
         error = 'Invalid github parameter format. Expected: owner/repo/branch/path'
@@ -121,23 +126,34 @@
         threadUrl = cdnUrl
         loadThread(cdnUrl)
       }
+    } else if (localParam && import.meta.env.MODE === 'development') {
+      // Dev-only local= parameter
+      localPath = localParam
+      githubPath = null
+
+      // Use path heuristics to detect directory
+      isDirectory = isDirectoryUrl(localParam)
+
+      if (isDirectory) {
+        // Directory - will use LocalBrowser
+        loading = false
+      } else {
+        // File - fetch from local server
+        threadUrl = `/${localParam}`
+        loadThread(threadUrl)
+      }
     } else if (urlParam) {
       // Legacy url= parameter (files only, no directory browsing)
       threadUrl = urlParam
       githubPath = null
+      localPath = null
       isDirectory = false
       loadThread(urlParam)
-    } else if (pathParam && import.meta.env.MODE === 'development') {
-      // Dev-only local path
-      threadUrl = pathParam
-      githubPath = null
-      isDirectory = false
-      loadThread(pathParam)
     } else {
       loading = false
       error =
         import.meta.env.MODE === 'development'
-          ? 'Provide a ?github=, ?url=, or ?path= parameter.'
+          ? 'Provide a ?github=, ?url=, or ?local= parameter.'
           : 'Provide a ?github= or ?url= parameter.'
     }
   })
@@ -173,6 +189,8 @@
     <div class="text-gray-400">Loading...</div>
   {:else if error}
     <div class="text-red-400 bg-red-900/20 p-4 rounded">{error}</div>
+  {:else if isDirectory && localPath}
+    <LocalBrowser localPath={localPath} />
   {:else if isDirectory && githubPath}
     <GitHubBrowser githubPath={githubPath} />
   {:else if isDirectory && threadUrl}
