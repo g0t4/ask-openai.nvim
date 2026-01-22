@@ -55,10 +55,10 @@ const diffData = $derived.by(() => {
     ? afterLines.slice(0, CONTEXT_LINES).join('\n')
     : afterFull
 
-  // "Old" text has the marker (with limited context)
-  const oldText = before + '<|fim_middle|>' + after
+  // "Old" text is just the context (no marker - it wasn't in the original code)
+  const oldText = before + after
 
-  // "New" text has the marker replaced with the assistant's response
+  // "New" text has the assistant's completion inserted
   const newText = before + assistantResponse + after
 
   return {
@@ -74,7 +74,7 @@ const diffData = $derived.by(() => {
     <div class="px-4 py-2 bg-cyan-500/10 border-b border-cyan-500/30">
       <h3 class="text-sm font-semibold text-cyan-400">FIM Preview (Fill-in-the-Middle)</h3>
       <p class="text-xs text-gray-400 mt-1">
-        Red shows the <code class="text-cyan-300">&lt;|fim_middle|&gt;</code> marker being replaced, green shows the assistant's completion
+        Green shows the assistant's completion inserted at <code class="text-cyan-300">&lt;|fim_middle|&gt;</code>
         {#if diffData.beforeOmitted > 0 || diffData.afterOmitted > 0}
           <span class="text-gray-500"> • Showing 10 lines of context before/after</span>
         {/if}
