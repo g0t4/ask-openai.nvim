@@ -101,23 +101,22 @@
     // Ends with / = directory
     if (url.endsWith('/')) return true
 
-    // Extract path from URL
+    // Extract the last path segment (works with both URLs and plain paths)
+    let lastSegment = ''
     try {
+      // Try parsing as URL first
       const urlObj = new URL(url)
-      const path = urlObj.pathname
-      const lastSegment = path.split('/').filter(Boolean).pop() || ''
-
-      // No extension = directory (e.g., "2026-01-19_002")
-      // Has .json extension = file
-      if (!lastSegment.includes('.')) return true
-      if (lastSegment.endsWith('.json')) return false
-
-      // Other extensions default to file
-      return false
+      lastSegment = urlObj.pathname.split('/').filter(Boolean).pop() || ''
     } catch {
-      // If URL parsing fails, fallback to slash check
-      return url.endsWith('/')
+      // Not a URL, treat as plain path
+      lastSegment = url.split('/').filter(Boolean).pop() || ''
     }
+
+    // No extension = directory (e.g., "2026-01-19_002")
+    // Has extension = file (e.g., ".json", ".txt", etc.)
+    if (!lastSegment.includes('.')) return true
+
+    return false
   }
 
   // Load from URL param on mount
