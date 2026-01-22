@@ -1,5 +1,5 @@
 <script lang="ts">
-import { highlightCode } from '$lib/highlight'
+import { highlight } from '../lib/highlight'
 
 interface Props {
   userMessage: string
@@ -64,7 +64,7 @@ const mergedCode = $derived(
 )
 
 // Detect language from the code or use auto-detection
-const highlightedCode = $derived(highlightCode(mergedCode, 'auto'))
+const highlightedCode = $derived(highlight(mergedCode, 'auto'))
 
 // Split highlighted code back into lines and match with insertion markers
 const highlightedLines = $derived.by(() => {
