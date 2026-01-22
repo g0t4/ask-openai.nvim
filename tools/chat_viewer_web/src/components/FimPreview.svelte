@@ -56,7 +56,7 @@ const codeParts = $derived.by(() => {
 
   return {
     before,
-    middle: assistantResponse.trim(),
+    middle: assistantResponse,
     after,
     beforeOmitted,
     afterOmitted,
@@ -64,22 +64,39 @@ const codeParts = $derived.by(() => {
   }
 })
 
-// Build the merged code and track which lines are inserted
+// Build the merged code and track which character ranges are inserted
 const mergedData = $derived.by(() => {
   if (!codeParts) return null
 
-  const beforeLines = codeParts.before.split('\n')
-  const middleLines = codeParts.middle.split('\n')
-  const afterLines = codeParts.after.split('\n')
+  // Merge strings FIRST to preserve exact newline structure
+  const mergedCode = codeParts.before + codeParts.middle + codeParts.after
 
-  // Track which lines are inserted
-  const allLines: { line: string; isInserted: boolean }[] = []
+  // Calculate character positions where the middle part starts and ends
+  const middleStart = codeParts.before.length
+  const middleEnd = middleStart + codeParts.middle.length
 
-  beforeLines.forEach(line => allLines.push({ line, isInserted: false }))
-  middleLines.forEach(line => allLines.push({ line, isInserted: true }))
-  afterLines.forEach(line => allLines.push({ line, isInserted: false }))
+  // Split merged code into lines
+  const lines = mergedCode.split('\n')
 
-  const mergedCode = allLines.map(l => l.line).join('\n')
+  // Track which character ranges in each line are inserted
+  let currentPos = 0
+  const allLines = lines.map(line => {
+    const lineStart = currentPos
+    const lineEnd = currentPos + line.length
+
+    // Calculate the inserted character range within this line
+    let insertedStart = null
+    let insertedEnd = null
+
+    if (lineStart < middleEnd && lineEnd >= middleStart) {
+      // This line overlaps with the inserted middle range
+      insertedStart = Math.max(0, middleStart - lineStart)
+      insertedEnd = Math.min(line.length, middleEnd - lineStart)
+    }
+
+    currentPos = lineEnd + 1 // +1 for the \n that was removed by split
+    return { line, insertedStart, insertedEnd }
+  })
 
   return { allLines, mergedCode }
 })
@@ -87,17 +104,77 @@ const mergedData = $derived.by(() => {
 // Detect language from the code or use auto-detection
 const highlightedCode = $derived(mergedData ? highlight(mergedData.mergedCode, 'auto') : '')
 
-// Split highlighted code back into lines and match with insertion markers
+// Helper function to wrap a character range in HTML with a span
+function wrapCharRange(html: string, start: number, end: number): string {
+  if (start === null || end === null || start >= end) return html
+
+  // Track position in text content (ignoring HTML tags)
+  let textPos = 0
+  let result = ''
+  let insideTag = false
+  let inserted = false
+
+  for (let i = 0; i < html.length; i++) {
+    const char = html[i]
+
+    if (char === '<') {
+      insideTag = true
+    } else if (char === '>') {
+      insideTag = false
+      result += char
+      continue
+    }
+
+    if (insideTag) {
+      result += char
+      continue
+    }
+
+    // We're at a text character
+    if (!inserted && textPos === start) {
+      result += '<span class="bg-green-500/20">'
+      inserted = true
+    }
+
+    result += char
+    textPos++
+
+    if (inserted && textPos === end) {
+      result += '</span>'
+      inserted = false
+    }
+  }
+
+  // Close span if we reached end of string
+  if (inserted) {
+    result += '</span>'
+  }
+
+  return result
+}
+
+// Split highlighted code back into lines and apply insertion markers
 const highlightedLines = $derived.by(() => {
   if (!mergedData || !codeParts) return []
 
   const htmlLines = highlightedCode.split('\n')
 
-  return htmlLines.map((html, idx) => ({
-    html,
-    isInserted: mergedData.allLines[idx]?.isInserted || false,
-    lineNum: idx + codeParts.startLineNum
-  }))
+  return htmlLines.map((html, idx) => {
+    const lineData = mergedData.allLines[idx]
+    const isFullyInserted = lineData?.insertedStart === 0 && lineData?.insertedEnd === lineData.line.length
+    const isPartiallyInserted = lineData?.insertedStart !== null && !isFullyInserted
+
+    // Apply character-level wrapping for partial insertions
+    const processedHtml = isPartiallyInserted
+      ? wrapCharRange(html, lineData.insertedStart, lineData.insertedEnd)
+      : html
+
+    return {
+      html: processedHtml,
+      isFullyInserted,
+      lineNum: idx + codeParts.startLineNum
+    }
+  })
 })
 </script>
 
@@ -114,7 +191,7 @@ const highlightedLines = $derived.by(() => {
     </div>
 
     <div class="overflow-x-auto">
-      <pre class="!m-0 !bg-transparent"><code class="hljs">{#if codeParts.beforeOmitted > 0}<span class="flex"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">⋮</span><span class="pl-3 flex-1 text-gray-500 italic">... ({codeParts.beforeOmitted} lines omitted)</span></span>{'\n'}{/if}{#each highlightedLines as line, idx}<span class="flex {line.isInserted ? 'bg-green-500/20' : ''}"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">{line.lineNum}</span><span class="pl-3 flex-1">{@html line.html}</span></span>{idx < highlightedLines.length - 1 ? '\n' : ''}{/each}{#if codeParts.afterOmitted > 0}{'\n'}<span class="flex"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">⋮</span><span class="pl-3 flex-1 text-gray-500 italic">... ({codeParts.afterOmitted} lines omitted)</span></span>{/if}</code></pre>
+      <pre class="!m-0 !bg-transparent"><code class="hljs">{#if codeParts.beforeOmitted > 0}<span class="line-container"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">⋮</span><span class="pl-3 flex-1 text-gray-500 italic">... ({codeParts.beforeOmitted} lines omitted)</span></span>{'\n'}{/if}{#each highlightedLines as line, idx}<span class="line-container {line.isFullyInserted ? 'bg-green-500/20' : ''}"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">{line.lineNum}</span><span class="pl-3 flex-1">{@html line.html}</span></span>{idx < highlightedLines.length - 1 ? '\n' : ''}{/each}{#if codeParts.afterOmitted > 0}{'\n'}<span class="line-container"><span class="inline-block w-12 text-right pr-3 text-gray-500 select-none border-r border-gray-700 flex-shrink-0">⋮</span><span class="pl-3 flex-1 text-gray-500 italic">... ({codeParts.afterOmitted} lines omitted)</span></span>{/if}</code></pre>
     </div>
   </div>
 {/if}
@@ -128,5 +205,9 @@ const highlightedLines = $derived.by(() => {
 
 .fim-preview pre {
   margin: 0;
+}
+
+.fim-preview .line-container {
+  display: inline;
 }
 </style>
