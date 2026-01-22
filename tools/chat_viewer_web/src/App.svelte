@@ -138,8 +138,8 @@
         // Directory - will use LocalBrowser
         loading = false
       } else {
-        // File - fetch from local server
-        threadUrl = `/${localParam}`
+        // File - fetch via API endpoint
+        threadUrl = `/api/local/file?path=${encodeURIComponent(localParam)}`
         loadThread(threadUrl)
       }
     } else if (urlParam) {
