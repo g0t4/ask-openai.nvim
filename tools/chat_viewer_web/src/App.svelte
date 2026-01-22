@@ -6,6 +6,7 @@
   import FileBrowser from './components/FileBrowser.svelte'
   import GitHubBrowser from './components/GitHubBrowser.svelte'
   import LocalBrowser from './components/LocalBrowser.svelte'
+  import FimPreview from './components/FimPreview.svelte'
   import 'highlight.js/styles/github-dark.css'
 
   let messages: Message[] = $state([])
@@ -37,6 +38,40 @@
     if (url.includes('question')) return ':AskQuestion'
     if (url.includes('fim')) return ':AskPredict'
     return 'Chat Viewer'
+  })
+
+  // Detect if this is a FIM thread and extract data for preview
+  const fimData = $derived.by(() => {
+    if (pageTitle !== ':AskPredict' || messages.length === 0) return null
+
+    // Find the last user message (actual prompt, not RAG context)
+    const lastUserMessage = messages.findLast(msg => msg.role === 'user')
+    if (!lastUserMessage) return null
+
+    // Check if it contains the FIM prompt
+    const content = typeof lastUserMessage.content === 'string' ? lastUserMessage.content : ''
+    if (!content.includes('<|fim_middle|>')) return null
+
+    // Find the assistant's response
+    const assistantMessage = messages.find(msg => msg.role === 'assistant')
+    if (!assistantMessage) return null
+
+    // Extract the non-thinking content from assistant response
+    let assistantContent = ''
+    if (typeof assistantMessage.content === 'string') {
+      assistantContent = assistantMessage.content
+    } else if (Array.isArray(assistantMessage.content)) {
+      // Filter out thinking blocks
+      assistantContent = assistantMessage.content
+        .filter((block: any) => block.type === 'text')
+        .map((block: any) => block.text)
+        .join('')
+    }
+
+    return {
+      userMessage: content,
+      assistantResponse: assistantContent.trim()
+    }
   })
 
   async function loadThread(url: string) {
@@ -196,6 +231,10 @@
   {:else if isDirectory && threadUrl}
     <FileBrowser url={threadUrl} />
   {:else}
+    {#if fimData}
+      <FimPreview userMessage={fimData.userMessage} assistantResponse={fimData.assistantResponse} />
+    {/if}
+
     <div class="space-y-4">
       {#each messages as msg, idx}
         <MessageView message={msg} index={idx + 1} />
