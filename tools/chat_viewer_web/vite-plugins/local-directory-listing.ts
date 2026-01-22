@@ -49,9 +49,9 @@ export function localDirectoryListing(): Plugin {
 
           const items: DirectoryItem[] = entries
             .map((entry) => {
-              const itemPath = relativePath
-                ? `${relativePath}/${entry.name}`
-                : entry.name
+              // Strip trailing slash to avoid double slashes
+              const basePath = relativePath.replace(/\/$/, '')
+              const itemPath = basePath ? `${basePath}/${entry.name}` : entry.name
 
               return {
                 name: entry.name,
