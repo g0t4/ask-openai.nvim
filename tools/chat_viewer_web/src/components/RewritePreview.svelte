@@ -44,7 +44,7 @@ const diffData = $derived.by(() => {
 {#if !userSelection}
   <div class="rewrite-preview mb-6 rounded-lg border border-yellow-500/30 bg-gray-900 overflow-hidden">
     <div class="px-4 py-2 bg-yellow-500/10 border-b border-yellow-500/30">
-      <h3 class="text-sm font-semibold text-yellow-400">AskRewrite Preview</h3>
+      <h3 class="text-sm font-semibold text-yellow-400">TLDR</h3>
       <p class="text-xs text-gray-400 mt-1">
         No user selection found in the last user message - cannot generate diff
       </p>
@@ -53,7 +53,7 @@ const diffData = $derived.by(() => {
 {:else if diffData}
   <div class="rewrite-preview mb-6 rounded-lg border border-purple-500/30 bg-gray-900 overflow-hidden">
     <div class="px-4 py-2 bg-purple-500/10 border-b border-purple-500/30">
-      <h3 class="text-sm font-semibold text-purple-400">AskRewrite Preview</h3>
+      <h3 class="text-sm font-semibold text-purple-400">TLDR</h3>
       <p class="text-xs text-gray-400 mt-1">
         Red shows removed text, green shows the assistant's rewrite
       </p>

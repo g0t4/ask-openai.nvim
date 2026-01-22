@@ -73,7 +73,7 @@ const diffData = $derived.by(() => {
 {#if diffData}
   <div class="fim-preview mb-6 rounded-lg border border-cyan-500/30 bg-gray-900 overflow-hidden">
     <div class="px-4 py-2 bg-cyan-500/10 border-b border-cyan-500/30">
-      <h3 class="text-sm font-semibold text-cyan-400">FIM Preview (Fill-in-the-Middle)</h3>
+      <h3 class="text-sm font-semibold text-cyan-400">TLDR</h3>
       <p class="text-xs text-gray-400 mt-1">
         Green shows the assistant's completion inserted at <code class="text-cyan-300">&lt;|fim_middle|&gt;</code>
         {#if diffData.beforeOmitted > 0 || diffData.afterOmitted > 0}
