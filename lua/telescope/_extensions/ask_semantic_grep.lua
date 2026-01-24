@@ -166,10 +166,11 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         local end_line_base0 = entry.match.end_line_base0
 
         if is_file_preview() then
-            -- PRN use start_column and end_column (base 0)
-            local last_col = -1
-            -- TODO confirm hl.range is base0 for both line/col values on start and end
-            vim.hl.range(bufnr, ns, HLGroups.RAG_HIGHLIGHT_LINES, { start_line_base0, 0 }, { end_line_base0, last_col }, {})
+            vim.hl.range(bufnr, ns, HLGroups.RAG_HIGHLIGHT_LINES, { start_line_base0, entry.match.start_column_base0 }, { end_line_base0, entry.match.end_column_base0 }, {})
+            -- TODO for column offsets => does vim.hl.range take char or byte based?
+            --    what am I tracking in my chunker?
+            --    TODO how to convert? vim.str_byteindex()/vim.str_utfindex()
+            --    IIGC I am mostly fine, except when I use emoji... most of my code is just ASCII chars
 
             ft = vim.filetype.match({ filename = filename })
         elseif is_entry_debug_preview() then
