@@ -166,9 +166,13 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         local end_line_base0 = entry.match.end_line_base0
 
         if is_file_preview() then
-            local start = { start_line_base0, entry.match.start_column_base0 }
-            local finish = { end_line_base0, entry.match.end_column_base0 }
-            vim.hl.range(bufnr, ns, HLGroups.RAG_HIGHLIGHT_LINES, start, finish, {})
+            -- TODO wait getpos is 1-based IIUC and so, shouldn't this be 1-based?
+            --    IIUC vim.hl.range uses getpos type inputs
+            --   these supposed 0 based numbers are producing the right selections
+            --   TODO verify the numbers I capture from treesitter (and line range) are correctly 0/1-based and mapped appropriately
+            local start_base0 = { start_line_base0, entry.match.start_column_base0 }
+            local finish_base0 = { end_line_base0, entry.match.end_column_base0 }
+            vim.hl.range(bufnr, ns, HLGroups.RAG_HIGHLIGHT_LINES, start_base0, finish_base0, {})
             -- TODO for column offsets => does vim.hl.range take char or byte based?
             --    what am I tracking in my chunker?
             --    TODO how to convert? vim.str_byteindex()/vim.str_utfindex()
