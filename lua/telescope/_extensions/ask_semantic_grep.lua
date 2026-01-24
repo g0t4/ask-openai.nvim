@@ -428,7 +428,8 @@ function semantic_grep_current_filetype_picker(opts)
                     -- default action uses these to open to file + location
                     filename = match.file, -- default action uses these to jump to file location
                     lnum = match.start_line_base0 + 1,
-                    col = match.start_column_base0 + 1,
+                    -- TODO is col even used? is it for jumping to the location? if so I don't really need it, line (lnum) alone is fine
+                    col = (match.start_column_base0 or 0) + 1, -- FYI assume 0 if None, again for uncovered_code chunks
 
                     -- valid = false -- true = hide this entry (or return nil for entire entry)
                 }

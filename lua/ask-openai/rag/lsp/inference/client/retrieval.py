@@ -17,7 +17,7 @@ class LSPRankedMatch:
     # using _base0 b/c this is serialized to clients so it must be clear as base0, clients can wrap and add .base0.start_line or .base1.start_line if desired
     # also server side I am not doing much with this, mostly just serialize responses to client so I don't need easy access to base1 on this type
     start_line_base0: int
-    start_column_base0: int
+    start_column_base0: int | None
     end_line_base0: int
     end_column_base0: int | None
     type: ChunkType

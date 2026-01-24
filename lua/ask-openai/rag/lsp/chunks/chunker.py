@@ -130,6 +130,16 @@ def build_line_range_chunks_from_uncovered_code(path: Path, file_hash: str, unco
             chunk.id = chunk_id
             chunk.id_int = str(chunk_id_to_faiss_id(chunk_id))
             chunk.type = ChunkType.UNCOVERED_CODE
+            #
+            # FYI not currently computing column offsets after covered code is subtracted
+            #   thus can't know column offsets (i.e. code could've been removed at start/middle/end of line)
+            #   and thus set None to override Line Range's default calcs for start/end column
+            #   also this is not mission critical to know, so I am going to set it to None (blank) as a reminder for now that I cannot know for this chunk type
+            #   let downstream consumers decide how to handle this (currently for highlights only)
+            #   TODO include in integration test of this
+            chunk.start_column0 = None
+            chunk.end_column0 = None
+            #
             yield chunk
 
 def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[str]) -> list[Chunk]:
@@ -176,7 +186,7 @@ def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[s
                 start_column0=0,  # assume first col, again not guaranteed if original line was modified (i.e. uncovered code)
                 end_line0=end_line_base0,
                 end_column0=length_of_last_line, # assume last line is original line, therefore length is column #
-                # FYI would be fine to go back to None for end_column_base0 on line_range chunks too
+                # FYI probably would be fine to go back to None for end_column_base0 on line_range chunks too
                 #
                 type=chunk_type,
                 file_hash=file_hash,
@@ -350,6 +360,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         last = chunk.sibling_nodes[-1]
 
         # ?? allow non-contiguous nodes (i.e. top level module statements if I were to use treesitter to find and aggrgate these instead of sliding window)
+        # FYI treesitter chunks have the basis to capture both line and columns for start/endl, unlike uncovered_code
         start_line_base0 = first.start_point[0]
         start_column_base0 = first.start_point[1]
         end_line_base0 = last.end_point[0]

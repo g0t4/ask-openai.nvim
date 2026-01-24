@@ -209,7 +209,7 @@ _G.LSPSemanticGrepResult = {}
 ---@field text string
 ---@field file string
 ---@field start_line_base0 integer
----@field start_column_base0 integer
+---@field start_column_base0 integer|nil
 ---@field end_line_base0 integer
 ---@field end_column_base0 integer|nil
 ---@field type ChunkType

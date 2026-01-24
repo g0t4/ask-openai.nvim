@@ -56,7 +56,7 @@ class Chunk(BaseModel):
 
     # explicit storage of 0 indexed positions
     start_line0: int
-    start_column0: int
+    start_column0: Optional[int]
     end_line0: int
     end_column0: Optional[int]  # None means last column of end_line (i.e. line based chunking)
 
@@ -96,7 +96,9 @@ class _Pos:
         return self._chunk.end_line0 + self.base
 
     @property
-    def start_column(self) -> int:
+    def start_column(self) -> int | None:
+        if self._chunk.start_column0 is None:
+            return None
         return self._chunk.start_column0 + self.base
 
     @property
