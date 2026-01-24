@@ -166,7 +166,9 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         local end_line_base0 = entry.match.end_line_base0
 
         if is_file_preview() then
-            vim.hl.range(bufnr, ns, HLGroups.RAG_HIGHLIGHT_LINES, { start_line_base0, entry.match.start_column_base0 }, { end_line_base0, entry.match.end_column_base0 }, {})
+            local start = { start_line_base0, entry.match.start_column_base0 }
+            local finish = { end_line_base0, entry.match.end_column_base0 }
+            vim.hl.range(bufnr, ns, HLGroups.RAG_HIGHLIGHT_LINES, start, finish, {})
             -- TODO for column offsets => does vim.hl.range take char or byte based?
             --    what am I tracking in my chunker?
             --    TODO how to convert? vim.str_byteindex()/vim.str_utfindex()
