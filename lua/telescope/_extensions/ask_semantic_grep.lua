@@ -153,7 +153,6 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
                 -- TODO what about byte vs char offsets? try indexing a chunk w/ emoji and see what happens with highlight
                 local visible_ws = "·"
                 chunk = string.rep(visible_ws, entry.match.start_column_base0) .. chunk
-                -- TODO flag this somehow? add to [CHUNK] label? or a label above content?
             end
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(chunk, "\n"))
         else

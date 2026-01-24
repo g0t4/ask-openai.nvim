@@ -159,15 +159,25 @@ def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[s
             end_line_base0 = end_line_exclusive_base0 - 1
             chunk_type = ChunkType.LINES
             chunk_id = chunk_id_for(path, chunk_type, start_line_base0, end_line_base0, file_hash)
+            length_of_last_line = len(lines[end_line_base0].rstrip("\n"))
             yield Chunk(
                 id=chunk_id,
                 id_int=str(chunk_id_to_faiss_id(chunk_id)),
                 text="".join(lines[start_line_base0:end_line_exclusive_base0]),  # slice is not end-inclusive
                 file=str(path),
+                #
+                # * line offsets - IIRC only for showing code in current file in telescope picker, highlighted, for human review...
+                #   for this purpose, it doesn't have to be perfect
+                #   also keep in mind file index can be stale, in which case the line ranges don't match either!
+                #   hence why content is captured at time of indexing... that captured chunk is used for embeddings/queries/rerank (not the current file contents)
+                #   for unmodifed line ranges, start_col=0 (of first line) and end_col=len(last line) are correct
+                #     doesn't hold for uncovered code (hence overrides both to None)
                 start_line0=start_line_base0,
-                start_column0=0,  # always the first column for line ranges
+                start_column0=0,  # assume first col, again not guaranteed if original line was modified (i.e. uncovered code)
                 end_line0=end_line_base0,
-                end_column0=None,
+                end_column0=length_of_last_line, # assume last line is original line, therefore length is column #
+                # FYI would be fine to go back to None for end_column_base0 on line_range chunks too
+                #
                 type=chunk_type,
                 file_hash=file_hash,
                 signature="",  # TODO

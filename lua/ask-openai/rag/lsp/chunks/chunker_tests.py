@@ -83,7 +83,7 @@ class TestLowLevel_LinesChunker:
         assert chunk1.start_line0 == 0
         assert chunk1.end_line0 == 19
         assert chunk1.start_column0 == 0
-        assert chunk1.end_column0 == None
+        assert chunk1.end_column0 == 2
         assert chunk1.file == "foo.txt"
         # chunk_id
         #   echo -n "foo.txt:lines:0-19:fake_hash" | sha256sum | cut -c -16
@@ -100,7 +100,7 @@ class TestLowLevel_LinesChunker:
         assert chunk2.start_line0 == 15
         assert chunk2.end_line0 == 29  # 30 lines total, last has line 29 which is on file line 28
         assert chunk2.start_column0 == 0
-        assert chunk2.end_column0 == None
+        assert chunk2.end_column0 == 2
         assert chunk2.file == "foo.txt"
         # chunk_id
         #   echo -n "foo.txt:lines:15-29:fake_hash" | sha256sum | cut -c -16
