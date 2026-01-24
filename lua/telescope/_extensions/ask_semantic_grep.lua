@@ -181,7 +181,8 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
             --      TODO verify the numbers I capture from treesitter (and line range) are correctly 0/1-based and mapped appropriately
             --
             local start_base0 = { start_line_base0, entry.match.start_column_base0 }
-            local finish_base0 = { end_line_base0, entry.match.end_column_base0 }
+            local end_col0 = entry.match.end_column_base0 or -1 -- -1 matches last line entirely (reasonable assumption for highlighting code in current file, which can be mismatched for many other reasons too)
+            local finish_base0 = { end_line_base0, end_col0 }
             vim.hl.range(bufnr, ns, HLGroups.RAG_HIGHLIGHT_LINES, start_base0, finish_base0, {})
             -- TODO for column offsets => does vim.hl.range take char or byte based?
             --    what am I tracking in my chunker?
