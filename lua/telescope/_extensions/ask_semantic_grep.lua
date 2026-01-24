@@ -148,7 +148,14 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         elseif is_chunk_text_preview() then
             -- useful to compare if there is a discrepancy vs file on-disk
             -- also a bit easier way to visualize full chunk text, especially if I add non-contiguous nodes in one chunk
-            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(entry.match.text, "\n"))
+            local chunk = entry.match.text
+            if entry.match.start_column_base0 > 0 then
+                -- TODO what about byte vs char offsets? try indexing a chunk w/ emoji and see what happens with highlight
+                local visible_ws = "·"
+                chunk = string.rep(visible_ws, entry.match.start_column_base0) .. chunk
+                -- TODO flag this somehow? add to [CHUNK] label? or a label above content?
+            end
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(chunk, "\n"))
         else
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "FAIL SAUCE" })
         end
@@ -166,10 +173,14 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         local end_line_base0 = entry.match.end_line_base0
 
         if is_file_preview() then
-            -- TODO wait getpos is 1-based IIUC and so, shouldn't this be 1-based?
-            --    IIUC vim.hl.range uses getpos type inputs
+            -- TODO! wait isn't getpos 1-based?? and if so, shouldn't this be 1-based?
+            --   IIUC vim.hl.range uses getpos type inputs
+            --   or like extmarks which IIRC are all 0-based?
+            --   or is it a mix of 0/1? like nvim_win_get_cursor?
+            --
             --   these supposed 0 based numbers are producing the right selections
-            --   TODO verify the numbers I capture from treesitter (and line range) are correctly 0/1-based and mapped appropriately
+            --      TODO verify the numbers I capture from treesitter (and line range) are correctly 0/1-based and mapped appropriately
+            --
             local start_base0 = { start_line_base0, entry.match.start_column_base0 }
             local finish_base0 = { end_line_base0, entry.match.end_column_base0 }
             vim.hl.range(bufnr, ns, HLGroups.RAG_HIGHLIGHT_LINES, start_base0, finish_base0, {})
