@@ -139,6 +139,7 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         local winid = self.state.winid
         local bufnr = self.state.bufnr
 
+        local start_col0 = entry.match.start_column_base0 or 0 -- assume 0 if not set (i.e. uncovered_code chunk type) - reasonable for human display purposes (i.e. highlighting)
         if is_file_preview() then
             -- might not match RAG chunk text
             -- so far, I haven't noticed this, but it might not be obvious beyond a bad match or not quite right match!
@@ -149,10 +150,10 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
             -- useful to compare if there is a discrepancy vs file on-disk
             -- also a bit easier way to visualize full chunk text, especially if I add non-contiguous nodes in one chunk
             local chunk = entry.match.text
-            if entry.match.start_column_base0 > 0 then
+            if start_col0 > 0 then
                 -- TODO what about byte vs char offsets? try indexing a chunk w/ emoji and see what happens with highlight
                 local visible_ws = "·"
-                chunk = string.rep(visible_ws, entry.match.start_column_base0) .. chunk
+                chunk = string.rep(visible_ws, start_col0) .. chunk
             end
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(chunk, "\n"))
         else
@@ -180,8 +181,9 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
             --   these supposed 0 based numbers are producing the right selections
             --      TODO verify the numbers I capture from treesitter (and line range) are correctly 0/1-based and mapped appropriately
             --
-            local start_base0 = { start_line_base0, entry.match.start_column_base0 }
-            local end_col0 = entry.match.end_column_base0 or -1 -- -1 matches last line entirely (reasonable assumption for highlighting code in current file, which can be mismatched for many other reasons too)
+            local start_base0 = { start_line_base0, start_col0 } -- FYI assume 0 if start_col0 was None (set above)... presently only for uncovered_code chunks
+            local end_col0 = entry.match.end_column_base0 or
+                -1 -- -1 matches last line entirely (reasonable assumption for highlighting code in current file, which can be mismatched for many other reasons too)
             local finish_base0 = { end_line_base0, end_col0 }
             vim.hl.range(bufnr, ns, HLGroups.RAG_HIGHLIGHT_LINES, start_base0, finish_base0, {})
             -- TODO for column offsets => does vim.hl.range take char or byte based?
