@@ -144,8 +144,8 @@ class IncrementalRAGIndexer:
         for path_str in current_path_strs:
             if is_ignored_allchecks(path_str, self.config, self.source_code_dir):
                 ignored_path_strs.add(path_str)
-        # if (len(ignored_path_strs) > 0):
-        logger.info(f"Ignoring files ({len(ignored_path_strs)}): {', '.join(ignored_path_strs)}")
+        if (len(ignored_path_strs) > 0):
+            logger.info(f"Ignoring files ({len(ignored_path_strs)}):\n    {'\n    '.join(ignored_path_strs)}")
         current_path_strs -= ignored_path_strs
 
         # * added, modified (aka changed)
