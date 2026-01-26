@@ -53,7 +53,8 @@ class IncrementalRAGIndexer:
         self.program_args = program_args
 
     async def main(self):
-        index_these_file_extensions = await self.get_indexed_file_extensions()
+        self.config = await self.load_rag_config(self.source_code_dir)
+        index_these_file_extensions = await self.get_indexed_file_extensions(self.config)
 
         if self.program_args and self.program_args.only_extension:
             index_these_file_extensions = [self.program_args.only_extension]
@@ -64,21 +65,23 @@ class IncrementalRAGIndexer:
         self.warn_about_other_extensions(index_these_file_extensions)
         await signal_hotpath_done_in_background()
 
-    async def get_indexed_file_extensions(self):
-        rag_yaml = self.source_code_dir / ".rag.yaml"
+    async def load_rag_config(self, source_dir: Path) -> Config:
+        rag_yaml = source_dir / ".rag.yaml"
         if not rag_yaml.exists():
             logger.info(f"no rag config found {rag_yaml}, using default config")
-            return Config.default().include
+            return Config.default()
 
         async with aiofiles.open(rag_yaml, mode="r") as f:
             content = await f.read()
         config = load_config(content)
         logger.pp_debug(f"found rag config: {rag_yaml}", config)
+        return config
 
+    async def get_indexed_file_extensions(self, config: Config) -> list[str]:
         if not config.enabled:
-            logger.info(f"RAG indexing disabled in {rag_yaml}, hack just returns no supported file extension to stop (fine for now)")
+            logger.info(f"RAG indexing disabled in {self.source_code_dir / '.rag.yaml'}, "
+                        "hack just returns no supported file extension to stop (fine for now)")
             return []
-
         return config.include
 
     def warn_about_other_extensions(self, index_languages: list[str]):
