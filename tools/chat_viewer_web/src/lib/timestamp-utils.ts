@@ -57,15 +57,34 @@ export function formatAge(timestamp: number): string {
 }
 
 /**
+ * Get color class based on age (cyan for recent, blue for medium, gray for old)
+ */
+export function getAgeColor(timestamp: number): string {
+  const now = Date.now()
+  const diffMs = now - timestamp * 1000
+  const diffHours = diffMs / (1000 * 60 * 60)
+  const diffDays = diffHours / 24
+
+  if (diffDays < 1) {
+    return 'text-cyan-400' // Recent - bright cyan
+  } else if (diffDays < 7) {
+    return 'text-blue-400' // Medium - blue
+  } else {
+    return 'text-gray-500' // Older - gray
+  }
+}
+
+/**
  * Get formatted timestamp info for display
  * Returns null if no timestamp found
  */
-export function getTimestampInfo(filename: string): { dateTime: string; age: string } | null {
+export function getTimestampInfo(filename: string): { dateTime: string; age: string; colorClass: string } | null {
   const timestamp = extractTimestamp(filename)
   if (!timestamp) return null
 
   return {
     dateTime: formatDateTime(timestamp),
-    age: formatAge(timestamp)
+    age: formatAge(timestamp),
+    colorClass: getAgeColor(timestamp)
   }
 }

@@ -155,13 +155,10 @@
                 {/if}
               </span>
               <span class="text-gray-300 font-mono">{item.name}</span>
-              {#if item.name.endsWith('.json')}
-                <span class="text-xs text-cyan-400">(thread)</span>
-              {/if}
               {@const timestampInfo = getTimestampInfo(item.name)}
               {#if timestampInfo}
                 <span class="text-xs text-gray-500 ml-2">
-                  {timestampInfo.dateTime} <span class="text-gray-600">({timestampInfo.age})</span>
+                  {timestampInfo.dateTime} <span class={timestampInfo.colorClass}>({timestampInfo.age})</span>
                 </span>
               {/if}
             {/if}
