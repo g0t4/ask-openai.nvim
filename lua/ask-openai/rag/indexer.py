@@ -60,6 +60,7 @@ class IncrementalRAGIndexer:
         self.source_code_dir = Path(source_code_dir)
         self.program_args = program_args
         self.config = config
+        # TODO pass root_path instead of using fs (IF I even need it  here anymore... was it just here for ignores?)
 
     async def main(self):
         index_these_file_extensions = await self.get_indexed_file_extensions()

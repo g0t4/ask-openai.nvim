@@ -32,8 +32,12 @@ class TestBuildIndex:
         cls.tmp_source_code_dir = Path(__file__).parent / "tests" / "tmp_source_code"
         cls.test_cases = Path(__file__).parent / "tests" / "test_cases"
 
+        # PRN move the reset to one spot between all tests
+        #   lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
+        #
         fs.dot_rag_dir = cls.dot_rag_dir
         fs.root_path = cls.tmp_source_code_dir  # use this as default, override if different below
+        # TODO finish passing these fs path vars so I can stop using the globals on fs
 
     def trash_path(self, dir):
         if dir.exists():
@@ -52,6 +56,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_building_rag_index_from_scratch(self):
+        lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
 
         # FYI! this duplicates some low level line range chunking tests but I want to keep it to include the end to end picture
         #   i.e. for computing chunk id which relies on path to file
@@ -131,6 +136,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_search_index_to_trigger_OpenMP_error(self):
+        lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
         self.trash_path(self.dot_rag_dir)
@@ -187,6 +193,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_update_index_removed_file(self):
+        # TODO put this reset on each test
         lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
 
         self.trash_path(self.dot_rag_dir)
@@ -276,6 +283,8 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index(self):
+        lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
+
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
@@ -336,6 +345,8 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_update_file_from_language_server(self):
+        lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
+
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
