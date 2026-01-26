@@ -2,6 +2,7 @@
 <script lang="ts">
   import type { ThreadJson, Message } from './lib/types'
   import { scrollToHash, setupHashListener } from './lib/hash-nav'
+  import { getTimestampInfo } from './lib/timestamp-utils'
   import MessageView from './components/MessageView.svelte'
   import FileBrowser from './components/FileBrowser.svelte'
   import GitHubBrowser from './components/GitHubBrowser.svelte'
@@ -39,6 +40,25 @@
     if (url.includes('question')) return ':AskQuestion'
     if (url.includes('fim')) return ':AskPredict'
     return 'Chat Viewer'
+  })
+
+  // Extract timestamp info from filename
+  const threadTimestampInfo = $derived.by(() => {
+    if (isDirectory) return null
+
+    // Try to get filename from localPath or githubPath
+    let filename = ''
+    if (localPath) {
+      filename = localPath.split('/').pop() || ''
+    } else if (githubPath) {
+      filename = githubPath.split('/').pop() || ''
+    } else if (threadUrl) {
+      // Try to extract from URL
+      filename = threadUrl.split('/').pop()?.split('?')[0] || ''
+    }
+
+    if (!filename) return null
+    return getTimestampInfo(filename)
   })
 
   // Detect if this is a FIM thread and extract data for preview
@@ -246,7 +266,14 @@
 
 <main class="max-w-7xl mx-auto p-4">
   <header class="mb-6">
-    <h1 class="text-2xl font-bold text-gray-100">{pageTitle}</h1>
+    <div class="flex items-baseline gap-3">
+      <h1 class="text-2xl font-bold text-gray-100">{pageTitle}</h1>
+      {#if threadTimestampInfo}
+        <span class="text-sm text-gray-500">
+          {threadTimestampInfo.dateTime} <span class={threadTimestampInfo.colorClass}>({threadTimestampInfo.age})</span>
+        </span>
+      {/if}
+    </div>
     {#if displayUrl}
       <p class="text-sm text-gray-500 truncate mt-1">{displayUrl}</p>
     {/if}
