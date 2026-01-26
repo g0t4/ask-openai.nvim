@@ -82,8 +82,10 @@ class IncrementalRAGIndexer:
 
     def warn_about_other_extensions(self, index_languages: list[str]):
 
+        cmd = ["fish", "-c", f"fd {self.source_code_dir} --exclude='\\.ctags\\.d' --exclude='\\.rag' --exec basename"]
+        print("warn cmd", cmd)
         result = subprocess.run(
-            ["fish", "-c", f"fd {self.source_code_dir} --exclude='\\.ctags\\.d' --exclude='\\.rag' --exec basename"],
+            cmd,
             stdout=subprocess.PIPE,
             text=True,
             check=STOP_ON_FAILURE,
@@ -126,8 +128,10 @@ class IncrementalRAGIndexer:
         # PRN add .ask.config or similar w/ ignore section to block things like manual_prompting folder! in ask-openai repo!
 
         # * current files
+        cmd = ["fd", f".*\\.{language_extension}$", str(self.source_code_dir), "--absolute-path", "--type", "f"]
+        print("current files cmd", cmd)
         result = subprocess.run(
-            ["fd", f".*\\.{language_extension}$", str(self.source_code_dir), "--absolute-path", "--type", "f"],
+            cmd,
             stdout=subprocess.PIPE,
             text=True,
             check=True,
