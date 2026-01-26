@@ -1,5 +1,6 @@
 from pathlib import Path
 import pytest
+import rich
 
 import lsp.ignores
 from lsp.ignores import _is_gitignored, setup_config
@@ -29,6 +30,7 @@ def tmp_root(tmp_path):
 
 def test_package_lock_is_ignored(tmp_root):
     setup_config(tmp_root, Config.default())
+    rich.print("\n[red bold]tmp_root", tmp_root, "\n")
 
     # * careful with path that is ignored for other reasons
     assert _is_gitignored(tmp_root / "package-lock.json")
