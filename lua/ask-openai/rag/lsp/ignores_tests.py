@@ -3,7 +3,7 @@ import pytest
 import rich
 
 import lsp.ignores
-from lsp.ignores import _is_gitignored, setup_ignores
+from lsp.ignores import _is_gitignored
 from lsp.config import Config
 from lsp import fs
 
@@ -27,8 +27,7 @@ def tmp_root(tmp_path):
     *.pyc
     """)
 
-    fs.root_path = root # TODO REMOVE SOON after migrate ignores off of what else?
-    setup_ignores(root)
+    fs.root_path = root  # TODO! REMOVE after migrate ignores off of what else?
 
     return root
 

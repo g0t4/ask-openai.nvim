@@ -22,7 +22,7 @@ from pydants import write_json
 from lsp.storage import Chunk, FileStat, load_prior_data
 from lsp.chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
 from lsp.config import Config, load_config
-from lsp.ignores import is_ignored_allchecks, setup_ignores
+from lsp.ignores import is_ignored_allchecks
 from lsp import fs
 
 # constants for subprocess.run for readability
@@ -369,7 +369,6 @@ async def main():
         fs.root_path = source_code_dir
         fs.dot_rag_dir = dot_rag_dir
         fs.config = config  # PRN AFAICT fs.config is not used in indexer code, so this could probably be commented out
-        setup_ignores(source_code_dir)
 
         await indexer.main()
 

@@ -118,7 +118,6 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
         tell_client_to_shut_that_shit_down_now()
         return
 
-    ignores.setup_ignores(fs.root_path)
     rag.load_model_and_indexes(fs.dot_rag_dir)  # TODO! ASYNC?
     rag.validate_rag_indexes()  # TODO! ASYNC?
 
