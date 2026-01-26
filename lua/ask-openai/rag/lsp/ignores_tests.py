@@ -1,7 +1,7 @@
 from pathlib import Path
 import pytest
 
-from lsp.ignores import _is_gitignored, use_gitignore, use_pygls_workspace
+from lsp.ignores import _is_gitignored, _setup_gitignored, use_pygls_workspace
 from lsp.config import Config
 
 @pytest.fixture
@@ -50,7 +50,7 @@ def test_literal_entry(tmp_root):
 
 def disable_test_listing_all_ignored_files_under_dir():
     path = Path("/Users/wesdemos/repos/github/g0t4/ask-openai.nvim")
-    spec = use_gitignore(path)
+    spec = _setup_gitignored(path)
 
     ignored_files = spec.match_tree(path)
 

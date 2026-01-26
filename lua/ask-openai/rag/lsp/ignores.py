@@ -14,10 +14,10 @@ root_path: Path | None = None
 def use_pygls_workspace(root_path_input: str | Path):
     global gitignore_spec, root_path
     root_path = Path(root_path_input)
-    gitignore_spec = use_gitignore(root_path)
+    gitignore_spec = _setup_gitignored(root_path)
     # PRN other gitignore logic? other ignore file types?
 
-def use_gitignore(root_path: Path | str) -> PathSpec:
+def _setup_gitignored(root_path: Path | str) -> PathSpec:
     root_path = Path(root_path)
     gitignore_path = root_path.joinpath(".gitignore")
 
