@@ -8,8 +8,9 @@ from lsp.config import Config
 
 logger = get_logger(__name__)
 
-gitignore_spec: PathSpec | None = None
-root_path: Path | None = None
+# don't mark None by default, else pyright will be a PITA
+gitignore_spec: PathSpec
+root_path: Path
 
 def setup_config(root_path_input: str | Path, config: Config):
     global gitignore_spec, root_path
