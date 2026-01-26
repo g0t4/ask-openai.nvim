@@ -14,12 +14,12 @@ root_path: Path | None = None
 def setup_config(root_path_input: str | Path, config: Config):
     global gitignore_spec, root_path
     root_path = Path(root_path_input)
-    gitignore_spec = _setup_gitignored(root_path, config)
-    # PRN other gitignore logic? other ignore file types?
+    gitignore_spec = _setup_gitignored(root_path)
+    # TODO separate spec for config.ignores, OR, merge into gitignore_spec?
 
-def _setup_gitignored(root_path: Path | str, config: Config) -> PathSpec:
-    root_path = Path(root_path)
+def _setup_gitignored(root_path: Path | str) -> PathSpec:
     gitignore_path = root_path.joinpath(".gitignore")
+    # TODO config.ignores load it into gitignore spec!
 
     ignore_entries = set()
     if gitignore_path.exists():
