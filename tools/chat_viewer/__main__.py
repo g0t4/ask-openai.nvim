@@ -308,7 +308,7 @@ def _handle_apply_patch(arguments: str):
 def _handle_run_command(arguments: str):
     try:
         loaded = json.loads(arguments)
-        command = Syntax(yank(loaded, "command"), "fish", theme="ansi_dark", line_numbers=False)
+        command = Syntax(yank(loaded, "command"), "bash", theme="ansi_dark", line_numbers=False)
 
         if len(loaded.keys()) == 0:
             return command
@@ -337,6 +337,8 @@ def _handle_unknown_tool(arguments: str):
 def _format_tool_arguments(func_name: str, arguments: str):
     if func_name == "apply_patch":
         return _handle_apply_patch(arguments)
+    if func_name == "run_process":
+        return _handle_run_command(arguments)
     if func_name == "run_command":
         return _handle_run_command(arguments)
     # semantic_grep has a few json args, that's fine to show

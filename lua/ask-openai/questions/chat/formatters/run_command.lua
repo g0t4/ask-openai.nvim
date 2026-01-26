@@ -90,6 +90,7 @@ function M.format(lines, tool_call, message)
             local name = output.name
             local text = tostring(output.text or "")
             -- PRN dict. lookup of formatter functions by type (name), w/ registerType(), esp. as the list of types grows
+            -- run_process
             if name == "STDOUT" then
                 -- TODO! I want tool specific formatters... b/c for run_command, I want the command (esp if its small) to be the header! I don't need to see run_command ever, right?
                 if text then

@@ -10,6 +10,7 @@ local M = {
 ---@type table<string, ToolCallFormatter>
 local formatters_by_function_name = {
     ["run_command"] = run_command.format,
+    ["run_process"] = run_command.format,
 }
 -- ? any issues with tool name overlap b/w different servers? does MCP even propose a way to handle the overlap?
 
