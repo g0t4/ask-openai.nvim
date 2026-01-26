@@ -56,21 +56,21 @@ def is_ignored_allchecks(file_path: str | Path, config: Config):
         logger.debug(f"filetype not supported: {file_path}")
         return IGNORED
 
-    if _is_gitignored(file_path):
+    if _is_gitignored(file_path, fs.root_path):
         return IGNORED
 
     # fallback, assume allowed
     return not IGNORED
 
-def _is_gitignored(file_path: str | Path):
+def _is_gitignored(file_path: str | Path, fs_root_path):
     """ only ignores for gitignore """
     file_path = Path(file_path)
 
-    if not file_path.is_relative_to(fs.root_path):
+    if not file_path.is_relative_to(fs_root_path):
         # FYI for now IGNORE all files NOT inside the root path
         return IGNORED
 
     # relative path is needed for relative patterns that start without a wildcard
-    rel_path = file_path.relative_to(fs.root_path)
+    rel_path = file_path.relative_to(fs_root_path)
 
     return gitignore_spec.match_file(rel_path)

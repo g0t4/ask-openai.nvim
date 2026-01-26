@@ -17,6 +17,8 @@ from lsp.chunks.chunker import RAGChunkerOptions
 from lsp.inference.client.embedder import encode_query
 from lsp.storage import ChunkType, load_chunks_by_file, load_file_stats_by_file
 from lsp.config import Config
+from lsp import fs  # stop gap set these until I remove fs's global state
+from lsp.ignores import setup_ignores
 
 # logging_fwk_to_console("WARN") # stop INFO logs after timing captured
 
@@ -29,6 +31,10 @@ class TestBuildIndex:
         cls.indexer_src_dir = Path(__file__).parent / "tests" / "indexer_src"
         cls.tmp_source_code_dir = Path(__file__).parent / "tests" / "tmp_source_code"
         cls.test_cases = Path(__file__).parent / "tests" / "test_cases"
+
+        fs.dot_rag_dir = cls.dot_rag_dir
+        fs.root_path = cls.tmp_source_code_dir  # use this as default, override if different below
+        setup_ignores()
 
     def trash_path(self, dir):
         if dir.exists():
@@ -54,6 +60,7 @@ class TestBuildIndex:
 
         # * recreate index
         self.trash_path(self.dot_rag_dir)
+        fs.root_path = self.indexer_src_dir  # not default from setup_class
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, RAGChunkerOptions.OnlyLineRangeChunks(), None, Config.default())
         await indexer.build_index(language_extension="lua")
 
@@ -128,6 +135,7 @@ class TestBuildIndex:
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
         self.trash_path(self.dot_rag_dir)
+        fs.root_path = self.indexer_src_dir  # not default from setup_class
         indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, RAGChunkerOptions.OnlyLineRangeChunks(), None, Config.default())
         await indexer.build_index(language_extension="lua")
 
