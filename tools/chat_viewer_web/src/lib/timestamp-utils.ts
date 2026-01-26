@@ -1,9 +1,9 @@
 /**
- * Extract Unix timestamp from filename like "1769217593-thread.json"
+ * Extract Unix timestamp from filename like "1769217593-thread.json" or "1769217593"
  * Returns null if no timestamp prefix is found
  */
 export function extractTimestamp(filename: string): number | null {
-  const match = filename.match(/^(\d{10})-/)
+  const match = filename.match(/^(\d{10})(?:-|$)/)
   if (match) {
     return parseInt(match[1], 10)
   }
