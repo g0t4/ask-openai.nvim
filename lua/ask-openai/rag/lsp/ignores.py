@@ -60,9 +60,6 @@ def _is_gitignored(file_path: str | Path):
     """ only ignores for gitignore """
     file_path = Path(file_path)
 
-    if gitignore_spec is None or root_path is None:
-        raise RuntimeError("root_path and gitignore spec not initialized")
-
     if not file_path.is_relative_to(root_path):
         # FYI for now IGNORE all files NOT inside the root path
         return True
