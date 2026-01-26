@@ -32,6 +32,7 @@ def setup_config(root_path_input: str | Path, config: Config):
             "node_modules",
             "bower_components",
             "iterm2env",
+            # "package-lock.json" # TODO test this and add in
         ])
 
         return PathSpec.from_lines(GitWildMatchPattern, ignore_entries)
@@ -41,6 +42,8 @@ def setup_config(root_path_input: str | Path, config: Config):
 
 def is_ignored_allchecks(file_path: str | Path, config: Config):
     """ unified ignore checks """
+    # TODO wire this into rag_indexer
+    # TODO wire this into rag_validate_index
 
     file_path = Path(file_path)
     if not config.is_file_type_supported(file_path):
