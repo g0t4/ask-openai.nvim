@@ -5,19 +5,18 @@ from pathspec.patterns.gitwildmatch import GitWildMatchPattern
 
 from lsp.logs import get_logger
 from lsp.config import Config
+from lsp import fs
 
 logger = get_logger(__name__)
 
 # don't mark None by default, else pyright will be a PITA
 gitignore_spec: PathSpec
-root_path: Path
 
-def setup_ignores(root_path_input: str | Path, config: Config):
-    global gitignore_spec, root_path
-    root_path = Path(root_path_input)
+def setup_ignores():
+    global gitignore_spec
 
-    def _setup_gitignored(root_path: Path | str) -> PathSpec:
-        gitignore_path = root_path.joinpath(".gitignore")
+    def _setup_gitignored() -> PathSpec:
+        gitignore_path = fs.root_path.joinpath(".gitignore")
         # TODO config.ignores load it into gitignore spec!
 
         ignore_entries = set()
@@ -36,13 +35,13 @@ def setup_ignores(root_path_input: str | Path, config: Config):
 
             # files that are often committed but shouldn't ever be indexed:
             "package-lock.json",
-            "uv.lock", # PRN *.lock?
+            "uv.lock",  # PRN *.lock?
             # ? other lock files?
         ])
 
         return PathSpec.from_lines(GitWildMatchPattern, ignore_entries)
 
-    gitignore_spec = _setup_gitignored(root_path)
+    gitignore_spec = _setup_gitignored()
     # TODO separate spec for config.ignores, OR, merge into gitignore_spec?
 
 IGNORED = True
@@ -67,11 +66,11 @@ def _is_gitignored(file_path: str | Path):
     """ only ignores for gitignore """
     file_path = Path(file_path)
 
-    if not file_path.is_relative_to(root_path):
+    if not file_path.is_relative_to(fs.root_path):
         # FYI for now IGNORE all files NOT inside the root path
         return IGNORED
 
     # relative path is needed for relative patterns that start without a wildcard
-    rel_path = file_path.relative_to(root_path)
+    rel_path = file_path.relative_to(fs.root_path)
 
     return gitignore_spec.match_file(rel_path)
