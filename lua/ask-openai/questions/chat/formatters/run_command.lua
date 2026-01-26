@@ -22,6 +22,13 @@ local function get_tool_header_text(args_json, message)
         -- and then the first part of command will be visible
         return object_or_error.command
     end
+    if object_or_error.command_line then
+        return object_or_error.command_line
+    end
+    if object_or_error.argv then
+        -- TODO mark as arv? in a debug mode return it with vim.inspect?
+        return table.concat(object_or_error.argv, " ")
+    end
 
     log:error("missing object.command", vim.inspect(object_or_error))
     return "missing object.command: " .. vim.inspect(object_or_error)
