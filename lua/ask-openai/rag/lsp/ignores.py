@@ -31,7 +31,8 @@ def setup_ignores(fs_root_path: Path, config: Config) -> PathSpec:
         "uv.lock",  # PRN *.lock?
         # ? other lock files?
     ])
-    # TODO add config.ignores to this spec!
+    if config.ignores:
+        ignore_entries.update(config.ignores)
 
     return PathSpec.from_lines(GitWildMatchPattern, ignore_entries)
 
