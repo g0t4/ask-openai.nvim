@@ -19,7 +19,6 @@ def setup_ignores():
         # TODO why not just create this on first use! have helper to create/get it
         #   TODO then I can clean up mess of using fs module for root_path etc
         gitignore_path = fs.root_path.joinpath(".gitignore")
-        # TODO config.ignores load it into gitignore spec!
 
         ignore_entries = set()
         if gitignore_path.exists():
@@ -40,11 +39,11 @@ def setup_ignores():
             "uv.lock",  # PRN *.lock?
             # ? other lock files?
         ])
+        # TODO config.ignores load into gitignore spec!
 
         return PathSpec.from_lines(GitWildMatchPattern, ignore_entries)
 
     gitignore_spec = _setup_gitignored()
-    # TODO separate spec for config.ignores, OR, merge into gitignore_spec?
 
 IGNORED = True
 
