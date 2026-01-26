@@ -12,13 +12,13 @@ logger = get_logger(__name__)
 # don't mark None by default, else pyright will be a PITA
 gitignore_spec: PathSpec
 
-def setup_ignores():
+def setup_ignores(fs_root_path):
     global gitignore_spec
 
     def _setup_gitignored() -> PathSpec:
         # TODO why not just create this on first use! have helper to create/get it
         #   TODO then I can clean up mess of using fs module for root_path etc
-        gitignore_path = fs.root_path.joinpath(".gitignore")
+        gitignore_path = fs_root_path.joinpath(".gitignore")
 
         ignore_entries = set()
         if gitignore_path.exists():
@@ -47,7 +47,7 @@ def setup_ignores():
 
 IGNORED = True
 
-def is_ignored_allchecks(file_path: str | Path, config: Config):
+def is_ignored_allchecks(file_path: str | Path, config: Config, fs_root_path: Path):
     """ unified ignore checks """
     # TODO wire this into rag_validate_index
 
@@ -56,7 +56,7 @@ def is_ignored_allchecks(file_path: str | Path, config: Config):
         logger.debug(f"filetype not supported: {file_path}")
         return IGNORED
 
-    if _is_gitignored(file_path, fs.root_path):
+    if _is_gitignored(file_path, fs_root_path):
         return IGNORED
 
     # fallback, assume allowed

@@ -141,7 +141,7 @@ class IncrementalRAGIndexer:
         # * ignored files
         ignored_path_strs: Set[str] = set()
         for path_str in current_path_strs:
-            if is_ignored_allchecks(path_str, self.config):
+            if is_ignored_allchecks(path_str, self.config, self.source_code_dir):
                 ignored_path_strs.add(path_str)
         # if (len(ignored_path_strs) > 0):
         logger.info(f"Ignoring files ({len(ignored_path_strs)}): {', '.join(ignored_path_strs)}")
@@ -369,7 +369,7 @@ async def main():
         fs.root_path = source_code_dir
         fs.dot_rag_dir = dot_rag_dir
         fs.config = config  # PRN AFAICT fs.config is not used in indexer code, so this could probably be commented out
-        setup_ignores()
+        setup_ignores(source_code_dir)
 
         await indexer.main()
 

@@ -118,13 +118,13 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
         tell_client_to_shut_that_shit_down_now()
         return
 
-    ignores.setup_ignores()
+    ignores.setup_ignores(fs.root_path)
     rag.load_model_and_indexes(fs.dot_rag_dir)  # TODO! ASYNC?
     rag.validate_rag_indexes()  # TODO! ASYNC?
 
     loop = asyncio.get_running_loop()  # btw RuntimeError if no current loop (a good thing)
     # logger.info(f'{loop=} {id(loop)=}')  # sanity check loop used when scheduling
-    update_queue = FileUpdateEmbeddingsQueue(config, server, loop)
+    update_queue = FileUpdateEmbeddingsQueue(config, fs.root_path, server, loop)
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 async def doc_saved(params: types.DidSaveTextDocumentParams):

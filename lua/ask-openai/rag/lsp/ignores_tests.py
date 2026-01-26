@@ -27,8 +27,8 @@ def tmp_root(tmp_path):
     *.pyc
     """)
 
-    fs.root_path = root
-    setup_ignores()
+    fs.root_path = root # TODO REMOVE SOON after migrate ignores off of what else?
+    setup_ignores(root)
 
     return root
 

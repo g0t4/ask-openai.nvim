@@ -34,7 +34,7 @@ class TestBuildIndex:
 
         fs.dot_rag_dir = cls.dot_rag_dir
         fs.root_path = cls.tmp_source_code_dir  # use this as default, override if different below
-        setup_ignores()
+        setup_ignores(fs.root_path)
 
     def trash_path(self, dir):
         if dir.exists():

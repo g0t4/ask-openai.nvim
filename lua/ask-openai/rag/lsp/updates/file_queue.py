@@ -19,6 +19,7 @@ class FileUpdateEmbeddingsQueue:
     def __init__(
         self,
         config: Config,
+        root_path: Path,
         server: LanguageServer,
         loop: asyncio.AbstractEventLoop,
         debounce_sec=0.3,
@@ -29,6 +30,7 @@ class FileUpdateEmbeddingsQueue:
         self.config = config
         self.server = server
         self.loop = loop
+        self.root_path = root_path
 
     async def fire_and_forget(self, uri: str):
         # * BTW best way to test this... open LS logs and then ctrl-s in a doc repeatedly, should only see update after last save (depending on debounce interval)
@@ -84,7 +86,7 @@ class FileUpdateEmbeddingsQueue:
             logger.warning(f"abort update rag... to_fs_path returned {doc_path}")
             return
 
-        if ignores.is_ignored_allchecks(doc_path, self.config):
+        if ignores.is_ignored_allchecks(doc_path, self.config, self.root_path):
             logger.debug(f"rag ignored doc: {doc_path}")
             return
 
