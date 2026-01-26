@@ -46,7 +46,7 @@ def is_ignored_allchecks(file_path: str | Path, config: Config):
         logger.debug(f"filetype not supported: {file_path}")
         return True
 
-    if is_ignored(file_path):
+    if _is_gitignored(file_path):
         return True
 
     # TODO config.ignores move it here? or outside?
@@ -54,7 +54,7 @@ def is_ignored_allchecks(file_path: str | Path, config: Config):
     # fallback, assume allowed
     return False
 
-def is_ignored(file_path: str | Path):
+def _is_gitignored(file_path: str | Path):
     """ only ignores for gitignore """
     file_path = Path(file_path)
 

@@ -1,7 +1,7 @@
 from pathlib import Path
 import pytest
 
-from lsp.ignores import is_ignored, use_gitignore, use_pygls_workspace
+from lsp.ignores import _is_gitignored, use_gitignore, use_pygls_workspace
 from lsp.config import Config
 
 @pytest.fixture
@@ -30,23 +30,23 @@ def test_all_paths_ignored_for_asterisk_dot_extension_pattern(tmp_root):
     use_pygls_workspace(tmp_root)
 
     # absolute path that IS relative to root_path
-    assert is_ignored(tmp_root / "subdir/file.pyc")
+    assert _is_gitignored(tmp_root / "subdir/file.pyc")
 
     # relative path upfront
-    assert is_ignored("is/relative/initially.pyc")
+    assert _is_gitignored("is/relative/initially.pyc")
 
 def test_ignore_if_not_relative_to_workspace_root_dir(tmp_root):
     use_pygls_workspace(tmp_root)
     # absolute path that IS NOT relative to root_path
     #  IOTW in a directory outside of root_path
-    assert is_ignored("/foo/subdir/file.pyc")
-    assert is_ignored("/foo/subdir/bar.txt")
-    assert is_ignored("/venv/foo.c")
+    assert _is_gitignored("/foo/subdir/file.pyc")
+    assert _is_gitignored("/foo/subdir/bar.txt")
+    assert _is_gitignored("/venv/foo.c")
 
 def test_literal_entry(tmp_root):
     use_pygls_workspace(tmp_root)
-    assert is_ignored(tmp_root / "venv/foo.c")
-    assert not is_ignored(tmp_root / "venvfoo.c")
+    assert _is_gitignored(tmp_root / "venv/foo.c")
+    assert not _is_gitignored(tmp_root / "venvfoo.c")
 
 def disable_test_listing_all_ignored_files_under_dir():
     path = Path("/Users/wesdemos/repos/github/g0t4/ask-openai.nvim")
