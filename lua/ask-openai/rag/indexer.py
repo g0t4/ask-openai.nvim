@@ -369,7 +369,6 @@ async def main():
         #   TODO rip this crap out long term
         fs.root_path = source_code_dir
         fs.dot_rag_dir = dot_rag_dir
-        fs.config = config  # PRN AFAICT fs.config is not used in indexer code, so this could probably be commented out
 
         await indexer.main()
 
