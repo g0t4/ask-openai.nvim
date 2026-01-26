@@ -30,6 +30,8 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
     changed: list[FileIssue] = []
     deleted_files: dict[Path, FileStat] = {}
 
+    # TODO warn about new, unindexed files too?
+
     for dataset in datasets.all_datasets.values():
         for path, stored_stat in dataset.stat_by_path.items():
             file_path = Path(path)

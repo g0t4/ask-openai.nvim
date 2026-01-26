@@ -47,22 +47,22 @@ class ProgramArgs:
 
 class IncrementalRAGIndexer:
 
-    def __init__(self, dot_rag_dir, source_code_dir, options: RAGChunkerOptions, program_args: ProgramArgs | None = None):
+    def __init__(
+        self,
+        dot_rag_dir: Path,
+        source_code_dir: Path,
+        options: RAGChunkerOptions,
+        program_args: ProgramArgs,
+        config: Config,
+    ):
         self.options = options
         self.dot_rag_dir = Path(dot_rag_dir)
         self.source_code_dir = Path(source_code_dir)
         self.program_args = program_args
+        self.config = config
 
     async def main(self):
-        self.config = await self.load_rag_config(self.source_code_dir)
-        # PRN move this into set_root_dir ?
-        # FYI indexer doesn't always use .rag dir in repo_root... so just be careful if you merge this logic into set_root_dir (or make a diff version)
-        fs.root_path = self.source_code_dir
-        fs.dot_rag_dir = self.dot_rag_dir
-        fs.config = self.config
-        setup_ignores()
-
-        index_these_file_extensions = await self.get_indexed_file_extensions(self.config)
+        index_these_file_extensions = await self.get_indexed_file_extensions()
 
         if self.program_args and self.program_args.only_extension:
             index_these_file_extensions = [self.program_args.only_extension]
@@ -73,24 +73,12 @@ class IncrementalRAGIndexer:
         self.warn_about_other_extensions(index_these_file_extensions)
         await signal_hotpath_done_in_background()
 
-    async def load_rag_config(self, source_dir: Path) -> Config:
-        rag_yaml = source_dir / ".rag.yaml"
-        if not rag_yaml.exists():
-            logger.info(f"no rag config found {rag_yaml}, using default config")
-            return Config.default()
-
-        async with aiofiles.open(rag_yaml, mode="r") as f:
-            content = await f.read()
-        config = load_config(content)
-        logger.pp_debug(f"found rag config: {rag_yaml}", config)
-        return config
-
-    async def get_indexed_file_extensions(self, config: Config) -> list[str]:
-        if not config.enabled:
+    async def get_indexed_file_extensions(self) -> list[str]:
+        if not self.config.enabled:
             logger.info(f"RAG indexing disabled in {self.source_code_dir / '.rag.yaml'}, "
                         "hack just returns no supported file extension to stop (fine for now)")
             return []
-        return config.include
+        return self.config.include
 
     def warn_about_other_extensions(self, index_languages: list[str]):
 
@@ -151,11 +139,9 @@ class IncrementalRAGIndexer:
         for path_str in current_path_strs:
             if is_ignored_allchecks(path_str, self.config):
                 ignored_path_strs.add(path_str)
-        if (len(ignored_path_strs) > 0):
-            logger.info(f"Ignoring files ({len(ignored_path_strs)}): {', '.join(ignored_path_strs)}")
+        # if (len(ignored_path_strs) > 0):
+        logger.info(f"Ignoring files ({len(ignored_path_strs)}): {', '.join(ignored_path_strs)}")
         current_path_strs -= ignored_path_strs
-
-        raise RuntimeError("abort to not update")
 
         # * added, modified (aka changed)
         changed_paths: Set[Path] = set()
@@ -359,13 +345,27 @@ async def main():
             logger.error("[red]No Git repository found in current working directory, cannot build RAG index.")
             sys.exit(1)
         dot_rag_dir = repo_root_dir / ".rag"
-        source_code_dir = "."  # TODO make this repo_root_dir always? has been nice to test a subset of files by cd to nested dir
+        source_code_dir = Path(".")  # TODO make this repo_root_dir always? has been nice to test a subset of files by cd to nested dir
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
         if args.rebuild:
             trash_dot_rag(dot_rag_dir)
 
         options = RAGChunkerOptions.ProductionOptions()
-        indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, options, args)
+        config = await fs.load_rag_config(source_code_dir)
+        indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, options, args, config)
+
+        # * STOPGAP: fs integration is just for ignores to work for now
+        #   FYI! minimize using fs module beyond ignores
+        #   I'd prefer to rip out the fs module's global state and instead
+        #   make a state obj like IncrementalRAGIndexer's ctor has!
+        #     modify ignores to take this new state object (like it takes config and doesn't use config from fs.config!)
+        #   and push that over into pygls code that originally created the fs module
+        #   TODO rip this crap out long term
+        fs.root_path = source_code_dir
+        fs.dot_rag_dir = dot_rag_dir
+        fs.config = config  # PRN AFAICT fs.config is not used in indexer code, so this could probably be commented out
+        setup_ignores()
+
         await indexer.main()
 
 if __name__ == "__main__":

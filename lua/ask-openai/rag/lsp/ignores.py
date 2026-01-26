@@ -16,6 +16,8 @@ def setup_ignores():
     global gitignore_spec
 
     def _setup_gitignored() -> PathSpec:
+        # TODO why not just create this on first use! have helper to create/get it
+        #   TODO then I can clean up mess of using fs module for root_path etc
         gitignore_path = fs.root_path.joinpath(".gitignore")
         # TODO config.ignores load it into gitignore spec!
 
@@ -48,7 +50,6 @@ IGNORED = True
 
 def is_ignored_allchecks(file_path: str | Path, config: Config):
     """ unified ignore checks """
-    # TODO wire this into rag_indexer
     # TODO wire this into rag_validate_index
 
     file_path = Path(file_path)

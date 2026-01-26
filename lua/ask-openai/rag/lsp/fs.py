@@ -58,6 +58,20 @@ def set_root_dir(root_dir: str | Path | None):
         logger.info(f"no rag config found {rag_yaml}, using default config")
         config = Config.default()
 
+async def load_rag_config(source_dir: Path) -> Config:
+    # TODO MERGE WITH ABOVE (this version was from indexer)
+    #   FYI above is sync, this is async, make this sync if needed
+    rag_yaml = source_dir / ".rag.yaml"
+    if not rag_yaml.exists():
+        logger.info(f"no rag config found {rag_yaml}, using default config")
+        return Config.default()
+
+    async with aiofiles.open(rag_yaml, mode="r") as f:
+        content = await f.read()
+    config = load_config(content)
+    logger.pp_debug(f"found rag config: {rag_yaml}", config)
+    return config
+
 def get_config():
     return config
 
