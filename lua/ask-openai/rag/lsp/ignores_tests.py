@@ -27,6 +27,13 @@ def tmp_root(tmp_path):
 
     return root
 
+def test_package_lock_is_ignored(tmp_root):
+    setup_config(tmp_root, Config.default())
+
+    # * careful with path that is ignored for other reasons
+    assert _is_gitignored(tmp_root / "package-lock.json")
+    assert _is_gitignored(tmp_root / "uv.lock")
+
 def test_all_paths_ignored_for_asterisk_dot_extension_pattern(tmp_root):
     setup_config(tmp_root, Config.default())
 

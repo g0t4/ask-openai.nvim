@@ -33,7 +33,11 @@ def setup_config(root_path_input: str | Path, config: Config):
             "node_modules",
             "bower_components",
             "iterm2env",
-            # "package-lock.json" # TODO test this and add in
+
+            # files that are often committed but shouldn't ever be indexed:
+            "package-lock.json",
+            "uv.lock", # PRN *.lock?
+            # ? other lock files?
         ])
 
         return PathSpec.from_lines(GitWildMatchPattern, ignore_entries)
@@ -41,11 +45,12 @@ def setup_config(root_path_input: str | Path, config: Config):
     gitignore_spec = _setup_gitignored(root_path)
     # TODO separate spec for config.ignores, OR, merge into gitignore_spec?
 
+IGNORED = True
+
 def is_ignored_allchecks(file_path: str | Path, config: Config):
     """ unified ignore checks """
     # TODO wire this into rag_indexer
     # TODO wire this into rag_validate_index
-    IGNORED = True
 
     file_path = Path(file_path)
     if not config.is_file_type_supported(file_path):
@@ -64,7 +69,7 @@ def _is_gitignored(file_path: str | Path):
 
     if not file_path.is_relative_to(root_path):
         # FYI for now IGNORE all files NOT inside the root path
-        return True
+        return IGNORED
 
     # relative path is needed for relative patterns that start without a wildcard
     rel_path = file_path.relative_to(root_path)
