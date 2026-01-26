@@ -27,7 +27,7 @@ def tmp_root(tmp_path):
     return root
 
 def test_all_paths_ignored_for_asterisk_dot_extension_pattern(tmp_root):
-    use_pygls_workspace(tmp_root)
+    use_pygls_workspace(tmp_root, Config.default())
 
     # absolute path that IS relative to root_path
     assert _is_gitignored(tmp_root / "subdir/file.pyc")
@@ -36,7 +36,7 @@ def test_all_paths_ignored_for_asterisk_dot_extension_pattern(tmp_root):
     assert _is_gitignored("is/relative/initially.pyc")
 
 def test_ignore_if_not_relative_to_workspace_root_dir(tmp_root):
-    use_pygls_workspace(tmp_root)
+    use_pygls_workspace(tmp_root, Config.default())
     # absolute path that IS NOT relative to root_path
     #  IOTW in a directory outside of root_path
     assert _is_gitignored("/foo/subdir/file.pyc")
@@ -44,13 +44,13 @@ def test_ignore_if_not_relative_to_workspace_root_dir(tmp_root):
     assert _is_gitignored("/venv/foo.c")
 
 def test_literal_entry(tmp_root):
-    use_pygls_workspace(tmp_root)
+    use_pygls_workspace(tmp_root, Config.default())
     assert _is_gitignored(tmp_root / "venv/foo.c")
     assert not _is_gitignored(tmp_root / "venvfoo.c")
 
-def disable_test_listing_all_ignored_files_under_dir():
+def disabled_manual_test_listing_all_ignored_files_under_dir():
     path = Path("/Users/wesdemos/repos/github/g0t4/ask-openai.nvim")
-    spec = _setup_gitignored(path)
+    spec = _setup_gitignored(path, Config.default())
 
     ignored_files = spec.match_tree(path)
 

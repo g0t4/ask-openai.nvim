@@ -11,13 +11,13 @@ logger = get_logger(__name__)
 gitignore_spec: PathSpec | None = None
 root_path: Path | None = None
 
-def use_pygls_workspace(root_path_input: str | Path):
+def use_pygls_workspace(root_path_input: str | Path, config: Config):
     global gitignore_spec, root_path
     root_path = Path(root_path_input)
-    gitignore_spec = _setup_gitignored(root_path)
+    gitignore_spec = _setup_gitignored(root_path, config)
     # PRN other gitignore logic? other ignore file types?
 
-def _setup_gitignored(root_path: Path | str) -> PathSpec:
+def _setup_gitignored(root_path: Path | str, config: Config) -> PathSpec:
     root_path = Path(root_path)
     gitignore_path = root_path.joinpath(".gitignore")
 
@@ -48,8 +48,6 @@ def is_ignored_allchecks(file_path: str | Path, config: Config):
 
     if _is_gitignored(file_path):
         return True
-
-    # TODO config.ignores move it here? or outside?
 
     # fallback, assume allowed
     return False
