@@ -6,6 +6,7 @@ from pathspec.patterns.gitwildmatch import GitWildMatchPattern
 from pygls.lsp.server import LanguageServer
 
 from lsp.logs import get_logger
+from lsp.config import Config
 
 logger = get_logger(__name__)
 
@@ -61,8 +62,7 @@ def is_ignored(file_path: str | Path, server: LanguageServer | None = None):
     file_path = Path(file_path)
 
     if spec is None or root_path is None:
-        warn_client(server)
-        return False
+        raise RuntimeError("root_path and gitignore spec not initialized")
 
     if not file_path.is_relative_to(root_path):
         # FYI for now IGNORE all files NOT inside the root path
@@ -70,5 +70,7 @@ def is_ignored(file_path: str | Path, server: LanguageServer | None = None):
 
     # relative path is needed for relative patterns that start without a wildcard
     rel_path = file_path.relative_to(root_path)
+
+    # TODO config.ignores move it here? or outside?
 
     return spec.match_file(rel_path)

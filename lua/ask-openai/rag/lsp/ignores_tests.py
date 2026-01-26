@@ -2,6 +2,7 @@ from pathlib import Path
 import pytest
 
 from lsp.ignores import is_ignored, use_gitignore, use_pygls_workspace
+from lsp.config import Config
 
 @pytest.fixture
 def tmp_root(tmp_path):
