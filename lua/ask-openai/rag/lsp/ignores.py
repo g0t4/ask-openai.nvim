@@ -14,29 +14,30 @@ root_path: Path | None = None
 def setup_config(root_path_input: str | Path, config: Config):
     global gitignore_spec, root_path
     root_path = Path(root_path_input)
+
+    def _setup_gitignored(root_path: Path | str) -> PathSpec:
+        gitignore_path = root_path.joinpath(".gitignore")
+        # TODO config.ignores load it into gitignore spec!
+
+        ignore_entries = set()
+        if gitignore_path.exists():
+            ignore_entries = set(gitignore_path.read_text().splitlines())
+
+        # ALWAYS exclude:
+        ignore_entries.update([
+            # focus on directories mostly, the languages you actually index can filter on file types implicitly (not indexed == ignored too)
+            ".git",
+            ".venv",
+            "__pycache__",
+            "node_modules",
+            "bower_components",
+            "iterm2env",
+        ])
+
+        return PathSpec.from_lines(GitWildMatchPattern, ignore_entries)
+
     gitignore_spec = _setup_gitignored(root_path)
     # TODO separate spec for config.ignores, OR, merge into gitignore_spec?
-
-def _setup_gitignored(root_path: Path | str) -> PathSpec:
-    gitignore_path = root_path.joinpath(".gitignore")
-    # TODO config.ignores load it into gitignore spec!
-
-    ignore_entries = set()
-    if gitignore_path.exists():
-        ignore_entries = set(gitignore_path.read_text().splitlines())
-
-    # ALWAYS exclude:
-    ignore_entries.update([
-        # focus on directories mostly, the languages you actually index can filter on file types implicitly (not indexed == ignored too)
-        ".git",
-        ".venv",
-        "__pycache__",
-        "node_modules",
-        "bower_components",
-        "iterm2env",
-    ])
-
-    return PathSpec.from_lines(GitWildMatchPattern, ignore_entries)
 
 def is_ignored_allchecks(file_path: str | Path, config: Config):
     """ unified ignore checks """
