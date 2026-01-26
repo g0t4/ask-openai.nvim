@@ -23,17 +23,31 @@
     try {
       const parsed = JSON.parse(argsJson)
 
-      // Special handling for apply_patch - use dedicated component
       if (name === 'apply_patch' && parsed.patch) {
         return { type: 'patch', patch: parsed.patch }
       }
 
-      // Special handling for run_command - show the command
       if (name === 'run_command' && parsed.command) {
         return { type: 'code', code: parsed.command, language: 'bash' }
       }
 
-      // Default: pretty print JSON
+      if (name === 'run_process' && parsed) {
+        const isShellMode = parsed.mode === 'shell' && typeof parsed.command_line === 'string'
+        if (isShellMode) {
+          return { type: 'code', code: parsed.command_line, language: 'bash' }
+        }
+
+        const isExecutableMode =
+          parsed.mode === 'executable' &&
+          Array.isArray(parsed.argv) &&
+          parsed.argv.length > 0
+
+        if (isExecutableMode) {
+          const cmd = parsed.argv.map(arg => String(arg)).join(' ')
+          return { type: 'code', code: cmd, language: 'bash' }
+        }
+      }
+
       return { type: 'code', code: JSON.stringify(parsed, null, 2), language: 'json' }
     } catch {
       return { type: 'code', code: argsJson, language: 'text' }
