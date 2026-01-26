@@ -76,11 +76,11 @@
         items = data
           .filter((item: any) => item.type === 'file' || item.type === 'dir')
           .sort((a: any, b: any) => {
-            // Directories first, then files
+            // Directories first, then by name descending (newest/highest first)
             if (a.type !== b.type) {
               return a.type === 'dir' ? -1 : 1
             }
-            return a.name.localeCompare(b.name)
+            return b.name.localeCompare(a.name)
           })
       } else {
         throw new Error('URL does not point to a directory')

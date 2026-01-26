@@ -58,7 +58,11 @@
         throw new Error('Invalid response format')
       }
 
-      items = data.items
+      // Sort: directories first, then by name descending (newest/highest first)
+      items = data.items.sort((a: LocalItem, b: LocalItem) => {
+        if (a.type !== b.type) return a.type === 'dir' ? -1 : 1
+        return b.name.localeCompare(a.name)
+      })
 
       if (items.length === 0) {
         error = 'No files or folders found'

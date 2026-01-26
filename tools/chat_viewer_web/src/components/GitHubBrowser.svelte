@@ -113,10 +113,10 @@
         })
       })
 
-      // Sort: directories first, then alphabetically
+      // Sort: directories first, then by name descending (newest/highest first)
       items = extractedItems.sort((a, b) => {
         if (a.type !== b.type) return a.type === 'dir' ? -1 : 1
-        return a.name.localeCompare(b.name)
+        return b.name.localeCompare(a.name)
       })
 
       if (items.length === 0) {
