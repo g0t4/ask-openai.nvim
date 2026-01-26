@@ -168,6 +168,12 @@
             {#if item.type === 'dir'}
               <span class="text-xl">📁</span>
               <span class="text-gray-300 font-mono">{item.name}/</span>
+              {@const timestampInfo = getTimestampInfo(item.name)}
+              {#if timestampInfo}
+                <span class="text-xs text-gray-500 ml-2">
+                  {timestampInfo.dateTime} <span class={timestampInfo.colorClass}>({timestampInfo.age})</span>
+                </span>
+              {/if}
             {:else}
               <span class="text-xl">
                 {#if item.name.endsWith('.json')}
