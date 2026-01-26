@@ -305,10 +305,25 @@ def _handle_apply_patch(arguments: str):
         return json.dumps(parsed, ensure_ascii=False)
     return str(parsed)
 
-def _handle_run_command(arguments: str):
+def _handle_run_command_and_run_process(arguments: str):
     try:
         loaded = json.loads(arguments)
-        command = Syntax(yank(loaded, "command"), "bash", theme="ansi_dark", line_numbers=False)
+        mode = yank(loaded, "mode")
+
+        if mode == "shell":
+            command_source = yank(loaded, "command_line")
+        elif mode == "executable":
+            argv_list = loaded.get("argv", [])
+            command_source = " ".join(map(str, argv_list))
+        else:
+            command_source = yank(loaded, "command")
+
+        command = Syntax(
+            command_source,
+            "bash",
+            theme="ansi_dark",
+            line_numbers=False,
+        )
 
         if len(loaded.keys()) == 0:
             return command
@@ -337,10 +352,11 @@ def _handle_unknown_tool(arguments: str):
 def _format_tool_arguments(func_name: str, arguments: str):
     if func_name == "apply_patch":
         return _handle_apply_patch(arguments)
-    if func_name == "run_process":
-        return _handle_run_command(arguments)
-    if func_name == "run_command":
-        return _handle_run_command(arguments)
+
+    if func_name in ("run_command", "run_process"):
+        # PRN honestly JSON presentation looks good here most of the time too
+        return _handle_run_command_and_run_process(arguments)
+
     # semantic_grep has a few json args, that's fine to show
     return handle_json_args(arguments)
 
