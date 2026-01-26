@@ -8,7 +8,7 @@ from lsp.config import Config
 
 logger = get_logger(__name__)
 
-def setup_ignores(fs_root_path) -> PathSpec:
+def setup_ignores(fs_root_path: Path, config: Config) -> PathSpec:
     # TODO why not just create this on first use! have helper to create/get it
     gitignore_path = fs_root_path.joinpath(".gitignore")
 
@@ -31,17 +31,17 @@ def setup_ignores(fs_root_path) -> PathSpec:
         "uv.lock",  # PRN *.lock?
         # ? other lock files?
     ])
-    # TODO config.ignores load into gitignore spec!
+    # TODO add config.ignores to this spec!
 
     return PathSpec.from_lines(GitWildMatchPattern, ignore_entries)
 
 gitignore_spec: PathSpec = None
 
-def get_gitignore_spec(fs_root_path):
+def get_gitignore_spec(fs_root_path, config):
     global gitignore_spec, _used_fs_root_path
 
     if (gitignore_spec is None):
-        gitignore_spec = setup_ignores(fs_root_path)
+        gitignore_spec = setup_ignores(fs_root_path, config)
         _used_fs_root_path = fs_root_path
 
     if (_used_fs_root_path != fs_root_path):
@@ -62,13 +62,13 @@ def is_ignored_allchecks(file_path: str | Path, config: Config, fs_root_path: Pa
         logger.debug(f"filetype not supported: {file_path}")
         return IGNORED
 
-    if _is_gitignored(file_path, fs_root_path):
+    if _is_gitignored(file_path, fs_root_path, config):
         return IGNORED
 
     # fallback, assume allowed
     return not IGNORED
 
-def _is_gitignored(file_path: str | Path, fs_root_path):
+def _is_gitignored(file_path: str | Path, fs_root_path, config):
     """ only ignores for gitignore """
     file_path = Path(file_path)
 
@@ -79,5 +79,5 @@ def _is_gitignored(file_path: str | Path, fs_root_path):
     # relative path is needed for relative patterns that start without a wildcard
     rel_path = file_path.relative_to(fs_root_path)
 
-    spec = get_gitignore_spec(fs_root_path)
+    spec = get_gitignore_spec(fs_root_path, config)
     return spec.match_file(rel_path)
