@@ -1,9 +1,7 @@
 from pathlib import Path
 
-from lsprotocol.types import MessageType, ShowMessageParams
 from pathspec import PathSpec
 from pathspec.patterns.gitwildmatch import GitWildMatchPattern
-from pygls.lsp.server import LanguageServer
 
 from lsp.logs import get_logger
 from lsp.config import Config
@@ -40,25 +38,7 @@ def use_gitignore(root_path: Path | str) -> PathSpec:
 
     return PathSpec.from_lines(GitWildMatchPattern, ignore_entries)
 
-warned_missing_spec = False
-
-def warn_client(server: LanguageServer | None = None):
-    global warned_missing_spec
-
-    if server is None:
-        return
-
-    if warned_missing_spec:
-        return
-
-    server.window_show_message(ShowMessageParams(
-        MessageType.Warning,
-        "Warning: No gitignore spec setup, allowing all files!",
-    ))
-    logger.warning("No gitignore spec setup, allowing all files!")
-    warned_missing_spec = True
-
-def is_ignored(file_path: str | Path, server: LanguageServer | None = None):
+def is_ignored(file_path: str | Path):
     file_path = Path(file_path)
 
     if spec is None or root_path is None:

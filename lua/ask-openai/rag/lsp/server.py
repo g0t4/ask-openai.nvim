@@ -69,6 +69,14 @@ async def sleepy(_ls: LanguageServer, args: dict):
     finally:
         remove_stopper(msg_id)
 
+def warn_client(server: LanguageServer):
+    # FYI keeping this around to use later, was only used by ignores logic that was sanitized
+    server.window_show_message(types.ShowMessageParams(
+        types.MessageType.Warning,
+        "Warning: foo the bar happened!",
+    ))
+    logger.warning("foo the bar happened!")
+
 @server.feature(types.INITIALIZE)
 def on_initialize(_: LanguageServer, params: types.InitializeParams):
     global dot_rag_dir, config

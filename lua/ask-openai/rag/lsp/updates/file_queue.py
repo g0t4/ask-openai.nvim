@@ -87,7 +87,7 @@ class FileUpdateEmbeddingsQueue:
         if not self.config.is_file_type_supported(doc_path):
             logger.debug(f"filetype not supported: {doc_path}")
             return
-        if ignores.is_ignored(doc_path, self.server):
+        if ignores.is_ignored(doc_path):
             logger.debug(f"rag ignored doc: {doc_path}")
             return
         if Path(doc_path).suffix == "":
