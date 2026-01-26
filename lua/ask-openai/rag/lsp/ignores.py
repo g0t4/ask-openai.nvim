@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 gitignore_spec: PathSpec | None = None
 root_path: Path | None = None
 
-def use_pygls_workspace(root_path_input: str | Path, config: Config):
+def setup_config(root_path_input: str | Path, config: Config):
     global gitignore_spec, root_path
     root_path = Path(root_path_input)
     gitignore_spec = _setup_gitignored(root_path, config)

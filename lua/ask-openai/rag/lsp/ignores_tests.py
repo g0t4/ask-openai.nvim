@@ -1,7 +1,7 @@
 from pathlib import Path
 import pytest
 
-from lsp.ignores import _is_gitignored, _setup_gitignored, use_pygls_workspace
+from lsp.ignores import _is_gitignored, _setup_gitignored, setup_config
 from lsp.config import Config
 
 @pytest.fixture
@@ -27,7 +27,7 @@ def tmp_root(tmp_path):
     return root
 
 def test_all_paths_ignored_for_asterisk_dot_extension_pattern(tmp_root):
-    use_pygls_workspace(tmp_root, Config.default())
+    setup_config(tmp_root, Config.default())
 
     # absolute path that IS relative to root_path
     assert _is_gitignored(tmp_root / "subdir/file.pyc")
@@ -36,7 +36,7 @@ def test_all_paths_ignored_for_asterisk_dot_extension_pattern(tmp_root):
     assert _is_gitignored("is/relative/initially.pyc")
 
 def test_ignore_if_not_relative_to_workspace_root_dir(tmp_root):
-    use_pygls_workspace(tmp_root, Config.default())
+    setup_config(tmp_root, Config.default())
     # absolute path that IS NOT relative to root_path
     #  IOTW in a directory outside of root_path
     assert _is_gitignored("/foo/subdir/file.pyc")
@@ -44,7 +44,7 @@ def test_ignore_if_not_relative_to_workspace_root_dir(tmp_root):
     assert _is_gitignored("/venv/foo.c")
 
 def test_literal_entry(tmp_root):
-    use_pygls_workspace(tmp_root, Config.default())
+    setup_config(tmp_root, Config.default())
     assert _is_gitignored(tmp_root / "venv/foo.c")
     assert not _is_gitignored(tmp_root / "venvfoo.c")
 

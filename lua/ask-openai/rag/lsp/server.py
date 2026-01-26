@@ -121,7 +121,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     rag.load_model_and_indexes(fs.dot_rag_dir)  # TODO! ASYNC?
     rag.validate_rag_indexes()  # TODO! ASYNC?
 
-    ignores.use_pygls_workspace(fs.root_path, config)
+    ignores.setup_config(fs.root_path, config)
 
     loop = asyncio.get_running_loop()  # btw RuntimeError if no current loop (a good thing)
     # logger.info(f'{loop=} {id(loop)=}')  # sanity check loop used when scheduling
