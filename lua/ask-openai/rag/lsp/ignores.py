@@ -8,13 +8,13 @@ from lsp.config import Config
 
 logger = get_logger(__name__)
 
-spec: PathSpec | None = None
+gitignore_spec: PathSpec | None = None
 root_path: Path | None = None
 
 def use_pygls_workspace(root_path_input: str | Path):
-    global spec, root_path
+    global gitignore_spec, root_path
     root_path = Path(root_path_input)
-    spec = use_gitignore(root_path)
+    gitignore_spec = use_gitignore(root_path)
     # PRN other gitignore logic? other ignore file types?
 
 def use_gitignore(root_path: Path | str) -> PathSpec:
@@ -38,10 +38,27 @@ def use_gitignore(root_path: Path | str) -> PathSpec:
 
     return PathSpec.from_lines(GitWildMatchPattern, ignore_entries)
 
+def is_ignored_allchecks(file_path: str | Path, config: Config):
+    """ unified ignore checks """
+
+    file_path = Path(file_path)
+    if not config.is_file_type_supported(file_path):
+        logger.debug(f"filetype not supported: {file_path}")
+        return True
+
+    if is_ignored(file_path):
+        return True
+
+    # TODO config.ignores move it here? or outside?
+
+    # fallback, assume allowed
+    return False
+
 def is_ignored(file_path: str | Path):
+    """ only ignores for gitignore """
     file_path = Path(file_path)
 
-    if spec is None or root_path is None:
+    if gitignore_spec is None or root_path is None:
         raise RuntimeError("root_path and gitignore spec not initialized")
 
     if not file_path.is_relative_to(root_path):
@@ -51,6 +68,4 @@ def is_ignored(file_path: str | Path):
     # relative path is needed for relative patterns that start without a wildcard
     rel_path = file_path.relative_to(root_path)
 
-    # TODO config.ignores move it here? or outside?
-
-    return spec.match_file(rel_path)
+    return gitignore_spec.match_file(rel_path)

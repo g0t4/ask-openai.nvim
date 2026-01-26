@@ -84,12 +84,10 @@ class FileUpdateEmbeddingsQueue:
             logger.warning(f"abort update rag... to_fs_path returned {doc_path}")
             return
 
-        if not self.config.is_file_type_supported(doc_path):
-            logger.debug(f"filetype not supported: {doc_path}")
-            return
-        if ignores.is_ignored(doc_path):
+        if ignores.is_ignored_allchecks(doc_path, self.config):
             logger.debug(f"rag ignored doc: {doc_path}")
             return
+
         if Path(doc_path).suffix == "":
             #  i.e. githooks
             # currently I don't index extensionless anwyways, so skip for now in updates

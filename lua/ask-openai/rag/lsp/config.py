@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 import os
+from pathlib import Path
 
 import yaml
 
@@ -44,9 +45,8 @@ class Config:
             enabled=default_enabled,
         )
 
-    def is_file_type_supported(self, doc_path: str) -> bool:
-        _, ext = os.path.splitext(doc_path)
-        ext = ext.lstrip('.').lower()
+    def is_file_type_supported(self, file_path: Path) -> bool:
+        ext = file_path.suffix.lstrip('.').lower()
         # TODO is this file extension or was filetype vim filetype? if so you'll have to use a lookup!
         #   FYI can fix that later, just get this started for now so I don't log false positives in LSP server for Unsupported files (most of the time anyways)
         file_type = ALIASED_EXTENSIONS.get(ext, ext)
