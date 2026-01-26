@@ -27,11 +27,12 @@ def tmp_root(tmp_path):
     *.pyc
     """)
 
+    fs.root_path = root
+    setup_ignores()
+
     return root
 
 def test_package_lock_is_ignored(tmp_root):
-    fs.root_path = tmp_root
-    setup_ignores()
     rich.print("\n[red bold]tmp_root", tmp_root, "\n")
 
     # * careful with path that is ignored for other reasons
@@ -39,9 +40,6 @@ def test_package_lock_is_ignored(tmp_root):
     assert _is_gitignored(tmp_root / "uv.lock")
 
 def test_all_paths_ignored_for_asterisk_dot_extension_pattern(tmp_root):
-    fs.root_path = tmp_root
-    setup_ignores()
-
     # absolute path that IS relative to root_path
     assert _is_gitignored(tmp_root / "subdir/file.pyc")
 
@@ -49,8 +47,6 @@ def test_all_paths_ignored_for_asterisk_dot_extension_pattern(tmp_root):
     assert _is_gitignored("is/relative/initially.pyc")
 
 def test_ignore_if_not_relative_to_workspace_root_dir(tmp_root):
-    fs.root_path = tmp_root
-    setup_ignores()
     # absolute path that IS NOT relative to root_path
     #  IOTW in a directory outside of root_path
     assert _is_gitignored("/foo/subdir/file.pyc")
@@ -58,15 +54,11 @@ def test_ignore_if_not_relative_to_workspace_root_dir(tmp_root):
     assert _is_gitignored("/venv/foo.c")
 
 def test_literal_entry(tmp_root):
-    fs.root_path = tmp_root
-    setup_ignores()
     assert _is_gitignored(tmp_root / "venv/foo.c")
     assert not _is_gitignored(tmp_root / "venvfoo.c")
 
 def disabled_manual_test_listing_all_ignored_files_under_dir():
     path = Path("/Users/wesdemos/repos/github/g0t4/ask-openai.nvim")
-    fs.root_path = tmp_root
-    setup_ignores()
 
     assert lsp.ignores.gitignore_spec
     spec = lsp.ignores.gitignore_spec
