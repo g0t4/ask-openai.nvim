@@ -23,6 +23,7 @@ import fs
 from lsp.storage import Chunk, FileStat, load_prior_data
 from lsp.chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
 from lsp.config import Config, load_config
+from lsp.ignores import setup_ignores
 
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False
