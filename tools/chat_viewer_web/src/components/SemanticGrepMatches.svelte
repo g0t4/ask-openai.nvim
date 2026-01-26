@@ -44,7 +44,7 @@
         idx++
       }
 
-      const snippet = snippetLines.join('\n').trim()
+      const snippet = snippetLines.join('\n')
 
       results.push({ filePath, startLine, endLine, snippet })
     }
