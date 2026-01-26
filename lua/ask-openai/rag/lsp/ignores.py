@@ -45,17 +45,18 @@ def is_ignored_allchecks(file_path: str | Path, config: Config):
     """ unified ignore checks """
     # TODO wire this into rag_indexer
     # TODO wire this into rag_validate_index
+    IGNORED = True
 
     file_path = Path(file_path)
     if not config.is_file_type_supported(file_path):
         logger.debug(f"filetype not supported: {file_path}")
-        return True
+        return IGNORED
 
     if _is_gitignored(file_path):
-        return True
+        return IGNORED
 
     # fallback, assume allowed
-    return False
+    return not IGNORED
 
 def _is_gitignored(file_path: str | Path):
     """ only ignores for gitignore """
