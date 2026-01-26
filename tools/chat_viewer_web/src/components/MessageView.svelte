@@ -32,7 +32,7 @@
 
   // Check if content looks like markdown (starts with heading or contains code blocks)
   const looksLikeMarkdown = $derived(
-    content && (/^#{1,6}\s/.test(content.trim()) || content.includes('```'))
+    content && (/^#{1,6}\s/.test(content) || content.includes('```'))
   )
   const shouldRenderMarkdown = $derived(
     role === 'system' ||
