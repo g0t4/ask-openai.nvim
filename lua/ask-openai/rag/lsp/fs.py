@@ -21,6 +21,18 @@ def is_no_rag_dir() -> bool:
         return False
     return not dot_rag_dir.exists()
 
+def get_cwd_repo_root() -> Path | None:
+    """
+    Get the root directory of the current Git repository
+    """
+    import subprocess
+    try:
+        root_directory = subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
+        root_directory = Path(root_directory)
+    except subprocess.CalledProcessError:
+        root_directory = None
+    return root_directory
+
 def set_root_dir(root_dir: str | Path | None):
     global root_path, dot_rag_dir, config
 

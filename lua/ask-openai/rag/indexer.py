@@ -19,11 +19,11 @@ import numpy as np
 
 from pydants import write_json
 
-import fs
 from lsp.storage import Chunk, FileStat, load_prior_data
 from lsp.chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
 from lsp.config import Config, load_config
-from lsp.ignores import setup_ignores
+from lsp.ignores import is_ignored_allchecks, setup_ignores
+from lsp import fs
 
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False
@@ -55,6 +55,13 @@ class IncrementalRAGIndexer:
 
     async def main(self):
         self.config = await self.load_rag_config(self.source_code_dir)
+        # PRN move this into set_root_dir ?
+        # FYI indexer doesn't always use .rag dir in repo_root... so just be careful if you merge this logic into set_root_dir (or make a diff version)
+        fs.root_path = self.source_code_dir
+        fs.dot_rag_dir = self.dot_rag_dir
+        fs.config = self.config
+        setup_ignores()
+
         index_these_file_extensions = await self.get_indexed_file_extensions(self.config)
 
         if self.program_args and self.program_args.only_extension:
@@ -138,6 +145,17 @@ class IncrementalRAGIndexer:
             check=True,
         )
         current_path_strs = set(result.stdout.strip().splitlines())
+
+        # * ignored files
+        ignored_path_strs: Set[str] = set()
+        for path_str in current_path_strs:
+            if is_ignored_allchecks(path_str, self.config):
+                ignored_path_strs.add(path_str)
+        if (len(ignored_path_strs) > 0):
+            logger.info(f"Ignoring files ({len(ignored_path_strs)}): {', '.join(ignored_path_strs)}")
+        current_path_strs -= ignored_path_strs
+
+        raise RuntimeError("abort to not update")
 
         # * added, modified (aka changed)
         changed_paths: Set[Path] = set()
@@ -345,6 +363,7 @@ async def main():
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
         if args.rebuild:
             trash_dot_rag(dot_rag_dir)
+
         options = RAGChunkerOptions.ProductionOptions()
         indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, options, args)
         await indexer.main()
