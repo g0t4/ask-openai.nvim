@@ -7,8 +7,8 @@ from .config import Config, load_config
 
 logger = get_logger(__name__)
 
-root_path: Path | None = None
-dot_rag_dir: Path | None = None
+root_path: Path
+dot_rag_dir: Path
 config: Config = Config.default()
 
 # *** by the way I am not 100% certain I like this module... but lets see how it goes
