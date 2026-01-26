@@ -209,6 +209,7 @@ local function ask_question_command(opts)
         })
 
         QuestionsFrontend.thread = ChatThread:new(body_overrides, base_url)
+        -- log:info("sending", vim.inspect(QuestionsFrontend.thread))
         QuestionsFrontend.then_send_messages()
     end
 
