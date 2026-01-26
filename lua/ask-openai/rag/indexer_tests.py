@@ -16,6 +16,7 @@ from indexer import IncrementalRAGIndexer
 from lsp.chunks.chunker import RAGChunkerOptions
 from lsp.inference.client.embedder import encode_query
 from lsp.storage import ChunkType, load_chunks_by_file, load_file_stats_by_file
+from lsp.config import Config
 
 # logging_fwk_to_console("WARN") # stop INFO logs after timing captured
 
@@ -53,7 +54,7 @@ class TestBuildIndex:
 
         # * recreate index
         self.trash_path(self.dot_rag_dir)
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, RAGChunkerOptions.OnlyLineRangeChunks())
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, RAGChunkerOptions.OnlyLineRangeChunks(), None, Config.default())
         await indexer.build_index(language_extension="lua")
 
         # * chunks
@@ -127,7 +128,7 @@ class TestBuildIndex:
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
         self.trash_path(self.dot_rag_dir)
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, RAGChunkerOptions.OnlyLineRangeChunks())
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.indexer_src_dir, RAGChunkerOptions.OnlyLineRangeChunks(), None, Config.default())
         await indexer.build_index(language_extension="lua")
 
         chunks_by_file = load_chunks_by_file(self.dot_rag_dir / "lua/chunks.json")
@@ -191,7 +192,7 @@ class TestBuildIndex:
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks(), None, Config.default())
         await indexer.build_index(language_extension="lua")
 
         # * check counts
@@ -211,7 +212,7 @@ class TestBuildIndex:
 
         # * update a file and rebuild
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks (starts = 1-20, 16-35, 31-50)
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())  # BTW recreate so no shared state (i.e. if cache added)
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks(), None, Config.default())  # BTW recreate so no shared state (i.e. if cache added)
         await indexer.build_index(language_extension="lua")
 
         # * check counts
@@ -230,7 +231,7 @@ class TestBuildIndex:
 
         # * delete a file and rebuild
         (self.tmp_source_code_dir / "numbers.lua").unlink()
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks(), None, Config.default())
         await indexer.build_index(language_extension="lua")
         #
         chunks_by_file = self.get_chunks_by_file()
@@ -247,7 +248,7 @@ class TestBuildIndex:
         # * add a file
         # FYI car.lua.txt was designed to catch issues with overlap (32 lines => 0 to 20, 15 to 35, but NOT 30 to 50 b/c only overlap exists so the next chunk has nothing unique in its non-overlapping segment) so maybe use a diff input file... if this causes issues here (move car.lua to a new test then)
         copy_file("car.lua.txt", "car.lua")
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks(), None, Config.default())
         await indexer.build_index(language_extension="lua")
         #
         chunks_by_file = self.get_chunks_by_file()
@@ -278,7 +279,7 @@ class TestBuildIndex:
         # copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks(), None, Config.default())
         await indexer.build_index(language_extension="lua")
 
         # * check counts
@@ -297,7 +298,7 @@ class TestBuildIndex:
         assert index.ntotal == 2, "index.ntotal (num vectors) should be 1"
 
         copy_file("numbers.30.txt", "numbers.lua")
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks(), None, Config.default())
         await indexer.build_index(language_extension="lua")
 
         # * check counts
@@ -312,7 +313,7 @@ class TestBuildIndex:
 
         # * 3rd rebuild - useful for compare new index 1 (new index), index 2 and index 3
         #  don't really need this to validate problem but I find it helpful to diff the logs
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks(), None, Config.default())
         await indexer.build_index(language_extension="lua")
 
         assert index.ntotal == 2, "index.ntotal (num vectors) should be 1"
@@ -338,7 +339,7 @@ class TestBuildIndex:
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks())
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, self.tmp_source_code_dir, RAGChunkerOptions.OnlyLineRangeChunks(), None, Config.default())
         await indexer.build_index(language_extension="lua")
 
         from lsp import rag
