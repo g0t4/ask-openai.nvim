@@ -83,7 +83,7 @@ class IncrementalRAGIndexer:
     def warn_about_other_extensions(self, index_languages: list[str]):
 
         cmd = ["fish", "-c", f"fd . {self.source_code_dir} --exclude='\\.ctags\\.d' --exclude='\\.rag' --exec basename"]
-        print("warn cmd", cmd)
+        logger.debug("warn cmd", cmd)
         result = subprocess.run(
             cmd,
             stdout=subprocess.PIPE,
@@ -129,7 +129,7 @@ class IncrementalRAGIndexer:
 
         # * current files
         cmd = ["fd", f".*\\.{language_extension}$", str(self.source_code_dir), "--absolute-path", "--type", "f"]
-        print("current files cmd", cmd)
+        logger.debug("current files cmd", cmd)
         result = subprocess.run(
             cmd,
             stdout=subprocess.PIPE,
