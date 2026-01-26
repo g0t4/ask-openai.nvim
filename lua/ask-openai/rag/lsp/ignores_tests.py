@@ -29,6 +29,10 @@ def tmp_root(tmp_path):
 
     fs.root_path = root  # TODO! REMOVE after migrate ignores off of what else?
 
+    # reset cached gitignore spec for the temporary repository
+    lsp.ignores.gitignore_spec = None
+    lsp.ignores._used_fs_root_path = None
+
     return root
 
 def test_package_lock_is_ignored(tmp_root):
