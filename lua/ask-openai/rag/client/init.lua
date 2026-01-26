@@ -331,7 +331,7 @@ function M._context_query(request, callback)
         callback(result.matches or {})
     end
 
-    log:error("_context_query.request", vim.inspect(request)) -- TODO comment out later
+    -- log:error("_context_query.request", vim.inspect(request)) -- TODO comment out later
     -- TODO would be neat to include the query/instructions as input to the chat history so I can see what is triggering the specific matches in a chat history
     local params = {
         command = "semantic_grep",

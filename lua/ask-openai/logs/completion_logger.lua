@@ -99,7 +99,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             vim.fn.mkdir(save_to, "p")
 
             local thread_json_path = save_to .. "/" .. chat_turn_id .. "-thread.json"
-            log:info("thread_json_path", thread_json_path)
+            -- log:info("thread_json_path", thread_json_path)
             local thread_file = io.open(thread_json_path, "w")
             if thread_file then
                 local thread_data = {

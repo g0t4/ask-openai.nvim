@@ -114,7 +114,7 @@ function M.parse_includes(prompt)
         includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, k)
     end
 
-    log:info("includes", vim.inspect(includes))
+    -- log:info("includes", vim.inspect(includes))
     return includes
 end
 
