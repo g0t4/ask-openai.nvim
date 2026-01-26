@@ -5,7 +5,6 @@ from pathspec.patterns.gitwildmatch import GitWildMatchPattern
 
 from lsp.logs import get_logger
 from lsp.config import Config
-from lsp import fs
 
 logger = get_logger(__name__)
 
@@ -17,7 +16,6 @@ def setup_ignores(fs_root_path):
 
     def _setup_gitignored() -> PathSpec:
         # TODO why not just create this on first use! have helper to create/get it
-        #   TODO then I can clean up mess of using fs module for root_path etc
         gitignore_path = fs_root_path.joinpath(".gitignore")
 
         ignore_entries = set()
