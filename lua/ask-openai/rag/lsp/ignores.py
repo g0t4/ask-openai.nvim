@@ -38,12 +38,16 @@ def setup_ignores(fs_root_path) -> PathSpec:
 gitignore_spec: PathSpec = None
 
 def get_gitignore_spec(fs_root_path):
-    global gitignore_spec
-    # FYI always the same, so cache it... TECHNICALLY I SHOULD CACHE PER PATH
-    # TODO memoize the function
+    global gitignore_spec, _used_fs_root_path
 
     if (gitignore_spec is None):
         gitignore_spec = setup_ignores(fs_root_path)
+        _used_fs_root_path = fs_root_path
+
+    if (_used_fs_root_path != fs_root_path):
+        # instead of cache per path, this should never change so let's just warn!
+        #  it would be invaluable to know this changed too!
+        raise RuntimeError(f"gitignore spec cached for different root: {_used_fs_root_path} vs {fs_root_path}")
 
     return gitignore_spec
 
