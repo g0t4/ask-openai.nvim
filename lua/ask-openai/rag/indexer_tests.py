@@ -17,6 +17,7 @@ from lsp.chunks.chunker import RAGChunkerOptions
 from lsp.inference.client.embedder import encode_query
 from lsp.storage import ChunkType, load_chunks_by_file, load_file_stats_by_file
 from lsp.config import Config
+import lsp.ignores
 from lsp import fs  # stop gap set these until I remove fs's global state
 
 # logging_fwk_to_console("WARN") # stop INFO logs after timing captured
@@ -186,6 +187,8 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_update_index_removed_file(self):
+        lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
+
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)

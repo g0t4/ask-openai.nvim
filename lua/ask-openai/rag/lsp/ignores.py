@@ -52,6 +52,11 @@ def get_gitignore_spec(fs_root_path, config):
 
     return gitignore_spec
 
+def reset_cache_bewteen_tests():
+    global gitignore_spec, _used_fs_root_path
+    gitignore_spec = None
+    _used_fs_root_path = None
+
 IGNORED = True
 
 def is_ignored_allchecks(file_path: str | Path, config: Config, fs_root_path: Path):
