@@ -105,14 +105,22 @@ function M.get_context_item()
         return nil
     end
 
-    -- PRN should yanks be grouped by file or otherwise?
-    local content = "## Recent yanks across all files in the project:\n"
+    -- PRN deduplicate? on similarity?
+    -- PRN group/sort by file? if multiple yanks from same file
+    local content = "## Recent yanks (copy to clipboard):\n"
     for _, yank in ipairs(M.yanks) do
-        -- TODO! pass back chunk objects and let fim builder do this
-        content = content ..
-            ".. yanked from " .. yank.file .. ":\n" ..
-            table.concat(yank.content, '\n') .. '\n\n'
+        local is_markdown = yank.file:match("%.md$")
+        if is_markdown then
+            -- no markdown code block if it is markdown
+            content = content .. table.concat(yank.content, "\n") .. "\n\n"
+        else
+            -- wrap in ``` ``` code block
+            content = content .. "```" .. yank.file .. "\n"
+                .. table.concat(yank.content, "\n") .. "\n"
+                .. "```\n\n"
+        end
     end
+
     return ContextItem:new("nvim-recent-yanks.txt", content)
 end
 
