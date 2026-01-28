@@ -14,15 +14,18 @@ Each operation starts with one of three headers:
 *** Delete File: <path> - remove an existing file. Nothing follows.
 *** Update File: <path> - patch an existing file in place (optionally with a rename).
 
-May be immediately followed by *** Move to: <new path> if you want to rename the file.
+If you want to rename the file too, immediately follow with:
+*** Move to: <new path>
+
 Then one or more “hunks”, each introduced by @@ (optionally followed by a hunk header).
 Within a hunk each line starts with:
 
 - for inserted text,
-
 * for removed text, or
   space ( ) for context.
   At the end of a truncated hunk you can emit *** End of File.
+
+Here is the grammar:
 
 Patch := Begin { FileOp } End
 Begin := "*** Begin Patch" NEWLINE
@@ -53,5 +56,12 @@ It is important to remember:
 - You must include a header with your intended action (Add/Delete/Update)
 - You must prefix new lines with `+` even when creating a new file
 
-Also:
+Tips on a failure:
+- You only need enough context for a unique match!
+- The line(s) you replace are context too; if they’re unique, no additional context is needed.
+- Split bigger patches into smaller patches, i.e. if editing two functions, try each separately!
+- Watch out for whitespace differences, i.e. blank lines
+
+Please be curteous:
 - NEVER leave comments about removed code, just get rid of it. This code lives in a git repo.
+- Check your work! Especially after a failure.
