@@ -109,16 +109,12 @@ function M.get_context_item()
     -- PRN group/sort by file? if multiple yanks from same file
     local content = "## Recent yanks (copy to clipboard):\n"
     for _, yank in ipairs(M.yanks) do
-        local is_markdown = yank.file:match("%.md$")
-        if is_markdown then
-            -- no markdown code block if it is markdown
-            content = content .. table.concat(yank.content, "\n") .. "\n\n"
-        else
-            -- wrap in ``` ``` code block
-            content = content .. "```" .. yank.file .. "\n"
-                .. table.concat(yank.content, "\n") .. "\n"
-                .. "```\n\n"
-        end
+        -- wrap in markdown ``` code block
+        -- even if markdown content it s/b fine (also rare that I'd be in a md file
+        --  model can differentiate just fine if I am copying ``` codeblocks too, it will get it when it sees a codeblock for markdown content
+        content = content .. "```" .. yank.file .. "\n"
+            .. table.concat(yank.content, "\n") .. "\n"
+            .. "```\n\n"
     end
 
     return ContextItem:new("nvim-recent-yanks.txt", content)
