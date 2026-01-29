@@ -23,7 +23,7 @@ def area(width, height):
     return width * height
 ```
 
-1. thent he CORRECT completion is (do not include backticks, those are just to delimit included whitespace):
+1. then the CORRECT completion is (do not include backticks, those are just to delimit included whitespace):
 `width`
 
 2. WRONG (because repeats the suffix):
