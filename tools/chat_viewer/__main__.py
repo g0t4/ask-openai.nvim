@@ -36,10 +36,7 @@ def load_preapproved_files() -> None:
             sys.exit(f"Invalid regular expression '{line}': {exc}\n\nFix this (or comment out the line) to continue...")
 
 def is_preapproved(file_path: str) -> bool:
-    for pat in preapproved_file_patterns:
-        if pat.search(file_path):
-            return True
-    return False
+    return any(pat.search(file_path) for pat in preapproved_file_patterns)
 
 def print_asis(what, **kwargs):
     _console.print(what, markup=False, **kwargs)
