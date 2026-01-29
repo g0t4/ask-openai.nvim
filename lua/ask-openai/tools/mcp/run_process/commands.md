@@ -59,7 +59,6 @@ fd | rg foo # search STDIN
 > [!WARNING]
 > NEVER use `ls -R` to search for files.
 > NEVER use `grep -R` to search file contents.
-> ... if you do, kittens will die... lots of them.
 
 Other costly mistakes to avoid:
 
