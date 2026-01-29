@@ -15,7 +15,7 @@ from rich.text import Text
 
 _console = Console(color_system="truecolor")
 
-PREAPPROVED_FILES: list[re.Pattern] = []
+preapproved_file_patterns: list[re.Pattern] = []
 SHOW_ALL_FILES = False
 
 def load_preapproved_files() -> None:
@@ -30,12 +30,12 @@ def load_preapproved_files() -> None:
             continue
 
         try:
-            PREAPPROVED_FILES.append(re.compile(line))
+            preapproved_file_patterns.append(re.compile(line))
         except re.error as exc:
             sys.exit(f"Invalid regular expression '{line}': {exc}\n\nFix this (or comment out the line) to continue...")
 
 def is_preapproved(file_path: str) -> bool:
-    for pat in PREAPPROVED_FILES:
+    for pat in preapproved_file_patterns:
         if pat.search(file_path):
             return True
     return False
