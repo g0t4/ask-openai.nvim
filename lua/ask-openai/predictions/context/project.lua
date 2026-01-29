@@ -18,11 +18,11 @@ function M.ensure_read()
         return
     end
 
-    M._global_context = files.read_file_text(context_path("global.md"))
+    M._global_context = files.read_text(context_path("global.md"))
 
     local project_file = ".ask/project.md"
     if vim.fn.filereadable(project_file) == 1 then
-        M._project_context = files.read_file_text(project_file) -- relative to CWD
+        M._project_context = files.read_text(project_file) -- relative to CWD
     end
 
     M._filetype_contexts = {}
@@ -41,7 +41,7 @@ function M.ensure_read()
             if typ == "file" and name:sub(-3) == ".md" then
                 local ft = name:sub(1, -4) -- strip ".md"
                 local path = context_path("filetypes/" .. name)
-                local content = files.read_file_text(path)
+                local content = files.read_text(path)
                 M._filetype_contexts[ft] = content
             end
         end

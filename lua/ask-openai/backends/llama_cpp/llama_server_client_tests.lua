@@ -74,7 +74,7 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
     end)
 
     local function read_json_file(filename)
-        local text = files.read_file_text(filename)
+        local text = files.read_text(filename)
         if not text then
             return nil
         end
@@ -264,7 +264,7 @@ patch: string,
         --   2. date in system message changes
         -- MOSTLY I saved the file so you can visualize the big picture w/o re-runing the request
         --
-        -- local actual_prompt = files.read_file_text("lua/ask-openai/backends/llama_cpp/jinja/tests/full_date_run_command_prompt.harmony")
+        -- local actual_prompt = files.read_text("lua/ask-openai/backends/llama_cpp/jinja/tests/full_date_run_command_prompt.harmony")
         -- should.be_same_colorful_diff(actual_prompt, prompt) -- FYI don't directly compare
 
         str(prompt):should_start_with(harmony.START)

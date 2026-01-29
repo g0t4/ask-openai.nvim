@@ -51,7 +51,7 @@ end
 
 HarmonyFimPromptBuilder.developer_message =
     files
-    .read_file_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/backends/models/gptoss/prompts/fim_dev.md")
+    .read_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/backends/models/gptoss/prompts/fim_dev.md")
     :gsub("<<FIM_CURSOR_MARKER>>", qwen.FIM_MIDDLE)
 -- TODO ideas if indent issues persist:
 --   for blank lines (sans indents at start, before cursor)... run FIM as if empty line entirely
