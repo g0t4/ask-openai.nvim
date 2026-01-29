@@ -1,0 +1,8 @@
+*** Begin Patch
+*** Update File: auto_edit/new_silence/detects/detectors/ideas.py
+@@
+-class GapContext:
+-    win: GapWindow
++class GapContext:
++    win: SilenceWindow
+*** End Patch

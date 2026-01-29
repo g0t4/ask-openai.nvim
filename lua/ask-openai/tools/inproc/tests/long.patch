@@ -1,0 +1,12 @@
+*** Begin Patch
+*** Update File: auto_edit/new_silence/detects/detectors/ideas.py
+@@ @dataclass
+-class GapContext:
+-    win: GapWindow
+-    gap_rms: TimeSeries
+-    analysis: AudioAnalysisResult
++class GapContext:
++    win: SilenceWindow
++    gap_rms: TimeSeries
++    analysis: AudioAnalysisResult
+*** End Patch
