@@ -7,20 +7,24 @@ local M = {}
 
 function M.openai_tools()
     local tools = {}
-    local system_message_instructions = {}
-    for _, mcp_tool in pairs(mcp.tools_available) do
+
+    -- * inject system message instructions based on available tools
+    local system_instructs = {}
+    for name, mcp_tool in pairs(mcp.tools_available) do
         table.insert(tools, openai_tool(mcp_tool))
+        local tool_instructs = mcp.get_system_message_instructions(name)
+        if tool_instructs then
+            table.insert(system_instructs, tool_instructs)
+        end
     end
     for _, inprocess_tool in pairs(inprocess.tools_available) do
         table.insert(tools, inprocess_tool)
-
-        -- hack to inject instructions, will revisit later
+        -- PRN push this into inprocess module like mcp/init.lua above
         if inprocess_tool["function"].name == "apply_patch" then
-            -- TODO move this down into inprocess module to aggregate?
-            table.insert(system_message_instructions, apply_patch_tool.get_system_message_instructions())
+            table.insert(system_instructs, apply_patch_tool.get_system_message_instructions())
         end
     end
-    return tools, system_message_instructions
+    return tools, system_instructs
 end
 
 ---@alias ToolCallDoneCallback fun(call_output: table|MCPToolCallOutputResult|MCPToolCallOutputError)

@@ -55,7 +55,6 @@ function M.get_system_message_instructions()
 
     M.DevMessageInstructions = files.read_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/apply_patch.md")
         .. "\n\n" .. files.read_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/apply_patch_extended.md")
-        .. "\n\n" .. files.read_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/commits.md")
     return M.DevMessageInstructions
 end
 

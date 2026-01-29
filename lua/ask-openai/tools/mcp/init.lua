@@ -241,4 +241,32 @@ function M.send_tool_call(tool_call, callback)
     tool.server.tools_call(tool_call.id, name, args_decoded, vim.schedule_wrap(callback))
 end
 
+M._cached_run_process_instructions = nil
+---@param tool_name string
+---@return string|nil instructions (if applicable for tool_name)
+function M.get_system_message_instructions(tool_name)
+    if tool_name ~= "run_process" and tool_name ~= "run_command" then
+        return nil
+    end
+
+    if M._cached_run_process_instructions then
+        return M._cached_run_process_instructions
+    end
+    -- PRN could get these from a named MCP prompt resource?
+
+    local files = require("ask-openai.helpers.files")
+
+    local run_process_dir = "~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/mcp/run_process"
+
+    local commits = files.read_text(run_process_dir .. "/commits.md"):gsub("<<COAUTHOR_NAME>>", "gptoss120b")
+    -- TODO where to get placeholder value(s)? (i.e COAUTHOR_NAME)
+
+    local commands = files.read_text(run_process_dir .. "/commands.md")
+
+    -- PRN have a checker that looks at blank lines at end/start of join sections then adds \n only if needed
+    M._cached_run_process_instructions = commits .. "\n\n" .. commands
+
+    return M._cached_run_process_instructions
+end
+
 return M
