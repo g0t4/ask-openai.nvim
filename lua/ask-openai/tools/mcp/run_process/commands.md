@@ -1,5 +1,10 @@
 ## Commands
 
+Here are noteworthy commands you have access to:
+
+- fd, rg, gsed, gawk, jq, yq, httpie
+- exa, icdiff, ffmpeg, imagemagick, fzf
+
 ### Use `fd` to list files
 
 ```sh
