@@ -15,7 +15,7 @@ from rich.text import Text
 
 _console = Console(color_system="truecolor")
 
-PREAPPROVED_FILES: list[re.Pattern | str] = []
+PREAPPROVED_FILES: list[re.Pattern] = []
 SHOW_ALL_FILES = False
 
 def load_preapproved_files() -> None:
@@ -29,24 +29,15 @@ def load_preapproved_files() -> None:
         if not line or is_comment_line:
             continue
 
-        if line.startswith("re:"):
-            try:
-                PREAPPROVED_FILES.append(re.compile(line[3:]))
-            except re.error as exc:
-                # stop so I can fix it, otherwise I could easily miss this:
-                sys.exit(f"Invalid regular expression '{line[3:]}': {exc}\n\nFix this (or comment out the line) to continue...")
-        else:
-            PREAPPROVED_FILES.append(line)
+        try:
+            PREAPPROVED_FILES.append(re.compile(line))
+        except re.error as exc:
+            sys.exit(f"Invalid regular expression '{line}': {exc}\n\nFix this (or comment out the line) to continue...")
 
 def is_preapproved(file_path: str) -> bool:
     for pat in PREAPPROVED_FILES:
-        if isinstance(pat, re.Pattern):
-            if pat.search(file_path):
-                return True
-        else:
-            # strings can be an exact match, or prefix match (startswith)
-            if file_path == pat or file_path.startswith(pat):
-                return True
+        if pat.search(file_path):
+            return True
     return False
 
 def print_asis(what, **kwargs):
