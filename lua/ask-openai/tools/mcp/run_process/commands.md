@@ -30,6 +30,9 @@ fd --max-depth 3
 fd --size +10M
 fd --changed-within 2hours
 fd --changed-before 7days
+
+# Files are versioned in git, so you can use `git` to find files too:
+git ls-files
 ```
 
 ### Use `rg` (ripgrep) to search file contents
