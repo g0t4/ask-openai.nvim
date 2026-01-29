@@ -10,7 +10,7 @@ Please be curteous:
 - NEVER leave comments about removed code, just get rid of it. This code lives in a git repo.
 - Check your work! Especially after a failure.
 
-## More Examples
+### More Examples
 
 Here's a patch file to change the `win` property's type:
 
