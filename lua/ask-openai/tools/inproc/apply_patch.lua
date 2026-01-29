@@ -51,9 +51,11 @@ function M.get_system_message_instructions()
     if M.DevMessageInstructions then
         return M.DevMessageInstructions
     end
-    local lines = vim.fn.readfile(vim.fn.expand("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/apply_patch.md"))
-    local lines2 = vim.fn.readfile(vim.fn.expand("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/commits.md"))
-    M.DevMessageInstructions = table.concat(lines, "\n") .. "\n\n" .. table.concat(lines2, "\n")
+    local files = require("ask-openai.helpers.files")
+
+    M.DevMessageInstructions = files.text_for("lua/ask-openai/tools/inproc/apply_patch.md")
+        .. "\n\n" .. files.text_for("lua/ask-openai/tools/inproc/apply_patch_extended.md")
+        .. "\n\n" .. files.text_for("lua/ask-openai/tools/inproc/commits.md")
     return M.DevMessageInstructions
 end
 

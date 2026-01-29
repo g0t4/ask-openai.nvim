@@ -16,6 +16,11 @@ function M.read_file_lines(file_path)
     return lines
 end
 
+function M.text_for(repo_relative_path)
+    local absolute_path = vim.fn.getcwd() .. '/' .. repo_relative_path
+    return M.read_file_text(absolute_path)
+end
+
 ---@param file_path string
 ---@return string?
 function M.read_file_text(file_path)
