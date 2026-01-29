@@ -5,6 +5,8 @@ Here are noteworthy commands you have access to:
 - fd, rg, gsed, gawk, jq, yq, httpie
 - exa, icdiff, ffmpeg, imagemagick, fzf
 
+Here are some *suggestions* too...
+
 ### Use `fd` to list files
 
 ```sh
@@ -33,6 +35,8 @@ fd --changed-before 7days
 
 # Files are versioned in git, so you can use `git` to find files too:
 git ls-files
+
+# other commands are fine too! as long as they're not needlessly slow / verbose!
 ```
 
 ### Use `rg` (ripgrep) to search file contents
