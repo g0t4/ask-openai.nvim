@@ -1,4 +1,3 @@
-
 ## Committing
 
 - This project is in a git repo.
@@ -6,4 +5,3 @@
 - Keep the description concise.
 - And, include "Co-Authored-By: <your name>"
 - Only commit files you changed.
-
