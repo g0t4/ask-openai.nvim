@@ -1,4 +1,3 @@
-
 Tips on a failure:
 
 - You only need enough context for a unique match!
@@ -53,4 +52,3 @@ Or, this could work if the `win` property is unique:
 +    win: SilenceWindow
 *** End Patch
 ```
-
