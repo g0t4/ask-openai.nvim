@@ -19,7 +19,8 @@ preapproved_file_patterns: list[re.Pattern] = []
 SHOW_ALL_FILES = False
 
 def load_preapproved_files() -> None:
-    preapproved_path = Path(__file__).with_name("preapproved.txt")
+    # Use the user‑level configuration location instead of the repository copy.
+    preapproved_path = Path.home() / ".config" / "ask-openai" / "preapproved.txt"
     if not preapproved_path.is_file():
         return
     for raw in preapproved_path.read_text(encoding="utf-8").splitlines():
