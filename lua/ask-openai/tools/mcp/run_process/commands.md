@@ -49,6 +49,9 @@ rg --glob="*manual*" embed  # glob filters paths (contains manual)
 rg --glob="!*manual*" embed  # ! excludes (does not contain manual)
 rg --max-depth 1
 rg --multiline
+
+# list files only:
+rg --files-with-matches # or -l
 rg --files  # list searched files
 
 fd | rg foo # search STDIN
