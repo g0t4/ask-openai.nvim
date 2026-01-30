@@ -338,7 +338,7 @@ def _handle_run_command_and_run_process(arguments: str):
 
         renderables.append(command)
 
-        if not loaded:
+        if not any(loaded):
             return renderables
 
         remaining_keys = _json(loaded)
