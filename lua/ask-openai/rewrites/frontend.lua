@@ -340,7 +340,6 @@ local function ask_rewrite_command(opts)
     local code_caveat = ""
     local code = selection.original_text
     if code ~= nil and code ~= "" then
-        -- Compute line range for the selection (1-indexed for user readability)
         local start_line = (selection._start_line_0indexed or 0) + 1
         local end_line = (selection._end_line_0indexed or 0) + 1
         local line_info = start_line == end_line and tostring(start_line) or (start_line .. "-" .. end_line)
