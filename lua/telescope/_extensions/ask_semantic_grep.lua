@@ -388,13 +388,17 @@ function semantic_grep_current_filetype_picker(opts)
         prompt_title = 'semantic grep 󰕡 EVERYTHING'
     end
 
-    local function set_prompt_highlights(bg, fg, border, prefix)
-        vim.api.nvim_set_hl(0, "TelescopePromptNormal", { fg = fg, bg = bg })
-        vim.api.nvim_set_hl(0, "TelescopePromptBorder", { fg = border, bg = bg })
+    local function set_prompt_highlights()
+        apple_pink = "#ff375f"
+        prefix = "#ffffff"
+        -- nil, "#ffffff", , )
+        bg = bg or "#181b20" -- default bg
+        vim.api.nvim_set_hl(0, "TelescopePromptNormal", { fg = apple_pink, bg = bg })
+        vim.api.nvim_set_hl(0, "TelescopePromptBorder", { fg = apple_pink, bg = bg })
         vim.api.nvim_set_hl(0, "TelescopePromptPrefix", { fg = prefix, bg = bg })
     end
 
-    -- set_prompt_highlights("#2e2e2e", "#ffffff", "#ff375f", "#ff8700")
+    set_prompt_highlights()
     picker = pickers:new({
         prompt_title = prompt_title,
         prompt_prefix = '󰕡 ',
