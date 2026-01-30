@@ -57,15 +57,15 @@ fd | rg foo # search STDIN
 ### _Verboten_ Commands
 
 > [!WARNING]
-> NEVER use `ls -R` to search for files.
-> NEVER use `grep -R` to search file contents.
+> NEVER use `ls -R`
+> NEVER use `grep -R`
+> NEVER use `find . -type f`
+
+Why? Because they are _SLOW_ and generate tons of useless output as they hoover up `node_modules`, `.venv`, etc because they don't support `.gitignore` exclusions.
 
 Other costly mistakes to avoid:
-
 ```sh
 ls -R ~ # gonna be a late night 🥱
 ls -R / # only assholes do this 😈
 ```
 
-- Never prefer commands that are slow 🐢
-- Never run commands that generate butt loads of output, for no good reason... `ls -R` 👀
