@@ -343,8 +343,12 @@ def _handle_run_command_and_run_process(arguments: str):
 
         renderables.append(command)
 
+        # If there are no keys in the parsed JSON, we still need to return a
+        # two‑element tuple so callers can safely unpack the result.  The
+        # second element contains any title renderables that may have been
+        # collected earlier (often an empty list).
         if not any(loaded):
-            return renderables
+            return renderables, title_renderables
 
         remaining_keys = _json(loaded)
         renderables.extend(["remaining keys:", remaining_keys])
