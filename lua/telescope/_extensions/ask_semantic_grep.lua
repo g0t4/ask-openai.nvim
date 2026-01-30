@@ -298,6 +298,18 @@ local get_icon_for_chunk_type = function(chunk_type)
     end
 end
 
+-- Set custom highlight groups for the Telescope prompt (the input box at the bottom left).
+-- This controls the query text colour, the background of the prompt, the border and the prefix symbol.
+---@param bg string Background colour in hex (e.g. "#2e2e2e").
+---@param fg string Foreground colour for the query text (e.g. "#ffffff").
+---@param border string Colour for the border around the prompt (e.g. "#5fb3b3").
+---@param prefix string Colour for the prompt prefix (e.g. "#ff8700").
+local function set_prompt_highlights(bg, fg, border, prefix)
+    vim.api.nvim_set_hl(0, "TelescopePromptNormal", { fg = fg, bg = bg })
+    vim.api.nvim_set_hl(0, "TelescopePromptBorder", { fg = border, bg = bg })
+    vim.api.nvim_set_hl(0, "TelescopePromptPrefix", { fg = prefix, bg = bg })
+end
+
 function semantic_grep_current_filetype_picker(opts)
     -- * this runs before picker opens, so you can gather context, i.e. current filetype, its LSP, etc
     ---@type LSPSemanticGrepRequest
@@ -382,12 +394,13 @@ function semantic_grep_current_filetype_picker(opts)
     opts_previewer = {}
     local prompt_title = 'semantic grep 󰕡 ' .. tostring(vim.o.filetype)
     if opts.languages == "GLOBAL" then
-        -- TODO list global languages here? from rag.yaml?
         prompt_title = 'semantic grep 󰕡 GLOBAL languages'
     end
     if opts.languages == "EVERYTHING" then
         prompt_title = 'semantic grep 󰕡 EVERYTHING'
     end
+    -- Apply custom colours to the Telescope prompt (query input box).
+    set_prompt_highlights("#2e2e2e", "#ffffff", "#5fb3b3", "#ff8700")
     picker = pickers:new({
         prompt_title = prompt_title,
         prompt_prefix = '󰕡 ',
