@@ -316,7 +316,7 @@ def _handle_run_command_and_run_process(arguments: str):
         loaded = json.loads(arguments)
         # import rich
         # rich.inspect(loaded)
-        mode = yank(loaded, "mode")
+        mode = loaded.get("mode")
 
         if mode == "shell":
             command_source = yank(loaded, "command_line")
