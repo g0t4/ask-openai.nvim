@@ -389,6 +389,7 @@ function semantic_grep_current_filetype_picker(opts)
     end
 
     local function set_prompt_highlights()
+        -- PRN set this always? it will apply to everything once this is called... can I have it apply just to my picker?
         apple_pink = "#ff375f"
         prefix = "#ffffff"
         -- nil, "#ffffff", , )
