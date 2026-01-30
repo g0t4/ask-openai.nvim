@@ -129,16 +129,12 @@ local function ask_question_command(opts)
     if selection then
         local file_name = files.get_file_relative_path(code_bufnr)
         -- include line range in the filename like foo.py:10-20
-        local line_range = selection:start_line_1indexed()
-        if selection:end_line_1indexed() ~= selection:start_line_1indexed() then
-            line_range = line_range .. "-" .. selection:end_line_1indexed()
-        end
-        local file_display = file_name .. ":" .. line_range
+        local start_line = selection:start_line_1indexed()
+        local end_line = selection:end_line_1indexed()
+        local line_info = start_line == end_line and tostring(start_line) or (start_line .. "-" .. end_line)
+        local file_display = file_name .. ":" .. line_info
         code_context =
-            "I selected the following\n"
-            .. "```" .. file_display .. "\n"
-            .. selection.original_text .. "\n"
-            .. "```"
+            "Here is the code I selected:" .. "\n```" .. file_display .. "\n" .. selection.original_text .. "\n```"
 
         -- PRN count \n in selection.original_text and only fold if > 10
         local fold = false -- = newline_count > 10
