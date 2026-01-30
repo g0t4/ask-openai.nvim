@@ -303,8 +303,9 @@ def _bash(source: str) -> Syntax:
     )
 
 def _json(data: dict) -> Syntax:
+    pretty = json.dumps(data, ensure_ascii=False, indent=2)
     return Syntax(
-        json.dumps(data, ensure_ascii=False, indent=2),
+        pretty,
         "json",
         theme="ansi_dark",
         line_numbers=False,
