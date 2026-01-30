@@ -308,6 +308,7 @@ def _json(data: dict) -> Syntax:
         pretty,
         "json",
         theme="ansi_dark",
+        # indent_guides=True,
         line_numbers=False,
     )
 
