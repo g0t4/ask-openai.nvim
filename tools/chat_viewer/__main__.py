@@ -359,8 +359,7 @@ def _handle_run_command_and_run_process(arguments: str):
 def handle_json_args(arguments: str):
     try:
         loaded = json.loads(arguments)
-        pretty = json.dumps(loaded, ensure_ascii=False, indent=2)
-        return Syntax(pretty, "json", theme="ansi_dark", indent_guides=True, line_numbers=False), None
+        return _json(loaded), None
     except json.JSONDecodeError as e:
         return arguments, None
 
