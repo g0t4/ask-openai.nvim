@@ -329,9 +329,13 @@ def _handle_run_command_and_run_process(arguments: str):
             theme="ansi_dark",
             line_numbers=False,
         )
-        return [command, "unformatted keys:", remaining_keys]
-    except json.JSONDecodeError as e:
-        return [Text(arguments)]
+        return [command, "remaining keys:", remaining_keys]
+    except Exception as err:
+        return [
+            Text.from_markup("[white bold on red]Failed parsing command"),
+            Text(f"ERROR: {err}"),
+            Text(f"original arguments: {arguments}"),
+        ]
 
 def handle_json_args(arguments: str):
     try:
