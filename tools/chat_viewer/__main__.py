@@ -294,6 +294,22 @@ def _handle_apply_patch(arguments: str):
         return json.dumps(parsed, ensure_ascii=False)
     return str(parsed)
 
+def _bash(source: str) -> Syntax:
+    return Syntax(
+        source,
+        "bash",
+        theme="ansi_dark",
+        line_numbers=False,
+    )
+
+def _json(data: dict) -> Syntax:
+    return Syntax(
+        json.dumps(data, ensure_ascii=False, indent=2),
+        "json",
+        theme="ansi_dark",
+        line_numbers=False,
+    )
+
 def _handle_run_command_and_run_process(arguments: str):
     renderables: list = []
     try:
@@ -315,12 +331,7 @@ def _handle_run_command_and_run_process(arguments: str):
             command_source = yank(loaded, "command")
 
         if command_source:
-            command = Syntax(
-                command_source,
-                "bash",
-                theme="ansi_dark",
-                line_numbers=False,
-            )
+            command = _bash(command_source)
         else:
             command = Text.from_markup("[bold white on red]<INVALID COMMAND>")
             loaded = json.loads(arguments)  # reload so we have mode/argv/command_line
@@ -330,12 +341,7 @@ def _handle_run_command_and_run_process(arguments: str):
         if not loaded:
             return renderables
 
-        remaining_keys = Syntax(
-            json.dumps(loaded, ensure_ascii=False, indent=2),
-            "json",
-            theme="ansi_dark",
-            line_numbers=False,
-        )
+        remaining_keys = _json(loaded)
         renderables.extend(["remaining keys:", remaining_keys])
     except Exception as err:
         renderables.extend([
