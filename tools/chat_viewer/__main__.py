@@ -297,6 +297,8 @@ def _handle_apply_patch(arguments: str):
 def _handle_run_command_and_run_process(arguments: str):
     try:
         loaded = json.loads(arguments)
+        # import rich
+        # rich.inspect(loaded)
         mode = yank(loaded, "mode")
 
         if mode == "shell":
@@ -307,12 +309,16 @@ def _handle_run_command_and_run_process(arguments: str):
         else:
             command_source = yank(loaded, "command")
 
-        command = Syntax(
-            command_source,
-            "bash",
-            theme="ansi_dark",
-            line_numbers=False,
-        )
+        if command_source:
+            command = Syntax(
+                command_source,
+                "bash",
+                theme="ansi_dark",
+                line_numbers=False,
+            )
+        else:
+            command = Text.from_markup("[bold white on red]<INVALID COMMAND>")
+            loaded = json.loads(arguments)  # reload so we have mode/argv/command_line
 
         if len(loaded.keys()) == 0:
             return command
