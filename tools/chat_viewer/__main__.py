@@ -281,18 +281,18 @@ def _handle_apply_patch(arguments: str):
     try:
         parsed = json.loads(arguments)
     except Exception:
-        return arguments
+        return arguments, None
 
     if isinstance(parsed, dict) and "patch" in parsed:
         patch_content = str(parsed["patch"])
         try:
             syntax = Syntax(patch_content, "diff", theme="ansi_dark", line_numbers=False)
-            return syntax
+            return syntax, None
         except Exception:
-            return patch_content
+            return patch_content, None
     if isinstance(parsed, dict):
-        return json.dumps(parsed, ensure_ascii=False)
-    return str(parsed)
+        return json.dumps(parsed, ensure_ascii=False), None
+    return str(parsed), None
 
 def _bash(source: str) -> Syntax:
     return Syntax(
@@ -311,12 +311,15 @@ def _json(data: dict) -> Syntax:
     )
 
 def _handle_run_command_and_run_process(arguments: str):
-    renderables: list = []
+    title_renderables = []
+    renderables = []
     try:
         loaded = json.loads(arguments)
         # import rich
         # rich.inspect(loaded)
-        mode = loaded.get("mode")
+        mode = yank(loaded, "mode")
+        if mode:
+            title_renderables.append(Text.from_markup(f"[bold]{mode}[/]"))
 
         if mode == "shell":
             command_source = yank(loaded, "command_line")
@@ -350,20 +353,20 @@ def _handle_run_command_and_run_process(arguments: str):
             Text(f"original arguments: {arguments}"),
         ])
 
-    return renderables
+    return renderables, title_renderables
 
 def handle_json_args(arguments: str):
     try:
         loaded = json.loads(arguments)
         pretty = json.dumps(loaded, ensure_ascii=False, indent=2)
-        return Syntax(pretty, "json", theme="ansi_dark", indent_guides=True, line_numbers=False)
+        return Syntax(pretty, "json", theme="ansi_dark", indent_guides=True, line_numbers=False), None
     except json.JSONDecodeError as e:
-        return arguments
+        return arguments, None
 
 def _handle_unknown_tool(arguments: str):
     return arguments
 
-def _format_tool_arguments(func_name: str, arguments: str):
+def _format_tool_arguments(func_name: str, arguments: str) -> tuple[list, list]:
     if func_name == "apply_patch":
         return _handle_apply_patch(arguments)
 
@@ -414,18 +417,23 @@ def print_assistant(msg: dict):
             arguments = yank(function, "arguments")
             # arguments = function["arguments"]
 
-            args = _format_tool_arguments(func_name, arguments)
+            (renders, title_renders) = _format_tool_arguments(func_name, arguments)
 
             print_if_missing_keys(function, "function")
             print_if_missing_keys(call, "call")
 
-            _console.print(f"- [bold]{func_name}[/]:")
+            # PRN add () title args vs remainder of args
+            if title_renders:
+                titles = ", ".join(map(str, title_renders))
+                _console.print(f"- [bold]{func_name}({titles})[/]:")
+            else:
+                _console.print(f"- [bold]{func_name}[/]:")
 
-            if isinstance(args, list):
-                for part in args:
+            if isinstance(renders, list):
+                for part in renders:
                     print_asis(Padding(part, (0, 0, 0, 4)))
             else:
-                print_asis(Padding(args, (0, 0, 0, 4)))
+                print_asis(Padding(renders, (0, 0, 0, 4)))
             _console.print()  # blank line
 
 def get_color(role: str) -> str:
