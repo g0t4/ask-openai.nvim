@@ -295,6 +295,7 @@ def _handle_apply_patch(arguments: str):
     return str(parsed)
 
 def _handle_run_command_and_run_process(arguments: str):
+    renderables: list = []
     try:
         loaded = json.loads(arguments)
         # import rich
@@ -320,8 +321,10 @@ def _handle_run_command_and_run_process(arguments: str):
             command = Text.from_markup("[bold white on red]<INVALID COMMAND>")
             loaded = json.loads(arguments)  # reload so we have mode/argv/command_line
 
-        if len(loaded.keys()) == 0:
-            return command
+        renderables.append(command)
+
+        if not loaded:
+            return renderables
 
         remaining_keys = Syntax(
             json.dumps(loaded, ensure_ascii=False, indent=2),
@@ -329,13 +332,15 @@ def _handle_run_command_and_run_process(arguments: str):
             theme="ansi_dark",
             line_numbers=False,
         )
-        return [command, "remaining keys:", remaining_keys]
+        renderables.extend(["remaining keys:", remaining_keys])
     except Exception as err:
-        return [
+        renderables.extend([
             Text.from_markup("[white bold on red]Failed parsing command"),
             Text(f"ERROR: {err}"),
             Text(f"original arguments: {arguments}"),
-        ]
+        ])
+
+    return renderables
 
 def handle_json_args(arguments: str):
     try:
