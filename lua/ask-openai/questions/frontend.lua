@@ -619,9 +619,14 @@ function QuestionsFrontend.follow_up_command()
     -- log:trace("follow up content:", user_message)
 
     if not QuestionsFrontend.thread then
-        -- for now just use follow up for existing chat, not a new one...
-        error("revisit code for using chat window to open initial chat turn")
-        -- FYI careful w/ chat window already open here
+        opts = {
+            args = user_message
+        }
+        -- TODO if /selection that won't work, I can fix that later
+        --   TODO can't I get a history of selections or smth?
+        --    what if I wanna select text in the chat window itself?
+        --    does last selection track the file? is it per window?
+        ask_question_command(opts)
         return
     end
 
