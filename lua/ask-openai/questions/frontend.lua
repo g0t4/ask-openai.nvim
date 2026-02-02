@@ -215,6 +215,7 @@ local function ask_question_command(opts)
 
         ---@param rag_matches LSPRankedMatch[]
         function on_rag_response(rag_matches)
+            log:info("on_rag_response")
             -- * make sure prior (canceled) rag request doesn't still respond
             if QuestionsFrontend.rag_request_ids ~= this_request_ids then
                 log:trace("possibly stale rag results, skipping: " .. vim.inspect({
@@ -233,9 +234,13 @@ local function ask_question_command(opts)
         end
 
         this_request_ids, cancel = rag_client.context_query_questions(code_bufnr, cleaned_prompt, code_context, context.includes.top_k, on_rag_response)
-        QuestionsFrontend.rag_cancel = cancel
+        QuestionsFrontend.rag_cancel = function()
+            log:warn("canceling RAG")
+            QuestionsFrontend.rag_cancel = nil
+            cancel()
+            QuestionsFrontend.rag_request_ids = nil
+        end
         QuestionsFrontend.rag_request_ids = this_request_ids
-        -- TODO! add cancelation logic to other parts of this QuestionsFrontend besides right here (review rewrites/predictions)
     else
         QuestionsFrontend.rag_cancel = nil
         QuestionsFrontend.rag_request_ids = nil
@@ -603,6 +608,9 @@ function QuestionsFrontend.abort_last_request()
         return
     end
     CurlRequestForThread.terminate(QuestionsFrontend.thread.last_request)
+    if QuestionsFrontend.rag_cancel then
+        QuestionsFrontend.rag_cancel()
+    end
 end
 
 function QuestionsFrontend.follow_up_command()

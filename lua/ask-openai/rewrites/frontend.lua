@@ -261,6 +261,9 @@ function RewriteFrontend.abort_last_request()
     end
 
     CurlRequest.terminate(RewriteFrontend.last_request)
+    if RewriteFrontend.rag_cancel then
+        RewriteFrontend.rag_cancel()
+    end
 
     if RewriteFrontend.displayer ~= nil then
         RewriteFrontend.displayer:clear_extmarks()
@@ -431,6 +434,7 @@ local function ask_rewrite_command(opts)
 
         ---@param rag_matches LSPRankedMatch[]
         function on_rag_response(rag_matches)
+            log:info("on_rag_response")
             -- PRN I think this could be shared with all frontends... if they pass themself for access to ID/cancel refs
 
             -- * make sure prior (canceled) rag request doesn't still respond
@@ -452,6 +456,13 @@ local function ask_rewrite_command(opts)
 
         -- TODO should abort logic also clear rag_cancel/rag_request_ids?
         this_request_ids, cancel = rag_client.context_query_rewrites(user_prompt, code_context, context.includes.top_k, on_rag_response)
+        RewriteFrontend.rag_cancel = function()
+            log:warn("canceling RAG")
+            RewriteFrontend.rag_cancel = nil
+            cancel()
+            RewriteFrontend.rag_request_ids = nil
+        end
+
         RewriteFrontend.rag_cancel = cancel
         RewriteFrontend.rag_request_ids = this_request_ids
     else
