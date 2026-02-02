@@ -332,8 +332,11 @@ function QuestionsFrontend.ensure_chat_window_is_open()
 
         -- stop generation, if still wanna look at it w/o closing the window
         vim.keymap.set("n", "<Esc>", QuestionsFrontend.abort_last_request, { buffer = QuestionsFrontend.chat_window.buffer_number })
+
         -- I already use this globally to close a window (:q) ... so just add stop to it:
         vim.keymap.set("n", "<F8>", QuestionsFrontend.abort_and_close, { buffer = QuestionsFrontend.chat_window.buffer_number })
+
+        vim.keymap.set({ "n", "i" }, "<C-s>", QuestionsFrontend.follow_up_command, { buffer = QuestionsFrontend.chat_window.buffer_number })
     end
 
     QuestionsFrontend.chat_window:open()
