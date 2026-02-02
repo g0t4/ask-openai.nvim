@@ -141,6 +141,10 @@ async def doc_opened(params: types.DidOpenTextDocumentParams):
     # imports.on_open(params)
 
 async def schedule_update(doc_uri: str):
+    if doc_uri.endswith("/AskQuestion"):
+        # PRN move client side
+        logger.info("skipping AskQuestion")
+        return
     if fs.is_no_rag_dir():
         return
     await update_queue.fire_and_forget(doc_uri)
