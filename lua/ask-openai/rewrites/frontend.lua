@@ -426,7 +426,7 @@ local function ask_rewrite_command(opts)
             if ok then
                 local base = vim.fn.stdpath('state') .. "/ask-openai/rewrite"
                 vim.fn.mkdir(base, "p")
-                local filename = "initial-" .. os.time() .. ".json"
+                local filename = os.time() .. "-initial.json"
                 local path = base .. "/" .. filename
                 local file = io.open(path, "w")
                 if file then

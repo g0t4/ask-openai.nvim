@@ -42,7 +42,7 @@ function ChatThread:save_initial()
     end
     vim.fn.mkdir(base, "p")
 
-    local filename = "initial-" .. os.time() .. ".json"
+    local filename = os.time() .. "-initial.json"
     local path = base .. "/" .. filename
     local file = io.open(path, "w")
     if not file then
