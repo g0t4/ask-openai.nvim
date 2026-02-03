@@ -31,6 +31,7 @@ dependencies = [
     "setuptools>=80.9.0",
     "tree-sitter>=0.25.2",
     "tree-sitter-language-pack>=0.10.0",
+    "whoosh>=2.7.4",
     "yapf>=0.43.0",
 ]
 
