@@ -420,6 +420,27 @@ local function ask_rewrite_command(opts)
             -- tools = tool_router.openai_tools(),
         })
 
+        -- Save the initial request messages before sending.
+        do
+            local ok, json = pcall(vim.json.encode, { messages = messages })
+            if ok then
+                local base = vim.fn.stdpath('state') .. "/ask-openai/rewrite"
+                vim.fn.mkdir(base, "p")
+                local filename = "initial-" .. os.time() .. ".json"
+                local path = base .. "/" .. filename
+                local file = io.open(path, "w")
+                if file then
+                    file:write(json)
+                    file:close()
+                    log:info("Saved initial rewrite request to %s", path)
+                else
+                    log:error("Unable to write initial rewrite request to %s", path)
+                end
+            else
+                log:error("Failed to encode initial rewrite request: %s", json)
+            end
+        end
+
         RewriteFrontend.last_request = CurlRequest:new({
             body = body,
             base_url = "http://build21:8013",
