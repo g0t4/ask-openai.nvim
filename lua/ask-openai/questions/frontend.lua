@@ -253,6 +253,11 @@ function QuestionsFrontend.then_send_messages()
     QuestionsFrontend.this_turn_chat_start_line_base0 = QuestionsFrontend.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
+    -- Save the initial user message (and any pre‑added context) before sending the request.
+    if QuestionsFrontend.thread and QuestionsFrontend.thread.save_initial then
+        QuestionsFrontend.thread:save_initial()
+    end
+
     local request = CurlRequestForThread:new({
         body = QuestionsFrontend.thread:next_curl_request_body(),
         base_url = QuestionsFrontend.thread.base_url,
