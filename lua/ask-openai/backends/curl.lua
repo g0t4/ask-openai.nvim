@@ -36,6 +36,29 @@ function Curl.spawn(request, frontend)
     request.body.stream = true
 
     local json = vim.json.encode(request.body)
+    -- Save the initial request payload (messages) before sending, for any frontend that uses Curl.
+    do
+        if request.body and request.body.messages then
+            local ok, payload = pcall(vim.json.encode, { messages = request.body.messages })
+            if ok then
+                local base = vim.fn.stdpath('state') .. "/ask-openai/" .. (request.type or "generic")
+                vim.fn.mkdir(base, "p")
+                local filename = os.time() .. "-initial.json"
+                local path = base .. "/" .. filename
+                local file = io.open(path, "w")
+                if file then
+                    file:write(payload)
+                    file:close()
+                    log:info("Saved initial curl request to %s", path)
+                else
+                    log:error("Unable to write initial curl request to %s", path)
+                end
+            else
+                log:error("Failed to encode initial curl request: %s", payload)
+            end
+        end
+    end
+
     local options = {
         command = "curl",
         args = {
