@@ -24,35 +24,6 @@ function ChatThread:new(params, base_url)
     return self
 end
 
---- Save the current thread messages to a JSON file for recovery.
---- The file is written to the Neovim data directory and includes a timestamp.
-function ChatThread:save_initial()
-    -- Encode the current thread state.
-    local ok, json = pcall(vim.json.encode, { messages = self.messages, params = self.params })
-    if not ok then
-        log:error("Failed to encode chat thread to JSON: %s", json)
-        return
-    end
-
-    -- Build a path that mirrors where response logs are written.
-    local base = vim.fn.stdpath('state') .. "/ask-openai"
-    base = base .. "/questions"
-    if self.start_time then
-        base = base .. "/" .. tostring(self.start_time)
-    end
-    vim.fn.mkdir(base, "p")
-
-    local filename = os.time() .. "-initial.json"
-    local path = base .. "/" .. filename
-    local file = io.open(path, "w")
-    if not file then
-        log:error("Unable to open file for writing: %s", path)
-        return
-    end
-    file:write(json)
-    file:close()
-    log:info("Saved initial chat thread to %s", path)
-end
 
 ---@param request CurlRequestForThread
 function ChatThread:set_last_request(request)
