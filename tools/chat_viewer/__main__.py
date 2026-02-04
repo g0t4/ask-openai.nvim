@@ -153,7 +153,11 @@ def print_markdown_content(msg: dict, role: str):
     # Detect auto‑generated RAG context blocks.
     if raw_content.startswith("# Semantic Grep matches:"):
         lines = raw_content.splitlines()
-        # Skip the first summary line.
+
+        # keep header
+        print_asis(lines[0]) # ok to de-emphasize (don't show as markdown header)
+
+        # enumerate matches:
         idx = 1
         while idx < len(lines):
             header = lines[idx]
