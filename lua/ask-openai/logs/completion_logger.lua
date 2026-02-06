@@ -119,8 +119,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
                     --   .__verbose.content (generated raw outputs, but ONLY for stream=false)
                     last_sse = sse_parsed,
                 }
-                if sse_parsed.__verbose then
-                end
                 thread_file:write(json.encode(thread_data, { indent = true }))
                 thread_file:close()
             end
