@@ -72,12 +72,16 @@ end
 function M.format(lines, tool_call, message)
     local decoded_args = add_tool_header(lines, tool_call, message)
     if decoded_args then
-        -- PRN input color?
+        -- PRN add indication that these are inputs? right now they blend in with outputs... (color?)
+        if decoded_args.stdin then
+            lines:append_text_fold_if_long("STDIN", decoded_args.stdin)
+            decoded_args.stdin = nil
+        end
+
         for key, value in pairs(decoded_args) do
+            -- other inputs: cwd, stdin, timeout_ms, dry_run (I'd be fine w/ hiding timeout_ms and dry_run if false)
             lines:append_text(key .. ": " .. vim.inspect(value))
         end
-        --   TODO args.workdir
-        --   TODO args.STDIN show collapsed?
     end
 
     -- -- debug dump everything:
