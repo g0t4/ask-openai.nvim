@@ -377,7 +377,7 @@ local function handle_rx_messages_updated()
 
         for _, tool_call in ipairs(rx_message.tool_calls) do
             local function_name = tool_call["function"].name or ""
-            local formatter = formatters.get_formatter(function_name) or formatters.generic.format
+            local formatter = formatters.get_formatter(function_name)
             local ok, err = pcall(formatter, lines, tool_call, rx_message)
             if not ok then
                 lines:append_unexpected_text("Formatter error: " .. tostring(err))

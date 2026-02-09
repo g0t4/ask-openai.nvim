@@ -15,6 +15,7 @@ local formatters_by_function_name = {
 
 function M.get_formatter(function_name)
     return formatters_by_function_name[function_name]
+        or generic.format
 end
 
 return M
