@@ -125,7 +125,7 @@ function M.format(lines, tool_call, message)
             if name == "STDOUT" then
                 -- TODO! I want tool specific formatters... b/c for run_command, I want the command (esp if its small) to be the header! I don't need to see run_command ever, right?
                 if text then
-                    lines:append_STDOUT(text)
+                    lines:append_text_fold_if_long("STDOUT", text)
                 else
                     -- PRN skip STDOUT entirely if empty?
                     lines:append_unexpected_line("UNEXPECTED empty STDOUT?")

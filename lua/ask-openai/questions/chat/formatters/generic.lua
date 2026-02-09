@@ -122,7 +122,7 @@ function M.format(lines, tool_call, message)
                 end
             elseif name == "STDOUT" then
                 if text then
-                    lines:append_STDOUT(text)
+                    lines:append_text_fold_if_long("STDOUT", text)
                 end
             else
                 -- GENERIC output type

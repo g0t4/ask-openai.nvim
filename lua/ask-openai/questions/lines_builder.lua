@@ -139,6 +139,12 @@ end
 ---@param text string
 ---@param max_lines? integer
 function LinesBuilder:append_STDOUT(text, max_lines)
+    self:append_text_fold_if_long("STDOUT", text, max_lines)
+end
+
+---@param text string
+---@param max_lines? integer
+function LinesBuilder:append_text_fold_if_long(key, text, max_lines)
     -- TODO! add some unit tests to flesh out bugs (b/c breaking an agent workflow would suck!)
 
     max_lines = max_lines or 3
@@ -150,14 +156,14 @@ function LinesBuilder:append_STDOUT(text, max_lines)
     if #lines == 0 then
         return
     elseif #lines == 1 then
-        local oneliner = "STDOUT: " .. lines[1]
+        local oneliner = key .. ": " .. lines[1]
         -- PRN style the STDOUT as subset of line (use column offsets)
-        self:append_styled_lines({ oneliner }, HLGroups.TOOL_STDOUT_CONTENT)
+        self:append_styled_lines({ oneliner }, HLGroups.TOOL_STDOUT_CONTENT) -- TODO pass HLGroup(s) so I can have other styles
         return
     elseif #lines == 2 and lines[2] == "" then
         -- last line is blank b/c of \n on end of STDOUT
 
-        local oneliner = "STDOUT: " .. lines[1]
+        local oneliner = key .. ": " .. lines[1]
         -- PRN style the STDOUT as subset of line (use column offsets)
         self:append_styled_lines({ oneliner }, HLGroups.TOOL_STDOUT_CONTENT)
         return
@@ -168,7 +174,7 @@ function LinesBuilder:append_STDOUT(text, max_lines)
 
     -- TODO do I really want this to be colorful? can I just show the output w/o a header? i.e. depending on what else was present in content array?
     --    TODO in this case I need to handle the entire command on its own? so it can control rest of content?
-    self:append_styled_lines({ "STDOUT" }, HLGroups.TOOL_STDOUT_HEADER)
+    self:append_styled_lines({ key }, HLGroups.TOOL_STDOUT_HEADER)
 
     -- first max_lines (default 3) are not collapsed
     local visible_lines = vim.list_slice(lines, 1, max_lines)
@@ -179,7 +185,7 @@ function LinesBuilder:append_STDOUT(text, max_lines)
     -- Add the folded remainder as a child fold
     if #folded_lines > 0 then
         self:append_folded_styled_lines(folded_lines, "") -- foldtext blank or custom
-        -- TODO ask a tiny model to summarize the lines!
+        -- PRN? ask a tiny model to summarize the lines!
     end
 end
 
