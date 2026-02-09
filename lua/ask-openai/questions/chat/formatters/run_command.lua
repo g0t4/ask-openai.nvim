@@ -18,21 +18,34 @@ local function get_tool_header_text(args_json, message)
         return "json decode failure (see logs): " .. vim.inspect(object_or_error), nil
     end
 
-    if object_or_error.command then
-        -- PRN? if LONG then fold the one line b/c with my fold setup a long line can be collapsed
-        -- and then the first part of command will be visible
-        return object_or_error.command, object_or_error
-    end
-    if object_or_error.command_line then
-        return object_or_error.command_line, object_or_error
-    end
-    if object_or_error.argv then
-        -- TODO mark as arv? in a debug mode return it with vim.inspect?
-        return table.concat(object_or_error.argv, " "), object_or_error
+    if not object_or_error.mode then
+        return "missing mode: ", object_or_error
     end
 
-    log:error("missing object.command", vim.inspect(object_or_error))
-    return "missing object.command: " .. vim.inspect(object_or_error), object_or_error
+    local mode = object_or_error.mode
+    object_or_error.mode = nil -- only want to pass back remaining args
+
+    if mode == "shell" then
+        local command_line = object_or_error.command_line
+        object_or_error.command_line = nil
+        if command_line then
+            return command_line, object_or_error
+        end
+        return "missing command_line: ", object_or_error
+    end
+
+    if mode == "executable" then
+        local argv = object_or_error.argv
+        if argv then
+            local cmd = table.concat(argv, " ")
+            object_or_error.argv = nil
+            return cmd, object_or_error
+        end
+        return "missing argv: ", object_or_error
+    end
+
+    log:error("invalid mode", args_json)
+    return "invalid mode: " .. args_json, object_or_error
 end
 
 ---@type ToolCallFormatter
@@ -61,9 +74,7 @@ function M.format(lines, tool_call, message)
     if decoded_args then
         -- PRN input color?
         for key, value in pairs(decoded_args) do
-            if key ~= "mode" and key ~= "command" and key ~= "command_line" and key ~= "argv" then
-                lines:append_text(key .. ": " .. vim.inspect(value))
-            end
+            lines:append_text(key .. ": " .. vim.inspect(value))
         end
         --   TODO args.workdir
         --   TODO args.STDIN show collapsed?
