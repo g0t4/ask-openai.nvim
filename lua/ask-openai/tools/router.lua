@@ -36,6 +36,7 @@ function M.send_tool_call_router(tool_call, callback)
     -- local tool_name = "no_way" -- FYI test tool call failure plumbing (callbacks)
 
     local function safe_call(fn)
+        -- treat as tool call failure, that way model can choose how to recover... vs just killing your tool runner :)
         local ok, err = pcall(fn)
         if not ok then
             callback(plumbing.create_tool_call_output_for_error_message(err))
