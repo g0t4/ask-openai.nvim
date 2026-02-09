@@ -69,7 +69,8 @@ function M.format(lines, tool_call, message)
         --   TODO args.STDIN show collapsed?
     end
 
-    lines:append_text(vim.inspect(tool_call))
+    -- -- debug dump everything:
+    -- lines:append_text(vim.inspect(tool_call))
 
     if not tool_call.call_output then
         -- tool not yet run/running – indicate pending state
