@@ -58,8 +58,18 @@ end
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
     local decoded_args = add_tool_header(lines, tool_call, message)
-    --   TODO args.workdir
-    --   TODO args.STDIN show collapsed?
+    if decoded_args then
+        -- PRN input color?
+        for key, value in pairs(decoded_args) do
+            if key ~= "mode" and key ~= "command" and key ~= "command_line" and key ~= "argv" then
+                lines:append_text(key .. ": " .. vim.inspect(value))
+            end
+        end
+        --   TODO args.workdir
+        --   TODO args.STDIN show collapsed?
+    end
+
+    lines:append_text(vim.inspect(tool_call))
 
     if not tool_call.call_output then
         -- tool not yet run/running – indicate pending state
