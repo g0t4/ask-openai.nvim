@@ -6,37 +6,38 @@ local M = {}
 
 ---@param args_json string
 ---@param message RxAccumulatedMessage
----@return string
+---@return string: header
+---@return table?: decoded_args
 local function get_tool_header_text(args_json, message)
     if message:is_still_streaming() then
-        return args_json
+        return args_json, nil
     end
 
     local success, object_or_error = safely.decode_json_always_logged(args_json)
     if not success then
-        return "json decode failure (see logs): " .. vim.inspect(object_or_error)
+        return "json decode failure (see logs): " .. vim.inspect(object_or_error), nil
     end
 
     if object_or_error.command then
         -- PRN? if LONG then fold the one line b/c with my fold setup a long line can be collapsed
         -- and then the first part of command will be visible
-        return object_or_error.command
+        return object_or_error.command, object_or_error
     end
     if object_or_error.command_line then
-        return object_or_error.command_line
+        return object_or_error.command_line, object_or_error
     end
     if object_or_error.argv then
         -- TODO mark as arv? in a debug mode return it with vim.inspect?
-        return table.concat(object_or_error.argv, " ")
+        return table.concat(object_or_error.argv, " "), object_or_error
     end
 
     log:error("missing object.command", vim.inspect(object_or_error))
-    return "missing object.command: " .. vim.inspect(object_or_error)
+    return "missing object.command: " .. vim.inspect(object_or_error), object_or_error
 end
 
 ---@type ToolCallFormatter
 local function add_tool_header(lines, tool_call, message)
-    local header = get_tool_header_text(tool_call["function"].arguments, message)
+    local header, decoded_args = get_tool_header_text(tool_call["function"].arguments, message)
     local hl_group = HLGroups.TOOL_SUCCESS
     if tool_call.call_output then
         if tool_call.call_output.result.isError then
@@ -51,11 +52,12 @@ local function add_tool_header(lines, tool_call, message)
     --   stuffed in the command field!
     --   (anything to not use the stdin arg, lol)
     lines:append_styled_text(header, hl_group)
+    return decoded_args
 end
 
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
-    add_tool_header(lines, tool_call, message)
+    local decoded_args = add_tool_header(lines, tool_call, message)
     --   TODO args.workdir
     --   TODO args.STDIN show collapsed?
 
