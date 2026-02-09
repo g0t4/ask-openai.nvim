@@ -378,7 +378,7 @@ local function handle_rx_messages_updated()
         for _, tool_call in ipairs(rx_message.tool_calls) do
             local function_name = tool_call["function"].name or ""
             local formatter = formatters.get_formatter(function_name)
-            local ok, err = pcall(formatter, lines, tool_call, rx_message)
+            local ok, err = pcall(function() formatter(lines, tool_call, rx_message) end)
             if not ok then
                 lines:append_unexpected_text("Formatter error: " .. tostring(err))
                 lines:append_text(vim.inspect(tool_call))
