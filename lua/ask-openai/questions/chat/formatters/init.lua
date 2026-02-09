@@ -1,9 +1,7 @@
 local run_process = require("ask-openai.questions.chat.formatters.run_command")
 local generic = require("ask-openai.questions.chat.formatters.generic")
 
-local M = {
-    generic = generic
-}
+local M = {}
 
 ---@alias ToolCallFormatter fun(lines: LinesBuilder, tool_call: ToolCall, message: RxAccumulatedMessage): nil
 
