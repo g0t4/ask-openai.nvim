@@ -45,6 +45,8 @@ end
 ---@param lines LinesBuilder
 function BufferController:replace_with_styled_lines_after(start_line_inclusive_base0, lines)
     local with_lines = lines.turn_lines
+    -- log:error("with_lines", table.concat(with_lines, "\n"))
+
     local marks = lines.marks
     local marks_ns_id = lines.marks_ns_id
 
@@ -113,6 +115,18 @@ function BufferController:replace_with_styled_lines_after(start_line_inclusive_b
             --  TODO show "reasoning"
             --  PRN show thinking dots when it's WIP!
         end
+
+        -- * PRN add extmarks for <br> to virtually split line?
+        -- -- TODO modify this below to add extmarks instead of splitting lines
+        -- for _, line in ipairs(with_lines) do
+        --     -- TODO don't split the line... just find matches...
+        --     local parts = vim.split(line, "<br>", { plain = true, trimempty = false })
+        --     for _, part in ipairs(parts) do
+        --        -- TODO add extmark
+        --     end
+        -- end
+        -- log:error("processed_lines", table.concat(processed_lines, "\n"))
+
 
         -- log:info("folding:")
         -- local line_count = vim.api.nvim_buf_line_count(self.buffer_number)
