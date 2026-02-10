@@ -104,6 +104,18 @@ local function ask_question_command(opts)
         if tool_provided_instructs then
             system = system .. "\n\n" .. table.concat(tool_provided_instructs, "\n")
         end
+
+        -- If readonly mode, remove editing tools like apply_patch
+        if context.includes.readonly then
+            local filtered = {}
+            for _, tool in ipairs(tool_definitions) do
+                local name = tool["function"] and tool["function"].name or nil
+                if name ~= "apply_patch" then
+                    table.insert(filtered, tool)
+                end
+            end
+            tool_definitions = filtered
+        end
     end
 
     -- * display system message in chat window
