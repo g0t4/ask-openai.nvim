@@ -116,17 +116,46 @@ function BufferController:replace_with_styled_lines_after(start_line_inclusive_b
             --  PRN show thinking dots when it's WIP!
         end
 
-        -- * PRN add extmarks for <br> to virtually split line?
-        -- -- TODO modify this below to add extmarks instead of splitting lines
-        -- for _, line in ipairs(with_lines) do
-        --     -- TODO don't split the line... just find matches...
-        --     local parts = vim.split(line, "<br>", { plain = true, trimempty = false })
-        --     for _, part in ipairs(parts) do
-        --        -- TODO add extmark
+        -- -- -- * add extmarks for <br> to virtually split line
+        -- -- TODO do overhead testing of this plus surrounding redo logic on every token
+        -- --   TODO if overhead is too steep, consider buffering tokens until every Nth token, OR maybe per line?
+        -- --    per line should be pefectly fine!
+        -- --    could even do it dynamic like first 5 lines, do it per token, after 10 lines wait for full lines thereafter...
+        -- --    that way short completions don't appear laggy
+        -- --    while also not redrawing every token for long completions where the token by token is not relevant
+        -- --    and line by line might be a more smooth rendering
+        -- --
+        -- --  FYI there are possible cases where I wouldn't want to show a split
+        -- --   i.e. verbatim reproduction of text in some scenario that has <br> in it...
+        -- --   wait and see if any situation arises and if so roll this back
+        -- --   I could forbid <br> in system prompt, but I hate the idea attention distractions... so, no
+        -- --   worse case remove this and leave the <br> and move on with life
+        -- --   PRN how common is this?
+        -- for line_number_base1, line in ipairs(with_lines) do
+        --     local search_start_col1 = 1
+        --     while true do
+        --         local start_col1, end_col1 = line:find("<br>", search_start_col1, true) -- find is 1-based column #s
+        --         if not start_col1 then
+        --             break
+        --         end
+        --         log:info("FOUND br", line, start_col1, end_col1)
+        --         local col_base0 = start_col1 - 1
+        --         vim.api.nvim_buf_set_extmark(
+        --             self.buffer_number,
+        --             marks_ns_id,
+        --             start_line_inclusive_base0 + (line_number_base1 - 1), -- 0‑based
+        --             col_base0, -- 0-based
+        --             {
+        --                 hl_group = "AskOpenAIBRTag",
+        --                 -- show a zero‑width virtual text so the line is visually split
+        --                 virt_text = { { "", "NonText" } },
+        --                 virt_text_pos = "overlay",
+        --             }
+        --         )
+        --         -- continue searching after this <br>
+        --         search_start_col1 = end_col1 + 1
         --     end
         -- end
-        -- log:error("processed_lines", table.concat(processed_lines, "\n"))
-
 
         -- log:info("folding:")
         -- local line_count = vim.api.nvim_buf_line_count(self.buffer_number)
