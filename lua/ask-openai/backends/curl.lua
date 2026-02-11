@@ -38,7 +38,6 @@ _G.CompletionsEndpoints = {
 function Curl.spawn(request, frontend)
     request.body.stream = true
 
-    local json_body = vim.json.encode(request.body)
     -- Save the initial request payload (messages) before sending, for any frontend that uses Curl.
     if request.body and request.body.messages then
         local ok, payload = pcall(function()
@@ -73,6 +72,7 @@ function Curl.spawn(request, frontend)
         end
     end
 
+    local json_body = vim.json.encode(request.body)
     local options = {
         command = "curl",
         args = {
