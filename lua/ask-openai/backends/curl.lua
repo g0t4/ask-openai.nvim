@@ -38,39 +38,43 @@ _G.CompletionsEndpoints = {
 function Curl.spawn(request, frontend)
     request.body.stream = true
 
-    -- Save the initial request payload (messages) before sending, for any frontend that uses Curl.
-    if request.body and request.body.messages then
-        local ok, payload = pcall(function()
-            -- * each message on its own (initial request has multiple messages)
-            --  PRN do I really like this style? how about just pretty print with back to back messages :) and not deal with "jsonl"
-            --  TODO only append new message
-            --    currently re-saving entire thread every time
-            local message_lines = {}
-            for _, msg in ipairs(request.body.messages) do
-                table.insert(message_lines, json.encode(
-                    { messages = { msg } },
-                    { indent = false } -- compact/oneline
-                ))
-            end
-            return table.concat(message_lines, "\n")
-        end)
-        if ok then
-            local save_dir, thread_id = completion_logger.log_request_with(request, frontend)
+    function write_messages_json()
+        -- Save the initial request payload (messages) before sending, for any frontend that uses Curl.
+        if request.body and request.body.messages then
+            local ok, payload = pcall(function()
+                -- * each message on its own (initial request has multiple messages)
+                --  PRN do I really like this style? how about just pretty print with back to back messages :) and not deal with "jsonl"
+                --  TODO only append new message
+                --    currently re-saving entire thread every time
+                local message_lines = {}
+                for _, msg in ipairs(request.body.messages) do
+                    table.insert(message_lines, json.encode(
+                        { messages = { msg } },
+                        { indent = false } -- compact/oneline
+                    ))
+                end
+                return table.concat(message_lines, "\n")
+            end)
+            if ok then
+                local save_dir, thread_id = completion_logger.log_request_with(request, frontend)
 
-            vim.fn.mkdir(save_dir, "p")
-            local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
-            local file = io.open(path, "w")
-            if file then
-                file:write(payload)
-                file:close()
-                log:info("Saved initial curl request to %s", path)
+                vim.fn.mkdir(save_dir, "p")
+                local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
+                local file = io.open(path, "w")
+                if file then
+                    file:write(payload)
+                    file:close()
+                    log:info("Saved initial curl request to %s", path)
+                else
+                    log:error("Unable to write initial curl request to %s", path)
+                end
             else
-                log:error("Unable to write initial curl request to %s", path)
+                log:error("Failed to encode initial curl request: %s", payload)
             end
-        else
-            log:error("Failed to encode initial curl request: %s", payload)
         end
     end
+
+    write_messages_json()
 
     local json_body = vim.json.encode(request.body)
     local options = {
