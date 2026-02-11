@@ -6,6 +6,22 @@ local M = {
     -- LOG_ALL_SSEs = true,
     LOG_ALL_SSEs = false,
 }
+---@param request CurlRequest
+---@param frontend StreamingFrontend
+---@return string save_dir, string thread_id
+function M.where_to_save(request, frontend)
+    local save_dir = vim.fn.stdpath("state") .. "/ask-openai"
+    if request.type ~= "" then
+        -- add `questions/` or `fim/` or `rewrite/` intermediate path
+        save_dir = save_dir .. "/" .. request.type
+    end
+    local thread_id = tostring(request.start_time)
+    if frontend.thread then
+        -- multi-turn threads use thread's start_time
+        thread_id = tostring(frontend.thread.start_time)
+    end
+    return save_dir, thread_id
+end
 
 ---@param sse_parsed table
 ---@param request CurlRequest
@@ -73,24 +89,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             frontend = frontend,
         }
 
-        ---@param request CurlRequest
-        ---@param frontend StreamingFrontend
-        ---@return string save_dir, string thread_id
-        function where_to_save(request, frontend)
-            local save_dir = vim.fn.stdpath("state") .. "/ask-openai"
-            if request.type ~= "" then
-                -- add `questions/` or `fim/` or `rewrite/` intermediate path
-                save_dir = save_dir .. "/" .. request.type
-            end
-            local thread_id = tostring(request.start_time)
-            if frontend.thread then
-                -- multi-turn threads use thread's start_time
-                thread_id = tostring(frontend.thread.start_time)
-            end
-            return save_dir, thread_id
-        end
-
-        local save_dir, thread_id = where_to_save(request, frontend)
+        local save_dir, thread_id = M.where_to_save(request, frontend)
 
         if M.LOG_ALL_SSEs then
             -- PRN save to 123-sses.jsonl
