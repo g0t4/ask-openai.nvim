@@ -80,12 +80,12 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             save_dir = save_dir .. "/" .. request.type
         end
         local thread_id = tostring(request.start_time)
-        if frontend and frontend.thread then
+        if frontend.thread then
             -- multi-turn threads use thread's start_time
             thread_id = tostring(frontend.thread.start_time)
         end
         if M.LOG_ALL_SSEs then
-            -- PRN save this to different file? jsonl would make a ton of sense here
+            -- PRN save to 123-sses.jsonl
             --   SSEs are fairly standardized => thus jsonl would likely read table-like
             --   for all but first(s)/last(s)
             --
@@ -97,10 +97,10 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             vim.fn.mkdir(save_dir, "p")
             -- TODO append new message to -messages.jsonl (new line, compact)
 
-            local thread_json_path = save_dir .. "/" .. thread_id .. "-thread.json"
-            -- log:info("thread_json_path", thread_json_path)
-            local thread_file = io.open(thread_json_path, "w")
-            if thread_file then
+            local path = save_dir .. "/" .. thread_id .. "-thread.json"
+            -- log:info("thread path", path)
+            local file = io.open(path, "w")
+            if file then
                 local thread_data = {
                     -- 99.99% of the time this is all I need (input messages thread + output message):
                     request_body = request.body,
@@ -118,8 +118,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
                     --   .__verbose.content (generated raw outputs, but ONLY for stream=false)
                     last_sse = sse_parsed,
                 }
-                thread_file:write(json.encode(thread_data, { indent = true }))
-                thread_file:close()
+                file:write(json.encode(thread_data, { indent = true }))
+                file:close()
             end
 
             if M.LOG_ALL_SSEs then

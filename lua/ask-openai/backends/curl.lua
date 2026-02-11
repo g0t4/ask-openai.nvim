@@ -30,6 +30,7 @@ _G.CompletionsEndpoints = {
 ---@field on_sse_llama_server_timings OnParsedSSE
 ---@field on_curl_exited_successfully OnCurlExitedSuccessfully
 ---@field explain_error ExplainError
+---@field thread? CurlRequestForThread
 
 ---@param request CurlRequest|CurlRequestForThread
 ---@param frontend StreamingFrontend
@@ -41,16 +42,32 @@ function Curl.spawn(request, frontend)
     do
         if request.body and request.body.messages then
             local ok, payload = pcall(function()
-                return json.encode(
-                    { messages = request.body.messages },
-                    { indent = false } -- indent = false => compact/oneline, vs true which is pretty printed/indented
-                )
+                -- * each message on its own (initial request has multiple messages)
+                --  PRN do I really like this style? how about just pretty print with back to back messages :) and not deal with "jsonl"
+                local message_lines = {}
+                for _, msg in ipairs(request.body.messages) do
+                    table.insert(message_lines, json.encode(
+                        { messages = { msg } },
+                        { indent = false } -- compact/oneline
+                    ))
+                end
+                return table.concat(message_lines, "\n")
             end)
             if ok then
-                local base = vim.fn.stdpath('state') .. "/ask-openai/" .. (request.type or "generic")
-                vim.fn.mkdir(base, "p")
-                local filename = os.time() .. "-messages.jsonl"
-                local path = base .. "/" .. filename
+                -- TODO share builder logic w/ completion_logger (and other loggers, i.e. future loggers like accept_logger)
+                local save_dir = vim.fn.stdpath("state") .. "/ask-openai"
+                if request.type ~= "" then
+                    -- add `questions/` or `fim/` or `rewrite/` intermediate path
+                    save_dir = save_dir .. "/" .. request.type
+                end
+                local thread_id = tostring(request.start_time)
+                if frontend.thread then
+                    -- multi-turn threads use thread's start_time
+                    thread_id = tostring(frontend.thread.start_time)
+                end
+
+                vim.fn.mkdir(save_dir, "p")
+                local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
                 local file = io.open(path, "w")
                 if file then
                     file:write(payload)
