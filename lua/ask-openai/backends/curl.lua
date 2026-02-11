@@ -38,6 +38,8 @@ function Curl.spawn(request, frontend)
 
     local json_body = vim.json.encode(request.body)
     -- Save the initial request payload (messages) before sending, for any frontend that uses Curl.
+    -- TODO initial here is just saving the new user message (not initial for that purpose)
+    --   TODO fold this into new message append logger (not dump thread every time)
     do
         if request.body and request.body.messages then
             local ok, payload = pcall(json.encode, { messages = request.body.messages }, { indent = true })
