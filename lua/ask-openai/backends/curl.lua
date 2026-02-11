@@ -3,6 +3,7 @@ local CurlRequest = require("ask-openai.backends.curl_request")
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 local completion_logger = require('ask-openai.logs.completion_logger')
 local safely = require("ask-openai.helpers.safely")
+local json = require('dkjson')
 
 local Curl = {}
 
@@ -35,11 +36,11 @@ _G.CompletionsEndpoints = {
 function Curl.spawn(request, frontend)
     request.body.stream = true
 
-    local json = vim.json.encode(request.body)
+    local json_body = vim.json.encode(request.body)
     -- Save the initial request payload (messages) before sending, for any frontend that uses Curl.
     do
         if request.body and request.body.messages then
-            local ok, payload = pcall(vim.json.encode, { messages = request.body.messages })
+            local ok, payload = pcall(json.encode, { messages = request.body.messages }, { indent = true })
             if ok then
                 local base = vim.fn.stdpath('state') .. "/ask-openai/" .. (request.type or "generic")
                 vim.fn.mkdir(base, "p")
@@ -68,7 +69,7 @@ function Curl.spawn(request, frontend)
             "-X", "POST",
             request:get_url(),
             "-H", "Content-Type: application/json",
-            "-d", json
+            "-d", json_body
         },
     }
 
