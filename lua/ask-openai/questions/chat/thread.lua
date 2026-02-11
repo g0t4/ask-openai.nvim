@@ -24,7 +24,6 @@ function ChatThread:new(params, base_url)
     return self
 end
 
-
 ---@param request CurlRequestForThread
 function ChatThread:set_last_request(request)
     self.last_request = request
@@ -32,7 +31,6 @@ end
 
 ---@param message TxChatMessage
 function ChatThread:add_message(message)
-    -- TODO drop previous messages => message.reasoning_content once a final message is detected?
     if not message.role then
         error("message.role is required")
     end
@@ -41,10 +39,6 @@ end
 
 ---@return table body
 function ChatThread:next_curl_request_body()
-    -- TODO add support for GptOssReasoningLevel.off => do the same as I am doing in FIM by setting last message w/ role==assistant and the message can prefill to force no thinking
-    --   TODO see this in fim code:
-    --     local fixed_thoughts = HarmonyFimPromptBuilder.deep_thoughts_about_fim
-
     ---@param array any[]
     ---@return any[]
     function clone_array_container_not_items(array)
