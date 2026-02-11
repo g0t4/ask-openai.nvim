@@ -56,7 +56,7 @@ function Curl.spawn(request, frontend)
             return table.concat(message_lines, "\n")
         end)
         if ok then
-            local save_dir, thread_id = completion_logger.where_to_save(request, frontend)
+            local save_dir, thread_id = completion_logger.log_request_with(request, frontend)
 
             vim.fn.mkdir(save_dir, "p")
             local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"

@@ -9,7 +9,7 @@ local M = {
 ---@param request CurlRequest
 ---@param frontend StreamingFrontend
 ---@return string save_dir, string thread_id
-function M.where_to_save(request, frontend)
+function M.log_request_with(request, frontend)
     local save_dir = vim.fn.stdpath("state") .. "/ask-openai"
     if request.type ~= "" then
         -- add `questions/` or `fim/` or `rewrite/` intermediate path
@@ -89,16 +89,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             frontend = frontend,
         }
 
-        local save_dir, thread_id = M.where_to_save(request, frontend)
-
-        if M.LOG_ALL_SSEs then
-            -- PRN save to 123-sses.jsonl
-            --   SSEs are fairly standardized => thus jsonl would likely read table-like
-            --   for all but first(s)/last(s)
-            --
-            -- create dir for multiple files (one per SSE)
-            save_dir = save_dir .. "/" .. thread_id
-        end
+        local save_dir, thread_id = M.log_request_with(request, frontend)
 
         vim.defer_fn(function()
             vim.fn.mkdir(save_dir, "p")
@@ -129,8 +120,12 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
                 file:close()
             end
 
+
             if M.LOG_ALL_SSEs then
-                local all_file = io.open(save_dir .. "/all_sses.json", "w")
+                -- PRN save to 123-sses.jsonl?
+                --   SSEs are fairly standardized => thus jsonl would likely read table-like
+                --   for all but first(s)/last(s)
+                local all_file = io.open(save_dir .. "/" .. thread_id .. "/all_sses.json", "w")
                 if all_file then
                     all_file:write(json.encode(all_sses, { indent = true }))
                     all_file:close()
