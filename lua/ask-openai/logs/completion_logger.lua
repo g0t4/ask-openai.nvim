@@ -95,6 +95,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             vim.fn.mkdir(save_dir, "p")
 
             function append_assistant_message()
+                -- FYI 0.1 ms for this func to run (a few tests) - NBD to be saving redundant info that's also in -thread.json
+
                 -- FYI I am keeping -thread.json for now until I have time to update my chat viewer for -messages.jsonl
                 --   I don't think I need anything beyond messages from -thread.json... if not then I'll ditch -thread.json most likely
                 --   if I do need more, it will be a while (if ever) before I fully stop using thread.json
