@@ -75,17 +75,18 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
 
         local save_to = vim.fn.stdpath("state") .. "/ask-openai"
         if request.type ~= "" then
+            -- add `questions/` or `fim/` or `rewrite/` intermediate path
             save_to = save_to .. "/" .. request.type
         end
-        if request.type == "questions" then
+        if frontend and frontend.thread then
             -- * group multi-turn chat thread log files
             -- multi turn chats should be grouped b/c each is written to disk after each response is generated
             -- only for QuestionsFrontend currently b/c FIM/AskRewrite are single turn chats
-            if frontend and frontend.thread then
-                -- convenient to use start_time b/c it sorts with all other logs that use starttime on per turn basis
-                local group_id = frontend.thread.start_time
-                save_to = save_to .. "/" .. tostring(group_id)
-            end
+            -- convenient to use start_time b/c it sorts with all other logs that use starttime on per turn basis
+            local group_id = frontend.thread.start_time
+            save_to = save_to .. "/" .. tostring(group_id)
+        else
+            -- use start time as there should only ever be one request and one response
         end
         -- chat turn id uniquely identifies each "turn" or exchange of user request + model response
         local chat_turn_id = tostring(sse_parsed.created)
