@@ -95,6 +95,9 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             vim.fn.mkdir(save_dir, "p")
 
             function append_assistant_message()
+                -- TODO! THIS IS NOT THE RIGHT SPOT! I don't have tool calls yet!
+                --  TODO move -thread.json (below) too? less big of a deal as I normally only use the last thread after tool calls are done
+
                 -- FYI 0.1 ms for this func to run (a few tests) - NBD to be saving redundant info that's also in -thread.json
 
                 -- FYI I am keeping -thread.json for now until I have time to update my chat viewer for -messages.jsonl
@@ -112,7 +115,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
                 end
             end
 
-            append_assistant_message()
+            -- append_assistant_message()
 
             local path = save_dir .. "/" .. thread_id .. "-thread.json"
             -- log:info("thread path", path)

@@ -45,13 +45,18 @@ function Curl.spawn(request, frontend)
                 -- * each message on its own (initial request has multiple messages)
                 --  PRN do I really like this style? how about just pretty print with back to back messages :) and not deal with "jsonl"
                 --  TODO only append new message - long assistant threads will increase each turn, the time it takes and since I recreate each time... it's going to be painful (possibly... as in 10ms? each turn... which is FINE for now :) )
+                --   TODO how about flag each message as logged? (after logged so not logging that)
                 --    currently re-saving entire thread every time
                 local message_lines = {}
                 for _, msg in ipairs(request.body.messages) do
-                    table.insert(message_lines, json.encode(
-                        { messages = { msg } },
-                        { indent = false } -- compact/oneline
-                    ))
+                    if not msg._logged then
+                        local json_string = json.encode(msg,
+                            { indent = false } -- compact/oneline
+                        )
+                        table.insert(message_lines, json_string)
+                        log:info("logging message", json_string)
+                        msg._logged = true
+                    end
                 end
                 return table.concat(message_lines, "\n")
             end)
@@ -60,7 +65,7 @@ function Curl.spawn(request, frontend)
 
                 vim.fn.mkdir(save_dir, "p")
                 local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
-                local file = io.open(path, "w")
+                local file = io.open(path, "a")
                 if file then
                     file:write(payload)
                     file:close()
