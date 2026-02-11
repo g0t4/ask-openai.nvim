@@ -98,7 +98,14 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         vim.defer_fn(function()
             vim.fn.mkdir(save_to, "p")
 
-            local thread_json_path = save_to .. "/" .. chat_turn_id .. "-thread.json"
+            -- For multi‑turn question threads we want a single file that is overwritten on each turn.
+            -- Use a constant filename inside the thread's directory.
+            local thread_json_path
+            if request.type == "questions" then
+                thread_json_path = save_to .. "/thread.json"
+            else
+                thread_json_path = save_to .. "/" .. chat_turn_id .. "-thread.json"
+            end
             -- log:info("thread_json_path", thread_json_path)
             local thread_file = io.open(thread_json_path, "w")
             if thread_file then
