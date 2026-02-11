@@ -43,6 +43,8 @@ function Curl.spawn(request, frontend)
         local ok, payload = pcall(function()
             -- * each message on its own (initial request has multiple messages)
             --  PRN do I really like this style? how about just pretty print with back to back messages :) and not deal with "jsonl"
+            --  TODO only append new messages (in this case, assistant response message only)
+            --    currently re-saving entire thread every time
             local message_lines = {}
             for _, msg in ipairs(request.body.messages) do
                 table.insert(message_lines, json.encode(

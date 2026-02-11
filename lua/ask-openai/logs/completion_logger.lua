@@ -73,17 +73,25 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             frontend = frontend,
         }
 
-        -- TODO share builder logic w/ completion_logger (and other loggers, i.e. future loggers like accept_logger)
-        local save_dir = vim.fn.stdpath("state") .. "/ask-openai"
-        if request.type ~= "" then
-            -- add `questions/` or `fim/` or `rewrite/` intermediate path
-            save_dir = save_dir .. "/" .. request.type
+        ---@param request CurlRequest
+        ---@param frontend StreamingFrontend
+        ---@return string save_dir, string thread_id
+        function where_to_save(request, frontend)
+            local save_dir = vim.fn.stdpath("state") .. "/ask-openai"
+            if request.type ~= "" then
+                -- add `questions/` or `fim/` or `rewrite/` intermediate path
+                save_dir = save_dir .. "/" .. request.type
+            end
+            local thread_id = tostring(request.start_time)
+            if frontend.thread then
+                -- multi-turn threads use thread's start_time
+                thread_id = tostring(frontend.thread.start_time)
+            end
+            return save_dir, thread_id
         end
-        local thread_id = tostring(request.start_time)
-        if frontend.thread then
-            -- multi-turn threads use thread's start_time
-            thread_id = tostring(frontend.thread.start_time)
-        end
+
+        local save_dir, thread_id = where_to_save(request, frontend)
+
         if M.LOG_ALL_SSEs then
             -- PRN save to 123-sses.jsonl
             --   SSEs are fairly standardized => thus jsonl would likely read table-like
