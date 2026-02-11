@@ -1,5 +1,6 @@
 local buffers = require("ask-openai.helpers.buffers")
 local log = require("ask-openai.logs.logger").predictions()
+local completion_logger = require("ask-openai.logs.completion_logger")
 local tool_router = require("ask-openai.tools.router")
 local curl = require("ask-openai.backends.curl")
 local agentica = require("ask-openai.backends.models.agentica")
@@ -530,6 +531,28 @@ function QuestionsFrontend.show_user_role()
     QuestionsFrontend.chat_window:append_styled_lines(lines_builder)
 end
 
+local function log_new_assistant_message(message)
+    -- FYI 0.1 ms for this func to run (a few tests) - NBD to be saving redundant info that's also in -thread.json
+
+    -- FYI I am keeping -thread.json for now until I have time to update my chat viewer for -messages.jsonl
+    --   I don't think I need anything beyond messages from -thread.json... if not then I'll ditch -thread.json most likely
+    --   if I do need more, it will be a while (if ever) before I fully stop using thread.json
+
+    local oneline = { indent = false }
+    local json_line = vim.json.encode(message, oneline)
+
+    local save_dir, thread_id = completion_logger.log_request_with(QuestionsFrontend.thread.last_request, QuestionsFrontend)
+    local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
+    local file, err = io.open(path, "a")
+    if not file then
+        log:error("Failed to open messages log for appending: %s", err)
+    else
+        message._logged = true
+        file:write(json_line, "\n")
+        file:close()
+    end
+end
+
 ---@type OnCurlExitedSuccessfully
 function QuestionsFrontend.on_curl_exited_successfully()
     vim.schedule(function()
@@ -546,6 +569,7 @@ function QuestionsFrontend.on_curl_exited_successfully()
             --   theoretically there can be multiple messages, with any role (not just assitant)
             local thread_message = TxChatMessage:from_assistant_rx_message(rx_message)
             QuestionsFrontend.thread:add_message(thread_message)
+            log_new_assistant_message(thread_message)
 
             -- * show user role (in chat window) as hint to follow up (now that model+tool_calls are all done):
             QuestionsFrontend.show_user_role()
