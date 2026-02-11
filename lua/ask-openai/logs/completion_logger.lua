@@ -93,7 +93,21 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
 
         vim.defer_fn(function()
             vim.fn.mkdir(save_dir, "p")
-            -- TODO append new message to -messages.jsonl (new line, compact)
+
+            function append_assistant_message()
+                local oneline = { indent = false }
+                local json_line = vim.json.encode(request.accum, oneline)
+                local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
+                local file, err = io.open(path, "a")
+                if not file then
+                    log:error("Failed to open messages log for appending: %s", err)
+                else
+                    file:write(json_line, "\n")
+                    file:close()
+                end
+            end
+
+            append_assistant_message()
 
             local path = save_dir .. "/" .. thread_id .. "-thread.json"
             -- log:info("thread path", path)
