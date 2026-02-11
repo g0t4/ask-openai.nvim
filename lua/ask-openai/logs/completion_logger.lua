@@ -98,7 +98,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
 
         vim.defer_fn(function()
             vim.fn.mkdir(save_to, "p")
-            -- TODO fold into a new message appender logger (not save thread every time)
+            -- TODO append new message to -messages.jsonl (new line, compact)
 
             -- For multi‑turn question threads we want a single file that is overwritten on each turn.
             -- Use a constant filename inside the thread's directory.
