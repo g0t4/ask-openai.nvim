@@ -95,6 +95,9 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             vim.fn.mkdir(save_dir, "p")
 
             function append_assistant_message()
+                -- FYI I am keeping -thread.json for now until I have time to update my chat viewer for -messages.jsonl
+                --   I don't think I need anything beyond messages from -thread.json... if not then I'll ditch -thread.json most likely
+                --   if I do need more, it will be a while (if ever) before I fully stop using thread.json
                 local oneline = { indent = false }
                 local json_line = vim.json.encode(request.accum, oneline)
                 local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
