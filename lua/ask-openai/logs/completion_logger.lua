@@ -78,39 +78,25 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             -- add `questions/` or `fim/` or `rewrite/` intermediate path
             save_to = save_to .. "/" .. request.type
         end
+        local thread_id = tostring(request.start_time)
         if frontend and frontend.thread then
-            -- * group multi-turn chat thread log files
-            -- multi turn chats should be grouped b/c each is written to disk after each response is generated
-            -- only for QuestionsFrontend currently b/c FIM/AskRewrite are single turn chats
-            -- convenient to use start_time b/c it sorts with all other logs that use starttime on per turn basis
-            local group_id = frontend.thread.start_time
-            save_to = save_to .. "/" .. tostring(group_id)
-        else
-            -- use start time as there should only ever be one request and one response
+            -- multi-turn threads use thread's start_time
+            thread_id = tostring(frontend.thread.start_time)
         end
-        -- chat turn id uniquely identifies each "turn" or exchange of user request + model response
-        local chat_turn_id = tostring(request.start_time)
         if M.LOG_ALL_SSEs then
             -- PRN save this to different file? jsonl would make a ton of sense here
             --   SSEs are fairly standardized => thus jsonl would likely read table-like
             --   for all but first(s)/last(s)
             --
             -- create dir for multiple files (one per SSE)
-            save_to = save_to .. "/" .. chat_turn_id
+            save_to = save_to .. "/" .. thread_id
         end
 
         vim.defer_fn(function()
             vim.fn.mkdir(save_to, "p")
             -- TODO append new message to -messages.jsonl (new line, compact)
 
-            -- For multi‑turn question threads we want a single file that is overwritten on each turn.
-            -- Use a constant filename inside the thread's directory.
-            local thread_json_path
-            if request.type == "questions" then
-                thread_json_path = save_to .. "/thread.json"
-            else
-                thread_json_path = save_to .. "/" .. chat_turn_id .. "-thread.json"
-            end
+            local thread_json_path = save_to .. "/" .. thread_id .. "-thread.json"
             -- log:info("thread_json_path", thread_json_path)
             local thread_file = io.open(thread_json_path, "w")
             if thread_file then
