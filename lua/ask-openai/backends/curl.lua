@@ -1,4 +1,5 @@
 local log = require("ask-openai.logs.logger").predictions()
+local completion_logger = require("ask-openai.logs.completion_logger")
 local CurlRequest = require("ask-openai.backends.curl_request")
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 local completion_logger = require('ask-openai.logs.completion_logger')
@@ -55,17 +56,7 @@ function Curl.spawn(request, frontend)
             return table.concat(message_lines, "\n")
         end)
         if ok then
-            -- TODO share builder logic w/ completion_logger (and other loggers, i.e. future loggers like accept_logger)
-            local save_dir = vim.fn.stdpath("state") .. "/ask-openai"
-            if request.type ~= "" then
-                -- add `questions/` or `fim/` or `rewrite/` intermediate path
-                save_dir = save_dir .. "/" .. request.type
-            end
-            local thread_id = tostring(request.start_time)
-            if frontend.thread then
-                -- multi-turn threads use thread's start_time
-                thread_id = tostring(frontend.thread.start_time)
-            end
+            local save_dir, thread_id = completion_logger.where_to_save(request, frontend)
 
             vim.fn.mkdir(save_dir, "p")
             local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
