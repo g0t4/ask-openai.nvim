@@ -90,13 +90,12 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         end
         -- chat turn id uniquely identifies each "turn" or exchange of user request + model response
         local chat_turn_id = tostring(request.start_time)
-        local is_multi_file = M.LOG_ALL_SSEs
-        if is_multi_file then
+        if M.LOG_ALL_SSEs then
             -- PRN save this to different file? jsonl would make a ton of sense here
             --   SSEs are fairly standardized => thus jsonl would likely read table-like
             --   for all but first(s)/last(s)
             --
-            -- only create dir if multiple files
+            -- create dir for multiple files (one per SSE)
             save_to = save_to .. "/" .. chat_turn_id
         end
 
