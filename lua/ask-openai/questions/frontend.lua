@@ -570,6 +570,8 @@ function QuestionsFrontend.on_curl_exited_successfully()
             local thread_message = TxChatMessage:from_assistant_rx_message(rx_message)
             QuestionsFrontend.thread:add_message(thread_message)
             log_new_assistant_message(thread_message)
+            -- TODO capture -thread.json here too and then get rid of response_message hack cuz all messages will now be in thread
+            --    TODO only do this for questions frontend
 
             -- * show user role (in chat window) as hint to follow up (now that model+tool_calls are all done):
             QuestionsFrontend.show_user_role()
