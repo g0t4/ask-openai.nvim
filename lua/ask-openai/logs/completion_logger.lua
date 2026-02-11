@@ -73,10 +73,11 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             frontend = frontend,
         }
 
-        local save_to = vim.fn.stdpath("state") .. "/ask-openai"
+        -- TODO share builder logic w/ completion_logger (and other loggers, i.e. future loggers like accept_logger)
+        local save_dir = vim.fn.stdpath("state") .. "/ask-openai"
         if request.type ~= "" then
             -- add `questions/` or `fim/` or `rewrite/` intermediate path
-            save_to = save_to .. "/" .. request.type
+            save_dir = save_dir .. "/" .. request.type
         end
         local thread_id = tostring(request.start_time)
         if frontend and frontend.thread then
@@ -89,14 +90,14 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             --   for all but first(s)/last(s)
             --
             -- create dir for multiple files (one per SSE)
-            save_to = save_to .. "/" .. thread_id
+            save_dir = save_dir .. "/" .. thread_id
         end
 
         vim.defer_fn(function()
-            vim.fn.mkdir(save_to, "p")
+            vim.fn.mkdir(save_dir, "p")
             -- TODO append new message to -messages.jsonl (new line, compact)
 
-            local thread_json_path = save_to .. "/" .. thread_id .. "-thread.json"
+            local thread_json_path = save_dir .. "/" .. thread_id .. "-thread.json"
             -- log:info("thread_json_path", thread_json_path)
             local thread_file = io.open(thread_json_path, "w")
             if thread_file then
@@ -122,7 +123,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             end
 
             if M.LOG_ALL_SSEs then
-                local all_file = io.open(save_to .. "/all_sses.json", "w")
+                local all_file = io.open(save_dir .. "/all_sses.json", "w")
                 if all_file then
                     all_file:write(json.encode(all_sses, { indent = true }))
                     all_file:close()
