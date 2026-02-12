@@ -133,14 +133,28 @@
     try {
       const res = await fetch(url)
       if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`)
-      const data: ThreadJson = await res.json()
 
-      // Extract messages from request_body
-      messages = data.request_body?.messages ?? []
+      // Detect format based on URL
+      const isJsonl = url.includes('-messages.jsonl')
 
-      // Append response_message if present
-      if (data.response_message) {
-        messages = [...messages, data.response_message]
+      if (isJsonl) {
+        // JSONL format: one message per line
+        const text = await res.text()
+        const lines = text.trim().split('\n')
+        messages = lines
+          .filter(line => line.trim())
+          .map(line => JSON.parse(line))
+      } else {
+        // Legacy thread.json format
+        const data: ThreadJson = await res.json()
+
+        // Extract messages from request_body
+        messages = data.request_body?.messages ?? []
+
+        // Append response_message if present
+        if (data.response_message) {
+          messages = [...messages, data.response_message]
+        }
       }
     } catch (e) {
       error = e instanceof Error ? e.message : 'Unknown error'

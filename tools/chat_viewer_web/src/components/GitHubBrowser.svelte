@@ -176,7 +176,7 @@
               {/if}
             {:else}
               <span class="text-xl">
-                {#if item.name.endsWith('.json')}
+                {#if item.name.endsWith('.json') || item.name.endsWith('.jsonl')}
                   📄
                 {:else if item.name.endsWith('.py')}
                   🐍
