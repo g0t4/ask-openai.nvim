@@ -9,7 +9,7 @@ from rich.padding import Padding
 from rich.syntax import Syntax
 from rich.panel import Panel
 from rich.pretty import Pretty, pprint
-from typing import Any
+from typing import Any, Iterable
 
 from rich.text import Text
 
@@ -52,11 +52,21 @@ def yank(mapping, key: str, default=None):
         del mapping[key]
     return value
 
+def load_messages_jsonl(path: Path) -> Iterable[dict[str, Any]]:
+    with open(path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+    for line in lines:
+        message = json.loads(line)
+        yield message
+
 def load_thread_messages_from_path(argv1: str) -> list[dict[str, Any]]:
     request_file = Path(argv1)
     if not request_file.is_file():
         print(f"File not found: {request_file}")
         sys.exit(1)
+    if argv1.endswith("-messages.jsonl"):
+        return list(load_messages_jsonl(request_file))
+
     with request_file.open("r", encoding="utf-8") as f:
         data = json.load(f)
     messages = load_messages(data)
@@ -155,7 +165,7 @@ def print_markdown_content(msg: dict, role: str):
         lines = raw_content.splitlines()
 
         # keep header
-        print_asis(lines[0]) # ok to de-emphasize (don't show as markdown header)
+        print_asis(lines[0])  # ok to de-emphasize (don't show as markdown header)
 
         # enumerate matches:
         idx = 1
