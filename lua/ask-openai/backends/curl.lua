@@ -2,7 +2,6 @@ local log = require("ask-openai.logs.logger").predictions()
 local completion_logger = require("ask-openai.logs.completion_logger")
 local CurlRequest = require("ask-openai.backends.curl_request")
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
-local completion_logger = require('ask-openai.logs.completion_logger')
 local safely = require("ask-openai.helpers.safely")
 local json = require('dkjson')
 
