@@ -95,6 +95,11 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         vim.defer_fn(function()
             vim.fn.mkdir(save_dir, "p")
 
+            if request.type ~= "questions" then
+                -- PredictionsFrontend and RewriteFrontend are both single turn, and can log assistant response message(s) here
+                M.append_to_messages_jsonl(accum, request, frontend)
+            end
+
             local path = save_dir .. "/" .. thread_id .. "-thread.json"
             -- log:info("thread path", path)
             local file = io.open(path, "w")
@@ -102,7 +107,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
                 local thread_data = {
                     -- 99.99% of the time this is all I need (input messages thread + output message):
                     request_body = request.body,
-                    response_message = request.accum,
+                    response_message = accum,
                     --
                     -- FYI must use llama-server's --verbose flag .__verbose.* on last_sse
                     --   __verbose.prompt basically repeats request.body, thus not needed
@@ -134,7 +139,9 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     end
 end
 
-function M.write_messages_jsonl(request, frontend)
+---@param request CurlRequest
+---@param frontend StreamingFrontend
+function M.write_new_messages_jsonl(request, frontend)
     -- Save the initial request payload (messages) before sending, for any frontend that uses Curl.
     if request.body and request.body.messages then
         local ok, payload = pcall(function()
@@ -175,6 +182,8 @@ function M.write_messages_jsonl(request, frontend)
     end
 end
 
+---@param request CurlRequest
+---@param frontend StreamingFrontend
 function M.append_to_messages_jsonl(message, request, frontend)
     -- FYI 0.1 ms for this func to run (a few tests) - NBD to be saving redundant info that's also in -thread.json
 
