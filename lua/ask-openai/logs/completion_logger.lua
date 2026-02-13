@@ -82,7 +82,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     --   so for now, this is not urgent to add to logs here... I can grab thread logs for after model responds to tool call result
 
     if sse_parsed.timings then
-        -- TODO skip questions frontend and move the logic for triggering this save over to the marked spot where the actual assistant messsage is ready and in the messages array!
         -- store for convenient access in-memory, that way if smth fails on save I can still see it here
         M.last_done = {
             sse_parsed = sse_parsed,
@@ -104,6 +103,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             -- log:info("thread path", path)
             local file = io.open(path, "w")
             if file then
+                -- TODO move this logic for QuestionsFrontend too? if I keep thread (I plan to ditch it)
                 local thread_data = {
                     -- 99.99% of the time this is all I need (input messages thread + output message):
                     request_body = request.body,
