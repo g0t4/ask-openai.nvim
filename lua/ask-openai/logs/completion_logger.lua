@@ -134,7 +134,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     end
 end
 
-function M.write_messages_json(request, frontend)
+function M.write_messages_jsonl(request, frontend)
     -- Save the initial request payload (messages) before sending, for any frontend that uses Curl.
     if request.body and request.body.messages then
         local ok, payload = pcall(function()
@@ -175,7 +175,7 @@ function M.write_messages_json(request, frontend)
     end
 end
 
-function M.append_message(message, request, frontend)
+function M.append_to_messages_jsonl(message, request, frontend)
     -- FYI 0.1 ms for this func to run (a few tests) - NBD to be saving redundant info that's also in -thread.json
 
     -- FYI I am keeping -thread.json for now until I have time to update my chat viewer for -messages.jsonl

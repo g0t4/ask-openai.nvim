@@ -37,7 +37,7 @@ _G.CompletionsEndpoints = {
 function Curl.spawn(request, frontend)
     request.body.stream = true
 
-    completion_logger.write_messages_json(request, frontend)
+    completion_logger.write_messages_jsonl(request, frontend)
 
     local json_body = vim.json.encode(request.body)
     local options = {
