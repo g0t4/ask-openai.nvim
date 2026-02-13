@@ -134,4 +134,26 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     end
 end
 
+function M.append_message(message, request, frontend)
+    -- FYI 0.1 ms for this func to run (a few tests) - NBD to be saving redundant info that's also in -thread.json
+
+    -- FYI I am keeping -thread.json for now until I have time to update my chat viewer for -messages.jsonl
+    --   I don't think I need anything beyond messages from -thread.json... if not then I'll ditch -thread.json most likely
+    --   if I do need more, it will be a while (if ever) before I fully stop using thread.json
+
+    local oneline = { indent = false }
+    local json_line = vim.json.encode(message, oneline)
+
+    local save_dir, thread_id = M.log_request_with(request, frontend)
+    local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
+    local file, err = io.open(path, "a")
+    if not file then
+        log:error("Failed to open messages log for appending: %s", err)
+    else
+        message._logged = true
+        file:write(json_line, "\n")
+        file:close()
+    end
+end
+
 return M

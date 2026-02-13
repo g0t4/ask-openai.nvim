@@ -531,28 +531,6 @@ function QuestionsFrontend.show_user_role()
     QuestionsFrontend.chat_window:append_styled_lines(lines_builder)
 end
 
-local function append_message(message, request, frontend)
-    -- FYI 0.1 ms for this func to run (a few tests) - NBD to be saving redundant info that's also in -thread.json
-
-    -- FYI I am keeping -thread.json for now until I have time to update my chat viewer for -messages.jsonl
-    --   I don't think I need anything beyond messages from -thread.json... if not then I'll ditch -thread.json most likely
-    --   if I do need more, it will be a while (if ever) before I fully stop using thread.json
-
-    local oneline = { indent = false }
-    local json_line = vim.json.encode(message, oneline)
-
-    local save_dir, thread_id = completion_logger.log_request_with(request, frontend)
-    local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
-    local file, err = io.open(path, "a")
-    if not file then
-        log:error("Failed to open messages log for appending: %s", err)
-    else
-        message._logged = true
-        file:write(json_line, "\n")
-        file:close()
-    end
-end
-
 ---@type OnCurlExitedSuccessfully
 function QuestionsFrontend.on_curl_exited_successfully()
     vim.schedule(function()
@@ -569,7 +547,7 @@ function QuestionsFrontend.on_curl_exited_successfully()
             --   theoretically there can be multiple messages, with any role (not just assitant)
             local thread_message = TxChatMessage:from_assistant_rx_message(rx_message)
             QuestionsFrontend.thread:add_message(thread_message)
-            append_message(thread_message, QuestionsFrontend.thread.last_request, QuestionsFrontend)
+            completion_logger.append_message(thread_message, QuestionsFrontend.thread.last_request, QuestionsFrontend)
             -- TODO capture -thread.json here too?? and then get rid of response_message hack cuz all messages will now be in thread
             --    TODO and careful to mirror changes (i.e. if move here, then need thread to save still for other frontends)
 
