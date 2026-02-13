@@ -531,7 +531,7 @@ function QuestionsFrontend.show_user_role()
     QuestionsFrontend.chat_window:append_styled_lines(lines_builder)
 end
 
-local function log_new_assistant_message(message)
+local function append_message(message, request, frontend)
     -- FYI 0.1 ms for this func to run (a few tests) - NBD to be saving redundant info that's also in -thread.json
 
     -- FYI I am keeping -thread.json for now until I have time to update my chat viewer for -messages.jsonl
@@ -541,7 +541,7 @@ local function log_new_assistant_message(message)
     local oneline = { indent = false }
     local json_line = vim.json.encode(message, oneline)
 
-    local save_dir, thread_id = completion_logger.log_request_with(QuestionsFrontend.thread.last_request, QuestionsFrontend)
+    local save_dir, thread_id = completion_logger.log_request_with(request, frontend)
     local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
     local file, err = io.open(path, "a")
     if not file then
@@ -569,9 +569,9 @@ function QuestionsFrontend.on_curl_exited_successfully()
             --   theoretically there can be multiple messages, with any role (not just assitant)
             local thread_message = TxChatMessage:from_assistant_rx_message(rx_message)
             QuestionsFrontend.thread:add_message(thread_message)
-            log_new_assistant_message(thread_message)
-            -- TODO capture -thread.json here too and then get rid of response_message hack cuz all messages will now be in thread
-            --    TODO only do this for questions frontend
+            append_message(thread_message, QuestionsFrontend.thread.last_request, QuestionsFrontend)
+            -- TODO capture -thread.json here too?? and then get rid of response_message hack cuz all messages will now be in thread
+            --    TODO and careful to mirror changes (i.e. if move here, then need thread to save still for other frontends)
 
             -- * show user role (in chat window) as hint to follow up (now that model+tool_calls are all done):
             QuestionsFrontend.show_user_role()
