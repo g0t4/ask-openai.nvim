@@ -52,6 +52,7 @@ async def semantic_grep(
     datasets: Datasets,
     stopper: Stopper = FAKE_STOPPER,
 ) -> list[LSPRankedMatch]:
+    logger.info(f"semantic_grep query: {args}")
     global_search = args.languages == "GLOBAL"
     everything_search = args.languages == "EVERYTHING"
 

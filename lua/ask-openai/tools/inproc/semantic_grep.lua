@@ -43,7 +43,8 @@ local M = {
 ---@param callback ToolCallDoneCallback
 function M.call(parsed_args, callback)
     local languages = ""
-    if not parsed_args.filetype then
+    -- log:info("parsed_args", vim.inspect(parsed_args))
+    if parsed_args.filetype == nil or parsed_args.filetype:match("^%s*$") then
         -- PRN use EVERYTHING instead of GLOBAL?
         -- when using tools that might make more sense
         -- but for now, assume if I limit the list then I did that for a good reason that likely benefits agent tool use
@@ -63,6 +64,7 @@ function M.call(parsed_args, callback)
         topK = parsed_args.top_k or 5,
         embedTopK = parsed_args.embed_top_k or 18,
     }
+    -- log:info("semantic_grep_request", vim.inspect(semantic_grep_request))
 
     local _client_request_ids, _cancel_all_requests
 
