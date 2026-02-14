@@ -3,16 +3,11 @@ local log = require("ask-openai.logs.logger").predictions()
 
 local M = {}
 
--- type = "object", properties={patch ={ description=""...}} -- FYI can set type = "object" and template will use a dict... I fixed template to support string arg only (like you get when you use opeani-harmony repo's tool config so I want to go with that)
---  and JSON is ok btw... b/c then generated code is escaped as a JSON string (or dict if you go type=object)
---  which means anything inside the string won't conflict with gptoss message format (which is also XML and so JSON is a wise choice for args and results)
+-- FYI gpt-oss apply_patch definition example:
+--   https://github.com/g0t4/gpt-oss/blob/017c732/gpt_oss/chat.py#L111-L119
 
 ---@type OpenAITool;
 M.ToolDefinition = {
-
-    -- FYI gpt-oss apply_patch definition example:
-    --   https://github.com/g0t4/gpt-oss/blob/017c732/gpt_oss/chat.py#L111-L119
-
     ["function"] = {
         description = "Patch a file",
         name = "apply_patch",
