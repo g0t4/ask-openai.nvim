@@ -3,9 +3,6 @@ local log = require("ask-openai.logs.logger").predictions()
 
 local M = {}
 
--- PRN try other MCP based tools from gptoss repo (python code runner, browser)...
---   use their system message descriptions but route them through MCP in here
-
 local alternative_dict_args = {
     -- model generates dict w/ single patch arg...
     --  this might be good if model doesn't reliably generate JSON string
