@@ -3,20 +3,6 @@ local log = require("ask-openai.logs.logger").predictions()
 
 local M = {}
 
-local alternative_dict_args = {
-    -- model generates dict w/ single patch arg...
-    --  this might be good if model doesn't reliably generate JSON string
-    --  I wish openai published some training examples to better understand formats to consider
-    type = "object",
-    properties = {
-        patch = {
-            description = "file changes in custom diff format",
-            type = "string"
-        }
-    },
-    required = { "patch" }
-}
-
 -- type = "object", properties={patch ={ description=""...}} -- FYI can set type = "object" and template will use a dict... I fixed template to support string arg only (like you get when you use opeani-harmony repo's tool config so I want to go with that)
 --  and JSON is ok btw... b/c then generated code is escaped as a JSON string (or dict if you go type=object)
 --  which means anything inside the string won't conflict with gptoss message format (which is also XML and so JSON is a wise choice for args and results)
@@ -31,7 +17,16 @@ M.ToolDefinition = {
         description = "Patch a file",
         name = "apply_patch",
         ---@diagnostic disable-next-line: missing-fields
-        parameters = alternative_dict_args
+        parameters = {
+            type = "object",
+            properties = {
+                patch = {
+                    description = "file changes in custom diff format",
+                    type = "string"
+                }
+            },
+            required = { "patch" }
+        }
     },
     type = "function"
 }
