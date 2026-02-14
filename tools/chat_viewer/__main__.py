@@ -56,6 +56,8 @@ def load_messages_jsonl(path: Path) -> Iterable[dict[str, Any]]:
     with open(path, "r", encoding="utf-8") as f:
         lines = f.readlines()
     for line in lines:
+        if line.strip() == "":
+            continue
         message = json.loads(line)
         yield message
 
