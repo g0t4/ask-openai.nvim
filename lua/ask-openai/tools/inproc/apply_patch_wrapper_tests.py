@@ -5,7 +5,7 @@ import importlib.util
 import importlib.machinery
 
 import pytest
-import apply_patch_multi
+import apply_patch_wrapper
 
 def test_de_dupe_in_middle_between_multiple_patches(monkeypatch, capsys):
     # key parts:
@@ -29,8 +29,8 @@ def test_de_dupe_in_middle_between_multiple_patches(monkeypatch, capsys):
 *** End Patch""")
 
     monkeypatch.setattr(sys, "stdin", StringIO(content))
-    monkeypatch.setattr(sys, "argv", ["apply_patch_multi.py", "--dry-run"])
-    apply_patch_multi.main()
+    monkeypatch.setattr(sys, "argv", ["apply_patch_wrapper.py", "--dry-run"])
+    apply_patch_wrapper.main()
 
     out = capsys.readouterr().out
     assert "Found 2 patch blocks" in out

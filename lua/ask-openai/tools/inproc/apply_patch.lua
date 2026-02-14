@@ -66,7 +66,7 @@ function M.call(parsed_args, callback)
 
     -- * python adapter supports multiple patch files in one request
     local python = vim.fn.expand("~/repos/github/g0t4/gpt-oss/.venv/bin/python3")
-    local runner = vim.fn.expand("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/apply_patch_multi.py")
+    local runner = vim.fn.expand("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/apply_patch_wrapper.py")
 
     -- PRN use async and get callback?
     -- FYI do not differentiate STDOUT/STDERR unless you can prove it fixes a problem with model performance
