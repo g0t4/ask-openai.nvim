@@ -52,17 +52,17 @@ function M.call(parsed_args, callback)
         return
     end
 
-    -- Check for multiple Begin/End Patch markers
-    local begin_count = select(2, patch:gsub("%*%*%* Begin Patch", ""))
-    local end_count = select(2, patch:gsub("%*%*%* End Patch", ""))
-
-    if begin_count > 1 or end_count > 1 then
-        vim.notify(
-            "Patch contains multiple '*** Begin Patch' or '*** End Patch' lines, stripping extras.",
-            vim.log.levels.ERROR
-        )
-        log:error("Original patch:\n" .. patch, vim.log.levels.ERROR)
-    end
+    -- -- Check for multiple Begin/End Patch markers
+    -- local begin_count = select(2, patch:gsub("%*%*%* Begin Patch", ""))
+    -- local end_count = select(2, patch:gsub("%*%*%* End Patch", ""))
+    --
+    -- if begin_count > 1 or end_count > 1 then
+    --     vim.notify(
+    --         "Patch contains multiple '*** Begin Patch' or '*** End Patch' lines, stripping extras.",
+    --         vim.log.levels.ERROR
+    --     )
+    --     log:error("Original patch:\n" .. patch, vim.log.levels.ERROR)
+    -- end
 
     -- * python adapter supports multiple patch files in one request
     local python = vim.fn.expand("~/repos/github/g0t4/gpt-oss/.venv/bin/python3")
