@@ -99,31 +99,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
                 M.append_to_messages_jsonl(accum, request, frontend)
             end
 
-            local path = save_dir .. "/" .. thread_id .. "-thread.json"
-            -- log:info("thread path", path)
-            local file = io.open(path, "w")
-            if file then
-                -- TODO move this logic for QuestionsFrontend too? if I keep thread (I plan to ditch it)
-                local thread_data = {
-                    -- 99.99% of the time this is all I need (input messages thread + output message):
-                    request_body = request.body,
-                    response_message = accum,
-                    --
-                    -- FYI must use llama-server's --verbose flag .__verbose.* on last_sse
-                    --   __verbose.prompt basically repeats request.body, thus not needed
-                    --   rendered prompt can be nice for reproducibility
-                    --     but, you can also use /apply-template endpoint to generate it too
-                    --     obviously won't capture template changes when rendering
-                    --
-                    -- last_sse has:
-                    --   .timings (top-level and under .__verbose.timings)
-                    --   .__verbose.(prompt, generation_settings)
-                    --   .__verbose.content (generated raw outputs, but ONLY for stream=false)
-                    last_sse = sse_parsed,
-                }
-                file:write(json.encode(thread_data, { indent = true }))
-                file:close()
-            end
+            M.save_thread(save_dir, thread_id, request, accum, sse_parsed)
 
             if M.LOG_ALL_SSEs then
                 -- PRN save to 123-sses.jsonl?
@@ -136,6 +112,34 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
                 end
             end
         end, 0)
+    end
+end
+
+function M.save_thread(save_dir, thread_id, request, response_message, sse_parsed)
+    local path = save_dir .. "/" .. thread_id .. "-thread.json"
+    -- log:info("thread path", path)
+    local file = io.open(path, "w")
+    if file then
+        -- TODO move this logic for QuestionsFrontend too? if I keep thread (I plan to ditch it)
+        local thread_data = {
+            -- 99.99% of the time this is all I need (input messages thread + output message):
+            request_body = request.body,
+            response_message = response_message,
+            --
+            -- FYI must use llama-server's --verbose flag .__verbose.* on last_sse
+            --   __verbose.prompt basically repeats request.body, thus not needed
+            --   rendered prompt can be nice for reproducibility
+            --     but, you can also use /apply-template endpoint to generate it too
+            --     obviously won't capture template changes when rendering
+            --
+            -- last_sse has:
+            --   .timings (top-level and under .__verbose.timings)
+            --   .__verbose.(prompt, generation_settings)
+            --   .__verbose.content (generated raw outputs, but ONLY for stream=false)
+            last_sse = sse_parsed,
+        }
+        file:write(json.encode(thread_data, { indent = true }))
+        file:close()
     end
 end
 
