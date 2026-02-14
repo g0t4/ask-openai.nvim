@@ -170,7 +170,7 @@ function M.write_new_messages_jsonl(request, frontend)
             local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
             local file = io.open(path, "a")
             if file then
-                file:write("\n") -- ensure not appending to end of last line w/ last message
+                file:write("\n") -- instead of trailing \n, prepend a \n to ensure never colliding with current message on last line
                 file:write(payload)
                 file:close()
                 log:info("Saved initial curl request to %s", path)
@@ -202,7 +202,8 @@ function M.append_to_messages_jsonl(message, request, frontend)
         log:error("Failed to open messages log for appending: %s", err)
     else
         message._logged = true
-        file:write(json_line, "\n")
+        file:write("\n") -- instead of trailing \n, prepend a \n to ensure never colliding with current message on last line
+        file:write(json_line)
         file:close()
     end
 end
