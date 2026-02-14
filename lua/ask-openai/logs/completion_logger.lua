@@ -170,6 +170,7 @@ function M.write_new_messages_jsonl(request, frontend)
             local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
             local file = io.open(path, "a")
             if file then
+                file:write("\n") -- ensure not appending to end of last line w/ last message
                 file:write(payload)
                 file:close()
                 log:info("Saved initial curl request to %s", path)
