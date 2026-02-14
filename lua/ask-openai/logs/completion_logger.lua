@@ -91,26 +91,26 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
 
         local save_dir, thread_id = M.log_request_with(request, frontend)
 
-        vim.defer_fn(function()
+        vim.schedule(function()
             vim.fn.mkdir(save_dir, "p")
+        end)
 
-            if request.type ~= "questions" then
-                -- PredictionsFrontend and RewriteFrontend are both single turn, and can log assistant response message(s) here
-                M.append_to_messages_jsonl(accum, request, frontend)
-            end
-            M.save_thread(request, frontend, accum, sse_parsed)
+        if request.type ~= "questions" then
+            -- PredictionsFrontend and RewriteFrontend are both single turn, and can log assistant response message(s) here
+            M.append_to_messages_jsonl(accum, request, frontend)
+        end
+        M.save_thread(request, frontend, accum, sse_parsed)
 
-            if M.LOG_ALL_SSEs then
-                -- PRN save to 123-sses.jsonl?
-                --   SSEs are fairly standardized => thus jsonl would likely read table-like
-                --   for all but first(s)/last(s)
-                local all_file = io.open(save_dir .. "/" .. thread_id .. "/all_sses.json", "w")
-                if all_file then
-                    all_file:write(json.encode(all_sses, { indent = true }))
-                    all_file:close()
-                end
+        if M.LOG_ALL_SSEs then
+            -- PRN save to 123-sses.jsonl?
+            --   SSEs are fairly standardized => thus jsonl would likely read table-like
+            --   for all but first(s)/last(s)
+            local all_file = io.open(save_dir .. "/" .. thread_id .. "/all_sses.json", "w")
+            if all_file then
+                all_file:write(json.encode(all_sses, { indent = true }))
+                all_file:close()
             end
-        end, 0)
+        end
     end
 end
 
