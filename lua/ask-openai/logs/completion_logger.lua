@@ -92,6 +92,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         local save_dir, thread_id = M.log_request_with(request, frontend)
 
         vim.schedule(function()
+            -- technically I have timing issues here, this could run after below (IIUC)
+            --  if so, then IIAC I can schedule the file writing for all of the below too and they'd be behind this then, right?
             vim.fn.mkdir(save_dir, "p")
         end)
 
@@ -99,7 +101,13 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             -- PredictionsFrontend and RewriteFrontend are both single turn, and can log assistant response message(s) here
             M.append_to_messages_jsonl(accum, request, frontend)
         end
+        -- TODO check timing of QuestionsFrontend now and ALSO check what (if anything) is missing here for the thread_message that QuestionsFrontend inserts into thread history vs the accum here
+        --  does accum have all of what's needed or is it missing anything (IIRC I vaguely recall there's something I distilled special in QuestionsFrontend that wouldn't be on the pure accum message here)
+        --  OR, was it just that I was duplicating the assistant message (randomly b/c that logic to insert the new message would execute before/after this saved b/c this used to be async via vim.vim.defer_fn(function() ... end,0)
+        --    btw if it was just duplicates, then now that I do not vim.defer_fn anymore for this part then timing wise the thread_message can't be added
         M.save_thread(request, frontend, accum, sse_parsed)
+        -- TODO consider if you want part of what thread has (i.e. other request body inputs)... perhaps just log that separately? in another file? and then not log thread.json anymore and just rely on messages.jsonl?
+        --  that said I was unhappy with messages alone today too so gahhh (I also ripped out messages.jsonl)
 
         if M.LOG_ALL_SSEs then
             -- PRN save to 123-sses.jsonl?
