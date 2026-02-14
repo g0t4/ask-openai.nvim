@@ -143,43 +143,44 @@ end
 ---@param frontend StreamingFrontend
 function M.write_new_messages_jsonl(request, frontend)
     -- Save the initial request payload (messages) before sending, for any frontend that uses Curl.
-    if request.body and request.body.messages then
-        local ok, payload = pcall(function()
-            -- * each message on its own (initial request has multiple messages)
-            --  PRN do I really like this style? how about just pretty print with back to back messages :) and not deal with "jsonl"
-            --  TODO only append new message - long assistant threads will increase each turn, the time it takes and since I recreate each time... it's going to be painful (possibly... as in 10ms? each turn... which is FINE for now :) )
-            --   TODO how about flag each message as logged? (after logged so not logging that)
-            --    currently re-saving entire thread every time
-            local message_lines = {}
-            for _, msg in ipairs(request.body.messages) do
-                if not msg._logged then
-                    local json_string = json.encode(msg,
-                        { indent = false } -- compact/oneline
-                    )
-                    table.insert(message_lines, json_string)
-                    log:info("logging message", json_string)
-                    msg._logged = true
-                end
+    if not request.body and not request.body.messages then
+        return
+    end
+    local ok, payload = pcall(function()
+        -- * each message on its own (initial request has multiple messages)
+        --  PRN do I really like this style? how about just pretty print with back to back messages :) and not deal with "jsonl"
+        --  TODO only append new message - long assistant threads will increase each turn, the time it takes and since I recreate each time... it's going to be painful (possibly... as in 10ms? each turn... which is FINE for now :) )
+        --   TODO how about flag each message as logged? (after logged so not logging that)
+        --    currently re-saving entire thread every time
+        local message_lines = {}
+        for _, msg in ipairs(request.body.messages) do
+            if not msg._logged then
+                local json_string = json.encode(msg,
+                    { indent = false } -- compact/oneline
+                )
+                table.insert(message_lines, json_string)
+                log:info("logging message", json_string)
+                msg._logged = true
             end
-            return table.concat(message_lines, "\n")
-        end)
-        if ok then
-            local save_dir, thread_id = M.log_request_with(request, frontend)
-
-            vim.fn.mkdir(save_dir, "p")
-            local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
-            local file = io.open(path, "a")
-            if file then
-                file:write("\n") -- instead of trailing \n, prepend a \n to ensure never colliding with current message on last line
-                file:write(payload)
-                file:close()
-                log:info("Saved initial curl request to %s", path)
-            else
-                log:error("Unable to write initial curl request to %s", path)
-            end
-        else
-            log:error("Failed to encode initial curl request: %s", payload)
         end
+        return table.concat(message_lines, "\n")
+    end)
+    if ok then
+        local save_dir, thread_id = M.log_request_with(request, frontend)
+
+        vim.fn.mkdir(save_dir, "p")
+        local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
+        local file = io.open(path, "a")
+        if file then
+            file:write("\n") -- instead of trailing \n, prepend a \n to ensure never colliding with current message on last line
+            file:write(payload)
+            file:close()
+            log:info("Saved initial curl request to %s", path)
+        else
+            log:error("Unable to write initial curl request to %s", path)
+        end
+    else
+        log:error("Failed to encode initial curl request: %s", payload)
     end
 end
 
