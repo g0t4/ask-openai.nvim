@@ -7,6 +7,11 @@ local M = {}
 --   https://github.com/g0t4/gpt-oss/blob/017c732/gpt_oss/chat.py#L111-L119
 --   FYI I settled on using object type for args, even though I had some luck with string based args to just contain the patch file in a "JSON string"
 
+
+-- BTW a few times I've noticed random serialization order for JSON with tool definitions...
+--  the order is irrelevant b/c the jinja gptoss template (or w/e model you use) sets up its own format and order
+--  so don't worry about tool definition fields being sorted diff (that's just the nature of hashmap tables in lua)
+--
 ---@type OpenAITool;
 M.ToolDefinition = {
     ["function"] = {
