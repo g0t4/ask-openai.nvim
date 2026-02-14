@@ -11,7 +11,6 @@ M.ToolDefinition = {
     ["function"] = {
         description = "Patch a file",
         name = "apply_patch",
-        ---@diagnostic disable-next-line: missing-fields
         parameters = {
             type = "object",
             properties = {
