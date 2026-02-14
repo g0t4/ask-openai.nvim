@@ -98,8 +98,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
                 -- PredictionsFrontend and RewriteFrontend are both single turn, and can log assistant response message(s) here
                 M.append_to_messages_jsonl(accum, request, frontend)
             end
-
-            M.save_thread(save_dir, thread_id, request, accum, sse_parsed)
+            M.save_thread(request, frontend, accum, sse_parsed)
 
             if M.LOG_ALL_SSEs then
                 -- PRN save to 123-sses.jsonl?
@@ -115,7 +114,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     end
 end
 
-function M.save_thread(save_dir, thread_id, request, response_message, sse_parsed)
+function M.save_thread(request, frontend, response_message, sse_parsed)
+    local save_dir, thread_id = M.log_request_with(request, frontend)
     local path = save_dir .. "/" .. thread_id .. "-thread.json"
     -- log:info("thread path", path)
     local file = io.open(path, "w")
