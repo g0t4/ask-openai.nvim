@@ -6,11 +6,6 @@ local M = {}
 -- PRN try other MCP based tools from gptoss repo (python code runner, browser)...
 --   use their system message descriptions but route them through MCP in here
 
-local string_arg = {
-    -- model generates JSON string for args
-    type = "string",
-}
-
 local alternative_dict_args = {
     -- model generates dict w/ single patch arg...
     --  this might be good if model doesn't reliably generate JSON string
@@ -39,7 +34,6 @@ M.ToolDefinition = {
         description = "Patch a file",
         name = "apply_patch",
         ---@diagnostic disable-next-line: missing-fields
-        -- parameters = string_arg, -- a few examples of missing " on the end of json dict (even though I say string it makes dict with patch proeprty, often)... fux it all up... I should add some error recovery?
         parameters = alternative_dict_args
     },
     type = "function"
