@@ -5,6 +5,7 @@ local M = {}
 
 -- FYI gpt-oss apply_patch definition example:
 --   https://github.com/g0t4/gpt-oss/blob/017c732/gpt_oss/chat.py#L111-L119
+--   FYI I settled on using object type for args, even though I had some luck with string based args to just contain the patch file in a "JSON string"
 
 ---@type OpenAITool;
 M.ToolDefinition = {
