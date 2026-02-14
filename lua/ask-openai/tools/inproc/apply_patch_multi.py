@@ -22,6 +22,12 @@ from pathlib import Path
 # cat lua/ask-openai/tools/inproc/test-multi-patch.patch | python3 lua/ask-openai/tools/inproc/apply_patch_splitter.py
 
 def main() -> None:
+    """ This wrapper extends apply_patch command
+    - apply multiple patches (not natively supported in apply_patch, but is trivial to handle)
+    - add dry-run mode
+    - fix issues without modifying upstream tool (i.e. de-duplicate End Patch)
+    """
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--dry-run",
@@ -46,6 +52,7 @@ def main() -> None:
         print(content)
         print()
 
+    # * codex rust based apply_patch
     apply_patch_rs = Path("~/repos/github/openai/codex/codex-rs/target/release/apply_patch").expanduser()  # https://regexr.com/8j95m
     count_begins = len(re.findall(r"^\*\*\* Begin Patch$", content, flags=re.MULTILINE))
     if count_begins <= 1:
@@ -53,10 +60,9 @@ def main() -> None:
             subprocess.run([apply_patch_rs], input=content, text=True, check=True)
         return
 
-    # Split the content on each "*** Begin Patch" marker
-    # Keep the marker with each subsequent chunk
+    # Split the content on each "*** Begin Patch"
     raw_patches = re.split(r"(^\*\*\* Begin Patch$)", content, flags=re.MULTILINE)
-    # Recombine the split parts so each patch starts with the marker
+    # Recombine split parts so each starts with Begin Patch
     patches = []
     for i in range(1, len(raw_patches), 2):
         marker = raw_patches[i]

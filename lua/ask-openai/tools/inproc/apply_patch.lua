@@ -64,18 +64,13 @@ function M.call(parsed_args, callback)
         log:error("Original patch:\n" .. patch, vim.log.levels.ERROR)
     end
 
-    -- * python variant in gptoss repo:
-    -- cat ~/repos/github/g0t4/gpt-oss/gpt_oss/tools/example-add.patch | ~/repos/github/g0t4/gpt-oss/.venv/bin/python3 ~/repos/github/g0t4/gpt-oss/gpt_oss/tools/apply_patch.py
+    -- * python adapter supports multiple patch files in one request
     local python = vim.fn.expand("~/repos/github/g0t4/gpt-oss/.venv/bin/python3")
-    -- local apply_patch_py = vim.fn.expand("~/repos/github/g0t4/gpt-oss/gpt_oss/tools/apply_patch.py")
-    local apply_patch_multi = vim.fn.expand("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/apply_patch_multi.py")
-
-    -- local apply_patch_rs = vim.fn.expand("~/repos/github/openai/codex/codex-rs/target/release/apply_patch")
-    -- local result = vim.fn.system({ apply_patch_rs }, patch)
+    local runner = vim.fn.expand("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/apply_patch_multi.py")
 
     -- PRN use async and get callback?
     -- FYI do not differentiate STDOUT/STDERR unless you can prove it fixes a problem with model performance
-    local result = vim.fn.system({ python, apply_patch_multi }, patch)
+    local result = vim.fn.system({ python, runner }, patch)
     log:info("apply_patch - vim.v.shell_error", vim.v.shell_error)
 
     -- apply_patch tool behaviors:
@@ -93,7 +88,7 @@ function M.call(parsed_args, callback)
 
     local exit_code = vim.v.shell_error
     if exit_code ~= 0 then
-        -- keep EXIT_CODE/isError here for your glue code at least... i.e. apply_patch.py file is missing! or no venv, or deps, etc...
+        -- keep EXIT_CODE/isError here for your glue code at least... i.e. missing wrapper script
         callback(plumbing.create_tool_call_output_for_error({
             -- do not name first result.. could be STDOUT or STDERR!
             plumbing.text_content(result),
@@ -111,10 +106,9 @@ function M.call(parsed_args, callback)
     }))
 end
 
--- NOTES apply_patch.py
--- - w/o dev message => generated Delete Then Add to update a file and that only deletes it! apply_patch has a bug in delete/add same file...  WTF?!?
---    likely fix is to add dev message instructions to remind about UpdateFile... and might need to fix this bug if it comes up still
---      yikes how the F does this happen with an official tool?!  that was used to fine tune?!?!
+-- notes
+-- - https://developers.openai.com/api/docs/guides/tools-apply-patch
+--   - suggests output format, same info I already have
 
 function manual_test()
     -- test call
@@ -131,7 +125,7 @@ function manual_test()
         log:info("manual_test() result", vim.inspect(call_output))
     end
 
-    -- make sure it can execute via either string or dict:
+    -- can execute via either string or dict, right now my tool logic uses object param
     -- M.call({ patch = patch, }, log_it)
     -- M.call(patch, log_it)
 end
