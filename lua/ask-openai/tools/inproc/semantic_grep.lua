@@ -12,7 +12,7 @@ local M = {
                 properties = {
                     filetype = {
                         type = "string",
-                        description = "limit matches to a vim compatible filetype. Leave unset for all indexed filetypes in a workspace."
+                        description = "limit matches to a vim compatible filetype. default includes all filetypes"
                     },
                     query = {
                         type = "string",
@@ -20,15 +20,15 @@ local M = {
                     },
                     instruct = {
                         type = "string",
-                        description = "instructions for the query"
+                        description = "instructions for the query, explain the type of query"
                     },
                     top_k = {
                         type = "number",
-                        description = "number of results to return (post reranking)"
+                        description = "number of matches to return (post reranking)"
                     },
                     embed_top_k = {
                         type = "number",
-                        description = "number of embeddings to consider for reranking"
+                        description = "number of embeddings matches to consider for reranking"
                     },
                 },
                 required = { "query" },
