@@ -164,7 +164,7 @@ function PredictionsFrontend.ask_for_prediction(params)
 
         ---@param rag_matches LSPRankedMatch[]
         function on_rag_response(rag_matches)
-            log:info("on_rag_response")
+            log:info("on_rag_response", vim.inspect(rag_matches))
             -- can this be called twice? one for done/cancel and a race condition b/w the two?
             -- log:info("on_rag_response(rag_matches:'" .. vim.inspect(rag_matches) .. "')")
 
@@ -175,28 +175,29 @@ function PredictionsFrontend.ask_for_prediction(params)
             if PredictionsFrontend.rag_request_ids ~= this_request_ids then
                 -- I bet this is why sometimes I get completions that still fire even after cancel b/c the RAG results aren't actually stopped in time on server and so they come back
                 --  and they arrive after next request started... the mismatch in request_ids will prevent that issue
-                -- log:trace("possibly stale rag results, skipping: " .. vim.inspect({
-                --     global_rag_request_ids = PredictionsFrontend.rag_request_ids,
-                --     this_request_ids = this_request_ids,
-                -- }))
+                log:trace("possibly stale rag results, skipping: " .. vim.inspect({
+                    global_rag_request_ids = PredictionsFrontend.rag_request_ids,
+                    this_request_ids = this_request_ids,
+                }))
                 return
             end
 
             if PredictionsFrontend.rag_cancel == nil then
-                -- log:error("rag appears canceled, skipping on_rag_response...")
+                log:error("rag appears canceled, skipping on_rag_response...")
                 return
             end
 
             then_send_fim(rag_matches)
         end
 
-        this_request_ids, cancel = rag_client.context_query_fim(ps_chunk, on_rag_response)
         PredictionsFrontend.rag_cancel = function()
             log:warn("canceling RAG")
             PredictionsFrontend.rag_cancel = nil
             cancel()
             PredictionsFrontend.rag_request_ids = nil
         end
+        this_request_ids, cancel = rag_client.context_query_fim(ps_chunk, on_rag_response)
+        log:info("after context_query_fim started")
         PredictionsFrontend.rag_request_ids = this_request_ids
     else
         PredictionsFrontend.rag_cancel = nil
