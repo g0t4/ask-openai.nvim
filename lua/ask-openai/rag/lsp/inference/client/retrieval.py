@@ -37,9 +37,9 @@ FAKE_STOPPER = Stopper("fake")
 @attrs.define
 class LSPSemanticGrepRequest:
     query: str
+    instruct: str
     currentFileAbsolutePath: str | None = None
     vimFiletype: str | None = None
-    instruct: str | None = None
     msgId: str = ""  # cannot bind underscores... this is not a bound param (LS handler sets it)
     languages: str = ""
     skipSameFile: bool = False
@@ -62,7 +62,9 @@ async def semantic_grep(
 
     instruct = args.instruct
     if instruct is None:
-        instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
+        # FYI I have noticed instruct can become part of query (not just instructions) so be careful
+        #  => i.e. b/c I had "semantic_grep telescope picker references, I was getting hits for semantic_grep tool (when in ask-openai.nvim repo) when query had nothing to do with finding semantic_grep codes
+        raise ValueError("instruct must be passed, and specific to a given query type")
     logger.info(f"using instruct: {instruct}")
 
     stopper.throw_if_stopped()

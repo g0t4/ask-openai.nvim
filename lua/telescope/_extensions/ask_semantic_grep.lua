@@ -417,6 +417,7 @@ function semantic_grep_current_filetype_picker(opts)
                     return
                 end
                 -- function is called each time the user changes the prompt (text in the Telescope Picker)
+                semantic_grep_request.instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
                 semantic_grep_request.query = prompt
                 return _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result, process_complete, entry_maker)
             end,
