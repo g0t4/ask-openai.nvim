@@ -34,7 +34,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
     lsp_buffer_number = lsp_buffer_number or 0
 
     logs:info("requesting semantic_grep, last_msg_id: " .. vim.inspect(last_msg_id))
-    local my_msg_id, cancel_my_request
+    local my_msg_id, cancel_my_request -- "my" as in this closure's request
     my_msg_id, cancel_my_request = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
             command = "semantic_grep",
             arguments = { semantic_grep_request },
