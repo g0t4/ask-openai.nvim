@@ -417,7 +417,21 @@ function semantic_grep_current_filetype_picker(opts)
                     return
                 end
                 -- function is called each time the user changes the prompt (text in the Telescope Picker)
-                semantic_grep_request.instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
+                -- FYI old instruct:
+                --   semantic_grep_request.instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
+                --   * issue I hadn't noticed, in ask-openai.nvim repo, I'm always getting matches for semantic_grep related code!
+                --   - `semantic grep` in the instruct became part of query
+                --     - obviously not all repos
+                --   - no doubt this explains some frustration I've had w/ picker results
+                --   TLDR be careful with instruct, that it doesn't become the query (too)
+                --     should be **generic**
+                --     if terminology overlaps, just be aware it will matching on overlapping terms even when the user query isn't related
+                --     IOTW don't use "semantic_grep" wording in instruct!
+                semantic_grep_request.instruct = "Find code related to the user's query"
+                -- TODO setup evals, i.e. auto-edit repo query="transcription ends on an edit boundary" should match:
+                --   ~/repos/github/g0t4/auto-edit-suggests/auto_edit/fcpxml/builder.py:165-178
+                --   perhaps copy branches into an evals repo OR just freeze a branch
+                --
                 semantic_grep_request.query = prompt
                 return _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result, process_complete, entry_maker)
             end,
