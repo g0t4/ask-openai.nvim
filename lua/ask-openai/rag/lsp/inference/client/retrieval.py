@@ -63,6 +63,7 @@ async def semantic_grep(
     instruct = args.instruct
     if instruct is None:
         instruct = "Semantic grep of relevant code for display in neovim, using semantic_grep extension to telescope"
+    logger.info(f"using instruct: {instruct}")
 
     stopper.throw_if_stopped()
     # * encode query vector
