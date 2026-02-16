@@ -34,15 +34,15 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
     lsp_buffer_number = lsp_buffer_number or 0
 
     logs:info("requesting semantic_grep, last_msg_id: " .. vim.inspect(last_msg_id))
-    local msg_id, cancel_my_request
-    msg_id, cancel_my_request = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
+    local my_msg_id, cancel_my_request
+    my_msg_id, cancel_my_request = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
             command = "semantic_grep",
             arguments = { semantic_grep_request },
         },
         ---@param result LSPSemanticGrepResult
         function(err, result, ctx)
             -- logs:warn("semantic_grep callback: " .. vim.inspect({ err = err, result = result, ctx = ctx }))
-            if last_msg_id ~= msg_id then
+            if last_msg_id ~= my_msg_id then
                 -- only the last request should update the picker!
                 -- prior requests may complete but are still cancelled
                 return
@@ -74,7 +74,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
         end
     )
     cancel_last_requests = cancel_my_request
-    last_msg_id = msg_id -- this is a number
+    last_msg_id = my_msg_id -- this is a number
 
     logs:info("semantic_grep last_msg_id: " .. vim.inspect(last_msg_id))
 end
