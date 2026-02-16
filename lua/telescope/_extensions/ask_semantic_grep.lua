@@ -26,14 +26,14 @@ local last_msg_id, cancel_last_requests
 ---@param entry_maker fun(match: LSPRankedMatch): SemanticGrepTelescopeEntryMatch
 function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result, process_complete, entry_maker)
     if cancel_last_requests then
-        logs:error("canceling previous request, last_msg_id: " .. vim.inspect(last_msg_id))
+        logs:info("canceling semantic_grep request, last_msg_id: " .. vim.inspect(last_msg_id))
         cancel_last_requests()
         cancel_last_requests = nil
     end
 
     lsp_buffer_number = lsp_buffer_number or 0
 
-    logs:warn("requesting semantic_grep, last_msg_id: " .. vim.inspect(last_msg_id))
+    logs:info("requesting semantic_grep, last_msg_id: " .. vim.inspect(last_msg_id))
     local msg_id, cancel_my_request
     msg_id, cancel_my_request = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", {
             command = "semantic_grep",
@@ -58,7 +58,6 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
                 return {}
             end
 
-            -- logs:info("result: " .. vim.inspect(result))
             if not result then
                 logs:error("semantic_grep failed to get results")
                 return {}
@@ -66,11 +65,9 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
 
             local matches = result.matches or {}
             for i, match in ipairs(matches) do
-                -- logs:info("match: " .. vim.inspect(match))
                 local entry = entry_maker(match)
                 process_result(entry)
             end
-            -- logs:info("picker: " .. vim.inspect(picker))
 
             -- picker.max_results = 10
             process_complete()
@@ -79,7 +76,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
     cancel_last_requests = cancel_my_request
     last_msg_id = msg_id -- this is a number
 
-    logs:warn("client_request_ids: " .. vim.inspect(last_msg_id))
+    logs:info("semantic_grep last_msg_id: " .. vim.inspect(last_msg_id))
 end
 
 local ns = vim.api.nvim_create_namespace("rag_preview")
