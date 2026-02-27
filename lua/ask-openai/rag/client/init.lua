@@ -19,17 +19,20 @@ local function load_rag_yaml_config(work_dir)
         log:info("no .rag.yaml found at", rag_yaml_path)
         return nil
     end
+    log:info("found .rag.yaml at", rag_yaml_path)
 
     local yaml_content = vim.fn.readfile(rag_yaml_path)
     if not yaml_content then
-        error("failed to read file contents", rag_yaml_path)
+        error("failed to read file contents: " .. rag_yaml_path)
         return nil
     end
 
     local yaml_str = table.concat(yaml_content, "\n")
+    -- log:info(".rag.yaml yaml_str:\n" .. yaml_str)
     local ok, parsed = safely.decode_yaml(yaml_str)
+    log:info(".rag.yaml parsed:\n" .. vim.inspect(parsed))
     if not ok then
-        error("Failed to parse yaml" .. rag_yaml_path)
+        error("Failed to parse yaml: " .. rag_yaml_path)
         return nil
     end
 
