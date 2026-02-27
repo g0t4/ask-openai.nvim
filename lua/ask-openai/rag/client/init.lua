@@ -67,7 +67,6 @@ local function determine_rag_config()
 
     -- * load .rag.yaml
     M.rag_yaml = load_rag_yaml_config(root_dir)
-    -- log:info("RAG", vim.inspect(M.rag_yaml))
 
     if M.rag_yaml and not M.rag_yaml.enabled then
         log:error("RAG is disabled in .rag.yaml")
@@ -75,8 +74,8 @@ local function determine_rag_config()
     end
 
     M.is_rag_indexed_workspace = true
-    M.rag_extensions = files.list_directories(dot_rag_dir)
-    log:info("RAG is supported for: " .. vim.inspect(M.rag_extensions))
+    M.rag_indexed_file_extensions = files.list_directories(dot_rag_dir)
+    log:info("RAG is supported for: " .. vim.inspect(M.rag_indexed_file_extensions))
 end
 determine_rag_config()
 
@@ -117,7 +116,7 @@ function M.get_filetypes_for_workspace()
         yml = "yaml", -- *
     }
 
-    return vim.iter(M.rag_extensions or {})
+    return vim.iter(M.rag_indexed_file_extensions or {})
         :map(function(ext) return ext_to_filetype[ext] or ext end)
         :totable()
 end
@@ -147,7 +146,7 @@ function M.is_rag_supported_in_current_file(bufnr)
     --  i.e. .yaml/.yml
     --  or c: .h/.c/.cpp ...
     --  or node: .js/.mjs
-    return vim.tbl_contains(M.rag_extensions, extension)
+    return vim.tbl_contains(M.rag_indexed_file_extensions, extension)
 end
 
 ---@param str string
