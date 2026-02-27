@@ -49,8 +49,7 @@ end
 local function check_supported_dirs()
     local work_dir = vim.fn.getcwd()
     local dot_rag_dir = work_dir .. "/.rag"
-
-    local is_rag_dir = files.exists(work_dir)
+    local is_rag_dir = files.exists(dot_rag_dir)
     M.rag_yaml = load_rag_yaml_config(work_dir)
     -- log:info("RAG", vim.inspect(M.rag_yaml))
 
