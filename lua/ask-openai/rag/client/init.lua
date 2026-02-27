@@ -75,6 +75,7 @@ local function determine_rag_config()
 
     M.is_rag_indexed_workspace = true
     M.rag_indexed_file_extensions = files.list_directories(dot_rag_dir)
+    table.sort(M.rag_indexed_file_extensions)
     log:info("RAG is supported for: " .. vim.inspect(M.rag_indexed_file_extensions))
 end
 determine_rag_config()
