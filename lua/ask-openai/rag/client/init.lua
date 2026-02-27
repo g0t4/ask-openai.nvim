@@ -47,6 +47,7 @@ local function load_rag_yaml_config(work_dir)
 end
 
 local function check_supported_dirs()
+    -- * find .rag/ dir
     -- PRN review terminology for root_dir/source_dir (wherever .rag/ and .rag.yaml live, make it consistent across lua/python)
     local root_dir = vim.fn.getcwd()
     local dot_rag_dir = root_dir .. "/.rag"
@@ -63,6 +64,8 @@ local function check_supported_dirs()
         root_dir = git_root
         log:info("fallback, found .rag in repo root: " .. dot_rag_dir)
     end
+
+    -- * load .rag.yaml
     M.rag_yaml = load_rag_yaml_config(root_dir)
     -- log:info("RAG", vim.inspect(M.rag_yaml))
 
