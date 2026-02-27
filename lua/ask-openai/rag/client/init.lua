@@ -50,15 +50,13 @@ local function check_supported_dirs()
     -- PRN review terminology for root_dir/source_dir (wherever .rag/ and .rag.yaml live, make it consistent across lua/python)
     local root_dir = vim.fn.getcwd()
     local dot_rag_dir = root_dir .. "/.rag"
-    local dot_rag_dir_exists = files.exists(dot_rag_dir)
-    if not dot_rag_dir_exists then
+    if not files.exists(dot_rag_dir) then
         -- fallback check git repo root
         --   i.e. the rag dir in this ask-openai repo, or my hammerspoon config in my dotfiles repo
         --   I often work inside these directories, maybe I should just have a .rag dir in them too.. and scope to just it but maybe not?
         local git_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
         dot_rag_dir = git_root .. "/.rag"
-        dot_rag_dir_exists = files.exists(dot_rag_dir)
-        if not dot_rag_dir_exists then
+        if not files.exists(dot_rag_dir) then
             log:info("RAG is disabled b/c there is NO .rag dir: " .. dot_rag_dir)
             return
         end
