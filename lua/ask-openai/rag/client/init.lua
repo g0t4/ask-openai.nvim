@@ -46,7 +46,7 @@ local function load_rag_yaml_config(work_dir)
     return parsed_config
 end
 
-local function check_supported_dirs()
+local function determine_rag_config()
     -- * find .rag/ dir
     -- PRN review terminology for root_dir/source_dir (wherever .rag/ and .rag.yaml live, make it consistent across lua/python)
     local root_dir = vim.fn.getcwd()
@@ -78,7 +78,7 @@ local function check_supported_dirs()
     M.rag_extensions = files.list_directories(dot_rag_dir)
     log:info("RAG is supported for: " .. vim.inspect(M.rag_extensions))
 end
-check_supported_dirs()
+determine_rag_config()
 
 function M.get_filetypes_for_workspace()
     -- FYI vim filetypes for enabling the LSP client for RAG purposes
