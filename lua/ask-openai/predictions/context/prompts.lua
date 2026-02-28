@@ -46,7 +46,18 @@ local function extract_top_k(prompt)
 end
 
 -- expose the slash commands list publicly for reuse elsewhere
-M.slash_commands = { "/yanks", "/all", "/commits", "/file", "/files", "/tools", "/selection", "/template", "/norag", "/readonly", }
+M.slash_commands = {
+    "/yanks",
+    "/all",
+    "/commits",
+    "/file",
+    "/files",
+    "/tools",
+    "/selection",
+    "/template",
+    "/norag",
+    "/readonly",
+}
 
 --- Completion function for slash commands used by user commands.
 -- Returns a list of completions matching the lead entered.
@@ -94,8 +105,8 @@ function M.parse_includes(prompt)
         commits = has("/commits"),
         current_file = has("/file"),
         open_files = has("/files"),
-    use_tools = has("/tools"),
-    readonly = has("/readonly"),
+        use_tools = has("/tools"),
+        readonly = has("/readonly"),
         apply_template_only = has("/template"), -- TODO for AskRewrite/AskQuestion (popup window with colorful prompt?)
         include_selection = has("/selection"),
         top_k = top_k,
