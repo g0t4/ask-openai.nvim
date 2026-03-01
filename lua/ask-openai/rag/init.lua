@@ -74,6 +74,9 @@ function M.setup_lsp()
     })
     -- log:info(vim.inspect(vim.lsp.config))
 
+    -- FYI troubleshooting:
+    -- - :checkhealth vim.lsp  # shows enabled vs active (buffer #s too)
+
     vim.lsp.enable("ask_language_server")
 
     do return end
