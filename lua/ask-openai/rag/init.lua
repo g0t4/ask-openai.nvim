@@ -93,8 +93,7 @@ function M.setup_lsp()
     -- global handler
     vim.lsp.handlers["window/showMessage"] = function(err, result, ctx, config)
         log:info("global handler window/showMessage", vim.inspect(result))
-        local vim_level = map_lsp_level_to_vim_level(result)
-        vim.notify(result.message, vim_level)
+        vim.notify(result.message, map_lsp_level_to_vim_level(result))
     end
 
 
