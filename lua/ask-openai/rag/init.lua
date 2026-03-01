@@ -29,7 +29,6 @@ function M.setup_lsp()
     --  FYI see rag_client.is_rag_supported_in_current_file() for ideas
     --  maybe even set some failure flag from initial setup here (or in a callback)
 
-    if not configs.ask_language_server then
         configs.ask_language_server = {
             default_config = {
                 cmd = {
@@ -46,7 +45,6 @@ function M.setup_lsp()
                 root_dir = require("lspconfig.util").root_pattern(".git", "."),
             },
         }
-    end
 
     -- vim.lsp.handlers["window/showMessage"] = function(err, result, ctx, config)
     --     messages.append("global handler window/showMessage")
