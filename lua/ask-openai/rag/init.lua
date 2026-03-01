@@ -95,14 +95,17 @@ function M.setup_lsp()
     --- @alias EventArgs { id:number, event: string, group: number|nil, file: string, match: string, buf:number, data: table }
 
     -- if LS provides dynamic registration, then some capabilities aren't registered until after LspAttach event
-    vim.lsp.handlers['client/registerCapability'] = (function(overridden)
+    ---@param overridden fun(err: any, res: any, ctx: any): any
+    local function on_register_capability(overridden)
         -- see :h LspAttach
         return function(err, res, ctx)
             -- TODO if I don't have this in my LS then comment out this handler
             log:info(string.format("client/registerCapability: client_id=%s", ctx.client_id))
             local result = overridden(err, res, ctx)
             local client = vim.lsp.get_client_by_id(ctx.client_id)
-            if not client or client.name ~= "ask_language_server" then return end
+            if not client or client.name ~= "ask_language_server" then
+                return
+            end
 
             for bufnr, _ in pairs(client.attached_buffers) do
                 -- Call your custom on_attach logic...
@@ -110,7 +113,8 @@ function M.setup_lsp()
             end
             return result
         end
-    end)(vim.lsp.handlers['client/registerCapability'])
+    end
+    vim.lsp.handlers['client/registerCapability'] = on_register_capability(vim.lsp.handlers['client/registerCapability'])
 
     vim.api.nvim_create_autocmd('LspDetach', {
         callback =
