@@ -55,6 +55,7 @@ function M.setup_lsp()
 
     lspconfig.ask_language_server.setup({
         on_attach = function(client, bufnr)
+            log:info("on_attach")
             -- messages.append(client.name .. " is now attached to buffer: " .. bufnr)
             -- messages.ensure_open()
             -- -- messages.append(vim.inspect(client))
