@@ -139,15 +139,15 @@ function M.setup_lsp()
         callback =
         --- @param event_args EventArgs
             function(event_args)
-            log:info(string.format("LspAttach: client_id=%s (buf %d)", event_args.data.client_id, event_args.buf))
-            local client = vim.lsp.get_client_by_id(event_args.data.client_id)
-            if not client or client.name ~= "ask_language_server" then return end
+                log:info(string.format("LspAttach: client_id=%s (buf %d)", event_args.data.client_id, event_args.buf))
+                local client = vim.lsp.get_client_by_id(event_args.data.client_id)
+                if not client or client.name ~= "ask_language_server" then return end
 
-            -- Log server capabilities only once per client to avoid noisy output
-            if not client._asked_openai_capabilities_logged then
-                log:info("Server capabilities:", vim.inspect(client.server_capabilities))
-                client._asked_openai_capabilities_logged = true
-            end
+                -- Log server capabilities only once per client to avoid noisy output
+                if not client._asked_openai_capabilities_logged then
+                    log:info("Server capabilities:", vim.inspect(client.server_capabilities))
+                    client._asked_openai_capabilities_logged = true
+                end
 
                 client.handlers = {
                     ["fuu/no_dot_rag__do_the_right_thing_wink"] = function(err, result, ctx, config)
