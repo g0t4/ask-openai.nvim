@@ -125,7 +125,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     # logger.info(f'{loop=} {id(loop)=}')  # sanity check loop used when scheduling
     update_queue = FileUpdateEmbeddingsQueue(config, fs.root_path, server, loop)
     server.window_show_message(types.ShowMessageParams(
-        types.MessageType.Debug,
+        types.MessageType.Warning,
         "hello test",
     ))
 

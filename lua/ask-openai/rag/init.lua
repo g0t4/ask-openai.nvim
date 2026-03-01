@@ -86,17 +86,16 @@ function M.setup_lsp()
         ---@param result { message: string, type: number }  -- Language Server MessageType
         local function notify_with_lsp_level(result)
             local level_map = {
-                [1] = vim.log.levels.ERROR, -- Error
-                [2] = vim.log.levels.WARN, -- Warning
-                [3] = vim.log.levels.INFO, -- Info
-                [4] = vim.log.levels.DEBUG, -- Log (treated as debug)
+                [1] = vim.log.levels.ERROR, -- MessageType.Error
+                [2] = vim.log.levels.WARN, -- MessageType.Warning
+                [3] = vim.log.levels.INFO, -- MessageType.Info
+                [5] = vim.log.levels.DEBUG, -- MessageType.Debug
+                [4] = vim.log.levels.TRACE, -- MessageType.Log => not sure Log == Trace but meh!
             }
             local level = level_map[result.type] or vim.log.levels.INFO
-            log:info("level", level)
             vim.notify(result.message, level)
         end
 
-        -- replace the original line with:
         notify_with_lsp_level(result)
     end
 
