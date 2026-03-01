@@ -73,11 +73,8 @@ function M.setup_lsp()
         root_dir = root_dir
     })
     -- log:info(vim.inspect(vim.lsp.config))
-
-    -- FYI troubleshooting:
-    -- - :checkhealth vim.lsp  # shows enabled vs active (buffer #s too)
-
     vim.lsp.enable("ask_language_server")
+    -- FYI :checkhealth vim.lsp  " shows enabled vs active (buffer #s too)
 
     -- ---@param result { message: string, type: number }  -- Language Server MessageType
     -- local function map_lsp_level_to_vim_level(result)
