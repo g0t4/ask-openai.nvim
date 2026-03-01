@@ -79,71 +79,111 @@ function M.setup_lsp()
 
     vim.lsp.enable("ask_language_server")
 
-    do return end
-
+    -- -- global handler
     -- vim.lsp.handlers["window/showMessage"] = function(err, result, ctx, config)
-    --     messages.append("global handler window/showMessage")
-    --     messages.append(vim.inspect(result))
+    --     log:info("global handler window/showMessage")
+    --     log:info(vim.inspect(result))
     -- end
 
-    lspconfig.ask_language_server.setup({
-        on_attach = function(client, bufnr)
-            log:info("on_attach")
-            -- messages.append(client.name .. " is now attached to buffer: " .. bufnr)
-            -- messages.ensure_open()
-            -- -- messages.append(vim.inspect(client))
-            client.handlers = {
-                ["fuu/no_dot_rag__do_the_right_thing_wink"] = function(err, result, ctx, config)
-                    messages.append("client handler fuu/no_dot_rag__do_the_right_thing_wink")
-                    messages.append(vim.inspect(result))
-                    -- ask server to shutdown, so I don't ask for more stuff it cannot do!
-                    -- WHY THE F does this not request SHUTDOWN!?
-                    -- vim.lsp.stop_client(client)
-                    -- vim.lsp.stop_client(client)
-                end,
+
+    --- @alias EventArgs { id:number, event: string, group: number|nil, file: string, match: string, buf:number, data: table }
+
+    -- if LS provides dynamic registration, then some capabilities aren't registered until after LspAttach event
+    vim.lsp.handlers['client/registerCapability'] = (function(overridden)
+        -- see :h LspAttach
+        return function(err, res, ctx)
+            -- TODO if I don't have this in my LS then comment out this handler
+            log:info(string.format("client/registerCapability: client_id=%s", ctx.client_id))
+            local result = overridden(err, res, ctx)
+            local client = vim.lsp.get_client_by_id(ctx.client_id)
+            if not client or client.name ~= "ask_language_server" then return end
+
+            for bufnr, _ in pairs(client.attached_buffers) do
+                -- Call your custom on_attach logic...
+                -- my_on_attach(client, bufnr)
+            end
+            return result
+        end
+    end)(vim.lsp.handlers['client/registerCapability'])
+
+    vim.api.nvim_create_autocmd('LspDetach', {
+        callback =
+        --- @param event_args EventArgs
+            function(event_args)
+                log:info(string.format("LspDetach: client_id=%s (buf %d)", event_args.data.client_id, event_args.buf))
+                local client = vim.lsp.get_client_by_id(event_args.data.client_id)
+                if not client or client.name ~= "ask_language_server" then return end
 
 
-                -- ["window/showMessage"] = function(err, result, ctx, config)
-                --     messages.append("client handler window/showMessage")
-                --     messages.append(vim.inspect(result))
-                -- end,
-                -- ["window/showMessageRequest"] = function(err, result, ctx, config)
-                --     messages.append("client handler window/showMessageRequest")
-                --     messages.append(vim.inspect(result))
-                -- end,
-                -- ["window/logMessage"] = function(err, result, ctx, config)
-                --     messages.append("client handler window/logMessage")
-                --     messages.append(vim.inspect(result))
-                -- end,
-            }
+                -- Remove the autocommand to format the buffer on save, if it exists
+                if client:supports_method('textDocument/formatting') then
+                    vim.api.nvim_clear_autocmds({
+                        event = 'BufWritePre',
+                        buffer = event_args.buf,
+                    })
+                end
+            end,
+    })
 
-            -- vim.defer_fn(function()
-            --     local req_id0, cancel0 = vim.lsp.buf_request(0, "workspace/executeCommand", {
-            --         command = "SLEEPY",
-            --         arguments = { {} }, -- MUST have empty arguments in pygls v2... or set values inside arguments = { { seconds = 10 } },
-            --     }, function(err, result)
-            --         log:error("DONE error: " .. vim.inspect(err) .. " res:" .. vim.inspect(result))
-            --     end)
-            --     -- vim.defer_fn(cancel0, 0) -- works fine to cancel all immediately and it does so VERY fast
-            --     vim.defer_fn(cancel0, 500)
-            --
-            --     local req_id1, cancel1 = vim.lsp.buf_request(0, "workspace/executeCommand", {
-            --         command = "SLEEPY",
-            --         arguments = { { seconds = 10 } },
-            --     }, function(err, result)
-            --         log:error("DONE error: " .. vim.inspect(err) .. " res:" .. vim.inspect(result))
-            --     end)
-            --     vim.defer_fn(cancel1, 0)
-            --
-            --     local req_id2, cancel2 = vim.lsp.buf_request(0, "workspace/executeCommand", {
-            --         command = "SLEEPY",
-            --         arguments = { { seconds = 10 } },
-            --     }, function(err, result)
-            --         log:error("DONE error: " .. vim.inspect(err) .. " res:" .. vim.inspect(result))
-            --     end)
-            --     vim.defer_fn(cancel2, 0)
-            -- end, 500)
-        end,
+    vim.api.nvim_create_autocmd('LspAttach', {
+        callback =
+        --- @param event_args EventArgs
+            function(event_args)
+                log:info(string.format("LspAttach: client_id=%s (buf %d)", event_args.data.client_id, event_args.buf))
+                local client = vim.lsp.get_client_by_id(event_args.data.client_id)
+                if not client or client.name ~= "ask_language_server" then return end
+
+                log:info("Server capabilities:", vim.inspect(client.server_capabilities))
+
+                client.handlers = {
+                    ["fuu/no_dot_rag__do_the_right_thing_wink"] = function(err, result, ctx, config)
+                        log:info("client handler fuu/no_dot_rag__do_the_right_thing_wink", vim.inspect(result))
+                        -- ask server to shutdown, so I don't ask for more stuff it cannot do!
+                        -- WHY THE F does this not request SHUTDOWN!?
+                        -- vim.lsp.stop_client(client)
+                        -- vim.lsp.stop_client(client)
+                    end,
+                    -- ["window/showMessage"] = function(err, result, ctx, config)
+                    --     log:info("client handler window/showMessage")
+                    --     log:info(vim.inspect(result))
+                    -- end,
+                    -- ["window/showMessageRequest"] = function(err, result, ctx, config)
+                    --     log:info("client handler window/showMessageRequest")
+                    --     log:info(vim.inspect(result))
+                    -- end,
+                    -- ["window/logMessage"] = function(err, result, ctx, config)
+                    --     log:info("client handler window/logMessage")
+                    --     log:info(vim.inspect(result))
+                    -- end,
+                }
+
+                -- vim.defer_fn(function()
+                --     local req_id0, cancel0 = vim.lsp.buf_request(0, "workspace/executeCommand", {
+                --         command = "SLEEPY",
+                --         arguments = { {} }, -- MUST have empty arguments in pygls v2... or set values inside arguments = { { seconds = 10 } },
+                --     }, function(err, result)
+                --         log:error("DONE error: " .. vim.inspect(err) .. " res:" .. vim.inspect(result))
+                --     end)
+                --     -- vim.defer_fn(cancel0, 0) -- works fine to cancel all immediately and it does so VERY fast
+                --     vim.defer_fn(cancel0, 500)
+                --
+                --     local req_id1, cancel1 = vim.lsp.buf_request(0, "workspace/executeCommand", {
+                --         command = "SLEEPY",
+                --         arguments = { { seconds = 10 } },
+                --     }, function(err, result)
+                --         log:error("DONE error: " .. vim.inspect(err) .. " res:" .. vim.inspect(result))
+                --     end)
+                --     vim.defer_fn(cancel1, 0)
+                --
+                --     local req_id2, cancel2 = vim.lsp.buf_request(0, "workspace/executeCommand", {
+                --         command = "SLEEPY",
+                --         arguments = { { seconds = 10 } },
+                --     }, function(err, result)
+                --         log:error("DONE error: " .. vim.inspect(err) .. " res:" .. vim.inspect(result))
+                --     end)
+                --     vim.defer_fn(cancel2, 0)
+                -- end, 500)
+            end
     })
 end
 
