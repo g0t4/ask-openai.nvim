@@ -79,11 +79,26 @@ function M.setup_lsp()
 
     vim.lsp.enable("ask_language_server")
 
-    -- -- global handler
-    -- vim.lsp.handlers["window/showMessage"] = function(err, result, ctx, config)
-    --     log:info("global handler window/showMessage")
-    --     log:info(vim.inspect(result))
-    -- end
+    -- global handler
+    vim.lsp.handlers["window/showMessage"] = function(err, result, ctx, config)
+        log:info("global handler window/showMessage", vim.inspect(result))
+
+        ---@param result { message: string, type: number }  -- Language Server MessageType
+        local function notify_with_lsp_level(result)
+            local level_map = {
+                [1] = vim.log.levels.ERROR, -- Error
+                [2] = vim.log.levels.WARN, -- Warning
+                [3] = vim.log.levels.INFO, -- Info
+                [4] = vim.log.levels.DEBUG, -- Log (treated as debug)
+            }
+            local level = level_map[result.type] or vim.log.levels.INFO
+            log:info("level", level)
+            vim.notify(result.message, level)
+        end
+
+        -- replace the original line with:
+        notify_with_lsp_level(result)
+    end
 
 
     --- @alias EventArgs { id:number, event: string, group: number|nil, file: string, match: string, buf:number, data: table }
