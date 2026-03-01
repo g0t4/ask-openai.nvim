@@ -79,22 +79,20 @@ function M.setup_lsp()
 
     vim.lsp.enable("ask_language_server")
 
+    ---@param result { message: string, type: number }  -- Language Server MessageType
+    local function map_lsp_level_to_vim_level(result)
+        local level_map = {
+            [1] = vim.log.levels.ERROR, -- MessageType.Error
+            [2] = vim.log.levels.WARN, -- MessageType.Warning
+            [3] = vim.log.levels.INFO, -- MessageType.Info
+            [5] = vim.log.levels.DEBUG, -- MessageType.Debug
+            [4] = vim.log.levels.TRACE, -- MessageType.Log => not sure Log == Trace but meh!
+        }
+        return level_map[result.type] or vim.log.levels.INFO
+    end
     -- global handler
     vim.lsp.handlers["window/showMessage"] = function(err, result, ctx, config)
         log:info("global handler window/showMessage", vim.inspect(result))
-
-        ---@param result { message: string, type: number }  -- Language Server MessageType
-        local function map_lsp_level_to_vim_level(result)
-            local level_map = {
-                [1] = vim.log.levels.ERROR, -- MessageType.Error
-                [2] = vim.log.levels.WARN, -- MessageType.Warning
-                [3] = vim.log.levels.INFO, -- MessageType.Info
-                [5] = vim.log.levels.DEBUG, -- MessageType.Debug
-                [4] = vim.log.levels.TRACE, -- MessageType.Log => not sure Log == Trace but meh!
-            }
-            return level_map[result.type] or vim.log.levels.INFO
-        end
-
         local vim_level = map_lsp_level_to_vim_level(result)
         vim.notify(result.message, vim_level)
     end
