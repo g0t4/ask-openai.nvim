@@ -107,10 +107,11 @@ function M.setup_lsp()
                 return
             end
 
-            for bufnr, _ in pairs(client.attached_buffers) do
-                -- Call your custom on_attach logic...
-                -- my_on_attach(client, bufnr)
-            end
+            -- PRN add any dynamic attach functionality
+            -- for bufnr, _ in pairs(client.attached_buffers) do
+            --     -- Call your custom on_attach logic...
+            --     -- my_on_attach(client, bufnr)
+            -- end
             return result
         end
     end
@@ -124,14 +125,14 @@ function M.setup_lsp()
                 local client = vim.lsp.get_client_by_id(event_args.data.client_id)
                 if not client or client.name ~= "ask_language_server" then return end
 
-
-                -- Remove the autocommand to format the buffer on save, if it exists
-                if client:supports_method('textDocument/formatting') then
-                    vim.api.nvim_clear_autocmds({
-                        event = 'BufWritePre',
-                        buffer = event_args.buf,
-                    })
-                end
+                -- PRN remove keymaps (if added in LspAttach)
+                -- -- Remove the autocommand to format the buffer on save, if it exists
+                -- if client:supports_method('textDocument/formatting') then
+                --     vim.api.nvim_clear_autocmds({
+                --         event = 'BufWritePre',
+                --         buffer = event_args.buf,
+                --     })
+                -- end
             end,
     })
 
@@ -148,6 +149,8 @@ function M.setup_lsp()
                     log:info("Server capabilities:", vim.inspect(client.server_capabilities))
                     client._asked_openai_capabilities_logged = true
                 end
+
+                -- TODO keymaps for slash commands
 
                 client.handlers = {
                     ["fuu/no_dot_rag__do_the_right_thing_wink"] = function(err, result, ctx, config)
