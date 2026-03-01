@@ -124,10 +124,6 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     loop = asyncio.get_running_loop()  # btw RuntimeError if no current loop (a good thing)
     # logger.info(f'{loop=} {id(loop)=}')  # sanity check loop used when scheduling
     update_queue = FileUpdateEmbeddingsQueue(config, fs.root_path, server, loop)
-    server.window_show_message(types.ShowMessageParams(
-        types.MessageType.Warning,
-        "hello test",
-    ))
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 async def doc_saved(params: types.DidSaveTextDocumentParams):
