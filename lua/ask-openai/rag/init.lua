@@ -22,29 +22,61 @@ function M.setup_lsp()
         return
     end
 
-    local lspconfig = require("lspconfig")
-    local configs = require("lspconfig.configs")
-
     -- TODO detect initial failure to start LSP => stop trying... so when embeddings server is down
     --  FYI see rag_client.is_rag_supported_in_current_file() for ideas
     --  maybe even set some failure flag from initial setup here (or in a callback)
 
-    configs.ask_language_server = {
-        default_config = {
-            cmd = {
-                os.getenv("HOME") .. "/repos/github/g0t4/ask-openai.nvim/.venv/bin/python",
-                "-m",
-                "lsp.server",
-            },
-            cmd_cwd = os.getenv("HOME") .. "/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag",
-            -- filetypes = rag_client.get_filetypes_for_workspace(),
-            -- filetypes = { '*' }, -- not set == all filetypes
-            --
-            -- FYI .git first means repo root is preferred, fallback is CWD
-            -- this maps to root_uri/root_path in server's on_initialize
-            root_dir = require("lspconfig.util").root_pattern(".git", "."),
+    --- @param bufnr number
+    --- @param on_dir fun(string)
+    local function root_dir(bufnr, on_dir)
+        -- NOTES:
+        -- - FYI vim.lsp.config's root_dir func is NOT compatible with nvim-lspconfig's root_dir func
+        -- - DO not use `root_marker` b/c it will start LSP with root_uri=None if it doesn't find the root marker! (YIKES)
+        -- - use this `root_dir` function and just don't call `on_dir` if you don't want the LS for a given file
+        -- - finds workspace root for *EACH BUFFER*
+        --   - each root discovered == new LS instance (makes sense)
+        --   - thus, F12 into a library => opens a separate LS instance for the library (also makes sense)
+        --     - if library has its own RAG indexes => well, you might want to search those!
+
+        -- * get root based on first .rag dir in/above file's directory
+        local filepath = vim.api.nvim_buf_get_name(bufnr)
+        local root = vim.fs.root(filepath, {
+            ".rag", -- only if a .rag dir, otherwise we don't start this LS
+            -- FYI might have issues w/ nested .rag dirs but I don't really use that... handle if it arises
+            -- ".git", -- common, but in my case I need .rag (in fact, LS should never be setup if there's no .rag dir, so this would never be called)
+        })
+
+        -- TODO comment out logs once you are comfortable w/ migration to vim.lsp.config
+        if root then
+            -- ONLY start LS if you find a root
+            log:info(string.format("found ask-LS root=%s, bufnr=%d %s", tostring(root), bufnr, filepath))
+            on_dir(root)
+            return
+        end
+        log:warn(string.format("no ask-LS root found for bufnr=%d %s", bufnr, filepath))
+    end
+
+    vim.lsp.config("ask_language_server", {
+
+        -- * language server
+        cmd = {
+            os.getenv("HOME") .. "/repos/github/g0t4/ask-openai.nvim/.venv/bin/python",
+            "-m",
+            "lsp.server",
         },
-    }
+        cmd_cwd = os.getenv("HOME") .. "/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag",
+
+        -- old values from lspconfig setup => these might need adjusted if filetypes differs in vim.lsp.config
+        -- filetypes = rag_client.get_filetypes_for_workspace(),
+        -- filetypes = { '*' }, -- not set == all filetypes
+
+        root_dir = root_dir
+    })
+    -- log:info(vim.inspect(vim.lsp.config))
+
+    vim.lsp.enable("ask_language_server")
+
+    do return end
 
     -- vim.lsp.handlers["window/showMessage"] = function(err, result, ctx, config)
     --     messages.append("global handler window/showMessage")
