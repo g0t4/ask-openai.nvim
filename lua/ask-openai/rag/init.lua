@@ -29,22 +29,22 @@ function M.setup_lsp()
     --  FYI see rag_client.is_rag_supported_in_current_file() for ideas
     --  maybe even set some failure flag from initial setup here (or in a callback)
 
-        configs.ask_language_server = {
-            default_config = {
-                cmd = {
-                    os.getenv("HOME") .. "/repos/github/g0t4/ask-openai.nvim/.venv/bin/python",
-                    "-m",
-                    "lsp.server",
-                },
-                cmd_cwd = os.getenv("HOME") .. "/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag",
-                -- filetypes = rag_client.get_filetypes_for_workspace(),
-                -- filetypes = { '*' }, -- not set == all filetypes
-                --
-                -- FYI .git first means repo root is preferred, fallback is CWD
-                -- this maps to root_uri/root_path in server's on_initialize
-                root_dir = require("lspconfig.util").root_pattern(".git", "."),
+    configs.ask_language_server = {
+        default_config = {
+            cmd = {
+                os.getenv("HOME") .. "/repos/github/g0t4/ask-openai.nvim/.venv/bin/python",
+                "-m",
+                "lsp.server",
             },
-        }
+            cmd_cwd = os.getenv("HOME") .. "/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag",
+            -- filetypes = rag_client.get_filetypes_for_workspace(),
+            -- filetypes = { '*' }, -- not set == all filetypes
+            --
+            -- FYI .git first means repo root is preferred, fallback is CWD
+            -- this maps to root_uri/root_path in server's on_initialize
+            root_dir = require("lspconfig.util").root_pattern(".git", "."),
+        },
+    }
 
     -- vim.lsp.handlers["window/showMessage"] = function(err, result, ctx, config)
     --     messages.append("global handler window/showMessage")
