@@ -35,7 +35,7 @@ logger = get_logger(__name__)
 # ----------------------------------------------------------------------
 # Global token counter
 # ----------------------------------------------------------------------
-total_tokens: int = 0  # cumulative tokens processed during this run
+token_count_since_restart: int = 0  # cumulative tokens processed during this run
 LIFETIME_TOKEN_COUNTER_FILE = Path(__file__).with_name("lifetime_token_counter.txt")
 
 def _persist_lifetime_token_count() -> None:
@@ -44,7 +44,7 @@ def _persist_lifetime_token_count() -> None:
         previous = int(LIFETIME_TOKEN_COUNTER_FILE.read_text().strip() or "0")
     except (FileNotFoundError, ValueError):
         previous = 0
-    new_total = previous + total_tokens
+    new_total = previous + token_count_since_restart
     LIFETIME_TOKEN_COUNTER_FILE.write_text(str(new_total))
     rich.print(f"[magenta]Total tokens processed (cumulative): {new_total}[/]")
 
@@ -141,7 +141,7 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
     def after_send():
         pass
 
-    global total_tokens
+    global token_count_since_restart
     with Timer() as encode_timer:
         # PRN split out this section to a socket agnostic dispatcher
         # TODO handle OutOfMemoryError: CUDA out of memory. Tried to allocate 4.1 GiB... (replicate and make sure warning gets to LSP client so it shows in neovim)
@@ -150,7 +150,7 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
             texts = request['texts']
             # PRN async encode?... really all I want async for is in the LSP to cancel pending buf_requests... this server side was just practice for asyncifying socket
             embeddings, input_ids = qwen3_embeddings.encode(texts)
-            total_tokens += sum(len(seq) for seq in input_ids)
+            token_count_since_restart += sum(len(seq) for seq in input_ids)
             response = {'embeddings': embeddings.tolist()}
 
             def after_send():
@@ -166,7 +166,7 @@ async def on_client_connected(reader: asyncio.StreamReader, writer: asyncio.Stre
             docs: list[str] = request['docs']
             # PRN async rerank?
             scores, input_ids = qwen3_rerank.rerank(instruct, query, docs)
-            total_tokens += sum(len(seq) for seq in input_ids)
+            token_count_since_restart += sum(len(seq) for seq in input_ids)
             response = {'scores': scores}
 
             def after_send():
