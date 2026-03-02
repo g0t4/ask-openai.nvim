@@ -41,12 +41,12 @@ LIFETIME_TOKEN_COUNTER_FILE = Path(__file__).with_name("lifetime_token_counter.t
 def _persist_lifetime_token_count() -> None:
     """Append the run's token total to a persistent file."""
     try:
-        previous = int(LIFETIME_TOKEN_COUNTER_FILE.read_text().strip() or "0")
+        previous_lifetime = int(LIFETIME_TOKEN_COUNTER_FILE.read_text().strip() or "0")
     except (FileNotFoundError, ValueError):
-        previous = 0
-    new_total = previous + token_count_since_restart
-    LIFETIME_TOKEN_COUNTER_FILE.write_text(str(new_total))
-    rich.print(f"[magenta]Total tokens processed (cumulative): {new_total}[/]")
+        previous_lifetime = 0
+    new_lifetime = previous_lifetime + token_count_since_restart
+    LIFETIME_TOKEN_COUNTER_FILE.write_text(str(new_lifetime))
+    rich.print(f"[magenta]LIFETIME tokens processed: {new_lifetime}[/]")
 
 def clear_iterm_scrollback():
     clear_iterm_scrolback = "\x1b]1337;ClearScrollback\a"
