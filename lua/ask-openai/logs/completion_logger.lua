@@ -155,7 +155,9 @@ end
 ---@param frontend StreamingFrontend
 function M.write_new_messages_jsonl(request, frontend)
     -- Save the initial request payload (messages) before sending, for any frontend that uses Curl.
-    if not request.body and not request.body.messages then
+    local request_body = request.body
+    local messages = request_body and request_body.messages
+    if not messages then
         return
     end
     local ok, payload = pcall(function()
@@ -165,7 +167,7 @@ function M.write_new_messages_jsonl(request, frontend)
         --   TODO how about flag each message as logged? (after logged so not logging that)
         --    currently re-saving entire thread every time
         local message_lines = {}
-        for _, msg in ipairs(request.body.messages) do
+        for _, msg in ipairs(messages) do
             if not msg._logged then
                 local json_string = json.encode(msg,
                     { indent = false } -- compact/oneline
