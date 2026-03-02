@@ -36,7 +36,7 @@ logger = get_logger(__name__)
 # Global token counter
 # ----------------------------------------------------------------------
 total_tokens: int = 0  # cumulative tokens processed during this run
-TOKEN_COUNTER_FILE = Path(__file__).with_name("token_counter.txt")
+TOKEN_COUNTER_FILE = Path(__file__).with_name("lifetime_token_counter.txt")
 
 def _persist_token_counter() -> None:
     """Append the run's token total to a persistent file."""
