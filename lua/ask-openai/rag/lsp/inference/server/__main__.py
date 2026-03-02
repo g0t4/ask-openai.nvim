@@ -36,16 +36,16 @@ logger = get_logger(__name__)
 # Global token counter
 # ----------------------------------------------------------------------
 total_tokens: int = 0  # cumulative tokens processed during this run
-TOKEN_COUNTER_FILE = Path(__file__).with_name("lifetime_token_counter.txt")
+LIFETIME_TOKEN_COUNTER_FILE = Path(__file__).with_name("lifetime_token_counter.txt")
 
 def _persist_token_counter() -> None:
     """Append the run's token total to a persistent file."""
     try:
-        previous = int(TOKEN_COUNTER_FILE.read_text().strip() or "0")
+        previous = int(LIFETIME_TOKEN_COUNTER_FILE.read_text().strip() or "0")
     except (FileNotFoundError, ValueError):
         previous = 0
     new_total = previous + total_tokens
-    TOKEN_COUNTER_FILE.write_text(str(new_total))
+    LIFETIME_TOKEN_COUNTER_FILE.write_text(str(new_total))
     rich.print(f"[magenta]Total tokens processed (cumulative): {new_total}[/]")
 
 def clear_iterm_scrollback():
