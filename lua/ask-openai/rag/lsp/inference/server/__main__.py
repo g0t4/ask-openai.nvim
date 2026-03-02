@@ -38,7 +38,7 @@ logger = get_logger(__name__)
 total_tokens: int = 0  # cumulative tokens processed during this run
 LIFETIME_TOKEN_COUNTER_FILE = Path(__file__).with_name("lifetime_token_counter.txt")
 
-def _persist_token_counter() -> None:
+def _persist_lifetime_token_count() -> None:
     """Append the run's token total to a persistent file."""
     try:
         previous = int(LIFETIME_TOKEN_COUNTER_FILE.read_text().strip() or "0")
@@ -227,7 +227,7 @@ async def main():
     def graceful_stop(message):
         rich.print("[red bold] " + message + "\n  Shutting down server...")
         stop.set()
-        _persist_token_counter()
+        _persist_lifetime_token_count()
 
     # adding signal handler via loop means the handler can interact with the event loop (unlike using signal.signal())
     loop.add_signal_handler(signal.SIGINT, graceful_stop, f"received signal SIGINT - Ctrl-C")
