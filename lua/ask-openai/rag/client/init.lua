@@ -32,7 +32,7 @@ local function load_rag_yaml_config(work_dir)
     local ok, parsed = safely.decode_yaml(yaml_str)
     log:info(".rag.yaml parsed:\n" .. vim.inspect(parsed))
     if not ok then
-        error("Failed to parse yaml: " .. rag_yaml_path)
+        error("Failed to parse yaml in " .. rag_yaml_path .. " because " .. vim.inspect(parsed))
         return nil
     end
 
