@@ -32,28 +32,25 @@ level = logging.DEBUG if verbose else (logging.INFO if info else logging.WARNING
 logging_fwk_to_console(level)
 logger = get_logger(__name__)
 
-# ----------------------------------------------------------------------
-# Global token counter
-# ----------------------------------------------------------------------
 token_count_since_restart: int = 0  # cumulative tokens processed during this run
-LIFETIME_TOKEN_COUNTER_FILE = Path(__file__).with_name("lifetime_token_counter.txt")
+LIFETIME_TOKEN_COUNT_FILE = Path(__file__).with_name("lifetime_token_counter.txt")
 
-# Dump lifetime token count on startup
-try:
-    lifetime_total = int(LIFETIME_TOKEN_COUNTER_FILE.read_text().strip() or "0")
-except (FileNotFoundError, ValueError):
-    lifetime_total = 0
-rich.print(f"[magenta]LIFETIME tokens processed: {lifetime_total:,}[/]")
+def _dump_lifetime():
+    # * let it error
+    # right now the file should always exist so let that kill it too
+    # I can touch it if need be, I want this file to not be screwed up
+    # PRN maybe I should just store token count and timestamp of restart... that way I don't need to think about totaling and can just append?
+    lifetime_total = int(LIFETIME_TOKEN_COUNT_FILE.read_text().strip())
+    rich.print(f"[magenta]LIFETIME tokens processed: {lifetime_total:,}[/]")
+
+_dump_lifetime()
 
 def _persist_lifetime_token_count() -> None:
-    """Append the run's token total to a persistent file."""
-    try:
-        previous_lifetime = int(LIFETIME_TOKEN_COUNTER_FILE.read_text().strip() or "0")
-    except (FileNotFoundError, ValueError):
-        previous_lifetime = 0
+    # * let it error
+    previous_lifetime = int(LIFETIME_TOKEN_COUNT_FILE.read_text().strip())
     new_lifetime = previous_lifetime + token_count_since_restart
-    LIFETIME_TOKEN_COUNTER_FILE.write_text(str(new_lifetime))
-    rich.print(f"[magenta]LIFETIME tokens processed: {new_lifetime}[/]")
+    LIFETIME_TOKEN_COUNT_FILE.write_text(str(new_lifetime))
+    rich.print(f"[magenta]NEW LIFETIME tokens processed: {new_lifetime:,}[/]")
 
 def clear_iterm_scrollback():
     clear_iterm_scrolback = "\x1b]1337;ClearScrollback\a"
