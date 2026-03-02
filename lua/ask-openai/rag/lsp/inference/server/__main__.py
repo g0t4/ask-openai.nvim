@@ -38,6 +38,13 @@ logger = get_logger(__name__)
 token_count_since_restart: int = 0  # cumulative tokens processed during this run
 LIFETIME_TOKEN_COUNTER_FILE = Path(__file__).with_name("lifetime_token_counter.txt")
 
+# Dump lifetime token count on startup
+try:
+    lifetime_total = int(LIFETIME_TOKEN_COUNTER_FILE.read_text().strip() or "0")
+except (FileNotFoundError, ValueError):
+    lifetime_total = 0
+rich.print(f"[magenta]LIFETIME tokens processed: {lifetime_total:,}[/]")
+
 def _persist_lifetime_token_count() -> None:
     """Append the run's token total to a persistent file."""
     try:
