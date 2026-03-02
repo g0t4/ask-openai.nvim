@@ -155,8 +155,8 @@ end
 ---@param frontend StreamingFrontend
 function M.write_new_messages_jsonl(request, frontend)
     -- Save the initial request payload (messages) before sending, for any frontend that uses Curl.
-    local request_body = request.body
-    local messages = request_body and request_body.messages
+    local body = request.body
+    local messages = body and body.message -- body then body.messages (else body if false/nil)
     if not messages then
         return
     end
