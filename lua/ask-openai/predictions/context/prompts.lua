@@ -47,16 +47,16 @@ end
 
 -- expose the slash commands list publicly for reuse elsewhere
 M.slash_commands = {
-    "/yanks",
-    "/all",
-    "/commits",
-    "/file",
-    "/files",
-    "/tools",
-    "/selection",
-    "/template",
-    "/norag",
-    "/readonly",
+    YANKS         = "/yanks",
+    ALL           = "/all",
+    COMMITS       = "/commits",
+    FILE          = "/file",
+    FILES         = "/files",
+    TOOLS         = "/tools",
+    SELECTION     = "/selection",
+    TEMPLATE_ONLY = "/template",
+    NORAG         = "/norag",
+    READONLY      = "/readonly",
 }
 
 --- Completion function for slash commands used by user commands.
@@ -69,9 +69,9 @@ function M.SlashCommandCompletion(arglead, cmdline, cursorpos)
     local completions = M.slash_commands or {}
     local result = {}
     local escaped = vim.pesc(arglead)
-    for _, c in ipairs(completions) do
-        if c:find('^' .. escaped) then
-            table.insert(result, c)
+    for _, cmd in pairs(completions) do
+        if cmd:find('^' .. escaped) then
+            table.insert(result, cmd)
         end
     end
     return result
@@ -100,18 +100,19 @@ function M.parse_includes(prompt)
 
     ---@type ParseIncludesResult
     local includes = {
-        all = (prompt == "") or has("/all"),
-        yanks = has("/yanks"),
-        commits = has("/commits"),
-        current_file = has("/file"),
-        open_files = has("/files"),
-        use_tools = has("/tools"),
-        readonly = has("/readonly"),
-        apply_template_only = has("/template"), -- TODO for AskRewrite/AskQuestion (popup window with colorful prompt?)
-        include_selection = has("/selection"),
+        all = (prompt == "") or has(M.slash_commands.ALL),
+        yanks = has(M.slash_commands.YANKS),
+        commits = has(M.slash_commands.COMMITS),
+        current_file = has(M.slash_commands.FILE),
+        open_files = has(M.slash_commands.FILES),
+        use_tools = has(M.slash_commands.TOOLS),
+        readonly = has(M.slash_commands.READONLY),
+        apply_template_only = has(M.slash_commands.TEMPLATE_ONLY),
+        include_selection = has(M.slash_commands.SELECTION),
         top_k = top_k,
         cleaned_prompt = prompt,
-        norag = has("/norag"),
+        norag = has(M.slash_commands.NORAG),
+
     }
 
     if includes.all then
