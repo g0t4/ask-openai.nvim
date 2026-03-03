@@ -1,4 +1,4 @@
-local run_process = require("ask-openai.questions.chat.formatters.run_command")
+local run_process = require("ask-openai.questions.chat.formatters.run_process")
 local generic = require("ask-openai.questions.chat.formatters.generic")
 
 local M = {}

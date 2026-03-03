@@ -354,7 +354,7 @@ def _handle_run_command_and_run_process(arguments: str):
         if command_source:
             command = _bash(command_source)
         else:
-            command = Text.from_markup("[bold white on red]<INVALID COMMAND>")
+            command = Text.from_markup("[bold white on red]MISSING COMMAND")
             loaded = json.loads(arguments)  # reload so we have mode/argv/command_line
 
         renderables.append(command)

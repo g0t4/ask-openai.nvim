@@ -245,7 +245,7 @@ M._cached_run_process_instructions = nil
 ---@param tool_name string
 ---@return string|nil instructions (if applicable for tool_name)
 function M.get_system_message_instructions(tool_name)
-    if tool_name ~= "run_process" and tool_name ~= "run_command" then
+    if tool_name ~= "run_process" then
         return nil
     end
 
