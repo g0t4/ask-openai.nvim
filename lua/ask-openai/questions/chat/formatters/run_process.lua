@@ -18,34 +18,21 @@ local function get_tool_header_text(args_json, message)
         return "json decode failure (see logs): " .. vim.inspect(object_or_error), nil
     end
 
-    if not object_or_error.mode then
-        return "missing mode: ", object_or_error
-    end
-
-    local mode = object_or_error.mode
-    object_or_error.mode = nil -- only want to pass back remaining args
-
-    if mode == "shell" then
-        local command_line = object_or_error.command_line
+    local command_line = object_or_error.command_line
+    if command_line then
         object_or_error.command_line = nil
-        if command_line then
-            return command_line, object_or_error
-        end
-        return "missing command_line: ", object_or_error
+        return command_line, object_or_error
     end
 
-    if mode == "executable" then
-        local argv = object_or_error.argv
-        if argv then
-            local cmd = table.concat(argv, " ")
-            object_or_error.argv = nil
-            return cmd, object_or_error
-        end
-        return "missing argv: ", object_or_error
+    local argv = object_or_error.argv
+    if argv then
+        object_or_error.argv = nil
+        local cmd = table.concat(argv, " ")
+        return cmd, object_or_error
     end
 
-    log:error("invalid mode", args_json)
-    return "invalid mode: " .. args_json, object_or_error
+    log:error("missing both argv and command_line", args_json)
+    return "missing both argv and command_line: " .. args_json, object_or_error
 end
 
 ---@type ToolCallFormatter
