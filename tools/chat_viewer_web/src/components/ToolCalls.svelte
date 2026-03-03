@@ -32,13 +32,12 @@
       }
 
       if (name === 'run_process' && parsed) {
-        const isShellMode = parsed.mode === 'shell' && typeof parsed.command_line === 'string'
+        const isShellMode = typeof parsed.command_line === 'string'
         if (isShellMode) {
           return { type: 'code', code: parsed.command_line, language: 'bash' }
         }
 
         const isExecutableMode =
-          parsed.mode === 'executable' &&
           Array.isArray(parsed.argv) &&
           parsed.argv.length > 0
 

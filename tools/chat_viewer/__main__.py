@@ -337,21 +337,24 @@ def _handle_run_command_and_run_process(arguments: str):
         # rich.inspect(loaded)
         mode = yank(loaded, "mode")
         if mode:
-            title_renderables.append(Text.from_markup(f"[bold]{mode}[/]"))
+            # for now, it's fine to show the old mode... as a reminder that the trace is from legacy run_process tool args
+            #   PRN over time I can drop this
+            title_renderables.append(Text.from_markup(f"[bold]legacy {mode}[/]"))
 
-        if mode == "shell":
+        if "command_line" in loaded:
             command_source = yank(loaded, "command_line")
-        elif mode == "executable":
+        elif "argv" in loaded:
             argv = loaded.get("argv", [])
             command_source = " ".join(map(str, argv))
         else:
+            # legacy run_command tool (pre run_process)
             command_source = yank(loaded, "command")
 
         if command_source:
             command = _bash(command_source)
         else:
             command = Text.from_markup("[bold white on red]MISSING COMMAND")
-            loaded = json.loads(arguments)  # reload so we have mode/argv/command_line
+            loaded = json.loads(arguments)  # reload so we see all args, including: mode/argv/command_line
 
         renderables.append(command)
 
