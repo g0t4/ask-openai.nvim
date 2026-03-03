@@ -49,16 +49,6 @@ function TxChatMessage:tool_result(tool_call)
 end
 
 ---@param content string
----@return OpenAIChatCompletion_Developer_TxChatMessage
-function TxChatMessage:developer(content)
-    -- FYI w/ gptoss this is the same as system_message with other models
-    -- - AND, gptoss's jinja template treats dev/system the same, must be first message only, and is put into harmony dev message
-    --
-    -- * content, role, name - https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-developer_message
-    return TxChatMessage:new(TX_MESSAGE_ROLES.DEVELOPER, content) --[[@as OpenAIChatCompletion_Developer_TxChatMessage]]
-end
-
----@param content string
 ---@return OpenAIChatCompletion_System_TxChatMessage
 function TxChatMessage:system(content)
     -- * content, role, name - https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-system_message

@@ -275,6 +275,9 @@ function HarmonyFimPromptBuilder.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(r
     -- {CHANNEL}final{MESSAGE}
 
     local builder = HarmonyFimPromptBuilder.new()
+        -- FYI MUST use role=developer explicitly since I am building the full prompt
+        --   when using messages then the jinja template for gptoss will map role=system => role=developer
+        --   but that won't happen here! as there is no template!
         :developer()
         :user(HarmonyFimPromptBuilder.context_user_msg(request))
         :user(prompts.semantic_grep_user_message(request.rag_matches))
@@ -289,7 +292,9 @@ end
 ---@param level GptOssReasoningLevel
 function HarmonyFimPromptBuilder.gptoss.get_fim_chat_messages(request, level)
     local messages = {
-        TxChatMessage:developer(HarmonyFimPromptBuilder.developer_message), -- FYI developer or system message must be first, and ONLY ONE is allowed
+        -- FYI developer or system message must be first, and ONLY ONE
+        -- => both map to developer role in jinja template (hence I chose system b/c it doesn't matter and that's more generic if I want to test my message prompts with a different model)
+        TxChatMessage:system(HarmonyFimPromptBuilder.developer_message),
         TxChatMessage:user(HarmonyFimPromptBuilder.context_user_msg(request)),
     }
     local rag_message = prompts.semantic_grep_user_message(request.rag_matches)
