@@ -341,13 +341,9 @@ def _handle_run_command_and_run_process(arguments: str):
 
         if mode == "shell":
             command_source = yank(loaded, "command_line")
-            if "argv" in loaded:
-                renderables.append(f"argv is not allowed with {mode=}")
         elif mode == "executable":
             argv = loaded.get("argv", [])
             command_source = " ".join(map(str, argv))
-            if "command_line" in loaded:
-                renderables.append(f"command_line is not allowed with {mode=}")
         else:
             command_source = yank(loaded, "command")
 
