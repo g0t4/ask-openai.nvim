@@ -9,9 +9,14 @@
   import LocalBrowser from './components/LocalBrowser.svelte'
   import FimPreview from './components/FimPreview.svelte'
   import RewritePreview from './components/RewritePreview.svelte'
+  import ModelInfo from './components/ModelInfo.svelte'
   import 'highlight.js/styles/github-dark.css'
 
   let messages: Message[] = $state([])
+  let modelInfo: { model?: string; isAvailable: boolean } = $state({
+    model: undefined,
+    isAvailable: false
+  })
   let loading = $state(true)
   let error = $state<string | null>(null)
   let threadUrl = $state<string | null>(null)
@@ -150,6 +155,14 @@
 
         // Extract messages from request_body
         messages = data.request_body?.messages ?? []
+
+        // Check for model info in thread metadata
+        if (data.last_sse?.model) {
+          modelInfo = {
+            model: data.last_sse.model,
+            isAvailable: true
+          }
+        }
 
         // Append response_message if present
         if (data.response_message) {
@@ -304,6 +317,10 @@
   {:else if isDirectory && threadUrl}
     <FileBrowser url={threadUrl} />
   {:else}
+    {#if modelInfo.isAvailable}
+      <ModelInfo model={modelInfo.model} />
+    {/if}
+
     {#if fimData}
       <FimPreview userMessage={fimData.userMessage} assistantResponse={fimData.assistantResponse} />
     {/if}
