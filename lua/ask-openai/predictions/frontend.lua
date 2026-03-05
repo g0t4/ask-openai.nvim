@@ -164,9 +164,8 @@ function PredictionsFrontend.ask_for_prediction(params)
 
         ---@param rag_matches LSPRankedMatch[]
         function on_rag_response(rag_matches)
-            log:info("on_rag_response", vim.inspect(rag_matches))
-            -- can this be called twice? one for done/cancel and a race condition b/w the two?
-            -- log:info("on_rag_response(rag_matches:'" .. vim.inspect(rag_matches) .. "')")
+            log:info("on_rag_response") -- leave around for general flow checking
+            -- log:info("on_rag_response", vim.inspect(rag_matches)) -- uncomment for detailed logging
 
             -- FYI unroll all rag specific safeguards here so that logic doesn't live inside send_fim
             perf:rag_done()
@@ -197,7 +196,7 @@ function PredictionsFrontend.ask_for_prediction(params)
             PredictionsFrontend.rag_request_ids = nil
         end
         this_request_ids, cancel = rag_client.context_query_fim(ps_chunk, on_rag_response)
-        log:info("after context_query_fim started")
+        -- log:info("after context_query_fim started")
         PredictionsFrontend.rag_request_ids = this_request_ids
     else
         PredictionsFrontend.rag_cancel = nil
