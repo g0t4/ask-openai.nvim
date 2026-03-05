@@ -186,6 +186,10 @@ function PredictionsFrontend.ask_for_prediction(params)
                 return
             end
 
+            -- clear cancel so not getting cancel message after retrieval (on next keystroke)
+            PredictionsFrontend.rag_cancel = nil
+            PredictionsFrontend.rag_request_ids = nil
+
             then_send_fim(rag_matches)
         end
 
