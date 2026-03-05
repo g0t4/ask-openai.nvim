@@ -158,6 +158,7 @@ function M.write_new_messages_jsonl(request, frontend)
     local body = request.body
     local messages = body and body.messages -- messages is nil if body is nil, else has body.messages
     if not messages then
+        log:info("no messages found (request.body.messages)... happens for qwen FIM b/c it uses raw prompt (TODO capture the raw prompt instead)?")
         return
     end
     local ok, payload = pcall(function()
