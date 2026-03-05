@@ -46,10 +46,10 @@ function M.setup_lsp()
             -- ".git", -- common, but in my case I need .rag (in fact, LS should never be setup if there's no .rag dir, so this would never be called)
         })
 
-        -- TODO comment out logs once you are comfortable w/ migration to vim.lsp.config
         if root then
             -- ONLY start LS if you find a root
-            log:info(string.format("found ask-LS root=%s, bufnr=%d %s", tostring(root), bufnr, filepath))
+            -- FYI! if you see RAG results seemingly coming from a different repo, use this log to check located root:
+            -- log:info(string.format("found ask-LS root=%s, bufnr=%d %s", tostring(root), bufnr, filepath))
             on_dir(root)
             return
         end
@@ -140,15 +140,15 @@ function M.setup_lsp()
         callback =
         --- @param event_args EventArgs
             function(event_args)
-                log:info(string.format("LspAttach: client_id=%s (buf %d)", event_args.data.client_id, event_args.buf))
+                -- log:info(string.format("LspAttach: client_id=%s (buf %d)", event_args.data.client_id, event_args.buf))
                 local client = vim.lsp.get_client_by_id(event_args.data.client_id)
                 if not client or client.name ~= "ask_language_server" then return end
 
                 -- Log server capabilities only once per client to avoid noisy output
-                if not client._asked_openai_capabilities_logged then
-                    log:info("Server capabilities:", vim.inspect(client.server_capabilities))
-                    client._asked_openai_capabilities_logged = true
-                end
+                -- if not client._asked_openai_capabilities_logged then
+                --     log:info("Server capabilities:", vim.inspect(client.server_capabilities))
+                --     client._asked_openai_capabilities_logged = true
+                -- end
 
                 -- TODO keymaps for slash commands
 
