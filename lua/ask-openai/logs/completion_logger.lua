@@ -156,7 +156,7 @@ end
 function M.write_new_messages_jsonl(request, frontend)
     -- Save the initial request payload (messages) before sending, for any frontend that uses Curl.
     local body = request.body
-    local messages = body and body.message -- body then body.messages (else body if false/nil)
+    local messages = body and body.messages -- messages is nil if body is nil, else has body.messages
     if not messages then
         return
     end
