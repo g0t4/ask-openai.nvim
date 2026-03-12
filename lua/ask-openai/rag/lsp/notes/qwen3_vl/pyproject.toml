@@ -9,4 +9,5 @@ dependencies = [
     "qwen-vl-utils>=0.0.14",
     "torch==2.8.0",
     "transformers>=4.57.0",
+    "yapf>=0.43.0",
 ]
