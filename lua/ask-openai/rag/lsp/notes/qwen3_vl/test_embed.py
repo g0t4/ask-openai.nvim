@@ -35,6 +35,10 @@ inputs = queries + documents
 # Process the inputs to get embeddings
 embeddings = model.process(inputs)
 
+# weird, running one document at a time does not produce the same embeddings, not entirely! is it b/c of text/image combo when including documents[2]?)
+#    some sort of batch invariant is violated, maybe inconsistent masking and/or padding?
+# doc1 = model.process([documents[0]])
+
 # Compute similarity scores between query embeddings and document embeddings
 similarity_scores = (embeddings[:4] @ embeddings[4:].T)
 
