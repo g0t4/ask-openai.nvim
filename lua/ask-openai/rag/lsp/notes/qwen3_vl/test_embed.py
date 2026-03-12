@@ -13,6 +13,7 @@ queries = [
     {"text": "Woman surfing on waves during a sunny day."},
     {"text": "City skyline view from a high-rise building at night."}
 ]
+queries_length = len(queries)
 
 # Define a list of document texts and images
 documents = [
@@ -40,7 +41,7 @@ embeddings = model.process(inputs)
 # doc1 = model.process([documents[0]])
 
 # Compute similarity scores between query embeddings and document embeddings
-similarity_scores = (embeddings[:4] @ embeddings[4:].T)
+similarity_scores = (embeddings[:queries_length] @ embeddings[queries_length:].T)
 
 # Print out the similarity scores in a list format
 print(similarity_scores.tolist())
@@ -51,4 +52,5 @@ print(similarity_scores.tolist())
 #  [0.1092604324221611, 0.03871120512485504, 0.06952016055583954]]
 
 
-
+for s in similarity_scores:
+    print(s)
