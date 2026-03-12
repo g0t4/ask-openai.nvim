@@ -130,7 +130,11 @@ function PredictionsFrontend.ask_for_prediction(params)
 
         ---@type ExplainError
         local function explain_error(text)
-            vim.notify("ERROR in new PREDICTIONS FRONTEND PoC: " .. text, vim.log.levels.ERROR)
+            vim.schedule(function()
+                -- cannot call nvim_echo in a fast context (which vim.notify uses), happens if not using nvim-notify
+                -- note: nvim-notify worked fine in a fast context
+                vim.notify("ERROR in new PREDICTIONS FRONTEND PoC: " .. text, vim.log.levels.ERROR)
+            end)
         end
 
         ---@type OnParsedSSE
