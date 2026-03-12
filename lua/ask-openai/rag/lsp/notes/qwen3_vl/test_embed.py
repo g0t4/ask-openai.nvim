@@ -52,5 +52,7 @@ print(similarity_scores.tolist())
 #  [0.1092604324221611, 0.03871120512485504, 0.06952016055583954]]
 
 
-for s in similarity_scores:
-    print(s)
+for i, s in enumerate(similarity_scores):
+    print(i, queries[i])
+    print("  ", s)
+    print()
