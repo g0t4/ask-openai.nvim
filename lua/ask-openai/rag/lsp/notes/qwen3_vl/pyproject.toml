@@ -4,4 +4,8 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "qwen-vl-utils>=0.0.14",
+    "torch==2.8.0",
+    "transformers>=4.57.0",
+]
