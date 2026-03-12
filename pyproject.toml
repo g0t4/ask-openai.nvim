@@ -23,6 +23,7 @@ dependencies = [
     "pytest>=8.4.1",
     "pytest-asyncio>=1.1.0",
     "pytest-watch>=4.2.0",
+    "qwen-vl-utils>=0.0.14",
     "rank-bm25>=0.2.2",
     "requests>=2.32.3",
     "rich>=14.0.0",
