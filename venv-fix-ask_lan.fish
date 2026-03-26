@@ -10,7 +10,9 @@
 #   - FYI cloned repo in Jan 2025 (way before RAG added)
 # *** torch==2.8.0 works!
 uv sync --extra ask_lan
-uv pip install torch==2.8.0 flash-attn==2.8.3
+uv pip install torch==2.8.0 flash-attn==2.8.3 einops==0.8.1
+# "faiss-gpu", # py 3.10 is newest ... do I really need this? faiss-cpu is probably fine for my needs (i.e. running nvim locally).... remember faiss is not used by inference server (obviously)
+
 #     * test deps and/or get version info:
 python3 -c "import torch; print(torch.version.cuda)"
 # 12.8
