@@ -50,7 +50,7 @@ class AsyncInferenceClient:
 
     async def __aenter__(self):
         self.reader, self.writer = await open_connection(
-            host="ollama.lan",
+            host="rag.lan",
             port=8015,
             family=socket.AF_INET,
         )
