@@ -9,7 +9,7 @@
 #   - found via fish history
 #   - FYI cloned repo in Jan 2025 (way before RAG added)
 # *** torch==2.8.0 works!
-uv sync --extra build21
+uv sync --extra ask_lan
 uv pip install torch==2.8.0
 #     * test deps and/or get version info:
 python3 -c "import torch; print(torch.version.cuda)"
