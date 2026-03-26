@@ -1,6 +1,6 @@
 #!/usr/bin/env fish
 
-set base_url 'http://build21:8013'
+set base_url 'http://ask.lan:8013'
 
 # %% * /v1/chat/completions
 
@@ -127,10 +127,10 @@ curl --fail-with-body -sSL --no-buffer "$base_url/completions" \
 # %% * /props - verify config + chat template
 #  especially to verify ENV VARS / CLI ARGS applied as expected
 
-curl build21.lan:8013/props | jq .
+curl ask.lan:8013/props | jq .
 
 # drop chat_template (big item) so it is easier to see the rest:
-curl build21.lan:8013/props | jq 'del(.chat_template)'
+curl ask.lan:8013/props | jq 'del(.chat_template)'
 
 # only chat_template:
-curl build21.lan:8013/props | jq .chat_template
+curl ask.lan:8013/props | jq .chat_template

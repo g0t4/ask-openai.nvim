@@ -6,12 +6,12 @@
 
 # FOR qwen3-8b.service (or similar params)
 
-set base_url 'http://build21:8013'
+set base_url 'http://ask.lan:8013'
 
 # %% * /props vs __verbose.generation_settings - how to find chat format (content, reasoning, etc) settings
 
 # 1. Look at config for the loaded model
-curl build21.lan:8013/props | jq 'del(.chat_template)'
+curl ask.lan:8013/props | jq 'del(.chat_template)'
 # FYI RAW PROMPT => RAW OUTPUT (AFAICT, these settings apply to raw prompts for the model):
 #  "chat_format": "Content-only",
 #  "reasoning_format": "none",

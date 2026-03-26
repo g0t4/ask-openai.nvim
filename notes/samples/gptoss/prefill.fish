@@ -1,6 +1,6 @@
 #!/usr/bin/env fish
 
-set base_url 'http://build21:8013'
+set base_url 'http://ask.lan:8013'
 
 # %% ** TEST prefill_assistant_message
 #  can modify last "prefilled" assistant message!!

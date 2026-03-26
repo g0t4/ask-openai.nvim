@@ -209,7 +209,7 @@ local function ask_question_command(opts)
         -- FYI I had this before RAG matches and it was working fine too
         table.insert(messages, TxChatMessage:user(user_message))
 
-        local base_url = "http://build21:8013"
+        local base_url = "http://ask.lan:8013"
         local body_overrides = model_params.new_gptoss_chat_body_llama_server({
             -- local body_overrides = model_params.new_qwen3coder_llama_server_chat_body({
             messages = messages,

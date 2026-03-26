@@ -9,7 +9,7 @@ local files = require("ask-openai.helpers.files")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 
 _describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
-    local base_url = "http://build21.lan:8013"
+    local base_url = "http://ask.lan:8013"
 
     it("check model is gpt-oss", function()
         -- * action
