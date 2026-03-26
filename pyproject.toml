@@ -38,7 +38,8 @@ dependencies = [
 
 [project.optional-dependencies]
 ask_lan = [
-    "flash-attn==2.8.3",
+    # flash-attn==2.8.3 — install manually on linux: uv pip install flash-attn==2.8.3
+    # can't be in pyproject.toml because uv tries to build it from source to get metadata (no wheels on PyPI)
     "einops==0.8.1",
     # "faiss-gpu", # py 3.10 is newest ... do I really need this? faiss-cpu is probably fine for my needs (i.e. running nvim locally).... remember faiss is not used by inference server (obviously)
     # torch cuda 12.8?
