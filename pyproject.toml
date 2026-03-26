@@ -36,7 +36,7 @@ dependencies = [
     "yapf>=0.43.0",
 ]
 
-[tool.pyright]
+# [tool.pyright]
 # reportUnusedVariable = false
 # reportUnusedExpression = false
 # reportUnusedParameter = false
