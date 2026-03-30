@@ -27,7 +27,7 @@ def vllm_completion_for(body):
     raw_print(body["prompt"])
 
     response = requests.post(
-        "http://ollama:8000/v1/completions",
+        "http://ask.lan:8000/v1/completions",
         headers={"Content-Type": "application/json"},
         data=json.dumps(body),
     )

@@ -7,7 +7,7 @@ from rich import print
 use_llama_cpp_server = True
 url = "http://localhost:11434/api/generate"
 if use_llama_cpp_server:
-    url = "http://ollama:8012/completions"
+    url = "http://ask.lan:8012/completions"
 
 def show_completion_for(body):
     print("[blue]## PROMPT")
