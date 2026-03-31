@@ -39,7 +39,9 @@ local servers = {
         command = "npx",
         args = {
             os.getenv("HOME") .. "/repos/github/g0t4/mcp-server-commands/build/index.js",
-            -- "--verbose",
+            -- FYI leave --verbose on for now given I am using a log file so it s/b NBD
+            --    this will be a huge help in troubleshooting hung tool calls and other issues
+            "--verbose",
         },
     },
 }
