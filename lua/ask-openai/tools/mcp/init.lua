@@ -75,6 +75,7 @@ function start_mcp_server(name, on_message)
 
     local function on_stdout(read_error, data)
         log:log_if_stdio_read_error("MCP on_stdout", read_error, data) -- FYI switch _errors/_always
+        -- log:trace_stdio_read_always("MCP on_stdout", read_error, data)
         if data == nil then return end -- EOF
 
         for line in data:gmatch("[^\r\n]+") do
@@ -91,6 +92,7 @@ function start_mcp_server(name, on_message)
 
     local function on_stderr(read_error, data)
         log:log_if_stdio_read_error("MCP on_stderr", read_error, data) -- FYI switch _errors/_always
+        -- log:trace_stdio_read_always("MCP on_stderr", read_error, data)
         -- if data == nil then return end -- EOF -- * add this line if add logic below
     end
 
