@@ -84,7 +84,12 @@ function start_mcp_server(name, on_message)
 
         -- PRN/TODO support content-length "header" before message? right now my MCP server mcp-server-commands (typescript MCP SDK) doesn't include content-length style (NOT AFAICT, maybe a setting to enable?)
         --   instead, right now responses are delimited by a trailing \n
+        -- TODO add integration tests to make sure this is solid
+        -- TODO you do not want tool calling to randomly fail for plumbing reasons!!!
+        -- TODO look at what you did with SSEs in streaming callbacks via uv.spawn and curl... can be similar integration test style here
+        --  NOTE not using curl implementation of loop/SSE/etc b/c SSE convention is \n\n unlike here where message is one trailing \n
         while true do
+            -- FYI could be multiple responses/notifications (aka messages) in one callback, hence loop
             local line, rest = pending_json:match("^(.-)\r?\n(.*)$")
             if not line then break end
             pending_json = rest
@@ -97,14 +102,7 @@ function start_mcp_server(name, on_message)
             end
         end
 
-        -- TODO do not try to parse here, require \n?
-        -- if #pending_json > 0 then
-        --     local ok, msg = safely.decode_json(pending_json)
-        --     if ok then
-        --         if on_message then on_message(msg) end
-        --         pending_json = ""
-        --     end
-        -- end
+        -- *** DO NOT attempt to decode/dispatch before \n arrives
     end
 
 
