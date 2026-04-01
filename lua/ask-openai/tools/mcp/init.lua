@@ -82,6 +82,8 @@ function start_mcp_server(name, on_message)
 
         pending_json = pending_json .. data
 
+        -- PRN/TODO support content-length "header" before message? right now my MCP server mcp-server-commands (typescript MCP SDK) doesn't include content-length style (NOT AFAICT, maybe a setting to enable?)
+        --   instead, right now responses are delimited by a trailing \n
         while true do
             local line, rest = pending_json:match("^(.-)\r?\n(.*)$")
             if not line then break end
@@ -95,13 +97,14 @@ function start_mcp_server(name, on_message)
             end
         end
 
-        if #pending_json > 0 then
-            local ok, msg = safely.decode_json(pending_json)
-            if ok then
-                if on_message then on_message(msg) end
-                pending_json = ""
-            end
-        end
+        -- TODO do not try to parse here, require \n?
+        -- if #pending_json > 0 then
+        --     local ok, msg = safely.decode_json(pending_json)
+        --     if ok then
+        --         if on_message then on_message(msg) end
+        --         pending_json = ""
+        --     end
+        -- end
     end
 
 
