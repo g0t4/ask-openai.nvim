@@ -73,12 +73,20 @@ function start_mcp_server(name, on_message)
         },
         on_exit)
 
+    local pending_json = ""
+
     local function on_stdout(read_error, data)
         log:log_if_stdio_read_error("MCP on_stdout", read_error, data) -- FYI switch _errors/_always
         -- log:trace_stdio_read_always("MCP on_stdout", read_error, data)
         if data == nil then return end -- EOF
 
-        for line in data:gmatch("[^\r\n]+") do
+        pending_json = pending_json .. data
+
+        while true do
+            local line, rest = pending_json:match("^(.-)\r?\n(.*)$")
+            if not line then break end
+            pending_json = rest
+
             local ok, msg = safely.decode_json(line)
             if ok and on_message then
                 on_message(msg)
@@ -86,7 +94,16 @@ function start_mcp_server(name, on_message)
                 log:trace("MCP decode error:", line)
             end
         end
+
+        if #pending_json > 0 then
+            local ok, msg = safely.decode_json(pending_json)
+            if ok then
+                if on_message then on_message(msg) end
+                pending_json = ""
+            end
+        end
     end
+
 
     uv.read_start(stdout, on_stdout)
 
