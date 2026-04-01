@@ -174,7 +174,7 @@ function M.write_new_messages_jsonl(request, frontend)
                     { indent = false } -- compact/oneline
                 )
                 table.insert(message_lines, json_string)
-                log:info("logging message", json_string)
+                -- log:info("logging message", json_string)
                 msg._logged = true
             end
         end
@@ -190,12 +190,12 @@ function M.write_new_messages_jsonl(request, frontend)
             file:write("\n") -- instead of trailing \n, prepend a \n to ensure never colliding with current message on last line
             file:write(payload)
             file:close()
-            log:info("Saved initial curl request to %s", path)
+            log:info("Saved initial curl request to", path)
         else
-            log:error("Unable to write initial curl request to %s", path)
+            log:error("Unable to write initial curl request to", path)
         end
     else
-        log:error("Failed to encode initial curl request: %s", payload)
+        log:error("Failed to encode initial curl request", payload)
     end
 end
 
