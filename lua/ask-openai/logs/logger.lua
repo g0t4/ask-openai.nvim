@@ -271,11 +271,11 @@ function Logger:trace_stdio_read_always(label, read_error, data)
 end
 
 -- less verbose, use this when not troubleshooting
-function Logger:trace_stdio_read_errors(label, read_error, data)
+function Logger:log_if_stdio_read_error(label, read_error, data)
     -- FYI read_error is only for the read operation on the pipe, not the underlying process itself
     if read_error ~= nil then
         -- ?? dump colorful stack trace
-        self:trace(label .. " read_error:", read_error)
+        self:info(label .. " read_error:", read_error)
     end
 
     -- if data == nil then return end -- do not log EOF (data == nil) -- * add this line if add logic below

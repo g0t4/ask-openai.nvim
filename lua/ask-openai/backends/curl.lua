@@ -115,7 +115,7 @@ function Curl.spawn(request, frontend)
     ---@param read_error any
     ---@param data? string
     local function on_stdout(read_error, data)
-        log:trace_stdio_read_errors("on_stdout", read_error, data)
+        log:log_if_stdio_read_error("on_stdout", read_error, data)
         -- log:trace_stdio_read_always("on_stdout", read_error, data)
 
         local no_data = data == nil or data == ""
@@ -131,7 +131,7 @@ function Curl.spawn(request, frontend)
     ---@param read_error? string
     ---@param data? string
     local function on_stderr(read_error, data)
-        log:trace_stdio_read_errors("on_stderr", read_error, data)
+        log:log_if_stdio_read_error("on_stderr", read_error, data)
         -- log:trace_stdio_read_always("on_stderr", read_error, data)
 
         local no_data = data == nil or data == ""
