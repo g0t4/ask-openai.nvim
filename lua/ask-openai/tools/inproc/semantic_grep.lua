@@ -116,11 +116,7 @@ function M.call(parsed_args, callback)
     local function on_server_response(err, lsp_result)
         if err then
             log:luaify_trace("Semantic Grep tool_call query failed: " .. tostring(err), lsp_result)
-            local result = {}
-            result.isError = true
-            result.error = err.message or "unknown error"
-            result.matches = {}
-            callback({ result = result })
+            callback(error_result(err.message or "unknown error"))
             return
         end
 
