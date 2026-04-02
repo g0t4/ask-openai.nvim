@@ -101,6 +101,9 @@ function M.call(parsed_args, callback)
     -- }               --
     --
 
+    -- TODO!!! extract/consolidate (below) into a "semantic_grep.client" smth? (bundles: server check, request, timeout logic, interface is input params + callback)
+    --   TODO!!! wire new client into other lua semantic_grep executeCommand usages
+
     ---@param message string
     local function error_result(message)
         return {
@@ -156,7 +159,6 @@ function M.call(parsed_args, callback)
         arguments = { semantic_grep_request },
     }
 
-    -- PRN consolidate with other client requests, maybe rag.client (func that bundles: server check, request, timeout logic)
     if not vim.lsp.get_clients({ name = "ask_language_server", bufnr = 0 })[1] then
         log:error("ask_language_server is not available")
         callback(error_result("Semantic Grep aborted... ask_language_server is not available"))
