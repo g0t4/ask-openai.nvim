@@ -150,16 +150,21 @@ function M.call(parsed_args, callback)
         arguments = { semantic_grep_request },
     }
 
+    ---@param message string
+    local function error_result(message)
+        return {
+            result = {
+                isError = true,
+                error = message,
+                matches = {}
+            }
+        }
+    end
+
     -- PRN consolidate with other client requests, maybe rag.client (func that bundles: server check, request, timeout logic)
     if not vim.lsp.get_clients({ name = "ask_language_server", bufnr = 0 })[1] then
         log:error("ask_language_server is not available")
-        callback({
-            result = {
-                isError = true,
-                error = "Semantic Grep aborted... ask_language_server is not available",
-                matches = {}
-            }
-        })
+        callback(error_result("Semantic Grep aborted... ask_language_server is not available"))
         return
     end
 
@@ -173,13 +178,7 @@ function M.call(parsed_args, callback)
     local timeout_ms = 5000
     _request_timeout_timer = vim.defer_fn(function()
         log:info("Semantic Grep request timed out")
-        callback({
-            result = {
-                isError = true,
-                error = "Semantic Grep request timed out",
-                matches = {}
-            }
-        })
+        callback(error_result("Semantic Grep request timed out"))
         vim.lsp.cancel_request(0, _client_request_ids)
     end, timeout_ms)
 
