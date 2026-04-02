@@ -174,11 +174,13 @@ function M.call(parsed_args, callback)
     local timeout_ms = 5000
     _request_timeout_timer = vim.defer_fn(function()
         log:info("Semantic Grep request timed out")
-        local result = {}
-        result.isError = true
-        result.error = "Semantic Grep request timed out"
-        result.matches = {}
-        callback({ result = result })
+        callback({
+            result = {
+                isError = true,
+                error = "Semantic Grep request timed out",
+                matches = {}
+            }
+        })
         vim.lsp.cancel_request(0, _client_request_ids)
     end, timeout_ms)
 
