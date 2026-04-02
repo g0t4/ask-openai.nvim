@@ -150,8 +150,28 @@ function M.call(parsed_args, callback)
         arguments = { semantic_grep_request },
     }
 
-    -- PRN consolidate with other client requests, maybe rag.client?
-    _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", params, on_server_response)
+    -- PRN consolidate with other client requests, maybe rag.client
+    -- - TODO review timeout functionality below
+    -- - TODO add check for servers before even sending request
+    _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", params, function(err, result, ctx, config)
+        if _request_timeout then
+            _request_timeout:stop()
+        end
+        on_server_response(err, result, ctx, config)
+    end)
+
+    local timeout_ms = 5000
+    _request_timeout = vim.defer_fn(function()
+        log:info("Semantic Grep request timed out")
+        -- send timeout error tool response
+        local result = {}
+        result.isError = true
+        result.error = "Semantic Grep request timed out"
+        result.matches = {}
+        callback({ result = result })
+        vim.lsp.cancel_request(0, _client_request_ids)
+    end, timeout_ms)
+
     return _client_request_ids, _cancel_all_requests
 end
 
