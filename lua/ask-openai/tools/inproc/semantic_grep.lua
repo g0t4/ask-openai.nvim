@@ -152,7 +152,16 @@ function M.call(parsed_args, callback)
 
     -- PRN consolidate with other client requests, maybe rag.client
     -- - TODO review timeout functionality below
-    -- - TODO add check for servers before even sending request
+    if not vim.lsp.get_clients({ name = "ask_language_server", bufnr = 0 })[1] then
+        log:error("ask_language_server is not available")
+        local result = {}
+        result.isError = true
+        result.error = "Semantic Grep aborted... ask_language_server is not available"
+        result.matches = {}
+        callback({ result = result })
+        return
+    end
+
     _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", params, function(err, result, ctx, config)
         if _request_timeout then
             _request_timeout:stop()
