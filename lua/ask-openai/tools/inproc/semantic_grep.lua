@@ -101,6 +101,16 @@ function M.call(parsed_args, callback)
     -- }               --
     --
 
+    ---@param message string
+    local function error_result(message)
+        return {
+            result = {
+                isError = true,
+                error = message,
+                matches = {}
+            }
+        }
+    end
 
     ---@param lsp_result LSPSemanticGrepResult
     local function on_server_response(err, lsp_result)
@@ -149,17 +159,6 @@ function M.call(parsed_args, callback)
         command = "semantic_grep",
         arguments = { semantic_grep_request },
     }
-
-    ---@param message string
-    local function error_result(message)
-        return {
-            result = {
-                isError = true,
-                error = message,
-                matches = {}
-            }
-        }
-    end
 
     -- PRN consolidate with other client requests, maybe rag.client (func that bundles: server check, request, timeout logic)
     if not vim.lsp.get_clients({ name = "ask_language_server", bufnr = 0 })[1] then
