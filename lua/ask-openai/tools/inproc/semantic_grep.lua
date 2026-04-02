@@ -163,14 +163,14 @@ function M.call(parsed_args, callback)
     end
 
     _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", params, function(err, result, ctx, config)
-        if _request_timeout then
-            _request_timeout:stop()
+        if _request_timeout_timer then
+            _request_timeout_timer:stop()
         end
         on_server_response(err, result, ctx, config)
     end)
 
     local timeout_ms = 5000
-    _request_timeout = vim.defer_fn(function()
+    _request_timeout_timer = vim.defer_fn(function()
         log:info("Semantic Grep request timed out")
         -- send timeout error tool response
         local result = {}
