@@ -95,7 +95,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
     if not M.is_lsp_client_available() then
         log:error("ask_language_server is not available")
         error_response("Semantic Grep aborted... ask_language_server is not available")
-        return
+        return {}, function() end
     end
 
     _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", params, function(err, result, ctx, config)
