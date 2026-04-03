@@ -84,28 +84,30 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
 
     ---@param message string
     ---@param matches? table optional list of matches to include in the error payload
-    local function error_result(message, matches)
+    -- Invokes the provided callback with a standardized error payload.
+    -- The function name is chosen to better convey its purpose.
+    local function error_response(message, matches)
         matches = matches or {}
-        return {
+        callback({
             result = {
                 isError = true,
                 error = message,
-                matches = matches
-            }
-        }
+                matches = matches,
+            },
+        })
     end
 
     ---@param lsp_result LSPSemanticGrepResult
     local function on_server_response(err, lsp_result)
         if err then
             log:luaify_trace("Semantic Grep tool_call query failed: " .. tostring(err), lsp_result)
-            callback(error_result(err.message or "unknown error"))
+            error_response(err.message or "unknown error")
             return
         end
 
         if lsp_result.error ~= nil and lsp_result.error ~= "" then
             log:luaify_trace("Semantic Grep tool_call lsp_result error, still calling back: ", lsp_result)
-            callback(error_result(lsp_result.error, lsp_result.matches))
+            error_response(lsp_result.error, lsp_result.matches)
             return
         end
 
@@ -141,7 +143,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
 
     if not vim.lsp.get_clients({ name = "ask_language_server", bufnr = 0 })[1] then
         log:error("ask_language_server is not available")
-        callback(error_result("Semantic Grep aborted... ask_language_server is not available"))
+        error_response("Semantic Grep aborted... ask_language_server is not available")
         return
     end
 
@@ -155,7 +157,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
     local timeout_ms = 5000
     _request_timeout_timer = vim.defer_fn(function()
         log:info("Semantic Grep request timed out")
-        callback(error_result("Semantic Grep request timed out"))
+        error_response("Semantic Grep request timed out")
         vim.lsp.cancel_request(0, _client_request_ids) -- IIUC same as using _cancel_all_requests()?
     end, timeout_ms)
 end
