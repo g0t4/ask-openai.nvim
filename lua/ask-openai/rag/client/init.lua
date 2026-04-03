@@ -229,6 +229,7 @@ _G.LSPRankedMatch = {}
 ---@param code_context? string
 ---@param top_k? integer
 ---@param callback fun(matches: LSPRankedMatch[])
+---@return integer _client_request_ids, fun() _cancel_all_requests
 function M.context_query_questions(same_file_bufnr, user_prompt, code_context, top_k, callback)
     top_k = top_k or 5
     local file = vim.api.nvim_buf_get_name(same_file_bufnr)
@@ -255,6 +256,7 @@ end
 ---@param code_context string
 ---@param top_k? integer
 ---@param callback fun(matches: LSPRankedMatch[])
+---@return integer _client_request_ids, fun() _cancel_all_requests
 function M.context_query_rewrites(user_prompt, code_context, top_k, callback)
     top_k = top_k or 5
     ---@type LSPSemanticGrepRequest
@@ -277,6 +279,7 @@ end
 
 ---@param ps_chunk PrefixSuffixChunk
 ---@param callback fun(matches: LSPRankedMatch[])
+---@return integer _client_request_ids, fun() _cancel_all_requests
 function M.context_query_fim(ps_chunk, callback)
     -- FYI IIRC I put the query building here to consolidate query/instruct logic across frontends
     --   it would be fine to push this out into PredictionsFrontend too...
@@ -305,45 +308,16 @@ end
 
 ---@param request LSPSemanticGrepRequest
 ---@param callback fun(matches: LSPRankedMatch[])
+---@return integer _client_request_ids, fun() _cancel_all_requests
 function M._context_query(request, callback)
-    local _client_request_ids, _cancel_all_requests -- declare in advance for closure:
-
-    ---@param result LSPSemanticGrepResult
-    local function on_server_response(err, result)
-        -- FYI do your best to log errors here so that code is not duplicated downstream
-        if err then
-            vim.notify("Semantic Grep failed: " .. err.message, vim.log.levels.ERROR)
-            callback({}) -- still callback w/ no results
-            return
-        end
-
-        if result.error ~= nil and result.error ~= "" then
-            if result.error == "Client cancelled query" then
-                -- do not log if its just a cancel (this is my server side error)
-                -- no caller would need to get a callback in this case
-                -- ?? maybe the server should not even bother responding?
-                return
-            end
-            log:error("RAG response error, still calling back: ", vim.inspect(result))
-
-            -- in the event matches are still returned, process them too... if server returns matches, use them!
-            callback(result.matches or {})
-            return
-        end
-        -- log:info(ansi.white_bold(ansi.red_bg("RAG matches (client):")), vim.inspect(result))
-        -- TODO use log_semantic_grep_matches(result) instead of luaify_trace/vim.inspect ... move the func and make it useful here
-        callback(result.matches or {})
-    end
-
-    -- log:error("_context_query.request", vim.inspect(request)) -- TODO comment out later
-    -- TODO would be neat to include the query/instructions as input to the chat history so I can see what is triggering the specific matches in a chat history
-    local params = {
-        command = "semantic_grep",
-        -- arguments is an array table, not a dict type table (IOTW only keys are sent if you send a k/v map)
-        arguments = { request },
-    }
-
-    _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", params, on_server_response)
+    local client = require("ask-openai.rag.client.client")
+    local _client_request_ids, _cancel_all_requests = client.semantic_grep_with_timeout(request, function(obj)
+        -- callers only get matches back (not errors, errors == empty list)
+        local matches = obj.result.matches or {}
+        -- TODO do I wanna return a differnt shape from shared client function? right now it uses tool call result shape
+        --  response.result.{matches|error|isError}
+        callback(matches)
+    end)
     return _client_request_ids, _cancel_all_requests
 end
 

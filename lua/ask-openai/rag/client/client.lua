@@ -17,7 +17,7 @@ end
 --- - supports timeout
 ---@param semantic_grep_request LSPSemanticGrepRequest
 ---@param callback fun(result: table) -- called with the result or error
----@return nil
+---@return integer _client_request_ids, fun() _cancel_all_requests
 function M.semantic_grep_with_timeout(semantic_grep_request, callback)
     --   TODO!!! wire new client into other lua semantic_grep executeCommand usages
 
@@ -52,6 +52,12 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
 
         if lsp_result.error ~= nil and lsp_result.error ~= "" then
             -- Language Server errors (returned successfully) hit this pathway
+
+            if lsp_result.error == "Client cancelled query" then
+                -- no caller would need to get a callback
+                return
+            end
+
             log:luaify_trace("Semantic Grep tool_call lsp_result error, still calling back: ", lsp_result)
             error_response(lsp_result.error, lsp_result.matches)
             return
@@ -105,6 +111,8 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
         error_response("Semantic Grep request timed out")
         vim.lsp.cancel_request(0, _client_request_ids) -- IIUC same as using _cancel_all_requests()?
     end, timeout_ms)
+
+    return _client_request_ids, _cancel_all_requests
 end
 
 return M
