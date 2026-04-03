@@ -31,11 +31,10 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
         last_cancel_requests = nil
     end
 
-    lsp_buffer_number = lsp_buffer_number or 0
-
     logs:info("requesting semantic_grep, last_msg_id: " .. vim.inspect(last_msg_id))
     local my_msg_id, cancel_my_request -- "my" as in this closure's request
-    my_msg_id, cancel_my_request = client.semantic_grep_with_timeout(semantic_grep_request, function(obj)
+    my_msg_id, cancel_my_request = client.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, function(obj)
+
         -- Ensure this is the most recent request before processing results.
         if last_msg_id ~= my_msg_id then
             return

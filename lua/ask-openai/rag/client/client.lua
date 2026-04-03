@@ -4,11 +4,11 @@ local log = require("ask-openai.logs.logger").predictions()
 local M = {}
 
 --- Checks if a given LSP client is attached to the current buffer.
---- @param client_name string|nil Name of the LSP client to check. Defaults to "ask_language_server".
+--- @param lsp_buffer_number? integer
 --- @return boolean
-function M.is_lsp_client_available(client_name)
-    client_name = client_name or "ask_language_server"
-    local clients = vim.lsp.get_clients({ name = client_name, bufnr = 0 })
+function M.is_lsp_client_available(lsp_buffer_number)
+    lsp_buffer_number = lsp_buffer_number or 0
+    local clients = vim.lsp.get_clients({ name = "ask_language_server", bufnr = lsp_buffer_number })
     return clients ~= nil and clients[1] ~= nil
 end
 
@@ -16,11 +16,11 @@ end
 --- - check server is available
 --- - supports timeout
 ---@param semantic_grep_request LSPSemanticGrepRequest
+--- @param lsp_buffer_number? integer
 ---@param callback fun(result: table) -- called with the result or error
 ---@return table _client_request_ids, fun() _cancel_all_requests
-function M.semantic_grep_with_timeout(semantic_grep_request, callback)
-    --   TODO!!! wire new client into other lua semantic_grep executeCommand usages
-
+function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, callback)
+    lsp_buffer_number = lsp_buffer_number or 0
     log:info("semantic_grep_request", vim.inspect(semantic_grep_request))
 
     -- normally I'd move closer to first use, but for this LSP cancel scenario, sometimes a nested func wants to use these (with nil check) and I forget about these... so leave here so it is obvious I can use them anywhere if check happens
@@ -92,12 +92,11 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
         arguments = { semantic_grep_request },
     }
 
-    -- CANNOT test this here b/c Lang Server doesn't attach to telescope buffer which opens for semantic grep UI queries
-    -- if not M.is_lsp_client_available() then
-    --     log:error("ask_language_server is not available")
-    --     error_response("Semantic Grep aborted... ask_language_server is not available")
-    --     return {}, function() end
-    -- end
+    if not M.is_lsp_client_available(lsp_buffer_number) then
+        log:error("ask_language_server is not available")
+        error_response("Semantic Grep aborted... ask_language_server is not available")
+        return {}, function() end
+    end
 
     local function stop_requests()
         if _cancel_all_requests == nil then
@@ -106,12 +105,11 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
         if _request_timeout_timer then
             _request_timeout_timer:stop()
         end
-        _cancel_all_requests()
-        -- vim.lsp.cancel_request(0, _client_request_ids) -- IIUC same as using _cancel_all_requests()?
+        _cancel_all_requests() -- IIAC same as vim.lsp.cancel_request(0, _client_request_ids) ... so I could skip passing the func around?
         _cancel_all_requests = nil -- avoid double canceling (raises error) i.e. if user cancels after a timeout
     end
 
-    _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", params, function(err, result, ctx, config)
+    _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", params, function(err, result, ctx, config)
         if _request_timeout_timer then
             _request_timeout_timer:stop()
         end

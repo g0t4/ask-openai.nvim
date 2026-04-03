@@ -311,7 +311,7 @@ end
 ---@param callback fun(matches: LSPRankedMatch[])
 ---@return integer _client_request_ids, fun() _cancel_all_requests
 function M._context_query(request, callback)
-    return client.semantic_grep_with_timeout(request, function(obj)
+    return client.semantic_grep_with_timeout(request, nil, function(obj)
         -- callers only get matches back (not errors, errors == empty list)
         local matches = obj.result.matches or {}
         -- TODO do I wanna return a differnt shape from shared client function? right now it uses tool call result shape

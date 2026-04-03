@@ -66,7 +66,7 @@ function M.call(parsed_args, callback)
         embedTopK = parsed_args.embed_top_k or 18,
     }
 
-    client.semantic_grep_with_timeout(semantic_grep_request, callback)
+    client.semantic_grep_with_timeout(semantic_grep_request, nil, callback)
 end
 
 return M
