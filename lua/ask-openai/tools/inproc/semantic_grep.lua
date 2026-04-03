@@ -100,7 +100,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
     ---@param lsp_result LSPSemanticGrepResult
     local function on_server_response(err, lsp_result)
         if err then
-            log:luaify_trace("Semantic Grep tool_call query failed: " .. tostring(err), lsp_result)
+            log:luaify_trace("Semantic Grep tool_call query failed (callback err): " .. vim.inspect(err), lsp_result)
             error_response(err.message or "unknown error")
             return
         end
