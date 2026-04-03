@@ -156,7 +156,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
     _request_timeout_timer = vim.defer_fn(function()
         log:info("Semantic Grep request timed out")
         callback(error_result("Semantic Grep request timed out"))
-        vim.lsp.cancel_request(0, _client_request_ids)
+        vim.lsp.cancel_request(0, _client_request_ids) -- IIUC same as using _cancel_all_requests()?
     end, timeout_ms)
 end
 
