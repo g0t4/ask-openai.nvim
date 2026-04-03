@@ -2,6 +2,7 @@ local mcp = require("ask-openai.tools.mcp")
 local inprocess = require("ask-openai.tools.inprocess")
 local plumbing = require("ask-openai.tools.plumbing")
 local apply_patch_tool = require("ask-openai.tools.inproc.apply_patch")
+local client = require("ask-openai.rag.client.client")
 
 local M = {}
 
@@ -18,10 +19,18 @@ function M.openai_tools()
         end
     end
     for _, inprocess_tool in pairs(inprocess.tools_available) do
-        table.insert(tools, inprocess_tool)
-        -- PRN push this into inprocess module like mcp/init.lua above
-        if inprocess_tool["function"].name == "apply_patch" then
-            table.insert(system_instructs, apply_patch_tool.get_system_message_instructions())
+        -- PRN push this into inprocess module like mcp/init.lua above?
+
+        if inprocess_tool["function"].name == "semantic_grep" then
+            -- somewhat strange but neovim invocations are rooted in the current buffer, so I have to use that to dictate some tool availability even though agent like requests are buffer independent... since my LS client is tied to a buffer in neovim, gotta roll with it! NBD TBH
+            if client.is_lsp_client_available() then
+                table.insert(tools, inprocess_tool)
+            end
+        else
+            table.insert(tools, inprocess_tool)
+            if inprocess_tool["function"].name == "apply_patch" then
+                table.insert(system_instructs, apply_patch_tool.get_system_message_instructions())
+            end
         end
     end
     return tools, system_instructs
