@@ -64,7 +64,16 @@ function M.call(parsed_args, callback)
         topK = parsed_args.top_k or 5,
         embedTopK = parsed_args.embed_top_k or 18,
     }
-    -- log:info("semantic_grep_request", vim.inspect(semantic_grep_request))
+end
+
+--- Executes a semantic grep request with:
+--- - check server is available
+--- - supports timeout
+---@param semantic_grep_request LSPSemanticGrepRequest
+---@param callback fun(result: table) -- called with the result or error
+---@return nil
+function M.semantic_grep_with_timeout(semantic_grep_request, callback)
+    log:info("semantic_grep_request", vim.inspect(semantic_grep_request))
 
     local _client_request_ids, _cancel_all_requests
 
