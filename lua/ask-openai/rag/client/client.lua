@@ -92,11 +92,12 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
         arguments = { semantic_grep_request },
     }
 
-    if not M.is_lsp_client_available() then
-        log:error("ask_language_server is not available")
-        error_response("Semantic Grep aborted... ask_language_server is not available")
-        return {}, function() end
-    end
+    -- CANNOT test this here b/c Lang Server doesn't attach to telescope buffer which opens for semantic grep UI queries
+    -- if not M.is_lsp_client_available() then
+    --     log:error("ask_language_server is not available")
+    --     error_response("Semantic Grep aborted... ask_language_server is not available")
+    --     return {}, function() end
+    -- end
 
     _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", params, function(err, result, ctx, config)
         if _request_timeout_timer then
