@@ -17,7 +17,7 @@ end
 --- - supports timeout
 ---@param semantic_grep_request LSPSemanticGrepRequest
 ---@param callback fun(result: table) -- called with the result or error
----@return integer _client_request_ids, fun() _cancel_all_requests
+---@return table _client_request_ids, fun() _cancel_all_requests
 function M.semantic_grep_with_timeout(semantic_grep_request, callback)
     --   TODO!!! wire new client into other lua semantic_grep executeCommand usages
 
