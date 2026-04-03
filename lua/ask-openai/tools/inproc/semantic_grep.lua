@@ -64,6 +64,8 @@ function M.call(parsed_args, callback)
         topK = parsed_args.top_k or 5,
         embedTopK = parsed_args.embed_top_k or 18,
     }
+
+    M.semantic_grep_with_timeout(semantic_grep_request, callback)
 end
 
 --- Executes a semantic grep request with:
