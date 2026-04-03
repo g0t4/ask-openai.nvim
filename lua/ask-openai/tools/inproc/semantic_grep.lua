@@ -100,12 +100,14 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
     ---@param lsp_result LSPSemanticGrepResult
     local function on_server_response(err, lsp_result)
         if err then
+            -- IIGC this is a client side error in making the request?
             log:luaify_trace("Semantic Grep tool_call query failed (callback err): " .. vim.inspect(err), lsp_result)
             error_response(err.message or "unknown error")
             return
         end
 
         if lsp_result.error ~= nil and lsp_result.error ~= "" then
+            -- Language Server errors (returned successfully) hit this pathway
             log:luaify_trace("Semantic Grep tool_call lsp_result error, still calling back: ", lsp_result)
             error_response(lsp_result.error, lsp_result.matches)
             return
