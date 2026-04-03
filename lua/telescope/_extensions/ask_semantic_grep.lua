@@ -12,6 +12,7 @@ local files = require("ask-openai.helpers.files")
 local logs = require('ask-openai.logs.logger').predictions()
 local AsyncDynamicFinder = require('telescope._extensions.ask_semantic_grep.async_dynamic_finder')
 local HLGroups = require('ask-openai.hlgroups')
+local client = require('ask-openai.rag.client.client')
 
 local latest_query_num = 0
 local picker
