@@ -2,12 +2,31 @@
   import { marked } from 'marked'
   import hljs from 'highlight.js'
   import { getLanguageFromPath } from '../lib/highlight'
+  import ApplyPatch from './ApplyPatch.svelte'
 
   interface Props {
     content: string
   }
 
   let { content }: Props = $props()
+
+  function splitAtPatches(text: string): Array<{type: 'markdown' | 'patch', content: string}> {
+    const segments: Array<{type: 'markdown' | 'patch', content: string}> = []
+    const regex = /```[^\n]*\n(\*\*\* Begin Patch[\s\S]*?\*\*\* End Patch)\s*\n```/g
+    let lastIndex = 0
+    let match
+    while ((match = regex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        segments.push({ type: 'markdown', content: text.slice(lastIndex, match.index) })
+      }
+      segments.push({ type: 'patch', content: match[1] })
+      lastIndex = match.index + match[0].length
+    }
+    if (lastIndex < text.length) {
+      segments.push({ type: 'markdown', content: text.slice(lastIndex) })
+    }
+    return segments
+  }
 
   // Custom renderer for code blocks
   const renderer = new marked.Renderer()
@@ -62,12 +81,18 @@
     renderer: renderer,
   })
 
-  const html = $derived(marked.parse(content) as string)
+  const segments = $derived(splitAtPatches(content))
 </script>
 
-<div class="prose prose-invert prose-sm max-w-none">
-  {@html html}
-</div>
+{#each segments as segment}
+  {#if segment.type === 'patch'}
+    <ApplyPatch patch={segment.content} />
+  {:else}
+    <div class="prose prose-invert prose-sm max-w-none">
+      {@html marked.parse(segment.content)}
+    </div>
+  {/if}
+{/each}
 
 <style>
   /* Custom prose styling for dark theme */
