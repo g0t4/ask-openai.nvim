@@ -175,6 +175,7 @@ async def schedule_update(doc_uri: str):
 
 @server.command("semantic_grep")
 async def semantic_grep_command(_: LanguageServer, args: rag.LSPSemanticGrepRequest) -> rag.LSPSemanticGrepResult:
+    # return rag.LSPSemanticGrepResult(error="FUCK") # test server errors
     args.msgId = server.protocol.msg_id
     try:
         return await rag.handle_semantic_grep_ls_command(args)  # TODO! ASYNC REVIEW
