@@ -99,6 +99,18 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
     --     return {}, function() end
     -- end
 
+    local function stop_requests()
+        if _cancel_all_requests == nil then
+            return
+        end
+        if _request_timeout_timer then
+            _request_timeout_timer:stop()
+        end
+        _cancel_all_requests()
+        -- vim.lsp.cancel_request(0, _client_request_ids) -- IIUC same as using _cancel_all_requests()?
+        _cancel_all_requests = nil -- avoid double canceling (raises error) i.e. if user cancels after a timeout
+    end
+
     _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(0, "workspace/executeCommand", params, function(err, result, ctx, config)
         if _request_timeout_timer then
             _request_timeout_timer:stop()
@@ -108,12 +120,15 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
 
     local timeout_ms = 5000
     _request_timeout_timer = vim.defer_fn(function()
+        if _cancel_all_requests == nil then -- already canceled
+            return
+        end
         log:info("Semantic Grep request timed out")
         error_response("Semantic Grep request timed out")
-        vim.lsp.cancel_request(0, _client_request_ids) -- IIUC same as using _cancel_all_requests()?
+        stop_requests()
     end, timeout_ms)
 
-    return _client_request_ids, _cancel_all_requests
+    return _client_request_ids, stop_requests
 end
 
 return M
