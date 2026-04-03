@@ -8,6 +8,21 @@ local M = {}
 ---@param semantic_grep_request LSPSemanticGrepRequest
 ---@param callback fun(result: table) -- called with the result or error
 ---@return nil
+--- Checks if a given LSP client is attached to the current buffer.
+--- @param client_name string|nil Name of the LSP client to check. Defaults to "ask_language_server".
+--- @return boolean True if at least one matching client is attached.
+function M.is_lsp_client_available(client_name)
+    client_name = client_name or "ask_language_server"
+    local clients = vim.lsp.get_clients({ name = client_name, bufnr = 0 })
+    return clients ~= nil and clients[1] ~= nil
+end
+
+--- Executes a semantic grep request with:
+--- - check server is available
+--- - supports timeout
+---@param semantic_grep_request LSPSemanticGrepRequest
+---@param callback fun(result: table) -- called with the result or error
+---@return nil
 function M.semantic_grep_with_timeout(semantic_grep_request, callback)
     --   TODO!!! wire new client into other lua semantic_grep executeCommand usages
 
@@ -76,7 +91,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
         arguments = { semantic_grep_request },
     }
 
-    if not vim.lsp.get_clients({ name = "ask_language_server", bufnr = 0 })[1] then
+    if not M.is_lsp_client_available() then
         log:error("ask_language_server is not available")
         error_response("Semantic Grep aborted... ask_language_server is not available")
         return
