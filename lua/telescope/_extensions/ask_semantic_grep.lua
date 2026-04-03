@@ -16,8 +16,7 @@ local HLGroups = require('ask-openai.hlgroups')
 local latest_query_num = 0
 local picker
 
-local last_msg_id, cancel_last_requests
-
+local last_msg_id, last_cancel_requests
 
 ---@param semantic_grep_request LSPSemanticGrepRequest
 ---@param lsp_buffer_number integer
@@ -25,10 +24,10 @@ local last_msg_id, cancel_last_requests
 ---@param process_complete fun()
 ---@param entry_maker fun(match: LSPRankedMatch): SemanticGrepTelescopeEntryMatch
 function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result, process_complete, entry_maker)
-    if cancel_last_requests then
+    if last_cancel_requests then
         logs:info("canceling semantic_grep request, last_msg_id: " .. vim.inspect(last_msg_id))
-        cancel_last_requests()
-        cancel_last_requests = nil
+        last_cancel_requests()
+        last_cancel_requests = nil
     end
 
     lsp_buffer_number = lsp_buffer_number or 0
@@ -42,7 +41,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
         end
 
         -- No longer need a cancel handler after the response.
-        cancel_last_requests = nil
+        last_cancel_requests = nil
 
         if obj.result and obj.result.isError then
             logs:error("semantic_grep failed: " .. (obj.result.error or "unknown"))
@@ -56,7 +55,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
         end
         process_complete()
     end)
-    cancel_last_requests = cancel_my_request
+    last_cancel_requests = cancel_my_request
     last_msg_id = my_msg_id -- this is a number
 
     logs:info("semantic_grep last_msg_id: " .. vim.inspect(last_msg_id))
