@@ -2,15 +2,10 @@ local ansi = require("ask-openai.predictions.ansi")
 local log = require("ask-openai.logs.logger").predictions()
 
 local M = {}
---- Executes a semantic grep request with:
---- - check server is available
---- - supports timeout
----@param semantic_grep_request LSPSemanticGrepRequest
----@param callback fun(result: table) -- called with the result or error
----@return nil
+
 --- Checks if a given LSP client is attached to the current buffer.
 --- @param client_name string|nil Name of the LSP client to check. Defaults to "ask_language_server".
---- @return boolean True if at least one matching client is attached.
+--- @return boolean
 function M.is_lsp_client_available(client_name)
     client_name = client_name or "ask_language_server"
     local clients = vim.lsp.get_clients({ name = client_name, bufnr = 0 })
