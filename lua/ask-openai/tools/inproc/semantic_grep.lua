@@ -75,45 +75,11 @@ end
 ---@param callback fun(result: table) -- called with the result or error
 ---@return nil
 function M.semantic_grep_with_timeout(semantic_grep_request, callback)
+    --   TODO!!! wire new client into other lua semantic_grep executeCommand usages
+
     log:info("semantic_grep_request", vim.inspect(semantic_grep_request))
 
     local _client_request_ids, _cancel_all_requests
-
-    -- ** error example from run_command
-    -- "result": {
-    --   "isError": true,
-    --   "content": [
-    --     {
-    --       "type": "text",
-    --       "text": "Command failed: lds\n/bin/sh: lds: command not found\n",
-    --       "name": "ERROR"
-    --     },
-    --     {
-    --       "type": "text",
-    --       "text": "/bin/sh: lds: command not found\n",
-    --       "name": "STDERR"
-    --     }
-    --   ]
-    -- },
-
-    --  ** happy path from run_command:
-    --  {
-    --   "result": {
-    --     "content": [
-    --       {
-    --         "type": "text",
-    --         "text": "a.out\nis-this-my-fault.log\nlua\nlua_modules\nMakefile\nnotes\npyproject.toml\nREADME.md\nstart-rag-server.fish\ntags\ntests\ntmp\nuv.lock\nvenv-fix-buil21.fish\n",
-    --         "name": "STDOUT"
-    --       }
-    --     ]
-    --   },
-    --   "jsonrpc": "2.0",
-    --   "id": 1
-    -- }               --
-    --
-
-    -- TODO!!! extract/consolidate (below) into a "semantic_grep.client" smth? (bundles: server check, request, timeout logic, interface is input params + callback)
-    --   TODO!!! wire new client into other lua semantic_grep executeCommand usages
 
     ---@param message string
     local function error_result(message)
