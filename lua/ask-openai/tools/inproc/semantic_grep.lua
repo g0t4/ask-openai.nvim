@@ -129,9 +129,9 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
 
         -- log_semantic_grep_matches(lsp_result)
 
-        -- do not mark isError = false here... that is assumed, might also cause issues if mis-interpreted as an error!
         callback({
             result = {
+                -- do not mark isError = false here... that is assumed, might also cause issues if mis-interpreted as an error!
                 matches = lsp_result.matches
             }
         }) -- FYI response object sent back to ToolCall/model
