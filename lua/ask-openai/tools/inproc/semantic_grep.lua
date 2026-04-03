@@ -79,7 +79,8 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
 
     log:info("semantic_grep_request", vim.inspect(semantic_grep_request))
 
-    local _client_request_ids, _cancel_all_requests
+    -- normally I'd move closer to first use, but for this LSP cancel scenario, sometimes a nested func wants to use these (with nil check) and I forget about these... so leave here so it is obvious I can use them anywhere if check happens
+    local _client_request_ids, _cancel_all_requests, _request_timeout_timer
 
     ---@param message string
     ---@param matches? table optional list of matches to include in the error payload
