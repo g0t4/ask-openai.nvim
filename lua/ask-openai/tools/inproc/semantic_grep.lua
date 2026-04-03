@@ -113,7 +113,6 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
 
         ---@param lsp_result LSPSemanticGrepResult
         function log_semantic_grep_matches(lsp_result)
-            -- TODO move this elsewhere if/when proves useful
             log:trace("Semantic Grep tool_call matches (client):")
             vim.iter(lsp_result.matches)
                 :each(
