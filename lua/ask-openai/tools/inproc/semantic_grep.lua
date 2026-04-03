@@ -82,12 +82,14 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
     local _client_request_ids, _cancel_all_requests
 
     ---@param message string
-    local function error_result(message)
+    ---@param matches? table optional list of matches to include in the error payload
+    local function error_result(message, matches)
+        matches = matches or {}
         return {
             result = {
                 isError = true,
                 error = message,
-                matches = {}
+                matches = matches
             }
         }
     end
@@ -102,12 +104,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, callback)
 
         if lsp_result.error ~= nil and lsp_result.error ~= "" then
             log:luaify_trace("Semantic Grep tool_call lsp_result error, still calling back: ", lsp_result)
-            callback({
-                result = {
-                    isError = true,
-                    matches = lsp_result.matches or {}
-                }
-            })
+            callback(error_result(lsp_result.error, lsp_result.matches))
             return
         end
 
