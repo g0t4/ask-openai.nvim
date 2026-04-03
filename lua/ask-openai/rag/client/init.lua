@@ -2,6 +2,7 @@ local log = require("ask-openai.logs.logger").predictions()
 local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.predictions.ansi")
 local safely = require("ask-openai.helpers.safely")
+local client = require("ask-openai.rag.client.client")
 
 local M = {}
 
@@ -310,15 +311,13 @@ end
 ---@param callback fun(matches: LSPRankedMatch[])
 ---@return integer _client_request_ids, fun() _cancel_all_requests
 function M._context_query(request, callback)
-    local client = require("ask-openai.rag.client.client")
-    local _client_request_ids, _cancel_all_requests = client.semantic_grep_with_timeout(request, function(obj)
+    return client.semantic_grep_with_timeout(request, function(obj)
         -- callers only get matches back (not errors, errors == empty list)
         local matches = obj.result.matches or {}
         -- TODO do I wanna return a differnt shape from shared client function? right now it uses tool call result shape
         --  response.result.{matches|error|isError}
         callback(matches)
     end)
-    return _client_request_ids, _cancel_all_requests
 end
 
 return M
