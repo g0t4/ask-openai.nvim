@@ -12,6 +12,8 @@
 
   let { calls, msgIndex }: Props = $props()
 
+  let rawViews = $state(new Set<number>())
+
   interface FormattedArgs {
     type: 'code' | 'patch'
     code?: string
@@ -70,7 +72,27 @@
         {#if formatted.type === 'patch' && formatted.patch}
           <ApplyPatch patch={formatted.patch} {msgIndex} toolIndex={idx + 1} />
         {:else if formatted.code}
-          <CodeBlock code={formatted.code} language={formatted.language ?? 'text'} />
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 text-sm">
+              <button
+                class="px-2 py-1 rounded {!rawViews.has(idx) ? 'bg-gray-600 text-white' : 'bg-gray-800 text-gray-400'}"
+                onclick={() => { rawViews.delete(idx); rawViews = new Set(rawViews) }}
+              >
+                Pretty
+              </button>
+              <button
+                class="px-2 py-1 rounded {rawViews.has(idx) ? 'bg-gray-600 text-white' : 'bg-gray-800 text-gray-400'}"
+                onclick={() => { rawViews.add(idx); rawViews = new Set(rawViews) }}
+              >
+                Raw
+              </button>
+            </div>
+            {#if rawViews.has(idx)}
+              <pre class="bg-gray-900 border border-gray-600 rounded p-3 text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap break-all">{JSON.stringify(call.function.arguments)}</pre>
+            {:else}
+              <CodeBlock code={formatted.code} language={formatted.language ?? 'text'} />
+            {/if}
+          </div>
         {/if}
       </div>
     </div>
