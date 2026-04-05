@@ -12,7 +12,7 @@
 
   let { patch, msgIndex = 0, toolIndex = 1 }: Props = $props()
 
-  let view = $state<'word' | 'diff' | 'raw'>('word')
+  let showWordDiff = $state(true)
 
   const parsed = $derived(parsePatch(patch))
 
@@ -39,26 +39,20 @@
   <!-- Toggle -->
   <div class="flex items-center gap-2 text-sm">
     <button
-      class="px-2 py-1 rounded {view === 'diff' ? 'bg-gray-600 text-white' : 'bg-gray-800 text-gray-400'}"
-      onclick={() => view = 'diff'}
+      class="px-2 py-1 rounded {!showWordDiff ? 'bg-gray-600 text-white' : 'bg-gray-800 text-gray-400'}"
+      onclick={() => showWordDiff = false}
     >
       Raw Diff
     </button>
     <button
-      class="px-2 py-1 rounded {view === 'word' ? 'bg-gray-600 text-white' : 'bg-gray-800 text-gray-400'}"
-      onclick={() => view = 'word'}
+      class="px-2 py-1 rounded {showWordDiff ? 'bg-gray-600 text-white' : 'bg-gray-800 text-gray-400'}"
+      onclick={() => showWordDiff = true}
     >
       Word Diff
     </button>
-    <button
-      class="px-2 py-1 rounded {view === 'raw' ? 'bg-gray-600 text-white' : 'bg-gray-800 text-gray-400'}"
-      onclick={() => view = 'raw'}
-    >
-      Raw
-    </button>
   </div>
 
-  {#if view === 'word'}
+  {#if showWordDiff}
     <!-- Word diff view -->
     {#each parsed.files as file, idx}
       {@const fileId = getFileId(msgIndex, idx + 1)}
@@ -106,11 +100,8 @@
         </div>
       </div>
     {/each}
-  {:else if view === 'diff'}
+  {:else}
     <!-- Raw diff view -->
     <CodeBlock code={patch} language="diff" />
-  {:else}
-    <!-- Raw JSON value -->
-    <pre class="bg-gray-900 border border-gray-600 rounded p-3 text-sm text-gray-300 overflow-x-auto whitespace-pre-wrap break-all">{JSON.stringify(patch)}</pre>
   {/if}
 </div>
