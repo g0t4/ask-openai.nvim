@@ -203,9 +203,10 @@ for name, server in pairs(servers) do
 
     mcp.send({ method = "initialize", params = init_params }, function(init_msg)
         log:info(string.format("MCP initialize response [%s]:", name), vim.inspect(init_msg))
-        -- Notify the server that the client is ready.
+        -- TODO detect if init error
+
         mcp.send({ method = "notifications/initialized" })
-        -- Now request the tool list.
+
         mcp.tools_list(function(msg)
             if msg.error then
                 log:error("tools/list@" .. name .. " error:", vim.inspect(msg))
