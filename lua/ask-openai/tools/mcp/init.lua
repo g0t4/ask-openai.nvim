@@ -187,14 +187,14 @@ for name, server in pairs(servers) do
 
     -- Perform initialization before requesting the tool list.
     local init_params = {
-        protocolVersion = "2025-06-18",
+        -- go with oldest protocolVersion for now, even though I am using @modelcontextprotocol/sdk v1.9.0 which was released in April 2025 which would put it after the protocolVersion==2025-03-26
+        protocolVersion = "2024-11-05",
         capabilities = {
             roots = { listChanged = true },
             -- caution: empty table {} => maps to empty array in JSON... that will fail for sampling and elicitation capabilities b/c they are objects: sampling = {}, elicitation = {},
         },
         clientInfo = {
             name = "ExampleClient",
-            title = "Example Client Display Name",
             version = "1.0.0",
         },
     }
