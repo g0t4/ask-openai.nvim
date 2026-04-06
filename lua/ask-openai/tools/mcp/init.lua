@@ -196,8 +196,8 @@ for name, server in pairs(servers) do
             -- sampling = vim.empty_dict(), -- use this to serialize an empty JSON object (this succeeds)
         },
         clientInfo = {
-            name = "ExampleClient",
-            version = "1.0.0",
+            name = "ask-openai",
+            -- version = "", -- version required (error if missing)
         },
     }
 
