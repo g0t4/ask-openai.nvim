@@ -209,12 +209,17 @@ for name, server in pairs(servers) do
             local err = init_msg.error
             -- Prefer logging the embedded error.message if available.
             if type(err) == "table" and err.message ~= nil then
-                log:error(string.format("MCP initialize error (SEE PATH below) [%s]: %s", name, err.message))
-                -- FYI message is a JSON string, would have to deserialize it to read .path... that's not necessary! I can just read the JSON when I have a failure;)
+                local msg = string.format("MCP initialize error (SEE PATH below) [%s]: %s", name, err.message)
+                log:error(msg)
+                vim.notify(msg, vim.log.levels.ERROR)
+                -- FYI message is a JSON string, would have to deserialize it to read .path... that's not necessary! I can just read the JSON when I have a failure;
             else
+                local msg = string.format("MCP initialize error [%s] (no message)", name)
+                log:error(msg)
+                vim.notify(msg, vim.log.levels.ERROR)
                 -- Fallback: log a concise notice without the full error dump.
-                log:error(string.format("MCP initialize error [%s] (no message)", name))
             end
+
             return
         end
 
