@@ -14,7 +14,7 @@ setmetatable(ChatWindow, class_mt)
 function ChatWindow:new()
     ---@type FloatWindowOptions
     local opts = {
-        width_ratio = 0.5,
+        width_ratio = 0.6,
         height_ratio = 0.8,
         filetype = "markdown",
         buffer_name = 'AskQuestion',
