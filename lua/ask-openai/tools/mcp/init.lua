@@ -69,16 +69,14 @@ function start_mcp_server(name, on_message)
 
         handle:close()
 
-        -- TODO reopen?
-        -- Only notify the user if Neovim is not in the process of shutting down.
-        log:info(vim.v.exiting)
         if vim.v.exiting ~= nil then
-        local msg = string.format("MCP server %s EXITED\n\n  *NOTE: vim is not shutting down*\n\nRESTART NEOVIM if you need the server running", server_name)
+            local msg = string.format("MCP server %s EXITED\n\n  *NOTE: vim is not shutting down*\n\nRESTART NEOVIM if you need the server running", server_name)
             log:info(ansi.white_bold(ansi.red_bg(msg)))
             vim.notify(msg, vim.log.levels.WARN)
         else
-            -- I never see this log come through... perhaps I need to actually trigger exit of server?
-            -- FYI I've never seen leaked MCP server process... but, doesn't mean it never happens!
+            -- I never see this log entry on shutdown...
+            -- reminds me => perhaps I need to actually trigger exit of server too?
+            --   but, I've never seen leaked MCP server process... doesn't mean it never happens!
             log:info(string.format("MCP server %s exited (during neovim shutdown)", server_name))
         end
     end
@@ -94,11 +92,8 @@ function start_mcp_server(name, on_message)
     local pending_json = ""
 
     local function on_stdout(read_error, data)
-        log:log_if_stdio_read_error(string.format("MCP on_stdout %s", server_name), read_error, data) -- FYI switch _errors/_always
-        -- log:trace_stdio_read_always("MCP on_stdout", read_error, data)
+        log:log_if_stdio_read_error(string.format("MCP on_stdout %s", server_name), read_error, data) -- FYI switch _errors/_always with:    log:trace_stdio_read_always("MCP ...
         if data == nil then return end -- EOF
-
-        -- TODO ignore / loosely validate initialize response
 
         pending_json = pending_json .. data
 
@@ -129,8 +124,7 @@ function start_mcp_server(name, on_message)
     uv.read_start(stdout, on_stdout)
 
     local function on_stderr(read_error, data)
-        log:log_if_stdio_read_error("MCP on_stderr", read_error, data) -- FYI switch _errors/_always
-        -- log:trace_stdio_read_always("MCP on_stderr", read_error, data)
+        log:log_if_stdio_read_error(string.format("MCP on_stderr %s", server_name), read_error, data) -- FYI switch _errors/_always with:    log:trace_stdio_read_always("MCP ...
         -- if data == nil then return end -- EOF -- * add this line if add logic below
     end
 
@@ -147,7 +141,7 @@ function start_mcp_server(name, on_message)
             M.callbacks[msg.id] = callback
         end
         local msg_json = vim.json.encode(msg)
-        log:info(string.format("MCP send %s:", server_name), msg_json)
+        -- log:info(string.format("MCP send %s:", server_name), msg_json)
         stdin:write(msg_json .. "\n")
     end
 
