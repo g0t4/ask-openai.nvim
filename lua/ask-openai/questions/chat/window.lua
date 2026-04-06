@@ -29,6 +29,10 @@ function ChatWindow:new()
     vim.keymap.set('n', '<leader>c', function() instance:clear() end,
         { buffer = instance.buffer_number, desc = "clear the chat window, and eventually the message history" })
 
+    -- Cycle the chat window width with a normal‑mode "w" press.
+    vim.keymap.set('n', 'w', function() instance:cycle_width() end,
+        { buffer = instance.buffer_number, desc = "cycle chat window width" })
+
     -- manually trigger LSP attach, b/c scratch buffers are normally not auto attached
     local client = vim.lsp.get_clients({ name = "ask_language_server" })[1]
     if client then vim.lsp.buf_attach_client(instance.buffer_number, client.id) end
@@ -50,11 +54,26 @@ function ChatWindow:resize_width_ratio(width_ratio)
     self.opts.width_ratio = width_ratio
 
     -- clamp the ratio between 0 and 1
-    self.opts.width_ratio = math.max(0, math.min(opts.width_ratio, 1))
+    self.opts.width_ratio = math.max(0, math.min(self.opts.width_ratio, 1))
 
     -- apply the new size by recreating the window
     self:close()
     self:open()
+end
+
+--- Cycle the width ratio through a predefined set of values.
+--- The sequence is 0.5 → 0.6 → 0.8 → 1.0 → back to 0.5.
+function ChatWindow:cycle_width()
+    local cycle = { 0.5, 0.6, 0.8, 1.0 }
+    local current = self.opts.width_ratio
+    local next_ratio = cycle[1]
+    for i, v in ipairs(cycle) do
+        if math.abs(v - current) < 0.001 then
+            next_ratio = cycle[(i % #cycle) + 1]
+            break
+        end
+    end
+    self:resize_width_ratio(next_ratio)
 end
 
 ---@type ExplainError
