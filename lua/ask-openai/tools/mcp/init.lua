@@ -135,9 +135,9 @@ function start_mcp_server(name, on_message)
         if callback then
             M.callbacks[msg.id] = callback
         end
-        local str = vim.json.encode(msg)
-        -- log:trace("MCP send:", str)
-        stdin:write(str .. "\n")
+        local msg_json = vim.json.encode(msg)
+        log:info(string.format("MCP send [%s]:", name), msg_json)
+        stdin:write(msg_json .. "\n")
     end
 
     local function tools_list(callback)
