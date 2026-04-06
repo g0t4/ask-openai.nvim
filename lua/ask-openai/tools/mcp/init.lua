@@ -140,11 +140,6 @@ function start_mcp_server(name, on_message)
         stdin:write(str .. "\n")
     end
 
-    -- NOTE: Initialization is now performed by the caller after the server object
-    -- is returned (see the loop further down). The `send` helper is still
-    -- available for callers to issue the `initialize` request before any other
-    -- RPC such as `tools/list`.
-
     local function tools_list(callback)
         send({ method = "tools/list" }, callback)
     end
