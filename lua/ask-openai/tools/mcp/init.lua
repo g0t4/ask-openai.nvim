@@ -207,8 +207,13 @@ for name, server in pairs(servers) do
         -- Detect initialization errors and abort further processing.
         if init_msg.error then
             local err = init_msg.error
-            -- Log the error details; err.message may contain embedded JSON.
-            log:error(string.format("MCP initialize error [%s]:", name), vim.inspect(err))
+            -- Prefer logging the embedded error.message if available.
+            if type(err) == "table" and err.message ~= nil then
+                log:error(string.format("MCP initialize error [%s]: %s", name, err.message))
+            else
+                -- Fallback: log a concise notice without the full error dump.
+                log:error(string.format("MCP initialize error [%s] (no message)", name))
+            end
             return
         end
 
