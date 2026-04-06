@@ -21,6 +21,7 @@ local servers = {
     -- * TODO need to send initialize for fetch to work (optional on mcp-server-commands below)
     -- -- fetch via docker container:
     fetch = {
+        -- TODO only include if initial request includes /web?
         command = "docker",
         args = { "run", "-i", "--rm", "mcp/fetch" },
     },
