@@ -45,6 +45,18 @@ function ChatWindow:new()
     return instance
 end
 
+---@param width_ratio number -- new width ratio (0 to 1)
+function ChatWindow:resize_width_ratio(width_ratio)
+    self.opts.width_ratio = width_ratio
+
+    -- clamp the ratio between 0 and 1
+    self.opts.width_ratio = math.max(0, math.min(opts.width_ratio, 1))
+
+    -- apply the new size by recreating the window
+    self:close()
+    self:open()
+end
+
 ---@type ExplainError
 function ChatWindow:explain_error(text)
     local lines = LinesBuilder:new()
