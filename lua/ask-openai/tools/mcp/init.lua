@@ -190,8 +190,7 @@ for name, server in pairs(servers) do
         protocolVersion = "2025-06-18",
         capabilities = {
             roots = { listChanged = true },
-            sampling = {},
-            elicitation = {},
+            -- caution: empty table {} => maps to empty array in JSON... that will fail for sampling and elicitation capabilities b/c they are objects: sampling = {}, elicitation = {},
         },
         clientInfo = {
             name = "ExampleClient",
