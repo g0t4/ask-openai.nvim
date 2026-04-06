@@ -296,10 +296,12 @@ function PredictionsFrontend.cursor_moved_in_insert_mode()
     --  TODO do I need this anymore? I swear I setup predictions to attach on BufEnter... and that already ignores specific filetypes (and other factors)?
     if vim.tbl_contains(ignore_buftypes, vim.bo.buftype)
         or vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
-        -- but, allow renames:
-        if not is_rename_window() then
-            return
-        end
+
+        -- -- but, allow renames:
+        -- if not is_rename_window() then
+        --     return
+        -- end
+        return
     end
 
     keypresses:onNext({})
