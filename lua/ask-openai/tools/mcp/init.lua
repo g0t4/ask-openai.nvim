@@ -73,13 +73,13 @@ function start_mcp_server(name, on_message)
         -- Only notify the user if Neovim is not in the process of shutting down.
         log:info(vim.v.exiting)
         if vim.v.exiting ~= nil then
-            local msg = string.format("MCP server ['%s'] EXITED\n\n  *NOTE: vim is not shutting down*\n\nRESTART NEOVIM if you need the server running", name)
+        local msg = string.format("MCP server %s EXITED\n\n  *NOTE: vim is not shutting down*\n\nRESTART NEOVIM if you need the server running", server_name)
             log:info(ansi.white_bold(ansi.red_bg(msg)))
             vim.notify(msg, vim.log.levels.WARN)
         else
             -- I never see this log come through... perhaps I need to actually trigger exit of server?
             -- FYI I've never seen leaked MCP server process... but, doesn't mean it never happens!
-            log:info(string.format("MCP server ['%s'] exited (during neovim shutdown)", name))
+            log:info(string.format("MCP server %s exited (during neovim shutdown)", server_name))
         end
     end
 
@@ -94,7 +94,7 @@ function start_mcp_server(name, on_message)
     local pending_json = ""
 
     local function on_stdout(read_error, data)
-        log:log_if_stdio_read_error(string.format("MCP on_stdout [%s]", name), read_error, data) -- FYI switch _errors/_always
+        log:log_if_stdio_read_error(string.format("MCP on_stdout %s", server_name), read_error, data) -- FYI switch _errors/_always
         -- log:trace_stdio_read_always("MCP on_stdout", read_error, data)
         if data == nil then return end -- EOF
 
@@ -118,7 +118,7 @@ function start_mcp_server(name, on_message)
             if ok and on_message then
                 on_message(msg)
             else
-                log:info(string.format("MCP decode error [%s]:", name), line)
+                log:info(string.format("MCP decode error %s:", server_name), line)
             end
         end
 
@@ -147,7 +147,7 @@ function start_mcp_server(name, on_message)
             M.callbacks[msg.id] = callback
         end
         local msg_json = vim.json.encode(msg)
-        log:info(string.format("MCP send [%s]:", name), msg_json)
+        log:info(string.format("MCP send %s:", server_name), msg_json)
         stdin:write(msg_json .. "\n")
     end
 
@@ -213,7 +213,7 @@ for name, server in pairs(servers) do
     }
 
     mcp.send({ method = "initialize", params = client_init_params }, function(server_init)
-        log:info(string.format("MCP initialize response [%s]:", name), vim.inspect(server_init))
+        log:info(string.format("MCP initialize response %s:", server_name), vim.inspect(server_init))
 
         -- * abort on init failure
         if server_init.error then
@@ -221,10 +221,10 @@ for name, server in pairs(servers) do
             local msg = ""
             if type(err) == "table" and err.message ~= nil then
                 -- log them embedded error.message if available
-                msg = string.format("MCP initialize error (SEE PATH below) [%s]: %s", name, err.message)
+                msg = string.format("MCP initialize error (SEE PATH below) %s: %s", server_name, err.message)
                 -- FYI message is a JSON string, so I would have to deserialize it to read .path... that's not necessary! I can just read the JSON when I have a failure!
             else
-                msg = string.format("MCP initialize error [%s] (no message)", name)
+                msg = string.format("MCP initialize error %s (no message)", server_name)
             end
             log:error(msg)
             vim.notify(msg, vim.log.levels.ERROR)
@@ -238,7 +238,7 @@ for name, server in pairs(servers) do
         -- PRN do I need to wait before tools/list ? IIUC notifications/initialized doesn't get a server response... so in this case, I am not waiting to send tools/list:
         mcp.tools_list(function(msg)
             if msg.error then
-                log:error("tools/list@" .. name .. " error:", vim.inspect(msg))
+                log:error(string.format("tools/list@%s error:", server_name), vim.inspect(msg))
                 return
             end
             for _, tool in ipairs(msg.result.tools) do
