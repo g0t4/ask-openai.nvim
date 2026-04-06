@@ -64,14 +64,17 @@ end
 --- Cycle the width ratio through a predefined set of values.
 --- The sequence is 0.5 → 0.6 → 0.8 → 1.0 → back to 0.5.
 function ChatWindow:cycle_width()
-    local cycle = { 0.5, 0.6, 0.8, 1.0 }
+    -- Increment width by 0.1, wrapping back to 0.5 after 1.0.
+    local step = 0.1
+    local min_ratio = 0.5
+    local max_ratio = 1.0
     local current = self.opts.width_ratio
-    local next_ratio = cycle[1]
-    for i, v in ipairs(cycle) do
-        if math.abs(v - current) < 0.001 then
-            next_ratio = cycle[(i % #cycle) + 1]
-            break
-        end
+    local next_ratio = current + step
+    if next_ratio > max_ratio + 1e-6 then
+        next_ratio = min_ratio
+    else
+        -- round to one decimal place to avoid floating‑point drift
+        next_ratio = math.floor(next_ratio * 10 + 0.5) / 10
     end
     self:resize_width_ratio(next_ratio)
 end
