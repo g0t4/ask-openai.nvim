@@ -69,7 +69,7 @@ function start_mcp_server(name, on_message)
         handle:close()
 
         -- TODO reopen?
-        log:info(ansi.white_bold(ansi.red_bg("MCP SERVER EXITED... DO YOU NEED TO RESTART IT? (ok to ignore this error if nvim is exiting)")))
+        log:info(ansi.white_bold(ansi.red_bg(string.format("MCP SERVER '%s' EXITED... DO YOU NEED TO RESTART IT? (ok to ignore this error if nvim is exiting)", name))))
     end
 
     handle, pid = uv.spawn(options.command,
@@ -83,7 +83,7 @@ function start_mcp_server(name, on_message)
     local pending_json = ""
 
     local function on_stdout(read_error, data)
-        log:log_if_stdio_read_error("MCP on_stdout", read_error, data) -- FYI switch _errors/_always
+        log:log_if_stdio_read_error(string.format("MCP on_stdout [%s]", name), read_error, data) -- FYI switch _errors/_always
         -- log:trace_stdio_read_always("MCP on_stdout", read_error, data)
         if data == nil then return end -- EOF
 
@@ -107,7 +107,7 @@ function start_mcp_server(name, on_message)
             if ok and on_message then
                 on_message(msg)
             else
-        log:info("MCP decode error:", line)
+                log:info(string.format("MCP decode error [%s]:", name), line)
             end
         end
 
@@ -158,7 +158,7 @@ function start_mcp_server(name, on_message)
     }
 
     send({ method = "initialize", params = init_params }, function(msg)
-        log:info("MCP initialize response:", vim.inspect(msg))
+        log:info(string.format("MCP initialize response [%s]:", name), vim.inspect(msg))
         -- Notify the server that the client is ready.
         send({ method = "notifications/initialized" })
     end)
