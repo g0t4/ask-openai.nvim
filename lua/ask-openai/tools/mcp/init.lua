@@ -186,7 +186,7 @@ for name, server in pairs(servers) do
     M.running_servers[name] = mcp
 
     -- Perform initialization before requesting the tool list.
-    local init_params = {
+    local client_init_params = {
         -- go with oldest protocolVersion for now, even though I am using @modelcontextprotocol/sdk v1.9.0 which was released in April 2025 which would put it after the protocolVersion==2025-03-26
         protocolVersion = "2024-11-05",
         capabilities = {
@@ -201,7 +201,7 @@ for name, server in pairs(servers) do
         },
     }
 
-    mcp.send({ method = "initialize", params = init_params }, function(server_init)
+    mcp.send({ method = "initialize", params = client_init_params }, function(server_init)
         log:info(string.format("MCP initialize response [%s]:", name), vim.inspect(server_init))
 
         -- * abort on init failure
