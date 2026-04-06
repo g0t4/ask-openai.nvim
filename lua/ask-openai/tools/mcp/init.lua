@@ -69,7 +69,17 @@ function start_mcp_server(name, on_message)
         handle:close()
 
         -- TODO reopen?
-        log:info(ansi.white_bold(ansi.red_bg(string.format("MCP SERVER '%s' EXITED... DO YOU NEED TO RESTART IT? (ok to ignore this error if nvim is exiting)", name))))
+        -- Only notify the user if Neovim is not in the process of shutting down.
+        log:info(vim.v.exiting)
+        if vim.v.exiting ~= nil then
+            local msg = string.format("MCP server ['%s'] EXITED\n\n  *NOTE: vim is not shutting down*\n\nRESTART NEOVIM if you need the server running", name)
+            log:info(ansi.white_bold(ansi.red_bg(msg)))
+            vim.notify(msg, vim.log.levels.WARN)
+        else
+            -- I never see this log come through... perhaps I need to actually trigger exit of server?
+            -- FYI I've never seen leaked MCP server process... but, doesn't mean it never happens!
+            log:info(string.format("MCP server ['%s'] exited (during neovim shutdown)", name))
+        end
     end
 
     handle, pid = uv.spawn(options.command,
