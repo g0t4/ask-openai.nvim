@@ -140,30 +140,10 @@ function start_mcp_server(name, on_message)
         stdin:write(str .. "\n")
     end
 
-    -- Send an "initialize" request with required parameters immediately after
-    -- the process starts. The response is logged and, once received, the client
-    -- notifies the server that it has been initialized.
-    local init_params = {
-        protocolVersion = "2025-06-18",
-        capabilities = {
-            roots = { listChanged = true },
-            sampling = {},
-            elicitation = {},
-        },
-        clientInfo = {
-            name = "ExampleClient",
-            title = "Example Client Display Name",
-            version = "1.0.0",
-        },
-    }
-
-    send({ method = "initialize", params = init_params }, function(msg)
-        log:info(string.format("MCP initialize response [%s]:", name), vim.inspect(msg))
-        -- Notify the server that the client is ready.
-        send({ method = "notifications/initialized" })
-    end)
-
-    -- TODO! call send w/ initialize after starting process (here or below) => fetch requires this... my mcp-server-commands is optional
+    -- NOTE: Initialization is now performed by the caller after the server object
+    -- is returned (see the loop further down). The `send` helper is still
+    -- available for callers to issue the `initialize` request before any other
+    # RPC such as `tools/list`.
 
     local function tools_list(callback)
         send({ method = "tools/list" }, callback)
@@ -209,17 +189,37 @@ for name, server in pairs(servers) do
         -- log:trace("MCP message:", vim.inspect(msg))
     end)
     M.running_servers[name] = mcp
-    mcp.tools_list(function(msg)
-        if msg.error then
-            log:error("tools/list@" .. name .. " error:", vim.inspect(msg))
-            return
-        end
-        -- log:luaify_trace("tools/list:", msg)
-        for _, tool in ipairs(msg.result.tools) do
-            -- log:trace("found " .. tool.name)
-            tool.server = mcp
-            M.tools_available[tool.name] = tool
-        end
+
+    -- Perform initialization before requesting the tool list.
+    local init_params = {
+        protocolVersion = "2025-06-18",
+        capabilities = {
+            roots = { listChanged = true },
+            sampling = {},
+            elicitation = {},
+        },
+        clientInfo = {
+            name = "ExampleClient",
+            title = "Example Client Display Name",
+            version = "1.0.0",
+        },
+    }
+
+    mcp.send({ method = "initialize", params = init_params }, function(init_msg)
+        log:info(string.format("MCP initialize response [%s]:", name), vim.inspect(init_msg))
+        -- Notify the server that the client is ready.
+        mcp.send({ method = "notifications/initialized" })
+        -- Now request the tool list.
+        mcp.tools_list(function(msg)
+            if msg.error then
+                log:error("tools/list@" .. name .. " error:", vim.inspect(msg))
+                return
+            end
+            for _, tool in ipairs(msg.result.tools) do
+                tool.server = mcp
+                M.tools_available[tool.name] = tool
+            end
+        end)
     end)
 end
 
