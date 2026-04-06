@@ -140,6 +140,29 @@ function start_mcp_server(name, on_message)
         stdin:write(str .. "\n")
     end
 
+    -- Send an "initialize" request with required parameters immediately after
+    -- the process starts. The response is logged and, once received, the client
+    -- notifies the server that it has been initialized.
+    local init_params = {
+        protocolVersion = "2025-06-18",
+        capabilities = {
+            roots = { listChanged = true },
+            sampling = {},
+            elicitation = {},
+        },
+        clientInfo = {
+            name = "ExampleClient",
+            title = "Example Client Display Name",
+            version = "1.0.0",
+        },
+    }
+
+    send({ method = "initialize", params = init_params }, function(msg)
+        log:trace("MCP initialize response:", vim.inspect(msg))
+        -- Notify the server that the client is ready.
+        send({ method = "notifications/initialized" })
+    end)
+
     -- TODO! call send w/ initialize after starting process (here or below) => fetch requires this... my mcp-server-commands is optional
 
     local function tools_list(callback)
