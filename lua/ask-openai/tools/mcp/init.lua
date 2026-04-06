@@ -204,7 +204,7 @@ for name, server in pairs(servers) do
     mcp.send({ method = "initialize", params = init_params }, function(init_msg)
         log:info(string.format("MCP initialize response [%s]:", name), vim.inspect(init_msg))
 
-        -- Detect initialization errors and abort further processing.
+        -- * abort on init failure
         if init_msg.error then
             local err = init_msg.error
             local msg = ""
@@ -223,6 +223,7 @@ for name, server in pairs(servers) do
 
         mcp.send({ method = "notifications/initialized" })
 
+        -- PRN do I need to wait before tools/list ? IIUC notifications/initialized doesn't get a server response... so in this case, I am not waiting to send tools/list:
         mcp.tools_list(function(msg)
             if msg.error then
                 log:error("tools/list@" .. name .. " error:", vim.inspect(msg))
