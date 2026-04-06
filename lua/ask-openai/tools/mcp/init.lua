@@ -18,6 +18,13 @@ M.callbacks = {}
 
 local servers = {
 
+    -- * TODO need to send initialize for fetch to work (optional on mcp-server-commands below)
+    -- -- fetch via docker container:
+    -- fetch = {
+    --     command = "docker",
+    --     args = { "run", "-i", "--rm", "mcp/fetch" },
+    -- },
+    --
     -- fetch is currently broken, hangs indefinitely or at least crashes when you try to send a message over STDIN at CLI
     --    but, dammit the inspector tool has it working with uvx :(
     --    it does this on me when I use it manually or using uv.spawn below... smth isn't right
