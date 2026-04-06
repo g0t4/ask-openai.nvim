@@ -247,7 +247,9 @@ M.tools_available = {}
 
 function M.setup()
     vim.api.nvim_create_user_command("McpLogToolsList", function()
-        log:trace(vim.inspect(M.tools_available))
+        local message = vim.inspect(M.tools_available)
+        log:info(message)
+        print(message)
     end, { nargs = 0 })
 end
 
