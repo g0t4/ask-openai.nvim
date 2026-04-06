@@ -191,7 +191,9 @@ for name, server in pairs(servers) do
         protocolVersion = "2024-11-05",
         capabilities = {
             roots = { listChanged = false },
-            -- caution: empty table {} => maps to empty array in JSON... that will fail for sampling and elicitation capabilities b/c they are objects: sampling = {}, elicitation = {},
+            -- WARNING: empty table {} => maps to an empty JSON array:
+            -- sampling = {}, -- serializes as empty JSON array (this triggers error response)
+            -- sampling = vim.empty_dict(), -- use this to serialize an empty JSON object (this succeeds)
         },
         clientInfo = {
             name = "ExampleClient",
