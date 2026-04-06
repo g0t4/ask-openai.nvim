@@ -60,6 +60,7 @@ function start_mcp_server(name, on_message)
     local stderr = uv.new_pipe(false)
 
     local options = servers[name]
+    local server_name = "[" .. name:upper() .. "]"
 
     local handle
 
