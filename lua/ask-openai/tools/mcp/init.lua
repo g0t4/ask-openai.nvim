@@ -87,6 +87,8 @@ function start_mcp_server(name, on_message)
         -- log:trace_stdio_read_always("MCP on_stdout", read_error, data)
         if data == nil then return end -- EOF
 
+        -- TODO ignore / loosely validate initialize response
+
         pending_json = pending_json .. data
 
         -- PRN/TODO support content-length "header" before message? right now my MCP server mcp-server-commands (typescript MCP SDK) doesn't include content-length style (NOT AFAICT, maybe a setting to enable?)
@@ -137,6 +139,8 @@ function start_mcp_server(name, on_message)
         -- log:trace("MCP send:", str)
         stdin:write(str .. "\n")
     end
+
+    -- TODO! call send w/ initialize after starting process (here or below) => fetch requires this... my mcp-server-commands is optional
 
     local function tools_list(callback)
         send({ method = "tools/list" }, callback)
