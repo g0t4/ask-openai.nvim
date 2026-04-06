@@ -204,28 +204,13 @@ for name, server in pairs(servers) do
     mcp.send({ method = "initialize", params = init_params }, function(init_msg)
         log:info(string.format("MCP initialize response [%s]:", name), vim.inspect(init_msg))
 
-        -- TODO detect if init error (here are failure examples from both commands server and fetch server:
-        -- [INFO ] MCP initialize response [commands]: {
-        --   error = {
-        --     code = -32603,
-        --     message = '[\n  {\n    "code": "invalid_type",\n    "expected": "string",\n    "received": "undefined",\n    "path": [\n      "params",\n      "clientInfo",\n      "version"\n    ],\n    "message": "Required"\n  }\n]'
-        --   },
-        --   id = 1,
-        --   jsonrpc = "2.0"
-        -- }
-        -- [INFO ] MCP initialize response [fetch]: {
-        --   error = {
-        --     code = -32602,
-        --     data = "",
-        --     message = "Invalid request parameters"
-        --   },
-        --   id = 2,
-        --   jsonrpc = "2.0"
-        -- }
-        --
-        --
-        -- commands server embeds details inside the error.message => extract these and log would be helpful for troubleshooting
-        -- then, if .error exists, do not proceed to initialized nor listing tools (STOP)
+        -- Detect initialization errors and abort further processing.
+        if init_msg.error then
+            local err = init_msg.error
+            -- Log the error details; err.message may contain embedded JSON.
+            log:error(string.format("MCP initialize error [%s]:", name), vim.inspect(err))
+            return
+        end
 
         mcp.send({ method = "notifications/initialized" })
 
