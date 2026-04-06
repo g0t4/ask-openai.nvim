@@ -33,6 +33,10 @@ function ChatWindow:new()
     vim.keymap.set('n', 'w', function() instance:cycle_width() end,
         { buffer = instance.buffer_number, desc = "cycle chat window width" })
 
+    -- Cycle the chat window height with a normal‑mode "h" press.
+    vim.keymap.set('n', 'h', function() instance:cycle_height() end,
+        { buffer = instance.buffer_number, desc = "cycle chat window height" })
+
     -- manually trigger LSP attach, b/c scratch buffers are normally not auto attached
     local client = vim.lsp.get_clients({ name = "ask_language_server" })[1]
     if client then vim.lsp.buf_attach_client(instance.buffer_number, client.id) end
@@ -61,6 +65,18 @@ function ChatWindow:resize_width_ratio(width_ratio)
     self:open()
 end
 
+---@param height_ratio number -- new height ratio (0 to 1)
+function ChatWindow:resize_height_ratio(height_ratio)
+    self.opts.height_ratio = height_ratio
+
+    -- clamp the ratio between 0 and 1
+    self.opts.height_ratio = math.max(0, math.min(self.opts.height_ratio, 1))
+
+    -- apply the new size by recreating the window
+    self:close()
+    self:open()
+end
+
 --- Cycle the width ratio through a predefined set of values.
 --- The sequence is 0.5 → 0.6 → 0.8 → 1.0 → back to 0.5.
 function ChatWindow:cycle_width()
@@ -77,6 +93,21 @@ function ChatWindow:cycle_width()
         next_ratio = math.floor(next_ratio * 10 + 0.5) / 10
     end
     self:resize_width_ratio(next_ratio)
+end
+
+--- Cycle the height ratio by 0.1 steps, wrapping from a minimum (0.1 less than the current height) back to 1.0.
+function ChatWindow:cycle_height()
+    local step = 0.1
+    local max_ratio = 1.0
+    local min_ratio = 0.6
+    local current = self.opts.height_ratio
+    local next_ratio = current + step
+    if next_ratio > max_ratio + 1e-6 then
+        next_ratio = min_ratio
+    else
+        next_ratio = math.floor(next_ratio * 10 + 0.5) / 10
+    end
+    self:resize_height_ratio(next_ratio)
 end
 
 ---@type ExplainError
