@@ -197,7 +197,7 @@ for name, server in pairs(servers) do
         },
         clientInfo = {
             name = "ask-openai",
-            -- version = "", -- version required (error if missing)
+            version = "", -- version required (error if missing)... COMMENT THIS OUT TO TEST ERROR HANDLING!
         },
     }
 
