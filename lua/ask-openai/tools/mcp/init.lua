@@ -201,12 +201,12 @@ for name, server in pairs(servers) do
         },
     }
 
-    mcp.send({ method = "initialize", params = init_params }, function(init_msg)
-        log:info(string.format("MCP initialize response [%s]:", name), vim.inspect(init_msg))
+    mcp.send({ method = "initialize", params = init_params }, function(server_init)
+        log:info(string.format("MCP initialize response [%s]:", name), vim.inspect(server_init))
 
         -- * abort on init failure
-        if init_msg.error then
-            local err = init_msg.error
+        if server_init.error then
+            local err = server_init.error
             local msg = ""
             if type(err) == "table" and err.message ~= nil then
                 -- log them embedded error.message if available
@@ -218,6 +218,7 @@ for name, server in pairs(servers) do
             log:error(msg)
             vim.notify(msg, vim.log.levels.ERROR)
 
+            -- FYI can use server response for capabilities, etc
             return
         end
 
