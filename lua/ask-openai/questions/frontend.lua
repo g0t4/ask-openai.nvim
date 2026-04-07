@@ -97,17 +97,18 @@ local function ask_question_command(opts)
     if use_tools then
         -- PRN build out more detailed guidance: review Claude Code and Codex prompts
         local tool_instructs = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/questions/prompts/tools.md")
-        -- replace the current working directory placeholder
+        -- replace the placeholder with cwd and optionally the repo root if it differs
         local cwd = vim.fn.getcwd()
-        tool_instructs = tool_instructs:gsub("INSERT_CWD", cwd)
-        -- optionally replace the repo root when it differs from the CWD
         local repo_root = ""
         local git_root_output = vim.fn.systemlist('git rev-parse --show-toplevel')
         if vim.v.shell_error == 0 and #git_root_output > 0 then
             repo_root = vim.fn.trim(git_root_output[1])
         end
-        local optional_repo = (repo_root ~= "" and repo_root ~= cwd) and repo_root or ""
-        tool_instructs = tool_instructs:gsub("OPTIONAL_REPO_DIR_IF_NOT_CWD", optional_repo)
+        local combined = cwd
+        if repo_root ~= "" and repo_root ~= cwd then
+            combined = cwd .. " " .. repo_root
+        end
+        tool_instructs = tool_instructs:gsub("INSERT_CWD", combined)
         system = system .. "\n\n" .. tool_instructs
 
         local tool_provided_instructs
