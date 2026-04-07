@@ -2,6 +2,7 @@
 
 For tool use, never modify files outside of the current working directory unless the user requested it:
 INSERT_CWD
+OPTIONAL_REPO_DIR_IF_NOT_CWD
 
 ## Use `semantic_grep` to find code
 
