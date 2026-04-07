@@ -12,6 +12,7 @@ include:
     - svelte
     - css
     - js
+    - md
 ignores:
     - "notes/"
 global_languages:
