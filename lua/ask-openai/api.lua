@@ -122,6 +122,13 @@ end
 --- @param base_url string The base URL of the llama-server (e.g. "http://paxy.lan:8012")
 --- @return string|nil The model name if discovered, otherwise nil.
 function M.get_llama_server_model(base_url)
+    -- TODO figure out why ltn12 and socket.http packages together are not working on wesdemos, but working fine on wes user... WTF
+    --   my innermost JSON lua module is just returning NOTHING on all requests as wesdemos... FUUUUU
+    --   might have smth to do with neovim v0.12 install (then remove) and lua5.1 missing now (kinda)... though luarocks on both users has the packages I need... I have no damn idea anymore
+
+    -- TODO test and verify this does what I want, then use it to show the model in status bar (cache first load)
+    --    TODO test below from gptoss
+    --    btw the below works for wes user only
     if _model_cache[base_url] ~= nil then
         return _model_cache[base_url]
     end
