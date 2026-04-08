@@ -16,6 +16,11 @@ M.callbacks = {}
 --    https://github.com/QwenLM/Qwen-Agent/tree/main/examples
 -- PRN also I wanna test out large qwen models, hosted by Alibaba/groq/others
 
+-- TODO fetch tool improvements
+--  if fetching a github repo page... just grab the README.md raw content file! don't use the github website for README/repo pages... go with raw.githubusercontent.com
+--    fetch plugin itself could re-route this
+--  ** I really like the idea of a subagent doing each request w/ a question/statement about what is of interest, let it gather multiple links and report back with links and what matters about each one
+
 local servers = {
 
     -- * TODO need to send initialize for fetch to work (optional on mcp-server-commands below)
