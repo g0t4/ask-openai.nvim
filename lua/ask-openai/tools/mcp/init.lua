@@ -329,28 +329,31 @@ M._cached_run_process_instructions = nil
 ---@param tool_name string
 ---@return string|nil instructions (if applicable for tool_name)
 function M.get_system_message_instructions(tool_name)
-    if tool_name ~= "run_process" then
-        return nil
-    end
+    -- Return system message instructions for specific MCP tools.
+    if tool_name == "run_process" then
+        if M._cached_run_process_instructions then
+            return M._cached_run_process_instructions
+        end
 
-    if M._cached_run_process_instructions then
+        local files = require("ask-openai.helpers.files")
+        local run_process_dir = "~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/mcp/run_process"
+        local commits = files.read_text(run_process_dir .. "/commits.md"):gsub("<<COAUTHOR_NAME>>", "gptoss120b")
+        local commands = files.read_text(run_process_dir .. "/commands.md")
+        M._cached_run_process_instructions = commits .. "\n\n" .. commands
         return M._cached_run_process_instructions
     end
-    -- PRN could get these from a named MCP prompt resource?
 
-    local files = require("ask-openai.helpers.files")
+    if tool_name == "fetch" then
+        if M._cached_fetch_instructions then
+            return M._cached_fetch_instructions
+        end
+        local files = require("ask-openai.helpers.files")
+        local fetch_path = "~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/mcp/fetch/fetch.md"
+        M._cached_fetch_instructions = files.read_text(fetch_path)
+        return M._cached_fetch_instructions
+    end
 
-    local run_process_dir = "~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/mcp/run_process"
-
-    local commits = files.read_text(run_process_dir .. "/commits.md"):gsub("<<COAUTHOR_NAME>>", "gptoss120b")
-    -- TODO where to get placeholder value(s)? (i.e COAUTHOR_NAME)
-
-    local commands = files.read_text(run_process_dir .. "/commands.md")
-
-    -- PRN have a checker that looks at blank lines at end/start of join sections then adds \n only if needed
-    M._cached_run_process_instructions = commits .. "\n\n" .. commands
-
-    return M._cached_run_process_instructions
+    return nil
 end
 
 return M
