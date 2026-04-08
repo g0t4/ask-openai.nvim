@@ -2,6 +2,10 @@ local M = {}
 local init = require("ask-openai")
 local config = require("ask-openai.config")
 local lualine = require('ask-openai.status.lualine')
+local LlamaServerClient = require('ask-openai.backends.llama_cpp.llama_server_client')
+
+-- cache for model names per base url (host:port)
+local _model_cache = {}
 
 -- * predictions *
 function M.enable_predictions()
@@ -111,6 +115,37 @@ function M.get_lualine_status()
             }
         end
     }
+end
+
+--- Query the llama-server for the model name running at the given base URL.
+--- Uses the `/v1/models` endpoint and caches the result per URL.
+--- @param base_url string The base URL of the llama-server (e.g. "http://paxy.lan:8012")
+--- @return string|nil The model name if discovered, otherwise nil.
+function M.get_llama_server_model(base_url)
+    if _model_cache[base_url] ~= nil then
+        return _model_cache[base_url]
+    end
+
+    local response = LlamaServerClient.get_models(base_url)
+    if not response or response.code ~= 200 then
+        return nil
+    end
+
+    local body = response.body
+    local model_name = nil
+    if type(body) == "table" then
+        if body.data and #body.data > 0 then
+            local first = body.data[1]
+            if type(first) == "table" and first.id then
+                model_name = first.id
+            end
+        elseif body.id then
+            model_name = body.id
+        end
+    end
+
+    _model_cache[base_url] = model_name
+    return model_name
 end
 
 return M
