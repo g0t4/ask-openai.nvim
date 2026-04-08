@@ -17,9 +17,9 @@ M.callbacks = {}
 -- PRN also I wanna test out large qwen models, hosted by Alibaba/groq/others
 
 -- TODO fetch tool improvements
---  if fetching a github repo page... just grab the README.md raw content file! don't use the github website for README/repo pages... go with raw.githubusercontent.com
---    fetch plugin itself could re-route this
---  ** I really like the idea of a subagent doing each request w/ a question/statement about what is of interest, let it gather multiple links and report back with links and what matters about each one
+-- ** setup a subagent for each request w/ a question/statement about what is of interest, let it gather multiple links and report back with links and what matters about each one
+--    subagent can have detailed instructions (/SKILL like) for GitHub links and many other common sites to make a more productive experience fetching from common sites
+--    also means instructions don't have to polluate normal system prompt for top level chat thread
 
 local servers = {
 
