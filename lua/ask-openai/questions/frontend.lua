@@ -105,7 +105,9 @@ local function ask_question_command(opts)
             local repo_root = vim.fn.trim(git_root_output[1])
             if repo_root ~= cwd then
                 -- PRN path compare instead of text comparison? add this if you run into a problem
-                cwd_text = cwd_text .. "\nRepository root: " .. repo_root
+                cwd_text = cwd_text ..
+                    "\nRepository root: " .. repo_root ..
+                    "\n*CAUTION you are not in the repo root directory, therefore some relative paths (i.e. from git, semantic_grep) may need adjusted accordingly.*"
             end
         end
         tool_instructs = tool_instructs:gsub("INSERT_CWD", cwd_text)

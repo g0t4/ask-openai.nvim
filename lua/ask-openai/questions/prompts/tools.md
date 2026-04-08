@@ -1,6 +1,7 @@
 ## Tool use
 
 Never modify files outside of the current working directory unless requested.
+
 INSERT_CWD
 
 ## Use `semantic_grep` to find code
