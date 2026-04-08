@@ -16,11 +16,6 @@ M.callbacks = {}
 --    https://github.com/QwenLM/Qwen-Agent/tree/main/examples
 -- PRN also I wanna test out large qwen models, hosted by Alibaba/groq/others
 
--- TODO fetch tool improvements
--- ** setup a subagent for each request w/ a question/statement about what is of interest, let it gather multiple links and report back with links and what matters about each one
---    subagent can have detailed instructions (/SKILL like) for GitHub links and many other common sites to make a more productive experience fetching from common sites
---    also means instructions don't have to polluate normal system prompt for top level chat thread
-
 local servers = {
 
     -- * TODO need to send initialize for fetch to work (optional on mcp-server-commands below)
@@ -351,6 +346,11 @@ function M.get_system_message_instructions(tool_name)
         local fetch_path = "~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/mcp/fetch/fetch.md"
         M._cached_fetch_instructions = files.read_text(fetch_path)
         return M._cached_fetch_instructions
+
+        -- TODO fetch tool/instruction improvement ideas
+        -- ** setup a subagent for each request w/ a question/statement about what is of interest, let it gather multiple links and report back with links and what matters about each one
+        --    subagent can have detailed instructions (/SKILL like) for GitHub links and many other common sites to make a more productive experience fetching from common sites
+        --    also means instructions don't have to polluate normal system prompt for top level chat thread
     end
 
     return nil
