@@ -97,27 +97,29 @@ local function ask_question_command(opts)
     if use_tools then
         -- PRN build out more detailed guidance: review Claude Code and Codex prompts
         local tool_instructs = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/questions/prompts/tools.md")
-        -- replace the placeholder with cwd and optionally the repo root if it differs
+        -- * repo root vs cwd prompt instructions
         local cwd = vim.fn.getcwd()
         local cwd_text = "Current directory: " .. cwd
         local git_root_output = vim.fn.systemlist('git rev-parse --show-toplevel')
         if vim.v.shell_error == 0 and #git_root_output > 0 then
             local repo_root = vim.fn.trim(git_root_output[1])
-        if repo_root ~= cwd then
-            -- PRN path compare instead of text comparison? add this if you run into a problem
-            cwd_text = cwd_text .. "\nRepository root: " .. repo_root
-            -- Determine nesting depth relative to repo root
-            local relative_path = cwd:sub(#repo_root + 2) -- strip trailing slash
-            local depth = 0
-            for _ in string.gmatch(relative_path, "[^/]+") do
-                depth = depth + 1
+            if repo_root ~= cwd then
+                -- PRN path compare instead of text comparison? add this if you run into a problem
+                cwd_text = cwd_text .. "\nRepository root: " .. repo_root
+                -- Determine nesting depth relative to repo root
+                local relative_path = cwd:sub(#repo_root + 2) -- strip trailing slash
+                local depth = 0
+                for _ in string.gmatch(relative_path, "[^/]+") do
+                    depth = depth + 1
+                end
+                if depth > 0 then
+                    -- FYI it is very rare that I run nvim from a nested dir, so the conditional, added overhead in system message is fine here
+                    local rel = ("..\\"):rep(depth)
+                    cwd_text = cwd_text .. "\nYou are " .. depth .. " levels deep, so you need " .. rel .. " to build relative paths from repo root."
+                else
+                    vim.notify("You aren't in repo root and yet the calculation for number of levels deep returned 0???, check logic for levels deep warning", vim.log.levels.WARN)
+                end
             end
-            if depth > 0 then
-                local rel = ("..\\"):rep(depth)
-                cwd_text = cwd_text .. "\nYou are " .. depth .. " levels deep, so you need " .. rel .. " to build relative paths from repo root."
-            end
-            cwd_text = cwd_text .. "\n*CAUTION you are not in the repo root directory, therefore some relative paths (i.e. from git, semantic_grep) may need adjusted accordingly.*"
-        end
         end
         tool_instructs = tool_instructs:gsub("INSERT_CWD", cwd_text)
         system = system .. "\n\n" .. tool_instructs
