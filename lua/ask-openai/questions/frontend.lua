@@ -114,7 +114,7 @@ local function ask_question_command(opts)
                 end
                 if depth > 0 then
                     -- FYI it is very rare that I run nvim from a nested dir, so the conditional, added overhead in system message is fine here
-                    local rel = ("..\\"):rep(depth)
+                    local rel = ("../"):rep(depth)
                     cwd_text = cwd_text .. "\nYou are " .. depth .. " levels deep, so you need " .. rel .. " to build relative paths from repo root."
                 else
                     vim.notify("You aren't in repo root and yet the calculation for number of levels deep returned 0???, check logic for levels deep warning", vim.log.levels.WARN)
