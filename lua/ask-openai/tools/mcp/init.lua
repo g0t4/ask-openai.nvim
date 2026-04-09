@@ -17,32 +17,19 @@ M.callbacks = {}
 -- PRN also I wanna test out large qwen models, hosted by Alibaba/groq/others
 
 local servers = {
-
-    -- * TODO need to send initialize for fetch to work (optional on mcp-server-commands below)
-    -- -- fetch via docker container:
     fetch = {
-        -- TODO only include if initial request includes /web?
+        -- PRN only include if initial request includes /web?
         command = "docker",
         args = { "run", "-i", "--rm", "mcp/fetch" },
+        --
+        --     command = "uvx",
+        --     args = {
+        --         -- "--directory",
+        --         -- "/Users/wesdemos/repos/github/g0t4/mcp-servers/src/fetch",
+        --         "mcp-server-fetch",
+        --         -- "--ignore-robots-txt",
+        --     },
     },
-    --
-    -- fetch is currently broken, hangs indefinitely or at least crashes when you try to send a message over STDIN at CLI
-    --    but, dammit the inspector tool has it working with uvx :(
-    --    it does this on me when I use it manually or using uv.spawn below... smth isn't right
-    --
-    --         |     raise RuntimeError(
-    --         |         "Received request before initialization was complete"
-    --         |     )   --
-    --
-    -- fetch = {
-    --     command = "uvx",
-    --     args = {
-    --         -- "--directory",
-    --         -- "/Users/wesdemos/repos/github/g0t4/mcp-servers/src/fetch",
-    --         "mcp-server-fetch",
-    --         -- "--ignore-robots-txt",
-    --     },
-    -- },
     commands = {
         command = "npx",
         args = {
