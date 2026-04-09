@@ -2,4 +2,4 @@
 
 - `git diff` is a sanity check!
 - COMMIT when you're done.
-- Include "Co-Authored-By: <<COAUTHOR_NAME>>"
+-- Set "--author=\"gptoss120b<wes.mcclure+gptoss120b@gmail.com>\""
