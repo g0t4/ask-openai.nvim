@@ -16,32 +16,43 @@ local JsonClient = {
 ---@param request_body? table
 ---@return JsonClientResponse?
 function JsonClient.get_response_body(url, method, request_body)
-    local response_body = {}
-    local source = nil
+    local request_json = nil
     if request_body then
-        local request_body_json = vim.json.encode(request_body)
-        source = ltn12.source.string(request_body_json)
+        request_json = vim.json.encode(request_body)
     end
-    local res, code, headers, status = http.request {
-        url = url,
-        method = method,
-        headers = {
-            ["Content-Type"] = "application/json",
-        },
-        source = source,
-        sink = ltn12.sink.table(response_body),
+
+    local curl_args = {
+        "curl",
+        "-sS",                      -- silent but show errors
+        "-X", method,
+        "-H", "Content-Type: application/json",
     }
 
-    local body = table.concat(response_body)
+    if request_json then
+        table.insert(curl_args, "-d")
+        table.insert(curl_args, request_json)
+    end
 
-    -- FYI if decode fails, will throw so no need to verify anything else in that case!
+    -- Append URL and ask curl to output HTTP status code on a new line
+    table.insert(curl_args, url)
+    table.insert(curl_args, "-w")
+    table.insert(curl_args, "\n%{http_code}")
+
+    -- Execute curl and capture output as a list of lines
+    local output = vim.fn.systemlist(curl_args)
+
+    -- The last line is the HTTP status code
+    local http_code = tonumber(output[#output]) or 0
+    -- All preceding lines form the response body
+    table.remove(output)                     -- drop the status line
+    local body_str = table.concat(output, "\n")
 
     ---@class JsonClientResponse
     ---@field code integer
     ---@field body any|nil
     local response = {
-        code = code,
-        body = vim.json.decode(body)
+        code = http_code,
+        body = vim.json.decode(body_str),
     }
     -- vim.print(response)
     return response
