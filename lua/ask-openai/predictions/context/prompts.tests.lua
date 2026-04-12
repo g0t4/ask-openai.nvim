@@ -82,18 +82,28 @@ describe("parse_includes", function()
             assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
         end
 
-        it("should recursively resolve static slash commands within skill content", function()
-            ensure_static_slash_commands_expand_in_skill_contents("all")
-            ensure_static_slash_commands_expand_in_skill_contents("yanks")
-            ensure_static_slash_commands_expand_in_skill_contents("commits")
-            ensure_static_slash_commands_expand_in_skill_contents("file", "current_file")
-            ensure_static_slash_commands_expand_in_skill_contents("WIP_open_files", "open_files")
-            ensure_static_slash_commands_expand_in_skill_contents("tools", "use_tools")
-            ensure_static_slash_commands_expand_in_skill_contents("readonly")
-            ensure_static_slash_commands_expand_in_skill_contents("WIP_template", "apply_template_only")
-            ensure_static_slash_commands_expand_in_skill_contents("selection", "include_selection")
-            ensure_static_slash_commands_expand_in_skill_contents("norag")
+        describe("should recursively resolve static slash commands within skill content", function()
+            local skill_cases = {
+                { "all" },
+                { "yanks" },
+                { "commits" },
+                { "file",           "current_file" },
+                { "WIP_open_files", "open_files" },
+                { "tools",          "use_tools" },
+                { "readonly" },
+                { "WIP_template",   "apply_template_only" },
+                { "selection",      "include_selection" },
+                { "norag" },
+            }
+
+            for _, case in ipairs(skill_cases) do
+                local skill, alias = case[1], case[2]
+                it(string.format("expands static slash commands for %s", alias or skill), function()
+                    ensure_static_slash_commands_expand_in_skill_contents(skill, alias)
+                end)
+            end
         end)
+
 
         -- TODO test of embedded top_k
     end)
