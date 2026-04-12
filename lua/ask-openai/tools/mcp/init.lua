@@ -123,11 +123,15 @@ function start_mcp_server(name, on_message)
     uv.read_start(stderr, on_stderr)
 
     local function send(msg, callback)
-        if not msg.id then
+        -- * notifications CANNOT have ID:  https://www.jsonrpc.org/specification#notification
+        -- BTW modelcontextprotocol uses notifications/ prefix (not sure this is universal), two examples: notifications/initialized and notifications/tools/list_changed
+        local is_notification = msg.method and msg.method:match("^notifications/")
+        if not msg.id and not is_notification then
             -- set a unique id if no id is provided
             msg.id = M.counter
             M.counter = M.counter + 1
         end
+
         msg.jsonrpc = "2.0"
         if callback then
             M.callbacks[msg.id] = callback
@@ -221,6 +225,10 @@ for name, server in pairs(servers) do
             return
         end
 
+        -- fetch MCP server rejects this (and on_exit's from neovim uv runner... but when I run uvx directly and paste in messages it keeps working after failure for notifications/initialized... interesting), works fine w/o this:
+        --  - COMMANDS MCP it doesn't matter if I send this or don't send this
+        --  - ok the issue might be that notifications don't include an ID? => YUP fetch works without the ID on the notification!
+        --  - docs: https://modelcontextprotocol.io/specification/2024-11-05/basic/lifecycle#initialization
         mcp.send({ method = "notifications/initialized" })
 
         -- PRN do I need to wait before tools/list ? IIUC notifications/initialized doesn't get a server response... so in this case, I am not waiting to send tools/list:
