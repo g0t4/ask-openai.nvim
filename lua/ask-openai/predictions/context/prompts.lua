@@ -129,24 +129,24 @@ function M.parse_includes(prompt)
         found = found or what:find("%W" .. command .. "$")
         return found ~= nil
     end
-    local function has(command)
+    local function prompt_has(command)
         return has_in(rendered_prompt, command)
     end
 
     ---@type ParseIncludesResult
     local includes = {
-        all = (prompt == "") or has(M.slash_commands.ALL),
-        yanks = has(M.slash_commands.YANKS),
-        commits = has(M.slash_commands.COMMITS),
-        current_file = has(M.slash_commands.FILE),
-        open_files = has(M.slash_commands.OPEN_FILES),
-        use_tools = has(M.slash_commands.TOOLS),
-        readonly = has(M.slash_commands.READONLY),
-        apply_template_only = has(M.slash_commands.TEMPLATE_ONLY),
-        include_selection = has(M.slash_commands.SELECTION),
+        all = (prompt == "") or prompt_has(M.slash_commands.ALL),
+        yanks = prompt_has(M.slash_commands.YANKS),
+        commits = prompt_has(M.slash_commands.COMMITS),
+        current_file = prompt_has(M.slash_commands.FILE),
+        open_files = prompt_has(M.slash_commands.OPEN_FILES),
+        use_tools = prompt_has(M.slash_commands.TOOLS),
+        readonly = prompt_has(M.slash_commands.READONLY),
+        apply_template_only = prompt_has(M.slash_commands.TEMPLATE_ONLY),
+        include_selection = prompt_has(M.slash_commands.SELECTION),
         top_k = top_k,
         cleaned_prompt = rendered_prompt,
-        norag = has(M.slash_commands.NORAG),
+        norag = prompt_has(M.slash_commands.NORAG),
     }
 
     -- Process each loaded skill content: detect slash commands within it, update includes,
