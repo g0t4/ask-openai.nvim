@@ -27,7 +27,7 @@ local servers = {
         command = "uvx",
         args = {
             "--directory",
-            "/Users/wesdemos/repos/github/g0t4/mcp-servers/src/fetch",
+            os.getenv("HOME") .. "/repos/github/g0t4/mcp-servers/src/fetch",
             "mcp-server-fetch",
             "--ignore-robots-txt", -- DO NOT WASTE TIME QUERYING robots.txt... YIKES (s/b default off IMO) ... if I can presonally browse to a website, my AI assistant can do it for me too
         },
