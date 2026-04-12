@@ -42,7 +42,7 @@ function M.extract_top_k(prompt)
     if top_k then
         top_k = tonumber(top_k)
         -- Clean the /k=<number> from the prompt
-        prompt = prompt:gsub("^/k=%d+%s*", "") -- start (specific)
+        prompt = prompt:gsub("^%s*/k=%d+%s*", "") -- start (specific)
         prompt = prompt:gsub("%s*/k=%d+$", "") -- end (specific)
         prompt = prompt:gsub("%s*/k=%d+%s*", " ") -- general
     end
