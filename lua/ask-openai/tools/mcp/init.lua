@@ -52,7 +52,7 @@ function start_mcp_server(name, on_response)
     local options = servers[name]
     local server_log_name = "[" .. name:upper() .. "]"
 
-    local handle
+    local handle, pid
 
     local function on_exit(code, signal)
         log:trace_on_exit_errors(code, signal) -- FYI switch _errors/_always
