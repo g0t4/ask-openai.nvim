@@ -121,7 +121,6 @@ function M.parse_includes(prompt)
         top_k = top_k,
         cleaned_prompt = prompt,
         norag = has(M.slash_commands.NORAG),
-
     }
 
     if includes.all then
@@ -132,8 +131,25 @@ function M.parse_includes(prompt)
         -- ? do I want all to include tools/selection too? for now leave them off (all doesn't have to mean every slash command)
     end
 
+    -- Clean built‑in slash commands from the prompt
     for _, k in ipairs(M.slash_commands) do
         includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, k)
+    end
+
+    -- Process skill slash commands: remove them from the prompt and append their content
+    local skill_contents = {}
+    for _, skill_name in ipairs(skills.get_skill_commands()) do
+        local cmd = "/" .. skill_name
+        -- Remove the skill reference from the prompt if present
+        includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, cmd)
+        -- Load the skill content and collect it for later appending
+        local content = skills.load_skill(skill_name)
+        if content then
+            table.insert(skill_contents, content)
+        end
+    end
+    if #skill_contents > 0 then
+        includes.cleaned_prompt = includes.cleaned_prompt .. "\n" .. table.concat(skill_contents, "\n")
     end
 
     -- log:info("includes", vim.inspect(includes))
