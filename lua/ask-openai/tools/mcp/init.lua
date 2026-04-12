@@ -44,7 +44,7 @@ local servers = {
 }
 
 
-function start_mcp_server(name, on_message)
+function start_mcp_server(name, on_response)
     local stdin = uv.new_pipe(false)
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
@@ -100,8 +100,8 @@ function start_mcp_server(name, on_message)
             pending_json = rest
 
             local ok, msg = safely.decode_json(line)
-            if ok and on_message then
-                on_message(msg)
+            if ok and on_response then
+                on_response(msg)
             else
                 log:error(string.format("MCP decode error %s:", server_name), line)
             end
