@@ -120,6 +120,11 @@ function M.parse_includes(prompt)
         end
     end
 
+    -- Append the cleaned skill contents.
+    if #raw_skill_contents > 0 then
+        rendered_prompt = rendered_prompt .. "\n" .. table.concat(raw_skill_contents, "\n")
+    end
+
     local function has_in(what, command)
         -- in middle, between whitespace
         local found = what:find("%W(" .. command .. ")%W")
@@ -149,20 +154,6 @@ function M.parse_includes(prompt)
         norag = prompt_has(M.slash_commands.NORAG),
     }
 
-    -- Process each loaded skill content: detect slash commands within it, update includes,
-    -- and strip those commands from the content before injection.
-    local processed_skill_contents = {}
-    for _, content in ipairs(raw_skill_contents) do
-        local cleaned = content
-        for cmd, field in pairs(slash_to_field) do
-            if has_in(content, cmd) then
-                includes[field] = true
-            end
-            cleaned = clean_prompt(cleaned, cmd)
-        end
-        table.insert(processed_skill_contents, cleaned)
-    end
-
     -- After processing skill content, propagate the effect of /all if it was discovered.
     if includes.all then
         includes.yanks = true
@@ -174,11 +165,6 @@ function M.parse_includes(prompt)
     -- Clean built‑in slash commands from the (now) cleaned prompt.
     for _, k in pairs(M.slash_commands) do
         rendered_prompt = clean_prompt(rendered_prompt, k)
-    end
-
-    -- Append the cleaned skill contents.
-    if #processed_skill_contents > 0 then
-        rendered_prompt = rendered_prompt .. "\n" .. table.concat(processed_skill_contents, "\n")
     end
 
     -- log:info("includes", vim.inspect(includes))
