@@ -140,20 +140,6 @@ function M.parse_includes(prompt)
         return found ~= nil
     end
 
-    -- Mapping from slash command strings to the corresponding includes field.
-    local slash_to_field = {
-        [M.slash_commands.ALL] = "all",
-        [M.slash_commands.YANKS] = "yanks",
-        [M.slash_commands.COMMITS] = "commits",
-        [M.slash_commands.FILE] = "current_file",
-        [M.slash_commands.OPEN_FILES] = "open_files",
-        [M.slash_commands.TOOLS] = "use_tools",
-        [M.slash_commands.READONLY] = "readonly",
-        [M.slash_commands.TEMPLATE_ONLY] = "apply_template_only",
-        [M.slash_commands.SELECTION] = "include_selection",
-        [M.slash_commands.NORAG] = "norag",
-    }
-
     ---@type ParseIncludesResult
     local includes = {
         all = (prompt == "") or has(M.slash_commands.ALL),
