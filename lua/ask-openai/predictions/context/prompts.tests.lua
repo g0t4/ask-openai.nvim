@@ -73,7 +73,7 @@ describe("parse_includes", function()
             assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
         end)
 
-        local function ensure_skill_embedded_command(command, field)
+        local function ensure_static_slash_commands_expand_in_skill_contents(command, field)
             -- print(command)
             field = field or command
             skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO /" .. command
@@ -83,16 +83,16 @@ describe("parse_includes", function()
         end
 
         it("should recursively resolve static slash commands within skill content", function()
-            ensure_skill_embedded_command("all")
-            ensure_skill_embedded_command("yanks")
-            ensure_skill_embedded_command("commits")
-            ensure_skill_embedded_command("file", "current_file")
-            ensure_skill_embedded_command("WIP_open_files", "open_files")
-            ensure_skill_embedded_command("tools", "use_tools")
-            ensure_skill_embedded_command("readonly")
-            ensure_skill_embedded_command("WIP_template", "apply_template_only")
-            ensure_skill_embedded_command("selection", "include_selection")
-            ensure_skill_embedded_command("norag")
+            ensure_static_slash_commands_expand_in_skill_contents("all")
+            ensure_static_slash_commands_expand_in_skill_contents("yanks")
+            ensure_static_slash_commands_expand_in_skill_contents("commits")
+            ensure_static_slash_commands_expand_in_skill_contents("file", "current_file")
+            ensure_static_slash_commands_expand_in_skill_contents("WIP_open_files", "open_files")
+            ensure_static_slash_commands_expand_in_skill_contents("tools", "use_tools")
+            ensure_static_slash_commands_expand_in_skill_contents("readonly")
+            ensure_static_slash_commands_expand_in_skill_contents("WIP_template", "apply_template_only")
+            ensure_static_slash_commands_expand_in_skill_contents("selection", "include_selection")
+            ensure_static_slash_commands_expand_in_skill_contents("norag")
         end)
 
         -- TODO test of embedded top_k
