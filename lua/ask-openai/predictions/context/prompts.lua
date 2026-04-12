@@ -130,15 +130,16 @@ function M.parse_includes(prompt)
     -- resolve any built‑in slash commands inside the skill content, and clean the
     -- skill content before injecting it.
     local raw_skill_contents = {}
+    local rendered_prompt = includes.cleaned_prompt
     for _, skill_name in pairs(skills.get_skill_commands()) do
         local cmd = "/" .. skill_name
         -- Detect presence of the skill command using the same pattern logic as `has`
-        local found = includes.cleaned_prompt:find("%W" .. cmd .. "%W")
-        found = found or includes.cleaned_prompt:find("^" .. cmd .. "%W")
-        found = found or includes.cleaned_prompt:find("%W" .. cmd .. "$")
+        local found = rendered_prompt:find("%W" .. cmd .. "%W")
+        found = found or rendered_prompt:find("^" .. cmd .. "%W")
+        found = found or rendered_prompt:find("%W" .. cmd .. "$")
         if found then
             -- Remove the skill reference from the prompt
-            includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, cmd)
+            rendered_prompt = clean_prompt(rendered_prompt, cmd)
             -- Load the skill content for later processing
             local content = skills.load_skill(skill_name)
             if content then
@@ -193,12 +194,12 @@ function M.parse_includes(prompt)
 
     -- Clean built‑in slash commands from the (now) cleaned prompt.
     for _, k in pairs(M.slash_commands) do
-        includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, k)
+        rendered_prompt = clean_prompt(rendered_prompt, k)
     end
 
     -- Append the cleaned skill contents.
     if #processed_skill_contents > 0 then
-        includes.cleaned_prompt = includes.cleaned_prompt .. "\n" .. table.concat(processed_skill_contents, "\n")
+        rendered_prompt = rendered_prompt .. "\n" .. table.concat(processed_skill_contents, "\n")
     end
 
     -- log:info("includes", vim.inspect(includes))
