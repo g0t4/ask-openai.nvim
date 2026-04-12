@@ -120,16 +120,17 @@ function M.parse_includes(prompt)
         end
     end
 
-    ---@param command string
-    ---@return boolean
-    local function has(command)
+    local function has_in(what, command)
         -- in middle, between whitespace
-        local found = prompt:find("%W(" .. command .. ")%W")
+        local found = what:find("%W(" .. command .. ")%W")
         -- start of string, with whitespace after
-        found = found or prompt:find("^" .. command .. "%W")
+        found = found or what:find("^" .. command .. "%W")
         -- end of string, with whitespace before
-        found = found or prompt:find("%W" .. command .. "$")
+        found = found or what:find("%W" .. command .. "$")
         return found ~= nil
+    end
+    local function has(command)
+        return has_in(rendered_prompt, command)
     end
 
     ---@type ParseIncludesResult
