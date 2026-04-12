@@ -19,17 +19,18 @@ M.callbacks = {}
 local servers = {
     fetch = {
         -- PRN only include if initial request includes /web?
-        command = "docker",
-        args = { "run", "-i", "--rm", "mcp/fetch" },
+        -- command = "docker",
+        -- args = { "run", "-i", "--rm", "mcp/fetch" },
         -- FYI docker logs foo_bar  -- big win for using docker, free tee'ing of STDOUT
         --
-        --     command = "uvx",
-        --     args = {
-        --         -- "--directory",
-        --         -- "/Users/wesdemos/repos/github/g0t4/mcp-servers/src/fetch",
-        --         "mcp-server-fetch",
-        --         -- "--ignore-robots-txt",
-        --     },
+
+        command = "uvx",
+        args = {
+            "--directory",
+            "/Users/wesdemos/repos/github/g0t4/mcp-servers/src/fetch",
+            "mcp-server-fetch",
+            -- "--ignore-robots-txt",
+        },
     },
     commands = {
         command = "npx",
