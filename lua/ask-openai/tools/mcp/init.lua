@@ -21,6 +21,7 @@ local servers = {
         -- PRN only include if initial request includes /web?
         command = "docker",
         args = { "run", "-i", "--rm", "mcp/fetch" },
+        -- FYI docker logs foo_bar  -- big win for using docker, free tee'ing of STDOUT
         --
         --     command = "uvx",
         --     args = {
