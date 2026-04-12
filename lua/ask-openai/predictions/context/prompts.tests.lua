@@ -71,5 +71,14 @@ describe("parse_includes", function()
             local includes = prompts.parse_includes("foo /" .. skill_name .. " bar")
             assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.cleaned_prompt)
         end)
+        it("should recursively resolve slash commands within skill content", function()
+            local skill_name = "fake_skilly_poo"
+            -- Skill content includes a slash command that should be resolved recursively
+            skills._skill_content_cache[skill_name] = "INJECTED SKILLY POO /all"
+            skills.cached_skill_commands = { skill_name }
+            local includes = prompts.parse_includes("foo /" .. skill_name .. " bar")
+            assert.is_true(includes.all, "includes.all should be true due to /all in skill content")
+            assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.cleaned_prompt)
+        end)
     end)
 end)
