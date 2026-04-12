@@ -110,22 +110,6 @@ function M.parse_includes(prompt)
         return found ~= nil
     end
 
-    ---@type ParseIncludesResult
-    local includes = {
-        all = (prompt == "") or has(M.slash_commands.ALL),
-        yanks = has(M.slash_commands.YANKS),
-        commits = has(M.slash_commands.COMMITS),
-        current_file = has(M.slash_commands.FILE),
-        open_files = has(M.slash_commands.OPEN_FILES),
-        use_tools = has(M.slash_commands.TOOLS),
-        readonly = has(M.slash_commands.READONLY),
-        apply_template_only = has(M.slash_commands.TEMPLATE_ONLY),
-        include_selection = has(M.slash_commands.SELECTION),
-        top_k = top_k,
-        cleaned_prompt = rendered_prompt,
-        norag = has(M.slash_commands.NORAG),
-    }
-
     -- Process skill slash commands first: detect skill references, load their content,
     -- resolve any built‑in slash commands inside the skill content, and clean the
     -- skill content before injecting it.
@@ -168,6 +152,22 @@ function M.parse_includes(prompt)
         [M.slash_commands.TEMPLATE_ONLY] = "apply_template_only",
         [M.slash_commands.SELECTION] = "include_selection",
         [M.slash_commands.NORAG] = "norag",
+    }
+
+    ---@type ParseIncludesResult
+    local includes = {
+        all = (prompt == "") or has(M.slash_commands.ALL),
+        yanks = has(M.slash_commands.YANKS),
+        commits = has(M.slash_commands.COMMITS),
+        current_file = has(M.slash_commands.FILE),
+        open_files = has(M.slash_commands.OPEN_FILES),
+        use_tools = has(M.slash_commands.TOOLS),
+        readonly = has(M.slash_commands.READONLY),
+        apply_template_only = has(M.slash_commands.TEMPLATE_ONLY),
+        include_selection = has(M.slash_commands.SELECTION),
+        top_k = top_k,
+        cleaned_prompt = rendered_prompt,
+        norag = has(M.slash_commands.NORAG),
     }
 
     -- Process each loaded skill content: detect slash commands within it, update includes,
