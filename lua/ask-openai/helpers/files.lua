@@ -83,6 +83,7 @@ function M.list_entries(path)
     while has_more do
         -- fs_readdir returns # entries (at a time) specified in fs_opendir
         local batch_of_entries = vim.uv.fs_readdir(dir)
+        -- log:info("batch", vim.inspect(batch_of_entries))
         if not batch_of_entries then
             break
         end
