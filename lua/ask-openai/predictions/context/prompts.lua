@@ -134,13 +134,10 @@ function M.parse_includes(prompt)
         -- ? do I want all to include tools/selection too? for now leave them off (all doesn't have to mean every slash command)
     end
 
-    -- Clean built‑in slash commands from the prompt
-    for _, k in pairs(M.slash_commands) do
-        includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, k)
-    end
-
-    -- Process skill slash commands: only if the skill command is present
-    local skill_contents = {}
+    -- Process skill slash commands first: detect skill references, load their content,
+    -- resolve any built‑in slash commands inside the skill content, and clean the
+    -- skill content before injecting it.
+    local raw_skill_contents = {}
     for _, skill_name in pairs(skills.get_skill_commands()) do
         local cmd = "/" .. skill_name
         -- Detect presence of the skill command using the same pattern logic as `has`
@@ -150,15 +147,66 @@ function M.parse_includes(prompt)
         if found then
             -- Remove the skill reference from the prompt
             includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, cmd)
-            -- Load and store the skill content for later appending
+            -- Load the skill content for later processing
             local content = skills.load_skill(skill_name)
             if content then
-                table.insert(skill_contents, content)
+                table.insert(raw_skill_contents, content)
             end
         end
     end
-    if #skill_contents > 0 then
-        includes.cleaned_prompt = includes.cleaned_prompt .. "\n" .. table.concat(skill_contents, "\n")
+
+    -- Helper to detect a slash command inside an arbitrary string.
+    local function has_in(str, command)
+        local found = str:find("%W(" .. command .. ")%W")
+        found = found or str:find("^" .. command .. "%W")
+        found = found or str:find("%W" .. command .. "$")
+        return found ~= nil
+    end
+
+    -- Mapping from slash command strings to the corresponding includes field.
+    local slash_to_field = {
+        [M.slash_commands.ALL] = "all",
+        [M.slash_commands.YANKS] = "yanks",
+        [M.slash_commands.COMMITS] = "commits",
+        [M.slash_commands.FILE] = "current_file",
+        [M.slash_commands.OPEN_FILES] = "open_files",
+        [M.slash_commands.TOOLS] = "use_tools",
+        [M.slash_commands.READONLY] = "readonly",
+        [M.slash_commands.TEMPLATE_ONLY] = "apply_template_only",
+        [M.slash_commands.SELECTION] = "include_selection",
+        [M.slash_commands.NORAG] = "norag",
+    }
+
+    -- Process each loaded skill content: detect slash commands within it, update includes,
+    -- and strip those commands from the content before injection.
+    local processed_skill_contents = {}
+    for _, content in ipairs(raw_skill_contents) do
+        local cleaned = content
+        for cmd, field in pairs(slash_to_field) do
+            if has_in(content, cmd) then
+                includes[field] = true
+            end
+            cleaned = clean_prompt(cleaned, cmd)
+        end
+        table.insert(processed_skill_contents, cleaned)
+    end
+
+    -- After processing skill content, propagate the effect of /all if it was discovered.
+    if includes.all then
+        includes.yanks = true
+        includes.commits = true
+        includes.current_file = true
+        includes.open_files = true
+    end
+
+    -- Clean built‑in slash commands from the (now) cleaned prompt.
+    for _, k in pairs(M.slash_commands) do
+        includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, k)
+    end
+
+    -- Append the cleaned skill contents.
+    if #processed_skill_contents > 0 then
+        includes.cleaned_prompt = includes.cleaned_prompt .. "\n" .. table.concat(processed_skill_contents, "\n")
     end
 
     -- log:info("includes", vim.inspect(includes))
