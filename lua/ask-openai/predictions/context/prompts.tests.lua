@@ -73,12 +73,26 @@ describe("parse_includes", function()
             assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
         end)
 
-        it("should recursively resolve static slash commands within skill content", function()
-            skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO /all"
+        local function ensure_skill_embedded_command(command, field)
+            -- print(command)
+            field = field or command
+            skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO /" .. command
             local includes = prompts.parse_includes("foo /" .. fake_skill_name .. " bar")
-            assert.is_true(includes.all, "includes.all should be true due to /all in skill content")
+            assert.is_true(includes[field], "includes." .. field .. " should be true due to /" .. command .. " in skill content")
             assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
-            -- TODO test of all slash command embedded (LOOP?)
+        end
+
+        it("should recursively resolve static slash commands within skill content", function()
+            ensure_skill_embedded_command("all")
+            ensure_skill_embedded_command("yanks")
+            ensure_skill_embedded_command("commits")
+            ensure_skill_embedded_command("file", "current_file")
+            ensure_skill_embedded_command("WIP_open_files", "open_files")
+            ensure_skill_embedded_command("tools", "use_tools")
+            ensure_skill_embedded_command("readonly")
+            ensure_skill_embedded_command("WIP_template", "apply_template_only")
+            ensure_skill_embedded_command("selection", "include_selection")
+            ensure_skill_embedded_command("norag")
         end)
 
         -- TODO test of embedded top_k
