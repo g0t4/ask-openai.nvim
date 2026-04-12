@@ -1,4 +1,6 @@
 local prompts = require("ask-openai.predictions.context.prompts")
+local skills = require("ask-openai.frontends.skills")
+
 require('ask-openai.helpers.testing')
 
 describe("parse_includes", function()
@@ -57,6 +59,15 @@ describe("parse_includes", function()
             ensure_detects("file", "current_file")
             ensure_detects("files", "open_files")
             ensure_detects("selection", "include_selection")
+        end)
+    end)
+
+    describe("skills", function()
+        it("should detect and load skill commands", function()
+            local skill_name = "test_fetch"
+            local includes = prompts.parse_includes("foo /" .. skill_name .. " bar")
+            assert.is_true(includes.skills[skill_name] ~= nil, "Skill should be loaded")
+            assert.are_equal("foo bar", includes.cleaned_prompt)
         end)
     end)
 end)

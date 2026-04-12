@@ -29,6 +29,9 @@ local function clean_prompt(prompt, command)
     cleaned = cleaned:gsub("^" .. command .. "%W", "")
     -- end of string, with whitespace before
     cleaned = cleaned:gsub("%W" .. command .. "$", "")
+    log:info("original prompt:", prompt)
+    log:info("      cleaned:", cleaned)
+    log:info("      command:", command)
     return cleaned
 end
 
