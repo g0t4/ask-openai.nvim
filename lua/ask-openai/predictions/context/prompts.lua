@@ -98,18 +98,6 @@ function M.parse_includes(prompt)
     local top_k, prompt_without_k = extract_top_k(prompt)
     prompt = prompt_without_k
 
-    ---@param command string
-    ---@return boolean
-    local function has(command)
-        -- in middle, between whitespace
-        local found = prompt:find("%W(" .. command .. ")%W")
-        -- start of string, with whitespace after
-        found = found or prompt:find("^" .. command .. "%W")
-        -- end of string, with whitespace before
-        found = found or prompt:find("%W" .. command .. "$")
-        return found ~= nil
-    end
-
     -- Process skill slash commands first: detect skill references, load their content,
     -- resolve any built‑in slash commands inside the skill content, and clean the
     -- skill content before injecting it.
@@ -132,11 +120,15 @@ function M.parse_includes(prompt)
         end
     end
 
-    -- Helper to detect a slash command inside an arbitrary string.
-    local function has_in(str, command)
-        local found = str:find("%W(" .. command .. ")%W")
-        found = found or str:find("^" .. command .. "%W")
-        found = found or str:find("%W" .. command .. "$")
+    ---@param command string
+    ---@return boolean
+    local function has(command)
+        -- in middle, between whitespace
+        local found = prompt:find("%W(" .. command .. ")%W")
+        -- start of string, with whitespace after
+        found = found or prompt:find("^" .. command .. "%W")
+        -- end of string, with whitespace before
+        found = found or prompt:find("%W" .. command .. "$")
         return found ~= nil
     end
 
