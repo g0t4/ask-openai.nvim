@@ -66,7 +66,7 @@ describe("parse_includes", function()
         it("should detect and load skill commands", function()
             local skill_name = "fake_skilly_poo"
             skills._skill_content_cache[skill_name] = "INJECTED SKILLY POO"
-            skills._skill_paths[skill_name] = "/fake/skilly/poo"
+            -- skills._skill_paths[skill_name] = "/fake/skilly/poo" -- not required if injecting content into cache
             skills.cached_skill_commands = { skill_name }
             local includes = prompts.parse_includes("foo /" .. skill_name .. " bar")
             assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.cleaned_prompt)
