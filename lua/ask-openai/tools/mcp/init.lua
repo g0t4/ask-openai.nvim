@@ -162,23 +162,21 @@ function start_mcp_server(name)
         if callback then
             M.callbacks[request.id] = callback
         end
-        local msg_json = vim.json.encode(request)
-        log:info(string.format("MCP send %s:", server_log_name), msg_json)
-        stdin:write(msg_json .. "\n")
+        local json = vim.json.encode(request)
+        log:info(string.format("MCP send %s:", server_log_name), json)
+        stdin:write(json .. "\n")
     end
 
-    --- Send a JSON-RPC notification (no ID, no callback).
-    ---@param notification table The notification request table (must contain a `method` field).
-    -- * notifications CANNOT have ID:  https://www.jsonrpc.org/specification#notification
-    --   BTW notification is a type of request
-    --   modelcontextprotocol uses "notifications/" method prefix, i.e.: notifications/initialized and notifications/tools/list_changed
-    local function notify(notification)
-        -- Notifications must not have an ID per JSON-RPC spec.
-        notification.id = nil
-        notification.jsonrpc = "2.0"
-        local msg_json = vim.json.encode(notification)
-        log:info(string.format("MCP notify %s:", server_log_name), msg_json)
-        stdin:write(msg_json .. "\n")
+    --- Send a JSON-RPC notification
+    ---@param request { method: string, params?: any, [any]: any }
+    local function notify(request)
+        -- * notifications CANNOT have ID: https://www.jsonrpc.org/specification#notification
+        -- BTW notification is a type of request
+        -- modelcontextprotocol uses "notifications/" method prefix, i.e.: notifications/initialized and notifications/tools/list_changed
+        request.jsonrpc = "2.0"
+        local json = vim.json.encode(request)
+        log:info(string.format("MCP notify %s:", server_log_name), json)
+        stdin:write(json .. "\n")
     end
 
     local function tools_list(callback)
