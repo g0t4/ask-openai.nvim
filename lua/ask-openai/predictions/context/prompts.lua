@@ -88,9 +88,11 @@ local function strip_slash_command_from_prompt(prompt, command)
     -- %1 => keep capture 1 (space before)
 
     -- -- especially useful to see changes when recursive rendering
-    -- log:info("original prompt:", prompt)
-    -- log:info("      cleaned:", cleaned)
-    -- log:info("      command:", command)
+    if cleaned ~= prompt then
+        log:info("original prompt: `" .. prompt .. "`")
+        log:info("      cleaned: `" .. cleaned .. "`")
+        log:info("      command: `" .. command .. "`")
+    end
     return cleaned ~= prompt, cleaned
 end
 
@@ -162,6 +164,7 @@ function M.parse_includes(prompt)
         if field then
             includes[field] = found
         else
+            vim.notify("missing field for slash command: " .. command, vim.log.levels.ERROR)
             log:error("missing field for slash command: " .. command)
         end
     end
