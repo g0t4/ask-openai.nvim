@@ -93,10 +93,6 @@ end
 function M.parse_includes(prompt)
     prompt = prompt or ""
 
-    -- Extract /k=<number> first, before other processing
-    local top_k, prompt_without_k = extract_top_k(prompt)
-    prompt = prompt_without_k
-
     -- Process skill slash commands first: detect skill references, load their content,
     -- resolve any built‑in slash commands inside the skill content, and clean the
     -- skill content before injecting it.
@@ -136,6 +132,10 @@ function M.parse_includes(prompt)
     local function prompt_has(command)
         return has_in(rendered_prompt, command)
     end
+
+    -- Extract /k=<number> first, before other processing
+    local top_k, prompt_without_k = extract_top_k(rendered_prompt)
+    rendered_prompt = prompt_without_k
 
     ---@type ParseIncludesResult
     local includes = {
