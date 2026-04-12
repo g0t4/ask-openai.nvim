@@ -19,22 +19,6 @@ local skills = require("ask-openai.frontends.skills")
 local M = {}
 
 ---@param prompt string
----@param command string
----@return string
-local function strip_slash_command_from_prompt(prompt, command)
-    -- in middle, between whitespace
-    local cleaned = prompt:gsub("(%W)(" .. command .. ")%W", "%1")
-    -- start of string, with whitespace after
-    cleaned = cleaned:gsub("^" .. command .. "%W", "")
-    -- end of string, with whitespace before
-    cleaned = cleaned:gsub("%W" .. command .. "$", "")
-    log:info("original prompt:", prompt)
-    log:info("      cleaned:", cleaned)
-    log:info("      command:", command)
-    return cleaned
-end
-
----@param prompt string
 ---@return integer?, string
 function M.extract_top_k(prompt)
     -- i.e. /k=10
@@ -90,6 +74,22 @@ function M.SlashCommandCompletion(arglead, cmdline, cursorpos)
         end
     end
     return result
+end
+
+---@param prompt string
+---@param command string
+---@return string
+local function strip_slash_command_from_prompt(prompt, command)
+    -- in middle, between whitespace
+    local cleaned = prompt:gsub("(%W)(" .. command .. ")%W", "%1")
+    -- start of string, with whitespace after
+    cleaned = cleaned:gsub("^" .. command .. "%W", "")
+    -- end of string, with whitespace before
+    cleaned = cleaned:gsub("%W" .. command .. "$", "")
+    log:info("original prompt:", prompt)
+    log:info("      cleaned:", cleaned)
+    log:info("      command:", command)
+    return cleaned
 end
 
 ---@param prompt? string
