@@ -23,20 +23,18 @@ function M.load_skill(name)
         error("Skill name is required for load_skill")
     end
 
-    -- Ensure the skill path map is populated.
+    if M._skill_content_cache[name] then
+        return M._skill_content_cache[name]
+    end
+
     if not M._skill_paths[name] then
-        -- Populate the skill map (also populates cached_skill_commands)
+        -- Populate paths (TODO I don't like this.. rename get_skill_commands or split out some functionality)
         M.get_skill_commands()
     end
 
     local path = M._skill_paths[name]
     if not path or vim.fn.filereadable(path) == 0 then
         return nil
-    end
-
-    -- Return cached content if available.
-    if M._skill_content_cache[path] then
-        return M._skill_content_cache[path]
     end
 
     local raw = files.read_text(path)
@@ -55,8 +53,7 @@ function M.load_skill(name)
     -- Trim leading/trailing whitespace for cleanliness.
     content = vim.trim(content)
 
-    -- Cache and return.
-    M._skill_content_cache[path] = content
+    M._skill_content_cache[name] = content
     return content
 end
 
