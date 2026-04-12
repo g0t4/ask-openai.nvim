@@ -122,26 +122,30 @@ function start_mcp_server(name, on_response)
 
     uv.read_start(stderr, on_stderr)
 
-    local function wrap_response_callback(server_response)
-        -- TODO wrap callback with error detection logic? to log error at least?
-        --   Response object (success or failure): https://www.jsonrpc.org/specification#response_object
-        --   - Server does NOT send for notifications
+    function wrap_response_callback(server_response)
+        -- Response object (success or failure)
+        -- - Server does NOT send response to notifications
+        -- - https://www.jsonrpc.org/specification#response_object
         --   - ID of request is required
-        --   - Either `error` or `result` are required, but NOT BOTH
-        --     - result object not constrained by spec
-        --     - error object has code/message/data properties
-        --   Error response: https://www.jsonrpc.org/specification#error_object
+        --   - Either `error` or `result` is required
+        --     - NOT BOTH
+        --     - `result` object not constrained by spec
+        --     - `error` object has code/message/data properties: https://www.jsonrpc.org/specification#error_object
         if server_response.error then
             log:error(string.format("MCP %s error response:", server_name), server_response.error)
         end
-        if server_response.result then
-            local id = server_response.id
-            if id then
-                local callback = M.callbacks[id]
-                if callback then
-                    callback(server_response.result)
-                    M.callbacks[id] = nil
-                end
+
+        log:info("MCP response:", vim.inspect(msg))
+        local id = server_response.id
+        if id then
+            local callback = M.callbacks[id]
+            if callback then
+                -- PRN strip out errors?
+                --   not sure I really ever use error right now!
+                --   PRN find out if/how I should be using JSONRPC error objects? (look at other MCP servers, try with fetch an invalid URL?)
+                --   IOTW only pass result? => callback(server_response.result)
+                callback(server_response)
+                M.callbacks[id] = nil
             end
         end
     end
@@ -200,16 +204,7 @@ M.running_servers = {}
 
 for name, server in pairs(servers) do
     -- log:trace("starting mcp server " .. name)
-    local mcp = start_mcp_server(name, function(msg)
-        if msg.id then
-            local callback = M.callbacks[msg.id]
-            if callback then
-                callback(msg)
-            end
-            M.callbacks[msg.id] = nil
-        end
-        -- log:trace("MCP message:", vim.inspect(msg))
-    end)
+    local mcp = start_mcp_server(name, wrap_response_callback)
     M.running_servers[name] = mcp
 
     -- Perform initialization before requesting the tool list.
