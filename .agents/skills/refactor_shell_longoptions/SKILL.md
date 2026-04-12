@@ -15,15 +15,16 @@ Pay attention to the shell type as some shell commands/builtins differ across sh
 
 ## (optional) Lookup help
 
-If you feel uncertain about the short option to long option mapping, then:
-- Run the command with `--help` to get its help output
-- Or, `fetch` help online, i.e. with fish shell here is the help page for the `complete` builtin command: `https://fishshell.com/docs/current/cmds/complete.html`
+If you feel uncertain about options:
+- Run the command with `--help`
+- Or, `fetch` online help:
+    - https://fishshell.com/docs/current/cmds/complete.html
+    - https://manpages.org/ls
 
-Never run commands, to get help output, if doing so would modify the system.
+Never run --help if doing so would modify the system.
 
-Example help lookups:
+Examples:
 ```sh
-
 rg --help
 fd -h
 
