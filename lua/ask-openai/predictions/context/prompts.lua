@@ -1,5 +1,5 @@
 local log = require("ask-openai.logs.logger").predictions()
-local files = require("ask-openai.helpers.files")
+local skills = require("ask-openai.frontends.skills")
 ---@class ParseIncludesResult
 ---@field all boolean
 ---@field yanks boolean
@@ -17,10 +17,6 @@ local files = require("ask-openai.helpers.files")
 ---@field include_selection? boolean
 ---@field top_k? integer
 local M = {}
-
--- Cache for skill commands read from the user's ~/.agent/skills directory.
--- This is populated on first request and reused for the lifetime of the module.
-local cached_skill_commands = nil
 
 
 ---@param prompt string
@@ -80,34 +76,14 @@ function M.SlashCommandCompletion(arglead, cmdline, cursorpos)
         end
     end
 
-    -- Merge dynamic skill commands from ~/.agent/skills
-    for _, cmd in ipairs(M.get_skill_commands()) do
+    -- * merge skill prompts
+    -- FYI first load will happen on first completion, s/b fine for slight delay
+    for _, cmd in ipairs(skills.get_skill_commands()) do
         if cmd:find('^' .. escaped) then
             table.insert(result, cmd)
         end
     end
     return result
-end
-
---- Retrieve slash command entries representing skill directories under
---- `~/.agent/skills`. The result is cached after the first successful read.
----@return string[] List of slash commands (e.g., "/my_skill")
-function M.get_skill_commands()
-    if cached_skill_commands then
-        return cached_skill_commands
-    end
-
-    local skills_path = vim.fn.expand("~/.agent/skills")
-    local commands = {}
-    if vim.fn.isdirectory(skills_path) == 1 then
-        -- Use helper to list sub‑directories only.
-        local dir_names = files.list_directories(skills_path)
-        for _, name in ipairs(dir_names) do
-            table.insert(commands, "/" .. name)
-        end
-    end
-    cached_skill_commands = commands
-    return commands
 end
 
 ---@param prompt? string
