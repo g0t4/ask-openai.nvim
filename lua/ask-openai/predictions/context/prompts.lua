@@ -141,7 +141,7 @@ function M.parse_includes(prompt)
 
     -- Process skill slash commands: only if the skill command is present
     local skill_contents = {}
-    for _, skill_name in ipairs(skills.get_skill_commands()) do
+    for _, skill_name in pairs(skills.get_skill_commands()) do
         local cmd = "/" .. skill_name
         -- Detect presence of the skill command using the same pattern logic as `has`
         local found = includes.cleaned_prompt:find("%W" .. cmd .. "%W")
