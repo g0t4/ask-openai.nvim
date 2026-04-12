@@ -135,7 +135,7 @@ function M.parse_includes(prompt)
     end
 
     -- Clean built‑in slash commands from the prompt
-    for _, k in ipairs(M.slash_commands) do
+    for _, k in pairs(M.slash_commands) do
         includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, k)
     end
 
