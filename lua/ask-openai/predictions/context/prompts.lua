@@ -39,14 +39,12 @@ end
 function M.extract_top_k(prompt)
     -- i.e. /k=10
     local top_k = nil
-    prompt = prompt:gsub("^%s*/k=(%d+)%s*", function(match)
+    local function rep(match)
         top_k = tonumber(match)
         return "" -- remove match
-    end) -- start (specific)
-    prompt = prompt:gsub("%s*/k=(%d+)%s*$", function(match)
-        top_k = tonumber(match)
-        return "" -- remove match
-    end) -- end (specific)
+    end
+    prompt = prompt:gsub("^%s*/k=(%d+)%s*", rep) -- start (specific)
+    prompt = prompt:gsub("%s*/k=(%d+)%s*$", rep) -- end (specific)
     prompt = prompt:gsub("%s*/k=(%d+)%s*", function(match)
         top_k = tonumber(match)
         return " " -- replace w/ one space
