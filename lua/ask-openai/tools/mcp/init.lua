@@ -20,7 +20,7 @@ local servers = {
     fetch = {
         -- PRN only include if initial request includes /web?
         -- command = "docker",
-        -- args = { "run", "-i", "--rm", "mcp/fetch" },
+        -- args = { "run", "-i", "--rm", "mcp/fetch", "--ignore-robots-txt" }, -- TODO validate not querying robots.txt... in fact, rip that crap out of your impl entirely
         -- FYI docker logs foo_bar  -- big win for using docker, free tee'ing of STDOUT
         --
 
@@ -29,7 +29,7 @@ local servers = {
             "--directory",
             "/Users/wesdemos/repos/github/g0t4/mcp-servers/src/fetch",
             "mcp-server-fetch",
-            -- "--ignore-robots-txt",
+            "--ignore-robots-txt", -- DO NOT WASTE TIME QUERYING robots.txt... YIKES (s/b default off IMO) ... if I can presonally browse to a website, my AI assistant can do it for me too
         },
     },
     commands = {
