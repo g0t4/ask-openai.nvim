@@ -136,16 +136,22 @@ function M.parse_includes(prompt)
         includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, k)
     end
 
-    -- Process skill slash commands: remove them from the prompt and append their content
+    -- Process skill slash commands: only if the skill command is present
     local skill_contents = {}
     for _, skill_name in ipairs(skills.get_skill_commands()) do
         local cmd = "/" .. skill_name
-        -- Remove the skill reference from the prompt if present
-        includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, cmd)
-        -- Load the skill content and collect it for later appending
-        local content = skills.load_skill(skill_name)
-        if content then
-            table.insert(skill_contents, content)
+        -- Detect presence of the skill command using the same pattern logic as `has`
+        local found = includes.cleaned_prompt:find("%W" .. cmd .. "%W")
+        found = found or includes.cleaned_prompt:find("^" .. cmd .. "%W")
+        found = found or includes.cleaned_prompt:find("%W" .. cmd .. "$")
+        if found then
+            -- Remove the skill reference from the prompt
+            includes.cleaned_prompt = clean_prompt(includes.cleaned_prompt, cmd)
+            -- Load and store the skill content for later appending
+            local content = skills.load_skill(skill_name)
+            if content then
+                table.insert(skill_contents, content)
+            end
         end
     end
     if #skill_contents > 0 then
