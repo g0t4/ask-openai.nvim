@@ -133,7 +133,7 @@ describe("parse_includes", function()
             skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO /k=" .. top_k_val
             local includes = prompts.parse_includes("foo /" .. fake_skill_name .. " bar")
             assert.are_equal(top_k_val, includes.top_k, "top_k should be parsed as 7")
-            assert.are_equal("foo bar\nINJECTED SKILLY POO ", includes.rendered_prompt)
+            assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
         end)
     end)
 end)
