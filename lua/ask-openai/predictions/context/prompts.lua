@@ -18,11 +18,10 @@ local skills = require("ask-openai.frontends.skills")
 ---@field top_k? integer
 local M = {}
 
-
 ---@param prompt string
 ---@param command string
 ---@return string
-local function clean_prompt(prompt, command)
+local function strip_slash_command_from_prompt(prompt, command)
     -- in middle, between whitespace
     local cleaned = prompt:gsub("(%W)(" .. command .. ")%W", "%1")
     -- start of string, with whitespace after
@@ -111,7 +110,7 @@ function M.parse_includes(prompt)
         found = found or rendered_prompt:find("%W" .. cmd .. "$")
         if found then
             -- Remove the skill reference from the prompt
-            rendered_prompt = clean_prompt(rendered_prompt, cmd)
+            rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, cmd)
             -- Load the skill content for later processing
             local content = skills.load_skill(skill_name)
             if content then
@@ -162,9 +161,8 @@ function M.parse_includes(prompt)
         includes.open_files = true
     end
 
-    -- Clean built‑in slash commands from the (now) cleaned prompt.
     for _, k in pairs(M.slash_commands) do
-        rendered_prompt = clean_prompt(rendered_prompt, k)
+        rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, k)
     end
 
     includes.cleaned_prompt = rendered_prompt
