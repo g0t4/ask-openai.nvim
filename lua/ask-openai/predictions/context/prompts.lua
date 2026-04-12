@@ -37,22 +37,20 @@ end
 ---@param prompt string
 ---@return integer?, string
 function M.extract_top_k(prompt)
+    -- i.e. /k=10
     local top_k = nil
-    -- Clean the /k=<number> from the prompt
     prompt = prompt:gsub("^%s*/k=(%d+)%s*", function(match)
         top_k = tonumber(match)
-        return ""
+        return "" -- remove match
     end) -- start (specific)
     prompt = prompt:gsub("%s*/k=(%d+)%s*$", function(match)
         top_k = tonumber(match)
-        return ""
+        return "" -- remove match
     end) -- end (specific)
-
     prompt = prompt:gsub("%s*/k=(%d+)%s*", function(match)
         top_k = tonumber(match)
-        return " "
-    end) -- general
-
+        return " " -- replace w/ one space
+    end) -- middle matches (spaces on both sides)
     return top_k, prompt
 end
 
