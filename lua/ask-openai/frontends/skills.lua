@@ -81,6 +81,7 @@ function M.get_skill_commands()
             table.insert(names, name)
         end
     end
+    -- PRN load standalone files too? no need for foo/SKILL.md ???
     M.cached_skill_commands = names
     return names
 end
