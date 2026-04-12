@@ -105,9 +105,9 @@ function M.parse_includes(prompt)
     for _, skill_name in pairs(skills.get_skill_commands()) do
         local cmd = "/" .. skill_name
         -- Detect presence of the skill command using the same pattern logic as `has`
-        local found = rendered_prompt:find("%W" .. cmd .. "%W")
-        found = found or rendered_prompt:find("^" .. cmd .. "%W")
-        found = found or rendered_prompt:find("%W" .. cmd .. "$")
+        local found = rendered_prompt:find("%s" .. cmd .. "%s")
+        found = found or rendered_prompt:find("^" .. cmd .. "%s")
+        found = found or rendered_prompt:find("%s" .. cmd .. "$")
         if found then
             -- Remove the skill reference from the prompt
             rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, cmd)
