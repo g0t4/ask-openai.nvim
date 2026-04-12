@@ -56,7 +56,7 @@ function CurrentContext:items(prompt, always_include)
     end
 
     items.includes = includes
-    items.cleaned_prompt = includes.cleaned_prompt
+    items.cleaned_prompt = includes.rendered_prompt
     return items
 end
 

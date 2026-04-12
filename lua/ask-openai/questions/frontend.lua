@@ -52,7 +52,7 @@ local function ask_question_command(opts)
         project = true,
     }
     local context = CurrentContext:items(user_prompt, always_include)
-    local cleaned_prompt = context.includes.cleaned_prompt
+    local cleaned_prompt = context.includes.rendered_prompt
 
     -- * /selection (currently needs current window to be code window)
     local selection = nil

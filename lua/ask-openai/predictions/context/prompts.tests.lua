@@ -8,7 +8,7 @@ describe("parse_includes", function()
         local function should_detect_slash_all(original_prompt, expected_cleaned)
             local includes = prompts.parse_includes(original_prompt)
             assert.is_true(includes.all, "includes.all should be true for '" .. original_prompt .. "'")
-            assert.are_equal(expected_cleaned, includes.cleaned_prompt)
+            assert.are_equal(expected_cleaned, includes.rendered_prompt)
         end
         it("'/all' slash command is detected and stripped", function()
             should_detect_slash_all("foo /all bar", "foo bar")
@@ -19,7 +19,7 @@ describe("parse_includes", function()
         local function should_not_detect_slash_all(original_prompt)
             local includes = prompts.parse_includes(original_prompt)
             assert.is_false(includes.all, "includes.all should be false for '" .. original_prompt .. "'")
-            assert.are_equal(original_prompt, includes.cleaned_prompt)
+            assert.are_equal(original_prompt, includes.rendered_prompt)
         end
         it("'/all' alone is not detected - for now b/c that means theres no user prompt!", function()
             -- FYI maybe I want to have this parse and strip? but for now it seems moot to do this without any other prompt text
@@ -50,7 +50,7 @@ describe("parse_includes", function()
                 field = field or command
                 local includes = prompts.parse_includes("foo /" .. command .. " bar")
                 assert.is_true(includes[field], "includes." .. field .. " should be true")
-                assert.are_equal("foo bar", includes.cleaned_prompt)
+                assert.are_equal("foo bar", includes.rendered_prompt)
             end
 
             -- just add one test per, do not exercise tests of the parsing/stripping
@@ -69,7 +69,7 @@ describe("parse_includes", function()
             -- skills._skill_paths[skill_name] = "/fake/skilly/poo" -- not required if injecting content into cache
             skills.cached_skill_commands = { skill_name }
             local includes = prompts.parse_includes("foo /" .. skill_name .. " bar")
-            assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.cleaned_prompt)
+            assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
         end)
         it("should recursively resolve slash commands within skill content", function()
             local skill_name = "fake_skilly_poo"
@@ -78,7 +78,9 @@ describe("parse_includes", function()
             skills.cached_skill_commands = { skill_name }
             local includes = prompts.parse_includes("foo /" .. skill_name .. " bar")
             assert.is_true(includes.all, "includes.all should be true due to /all in skill content")
-            assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.cleaned_prompt)
+            assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
+            -- TODO test of all slash command embedded (LOOP?)
         end)
+        -- TODO test of embedded top_k
     end)
 end)

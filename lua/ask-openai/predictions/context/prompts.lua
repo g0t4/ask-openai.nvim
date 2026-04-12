@@ -11,7 +11,7 @@ local skills = require("ask-openai.frontends.skills")
 ---@field norag? boolean
 ---@field project? boolean
 ---@field git_diff? boolean
----@field cleaned_prompt string
+---@field rendered_prompt string
 ---@field use_tools? boolean
 ---@field apply_template_only? boolean
 ---@field include_selection? boolean
@@ -149,7 +149,7 @@ function M.parse_includes(prompt)
         apply_template_only = prompt_has(M.slash_commands.TEMPLATE_ONLY),
         include_selection = prompt_has(M.slash_commands.SELECTION),
         top_k = top_k,
-        cleaned_prompt = "",
+        rendered_prompt = "",
         norag = prompt_has(M.slash_commands.NORAG),
     }
 
@@ -165,7 +165,7 @@ function M.parse_includes(prompt)
         rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, k)
     end
 
-    includes.cleaned_prompt = rendered_prompt
+    includes.rendered_prompt = rendered_prompt
     -- log:info("includes", vim.inspect(includes))
     return includes
 end
