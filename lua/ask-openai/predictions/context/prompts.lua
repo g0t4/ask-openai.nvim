@@ -80,7 +80,7 @@ function M.SlashCommandCompletion(arglead, cmdline, cursorpos)
     -- FYI first load will happen on first completion, s/b fine for slight delay
     for _, cmd in ipairs(skills.get_skill_commands()) do
         if cmd:find('^' .. escaped) then
-            table.insert(result, cmd)
+            table.insert(result, "/" .. cmd)
         end
     end
     return result
