@@ -64,7 +64,10 @@ describe("parse_includes", function()
 
     describe("skills", function()
         it("should detect and load skill commands", function()
-            local skill_name = "test_fetch"
+            local skill_name = "test_skilly_poo"
+            skills._skill_content_cache[skill_name] = "SKILLY POO"
+            skills._skill_paths[skill_name] = "dummy_path"
+            skills.cached_skill_commands = { skill_name }
             local includes = prompts.parse_includes("foo /" .. skill_name .. " bar")
             assert.is_true(includes.skills[skill_name] ~= nil, "Skill should be loaded")
             assert.are_equal("foo bar", includes.cleaned_prompt)
