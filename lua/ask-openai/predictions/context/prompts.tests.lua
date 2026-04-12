@@ -64,13 +64,12 @@ describe("parse_includes", function()
 
     describe("skills", function()
         it("should detect and load skill commands", function()
-            local skill_name = "test_skilly_poo"
-            skills._skill_content_cache[skill_name] = "SKILLY POO"
-            skills._skill_paths[skill_name] = "dummy_path"
+            local skill_name = "fake_skilly_poo"
+            skills._skill_content_cache[skill_name] = "INJECTED SKILLY POO"
+            skills._skill_paths[skill_name] = "/fake/skilly/poo"
             skills.cached_skill_commands = { skill_name }
             local includes = prompts.parse_includes("foo /" .. skill_name .. " bar")
-            assert.is_true(includes.skills[skill_name] ~= nil, "Skill should be loaded")
-            assert.are_equal("foo bar", includes.cleaned_prompt)
+            assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.cleaned_prompt)
         end)
     end)
 end)
