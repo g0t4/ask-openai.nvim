@@ -93,7 +93,7 @@ function start_mcp_server(name)
             log:error(string.format("MCP %s error response:", server_log_name), server_response.error)
         end
 
-        log:info("MCP response:", vim.inspect(server_response))
+        -- log:info("MCP response:", vim.inspect(server_response))
         local id = server_response.id
         if id then
             local callback = M.callbacks[id]
@@ -163,7 +163,7 @@ function start_mcp_server(name)
             M.callbacks[request.id] = callback
         end
         local json = vim.json.encode(request)
-        log:info(string.format("MCP send %s:", server_log_name), json)
+        -- log:info(string.format("MCP send %s:", server_log_name), json)
         stdin:write(json .. "\n")
     end
 
@@ -175,7 +175,7 @@ function start_mcp_server(name)
         -- modelcontextprotocol uses "notifications/" method prefix, i.e.: notifications/initialized and notifications/tools/list_changed
         request.jsonrpc = "2.0"
         local json = vim.json.encode(request)
-        log:info(string.format("MCP notify %s:", server_log_name), json)
+        -- log:info(string.format("MCP notify %s:", server_log_name), json)
         stdin:write(json .. "\n")
     end
 
