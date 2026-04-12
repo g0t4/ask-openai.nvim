@@ -93,7 +93,7 @@ function start_mcp_server(name)
             log:error(string.format("MCP %s error response:", server_log_name), server_response.error)
         end
 
-        log:info("MCP response:", vim.inspect(msg))
+        log:info("MCP response:", vim.inspect(server_response))
         local id = server_response.id
         if id then
             local callback = M.callbacks[id]
