@@ -122,7 +122,7 @@ function M.parse_includes(prompt)
         apply_template_only = has(M.slash_commands.TEMPLATE_ONLY),
         include_selection = has(M.slash_commands.SELECTION),
         top_k = top_k,
-        cleaned_prompt = prompt,
+        cleaned_prompt = rendered_prompt,
         norag = has(M.slash_commands.NORAG),
     }
 
@@ -130,7 +130,7 @@ function M.parse_includes(prompt)
     -- resolve any built‑in slash commands inside the skill content, and clean the
     -- skill content before injecting it.
     local raw_skill_contents = {}
-    local rendered_prompt = includes.cleaned_prompt
+    local rendered_prompt = prompt
     for _, skill_name in pairs(skills.get_skill_commands()) do
         local cmd = "/" .. skill_name
         -- Detect presence of the skill command using the same pattern logic as `has`
