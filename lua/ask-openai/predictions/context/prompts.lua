@@ -1,4 +1,5 @@
 local log = require("ask-openai.logs.logger").predictions()
+local files = require("ask-openai.helpers.files")
 ---@class ParseIncludesResult
 ---@field all boolean
 ---@field yanks boolean
@@ -16,6 +17,11 @@ local log = require("ask-openai.logs.logger").predictions()
 ---@field include_selection? boolean
 ---@field top_k? integer
 local M = {}
+
+-- Cache for skill commands read from the user's ~/.agent/skills directory.
+-- This is populated on first request and reused for the lifetime of the module.
+local cached_skill_commands = nil
+
 
 ---@param prompt string
 ---@param command string
@@ -66,15 +72,42 @@ M.slash_commands = {
 ---@param cursorpos number The cursor position.
 ---@return string[] List of matching completions.
 function M.SlashCommandCompletion(arglead, cmdline, cursorpos)
-    local completions = M.slash_commands or {}
     local result = {}
     local escaped = vim.pesc(arglead)
-    for _, cmd in pairs(completions) do
+    for _, cmd in pairs(M.slash_commands) do
+        if cmd:find('^' .. escaped) then
+            table.insert(result, cmd)
+        end
+    end
+
+    -- Merge dynamic skill commands from ~/.agent/skills
+    for _, cmd in ipairs(M.get_skill_commands()) do
         if cmd:find('^' .. escaped) then
             table.insert(result, cmd)
         end
     end
     return result
+end
+
+--- Retrieve slash command entries representing skill directories under
+--- `~/.agent/skills`. The result is cached after the first successful read.
+---@return string[] List of slash commands (e.g., "/my_skill")
+function M.get_skill_commands()
+    if cached_skill_commands then
+        return cached_skill_commands
+    end
+
+    local skills_path = vim.fn.expand("~/.agent/skills")
+    local commands = {}
+    if vim.fn.isdirectory(skills_path) == 1 then
+        -- Use helper to list sub‑directories only.
+        local dir_names = files.list_directories(skills_path)
+        for _, name in ipairs(dir_names) do
+            table.insert(commands, "/" .. name)
+        end
+    end
+    cached_skill_commands = commands
+    return commands
 end
 
 ---@param prompt? string
