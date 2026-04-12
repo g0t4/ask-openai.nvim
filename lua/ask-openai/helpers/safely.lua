@@ -17,6 +17,9 @@ function M.xpcall_log_failures(error_message)
     }
 end
 
+---@param json_string string
+---@return boolean success
+---@return any object
 function M.decode_json(json_string)
     local success, object = xpcall(vim.json.decode, M.xpcall_log_failures, json_string)
     if not success then
