@@ -43,8 +43,7 @@ local servers = {
     },
 }
 
-
-function start_mcp_server(name, on_response)
+function start_mcp_server(name)
     local stdin = uv.new_pipe(false)
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
@@ -80,6 +79,34 @@ function start_mcp_server(name, on_response)
         on_exit)
 
     local pending_json = ""
+
+    local function on_response(server_response)
+        -- Response object (success or failure)
+        -- - Server does NOT send response to notifications
+        -- - https://www.jsonrpc.org/specification#response_object
+        --   - ID of request is required
+        --   - Either `error` or `result` is required
+        --     - NOT BOTH
+        --     - `result` object not constrained by spec
+        --     - `error` object has code/message/data properties: https://www.jsonrpc.org/specification#error_object
+        if server_response.error then
+            log:error(string.format("MCP %s error response:", server_log_name), server_response.error)
+        end
+
+        log:info("MCP response:", vim.inspect(msg))
+        local id = server_response.id
+        if id then
+            local callback = M.callbacks[id]
+            if callback then
+                -- PRN strip out errors?
+                --   not sure I really ever use error right now!
+                --   PRN find out if/how I should be using JSONRPC error objects? (look at other MCP servers, try with fetch an invalid URL?)
+                --   IOTW only pass result? => callback(server_response.result)
+                callback(server_response)
+                M.callbacks[id] = nil
+            end
+        end
+    end
 
     local function on_stdout(read_error, data)
         log:log_if_stdio_read_error(string.format("MCP on_stdout %s", server_log_name), read_error, data) -- FYI switch _errors/_always with:    log:trace_stdio_read_always("MCP ...
@@ -180,34 +207,7 @@ for name, server in pairs(servers) do
     local server_log_name = "[" .. name:upper() .. "]"
     -- log:trace("starting mcp server " .. name)
 
-    local function wrap_response_callback(server_response)
-        -- Response object (success or failure)
-        -- - Server does NOT send response to notifications
-        -- - https://www.jsonrpc.org/specification#response_object
-        --   - ID of request is required
-        --   - Either `error` or `result` is required
-        --     - NOT BOTH
-        --     - `result` object not constrained by spec
-        --     - `error` object has code/message/data properties: https://www.jsonrpc.org/specification#error_object
-        if server_response.error then
-            log:error(string.format("MCP %s error response:", server_log_name), server_response.error)
-        end
-
-        log:info("MCP response:", vim.inspect(msg))
-        local id = server_response.id
-        if id then
-            local callback = M.callbacks[id]
-            if callback then
-                -- PRN strip out errors?
-                --   not sure I really ever use error right now!
-                --   PRN find out if/how I should be using JSONRPC error objects? (look at other MCP servers, try with fetch an invalid URL?)
-                --   IOTW only pass result? => callback(server_response.result)
-                callback(server_response)
-                M.callbacks[id] = nil
-            end
-        end
-    end
-    local mcp = start_mcp_server(name, wrap_response_callback)
+    local mcp = start_mcp_server(name)
     M.running_servers[name] = mcp
 
     -- Perform initialization before requesting the tool list.
