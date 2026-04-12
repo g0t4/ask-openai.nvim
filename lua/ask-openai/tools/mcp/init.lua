@@ -59,13 +59,13 @@ function start_mcp_server(name, on_message)
 
         if vim.v.exiting ~= nil then
             local msg = string.format("MCP server %s EXITED\n\n  *NOTE: vim is not shutting down*\n\nRESTART NEOVIM if you need the server running", server_name)
-            log:info(ansi.white_bold(ansi.red_bg(msg)))
+            log:error(ansi.white_bold(ansi.red_bg(msg)))
             vim.notify(msg, vim.log.levels.WARN)
         else
             -- I never see this log entry on shutdown...
             -- reminds me => perhaps I need to actually trigger exit of server too?
             --   but, I've never seen leaked MCP server process... doesn't mean it never happens!
-            log:info(string.format("MCP server %s exited (during neovim shutdown)", server_name))
+            log:error(string.format("MCP server %s exited (during neovim shutdown)", server_name))
         end
     end
 
@@ -101,7 +101,7 @@ function start_mcp_server(name, on_message)
             if ok and on_message then
                 on_message(msg)
             else
-                log:info(string.format("MCP decode error %s:", server_name), line)
+                log:error(string.format("MCP decode error %s:", server_name), line)
             end
         end
 
@@ -197,7 +197,7 @@ for name, server in pairs(servers) do
 
     local server_name = "[" .. name:upper() .. "]"
     mcp.send({ method = "initialize", params = client_init_params }, function(server_init)
-        log:info(string.format("MCP initialize response %s:", server_name), vim.inspect(server_init))
+        log:trace(string.format("MCP initialize response %s:", server_name), vim.inspect(server_init))
 
         -- * abort on init failure
         if server_init.error then
