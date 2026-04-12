@@ -50,7 +50,7 @@ function start_mcp_server(name, on_response)
     local stderr = uv.new_pipe(false)
 
     local options = servers[name]
-    local server_name = "[" .. name:upper() .. "]"
+    local server_log_name = "[" .. name:upper() .. "]"
 
     local handle
 
@@ -60,14 +60,14 @@ function start_mcp_server(name, on_response)
         handle:close()
 
         if vim.v.exiting ~= nil then
-            local msg = string.format("MCP server %s EXITED\n\n  *NOTE: vim is not shutting down*\n\nRESTART NEOVIM if you need the server running", server_name)
+            local msg = string.format("MCP server %s EXITED\n\n  *NOTE: vim is not shutting down*\n\nRESTART NEOVIM if you need the server running", server_log_name)
             log:error(ansi.white_bold(ansi.red_bg(msg)))
             vim.notify(msg, vim.log.levels.WARN)
         else
             -- I never see this log entry on shutdown...
             -- reminds me => perhaps I need to actually trigger exit of server too?
             --   but, I've never seen leaked MCP server process... doesn't mean it never happens!
-            log:error(string.format("MCP server %s exited (during neovim shutdown)", server_name))
+            log:error(string.format("MCP server %s exited (during neovim shutdown)", server_log_name))
         end
     end
 
@@ -82,7 +82,7 @@ function start_mcp_server(name, on_response)
     local pending_json = ""
 
     local function on_stdout(read_error, data)
-        log:log_if_stdio_read_error(string.format("MCP on_stdout %s", server_name), read_error, data) -- FYI switch _errors/_always with:    log:trace_stdio_read_always("MCP ...
+        log:log_if_stdio_read_error(string.format("MCP on_stdout %s", server_log_name), read_error, data) -- FYI switch _errors/_always with:    log:trace_stdio_read_always("MCP ...
         if data == nil then return end -- EOF
 
         pending_json = pending_json .. data
@@ -103,9 +103,9 @@ function start_mcp_server(name, on_response)
             if ok then
                 on_response(msg)
             else
-                log:error(string.format("MCP STDOUT decode error %s OK:", server_name), ok)
-                log:error(string.format("MCP STDOUT decode error %s LINE:", server_name), line)
-                log:error(string.format("MCP STDOUT decode error %s MSG:", server_name), vim.inspect(msg))
+                log:error(string.format("MCP STDOUT decode error %s OK:", server_log_name), ok)
+                log:error(string.format("MCP STDOUT decode error %s LINE:", server_log_name), line)
+                log:error(string.format("MCP STDOUT decode error %s MSG:", server_log_name), vim.inspect(msg))
             end
         end
 
@@ -116,10 +116,10 @@ function start_mcp_server(name, on_response)
     uv.read_start(stdout, on_stdout)
 
     local function on_stderr(read_error, data)
-        log:log_if_stdio_read_error(string.format("MCP on_stderr %s", server_name), read_error, data) -- FYI switch _errors/_always with:    log:trace_stdio_read_always("MCP ...
+        log:log_if_stdio_read_error(string.format("MCP on_stderr %s", server_log_name), read_error, data) -- FYI switch _errors/_always with:    log:trace_stdio_read_always("MCP ...
         if data == nil then return end -- EOF -- * add this line if add logic below
 
-        log:error(string.format("MCP %s STDERR:", server_name), ansi.red(data))
+        log:error(string.format("MCP %s STDERR:", server_log_name), ansi.red(data))
     end
 
     uv.read_start(stderr, on_stderr)
@@ -139,7 +139,7 @@ function start_mcp_server(name, on_response)
             M.callbacks[msg.id] = callback
         end
         local msg_json = vim.json.encode(msg)
-        log:info(string.format("MCP send %s:", server_name), msg_json)
+        log:info(string.format("MCP send %s:", server_log_name), msg_json)
         stdin:write(msg_json .. "\n")
     end
 
@@ -177,7 +177,7 @@ end
 M.running_servers = {}
 
 for name, server in pairs(servers) do
-    local server_name = "[" .. name:upper() .. "]"
+    local server_log_name = "[" .. name:upper() .. "]"
     -- log:trace("starting mcp server " .. name)
 
     local function wrap_response_callback(server_response)
@@ -190,7 +190,7 @@ for name, server in pairs(servers) do
         --     - `result` object not constrained by spec
         --     - `error` object has code/message/data properties: https://www.jsonrpc.org/specification#error_object
         if server_response.error then
-            log:error(string.format("MCP %s error response:", server_name), server_response.error)
+            log:error(string.format("MCP %s error response:", server_log_name), server_response.error)
         end
 
         log:info("MCP response:", vim.inspect(msg))
@@ -227,7 +227,7 @@ for name, server in pairs(servers) do
     }
 
     mcp.send({ method = "initialize", params = client_init_params }, function(server_init)
-        log:trace(string.format("MCP initialize response %s:", server_name), vim.inspect(server_init))
+        log:trace(string.format("MCP initialize response %s:", server_log_name), vim.inspect(server_init))
 
         -- * abort on init failure
         if server_init.error then
@@ -235,10 +235,10 @@ for name, server in pairs(servers) do
             local msg = ""
             if type(err) == "table" and err.message ~= nil then
                 -- log them embedded error.message if available
-                msg = string.format("MCP initialize error (SEE PATH below) %s: %s", server_name, err.message)
+                msg = string.format("MCP initialize error (SEE PATH below) %s: %s", server_log_name, err.message)
                 -- FYI message is a JSON string, so I would have to deserialize it to read .path... that's not necessary! I can just read the JSON when I have a failure!
             else
-                msg = string.format("MCP initialize error %s (no message)", server_name)
+                msg = string.format("MCP initialize error %s (no message)", server_log_name)
             end
             log:error(msg)
             vim.notify(msg, vim.log.levels.ERROR)
@@ -256,7 +256,7 @@ for name, server in pairs(servers) do
         -- PRN do I need to wait before tools/list ? IIUC notifications/initialized doesn't get a server response... so in this case, I am not waiting to send tools/list:
         mcp.tools_list(function(response)
             if response.error then
-                log:error(string.format("tools/list@%s error:", server_name), vim.inspect(response))
+                log:error(string.format("tools/list@%s error:", server_log_name), vim.inspect(response))
                 return
             end
             for _, tool in ipairs(response.result.tools) do
