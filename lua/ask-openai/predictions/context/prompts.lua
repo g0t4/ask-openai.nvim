@@ -78,18 +78,20 @@ end
 
 ---@param prompt string
 ---@param command string
----@return string
+---@return boolean, string
 local function strip_slash_command_from_prompt(prompt, command)
-    -- in middle, between whitespace
-    local cleaned = prompt:gsub("(%W)(" .. command .. ")%W", "%1")
-    -- start of string, with whitespace after
-    cleaned = cleaned:gsub("^" .. command .. "%W", "")
-    -- end of string, with whitespace before
-    cleaned = cleaned:gsub("%W" .. command .. "$", "")
-    log:info("original prompt:", prompt)
-    log:info("      cleaned:", cleaned)
-    log:info("      command:", command)
-    return cleaned
+    local cleaned = prompt:gsub("^%s*" .. command .. "%s", "") -- start (optional whitespace before)
+
+    cleaned = cleaned:gsub("%s" .. command .. "%s*$", "") -- end (optional whitespace after, until end)
+
+    cleaned = cleaned:gsub("(%s+)(" .. command .. ")%s+", "%1") -- middle matches (whitespace on both sides)
+    -- %1 => keep capture 1 (space before)
+
+    -- -- especially useful to see changes when recursive rendering
+    -- log:info("original prompt:", prompt)
+    -- log:info("      cleaned:", cleaned)
+    -- log:info("      command:", command)
+    return cleaned ~= prompt, cleaned
 end
 
 ---@param prompt? string
@@ -100,28 +102,22 @@ function M.parse_includes(prompt)
     -- Process skill slash commands first: detect skill references, load their content,
     -- resolve any built‑in slash commands inside the skill content, and clean the
     -- skill content before injecting it.
-    local raw_skill_contents = {}
+    local skill_contents = {}
     local rendered_prompt = prompt
     for _, skill_name in pairs(skills.get_skill_commands()) do
         local cmd = "/" .. skill_name
-        -- Detect presence of the skill command using the same pattern logic as `has`
-        local found = rendered_prompt:find("%s" .. cmd .. "%s")
-        found = found or rendered_prompt:find("^" .. cmd .. "%s")
-        found = found or rendered_prompt:find("%s" .. cmd .. "$")
+        local found, rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, cmd)
         if found then
-            -- Remove the skill reference from the prompt
-            rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, cmd)
-            -- Load the skill content for later processing
             local content = skills.load_skill(skill_name)
             if content then
-                table.insert(raw_skill_contents, content)
+                table.insert(skill_contents, content)
             end
         end
     end
 
     -- Append the cleaned skill contents.
-    if #raw_skill_contents > 0 then
-        rendered_prompt = rendered_prompt .. "\n" .. table.concat(raw_skill_contents, "\n")
+    if #skill_contents > 0 then
+        rendered_prompt = rendered_prompt .. "\n" .. table.concat(skill_contents, "\n")
     end
 
     local function has_in(what, command)
@@ -140,21 +136,35 @@ function M.parse_includes(prompt)
     local top_k, prompt_without_k = M.extract_top_k(rendered_prompt)
     rendered_prompt = prompt_without_k
 
+    ---@type table<string, string>
+    M.slash_command_to_field = {
+        [M.slash_commands.ALL] = "all",
+        [M.slash_commands.YANKS] = "yanks",
+        [M.slash_commands.COMMITS] = "commits",
+        [M.slash_commands.FILE] = "current_file",
+        [M.slash_commands.OPEN_FILES] = "open_files",
+        [M.slash_commands.TOOLS] = "use_tools",
+        [M.slash_commands.READONLY] = "readonly",
+        [M.slash_commands.TEMPLATE_ONLY] = "apply_template_only",
+        [M.slash_commands.SELECTION] = "include_selection",
+        [M.slash_commands.NORAG] = "norag",
+    }
+
     ---@type ParseIncludesResult
     local includes = {
-        all = (prompt == "") or prompt_has(M.slash_commands.ALL),
-        yanks = prompt_has(M.slash_commands.YANKS),
-        commits = prompt_has(M.slash_commands.COMMITS),
-        current_file = prompt_has(M.slash_commands.FILE),
-        open_files = prompt_has(M.slash_commands.OPEN_FILES),
-        use_tools = prompt_has(M.slash_commands.TOOLS),
-        readonly = prompt_has(M.slash_commands.READONLY),
-        apply_template_only = prompt_has(M.slash_commands.TEMPLATE_ONLY),
-        include_selection = prompt_has(M.slash_commands.SELECTION),
+        -- patterns:
         top_k = top_k,
-        rendered_prompt = "",
-        norag = prompt_has(M.slash_commands.NORAG),
     }
+    for _, command in pairs(M.slash_commands) do
+        local found
+        found, rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, command)
+        local field = M.slash_command_to_field[command]
+        if field then
+            includes[field] = found
+        else
+            log:error("missing field for slash command: " .. command)
+        end
+    end
 
     -- propagate the effect of /all
     if includes.all then
@@ -163,10 +173,6 @@ function M.parse_includes(prompt)
         includes.commits = true
         includes.current_file = true
         includes.open_files = true
-    end
-
-    for _, k in pairs(M.slash_commands) do
-        rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, k)
     end
 
     includes.rendered_prompt = rendered_prompt
