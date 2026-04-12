@@ -18,21 +18,24 @@ M.callbacks = {}
 
 local servers = {
     fetch = {
-        -- PRN only include if initial request includes /web?
-        command = "docker",
-        args = { "run", "-i", "--rm", "weshigbee/mcp-fetch" },
+        -- PRN only include this tool if initial request includes /web?
+
+        -- -- * via docker
+        -- command = "docker",
+        -- args = { "run", "-i", "--rm", "weshigbee/mcp-fetch" },
         -- mcp/fetch image is prebuilt but has robots.txt and user-agent crap that slows things down
         -- FYI server response logs:
         --   docker container logs foo_bar --follow | jq
         --   docker container logs jovial_blackburn --follow | jq --compact-output
 
-        -- command = "uvx",
-        -- args = {
-        --     "--directory",
-        --     os.getenv("HOME") .. "/repos/github/g0t4/mcp-servers/src/fetch",
-        --     "mcp-server-fetch",
-        --     "--ignore-robots-txt", -- DO NOT WASTE TIME QUERYING robots.txt... YIKES (s/b default off IMO) ... if I can presonally browse to a website, my AI assistant can do it for me too
-        -- },
+        -- -- * via source
+        command = "uvx",
+        args = {
+            "--directory",
+            os.getenv("HOME") .. "/repos/github/g0t4/mcp-servers/src/fetch",
+            "mcp-server-fetch",
+            "--ignore-robots-txt", -- DO NOT WASTE TIME QUERYING robots.txt... YIKES (s/b default off IMO) ... if I can presonally browse to a website, my AI assistant can do it for me too
+        },
     },
     commands = {
         command = "npx",
