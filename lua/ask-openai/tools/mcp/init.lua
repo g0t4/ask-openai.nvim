@@ -152,12 +152,8 @@ function start_mcp_server(name)
     uv.read_start(stderr, on_stderr)
 
     local function send(request, callback)
-        -- * notifications CANNOT have ID:  https://www.jsonrpc.org/specification#notification
-        --   BTW notification is a type of request
-        --   modelcontextprotocol uses "notifications/" method prefix, i.e.: notifications/initialized and notifications/tools/list_changed
-        local is_notification = request.method and request.method:match("^notifications/")
-        if not request.id and not is_notification then
-            -- set a unique id if no id is provided
+        -- Regular request (with optional callback). ID is always set unless caller explicitly provides one.
+        if not request.id then
             request.id = M.counter
             M.counter = M.counter + 1
         end
@@ -168,6 +164,20 @@ function start_mcp_server(name)
         end
         local msg_json = vim.json.encode(request)
         log:info(string.format("MCP send %s:", server_log_name), msg_json)
+        stdin:write(msg_json .. "\n")
+    end
+
+    --- Send a JSON-RPC notification (no ID, no callback).
+    ---@param notification table The notification request table (must contain a `method` field).
+    -- * notifications CANNOT have ID:  https://www.jsonrpc.org/specification#notification
+    --   BTW notification is a type of request
+    --   modelcontextprotocol uses "notifications/" method prefix, i.e.: notifications/initialized and notifications/tools/list_changed
+    local function notify(notification)
+        -- Notifications must not have an ID per JSON-RPC spec.
+        notification.id = nil
+        notification.jsonrpc = "2.0"
+        local msg_json = vim.json.encode(notification)
+        log:info(string.format("MCP notify %s:", server_log_name), msg_json)
         stdin:write(msg_json .. "\n")
     end
 
@@ -189,6 +199,7 @@ function start_mcp_server(name)
 
     return {
         send = send,
+        notify = notify,
         stop = function()
             -- handle:kill("sigterm")
             uv.shutdown(stdin, function()
@@ -252,7 +263,7 @@ for name, server in pairs(servers) do
         --  - COMMANDS MCP it doesn't matter if I send this or don't send this
         --  - ok the issue might be that notifications don't include an ID? => YUP fetch works without the ID on the notification!
         --  - docs: https://modelcontextprotocol.io/specification/2024-11-05/basic/lifecycle#initialization
-        mcp.send({ method = "notifications/initialized" })
+        mcp.notify({ method = "notifications/initialized" })
 
         -- PRN do I need to wait before tools/list ? IIUC notifications/initialized doesn't get a server response... so in this case, I am not waiting to send tools/list:
         mcp.tools_list(function(response)
