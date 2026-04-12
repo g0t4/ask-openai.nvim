@@ -173,6 +173,7 @@ for name, server in pairs(servers) do
             if callback then
                 callback(msg)
             end
+            M.callbacks[msg.id] = nil
         end
         -- log:trace("MCP message:", vim.inspect(msg))
     end)
