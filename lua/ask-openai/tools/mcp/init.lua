@@ -122,6 +122,30 @@ function start_mcp_server(name, on_message)
 
     uv.read_start(stderr, on_stderr)
 
+    local function wrap_response_callback(server_response)
+        -- TODO wrap callback with error detection logic? to log error at least?
+        --   Response object (success or failure): https://www.jsonrpc.org/specification#response_object
+        --   - Server does NOT send for notifications
+        --   - ID of request is required
+        --   - Either `error` or `result` are required, but NOT BOTH
+        --     - result object not constrained by spec
+        --     - error object has code/message/data properties
+        --   Error response: https://www.jsonrpc.org/specification#error_object
+        if server_response.error then
+            log:error(string.format("MCP %s error response:", server_name), server_response.error)
+        end
+        if server_response.result then
+            local id = server_response.id
+            if id then
+                local callback = M.callbacks[id]
+                if callback then
+                    callback(server_response.result)
+                    M.callbacks[id] = nil
+                end
+            end
+        end
+    end
+
     local function send(msg, callback)
         -- * notifications CANNOT have ID:  https://www.jsonrpc.org/specification#notification
         -- BTW modelcontextprotocol uses notifications/ prefix (not sure this is universal), two examples: notifications/initialized and notifications/tools/list_changed
@@ -131,21 +155,13 @@ function start_mcp_server(name, on_message)
             msg.id = M.counter
             M.counter = M.counter + 1
         end
-
         msg.jsonrpc = "2.0"
+
         if callback then
-            -- TODO wrap callback with error detection logic? to log error at least?
-            --   Response object (success or failure): https://www.jsonrpc.org/specification#response_object
-            --   - Server does NOT send for notifications
-            --   - ID of request is required
-            --   - Either `error` or `result` are required, but NOT BOTH
-            --     - result object not constrained by spec
-            --     - error object has code/message/data properties
-            --   Error response: https://www.jsonrpc.org/specification#error_object
             M.callbacks[msg.id] = callback
         end
         local msg_json = vim.json.encode(msg)
-        -- log:info(string.format("MCP send %s:", server_name), msg_json)
+        log:info(string.format("MCP send %s:", server_name), msg_json)
         stdin:write(msg_json .. "\n")
     end
 
