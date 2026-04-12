@@ -100,10 +100,12 @@ function start_mcp_server(name, on_response)
             pending_json = rest
 
             local ok, msg = safely.decode_json(line)
-            if ok and on_response then
+            if ok then
                 on_response(msg)
             else
-                log:error(string.format("MCP decode error %s:", server_name), line)
+                log:error(string.format("MCP STDOUT decode error %s OK:", server_name), ok)
+                log:error(string.format("MCP STDOUT decode error %s LINE:", server_name), line)
+                log:error(string.format("MCP STDOUT decode error %s MSG:", server_name), vim.inspect(msg))
             end
         end
 
