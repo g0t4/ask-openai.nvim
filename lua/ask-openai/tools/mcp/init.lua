@@ -232,12 +232,12 @@ for name, server in pairs(servers) do
         mcp.send({ method = "notifications/initialized" })
 
         -- PRN do I need to wait before tools/list ? IIUC notifications/initialized doesn't get a server response... so in this case, I am not waiting to send tools/list:
-        mcp.tools_list(function(msg)
-            if msg.error then
-                log:error(string.format("tools/list@%s error:", server_name), vim.inspect(msg))
+        mcp.tools_list(function(response)
+            if response.error then
+                log:error(string.format("tools/list@%s error:", server_name), vim.inspect(response))
                 return
             end
-            for _, tool in ipairs(msg.result.tools) do
+            for _, tool in ipairs(response.result.tools) do
                 tool.server = mcp
                 M.tools_available[tool.name] = tool
             end
