@@ -36,7 +36,7 @@ end
 
 ---@param prompt string
 ---@return integer?, string
-local function extract_top_k(prompt)
+function M.extract_top_k(prompt)
     -- Extract /k=<number> pattern (e.g., /k=10)
     local top_k = prompt:match("/k=(%d+)")
     if top_k then
@@ -133,8 +133,7 @@ function M.parse_includes(prompt)
         return has_in(rendered_prompt, command)
     end
 
-    -- Extract /k=<number> first, before other processing
-    local top_k, prompt_without_k = extract_top_k(rendered_prompt)
+    local top_k, prompt_without_k = M.extract_top_k(rendered_prompt)
     rendered_prompt = prompt_without_k
 
     ---@type ParseIncludesResult
@@ -153,8 +152,9 @@ function M.parse_includes(prompt)
         norag = prompt_has(M.slash_commands.NORAG),
     }
 
-    -- After processing skill content, propagate the effect of /all if it was discovered.
+    -- propagate the effect of /all
     if includes.all then
+        -- defaults for /all:
         includes.yanks = true
         includes.commits = true
         includes.current_file = true
