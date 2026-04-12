@@ -13,10 +13,13 @@ Pay attention to the shell type as some shell commands/builtins differ across sh
 - If a short option has no documented long counterpart, leave it as‑is.
 - ONLY replace short options with long options, do not change ANYTHING else.
 
-## (optional) run commands to get `--help` output
+## (optional) Lookup help
 
-If you feel uncertain about the short option to long option mapping, then run the command to get its help output!
-- Never run commands, to get help output, if doing so would modify the system.
+If you feel uncertain about the short option to long option mapping, then:
+- Run the command with `--help` to get its help output
+- Or, `fetch` help online, i.e. with fish shell here is the help page for the `complete` builtin command: `https://fishshell.com/docs/current/cmds/complete.html`
+
+Never run commands, to get help output, if doing so would modify the system.
 
 Example help lookups:
 ```sh
