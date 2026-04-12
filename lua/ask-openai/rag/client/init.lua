@@ -20,7 +20,7 @@ local function load_rag_yaml_config(work_dir)
         log:info("no .rag.yaml found at", rag_yaml_path)
         return nil
     end
-    log:info("found .rag.yaml at", rag_yaml_path)
+    log:trace("found .rag.yaml at", rag_yaml_path)
 
     local yaml_content = vim.fn.readfile(rag_yaml_path)
     if not yaml_content then
@@ -29,9 +29,9 @@ local function load_rag_yaml_config(work_dir)
     end
 
     local yaml_str = table.concat(yaml_content, "\n")
-    -- log:info(".rag.yaml yaml_str:\n" .. yaml_str)
+    -- log:info(".rag.yaml raw contents:\n" .. yaml_str)
     local ok, parsed = safely.decode_yaml(yaml_str)
-    log:info(".rag.yaml parsed:\n" .. vim.inspect(parsed))
+    log:trace(".rag.yaml parsed:\n" .. vim.inspect(parsed))
     if not ok then
         error("Failed to parse yaml in " .. rag_yaml_path .. " because " .. vim.inspect(parsed))
         return nil
@@ -77,7 +77,7 @@ local function determine_rag_config()
     M.is_rag_indexed_workspace = true
     M.rag_indexed_file_extensions = files.list_directories(dot_rag_dir)
     table.sort(M.rag_indexed_file_extensions)
-    log:info("RAG is supported for: " .. vim.inspect(M.rag_indexed_file_extensions))
+    log:trace("RAG is supported for: " .. vim.inspect(M.rag_indexed_file_extensions))
 end
 determine_rag_config()
 
