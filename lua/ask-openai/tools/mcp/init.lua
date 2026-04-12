@@ -115,7 +115,7 @@ function start_mcp_server(name, on_message)
         log:log_if_stdio_read_error(string.format("MCP on_stderr %s", server_name), read_error, data) -- FYI switch _errors/_always with:    log:trace_stdio_read_always("MCP ...
         if data == nil then return end -- EOF -- * add this line if add logic below
 
-        log:error(string.format("MCP %s STDERR:", server_name), data)
+        log:error(string.format("MCP %s STDERR:", server_name), ansi.red(data))
     end
 
     uv.read_start(stderr, on_stderr)
