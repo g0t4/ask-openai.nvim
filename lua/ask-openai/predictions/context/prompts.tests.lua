@@ -75,8 +75,9 @@ describe("parse_includes", function()
             end
 
             expect("start of prompt", "/k=3 foo bar")
+            expect("start of prompt + spaces before", "  /k=3 foo bar")
             expect("middle of prompt", "foo /k=3 bar")
-            expect("end of prompt", "foo bar /k=3")
+            expect("end of prompt + spaces after", "foo bar /k=3  ")
         end)
     end)
 
