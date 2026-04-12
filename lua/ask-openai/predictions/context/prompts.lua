@@ -126,14 +126,6 @@ function M.parse_includes(prompt)
         norag = has(M.slash_commands.NORAG),
     }
 
-    if includes.all then
-        includes.yanks = true
-        includes.commits = true
-        includes.current_file = true
-        includes.open_files = true
-        -- ? do I want all to include tools/selection too? for now leave them off (all doesn't have to mean every slash command)
-    end
-
     -- Process skill slash commands first: detect skill references, load their content,
     -- resolve any built‑in slash commands inside the skill content, and clean the
     -- skill content before injecting it.
