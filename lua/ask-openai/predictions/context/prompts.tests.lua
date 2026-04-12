@@ -69,7 +69,7 @@ describe("parse_includes", function()
             it("start of prompt", function()
                 local includes = prompts.parse_includes("/k=3 foo bar")
                 assert.are_equal(3, includes.top_k)
-                assert.are_equal(" foo bar", includes.rendered_prompt)
+                assert.are_equal("foo bar", includes.rendered_prompt)
             end)
 
             it("middle of prompt", function()
