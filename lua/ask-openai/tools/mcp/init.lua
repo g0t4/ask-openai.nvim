@@ -151,21 +151,22 @@ function start_mcp_server(name)
 
     uv.read_start(stderr, on_stderr)
 
-    local function send(msg, callback)
+    local function send(request, callback)
         -- * notifications CANNOT have ID:  https://www.jsonrpc.org/specification#notification
-        -- BTW modelcontextprotocol uses notifications/ prefix (not sure this is universal), two examples: notifications/initialized and notifications/tools/list_changed
-        local is_notification = msg.method and msg.method:match("^notifications/")
-        if not msg.id and not is_notification then
+        --   BTW notification is a type of request
+        --   modelcontextprotocol uses "notifications/" method prefix, i.e.: notifications/initialized and notifications/tools/list_changed
+        local is_notification = request.method and request.method:match("^notifications/")
+        if not request.id and not is_notification then
             -- set a unique id if no id is provided
-            msg.id = M.counter
+            request.id = M.counter
             M.counter = M.counter + 1
         end
-        msg.jsonrpc = "2.0"
+        request.jsonrpc = "2.0"
 
         if callback then
-            M.callbacks[msg.id] = callback
+            M.callbacks[request.id] = callback
         end
-        local msg_json = vim.json.encode(msg)
+        local msg_json = vim.json.encode(request)
         log:info(string.format("MCP send %s:", server_log_name), msg_json)
         stdin:write(msg_json .. "\n")
     end
