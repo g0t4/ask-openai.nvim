@@ -73,7 +73,7 @@ describe("parse_includes", function()
             assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
         end)
 
-        local function ensure_static_slash_commands_expand_in_skill_contents(command, field)
+        local function ensure_static_slash_command_is_identified(command, field)
             -- print(command)
             field = field or command
             skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO /" .. command
@@ -82,8 +82,8 @@ describe("parse_includes", function()
             assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
         end
 
-        describe("should recursively resolve static slash commands within skill content", function()
-            local skill_cases = {
+        describe("support static slash commands", function()
+            local cases = {
                 { "all" },
                 { "yanks" },
                 { "commits" },
@@ -96,10 +96,10 @@ describe("parse_includes", function()
                 { "norag" },
             }
 
-            for _, case in ipairs(skill_cases) do
-                local skill, alias = case[1], case[2]
-                it(string.format("expands static slash commands for %s", alias or skill), function()
-                    ensure_static_slash_commands_expand_in_skill_contents(skill, alias)
+            for _, case in ipairs(cases) do
+                local command, field = case[1], case[2]
+                it("/" .. command, function()
+                    ensure_static_slash_command_is_identified(command, field)
                 end)
             end
         end)
