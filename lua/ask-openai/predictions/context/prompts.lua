@@ -150,7 +150,7 @@ function M.parse_includes(prompt)
         apply_template_only = prompt_has(M.slash_commands.TEMPLATE_ONLY),
         include_selection = prompt_has(M.slash_commands.SELECTION),
         top_k = top_k,
-        cleaned_prompt = rendered_prompt,
+        cleaned_prompt = "",
         norag = prompt_has(M.slash_commands.NORAG),
     }
 
@@ -167,6 +167,7 @@ function M.parse_includes(prompt)
         rendered_prompt = clean_prompt(rendered_prompt, k)
     end
 
+    includes.cleaned_prompt = rendered_prompt
     -- log:info("includes", vim.inspect(includes))
     return includes
 end
