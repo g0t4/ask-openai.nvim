@@ -44,51 +44,69 @@ describe("parse_includes", function()
             should_not_detect_slash_all("bar/all")
         end)
     end)
-    describe("/others", function()
-        it("should detect /yanks", function()
-            function ensure_detects(command, field)
-                field = field or command
-                local includes = prompts.parse_includes("foo /" .. command .. " bar")
-                assert.is_true(includes[field], "includes." .. field .. " should be true")
-                assert.are_equal("foo bar", includes.rendered_prompt)
-            end
+    describe("static", function()
+        function ensure_detects(command, field)
+            field = field or command
+            describe("/" .. command, function()
+                -- test slash command detection when the command appears at various positions
+                local position_cases = {
+                    { scenario = "start of prompt",                 prompt = "/" .. command .. " foo bar" },
+                    { scenario = "start of prompt + spaces before", prompt = "  /" .. command .. " foo bar" },
+                    { scenario = "middle of prompt",                prompt = "foo /" .. command .. " bar" },
+                    { scenario = "end of prompt",                   prompt = "foo bar /" .. command },
+                    { scenario = "end of prompt + spaces after",    prompt = "foo bar /" .. command .. "  " },
+                }
 
-            -- just add one test per, do not exercise tests of the parsing/stripping
-            ensure_detects("yanks")
-            ensure_detects("commits")
-            ensure_detects("file", "current_file")
-            ensure_detects("WIP_open_files", "open_files")
-            ensure_detects("selection", "include_selection")
-            ensure_detects("tools", "use_tools")
-            ensure_detects("readonly")
-            ensure_detects("WIP_template", "apply_template_only")
-            ensure_detects("norag")
+                for _, case in ipairs(position_cases) do
+                    it(case.scenario .. ": `" .. case.prompt .. "`", function()
+                        local includes = prompts.parse_includes(case.prompt)
+                        assert.is_true(
+                            includes[field],
+                            ("includes.%s should be true"):format(field)
+                        )
+                        -- TODO should I allow leading/trailing spaces?
+                        local trimmed = includes.rendered_prompt:gsub("^%s+", ""):gsub("%s+$", "")
+                        assert.are_equal("foo bar", trimmed)
+                    end)
+                end
+            end)
+        end
+
+        -- just add one test per, do not exercise tests of the parsing/stripping
+        ensure_detects("yanks")
+        ensure_detects("commits")
+        ensure_detects("file", "current_file")
+        ensure_detects("WIP_open_files", "open_files")
+        ensure_detects("selection", "include_selection")
+        ensure_detects("tools", "use_tools")
+        ensure_detects("readonly")
+        ensure_detects("WIP_template", "apply_template_only")
+        ensure_detects("norag")
+    end)
+
+    describe("extract /k", function()
+        local function expect(scenario, prompt)
+            it(scenario, function()
+                local includes = prompts.parse_includes(prompt)
+                assert.are_equal(3, includes.top_k)
+                assert.are_equal("foo bar", includes.rendered_prompt)
+            end)
+        end
+
+        expect("start of prompt", "/k=3 foo bar")
+        expect("start of prompt + spaces before", "  /k=3 foo bar")
+        expect("middle of prompt", "foo /k=3 bar")
+        expect("end of prompt", "foo bar /k=3")
+        expect("end of prompt + spaces after", "foo bar /k=3  ")
+
+        it("without /k => returns prompt as is", function()
+            local top_k, prompt = prompts.extract_top_k("foo bar")
+            assert.is_nil(top_k)
+            assert.are_equal("foo bar", prompt)
         end)
 
-        describe("extract /k", function()
-            local function expect(scenario, prompt)
-                it(scenario, function()
-                    local includes = prompts.parse_includes(prompt)
-                    assert.are_equal(3, includes.top_k)
-                    assert.are_equal("foo bar", includes.rendered_prompt)
-                end)
-            end
-
-            expect("start of prompt", "/k=3 foo bar")
-            expect("start of prompt + spaces before", "  /k=3 foo bar")
-            expect("middle of prompt", "foo /k=3 bar")
-            expect("end of prompt", "foo bar /k=3")
-            expect("end of prompt + spaces after", "foo bar /k=3  ")
-
-            it("without /k => returns prompt as is", function()
-                local top_k, prompt = prompts.extract_top_k("foo bar")
-                assert.is_nil(top_k)
-                assert.are_equal("foo bar", prompt)
-            end)
-
-            it("without word boundary => does not parse", function()
-                local top_k, prompt = prompts.extract_top_k("foo/k=3 bar")
-            end)
+        it("without word boundary => does not parse", function()
+            local top_k, prompt = prompts.extract_top_k("foo/k=3 bar")
         end)
     end)
 
