@@ -77,7 +77,18 @@ describe("parse_includes", function()
             expect("start of prompt", "/k=3 foo bar")
             expect("start of prompt + spaces before", "  /k=3 foo bar")
             expect("middle of prompt", "foo /k=3 bar")
+            expect("end of prompt", "foo bar /k=3")
             expect("end of prompt + spaces after", "foo bar /k=3  ")
+
+            it("without /k => returns prompt as is", function()
+                local top_k, prompt = prompts.extract_top_k("foo bar")
+                assert.is_nil(top_k)
+                assert.are_equal("foo bar", prompt)
+            end)
+
+            it("without word boundary => does not parse", function()
+                local top_k, prompt = prompts.extract_top_k("foo/k=3 bar")
+            end)
         end)
     end)
 

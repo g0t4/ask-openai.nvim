@@ -37,15 +37,22 @@ end
 ---@param prompt string
 ---@return integer?, string
 function M.extract_top_k(prompt)
-    -- Extract /k=<number> pattern (e.g., /k=10)
-    local top_k = prompt:match("/k=(%d+)")
-    if top_k then
-        top_k = tonumber(top_k)
-        -- Clean the /k=<number> from the prompt
-        prompt = prompt:gsub("^%s*/k=%d+%s*", "") -- start (specific)
-        prompt = prompt:gsub("%s*/k=%d+%s*$", "") -- end (specific)
-        prompt = prompt:gsub("%s*/k=%d+%s*", " ") -- general
-    end
+    local top_k = nil
+    -- Clean the /k=<number> from the prompt
+    prompt = prompt:gsub("^%s*/k=%d+%s*", function(match)
+        top_k = tonumber(match:match("%d+"))
+        return ""
+    end) -- start (specific)
+    prompt = prompt:gsub("%s*/k=%d+%s*$", function(match)
+        top_k = tonumber(match:match("%d+"))
+        return ""
+    end) -- end (specific)
+
+    prompt = prompt:gsub("%s*/k=%d+%s*", function(match)
+        top_k = tonumber(match:match("%d+"))
+        return " "
+    end) -- general
+
     return top_k, prompt
 end
 
