@@ -1,7 +1,7 @@
 local prompts = require("ask-openai.predictions.context.prompts")
 local skills = require("ask-openai.frontends.skills")
-
 require('ask-openai.helpers.testing')
+local describe = require("devtools.tests._describe")
 
 describe("parse_includes", function()
     describe("/all", function()
