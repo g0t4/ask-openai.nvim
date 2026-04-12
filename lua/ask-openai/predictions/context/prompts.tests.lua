@@ -104,7 +104,12 @@ describe("parse_includes", function()
             end
         end)
 
-
-        -- TODO test of embedded top_k
+        it("should detect top_k embedded in skill content", function()
+            local top_k_val = 7
+            skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO /k=" .. top_k_val
+            local includes = prompts.parse_includes("foo /" .. fake_skill_name .. " bar")
+            assert.are_equal(top_k_val, includes.top_k)
+            assert.are_equal("foo bar\nINJECTED SKILLY POO ", includes.rendered_prompt)
+        end)
     end)
 end)
