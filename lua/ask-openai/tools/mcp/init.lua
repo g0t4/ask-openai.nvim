@@ -194,6 +194,7 @@ for name, server in pairs(servers) do
         },
     }
 
+    local server_name = "[" .. name:upper() .. "]"
     mcp.send({ method = "initialize", params = client_init_params }, function(server_init)
         log:info(string.format("MCP initialize response %s:", server_name), vim.inspect(server_init))
 
