@@ -126,13 +126,13 @@ function start_mcp_server(name)
             if not line then break end
             pending_json = rest
 
-            local ok, msg = safely.decode_json(line)
+            local ok, response = safely.decode_json(line)
             if ok then
-                on_server_response(msg)
+                on_server_response(response)
             else
                 log:error(string.format("MCP STDOUT decode error %s OK:", server_log_name), ok)
                 log:error(string.format("MCP STDOUT decode error %s LINE:", server_log_name), line)
-                log:error(string.format("MCP STDOUT decode error %s MSG:", server_log_name), vim.inspect(msg))
+                log:error(string.format("MCP STDOUT decode error %s MSG:", server_log_name), vim.inspect(response))
             end
         end
 
