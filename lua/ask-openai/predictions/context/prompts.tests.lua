@@ -106,10 +106,12 @@ describe("parse_includes", function()
         local function ensure_static_slash_command_is_identified(command, field)
             -- print(command)
             field = field or command
-            skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO /" .. command
-            local includes = prompts.parse_includes("foo /" .. fake_skill_name .. " bar")
-            assert.is_true(includes[field], "includes." .. field .. " should be true due to /" .. command .. " in skill content")
-            assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
+            it("/" .. command, function()
+                skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO /" .. command
+                local includes = prompts.parse_includes("foo /" .. fake_skill_name .. " bar")
+                assert.is_true(includes[field], "includes." .. field .. " should be true due to /" .. command .. " in skill content")
+                assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
+            end)
         end
 
         describe("support static slash commands", function()
@@ -128,11 +130,10 @@ describe("parse_includes", function()
 
             for _, case in ipairs(cases) do
                 local command, field = case[1], case[2]
-                it("/" .. command, function()
-                    ensure_static_slash_command_is_identified(command, field)
-                end)
+                ensure_static_slash_command_is_identified(command, field)
             end
         end)
+
 
         it("should detect top_k embedded in skill content", function()
             local top_k_val = 7
