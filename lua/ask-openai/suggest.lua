@@ -1,5 +1,6 @@
 local curl = require('plenary.curl')
 local TxChatMessage = require('ask-openai.questions.chat.messages.tx')
+local log = require('ask-openai.logs.logger').predictions()
 
 ---@return string
 local function get_vim_command_suggestion(passed_context)
@@ -46,6 +47,7 @@ local function get_vim_command_suggestion(passed_context)
         }),
         synchronous = true -- might be fun to try to make this stream! not a huge value though for streaming a short cmdline but would teach me lua async
     })
+    log:info("cmdline-response", vim.inspect(response))
 
     if response and response.status == 200 then
         -- vim.fn.writefile({ response.body }, "/tmp/ask-openai-response.json", "a")
@@ -57,7 +59,14 @@ local function get_vim_command_suggestion(passed_context)
             return result.message.content
         end
         -- assume openai
-        return result.choices[1].message.content
+        local first_choice = result.choices[1]
+        local content = first_choice.message.content
+        -- warn if first_choice finish_reason is length (turncated)
+        if first_choice.finish_reason == "length" then
+            content = content .. "\" content truncated, increase max token limits"
+            log:warn("response was truncated due to token limit")
+        end
+        return content
     else
         print("Request failed:", response.status, response.body)
         -- prepend : to make it extra obvious (b/c cmdline already has a : this doubles up to ::, still works just fine)
