@@ -42,6 +42,13 @@ describe("render", function()
 
         -- just add one test per, do not exercise tests of the parsing/stripping
         ensure_detects("yanks")
+
+        -- reasoning level control (i.e. so can set this in a skill!)
+        ensure_detects("low")
+        ensure_detects("medium")
+        ensure_detects("high")
+        ensure_detects("none")
+
         ensure_detects("commits")
         ensure_detects("file", "current_file")
         ensure_detects("WIP_open_files", "open_files")

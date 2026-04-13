@@ -16,6 +16,11 @@ local skills = require("ask-openai.frontends.skills")
 ---@field apply_template_only? boolean
 ---@field include_selection? boolean
 ---@field top_k? integer
+---@field readonly? boolean
+---@field reasoning_low? boolean
+---@field reasoning_medium? boolean
+---@field reasoning_high? boolean
+---@field reasoning_none? boolean
 local M = {}
 
 ---@param prompt string
@@ -39,16 +44,22 @@ end
 
 -- expose the slash commands list publicly for reuse elsewhere
 M.slash_commands = {
-    YANKS         = "/yanks",
-    ALL           = "/all",
-    COMMITS       = "/commits",
-    FILE          = "/file",
-    OPEN_FILES    = "/WIP_open_files",
-    TOOLS         = "/tools",
-    SELECTION     = "/selection",
-    TEMPLATE_ONLY = "/WIP_template",
-    NORAG         = "/norag",
-    READONLY      = "/readonly",
+    YANKS            = "/yanks",
+    ALL              = "/all",
+    COMMITS          = "/commits",
+    FILE             = "/file",
+    OPEN_FILES       = "/WIP_open_files",
+    TOOLS            = "/tools",
+    SELECTION        = "/selection",
+    TEMPLATE_ONLY    = "/WIP_template",
+    NORAG            = "/norag",
+    READONLY         = "/readonly",
+
+    -- reasoning levels
+    REASONING_LOW    = "/low",
+    REASONING_MEDIUM = "/medium",
+    REASONING_HIGH   = "/high",
+    REASONING_NONE   = "/none",
 }
 
 --- Completion function for slash commands used by user commands.
@@ -148,6 +159,12 @@ function M.render(prompt)
         [M.slash_commands.TEMPLATE_ONLY] = "apply_template_only",
         [M.slash_commands.SELECTION] = "include_selection",
         [M.slash_commands.NORAG] = "norag",
+
+        -- reasoning levels
+        [M.slash_commands.REASONING_LOW] = "reasoning_low",
+        [M.slash_commands.REASONING_MEDIUM] = "reasoning_medium",
+        [M.slash_commands.REASONING_HIGH] = "reasoning_high",
+        [M.slash_commands.REASONING_NONE] = "reasoning_none",
     }
 
     ---@type ParseIncludesResult
@@ -178,7 +195,7 @@ function M.render(prompt)
     end
 
     includes.rendered_prompt = rendered_prompt
-    -- log:info("includes", vim.inspect(includes))
+    log:info("includes", vim.inspect(includes))
     return includes
 end
 
