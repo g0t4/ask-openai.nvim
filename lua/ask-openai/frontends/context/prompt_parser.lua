@@ -82,20 +82,34 @@ end
 ---@param command string
 ---@return boolean, string
 local function strip_slash_command_from_prompt(prompt, command)
-    local cleaned = prompt:gsub("^%s*" .. command .. "%s", "") -- start (optional whitespace before)
-
-    cleaned = cleaned:gsub("%s" .. command .. "%s*$", "") -- end (optional whitespace after, until end)
-
-    cleaned = cleaned:gsub("(%s+)(" .. command .. ")%s+", "%1") -- middle matches (whitespace on both sides)
-    -- %1 => keep capture 1 (space before)
-
-    -- -- especially useful to see changes when recursive rendering
-    if cleaned ~= prompt then
+    -- The original implementation removed only a single occurrence of a command
+    -- (start, end, or middle) which caused failures when the same slash command
+    -- appeared multiple times in the prompt. To support duplicate commands we
+    -- repeatedly apply the removal patterns until the prompt stabilises.
+    local cleaned = prompt
+    local any_removed = false
+    while true do
+        local before = cleaned
+        -- Remove command at the start (optional leading whitespace, mandatory
+        -- trailing whitespace to separate from following text).
+        cleaned = cleaned:gsub("^%s*" .. command .. "%s+", "")
+        -- Remove command at the end (preceded by whitespace, optional trailing
+        -- whitespace before end of string).
+        cleaned = cleaned:gsub("%s+" .. command .. "%s*$", "")
+        -- Remove command surrounded by whitespace on both sides, preserving a
+        -- single space where the command was.
+        cleaned = cleaned:gsub("(%s+)" .. command .. "%s+", "%1")
+        if cleaned == before then
+            break
+        end
+        any_removed = true
+    end
+    if any_removed then
         log:info("original prompt: `" .. prompt .. "`")
         log:info("         detect: `" .. command .. "`")
         log:info("     new prompt: `" .. cleaned .. "`")
     end
-    return cleaned ~= prompt, cleaned
+    return any_removed, cleaned
 end
 
 ---@param prompt? string
