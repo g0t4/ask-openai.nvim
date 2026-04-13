@@ -86,20 +86,20 @@ local function strip_slash_command_from_prompt(prompt, command)
     -- (start, end, or middle) which caused failures when the same slash command
     -- appeared multiple times in the prompt. To support duplicate commands we
     -- repeatedly apply the removal patterns until the prompt stabilises.
-    local cleaned = prompt
+    local final_prompt = prompt
     local any_removed = false
     while true do
-        local before = cleaned
+        local start_of_iteration_prompt = final_prompt
         -- Remove command at the start (optional leading whitespace, mandatory
         -- trailing whitespace to separate from following text).
-        cleaned = cleaned:gsub("^%s*" .. command .. "%s+", "")
+        final_prompt = final_prompt:gsub("^%s*" .. command .. "%s+", "")
         -- Remove command at the end (preceded by whitespace, optional trailing
         -- whitespace before end of string).
-        cleaned = cleaned:gsub("%s+" .. command .. "%s*$", "")
+        final_prompt = final_prompt:gsub("%s+" .. command .. "%s*$", "")
         -- Remove command surrounded by whitespace on both sides, preserving a
         -- single space where the command was.
-        cleaned = cleaned:gsub("(%s+)" .. command .. "%s+", "%1")
-        if cleaned == before then
+        final_prompt = final_prompt:gsub("(%s+)" .. command .. "%s+", "%1")
+        if final_prompt == start_of_iteration_prompt then
             break
         end
         any_removed = true
@@ -107,9 +107,9 @@ local function strip_slash_command_from_prompt(prompt, command)
     if any_removed then
         log:info("original prompt: `" .. prompt .. "`")
         log:info("         detect: `" .. command .. "`")
-        log:info("     new prompt: `" .. cleaned .. "`")
+        log:info("     new prompt: `" .. final_prompt .. "`")
     end
-    return any_removed, cleaned
+    return any_removed, final_prompt
 end
 
 ---@param prompt? string
