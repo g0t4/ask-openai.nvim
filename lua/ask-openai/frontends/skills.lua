@@ -13,6 +13,26 @@ M._skill_paths = {}
 -- Cache of skill name -> skill md contents
 M._skill_content_cache = {}
 
+---@param raw string
+---@return string cleaned
+function M.clean_skill_contents(raw)
+    local content = raw
+
+    -- Remove YAML front‑matter delimited by triple dashes at the start of the file.
+    if content:match("^%-%-%-") then
+        -- Remove everything from the opening '---' to the next closing '---',
+        -- and consume any following whitespace (including CRLF line endings).
+        content = content:gsub("^%-%-%-.-%-%-%-%s*", "")
+    end
+
+    -- Strip HTML comments: <!-- comment --> (non‑greedy)
+    content = content:gsub("<!--.-?-->", "")
+
+    -- Trim leading/trailing whitespace for cleanliness.
+    content = vim.trim(content)
+    return content
+end
+
 --- The content is cached after the first read.
 ---@param name string The name of the skill
 ---@return string|nil The skill contents after stripping HTML comments and YAML front‑matter,
@@ -43,16 +63,7 @@ function M.load_skill(name)
         return nil
     end
 
-    -- Strip HTML comments: <!-- comment --> (non‑greedy)
-    local without_comments = raw:gsub("<!--.-?-->", "")
-    -- Remove YAML front‑matter delimited by triple dashes at the start of the file.
-    local content = without_comments
-    if content:match("^%-%-%-") then
-        -- Remove everything from the opening '---' to the next closing '---' line.
-        content = content:gsub("^%-%-%-.-%-%-%-\n?", "")
-    end
-    -- Trim leading/trailing whitespace for cleanliness.
-    content = vim.trim(content)
+    local content = M.clean_skill_contents(raw)
 
     M._skill_content_cache[name] = content
     return content
