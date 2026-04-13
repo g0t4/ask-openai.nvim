@@ -92,8 +92,8 @@ local function strip_slash_command_from_prompt(prompt, command)
     -- -- especially useful to see changes when recursive rendering
     if cleaned ~= prompt then
         log:info("original prompt: `" .. prompt .. "`")
-        log:info("      cleaned: `" .. cleaned .. "`")
-        log:info("      command: `" .. command .. "`")
+        log:info("         detect: `" .. command .. "`")
+        log:info("     new prompt: `" .. cleaned .. "`")
     end
     return cleaned ~= prompt, cleaned
 end
