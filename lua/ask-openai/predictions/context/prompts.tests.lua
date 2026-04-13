@@ -1,4 +1,4 @@
-local prompts = require("ask-openai.predictions.context.prompts")
+local prompt_parser = require("ask-openai.predictions.context.prompts")
 local skills = require("ask-openai.frontends.skills")
 require('ask-openai.helpers.testing')
 local describe = require("devtools.tests._describe")
@@ -22,7 +22,7 @@ describe("render", function()
 
                 for _, case in ipairs(position_cases) do
                     it(case.scenario .. ": `" .. case.prompt .. "`", function()
-                        local includes = prompts.render(case.prompt)
+                        local includes = prompt_parser.render(case.prompt)
                         if case.unchanged then
                             assert.is_false(includes[field], "includes." .. field .. " should be false")
                             assert.are_equal(case.prompt, includes.rendered_prompt)
@@ -52,7 +52,7 @@ describe("render", function()
     describe("extract /k", function()
         local function expect(scenario, prompt)
             it(scenario, function()
-                local includes = prompts.render(prompt)
+                local includes = prompt_parser.render(prompt)
                 assert.are_equal(3, includes.top_k)
                 assert.are_equal("foo bar", includes.rendered_prompt)
             end)
@@ -65,13 +65,13 @@ describe("render", function()
         expect("end of prompt + spaces after", "foo bar /k=3  ")
 
         it("without /k => returns prompt as is", function()
-            local top_k, prompt = prompts.strip_patterns_from_prompt("foo bar")
+            local top_k, prompt = prompt_parser.strip_patterns_from_prompt("foo bar")
             assert.is_nil(top_k)
             assert.are_equal("foo bar", prompt)
         end)
 
         it("without word boundary => does not parse", function()
-            local top_k, prompt = prompts.strip_patterns_from_prompt("foo/k=3 bar")
+            local top_k, prompt = prompt_parser.strip_patterns_from_prompt("foo/k=3 bar")
         end)
     end)
 
@@ -82,7 +82,7 @@ describe("render", function()
 
         it("should detect and load skill commands", function()
             skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO"
-            local includes = prompts.render("foo /" .. fake_skill_name .. " bar")
+            local includes = prompt_parser.render("foo /" .. fake_skill_name .. " bar")
             assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
         end)
 
@@ -91,7 +91,7 @@ describe("render", function()
             field = field or command
             it("/" .. command, function()
                 skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO /" .. command
-                local includes = prompts.render("foo /" .. fake_skill_name .. " bar")
+                local includes = prompt_parser.render("foo /" .. fake_skill_name .. " bar")
                 assert.is_true(includes[field], "includes." .. field .. " should be true due to /" .. command .. " in skill content")
                 assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
             end)
@@ -121,7 +121,7 @@ describe("render", function()
         it("should detect top_k embedded in skill content", function()
             local top_k_val = 7
             skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO /k=" .. top_k_val
-            local includes = prompts.render("foo /" .. fake_skill_name .. " bar")
+            local includes = prompt_parser.render("foo /" .. fake_skill_name .. " bar")
             assert.are_equal(top_k_val, includes.top_k, "top_k should be parsed as 7")
             assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
         end)

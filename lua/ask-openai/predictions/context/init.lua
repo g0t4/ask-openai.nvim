@@ -4,7 +4,7 @@ local ctags = require("ask-openai.predictions.context.ctags")
 -- local inspect = require("ask-openai.predictions.context.inspect")
 local git_diff = require("ask-openai.predictions.context.git_diff")
 local matching_ctags = require("ask-openai.predictions.context.matching_ctags")
-local prompts = require("ask-openai.predictions.context.prompts")
+local prompt_parser = require("ask-openai.predictions.context.prompts")
 local project = require("ask-openai.predictions.context.project")
 local messages = require("devtools.messages")
 local cmds = require("ask-openai.predictions.context.cmds")
@@ -30,7 +30,7 @@ local CurrentContext = {}
 ---@return CurrentContext
 function CurrentContext:items(prompt, always_include)
     local items = {}
-    local includes = prompts.render(prompt)
+    local includes = prompt_parser.render(prompt)
 
     -- allow override to force include context items
     always_include = always_include or {}

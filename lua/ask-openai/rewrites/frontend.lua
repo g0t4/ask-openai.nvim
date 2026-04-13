@@ -18,7 +18,8 @@ local model_params = require("ask-openai.questions.models.params")
 local MessageBuilder = require("ask-openai.rewrites.message_builder")
 local HLGroups = require("ask-openai.hlgroups")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
-local prompts = require("ask-openai.frontends.prompts")
+local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
+local prompt_parser = require("ask-openai.predictions.context.prompts")
 
 ---@class RewriteFrontend : StreamingFrontend
 local RewriteFrontend = {}
@@ -395,7 +396,7 @@ local function ask_rewrite_command(opts)
                     table.insert(messages, TxChatMessage:user_context(value.content))
                 end)
         end
-        local rag_message = prompts.semantic_grep_user_message(rag_matches)
+        local rag_message = rag_instructions.semantic_grep_user_message(rag_matches)
         if rag_message then
             table.insert(messages, rag_message)
         end
@@ -611,7 +612,7 @@ function RewriteFrontend.setup()
     vim.api.nvim_create_user_command(
         "AskRewrite",
         ask_rewrite_command,
-        { range = true, nargs = "*", complete = require("ask-openai.predictions.context.prompts").SlashCommandCompletion }
+        { range = true, nargs = "*", complete = prompt_parser.SlashCommandCompletion }
     )
 
     vim.keymap.set({ 'n', 'v' }, '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })

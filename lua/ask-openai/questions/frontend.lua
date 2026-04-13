@@ -16,14 +16,14 @@ local files = require("ask-openai.helpers.files")
 local model_params = require("ask-openai.questions.models.params")
 local LinesBuilder = require("ask-openai.questions.lines_builder")
 local MessageBuilder = require("ask-openai.rewrites.message_builder")
-local prompts = require("ask-openai.predictions.context.prompts")
+local prompt_parser = require("ask-openai.predictions.context.prompts")
 local HLGroups = require("ask-openai.hlgroups")
 local formatters = require("ask-openai.questions.chat.formatters")
 local ToolCallOutput = require("ask-openai.questions.chat.tool_call_output")
 local CurlRequestForThread = require("ask-openai.questions.curl_request_for_thread")
 local RxAccumulatedMessage = require("ask-openai.questions.chat.messages.rx")
 local ToolCall = require("ask-openai.questions.chat.tool_call")
-local prompts = require("ask-openai.frontends.prompts")
+local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
 
 require("ask-openai.helpers.buffers")
 
@@ -227,7 +227,7 @@ local function ask_question_command(opts)
     end
 
     local function then_generate_completion(rag_matches)
-        local rag_message = prompts.semantic_grep_user_message(rag_matches)
+        local rag_message = rag_instructions.semantic_grep_user_message(rag_matches)
         if rag_message then
             table.insert(messages, rag_message)
         end
@@ -711,7 +711,7 @@ function QuestionsFrontend.setup()
     vim.api.nvim_create_user_command(
         "AskQuestion",
         ask_question_command,
-        { range = true, nargs = 1, complete = require("ask-openai.predictions.context.prompts").SlashCommandCompletion }
+        { range = true, nargs = 1, complete = prompt_parser.SlashCommandCompletion }
     )
     -- * prefill argument combos:
     vim.keymap.set('n', '<Leader>q', ':AskQuestion ', { noremap = true })

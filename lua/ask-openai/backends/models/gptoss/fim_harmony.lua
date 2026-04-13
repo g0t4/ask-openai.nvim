@@ -4,7 +4,7 @@ local dedupe = require("ask-openai.rag.client.dedupe")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 local qwen = require("ask-openai.backends.models.fim").qwen25coder.sentinel_tokens
-local prompts = require("ask-openai.frontends.prompts")
+local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
 local files = require("ask-openai.helpers.files")
 
 ---@class HarmonyFimPromptBuilder
@@ -280,7 +280,7 @@ function HarmonyFimPromptBuilder.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(r
         --   but that won't happen here! as there is no template!
         :developer()
         :user(HarmonyFimPromptBuilder.context_user_msg(request))
-        :user(prompts.semantic_grep_user_message(request.rag_matches))
+        :user(rag_instructions.semantic_grep_user_message(request.rag_matches))
         :user(HarmonyFimPromptBuilder.fim_prompt(request))
         :set_thinking()
         :start_assistant_final_response() -- this forces the model to respond w/o any further thinking
@@ -297,7 +297,7 @@ function HarmonyFimPromptBuilder.gptoss.get_fim_chat_messages(request, level)
         TxChatMessage:system(HarmonyFimPromptBuilder.developer_message),
         TxChatMessage:user(HarmonyFimPromptBuilder.context_user_msg(request)),
     }
-    local rag_message = prompts.semantic_grep_user_message(request.rag_matches)
+    local rag_message = rag_instructions.semantic_grep_user_message(request.rag_matches)
     if rag_message then
         table.insert(messages, rag_message)
     end
