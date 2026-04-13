@@ -3,10 +3,10 @@ local skills = require("ask-openai.frontends.skills")
 require('ask-openai.helpers.testing')
 local describe = require("devtools.tests._describe")
 
-describe("parse_includes", function()
+describe("render", function()
     describe("/all", function()
         local function should_detect_slash_all(original_prompt, expected_cleaned)
-            local includes = prompts.parse_includes(original_prompt)
+            local includes = prompts.render(original_prompt)
             assert.is_true(includes.all, "includes.all should be true for '" .. original_prompt .. "'")
             assert.are_equal(expected_cleaned, includes.rendered_prompt)
         end
@@ -17,7 +17,7 @@ describe("parse_includes", function()
         end)
 
         local function should_not_detect_slash_all(original_prompt)
-            local includes = prompts.parse_includes(original_prompt)
+            local includes = prompts.render(original_prompt)
             assert.is_false(includes.all, "includes.all should be false for '" .. original_prompt .. "'")
             assert.are_equal(original_prompt, includes.rendered_prompt)
         end
@@ -59,7 +59,7 @@ describe("parse_includes", function()
 
                 for _, case in ipairs(position_cases) do
                     it(case.scenario .. ": `" .. case.prompt .. "`", function()
-                        local includes = prompts.parse_includes(case.prompt)
+                        local includes = prompts.render(case.prompt)
                         assert.is_true(
                             includes[field],
                             ("includes.%s should be true"):format(field)
@@ -87,7 +87,7 @@ describe("parse_includes", function()
     describe("extract /k", function()
         local function expect(scenario, prompt)
             it(scenario, function()
-                local includes = prompts.parse_includes(prompt)
+                local includes = prompts.render(prompt)
                 assert.are_equal(3, includes.top_k)
                 assert.are_equal("foo bar", includes.rendered_prompt)
             end)
@@ -117,7 +117,7 @@ describe("parse_includes", function()
 
         it("should detect and load skill commands", function()
             skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO"
-            local includes = prompts.parse_includes("foo /" .. fake_skill_name .. " bar")
+            local includes = prompts.render("foo /" .. fake_skill_name .. " bar")
             assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
         end)
 
@@ -126,7 +126,7 @@ describe("parse_includes", function()
             field = field or command
             it("/" .. command, function()
                 skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO /" .. command
-                local includes = prompts.parse_includes("foo /" .. fake_skill_name .. " bar")
+                local includes = prompts.render("foo /" .. fake_skill_name .. " bar")
                 assert.is_true(includes[field], "includes." .. field .. " should be true due to /" .. command .. " in skill content")
                 assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
             end)
@@ -156,7 +156,7 @@ describe("parse_includes", function()
         it("should detect top_k embedded in skill content", function()
             local top_k_val = 7
             skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO /k=" .. top_k_val
-            local includes = prompts.parse_includes("foo /" .. fake_skill_name .. " bar")
+            local includes = prompts.render("foo /" .. fake_skill_name .. " bar")
             assert.are_equal(top_k_val, includes.top_k, "top_k should be parsed as 7")
             assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
         end)

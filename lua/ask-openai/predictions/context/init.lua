@@ -30,7 +30,7 @@ local CurrentContext = {}
 ---@return CurrentContext
 function CurrentContext:items(prompt, always_include)
     local items = {}
-    local includes = prompts.parse_includes(prompt)
+    local includes = prompts.render(prompt)
 
     -- allow override to force include context items
     always_include = always_include or {}

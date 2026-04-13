@@ -20,7 +20,7 @@ local M = {}
 
 ---@param prompt string
 ---@return integer?, string
-function M.extract_top_k(prompt)
+function M.strip_patterns_from_prompt(prompt)
     -- i.e. /k=10
     local top_k = nil
     local function strip(match)
@@ -60,13 +60,15 @@ M.slash_commands = {
 function M.SlashCommandCompletion(arglead, cmdline, cursorpos)
     local result = {}
     local escaped = vim.pesc(arglead)
+
+    -- * static slash commands
     for _, cmd in pairs(M.slash_commands) do
         if cmd:find('^' .. escaped) then
             table.insert(result, cmd)
         end
     end
 
-    -- * merge skill prompts
+    -- * add skill prompts
     -- FYI first load will happen on first completion, s/b fine for slight delay
     for _, cmd in ipairs(skills.get_skill_commands()) do
         if cmd:find('^' .. escaped) then
@@ -98,7 +100,7 @@ end
 
 ---@param prompt? string
 ---@return ParseIncludesResult
-function M.parse_includes(prompt)
+function M.render(prompt)
     prompt = prompt or ""
 
     -- * inject skills first
@@ -118,8 +120,8 @@ function M.parse_includes(prompt)
         rendered_prompt = rendered_prompt .. "\n" .. table.concat(skill_contents, "\n")
     end
 
-    local top_k, prompt_without_k = M.extract_top_k(rendered_prompt)
-    rendered_prompt = prompt_without_k
+    -- * detect pattern based fields
+    local top_k, rendered_prompt = M.strip_patterns_from_prompt(rendered_prompt)
 
     ---@type table<string, string>
     M.slash_command_to_field = {
@@ -140,6 +142,7 @@ function M.parse_includes(prompt)
         -- patterns:
         top_k = top_k,
     }
+    -- * detect static commands
     for _, command in pairs(M.slash_commands) do
         local found
         found, rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, command)
