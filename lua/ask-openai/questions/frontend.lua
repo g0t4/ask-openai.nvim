@@ -451,34 +451,34 @@ function QuestionsFrontend.on_streaming_delta_update_message_history(choice, req
     --   that said, one message per request is it... unless I am doing something funky with the raw prompt to trigger mulitple messages?
     local index_base1 = choice.index + 1
 
-    local rx_message = request.accumulated_model_response_messages[index_base1]
-    if rx_message == nil then
-        rx_message = RxAccumulatedMessage:new(choice.delta.role, "")
-        rx_message.index = choice.index
-        rx_message._verbatim_content = ""
+    local rx_accum_message = request.accumulated_model_response_messages[index_base1]
+    if rx_accum_message == nil then
+        rx_accum_message = RxAccumulatedMessage:new(choice.delta.role, "")
+        rx_accum_message.index = choice.index
+        rx_accum_message._verbatim_content = ""
         -- assumes contiguous indexes, s/b almost always 0 index only, 1 too with dual tool call IIRC (gptoss doesn't do dual tool at once)
-        request.accumulated_model_response_messages[index_base1] = rx_message
+        request.accumulated_model_response_messages[index_base1] = rx_accum_message
     end
 
     if choice.delta.content ~= nil and choice.delta.content ~= vim.NIL then
         -- by tracking _verbatim_content, I can trim the end every single time
         -- and if it is not a full match it will show back up once it's past the match point
-        rx_message._verbatim_content = (rx_message._verbatim_content or "") .. choice.delta.content
+        rx_accum_message._verbatim_content = (rx_accum_message._verbatim_content or "") .. choice.delta.content
     end
 
     if choice.delta.reasoning_content ~= nil and choice.delta.reasoning_content ~= vim.NIL then
-        rx_message.reasoning_content =
-            (rx_message.reasoning_content or "") .. choice.delta.reasoning_content
+        rx_accum_message.reasoning_content =
+            (rx_accum_message.reasoning_content or "") .. choice.delta.reasoning_content
     end
 
     if choice.finish_reason ~= nil then
         -- FYI this is vim.NIL on first too
-        rx_message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
+        rx_accum_message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
     end
 
     -- * strip leaked tool call tokens (bug in llama.cpp)
-    rx_message.content = rx_message._verbatim_content:gsub("\n<tool_call>\n<function=[%w_]+", "")
-    if rx_message.content ~= rx_message._verbatim_content then
+    rx_accum_message.content = rx_accum_message._verbatim_content:gsub("\n<tool_call>\n<function=[%w_]+", "")
+    if rx_accum_message.content ~= rx_accum_message._verbatim_content then
         log:error("stripping LEAKED TOOL CALL!")
     end
 
@@ -490,7 +490,7 @@ function QuestionsFrontend.on_streaming_delta_update_message_history(choice, req
     -- * parse tool calls (streaming)
     for _, call_delta in ipairs(calls) do
         -- * lookup or create new parsed_call
-        local parsed_call = rx_message.tool_calls[call_delta.index + 1]
+        local parsed_call = rx_accum_message.tool_calls[call_delta.index + 1]
         if parsed_call == nil then
             -- create ToolCall to populate across SSEs
             parsed_call = ToolCall:new {
@@ -499,7 +499,7 @@ function QuestionsFrontend.on_streaming_delta_update_message_history(choice, req
                 index = call_delta.index,
                 type  = call_delta.type,
             }
-            table.insert(rx_message.tool_calls, parsed_call)
+            table.insert(rx_accum_message.tool_calls, parsed_call)
         end
 
         local func = call_delta["function"] -- FYI "function" is keyword (lua)
