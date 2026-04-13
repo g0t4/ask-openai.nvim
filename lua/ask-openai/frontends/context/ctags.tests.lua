@@ -1,5 +1,5 @@
 require('ask-openai.helpers.testing')
-local ctags = require("ask-openai.predictions.context.ctags")
+local ctags = require("ask-openai.frontends.context.ctags")
 local should = require("devtools.tests.should")
 local files = require("ask-openai.helpers.files")
 

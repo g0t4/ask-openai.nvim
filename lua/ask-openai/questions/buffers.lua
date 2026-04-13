@@ -1,6 +1,6 @@
 local log = require("ask-openai.logs.logger").predictions()
 local Fold = require("ask-openai.questions.fold")
-require("ask-openai.predictions.context.inspect")
+require("ask-openai.frontends.context.inspect")
 
 ---@class BufferController
 ---@field buffer_number number

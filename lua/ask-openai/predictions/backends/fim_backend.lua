@@ -1,5 +1,5 @@
 local log = require("ask-openai.logs.logger").predictions()
-local CurrentContext = require("ask-openai.predictions.context")
+local CurrentContext = require("ask-openai.frontends.context")
 local fim = require("ask-openai.backends.models.fim")
 local qwen = fim.qwen25coder.sentinel_tokens
 local fim_harmony = require("ask-openai.backends.models.gptoss.fim_harmony")

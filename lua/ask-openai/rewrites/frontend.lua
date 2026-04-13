@@ -6,7 +6,7 @@ local text_helpers = require("ask-openai.helpers.text")
 local thinking = require("ask-openai.rewrites.thinking")
 local Selection = require("ask-openai.helpers.selection")
 local Displayer = require("ask-openai.rewrites.displayer")
-local CurrentContext = require("ask-openai.predictions.context")
+local CurrentContext = require("ask-openai.frontends.context")
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 local files = require("ask-openai.helpers.files")
 local api = require("ask-openai.api")
@@ -19,7 +19,7 @@ local MessageBuilder = require("ask-openai.rewrites.message_builder")
 local HLGroups = require("ask-openai.hlgroups")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
-local prompt_parser = require("ask-openai.predictions.context.prompts")
+local prompt_parser = require("ask-openai.frontends.context.prompts")
 
 ---@class RewriteFrontend : StreamingFrontend
 local RewriteFrontend = {}

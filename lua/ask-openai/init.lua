@@ -158,7 +158,7 @@ function M.setup(user_options)
         M.start_predictions()
     end
 
-    require("ask-openai.predictions.context").setup()
+    require("ask-openai.frontends.context").setup()
     require("ask-openai.rewrites.frontend").setup()
     require("ask-openai.questions.frontend").setup()
     require("ask-openai.tools.mcp").setup()

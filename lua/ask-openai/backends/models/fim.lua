@@ -3,7 +3,7 @@ local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.predictions.ansi")
 local ChatThread = require("ask-openai.questions.chat.thread")
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
-local ContextItem = require("ask-openai.predictions.context.item")
+local ContextItem = require("ask-openai.frontends.context.item")
 
 local M = {}
 

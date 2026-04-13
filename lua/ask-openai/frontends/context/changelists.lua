@@ -1,4 +1,4 @@
-require("ask-openai.predictions.context.inspect")
+require("ask-openai.frontends.context.inspect")
 
 local M = {}
 
