@@ -25,24 +25,6 @@ describe("render", function()
             -- FYI maybe I want to have this parse and strip? but for now it seems moot to do this without any other prompt text
             should_not_detect_slash_all("/all")
         end)
-        it("'/allFoo' - in front of word is not stripped", function()
-            should_not_detect_slash_all("/allFoo ")
-            should_not_detect_slash_all(" /allFoo ")
-            should_not_detect_slash_all(" /allFoo")
-            should_not_detect_slash_all("/allFoo")
-        end)
-        it("'foo/allbar' - in between word is not stripped", function()
-            should_not_detect_slash_all("foo/allbar ")
-            should_not_detect_slash_all(" foo/allbar ")
-            should_not_detect_slash_all(" foo/allbar")
-            should_not_detect_slash_all("foo/allbar")
-        end)
-        it("'bar/all' - at end of word is not stripped", function()
-            should_not_detect_slash_all("bar/all ")
-            should_not_detect_slash_all(" bar/all ")
-            should_not_detect_slash_all(" bar/all")
-            should_not_detect_slash_all("bar/all")
-        end)
     end)
     describe("static", function()
         function ensure_detects(command, field)
@@ -50,12 +32,14 @@ describe("render", function()
             describe("/" .. command, function()
                 -- test slash command detection when the command appears at various positions
                 local position_cases = {
-                    { scenario = "start of prompt",                 prompt = "/" .. command .. " foo bar" },
-                    { scenario = "start of prompt + spaces before", prompt = "  /" .. command .. " foo bar" },
-                    { scenario = "middle of prompt",                prompt = "foo /" .. command .. " bar" },
-                    { scenario = "end of prompt",                   prompt = "foo bar /" .. command },
-                    { scenario = "end of prompt + spaces after",    prompt = "foo bar /" .. command .. "  " },
-                    { scenario = "tacked onto end of word",         prompt = "bar/" .. command,             unchanged = true },
+                    { scenario = "start of prompt",                       prompt = "/" .. command .. " foo bar" },
+                    { scenario = "start of prompt + spaces before",       prompt = "  /" .. command .. " foo bar" },
+                    { scenario = "middle of prompt",                      prompt = "foo /" .. command .. " bar" },
+                    { scenario = "end of prompt",                         prompt = "foo bar /" .. command },
+                    { scenario = "end of prompt + spaces after",          prompt = "foo bar /" .. command .. "  " },
+                    { scenario = "unchanged because on end of word",      prompt = "bar/" .. command,             unchanged = true },
+                    { scenario = "unchanged because in middle of a word", prompt = "foo/" .. command .. "bar",    unchanged = true },
+                    { scenario = "unchanged b/c in front of word",        prompt = "/" .. command .. "Foo",       unchanged = true },
                 }
 
                 for _, case in ipairs(position_cases) do
