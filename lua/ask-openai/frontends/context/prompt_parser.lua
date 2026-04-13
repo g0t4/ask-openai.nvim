@@ -199,4 +199,18 @@ function M.render(prompt)
     return includes
 end
 
+---@param includes ParseIncludesResult
+---@return "low"|"medium"|"high"|nil
+function M.get_reasoning_level(includes)
+    if includes.reasoning_low then
+        return "low"
+    elseif includes.reasoning_medium then
+        return "medium"
+    elseif includes.reasoning_high then
+        return "high"
+    else
+        return nil
+    end
+end
+
 return M
