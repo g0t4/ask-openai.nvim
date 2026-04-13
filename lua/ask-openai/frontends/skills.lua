@@ -33,11 +33,13 @@ function M.load_skill(name)
 
     local path = M._skill_paths[name]
     if not path or vim.fn.filereadable(path) == 0 then
+        log:error(string.format("Skill file not found: %s", name))
         return nil
     end
 
     local raw = files.read_text(path)
     if not raw then
+        log:error(string.format("Empty skill %s in %s", name, path))
         return nil
     end
 
