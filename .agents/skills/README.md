@@ -1,5 +1,9 @@
+
+
 ## Comments in prompts
 
+- FYI can put comments in yaml frontmatter too!
+  - this is a good spot for general TODOs
 - Use markdown comments to strip out parts of a prompt at runtime
 - Use sed or lua pattern to strip
    `sed '/<!--/,/-->/d'`
