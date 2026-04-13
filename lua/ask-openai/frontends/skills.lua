@@ -79,18 +79,18 @@ function M.get_skill_commands()
         local entries = files.list_entries(skills_path)
         for _, entry in ipairs(entries) do
             if entry.type == "file" and entry.name:match("%.md$") then
-                local base = entry.name:gsub("%.md$", "")
+                local skill_name = entry.name:gsub("%.md$", "")
                 -- FYI this means directory wins over standalone markdown file
-                if M._skill_paths[base] then
+                if M._skill_paths[skill_name] then
                     vim.notify(string.format(
                         "Skill name collision: '%s' already registered from directory %s; ignoring standalone %s",
-                        base,
-                        M._skill_paths[base],
+                        skill_name,
+                        M._skill_paths[skill_name],
                         skills_path .. "/" .. entry.name
                     ), vim.log.levels.WARN)
                 else
-                    M._skill_paths[base] = skills_path .. "/" .. entry.name
-                    table.insert(names, base)
+                    M._skill_paths[skill_name] = skills_path .. "/" .. entry.name
+                    table.insert(names, skill_name)
                 end
             end
         end
