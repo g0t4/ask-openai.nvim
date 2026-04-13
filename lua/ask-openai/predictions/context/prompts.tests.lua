@@ -55,19 +55,17 @@ describe("render", function()
                     { scenario = "middle of prompt",                prompt = "foo /" .. command .. " bar" },
                     { scenario = "end of prompt",                   prompt = "foo bar /" .. command },
                     { scenario = "end of prompt + spaces after",    prompt = "foo bar /" .. command .. "  " },
-                    -- { scenario = "tacked onto end of word",         prompt = "bar/" .. command,             unchanged = true },
+                    { scenario = "tacked onto end of word",         prompt = "bar/" .. command,             unchanged = true },
                 }
 
                 for _, case in ipairs(position_cases) do
                     it(case.scenario .. ": `" .. case.prompt .. "`", function()
                         local includes = prompts.render(case.prompt)
-                        assert.is_true(
-                            includes[field],
-                            ("includes.%s should be true"):format(field)
-                        )
                         if case.unchanged then
+                            assert.is_false(includes[field], "includes." .. field .. " should be false")
                             assert.are_equal(case.prompt, includes.rendered_prompt)
                         else
+                            assert.is_true(includes[field], ("includes.%s should be true"):format(field))
                             -- PRN remove? hack to ignore leading/trailing spaces on rendered_prompt
                             local rendered_prompt = includes.rendered_prompt:gsub("^%s+", ""):gsub("%s+$", "")
                             assert.are_equal("foo bar", rendered_prompt)
