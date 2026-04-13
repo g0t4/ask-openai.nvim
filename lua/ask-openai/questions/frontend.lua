@@ -242,7 +242,7 @@ local function ask_question_command(opts)
             messages = messages,
             model = "", -- irrelevant for llama-server
             tools = tool_definitions,
-        })
+        }, context)
 
         QuestionsFrontend.thread = ChatThread:new(body_overrides, base_url)
         -- log:info("sending", vim.inspect(QuestionsFrontend.thread))

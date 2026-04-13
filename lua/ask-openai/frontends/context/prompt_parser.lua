@@ -1,6 +1,10 @@
 local log = require("ask-openai.logs.logger").predictions()
 local skills = require("ask-openai.frontends.skills")
----@class ParseIncludesResult
+local local_share = require("ask-openai.config.local_share")
+
+local M = {}
+
+---@class ParsedIncludes
 ---@field all boolean
 ---@field yanks boolean
 ---@field commits boolean
@@ -20,8 +24,55 @@ local skills = require("ask-openai.frontends.skills")
 ---@field reasoning_low? boolean
 ---@field reasoning_medium? boolean
 ---@field reasoning_high? boolean
----@field reasoning_none? boolean
-local M = {}
+---@field reasoning_off? boolean
+local Includes = {}
+Includes.__index = Includes
+M.Includes = Includes
+
+---@return ParsedIncludes
+function Includes.new(initial)
+    local self = {
+        all = initial.all or false,
+        yanks = initial.yanks or false,
+        commits = initial.commits or false,
+        current_file = initial.current_file or false,
+        open_files = initial.open_files or false,
+        ctags = initial.ctags,
+        matching_ctags = initial.matching_ctags,
+        norag = initial.norag or false,
+        project = initial.project or false,
+        git_diff = initial.git_diff or false,
+        rendered_prompt = initial.rendered_prompt or "",
+        use_tools = initial.use_tools or false,
+        apply_template_only = initial.apply_template_only or false,
+        include_selection = initial.include_selection or false,
+        top_k = initial.top_k,
+        readonly = initial.readonly or false,
+        reasoning_low = initial.reasoning_low or false,
+        reasoning_medium = initial.reasoning_medium or false,
+        reasoning_high = initial.reasoning_high or false,
+        reasoning_off = initial.reasoning_off or false,
+    }
+    setmetatable(self, Includes)
+    return self
+end
+
+---@param self ParsedIncludes
+---@return "low"|"medium"|"high"|"off"|nil
+function Includes.get_reasoning_level(self)
+    -- TODO as needed, map this to other model reasoning effort/level values... if they differ from low/medium/high/off
+    if self.reasoning_low then
+        return local_share.GptOssReasoningLevel.low
+    elseif self.reasoning_medium then
+        return local_share.GptOssReasoningLevel.medium
+    elseif self.reasoning_high then
+        return local_share.GptOssReasoningLevel.high
+    elseif self.reasoning_off then
+        return local_share.GptOssReasoningLevel.off
+    else
+        return nil
+    end
+end
 
 ---@param prompt string
 ---@return integer?, string
@@ -59,7 +110,7 @@ M.slash_commands = {
     REASONING_LOW    = "/low",
     REASONING_MEDIUM = "/medium",
     REASONING_HIGH   = "/high",
-    REASONING_NONE   = "/none",
+    REASONING_OFF    = "/off",
 }
 
 --- Completion function for slash commands used by user commands.
@@ -123,7 +174,7 @@ local function strip_slash_command_from_prompt(prompt, command)
 end
 
 ---@param prompt? string
----@return ParseIncludesResult
+---@return ParsedIncludes
 function M.render(prompt)
     prompt = prompt or ""
 
@@ -164,14 +215,13 @@ function M.render(prompt)
         [M.slash_commands.REASONING_LOW] = "reasoning_low",
         [M.slash_commands.REASONING_MEDIUM] = "reasoning_medium",
         [M.slash_commands.REASONING_HIGH] = "reasoning_high",
-        [M.slash_commands.REASONING_NONE] = "reasoning_none",
+        [M.slash_commands.REASONING_OFF] = "reasoning_off",
     }
 
-    ---@type ParseIncludesResult
-    local includes = {
+    local includes = Includes.new({
         -- patterns:
         top_k = top_k,
-    }
+    })
     -- * detect static commands
     for _, command in pairs(M.slash_commands) do
         local found
@@ -197,20 +247,6 @@ function M.render(prompt)
     includes.rendered_prompt = rendered_prompt
     log:info("includes", vim.inspect(includes))
     return includes
-end
-
----@param includes ParseIncludesResult
----@return "low"|"medium"|"high"|nil
-function M.get_reasoning_level(includes)
-    if includes.reasoning_low then
-        return "low"
-    elseif includes.reasoning_medium then
-        return "medium"
-    elseif includes.reasoning_high then
-        return "high"
-    else
-        return nil
-    end
 end
 
 return M

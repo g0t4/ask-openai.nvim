@@ -21,7 +21,7 @@ local cmds = require("ask-openai.frontends.context.cmds")
 ---@field matching_ctags ContextItem
 ---@field project ContextItem
 ---
----@field includes ParseIncludesResult
+---@field includes ParsedIncludes
 ---@field cleaned_prompt string
 local CurrentContext = {}
 

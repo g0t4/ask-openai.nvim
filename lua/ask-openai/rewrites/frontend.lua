@@ -419,7 +419,7 @@ local function ask_rewrite_command(opts)
             messages = messages,
             model = "", -- irrelevant for llama-server
             -- tools = tool_router.openai_tools(),
-        })
+        }, context)
 
         RewriteFrontend.last_request = CurlRequest:new({
             body = body,

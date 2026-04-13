@@ -18,9 +18,15 @@ local function throw_if_no_messages(request_body)
     end
 end
 
-function M.new_gptoss_chat_body_llama_server(request_body)
+---@param request_body table
+---@param context CurrentContext
+---@return table
+function M.new_gptoss_chat_body_llama_server(request_body, context)
     throw_if_no_messages(request_body)
-    local level = api.get_rewrite_reasoning_level()
+
+    local level = context.includes:get_reasoning_level()
+        or api.get_rewrite_reasoning_level()
+
     local max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(level)
 
     local recommended = {
