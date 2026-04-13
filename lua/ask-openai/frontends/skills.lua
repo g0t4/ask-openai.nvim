@@ -8,14 +8,14 @@ local files = require("ask-openai.helpers.files")
 
 local M = {}
 
--- Cache mapping skill name -> absolute path of the SKILL.md file
+-- Cache mapping skill name -> absolute path of the skill file (SKILL.md or a markdown file)
 M._skill_paths = {}
 -- Cache for loaded skill file contents (keyed by absolute path)
 M._skill_content_cache = {}
 
 --- Load and return the processed content of a skill.
 --- The content is cached after the first read.
----@param name string The name of the skill (directory name under ~/.agents/skills)
+---@param name string The name of the skill (directory name under ~/.agents/skills or a markdown filename without extension)
 ---@return string|nil The skill content after stripping HTML comments and YAML front‑matter,
 ---                or nil if the skill cannot be found.
 function M.load_skill(name)
@@ -58,9 +58,8 @@ function M.load_skill(name)
 end
 
 M.cached_skill_commands = nil
-
---- Retrieve slash command entries representing skill directories under
---- `~/.agent/skills`. The result is cached after the first successful read.
+--- Retrieve slash command entries representing skill definitions under `~/.agents/skills`.
+--- Includes both skill directories containing a SKILL.md file and standalone markdown files.
 ---@return string[] List of slash commands (e.g., "/my_skill")
 function M.get_skill_commands()
     if M.cached_skill_commands then
@@ -77,8 +76,19 @@ function M.get_skill_commands()
             M._skill_paths[name] = skills_path .. "/" .. name .. "/SKILL.md"
             table.insert(names, name)
         end
+
+        -- Also load markdown files directly under the skills directory.
+        local entries = files.list_entries(skills_path)
+        for _, entry in ipairs(entries) do
+            if entry.type == "file" and entry.name:match("%.md$") then
+                local base = entry.name:gsub("%.md$", "")
+                if not M._skill_paths[base] then
+                    M._skill_paths[base] = skills_path .. "/" .. entry.name
+                    table.insert(names, base)
+                end
+            end
+        end
     end
-    -- PRN load standalone files too? no need for foo/SKILL.md ???
     M.cached_skill_commands = names
     return names
 end
