@@ -8,15 +8,14 @@ local files = require("ask-openai.helpers.files")
 
 local M = {}
 
--- Cache mapping skill name -> absolute path of the skill file (SKILL.md or a markdown file)
+-- Cache of skill name -> absolute path of the skill markdown file
 M._skill_paths = {}
--- Cache for loaded skill file contents (keyed by absolute path)
+-- Cache of skill name -> skill md contents
 M._skill_content_cache = {}
 
---- Load and return the processed content of a skill.
 --- The content is cached after the first read.
----@param name string The name of the skill (directory name under ~/.agents/skills or a markdown filename without extension)
----@return string|nil The skill content after stripping HTML comments and YAML front‑matter,
+---@param name string The name of the skill
+---@return string|nil The skill contents after stripping HTML comments and YAML front‑matter,
 ---                or nil if the skill cannot be found.
 function M.load_skill(name)
     if not name or name == "" then
@@ -58,8 +57,7 @@ function M.load_skill(name)
 end
 
 M.cached_skill_commands = nil
---- Retrieve slash command entries representing skill definitions under `~/.agents/skills`.
---- Includes both skill directories containing a SKILL.md file and standalone markdown files.
+--- List of slash commands for skills (cached after first load)
 ---@return string[] List of slash commands (e.g., "/my_skill")
 function M.get_skill_commands()
     if M.cached_skill_commands then
