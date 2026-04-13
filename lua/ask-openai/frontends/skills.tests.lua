@@ -15,6 +15,13 @@ describe("clean_skill_content", function()
         assert.are_equal("Hello", cleaned)
     end)
 
+    it("removes HTML comments non‑greedily", function()
+        local raw = "Hello <!-- first comment -->world random -->!"
+        local cleaned = skills.clean_skill_contents(raw)
+        -- make sure the stripping doesn't go past end of current comment
+        assert.are_equal("Hello world random -->!", cleaned)
+    end)
+
     it("removes YAML front‑matter", function()
         local raw = [[---
 foo: bar
