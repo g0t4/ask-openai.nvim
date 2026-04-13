@@ -4,7 +4,7 @@ TODO add test guidance around running plenary tests with neovim headless
 
 per project could have entrypoints to test various subsets:
 ```examples.sh
-nvim --headless -c "PlenaryBustedFile lua/ask-openai/frontends/context/prompts.tests.lua" -c qa
+nvim --headless -c "PlenaryBustedFile lua/ask-openai/frontends/context/prompt_parser.tests.lua" -c qa
 ```
 
 PER REPO should honestly have a verify_this_project that specifically explains how to verify all subsystems!

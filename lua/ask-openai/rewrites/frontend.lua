@@ -19,7 +19,7 @@ local MessageBuilder = require("ask-openai.rewrites.message_builder")
 local HLGroups = require("ask-openai.hlgroups")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
-local prompt_parser = require("ask-openai.frontends.context.prompts")
+local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 
 ---@class RewriteFrontend : StreamingFrontend
 local RewriteFrontend = {}

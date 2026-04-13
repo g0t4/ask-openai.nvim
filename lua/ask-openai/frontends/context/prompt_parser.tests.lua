@@ -1,4 +1,4 @@
-local prompt_parser = require("ask-openai.frontends.context.prompts")
+local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local skills = require("ask-openai.frontends.skills")
 require('ask-openai.helpers.testing')
 local describe = require("devtools.tests._describe")
