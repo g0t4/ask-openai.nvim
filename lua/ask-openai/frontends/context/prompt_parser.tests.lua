@@ -10,14 +10,17 @@ describe("render", function()
             describe("/" .. command, function()
                 -- test slash command detection when the command appears at various positions
                 local position_cases = {
-                    { scenario = "start of prompt",                       prompt = "/" .. command .. " foo bar" },
-                    { scenario = "start of prompt + spaces before",       prompt = "  /" .. command .. " foo bar" },
-                    { scenario = "middle of prompt",                      prompt = "foo /" .. command .. " bar" },
-                    { scenario = "end of prompt",                         prompt = "foo bar /" .. command },
-                    { scenario = "end of prompt + spaces after",          prompt = "foo bar /" .. command .. "  " },
-                    { scenario = "unchanged because on end of word",      prompt = "bar/" .. command,             unchanged = true },
-                    { scenario = "unchanged because in middle of a word", prompt = "foo/" .. command .. "bar",    unchanged = true },
-                    { scenario = "unchanged b/c in front of word",        prompt = "/" .. command .. "Foo",       unchanged = true },
+                    { scenario = "start of prompt",                   prompt = "/" .. command .. " foo bar" },
+                    { scenario = "start of prompt + spaces before",   prompt = "  /" .. command .. " foo bar" },
+                    { scenario = "middle of prompt",                  prompt = "foo /" .. command .. " bar" },
+                    { scenario = "end of prompt",                     prompt = "foo bar /" .. command },
+                    { scenario = "end of prompt + spaces after",      prompt = "foo bar /" .. command .. "  " },
+                    --
+                    { scenario = "unchanged b/c on end of word",      prompt = "bar/" .. command,                        unchanged = true },
+                    { scenario = "unchanged b/c in middle of a word", prompt = "foo/" .. command .. "bar",               unchanged = true },
+                    { scenario = "unchanged b/c in front of word",    prompt = "/" .. command .. "Foo",                  unchanged = true },
+                    --
+                    { scenario = "command included twice",            prompt = "foo bar /" .. command .. " /" .. command },
                 }
 
                 for _, case in ipairs(position_cases) do
