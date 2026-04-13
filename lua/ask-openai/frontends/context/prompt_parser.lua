@@ -87,7 +87,6 @@ local function strip_slash_command_from_prompt(prompt, command)
     -- appeared multiple times in the prompt. To support duplicate commands we
     -- repeatedly apply the removal patterns until the prompt stabilises.
     local final_prompt = prompt
-    local any_removed = false
     while true do
         local start_of_iteration_prompt = final_prompt
         -- Remove command at the start (optional leading whitespace, mandatory
@@ -102,8 +101,8 @@ local function strip_slash_command_from_prompt(prompt, command)
         if final_prompt == start_of_iteration_prompt then
             break
         end
-        any_removed = true
     end
+    local any_removed = final_prompt ~= prompt
     if any_removed then
         log:info("original prompt: `" .. prompt .. "`")
         log:info("         detect: `" .. command .. "`")
