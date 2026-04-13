@@ -21,10 +21,12 @@ local function get_vim_command_suggestion(passed_context)
     local config = require("ask-openai.config")
     local bearer_token = config.get_validated_bearer_token()
     local chat_url = config.get_chat_completions_url()
-    config.print_verbose("chat_url", chat_url)
+    print("chat_url", chat_url) -- FYI this shows over commandline so it is helpful to print so I can verify if smth fails where it was sent at least
     local model = config.get_options().model
-    config.print_verbose("model", model)
+    log:trace("model", model)
 
+    local max_tokens = config.get_options().max_tokens
+    log:info("max_tokens", max_tokens)
     local response = curl.post({
         url = chat_url,
         headers = {
@@ -41,7 +43,7 @@ local function get_vim_command_suggestion(passed_context)
                 TxChatMessage:system(system_message),
                 TxChatMessage:user(passed_context),
             },
-            max_tokens = config.get_options().max_tokens,
+            max_tokens = max_tokens,
             n = 1,
             stream = false, -- FYI must set this for ollama, doesn't hurt to do for all
         }),
