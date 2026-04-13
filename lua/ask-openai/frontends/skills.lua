@@ -18,17 +18,16 @@ M._skill_content_cache = {}
 function M.clean_skill_contents(raw)
     local content = raw
 
-    -- Remove YAML front‑matter delimited by triple dashes at the start of the file.
+    -- Remove YAML front‑matter
     if content:match("^%-%-%-") then
-        -- Remove everything from the opening '---' to the next closing '---',
+        -- Remove everything from the opening '---' to the next closing '---' line,
         -- and consume any following whitespace (including CRLF line endings).
         content = content:gsub("^%-%-%-.-%-%-%-%s*", "")
     end
 
-    -- Strip HTML comments: <!-- comment --> (non‑greedy)
+    -- strip HTML comments (non‑greedy)
     content = content:gsub("<!--.-?-->", "")
 
-    -- Trim leading/trailing whitespace for cleanliness.
     content = vim.trim(content)
     return content
 end
@@ -64,7 +63,6 @@ function M.load_skill(name)
     end
 
     local content = M.clean_skill_contents(raw)
-
     M._skill_content_cache[name] = content
     return content
 end
