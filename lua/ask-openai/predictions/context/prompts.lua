@@ -101,9 +101,7 @@ end
 function M.parse_includes(prompt)
     prompt = prompt or ""
 
-    -- Process skill slash commands first: detect skill references, load their content,
-    -- resolve any built‑in slash commands inside the skill content, and clean the
-    -- skill content before injecting it.
+    -- * inject skills first
     local skill_contents = {}
     local rendered_prompt = prompt
     for _, skill_name in pairs(skills.get_skill_commands()) do
@@ -116,8 +114,6 @@ function M.parse_includes(prompt)
             end
         end
     end
-
-    -- Append the cleaned skill contents.
     if #skill_contents > 0 then
         rendered_prompt = rendered_prompt .. "\n" .. table.concat(skill_contents, "\n")
     end
