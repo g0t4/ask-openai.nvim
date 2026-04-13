@@ -118,19 +118,6 @@ function M.parse_includes(prompt)
         rendered_prompt = rendered_prompt .. "\n" .. table.concat(skill_contents, "\n")
     end
 
-    local function has_in(what, command)
-        -- in middle, between whitespace
-        local found = what:find("%W(" .. command .. ")%W")
-        -- start of string, with whitespace after
-        found = found or what:find("^" .. command .. "%W")
-        -- end of string, with whitespace before
-        found = found or what:find("%W" .. command .. "$")
-        return found ~= nil
-    end
-    local function prompt_has(command)
-        return has_in(rendered_prompt, command)
-    end
-
     local top_k, prompt_without_k = M.extract_top_k(rendered_prompt)
     rendered_prompt = prompt_without_k
 
