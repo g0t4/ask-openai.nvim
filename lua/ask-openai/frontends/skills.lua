@@ -67,15 +67,14 @@ function M.get_skill_commands()
     local skills_path = vim.fn.expand("~/.agents/skills")
     local names = {}
     if vim.fn.isdirectory(skills_path) == 1 then
-        -- Use helper to list sub‑directories only.
+        -- * load skill directories
         local dir_names = files.list_directories(skills_path)
         for _, name in ipairs(dir_names) do
-            -- Store the absolute path to the SKILL.md file for later loading.
             M._skill_paths[name] = skills_path .. "/" .. name .. "/SKILL.md"
             table.insert(names, name)
         end
 
-        -- Also load markdown files directly under the skills directory.
+        -- * plus standalone markdown files
         local entries = files.list_entries(skills_path)
         for _, entry in ipairs(entries) do
             if entry.type == "file" and entry.name:match("%.md$") then
