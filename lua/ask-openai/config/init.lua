@@ -41,7 +41,7 @@ local default_options = {
 
     -- request parameters:
     model = "gpt-4o",
-    max_tokens = 200, -- maybe have a higher toggle if absolutely needed?
+    max_tokens = 2000, -- higher when using thinking models like gptoss120b
     -- PRN temperature
     -- in future, if add other ask helpers then I can move these into a nested table like copilot options
 
