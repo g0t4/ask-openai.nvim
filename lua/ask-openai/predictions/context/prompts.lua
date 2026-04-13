@@ -108,7 +108,7 @@ function M.render(prompt)
     local rendered_prompt = prompt
     for _, skill_name in pairs(skills.get_skill_commands()) do
         local cmd = "/" .. skill_name
-        local found, rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, cmd)
+        found, rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, cmd)
         if found then
             local content = skills.load_skill(skill_name)
             if content then

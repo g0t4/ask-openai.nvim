@@ -105,13 +105,13 @@ describe("render", function()
         expect("end of prompt + spaces after", "foo bar /k=3  ")
 
         it("without /k => returns prompt as is", function()
-            local top_k, prompt = prompts.extract_top_k("foo bar")
+            local top_k, prompt = prompts.strip_patterns_from_prompt("foo bar")
             assert.is_nil(top_k)
             assert.are_equal("foo bar", prompt)
         end)
 
         it("without word boundary => does not parse", function()
-            local top_k, prompt = prompts.extract_top_k("foo/k=3 bar")
+            local top_k, prompt = prompts.strip_patterns_from_prompt("foo/k=3 bar")
         end)
     end)
 
