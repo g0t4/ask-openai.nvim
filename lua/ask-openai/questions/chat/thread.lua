@@ -72,7 +72,7 @@ end
 function AgentTrace:dump()
     -- log:luaify_trace("last_request's RxAccumulatedMessages", self.last_request.accumulated_model_response_messages)
     -- log:luaify_trace("thread's TxChatMessages (history, sent on followup/toolresults)", self.messages)
-    log:luaify_trace("ChatThread:dump", self)
+    log:luaify_trace("AgentTrace:dump", self)
 end
 
 return AgentTrace

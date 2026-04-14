@@ -5,7 +5,7 @@ local tool_router = require("ask-openai.tools.router")
 local curl = require("ask-openai.backends.curl")
 local agentica = require("ask-openai.backends.models.agentica")
 local ChatWindow = require("ask-openai.questions.chat.window")
-local ChatThread = require("ask-openai.questions.chat.thread")
+local AgentTrace = require("ask-openai.questions.chat.thread")
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 local ChatParams = require("ask-openai.questions.chat.params")
 local Selection = require("ask-openai.helpers.selection")
@@ -245,7 +245,7 @@ local function ask_question_command(opts)
             tools = tool_definitions,
         }, context)
 
-        QuestionsFrontend.trace = ChatThread:new(body_overrides, base_url)
+        QuestionsFrontend.trace = AgentTrace:new(body_overrides, base_url)
         -- log:info("sending", vim.inspect(QuestionsFrontend.trace))
         QuestionsFrontend.then_send_messages()
     end
