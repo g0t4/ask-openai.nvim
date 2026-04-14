@@ -27,8 +27,8 @@ local inspect = require("devtools.inspect")
 
 require("ask-openai.helpers.buffers")
 
----@class QuestionsFrontend : StreamingFrontend
-local QuestionsFrontend = {}
+---@class AgentsFrontend : StreamingFrontend
+local AgentsFrontend = {}
 
 local first_turn_ns_id
 
@@ -72,7 +72,7 @@ local function ask_question_command(opts)
     end
 
     -- FYI! do not move opening window higher, unless above code supports code_win_id/code_bufnr:
-    QuestionsFrontend.ensure_chat_window_is_open()
+    AgentsFrontend.ensure_chat_window_is_open()
     --
     -- * chat window should always be open, nonetheless check:
     local buffer_name = vim.api.nvim_buf_get_name(0)
@@ -87,7 +87,7 @@ local function ask_question_command(opts)
     -- log:error("code_win_id", code_win_id)
     -- log:error("code_bufnr", code_bufnr)
 
-    QuestionsFrontend.abort_last_request()
+    AgentsFrontend.abort_last_request()
     use_tools = context.includes.use_tools or false
 
     local system = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/system_message.md")
@@ -151,10 +151,10 @@ local function ask_question_command(opts)
         first_turn_ns_id = vim.api.nvim_create_namespace("ask.marks.chat.window.first.turn")
     end
     local lines = LinesBuilder:new(first_turn_ns_id)
-    if QuestionsFrontend.trace then
+    if AgentsFrontend.trace then
         -- FYI some previous extmarks are "dropped", fine by me to "turn off the colors"... but, probably want it for all previous chat extmarks
         lines:append_styled_lines({ "--- New Trace Started ---" }, HLGroups.SYSTEM_PROMPT)
-        -- or:   QuestionsFrontend.clear_chat_command()
+        -- or:   AgentsFrontend.clear_chat_command()
     end
     lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
     lines:append_folded_styled_text("system\n" .. system, "")
@@ -198,7 +198,7 @@ local function ask_question_command(opts)
     end
 
     lines:append_blank_line()
-    QuestionsFrontend.chat_window:append_styled_lines(lines)
+    AgentsFrontend.chat_window:append_styled_lines(lines)
 
     ---@type OpenAIChatCompletion_TxChatMessage[]
     local messages = {
@@ -244,9 +244,9 @@ local function ask_question_command(opts)
             tools = tool_definitions,
         }, context)
 
-        QuestionsFrontend.trace = AgentTrace:new(body_overrides, base_url)
-        -- log:info("sending", vim.inspect(QuestionsFrontend.trace))
-        QuestionsFrontend.then_send_messages()
+        AgentsFrontend.trace = AgentTrace:new(body_overrides, base_url)
+        -- log:info("sending", vim.inspect(AgentsFrontend.trace))
+        AgentsFrontend.then_send_messages()
     end
 
     -- log:error("context.includes", vim.inspect(context.includes))
@@ -257,15 +257,15 @@ local function ask_question_command(opts)
         function on_rag_response(rag_matches)
             log:info("on_rag_response")
             -- * make sure prior (canceled) rag request doesn't still respond
-            if QuestionsFrontend.rag_request_ids ~= this_request_ids then
+            if AgentsFrontend.rag_request_ids ~= this_request_ids then
                 log:trace("possibly stale rag results, skipping: " .. vim.inspect({
-                    global_rag_request_ids = QuestionsFrontend.rag_request_ids,
+                    global_rag_request_ids = AgentsFrontend.rag_request_ids,
                     this_request_ids = this_request_ids,
                 }))
                 return
             end
 
-            if QuestionsFrontend.rag_cancel == nil then
+            if AgentsFrontend.rag_cancel == nil then
                 log:error("rag appears canceled, skipping on_rag_response...")
                 return
             end
@@ -274,45 +274,45 @@ local function ask_question_command(opts)
         end
 
         this_request_ids, cancel = rag_client.context_query_questions(code_bufnr, cleaned_prompt, code_context, context.includes.top_k, on_rag_response)
-        QuestionsFrontend.rag_cancel = function()
+        AgentsFrontend.rag_cancel = function()
             log:warn("canceling RAG")
-            QuestionsFrontend.rag_cancel = nil
+            AgentsFrontend.rag_cancel = nil
             cancel()
-            QuestionsFrontend.rag_request_ids = nil
+            AgentsFrontend.rag_request_ids = nil
         end
-        QuestionsFrontend.rag_request_ids = this_request_ids
+        AgentsFrontend.rag_request_ids = this_request_ids
     else
-        QuestionsFrontend.rag_cancel = nil
-        QuestionsFrontend.rag_request_ids = nil
+        AgentsFrontend.rag_cancel = nil
+        AgentsFrontend.rag_request_ids = nil
         then_generate_completion({})
     end
 end
 
-function QuestionsFrontend.then_send_messages()
+function AgentsFrontend.then_send_messages()
     -- * conversation turns (track start line for streaming chunks)
-    QuestionsFrontend.this_turn_chat_start_line_base0 = QuestionsFrontend.chat_window.buffer:get_line_count()
+    AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
     local request = CurlRequestForTrace:new({
-        body = QuestionsFrontend.trace:next_curl_request_body(),
-        base_url = QuestionsFrontend.trace.base_url,
+        body = AgentsFrontend.trace:next_curl_request_body(),
+        base_url = AgentsFrontend.trace.base_url,
         endpoint = CompletionsEndpoints.oai_v1_chat_completions,
         type = "questions",
     })
     log:luaify_trace("body:", request.body)
-    curl.spawn(request, QuestionsFrontend)
-    QuestionsFrontend.trace:set_last_request(request)
+    curl.spawn(request, AgentsFrontend)
+    AgentsFrontend.trace:set_last_request(request)
 end
 
-function QuestionsFrontend.abort_and_close()
-    QuestionsFrontend.abort_last_request()
-    if QuestionsFrontend.chat_window ~= nil then
-        QuestionsFrontend.chat_window:close()
+function AgentsFrontend.abort_and_close()
+    AgentsFrontend.abort_last_request()
+    if AgentsFrontend.chat_window ~= nil then
+        AgentsFrontend.chat_window:close()
     end
 end
 
 ---@type ExplainError
-function QuestionsFrontend.explain_error(text)
+function AgentsFrontend.explain_error(text)
     vim.schedule(function()
         -- TEST this with:
         -- 1. remove --jinja from llama-server service
@@ -324,7 +324,7 @@ function QuestionsFrontend.explain_error(text)
         --
         -- ALSO 503 error for model loading:
         --   error = { code = 503, message = "Loading model", type = "unavailable_error" }
-        QuestionsFrontend.chat_window:explain_error(text)
+        AgentsFrontend.chat_window:explain_error(text)
     end)
 end
 
@@ -351,7 +351,7 @@ function _G.MyAgentWindowFoldingForLine(line_num_base1)
     --
     -- FYI read docs about return values for expr:
     --   https://neovim.io/doc/user/fold.html#fold-expr
-    local folds = QuestionsFrontend.chat_window.buffer.folds or {}
+    local folds = AgentsFrontend.chat_window.buffer.folds or {}
     for _, fold in ipairs(folds) do
         if line_num_base1 >= fold.start_line_base1 and line_num_base1 <= fold.end_line_base1 then
             return '1' -- inside first level fold
@@ -360,7 +360,7 @@ function _G.MyAgentWindowFoldingForLine(line_num_base1)
     return '0' -- this line is not in a fold
 end
 
-function QuestionsFrontend.clear_undos()
+function AgentsFrontend.clear_undos()
     -- wipe undo history
     -- i.e. after assistant response - undo fucks up the extmarks, and the assistant response is not gonna be sent back if modified (this is view only) so just default to making that UX a bit more intuitive
 
@@ -371,29 +371,29 @@ function QuestionsFrontend.clear_undos()
     vim.bo.undolevels = previous_undo_level
 end
 
-function QuestionsFrontend.ensure_chat_window_is_open()
-    if QuestionsFrontend.chat_window == nil then
-        QuestionsFrontend.chat_window = AgentWindow:new()
+function AgentsFrontend.ensure_chat_window_is_open()
+    if AgentsFrontend.chat_window == nil then
+        AgentsFrontend.chat_window = AgentWindow:new()
 
         -- stop generation, if still wanna look at it w/o closing the window
-        vim.keymap.set("n", "<Esc>", QuestionsFrontend.abort_last_request, { buffer = QuestionsFrontend.chat_window.buffer_number })
+        vim.keymap.set("n", "<Esc>", AgentsFrontend.abort_last_request, { buffer = AgentsFrontend.chat_window.buffer_number })
 
         -- I already use this globally to close a window (:q) ... so just add stop to it:
-        vim.keymap.set("n", "<F8>", QuestionsFrontend.abort_and_close, { buffer = QuestionsFrontend.chat_window.buffer_number })
+        vim.keymap.set("n", "<F8>", AgentsFrontend.abort_and_close, { buffer = AgentsFrontend.chat_window.buffer_number })
 
-        vim.keymap.set({ "n", "i" }, "<C-s>", QuestionsFrontend.follow_up_command, { buffer = QuestionsFrontend.chat_window.buffer_number })
+        vim.keymap.set({ "n", "i" }, "<C-s>", AgentsFrontend.follow_up_command, { buffer = AgentsFrontend.chat_window.buffer_number })
     end
 
-    QuestionsFrontend.chat_window:open()
+    AgentsFrontend.chat_window:open()
 end
 
 local function handle_rx_messages_updated()
-    if not QuestionsFrontend.trace.last_request.accumulated_model_response_messages then
+    if not AgentsFrontend.trace.last_request.accumulated_model_response_messages then
         return
     end
 
     local lines = LinesBuilder:new()
-    for _, rx_message in ipairs(QuestionsFrontend.trace.last_request.accumulated_model_response_messages) do
+    for _, rx_message in ipairs(AgentsFrontend.trace.last_request.accumulated_model_response_messages) do
         -- FYI !! now it is obvious that this is only operating on accumulated message type!
 
         -- * message contents
@@ -428,8 +428,8 @@ local function handle_rx_messages_updated()
     end
 
     vim.schedule(function()
-        lines.marks_ns_id = QuestionsFrontend.trace.last_request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
-        QuestionsFrontend.chat_window.buffer:replace_with_styled_lines_after(QuestionsFrontend.this_turn_chat_start_line_base0, lines)
+        lines.marks_ns_id = AgentsFrontend.trace.last_request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
+        AgentsFrontend.chat_window.buffer:replace_with_styled_lines_after(AgentsFrontend.this_turn_chat_start_line_base0, lines)
     end)
 end
 
@@ -437,7 +437,7 @@ end
 ---@param choice OpenAIChoice|nil
 ---@param request CurlRequestForTrace
 ---@param sse_parsed OnParsedSSE
-function QuestionsFrontend.on_streaming_delta_update_message_history(choice, request, sse_parsed)
+function AgentsFrontend.on_streaming_delta_update_message_history(choice, request, sse_parsed)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
     -- rebuilds message as if sent `stream: false`
     -- for message history / follow up
@@ -530,19 +530,19 @@ function QuestionsFrontend.on_streaming_delta_update_message_history(choice, req
 end
 
 ---@type OnParsedSSE
-function QuestionsFrontend.on_sse_llama_server_timings(sse)
+function AgentsFrontend.on_sse_llama_server_timings(sse)
     -- PRN use this to extract timing like in rewrites
 end
 
 ---@type OnParsedSSE
-function QuestionsFrontend.on_parsed_data_sse(sse_parsed)
+function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     -- FYI right now this is desingned for /v1/chat/completions only
     --   I added this guard based on review of on-on_streaming_delta_update_message_history that appears (IIRC) to be using /v1/chat/completions ONLY compatible fields
-    local request = QuestionsFrontend.trace.last_request
+    local request = AgentsFrontend.trace.last_request
     if request.endpoint ~= CompletionsEndpoints.oai_v1_chat_completions then
         -- fail fast in this case
         -- TODO (when I need it)... you very likely can support other endpoints (see what you've done in both PredictionsFrontend and RewriteFrontend (both have some multi endpoint support)
-        local message = "QuestionsFrontend SSEs not supported for endpoint: " .. tostring(request.endpoint)
+        local message = "AgentsFrontend SSEs not supported for endpoint: " .. tostring(request.endpoint)
         log:error(message)
         vim.notify(message, vim.log.levels.ERROR)
         return
@@ -552,24 +552,24 @@ function QuestionsFrontend.on_parsed_data_sse(sse_parsed)
         return
     end
     local first_choice = sse_parsed.choices[1]
-    QuestionsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_parsed)
+    AgentsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_parsed)
     handle_rx_messages_updated()
 end
 
-function QuestionsFrontend.show_user_role()
+function AgentsFrontend.show_user_role()
     local lines_builder = LinesBuilder:new()
     lines_builder:create_marks_namespace()
     lines_builder:append_role_header("user")
     lines_builder:append_blank_line()
-    QuestionsFrontend.chat_window:append_styled_lines(lines_builder)
+    AgentsFrontend.chat_window:append_styled_lines(lines_builder)
 end
 
 ---@type OnCurlExitedSuccessfully
-function QuestionsFrontend.on_curl_exited_successfully()
+function AgentsFrontend.on_curl_exited_successfully()
     vim.schedule(function()
         -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for assistant messages)
 
-        for _, rx_message in ipairs(QuestionsFrontend.trace.last_request.accumulated_model_response_messages or {}) do
+        for _, rx_message in ipairs(AgentsFrontend.trace.last_request.accumulated_model_response_messages or {}) do
             -- *** trace.last_request.accumulated_model_response_messages IS NOT trace.messages
             --    trace.messages => sent with future requests, hence TxChatMessage
             --    request.response_messages is simply to denormalize responses from SSEs, hence RxAccumulatedMessage
@@ -579,24 +579,24 @@ function QuestionsFrontend.on_curl_exited_successfully()
             --   (must come before tool result messages)
             --   theoretically there can be multiple messages, with any role (not just assitant)
             local trace_message = TxChatMessage:from_assistant_rx_message(rx_message)
-            QuestionsFrontend.trace:add_message(trace_message)
-            completion_logger.append_to_messages_jsonl(trace_message, QuestionsFrontend.trace.last_request, QuestionsFrontend)
+            AgentsFrontend.trace:add_message(trace_message)
+            completion_logger.append_to_messages_jsonl(trace_message, AgentsFrontend.trace.last_request, AgentsFrontend)
             -- TODO capture *-trace.json here too? and then get rid of response_message hack cuz all messages will now be in trace
             --    TODO and careful to mirror changes (i.e. if move here, then need trace to save still for other frontends)
 
             -- * show user role (in chat window) as hint to follow up (now that model+tool_calls are all done):
-            QuestionsFrontend.show_user_role()
+            AgentsFrontend.show_user_role()
 
-            QuestionsFrontend.chat_window.followup_starts_at_line_0indexed = QuestionsFrontend.chat_window.buffer:get_line_count() - 1
+            AgentsFrontend.chat_window.followup_starts_at_line_0indexed = AgentsFrontend.chat_window.buffer:get_line_count() - 1
         end
-        QuestionsFrontend.clear_undos()
+        AgentsFrontend.clear_undos()
 
-        QuestionsFrontend.run_tools_and_send_results_back_to_the_model()
+        AgentsFrontend.run_tools_and_send_results_back_to_the_model()
     end)
 end
 
-function QuestionsFrontend.run_tools_and_send_results_back_to_the_model()
-    for _, rx_message in ipairs(QuestionsFrontend.trace.last_request.accumulated_model_response_messages or {}) do
+function AgentsFrontend.run_tools_and_send_results_back_to_the_model()
+    for _, rx_message in ipairs(AgentsFrontend.trace.last_request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
             -- log:trace("tool:", vim.inspect(tool))
 
@@ -615,14 +615,14 @@ function QuestionsFrontend.run_tools_and_send_results_back_to_the_model()
                 local tool_response_message = TxChatMessage:tool_result(tool_call)
                 -- log:jsonify_compact_trace("tool_message:", tool_response_message)
                 tool_call.response_message = tool_response_message
-                QuestionsFrontend.trace:add_message(tool_response_message)
+                AgentsFrontend.trace:add_message(tool_response_message)
 
                 -- * when last tool completes, send tool results (TxChatMessage package)
                 vim.schedule(function()
                     -- FYI I am scheduling this so it happens after redraws
                     --  IIUC I need to queue this after the other changes from above?
                     --  else IIUC, the line count won't be right for where in the chat window to insert next message
-                    QuestionsFrontend.send_tool_messages_if_all_tools_done()
+                    AgentsFrontend.send_tool_messages_if_all_tools_done()
                 end)
             end
 
@@ -632,16 +632,16 @@ function QuestionsFrontend.run_tools_and_send_results_back_to_the_model()
     end
 end
 
-function QuestionsFrontend.send_tool_messages_if_all_tools_done()
-    if QuestionsFrontend.any_outstanding_tool_calls() then
+function AgentsFrontend.send_tool_messages_if_all_tools_done()
+    if AgentsFrontend.any_outstanding_tool_calls() then
         return
     end
-    QuestionsFrontend.then_send_messages()
+    AgentsFrontend.then_send_messages()
 end
 
 ---@return boolean
-function QuestionsFrontend.any_outstanding_tool_calls()
-    for _, rx_message in ipairs(QuestionsFrontend.trace.last_request.accumulated_model_response_messages or {}) do
+function AgentsFrontend.any_outstanding_tool_calls()
+    for _, rx_message in ipairs(AgentsFrontend.trace.last_request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
             local is_outstanding = tool_call.response_message == nil
             if is_outstanding then
@@ -652,30 +652,30 @@ function QuestionsFrontend.any_outstanding_tool_calls()
     return false
 end
 
-function QuestionsFrontend.abort_last_request()
-    if not QuestionsFrontend.trace then
+function AgentsFrontend.abort_last_request()
+    if not AgentsFrontend.trace then
         return
     end
-    CurlRequestForTrace.terminate(QuestionsFrontend.trace.last_request)
-    if QuestionsFrontend.rag_cancel then
-        QuestionsFrontend.rag_cancel()
+    CurlRequestForTrace.terminate(AgentsFrontend.trace.last_request)
+    if AgentsFrontend.rag_cancel then
+        AgentsFrontend.rag_cancel()
     end
 end
 
-function QuestionsFrontend.follow_up_command()
+function AgentsFrontend.follow_up_command()
     -- take follow up after end of prior response message from assistant
     --  if already a M.trace then add to that with a new message
     --  leave content as is in the buffer, close enough to what it would be if redrawn
     --  and I don't use the buffer contents for past messages
     --  so, just copy it out into a new message from user
-    QuestionsFrontend.ensure_chat_window_is_open()
-    local start_line_base0 = QuestionsFrontend.chat_window.followup_starts_at_line_0indexed or 0
-    local user_message = QuestionsFrontend.chat_window.buffer:get_lines_after(start_line_base0)
-    QuestionsFrontend.chat_window.buffer:scroll_cursor_to_end_of_buffer()
+    AgentsFrontend.ensure_chat_window_is_open()
+    local start_line_base0 = AgentsFrontend.chat_window.followup_starts_at_line_0indexed or 0
+    local user_message = AgentsFrontend.chat_window.buffer:get_lines_after(start_line_base0)
+    AgentsFrontend.chat_window.buffer:scroll_cursor_to_end_of_buffer()
     vim.cmd("normal! o") -- move to end of buffer, add new line below to separate subsequent follow up response message
     -- log:trace("follow up content:", user_message)
 
-    if not QuestionsFrontend.trace then
+    if not AgentsFrontend.trace then
         opts = {
             args = user_message
         }
@@ -684,32 +684,32 @@ function QuestionsFrontend.follow_up_command()
         --    what if I wanna select text in the chat window itself?
         --    does last selection track the file? is it per window?
         -- hack: close window so LSP is available AND selections work (last selected)
-        QuestionsFrontend.chat_window:close()
+        AgentsFrontend.chat_window:close()
         ask_question_command(opts)
         return
     end
 
     local message = TxChatMessage:user(user_message)
-    QuestionsFrontend.trace:add_message(message)
-    QuestionsFrontend.then_send_messages()
+    AgentsFrontend.trace:add_message(message)
+    AgentsFrontend.then_send_messages()
 end
 
 function ask_dump_agent_trace_command()
-    if not QuestionsFrontend.trace then
+    if not AgentsFrontend.trace then
         print("no trace to dump")
         return
     end
-    QuestionsFrontend.trace:dump()
+    AgentsFrontend.trace:dump()
 end
 
-function QuestionsFrontend.clear_chat_command()
-    if QuestionsFrontend.chat_window then
-        QuestionsFrontend.chat_window:clear()
+function AgentsFrontend.clear_chat_command()
+    if AgentsFrontend.chat_window then
+        AgentsFrontend.chat_window:clear()
     end
-    QuestionsFrontend.trace = nil
+    AgentsFrontend.trace = nil
 end
 
-function QuestionsFrontend.setup()
+function AgentsFrontend.setup()
     -- * cauterize top level
     vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
 
@@ -736,12 +736,12 @@ function QuestionsFrontend.setup()
     --  FYI this smacks of inserting pre-canned prompts with a /prompt slash command?
     vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskQuestion /tools can you review my outstanding git changes', { noremap = true })
 
-    vim.keymap.set('n', '<leader>aa', QuestionsFrontend.abort_last_request, { noremap = true })
-    vim.keymap.set('n', '<leader>ac', QuestionsFrontend.clear_chat_command, { noremap = true })
-    vim.keymap.set('n', '<leader>af', QuestionsFrontend.follow_up_command, { noremap = true })
-    vim.keymap.set('n', '<leader>ao', QuestionsFrontend.ensure_chat_window_is_open, { noremap = true })
+    vim.keymap.set('n', '<leader>aa', AgentsFrontend.abort_last_request, { noremap = true })
+    vim.keymap.set('n', '<leader>ac', AgentsFrontend.clear_chat_command, { noremap = true })
+    vim.keymap.set('n', '<leader>af', AgentsFrontend.follow_up_command, { noremap = true })
+    vim.keymap.set('n', '<leader>ao', AgentsFrontend.ensure_chat_window_is_open, { noremap = true })
 
     vim.api.nvim_create_user_command("AskDumpAgentTrace", ask_dump_agent_trace_command, {})
 end
 
-return QuestionsFrontend
+return AgentsFrontend

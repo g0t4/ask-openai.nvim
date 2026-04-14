@@ -102,8 +102,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             -- PredictionsFrontend and RewriteFrontend are both single turn, and can log assistant response message(s) here
             M.append_to_messages_jsonl(accum, request, frontend)
         end
-        -- TODO check timing of QuestionsFrontend now and ALSO check what (if anything) is missing here for the trace_message that QuestionsFrontend inserts into trace history vs the accum here
-        --  does accum have all of what's needed or is it missing anything (IIRC I vaguely recall there's something I distilled special in QuestionsFrontend that wouldn't be on the pure accum message here)
+        -- TODO check timing of AgentsFrontend now and ALSO check what (if anything) is missing here for the trace_message that AgentsFrontend inserts into trace history vs the accum here
+        --  does accum have all of what's needed or is it missing anything (IIRC I vaguely recall there's something I distilled special in AgentsFrontend that wouldn't be on the pure accum message here)
         --  OR, was it just that I was duplicating the assistant message (randomly b/c that logic to insert the new message would execute before/after this saved b/c this used to be async via vim.vim.defer_fn(function() ... end,0)
         --    btw if it was just duplicates, then now that I do not vim.defer_fn anymore for this part then timing wise the trace_message can't be added
         M.save_trace(request, frontend, accum, sse_parsed)
@@ -129,7 +129,7 @@ function M.save_trace(request, frontend, response_message, sse_parsed)
     -- log:info("trace path", path)
     local file = io.open(path, "w")
     if file then
-        -- TODO move this logic for QuestionsFrontend too? if I keep trace (I plan to ditch it)
+        -- TODO move this logic for AgentsFrontend too? if I keep trace (I plan to ditch it)
         local trace_data = {
             -- 99.99% of the time this is all I need (input messages trace + output message):
             request_body = request.body,
