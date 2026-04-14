@@ -76,14 +76,14 @@ function M.get_instruct_slash_commands()
     local instructs_path = vim.fn.expand("~/.agents/instructs")
     local names = {}
     if vim.fn.isdirectory(instructs_path) == 1 then
-        -- * load instruct directories
+        -- global instruct directories
         local dir_names = files.list_directories(instructs_path)
         for _, name in ipairs(dir_names) do
             M._instruct_paths_by_name[name] = instructs_path .. "/" .. name .. "/INSTRUCT.md"
             table.insert(names, name)
         end
 
-        -- * plus standalone markdown files
+        -- global standalone markdown files
         local entries = files.list_entries(instructs_path)
         for _, entry in ipairs(entries) do
             if entry.type == "file" and entry.name:match("%.md$") then
@@ -91,7 +91,7 @@ function M.get_instruct_slash_commands()
                 -- FYI this means directory wins over standalone markdown file
                 if M._instruct_paths_by_name[instruct_name] then
                     vim.notify(string.format(
-                        "Instruct name collision: '%s' already registered from directory %s; ignoring standalone %s",
+                        "Instruct name collision: '%s' already registered from directory %s; ignoring global file %s",
                         instruct_name,
                         M._instruct_paths_by_name[instruct_name],
                         instructs_path .. "/" .. entry.name
@@ -99,6 +99,42 @@ function M.get_instruct_slash_commands()
                 else
                     M._instruct_paths_by_name[instruct_name] = instructs_path .. "/" .. entry.name
                     table.insert(names, instruct_name)
+                end
+            end
+        end
+    end
+
+    -- repo‑specific instructs: <repo_root>/.agents/instructs
+    local repo_root = nil
+    local git_root = vim.fn.systemlist('git rev-parse --show-toplevel')[1]
+    if vim.v.shell_error == 0 and git_root ~= '' then
+        repo_root = vim.fn.trim(git_root)
+    end
+    if repo_root then
+        local repo_instructs_path = repo_root .. '/.agents/instructs'
+        if vim.fn.isdirectory(repo_instructs_path) == 1 then
+            local dir_names = files.list_directories(repo_instructs_path)
+            for _, name in ipairs(dir_names) do
+                if not M._instruct_paths_by_name[name] then
+                    M._instruct_paths_by_name[name] = repo_instructs_path .. '/' .. name .. '/INSTRUCT.md'
+                    table.insert(names, name)
+                end
+            end
+
+            local entries = files.list_entries(repo_instructs_path)
+            for _, entry in ipairs(entries) do
+                if entry.type == 'file' and entry.name:match('%.md$') then
+                    local instruct_name = entry.name:gsub('%.md$', '')
+                    if not M._instruct_paths_by_name[instruct_name] then
+                        M._instruct_paths_by_name[instruct_name] = repo_instructs_path .. '/' .. entry.name
+                        table.insert(names, instruct_name)
+                    else
+                        vim.notify(string.format(
+                            "Instruct name collision: '%s' already registered from higher precedence; ignoring repo file %s",
+                            instruct_name,
+                            repo_instructs_path .. '/' .. entry.name
+                        ), vim.log.levels.WARN)
+                    end
                 end
             end
         end
