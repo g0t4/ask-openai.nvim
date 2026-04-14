@@ -579,9 +579,9 @@ function QuestionsFrontend.on_curl_exited_successfully()
             -- add assistant response message to chat history (TxChatMessage)
             --   (must come before tool result messages)
             --   theoretically there can be multiple messages, with any role (not just assitant)
-            local thread_message = TxChatMessage:from_assistant_rx_message(rx_message)
-            QuestionsFrontend.trace:add_message(thread_message)
-            completion_logger.append_to_messages_jsonl(thread_message, QuestionsFrontend.trace.last_request, QuestionsFrontend)
+            local trace_message = TxChatMessage:from_assistant_rx_message(rx_message)
+            QuestionsFrontend.trace:add_message(trace_message)
+            completion_logger.append_to_messages_jsonl(trace_message, QuestionsFrontend.trace.last_request, QuestionsFrontend)
             -- TODO capture *-trace.json here too? and then get rid of response_message hack cuz all messages will now be in thread
             --    TODO and careful to mirror changes (i.e. if move here, then need thread to save still for other frontends)
 
