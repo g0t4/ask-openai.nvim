@@ -45,7 +45,7 @@ local function get_file(path)
 end
 
 ---@param opts {args:string}
-local function ask_question_command(opts)
+local function ask_agent_command(opts)
     local user_prompt = opts.args
     local always_include = {
         yanks = true,
@@ -685,7 +685,7 @@ function AgentsFrontend.follow_up_command()
         --    does last selection track the file? is it per window?
         -- hack: close window so LSP is available AND selections work (last selected)
         AgentsFrontend.chat_window:close()
-        ask_question_command(opts)
+        ask_agent_command(opts)
         return
     end
 
@@ -713,7 +713,7 @@ function AgentsFrontend.setup()
     -- * AskAgent
     vim.api.nvim_create_user_command(
         "AskAgent",
-        ask_question_command,
+        ask_agent_command,
         { range = true, nargs = 1, complete = prompt_parser.SlashCommandCompletion }
     )
     -- * prefill argument combos:
