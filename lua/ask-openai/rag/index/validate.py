@@ -105,7 +105,7 @@ class DatasetsValidator:
         else:
             logger.debug("All good, no missing extensions, you lucky motherf***er")
 
-    def compare_config_vs_indexed_mismatches(self, datasets: Datasets, config: Config) -> None:
+    def compare_config_vs_indexed_extensions(self, datasets: Datasets, config: Config) -> None:
         # FYI IIRC validate was not initially intended to reconcile config vs actual...
         # so this config compare might not fit as-is... might need more changes to dataset compares...
         # just heads up, IIRC, I am materially altering the purpose of this tool and might want to review all of its code to ensure smth isn't amiss
@@ -149,7 +149,7 @@ def main():
 
     # PRN make this main() function async
     config = asyncio.run(load_rag_config(root_dir))
-    validator.compare_config_vs_indexed_mismatches(ds, config)
+    validator.compare_config_vs_indexed_extensions(ds, config)
 
     if validator.any_problems:
         sys.exit(1)
