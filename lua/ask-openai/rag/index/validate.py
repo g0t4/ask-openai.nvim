@@ -119,7 +119,7 @@ class DatasetsValidator:
         if extra_extensions:
             self.any_problems = True
             logger.error( \
-                "[bold white on red]Datasets exist for extensions no longer indexed: "
+                "[bold white on red]Vestigial datasets (extensions that aren't indexed): "
                 + ", ".join(sorted(extra_extensions))
             )
 
