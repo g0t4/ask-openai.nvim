@@ -297,7 +297,7 @@ function AgentsFrontend.then_send_messages()
         body = AgentsFrontend.trace:next_curl_request_body(),
         base_url = AgentsFrontend.trace.base_url,
         endpoint = CompletionsEndpoints.oai_v1_chat_completions,
-        type = "questions",
+        type = "agents",
     })
     log:luaify_trace("body:", request.body)
     curl.spawn(request, AgentsFrontend)

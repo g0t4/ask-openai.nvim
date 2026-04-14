@@ -98,7 +98,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             vim.fn.mkdir(save_dir, "p")
         end)
 
-        if request.type ~= "questions" then
+        if request.type ~= "agents" then
             -- PredictionsFrontend and RewriteFrontend are both single turn, and can log assistant response message(s) here
             M.append_to_messages_jsonl(accum, request, frontend)
         end
