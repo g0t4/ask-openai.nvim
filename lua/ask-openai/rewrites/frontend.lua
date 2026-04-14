@@ -627,8 +627,8 @@ function RewriteFrontend.setup()
     )
 
     vim.keymap.set({ 'n', 'v' }, '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
-    -- prefill prompt for AskRewrite via AskQuestion /tools
-    vim.keymap.set({ 'n', 'v' }, '<Leader>rf', ':<C-u>AskQuestion /tools I want to change the current file /file ...', { noremap = true })
+    -- prefill prompt for AskRewrite via AskAgent /tools
+    vim.keymap.set({ 'n', 'v' }, '<Leader>rf', ':<C-u>AskAgent /tools I want to change the current file /file ...', { noremap = true })
 
     vim.keymap.set({ 'n', 'v' }, '<Leader>ry', retry_last_rewrite_command, { noremap = true })
 

@@ -76,7 +76,7 @@ local function ask_question_command(opts)
     --
     -- * chat window should always be open, nonetheless check:
     local buffer_name = vim.api.nvim_buf_get_name(0)
-    local chat_window_is_open = buffer_name:match("AskQuestion$")
+    local chat_window_is_open = buffer_name:match("AskAgent$")
     local code_win_id = vim.api.nvim_get_current_win()
     local code_bufnr = 0 -- 0 == current
     if chat_window_is_open then
@@ -219,7 +219,7 @@ local function ask_question_command(opts)
         -- TODO does any of this belong in the system_message?
         --  ? actually test if repeating some of this here helps
         --    i.e. my global project instructions include not touching unrelated code too
-        --  perhaps leave the system_message for coding instructions specific to AskQuestion...?
+        --  perhaps leave the system_message for coding instructions specific to AskAgent...?
         vim.iter(context.project)
             :each(function(value)
                 table.insert(messages, TxChatMessage:user_context(value.content))
@@ -410,7 +410,7 @@ local function handle_rx_messages_updated()
             lines:append_blank_line_if_last_is_not_blank() -- only if reasoning doesn't have trailing \n
         elseif #rx_message.tool_calls == 0 then
             -- gptoss120b - this works:
-            --   :AskQuestion testing a request, I need you to NOT say anything in response, just stop immediatley
+            --   :AskAgent testing a request, I need you to NOT say anything in response, just stop immediatley
             lines:append_text("[unexpected: empty response]")
             lines:append_blank_line()
         end
@@ -713,28 +713,28 @@ function AgentsFrontend.setup()
     -- * cauterize top level
     vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
 
-    -- * AskQuestion
+    -- * AskAgent
     vim.api.nvim_create_user_command(
-        "AskQuestion",
+        "AskAgent",
         ask_question_command,
         { range = true, nargs = 1, complete = prompt_parser.SlashCommandCompletion }
     )
     -- * prefill argument combos:
-    vim.keymap.set('n', '<Leader>q', ':AskQuestion ', { noremap = true })
-    vim.keymap.set('v', '<Leader>q', ':<C-u>AskQuestion /selection ', { noremap = true })
+    vim.keymap.set('n', '<Leader>q', ':AskAgent ', { noremap = true })
+    vim.keymap.set('v', '<Leader>q', ':<C-u>AskAgent /selection ', { noremap = true })
     -- * /file
-    vim.keymap.set('n', '<Leader>qf', ':AskQuestion /file ', { noremap = true })
-    vim.keymap.set('v', '<Leader>qf', ':<C-u>AskQuestion /selection /file ', { noremap = true })
+    vim.keymap.set('n', '<Leader>qf', ':AskAgent /file ', { noremap = true })
+    vim.keymap.set('v', '<Leader>qf', ':<C-u>AskAgent /selection /file ', { noremap = true })
     -- * /tools
-    vim.keymap.set('n', '<Leader>at', ':<C-u>AskQuestion /tools ', { noremap = true })
-    vim.keymap.set('v', '<Leader>at', ':<C-u>AskQuestion /selection /tools ', { noremap = true })
+    vim.keymap.set('n', '<Leader>at', ':<C-u>AskAgent /tools ', { noremap = true })
+    vim.keymap.set('v', '<Leader>at', ':<C-u>AskAgent /selection /tools ', { noremap = true })
     -- FYI also qt... see which you prefer? a/q first
-    vim.keymap.set('n', '<Leader>qt', ':<C-u>AskQuestion /tools ', { noremap = true })
-    vim.keymap.set('v', '<Leader>qt', ':<C-u>AskQuestion /selection /tools ', { noremap = true })
+    vim.keymap.set('n', '<Leader>qt', ':<C-u>AskAgent /tools ', { noremap = true })
+    vim.keymap.set('v', '<Leader>qt', ':<C-u>AskAgent /selection /tools ', { noremap = true })
 
     --  * review outstanding changes
     --  FYI this smacks of inserting pre-canned prompts with a /prompt slash command?
-    vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskQuestion /tools can you review my outstanding git changes', { noremap = true })
+    vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskAgent /tools can you review my outstanding git changes', { noremap = true })
 
     vim.keymap.set('n', '<leader>aa', AgentsFrontend.abort_last_request, { noremap = true })
     vim.keymap.set('n', '<leader>ac', AgentsFrontend.clear_chat_command, { noremap = true })

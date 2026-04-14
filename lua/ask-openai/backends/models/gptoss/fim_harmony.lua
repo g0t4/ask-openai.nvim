@@ -32,7 +32,7 @@ function HarmonyFimPromptBuilder:system()
     -- - And instead of forcing instant response, I could start the thoughts section and let it finish it.
     --   i.e. prompt it to finish thoughts about the specific code in the example
     --   "Ok now I should review the code itself and take some notes..."
-    -- - Just keep in mind, if you want thinking, you can always use AskRewrite or AskQuestion too (make sure those aren't a fit before modifying FIM for this)
+    -- - Just keep in mind, if you want thinking, you can always use AskRewrite or AskAgent too (make sure those aren't a fit before modifying FIM for this)
     --   with thinking I can't imagine you're not talking about an Edit Prediction (less FIM)
 
     local message = [[

@@ -17,7 +17,7 @@ function AgentWindow:new()
         width_ratio = 0.6,
         height_ratio = 0.8,
         filetype = "markdown",
-        buffer_name = 'AskQuestion',
+        buffer_name = 'AskAgent',
     }
 
     local instance_mt = { __index = self } -- FYI self is likely AgentWindow here

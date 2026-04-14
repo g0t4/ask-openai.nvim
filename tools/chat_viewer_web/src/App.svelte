@@ -41,8 +41,8 @@
     if (isDirectory) return 'File Browser'
     const url = traceUrl.toLowerCase()
     if (url.includes('rewrite')) return ':AskRewrite'
-    if (url.includes('tools')) return ':AskQuestion /tools'
-    if (url.includes('question')) return ':AskQuestion'
+    if (url.includes('tools')) return ':AskAgent /tools'
+    if (url.includes('question')) return ':AskAgent'
     if (url.includes('fim')) return ':AskPredict'
     return 'Chat Viewer'
   })

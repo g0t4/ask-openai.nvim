@@ -14,7 +14,7 @@ HLGroups.TOOL_FAILED = "AskToolFailed"
 vim.api.nvim_set_hl(0, HLGroups.TOOL_SUCCESS, { fg = "#92E2AC", bg = "NONE" })
 vim.api.nvim_set_hl(0, HLGroups.TOOL_FAILED, { fg = "#e06c75", bg = "NONE", bold = true })
 
--- * CHAT / :AskQuestion
+-- * CHAT / :AskAgent
 HLGroups.CHAT_REASONING = "AskChatReasoning"
 HLGroups.EXPLAIN_ERROR = "AskExplainError"
 vim.api.nvim_set_hl(0, HLGroups.CHAT_REASONING, { fg = "#808080", italic = true })

@@ -5,10 +5,10 @@
 - AskRewrite is working well
 
 ## Fixes in my code:
-- blow up when I pass think content back to it in AskQuestion/AskToolUse
+- blow up when I pass think content back to it in AskAgent/AskToolUse
   - triggers a failure in the jinja template that builds the actual prompt on the llama-server side
   - this is on my first follow up after a think response
-  - I am not sure I ever designed AskQuestion to be able to handle thinking responses, to not send back the think tags
+  - I am not sure I ever designed AskAgent to be able to handle thinking responses, to not send back the think tags
 
 ## FIM
 

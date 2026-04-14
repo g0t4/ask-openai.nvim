@@ -1,4 +1,4 @@
-## old model notes in AskQuestion
+## old model notes in AskAgent
 
 taken from AgentsFrontend right before sending a new question trace
 **put notes here instead of bloating the code**
@@ -35,7 +35,7 @@ taken from AgentsFrontend right before sending a new question trace
   - review start logs for n_ctx and during completion it warns if truncated prompt:
     - level=WARN source=runner.go:131 msg="truncating input prompt" limit=8192 prompt=10552 keep=4 new=8192
 
-## /v1/completions no longer makes sense with AgentTrace in AskToolUse/AskQuestion
+## /v1/completions no longer makes sense with AgentTrace in AskToolUse/AskAgent
 
 - FYI not going to support /v1/completions anymore...
   - not until I have a specific need to use it

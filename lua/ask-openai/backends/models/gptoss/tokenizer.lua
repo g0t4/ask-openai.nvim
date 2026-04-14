@@ -4,7 +4,7 @@ local M = {}
 ---@param level any
 ---@return number
 function M.get_gptoss_max_tokens_for_level(level)
-    -- FYI if you want separate levels for say FIM vs AskQuestion/AskRewrite...
+    -- FYI if you want separate levels for say FIM vs AskAgent/AskRewrite...
     --   consider passing the type here so it is all in one spot still.. the levels are?
     --   or just duplicate this function below and keep it all together
 

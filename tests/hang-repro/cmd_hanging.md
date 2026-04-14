@@ -18,7 +18,7 @@ Ask Qwen3.5 27B Distill Claude Opus to run the following command and it will han
   several cases model (qwen3.5 distill) specifically set timeout to 10000 and 30000 (is my timeout in seconds and not ms?)
 
 ```vim
-AskQuestion /tools run system_profiler SPUSBDataType SPThunderboltDataType -json and summarizer
+AskAgent /tools run system_profiler SPUSBDataType SPThunderboltDataType -json and summarizer
 ```
 
 ```
