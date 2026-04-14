@@ -614,7 +614,7 @@ function QuestionsFrontend.run_tools_and_send_results_back_to_the_model()
 
                 -- * map tool result to a new TxChatMessage (to send back to model)
                 local tool_response_message = TxChatMessage:tool_result(tool_call)
-                log:jsonify_compact_trace("tool_message:", tool_response_message, "foo", { a = "bar" })
+                -- log:jsonify_compact_trace("tool_message:", tool_response_message)
                 tool_call.response_message = tool_response_message
                 QuestionsFrontend.thread:add_message(tool_response_message)
 
