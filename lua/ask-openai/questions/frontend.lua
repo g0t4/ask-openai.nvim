@@ -24,6 +24,7 @@ local CurlRequestForThread = require("ask-openai.questions.curl_request_for_thre
 local RxAccumulatedMessage = require("ask-openai.questions.chat.messages.rx")
 local ToolCall = require("ask-openai.questions.chat.tool_call")
 local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
+local inspect = require("devtools.inspect")
 
 require("ask-openai.helpers.buffers")
 
@@ -299,7 +300,7 @@ function QuestionsFrontend.then_send_messages()
         endpoint = CompletionsEndpoints.oai_v1_chat_completions,
         type = "questions",
     })
-    log:luaify_trace("body:", request.body)
+    log:trace("body:", inspect.bat_inspect(request.body))
     curl.spawn(request, QuestionsFrontend)
     QuestionsFrontend.thread:set_last_request(request)
 end
@@ -466,8 +467,7 @@ function QuestionsFrontend.on_streaming_delta_update_message_history(choice, req
         rx_accum_message.timings = sse_parsed.timings
         -- FYI this may very well break submitting to llama-server... if so I'll need curl request to copy/strip these extra fields so I can keep them locally
         vim.defer_fn(function()
-            local dev_inspect = require("devtools.inspect")
-            log:info("test", dev_inspect.bat_inspect(sse_parsed)) -- NOW THAT IS A BEAUTIFUL LOG!!!! mmm bat_inspect (no log prefix on each line either)
+            log:info("test", inspect.bat_inspect(sse_parsed)) -- NOW THAT IS A BEAUTIFUL LOG!!!! mmm bat_inspect (no log prefix on each line either)
         end, 10)
     end
 
