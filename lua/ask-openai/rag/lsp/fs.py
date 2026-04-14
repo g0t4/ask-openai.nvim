@@ -53,10 +53,10 @@ def set_root_dir(root_dir: str | Path | None):
     rag_yaml = root_path / ".rag.yaml"
     if not rag_yaml.exists():
         logger.info(f"no rag config found {rag_yaml}, using default config")
-        config = Config.default()
-    else:
-        config = load_config(rag_yaml.read_text())
-        logger.pp_debug(f"found rag config: {rag_yaml}", config)
+        return Config.default()
+
+    config = load_config(rag_yaml.read_text())
+    logger.pp_debug(f"found rag config: {rag_yaml}", config)
 
 async def load_rag_config(source_dir: Path) -> Config:
     # TODO MERGE WITH ABOVE (this version was from indexer)
