@@ -150,7 +150,7 @@
           .filter(line => line.trim())
           .map(line => JSON.parse(line))
       } else {
-        // Legacy thread.json format
+        // *-trace.json
         const data: ThreadJson = await res.json()
 
         // Extract messages from request_body

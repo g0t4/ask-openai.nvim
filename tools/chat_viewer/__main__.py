@@ -75,7 +75,7 @@ def load_thread_messages_from_path(argv1: str) -> list[dict[str, Any]]:
 
     # * include response message at end of thread
     if "response_message" in data:
-        # * thread.json
+        # * trace.json
         response = data["response_message"]
         if isinstance(response, dict):
             response["output.json"] = True
@@ -98,7 +98,7 @@ def load_messages(data) -> list[dict[str, Any]]:
         return data
     if isinstance(data, dict):
         if "request_body" in data:
-            # * thread.json has request_body.messages
+            # * -trace.json has request_body.messages
             data = data["request_body"]
         if "messages" in data:
             # typical request body, has messages, tools, temp, etc
@@ -114,13 +114,13 @@ def load_messages(data) -> list[dict[str, Any]]:
 def load_thread_messages_from_stream(stream) -> list[dict[str, Any]]:
     # assume stream can be:
     #   jq .messages | this
-    #   cat *-thread.json | this
+    #   cat *-trace.json | this
     #   cat input-messages.json | this
     data = json.load(stream)
     messages = load_messages(data)
 
     if "response_message" in data:
-        # * thread.json
+        # * trace
         response = data["response_message"]
         if isinstance(response, dict):
             response["output.json"] = True

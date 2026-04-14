@@ -106,7 +106,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         --  OR, was it just that I was duplicating the assistant message (randomly b/c that logic to insert the new message would execute before/after this saved b/c this used to be async via vim.vim.defer_fn(function() ... end,0)
         --    btw if it was just duplicates, then now that I do not vim.defer_fn anymore for this part then timing wise the thread_message can't be added
         M.save_thread(request, frontend, accum, sse_parsed)
-        -- TODO consider if you want part of what thread has (i.e. other request body inputs)... perhaps just log that separately? in another file? and then not log thread.json anymore and just rely on messages.jsonl?
+        -- TODO consider if you want part of what thread has (i.e. other request body inputs)... perhaps just log that separately? in another file? and then not log *-trace.json anymore and just rely on messages.jsonl?
         --  that said I was unhappy with messages alone today too so gahhh (I also ripped out messages.jsonl)
 
         if M.LOG_ALL_SSEs then
@@ -124,7 +124,7 @@ end
 
 function M.save_thread(request, frontend, response_message, sse_parsed)
     local save_dir, thread_id = M.log_request_with(request, frontend)
-    local path = save_dir .. "/" .. thread_id .. "-thread.json"
+    local path = save_dir .. "/" .. thread_id .. "-trace.json"
     -- log:info("thread path", path)
     local file = io.open(path, "w")
     if file then
@@ -202,11 +202,11 @@ end
 ---@param request CurlRequest
 ---@param frontend StreamingFrontend
 function M.append_to_messages_jsonl(message, request, frontend)
-    -- FYI 0.1 ms for this func to run (a few tests) - NBD to be saving redundant info that's also in -thread.json
+    -- FYI 0.1 ms for this func to run (a few tests) - NBD to be saving redundant info that's also in *-trace.json
 
-    -- FYI I am keeping -thread.json for now until I have time to update my chat viewer for -messages.jsonl
-    --   I don't think I need anything beyond messages from -thread.json... if not then I'll ditch -thread.json most likely
-    --   if I do need more, it will be a while (if ever) before I fully stop using thread.json
+    -- FYI I am keeping *-trace.json for now until I have time to update my chat viewer for -messages.jsonl
+    --   I don't think I need anything beyond messages from -trace.json... if not then I'll ditch -trace.json most likely
+    --   if I do need more, it will be a while (if ever) before I fully stop using -trace.json
 
     local oneline = { indent = false }
     local json_line = vim.json.encode(message, oneline)
