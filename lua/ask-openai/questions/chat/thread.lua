@@ -6,13 +6,13 @@ local log = require('ask-openai.logs.logger').predictions()
 ---@field params ChatParams
 ---@field last_request CurlRequestForThread
 ---@field base_url string
-local ChatThread = {}
+local AgentTrace = {}
 
 ---@param params ChatParams
 ---@param base_url string
 ---@return ChatThread
-function ChatThread:new(params, base_url)
-    self = setmetatable({}, { __index = ChatThread })
+function AgentTrace:new(params, base_url)
+    self = setmetatable({}, { __index = AgentTrace })
     self.messages = params.messages or {}
     -- FYI think of params as the next request params
     self.params = params or {}
@@ -25,12 +25,12 @@ function ChatThread:new(params, base_url)
 end
 
 ---@param request CurlRequestForThread
-function ChatThread:set_last_request(request)
+function AgentTrace:set_last_request(request)
     self.last_request = request
 end
 
 ---@param message TxChatMessage
-function ChatThread:add_message(message)
+function AgentTrace:add_message(message)
     if not message.role then
         error("message.role is required")
     end
@@ -38,7 +38,7 @@ function ChatThread:add_message(message)
 end
 
 ---@return table body
-function ChatThread:next_curl_request_body()
+function AgentTrace:next_curl_request_body()
     ---@param array any[]
     ---@return any[]
     function clone_array_container_not_items(array)
@@ -69,10 +69,10 @@ function ChatThread:next_curl_request_body()
     return body
 end
 
-function ChatThread:dump()
+function AgentTrace:dump()
     -- log:luaify_trace("last_request's RxAccumulatedMessages", self.last_request.accumulated_model_response_messages)
     -- log:luaify_trace("thread's TxChatMessages (history, sent on followup/toolresults)", self.messages)
     log:luaify_trace("ChatThread:dump", self)
 end
 
-return ChatThread
+return AgentTrace
