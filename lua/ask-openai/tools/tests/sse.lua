@@ -1,7 +1,7 @@
 local test_setup = require("ask-openai.helpers.test_setup")
 test_setup.modify_package_path()
 
-local questions_frontend = require("ask-openai.questions.frontend")
+local questions_frontend = require("ask-openai.agents.frontend")
 local text = require("ask-openai.helpers.text")
 require("ask-openai.helpers.buffers")
 

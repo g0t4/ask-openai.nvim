@@ -160,7 +160,7 @@ function M.setup(user_options)
 
     require("ask-openai.frontends.context").setup()
     require("ask-openai.rewrites.frontend").setup()
-    require("ask-openai.questions.frontend").setup()
+    require("ask-openai.agents.frontend").setup()
     require("ask-openai.tools.mcp").setup()
     require("ask-openai.rag").setup()
 end

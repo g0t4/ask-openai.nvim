@@ -14,7 +14,7 @@ local rag_client = require("ask-openai.rag.client")
 local CurlRequest = require("ask-openai.backends.curl_request")
 local human = require("devtools.humanize")
 local tool_router = require("ask-openai.tools.router")
-local model_params = require("ask-openai.questions.models.params")
+local model_params = require("ask-openai.agents.models.params")
 local MessageBuilder = require("ask-openai.rewrites.message_builder")
 local HLGroups = require("ask-openai.hlgroups")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
@@ -362,7 +362,7 @@ local function ask_rewrite_command(opts)
             .. "\n```" .. file_name .. ":" .. line_info
             .. "\n" .. code .. "\n```"
         code_caveat = "\n\nThis is not necessarily a complete selection of nearby code, this is just the part I want help with. Preserve indentation!"
-        -- TODO add separate reasoning level for rewrites/questions vs predictions... that should help here and with tool calls too!
+        -- TODO add separate reasoning level for rewrites/agents vs predictions... that should help here and with tool calls too!
         -- * response indentation:
         -- - ALTERNATIVELY, if I could show more of the surrounding code, that would likely help too/instead
         -- - FYI mentioning "carefully preserved indentation" resulted in the model not generating markdown wrapers and explanations! (gptoss120b)

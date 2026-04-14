@@ -70,7 +70,7 @@ describe("u-ctags format", function()
                 local lines = {
                     -- strip these:
                     "split_lines_to_table	lua/ask-openai/prediction/prediction.lua	/^local function split_lines_to_table(text)$/;\"	f",
-                    "tool_header	lua/ask-openai/questions/ask.lua	/^            local tool_header = \"**\" .. (call[\"function\"].name or \"\") .. \"**\"$/;\"	f",
+                    "tool_header	lua/ask-openai/agents/ask.lua	/^            local tool_header = \"**\" .. (call[\"function\"].name or \"\") .. \"**\"$/;\"	f",
                     -- keep lines:
                     "on_delete	lua/devtools/diff/weslcs.lua	/^    function builder:on_delete(_token)$/;\"	f	unknown:builder",
                 }

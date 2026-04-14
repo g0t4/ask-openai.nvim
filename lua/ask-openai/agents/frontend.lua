@@ -12,7 +12,7 @@ local CurrentContext = require("ask-openai.frontends.context")
 local api = require("ask-openai.api")
 local rag_client = require("ask-openai.rag.client")
 local files = require("ask-openai.helpers.files")
-local model_params = require("ask-openai.questions.models.params")
+local model_params = require("ask-openai.agents.models.params")
 local LinesBuilder = require("ask-openai.agents.viewer.lines_builder")
 local MessageBuilder = require("ask-openai.rewrites.message_builder")
 local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
@@ -90,13 +90,13 @@ local function ask_question_command(opts)
     QuestionsFrontend.abort_last_request()
     use_tools = context.includes.use_tools or false
 
-    local system = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/questions/prompts/system_message.md")
+    local system = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/system_message.md")
     -- PRN "NEVER add copyright or license headers unless specifically requested."
 
     local tool_definitions
     if use_tools then
         -- PRN build out more detailed guidance: review Claude Code and Codex prompts
-        local tool_instructs = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/questions/prompts/tools.md")
+        local tool_instructs = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/tools.md")
         -- * repo root vs cwd prompt instructions
         local cwd = vim.fn.getcwd()
         local cwd_text = "Current directory: " .. cwd
