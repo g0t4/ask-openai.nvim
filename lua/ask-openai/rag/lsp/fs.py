@@ -42,7 +42,7 @@ async def set_root_dir(root_dir: str | Path | None):
 
     logger.info(f"{root_dir=}")
     root_path = Path(root_dir)
-    dot_rag_dir = Path(root_path) / ".rag"
+    dot_rag_dir = root_path / ".rag"
     if is_no_rag_dir():
         logger.error(f"abort on_initialize b/c no .rag dir, {dot_rag_dir=}")
         # no need to do anything else, the LS server handles setting no capabilities
@@ -61,10 +61,10 @@ async def set_root_dir(root_dir: str | Path | None):
     logger.pp_debug(f"found rag config: {rag_yaml}", config)
     return config  # return NOT used, remove when done refactoring same code below
 
-async def load_rag_config(source_dir: Path) -> Config:
+async def load_rag_config(root_path: Path) -> Config:
     # TODO MERGE WITH ABOVE (this version was from indexer)
     #   FYI above is sync, this is async, make this sync if needed
-    rag_yaml = source_dir / ".rag.yaml"
+    rag_yaml = root_path / ".rag.yaml"
     if not rag_yaml.exists():
         logger.info(f"no rag config found {rag_yaml}, using default config")
         return Config.default()
