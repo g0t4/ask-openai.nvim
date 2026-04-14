@@ -46,6 +46,10 @@ vim.api.nvim_set_hl(0, HLGroups.STATS_CACHED, {
     bg = "none",
 })
 
+-- Arrow between ingest and predicted timings (neon-ish blue)
+HLGroups.STATS_ARROW = "AskStatsArrow"
+vim.api.nvim_set_hl(0, HLGroups.STATS_ARROW, { fg = "#00ffff", bg = "NONE", bold = true })
+
 -- * RAG
 HLGroups.RAG_HIGHLIGHT_LINES = "AskRagHighlightLines"
 HLGroups.RAG_CHUNK_TYPE_ICON_LINE_RANGE = "Normal"

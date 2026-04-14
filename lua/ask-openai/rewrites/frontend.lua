@@ -189,22 +189,26 @@ function RewriteFrontend.on_sse_llama_server_timings(sse)
             { predicted_display, HLGroups.STATS_PREDICTED },
         }
 
-        -- Include cached token count with the ingest (prompt) side if present
+        -- Build the virtual text pieces. If a cache count exists we show it **before** the ingest speed,
+        -- using the green STATS_CACHED highlight, then the ingest speed (prompt) itself.
         local cache_n = sse.timings.cache_n
-        local ingest_part = ingest_display
+        local virt_text = {}
+
         if type(cache_n) == "number" and cache_n > 0 then
-            ingest_part = string.format(
-                "%s %scached",
-                ingest_display,
-                human.comma_delimit(cache_n)
-            )
+            table.insert(virt_text, {
+                string.format("%scached", human.comma_delimit(cache_n)),
+                HLGroups.STATS_CACHED,
+            })
+            -- Separator between cached count and ingest speed
+            table.insert(virt_text, { " + ", nil })
         end
 
-        local virt_text = {
-            { ingest_part, HLGroups.STATS_PROMPT },
-            { arrow, HLGroups.STATS_ARROW },
-            { predicted_display, HLGroups.STATS_PREDICTED },
-        }
+        -- Ingest (prompt) speed
+        table.insert(virt_text, { ingest_display, HLGroups.STATS_PROMPT })
+        -- Arrow separating ingest and predicted sides
+        table.insert(virt_text, { arrow, HLGroups.STATS_ARROW })
+        -- Predicted (output) speed
+        table.insert(virt_text, { predicted_display, HLGroups.STATS_PREDICTED })
 
         vim.api.nvim_buf_set_extmark(0, RewriteFrontend.displayer.marks.namespace_id, current_cursor_row_0based, 0, {
             virt_text = virt_text,
