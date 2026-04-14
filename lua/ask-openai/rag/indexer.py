@@ -81,15 +81,15 @@ class IncrementalRAGIndexer:
         for file_extension in included:
             await self.build_index(file_extension)
         self.warn_about_other_extensions(included)
-        self.trash_vestigial_extensions(included)
+        self.trash_vestigial_extensions(set(included))
         await signal_hotpath_done_in_background()
 
-    def trash_vestigial_extensions(self, configured_extensions: list[str]):
-        print(f'{sorted(configured_extensions)=}')
+    def trash_vestigial_extensions(self, configured_extensions: set[str]):
+        print(f'configured:\n  {sorted(configured_extensions)}')
 
         rag_dir_dirs = [p for p in self.dot_rag_dir.iterdir() if p.is_dir()]
-        indexed_extensions = [d.name for d in rag_dir_dirs]
-        print(f'{sorted(indexed_extensions)=}')
+        indexed_extensions = {d.name for d in rag_dir_dirs}
+        print(f'indexed:\n  {sorted(indexed_extensions)}')
 
         for extension_dir in rag_dir_dirs:
             if extension_dir.name not in configured_extensions:
