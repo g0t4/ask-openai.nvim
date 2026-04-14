@@ -1,23 +1,24 @@
 ---
-name: verify_neovim_lua_config
-description: Guidance and command to run Plenary/Busted tests for Neovim Lua configuration
+name: verify_lua_config
+description: how to verify lua modules for neovim and hammerspoon
 ---
 
-## Overview
-
-This skill provides a concise, reproducible way to run **Plenary/Busted** style
-tests for Neovim Lua configuration files. It is intended for use in headless
-automation (e.g., CI pipelines) or by an AI agent that needs to verify that a
-Neovim configuration works correctly.
+I use **Plenary/Busted** style tests for Neovim and Hammerspoon configuration files (scripts).
 
 ## Prerequisites
 
-1. **Neovim** – Ensure `nvim` is installed and reachable via the system `$PATH`.
-2. **Plenary.nvim** – The plugin must be installed (e.g., via a plugin manager) so
-   the `PlenaryBusted*` commands are available.
-3. **Test files** – Your Lua test files should follow the Plenary/Busted
-   conventions (`describe`, `it`, etc.) and be located under a directory such as
-   `lua/your-plugin/tests` or `tests/`.
+1. **plenary.nvim** plugin
+    - check with
+      `:= vim.iter(vim.fn.getscriptinfo()):filter(function(s) return s.name:match("plenary.nvim") end):totable()`
+    - provides `PlenaryBusted*` commands
+
+## Naming
+
+- Test file names end with `.tests.lua`
+- Put new test files next to the system under test. Name accordingly:
+     skills.lua
+     skills.tests.lua
+- `PlenaryBustedDirectory` has a retarded discovery convention: `*_spec.lua`... DO NOT USE THIS CRAP.
 
 ## Running a single test file
 
@@ -27,20 +28,11 @@ nvim --headless \
   -c "qa!"
 ```
 
-* `PlenaryBustedFile <path>` runs the specified test file.
-* `qa!` quits Neovim after the test run.
-
-## Running all tests in a directory
+## Run multiple test files
 
 ```sh
-nvim --headless \
-  -c "PlenaryBustedDirectory lua/ask-openai/frontends" \
-  -c "qa!"
+fd ".tests\.lua" | xargs -I_ nvim --headless -c "PlenaryBustedFile _" -c "qa!"
 ```
-
-Replace the directory path with the location of your tests. The command will
-discover all `*_tests.lua` files (or any file that contains Plenary/Busted
-syntax) and execute them.
 
 ## Example for this repository
 
