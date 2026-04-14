@@ -112,12 +112,14 @@ class DatasetsValidator:
         # print(f'{sorted(configured_extensions)=}')
         extra_extensions = present_extensions - configured_extensions
         if extra_extensions:
+            self.any_problems = True
             logger.error( \
                 "[bold white on red]Datasets exist for extensions no longer indexed: "
                 + ", ".join(sorted(extra_extensions))
             )
         missing_extensions = configured_extensions - present_extensions
         if missing_extensions:
+            self.any_problems = True
             logger.error( \
                 "[bold white on red]Missing datasets (configured extensions): "
                 + ", ".join(sorted(missing_extensions))
