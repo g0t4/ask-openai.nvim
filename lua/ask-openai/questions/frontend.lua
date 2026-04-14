@@ -436,7 +436,8 @@ end
 --- think of this as denormalizing SSEs => into aggregate RxAccumulatedMessage
 ---@param choice OpenAIChoice|nil
 ---@param request CurlRequestForThread
-function QuestionsFrontend.on_streaming_delta_update_message_history(choice, request)
+---@param sse_parsed OnParsedSSE
+function QuestionsFrontend.on_streaming_delta_update_message_history(choice, request, sse_parsed)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
     -- rebuilds message as if sent `stream: false`
     -- for message history / follow up
@@ -460,6 +461,12 @@ function QuestionsFrontend.on_streaming_delta_update_message_history(choice, req
         request.accumulated_model_response_messages[index_base1] = rx_accum_message
     end
 
+    if sse_parsed.timings then
+        -- ? should I put this into the on_sse_llama_server_timings instead of here?
+        rx_accum_message.timings = sse_parsed.timings
+        -- FYI this may very well break submitting to llama-server... if so I'll need curl request to copy/strip these extra fields so I can keep them locally
+    end
+
     if choice.delta.content ~= nil and choice.delta.content ~= vim.NIL then
         -- by tracking _verbatim_content, I can trim the end every single time
         -- and if it is not a full match it will show back up once it's past the match point
@@ -477,6 +484,7 @@ function QuestionsFrontend.on_streaming_delta_update_message_history(choice, req
     end
 
     -- * strip leaked tool call tokens (bug in llama.cpp)
+    -- TODO this is an old bug, s/b resolved... is it ok to remove this?
     rx_accum_message.content = rx_accum_message._verbatim_content:gsub("\n<tool_call>\n<function=[%w_]+", "")
     if rx_accum_message.content ~= rx_accum_message._verbatim_content then
         log:error("stripping LEAKED TOOL CALL!")
@@ -546,7 +554,7 @@ function QuestionsFrontend.on_parsed_data_sse(sse_parsed)
         return
     end
     local first_choice = sse_parsed.choices[1]
-    QuestionsFrontend.on_streaming_delta_update_message_history(first_choice, request)
+    QuestionsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_parsed)
     handle_rx_messages_updated()
 end
 

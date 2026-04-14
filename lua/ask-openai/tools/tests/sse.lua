@@ -68,7 +68,8 @@ data: [DONE]
             local deltas = text.split_lines_skip_empties(choices)
             for _, delta_json in pairs(deltas) do
                 local delta_table = vim.json.decode(delta_json)
-                questions_frontend.on_streaming_delta_update_message_history(delta_table, request)
+                local sse_parsed = {} -- fake the full SSE since AFAICT it is not always available in consumer tests
+                questions_frontend.on_streaming_delta_update_message_history(delta_table, request, sse_parsed)
             end
             return request, frontend
         end
@@ -261,12 +262,10 @@ data: [DONE]
                 :map(function(line)
                     return vim.json.decode(line, {})
                 end)
-                :map(function(sse)
-                    return sse.choices
-                end)
-                :each(function(sse)
+                :each(function(sse_parsed)
+                    local choices = sse_parsed.choices
                     -- vim.print(sse[1])
-                    questions_frontend.on_streaming_delta_update_message_history(sse[1], request)
+                    questions_frontend.on_streaming_delta_update_message_history(choices[1], request, sse_parsed)
                 end)
 
             should.be_equal(1, #request.accumulated_model_response_messages)
