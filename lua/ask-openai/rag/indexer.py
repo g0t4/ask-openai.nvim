@@ -63,8 +63,11 @@ class IncrementalRAGIndexer:
         # TODO pass root_path instead of using fs (IF I even need it  here anymore... was it just here for ignores?)
 
     async def main(self):
-        index_these_file_extensions = await self.get_indexed_file_extensions()
+        if not self.config.enabled:
+            logger.warn(f"RAG indexing disabled in {self.source_code_dir / '.rag.yaml'}, ")
+            return
 
+        index_these_file_extensions = self.config.include
         if self.program_args and self.program_args.only_extension:
             index_these_file_extensions = [self.program_args.only_extension]
             logger.info(f"Indexing only extension: {index_these_file_extensions[0]}")
@@ -73,13 +76,6 @@ class IncrementalRAGIndexer:
             await self.build_index(file_extension)
         self.warn_about_other_extensions(index_these_file_extensions)
         await signal_hotpath_done_in_background()
-
-    async def get_indexed_file_extensions(self) -> list[str]:
-        if not self.config.enabled:
-            logger.info(f"RAG indexing disabled in {self.source_code_dir / '.rag.yaml'}, "
-                        "hack just returns no supported file extension to stop (fine for now)")
-            return []
-        return self.config.include
 
     def warn_about_other_extensions(self, index_languages: list[str]):
 
