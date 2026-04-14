@@ -55,7 +55,8 @@ def set_root_dir(root_dir: str | Path | None):
         logger.info(f"no rag config found {rag_yaml}, using default config")
         return Config.default()
 
-    config = load_config(rag_yaml.read_text())
+    content = rag_yaml.read_text()
+    config = load_config(content)
     logger.pp_debug(f"found rag config: {rag_yaml}", config)
 
 async def load_rag_config(source_dir: Path) -> Config:
