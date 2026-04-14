@@ -710,9 +710,6 @@ function AgentsFrontend.clear_chat_command()
 end
 
 function AgentsFrontend.setup()
-    -- * cauterize top level
-    vim.keymap.set({ 'n', 'v' }, '<leader>a', '<Nop>', { noremap = true })
-
     -- * AskAgent
     vim.api.nvim_create_user_command(
         "AskAgent",
@@ -720,9 +717,10 @@ function AgentsFrontend.setup()
         { range = true, nargs = 1, complete = prompt_parser.SlashCommandCompletion }
     )
     -- * prefill argument combos:
-    vim.keymap.set('n', '<Leader>q', ':AskAgent ', { noremap = true })
-    vim.keymap.set('v', '<Leader>q', ':<C-u>AskAgent /selection ', { noremap = true })
+    vim.keymap.set('n', '<Leader>a', ':AskAgent ', { noremap = true })
+    vim.keymap.set('v', '<Leader>a', ':<C-u>AskAgent /selection ', { noremap = true })
     -- * /file
+    -- TODO <leader>af => follow up in chat window, need to pick smth new here:
     vim.keymap.set('n', '<Leader>qf', ':AskAgent /file ', { noremap = true })
     vim.keymap.set('v', '<Leader>qf', ':<C-u>AskAgent /selection /file ', { noremap = true })
     -- * /tools
