@@ -231,7 +231,7 @@ _G.LSPRankedMatch = {}
 ---@param top_k? integer
 ---@param callback fun(matches: LSPRankedMatch[])
 ---@return integer _client_request_ids, fun() _cancel_all_requests
-function M.context_query_questions(same_file_bufnr, user_prompt, code_context, top_k, callback)
+function M.context_query_for_agents(same_file_bufnr, user_prompt, code_context, top_k, callback)
     top_k = top_k or 5
     local file = vim.api.nvim_buf_get_name(same_file_bufnr)
     -- PRN do something else when no code_context (nothing selected intentionally by user)?

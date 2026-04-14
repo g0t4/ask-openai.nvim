@@ -273,7 +273,7 @@ local function ask_question_command(opts)
             then_generate_completion(rag_matches)
         end
 
-        this_request_ids, cancel = rag_client.context_query_questions(code_bufnr, cleaned_prompt, code_context, context.includes.top_k, on_rag_response)
+        this_request_ids, cancel = rag_client.context_query_for_agents(code_bufnr, cleaned_prompt, code_context, context.includes.top_k, on_rag_response)
         AgentsFrontend.rag_cancel = function()
             log:warn("canceling RAG")
             AgentsFrontend.rag_cancel = nil
