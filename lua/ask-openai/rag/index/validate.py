@@ -107,9 +107,9 @@ class DatasetsValidator:
 
     def compare_config_vs_indexed_mismatches(self, datasets: Datasets, config: Config) -> None:
         present_extensions = set(datasets.all_datasets.keys())
-        print(f'{present_extensions=}')
+        print(f'{sorted(present_extensions)=}')
         configured_extensions = set(config.include)
-        print(f'{configured_extensions=}')
+        print(f'{sorted(configured_extensions)=}')
         extra_extensions = present_extensions - configured_extensions
         if extra_extensions:
             logger.error( \
