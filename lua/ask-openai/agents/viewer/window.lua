@@ -1,5 +1,5 @@
 local LinesBuilder = require("ask-openai.questions.lines_builder")
-local BufferController = require("ask-openai.agents.buffers")
+local BufferController = require("ask-openai.agents.viewer.buffers")
 local HLGroups = require("ask-openai.hlgroups")
 local FloatWindow = require("ask-openai.helpers.float_window")
 
