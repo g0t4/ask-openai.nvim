@@ -152,7 +152,7 @@ local function ask_question_command(opts)
         first_turn_ns_id = vim.api.nvim_create_namespace("ask.marks.chat.window.first.turn")
     end
     local lines = LinesBuilder:new(first_turn_ns_id)
-    if QuestionsFrontend.thread then
+    if QuestionsFrontend.trace then
         -- FYI some previous extmarks are "dropped", fine by me to "turn off the colors"... but, probably want it for all previous chat extmarks
         lines:append_styled_lines({ "--- New Thread Started ---" }, HLGroups.SYSTEM_PROMPT)
         -- or:   QuestionsFrontend.clear_chat_command()
@@ -245,8 +245,8 @@ local function ask_question_command(opts)
             tools = tool_definitions,
         }, context)
 
-        QuestionsFrontend.thread = ChatThread:new(body_overrides, base_url)
-        -- log:info("sending", vim.inspect(QuestionsFrontend.thread))
+        QuestionsFrontend.trace = ChatThread:new(body_overrides, base_url)
+        -- log:info("sending", vim.inspect(QuestionsFrontend.trace))
         QuestionsFrontend.then_send_messages()
     end
 
@@ -295,14 +295,14 @@ function QuestionsFrontend.then_send_messages()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
     local request = CurlRequestForThread:new({
-        body = QuestionsFrontend.thread:next_curl_request_body(),
-        base_url = QuestionsFrontend.thread.base_url,
+        body = QuestionsFrontend.trace:next_curl_request_body(),
+        base_url = QuestionsFrontend.trace.base_url,
         endpoint = CompletionsEndpoints.oai_v1_chat_completions,
         type = "questions",
     })
     log:luaify_trace("body:", request.body)
     curl.spawn(request, QuestionsFrontend)
-    QuestionsFrontend.thread:set_last_request(request)
+    QuestionsFrontend.trace:set_last_request(request)
 end
 
 function QuestionsFrontend.abort_and_close()
@@ -389,12 +389,12 @@ function QuestionsFrontend.ensure_chat_window_is_open()
 end
 
 local function handle_rx_messages_updated()
-    if not QuestionsFrontend.thread.last_request.accumulated_model_response_messages then
+    if not QuestionsFrontend.trace.last_request.accumulated_model_response_messages then
         return
     end
 
     local lines = LinesBuilder:new()
-    for _, rx_message in ipairs(QuestionsFrontend.thread.last_request.accumulated_model_response_messages) do
+    for _, rx_message in ipairs(QuestionsFrontend.trace.last_request.accumulated_model_response_messages) do
         -- FYI !! now it is obvious that this is only operating on accumulated message type!
 
         -- * message contents
@@ -429,7 +429,7 @@ local function handle_rx_messages_updated()
     end
 
     vim.schedule(function()
-        lines.marks_ns_id = QuestionsFrontend.thread.last_request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
+        lines.marks_ns_id = QuestionsFrontend.trace.last_request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
         QuestionsFrontend.chat_window.buffer:replace_with_styled_lines_after(QuestionsFrontend.this_turn_chat_start_line_base0, lines)
     end)
 end
@@ -539,7 +539,7 @@ end
 function QuestionsFrontend.on_parsed_data_sse(sse_parsed)
     -- FYI right now this is desingned for /v1/chat/completions only
     --   I added this guard based on review of on-on_streaming_delta_update_message_history that appears (IIRC) to be using /v1/chat/completions ONLY compatible fields
-    local request = QuestionsFrontend.thread.last_request
+    local request = QuestionsFrontend.trace.last_request
     if request.endpoint ~= CompletionsEndpoints.oai_v1_chat_completions then
         -- fail fast in this case
         -- TODO (when I need it)... you very likely can support other endpoints (see what you've done in both PredictionsFrontend and RewriteFrontend (both have some multi endpoint support)
@@ -570,7 +570,7 @@ function QuestionsFrontend.on_curl_exited_successfully()
     vim.schedule(function()
         -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for assistant messages)
 
-        for _, rx_message in ipairs(QuestionsFrontend.thread.last_request.accumulated_model_response_messages or {}) do
+        for _, rx_message in ipairs(QuestionsFrontend.trace.last_request.accumulated_model_response_messages or {}) do
             -- *** thread.last_request.accumulated_model_response_messages IS NOT thread.messages
             --    thread.messages => sent with future requests, hence TxChatMessage
             --    request.response_messages is simply to denormalize responses from SSEs, hence RxAccumulatedMessage
@@ -580,8 +580,8 @@ function QuestionsFrontend.on_curl_exited_successfully()
             --   (must come before tool result messages)
             --   theoretically there can be multiple messages, with any role (not just assitant)
             local thread_message = TxChatMessage:from_assistant_rx_message(rx_message)
-            QuestionsFrontend.thread:add_message(thread_message)
-            completion_logger.append_to_messages_jsonl(thread_message, QuestionsFrontend.thread.last_request, QuestionsFrontend)
+            QuestionsFrontend.trace:add_message(thread_message)
+            completion_logger.append_to_messages_jsonl(thread_message, QuestionsFrontend.trace.last_request, QuestionsFrontend)
             -- TODO capture -thread.json here too?? and then get rid of response_message hack cuz all messages will now be in thread
             --    TODO and careful to mirror changes (i.e. if move here, then need thread to save still for other frontends)
 
@@ -597,7 +597,7 @@ function QuestionsFrontend.on_curl_exited_successfully()
 end
 
 function QuestionsFrontend.run_tools_and_send_results_back_to_the_model()
-    for _, rx_message in ipairs(QuestionsFrontend.thread.last_request.accumulated_model_response_messages or {}) do
+    for _, rx_message in ipairs(QuestionsFrontend.trace.last_request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
             -- log:trace("tool:", vim.inspect(tool))
 
@@ -616,7 +616,7 @@ function QuestionsFrontend.run_tools_and_send_results_back_to_the_model()
                 local tool_response_message = TxChatMessage:tool_result(tool_call)
                 -- log:jsonify_compact_trace("tool_message:", tool_response_message)
                 tool_call.response_message = tool_response_message
-                QuestionsFrontend.thread:add_message(tool_response_message)
+                QuestionsFrontend.trace:add_message(tool_response_message)
 
                 -- * when last tool completes, send tool results (TxChatMessage package)
                 vim.schedule(function()
@@ -642,7 +642,7 @@ end
 
 ---@return boolean
 function QuestionsFrontend.any_outstanding_tool_calls()
-    for _, rx_message in ipairs(QuestionsFrontend.thread.last_request.accumulated_model_response_messages or {}) do
+    for _, rx_message in ipairs(QuestionsFrontend.trace.last_request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
             local is_outstanding = tool_call.response_message == nil
             if is_outstanding then
@@ -654,10 +654,10 @@ function QuestionsFrontend.any_outstanding_tool_calls()
 end
 
 function QuestionsFrontend.abort_last_request()
-    if not QuestionsFrontend.thread then
+    if not QuestionsFrontend.trace then
         return
     end
-    CurlRequestForThread.terminate(QuestionsFrontend.thread.last_request)
+    CurlRequestForThread.terminate(QuestionsFrontend.trace.last_request)
     if QuestionsFrontend.rag_cancel then
         QuestionsFrontend.rag_cancel()
     end
@@ -676,7 +676,7 @@ function QuestionsFrontend.follow_up_command()
     vim.cmd("normal! o") -- move to end of buffer, add new line below to separate subsequent follow up response message
     -- log:trace("follow up content:", user_message)
 
-    if not QuestionsFrontend.thread then
+    if not QuestionsFrontend.trace then
         opts = {
             args = user_message
         }
@@ -691,23 +691,23 @@ function QuestionsFrontend.follow_up_command()
     end
 
     local message = TxChatMessage:user(user_message)
-    QuestionsFrontend.thread:add_message(message)
+    QuestionsFrontend.trace:add_message(message)
     QuestionsFrontend.then_send_messages()
 end
 
 function ask_dump_agent_trace_command()
-    if not QuestionsFrontend.thread then
+    if not QuestionsFrontend.trace then
         print("no trace to dump")
         return
     end
-    QuestionsFrontend.thread:dump()
+    QuestionsFrontend.trace:dump()
 end
 
 function QuestionsFrontend.clear_chat_command()
     if QuestionsFrontend.chat_window then
         QuestionsFrontend.chat_window:clear()
     end
-    QuestionsFrontend.thread = nil
+    QuestionsFrontend.trace = nil
 end
 
 function QuestionsFrontend.setup()
