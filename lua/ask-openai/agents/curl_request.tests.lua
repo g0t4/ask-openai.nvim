@@ -1,3 +1,5 @@
+require('ask-openai.helpers.testing')
+local describe = require("devtools.tests._describe")
 local CurlRequestForTrace = require("ask-openai.agents.curl_request_for_trace")
 local CurlRequest = require("ask-openai.backends.curl_request")
 require("ask-openai.backends.curl") -- for _G.CompletionsEndpoints
