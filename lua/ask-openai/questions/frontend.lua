@@ -695,9 +695,9 @@ function QuestionsFrontend.follow_up_command()
     QuestionsFrontend.then_send_messages()
 end
 
-function ask_dump_thread_command()
+function ask_dump_agent_trace_command()
     if not QuestionsFrontend.thread then
-        print("no thread to dump")
+        print("no trace to dump")
         return
     end
     QuestionsFrontend.thread:dump()
@@ -742,7 +742,7 @@ function QuestionsFrontend.setup()
     vim.keymap.set('n', '<leader>af', QuestionsFrontend.follow_up_command, { noremap = true })
     vim.keymap.set('n', '<leader>ao', QuestionsFrontend.ensure_chat_window_is_open, { noremap = true })
 
-    vim.api.nvim_create_user_command("AskDumpThread", ask_dump_thread_command, {})
+    vim.api.nvim_create_user_command("AskDumpAgentTrace", ask_dump_agent_trace_command, {})
 end
 
 return QuestionsFrontend
