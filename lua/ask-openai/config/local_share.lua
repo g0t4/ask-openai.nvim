@@ -253,7 +253,7 @@ end
 -- * separate reasoning level for RewriteFrontend and AgentsFrontend
 function M.set_rewrite_reasoning_level(level)
     -- FYI I wanted a separate setting largely because I intend to leave this normally on a different level vs FIM...
-    --  FIM will normally be low/off, Rewrite/Questions will be medium/high
+    --  FIM will normally be low/off, Rewrite/Agents will be medium/high
     local cfg = get()
     cfg.gptoss = cfg.gptoss or {}
     cfg.gptoss.rewrite_reasoning_level = level

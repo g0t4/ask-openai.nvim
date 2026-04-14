@@ -1,7 +1,7 @@
 local test_setup = require("ask-openai.helpers.test_setup")
 test_setup.modify_package_path()
 
-local questions_frontend = require("ask-openai.agents.frontend")
+local agents_frontend = require("ask-openai.agents.frontend")
 local text = require("ask-openai.helpers.text")
 require("ask-openai.helpers.buffers")
 
@@ -69,7 +69,7 @@ data: [DONE]
             for _, delta_json in pairs(deltas) do
                 local delta_table = vim.json.decode(delta_json)
                 local sse_parsed = {} -- fake the full SSE since AFAICT it is not always available in consumer tests
-                questions_frontend.on_streaming_delta_update_message_history(delta_table, request, sse_parsed)
+                agents_frontend.on_streaming_delta_update_message_history(delta_table, request, sse_parsed)
             end
             return request, frontend
         end
@@ -265,7 +265,7 @@ data: [DONE]
                 :each(function(sse_parsed)
                     local choices = sse_parsed.choices
                     -- vim.print(sse[1])
-                    questions_frontend.on_streaming_delta_update_message_history(choices[1], request, sse_parsed)
+                    agents_frontend.on_streaming_delta_update_message_history(choices[1], request, sse_parsed)
                 end)
 
             should.be_equal(1, #request.accumulated_model_response_messages)
