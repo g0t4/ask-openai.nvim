@@ -17,6 +17,9 @@ M.callbacks = {}
 -- PRN also I wanna test out large qwen models, hosted by Alibaba/groq/others
 
 local servers = {
+
+    -- TODO https://agentskills.io/mcp https based MCP tools... is it a websocket?
+
     fetch = {
         -- PRN only include this tool if initial request includes /web?
 
