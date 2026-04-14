@@ -1,3 +1,4 @@
+import asyncio
 import os
 import rich
 import subprocess
@@ -10,7 +11,7 @@ from typing import Set
 from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.storage import load_all_datasets, Datasets
 from lsp.chunks.chunker import get_file_stat
-from lsp.fs import relative_to_workspace
+from lsp.fs import load_rag_config, Config
 from index.stale import warn_about_stale_files
 
 logger = get_logger("validator")
@@ -104,6 +105,25 @@ class DatasetsValidator:
         else:
             logger.debug("All good, no missing extensions, you lucky motherf***er")
 
+    def warn_about_config_vs_actual_mismatches(self, datasets: Datasets, config: Config) -> None:
+        """Warn about datasets that exist for extensions no longer indexed."""
+        present_extensions = set(datasets.all_datasets.keys())
+        print(f'{present_extensions=}')
+        configured_extensions = set(config.include)
+        print(f'{configured_extensions=}')
+        extra_extensions = present_extensions - configured_extensions
+        if extra_extensions:
+            logger.error( \
+                "[bold white on red]Datasets exist for extensions no longer indexed: "
+                + ", ".join(sorted(extra_extensions))
+            )
+        missing_extensions = configured_extensions - present_extensions
+        if missing_extensions:
+            logger.error( \
+                "[bold white on red]Missing datasets (configured extensions): "
+                + ", ".join(sorted(missing_extensions))
+            )
+
 def main():
     # usage:
     #   python3 -m index.validate $(_repo_root)/.rag
@@ -120,8 +140,13 @@ def main():
     root_dir = rag_dir.parent  # for validation purposes, safe assumption
     warn_about_stale_files(ds, root_dir)
 
+    # PRN make this main() function async
+    config = asyncio.run(load_rag_config(root_dir))
+    validator.warn_about_config_vs_actual_mismatches(ds, config)
+
     if validator.any_problems:
         sys.exit(1)
 
 if __name__ == "__main__":
+    # asyncio.run(main())
     main()
