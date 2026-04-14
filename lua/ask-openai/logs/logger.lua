@@ -1,6 +1,7 @@
 local local_share = require("ask-openai.config.local_share")
 local ansi = require("ask-openai.predictions.ansi")
 local uv = vim.loop
+local inspect = require("devtools.inspect")
 local Logger = {}
 Logger.__index = Logger
 
@@ -108,19 +109,24 @@ function Logger:info(...)
     self:log(local_share.LOG_LEVEL_NUMBERS.INFO, ...)
 end
 
+function Logger:is_enabled(level_number)
+    local _, threshold = local_share.get_log_threshold()
+    return level_number <= threshold
+end
+
 ---@param message string
 ---@param value any - will be vim.inspect()'d and piped through bat
 function Logger:luaify_trace(message, value)
-    local text = vim.inspect(value)
+    -- bat is expensive, don't call if not logging it!
+    if not self:is_enabled(local_share.LOG_LEVEL_NUMBERS.TRACE) then
+        return
+    end
 
-    local command = "bat"
-    local args = {
-        "--style=plain",
-        "--color", "always",
-        "-l", "lua",
-    }
+    -- TODO update jsonify to use bat_inspect too (pass language as new arg to bat_inspect?)
+    -- PRN? --style=plain (add to bat_inspect?)
+    local text = inspect.bat_inspect(value)
 
-    self:_transform_then_log(command, args, text, message)
+    self:trace(message, text)
 end
 
 function Logger:_transform_then_log(command, args, text, message)
@@ -206,6 +212,8 @@ function Logger:_jsonify_trace(message, compact, ...)
         return
     end
 
+    -- TODO migrate to bat_inspect(text, "json")...
+    --   TODO then get rid of _transform_then_log below and function too as this is the last spot to use it
     local command = "jq"
     local args = { ".", "--color-output" }
     if compact then

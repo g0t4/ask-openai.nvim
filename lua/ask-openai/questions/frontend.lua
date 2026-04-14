@@ -300,7 +300,7 @@ function QuestionsFrontend.then_send_messages()
         endpoint = CompletionsEndpoints.oai_v1_chat_completions,
         type = "questions",
     })
-    log:trace("body:", inspect.bat_inspect(request.body))
+    log:luaify_trace("body:", request.body)
     curl.spawn(request, QuestionsFrontend)
     QuestionsFrontend.thread:set_last_request(request)
 end
