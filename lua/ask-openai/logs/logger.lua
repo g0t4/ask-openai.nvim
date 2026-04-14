@@ -129,67 +129,6 @@ function Logger:luaify_trace(message, value)
     self:trace(message, text)
 end
 
-function Logger:_transform_then_log(command, args, text, message)
-    local stdin = uv.new_pipe(false)
-    local stdout = uv.new_pipe(false)
-    local stderr = uv.new_pipe(false)
-
-    local handle, pid
-
-    ---@param code   integer  -- exit code returned by the spawned process
-    ---@param signal integer  -- signal that terminated the process (0 if none)
-    local function on_exit(code, signal)
-        if stdin then stdin:close() end
-        if stdout then stdout:close() end
-        if stderr then stderr:close() end
-        if handle then handle:close() end
-    end
-
-    handle, pid = uv.spawn(command,
-        ---@diagnostic disable-next-line: missing-fields
-        {
-            args = args,
-            stdio = { stdin, stdout, stderr },
-        },
-        on_exit)
-
-    local function process_output(data)
-        if not data then return end
-        for line in data:gmatch("[^\r\n]+") do
-            local is_blank_line = line:match("^%s*$")
-            if not is_blank_line then
-                -- TODO how about not log each line separately? (i.e. drop the log prefix at start of each line)
-                self:trace(message, line)
-            end
-        end
-    end
-
-    ---@param err? string
-    ---@param data? string
-    local function on_stdout(err, data)
-        if err then
-            self:trace("stderr error: " .. tostring(err))
-            return
-        end
-        process_output(data)
-    end
-    stdout:read_start(on_stdout)
-
-    ---@param err? string
-    ---@param data? string
-    local function on_stderr(err, data)
-        if err then
-            self:trace("stderr error: " .. tostring(err))
-            return
-        end
-        process_output(data)
-    end
-    stderr:read_start(on_stderr)
-
-    stdin:write(text)
-    stdin:shutdown()
-end
-
 ---@param message string
 ---@param ... any - lua value(s) that will be vim.json.encode()'d
 function Logger:jsonify_trace(message, ...)
@@ -206,21 +145,12 @@ end
 ---@param compact? boolean
 ---@param ... any - lua value(s) that will be vim.json.encode()'d
 function Logger:_jsonify_trace(message, compact, ...)
-    local text = vim.json.encode(...)
-    if not text then
-        self:trace("failed to encode value to JSON, consider using luaify_trace")
+    if not self:is_enabled(local_share.LOG_LEVEL_NUMBERS.TRACE) then
         return
     end
-
-    -- TODO migrate to bat_inspect(text, "json")...
-    --   TODO then get rid of _transform_then_log below and function too as this is the last spot to use it
-    local command = "jq"
-    local args = { ".", "--color-output" }
-    if compact then
-        table.insert(args, "--compact-output")
-    end
-
-    self:_transform_then_log(command, args, text, message)
+    local value = { ... }
+    local json = inspect.jq_json(value, compact)
+    self:trace(message, json)
 end
 
 function Logger:log(level_number, ...)
