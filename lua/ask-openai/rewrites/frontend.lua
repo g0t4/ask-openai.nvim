@@ -169,35 +169,42 @@ function RewriteFrontend.on_sse_llama_server_timings(sse)
         local current_cursor_row_0based = current_cursor_row_1based - 2
         if current_cursor_row_0based < 0 then current_cursor_row_0based = 0 end
 
+        -- Build compact timing display: <prompt_n>@<prompt_rate>-><predicted_n>@<predicted_rate>
+        local ingest_display = string.format(
+            "%s@%stps",
+            human.comma_delimit(sse.timings.prompt_n),
+            human.format_num(sse.timings.prompt_per_second)
+        )
+        local predicted_display = string.format(
+            "%s@%stps",
+            human.comma_delimit(sse.timings.predicted_n),
+            human.format_num(sse.timings.predicted_per_second)
+        )
+
+        -- Use a distinct arrow (⟶) to separate ingest and predicted parts, without coloring the arrow itself
+        local arrow = " ⟶  "
         local virt_text = {
-            {
-                string.format(
-                    "%sout@%stps",
-                    human.comma_delimit(sse.timings.predicted_n),
-                    human.format_num(sse.timings.predicted_per_second)
-                ),
-                HLGroups.STATS_PREDICTED
-            },
-            {
-                string.format(
-                    " %sin@%stps",
-                    human.comma_delimit(sse.timings.prompt_n),
-                    human.format_num(sse.timings.prompt_per_second)
-                ),
-                HLGroups.STATS_PROMPT
-            },
+            { ingest_display, HLGroups.STATS_PROMPT },
+            { arrow, HLGroups.STATS_ARROW },
+            { predicted_display, HLGroups.STATS_PREDICTED },
         }
 
+        -- Include cached token count with the ingest (prompt) side if present
         local cache_n = sse.timings.cache_n
+        local ingest_part = ingest_display
         if type(cache_n) == "number" and cache_n > 0 then
-            table.insert(virt_text, {
-                string.format(
-                    " %scached",
-                    human.comma_delimit(cache_n)
-                ),
-                HLGroups.STATS_CACHE
-            })
+            ingest_part = string.format(
+                "%s %scached",
+                ingest_display,
+                human.comma_delimit(cache_n)
+            )
         end
+
+        local virt_text = {
+            { ingest_part, HLGroups.STATS_PROMPT },
+            { arrow, HLGroups.STATS_ARROW },
+            { predicted_display, HLGroups.STATS_PREDICTED },
+        }
 
         vim.api.nvim_buf_set_extmark(0, RewriteFrontend.displayer.marks.namespace_id, current_cursor_row_0based, 0, {
             virt_text = virt_text,
