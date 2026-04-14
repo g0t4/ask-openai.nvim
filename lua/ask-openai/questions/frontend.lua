@@ -463,12 +463,7 @@ function QuestionsFrontend.on_streaming_delta_update_message_history(choice, req
     end
 
     if sse_parsed.timings then
-        -- ? should I put this into the on_sse_llama_server_timings instead of here?
         rx_accum_message.timings = sse_parsed.timings
-        -- FYI this may very well break submitting to llama-server... if so I'll need curl request to copy/strip these extra fields so I can keep them locally
-        vim.defer_fn(function()
-            log:info("test", inspect.bat_inspect(sse_parsed)) -- NOW THAT IS A BEAUTIFUL LOG!!!! mmm bat_inspect (no log prefix on each line either)
-        end, 10)
     end
 
     if choice.delta.content ~= nil and choice.delta.content ~= vim.NIL then
