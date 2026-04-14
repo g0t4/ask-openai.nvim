@@ -33,7 +33,7 @@ def get_cwd_repo_root() -> Path | None:
         root_directory = None
     return root_directory
 
-def set_root_dir(root_dir: str | Path | None):
+async def set_root_dir(root_dir: str | Path | None):
     global root_path, dot_rag_dir, config
 
     if root_dir is None:
@@ -55,10 +55,11 @@ def set_root_dir(root_dir: str | Path | None):
         logger.info(f"no rag config found {rag_yaml}, using default config")
         return Config.default()
 
-    content = rag_yaml.read_text()
+    async with aiofiles.open(rag_yaml, mode="r") as f:
+        content = await f.read()
     config = load_config(content)
     logger.pp_debug(f"found rag config: {rag_yaml}", config)
-    return config
+    return config  # return NOT used, remove when done refactoring same code below
 
 async def load_rag_config(source_dir: Path) -> Config:
     # TODO MERGE WITH ABOVE (this version was from indexer)

@@ -17,7 +17,7 @@ async def main():
     logger = get_logger(__name__)
 
     dot_rag_dir = Path("~/repos/github/g0t4/ask-openai.nvim/.rag").expanduser().absolute()
-    set_root_dir(dot_rag_dir.parent)
+    await set_root_dir(dot_rag_dir.parent)
     datasets = load_all_datasets(dot_rag_dir)
 
     args = LSPSemanticGrepRequest(

@@ -78,7 +78,7 @@ def warn_client(server: LanguageServer):
     logger.warning("foo the bar happened!")
 
 @server.feature(types.INITIALIZE)
-def on_initialize(_: LanguageServer, params: types.InitializeParams):
+async def on_initialize(_: LanguageServer, params: types.InitializeParams):
     global dot_rag_dir, config
 
     # # PRN use workspace folders if multi-workspace ...
@@ -86,7 +86,7 @@ def on_initialize(_: LanguageServer, params: types.InitializeParams):
     # logger.info(f"{params.workspace_folders=}")
     # server.workspace.folders
 
-    fs.set_root_dir(params.root_path)
+    await fs.set_root_dir(params.root_path)
     config = fs.get_config()
     if not config.enabled or fs.is_no_rag_dir():
         # DO NOT notify yet, that has to come after server responds to initialize request

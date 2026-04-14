@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 
 from rich import print as rich_print
@@ -21,7 +22,7 @@ test_cases_csharp = test_cases_treesitter / "csharp"
 test_cases_rust = test_cases_treesitter / "rust"
 test_cases_lua = test_cases_treesitter / "lua"
 
-set_root_dir(repo_root)
+asyncio.run(set_root_dir(repo_root))
 
 # z rag
 # ptw lsp/chunker_tests.py -- --capture=tee-sys
