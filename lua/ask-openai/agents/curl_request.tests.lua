@@ -1,4 +1,4 @@
-local CurlRequestForTrace = require("ask-openai.questions.curl_request_for_trace")
+local CurlRequestForTrace = require("ask-openai.agents.curl_request_for_trace")
 local CurlRequest = require("ask-openai.backends.curl_request")
 require("ask-openai.backends.curl") -- for _G.CompletionsEndpoints
 
