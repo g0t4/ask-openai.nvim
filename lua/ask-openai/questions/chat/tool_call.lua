@@ -3,7 +3,7 @@
 ---@class ToolCall : OpenAIChoiceDeltaToolCall
 ---
 ---  my additions:
----@field response_message table|nil -- TODO type this? response message to send call results back to the model that will, also attached to chat_thread (history)
+---@field response_message table|nil -- TODO type this? response message to send call results back to the model that will, also attached to agent_trace (history)
 ---@field call_output? ToolCallOutput -- tool call outputs (specific to a given tool type, some have standard structure, i.e. MCP)
 local ToolCall = {}
 

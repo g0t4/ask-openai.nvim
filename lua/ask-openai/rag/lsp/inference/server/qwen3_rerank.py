@@ -83,7 +83,7 @@ def tokenize_docs(instruct: str, query: str, documents: list[str]):
         max_length=max_user_tokens,
     )
     for i, doc_tokens in enumerate(documents_tokens['input_ids']):
-        # insert user message contents into the chat thread template (this way I don't have to tokenize the constant parts repeatedly
+        # insert user message contents into the agent trace template (this way I don't have to tokenize the constant parts repeatedly
         documents_tokens['input_ids'][i] = thread_prefix_tokens + instruct_query_tokens + doc_tokens + thread_suffix_tokens
     documents_tokens = tokenizer.pad(documents_tokens, padding=True, return_tensors="pt", max_length=max_length)
     return move_to_gpu(documents_tokens, model.device)
