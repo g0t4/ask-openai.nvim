@@ -105,8 +105,7 @@ class DatasetsValidator:
         else:
             logger.debug("All good, no missing extensions, you lucky motherf***er")
 
-    def warn_about_config_vs_actual_mismatches(self, datasets: Datasets, config: Config) -> None:
-        """Warn about datasets that exist for extensions no longer indexed."""
+    def compare_config_vs_indexed_mismatches(self, datasets: Datasets, config: Config) -> None:
         present_extensions = set(datasets.all_datasets.keys())
         print(f'{present_extensions=}')
         configured_extensions = set(config.include)
@@ -142,7 +141,7 @@ def main():
 
     # PRN make this main() function async
     config = asyncio.run(load_rag_config(root_dir))
-    validator.warn_about_config_vs_actual_mismatches(ds, config)
+    validator.compare_config_vs_indexed_mismatches(ds, config)
 
     if validator.any_problems:
         sys.exit(1)
