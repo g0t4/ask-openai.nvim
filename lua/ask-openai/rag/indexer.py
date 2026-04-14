@@ -85,16 +85,21 @@ class IncrementalRAGIndexer:
         await signal_hotpath_done_in_background()
 
     def trash_vestigial_extensions(self, configured_extensions: set[str]):
-        print(f'configured:\n  {sorted(configured_extensions)}')
-
         rag_dir_dirs = [p for p in self.dot_rag_dir.iterdir() if p.is_dir()]
         indexed_extensions = {d.name for d in rag_dir_dirs}
-        print(f'indexed:\n  {sorted(indexed_extensions)}')
+        vestigial_extensions = indexed_extensions - configured_extensions
 
-        for extension_dir in rag_dir_dirs:
-            if extension_dir.name not in configured_extensions:
-                logger.warn(f"Removing vestigial rag dir: {extension_dir}")
-                trash_dir(extension_dir)
+        if not any(vestigial_extensions):
+            return
+
+        # logger.info(f'configured:\n  {sorted(configured_extensions)}')
+        # logger.info(f'indexed:\n  {sorted(indexed_extensions)}')
+        logger.warn(f'FYI found {vestigial_extensions=}, removing...')
+
+        for name in vestigial_extensions:
+            extension_dir = self.dot_rag_dir / name
+            logger.warn(f"Removing vestigial rag dir: {extension_dir}")
+            trash_dir(extension_dir)
 
     def warn_about_other_extensions(self, index_languages: list[str]):
 
