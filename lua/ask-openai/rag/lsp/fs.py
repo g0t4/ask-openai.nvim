@@ -58,6 +58,7 @@ def set_root_dir(root_dir: str | Path | None):
     content = rag_yaml.read_text()
     config = load_config(content)
     logger.pp_debug(f"found rag config: {rag_yaml}", config)
+    return config
 
 async def load_rag_config(source_dir: Path) -> Config:
     # TODO MERGE WITH ABOVE (this version was from indexer)
