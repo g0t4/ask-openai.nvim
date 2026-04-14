@@ -49,21 +49,9 @@ async def set_root_dir(root_dir: str | Path | None):
 
     logger.debug(f"{dot_rag_dir=}")
 
-    # * config
-    rag_yaml = root_path / ".rag.yaml"
-    if not rag_yaml.exists():
-        logger.info(f"no rag config found {rag_yaml}, using default config")
-        return Config.default()
-
-    async with aiofiles.open(rag_yaml, mode="r") as f:
-        content = await f.read()
-    config = load_config(content)
-    logger.pp_debug(f"found rag config: {rag_yaml}", config)
-    return config  # return NOT used, remove when done refactoring same code below
+    await load_rag_config(root_path)
 
 async def load_rag_config(root_path: Path) -> Config:
-    # TODO MERGE WITH ABOVE (this version was from indexer)
-    #   FYI above is sync, this is async, make this sync if needed
     rag_yaml = root_path / ".rag.yaml"
     if not rag_yaml.exists():
         logger.info(f"no rag config found {rag_yaml}, using default config")
