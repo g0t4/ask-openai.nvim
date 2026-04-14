@@ -16,9 +16,9 @@ function M.log_request_with(request, frontend)
         save_dir = save_dir .. "/" .. request.type
     end
     local thread_id = tostring(request.start_time)
-    if frontend.thread then
+    if frontend.trace then
         -- multi-turn threads use thread's start_time
-        thread_id = tostring(frontend.thread.start_time)
+        thread_id = tostring(frontend.trace.start_time)
     end
     return save_dir, thread_id
 end

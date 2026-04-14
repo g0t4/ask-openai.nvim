@@ -1,7 +1,7 @@
 local CurlRequest = require("ask-openai.backends.curl_request")
 
 ---@class CurlRequestForThread : CurlRequest
----@field thread ChatThread
+---@field trace ChatThread
 ---@field accumulated_model_response_messages RxAccumulatedMessage[] -- model "assistant" responses, built from SSEs
 local CurlRequestForThread = {}
 local class_mt = { __index = CurlRequest } -- inherit from CurlRequest (for reals, not just the type annotations :] )
@@ -13,7 +13,7 @@ function CurlRequestForThread:new(params)
     local me = self -- making it obvious this is passing CurlRequestForThread as self (key for inheritance to work)
     self = CurlRequest.new(me, params) --[[@as CurlRequestForThread]]
 
-    self.thread = nil
+    self.trace = nil
     self.accumulated_model_response_messages = {}
     -- TODO do thread/accumulated_model_response_messages even belong on the CurlRequestForThread?
     --   IOTW should I just use CurlRequest and put them elsewhere?

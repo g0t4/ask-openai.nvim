@@ -30,7 +30,7 @@ _G.CompletionsEndpoints = {
 ---@field on_sse_llama_server_timings OnParsedSSE
 ---@field on_curl_exited_successfully OnCurlExitedSuccessfully
 ---@field explain_error ExplainError
----@field thread? CurlRequestForThread
+---@field trace? CurlRequestForThread
 
 ---@param request CurlRequest|CurlRequestForThread
 ---@param frontend StreamingFrontend

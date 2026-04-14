@@ -665,7 +665,7 @@ end
 
 function QuestionsFrontend.follow_up_command()
     -- take follow up after end of prior response message from assistant
-    --  if already a M.thread then add to that with a new message
+    --  if already a M.trace then add to that with a new message
     --  leave content as is in the buffer, close enough to what it would be if redrawn
     --  and I don't use the buffer contents for past messages
     --  so, just copy it out into a new message from user
