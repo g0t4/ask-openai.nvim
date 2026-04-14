@@ -80,11 +80,11 @@ class IncrementalRAGIndexer:
 
         for file_extension in included:
             await self.build_index(file_extension)
-        self.warn_about_other_extensions(included)
-        self.trash_vestigial_extensions(set(included))
+        self.flag_unindexed_extensions_with_file_counts(included)
+        self.trash_vestigial_extension_indexes(set(included))
         await signal_hotpath_done_in_background()
 
-    def trash_vestigial_extensions(self, configured_extensions: set[str]):
+    def trash_vestigial_extension_indexes(self, configured_extensions: set[str]):
         rag_dir_dirs = [p for p in self.dot_rag_dir.iterdir() if p.is_dir()]
         indexed_extensions = {d.name for d in rag_dir_dirs}
         vestigial_extensions = indexed_extensions - configured_extensions
@@ -101,7 +101,7 @@ class IncrementalRAGIndexer:
             logger.warn(f"Removing vestigial rag dir: {extension_dir}")
             trash_dir(extension_dir)
 
-    def warn_about_other_extensions(self, index_languages: list[str]):
+    def flag_unindexed_extensions_with_file_counts(self, index_languages: list[str]):
 
         cmd = ["fish", "-c", f"fd . {self.source_code_dir} --exclude='\\.ctags\\.d' --exclude='\\.rag' --exec basename"]
         logger.debug("warn cmd", cmd)
