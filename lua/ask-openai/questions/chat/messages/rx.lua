@@ -28,7 +28,7 @@ local RX_MESSAGE_ROLES = {
 }
 
 --- ONLY FOR ACCUMULATING MODEL RESPONSES (over streaming SSEs)
---- NOT FOR BUILDING MESSAGES in a REQUEST (see ChatThread/TxChatMessage for that)
+--- NOT FOR BUILDING MESSAGES in a REQUEST (see AgentTrace/TxChatMessage for that)
 ---
 ---@param role RX_MESSAGE_ROLES|string - Theoretically ONLY assistant role... but no reason to limit a model that generates a diff role(s)
 ---@param content string|nil

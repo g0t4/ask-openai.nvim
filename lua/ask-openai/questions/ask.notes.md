@@ -35,7 +35,7 @@ taken from QuestionsFrontend right before sending a new question thread
   - review start logs for n_ctx and during completion it warns if truncated prompt:
     - level=WARN source=runner.go:131 msg="truncating input prompt" limit=8192 prompt=10552 keep=4 new=8192
 
-## /v1/completions no longer makes sense with ChatThread in AskToolUse/AskQuestion
+## /v1/completions no longer makes sense with AgentTrace in AskToolUse/AskQuestion
 
 - FYI not going to support /v1/completions anymore...
   - not until I have a specific need to use it
@@ -43,7 +43,7 @@ taken from QuestionsFrontend right before sending a new question thread
     - including tool use instructions and parsing response for tool_calls, from scratch!
   - thus /v1/chat/completions exclusively makes sense
 - if anything I could add support for /api/chat
-  - i.e. using `ApiChatThread` that has a different `next_body()`...
+  - i.e. using `ApiAgentTrace` that has a different `next_body()`...
 
 Previously I used this when it was single turn Question/Answer:
 
