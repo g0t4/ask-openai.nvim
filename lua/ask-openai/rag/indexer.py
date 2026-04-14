@@ -67,14 +67,14 @@ class IncrementalRAGIndexer:
             logger.warn(f"RAG indexing disabled in {self.source_code_dir / '.rag.yaml'}, ")
             return
 
-        index_these_file_extensions = self.config.include
+        included = self.config.include
         if self.program_args and self.program_args.only_extension:
-            index_these_file_extensions = [self.program_args.only_extension]
-            logger.info(f"Indexing only extension: {index_these_file_extensions[0]}")
+            included = [self.program_args.only_extension]
+            logger.info(f"Indexing only extension: {included[0]}")
 
-        for file_extension in index_these_file_extensions:
+        for file_extension in included:
             await self.build_index(file_extension)
-        self.warn_about_other_extensions(index_these_file_extensions)
+        self.warn_about_other_extensions(included)
         await signal_hotpath_done_in_background()
 
     def warn_about_other_extensions(self, index_languages: list[str]):
