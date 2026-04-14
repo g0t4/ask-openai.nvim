@@ -1,5 +1,5 @@
 local log = require("ask-openai.logs.logger").predictions()
-local Fold = require("ask-openai.questions.fold")
+local Fold = require("ask-openai.agents.fold")
 require("ask-openai.frontends.context.inspect")
 
 ---@class BufferController
