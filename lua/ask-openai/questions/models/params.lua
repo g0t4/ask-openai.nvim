@@ -41,7 +41,7 @@ function M.new_gptoss_chat_body_llama_server(request_body, context)
         },
         max_tokens = max_tokens,
 
-        verbose = true, -- my build of llama-server will one-off add __verbose if verbose is set on body of request!
+        -- verbose = true, -- * my build of llama-server will one-off add __verbose if verbose is set on body of request!
 
     }
     return default_to_recommended(request_body, recommended)
