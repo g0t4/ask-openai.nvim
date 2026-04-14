@@ -1,5 +1,5 @@
-local run_process = require("ask-openai.questions.chat.formatters.run_process")
-local generic = require("ask-openai.questions.chat.formatters.generic")
+local run_process = require("ask-openai.agents.viewer.formatters.run_process")
+local generic = require("ask-openai.agents.viewer.formatters.generic")
 
 local M = {}
 
