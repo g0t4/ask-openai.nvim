@@ -131,7 +131,7 @@ class DatasetsValidator:
                 + ", ".join(sorted(missing_extensions))
             )
 
-def main():
+async def main():
     # usage:
     #   python3 -m index.validate $(_repo_root)/.rag
 
@@ -147,13 +147,11 @@ def main():
     root_dir = rag_dir.parent  # for validation purposes, safe assumption
     warn_about_stale_files(ds, root_dir)
 
-    # PRN make this main() function async
-    config = asyncio.run(load_rag_config(root_dir))
+    config = await load_rag_config(root_dir)
     validator.compare_config_vs_indexed_extensions(ds, config)
 
     if validator.any_problems:
         sys.exit(1)
 
 if __name__ == "__main__":
-    # asyncio.run(main())
-    main()
+    asyncio.run(main())
