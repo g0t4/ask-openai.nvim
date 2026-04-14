@@ -40,7 +40,17 @@ foo: bar
         assert.are_equal("Hello", cleaned)
     end)
 
-    it("yaml frontmatter not on first line", function()
+    it("yaml frontmatter can have blank lines ahead of it", function()
+        local raw = [[
+---
+bar: baz
+---
+Hello world]]
+        local cleaned = instructs.clean_contents(raw)
+        assert.are_equal("Hello world", cleaned)
+    end)
+
+    it("yaml frontmatter is ignored when it is not the first non-blank line", function()
         local raw = [[foo
 ---
 bar: baz
