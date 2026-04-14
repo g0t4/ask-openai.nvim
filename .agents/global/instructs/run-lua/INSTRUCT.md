@@ -44,5 +44,5 @@ vim.defer_fn(function() vim.notify("Timer fired") end, 2000)
 
 vim.api.nvim_open_win(bufnr, false, {relative='editor', width=80, height=20, row=5, col=5})
 
-dofile(vim.fn.expand("~/.agents/skills/run-lua/scripts/cleanup.lua"))
+dofile(vim.fn.expand("~/.agents/instructs/run-lua/scripts/cleanup.lua"))
 ```

@@ -7,7 +7,8 @@ auto_attach: true
 # FYI stick with single examples below because your codebase will provide more (via RAG) anyways
 ---
 
-- This guidance trumps semantic_grep examples that are included from my repo. This skill details my current preferences.
+- This guidance trumps semantic_grep examples that are included from my repo.
+  - IOTW these are my current preferences, even if legacy code has other styles.
 - fish online help: https://fishshell.com/docs/current/cmds/abbr.html
 
 ## static abbrs

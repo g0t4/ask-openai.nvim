@@ -16,15 +16,15 @@ I use **Plenary/Busted** style tests for Neovim and Hammerspoon configuration fi
 
 - Test file names end with `.tests.lua`
 - Put new test files next to the system under test. Name accordingly:
-     skills.lua
-     skills.tests.lua
+     module.lua
+     module.tests.lua
 - `PlenaryBustedDirectory` has a retarded discovery convention: `*_spec.lua`... DO NOT USE THIS CRAP.
 
 ## Running a single test file
 
 ```sh
 nvim --headless \
-  -c "PlenaryBustedFile lua/ask-openai/frontends/skills.tests.lua" \
+  -c "PlenaryBustedFile lua/ask-openai/frontends/instructs.tests.lua" \
   -c "qa!"
 ```
 

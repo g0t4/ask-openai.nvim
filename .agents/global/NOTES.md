@@ -1,4 +1,4 @@
-## verification/testing skills
+## verification/testing instructs
 
 - FYI can apply these notes to any test tool, not just lua+nvim
 
@@ -22,5 +22,6 @@ PER REPO should have a `/verify_this_project` that specifically explains how to 
   manual tests + expected output
   compiling code
   linting
-  verification tools (i.e. skills-verify or w/e the name is)
+  verification tools
+    TODO build my own set of verifications that run when loaded, in fact this is the loader more or less... if loads => good to go!
 

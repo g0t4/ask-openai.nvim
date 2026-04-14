@@ -1,5 +1,5 @@
 local log = require("ask-openai.logs.logger").predictions()
-local skills = require("ask-openai.frontends.skills")
+local instructs = require("ask-openai.frontends.instructs")
 local local_share = require("ask-openai.config.local_share")
 
 local M = {}
@@ -130,9 +130,9 @@ function M.SlashCommandCompletion(arglead, cmdline, cursorpos)
         end
     end
 
-    -- * add skill prompts
+    -- * add instruct prompts
     -- FYI first load will happen on first completion, s/b fine for slight delay
-    for _, cmd in ipairs(skills.get_skill_commands()) do
+    for _, cmd in ipairs(instructs.get_instruct_slash_commands()) do
         if cmd:find('^' .. escaped) then
             table.insert(result, "/" .. cmd)
         end
@@ -178,21 +178,21 @@ end
 function M.render(prompt)
     prompt = prompt or ""
 
-    -- * inject skills first
-    local skill_contents = {}
+    -- * inject instructs first
+    local instruct_contents = {}
     local rendered_prompt = prompt
-    for _, skill_name in pairs(skills.get_skill_commands()) do
-        local cmd = "/" .. skill_name
+    for _, instruct_name in pairs(instructs.get_instruct_slash_commands()) do
+        local cmd = "/" .. instruct_name
         found, rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, cmd)
         if found then
-            local content = skills.load_skill(skill_name)
+            local content = instructs.load_instruct(instruct_name)
             if content then
-                table.insert(skill_contents, content)
+                table.insert(instruct_contents, content)
             end
         end
     end
-    if #skill_contents > 0 then
-        rendered_prompt = rendered_prompt .. "\n" .. table.concat(skill_contents, "\n")
+    if #instruct_contents > 0 then
+        rendered_prompt = rendered_prompt .. "\n" .. table.concat(instruct_contents, "\n")
     end
 
     -- * detect pattern based fields

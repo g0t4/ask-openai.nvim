@@ -1,5 +1,5 @@
 local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
-local skills = require("ask-openai.frontends.skills")
+local instructs = require("ask-openai.frontends.instructs")
 require('ask-openai.helpers.testing')
 local describe = require("devtools.tests._describe")
 
@@ -51,7 +51,7 @@ describe("render", function()
         -- just add one test per, do not exercise tests of the parsing/stripping
         ensure_detects("yanks")
 
-        -- reasoning level control (i.e. so can set this in a skill!)
+        -- reasoning level control (i.e. so can set this in instructs!)
         ensure_detects("low", "reasoning_low")
         ensure_detects("medium", "reasoning_medium")
         ensure_detects("high", "reasoning_high")
@@ -93,25 +93,25 @@ describe("render", function()
         end)
     end)
 
-    describe("skills", function()
-        local fake_skill_name = "fake_skilly_poo"
-        skills.cached_skill_commands = { fake_skill_name }
-        -- skills._skill_paths[skill_name] = "/fake/skilly/poo" -- not required if injecting content into cache
+    describe("instructs", function()
+        local fake_name = "fake_poo"
+        instructs.cached_instruct_slash_commands = { fake_name }
+        -- instructs._instruct_paths_by_name[instruct_name] = "/fake/instructy/poo" -- not required if injecting content into cache
 
-        it("should detect and load skill commands", function()
-            skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO"
-            local includes = prompt_parser.render("foo /" .. fake_skill_name .. " bar")
-            assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
+        it("should detect and load instruct commands", function()
+            instructs._instruct_contents_by_name[fake_name] = "INJECTED INSTRUCTY POO"
+            local includes = prompt_parser.render("foo /" .. fake_name .. " bar")
+            assert.are_equal("foo bar\nINJECTED INSTRUCTY POO", includes.rendered_prompt)
         end)
 
         local function ensure_static_slash_command_is_identified(command, field)
             -- print(command)
             field = field or command
             it("/" .. command, function()
-                skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO /" .. command
-                local includes = prompt_parser.render("foo /" .. fake_skill_name .. " bar")
-                assert.is_true(includes[field], "includes." .. field .. " should be true due to /" .. command .. " in skill content")
-                assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
+                instructs._instruct_contents_by_name[fake_name] = "INJECTED INSTRUCTY POO /" .. command
+                local includes = prompt_parser.render("foo /" .. fake_name .. " bar")
+                assert.is_true(includes[field], "includes." .. field .. " should be true due to /" .. command .. " in instruct content")
+                assert.are_equal("foo bar\nINJECTED INSTRUCTY POO", includes.rendered_prompt)
             end)
         end
 
@@ -136,12 +136,12 @@ describe("render", function()
         end)
 
 
-        it("should detect top_k embedded in skill content", function()
+        it("should detect top_k embedded in instruct content", function()
             local top_k_val = 7
-            skills._skill_content_cache[fake_skill_name] = "INJECTED SKILLY POO /k=" .. top_k_val
-            local includes = prompt_parser.render("foo /" .. fake_skill_name .. " bar")
+            instructs._instruct_contents_by_name[fake_name] = "INJECTED INSTRUCTY POO /k=" .. top_k_val
+            local includes = prompt_parser.render("foo /" .. fake_name .. " bar")
             assert.are_equal(top_k_val, includes.top_k, "top_k should be parsed as 7")
-            assert.are_equal("foo bar\nINJECTED SKILLY POO", includes.rendered_prompt)
+            assert.are_equal("foo bar\nINJECTED INSTRUCTY POO", includes.rendered_prompt)
         end)
     end)
 end)

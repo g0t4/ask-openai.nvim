@@ -18,7 +18,7 @@ M.callbacks = {}
 
 local servers = {
 
-    -- TODO https://agentskills.io/mcp https based MCP tools... is it a websocket?
+    -- PRN implement https://agentskills.io/mcp https based MCP tools... is it a websocket?
 
     fetch = {
         -- PRN only include this tool if initial request includes /web?
@@ -390,7 +390,7 @@ function M.get_system_message_instructions(tool_name)
 
         -- TODO fetch tool/instruction improvement ideas
         -- ** setup a subagent for each request w/ a question/statement about what is of interest, let it gather multiple links and report back with links and what matters about each one
-        --    subagent can have detailed instructions (/SKILL like) for GitHub links and many other common sites to make a more productive experience fetching from common sites
+        --    subagent can have detailed instructions (/INSTRUCT like) for GitHub links and many other common sites to make a more productive experience fetching from common sites
         --    also means instructions don't have to polluate normal system prompt for top level chat thread
     end
 
