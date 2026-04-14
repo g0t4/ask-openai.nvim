@@ -13,7 +13,7 @@ local M = {
 function M.log_request_with(request, frontend)
     local save_dir = vim.fn.stdpath("state") .. "/ask-openai"
     if request.type ~= "" then
-        -- add `questions/` or `fim/` or `rewrite/` intermediate path
+        -- add `agents/` or `fim/` or `rewrite/` intermediate path
         save_dir = save_dir .. "/" .. request.type
     end
     local trace_id = tostring(request.start_time)

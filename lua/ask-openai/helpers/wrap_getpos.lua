@@ -4,7 +4,7 @@
 local GetPos = {}
 
 
--- TODO! ! use this for selection in frontends: rewrites, questions, predictions, etc?
+-- TODO! ! use this for selection in frontends: rewrites, agents, predictions, etc?
 
 function setup_for_testing()
     -- Map <leader>b to print the cursor position.
