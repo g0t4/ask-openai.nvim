@@ -75,7 +75,15 @@ class IncrementalRAGIndexer:
         for file_extension in included:
             await self.build_index(file_extension)
         self.warn_about_other_extensions(included)
+        self.trash_vestigial_extensions(included)
         await signal_hotpath_done_in_background()
+
+    def trash_vestigial_extensions(self, indexed_extensions: list[str]):
+        rag_dir_dirs = [p for p in self.dot_rag_dir.iterdir() if p.is_dir()]
+        for extension_dir in rag_dir_dirs:
+            if extension_dir.name not in indexed_extensions:
+                logger.warn(f"Removing vestigial rag dir: {extension_dir}")
+                subprocess.run(["trash", extension_dir])
 
     def warn_about_other_extensions(self, index_languages: list[str]):
 
