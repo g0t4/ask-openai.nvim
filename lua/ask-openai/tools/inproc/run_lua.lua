@@ -39,6 +39,8 @@ function M.call(parsed_args, callback)
         return
     end
 
+    -- TODO need async design with callback to trigger when there is a result... i.e. if ask user for input, need to get answer... and wait for that before the tool finishes up... right now it's sync only
+    --
     local ok, result = pcall(fn)
     if not ok then
         callback(plumbing.create_tool_call_output_for_error_message("Error executing Lua code: " .. tostring(result)))
