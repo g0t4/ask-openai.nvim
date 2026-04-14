@@ -24,11 +24,31 @@ describe("render", function()
                     { scenario = "end of prompt",                     prompt = "foo bar /" .. command },
                     { scenario = "end of prompt + spaces after",      prompt = "foo bar /" .. command .. "  " },
                     --
-                    { scenario = "unchanged b/c on end of word",      prompt = "bar/" .. command,                        unchanged = true },
-                    { scenario = "unchanged b/c in middle of a word", prompt = "foo/" .. command .. "bar",               unchanged = true },
-                    { scenario = "unchanged b/c in front of word",    prompt = "/" .. command .. "Foo",                  unchanged = true },
+                    { scenario = "unchanged b/c on end of word",      prompt = "bar/" .. command,             unchanged = true },
+                    { scenario = "unchanged b/c in middle of a word", prompt = "foo/" .. command .. "bar",    unchanged = true },
+                    { scenario = "unchanged b/c in front of word",    prompt = "/" .. command .. "Foo",       unchanged = true },
                     --
-                    { scenario = "command included twice",            prompt = "foo bar /" .. command .. " /" .. command },
+                    -- * duplicate /command => strips all
+                    -- FYI dup is a conundrum => only an issue if hits 2/3 of my gsub() calls...
+                    --    else duplicates would be all trimmed w/in the same case (start gsub / middle gsub / end gsub)
+                    --    basically I am covering edge cases of my implementation
+                    --    TODO try tokenizing the prompt => get rid of whitespace headache?
+                    {
+                        scenario = "command duplicated - middle + end",
+                        prompt = "foo bar /" .. command .. " /" .. command,
+                    },
+                    {
+                        scenario = "command duplicated - start + middle",
+                        prompt = "/" .. command .. " /" .. command .. " foo bar",
+                    },
+                    {
+                        scenario = "command duplicated - start + end",
+                        prompt = "/" .. command .. " foo bar /" .. command,
+                    },
+                    {
+                        scenario = "command duplicated - start + middle + end",
+                        prompt = "/" .. command .. " foo /" .. command .. " bar /" .. command
+                    },
                 }
 
                 for _, case in ipairs(position_cases) do
