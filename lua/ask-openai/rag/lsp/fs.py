@@ -60,7 +60,7 @@ async def load_rag_config(root_path: Path) -> Config:
     async with aiofiles.open(rag_yaml, mode="r") as f:
         content = await f.read()
     config = load_config(content)
-    logger.pp_debug(f"found rag config: {rag_yaml}", config)
+    logger.pp_debug(f"found rag config", rag_yaml)
     return config
 
 def get_config():
