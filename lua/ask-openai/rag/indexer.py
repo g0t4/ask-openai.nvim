@@ -45,6 +45,12 @@ class ProgramArgs:
     level: int
     only_extension: str | None = None
 
+def trash_dir(directory):
+    directory = Path(directory)
+    if not directory.exists():
+        return
+    subprocess.run(["trash", directory], check=IGNORE_FAILURE)
+
 class IncrementalRAGIndexer:
 
     def __init__(
@@ -83,7 +89,7 @@ class IncrementalRAGIndexer:
         for extension_dir in rag_dir_dirs:
             if extension_dir.name not in indexed_extensions:
                 logger.warn(f"Removing vestigial rag dir: {extension_dir}")
-                subprocess.run(["trash", extension_dir])
+                trash_dir(extension_dir)
 
     def warn_about_other_extensions(self, index_languages: list[str]):
 
@@ -306,12 +312,6 @@ class IncrementalRAGIndexer:
         if paths.deleted:
             logger.debug(f"[green]Removed {len(paths.deleted)} deleted files")
 
-def trash_dot_rag(dot_rag_dir):
-    dot_rag_dir = Path(dot_rag_dir)
-    if not dot_rag_dir.exists():
-        return
-    subprocess.run(["trash", dot_rag_dir], check=IGNORE_FAILURE)
-
 async def main():
     from lsp.logs import logging_fwk_to_console
 
@@ -358,7 +358,7 @@ async def main():
         # FYI added .resolve() recently, leave a note just in case that causes issues so you remember (2026-01-26... remove this in a few weeks max)
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
         if args.rebuild:
-            trash_dot_rag(dot_rag_dir)
+            trash_dir(dot_rag_dir)
 
         options = RAGChunkerOptions.ProductionOptions()
         config = await fs.load_rag_config(source_code_dir)
