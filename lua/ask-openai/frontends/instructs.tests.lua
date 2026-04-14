@@ -40,6 +40,16 @@ foo: bar
         assert.are_equal("Hello", cleaned)
     end)
 
+    it("yaml frontmatter not on first line", function()
+        local raw = [[foo
+---
+bar: baz
+---
+Hello world]]
+        local cleaned = instructs.clean_contents(raw)
+        assert.are_equal(raw, cleaned)
+    end)
+
     it("removes multiple HTML comments and trims", function()
         local raw = "Hello <!--c1--> world <!--c2-->"
         local cleaned = instructs.clean_contents(raw)
