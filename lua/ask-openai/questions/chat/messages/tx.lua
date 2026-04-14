@@ -83,6 +83,7 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     --   NO mention of sending thinking back! so, no OpenAI compat name for that!
 
     local tx_message = TxChatMessage:new(rx_message.role, rx_message.content) --[[@as OpenAIChatCompletion_Assistant_TxChatMessage]]
+    -- FYI! setting timings is working w/ llama-server, must just ignore the fields!
     tx_message.timings = rx_message.timings
 
     -- FYI qwen3-8b's template exploded after tool call w/ reasoning_content included: (smth about lstrip).. if I comment out next line, then it works fine (tool calls and all):
