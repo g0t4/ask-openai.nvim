@@ -1,7 +1,7 @@
 local CurlRequest = require("ask-openai.backends.curl_request")
 
 ---@class CurlRequestForThread : CurlRequest
----@field trace ChatThread
+---@field trace AgentTrace
 ---@field accumulated_model_response_messages RxAccumulatedMessage[] -- model "assistant" responses, built from SSEs
 local CurlRequestForThread = {}
 local class_mt = { __index = CurlRequest } -- inherit from CurlRequest (for reals, not just the type annotations :] )

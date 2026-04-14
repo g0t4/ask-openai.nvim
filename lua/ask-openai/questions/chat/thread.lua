@@ -1,7 +1,7 @@
 local log = require('ask-openai.logs.logger').predictions()
 
 --- see https://platform.openai.com/docs/api-reference/chat/create
----@class ChatThread
+---@class AgentTrace
 ---@field messages TxChatMessage[]
 ---@field params ChatParams
 ---@field last_request CurlRequestForThread
@@ -10,7 +10,7 @@ local AgentTrace = {}
 
 ---@param params ChatParams
 ---@param base_url string
----@return ChatThread
+---@return AgentTrace
 function AgentTrace:new(params, base_url)
     self = setmetatable({}, { __index = AgentTrace })
     self.messages = params.messages or {}
