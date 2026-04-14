@@ -4,7 +4,7 @@ local log = require('ask-openai.logs.logger').predictions()
 ---@class AgentTrace
 ---@field messages TxChatMessage[]
 ---@field params ChatParams
----@field last_request CurlRequestForThread
+---@field last_request CurlRequestForTrace
 ---@field base_url string
 local AgentTrace = {}
 
@@ -24,7 +24,7 @@ function AgentTrace:new(params, base_url)
     return self
 end
 
----@param request CurlRequestForThread
+---@param request CurlRequestForTrace
 function AgentTrace:set_last_request(request)
     self.last_request = request
 end
@@ -71,7 +71,7 @@ end
 
 function AgentTrace:dump()
     -- log:luaify_trace("last_request's RxAccumulatedMessages", self.last_request.accumulated_model_response_messages)
-    -- log:luaify_trace("thread's TxChatMessages (history, sent on followup/toolresults)", self.messages)
+    -- log:luaify_trace("trace's TxChatMessages (history, sent on followup/toolresults)", self.messages)
     log:luaify_trace("AgentTrace:dump", self)
 end
 

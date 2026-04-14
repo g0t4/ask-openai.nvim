@@ -90,7 +90,7 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     tx_message.reasoning_content = rx_message.reasoning_content
     -- FYI llama-server populates message.thinking via message.reasoning_content (for gptoss):
     --   https://github.com/ggml-org/llama.cpp/blob/0de8878c9/common/chat.cpp#L1813-L1817
-    -- TODO modify thread:add_message() to drop reasoning_content when final message is added
+    -- TODO modify trace:add_message() to drop reasoning_content when final message is added
 
     --- * map tool calls
     if rx_message.tool_calls then

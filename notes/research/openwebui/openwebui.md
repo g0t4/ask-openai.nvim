@@ -10,7 +10,7 @@
     - Another factor, openwebui prompts the model separately for a tool use (explicitly asks for tools - or empty list if don't want tools... so it forces model to pick one/some/none)
       - it provides user's prompt too, but in a diff way... the focus seems to be on tool use (structures the prompt to start out emphasizing tool use only, not user prompt... which is attached as almost a footnote)
     - Then, it evals tool calls and returns results ALONG with user prompt
-      - almost as if the user had included a relevant tool call cuz the previous prompt is not in the thread now... just the tool call and result (AFAICT, I should double check what it does with thread after tool call completes)
+      - almost as if the user had included a relevant tool call cuz the previous prompt is not in the trace now... just the tool call and result (AFAICT, I should double check what it does with trace after tool call completes)
 - Using builtin templates in qwen models has done seemingly the opposite in my testing of AskToolUse
   - qwen3 ROCKS with this format
   - qwen2.5 IS TERRIBLE with its builtin format, keeps generating invalid XML tags around its tool calls

@@ -8,19 +8,20 @@ local M = {
 }
 ---@param request CurlRequest
 ---@param frontend StreamingFrontend
----@return string save_dir, string thread_id
+---@return string save_dir
+---@return string trace_id
 function M.log_request_with(request, frontend)
     local save_dir = vim.fn.stdpath("state") .. "/ask-openai"
     if request.type ~= "" then
         -- add `questions/` or `fim/` or `rewrite/` intermediate path
         save_dir = save_dir .. "/" .. request.type
     end
-    local thread_id = tostring(request.start_time)
+    local trace_id = tostring(request.start_time)
     if frontend.trace then
-        -- multi-turn threads use thread's start_time
-        thread_id = tostring(frontend.trace.start_time)
+        -- multi-turn traces use trace's start_time
+        trace_id = tostring(frontend.trace.start_time)
     end
-    return save_dir, thread_id
+    return save_dir, trace_id
 end
 
 ---@param sse_parsed table
@@ -79,7 +80,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     end
     -- PRN track tool call deltas too? on the response (for output.json)?
     --   FYI request.body, on next turn, already has the tool call
-    --   so for now, this is not urgent to add to logs here... I can grab thread logs for after model responds to tool call result
+    --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
 
     if sse_parsed.timings then
         -- store for convenient access in-memory, that way if smth fails on save I can still see it here
@@ -89,7 +90,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             frontend = frontend,
         }
 
-        local save_dir, thread_id = M.log_request_with(request, frontend)
+        local save_dir, trace_id = M.log_request_with(request, frontend)
 
         vim.schedule(function()
             -- technically I have timing issues here, this could run after below (IIUC)
@@ -101,19 +102,19 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             -- PredictionsFrontend and RewriteFrontend are both single turn, and can log assistant response message(s) here
             M.append_to_messages_jsonl(accum, request, frontend)
         end
-        -- TODO check timing of QuestionsFrontend now and ALSO check what (if anything) is missing here for the thread_message that QuestionsFrontend inserts into thread history vs the accum here
+        -- TODO check timing of QuestionsFrontend now and ALSO check what (if anything) is missing here for the trace_message that QuestionsFrontend inserts into trace history vs the accum here
         --  does accum have all of what's needed or is it missing anything (IIRC I vaguely recall there's something I distilled special in QuestionsFrontend that wouldn't be on the pure accum message here)
         --  OR, was it just that I was duplicating the assistant message (randomly b/c that logic to insert the new message would execute before/after this saved b/c this used to be async via vim.vim.defer_fn(function() ... end,0)
-        --    btw if it was just duplicates, then now that I do not vim.defer_fn anymore for this part then timing wise the thread_message can't be added
-        M.save_thread(request, frontend, accum, sse_parsed)
-        -- TODO consider if you want part of what thread has (i.e. other request body inputs)... perhaps just log that separately? in another file? and then not log *-trace.json anymore and just rely on messages.jsonl?
+        --    btw if it was just duplicates, then now that I do not vim.defer_fn anymore for this part then timing wise the trace_message can't be added
+        M.save_trace(request, frontend, accum, sse_parsed)
+        -- TODO consider if you want part of what trace has (i.e. other request body inputs)... perhaps just log that separately? in another file? and then not log *-trace.json anymore and just rely on messages.jsonl?
         --  that said I was unhappy with messages alone today too so gahhh (I also ripped out messages.jsonl)
 
         if M.LOG_ALL_SSEs then
             -- PRN save to 123-sses.jsonl?
             --   SSEs are fairly standardized => thus jsonl would likely read table-like
             --   for all but first(s)/last(s)
-            local all_file = io.open(save_dir .. "/" .. thread_id .. "/all_sses.json", "w")
+            local all_file = io.open(save_dir .. "/" .. trace_id .. "/all_sses.json", "w")
             if all_file then
                 all_file:write(json.encode(all_sses, { indent = true }))
                 all_file:close()
@@ -122,15 +123,15 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     end
 end
 
-function M.save_thread(request, frontend, response_message, sse_parsed)
-    local save_dir, thread_id = M.log_request_with(request, frontend)
-    local path = save_dir .. "/" .. thread_id .. "-trace.json"
-    -- log:info("thread path", path)
+function M.save_trace(request, frontend, response_message, sse_parsed)
+    local save_dir, trace_id = M.log_request_with(request, frontend)
+    local path = save_dir .. "/" .. trace_id .. "-trace.json"
+    -- log:info("trace path", path)
     local file = io.open(path, "w")
     if file then
-        -- TODO move this logic for QuestionsFrontend too? if I keep thread (I plan to ditch it)
-        local thread_data = {
-            -- 99.99% of the time this is all I need (input messages thread + output message):
+        -- TODO move this logic for QuestionsFrontend too? if I keep trace (I plan to ditch it)
+        local trace_data = {
+            -- 99.99% of the time this is all I need (input messages trace + output message):
             request_body = request.body,
             response_message = response_message,
             --
@@ -146,7 +147,7 @@ function M.save_thread(request, frontend, response_message, sse_parsed)
             --   .__verbose.content (generated raw outputs, but ONLY for stream=false)
             last_sse = sse_parsed,
         }
-        file:write(json.encode(thread_data, { indent = true }))
+        file:write(json.encode(trace_data, { indent = true }))
         file:close()
     end
 end
@@ -164,9 +165,9 @@ function M.write_new_messages_jsonl(request, frontend)
     local ok, payload = pcall(function()
         -- * each message on its own (initial request has multiple messages)
         --  PRN do I really like this style? how about just pretty print with back to back messages :) and not deal with "jsonl"
-        --  TODO only append new message - long assistant threads will increase each turn, the time it takes and since I recreate each time... it's going to be painful (possibly... as in 10ms? each turn... which is FINE for now :) )
+        --  TODO only append new message - long assistant traces will increase each turn, the time it takes and since I recreate each time... it's going to be painful (possibly... as in 10ms? each turn... which is FINE for now :) )
         --   TODO how about flag each message as logged? (after logged so not logging that)
-        --    currently re-saving entire thread every time
+        --    currently re-saving entire trace every time
         local message_lines = {}
         for _, msg in ipairs(messages) do
             if not msg._logged then
@@ -181,10 +182,10 @@ function M.write_new_messages_jsonl(request, frontend)
         return table.concat(message_lines, "\n")
     end)
     if ok then
-        local save_dir, thread_id = M.log_request_with(request, frontend)
+        local save_dir, trace_id = M.log_request_with(request, frontend)
 
         vim.fn.mkdir(save_dir, "p")
-        local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
+        local path = save_dir .. "/" .. trace_id .. "-messages.jsonl"
         local file = io.open(path, "a")
         if file then
             file:write("\n") -- instead of trailing \n, prepend a \n to ensure never colliding with current message on last line
@@ -211,8 +212,8 @@ function M.append_to_messages_jsonl(message, request, frontend)
     local oneline = { indent = false }
     local json_line = vim.json.encode(message, oneline)
 
-    local save_dir, thread_id = M.log_request_with(request, frontend)
-    local path = save_dir .. "/" .. thread_id .. "-messages.jsonl"
+    local save_dir, trace_id = M.log_request_with(request, frontend)
+    local path = save_dir .. "/" .. trace_id .. "-messages.jsonl"
     local file, err = io.open(path, "a")
     if not file then
         log:error("Failed to open messages log for appending: %s", err)

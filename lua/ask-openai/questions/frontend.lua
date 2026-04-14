@@ -20,7 +20,7 @@ local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local HLGroups = require("ask-openai.hlgroups")
 local formatters = require("ask-openai.questions.chat.formatters")
 local ToolCallOutput = require("ask-openai.questions.chat.tool_call_output")
-local CurlRequestForThread = require("ask-openai.questions.curl_request_for_thread")
+local CurlRequestForTrace = require("ask-openai.questions.curl_request_for_trace")
 local RxAccumulatedMessage = require("ask-openai.questions.chat.messages.rx")
 local ToolCall = require("ask-openai.questions.chat.tool_call")
 local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
@@ -154,7 +154,7 @@ local function ask_question_command(opts)
     local lines = LinesBuilder:new(first_turn_ns_id)
     if QuestionsFrontend.trace then
         -- FYI some previous extmarks are "dropped", fine by me to "turn off the colors"... but, probably want it for all previous chat extmarks
-        lines:append_styled_lines({ "--- New Thread Started ---" }, HLGroups.SYSTEM_PROMPT)
+        lines:append_styled_lines({ "--- New Trace Started ---" }, HLGroups.SYSTEM_PROMPT)
         -- or:   QuestionsFrontend.clear_chat_command()
     end
     lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
@@ -294,7 +294,7 @@ function QuestionsFrontend.then_send_messages()
     QuestionsFrontend.this_turn_chat_start_line_base0 = QuestionsFrontend.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
-    local request = CurlRequestForThread:new({
+    local request = CurlRequestForTrace:new({
         body = QuestionsFrontend.trace:next_curl_request_body(),
         base_url = QuestionsFrontend.trace.base_url,
         endpoint = CompletionsEndpoints.oai_v1_chat_completions,
@@ -436,7 +436,7 @@ end
 
 --- think of this as denormalizing SSEs => into aggregate RxAccumulatedMessage
 ---@param choice OpenAIChoice|nil
----@param request CurlRequestForThread
+---@param request CurlRequestForTrace
 ---@param sse_parsed OnParsedSSE
 function QuestionsFrontend.on_streaming_delta_update_message_history(choice, request, sse_parsed)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
@@ -571,10 +571,10 @@ function QuestionsFrontend.on_curl_exited_successfully()
         -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for assistant messages)
 
         for _, rx_message in ipairs(QuestionsFrontend.trace.last_request.accumulated_model_response_messages or {}) do
-            -- *** thread.last_request.accumulated_model_response_messages IS NOT thread.messages
-            --    thread.messages => sent with future requests, hence TxChatMessage
+            -- *** trace.last_request.accumulated_model_response_messages IS NOT trace.messages
+            --    trace.messages => sent with future requests, hence TxChatMessage
             --    request.response_messages is simply to denormalize responses from SSEs, hence RxAccumulatedMessage
-            --    request => SSEs => RxAccumulatedMessage(s)  => toolcalls/followup => thread.messages (TxChatMessage) => next request => ...
+            --    request => SSEs => RxAccumulatedMessage(s)  => toolcalls/followup => trace.messages (TxChatMessage) => next request => ...
 
             -- add assistant response message to chat history (TxChatMessage)
             --   (must come before tool result messages)
@@ -582,8 +582,8 @@ function QuestionsFrontend.on_curl_exited_successfully()
             local trace_message = TxChatMessage:from_assistant_rx_message(rx_message)
             QuestionsFrontend.trace:add_message(trace_message)
             completion_logger.append_to_messages_jsonl(trace_message, QuestionsFrontend.trace.last_request, QuestionsFrontend)
-            -- TODO capture *-trace.json here too? and then get rid of response_message hack cuz all messages will now be in thread
-            --    TODO and careful to mirror changes (i.e. if move here, then need thread to save still for other frontends)
+            -- TODO capture *-trace.json here too? and then get rid of response_message hack cuz all messages will now be in trace
+            --    TODO and careful to mirror changes (i.e. if move here, then need trace to save still for other frontends)
 
             -- * show user role (in chat window) as hint to follow up (now that model+tool_calls are all done):
             QuestionsFrontend.show_user_role()
@@ -657,7 +657,7 @@ function QuestionsFrontend.abort_last_request()
     if not QuestionsFrontend.trace then
         return
     end
-    CurlRequestForThread.terminate(QuestionsFrontend.trace.last_request)
+    CurlRequestForTrace.terminate(QuestionsFrontend.trace.last_request)
     if QuestionsFrontend.rag_cancel then
         QuestionsFrontend.rag_cancel()
     end

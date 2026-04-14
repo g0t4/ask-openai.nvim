@@ -1,6 +1,6 @@
 <!-- Gippity took dibs -->
 <script lang="ts">
-  import type { ThreadJson, Message } from './lib/types'
+  import type { TraceJson, Message } from './lib/types'
   import { scrollToHash, setupHashListener } from './lib/hash-nav'
   import { getTimestampInfo } from './lib/timestamp-utils'
   import MessageView from './components/MessageView.svelte'
@@ -19,7 +19,7 @@
   })
   let loading = $state(true)
   let error = $state<string | null>(null)
-  let threadUrl = $state<string | null>(null)
+  let traceUrl = $state<string | null>(null)
   let isDirectory = $state(false)
   let githubPath = $state<string | null>(null) // e.g., "g0t4/dataset-gfy/master/path/to/file"
   let localPath = $state<string | null>(null) // e.g., "semantic_grep_auto_context/fims"
@@ -30,16 +30,16 @@
       ? `local → ${localPath || '(root)'}`
       : githubPath
         ? `github.com/${githubPath.split('/').slice(0, 2).join('/')} → ${githubPath.split('/').slice(3).join('/')}`
-        : threadUrl
-          ? decodeURIComponent(threadUrl)
+        : traceUrl
+          ? decodeURIComponent(traceUrl)
           : null
   )
 
-  // Derive title from thread URL
+  // Derive title from trace URL
   const pageTitle = $derived.by(() => {
-    if (!threadUrl) return 'Chat Viewer'
+    if (!traceUrl) return 'Chat Viewer'
     if (isDirectory) return 'File Browser'
-    const url = threadUrl.toLowerCase()
+    const url = traceUrl.toLowerCase()
     if (url.includes('rewrite')) return ':AskRewrite'
     if (url.includes('tools')) return ':AskQuestion /tools'
     if (url.includes('question')) return ':AskQuestion'
@@ -48,7 +48,7 @@
   })
 
   // Extract timestamp info from filename
-  const threadTimestampInfo = $derived.by(() => {
+  const traceTimestampInfo = $derived.by(() => {
     if (isDirectory) return null
 
     // Try to get filename from localPath or githubPath
@@ -57,16 +57,16 @@
       filename = localPath.split('/').pop() || ''
     } else if (githubPath) {
       filename = githubPath.split('/').pop() || ''
-    } else if (threadUrl) {
+    } else if (traceUrl) {
       // Try to extract from URL
-      filename = threadUrl.split('/').pop()?.split('?')[0] || ''
+      filename = traceUrl.split('/').pop()?.split('?')[0] || ''
     }
 
     if (!filename) return null
     return getTimestampInfo(filename)
   })
 
-  // Detect if this is a FIM thread and extract data for preview
+  // Detect if this is a FIM trace and extract data for preview
   const fimData = $derived.by(() => {
     if (pageTitle !== ':AskPredict' || messages.length === 0) return null
 
@@ -100,7 +100,7 @@
     }
   })
 
-  // Detect if this is an AskRewrite thread and extract data for preview
+  // Detect if this is an AskRewrite trace and extract data for preview
   const rewriteData = $derived.by(() => {
     if (pageTitle !== ':AskRewrite' || messages.length === 0) return null
 
@@ -132,7 +132,7 @@
     }
   })
 
-  async function loadThread(url: string) {
+  async function loadTrace(url: string) {
     loading = true
     error = null
     try {
@@ -151,12 +151,12 @@
           .map(line => JSON.parse(line))
       } else {
         // *-trace.json
-        const data: ThreadJson = await res.json()
+        const data: TraceJson = await res.json()
 
         // Extract messages from request_body
         messages = data.request_body?.messages ?? []
 
-        // Check for model info in thread metadata
+        // Check for model info in trace metadata
         if (data.last_sse?.model) {
           modelInfo = {
             model: data.last_sse.model,
@@ -237,8 +237,8 @@
       } else {
         // File - fetch from jsDelivr CDN
         const cdnUrl = `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}`
-        threadUrl = cdnUrl
-        loadThread(cdnUrl)
+        traceUrl = cdnUrl
+        loadTrace(cdnUrl)
       }
     } else if (localParam && import.meta.env.MODE === 'development') {
       // Dev-only local= parameter
@@ -253,16 +253,16 @@
         loading = false
       } else {
         // File - fetch via API endpoint
-        threadUrl = `/api/local/file?path=${encodeURIComponent(localParam)}`
-        loadThread(threadUrl)
+        traceUrl = `/api/local/file?path=${encodeURIComponent(localParam)}`
+        loadTrace(traceUrl)
       }
     } else if (urlParam) {
       // Legacy url= parameter (files only, no directory browsing)
-      threadUrl = urlParam
+      traceUrl = urlParam
       githubPath = null
       localPath = null
       isDirectory = false
-      loadThread(urlParam)
+      loadTrace(urlParam)
     } else {
       loading = false
       error =
@@ -295,9 +295,9 @@
   <header class="mb-6">
     <div class="flex items-baseline gap-3">
       <h1 class="text-2xl font-bold text-gray-100">{pageTitle}</h1>
-      {#if threadTimestampInfo}
+      {#if traceTimestampInfo}
         <span class="text-sm text-gray-500">
-          {threadTimestampInfo.dateTime} <span class={threadTimestampInfo.colorClass}>({threadTimestampInfo.age})</span>
+          {traceTimestampInfo.dateTime} <span class={traceTimestampInfo.colorClass}>({traceTimestampInfo.age})</span>
         </span>
       {/if}
     </div>
@@ -314,8 +314,8 @@
     <LocalBrowser localPath={localPath} />
   {:else if isDirectory && githubPath}
     <GitHubBrowser githubPath={githubPath} />
-  {:else if isDirectory && threadUrl}
-    <FileBrowser url={threadUrl} />
+  {:else if isDirectory && traceUrl}
+    <FileBrowser url={traceUrl} />
   {:else}
     {#if modelInfo.isAvailable}
       <ModelInfo model={modelInfo.model} />

@@ -30,9 +30,9 @@ _G.CompletionsEndpoints = {
 ---@field on_sse_llama_server_timings OnParsedSSE
 ---@field on_curl_exited_successfully OnCurlExitedSuccessfully
 ---@field explain_error ExplainError
----@field trace? CurlRequestForThread
+---@field trace? CurlRequestForTrace
 
----@param request CurlRequest|CurlRequestForThread
+---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 function Curl.spawn(request, frontend)
     request.body.stream = true

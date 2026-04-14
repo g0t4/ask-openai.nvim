@@ -29,7 +29,7 @@ function M.semantic_grep_user_message(rag_matches)
             -- * add leading whitespace for non-zero start columns (ts chunks only, so far)
             local start_col0 = chunk.start_column_base0
             if start_col0 and start_col0 > 0 then
-                -- I noticed in some cases a treesitter matched function has non-zero start column and that shows as incorrectly indented in thread RAG matches
+                -- I noticed in some cases a treesitter matched function has non-zero start column and that shows as incorrectly indented in trace RAG matches
                 --   mostly wanted to avoid model being confused, especialy if multiple matches are from same file and the de-indented func signature (often all that is off like this)... is just slightly wrong but could it confuse the generated code?
                 --      could this be partially why I get poorly indented suggestions at times?
                 --   so, I am adding whitespace for now

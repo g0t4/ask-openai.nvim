@@ -61,7 +61,7 @@ def load_messages_jsonl(path: Path) -> Iterable[dict[str, Any]]:
         message = json.loads(line)
         yield message
 
-def load_thread_messages_from_path(argv1: str) -> list[dict[str, Any]]:
+def load_trace_messages_from_path(argv1: str) -> list[dict[str, Any]]:
     request_file = Path(argv1)
     if not request_file.is_file():
         print(f"File not found: {request_file}")
@@ -73,7 +73,7 @@ def load_thread_messages_from_path(argv1: str) -> list[dict[str, Any]]:
         data = json.load(f)
     messages = load_messages(data)
 
-    # * include response message at end of thread
+    # * include response message at end of trace
     if "response_message" in data:
         # * trace.json
         response = data["response_message"]
@@ -111,7 +111,7 @@ def load_messages(data) -> list[dict[str, Any]]:
             return messages
     return []
 
-def load_thread_messages_from_stream(stream) -> list[dict[str, Any]]:
+def load_trace_messages_from_stream(stream) -> list[dict[str, Any]]:
     # assume stream can be:
     #   jq .messages | this
     #   cat *-trace.json | this
@@ -511,9 +511,9 @@ def main() -> None:
     load_preapproved_files()
 
     if len(sys.argv) < 2:
-        messages = load_thread_messages_from_stream(sys.stdin)
+        messages = load_trace_messages_from_stream(sys.stdin)
     else:
-        messages = load_thread_messages_from_path(sys.argv[1])
+        messages = load_trace_messages_from_path(sys.argv[1])
 
     for idx, message in enumerate(messages, start=1):
         print_message(message, idx)

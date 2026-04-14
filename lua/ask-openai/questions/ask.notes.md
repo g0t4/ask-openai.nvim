@@ -1,6 +1,6 @@
 ## old model notes in AskQuestion
 
-taken from QuestionsFrontend right before sending a new question thread
+taken from QuestionsFrontend right before sending a new question trace
 **put notes here instead of bloating the code**
 
 ```lua
