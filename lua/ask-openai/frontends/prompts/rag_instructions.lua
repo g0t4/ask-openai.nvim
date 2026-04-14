@@ -2,7 +2,7 @@ local log = require("ask-openai.logs.logger").predictions()
 local M = {}
 
 -- TxChatMessage is used to wrap the generated semantic grep content as a user context message
-local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
+local TxChatMessage = require("ask-openai.agents.messages.tx")
 
 local function semantic_grep_header_lines(rag_matches)
     return {

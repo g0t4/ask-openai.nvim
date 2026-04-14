@@ -1,4 +1,4 @@
-local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
+local TxChatMessage = require("ask-openai.agents.messages.tx")
 
 local M = {}
 

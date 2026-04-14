@@ -1,6 +1,6 @@
 local log = require('ask-openai.logs.logger').predictions()
 local ansi = require('ask-openai.predictions.ansi')
-local shared = require('ask-openai.questions.chat.messages.shared')
+local shared = require('ask-openai.agents.messages.shared')
 
 ---@class RxAccumulatedMessage
 ---@field role? string

@@ -1,7 +1,7 @@
 local log = require("ask-openai.logs.logger").predictions()
 local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.predictions.ansi")
-local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
+local TxChatMessage = require("ask-openai.agents.messages.tx")
 local ContextItem = require("ask-openai.frontends.context.item")
 
 local M = {}

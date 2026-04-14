@@ -1,5 +1,5 @@
 require('ask-openai.helpers.test_setup').modify_package_path()
-local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
+local TxChatMessage = require("ask-openai.agents.messages.tx")
 local should = require("devtools.tests.should")
 local _describe = require("devtools.tests._describe")
 local str = require("devtools.tests.str")

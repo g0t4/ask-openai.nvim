@@ -1,5 +1,5 @@
 local curl = require('plenary.curl')
-local TxChatMessage = require('ask-openai.questions.chat.messages.tx')
+local TxChatMessage = require('ask-openai.agents.messages.tx')
 local log = require('ask-openai.logs.logger').predictions()
 
 ---@return string
