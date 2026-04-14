@@ -43,6 +43,7 @@
     if (url.includes('rewrite')) return ':AskRewrite'
     if (url.includes('tools')) return ':AskAgent /tools'
     if (url.includes('question')) return ':AskAgent'
+    if (url.includes('agents')) return ':AskAgent'
     if (url.includes('fim')) return ':AskPredict'
     return 'Chat Viewer'
   })
