@@ -1,6 +1,6 @@
 local BufferController0Indexed = require('ask-openai.rewrites.BufferController')
 
--- TODO! should ChatWindow be derived from WindowController0Indexed?
+-- TODO! should AgentWindow be derived from WindowController0Indexed?
 --   TODO! especially after buffer controllers are merged into one that is 0 indexed
 
 ---This entire class operates on 0-indexed row and column positions

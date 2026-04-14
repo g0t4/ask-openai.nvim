@@ -3,15 +3,15 @@ local BufferController = require("ask-openai.questions.buffers")
 local HLGroups = require("ask-openai.hlgroups")
 local FloatWindow = require("ask-openai.helpers.float_window")
 
----@class ChatWindow : FloatWindow
+---@class AgentWindow : FloatWindow
 ---@field buffer_number number
 ---@field buffer BufferController
 ---@field win_id number
-local ChatWindow = {}
+local AgentWindow = {}
 local class_mt = { __index = FloatWindow } -- inherit FloatWindow behavior too
-setmetatable(ChatWindow, class_mt)
+setmetatable(AgentWindow, class_mt)
 
-function ChatWindow:new()
+function AgentWindow:new()
     ---@type FloatWindowOptions
     local opts = {
         width_ratio = 0.6,
@@ -20,7 +20,7 @@ function ChatWindow:new()
         buffer_name = 'AskQuestion',
     }
 
-    local instance_mt = { __index = self } -- FYI self is likely ChatWindow here
+    local instance_mt = { __index = self } -- FYI self is likely AgentWindow here
     local instance = setmetatable(FloatWindow:new(opts), instance_mt)
 
     instance.buffer = BufferController:new(instance.buffer_number)
@@ -43,7 +43,7 @@ function ChatWindow:new()
 
     -- * folding options
     vim.opt_local.foldmethod = "expr"
-    vim.opt_local.foldexpr = "v:lua.MyChatWindowFolding()"
+    vim.opt_local.foldexpr = "v:lua.MyAgentWindowFolding()"
     vim.opt_local.foldenable = true
     vim.opt_local.foldlevel = 0 -- CLOSE all folds with higher number, thus 0 == ALL (equiv to zM => foldenable + foldlevel=0)
 
@@ -54,7 +54,7 @@ function ChatWindow:new()
 end
 
 ---@param width_ratio number -- new width ratio (0 to 1)
-function ChatWindow:resize_width_ratio(width_ratio)
+function AgentWindow:resize_width_ratio(width_ratio)
     self.opts.width_ratio = width_ratio
 
     -- clamp the ratio between 0 and 1
@@ -66,7 +66,7 @@ function ChatWindow:resize_width_ratio(width_ratio)
 end
 
 ---@param height_ratio number -- new height ratio (0 to 1)
-function ChatWindow:resize_height_ratio(height_ratio)
+function AgentWindow:resize_height_ratio(height_ratio)
     self.opts.height_ratio = height_ratio
 
     -- clamp the ratio between 0 and 1
@@ -79,7 +79,7 @@ end
 
 --- Cycle the width ratio through a predefined set of values.
 --- The sequence is 0.5 → 0.6 → 0.8 → 1.0 → back to 0.5.
-function ChatWindow:cycle_width()
+function AgentWindow:cycle_width()
     -- Increment width by 0.1, wrapping back to 0.5 after 1.0.
     local step = 0.1
     local min_ratio = 0.5
@@ -96,7 +96,7 @@ function ChatWindow:cycle_width()
 end
 
 --- Cycle the height ratio by 0.1 steps, wrapping from a minimum (0.1 less than the current height) back to 1.0.
-function ChatWindow:cycle_height()
+function AgentWindow:cycle_height()
     local step = 0.1
     local max_ratio = 1.0
     local min_ratio = 0.6
@@ -111,7 +111,7 @@ function ChatWindow:cycle_height()
 end
 
 ---@type ExplainError
-function ChatWindow:explain_error(text)
+function AgentWindow:explain_error(text)
     local lines = LinesBuilder:new()
     lines:create_marks_namespace()
     lines:append_styled_text(text, HLGroups.EXPLAIN_ERROR)
@@ -120,17 +120,17 @@ function ChatWindow:explain_error(text)
 end
 
 ---@param lines LinesBuilder
-function ChatWindow:append_styled_lines(lines)
+function AgentWindow:append_styled_lines(lines)
     self.buffer:append_styled_lines(lines)
 end
 
 --- clear the window contents only (not message history)
-function ChatWindow:clear()
+function AgentWindow:clear()
     self.buffer:clear()
 end
 
-function ChatWindow:close()
+function AgentWindow:close()
     vim.api.nvim_win_close(0, true)
 end
 
-return ChatWindow
+return AgentWindow

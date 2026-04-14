@@ -4,7 +4,7 @@ local completion_logger = require("ask-openai.logs.completion_logger")
 local tool_router = require("ask-openai.tools.router")
 local curl = require("ask-openai.backends.curl")
 local agentica = require("ask-openai.backends.models.agentica")
-local ChatWindow = require("ask-openai.questions.chat.window")
+local AgentWindow = require("ask-openai.questions.chat.window")
 local AgentTrace = require("ask-openai.agents.trace")
 local TxChatMessage = require("ask-openai.questions.chat.messages.tx")
 local ChatParams = require("ask-openai.questions.chat.params")
@@ -329,9 +329,9 @@ function QuestionsFrontend.explain_error(text)
     end)
 end
 
-function _G.MyChatWindowFolding()
+function _G.MyAgentWindowFolding()
     local line_num_base1 = vim.v.lnum -- confirmed this is base 1 (might get lnum=0 if no lines though)
-    local fold_value = _G.MyChatWindowFoldingForLine(line_num_base1)
+    local fold_value = _G.MyAgentWindowFoldingForLine(line_num_base1)
 
     -- To force re-evaluate folding on all lines:
     --   `zx` ***
@@ -346,7 +346,7 @@ function _G.MyChatWindowFolding()
     return fold_value
 end
 
-function _G.MyChatWindowFoldingForLine(line_num_base1)
+function _G.MyAgentWindowFoldingForLine(line_num_base1)
     -- * HUGE WIN => with expr I can fold one line only! (IIUC manual is minimum 2)
     --   * so for long reasoning lines (that wrap but don't span multiple new lines) these can still be collapsed!!
     --
@@ -374,7 +374,7 @@ end
 
 function QuestionsFrontend.ensure_chat_window_is_open()
     if QuestionsFrontend.chat_window == nil then
-        QuestionsFrontend.chat_window = ChatWindow:new()
+        QuestionsFrontend.chat_window = AgentWindow:new()
 
         -- stop generation, if still wanna look at it w/o closing the window
         vim.keymap.set("n", "<Esc>", QuestionsFrontend.abort_last_request, { buffer = QuestionsFrontend.chat_window.buffer_number })

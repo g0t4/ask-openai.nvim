@@ -160,7 +160,7 @@ function BufferController:replace_with_styled_lines_after(start_line_inclusive_b
         -- log:info("folding:")
         -- local line_count = vim.api.nvim_buf_line_count(self.buffer_number)
         -- for i = 0, line_count - 1 do
-        --     log:info("  line[" .. i .. "] → " .. _G.MyChatWindowFoldingForLine(i))
+        --     log:info("  line[" .. i .. "] → " .. _G.MyAgentWindowFoldingForLine(i))
         -- end
     end)
 
