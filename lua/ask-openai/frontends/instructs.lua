@@ -73,18 +73,18 @@ function M.get_instruct_slash_commands()
         return M.cached_instruct_slash_commands
     end
 
-    local instructs_path = vim.fn.expand("~/.agents/instructs")
+    local home_dir_instructs_path = vim.fn.expand("~/.agents/instructs")
     local names = {}
-    if vim.fn.isdirectory(instructs_path) == 1 then
-        -- global instruct directories
-        local dir_names = files.list_directories(instructs_path)
+    if vim.fn.isdirectory(home_dir_instructs_path) == 1 then
+        -- * global instruct directories
+        local dir_names = files.list_directories(home_dir_instructs_path)
         for _, name in ipairs(dir_names) do
-            M._instruct_paths_by_name[name] = instructs_path .. "/" .. name .. "/INSTRUCT.md"
+            M._instruct_paths_by_name[name] = home_dir_instructs_path .. "/" .. name .. "/INSTRUCT.md"
             table.insert(names, name)
         end
 
         -- global standalone markdown files
-        local entries = files.list_entries(instructs_path)
+        local entries = files.list_entries(home_dir_instructs_path)
         for _, entry in ipairs(entries) do
             if entry.type == "file" and entry.name:match("%.md$") then
                 local instruct_name = entry.name:gsub("%.md$", "")
@@ -94,17 +94,17 @@ function M.get_instruct_slash_commands()
                         "Instruct name collision: '%s' already registered from directory %s; ignoring global file %s",
                         instruct_name,
                         M._instruct_paths_by_name[instruct_name],
-                        instructs_path .. "/" .. entry.name
+                        home_dir_instructs_path .. "/" .. entry.name
                     ), vim.log.levels.WARN)
                 else
-                    M._instruct_paths_by_name[instruct_name] = instructs_path .. "/" .. entry.name
+                    M._instruct_paths_by_name[instruct_name] = home_dir_instructs_path .. "/" .. entry.name
                     table.insert(names, instruct_name)
                 end
             end
         end
     end
 
-    -- repo‑specific instructs: <repo_root>/.agents/instructs
+    -- * repo‑specific instructs: <repo_root>/.agents/instructs
     local repo_root = nil
     local git_root = vim.fn.systemlist('git rev-parse --show-toplevel')[1]
     if vim.v.shell_error == 0 and git_root ~= '' then
