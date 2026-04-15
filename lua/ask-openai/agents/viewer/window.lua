@@ -30,11 +30,11 @@ function AgentWindow:new()
         { buffer = instance.buffer_number, desc = "clear the chat window, and eventually the message history" })
 
     -- Cycle the chat window width with a normal‑mode "w" press.
-    vim.keymap.set('n', 'w', function() instance:cycle_width() end,
+    vim.keymap.set('n', '<leader>aw', function() instance:cycle_width() end,
         { buffer = instance.buffer_number, desc = "cycle chat window width" })
 
     -- Cycle the chat window height with a normal‑mode "h" press.
-    vim.keymap.set('n', 'h', function() instance:cycle_height() end,
+    vim.keymap.set('n', '<leader>ah', function() instance:cycle_height() end,
         { buffer = instance.buffer_number, desc = "cycle chat window height" })
 
     -- manually trigger LSP attach, b/c scratch buffers are normally not auto attached
