@@ -5,9 +5,17 @@ set initalize '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 
 set list_tools '{ "jsonrpc": "2.0", "id": 1, "method": "tools/list" }'
 
-echo $initalize | http \
+begin
+    echo $initalize
+    #
+    # HRM... I cannot get initialize to send before a tools/list request...
+    #   server just hangs
+    # sleep 1
+    # echo $list_tools
+end | http \
     "https://docs.langchain.com/mcp" \
-    accept:"application/json;text/event-stream" > initialize.response
+    accept:"application/json;text/event-stream" # >initialize.response
+
 # event: message
 # data: {
 #     "id": 1,
@@ -18,10 +26,9 @@ echo $initalize | http \
 
 # grab data line:
 # cat initialize.response | gsed -n "2 p"
-cat initialize.response | grep data:
-cat initialize.response | grep data: |  string replace --regex "[^{]*" "" | jq
+# cat initialize.response | grep data:
+# cat initialize.response | grep data: | string replace --regex "[^{]*" "" | jq
 # compare SSE data: response to original mcp.json
 # diff_two_commands 'cat mcp.json | jq --sort-keys .' 'cat initialize.response | grep data: | string replace --regex "[^{]*" "" | jq --sort-keys .result'
 #   basically the same, a few slight differences... so same info you can get w/ GET request to /mcp
-
 
