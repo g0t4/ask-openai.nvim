@@ -16,5 +16,12 @@ echo $initalize | http \
 #         "capabilities": {
 #   ...
 
+# grab data line:
+# cat initialize.response | gsed -n "2 p"
+cat initialize.response | grep data:
+cat initialize.response | grep data: |  string replace --regex "[^{]*" "" | jq
+# compare SSE data: response to original mcp.json
+# diff_two_commands 'cat mcp.json | jq --sort-keys .' 'cat initialize.response | grep data: | string replace --regex "[^{]*" "" | jq --sort-keys .result'
+#   basically the same, a few slight differences... so same info you can get w/ GET request to /mcp
 
 
