@@ -1,9 +1,8 @@
 local socket = require("socket")
-local cmsgpack = require("cmsgpack")
--- FYI lua-MessagePack is probably a better choice...
--- cmsgpack required a workaround to install:
---  CFLAGS="-include limits.h" luarocks install --lua-version=5.1 lua-cmsgpack
---  if I have issues with cmsgpack then try lua-MessagePack which seems wildly popular (pure lua too, IIUC)
+local mp = require("MessagePack")
+-- FYI lua-MessagePack is a pure‑Lua MessagePack implementation. It works with Lua 5.1+ and avoids the C compiler
+-- hassle required by `cmsgpack`. Ensure it is installed via:
+--   luarocks install --lua-version=5.1 lua-MessagePack
 
 local M = {}
 
@@ -42,7 +41,7 @@ end
 ---@param payload table
 ---@return boolean, string|nil
 local function send_message(tcp, payload)
-    local data = cmsgpack.pack(payload)
+    local data = mp.pack(payload)
     -- prefix with 4‑byte big‑endian length as expected by the server
     local len = #data
     local prefix = string.char(
@@ -72,7 +71,7 @@ local function receive_message(tcp)
     if not payload then
         return nil, ("embeddings recv payload error: " .. (err2 or "unknown"))
     end
-    local ok, decoded = pcall(cmsgpack.unpack, payload)
+    local ok, decoded = pcall(mp.unpack, payload)
     if not ok then
         return nil, ("embeddings unpack error: " .. (decoded or "unknown"))
     end

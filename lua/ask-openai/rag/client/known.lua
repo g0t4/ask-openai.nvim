@@ -2,6 +2,14 @@ local embeddings_client = require("ask-openai.rag.client.embedder")
 
 local M = {}
 
+--- Expected similarity scores for known embeddings by model identifier.
+--- This table is now exposed publicly via the module for testing purposes.
+M.expected_scores_by_model_identifier = {
+    ["Qwen/Qwen3-Embedding-0.6B"] = { { 0.7646, 0.1414 }, { 0.1355, 0.6000 } },
+    ["Qwen/Qwen3-Embedding-4B"]   = { { 0.7534, 0.1147 }, { 0.0320, 0.6258 } },
+    ["Qwen/Qwen3-Embedding-8B"]   = { { 0.7493, 0.0751 }, { 0.0880, 0.6318 } },
+}
+
 print("FYI compare outputs to python outputs, i.e. lengths should match...")
 
 ---@return string[] input_texts
@@ -82,13 +90,7 @@ local function assert_known_embeddings_match_expected_scores(embeddings)
     local model_identifier = "Qwen/Qwen3-Embedding-0.6B"
 
     ---@type table<string, number[][]>
-    local expected_scores_by_model_identifier = {
-        ["Qwen/Qwen3-Embedding-0.6B"] = { { 0.7646, 0.1414 }, { 0.1355, 0.6000 } },
-        ["Qwen/Qwen3-Embedding-4B"]   = { { 0.7534, 0.1147 }, { 0.0320, 0.6258 } },
-        ["Qwen/Qwen3-Embedding-8B"]   = { { 0.7493, 0.0751 }, { 0.0880, 0.6318 } },
-    }
-
-    local expected_scores = expected_scores_by_model_identifier[model_identifier]
+    local expected_scores = M.expected_scores_by_model_identifier[model_identifier]
     if not expected_scores then
         error(string.format("cannot find expected scores for %s", model_identifier))
     end
