@@ -16,8 +16,8 @@ local M = {}
 --- Default connection options – can be overridden via `setup`.
 ---@type table
 local opts = {
-    host = "127.0.0.1",
-    port = 5000,
+    host = "ask.lan",
+    port = 8015,
     timeout = 5, -- seconds for connect/read/write
 }
 
