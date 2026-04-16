@@ -50,6 +50,8 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     #
     "27d69e723de7d4ed60e5d8c0b0ef5f9fcae2d4de5d0c152a6c50feb1a021630d", # apply_patch instructs (huge - worth updating)
     "febf26dcfb6df81560cdb9efe38c9c3691064cb3e2d0b6fc3fe89d0091a508d3", # 2026-04-16 apply_patch changes (current version)
+    #
+    "2a29088b7b85f47b3f55caf9adff674f5e0ab345e4b3a01443f9bef29ff933b3" # agents user msg3 -  python code preferences (short)
 
 ]
 
