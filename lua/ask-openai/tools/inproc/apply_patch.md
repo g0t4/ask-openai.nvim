@@ -10,10 +10,10 @@ Each “operation” MUST start with one of three “headers”:
 
 *** Add File: <path> - every following line is a + line (the initial contents).
 *** Delete File: <path> - remove an existing file. Nothing follows.
-*** Update File: <path> - change an existing file in-place (optionally with a rename).
+*** Update File: <path> - in-place edits (optionally with a rename).
 
-When updating a file, if you want to rename it, immediately follow the Update File header with:
-*** Move to: <new path>
+UpdateFile can be immediately followed by MoveTo to rename the file:
+*** Move to: <new_path>
 
 Then one or more “hunks”, each introduced by @@ (optionally followed by a hunk header).
 
