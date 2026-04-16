@@ -503,6 +503,9 @@ def print_message(msg: dict, idx: int):
     if "output.json" in msg:
         title = f"{title} (output.json)"
     print_section_header(title, get_color(role))
+    if not SHOW_ALL_FILES and _content_hash(msg) in EXCLUDED_CONTENT_HASHES:
+        # skip showing content (but still show header?)
+        return
 
     match role:
         case "system" | "developer" | "user":
@@ -534,8 +537,6 @@ def main() -> None:
         messages = load_trace_messages_from_path(sys.argv[1])
 
     for idx, message in enumerate(messages, start=1):
-        if not SHOW_ALL_FILES and _content_hash(message) in EXCLUDED_CONTENT_HASHES:
-            continue
         print_message(message, idx)
 
 if __name__ == "__main__":
