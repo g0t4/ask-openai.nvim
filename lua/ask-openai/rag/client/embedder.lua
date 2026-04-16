@@ -93,22 +93,64 @@ function M.embed_text(text)
     return resp.embeddings, nil
 end
 
---- Request embeddings for a batch of strings.
----@param texts string[]
----@return table[]|nil, string|nil  -- list of embedding vectors
-function M.embed_batch(texts)
+--- Request embeddings for a batch of strings, splitting into sub‑batches when needed.
+---@param texts string[] @list of strings to embed
+---@param batch_size? integer @size of each sub‑batch (default 8)
+---@return table[]|nil, string|nil @list of embedding vectors or error message
+function M.embed_batch(texts, batch_size)
+    batch_size = batch_size or 8
+
     if type(texts) ~= "table" then
         return nil, "embed_batch expects a table of strings"
     end
-    local tcp, err = connect()
-    if not tcp then return nil, err end
-    local ok, send_err = send_message(tcp, { batch = texts })
-    if not ok then return nil, send_err end
-    local resp, recv_err = receive_message(tcp)
-    tcp:close()
-    if not resp then return nil, recv_err end
-    if resp.error then return nil, resp.error end
-    return resp.embeddings, nil
+
+    local total = #texts
+    local all_vecs = {}
+
+    for i = 1, total, batch_size do
+        local batch_end = math.min(i + batch_size - 1, total)
+        local batch = {}
+        for j = i, batch_end do
+            table.insert(batch, texts[j])
+        end
+
+        -- Open a new connection for each sub‑batch
+        local tcp, err = connect()
+        if not tcp then
+            return nil, err
+        end
+
+        if logger then
+            logger.info(string.format("    batch %d-%d of %d", i, batch_end, total))
+        end
+
+        local ok, send_err = send_message(tcp, { batch = batch })
+        if not ok then
+            tcp:close()
+            return nil, send_err
+        end
+
+        local resp, recv_err = receive_message(tcp)
+        tcp:close()
+        if not resp then
+            return nil, recv_err
+        end
+        if resp.error then
+            return nil, resp.error
+        end
+
+        table.insert(all_vecs, resp.embeddings)
+    end
+
+    -- Concatenate results from all sub‑batches
+    local concatenated = {}
+    for _, vecs in ipairs(all_vecs) do
+        for _, v in ipairs(vecs) do
+            table.insert(concatenated, v)
+        end
+    end
+
+    return concatenated, nil
 end
 
 function M.qwen3_format_query(query, instruct)
