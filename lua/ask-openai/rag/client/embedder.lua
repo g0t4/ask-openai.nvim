@@ -1,5 +1,9 @@
 local socket = require("socket")
 local cmsgpack = require("cmsgpack")
+-- FYI lua-MessagePack is probably a better choice...
+-- cmsgpack required a workaround to install:
+--  CFLAGS="-include limits.h" luarocks install --lua-version=5.1 lua-cmsgpack
+--  if I have issues with cmsgpack then try lua-MessagePack which seems wildly popular (pure lua too, IIUC)
 
 local M = {}
 
