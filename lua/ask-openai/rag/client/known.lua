@@ -105,9 +105,9 @@ end
 ---@return boolean ok
 function M.run_verification(model_identifier)
     local inputs = M.get_known_inputs()
-    vim.print(inputs)
+    vim.print('inputs:', inputs)
     local embeddings, err = embeddings_client.embed_batch(inputs)
-    vim.print(embeddings)
+    vim.print('embeddings:', embeddings)
     if not embeddings then
         print("Embedding request failed: " .. (err or "unknown error"))
         return false
