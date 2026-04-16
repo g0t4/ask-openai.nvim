@@ -1,0 +1,7 @@
+-- lua based client to access embeddings python server (see server.py)
+-- connect to socket and use custom format (see server.py and/or lsp.inference.client/embedder.py for the client side in python)
+--    msgpack send/rx: lua/ask-openai/rag/lsp/inference/comms.py (both server and client use this)
+--    include startup test that I run
+--
+-- I installed lua-cmsgpack already:
+--   CFLAGS="-include limits.h" luarocks install --lua-version=5.1 lua-cmsgpack
