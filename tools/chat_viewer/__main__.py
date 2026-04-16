@@ -69,6 +69,56 @@ def load_preapproved_files() -> None:
 def is_preapproved(file_path: str) -> bool:
     return any(pat.search(file_path) for pat in preapproved_file_patterns)
 
+def _is_content_excluded(msg: dict[str, Any]) -> bool:
+    """Return True if the message's content hash is listed in EXCLUDED_CONTENT_HASHES.
+
+    The global SHOW_ALL_FILES flag disables exclusion.
+    """
+    if SHOW_ALL_FILES:
+        return False
+    content = msg.get("content", "")
+    if not isinstance(content, str):
+        return False
+    content_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
+    return content_hash in EXCLUDED_CONTENT_HASHES
+
+def _filter_system_content(msg: dict[str, Any]) -> str | None:
+    """Filter a system message based on hash exclusions.
+
+    1. If the whole content's hash is excluded, return None.
+    2. Otherwise split on lines starting with "## ". Each section (heading + body)
+       is hashed; sections whose hash is in EXCLUDED_CONTENT_HASHES are omitted.
+    3. Return the recombined markdown or None if all sections were removed.
+    """
+    if SHOW_ALL_FILES:
+        return msg.get("content") if isinstance(msg.get("content"), str) else None
+    content = msg.get("content", "")
+    if not isinstance(content, str):
+        return None
+    whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
+    if whole_hash in EXCLUDED_CONTENT_HASHES:
+        return None
+    lines = content.splitlines()
+    sections: list[str] = []
+    current_section: list[str] = []
+    for line in lines:
+        if line.startswith("## "):
+            if current_section:
+                sections.append("\n".join(current_section))
+            current_section = [line]
+        else:
+            current_section.append(line)
+    if current_section:
+        sections.append("\n".join(current_section))
+    kept: list[str] = []
+    for sec in sections:
+        sec_hash = hashlib.sha256(sec.encode("utf-8")).hexdigest()
+        if sec_hash not in EXCLUDED_CONTENT_HASHES:
+            kept.append(sec)
+    if not kept:
+        return None
+    return "\n".join(kept)
+
 def print_asis(what, **kwargs):
     _console.print(what, markup=False, **kwargs)
 
@@ -516,12 +566,22 @@ def print_message(msg: dict, idx: int):
     if "output.json" in msg:
         title = f"{title} (output.json)"
     print_section_header(title, get_color(role))
-    if not SHOW_ALL_FILES and _content_hash(msg) in EXCLUDED_CONTENT_HASHES:
-        # skip showing content (but still show header?)
+    if role == "system":
+        filtered = _filter_system_content(msg)
+        if filtered is None:
+            return
+        # temporarily replace the content for rendering
+        original = msg.get("content")
+        msg["content"] = filtered
+        print_markdown_content(msg, role)
+        if original is not None:
+            msg["content"] = original
         return
-
+    # non‑system messages
+    if _is_content_excluded(msg):
+        return
     match role:
-        case "system" | "developer" | "user":
+        case "developer" | "user":
             print_markdown_content(msg, role)
         case "tool":
             print_tool_call_result(msg)
