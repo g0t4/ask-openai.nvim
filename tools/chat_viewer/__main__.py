@@ -23,7 +23,8 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     # FYI careful w/ trailing \n when computing by hand
     #   cat 1776320801-trace.json | jq --raw-output --join-output .request_body.messages[0].content | sha256
     #      use jq's --join-output which joins lines thus removing \n on end
-    "4601994390a24a63f5e38160e15dd11c02361ed2be2af84d1a2ae8e77bc7392b",  # System Message - Rewrite "Ground rules" (short list of 9 bullets)
+    "4601994390a24a63f5e38160e15dd11c02361ed2be2af84d1a2ae8e77bc7392b",  # System Message - Rewrite #1 "Ground rules" (short list of 9 bullets)
+    "832293045d2b0ff4a19379aa4bfd15de6dc268434f85e01306741ca23a0f566c", # ## General Code Preferences - Rewrite #3 (very short)
 ]
 
 def _content_hash(msg: dict[str, Any]) -> str:
