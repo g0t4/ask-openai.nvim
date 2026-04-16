@@ -2,7 +2,9 @@
 
 set server "https://docs.langchain.com/mcp"
 
-set call_cmd_search '{ "jsonrpc": "2.0", "id": 1, "method":"tools/call","params":{"name":"query_docs_filesystem_docs_by_lang_chain","arguments":{"command":"ls"}}}'
+set command ls
+set command tree
+set call_cmd_search '{ "jsonrpc": "2.0", "id": 1, "method":"tools/call","params":{"name":"query_docs_filesystem_docs_by_lang_chain","arguments":{"command":"'$command'"}}}'
 echo $call_cmd_search | http \
     $server \
     accept:"application/json;text/event-stream" >call_cmd_search.response
