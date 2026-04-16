@@ -129,7 +129,9 @@ end
 ---@return boolean ok true on success, false on failure
 function M.run_verification(model_path)
     local inputs = M.get_known_inputs()
+    vim.print(inputs)
     local embeddings, err = embeddings_client.embed_batch(inputs)
+    vim.print(embeddings)
     if not embeddings then
         print("Embedding request failed: " .. (err or "unknown error"))
         return false
