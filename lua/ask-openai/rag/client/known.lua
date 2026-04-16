@@ -7,7 +7,7 @@
 -- The module relies on the public API defined in
 -- `ask-openai.rag.client.embeddings` (`embed_batch`).
 
-local embeddings_client = require("ask-openai.rag.client.embeddings")
+local embeddings_client = require("ask-openai.rag.client.embedder")
 
 local M = {}
 
