@@ -29,13 +29,6 @@ function M.get_known_inputs()
     return input_texts
 end
 
----@type table<string, number[][]>
-local expected_scores_by_model_identifier = {
-    ["Qwen/Qwen3-Embedding-0.6B"] = { { 0.7646, 0.1414 }, { 0.1355, 0.6000 } },
-    ["Qwen/Qwen3-Embedding-4B"]   = { { 0.7534, 0.1147 }, { 0.0320, 0.6258 } },
-    ["Qwen/Qwen3-Embedding-8B"]   = { { 0.7493, 0.0751 }, { 0.0880, 0.6318 } },
-}
-
 --- Compute the dot‑product matrix between two sets of vectors.
 ---@param a number[][] left‑hand side (m × d)
 ---@param b number[][] right‑hand side (n × d)
@@ -82,17 +75,22 @@ end
 local function verify_qwen3_known_embeddings(embeddings, model_identifier)
     -- First two vectors correspond to queries, the remaining to passages.
     local query_embeddings = { embeddings[1], embeddings[2] }
-    local passage_embeddings = { embeddings[3], embeddings[4] }
+    local document_embeddings = { embeddings[3], embeddings[4] }
 
     -- Compute similarity matrix (queries × passages).
-    local actual_scores = dot_product_matrix(query_embeddings, passage_embeddings)
+    local actual_scores = dot_product_matrix(query_embeddings, document_embeddings)
+
+    ---@type table<string, number[][]>
+    local expected_scores_by_model_identifier = {
+        ["Qwen/Qwen3-Embedding-0.6B"] = { { 0.7646, 0.1414 }, { 0.1355, 0.6000 } },
+        ["Qwen/Qwen3-Embedding-4B"]   = { { 0.7534, 0.1147 }, { 0.0320, 0.6258 } },
+        ["Qwen/Qwen3-Embedding-8B"]   = { { 0.7493, 0.0751 }, { 0.0880, 0.6318 } },
+    }
 
     local expected_scores = expected_scores_by_model_identifier[model_identifier]
     if not expected_scores then
         error(string.format("cannot find expected scores for %s", model_identifier))
     end
-
-    print(string.format("expected_scores=%s", vim.inspect(expected_scores)))
 
     assert_matrices_almost_equal(actual_scores, expected_scores, 3)
 
@@ -105,9 +103,9 @@ end
 ---@return boolean ok
 function M.run_verification(model_identifier)
     local known_inputs = M.get_known_inputs()
-    vim.print('inputs:', known_inputs)
+    -- vim.print('inputs:', known_inputs)
     local embeddings, err = embeddings_client.embed_batch(known_inputs)
-    vim.print('embeddings:', embeddings)
+    -- vim.print('embeddings:', embeddings)
     if not embeddings then
         print("Embedding request failed: " .. (err or "unknown error"))
         return false
