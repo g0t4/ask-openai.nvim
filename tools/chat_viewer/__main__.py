@@ -18,12 +18,7 @@ _console = Console(color_system="truecolor")
 
 preapproved_file_patterns: list[re.Pattern] = []
 SHOW_ALL_FILES = False
-# ----------------------------------------------------------------------
-# Content hash based exclusions
-# ----------------------------------------------------------------------
-# Add SHA‑256 hashes (hex strings) of message contents you want to completely
-# skip from being displayed.  The hash is computed on the raw string value of
-# the message’s ``content`` field before any further processing.
+
 EXCLUDED_CONTENT_HASHES: list[str] = [
     # FYI careful w/ trailing \n when computing by hand
     #   cat 1776320801-trace.json | jq --raw-output --join-output .request_body.messages[0].content | sha256
@@ -33,13 +28,11 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
 
 def _content_hash(msg: dict[str, Any]) -> str:
     """Return SHA‑256 hash (hex) of the message's raw ``content``."""
-    raw = msg.get("content", "")
-    if isinstance(raw, (dict, list)):
-        # Normalise complex objects to JSON string before hashing.
-        raw = json.dumps(raw, sort_keys=True, ensure_ascii=False)
-    elif not isinstance(raw, str):
-        raw = str(raw)
-    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+    content = msg.get("content", "")
+    if not isinstance(content, str):
+        # ignore non-string values, when I wanna ignore those I can come in here and add support
+        return ""
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 def load_preapproved_files() -> None:
     # Use the user‑level configuration location instead of the repository copy.
@@ -539,7 +532,6 @@ def main() -> None:
         messages = load_trace_messages_from_path(sys.argv[1])
 
     for idx, message in enumerate(messages, start=1):
-        # Skip messages whose content hash is listed in EXCLUDED_CONTENT_HASHES.
         if _content_hash(message) in EXCLUDED_CONTENT_HASHES:
             continue
         print_message(message, idx)
