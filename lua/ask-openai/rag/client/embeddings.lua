@@ -121,4 +121,13 @@ function M.embed_batch(texts)
     return resp.embeddings, nil
 end
 
+function M.qwen3_format_query(query, instruct)
+    if instruct ~= nil then
+        -- FYI verbatim copy of formatter from embedder.py...
+        --   was the lack of " " after Query: in the original examples?
+        return "Instruct: " .. instruct .. "\nQuery:" .. query
+    end
+    return "Query: " .. query
+end
+
 return M

@@ -16,20 +16,9 @@ local M = {}
 function M.get_known_inputs()
     local instruct = "Given a web search query, retrieve relevant passages that answer the query"
 
-    -- Helper to format a query for Qwen‑3.  The original Python code used a
-    -- function `qwen3_format_query`; we inline the same behaviour here.
-    local function qwen3_format_query(query, instruct)
-        if instruct ~= nil then
-            -- FYI verbatim copy of formatter from embedder.py...
-            --   was the lack of " " after Query: in the original examples?
-            return "Instruct: " .. instruct .. "\nQuery:" .. query
-        end
-        return "Query: " .. query
-    end
-
     local queries = {
-        qwen3_format_query("What is the capital of China?", instruct),
-        qwen3_format_query("Explain gravity", instruct),
+        embeddings_client.qwen3_format_query("What is the capital of China?", instruct),
+        embeddings_client.qwen3_format_query("Explain gravity", instruct),
     }
 
     local documents = {
