@@ -1,20 +1,18 @@
 ## Use `apply_patch` to edit files.
 
-Your patch language is a stripped‑down, file‑oriented diff format designed to be easy to parse and safe to apply. You can think of it as a high‑level envelope:
+Your patch language is a stripped‑down, file‑oriented diff format designed to be easy to parse and safe to apply.
 
 *** Begin Patch
-[ one or more file sections ]
+[ one or more file operations ]
 *** End Patch
 
-Within that envelope, you get a sequence of file operations.
-You MUST include a header to specify the action you are taking.
 Each operation starts with one of three headers:
 
-*** Add File: <path> - create a new file. Every following line is a + line (the initial contents).
+*** Add File: <path> - every following line is a + line (the initial contents).
 *** Delete File: <path> - remove an existing file. Nothing follows.
-*** Update File: <path> - patch an existing file in place (optionally with a rename).
+*** Update File: <path> - change an existing file in-place (optionally with a rename).
 
-If you want to rename the file too, immediately follow with:
+When updating a file, if you want to rename it, immediately follow with:
 *** Move to: <new path>
 
 Then one or more “hunks”, each introduced by @@ (optionally followed by a hunk header).
