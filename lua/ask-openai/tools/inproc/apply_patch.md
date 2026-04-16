@@ -18,8 +18,8 @@ When updating a file, if you want to rename it, immediately follow with:
 Then one or more “hunks”, each introduced by @@ (optionally followed by a hunk header).
 Within a hunk each line starts with:
 
-- for inserted text,
-* for removed text, or
++ for inserted text,
+- for removed text, or
   space ( ) for context.
   At the end of a truncated hunk you can emit *** End of File.
 
