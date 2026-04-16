@@ -1,14 +1,4 @@
----@mod ask-openai.rag.client.embeddings Lua client for the embeddings inference server
----@brief
--- This module provides a simple Lua client that talks to a Python based
--- embeddings server over a TCP socket. Communication uses MessagePack for
--- serialization – the same format used by the Python side (`comms.py`).
---
--- The server expects a length‑prefixed MessagePack payload. The client sends a
--- request table and receives a response table containing either `embeddings`
--- (list of numbers) or an `error` field.
-
-local socket = require("socket") -- LuaSocket
+local socket = require("socket")
 local cmsgpack = require("cmsgpack")
 
 local M = {}

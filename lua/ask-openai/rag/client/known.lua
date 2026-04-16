@@ -1,17 +1,9 @@
----@mod ask-openai.rag.client.known Known inputs and verification for Qwen‑3 embeddings
----@brief
--- Provides a helper that builds the same inputs used in the Python
--- reference implementation and a verification routine that checks the
--- returned embeddings against the expected scores.
---
--- The module relies on the public API defined in
--- `ask-openai.rag.client.embeddings` (`embed_batch`).
-
 local embeddings_client = require("ask-openai.rag.client.embedder")
 
 local M = {}
 
---- Build the list of queries (with instruction) and reference documents.
+print("FYI compare outputs to python outputs, i.e. lengths should match...")
+
 ---@return string[] input_texts
 function M.get_known_inputs()
     local instruct = "Given a web search query, retrieve relevant passages that answer the query"
@@ -34,7 +26,7 @@ function M.get_known_inputs()
         table.insert(input_texts, d)
     end
 
-    -- Print length information for debugging / padding checks.
+    -- prints for padding checks:
     for i, text in ipairs(input_texts) do
         print(string.format("%d: %s", i - 1, ("len(text)=%d"):format(#text)))
     end
@@ -42,9 +34,8 @@ function M.get_known_inputs()
     return input_texts
 end
 
---- Expected similarity scores for each model path.
 ---@type table<string, number[][]>
-local expected_scores_by_model_path = {
+local expected_scores_by_model_identifier = {
     ["Qwen/Qwen3-Embedding-0.6B"] = { { 0.7646, 0.1414 }, { 0.1355, 0.6000 } },
     ["Qwen/Qwen3-Embedding-4B"]   = { { 0.7534, 0.1147 }, { 0.0320, 0.6258 } },
     ["Qwen/Qwen3-Embedding-8B"]   = { { 0.7493, 0.0751 }, { 0.0880, 0.6318 } },
@@ -91,11 +82,9 @@ local function assert_matrices_almost_equal(actual, expected, decimal)
     end
 end
 
---- Verify that embeddings produced for the known inputs match the
---- pre‑computed scores for a given model.
 ---@param embeddings number[][] embeddings returned by `embed_batch`
----@param model_path string model identifier (e.g. "Qwen/Qwen3-Embedding-4B")
-local function verify_qwen3_known_embeddings(embeddings, model_path)
+---@param model_identifier string
+local function verify_qwen3_known_embeddings(embeddings, model_identifier)
     -- First two vectors correspond to queries, the remaining to passages.
     local query_embeddings = { embeddings[1], embeddings[2] }
     local passage_embeddings = { embeddings[3], embeddings[4] }
@@ -103,9 +92,9 @@ local function verify_qwen3_known_embeddings(embeddings, model_path)
     -- Compute similarity matrix (queries × passages).
     local actual_scores = dot_product_matrix(query_embeddings, passage_embeddings)
 
-    local expected_scores = expected_scores_by_model_path[model_path]
+    local expected_scores = expected_scores_by_model_identifier[model_identifier]
     if not expected_scores then
-        error(string.format("cannot find expected scores for %s", model_path))
+        error(string.format("cannot find expected scores for %s", model_identifier))
     end
 
     print(string.format("expected_scores=%s", vim.inspect(expected_scores)))
@@ -117,11 +106,9 @@ local function verify_qwen3_known_embeddings(embeddings, model_path)
     print("[green bold]scores look ok")
 end
 
---- High‑level helper that obtains the known inputs, queries the embedding
---- server and runs the verification for a given model.
----@param model_path string model identifier used to select expected scores
----@return boolean ok true on success, false on failure
-function M.run_verification(model_path)
+---@param model_identifier string
+---@return boolean ok
+function M.run_verification(model_identifier)
     local inputs = M.get_known_inputs()
     vim.print(inputs)
     local embeddings, err = embeddings_client.embed_batch(inputs)
@@ -131,7 +118,7 @@ function M.run_verification(model_path)
         return false
     end
 
-    local ok, verify_err = pcall(verify_qwen3_known_embeddings, embeddings, model_path)
+    local ok, verify_err = pcall(verify_qwen3_known_embeddings, embeddings, model_identifier)
     if not ok then
         print("Verification failed: " .. verify_err)
         return false
