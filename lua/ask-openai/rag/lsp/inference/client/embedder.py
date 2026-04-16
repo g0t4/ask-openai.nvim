@@ -43,14 +43,14 @@ async def encode_passages(passages: list[str]) -> np.ndarray:
     # FYI Qwen3 has NO passage/document label, only query side has Query:/Instruct:
     return await _encode_batch(passages)
 
-def qwen3_format_query(text: str, instruct: Optional[str]) -> str:
+def qwen3_format_query(query: str, instruct: Optional[str]) -> str:
     if instruct:
-        return f'Instruct: {instruct}\nQuery:{text}'
-    return f"Query: {text}"
+        return f'Instruct: {instruct}\nQuery:{query}'
+    return f"Query: {query}"
 
-async def encode_query(text: str, instruct: Optional[str]) -> np.ndarray:
+async def encode_query(query: str, instruct: Optional[str]) -> np.ndarray:
     return await _encode_batch([
-        qwen3_format_query(text, instruct),
+        qwen3_format_query(query, instruct),
     ])
 
 async def get_shape() -> int:

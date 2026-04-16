@@ -179,7 +179,7 @@ class TestBuildIndex:
         #   this was just the very first search I tried with faiss and so it lingers
         #   that said, good test case now! and then maybe keep this and rename it!
 
-        q = await encode_query(text="hello world", instruct="find code that uses + operator")
+        q = await encode_query(query="hello world", instruct="find code that uses + operator")
         assert q.shape == (1, 1024)
 
         index = self.get_vector_index()
