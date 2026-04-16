@@ -23,12 +23,21 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     # FYI careful w/ trailing \n when computing by hand
     #   cat 1776320801-trace.json | jq --raw-output --join-output .request_body.messages[0].content | sha256
     #      use jq's --join-output which joins lines thus removing \n on end
+    #
+    # * Rewrites
     "4601994390a24a63f5e38160e15dd11c02361ed2be2af84d1a2ae8e77bc7392b",  # System Message - Rewrite #1 "Ground rules" (short list of 9 bullets)
-    "832293045d2b0ff4a19379aa4bfd15de6dc268434f85e01306741ca23a0f566c", # ## General Code Preferences - Rewrite #3 (very short)
-    "3213ad85a96c3647b5ff593803be3f0f412187237932208647df3c4db75bb20d", # Rewrite - Lua Code Preferences user message
-    "71675b1a7166d68175033a5f256cfa7fe6097d25a9ed1167d3c0d884f03d438e", # FIM msg 2 - "context that's automatically provided" - won't always match b/c IIRC yanks go at end...
+    "832293045d2b0ff4a19379aa4bfd15de6dc268434f85e01306741ca23a0f566c",  # ## General Code Preferences - Rewrite #3 (very short)
+    "3213ad85a96c3647b5ff593803be3f0f412187237932208647df3c4db75bb20d",  # Rewrite - Lua Code Preferences user message
+    #
+    # * FIMs
+    "71675b1a7166d68175033a5f256cfa7fe6097d25a9ed1167d3c0d884f03d438e",  # FIM msg 2 - "context that's automatically provided" - matches if NO yanks
+    # - won't always match b/c IIRC yanks go at end...
+    # OR I could literally do a find on blobs of text to ignore (and use current prompt values for that?)
     # TODO split markdown on headers and look for common sections within the markdown! i.e. here in FIM message 2 it has all context in one message (unlike Rewrite which puts each context item into its own user message)...
     #   so I could also go the route of separate user message for each context item type?
+    #
+    # * Agents/Tools
+    # ?
 ]
 
 def _content_hash(msg: dict[str, Any]) -> str:
