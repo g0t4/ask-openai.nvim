@@ -114,6 +114,8 @@ function M.embed_batch(texts, batch_size)
             table.insert(batch, texts[j])
         end
 
+        local msg = { texts = batch, type = "embed" }
+
         vim.print(string.format("batch %d-%d of %d", i, batch_end, total))
 
         -- Open a new connection for each sub‑batch
@@ -123,7 +125,7 @@ function M.embed_batch(texts, batch_size)
             return nil, err
         end
 
-        local ok, send_err = send_message(tcp, { batch = batch })
+        local ok, send_err = send_message(tcp, msg)
         if not ok then
             vim.print("  send_message error: ", vim.inspect(ok), vim.inspect(send_err))
             tcp:close()
