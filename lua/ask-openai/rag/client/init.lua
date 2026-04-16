@@ -320,6 +320,6 @@ function M._context_query(request, callback)
     end)
 end
 
-require("ask-openai.rag.client.known").run_verification("Qwen/Qwen3-Embedding-0.6B")
+require("ask-openai.rag.client.known")
 
 return M

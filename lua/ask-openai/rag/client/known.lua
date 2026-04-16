@@ -71,14 +71,15 @@ local function assert_matrices_almost_equal(actual, expected, decimal)
 end
 
 ---@param embeddings number[][] embeddings returned by `embed_batch`
----@param model_identifier string
-local function verify_qwen3_known_embeddings(embeddings, model_identifier)
+local function assert_known_embeddings_match_expected_scores(embeddings)
     -- First two vectors correspond to queries, the remaining to passages.
     local query_embeddings = { embeddings[1], embeddings[2] }
     local document_embeddings = { embeddings[3], embeddings[4] }
 
     -- Compute similarity matrix (queries × passages).
     local actual_scores = dot_product_matrix(query_embeddings, document_embeddings)
+
+    local model_identifier = "Qwen/Qwen3-Embedding-0.6B"
 
     ---@type table<string, number[][]>
     local expected_scores_by_model_identifier = {
@@ -99,9 +100,8 @@ local function verify_qwen3_known_embeddings(embeddings, model_identifier)
     print("[green bold]scores look ok")
 end
 
----@param model_identifier string
 ---@return boolean ok
-function M.run_verification(model_identifier)
+function M.run_verification()
     local known_inputs = M.get_known_inputs()
     -- vim.print('inputs:', known_inputs)
     local embeddings, err = embeddings_client.embed_batch(known_inputs)
@@ -111,7 +111,7 @@ function M.run_verification(model_identifier)
         return false
     end
 
-    local ok, verify_err = pcall(verify_qwen3_known_embeddings, embeddings, model_identifier)
+    local ok, verify_err = pcall(assert_known_embeddings_match_expected_scores, embeddings)
     if not ok then
         print("Verification failed: " .. verify_err)
         return false
@@ -119,5 +119,7 @@ function M.run_verification(model_identifier)
 
     return true
 end
+
+M.run_verification()
 
 return M
