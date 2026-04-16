@@ -114,18 +114,18 @@ function M.embed_batch(texts, batch_size)
             table.insert(batch, texts[j])
         end
 
+        vim.print(string.format("batch %d-%d of %d", i, batch_end, total))
+
         -- Open a new connection for each sub‑batch
         local tcp, err = connect()
         if not tcp then
+            vim.print("  TCP.connect ", vim.inspect(tcp), vim.inspect(err))
             return nil, err
-        end
-
-        if logger then
-            logger.info(string.format("    batch %d-%d of %d", i, batch_end, total))
         end
 
         local ok, send_err = send_message(tcp, { batch = batch })
         if not ok then
+            vim.print("  send_message error: ", vim.inspect(ok), vim.inspect(send_err))
             tcp:close()
             return nil, send_err
         end
@@ -133,9 +133,11 @@ function M.embed_batch(texts, batch_size)
         local resp, recv_err = receive_message(tcp)
         tcp:close()
         if not resp then
+            vim.print("  receive_message error: ", vim.inspect(recv_err))
             return nil, recv_err
         end
         if resp.error then
+            vim.print("  embed_batch error: ", vim.inspect(resp.error))
             return nil, resp.error
         end
 
