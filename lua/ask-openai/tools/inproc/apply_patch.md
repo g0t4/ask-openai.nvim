@@ -6,7 +6,7 @@ Your patch language is a stripped‑down, file‑oriented diff format designed t
 [ one or more file operations ]
 *** End Patch
 
-Each operation starts with one of three headers:
+Each “operation” MUST start with one of three “headers”:
 
 *** Add File: <path> - every following line is a + line (the initial contents).
 *** Delete File: <path> - remove an existing file. Nothing follows.
