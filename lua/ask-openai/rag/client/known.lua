@@ -120,6 +120,4 @@ function M.run_verification()
     return true
 end
 
-M.run_verification()
-
 return M

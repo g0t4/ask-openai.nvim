@@ -320,6 +320,7 @@ function M._context_query(request, callback)
     end)
 end
 
-require("ask-openai.rag.client.known")
+-- require("ask-openai.rag.client.known").run_verification()
+
 
 return M
