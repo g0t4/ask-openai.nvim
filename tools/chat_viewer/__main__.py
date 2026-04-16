@@ -10,6 +10,7 @@ from rich.syntax import Syntax
 from rich.panel import Panel
 from rich.pretty import Pretty, pprint
 from typing import Any, Iterable
+import hashlib
 
 from rich.text import Text
 
@@ -17,6 +18,25 @@ _console = Console(color_system="truecolor")
 
 preapproved_file_patterns: list[re.Pattern] = []
 SHOW_ALL_FILES = False
+# ----------------------------------------------------------------------
+# Content hash based exclusions
+# ----------------------------------------------------------------------
+# Add SHA‑256 hashes (hex strings) of message contents you want to completely
+# skip from being displayed.  The hash is computed on the raw string value of
+# the message’s ``content`` field before any further processing.
+EXCLUDED_CONTENT_HASHES: list[str] = [
+    "4601994390a24a63f5e38160e15dd11c02361ed2be2af84d1a2ae8e77bc7392b",  # System Message - Rewrite "Ground rules" (short list of 9 bullets)
+]
+
+def _content_hash(msg: dict[str, Any]) -> str:
+    """Return SHA‑256 hash (hex) of the message's raw ``content``."""
+    raw = msg.get("content", "")
+    if isinstance(raw, (dict, list)):
+        # Normalise complex objects to JSON string before hashing.
+        raw = json.dumps(raw, sort_keys=True, ensure_ascii=False)
+    elif not isinstance(raw, str):
+        raw = str(raw)
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 def load_preapproved_files() -> None:
     # Use the user‑level configuration location instead of the repository copy.
@@ -516,6 +536,9 @@ def main() -> None:
         messages = load_trace_messages_from_path(sys.argv[1])
 
     for idx, message in enumerate(messages, start=1):
+        # Skip messages whose content hash is listed in EXCLUDED_CONTENT_HASHES.
+        if _content_hash(message) in EXCLUDED_CONTENT_HASHES:
+            continue
         print_message(message, idx)
 
 if __name__ == "__main__":
