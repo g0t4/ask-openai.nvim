@@ -534,7 +534,7 @@ def main() -> None:
         messages = load_trace_messages_from_path(sys.argv[1])
 
     for idx, message in enumerate(messages, start=1):
-        if _content_hash(message) in EXCLUDED_CONTENT_HASHES:
+        if not SHOW_ALL_FILES and _content_hash(message) in EXCLUDED_CONTENT_HASHES:
             continue
         print_message(message, idx)
 
