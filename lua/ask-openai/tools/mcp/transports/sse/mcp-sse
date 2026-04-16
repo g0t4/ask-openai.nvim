@@ -1,0 +1,8 @@
+AskAgent /tools first fetch https://modelcontextprotocol.io/specification/2024-11-05/basic/transports and carefully tudy how transports work.
+
+I current have MCP w/ STDIO transport working for `run_process` and `fetch` tools. I want you to add the SSE (server sent events) transport. 
+- For testing purposes the MCP site has an MCP server over HTTP located at: https://modelcontextprotocol.io/mcp 
+
+
+... can you add components to connect and communicate with their MCP server, add tests along the way to make sure tools/list work.... seee attached nvim+lua testing guidance /verify_lua_config ... take your time!  btw later we can better organize the STDIO transport vs http, for now lets just get http working (don't break STDIO btw... all of your tools rely on it :) )  ... btw for clarity this is NOT an inprocess tool at all, this is a second transport option for MCP tools... I should be able to configure the https://modelcontextprotocol.io/mcp as a tool in my MCP config and have it just work and then also configure OTHER MCP servers (with their own tools) to work too... I am not looking at some http client code alone, I need this to be full blown MCP client that supports both STDIO (already done w/ run_process and fetch tools) and now will have HTTP transport too ... here is the 2nd MCP server that you can use for testing... both should be operational over MCP https://docs.langchain.com/mcp 
+
