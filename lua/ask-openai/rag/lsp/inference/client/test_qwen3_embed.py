@@ -8,7 +8,7 @@ async def main():
     # logging_fwk_to_console("DEBUG")
     logger = get_logger(__name__)
 
-    scoring_texts = get_known_inputs()
+    known_inputs = get_known_inputs()
 
     file_chunk = "local M = {}\nlocal init = require(\"ask-openai\")\nlocal config = require(\"ask-openai.config\")\n\n-- FYI uses can add commands if that's what they want, they have the API to do so:\n\nfunction M.enable_predictions()\n    config.local_share.set_predictions_enabled()\n    init.start_predictions()\nend\n\nfunction M.disable_predictions()\n    config.local_share.set_predictions_disabled()\n    init.stop_predictions()\nend\n\nfunction M.toggle_predictions()\n    if config.local_share.are_predictions_enabled() then\n        M.disable_predictions()\n    else"
     hello_world = "Hello world"
@@ -31,7 +31,7 @@ async def main():
         #   18-20ms with "hello world"
         #   then my chunk (below)... holy F 21ms?! qwen3 full precision!
         #
-        rx_embeddings = await embedder._encode_batch(scoring_texts)
+        rx_embeddings = await embedder._encode_batch(known_inputs)
 
     if rx_embeddings is None:
         exit(-1)
