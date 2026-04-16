@@ -19,12 +19,8 @@ function M.get_known_inputs()
     }
 
     local input_texts = {}
-    for _, q in ipairs(queries) do
-        table.insert(input_texts, q)
-    end
-    for _, d in ipairs(documents) do
-        table.insert(input_texts, d)
-    end
+    vim.list_extend(input_texts, queries)
+    vim.list_extend(input_texts, documents)
 
     -- prints for padding checks:
     for i, text in ipairs(input_texts) do
