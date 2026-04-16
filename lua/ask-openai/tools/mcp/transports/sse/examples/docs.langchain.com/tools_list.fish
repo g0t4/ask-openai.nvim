@@ -3,16 +3,14 @@
 set initalize '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}'
 # got this error: {"jsonrpc":"2.0","error":{"code":-32000,"message":"Not Acceptable: Client must accept both application/json and text/event-stream"},"id":null}
 
-set list_tools '{ "jsonrpc": "2.0", "id": 1, "method": "tools/list" }'
+# initialize works but not much point to it
+echo $initialize \
+    "https://docs.langchain.com/mcp" \
+    accept:"application/json;text/event-stream" # >initialize.response
 
-begin
-    echo $initalize
-    #
-    # HRM... I cannot get initialize to send before a tools/list request...
-    #   server just hangs
-    # sleep 1
-    # echo $list_tools
-end | http \
+# tools/list works!
+set list_tools '{ "jsonrpc": "2.0", "id": 1, "method": "tools/list" }'
+echo $list_tools | http \
     "https://docs.langchain.com/mcp" \
     accept:"application/json;text/event-stream" # >initialize.response
 
@@ -31,4 +29,3 @@ end | http \
 # compare SSE data: response to original mcp.json
 # diff_two_commands 'cat mcp.json | jq --sort-keys .' 'cat initialize.response | grep data: | string replace --regex "[^{]*" "" | jq --sort-keys .result'
 #   basically the same, a few slight differences... so same info you can get w/ GET request to /mcp
-
