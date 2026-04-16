@@ -1,0 +1,3 @@
+event: message
+data: {"result":{"content":[{"type":"text","text":"exit: 0\n--- stdout ---\napi-reference\nindex.mdx\nlangsmith\nopenapi\noss\n"}]},"jsonrpc":"2.0","id":1}
+
