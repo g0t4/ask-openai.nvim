@@ -18,8 +18,7 @@ function M.get_known_inputs()
         "Gravity is a force that attracts two bodies towards each other. It gives weight to physical objects and is responsible for the movement of planets around the sun.",
     }
 
-    local input_texts = {}
-    vim.list_extend(input_texts, queries)
+    local input_texts = vim.list_extend({}, queries)
     vim.list_extend(input_texts, documents)
 
     -- prints for padding checks:
