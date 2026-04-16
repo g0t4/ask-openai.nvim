@@ -18,8 +18,13 @@ function M.get_known_inputs()
 
     -- Helper to format a query for Qwen‑3.  The original Python code used a
     -- function `qwen3_format_query`; we inline the same behaviour here.
-    local function qwen3_format_query(query, instruction)
-        return instruction .. "\n" .. query
+    local function qwen3_format_query(query, instruct)
+        if instruct ~= nil then
+            -- FYI verbatim copy of formatter from embedder.py...
+            --   was the lack of " " after Query: in the original examples?
+            return "Instruct: " .. instruct .. "\nQuery:" .. query
+        end
+        return "Query: " .. query
     end
 
     local queries = {
