@@ -275,18 +275,18 @@ function start_mcp_server_stdio(name)
 
     -- currently I don't do anything with running_servers, so I don't really need to return an object, short of GC perhaps
     --  TODO any GC issues after a while? if so, should I return references to stdin/out/err pipes or smth else?
-    return {}
+    -- return {}
 end
 
-M.running_servers = {}
+-- M.running_servers = {}
 M.tools_available = {}
 
 for name, server in pairs(servers) do
     local server_log_name = "[" .. name:upper() .. "]"
     -- log:trace("starting mcp server " .. name)
 
-    local mcp = start_mcp_server_stdio(name)
-    M.running_servers[name] = mcp
+    start_mcp_server_stdio(name)
+    -- M.running_servers[name] = mcp
 end
 
 
