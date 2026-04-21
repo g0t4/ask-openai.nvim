@@ -86,23 +86,23 @@ function SSEDataOnlyParser:write(data)
     -- * look for blank line (signals end of data event)
     -- FYI split takes plain and trimempty options
     --   default not removing empties, can use to check if a \n\n was present
-    local lines = vim.split(self._buffer, "\n\n", {})
+    local events = vim.split(self._buffer, "\n\n", {})
 
-    if (#lines == 1) then
+    if (#events == 1) then
         -- no blank line (yet)
         return
-    elseif (#lines >= 2) then
+    elseif (#events >= 2) then
         -- had blank line(s)
 
         -- ==> emit completed data event(s)
-        for i = 1, #lines - 1 do
-            local event = lines[i]
+        for i = 1, #events - 1 do
+            local event = events[i]
             event = event:gsub("^data: ", "") -- happens when multiple in one SSE
             self._on_data_sse(event)
         end
 
         -- keep last line in buffer (it's not complete w/o a blank line)
-        self._buffer = lines[#lines]
+        self._buffer = events[#events]
     end
 end
 
