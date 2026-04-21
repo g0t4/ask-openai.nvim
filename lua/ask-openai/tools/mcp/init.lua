@@ -271,8 +271,6 @@ function start_mcp_server_stdio(name)
     end)
 
     return {
-        send = send_generic,
-        notify = notify,
         stop = function()
             -- handle:kill("sigterm")
             uv.shutdown(stdin, function()
@@ -281,7 +279,6 @@ function start_mcp_server_stdio(name)
                 end)
             end)
         end,
-        tools_list = tools_list,
         tools_call = tools_call,
     }
 end
