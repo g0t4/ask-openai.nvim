@@ -196,6 +196,34 @@ function start_mcp_server_stdio(name)
         send_stdio(request)
     end
 
+    -- Helper to parse HTTP response bodies for the HTTP transport.
+    function parse_http_body_http(body)
+        -- Trim leading whitespace/newlines.
+        body = body:gsub("^%s+", "")
+        if body:match("^event:%s*") then
+            -- Server‑Sent Events format.
+            for line in body:gmatch("[^\\r\\n]+") do
+                local data = line:match("^data:%s*(.+)")
+                if data then
+                    local ok, resp = safely.decode_json(data)
+                    if ok then
+                        on_server_response_generic(resp)
+                    else
+                        log:error(string.format("MCP SSE decode error %s", server_log_name), resp)
+                    end
+                end
+            end
+        else
+            -- Assume plain JSON response.
+            local ok, resp = safely.decode_json(body)
+            if ok then
+                on_server_response_generic(resp)
+            else
+                log:error(string.format("MCP HTTP decode error %s", server_log_name), resp)
+            end
+        end
+    end
+
     local function tools_list(callback)
         send_generic({ method = "tools/list" }, callback)
     end
@@ -282,6 +310,117 @@ function start_mcp_server_stdio(name)
     -- return {}
 end
 
+-- Start an MCP server using HTTP transport. Each request is a separate POST.
+local function start_mcp_server_http(name)
+    local options = servers[name]
+    local server_log_name = "[" .. name:upper() .. "]"
+    local url = options.url
+
+    -- Request ID counter and pending callbacks, similar to stdio implementation.
+    local counter = 1
+    local callbacks = {}
+
+    local function on_server_response_generic(server_response)
+        if server_response.error then
+            log:error(string.format("MCP %s error response:", server_log_name), server_response.error)
+        end
+        local id = server_response.id
+        if id then
+            local callback = callbacks[id]
+            if callback then
+                callback(server_response)
+                callbacks[id] = nil
+            end
+        end
+    end
+
+    --[[ Deprecated parse_http_body for HTTP transport; using parse_http_body_http instead. ]]
+
+    -- Send a JSON‑RPC request via HTTP POST.
+    local function send_http(request, callback)
+        if not request.id then
+            request.id = counter
+            counter = counter + 1
+        end
+        request.jsonrpc = "2.0"
+        if callback then
+            callbacks[request.id] = callback
+        end
+
+        local json = vim.json.encode(request)
+
+        local stdout = uv.new_pipe(false)
+        local stderr = uv.new_pipe(false)
+        local handle
+        local args = {
+            "-s", "-X", "POST",
+            "-H", "Content-Type: application/json",
+            "-d", json,
+            url,
+        }
+        handle = uv.spawn("curl", {
+            args = args,
+            stdio = {nil, stdout, stderr},
+        }, function(code, signal)
+            -- Close pipes after process exits.
+            stdout:close()
+            stderr:close()
+            handle:close()
+        end)
+
+        local response_body = ""
+        uv.read_start(stdout, function(read_err, data)
+            if read_err then
+                log:error(string.format("MCP HTTP stdout read error %s", server_log_name), read_err)
+                return
+            end
+            if data then
+                response_body = response_body .. data
+            else
+                -- EOF – parse accumulated body.
+                parse_http_body_http(response_body)
+            end
+        end)
+
+        uv.read_start(stderr, function(read_err, data)
+            if read_err then
+                log:error(string.format("MCP HTTP stderr read error %s", server_log_name), read_err)
+                return
+            end
+            if data then
+                log:error(string.format("MCP %s STDERR:", server_log_name), ansi.red(data))
+            end
+        end)
+    end
+
+    local function tools_list(callback)
+        send_http({ method = "tools/list" }, callback)
+    end
+
+    local function tools_call(id, tool_name, args, callback)
+        send_http({
+            id = id,
+            method = "tools/call",
+            params = {
+                name = tool_name,
+                arguments = args,
+            },
+        }, callback)
+    end
+
+    -- Immediately request the tool list; no init step required for HTTP.
+    tools_list(function(response)
+        if response.error then
+            log:error(string.format("tools/list@%s error:", server_log_name), vim.inspect(response))
+            return
+        end
+        for _, tool in ipairs(response.result.tools) do
+            tool.call = tools_call
+            M.tools_available[tool.name] = tool
+        end
+    end)
+end
+
 -- M.running_servers = {}
 M.tools_available = {}
 
@@ -292,7 +431,7 @@ for name, server in pairs(servers) do
     if server.transport == "stdio" then
         start_mcp_server_stdio(name)
     elseif server.transport == "http" then
-        -- start_mcp_server_http(name)
+        start_mcp_server_http(name)
     else
         error(string.format("unsupported transport %s for server %s", server.transport, name))
     end
