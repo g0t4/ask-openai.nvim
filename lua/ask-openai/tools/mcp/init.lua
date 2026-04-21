@@ -285,7 +285,11 @@ for name, server in pairs(servers) do
     local server_log_name = "[" .. name:upper() .. "]"
     -- log:trace("starting mcp server " .. name)
 
-    start_mcp_server_stdio(name)
+    if server.transport == "stdio" then
+        start_mcp_server_stdio(name)
+    else
+        error(string.format("unsupported transport %s for server %s", server.transport, name))
+    end
     -- M.running_servers[name] = mcp
 end
 
