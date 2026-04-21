@@ -172,7 +172,7 @@ function start_mcp_server_stdio(name)
         stdin:write(json .. "\n")
     end
 
-    local function send_generic(request, callback)
+    local function send_outer_stdio(request, callback)
         -- Regular request (with optional callback). ID is always set unless caller explicitly provides one.
         if not request.id then
             request.id = counter
@@ -188,7 +188,7 @@ function start_mcp_server_stdio(name)
 
     --- Send a JSON-RPC notification
     ---@param request { method: string, params?: any, [any]: any }
-    local function notify_generic(request)
+    local function notify_stdio(request)
         -- * notifications CANNOT have ID: https://www.jsonrpc.org/specification#notification
         -- BTW notification is a type of request
         -- modelcontextprotocol uses "notifications/" method prefix, i.e.: notifications/initialized and notifications/tools/list_changed
@@ -197,12 +197,12 @@ function start_mcp_server_stdio(name)
     end
 
     local function tools_list(callback)
-        send_generic({ method = "tools/list" }, callback)
+        send_outer_stdio({ method = "tools/list" }, callback)
     end
 
     local function tools_call(id, tool_name, args, callback)
         -- PRN/TODO btw your downstream code uses result object for almost everything, even tool call failures... that is probably fine but I should find out if a failed tool call is suppose to be presented as an error object on the response or as-is with result.isError etc?
-        send_generic({
+        send_outer_stdio({
             id = id,
             method = "tools/call",
             params = {
@@ -230,7 +230,7 @@ function start_mcp_server_stdio(name)
         },
     }
 
-    send_generic({ method = "initialize", params = client_init_params }, function(server_init)
+    send_outer_stdio({ method = "initialize", params = client_init_params }, function(server_init)
         log:trace(string.format("MCP initialize response %s:", server_log_name), vim.inspect(server_init))
 
         -- * abort on init failure
@@ -253,7 +253,7 @@ function start_mcp_server_stdio(name)
         --  - COMMANDS MCP it doesn't matter if I send this or don't send this
         --  - ok the issue might be that notifications don't include an ID? => YUP fetch works without the ID on the notification!
         --  - docs: https://modelcontextprotocol.io/specification/2024-11-05/basic/lifecycle#initialization
-        notify_generic({ method = "notifications/initialized" })
+        notify_stdio({ method = "notifications/initialized" })
 
         -- PRN do I need to wait before tools/list ? IIUC notifications/initialized doesn't get a server response... so in this case, I am not waiting to send tools/list:
         tools_list(function(response)
