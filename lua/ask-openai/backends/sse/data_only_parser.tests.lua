@@ -221,6 +221,16 @@ describe("data-only events", function()
                         parser:write(part2)
                         assert.are.same({ '{"c":3}' }, events)
                     end)
+
+                    it("triple split event field's line", function()
+                        local part1 = "even"
+                        local part2 = "t: mess"
+                        local part3 = "age\ndata: {\"f\":6}\n\n"
+                        parser:write(part1)
+                        parser:write(part2)
+                        parser:write(part3)
+                        assert.are.same({ '{"f":6}' }, events)
+                    end)
                 end)
             end)
             describe("multiple SSEs", function()
