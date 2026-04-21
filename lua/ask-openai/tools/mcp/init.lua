@@ -282,6 +282,7 @@ function start_mcp_server_stdio(name)
 end
 
 M.running_servers = {}
+M.tools_available = {}
 
 for name, server in pairs(servers) do
     local server_log_name = "[" .. name:upper() .. "]"
@@ -291,7 +292,6 @@ for name, server in pairs(servers) do
     M.running_servers[name] = mcp
 end
 
-M.tools_available = {}
 
 function M.setup()
     vim.api.nvim_create_user_command("McpLogToolsList", function()
