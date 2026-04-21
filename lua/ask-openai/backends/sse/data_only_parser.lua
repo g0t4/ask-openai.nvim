@@ -101,7 +101,7 @@ function SSEDataOnlyParser:write(data)
             -- *** \n is FIELD SEPARATOR (cannot have another \n next to it)
             local fields = vim.split(event, "\n")
 
-            local data = vim.iter(fields)
+            local data_value = vim.iter(fields)
                 :filter(function(f)
                     -- limit to data fields, ignore the rest for now
                     return f:match("^data:")
@@ -113,7 +113,7 @@ function SSEDataOnlyParser:write(data)
                     return result
                 end)
                 :join("\n")
-            self._on_data_sse(data)
+            self._on_data_sse(data_value)
         end
 
         -- keep last line in buffer (it's not complete w/o a blank line)
