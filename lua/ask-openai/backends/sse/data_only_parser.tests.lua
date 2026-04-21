@@ -3,7 +3,7 @@ local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 local describe = require("devtools.tests._describe")
 
 only = it
-it = ignore
+-- it = ignore
 
 describe("data-only events", function()
     local events = {}

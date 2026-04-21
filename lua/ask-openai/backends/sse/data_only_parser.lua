@@ -79,7 +79,7 @@ function SSEDataOnlyParser:write(data)
     data = data:gsub("\r\n", "\n"):gsub("\r", "\n")
 
     -- FYI assumed data only => strip data: prefix
-    data = data:gsub("^data: ", "")
+    -- data = data:gsub("^data: ", "")
 
     self._buffer = self._buffer .. data
 
@@ -97,8 +97,17 @@ function SSEDataOnlyParser:write(data)
         -- ==> emit completed data event(s)
         for i = 1, #events - 1 do
             local event = events[i]
-            event = event:gsub("^data: ", "") -- happens when multiple in one SSE
-            self._on_data_sse(event)
+            -- SSEs (events) are comprised of \n delimited fields
+            local fields = vim.split(event, "\n")
+            -- strip data: prefix on each field (assume all are data)
+            local data = vim.iter(fields)
+                :map(function(f)
+                    -- TODO later can handle or parse or otherwise split the field name and value (i.e. for event: message)
+                    local result, _ = f:gsub("^data: ", "")
+                    return result
+                end)
+                :join("\n")
+            self._on_data_sse(data)
         end
 
         -- keep last line in buffer (it's not complete w/o a blank line)
