@@ -193,35 +193,34 @@ describe("data-only events", function()
         describe("split write", function()
             describe("single SSE", function()
                 it("each field on its own line", function()
-                    local write1 = "event: message\n"
-                    local write2 = "data: {\"d\":4}\n\n"
-                    parser:write(write1)
-                    parser:write(write2)
+                    parser:writes {
+                        "event: message\n",
+                        "data: {\"d\":4}\n\n",
+                    }
                     assert.are.same({ '{"d":4}' }, events)
                 end)
                 describe("split within event field's line", function()
                     it("even[SPLIT]t: message", function()
-                        local part1 = "even"
-                        local part2 = "t: message\n" .. "data: {\"c\":3}\n\n"
-                        parser:write(part1)
-                        parser:write(part2)
+                        parser:writes {
+                            "even",
+                            "t: message\ndata: {\"c\":3}\n\n",
+                        }
                         assert.are.same({ '{"c":3}' }, events)
                     end)
                     it("event:[SPLIT] message", function()
-                        local part1 = "event:"
-                        local part2 = " message\n" .. "data: {\"c\":3}\n\n"
-                        parser:write(part1)
-                        parser:write(part2)
+                        parser:writes {
+                            "event:",
+                            " message\ndata: {\"c\":3}\n\n",
+                        }
                         assert.are.same({ '{"c":3}' }, events)
                     end)
                     it("event: mes[SPLIT]sage", function()
-                        local part1 = "event:"
-                        local part2 = " message\n" .. "data: {\"c\":3}\n\n"
-                        parser:write(part1)
-                        parser:write(part2)
+                        parser:writes {
+                            "event:",
+                            " message\ndata: {\"c\":3}\n\n",
+                        }
                         assert.are.same({ '{"c":3}' }, events)
                     end)
-
                     it("triple split event field's line", function()
                         parser:writes {
                             "even",
