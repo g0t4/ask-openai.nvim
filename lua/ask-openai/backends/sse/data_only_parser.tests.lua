@@ -164,6 +164,63 @@ describe("data-only events", function()
     -- PRN strip comments test case -- if I have a server that does this?
 end)
 
+describe("data-only parser with event field", function()
+    local events = {}
+    local function on_data_sse(data)
+        table.insert(events, data)
+    end
+    local parser
+    before_each(function()
+        events = {}
+        parser = SSEDataOnlyParser.new(on_data_sse)
+    end)
+
+    it("ignores event line and emits only data", function()
+        local write = "event: message\n" .. "data: {\"test\": 1}\n\n"
+        parser:write(write)
+        assert.are.same({ '{"test": 1}' }, events)
+    end)
+end)
+
+describe("multiple messages with event field", function()
+    local events = {}
+    local function on_data_sse(data)
+        table.insert(events, data)
+    end
+    local parser
+    before_each(function()
+        events = {}
+        parser = SSEDataOnlyParser.new(on_data_sse)
+    end)
+
+    it("parses several event: message entries", function()
+        local write = "event: message\n" .. "data: {\"a\":1}\n\n" ..
+                      "event: message\n" .. "data: {\"b\":2}\n\n"
+        parser:write(write)
+        assert.are.same({ '{"a":1}', '{"b":2}' }, events)
+    end)
+end)
+
+describe("split event line across writes", function()
+    local events = {}
+    local function on_data_sse(data)
+        table.insert(events, data)
+    end
+    local parser
+    before_each(function()
+        events = {}
+        parser = SSEDataOnlyParser.new(on_data_sse)
+    end)
+
+    it("handles event split between writes and still emits data", function()
+        local part1 = "event:"
+        local part2 = " message\n" .. "data: {\"c\":3}\n\n"
+        parser:write(part1)
+        parser:write(part2)
+        assert.are.same({ '{"c":3}' }, events)
+    end)
+end)
+
 describe("integration test - completion captures", function()
     -- TODO! curl-stream-sses-weather.out
 
