@@ -210,6 +210,66 @@ function start_mcp_server_stdio(name)
         }, callback)
     end
 
+    -- Perform initialization before requesting the tool list.
+    -- This logic was previously in the outer for‑loop; moving it here keeps the
+    -- server lifecycle self‑contained.
+    local client_init_params = {
+        -- go with oldest protocolVersion for now, even though I am using @modelcontextprotocol/sdk v1.9.0 which was released in April 2025 which would put it after the protocolVersion==2025-03-26
+        protocolVersion = "2024-11-05",
+        capabilities = {
+            roots = { listChanged = false },
+            -- WARNING: empty table {} => maps to an empty JSON array:
+            -- sampling = {}, -- serializes as empty JSON array (this triggers error response)
+            -- sampling = vim.empty_dict(), -- use this to serialize an empty JSON object (this succeeds)
+        },
+        clientInfo = {
+            name = "ask-openai",
+            version = "", -- version required (error if missing)... COMMENT THIS OUT TO TEST ERROR HANDLING!
+        },
+    }
+
+    send_generic({ method = "initialize", params = client_init_params }, function(server_init)
+        log:trace(string.format("MCP initialize response %s:", server_log_name), vim.inspect(server_init))
+
+        -- * abort on init failure
+        if server_init.error then
+            local err = server_init.error
+            local msg = ""
+            if type(err) == "table" and err.message ~= nil then
+                -- log them embedded error.message if available
+                msg = string.format("MCP initialize error (SEE PATH below) %s: %s", server_log_name, err.message)
+                -- FYI message is a JSON string, so I would have to deserialize it to read .path... that's not necessary! I can just read the JSON when I have a failure!
+            else
+                msg = string.format("MCP initialize error %s (no message)", server_log_name)
+            end
+            log:error(msg)
+            vim.notify(msg, vim.log.levels.ERROR)
+            return
+        end
+
+        -- fetch MCP server rejects this (and on_exit's from neovim uv runner... but when I run uvx directly and paste in messages it keeps working after failure for notifications/initialized... interesting), works fine w/o this:
+        --  - COMMANDS MCP it doesn't matter if I send this or don't send this
+        --  - ok the issue might be that notifications don't include an ID? => YUP fetch works without the ID on the notification!
+        --  - docs: https://modelcontextprotocol.io/specification/2024-11-05/basic/lifecycle#initialization
+        notify({ method = "notifications/initialized" })
+
+        -- PRN do I need to wait before tools/list ? IIUC notifications/initialized doesn't get a server response... so in this case, I am not waiting to send tools/list:
+        tools_list(function(response)
+            if response.error then
+                log:error(string.format("tools/list@%s error:", server_log_name), vim.inspect(response))
+                return
+            end
+            for _, tool in ipairs(response.result.tools) do
+                tool.server = {
+                    send = send_generic,
+                    notify = notify,
+                    tools_call = tools_call,
+                }
+                M.tools_available[tool.name] = tool
+            end
+        end)
+    end)
+
     return {
         send = send_generic,
         notify = notify,
@@ -234,62 +294,6 @@ for name, server in pairs(servers) do
 
     local mcp = start_mcp_server_stdio(name)
     M.running_servers[name] = mcp
-
-    -- Perform initialization before requesting the tool list.
-    local client_init_params = {
-        -- go with oldest protocolVersion for now, even though I am using @modelcontextprotocol/sdk v1.9.0 which was released in April 2025 which would put it after the protocolVersion==2025-03-26
-        protocolVersion = "2024-11-05",
-        capabilities = {
-            roots = { listChanged = false },
-            -- WARNING: empty table {} => maps to an empty JSON array:
-            -- sampling = {}, -- serializes as empty JSON array (this triggers error response)
-            -- sampling = vim.empty_dict(), -- use this to serialize an empty JSON object (this succeeds)
-        },
-        clientInfo = {
-            name = "ask-openai",
-            version = "", -- version required (error if missing)... COMMENT THIS OUT TO TEST ERROR HANDLING!
-        },
-    }
-
-    mcp.send({ method = "initialize", params = client_init_params }, function(server_init)
-        log:trace(string.format("MCP initialize response %s:", server_log_name), vim.inspect(server_init))
-
-        -- * abort on init failure
-        if server_init.error then
-            local err = server_init.error
-            local msg = ""
-            if type(err) == "table" and err.message ~= nil then
-                -- log them embedded error.message if available
-                msg = string.format("MCP initialize error (SEE PATH below) %s: %s", server_log_name, err.message)
-                -- FYI message is a JSON string, so I would have to deserialize it to read .path... that's not necessary! I can just read the JSON when I have a failure!
-            else
-                msg = string.format("MCP initialize error %s (no message)", server_log_name)
-            end
-            log:error(msg)
-            vim.notify(msg, vim.log.levels.ERROR)
-
-            -- FYI can use server response for capabilities, etc
-            return
-        end
-
-        -- fetch MCP server rejects this (and on_exit's from neovim uv runner... but when I run uvx directly and paste in messages it keeps working after failure for notifications/initialized... interesting), works fine w/o this:
-        --  - COMMANDS MCP it doesn't matter if I send this or don't send this
-        --  - ok the issue might be that notifications don't include an ID? => YUP fetch works without the ID on the notification!
-        --  - docs: https://modelcontextprotocol.io/specification/2024-11-05/basic/lifecycle#initialization
-        mcp.notify({ method = "notifications/initialized" })
-
-        -- PRN do I need to wait before tools/list ? IIUC notifications/initialized doesn't get a server response... so in this case, I am not waiting to send tools/list:
-        mcp.tools_list(function(response)
-            if response.error then
-                log:error(string.format("tools/list@%s error:", server_log_name), vim.inspect(response))
-                return
-            end
-            for _, tool in ipairs(response.result.tools) do
-                tool.server = mcp
-                M.tools_available[tool.name] = tool
-            end
-        end)
-    end)
 end
 
 M.tools_available = {}
