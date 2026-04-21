@@ -258,11 +258,7 @@ function start_mcp_server_stdio(name)
                 return
             end
             for _, tool in ipairs(response.result.tools) do
-                tool.server = {
-                    send = send_generic,
-                    notify = notify_generic,
-                    tools_call = tools_call,
-                }
+                tool.call = tools_call
                 M.tools_available[tool.name] = tool
             end
         end)
@@ -277,7 +273,6 @@ function start_mcp_server_stdio(name)
                 end)
             end)
         end,
-        tools_call = tools_call,
     }
 end
 
@@ -364,7 +359,7 @@ function M.send_tool_call(tool_call, callback)
 
     -- PRN timeout mechanism? might be a good spot to wrap an async timer to check back (wait for the need to arise)
 
-    tool.server.tools_call(tool_call.id, name, args_decoded, vim.schedule_wrap(callback))
+    tool.call(tool_call.id, name, args_decoded, vim.schedule_wrap(callback))
 end
 
 M._cached_run_process_instructions = nil
