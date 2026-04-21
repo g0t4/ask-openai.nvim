@@ -373,6 +373,7 @@ local function start_mcp_server_http(name)
                 return
             end
             -- TODO the parse trigger is a NEWLINE for SSEs (not for JSON content-type)
+            -- TODO use my SSE parser from streaming tokens
             if data then
                 response_body = response_body .. data
             else
