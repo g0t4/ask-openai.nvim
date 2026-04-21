@@ -273,7 +273,9 @@ function start_mcp_server_stdio(name)
         end)
     end
 
-    return { stop = stop }
+    -- currently I don't do anything with running_servers, so I don't really need to return an object, short of GC perhaps
+    --  TODO any GC issues after a while? if so, should I return references to stdin/out/err pipes or smth else?
+    return {}
 end
 
 M.running_servers = {}
