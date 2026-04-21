@@ -162,6 +162,12 @@ function start_mcp_server_stdio(name)
 
     uv.read_start(stderr, on_stderr)
 
+    local function send_stdio(request)
+        local json = vim.json.encode(request)
+        -- log:info(string.format("MCP send %s:", server_log_name), json)
+        stdin:write(json .. "\n")
+    end
+
     local function send(request, callback)
         -- Regular request (with optional callback). ID is always set unless caller explicitly provides one.
         if not request.id then
@@ -173,9 +179,7 @@ function start_mcp_server_stdio(name)
         if callback then
             callbacks[request.id] = callback
         end
-        local json = vim.json.encode(request)
-        -- log:info(string.format("MCP send %s:", server_log_name), json)
-        stdin:write(json .. "\n")
+        send_stdio(request)
     end
 
     --- Send a JSON-RPC notification
