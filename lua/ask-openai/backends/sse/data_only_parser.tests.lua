@@ -149,7 +149,6 @@ describe("data-only events", function()
     describe("ignore event field in Named events, IOTW treat like data-only message", function()
         -- "Named event" == event+data field per message
         --   read more: https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#named_events
-        do return end
 
         -- FYI wait for a need to parse more or all fields before adding that
         -- - PRN id field
