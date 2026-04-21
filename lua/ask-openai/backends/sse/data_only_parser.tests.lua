@@ -175,25 +175,75 @@ describe("data-only events", function()
         --
         -- FYI just ignore event field for now to support MCP HTTP streamable transport
 
-        it("single write", function()
-            local write = "event: message\n" .. "data: {\"test\": 1}\n\n"
-            parser:write(write)
-            assert.are.same({ '{"test": 1}' }, events)
+        describe("single write", function()
+            it("single SSE", function()
+                local write = "event: message\n" .. "data: {\"test\": 1}\n\n"
+                parser:write(write)
+                assert.are.same({ '{"test": 1}' }, events)
+            end)
+
+            it("multiple SSEs", function()
+                local write = "event: message\n" .. "data: {\"a\":1}\n\n" ..
+                    "event: message\n" .. "data: {\"b\":2}\n\n"
+                parser:write(write)
+                assert.are.same({ '{"a":1}', '{"b":2}' }, events)
+            end)
         end)
 
-        it("single write of multiple data events", function()
-            local write = "event: message\n" .. "data: {\"a\":1}\n\n" ..
-                "event: message\n" .. "data: {\"b\":2}\n\n"
-            parser:write(write)
-            assert.are.same({ '{"a":1}', '{"b":2}' }, events)
-        end)
-
-        it("split write", function()
-            local write1 = "event: message\n"
-            local write2 = "data: {\"d\":4}\n\n"
-            parser:write(write1)
-            parser:write(write2)
-            assert.are.same({ '{"d":4}' }, events)
+        describe("split write", function()
+            describe("single SSE", function()
+                it("each field on its own line", function()
+                    local write1 = "event: message\n"
+                    local write2 = "data: {\"d\":4}\n\n"
+                    parser:write(write1)
+                    parser:write(write2)
+                    assert.are.same({ '{"d":4}' }, events)
+                end)
+                describe("split within event field's line", function()
+                    it("even[SPLIT]t: message", function()
+                        local part1 = "even"
+                        local part2 = "t: message\n" .. "data: {\"c\":3}\n\n"
+                        parser:write(part1)
+                        parser:write(part2)
+                        assert.are.same({ '{"c":3}' }, events)
+                    end)
+                    it("event:[SPLIT] message", function()
+                        local part1 = "event:"
+                        local part2 = " message\n" .. "data: {\"c\":3}\n\n"
+                        parser:write(part1)
+                        parser:write(part2)
+                        assert.are.same({ '{"c":3}' }, events)
+                    end)
+                    it("event: mes[SPLIT]sage", function()
+                        local part1 = "event:"
+                        local part2 = " message\n" .. "data: {\"c\":3}\n\n"
+                        parser:write(part1)
+                        parser:write(part2)
+                        assert.are.same({ '{"c":3}' }, events)
+                    end)
+                end)
+            end)
+            describe("multiple SSEs", function()
+                it("every line split in middle somewhere", function()
+                    local part1 = "ev"
+                    local part2 = "ent: message\n"
+                    local part3 = "da"
+                    local part4 = "ta: {\"a\":1}\n\n"
+                    local part5 = "ev"
+                    local part6 = "ent: message\n"
+                    local part7 = "da"
+                    local part8 = "ta: {\"b\":2}\n\n"
+                    parser:write(part1)
+                    parser:write(part2)
+                    parser:write(part3)
+                    parser:write(part4)
+                    parser:write(part5)
+                    parser:write(part6)
+                    parser:write(part7)
+                    parser:write(part8)
+                    assert.are.same({ '{"a":1}', '{"b":2}' }, events)
+                end)
+            end)
         end)
 
         it("multiple data events across separate writes", function()
@@ -214,23 +264,6 @@ describe("data-only events", function()
             parser:write(write3)
             parser:write(write4)
             assert.are.same({ '{"x":10}', '{"y":20}' }, events)
-        end)
-
-        describe("event line split into two writes", function()
-            it("even[SPLIT]t: message", function()
-                local part1 = "even"
-                local part2 = "t: message\n" .. "data: {\"c\":3}\n\n"
-                parser:write(part1)
-                parser:write(part2)
-                assert.are.same({ '{"c":3}' }, events)
-            end)
-            it("event:[SPLIT] message", function()
-                local part1 = "event:"
-                local part2 = " message\n" .. "data: {\"c\":3}\n\n"
-                parser:write(part1)
-                parser:write(part2)
-                assert.are.same({ '{"c":3}' }, events)
-            end)
         end)
     end)
 
