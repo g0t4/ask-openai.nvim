@@ -76,9 +76,9 @@ describe("data-only events", function()
     end)
 
     it("multiple events in single write", function()
-        local write = "data: hello\n\ndata: world\n\n"
-
-        parser:write(write)
+        parser:writes {
+            "data: hello\n\ndata: world\n\n"
+        }
         assert.are.same({ "hello", "world" }, events)
     end)
 
