@@ -106,4 +106,13 @@ function SSEDataOnlyParser:write(data)
     end
 end
 
+--- Write multiple chunks sequentially.
+--- currently for testing
+---@param writes string[] List of data chunks to write.
+function SSEDataOnlyParser:writes(writes)
+    for _, chunk in ipairs(writes) do
+        self:write(chunk)
+    end
+end
+
 return SSEDataOnlyParser

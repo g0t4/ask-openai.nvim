@@ -225,22 +225,16 @@ describe("data-only events", function()
             end)
             describe("multiple SSEs", function()
                 it("every line split in middle somewhere", function()
-                    local part1 = "ev"
-                    local part2 = "ent: message\n"
-                    local part3 = "da"
-                    local part4 = "ta: {\"a\":1}\n\n"
-                    local part5 = "ev"
-                    local part6 = "ent: message\n"
-                    local part7 = "da"
-                    local part8 = "ta: {\"b\":2}\n\n"
-                    parser:write(part1)
-                    parser:write(part2)
-                    parser:write(part3)
-                    parser:write(part4)
-                    parser:write(part5)
-                    parser:write(part6)
-                    parser:write(part7)
-                    parser:write(part8)
+                    parser:writes({
+                        "ev",
+                        "ent: message\n",
+                        "da",
+                        "ta: {\"a\":1}\n\n",
+                        "ev",
+                        "ent: message\n",
+                        "da",
+                        "ta: {\"b\":2}\n\n",
+                    })
                     assert.are.same({ '{"a":1}', '{"b":2}' }, events)
                 end)
             end)
