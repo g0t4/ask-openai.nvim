@@ -177,15 +177,15 @@ describe("data-only events", function()
 
         describe("single write", function()
             it("single SSE", function()
-                local write = "event: message\n" .. "data: {\"test\": 1}\n\n"
-                parser:write(write)
+                parser:write('event: message\ndata: {"test": 1}\n\n')
                 assert.are.same({ '{"test": 1}' }, events)
             end)
 
             it("multiple SSEs", function()
-                local write = "event: message\n" .. "data: {\"a\":1}\n\n" ..
-                    "event: message\n" .. "data: {\"b\":2}\n\n"
-                parser:write(write)
+                parser:write(
+                    'event: message\ndata: {"a":1}\n\n'
+                    .. 'event: message\ndata: {"b":2}\n\n'
+                )
                 assert.are.same({ '{"a":1}', '{"b":2}' }, events)
             end)
         end)
