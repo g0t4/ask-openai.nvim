@@ -352,6 +352,7 @@ local function start_mcp_server_http(name)
         local args = {
             "-s", "-X", "POST",
             "-H", "Content-Type: application/json",
+            "-H", "Accept: application/json, text/event-stream",
             "-d", json,
             url,
         }
@@ -405,8 +406,9 @@ local function start_mcp_server_http(name)
         }, callback)
     end
 
-    -- Immediately request the tool list; no init step required for HTTP.
     tools_list(function(response)
+        -- TODO fix no response to tools_list (can use GET instead if need be)
+        log:info(string.format("tools/list@%s:", server_log_name), vim.inspect(response))
         if response.error then
             log:error(string.format("tools/list@%s error:", server_log_name), vim.inspect(response))
             return
