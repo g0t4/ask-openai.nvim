@@ -234,14 +234,14 @@ describe("data-only events", function()
             describe("multiple SSEs", function()
                 it("every line split in middle somewhere", function()
                     parser:writes {
-                        "ev",
-                        "ent: message\n",
-                        "da",
-                        "ta: {\"a\":1}\n\n",
-                        "ev",
-                        "ent: message\n",
-                        "da",
-                        "ta: {\"b\":2}\n\n",
+                        'ev',
+                        'ent: message\n',
+                        'da',
+                        'ta: {"a":1}\n\n',
+                        'ev',
+                        'ent: message\n',
+                        'da',
+                        'ta: {"b":2}\n\n',
                     }
                     assert.are.same({ '{"a":1}', '{"b":2}' }, events)
                 end)
