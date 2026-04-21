@@ -53,7 +53,7 @@ local servers = {
     },
 }
 
-function start_mcp_server(name)
+function start_mcp_server_stdio(name)
     local stdin = uv.new_pipe(false)
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
@@ -227,7 +227,7 @@ for name, server in pairs(servers) do
     local server_log_name = "[" .. name:upper() .. "]"
     -- log:trace("starting mcp server " .. name)
 
-    local mcp = start_mcp_server(name)
+    local mcp = start_mcp_server_stdio(name)
     M.running_servers[name] = mcp
 
     -- Perform initialization before requesting the tool list.
