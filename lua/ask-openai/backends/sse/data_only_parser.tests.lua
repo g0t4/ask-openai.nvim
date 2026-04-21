@@ -84,13 +84,12 @@ describe("data-only events", function()
         assert.are.same({ "hello", "world" }, events)
     end)
 
-    -- it("'data: ' is at the start of a new event's data value", function()
-    --     -- FYI this won't ever happen w/ json payload
-    --     --   SO, DO NOT TEST THIS
-    --     local write = "data: data: \n\n"
-    --     parser:write(write)
-    --     assert.are.same({ "data: " }, events)
-    -- end)
+    it("'data: ' is at the start of a new event's data value", function()
+        -- edge case to make sure not replacing multiple `data:` and/or not iteratively replacing one at a time (i.e. in a loop)
+        local write = "data: data: \n\n"
+        parser:write(write)
+        assert.are.same({ "data: " }, events)
+    end)
 
     describe("dregs with no trailing blank line", function()
         describe("dregs is valid JSON", function()
