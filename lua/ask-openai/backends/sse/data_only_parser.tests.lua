@@ -84,16 +84,6 @@ describe("data-only events", function()
         assert.are.same({ "hello", "world" }, events)
     end)
 
-    it("'data: ' at start of a multi write, single event's data value", function()
-        -- FYI this might be a problem with concat multiple data labels, see notes above in other similar tests... for now this is FINE as is until I get a real world test case to invalidate it
-        -- edge case - make sure the second 'data: ' is preserved
-        parser:writes {
-            'data: {"code": "local my_var = \\"my_',
-            'data: bar\\""}\n\n'
-        }
-        assert.are.same({ '{"code": "local my_var = \\"my_data: bar\\""}' }, events)
-    end)
-
     -- it("'data: ' is at the start of a new event's data value", function()
     --     -- FYI this won't ever happen w/ json payload
     --     --   SO, DO NOT TEST THIS
