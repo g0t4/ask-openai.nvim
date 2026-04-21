@@ -22,6 +22,7 @@ describe("mcp_http_transport", function()
         -- The MCP server provides actual tool names such as
         -- "search_docs_by_lang_chain". We poll until one of those appears.
         local got_tool = vim.wait(2000, function()
+            -- vim.print(mcp.tools_available)
             return mcp.tools_available["search_docs_by_lang_chain"] ~= nil
         end, 50)
         -- This assertion should initially fail (got_tool == false) until the
