@@ -32,6 +32,7 @@ local servers = {
         --   docker container logs jovial_blackburn --follow | jq --compact-output
 
         -- -- * via source
+        transport = "stdio",
         command = "uvx",
         args = {
             "--directory",
@@ -41,6 +42,7 @@ local servers = {
         },
     },
     commands = {
+        transport = "stdio",
         command = "npx",
         args = {
             os.getenv("HOME") .. "/repos/github/g0t4/mcp-server-commands/build/index.js",
