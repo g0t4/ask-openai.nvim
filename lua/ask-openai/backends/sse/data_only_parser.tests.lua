@@ -40,7 +40,7 @@ describe("data-only events", function()
     end
 
     describe("concatenate", function()
-        it("concatenate split write data value with newline at end of first write, preserves value's newline", function()
+        it("split write data value with newline at end of first write, preserves value's newline", function()
             -- FYI it is possible this is not how I should combine when there are multiple data labels, in that case I might need to concat with \n in between
             --   for now I am leaving this as is as I have yet to see it in the wild with openai compatible streaming endpoints, so I can't easily verify one way or the other
             --   in this case if I concat w/ \n then I should have "hello\n\nworld"
@@ -53,7 +53,7 @@ describe("data-only events", function()
             parser:write(write2)
             assert.are.same({ "hello\nworld" }, events)
         end)
-        it("concatenate split write data value (single event)", function()
+        it("split write data value (single event)", function()
             -- FYI it is possible this is not how I should combine when there are multiple data labels, in that case I might need to concat with \n in between
             --   for now I am leaving this as is as I have yet to see it in the wild with openai compatible streaming endpoints, so I can't easily verify one way or the other
             --   in this case if I concat w/ \n then I should have "hello\nworld"
@@ -65,7 +65,7 @@ describe("data-only events", function()
             parser:write(write2)
             assert.are.same({ "helloworld" }, events)
         end)
-        it("concatenate split write data value without 'data: ' prefix on second write", function()
+        it("split write data value without 'data: ' prefix on second write", function()
             -- FYI AFAICT this is NOT PER the spec... and is just my intution looking at how llama-server generates this one large final SSE (w/ verbose logging turned on)
             -- see multi-line-sse.json which makes it pretty clear no \n is intended between the two lines
             -- so even if I change 2+ data lables to use \n I would likely leave this as is with no \n added in middle
