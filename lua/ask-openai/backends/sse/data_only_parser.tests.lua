@@ -89,7 +89,7 @@ describe("data-only events", function()
         -- edge case - make sure the second 'data: ' is preserved
         parser:writes {
             'data: {"code": "local my_var = \\"my_',
-            'data: data: bar\\""}\n\n'
+            'data: bar\\""}\n\n'
         }
         assert.are.same({ '{"code": "local my_var = \\"my_data: bar\\""}' }, events)
     end)
