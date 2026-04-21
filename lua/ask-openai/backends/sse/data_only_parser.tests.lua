@@ -216,8 +216,8 @@ describe("data-only events", function()
                     end)
                     it("event: mes[SPLIT]sage", function()
                         parser:writes {
-                            "event:",
-                            " message\ndata: {\"c\":3}\n\n",
+                            'event:',
+                            ' message\ndata: {"c":3}\n\n',
                         }
                         assert.are.same({ '{"c":3}' }, events)
                     end)
