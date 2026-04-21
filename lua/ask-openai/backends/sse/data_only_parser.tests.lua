@@ -42,7 +42,7 @@ describe("data-only events", function()
     end
 
     describe("concatenate", function()
-        only("two data fields in the same event => keeps \\n between the values", function()
+        only("two data fields in the same event => joined with \\n", function()
             parser:writes {
                 -- FYI you must have \n at the end of a field to delimit it from other fields in the same event, including with multiple data field values
                 "data: hello\n", -- *** \n is FIELD SEPARATOR (cannot have another \n next to it)
@@ -50,21 +50,15 @@ describe("data-only events", function()
             }
             assert.are.same({ "hello\nworld" }, events)
         end)
-        it("two writes IS NOT two fields, fields require \\n separator", function()
-            -- ***   \n\n is EVENT SEPARATOR
-            -- ***   \n is FIELD SEPARATOR
-            -- MUST be a \n after the first data field...
-            -- else it is not two data fields but just one with its value across two writes
-            -- * KEEP IN MIND ... WRITE != FIELD
-            --    WRITE IS NOT FIELD
-            --    *** THERE IS NO IMPLICIT \n after each write!
+        it("two writes IS NOT two fields", function()
+            -- *** THERE IS NO IMPLICIT \n after each write!
             parser:writes {
                 "data: hello", -- no \n means field continues on the next write
                 "data: world\n\n",
             }
             assert.are.same({ "hellodata: world" }, events)
         end)
-        it("split write data value without 'data: ' prefix on second write", function()
+        it("data value split across two writes", function()
             parser:writes {
                 "data: data_va", -- again, no \n means field continues on the next write
                 "lue1\n\n"
