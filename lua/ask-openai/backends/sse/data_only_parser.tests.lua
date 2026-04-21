@@ -27,9 +27,8 @@ describe("data-only events", function()
             --  FTR it would be fine to strip out the \r and \r\n handling entirely
 
             describe("single data value in single write", function()
-                local write1 = 'data: data_value1' .. blank_line
                 before_each(function()
-                    parser:write(write1)
+                    parser:write('data: data_value1' .. blank_line)
                 end)
 
                 it("should emit event", function()
