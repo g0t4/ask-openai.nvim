@@ -264,16 +264,16 @@ function start_mcp_server_stdio(name)
         end)
     end)
 
-    return {
-        stop = function()
-            -- handle:kill("sigterm")
-            uv.shutdown(stdin, function()
-                uv.close(handle, function()
-                    -- free memory by closing handle
-                end)
+    local function stop()
+        -- handle:kill("sigterm")
+        uv.shutdown(stdin, function()
+            uv.close(handle, function()
+                -- free memory by closing handle
             end)
-        end,
-    }
+        end)
+    end
+
+    return { stop = stop }
 end
 
 M.running_servers = {}
