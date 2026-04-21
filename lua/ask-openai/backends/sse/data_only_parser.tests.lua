@@ -162,62 +162,65 @@ describe("data-only events", function()
     end)
 
     -- PRN strip comments test case -- if I have a server that does this?
-end)
 
-describe("data-only parser with event field", function()
-    local events = {}
-    local function on_data_sse(data)
-        table.insert(events, data)
-    end
-    local parser
-    before_each(function()
-        events = {}
-        parser = SSEDataOnlyParser.new(on_data_sse)
-    end)
+    describe("ignores `event: message\\n`", function()
+        it("single write", function()
+            local write = "event: message\n" .. "data: {\"test\": 1}\n\n"
+            parser:write(write)
+            assert.are.same({ '{"test": 1}' }, events)
+        end)
 
-    it("ignores event line and emits only data", function()
-        local write = "event: message\n" .. "data: {\"test\": 1}\n\n"
-        parser:write(write)
-        assert.are.same({ '{"test": 1}' }, events)
-    end)
-end)
+        it("single write of multiple data events", function()
+            local write = "event: message\n" .. "data: {\"a\":1}\n\n" ..
+                "event: message\n" .. "data: {\"b\":2}\n\n"
+            parser:write(write)
+            assert.are.same({ '{"a":1}', '{"b":2}' }, events)
+        end)
 
-describe("multiple messages with event field", function()
-    local events = {}
-    local function on_data_sse(data)
-        table.insert(events, data)
-    end
-    local parser
-    before_each(function()
-        events = {}
-        parser = SSEDataOnlyParser.new(on_data_sse)
-    end)
+        it("split write", function()
+            local write1 = "event: message\n"
+            local write2 = "data: {\"d\":4}\n\n"
+            parser:write(write1)
+            parser:write(write2)
+            assert.are.same({ '{"d":4}' }, events)
+        end)
 
-    it("parses several event: message entries", function()
-        local write = "event: message\n" .. "data: {\"a\":1}\n\n" ..
-                      "event: message\n" .. "data: {\"b\":2}\n\n"
-        parser:write(write)
-        assert.are.same({ '{"a":1}', '{"b":2}' }, events)
-    end)
-end)
+        it("multiple data events across separate writes", function()
+            local write1 = "event: message\ndata: {\"x\":10}\n\n"
+            local write2 = "event: message\ndata: {\"y\":20}\n\n"
+            parser:write(write1)
+            parser:write(write2)
+            assert.are.same({ '{"x":10}', '{"y":20}' }, events)
+        end)
 
-describe("split event line across writes", function()
-    local events = {}
-    local function on_data_sse(data)
-        table.insert(events, data)
-    end
-    local parser
-    before_each(function()
-        events = {}
-        parser = SSEDataOnlyParser.new(on_data_sse)
-    end)
+        it("repeated split write of data events", function()
+            local write1 = "event: message\n"
+            local write2 = "data: {\"x\":10}\n\n"
+            local write3 = "event: message\n"
+            local write4 = "data: {\"y\":20}\n\n"
+            parser:write(write1)
+            parser:write(write2)
+            parser:write(write3)
+            parser:write(write4)
+            assert.are.same({ '{"x":10}', '{"y":20}' }, events)
+        end)
 
-    it("handles event split between writes and still emits data", function()
-        local part1 = "event:"
-        local part2 = " message\n" .. "data: {\"c\":3}\n\n"
-        parser:write(part1)
-        parser:write(part2)
-        assert.are.same({ '{"c":3}' }, events)
+        describe("event line split into two writes", function()
+            it("even[SPLIT]t: message", function()
+                local part1 = "even"
+                local part2 = "t: message\n" .. "data: {\"c\":3}\n\n"
+                parser:write(part1)
+                parser:write(part2)
+                assert.are.same({ '{"c":3}' }, events)
+            end)
+            it("event:[SPLIT] message", function()
+                local part1 = "event:"
+                local part2 = " message\n" .. "data: {\"c\":3}\n\n"
+                parser:write(part1)
+                parser:write(part2)
+                assert.are.same({ '{"c":3}' }, events)
+            end)
+        end)
     end)
 end)
 
