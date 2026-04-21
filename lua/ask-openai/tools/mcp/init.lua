@@ -102,7 +102,7 @@ function start_mcp_server_stdio(name)
         --     - `result` object not constrained by spec
         --     - `error` object has code/message/data properties: https://www.jsonrpc.org/specification#error_object
         if server_response.error then
-            log:error(string.format("MCP %s error response:", server_log_name), server_response.error)
+            log:error(string.format("MCP %s error response:", server_log_name), vim.inspect(server_response.error))
         end
 
         -- log:info("MCP response:", vim.inspect(server_response))
@@ -322,7 +322,7 @@ local function start_mcp_server_http(name)
 
     local function on_server_response_generic(server_response)
         if server_response.error then
-            log:error(string.format("MCP %s error response:", server_log_name), server_response.error)
+            log:error(string.format("MCP %s error response:", server_log_name), vim.inspect(server_response.error))
         end
         local id = server_response.id
         if id then
@@ -360,7 +360,7 @@ local function start_mcp_server_http(name)
         }
         handle = uv.spawn("curl", {
             args = args,
-            stdio = {nil, stdout, stderr},
+            stdio = { nil, stdout, stderr },
         }, function(code, signal)
             -- Close pipes after process exits.
             stdout:close()
@@ -426,7 +426,7 @@ M.tools_available = {}
 
 for name, server in pairs(servers) do
     local server_log_name = "[" .. name:upper() .. "]"
-    -- log:trace("starting mcp server " .. name)
+    log:trace("starting mcp server " .. server_log_name .. " with transport: " .. server.transport)
 
     if server.transport == "stdio" then
         start_mcp_server_stdio(name)
