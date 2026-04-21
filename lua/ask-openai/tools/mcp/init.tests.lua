@@ -21,7 +21,7 @@ describe("mcp_http_transport", function()
         -- tool to appear.
         local got_tool = vim.wait(2000, function()
             return mcp.tools_available["langchain_docs"] ~= nil
-        end, 100)
+        end, 50)
         -- This assertion should initially fail (got_tool == false) until the
         -- HTTP transport is fixed.
         assert.is_true(got_tool)
