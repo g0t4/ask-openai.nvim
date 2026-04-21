@@ -92,7 +92,7 @@ function start_mcp_server_stdio(name)
     local counter = 1
     local callbacks = {}
 
-    local function on_server_response_generic(server_response)
+    local function on_server_response_stdio(server_response)
         -- Response object (success or failure)
         -- - Server does NOT send response to notifications
         -- - https://www.jsonrpc.org/specification#response_object
@@ -141,7 +141,7 @@ function start_mcp_server_stdio(name)
 
             local ok, response = safely.decode_json(line)
             if ok then
-                on_server_response_generic(response)
+                on_server_response_stdio(response)
             else
                 log:error(string.format("MCP STDOUT decode error %s OK:", server_log_name), ok)
                 log:error(string.format("MCP STDOUT decode error %s LINE:", server_log_name), line)
@@ -282,7 +282,6 @@ function start_mcp_server_stdio(name)
     -- return {}
 end
 
--- Start an MCP server using HTTP transport. Each request is a separate POST.
 local function start_mcp_server_http(name)
     local options = servers[name]
     local server_log_name = "[" .. name:upper() .. "]"
