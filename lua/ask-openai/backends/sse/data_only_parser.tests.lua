@@ -161,9 +161,20 @@ describe("data-only events", function()
         end)
     end)
 
-    -- PRN strip comments test case -- if I have a server that does this?
+    -- TODO do I support concatenating multiple `data:` lines? (with only \n delimiter, not \n\n which is the event delimiter)
+    --   read more here: https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#data
 
-    describe("ignores `event: message\\n`", function()
+    describe("ignore event field in Named events, IOTW treat like data-only message", function()
+        -- "Named event" == event+data field per message
+        --   read more: https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#named_events
+
+        -- FYI wait for a need to parse more or all fields before adding that
+        -- - PRN id field
+        -- - PRN retry field
+        -- - PRN ignore invalid field names
+        --
+        -- FYI just ignore event field for now to support MCP HTTP streamable transport
+
         it("single write", function()
             local write = "event: message\n" .. "data: {\"test\": 1}\n\n"
             parser:write(write)
@@ -222,6 +233,15 @@ describe("data-only events", function()
             end)
         end)
     end)
+
+    -- TODO comments:
+    -- describe("ignore comments", function()
+    --     it("single data event with a comment before", function()
+    --         local write = ": this is a comment\n" .. "data: {\"test\": 1}\n\n"
+    --         parser:write(write)
+    --         assert.are.same({ '{"test": 1}' }, events)
+    --     end)
+    -- end)
 end)
 
 describe("integration test - completion captures", function()
