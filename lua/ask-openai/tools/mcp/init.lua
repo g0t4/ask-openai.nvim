@@ -166,7 +166,7 @@ function start_mcp_server_stdio(name)
 
     uv.read_start(stderr, on_stderr)
 
-    local function send_stdio(request)
+    local function write_stdio(request)
         local json = vim.json.encode(request)
         -- log:info(string.format("MCP write %s:", server_log_name), json)
         stdin:write(json .. "\n")
@@ -183,7 +183,7 @@ function start_mcp_server_stdio(name)
         if callback then
             callbacks[request.id] = callback
         end
-        send_stdio(request)
+        write_stdio(request)
     end
 
     --- Send a JSON-RPC notification
@@ -193,7 +193,7 @@ function start_mcp_server_stdio(name)
         -- BTW notification is a type of request
         -- modelcontextprotocol uses "notifications/" method prefix, i.e.: notifications/initialized and notifications/tools/list_changed
         request.jsonrpc = "2.0"
-        send_stdio(request)
+        write_stdio(request)
     end
 
     local function tools_list(callback)
