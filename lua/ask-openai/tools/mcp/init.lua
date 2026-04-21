@@ -372,6 +372,7 @@ local function start_mcp_server_http(name)
                 log:error(string.format("MCP HTTP stdout read error %s", server_log_name), read_err)
                 return
             end
+            -- TODO the parse trigger is a NEWLINE for SSEs (not for JSON content-type)
             if data then
                 response_body = response_body .. data
             else
