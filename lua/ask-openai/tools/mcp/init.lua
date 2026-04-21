@@ -102,7 +102,7 @@ function start_mcp_server_stdio(name)
         --     - `result` object not constrained by spec
         --     - `error` object has code/message/data properties: https://www.jsonrpc.org/specification#error_object
         if server_response.error then
-            log:error(string.format("MCP %s error response:", server_log_name), vim.inspect(server_response.error))
+            log:error(string.format("MCP %s STDIO error response:", server_log_name), vim.inspect(server_response.error))
         end
 
         -- log:info("MCP response:", vim.inspect(server_response))
@@ -320,9 +320,9 @@ local function start_mcp_server_http(name)
     local counter = 1
     local callbacks = {}
 
-    local function on_server_response_generic(server_response)
+    local function on_server_response_http(server_response)
         if server_response.error then
-            log:error(string.format("MCP %s error response:", server_log_name), vim.inspect(server_response.error))
+            log:error(string.format("MCP %s HTTP error response:", server_log_name), vim.inspect(server_response.error))
         end
         local id = server_response.id
         if id then
