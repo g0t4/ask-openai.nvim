@@ -287,6 +287,8 @@ for name, server in pairs(servers) do
 
     if server.transport == "stdio" then
         start_mcp_server_stdio(name)
+    elseif server.transport == "http" then
+        -- start_mcp_server_http(name)
     else
         error(string.format("unsupported transport %s for server %s", server.transport, name))
     end
