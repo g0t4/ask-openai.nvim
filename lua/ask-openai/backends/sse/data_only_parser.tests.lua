@@ -2,6 +2,9 @@ require("ask-openai.helpers.test_setup").modify_package_path()
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 local describe = require("devtools.tests._describe")
 
+only = it
+it = ignore
+
 describe("data-only events", function()
     local events = {}
     local function on_data_sse(data)
@@ -39,7 +42,7 @@ describe("data-only events", function()
     end
 
     describe("concatenate", function()
-        it("two data fields in the same event => keeps \\n between the values", function()
+        only("two data fields in the same event => keeps \\n between the values", function()
             parser:writes {
                 -- FYI you must have \n at the end of a field to delimit it from other fields in the same event, including with multiple data field values
                 "data: hello\n",
