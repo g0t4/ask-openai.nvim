@@ -75,11 +75,11 @@ end
 function SSEDataOnlyParser:write(data)
     -- log:info("data", vim.inspect(data))
 
-    -- FYI assumed data only => strip data: prefix
-    data = data:gsub("^data: ", "")
-
     -- normalize line endings to LF
     data = data:gsub("\r\n", "\n"):gsub("\r", "\n")
+
+    -- FYI assumed data only => strip data: prefix
+    data = data:gsub("^data: ", "")
 
     self._buffer = self._buffer .. data
 
