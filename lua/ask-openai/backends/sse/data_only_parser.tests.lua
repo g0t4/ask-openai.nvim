@@ -78,6 +78,7 @@ describe("data-only events", function()
 
     it("multiple events in single write", function()
         parser:writes {
+            -- NOTE \n\n == Event Separator (must have one after each event)
             "data: hello\n\ndata: world\n\n"
         }
         assert.are.same({ "hello", "world" }, events)
