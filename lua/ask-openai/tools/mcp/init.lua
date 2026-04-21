@@ -103,6 +103,7 @@ function start_mcp_server_stdio(name)
         -- log:info("MCP response:", vim.inspect(server_response))
         local id = server_response.id
         if id then
+            -- TODO bug here M.callbacks should not be global across servers
             local callback = M.callbacks[id]
             if callback then
                 -- PRN strip out errors?
