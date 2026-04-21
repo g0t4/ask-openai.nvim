@@ -39,34 +39,29 @@ describe("data-only events", function()
     end
 
     describe("concatenate", function()
-        it("split write data value with newline at end of first write, preserves value's newline", function()
-            -- FYI it is possible this is not how I should combine when there are multiple data labels, in that case I might need to concat with \n in between
-            --   for now I am leaving this as is as I have yet to see it in the wild with openai compatible streaming endpoints, so I can't easily verify one way or the other
-            --   in this case if I concat w/ \n then I should have "hello\n\nworld"
-
-            -- no different than if the \n were in the middle of the data value
+        it("two data fields => concatenate values with a \n in between", function()
             parser:writes {
+                -- FYI you must have \n at the end of a field to delimit it from other fields in the same event, including with multiple data field values
                 "data: hello\n",
                 "data: world\n\n",
             }
             assert.are.same({ "hello\nworld" }, events)
         end)
-        it("split write data value (single event)", function()
-            -- FYI it is possible this is not how I should combine when there are multiple data labels, in that case I might need to concat with \n in between
-            --   for now I am leaving this as is as I have yet to see it in the wild with openai compatible streaming endpoints, so I can't easily verify one way or the other
-            --   in this case if I concat w/ \n then I should have "hello\nworld"
-
+        it("two writes IS NOT two fields, fields require \n separator", function()
+            -- ***   \n\n is EVENT SEPARATOR
+            -- ***   \n is FIELD SEPARATOR
+            -- MUST be a \n after the first data field...
+            -- else it is not two data fields but just one with its value across two writes
+            -- * KEEP IN MIND ... WRITE != FIELD
+            --    WRITE IS NOT FIELD
+            --    *** THERE IS NO IMPLICIT \n after each write!
             parser:writes {
                 "data: hello",
                 "data: world\n\n",
             }
-            assert.are.same({ "helloworld" }, events)
+            assert.are.same({ "hellodata: world" }, events)
         end)
         it("split write data value without 'data: ' prefix on second write", function()
-            -- FYI AFAICT this is NOT PER the spec... and is just my intution looking at how llama-server generates this one large final SSE (w/ verbose logging turned on)
-            -- see multi-line-sse.json which makes it pretty clear no \n is intended between the two lines
-            -- so even if I change 2+ data lables to use \n I would likely leave this as is with no \n added in middle
-
             parser:writes {
                 "data: data_va",
                 "lue1\n\n"
@@ -89,8 +84,6 @@ describe("data-only events", function()
             'data: {"code": "local my_var = \\"my_',
             'data: data: bar\\""}\n\n'
         }
-
-
         assert.are.same({ '{"code": "local my_var = \\"my_data: bar\\""}' }, events)
     end)
 
