@@ -71,8 +71,7 @@ describe("data-only events", function()
             }
             assert.are.same({ "data_value1" }, events)
         end)
-        it("what is the behavior if one event has multiple non-consecutive data fields?", function()
-            -- * ASSUME STILL CONCATENATE
+        it("non-consecutive data fields are ALSO concatenated in order", function()
             parser:writes {
                 "data: val1\n",
                 "event: message\n",
