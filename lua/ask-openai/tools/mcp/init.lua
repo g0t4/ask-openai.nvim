@@ -87,8 +87,6 @@ function start_mcp_server_stdio(name)
         },
         on_exit)
 
-    local pending_json = ""
-
     local function on_server_response(server_response)
         -- Response object (success or failure)
         -- - Server does NOT send response to notifications
@@ -117,6 +115,7 @@ function start_mcp_server_stdio(name)
         end
     end
 
+    local pending_json = ""
     local function on_stdout(read_error, data)
         log:log_if_stdio_read_error(string.format("MCP on_stdout %s", server_log_name), read_error, data) -- FYI switch _errors/_always with:    log:trace_stdio_read_always("MCP ...
         if data == nil then return end -- EOF
