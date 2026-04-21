@@ -85,11 +85,11 @@ describe("data-only events", function()
     it("'data: ' at start of a multi write, single event's data value", function()
         -- FYI this might be a problem with concat multiple data labels, see notes above in other similar tests... for now this is FINE as is until I get a real world test case to invalidate it
         -- edge case - make sure the second 'data: ' is preserved
-        local write1 = 'data: {"code": "local my_var = \\"my_'
-        local write2 = 'data: data: bar\\""}\n\n'
+        parser:writes {
+            'data: {"code": "local my_var = \\"my_',
+            'data: data: bar\\""}\n\n'
+        }
 
-        parser:write(write1)
-        parser:write(write2)
 
         assert.are.same({ '{"code": "local my_var = \\"my_data: bar\\""}' }, events)
     end)
