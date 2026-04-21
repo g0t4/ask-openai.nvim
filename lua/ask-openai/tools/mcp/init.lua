@@ -172,7 +172,7 @@ function start_mcp_server_stdio(name)
         stdin:write(json .. "\n")
     end
 
-    local function send_outer_stdio(request, callback)
+    local function send_request_stdio(request, callback)
         -- Regular request (with optional callback). ID is always set unless caller explicitly provides one.
         if not request.id then
             request.id = counter
@@ -197,12 +197,12 @@ function start_mcp_server_stdio(name)
     end
 
     local function tools_list(callback)
-        send_outer_stdio({ method = "tools/list" }, callback)
+        send_request_stdio({ method = "tools/list" }, callback)
     end
 
     local function tools_call(id, tool_name, args, callback)
         -- PRN/TODO btw your downstream code uses result object for almost everything, even tool call failures... that is probably fine but I should find out if a failed tool call is suppose to be presented as an error object on the response or as-is with result.isError etc?
-        send_outer_stdio({
+        send_request_stdio({
             id = id,
             method = "tools/call",
             params = {
@@ -230,7 +230,7 @@ function start_mcp_server_stdio(name)
         },
     }
 
-    send_outer_stdio({ method = "initialize", params = client_init_params }, function(server_init)
+    send_request_stdio({ method = "initialize", params = client_init_params }, function(server_init)
         log:trace(string.format("MCP initialize response %s:", server_log_name), vim.inspect(server_init))
 
         -- * abort on init failure
