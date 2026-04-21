@@ -19,8 +19,10 @@ describe("mcp_http_transport", function()
     it("populates tools list within timeout", function()
         -- Wait up to 2000 ms, checking every 100 ms, for the langchain_docs
         -- tool to appear.
+        -- The MCP server provides actual tool names such as
+        -- "search_docs_by_lang_chain". We poll until one of those appears.
         local got_tool = vim.wait(2000, function()
-            return mcp.tools_available["langchain_docs"] ~= nil
+            return mcp.tools_available["search_docs_by_lang_chain"] ~= nil
         end, 50)
         -- This assertion should initially fail (got_tool == false) until the
         -- HTTP transport is fixed.
