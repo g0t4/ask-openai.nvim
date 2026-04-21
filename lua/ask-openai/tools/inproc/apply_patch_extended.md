@@ -1,14 +1,11 @@
 Tips on a failure:
-
 - You only need enough context for a unique match!
 - The line(s) you replace are context too; if they’re unique, no additional context is needed.
 - Split bigger patches into smaller patches, i.e. if editing two functions, try each separately!
 - Watch out for whitespace differences, i.e. blank lines
 
 Please be curteous:
-
-- NEVER leave comments about removed code, just get rid of it. This code lives in a git repo.
-- Check your work! Especially after a failure.
+- Check your work!
 
 ### More Examples
 
