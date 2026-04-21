@@ -50,6 +50,15 @@ describe("data-only events", function()
             }
             assert.are.same({ "hello\nworld" }, events)
         end)
+        it("non-consecutive data fields are ALSO concatenated in order", function()
+            parser:writes {
+                "data: val1\n", -- data field
+                "event: message\n", -- event field
+                "data: val2\n\n", -- data field
+            }
+            assert.are.same({ "val1\nval2" }, events)
+        end)
+        -- edge cases:
         it("two writes IS NOT two fields", function()
             -- *** THERE IS NO IMPLICIT \n after each write!
             parser:writes {
@@ -64,14 +73,6 @@ describe("data-only events", function()
                 "lue1\n\n"
             }
             assert.are.same({ "data_value1" }, events)
-        end)
-        it("non-consecutive data fields are ALSO concatenated in order", function()
-            parser:writes {
-                "data: val1\n", -- data field
-                "event: message\n", -- event field
-                "data: val2\n\n", -- data field
-            }
-            assert.are.same({ "val1\nval2" }, events)
         end)
     end)
 
