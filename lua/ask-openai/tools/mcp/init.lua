@@ -87,7 +87,7 @@ function start_mcp_server_stdio(name)
         },
         on_exit)
 
-    local function on_server_response(server_response)
+    local function on_server_response_generic(server_response)
         -- Response object (success or failure)
         -- - Server does NOT send response to notifications
         -- - https://www.jsonrpc.org/specification#response_object
@@ -136,7 +136,7 @@ function start_mcp_server_stdio(name)
 
             local ok, response = safely.decode_json(line)
             if ok then
-                on_server_response(response)
+                on_server_response_generic(response)
             else
                 log:error(string.format("MCP STDOUT decode error %s OK:", server_log_name), ok)
                 log:error(string.format("MCP STDOUT decode error %s LINE:", server_log_name), line)
