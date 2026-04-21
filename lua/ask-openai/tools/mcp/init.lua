@@ -48,6 +48,10 @@ local servers = {
             "--verbose",
         },
     },
+    langchain_docs = {
+        transport = "http",
+        url = "https://docs.langchain.com/mcp",
+    }
 }
 
 function start_mcp_server_stdio(name)
