@@ -155,6 +155,8 @@ function start_mcp_server_stdio(name)
         log:log_if_stdio_read_error(string.format("MCP on_stderr %s", server_log_name), read_error, data) -- FYI switch _errors/_always with:    log:trace_stdio_read_always("MCP ...
         if data == nil then return end -- EOF -- * add this line if add logic below
 
+        -- IIRC this rarely ever happens and would be transport specific.
+        --   keep in mind if a tool call fails, the result comes through on_stdout and simply has isError=true
         log:error(string.format("MCP %s STDERR:", server_log_name), ansi.red(data))
     end
 
