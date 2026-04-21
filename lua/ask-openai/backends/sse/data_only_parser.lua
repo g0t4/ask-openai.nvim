@@ -71,41 +71,44 @@ function SSEDataOnlyParser:flush_dregs()
 end
 
 --- curl stdout should be patched into this
----@param data string
+---@param data string -- NOTE data is not synonymous with line/field/event (it can be any one of these, or NONE of these)
 function SSEDataOnlyParser:write(data)
     -- log:info("data", vim.inspect(data))
 
     -- normalize line endings to LF
     data = data:gsub("\r\n", "\n"):gsub("\r", "\n")
 
-    -- FYI assumed data only => strip data: prefix
-    -- data = data:gsub("^data: ", "")
-
+    -- simple idea... BUFFER writes until we have an event separator (\n\n)
     self._buffer = self._buffer .. data
 
-    -- * look for blank line (signals end of data event)
+    -- * blank line signals end of event
+    -- *** \n\n is EVENT SEPARATOR
     -- FYI split takes plain and trimempty options
     --   default not removing empties, can use to check if a \n\n was present
     local events = vim.split(self._buffer, "\n\n", {})
 
     if (#events == 1) then
-        -- no blank line (yet)
+        -- no event separator (blank line) yet
         return
     elseif (#events >= 2) then
-        -- had blank line(s)
+        -- found event separator(s)!
 
         -- ==> emit completed data event(s)
         for i = 1, #events - 1 do
             local event = events[i]
+
             -- SSEs (events) are comprised of \n delimited fields
+            -- *** \n is FIELD SEPARATOR (cannot have another \n next to it)
             local fields = vim.split(event, "\n")
-            -- strip data: prefix on each field (assume all are data)
+
             local data = vim.iter(fields)
                 :filter(function(f)
+                    -- limit to data fields, ignore the rest for now
                     return f:match("^data:")
                 end)
                 :map(function(f)
-                    -- TODO later can handle or parse or otherwise split the field name and value (i.e. for event: message)
+                    -- strip data: prefix on each data field
+                    -- PRN later can handle or parse or otherwise split the field name and value (i.e. for event: message)
                     local result, _ = f:gsub("^data: ", "")
                     return result
                 end)
@@ -118,8 +121,7 @@ function SSEDataOnlyParser:write(data)
     end
 end
 
---- Write multiple chunks sequentially.
---- currently for testing
+--- TESTING ONLY - Write multiple chunks sequentially.
 ---@param writes string[] List of data chunks to write.
 function SSEDataOnlyParser:writes(writes)
     for _, chunk in ipairs(writes) do

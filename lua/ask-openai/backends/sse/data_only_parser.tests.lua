@@ -45,8 +45,8 @@ describe("data-only events", function()
         only("two data fields in the same event => keeps \\n between the values", function()
             parser:writes {
                 -- FYI you must have \n at the end of a field to delimit it from other fields in the same event, including with multiple data field values
-                "data: hello\n",
-                "data: world\n\n",
+                "data: hello\n", -- *** \n is FIELD SEPARATOR (cannot have another \n next to it)
+                "data: world\n\n", -- *** \n\n is EVENT SEPARATOR
             }
             assert.are.same({ "hello\nworld" }, events)
         end)
@@ -59,23 +59,23 @@ describe("data-only events", function()
             --    WRITE IS NOT FIELD
             --    *** THERE IS NO IMPLICIT \n after each write!
             parser:writes {
-                "data: hello",
+                "data: hello", -- no \n means field continues on the next write
                 "data: world\n\n",
             }
             assert.are.same({ "hellodata: world" }, events)
         end)
         it("split write data value without 'data: ' prefix on second write", function()
             parser:writes {
-                "data: data_va",
+                "data: data_va", -- again, no \n means field continues on the next write
                 "lue1\n\n"
             }
             assert.are.same({ "data_value1" }, events)
         end)
         it("non-consecutive data fields are ALSO concatenated in order", function()
             parser:writes {
-                "data: val1\n",
-                "event: message\n",
-                "data: val2\n\n",
+                "data: val1\n", -- data field
+                "event: message\n", -- event field
+                "data: val2\n\n", -- data field
             }
             assert.are.same({ "val1\nval2" }, events)
         end)
