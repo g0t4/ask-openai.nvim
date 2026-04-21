@@ -194,23 +194,23 @@ describe("data-only events", function()
             describe("single SSE", function()
                 it("each field on its own line", function()
                     parser:writes {
-                        "event: message\n",
-                        "data: {\"d\":4}\n\n",
+                        'event: message\n',
+                        'data: {"d":4}\n\n',
                     }
                     assert.are.same({ '{"d":4}' }, events)
                 end)
                 describe("split within event field's line", function()
                     it("even[SPLIT]t: message", function()
                         parser:writes {
-                            "even",
-                            "t: message\ndata: {\"c\":3}\n\n",
+                            'even',
+                            't: message\ndata: {"c":3}\n\n',
                         }
                         assert.are.same({ '{"c":3}' }, events)
                     end)
                     it("event:[SPLIT] message", function()
                         parser:writes {
-                            "event:",
-                            " message\ndata: {\"c\":3}\n\n",
+                            'event:',
+                            ' message\ndata: {"c":3}\n\n',
                         }
                         assert.are.same({ '{"c":3}' }, events)
                     end)
