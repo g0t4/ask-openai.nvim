@@ -196,34 +196,6 @@ function start_mcp_server_stdio(name)
         send_stdio(request)
     end
 
-    -- Helper to parse HTTP response bodies for the HTTP transport.
-    function parse_http_body_http(body)
-        -- Trim leading whitespace/newlines.
-        body = body:gsub("^%s+", "")
-        if body:match("^event:%s*") then
-            -- Server‑Sent Events format.
-            for line in body:gmatch("[^\\r\\n]+") do
-                local data = line:match("^data:%s*(.+)")
-                if data then
-                    local ok, resp = safely.decode_json(data)
-                    if ok then
-                        on_server_response_generic(resp)
-                    else
-                        log:error(string.format("MCP SSE decode error %s", server_log_name), resp)
-                    end
-                end
-            end
-        else
-            -- Assume plain JSON response.
-            local ok, resp = safely.decode_json(body)
-            if ok then
-                on_server_response_generic(resp)
-            else
-                log:error(string.format("MCP HTTP decode error %s", server_log_name), resp)
-            end
-        end
-    end
-
     local function tools_list(callback)
         send_generic({ method = "tools/list" }, callback)
     end
@@ -334,7 +306,33 @@ local function start_mcp_server_http(name)
         end
     end
 
-    --[[ Deprecated parse_http_body for HTTP transport; using parse_http_body_http instead. ]]
+    -- Helper to parse HTTP response bodies for the HTTP transport.
+    local function parse_http_body_http(body)
+        -- Trim leading whitespace/newlines.
+        body = body:gsub("^%s+", "")
+        if body:match("^event:%s*") then
+            -- Server‑Sent Events format.
+            for line in body:gmatch("[^\\r\\n]+") do
+                local data = line:match("^data:%s*(.+)")
+                if data then
+                    local ok, resp = safely.decode_json(data)
+                    if ok then
+                        on_server_response_http(resp)
+                    else
+                        log:error(string.format("MCP SSE decode error %s", server_log_name), resp)
+                    end
+                end
+            end
+        else
+            -- Assume plain JSON response.
+            local ok, resp = safely.decode_json(body)
+            if ok then
+                on_server_response_http(resp)
+            else
+                log:error(string.format("MCP HTTP decode error %s", server_log_name), resp)
+            end
+        end
+    end
 
     -- Send a JSON‑RPC request via HTTP POST.
     local function send_http(request, callback)
