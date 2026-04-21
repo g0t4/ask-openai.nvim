@@ -225,7 +225,7 @@ describe("data-only events", function()
                         parser:writes {
                             "even",
                             "t: mess",
-                            "age\ndata: {\"f\":6}\n\n",
+                            'age\ndata: {"f":6}\n\n',
                         }
                         assert.are.same({ '{"f":6}' }, events)
                     end)
