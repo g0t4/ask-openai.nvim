@@ -249,22 +249,20 @@ describe("data-only events", function()
         end)
 
         it("multiple data events across separate writes", function()
-            local write1 = "event: message\ndata: {\"x\":10}\n\n"
-            local write2 = "event: message\ndata: {\"y\":20}\n\n"
-            parser:write(write1)
-            parser:write(write2)
+            parser:writes {
+                'event: message\ndata: {"x":10}\n\n',
+                'event: message\ndata: {"y":20}\n\n',
+            }
             assert.are.same({ '{"x":10}', '{"y":20}' }, events)
         end)
 
         it("repeated split write of data events", function()
-            local write1 = "event: message\n"
-            local write2 = "data: {\"x\":10}\n\n"
-            local write3 = "event: message\n"
-            local write4 = "data: {\"y\":20}\n\n"
-            parser:write(write1)
-            parser:write(write2)
-            parser:write(write3)
-            parser:write(write4)
+            parser:writes {
+                'event: message\n',
+                'data: {"x":10}\n\n',
+                'event: message\n',
+                'data: {"y":20}\n\n',
+            }
             assert.are.same({ '{"x":10}', '{"y":20}' }, events)
         end)
     end)
