@@ -46,11 +46,10 @@ describe("data-only events", function()
             --   in this case if I concat w/ \n then I should have "hello\n\nworld"
 
             -- no different than if the \n were in the middle of the data value
-            local write1 = "data: hello\n"
-            local write2 = "data: world\n\n"
-
-            parser:write(write1)
-            parser:write(write2)
+            parser:writes {
+                "data: hello\n",
+                "data: world\n\n",
+            }
             assert.are.same({ "hello\nworld" }, events)
         end)
         it("split write data value (single event)", function()
@@ -58,11 +57,10 @@ describe("data-only events", function()
             --   for now I am leaving this as is as I have yet to see it in the wild with openai compatible streaming endpoints, so I can't easily verify one way or the other
             --   in this case if I concat w/ \n then I should have "hello\nworld"
 
-            local write1 = "data: hello"
-            local write2 = "data: world\n\n"
-
-            parser:write(write1)
-            parser:write(write2)
+            parser:writes {
+                "data: hello",
+                "data: world\n\n",
+            }
             assert.are.same({ "helloworld" }, events)
         end)
         it("split write data value without 'data: ' prefix on second write", function()
@@ -70,11 +68,10 @@ describe("data-only events", function()
             -- see multi-line-sse.json which makes it pretty clear no \n is intended between the two lines
             -- so even if I change 2+ data lables to use \n I would likely leave this as is with no \n added in middle
 
-            local write1 = "data: data_va"
-            local write2 = "lue1\n\n"
-
-            parser:write(write1)
-            parser:write(write2)
+            parser:writes {
+                "data: data_va",
+                "lue1\n\n"
+            }
             assert.are.same({ "data_value1" }, events)
         end)
     end)
