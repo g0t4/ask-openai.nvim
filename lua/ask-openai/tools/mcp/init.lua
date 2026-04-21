@@ -7,9 +7,6 @@ local uv = vim.uv
 
 local M = {}
 
-M.counter = 1
-M.callbacks = {}
-
 -- TODO! look into Memory tools / RAG, i.e. in Qwen-Agent
 -- TODO! https://github.com/QwenLM/Qwen-Agent/blob/main/qwen_agent/memory/memory.py
 -- also check out other examples in qwen-agent for new ideas:
@@ -87,6 +84,10 @@ function start_mcp_server_stdio(name)
         },
         on_exit)
 
+    -- Server‑specific state. Each server gets its own request ID counter and pending callbacks.
+    local counter = 1
+    local callbacks = {}
+
     local function on_server_response_generic(server_response)
         -- Response object (success or failure)
         -- - Server does NOT send response to notifications
@@ -103,15 +104,14 @@ function start_mcp_server_stdio(name)
         -- log:info("MCP response:", vim.inspect(server_response))
         local id = server_response.id
         if id then
-            -- TODO bug here M.callbacks should not be global across servers
-            local callback = M.callbacks[id]
+            local callback = callbacks[id]
             if callback then
                 -- PRN strip out errors?
                 --   not sure I really ever use error right now!
                 --   PRN find out if/how I should be using JSONRPC error objects? (look at other MCP servers, try with fetch an invalid URL?)
                 --   IOTW only pass result? => callback(server_response.result)
                 callback(server_response)
-                M.callbacks[id] = nil
+                callbacks[id] = nil
             end
         end
     end
@@ -163,13 +163,13 @@ function start_mcp_server_stdio(name)
     local function send(request, callback)
         -- Regular request (with optional callback). ID is always set unless caller explicitly provides one.
         if not request.id then
-            request.id = M.counter
-            M.counter = M.counter + 1
+            request.id = counter
+            counter = counter + 1
         end
         request.jsonrpc = "2.0"
 
         if callback then
-            M.callbacks[request.id] = callback
+            callbacks[request.id] = callback
         end
         local json = vim.json.encode(request)
         -- log:info(string.format("MCP send %s:", server_log_name), json)
