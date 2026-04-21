@@ -184,7 +184,7 @@ function start_mcp_server_stdio(name)
 
     --- Send a JSON-RPC notification
     ---@param request { method: string, params?: any, [any]: any }
-    local function notify(request)
+    local function notify_generic(request)
         -- * notifications CANNOT have ID: https://www.jsonrpc.org/specification#notification
         -- BTW notification is a type of request
         -- modelcontextprotocol uses "notifications/" method prefix, i.e.: notifications/initialized and notifications/tools/list_changed
@@ -249,7 +249,7 @@ function start_mcp_server_stdio(name)
         --  - COMMANDS MCP it doesn't matter if I send this or don't send this
         --  - ok the issue might be that notifications don't include an ID? => YUP fetch works without the ID on the notification!
         --  - docs: https://modelcontextprotocol.io/specification/2024-11-05/basic/lifecycle#initialization
-        notify({ method = "notifications/initialized" })
+        notify_generic({ method = "notifications/initialized" })
 
         -- PRN do I need to wait before tools/list ? IIUC notifications/initialized doesn't get a server response... so in this case, I am not waiting to send tools/list:
         tools_list(function(response)
@@ -260,7 +260,7 @@ function start_mcp_server_stdio(name)
             for _, tool in ipairs(response.result.tools) do
                 tool.server = {
                     send = send_generic,
-                    notify = notify,
+                    notify = notify_generic,
                     tools_call = tools_call,
                 }
                 M.tools_available[tool.name] = tool
