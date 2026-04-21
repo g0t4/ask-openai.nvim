@@ -54,10 +54,6 @@ local servers = {
 }
 
 function start_mcp_server_stdio(name)
-    local stdin = uv.new_pipe(false)
-    local stdout = uv.new_pipe(false)
-    local stderr = uv.new_pipe(false)
-
     local options = servers[name]
     local server_log_name = "[" .. name:upper() .. "]"
 
@@ -80,6 +76,9 @@ function start_mcp_server_stdio(name)
         end
     end
 
+    local stdin = uv.new_pipe(false)
+    local stdout = uv.new_pipe(false)
+    local stderr = uv.new_pipe(false)
     handle, pid = uv.spawn(options.command,
         ---@diagnostic disable-next-line: missing-fields
         {
