@@ -289,6 +289,7 @@ local function start_mcp_server_http(name)
     local callbacks = {}
 
     local function on_data_sse(data_value)
+        log:trace(string.format("MCP %s JSONRPC on_data_sse data_value:", server_log_name), vim.inspect(data_value))
         local rpc_response = vim.json.decode(data_value)
         log:trace(string.format("MCP %s JSONRPC response:", server_log_name), vim.inspect(rpc_response))
         if rpc_response.error then
