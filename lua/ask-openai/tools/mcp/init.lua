@@ -1,4 +1,5 @@
 local log = require("ask-openai.logs.logger").predictions()
+local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 local ansi = require("ask-openai.predictions.ansi")
 local plumbing = require("ask-openai.tools.plumbing")
 local safely = require("ask-openai.helpers.safely")
@@ -88,7 +89,6 @@ function start_mcp_server_stdio(name)
         },
         on_exit)
 
-    -- Server‑specific state. Each server gets its own request ID counter and pending callbacks.
     local counter = 1
     local callbacks = {}
 
@@ -231,7 +231,7 @@ function start_mcp_server_stdio(name)
     }
 
     send_request_stdio({ method = "initialize", params = client_init_params }, function(server_init)
-        log:trace(string.format("MCP initialize response %s:", server_log_name), vim.inspect(server_init))
+        -- log:trace(string.format("MCP initialize response %s:", server_log_name), vim.inspect(server_init))
 
         -- * abort on init failure
         if server_init.error then
@@ -283,57 +283,31 @@ function start_mcp_server_stdio(name)
 end
 
 local function start_mcp_server_http(name)
-    local options = servers[name]
     local server_log_name = "[" .. name:upper() .. "]"
-    local url = options.url
-
-    -- Request ID counter and pending callbacks, similar to stdio implementation.
+    local options = servers[name]
     local counter = 1
     local callbacks = {}
 
-    local function on_server_response_http(server_response)
-        if server_response.error then
-            log:error(string.format("MCP %s HTTP error response:", server_log_name), vim.inspect(server_response.error))
+    local function on_data_sse(data_value)
+        local rpc_response = vim.json.decode(data_value)
+        log:trace(string.format("MCP %s JSONRPC response:", server_log_name), vim.inspect(rpc_response))
+        if rpc_response.error then
+            log:error(string.format("MCP %s JSONRPC response error:", server_log_name), vim.inspect(rpc_response.error))
         end
-        local id = server_response.id
+        local id = rpc_response.id
         if id then
             local callback = callbacks[id]
             if callback then
-                callback(server_response)
+                callback(rpc_response)
                 callbacks[id] = nil
-            end
-        end
-    end
-
-    -- Helper to parse HTTP response bodies for the HTTP transport.
-    local function parse_http_body_http(body)
-        -- Trim leading whitespace/newlines.
-        body = body:gsub("^%s+", "")
-        if body:match("^event:%s*") then
-            -- Server‑Sent Events format.
-            for line in body:gmatch("[^\\r\\n]+") do
-                local data = line:match("^data:%s*(.+)")
-                if data then
-                    local ok, resp = safely.decode_json(data)
-                    if ok then
-                        on_server_response_http(resp)
-                    else
-                        log:error(string.format("MCP SSE decode error %s", server_log_name), resp)
-                    end
-                end
+            else
+                log:warn(string.format("MCP %s JSONRPC response.id has no corresponding callback:", server_log_name))
             end
         else
-            -- Assume plain JSON response.
-            local ok, resp = safely.decode_json(body)
-            if ok then
-                on_server_response_http(resp)
-            else
-                log:error(string.format("MCP HTTP decode error %s", server_log_name), resp)
-            end
+            log:warn(string.format("MCP %s JSONRPC response has no id:", server_log_name))
         end
     end
 
-    -- Send a JSON‑RPC request via HTTP POST.
     local function send_http(request, callback)
         if not request.id then
             request.id = counter
@@ -354,47 +328,45 @@ local function start_mcp_server_http(name)
             "-H", "Content-Type: application/json",
             "-H", "Accept: application/json, text/event-stream",
             "-d", json,
-            url,
+            options.url,
         }
-        handle = uv.spawn("curl", {
-            args = args,
-            stdio = { nil, stdout, stderr },
-        }, function(code, signal)
+
+        local function on_exit(code, signal)
+            log:info(string.format("%s send_http on_exit", server_log_name), code, signal)
             -- Close pipes after process exits.
             stdout:close()
             stderr:close()
             handle:close()
-        end)
+        end
 
-        local response_body = ""
+        handle = uv.spawn("curl", {
+            args = args,
+            stdio = { nil, stdout, stderr },
+        }, on_exit)
+
+        local parser = SSEDataOnlyParser.new(on_data_sse)
         uv.read_start(stdout, function(read_err, data)
+            log:info(string.format("%s send_http on_stdout", server_log_name), vim.inspect(data))
             if read_err then
-                log:error(string.format("MCP HTTP stdout read error %s", server_log_name), read_err)
+                log:error(string.format("%s send_http on_stdout has read_err", server_log_name), vim.inspect(read_err))
                 return
             end
-            -- TODO the parse trigger is a NEWLINE for SSEs (not for JSON content-type)
-            -- TODO use my SSE parser from streaming tokens
             if data then
-                response_body = response_body .. data
+                parser:write(data)
             else
-                -- EOF – parse accumulated body.
-                parse_http_body_http(response_body)
+                parser:flush_dregs()
             end
         end)
 
         uv.read_start(stderr, function(read_err, data)
             if read_err then
-                log:error(string.format("MCP HTTP stderr read error %s", server_log_name), read_err)
+                log:error(string.format("%s send_http on_stderr has read_err", server_log_name), vim.inspect(read_err))
                 return
             end
             if data then
-                log:error(string.format("MCP %s STDERR:", server_log_name), ansi.red(data))
+                log:error(string.format("%s send_http on_stderr has data", server_log_name), ansi.red(data))
             end
         end)
-    end
-
-    local function tools_list(callback)
-        send_http({ method = "tools/list" }, callback)
     end
 
     local function tools_call(id, tool_name, args, callback)
@@ -408,14 +380,9 @@ local function start_mcp_server_http(name)
         }, callback)
     end
 
-    tools_list(function(response)
-        -- TODO fix no response to tools_list (can use GET instead if need be)
-        log:info(string.format("tools/list@%s:", server_log_name), vim.inspect(response))
-        if response.error then
-            log:error(string.format("tools/list@%s error:", server_log_name), vim.inspect(response))
-            return
-        end
-        for _, tool in ipairs(response.result.tools) do
+    send_http({ method = "tools/list" }, function(response)
+        local tools = response.result.tools
+        for _, tool in pairs(tools) do
             tool.call = tools_call
             M.tools_available[tool.name] = tool
         end
