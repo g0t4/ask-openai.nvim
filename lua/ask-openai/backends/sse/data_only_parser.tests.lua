@@ -39,6 +39,17 @@ describe("data-only events", function()
                 end)
             end)
         end)
+
+        describe("empty event handling", function()
+            before_each(function()
+                -- write only a blank line (event separator) without any data fields
+                parser:write(blank_line)
+            end)
+
+            it("does not emit any events", function()
+                assert.are.same({}, events)
+            end)
+        end)
     end
 
     describe("concatenate", function()
