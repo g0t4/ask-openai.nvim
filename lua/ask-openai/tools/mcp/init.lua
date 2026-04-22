@@ -376,7 +376,7 @@ local function start_mcp_server_http(name)
                         local remaining = header_buffer:sub(header_end + 1)
                         local content_type = get_content_type(raw_headers)
                         -- log:info(string.format("%s content-type header: %s", server_log_name, content_type))
-                        if not content_type or not content_type:find("text/event-stream") then
+                        if content_type ~= "text/event-stream" then
                             log:error(string.format("%s unexpected response type (Content-Type: %s)", server_log_name, content_type or "nil"))
                             -- Abort further processing; downstream callbacks will not be invoked.
                             -- PRN implement application/json support? I don't think I will need this with HTTP POST based reequests
