@@ -260,17 +260,12 @@ describe("data-only events", function()
         end)
     end)
 
-    describe("empty event followed by valid event in same write", function()
-        before_each(function()
-            -- write a blank event (just the separator) then a proper data event
-            local blank_event = "\n\n"
-            local valid_event = "data: hello\n\n"
-            parser:write(blank_event .. valid_event)
-        end)
-
-        it("should emit only the valid event", function()
-            assert.are.same({ "hello" }, events)
-        end)
+    it("empty event followed by valid event in same write should emit only the valid event", function()
+        -- write a blank event (just the separator) then a proper data event
+        local blank_event = "\n\n"
+        local valid_event = "data: hello\n\n"
+        parser:write(blank_event .. valid_event)
+        assert.are.same({ "hello" }, events)
     end)
 
     -- TODO comments:
