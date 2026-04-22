@@ -375,11 +375,14 @@ local function start_mcp_server_http(name)
                         local raw_headers = header_buffer:sub(1, header_end)
                         local remaining = header_buffer:sub(header_end + 1)
                         local content_type = get_content_type(raw_headers)
-                        if content_type and content_type:find("application/json") then
-                            log:error(string.format("%s unexpected JSON response (Content-Type: %s)", server_log_name, content_type))
+                        -- log:info(string.format("%s content-type header: %s", server_log_name, content_type))
+                        if not content_type or not content_type:find("text/event-stream") then
+                            log:error(string.format("%s unexpected response type (Content-Type: %s)", server_log_name, content_type or "nil"))
                             -- Abort further processing; downstream callbacks will not be invoked.
+                            -- PRN implement application/json support? I don't think I will need this with HTTP POST based reequests
                             return
                         end
+
                         headers_parsed = true
                         if #remaining > 0 then
                             parser:write(remaining)
