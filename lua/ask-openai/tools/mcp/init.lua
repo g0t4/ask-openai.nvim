@@ -333,7 +333,7 @@ local function start_mcp_server_http(name)
         }
 
         local function on_exit(code, signal)
-            log:info(string.format("%s send_http on_exit", server_log_name), code, signal)
+            -- log:info(string.format("%s send_http on_exit", server_log_name), code, signal)
             -- Close pipes after process exits.
             stdout:close()
             stderr:close()
@@ -362,7 +362,7 @@ local function start_mcp_server_http(name)
         end
 
         uv.read_start(stdout, function(read_err, data)
-            log:info(string.format("%s send_http on_stdout", server_log_name), vim.inspect(data))
+            -- log:info(string.format("%s send_http on_stdout", server_log_name), vim.inspect(data))
             if read_err then
                 log:error(string.format("%s send_http on_stdout has read_err", server_log_name), vim.inspect(read_err))
                 return
