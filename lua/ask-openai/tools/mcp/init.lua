@@ -324,7 +324,7 @@ local function start_mcp_server_http(name)
         local stderr = uv.new_pipe(false)
         local handle
         local args = {
-            "-s", "-X", "POST",
+            "-i", "-s", "-X", "POST",
             "-H", "Content-Type: application/json",
             "-H", "Accept: application/json, text/event-stream",
             "-d", json,
@@ -344,7 +344,22 @@ local function start_mcp_server_http(name)
             stdio = { nil, stdout, stderr },
         }, on_exit)
 
+        -- Include response headers with `-i`. We'll parse them before feeding body to the SSE parser.
         local parser = SSEDataOnlyParser.new(on_data_sse)
+        local headers_parsed = false
+        local header_buffer = ""
+
+        local function parse_headers(header_str)
+            local content_type
+            for line in header_str:gmatch("([^\r\n]+)") do
+                local key, value = line:match("^(%S+):%s*(.+)$")
+                if key and value and key:lower() == "content-type" then
+                    content_type = value
+                end
+            end
+            return content_type
+        end
+
         uv.read_start(stdout, function(read_err, data)
             log:info(string.format("%s send_http on_stdout", server_log_name), vim.inspect(data))
             if read_err then
@@ -352,7 +367,26 @@ local function start_mcp_server_http(name)
                 return
             end
             if data then
-                parser:write(data)
+                if not headers_parsed then
+                    header_buffer = header_buffer .. data
+                    local header_end = header_buffer:find("\r?\n\r?\n")
+                    if header_end then
+                        local raw_headers = header_buffer:sub(1, header_end)
+                        local remaining = header_buffer:sub(header_end + 1)
+                        local content_type = parse_headers(raw_headers)
+                        if content_type and content_type:find("application/json") then
+                            log:error(string.format("%s unexpected JSON response (Content-Type: %s)", server_log_name, content_type))
+                            -- Abort further processing; downstream callbacks will not be invoked.
+                            return
+                        end
+                        headers_parsed = true
+                        if #remaining > 0 then
+                            parser:write(remaining)
+                        end
+                    end
+                else
+                    parser:write(data)
+                end
             else
                 parser:flush_dregs()
             end
