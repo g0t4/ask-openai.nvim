@@ -113,6 +113,12 @@ function SSEDataOnlyParser:write(data)
                     return result
                 end)
                 :join("\n")
+
+            local is_whitespace_only = data_value:match("^%s*$")
+            if is_whitespace_only then
+                log:trace("skipping empty SSE: " .. vim.inspect(data_value))
+                return
+            end
             self._on_data_sse(data_value)
         end
 
