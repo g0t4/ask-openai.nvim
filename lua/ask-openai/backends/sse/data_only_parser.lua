@@ -117,9 +117,9 @@ function SSEDataOnlyParser:write(data)
             local is_whitespace_only = data_value:match("^%s*$")
             if is_whitespace_only then
                 log:trace("skipping empty SSE: " .. vim.inspect(data_value))
-                return
+            else
+                self._on_data_sse(data_value)
             end
-            self._on_data_sse(data_value)
         end
 
         -- keep last line in buffer (it's not complete w/o a blank line)
