@@ -350,7 +350,7 @@ local function start_mcp_server_http(name)
         local headers_parsed = false
         local header_buffer = ""
 
-        local function parse_headers(header_str)
+        local function get_content_type(header_str)
             local content_type
             for line in header_str:gmatch("([^\r\n]+)") do
                 local key, value = line:match("^(%S+):%s*(.+)$")
@@ -374,7 +374,7 @@ local function start_mcp_server_http(name)
                     if header_end then
                         local raw_headers = header_buffer:sub(1, header_end)
                         local remaining = header_buffer:sub(header_end + 1)
-                        local content_type = parse_headers(raw_headers)
+                        local content_type = get_content_type(raw_headers)
                         if content_type and content_type:find("application/json") then
                             log:error(string.format("%s unexpected JSON response (Content-Type: %s)", server_log_name, content_type))
                             -- Abort further processing; downstream callbacks will not be invoked.
