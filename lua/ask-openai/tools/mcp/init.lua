@@ -31,12 +31,13 @@ local servers = {
 
         -- -- * via source
         transport = "stdio",
-        command = "uvx",
+        command = "uv",
         args = {
+            -- do not use uvx, that will install central/cached copy
+            "run",
             "--directory",
             os.getenv("HOME") .. "/repos/github/g0t4/mcp-servers/src/fetch",
             "mcp-server-fetch",
-            "--ignore-robots-txt", -- DO NOT WASTE TIME QUERYING robots.txt... YIKES (s/b default off IMO) ... if I can presonally browse to a website, my AI assistant can do it for me too
         },
     },
     commands = {
