@@ -1,5 +1,4 @@
 ---
-name: remove_your_comments
 description: |
     Tell LLM to remove its comments.
     Run this after a series of changes.
