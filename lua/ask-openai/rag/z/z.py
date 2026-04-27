@@ -132,10 +132,12 @@ async def query(query_text: str) -> None:
     # Load path -> id mapping
     with OUTPUT_FILE.open("r", encoding="utf-8") as f:
         path_id_map: Dict[str, int] = json.load(f)
-    # Build reverse lookup id -> path
-    id_path_map = {int(v): k for k, v in path_id_map.items()}
     # Load Faiss index
     index = faiss.read_index(str(INDEX_FILE))
+    # Ensure mapping and index sizes match
+    assert len(path_id_map) == index.ntotal, f"embeddings.json count {len(path_id_map)} != faiss index count {index.ntotal}"
+    # Build reverse lookup id -> path
+    id_path_map = {int(v): k for k, v in path_id_map.items()}
     # Encode query
     query_vec_np = await encode_passages([query_text])
     query_vec = query_vec_np.astype("float32")
