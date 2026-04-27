@@ -1,11 +1,9 @@
-"""Utility to index a directory tree and store file embeddings.
+"""
+Utility to index and query directories in `$HOME/repos`
+- idea is... what if I had a semantic_cd ... basically let me cd to a dir by describing what I want to jump to instead of a path?
 
-The script walks a repository (default ``$HOME/repos``) using ``fd`` and
-produces a JSON file mapping absolute file paths to their embedding vectors.
-It relies on the async ``encode_passages`` function from
-``lsp.inference.client.embedder`` which talks to the Qwen3 embedding server.
-
-The output is written to ``$HOME/.local/semantic_grep/dir/embeddings.json``.
+FYI!!! this was a VERY ABUSIVE build out using gptoss and then wes hacking around a bit too... mostly gptoss
+- gptoss did a damn good job given how shoddy my instructions were!
 """
 
 import asyncio
@@ -19,30 +17,22 @@ from typing import List, Dict
 from lsp.inference.client.embedder import encode_passages
 import faiss
 import numpy as np
-# ---------------------------------------------------------------------------
-# Configuration
-# ---------------------------------------------------------------------------
+
 DEFAULT_ROOT = Path(os.getenv("HOME", "~")) / "repos"
 OUTPUT_DIR = Path(os.getenv("HOME", "~")) / ".local/semantic_grep/dir"
-# JSON maps directory path -> faiss id (int)
 OUTPUT_FILE = OUTPUT_DIR / "embeddings.json"
-# Faiss index file stores the vectors themselves
 INDEX_FILE = OUTPUT_DIR / "index.faiss"
 
-# ---------------------------------------------------------------------------
-# Helper functions
-# ---------------------------------------------------------------------------
-def _run_fd(root: Path) -> List[Path]:
-    """Return a list of absolute directory paths under *root* using ``fd``.
-
-    Only directories are returned – the path string itself is the "document" to embed.
-    """
+def get_directory_paths(root: Path) -> List[Path]:
+    # PRN perhaps use the actual `z` fish function's store of recent directories as the source of directories to index instead of everything?
+    #   /Users/wesdemos/.local/share/z/data
+    #
     cmd = [
         "fd",
         ".",
         str(root),
         "--max-depth",
-        # todo relax depth later, 4 gives about 4K dirs
+        # PRN relax the limit here on # dirs
         "5",
         "--type",
         "dir",
@@ -77,7 +67,6 @@ async def _embed_files(paths: List[Path], batch_size: int = 16) -> Dict[Path, np
         vecs_np = await encode_passages(texts)
         for path_obj, vec in zip(batch_paths, vecs_np):
             embeddings[path_obj] = vec
-    print(f"Completed embedding for {len(embeddings)} directories")
     return embeddings
 
 async def build_index(root: Path = DEFAULT_ROOT) -> None:
@@ -88,7 +77,7 @@ async def build_index(root: Path = DEFAULT_ROOT) -> None:
     """
     print(f"Starting indexing for root: {root}")
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    paths = _run_fd(root)
+    paths = get_directory_paths(root)
     path_to_vec = await _embed_files(paths)
 
     # Build Faiss index (using inner product for cosine similarity)
