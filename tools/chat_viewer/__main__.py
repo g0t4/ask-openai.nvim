@@ -26,6 +26,8 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     #
     # * Rewrites
     "4601994390a24a63f5e38160e15dd11c02361ed2be2af84d1a2ae8e77bc7392b",  # Rewrite msg1 - System Message - #1 "Ground rules" (short list of 9 bullets)
+    "f7dae2933320d80989f18d7f3b973ca2fb8b57cfdfa8525736aec8e8c85a1482",  #   ground rules updated
+    #
     "832293045d2b0ff4a19379aa4bfd15de6dc268434f85e01306741ca23a0f566c",  # Rewrite msg3 - ## General Code Preferences (very short)
     "3213ad85a96c3647b5ff593803be3f0f412187237932208647df3c4db75bb20d",  # Rewrite -msg? - Lua Code Preferences user message
     #
@@ -51,8 +53,9 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "27d69e723de7d4ed60e5d8c0b0ef5f9fcae2d4de5d0c152a6c50feb1a021630d", # apply_patch instructs (huge - worth updating)
     "febf26dcfb6df81560cdb9efe38c9c3691064cb3e2d0b6fc3fe89d0091a508d3", # 2026-04-16 apply_patch changes (current version)
     #
-    "2a29088b7b85f47b3f55caf9adff674f5e0ab345e4b3a01443f9bef29ff933b3" # agents user msg3 -  python code preferences (short)
-
+    # python code prefs:
+    "2a29088b7b85f47b3f55caf9adff674f5e0ab345e4b3a01443f9bef29ff933b3", # agents user msg3 -  python code preferences (short)
+    "7f579161c8af585c55ea5dcc35b79bbee399a3b2f4d0461f4df50e17f34a0866", # python code prefs updated
 ]
 
 def _content_hash(msg: dict[str, Any]) -> str:
@@ -94,6 +97,7 @@ def _is_content_excluded(msg: dict[str, Any]) -> bool:
     if not isinstance(content, str):
         return False
     content_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
+    # print("NON-SYSTEM HASH", content_hash) # useful to log to quickly ignore sections you've changed
     return content_hash in EXCLUDED_CONTENT_HASHES
 
 def _filter_system_content(msg: dict[str, Any]) -> str | None:
