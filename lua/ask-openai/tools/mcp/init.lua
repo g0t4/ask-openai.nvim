@@ -50,6 +50,18 @@ local servers = {
             "--verbose",
         },
     },
+    agents   = {
+        transport = "stdio",
+        command = "uv",
+        args = {
+            "run",
+            "--directory",
+            os.getenv("HOME") .. "/repos/github/g0t4/mcp-servers/src/agents",
+            "-m",
+            "subagents",
+            -- PRN add verbosity flag across all my tools "--verbose",
+        },
+    },
     -- mcp_docs = {
     --     transport = "http",
     --     url = "https://modelcontextprotocol.io/mcp",
