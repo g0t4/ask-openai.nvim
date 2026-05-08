@@ -193,6 +193,14 @@ def load_trace_messages_from_path(argv1: str) -> list[dict[str, Any]]:
 
     return messages
 
+def show_rest_of_request_body_properties(data):
+    # typical request body, has messages, tools, temp, etc
+    # FYI print other properties at the top (i.e. tools)... if some of these nag me I can always write handlers for them to make them pretty too
+    #   primary is going to be tools list and that tends to look good as is in JSON b/c it is itself a JSON schema
+    # only show rest of request body in verbose mode (--all)
+    print_section_header("UNPROCESSED request.body properties", color="cyan")
+    pprint_asis(data)
+
 def load_messages(data) -> list[dict[str, Any]]:
     if isinstance(data, list):
         # * only has list of messages
@@ -202,13 +210,10 @@ def load_messages(data) -> list[dict[str, Any]]:
             # * -trace.json has request_body.messages
             data = data["request_body"]
         if "messages" in data:
-            # typical request body, has messages, tools, temp, etc
             messages = data["messages"]
             del data["messages"]
-            # FYI print other properties at the top (i.e. tools)... if some of these nag me I can always write handlers for them to make them pretty too
-            #   primary is going to be tools list and that tends to look good as is in JSON b/c it is itself a JSON schema
-            print_section_header("UNPROCESSED request.body properties", color="cyan")
-            pprint_asis(data)
+            if SHOW_ALL_FILES:
+                show_rest_of_request_body_properties(data)
             return messages
     return []
 
