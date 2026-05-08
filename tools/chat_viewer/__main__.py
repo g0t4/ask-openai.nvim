@@ -56,6 +56,8 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     # python code prefs:
     "2a29088b7b85f47b3f55caf9adff674f5e0ab345e4b3a01443f9bef29ff933b3", # agents user msg3 -  python code preferences (short)
     "7f579161c8af585c55ea5dcc35b79bbee399a3b2f4d0461f4df50e17f34a0866", # python code prefs updated
+    #
+    "232276fe3bb7baf13ede0343f5c076774b2dbd64be3b010a314b85816f718f31", # rewrite - fish user prefs
 ]
 
 def _content_hash(msg: dict[str, Any]) -> str:
