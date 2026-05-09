@@ -280,17 +280,6 @@ def _format_content(content: Any) -> str:
     return _format_json(content)
 
 def print_markdown_content(msg: dict, role: str):
-    """Render markdown content from a message.
-
-    If the markdown originates from an automatic RAG context (it starts with
-    ``# Semantic Grep matches:``), we split the content on file headings of the
-    form ``## /path/to/file:line-start-line-end``. For each section we check the
-    file against the pre‑approved list; unapproved files are displayed, while
-    approved ones are hidden unless the ``--all`` flag is used. Unhidden sections
-    are rendered as a fenced code block with a language derived from the file
-    extension, preserving the original text.
-    """
-
     raw_content = _extract_content(msg)
     if not raw_content:
         return
