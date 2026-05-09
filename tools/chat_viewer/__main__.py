@@ -13,6 +13,7 @@ from typing import Any, Iterable
 import hashlib
 
 from rich.text import Text
+from dataclasses import dataclass
 
 _console = Console(color_system="truecolor")
 
@@ -106,17 +107,39 @@ def _is_entire_content_excluded(msg: dict[str, Any]) -> bool:
     # print("NON-SYSTEM HASH", content_hash) # useful to log to quickly ignore sections you've changed
     return content_hash in EXCLUDED_CONTENT_HASHES
 
-def _filter_content(content: str) -> str | None:
-    """ Return the recombined markdown or None if all sections were removed. """
-    # TODO remove returning None == all excluded... let's do [] empty array and a DTO with content/hash/is_excluded
+@dataclass
+class SectionDTO:
+    """Data transfer object representing a markdown section.
 
+    Attributes:
+        content: The raw markdown text of the section.
+        content_hash: SHA‑256 hash (hex) of the section's content.
+        is_excluded: Whether the section's hash is listed in ``EXCLUDED_CONTENT_HASHES``.
+    """
+
+    content: str
+    content_hash: str
+    is_excluded: bool
+
+
+def _split_content(content: str) -> list[SectionDTO]:
+    """Split *content* into sections and return a list of :class:`SectionDTO`.
+
+    The function respects ``SHOW_ALL_FILES`` and ``EXCLUDED_CONTENT_HASHES``.
+    If the whole content is excluded, an empty list is returned.
+    """
+
+    # When the ``--all`` flag is set, bypass exclusion but keep the content as a single section.
     if SHOW_ALL_FILES:
-        return content
+        whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
+        return [SectionDTO(content=content, content_hash=whole_hash, is_excluded=False)]
 
+    # Check if the entire content should be excluded.
     whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
     if whole_hash in EXCLUDED_CONTENT_HASHES:
-        return None
+        return []
 
+    # Split the content into sections based on markdown "## " headers.
     lines = content.splitlines()
     sections: list[str] = []
     current_section: list[str] = []
@@ -129,15 +152,15 @@ def _filter_content(content: str) -> str | None:
             current_section.append(line)
     if current_section:
         sections.append("\n".join(current_section))
-    kept: list[str] = []
+
+    # Build DTOs for each section.
+    dtos: list[SectionDTO] = []
     for sec in sections:
         sec_hash = hashlib.sha256(sec.encode("utf-8")).hexdigest()
-        if sec_hash not in EXCLUDED_CONTENT_HASHES:
-            # hack to attach hash for showing when I want to exclude new sections...
-            kept.append(f"<!-- HASH: {sec_hash} -->\n{sec}")  # TODO return an object per section w/ content + hash + excluded boolean? this would fix issues with multi pass exclusions
-    if not kept:
-        return None
-    return "\n".join(kept)
+        excluded = sec_hash in EXCLUDED_CONTENT_HASHES
+        dtos.append(SectionDTO(content=sec, content_hash=sec_hash, is_excluded=excluded))
+
+    return dtos
 
 def print_asis(what, **kwargs):
     _console.print(what, markup=False, **kwargs)
@@ -268,14 +291,18 @@ def print_markdown_content(msg: dict, role: str):
     """
 
     raw_content = _extract_content(msg)
-    filtered_content = _filter_content(raw_content)
-    if filtered_content is None:
+    # Split content into sections with associated hashes and exclusion flags.
+    sections = _split_content(raw_content)
+    if not sections:
+        # Entire content excluded.
         return
+    # Combine non‑excluded sections for further processing (e.g., Semantic Grep detection).
+    display_content = "\n".join(sec.content for sec in sections if not sec.is_excluded)
+    if not display_content:
+        return
+    if re.search(r'^(?:<!--.*?-->\n)?# Semantic Grep matches:', display_content, re.MULTILINE):
 
-    # TODO <!--- --> is a HACK for attaching content hash... remove this once that is refactored
-    if re.search(r'^(?:<!--.*?-->\n)?# Semantic Grep matches:', filtered_content, re.MULTILINE):
-
-        lines = filtered_content.splitlines()
+        lines = display_content.splitlines()
 
         # note detection activated:
         _console.print("[italic]Detected Semantic Grep matches... excluding based on file path[/]")  # ok to de-emphasize (don't show as markdown header)
@@ -314,9 +341,14 @@ def print_markdown_content(msg: dict, role: str):
             print_asis(syntax)
         return
 
-    # Default handling – render the entire content as markdown.
-    highlighted = Syntax(filtered_content, "markdown", theme="ansi_dark")
-    Console().print(highlighted)
+    # Default handling – render each non‑excluded section with its hash.
+    for sec in sections:
+        if sec.is_excluded:
+            continue
+        # Show the hash for the section (without embedding it in the markdown).
+        _console.print(f"[dim]HASH: {sec.content_hash}[/]")
+        highlighted = Syntax(sec.content, "markdown", theme="ansi_dark")
+        _console.print(highlighted)
 
 def decode_if_json(content):
     if isinstance(content, str):
