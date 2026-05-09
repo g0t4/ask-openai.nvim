@@ -153,10 +153,8 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
         if current_section:
             yield "\n".join(current_section)
 
-    sections = split_markdown_sections(content)
-
     dtos: list[SectionDTO] = []
-    for sec in sections:
+    for sec in split_markdown_sections(content):
         sec_hash = hashlib.sha256(sec.encode("utf-8")).hexdigest()
         excluded = sec_hash in EXCLUDED_CONTENT_HASHES
         dtos.append(SectionDTO(content=sec, content_hash=sec_hash, is_excluded=excluded))
