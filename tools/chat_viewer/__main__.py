@@ -120,16 +120,13 @@ class SectionDTO:
 
 def _split_content_into_sections(content: str) -> list[SectionDTO]:
     """
-    The function respects ``SHOW_ALL_FILES`` and ``EXCLUDED_CONTENT_HASHES``.
     If the whole content is excluded, an empty list is returned.
     """
 
-    # When the ``--all`` flag is set, bypass exclusion but keep the content as a single section.
     if SHOW_ALL_FILES:
         whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
         return [SectionDTO(content=content, content_hash=whole_hash, is_excluded=False)]
 
-    # Check if the entire content should be excluded.
     whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
     if whole_hash in EXCLUDED_CONTENT_HASHES:
         return []
