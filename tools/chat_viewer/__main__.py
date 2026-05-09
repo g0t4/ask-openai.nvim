@@ -285,8 +285,7 @@ def print_markdown_content(msg: dict, role: str):
     if not raw_content:
         return
 
-    # * hide preapproved RAG matches
-    def hide_preapprovied_rag_matches():
+    def hide_preapprovied_rag_matches(raw_content: str) -> bool:
         if not re.search(r'^(?:<!--.*?-->\n)?# Semantic Grep matches:', raw_content, re.MULTILINE):
             return False
 
@@ -326,7 +325,7 @@ def print_markdown_content(msg: dict, role: str):
 
         return True
 
-    if hide_preapprovied_rag_matches():
+    if hide_preapprovied_rag_matches(raw_content):
         return
 
     sections = _split_content_into_sections(raw_content)
