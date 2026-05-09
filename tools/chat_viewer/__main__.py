@@ -291,10 +291,9 @@ def print_markdown_content(msg: dict, role: str):
         if not content.strip().startswith('# Semantic Grep matches:'):
             return False
 
-        lines = content.splitlines()
-
-        # note detection activated:
         _console.print("[italic]Detected Semantic Grep matches... excluding based on file path[/]")  # ok to de-emphasize (don't show as markdown header)
+
+        lines = content.splitlines()
 
         idx = 1
         while idx < len(lines):
