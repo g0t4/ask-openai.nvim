@@ -58,6 +58,10 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "7f579161c8af585c55ea5dcc35b79bbee399a3b2f4d0461f4df50e17f34a0866", # python code prefs updated
     #
     "232276fe3bb7baf13ede0343f5c076774b2dbd64be3b010a314b85816f718f31", # rewrite - fish user prefs
+    "4f20f6289174db47cefe46f27829c02078f22ce8717594b10c2551c18a57fca6", # manually added exclusion
+    "0136a4aa31976d7f7e35778c4a94356836e189ceb4f37ccf5fe3aed94dda9780", # Fish syntax examples
+    "511f32b9bf45f71b8a1a807d3636e9694c2c6ad13cc68166ca6741455eb72df7", # General project code rules
+    "8f9ce1c508b6ed7f217818da62222e65643092d1e679f31cb738153edec72cb0", # General Code Preferences
 ]
 
 def _content_hash(msg: dict[str, Any]) -> str:
@@ -105,20 +109,19 @@ def _is_content_excluded(msg: dict[str, Any]) -> bool:
 def _filter_system_content(msg: dict[str, Any]) -> str | None:
     """Filter a system message based on hash exclusions.
 
-    1. If the whole content's hash is excluded, return None.
-    2. Otherwise split on lines starting with "## ". Each section (heading + body)
-       is hashed; sections whose hash is in EXCLUDED_CONTENT_HASHES are omitted.
     3. Return the recombined markdown or None if all sections were removed.
     """
-    # TODO do this with user messages too (break md like sections) => FIM is a good example of this for fish script FIMs (message 2)
     if SHOW_ALL_FILES:
         return msg.get("content") if isinstance(msg.get("content"), str) else None
+
     content = msg.get("content", "")
     if not isinstance(content, str):
         return None
+
     whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
     if whole_hash in EXCLUDED_CONTENT_HASHES:
         return None
+
     lines = content.splitlines()
     sections: list[str] = []
     current_section: list[str] = []
@@ -135,7 +138,8 @@ def _filter_system_content(msg: dict[str, Any]) -> str | None:
     for sec in sections:
         sec_hash = hashlib.sha256(sec.encode("utf-8")).hexdigest()
         if sec_hash not in EXCLUDED_CONTENT_HASHES:
-            kept.append(sec)
+            # hack to attach hash for showing when I want to exclude new sections...
+            kept.append(f"<!-- HASH: {sec_hash} -->\n{sec}")  # TODO return an object per section w/ content + hash + excluded boolean? this would fix issues with multi pass exclusions
     if not kept:
         return None
     return "\n".join(kept)
@@ -269,12 +273,13 @@ def print_markdown_content(msg: dict, role: str):
     """
     raw_content = _extract_content(msg)
 
-    # Detect auto‑generated RAG context blocks.
-    if raw_content.startswith("# Semantic Grep matches:"):
+    # TODO <!--- --> is a HACK for attaching content hash... remove this once that is refactored
+    if re.search(r'^(?:<!--.*?-->\n)?# Semantic Grep matches:', raw_content, re.MULTILINE):
+
         lines = raw_content.splitlines()
 
-        # keep header
-        print_asis(lines[0])  # ok to de-emphasize (don't show as markdown header)
+        # note detection activated:
+        _console.print("[italic]Detected Semantic Grep matches... excluding based on file path[/]")  # ok to de-emphasize (don't show as markdown header)
 
         # enumerate matches:
         idx = 1
@@ -592,23 +597,23 @@ def print_message(msg: dict, idx: int):
     if "output.json" in msg:
         title = f"{title} (output.json)"
     print_section_header(title, get_color(role))
-    if role == "system":
+    # Apply content filtering to system and user messages.
+    if role in ("system", "user", "developer"):
         filtered = _filter_system_content(msg)
         if filtered is None:
             return
         # temporarily replace the content for rendering
         original = msg.get("content")
         msg["content"] = filtered
+        # TODO update print_markdown_content and remove <!-- --> comment hack once exclusions refactored
         print_markdown_content(msg, role)
         if original is not None:
             msg["content"] = original
         return
-    # non‑system messages
+    # Non‑system/user messages
     if _is_content_excluded(msg):
         return
     match role:
-        case "developer" | "user":
-            print_markdown_content(msg, role)
         case "tool":
             print_tool_call_result(msg)
         case "assistant":
