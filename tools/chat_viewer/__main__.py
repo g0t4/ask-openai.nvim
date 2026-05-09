@@ -106,7 +106,7 @@ def _is_content_excluded(msg: dict[str, Any]) -> bool:
     # print("NON-SYSTEM HASH", content_hash) # useful to log to quickly ignore sections you've changed
     return content_hash in EXCLUDED_CONTENT_HASHES
 
-def _filter_system_content(msg: dict[str, Any]) -> str | None:
+def _filter_content(msg: dict[str, Any]) -> str | None:
     """Filter a system message based on hash exclusions.
 
     3. Return the recombined markdown or None if all sections were removed.
@@ -599,7 +599,7 @@ def print_message(msg: dict, idx: int):
     print_section_header(title, get_color(role))
     # Apply content filtering to system and user messages.
     if role in ("system", "user", "developer"):
-        filtered = _filter_system_content(msg)
+        filtered = _filter_content(msg)
         if filtered is None:
             return
         # temporarily replace the content for rendering
