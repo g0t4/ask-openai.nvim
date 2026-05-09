@@ -160,11 +160,8 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
         if current_section:
             yield "\n".join(current_section)
 
-    dtos: list[SectionDTO] = []
-    for sec in split_markdown_sections(content):
-        dtos.append(SectionDTO(content=sec))
-
-    return dtos
+    # Build SectionDTOs for each markdown section using a list comprehension.
+    return [SectionDTO(content=sec) for sec in split_markdown_sections(content)]
 
 def print_asis(what, **kwargs):
     _console.print(what, markup=False, **kwargs)
