@@ -58,6 +58,7 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     # python code prefs:
     "2a29088b7b85f47b3f55caf9adff674f5e0ab345e4b3a01443f9bef29ff933b3",  # agents user msg3 -  python code preferences (short)
     "7f579161c8af585c55ea5dcc35b79bbee399a3b2f4d0461f4df50e17f34a0866",  # python code prefs updated
+    "bd6abb18b2eb841a0fe1e6a89e93227744a24dec391c11034966bd5032716147",  # Python Code Preferences (FIM)
     #
     "232276fe3bb7baf13ede0343f5c076774b2dbd64be3b010a314b85816f718f31",  # rewrite - fish user prefs
     "4f20f6289174db47cefe46f27829c02078f22ce8717594b10c2551c18a57fca6",  # manually added exclusion
