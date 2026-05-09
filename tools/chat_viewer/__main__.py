@@ -106,17 +106,15 @@ def _is_entire_content_excluded(msg: dict[str, Any]) -> bool:
     # print("NON-SYSTEM HASH", content_hash) # useful to log to quickly ignore sections you've changed
     return content_hash in EXCLUDED_CONTENT_HASHES
 
-def _filter_content(msg: dict[str, Any]) -> str | None:
+def _filter_content(content: str) -> str | None:
     """Filter a system message based on hash exclusions.
 
     3. Return the recombined markdown or None if all sections were removed.
     """
-    if SHOW_ALL_FILES:
-        return msg.get("content") if isinstance(msg.get("content"), str) else None
+    # TODO remove returning None entirely... signaling something that even confuses me right now... get rid of it
 
-    content = msg.get("content", "")
-    if not isinstance(content, str):
-        return None
+    if SHOW_ALL_FILES:
+        return content
 
     whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
     if whole_hash in EXCLUDED_CONTENT_HASHES:
@@ -271,12 +269,16 @@ def print_markdown_content(msg: dict, role: str):
     are rendered as a fenced code block with a language derived from the file
     extension, preserving the original text.
     """
+
     raw_content = _extract_content(msg)
+    filtered_content = _filter_content(raw_content)
+    if filtered_content is None:
+        return
 
     # TODO <!--- --> is a HACK for attaching content hash... remove this once that is refactored
-    if re.search(r'^(?:<!--.*?-->\n)?# Semantic Grep matches:', raw_content, re.MULTILINE):
+    if re.search(r'^(?:<!--.*?-->\n)?# Semantic Grep matches:', filtered_content, re.MULTILINE):
 
-        lines = raw_content.splitlines()
+        lines = filtered_content.splitlines()
 
         # note detection activated:
         _console.print("[italic]Detected Semantic Grep matches... excluding based on file path[/]")  # ok to de-emphasize (don't show as markdown header)
@@ -316,7 +318,7 @@ def print_markdown_content(msg: dict, role: str):
         return
 
     # Default handling – render the entire content as markdown.
-    highlighted = Syntax(raw_content, "markdown", theme="ansi_dark")
+    highlighted = Syntax(filtered_content, "markdown", theme="ansi_dark")
     Console().print(highlighted)
 
 def decode_if_json(content):
@@ -599,16 +601,7 @@ def print_message(msg: dict, idx: int):
     print_section_header(title, get_color(role))
 
     if role in ("system", "user", "developer"):
-        filtered = _filter_content(msg)
-        if filtered is None:
-            return
-        # temporarily replace the content for rendering
-        original = msg.get("content")
-        msg["content"] = filtered
-        # TODO update print_markdown_content and remove <!-- --> comment hack once exclusions refactored
         print_markdown_content(msg, role)
-        if original is not None:
-            msg["content"] = original
         return
 
     if _is_entire_content_excluded(msg):
