@@ -41,27 +41,27 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     #
     # * Agents/Tools
     # Agents msg1 System Message
-    "771937c4c06bbd93ed1e1a0386a8b8ae0f7ce56f684d1ebf2ed25f084af2f49e", # intro blurb before ## sections
-    "ec8f0516513ef8c3ddfd7a6760b44874f8b8665316323feb104f7aae0df1a00e", # Ground rules
+    "771937c4c06bbd93ed1e1a0386a8b8ae0f7ce56f684d1ebf2ed25f084af2f49e",  # intro blurb before ## sections
+    "ec8f0516513ef8c3ddfd7a6760b44874f8b8665316323feb104f7aae0df1a00e",  # Ground rules
     # FYI Tool use will remain b/c it shows directories (well worth seeing each time too)
-    "248d4a2751e309453b476914b6ecf1ddb2750a9033e3ecb7eb12f04c14fbd917", # semantic_grep
-    "5b4513e0987158cfbc9225e1535f437eb054f5ca5455759984dcbf7631f56197", # Fetch tool
-    "b870ef7225f0a2b973f266c40ceba102867224ce64709d96ad01c9e532f15ba4", # Committing
-    "f81ca64540efef46c8f15087775bcd0497cfc9705fc25b77fbfda98c526fa696", # top shelf nerd commands
-    "8723daf9f8aefcf1372fa7b721bacee4b75e1024fc4badcfeed8e3d4317b1b8b", # bad commands
+    "248d4a2751e309453b476914b6ecf1ddb2750a9033e3ecb7eb12f04c14fbd917",  # semantic_grep
+    "5b4513e0987158cfbc9225e1535f437eb054f5ca5455759984dcbf7631f56197",  # Fetch tool
+    "b870ef7225f0a2b973f266c40ceba102867224ce64709d96ad01c9e532f15ba4",  # Committing
+    "f81ca64540efef46c8f15087775bcd0497cfc9705fc25b77fbfda98c526fa696",  # top shelf nerd commands
+    "8723daf9f8aefcf1372fa7b721bacee4b75e1024fc4badcfeed8e3d4317b1b8b",  # bad commands
     #
-    "27d69e723de7d4ed60e5d8c0b0ef5f9fcae2d4de5d0c152a6c50feb1a021630d", # apply_patch instructs (huge - worth updating)
-    "febf26dcfb6df81560cdb9efe38c9c3691064cb3e2d0b6fc3fe89d0091a508d3", # 2026-04-16 apply_patch changes (current version)
+    "27d69e723de7d4ed60e5d8c0b0ef5f9fcae2d4de5d0c152a6c50feb1a021630d",  # apply_patch instructs (huge - worth updating)
+    "febf26dcfb6df81560cdb9efe38c9c3691064cb3e2d0b6fc3fe89d0091a508d3",  # 2026-04-16 apply_patch changes (current version)
     #
     # python code prefs:
-    "2a29088b7b85f47b3f55caf9adff674f5e0ab345e4b3a01443f9bef29ff933b3", # agents user msg3 -  python code preferences (short)
-    "7f579161c8af585c55ea5dcc35b79bbee399a3b2f4d0461f4df50e17f34a0866", # python code prefs updated
+    "2a29088b7b85f47b3f55caf9adff674f5e0ab345e4b3a01443f9bef29ff933b3",  # agents user msg3 -  python code preferences (short)
+    "7f579161c8af585c55ea5dcc35b79bbee399a3b2f4d0461f4df50e17f34a0866",  # python code prefs updated
     #
-    "232276fe3bb7baf13ede0343f5c076774b2dbd64be3b010a314b85816f718f31", # rewrite - fish user prefs
-    "4f20f6289174db47cefe46f27829c02078f22ce8717594b10c2551c18a57fca6", # manually added exclusion
-    "0136a4aa31976d7f7e35778c4a94356836e189ceb4f37ccf5fe3aed94dda9780", # Fish syntax examples
-    "511f32b9bf45f71b8a1a807d3636e9694c2c6ad13cc68166ca6741455eb72df7", # General project code rules
-    "8f9ce1c508b6ed7f217818da62222e65643092d1e679f31cb738153edec72cb0", # General Code Preferences
+    "232276fe3bb7baf13ede0343f5c076774b2dbd64be3b010a314b85816f718f31",  # rewrite - fish user prefs
+    "4f20f6289174db47cefe46f27829c02078f22ce8717594b10c2551c18a57fca6",  # manually added exclusion
+    "0136a4aa31976d7f7e35778c4a94356836e189ceb4f37ccf5fe3aed94dda9780",  # Fish syntax examples
+    "511f32b9bf45f71b8a1a807d3636e9694c2c6ad13cc68166ca6741455eb72df7",  # General project code rules
+    "8f9ce1c508b6ed7f217818da62222e65643092d1e679f31cb738153edec72cb0",  # General Code Preferences
 ]
 
 def _content_hash(msg: dict[str, Any]) -> str:
