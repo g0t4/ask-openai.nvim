@@ -129,9 +129,16 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
 
     whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
     if whole_hash in EXCLUDED_CONTENT_HASHES:
+        # TODO why not just return it with is_excluded = True???
         return []
 
-    # Split the content into sections based on markdown "## " headers.
+    # * split on markdown sub-sections (## header 2)
+    #
+    # some messages (mostly auto context) include static text like general code preferences, language specific instructions...
+    #   while also including dynamic auto context like yanks
+    #   I could force dynamic vs static content to go into separate messages and then maybe not need this..
+    #   but this is lets me have maximum flexibility in how I format messages (especially for auto context messages)
+    #
     lines = content.splitlines()
     sections: list[str] = []
     current_section: list[str] = []
