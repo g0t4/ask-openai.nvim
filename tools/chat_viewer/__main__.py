@@ -53,6 +53,7 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     #
     "27d69e723de7d4ed60e5d8c0b0ef5f9fcae2d4de5d0c152a6c50feb1a021630d",  # apply_patch instructs (huge - worth updating)
     "febf26dcfb6df81560cdb9efe38c9c3691064cb3e2d0b6fc3fe89d0091a508d3",  # 2026-04-16 apply_patch changes (current version)
+    "f468af805b3d4832b64ba516ca94b729ec5332524564b4c5e2fc7b4ffaa2c112",  #  agents apply_patch instruction 2026-05-09
     #
     # python code prefs:
     "2a29088b7b85f47b3f55caf9adff674f5e0ab345e4b3a01443f9bef29ff933b3",  # agents user msg3 -  python code preferences (short)
@@ -60,7 +61,10 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     #
     "232276fe3bb7baf13ede0343f5c076774b2dbd64be3b010a314b85816f718f31",  # rewrite - fish user prefs
     "4f20f6289174db47cefe46f27829c02078f22ce8717594b10c2551c18a57fca6",  # manually added exclusion
+    #
     "0136a4aa31976d7f7e35778c4a94356836e189ceb4f37ccf5fe3aed94dda9780",  # Fish syntax examples
+    "b1b230c60a363b6e44b6135d15ff1e8d30e83df41d2adfd079d7209ab6e7234e",  # Fish syntax examples (todo is there a difference in how split sections is working that causes the whole match to be different than partial match for same section content?)... NBD just a possible thing to consider
+    #
     "511f32b9bf45f71b8a1a807d3636e9694c2c6ad13cc68166ca6741455eb72df7",  # General project code rules
     "8f9ce1c508b6ed7f217818da62222e65643092d1e679f31cb738153edec72cb0",  # General Code Preferences
 ]
@@ -120,7 +124,6 @@ class SectionDTO:
     content: str
     content_hash: str
     is_excluded: bool
-
 
 def _split_content(content: str) -> list[SectionDTO]:
     """Split *content* into sections and return a list of :class:`SectionDTO`.
