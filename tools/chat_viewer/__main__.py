@@ -113,14 +113,7 @@ def _is_entire_content_excluded(msg: dict[str, Any]) -> bool:
 
 @dataclass
 class SectionDTO:
-    """Data transfer object representing a markdown section.
-
-    Attributes:
-        content: The raw markdown text of the section.
-        content_hash: SHA‑256 hash (hex) of the section's content.
-        is_excluded: Whether the section's hash is listed in ``EXCLUDED_CONTENT_HASHES``.
-    """
-
+    # message.content or subset of message.content to show/hide
     content: str
     content_hash: str
     is_excluded: bool
