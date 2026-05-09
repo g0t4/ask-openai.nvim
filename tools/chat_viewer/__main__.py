@@ -144,13 +144,14 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
     # Build SectionDTOs for each markdown section using a list comprehension.
     return [SectionDTO(content=sec) for sec in split_markdown_sections(content)]
 
-
 def split_markdown_sections(text: str) -> Iterator[str]:
-    """Split ``text`` into markdown sections based on ``## `` headings.
-
-    Each section starts with a line that begins with ``## `` and includes all
-    subsequent lines until the next such heading or the end of the input.
-    """
+    # * split on markdown sub-sections (## header 2)
+    #
+    # some messages (mostly auto context) include static text like general code preferences, language specific instructions...
+    #   while also including dynamic auto context like yanks
+    #   I could force dynamic vs static content to go into separate messages and then maybe not need this..
+    #   but this is lets me have maximum flexibility in how I format messages (especially for auto context messages)
+    #
     lines = text.splitlines()
     current_section: list[str] = []
     for line in lines:
@@ -160,9 +161,9 @@ def split_markdown_sections(text: str) -> Iterator[str]:
             current_section = [line]
         else:
             current_section.append(line)
+    # dregs (last subsection, if any)
     if current_section:
         yield "\n".join(current_section)
-
 
 def show_unapproved_rag_matches(content: str) -> bool:
     """Detect and render Semantic Grep matches that are not pre‑approved.
