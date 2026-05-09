@@ -166,14 +166,6 @@ def split_markdown_sections(text: str) -> Iterator[str]:
         yield "\n".join(current_section)
 
 def show_unapproved_rag_matches(content: str) -> bool:
-    """Detect and render Semantic Grep matches that are not pre‑approved.
-
-    The function looks for sections starting with a markdown ``##`` heading that
-    contains a file path and line range (e.g. ``## path/to/file.py:10-20``). It
-    reuses :func:`split_markdown_sections` to obtain those sections, then renders
-    the snippet for each unapproved match.
-    """
-
     if not content.strip().startswith('# Semantic Grep matches:'):
         return False
 
