@@ -363,9 +363,7 @@ def print_rag_matches(content):
         # FYI no need to show other fields, just file/text are relevant for review, nor warn...
         # unless some other tool at some point has similar matches list and I'd be hiding something
 
-        # Skip pre‑approved files unless the user explicitly asked for all.
         if not SHOW_ALL_FILES and is_preapproved(str(file)):
-            # TODO integrate preapproved file filters elsewhere (i.e. role=user messages have a list of rag matches too in a markdown format                                                        u
             continue
 
         if file:
