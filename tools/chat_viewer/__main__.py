@@ -13,7 +13,7 @@ from typing import Any, Iterable, Iterator
 import hashlib
 
 from rich.text import Text
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 _console = Console(color_system="truecolor")
 
@@ -115,8 +115,13 @@ def _is_entire_content_excluded(msg: dict[str, Any]) -> bool:
 class SectionDTO:
     # message.content or subset of message.content to show/hide
     content: str
-    content_hash: str
-    is_excluded: bool
+    content_hash: str = field(init=False)
+    is_excluded: bool = field(init=False)
+
+    def __post_init__(self) -> None:
+        # Compute hash and exclusion flag based on the content.
+        self.content_hash = hashlib.sha256(self.content.encode("utf-8")).hexdigest()
+        self.is_excluded = self.content_hash in EXCLUDED_CONTENT_HASHES
 
 def _split_content_into_sections(content: str) -> list[SectionDTO]:
     """
@@ -124,8 +129,10 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
     """
 
     if SHOW_ALL_FILES:
-        whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
-        return [SectionDTO(content=content, content_hash=whole_hash, is_excluded=False)]
+        # Return a single section for the whole content, never excluded.
+        section = SectionDTO(content=content)
+        section.is_excluded = False
+        return [section]
 
     whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
     if whole_hash in EXCLUDED_CONTENT_HASHES:
@@ -155,9 +162,7 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
 
     dtos: list[SectionDTO] = []
     for sec in split_markdown_sections(content):
-        sec_hash = hashlib.sha256(sec.encode("utf-8")).hexdigest()
-        excluded = sec_hash in EXCLUDED_CONTENT_HASHES
-        dtos.append(SectionDTO(content=sec, content_hash=sec_hash, is_excluded=excluded))
+        dtos.append(SectionDTO(content=sec))
 
     return dtos
 
