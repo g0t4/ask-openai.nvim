@@ -9,7 +9,7 @@ from rich.padding import Padding
 from rich.syntax import Syntax
 from rich.panel import Panel
 from rich.pretty import Pretty, pprint
-from typing import Any, Iterable
+from typing import Any, Iterable, Iterator
 import hashlib
 
 from rich.text import Text
@@ -132,7 +132,7 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
         # TODO why not just return it with is_excluded = True???
         return []
 
-    def split_markdown_sections(text: str) -> list[str]:
+    def split_markdown_sections(text: str) -> Iterator[str]:
         # * split on markdown sub-sections (## header 2)
         #
         # some messages (mostly auto context) include static text like general code preferences, language specific instructions...
@@ -141,18 +141,17 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
         #   but this is lets me have maximum flexibility in how I format messages (especially for auto context messages)
         #
         lines = text.splitlines()
-        sections: list[str] = []
         current_section: list[str] = []
         for line in lines:
             if line.startswith("## "):
                 if current_section:
-                    sections.append("\n".join(current_section))
+                    yield "\n".join(current_section)
                 current_section = [line]
             else:
                 current_section.append(line)
+        # dregs (last subsection, if any)
         if current_section:
-            sections.append("\n".join(current_section))
-        return sections
+            yield "\n".join(current_section)
 
     sections = split_markdown_sections(content)
 
