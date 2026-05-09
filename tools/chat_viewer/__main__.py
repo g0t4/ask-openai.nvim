@@ -92,7 +92,7 @@ def load_preapproved_files() -> None:
 def is_preapproved(file_path: str) -> bool:
     return any(pat.search(file_path) for pat in preapproved_file_patterns)
 
-def _is_content_excluded(msg: dict[str, Any]) -> bool:
+def _is_entire_content_excluded(msg: dict[str, Any]) -> bool:
     """Return True if the message's content hash is listed in EXCLUDED_CONTENT_HASHES.
 
     The global SHOW_ALL_FILES flag disables exclusion.
@@ -610,8 +610,8 @@ def print_message(msg: dict, idx: int):
         if original is not None:
             msg["content"] = original
         return
-    # Non‑system/user messages
-    if _is_content_excluded(msg):
+
+    if _is_entire_content_excluded(msg):
         return
     match role:
         case "tool":
