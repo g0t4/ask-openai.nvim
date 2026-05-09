@@ -142,9 +142,9 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
         return []
 
     # Build SectionDTOs for each markdown section using a list comprehension.
-    return [SectionDTO(content=sec) for sec in split_markdown_sections(content)]
+    return [SectionDTO(content=sec) for sec in split_h2_markdown_sections(content)]
 
-def split_markdown_sections(text: str) -> Iterator[str]:
+def split_h2_markdown_sections(text: str) -> Iterator[str]:
     # * split on markdown sub-sections (## header 2)
     #
     # some messages (mostly auto context) include static text like general code preferences, language specific instructions...
@@ -171,7 +171,7 @@ def show_unapproved_rag_matches(content: str) -> bool:
 
     _console.print("[italic]Detected Semantic Grep matches... excluding based on file path[/]")
 
-    for section in split_markdown_sections(content):
+    for section in split_h2_markdown_sections(content):
         lines = section.splitlines()
         if not lines:
             continue
