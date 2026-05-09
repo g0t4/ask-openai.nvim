@@ -132,7 +132,7 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
         # TODO why not just return it with is_excluded = True???
         return []
 
-    def split_markdown_sections(content: str) -> list[str]:
+    def split_markdown_sections(text: str) -> list[str]:
         # * split on markdown sub-sections (## header 2)
         #
         # some messages (mostly auto context) include static text like general code preferences, language specific instructions...
@@ -140,7 +140,7 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
         #   I could force dynamic vs static content to go into separate messages and then maybe not need this..
         #   but this is lets me have maximum flexibility in how I format messages (especially for auto context messages)
         #
-        lines = content.splitlines()
+        lines = text.splitlines()
         sections: list[str] = []
         current_section: list[str] = []
         for line in lines:
