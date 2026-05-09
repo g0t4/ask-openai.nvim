@@ -285,11 +285,11 @@ def print_markdown_content(msg: dict, role: str):
     if not raw_content:
         return
 
-    def hide_preapprovied_rag_matches(raw_content: str) -> bool:
-        if not re.search(r'^(?:<!--.*?-->\n)?# Semantic Grep matches:', raw_content, re.MULTILINE):
+    def hide_preapprovied_rag_matches(content: str) -> bool:
+        if not re.search(r'^(?:<!--.*?-->\n)?# Semantic Grep matches:', content, re.MULTILINE):
             return False
 
-        lines = raw_content.splitlines()
+        lines = content.splitlines()
 
         # note detection activated:
         _console.print("[italic]Detected Semantic Grep matches... excluding based on file path[/]")  # ok to de-emphasize (don't show as markdown header)
