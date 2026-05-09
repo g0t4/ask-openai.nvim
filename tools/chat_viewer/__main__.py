@@ -286,7 +286,7 @@ def print_markdown_content(msg: dict, role: str):
         return
 
     def hide_preapprovied_rag_matches(content: str) -> bool:
-        if not re.search(r'^(?:<!--.*?-->\n)?# Semantic Grep matches:', content, re.MULTILINE):
+        if not content.strip().startswith('# Semantic Grep matches:'):
             return False
 
         lines = content.splitlines()
