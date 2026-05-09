@@ -292,18 +292,12 @@ def print_markdown_content(msg: dict, role: str):
     """
 
     raw_content = _extract_content(msg)
-    # Split content into sections with associated hashes and exclusion flags.
-    sections = _split_content_into_sections(raw_content)
-    if not sections:
-        # Entire content excluded.
+    if not raw_content:
         return
-    # Combine non‑excluded sections for further processing (e.g., Semantic Grep detection).
-    display_content = "\n".join(sec.content for sec in sections if not sec.is_excluded)
-    if not display_content:
-        return
-    if re.search(r'^(?:<!--.*?-->\n)?# Semantic Grep matches:', display_content, re.MULTILINE):
 
-        lines = display_content.splitlines()
+    # * hide preapproved RAG matches
+    if re.search(r'^(?:<!--.*?-->\n)?# Semantic Grep matches:', raw_content, re.MULTILINE):
+        lines = raw_content.splitlines()
 
         # note detection activated:
         _console.print("[italic]Detected Semantic Grep matches... excluding based on file path[/]")  # ok to de-emphasize (don't show as markdown header)
@@ -340,6 +334,12 @@ def print_markdown_content(msg: dict, role: str):
             # Use a fenced code block; Syntax provides colourised output.
             syntax = Syntax(snippet, ext or "text", theme="ansi_dark")
             print_asis(syntax)
+        return
+
+    # Split content into sections with associated hashes and exclusion flags.
+    sections = _split_content_into_sections(raw_content)
+    if not sections:
+        # Entire content excluded.
         return
 
     # Default handling – render each non‑excluded section with its hash.
