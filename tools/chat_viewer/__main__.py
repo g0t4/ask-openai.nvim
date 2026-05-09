@@ -364,7 +364,7 @@ def print_rag_matches(content):
         # unless some other tool at some point has similar matches list and I'd be hiding something
 
         # Skip pre‑approved files unless the user explicitly asked for all.
-        if not SHOW_ALL_FILES and file and is_preapproved(str(file)):
+        if not SHOW_ALL_FILES and is_preapproved(str(file)):
             # TODO integrate preapproved file filters elsewhere (i.e. role=user messages have a list of rag matches too in a markdown format                                                        u
             continue
 
