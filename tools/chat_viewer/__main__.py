@@ -110,6 +110,7 @@ def _filter_system_content(msg: dict[str, Any]) -> str | None:
        is hashed; sections whose hash is in EXCLUDED_CONTENT_HASHES are omitted.
     3. Return the recombined markdown or None if all sections were removed.
     """
+    # TODO do this with user messages too (break md like sections) => FIM is a good example of this for fish script FIMs (message 2)
     if SHOW_ALL_FILES:
         return msg.get("content") if isinstance(msg.get("content"), str) else None
     content = msg.get("content", "")
