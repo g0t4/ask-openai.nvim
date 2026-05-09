@@ -118,9 +118,8 @@ class SectionDTO:
     content_hash: str
     is_excluded: bool
 
-def _split_content(content: str) -> list[SectionDTO]:
-    """Split *content* into sections and return a list of :class:`SectionDTO`.
-
+def _split_content_into_sections(content: str) -> list[SectionDTO]:
+    """
     The function respects ``SHOW_ALL_FILES`` and ``EXCLUDED_CONTENT_HASHES``.
     If the whole content is excluded, an empty list is returned.
     """
@@ -288,7 +287,7 @@ def print_markdown_content(msg: dict, role: str):
 
     raw_content = _extract_content(msg)
     # Split content into sections with associated hashes and exclusion flags.
-    sections = _split_content(raw_content)
+    sections = _split_content_into_sections(raw_content)
     if not sections:
         # Entire content excluded.
         return
