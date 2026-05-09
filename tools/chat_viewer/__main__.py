@@ -286,7 +286,10 @@ def print_markdown_content(msg: dict, role: str):
         return
 
     # * hide preapproved RAG matches
-    if re.search(r'^(?:<!--.*?-->\n)?# Semantic Grep matches:', raw_content, re.MULTILINE):
+    def hide_preapprovied_rag_matches():
+        if not re.search(r'^(?:<!--.*?-->\n)?# Semantic Grep matches:', raw_content, re.MULTILINE):
+            return False
+
         lines = raw_content.splitlines()
 
         # note detection activated:
@@ -320,6 +323,10 @@ def print_markdown_content(msg: dict, role: str):
             ext = os.path.splitext(file_path)[1].lstrip('.').lower()
             syntax = Syntax(snippet, ext or "text", theme="ansi_dark")
             print_asis(syntax)
+
+        return True
+
+    if hide_preapprovied_rag_matches():
         return
 
     sections = _split_content_into_sections(raw_content)
