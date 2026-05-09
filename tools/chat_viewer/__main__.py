@@ -310,32 +310,24 @@ def print_markdown_content(msg: dict, role: str):
                 idx += 1
             snippet = "\n".join(snippet_lines).strip("\n")
 
-            # Skip pre‑approved files unless the user asked to show all.
-            if not SHOW_ALL_FILES and file_path and is_preapproved(str(file_path)):
+            if not SHOW_ALL_FILES and is_preapproved(str(file_path)):
                 continue
 
-            # Render a heading for the match, including the line range.
             start_line = match.group(2)
             end_line = match.group(3)
             _console.print(f"\n## MATCH {file_path}:{start_line}-{end_line}")
-            # Determine a language based on the file extension for syntax highlighting.
             ext = os.path.splitext(file_path)[1].lstrip('.').lower()
-            # Use a fenced code block; Syntax provides colourised output.
             syntax = Syntax(snippet, ext or "text", theme="ansi_dark")
             print_asis(syntax)
         return
 
-    # Split content into sections with associated hashes and exclusion flags.
     sections = _split_content_into_sections(raw_content)
     if not sections:
-        # Entire content excluded.
         return
 
-    # Default handling – render each non‑excluded section with its hash.
     for sec in sections:
         if sec.is_excluded:
             continue
-        # Show the hash for the section (without embedding it in the markdown).
         _console.print(f"[dim]HASH: {sec.content_hash}[/]")
         highlighted = Syntax(sec.content, "markdown", theme="ansi_dark")
         _console.print(highlighted)
