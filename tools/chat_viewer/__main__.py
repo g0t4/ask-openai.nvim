@@ -286,33 +286,31 @@ def print_markdown_content(msg: dict, role: str):
         return
 
     def show_unapproved_rag_matches(content: str) -> bool:
-        # show RAG matches that are not flagged as preapproved (to exclude showing chunks)
+        """Detect and render Semantic Grep matches that are not pre‑approved.
+
+        The function looks for sections starting with a markdown ``##`` heading that
+        contains a file path and line range (e.g. ``## path/to/file.py:10-20``). It
+        reuses :func:`split_markdown_sections` to obtain those sections, then
+        renders the snippet for each unapproved match.
+        """
 
         if not content.strip().startswith('# Semantic Grep matches:'):
             return False
 
-        _console.print("[italic]Detected Semantic Grep matches... excluding based on file path[/]")  # ok to de-emphasize (don't show as markdown header)
+        _console.print("[italic]Detected Semantic Grep matches... excluding based on file path[/]")
 
-        lines = content.splitlines()
-
-        idx = 1
-        while idx < len(lines):
-            # TODO reuse split on ## headers logic? so ironically now I'd prefer to just use the sections lol!
-            header = lines[idx]
+        for section in split_markdown_sections(content):
+            lines = section.splitlines()
+            if not lines:
+                continue
+            header = lines[0]
             match = re.match(r"^##\s+(.+?):(\d+)-(\d+)", header)
             if not match:
-                # If the line does not match a file heading, just move on.
-                idx += 1
                 continue
 
             file_path = match.group(1)
-            # Collect the following lines until the next heading or end of input.
-            idx += 1
-            snippet_lines: list[str] = []
-            while idx < len(lines) and not lines[idx].startswith("## "):
-                snippet_lines.append(lines[idx])
-                idx += 1
-            snippet = "\n".join(snippet_lines).strip("\n")
+            # Remaining lines after the header constitute the snippet.
+            snippet = "\n".join(lines[1:]).strip("\n")
 
             if not SHOW_ALL_FILES and is_preapproved(str(file_path)):
                 continue
