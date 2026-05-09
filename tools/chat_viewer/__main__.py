@@ -141,15 +141,12 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
         # TODO why not just return it with is_excluded = True???
         return []
 
-    # Build SectionDTOs for each markdown section using a list comprehension.
     return [SectionDTO(content=sec) for sec in split_h2_markdown_sections(content)]
 
 def split_h2_markdown_sections(text: str) -> Iterator[str]:
-    # * split on markdown sub-sections (## header 2)
-    #
-    # some messages (mostly auto context) include static text like general code preferences, language specific instructions...
+    # some messages (mostly auto context) include static text like General Code Preferences, and language specific instructions...
     #   while also including dynamic auto context like yanks
-    #   I could force dynamic vs static content to go into separate messages and then maybe not need this..
+    #   I could force dynamic vs static content to go into separate messages and then maybe not need to subdivide messages for exclusions
     #   but this is lets me have maximum flexibility in how I format messages (especially for auto context messages)
     #
     lines = text.splitlines()
