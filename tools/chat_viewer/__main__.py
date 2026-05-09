@@ -291,9 +291,9 @@ def print_markdown_content(msg: dict, role: str):
         # note detection activated:
         _console.print("[italic]Detected Semantic Grep matches... excluding based on file path[/]")  # ok to de-emphasize (don't show as markdown header)
 
-        # enumerate matches:
         idx = 1
         while idx < len(lines):
+            # TODO reuse split on ## headers logic? so ironically now I'd prefer to just use the sections lol!
             header = lines[idx]
             match = re.match(r"^##\s+(.+?):(\d+)-(\d+)", header)
             if not match:
