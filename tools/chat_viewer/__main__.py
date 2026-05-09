@@ -107,11 +107,8 @@ def _is_entire_content_excluded(msg: dict[str, Any]) -> bool:
     return content_hash in EXCLUDED_CONTENT_HASHES
 
 def _filter_content(content: str) -> str | None:
-    """Filter a system message based on hash exclusions.
-
-    3. Return the recombined markdown or None if all sections were removed.
-    """
-    # TODO remove returning None entirely... signaling something that even confuses me right now... get rid of it
+    """ Return the recombined markdown or None if all sections were removed. """
+    # TODO remove returning None == all excluded... let's do [] empty array and a DTO with content/hash/is_excluded
 
     if SHOW_ALL_FILES:
         return content
