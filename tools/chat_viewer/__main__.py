@@ -347,7 +347,6 @@ def decode_if_json(content):
         except Exception:
             # return as str if parse fails
             return insert_newlines(content)
-
     # keep w/e type (dict, list, etc... don't care)
     return content
 
