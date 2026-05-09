@@ -597,7 +597,7 @@ def print_message(msg: dict, idx: int):
     if "output.json" in msg:
         title = f"{title} (output.json)"
     print_section_header(title, get_color(role))
-    # Apply content filtering to system and user messages.
+
     if role in ("system", "user", "developer"):
         filtered = _filter_content(msg)
         if filtered is None:
@@ -612,6 +612,7 @@ def print_message(msg: dict, idx: int):
         return
 
     if _is_entire_content_excluded(msg):
+        # TODO fold this exclude logic into new exclusion pipeline once refactored
         return
     match role:
         case "tool":
