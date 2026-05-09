@@ -155,7 +155,6 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
 
     sections = split_markdown_sections(content)
 
-    # Build DTOs for each section.
     dtos: list[SectionDTO] = []
     for sec in sections:
         sec_hash = hashlib.sha256(sec.encode("utf-8")).hexdigest()
