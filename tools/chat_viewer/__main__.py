@@ -125,7 +125,8 @@ class SectionDTO:
         self.is_excluded = self.content_hash in EXCLUDED_CONTENT_HASHES
 
 def _split_content_into_sections(content: str) -> list[SectionDTO]:
-    """
+    """Split a message's content into markdown sections.
+
     If the whole content is excluded, an empty list is returned.
     """
 
@@ -140,29 +141,67 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
         # TODO why not just return it with is_excluded = True???
         return []
 
-    def split_markdown_sections(text: str) -> Iterator[str]:
-        # * split on markdown sub-sections (## header 2)
-        #
-        # some messages (mostly auto context) include static text like general code preferences, language specific instructions...
-        #   while also including dynamic auto context like yanks
-        #   I could force dynamic vs static content to go into separate messages and then maybe not need this..
-        #   but this is lets me have maximum flexibility in how I format messages (especially for auto context messages)
-        #
-        lines = text.splitlines()
-        current_section: list[str] = []
-        for line in lines:
-            if line.startswith("## "):
-                if current_section:
-                    yield "\n".join(current_section)
-                current_section = [line]
-            else:
-                current_section.append(line)
-        # dregs (last subsection, if any)
-        if current_section:
-            yield "\n".join(current_section)
-
     # Build SectionDTOs for each markdown section using a list comprehension.
     return [SectionDTO(content=sec) for sec in split_markdown_sections(content)]
+
+
+def split_markdown_sections(text: str) -> Iterator[str]:
+    """Split ``text`` into markdown sections based on ``## `` headings.
+
+    Each section starts with a line that begins with ``## `` and includes all
+    subsequent lines until the next such heading or the end of the input.
+    """
+    lines = text.splitlines()
+    current_section: list[str] = []
+    for line in lines:
+        if line.startswith("## "):
+            if current_section:
+                yield "\n".join(current_section)
+            current_section = [line]
+        else:
+            current_section.append(line)
+    if current_section:
+        yield "\n".join(current_section)
+
+
+def show_unapproved_rag_matches(content: str) -> bool:
+    """Detect and render Semantic Grep matches that are not pre‑approved.
+
+    The function looks for sections starting with a markdown ``##`` heading that
+    contains a file path and line range (e.g. ``## path/to/file.py:10-20``). It
+    reuses :func:`split_markdown_sections` to obtain those sections, then renders
+    the snippet for each unapproved match.
+    """
+
+    if not content.strip().startswith('# Semantic Grep matches:'):
+        return False
+
+    _console.print("[italic]Detected Semantic Grep matches... excluding based on file path[/]")
+
+    for section in split_markdown_sections(content):
+        lines = section.splitlines()
+        if not lines:
+            continue
+        header = lines[0]
+        match = re.match(r"^##\s+(.+?):(\d+)-(\d+)", header)
+        if not match:
+            continue
+
+        file_path = match.group(1)
+        # Remaining lines after the header constitute the snippet.
+        snippet = "\n".join(lines[1:]).strip("\n")
+
+        if not SHOW_ALL_FILES and is_preapproved(str(file_path)):
+            continue
+
+        start_line = match.group(2)
+        end_line = match.group(3)
+        _console.print(f"\n## MATCH {file_path}:{start_line}-{end_line}")
+        ext = os.path.splitext(file_path)[1].lstrip('.').lower()
+        syntax = Syntax(snippet, ext or "text", theme="ansi_dark")
+        print_asis(syntax)
+
+    return True
 
 def print_asis(what, **kwargs):
     _console.print(what, markup=False, **kwargs)
@@ -284,45 +323,6 @@ def print_markdown_content(msg: dict, role: str):
     raw_content = _extract_content(msg)
     if not raw_content:
         return
-
-    def show_unapproved_rag_matches(content: str) -> bool:
-        """Detect and render Semantic Grep matches that are not pre‑approved.
-
-        The function looks for sections starting with a markdown ``##`` heading that
-        contains a file path and line range (e.g. ``## path/to/file.py:10-20``). It
-        reuses :func:`split_markdown_sections` to obtain those sections, then
-        renders the snippet for each unapproved match.
-        """
-
-        if not content.strip().startswith('# Semantic Grep matches:'):
-            return False
-
-        _console.print("[italic]Detected Semantic Grep matches... excluding based on file path[/]")
-
-        for section in split_markdown_sections(content):
-            lines = section.splitlines()
-            if not lines:
-                continue
-            header = lines[0]
-            match = re.match(r"^##\s+(.+?):(\d+)-(\d+)", header)
-            if not match:
-                continue
-
-            file_path = match.group(1)
-            # Remaining lines after the header constitute the snippet.
-            snippet = "\n".join(lines[1:]).strip("\n")
-
-            if not SHOW_ALL_FILES and is_preapproved(str(file_path)):
-                continue
-
-            start_line = match.group(2)
-            end_line = match.group(3)
-            _console.print(f"\n## MATCH {file_path}:{start_line}-{end_line}")
-            ext = os.path.splitext(file_path)[1].lstrip('.').lower()
-            syntax = Syntax(snippet, ext or "text", theme="ansi_dark")
-            print_asis(syntax)
-
-        return True
 
     if show_unapproved_rag_matches(raw_content):
         return
