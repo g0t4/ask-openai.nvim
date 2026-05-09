@@ -285,7 +285,9 @@ def print_markdown_content(msg: dict, role: str):
     if not raw_content:
         return
 
-    def hide_preapproved_rag_matches(content: str) -> bool:
+    def show_unapproved_rag_matches(content: str) -> bool:
+        # show RAG matches that are not flagged as preapproved (to exclude showing chunks)
+
         if not content.strip().startswith('# Semantic Grep matches:'):
             return False
 
@@ -325,7 +327,7 @@ def print_markdown_content(msg: dict, role: str):
 
         return True
 
-    if hide_preapproved_rag_matches(raw_content):
+    if show_unapproved_rag_matches(raw_content):
         return
 
     sections = _split_content_into_sections(raw_content)
