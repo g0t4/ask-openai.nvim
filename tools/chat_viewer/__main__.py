@@ -176,7 +176,7 @@ def show_unapproved_rag_matches(content: str) -> bool:
         end_line = match.group(3)
         _console.print(f"\n## MATCH {file_path}:{start_line}-{end_line}")
         ext = os.path.splitext(file_path)[1].lstrip('.').lower()
-        syntax = Syntax(snippet, ext or "text", theme="ansi_dark")
+        syntax = _syntax(snippet, ext or "text")
         _console.print(syntax)
 
     return True
@@ -313,7 +313,7 @@ def print_markdown_content(msg: dict, role: str):
         if sec.is_excluded:
             continue
         _console.print(f"[dim]HASH: {sec.content_hash}[/]")
-        highlighted = Syntax(sec.content, "markdown", theme="ansi_dark")
+        highlighted = _syntax(sec.content, "markdown")
         _console.print(highlighted)
 
 def decode_if_json(content):
@@ -348,7 +348,7 @@ def print_rag_matches(content):
         if isinstance(text, str):
             ext = os.path.splitext(file)[1].lstrip('.').lower() if file else ""
             # YES! this is why this review tool rocks... language specific syntax highlighting!
-            syntax = Syntax(text, ext or "text", theme="ansi_dark", line_numbers=False)
+            syntax = _syntax(text, ext or "text")
             _console.print(syntax)
         else:
             _console.print(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]")
@@ -408,7 +408,7 @@ def _handle_apply_patch(arguments: str):
     if isinstance(parsed, dict) and "patch" in parsed:
         patch_content = str(parsed["patch"])
         try:
-            syntax = Syntax(patch_content, "diff", theme="ansi_dark", line_numbers=False)
+            syntax = _syntax(patch_content, "diff")
             return syntax, None
         except Exception:
             return patch_content, None
@@ -416,16 +416,19 @@ def _handle_apply_patch(arguments: str):
         return json.dumps(parsed, ensure_ascii=False), None
     return str(parsed), None
 
-def _bash(source: str) -> Syntax:
-    is_multi_line = "\n" in source
+def _syntax(source: str, lexer: str) -> Syntax:
+    # is_multi_line = "\n" in source
     return Syntax(
         source,
-        "bash",
-        theme="ansi_dark",
-        line_numbers=is_multi_line  # TODO remove if don't like this, test drive it
-    )
+        lexer,  # i.e. bash/json/etc
+        theme="ansi_dark",  # effectively sets default theme which is why I want a _syntax helper
+        line_numbers=False)
+
+def _bash(source: str) -> Syntax:
+    return _syntax(source, "bash")
 
 def _json(data: dict) -> Syntax:
+    # PRN add _pprint_syntax?
     pretty = json.dumps(data, ensure_ascii=False, indent=2)
     return Syntax(
         pretty,
