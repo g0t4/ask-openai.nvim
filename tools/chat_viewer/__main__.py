@@ -177,11 +177,11 @@ def show_unapproved_rag_matches(content: str) -> bool:
         _console.print(f"\n## MATCH {file_path}:{start_line}-{end_line}")
         ext = os.path.splitext(file_path)[1].lstrip('.').lower()
         syntax = Syntax(snippet, ext or "text", theme="ansi_dark")
-        print_asis(syntax)
+        print_no_markup(syntax)
 
     return True
 
-def print_asis(what, **kwargs):
+def print_no_markup(what, **kwargs):
     _console.print(what, markup=False, **kwargs)
 
 def pprint_asis(what):
@@ -349,7 +349,7 @@ def print_rag_matches(content):
             ext = os.path.splitext(file)[1].lstrip('.').lower() if file else ""
             # YES! this is why this review tool rocks... language specific syntax highlighting!
             syntax = Syntax(text, ext or "text", theme="ansi_dark", line_numbers=False)
-            print_asis(syntax)
+            print_no_markup(syntax)
         else:
             _console.print(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]")
             pprint_asis(text)
@@ -390,9 +390,9 @@ def print_mcp_result(content):
             item_text = yank(item, "text")
             item_text = insert_newlines(item_text)
             if padding:
-                print_asis(Padding(item_text, (0, 0, 0, 4)))
+                print_no_markup(Padding(item_text, (0, 0, 0, 4)))
             else:
-                print_asis(item_text)
+                print_no_markup(item_text)
 
     # verbose dump?
     # print_asis(content)
@@ -510,7 +510,7 @@ def print_if_missing_keys(obj, name):
 def print_assistant(msg: dict):
     reasoning = msg.get("reasoning_content")
     if reasoning:
-        print_asis(
+        print_no_markup(
             Padding(
                 insert_newlines(reasoning),
                 (0, 0, 0, 2),  # top, right, bottom, left
@@ -523,7 +523,7 @@ def print_assistant(msg: dict):
 
     content = msg.get("content", "")
     if content:
-        print_asis(insert_newlines(content))
+        print_no_markup(insert_newlines(content))
 
     requests = yank(msg, "tool_calls", [])
     if requests:
@@ -554,9 +554,9 @@ def print_assistant(msg: dict):
 
             if isinstance(renders, list):
                 for part in renders:
-                    print_asis(Padding(part, (0, 0, 0, 4)))
+                    print_no_markup(Padding(part, (0, 0, 0, 4)))
             else:
-                print_asis(Padding(renders, (0, 0, 0, 4)))
+                print_no_markup(Padding(renders, (0, 0, 0, 4)))
             _console.print()  # blank line
 
 def get_color(role: str) -> str:
