@@ -417,11 +417,12 @@ def _handle_apply_patch(arguments: str):
     return str(parsed), None
 
 def _bash(source: str) -> Syntax:
+    is_multi_line = "\n" in source
     return Syntax(
         source,
         "bash",
         theme="ansi_dark",
-        line_numbers=False,
+        line_numbers=is_multi_line  # TODO remove if don't like this, test drive it
     )
 
 def _json(data: dict) -> Syntax:
@@ -431,7 +432,7 @@ def _json(data: dict) -> Syntax:
         "json",
         theme="ansi_dark",
         # indent_guides=True,
-        line_numbers=False,
+        # line_numbers=True,
     )
 
 def _handle_run_command_and_run_process(arguments: str):
