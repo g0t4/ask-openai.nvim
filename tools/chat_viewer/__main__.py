@@ -184,7 +184,7 @@ def show_unapproved_rag_matches(content: str) -> bool:
 def print_no_markup(what, **kwargs):
     _console.print(what, markup=False, **kwargs)
 
-def pprint_asis(what):
+def pprint_no_truncate(what):
     # btw expand_all=False is the default and will truncate some sections (shown w/ yellow bg on black text with "...")
     #   for now just always show everything given the review is supposed to be exhaustive and so far I haven't noticed much that is a huge burden
     pprint(what, expand_all=True, indent_guides=False)
@@ -241,7 +241,7 @@ def show_rest_of_request_body_properties(data):
     #   primary is going to be tools list and that tends to look good as is in JSON b/c it is itself a JSON schema
     # only show rest of request body in verbose mode (--all)
     print_section_header("UNPROCESSED request.body properties", color="cyan")
-    pprint_asis(data)
+    pprint_no_truncate(data)
 
 def load_messages(data) -> list[dict[str, Any]]:
     if isinstance(data, list):
@@ -352,7 +352,7 @@ def print_rag_matches(content):
             print_no_markup(syntax)
         else:
             _console.print(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]")
-            pprint_asis(text)
+            pprint_no_truncate(text)
 
         counter += 1
 
@@ -363,13 +363,13 @@ def print_rag_matches(content):
 def print_result_unrecognized(content):
     # FYI this is just a warning to consider adding handlers for it
     _console.print(f"[yellow bold]UNRECOGNIZED RESULT TYPE:[/]")
-    pprint_asis(content)
+    pprint_no_truncate(content)
 
 def print_tool_call_result(msg: dict[str, Any]):
     content = msg.get("content", "")
     content = decode_if_json(content)
     if not isinstance(content, dict):
-        pprint_asis(content)
+        pprint_no_truncate(content)
         return
 
     return print_rag_matches(content) or print_mcp_result(content) or print_result_unrecognized(content)
@@ -505,7 +505,7 @@ def print_if_missing_keys(obj, name):
         return
 
     _console.print(f"[red bold]MISSED KEYS on {name}:[/]")
-    pprint_asis(obj)
+    pprint_no_truncate(obj)
 
 def print_assistant(msg: dict):
     reasoning = msg.get("reasoning_content")
@@ -532,7 +532,7 @@ def print_assistant(msg: dict):
             call_type = yank(call, "type")
             if call_type != "function":
                 _console.print(f"- UNHANDLED TYPE '{call_type}' on tool call id: '{id}'")
-                pprint_asis(call)
+                pprint_no_truncate(call)
                 continue
 
             function = yank(call, "function")
