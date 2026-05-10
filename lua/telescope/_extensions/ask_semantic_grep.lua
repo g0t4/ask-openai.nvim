@@ -383,6 +383,14 @@ function semantic_grep_current_filetype_picker(opts)
         prompt_title = prompt_title,
         prompt_prefix = '󰕡 ',
         sorting_strategy = 'ascending', -- default descending doesn't work right now due to bug with setting cursor position in results window
+        -- Use a vertical layout to split results and preview top/bottom instead of left/right.
+        layout_strategy = "vertical",
+        layout_config = {
+            -- Allocate half of the window height to the preview pane.
+            preview_height = 0.5,
+            -- Keep the prompt at the top (default is bottom for some layouts).
+            prompt_position = "top",
+        },
 
         finder = AsyncDynamicFinder:new({
             ---@param prompt string
