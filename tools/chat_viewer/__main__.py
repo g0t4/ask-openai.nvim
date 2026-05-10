@@ -177,7 +177,7 @@ def show_unapproved_rag_matches(content: str) -> bool:
         _console.print(f"\n## MATCH {file_path}:{start_line}-{end_line}")
         ext = os.path.splitext(file_path)[1].lstrip('.').lower()
         syntax = Syntax(snippet, ext or "text", theme="ansi_dark")
-        print_no_markup(syntax)
+        _console.print(syntax)
 
     return True
 
@@ -349,7 +349,7 @@ def print_rag_matches(content):
             ext = os.path.splitext(file)[1].lstrip('.').lower() if file else ""
             # YES! this is why this review tool rocks... language specific syntax highlighting!
             syntax = Syntax(text, ext or "text", theme="ansi_dark", line_numbers=False)
-            print_no_markup(syntax)
+            _console.print(syntax)
         else:
             _console.print(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]")
             pprint_no_truncate(text)
