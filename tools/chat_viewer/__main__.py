@@ -1,7 +1,9 @@
 import json
 import os
 import sys
+import subprocess
 import re
+from dataclasses import dataclass, field
 from pathlib import Path
 from rich.console import Console
 from rich.markdown import Markdown
@@ -9,11 +11,9 @@ from rich.padding import Padding
 from rich.syntax import Syntax
 from rich.panel import Panel
 from rich.pretty import Pretty, pprint
+from rich.text import Text
 from typing import Any, Iterable, Iterator
 import hashlib
-
-from rich.text import Text
-from dataclasses import dataclass, field
 
 _console = Console(color_system="truecolor")
 
@@ -424,8 +424,42 @@ def _syntax(source: str, lexer: str) -> Syntax:
         theme="ansi_dark",  # effectively sets default theme which is why I want a _syntax helper
         line_numbers=False)
 
-def _bash(source: str) -> Syntax:
-    return _syntax(source, "bash")
+def _bash(source: str):
+    # FYI pygments bash lexer sucks at coloring bash, basically only builtins seem styled... i.e. echo
+    # return _syntax(source, "bash")
+    return bat_text(source, language="bash")
+
+def bat_text(
+    content: str,
+    language: str | None = None,
+    *,
+    theme: str = "TwoDark",
+    plain: bool = True,
+) -> Text:
+    # material overhead like 20ms per call to bat... fine for now as the thread viewer loads super fast for now
+    #  ~400ms => 800ms for 90 message thread (most tool calls were run_process)
+
+    cmd = [
+        "bat",
+        "--color=always",
+        f"--theme={theme}",
+    ]
+
+    if plain:
+        cmd.append("--style=plain")
+
+    if language:
+        cmd.append(f"--language={language}")
+
+    proc = subprocess.run(
+        cmd,
+        input=content,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    return Text.from_ansi(proc.stdout)
 
 def _json(data: dict) -> Syntax:
     # PRN add _pprint_syntax?
