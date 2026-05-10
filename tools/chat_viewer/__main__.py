@@ -143,24 +143,8 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
 
     return [SectionDTO(content=sec) for sec in split_h2_markdown_sections(content)]
 
-def split_h2_markdown_sections(text: str) -> Iterator[str]:
-    # some messages (mostly auto context) include static text like General Code Preferences, and language specific instructions...
-    #   while also including dynamic auto context like yanks
-    #   I could force dynamic vs static content to go into separate messages and then maybe not need to subdivide messages for exclusions
-    #   but this is lets me have maximum flexibility in how I format messages (especially for auto context messages)
-    #
-    lines = text.splitlines()
-    current_section: list[str] = []
-    for line in lines:
-        if line.startswith("## "):
-            if current_section:
-                yield "\n".join(current_section)
-            current_section = [line]
-        else:
-            current_section.append(line)
-    # dregs (last subsection, if any)
-    if current_section:
-        yield "\n".join(current_section)
+# Import split_h2_markdown_sections from a dedicated module for easier testing and reuse.
+from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 
 def show_unapproved_rag_matches(content: str) -> bool:
     if not content.strip().startswith('# Semantic Grep matches:'):
