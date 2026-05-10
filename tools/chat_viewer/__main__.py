@@ -43,7 +43,10 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     # * Agents/Tools
     # Agents msg1 System Message
     "771937c4c06bbd93ed1e1a0386a8b8ae0f7ce56f684d1ebf2ed25f084af2f49e",  # intro blurb before ## sections
+    #
     "ec8f0516513ef8c3ddfd7a6760b44874f8b8665316323feb104f7aae0df1a00e",  # Ground rules
+    "89dfb9bec0ec8587e2c9e9f80480375ddc189b36d515f1d2fae59cd6ad3909dc",  # Ground rules (FIM no \n\n)
+    #
     # FYI Tool use will remain b/c it shows directories (well worth seeing each time too)
     "248d4a2751e309453b476914b6ecf1ddb2750a9033e3ecb7eb12f04c14fbd917",  # semantic_grep
     "5b4513e0987158cfbc9225e1535f437eb054f5ca5455759984dcbf7631f56197",  # Fetch tool
@@ -67,7 +70,8 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "b1b230c60a363b6e44b6135d15ff1e8d30e83df41d2adfd079d7209ab6e7234e",  # Fish syntax examples (todo is there a difference in how split sections is working that causes the whole match to be different than partial match for same section content?)... NBD just a possible thing to consider
     #
     "511f32b9bf45f71b8a1a807d3636e9694c2c6ad13cc68166ca6741455eb72df7",  # General project code rules
-    "8f9ce1c508b6ed7f217818da62222e65643092d1e679f31cb738153edec72cb0",  # General Code Preferences
+    "8f9ce1c508b6ed7f217818da62222e65643092d1e679f31cb738153edec72cb0",  # General Code Preferences (FIM one + trailing \n\n) # TODO strip trail new lines before compute hash?
+    "f2fea7d3d5637345a1862e068f59c3ac597bb70dbf95d30c32830b082f921cfc",  # General Code Preferences (latest in FIM so no \n\n)
 ]
 
 def _content_hash(msg: dict[str, Any]) -> str:
