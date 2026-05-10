@@ -547,9 +547,9 @@ def print_assistant(msg: dict):
             # PRN add () title args vs remainder of args
             if title_renders:
                 titles = ", ".join(map(str, title_renders))
-                _console.print(f"- [bold]{func_name}({titles})[/]:")
+                _console.print(f"- {func_name}({titles}):")
             else:
-                _console.print(f"- [bold]{func_name}[/]:")
+                _console.print(f"- {func_name}:")
 
             if isinstance(renders, list):
                 for part in renders:
