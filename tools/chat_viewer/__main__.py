@@ -543,23 +543,23 @@ def print_assistant(msg: dict):
             arguments = yank(function, "arguments")
             # arguments = function["arguments"]
 
-            (renders, title_renders) = _format_tool_arguments(func_name, arguments)
+            (renderable_parts, renderable_titles) = _format_tool_arguments(func_name, arguments)
 
             print_if_missing_keys(function, "function")
             print_if_missing_keys(call, "call")
 
             # PRN add () title args vs remainder of args
-            if title_renders:
-                titles = ", ".join(map(str, title_renders))
+            if renderable_titles:
+                titles = ", ".join(map(str, renderable_titles))
                 _console.print(f"- {func_name}({titles}):")
             else:
                 _console.print(f"- {func_name}:")
 
-            if isinstance(renders, list):
-                for part in renders:
+            if isinstance(renderable_parts, list):
+                for part in renderable_parts:
                     print_no_markup(Padding(part, (0, 0, 0, 4)))
             else:
-                print_no_markup(Padding(renders, (0, 0, 0, 4)))
+                print_no_markup(Padding(renderable_parts, (0, 0, 0, 4)))
             _console.print()  # blank line
 
 def get_color(role: str) -> str:
