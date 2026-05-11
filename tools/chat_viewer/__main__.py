@@ -427,13 +427,13 @@ def _syntax(source: str, lexer: str) -> Syntax:
 def _bash(source: str):
     # FYI pygments bash lexer sucks at coloring bash, basically only builtins seem styled... i.e. echo
     # return _syntax(source, "bash")
-    return bat_text(source, language="bash")
+    return _bash_via_bat_high_contrast(source, language="bash")
 
-def bat_text(
+def _bash_via_bat_high_contrast(
     content: str,
     language: str | None = None,
     *,
-    theme: str = "OneHalfLight",
+    theme: str = "GitHub",  # bat theme
     plain: bool = True,
 ) -> Text:
     # material overhead like 20ms per call to bat... fine for now as the thread viewer loads super fast for now
@@ -459,7 +459,10 @@ def bat_text(
         check=True,
     )
 
-    return Text.from_ansi(proc.stdout, style="bold on white")
+    return Text.from_ansi(
+        proc.stdout,
+        style="bold on #EAF4FF", # High contrast light bg + bold foreground
+    )
 
 def _json(data: dict) -> Syntax:
     # PRN add _pprint_syntax?
