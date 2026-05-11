@@ -435,7 +435,7 @@ def _bash_via_bat_high_contrast(
     *,
     theme: str = "GitHub",  # bat theme
     plain: bool = True,
-) -> Text:
+):
     # material overhead like 20ms per call to bat... fine for now as the thread viewer loads super fast for now
     #  ~400ms => 800ms for 90 message thread (most tool calls were run_process)
 
@@ -458,11 +458,15 @@ def _bash_via_bat_high_contrast(
         text=True,
         check=True,
     )
-
-    return Text.from_ansi(
-        proc.stdout,
-        style="bold on #EAF4FF", # High contrast light bg + bold foreground
+    return Panel(  # panel adds border around the code, thicker which helps readability
+        Text.from_ansi(proc.stdout),
+        style="bold on #EAF4FF",  # High contrast light bg + bold foreground
+        border_style="#C8B8A8",
     )
+    # return Text.from_ansi(
+    #     proc.stdout,
+    #     style="bold on #EAF4FF", # High contrast light bg + bold foreground
+    # )
 
 def _json(data: dict) -> Syntax:
     # PRN add _pprint_syntax?
