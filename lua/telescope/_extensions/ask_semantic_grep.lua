@@ -386,11 +386,7 @@ function semantic_grep_current_filetype_picker(opts)
         -- Use a vertical layout to split results and preview top/bottom instead of left/right.
         layout_strategy = "vertical",
         layout_config = {
-            -- Allocate most of the window height to the preview pane (80%).
-            preview_height = 0.8,
-            -- Show only a small portion for the results (top 5 hits usually).
-            results_height = 0.2,
-            -- Keep the prompt at the top (default is bottom for some layouts).
+            preview_height = 0.8, -- ratio of total height
             prompt_position = "top",
         },
 
