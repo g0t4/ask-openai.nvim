@@ -433,7 +433,7 @@ def bat_text(
     content: str,
     language: str | None = None,
     *,
-    theme: str = "TwoDark",
+    theme: str = "OneHalfLight",
     plain: bool = True,
 ) -> Text:
     # material overhead like 20ms per call to bat... fine for now as the thread viewer loads super fast for now
@@ -459,7 +459,7 @@ def bat_text(
         check=True,
     )
 
-    return Text.from_ansi(proc.stdout)
+    return Text.from_ansi(proc.stdout, style="bold on white")
 
 def _json(data: dict) -> Syntax:
     # PRN add _pprint_syntax?
