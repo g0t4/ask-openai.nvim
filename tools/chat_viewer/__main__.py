@@ -357,16 +357,17 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
         header = f"## MATCH {counter}"
         if file:
             header += f": [bold]{file}[/]"
-        match_node: Tree = root.add(header)
+        root.add(header)
 
         if isinstance(text, str):
             ext = os.path.splitext(file)[1].lstrip('.').lower() if file else ""
             # YES! this is why this review tool rocks... language specific syntax highlighting!
             syntax = _syntax(text, ext or "text")
-            match_node.add(syntax)
+            root.add(syntax)
         else:
-            match_node.add_markup(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]") \
+            root.add_markup(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]") \
                 .add(_pretty_no_truncate(text))
+        root.blank_line()
 
         counter += 1
 
