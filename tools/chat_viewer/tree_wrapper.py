@@ -130,9 +130,8 @@ class TreeWrapper(Tree):
                 self.add(display)
                 continue
             display = Text.from_markup(f"[blue]{key}:[/]")
-            child = self.add(display)
             # * dict/list
-            child.add_pretty(value)
+            self.add(display).add_pretty(value)
 
         return self
 
