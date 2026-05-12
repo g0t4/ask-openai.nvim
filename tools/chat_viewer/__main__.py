@@ -516,13 +516,7 @@ def _handle_run_command_and_run_process(arguments: str):
                 return command
             raise ValueError("No command found")
 
-        display_command = get_display_command()
-        if display_command:
-            command = _bash(display_command)
-        else:
-            command = Text.from_markup("[bold white on red]MISSING COMMAND")
-            loaded = json.loads(arguments)  # reload so we see all args, including: mode/argv/command_line
-
+        command = _bash(get_display_command())
         renderables.append(command)
 
         if not any(loaded):
