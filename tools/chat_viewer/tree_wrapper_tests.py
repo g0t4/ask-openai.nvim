@@ -39,11 +39,10 @@ class Test_TreeWrapper_add_list_of_key_value_pairs:
 
     def test_python_list(self):
         # TODO is this really how I want this to look? each item on its own line if primitive?
-        assert """key:\n        item1\n        item2""" in self.get_recorded({"key": ["item1", "item2"]})
-        assert """key:\n        1\n        1.1""" in self.get_recorded({"key": [1, 1.1]})
-        assert """key:\n        None""" in self.get_recorded({"key": [None]})
-
-        assert """key:\n        {'foo': 'bar'}""" in self.get_recorded({"key": [{"foo": "bar"}]})
+        assert """key:\n        ['item1', 'item2']""" in self.get_recorded({"key": ["item1", "item2"]})
+        assert """key:\n        [1, 1.1]""" in self.get_recorded({"key": [1, 1.1]})
+        assert """key:\n        [None]""" in self.get_recorded({"key": [None]})
+        assert """key:\n        [{'foo': 'bar'}]""" in self.get_recorded({"key": [{"foo": "bar"}]})
 
     def test_json_dict_value(self):
         tree = TreeWrapper()
@@ -51,8 +50,7 @@ class Test_TreeWrapper_add_list_of_key_value_pairs:
 
         recorded = self.record_plaintext(tree)
 
-        assert """key:
-        inner: value""" in recorded
+        assert """key:\n        {'inner': 'value'}""" in recorded
 
     def record_plaintext(self, tree: TreeWrapper) -> str:
         console = Console(record=True, width=120, force_terminal=False)

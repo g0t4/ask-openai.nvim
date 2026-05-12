@@ -132,14 +132,17 @@ class TreeWrapper(Tree):
             display = Text.from_markup(f"[blue]{key}:[/]")
             child = self.add(display)
             if isinstance(value, dict):
-                child.add_list_of_key_value_pairs(value)
-            else:
-                # list
-                for item in value:
-                    if item is None or isinstance(item, (str, int, float, bool)):
-                        child.add_no_markup(str(item))
-                    else:
-                        child.add_pretty(item)
+                child.add_pretty(value)
+                # PRN add check if rendered Pretty value is > 40 chars then expand?
+                # child.add_list_of_key_value_pairs(value)
+                continue
+
+            child.add_pretty(value)
+            # for item in value:
+            #     if item is None or isinstance(item, (str, int, float, bool)):
+            #         child.add_no_markup(str(item))
+            #     else:
+            #         child.add_pretty(item)
 
         return self
 
