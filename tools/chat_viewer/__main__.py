@@ -582,7 +582,8 @@ def print_assistant(msg: dict):
 
     requests = yank(msg, "tool_calls", [])
     if requests:
-        tree = Tree("calls", hide_root=True)  # TODO strip away showing connectors between levels
+        tree = Tree("calls", hide_root=True)
+        tree.TREE_GUIDES = [("    ", "    ", "    ", "    ")]
         for call in requests:
             id = yank(call, "id")
             call_type = yank(call, "type")
