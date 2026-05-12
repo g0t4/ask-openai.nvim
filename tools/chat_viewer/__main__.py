@@ -386,7 +386,7 @@ def print_tool_result_message(msg: Dict[str, Any]) -> None:
         _console.print(root)
         return
 
-    handled = (_add_rag_matches(root, content) or _add_mcp_result(root, content))
+    handled = _add_rag_matches(root, content) or _add_mcp_result(root, content)
     if not handled:
         _add_unrecognized(root, content)
     _console.print(root)
