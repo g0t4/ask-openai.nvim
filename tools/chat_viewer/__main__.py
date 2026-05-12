@@ -293,11 +293,6 @@ def _extract_content(msg: dict) -> str:
         return content["text"]
     return content  # type: ignore
 
-def _format_content(content: Any) -> str:
-    if isinstance(content, str):
-        return insert_newlines(content)
-    return _format_json(content)
-
 def print_markdown_message(msg: dict, role: str):
     raw_content = _extract_content(msg)
     if not raw_content:
@@ -637,6 +632,12 @@ def print_message(msg: dict, idx: int):
 def print_fallback(msg: dict[str, Any]):
     role = msg.get("role", "")
     content = msg.get("content", "")
+
+    def _format_content(content: Any) -> str:
+        if isinstance(content, str):
+            return insert_newlines(content)
+        return _format_json(content)
+
     formatted = _format_content(content)
 
 def main() -> None:
