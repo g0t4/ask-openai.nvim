@@ -492,17 +492,22 @@ def _handle_run_command_and_run_process(arguments: str):
             #   PRN over time I can drop this
             title_renderables.append(Text.from_markup(f"[bold]legacy {mode}[/]"))
 
-        if "command_line" in loaded:
-            command_source = yank(loaded, "command_line")
-        elif "argv" in loaded:
+        display_command = None
+        command_line = loaded.get("command_line", None)
+        if command_line:
+            del loaded["command_line"]
+            display_command = command_line
+        argv = loaded.get("argv", [])
+        if argv:
             argv = loaded.get("argv", [])
-            command_source = " ".join(map(str, argv))
-        else:
+            display_command = " ".join(map(str, argv))
+        command = loaded.get("command", None)
+        if command:
             # legacy run_command tool (pre run_process)
-            command_source = yank(loaded, "command")
+            display_command = yank(loaded, "command")
 
-        if command_source:
-            command = _bash(command_source)
+        if display_command:
+            command = _bash(display_command)
         else:
             command = Text.from_markup("[bold white on red]MISSING COMMAND")
             loaded = json.loads(arguments)  # reload so we see all args, including: mode/argv/command_line
