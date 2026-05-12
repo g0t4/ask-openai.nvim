@@ -119,16 +119,15 @@ class TreeWrapper(Tree):
         return self
 
     def list_key_value_pairs(self, obj):
-        if not any(obj.keys()):
-            return
         # FYI basically I want a JSON like dump with leading and trailing { and } which waste space...
         for key, value in obj.items():
-            display = None
+
             if value is None or isinstance(value, (str, int, float, bool)):
                 # single line => key: value
                 display = Text.from_markup(f"[blue]{key}:[/] ") + Text(str(value))
                 self.add(display)
                 continue
+
             display = Text.from_markup(f"[blue]{key}:[/]")
             # * dict/list
             self.add(display).add_pretty(value)
