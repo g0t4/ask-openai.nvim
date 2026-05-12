@@ -546,31 +546,29 @@ def print_if_missing_keys(obj, name, tree: TreeWrapper):
             .add(_json(obj))
 
 def print_assistant(msg: dict):
+    root = TreeWrapper(hide_root=True)
+
     reasoning = msg.get("reasoning_content")
     if reasoning:
-        print_no_markup(
-            Padding(
-                insert_newlines(reasoning),
-                (0, 0, 0, 2),  # top, right, bottom, left
-            ),
-            # PRN "dim" style would work too, instead of bright_black (only works b/c my theme has that as a white-ish)
+        root.add_no_markup(
+            insert_newlines(reasoning),
             style="bright_black italic",
         )
-        # btw nothing wrong with going back to no blank line between reasoning and content... given text style differences:
-        print()
+        root.blank_line()
 
     content = msg.get("content", "")
     if content:
-        print_no_markup(insert_newlines(content))
+        root.add_no_markup(insert_newlines(content))
+        root.blank_line()
 
     requests = yank(msg, "tool_calls", [])
     if requests:
-        tree = TreeWrapper("calls", hide_root=True)
+        calls_tree = TreeWrapper("calls", hide_root=True)
         for call in requests:
-            id = yank(call, "id")
+            call_id = yank(call, "id")
             call_type = yank(call, "type")
             if call_type != "function":
-                tree.add(f"- UNHANDLED TYPE '{call_type}' on tool call id: '{id}'") \
+                calls_tree.add(f"- UNHANDLED TYPE '{call_type}' on tool call id: '{call_id}'") \
                     .add(_json(call))
                 continue
 
@@ -579,13 +577,15 @@ def print_assistant(msg: dict):
             func_name = yank(function, "name")
             arguments = yank(function, "arguments")
 
-            print_if_missing_keys(function, "function", tree)
-            print_if_missing_keys(call, "call", tree)
+            print_if_missing_keys(function, "function", calls_tree)
+            print_if_missing_keys(call, "call", calls_tree)
 
-            add_tool_call_request(func_name, arguments, tree)
+            add_tool_call_request(func_name, arguments, calls_tree)
 
-        _console.print(tree)
-        _console.print()  # blank line
+        root.add(calls_tree)
+
+    _console.print(root)
+    _console.print()  # blank line
 
 def get_color(role: str) -> str:
     role_lower = role.lower()
