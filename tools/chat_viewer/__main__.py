@@ -296,7 +296,7 @@ def _format_content(content: Any) -> str:
         return insert_newlines(content)
     return _format_json(content)
 
-def print_markdown_content(msg: dict, role: str):
+def print_markdown_message(msg: dict, role: str):
     raw_content = _extract_content(msg)
     if not raw_content:
         return
@@ -620,7 +620,7 @@ def print_message(msg: dict, idx: int):
     print_section_header(title, get_color(role))
 
     if role in ("system", "user", "developer"):
-        print_markdown_content(msg, role)
+        print_markdown_message(msg, role)
         return
 
     match role:
