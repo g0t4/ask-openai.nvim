@@ -106,7 +106,7 @@ class TreeWrapper(Tree):
             self.parent = None
         return self
 
-    def add_error(self, message: str, error: Exception) -> "TreeWrapper":
+    def add_error(self, message: str, error: Exception, context: Any | None = None) -> "TreeWrapper":
         node = self.add_markup(f"[red bold]{message}[/]")
         node.add_pretty(error)
         node.add_no_markup(traceback.format_exc())

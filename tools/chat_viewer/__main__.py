@@ -399,18 +399,13 @@ def print_mcp_result(content):
     # print_asis(content)
     return True
 
-def _add_error(tree, message, err, context):
-    child = tree.add(Text.from_markup(f"[white bold on red]{message}"))
-    child.add(str(err))
-    return child.add(context)
-
 def _handle_apply_patch(arguments: str, tree: TreeWrapper):
     child = tree.add(format_call_title("apply_patch"))
 
     try:
         parsed = json.loads(arguments)
     except Exception as err:
-        return _add_error(child, "Failed parsing arguments", err, arguments)
+        return child.add_error("Failed parsing arguments", err, arguments)
 
     if isinstance(parsed, dict) and "patch" in parsed:
         patch_content = str(parsed["patch"])
@@ -418,7 +413,7 @@ def _handle_apply_patch(arguments: str, tree: TreeWrapper):
             syntax = _syntax(patch_content, "diff")
             return child.add(syntax)
         except Exception as err:
-            return _add_error(child, "Failed parsing arguments", err, patch_content)
+            return child.add_error("Failed adding patch", err, patch_content)
 
     if isinstance(parsed, dict):
         return child.add(json.dumps(parsed, ensure_ascii=False))
@@ -526,7 +521,7 @@ def _handle_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
         show_remaining_keys(loaded, call_tree)
 
     except Exception as err:
-        _add_error(call_tree, "Failed parsing command", err, arguments)
+        call_tree.add_error("Failed parsing command", err, arguments)
 
 def format_call_title(title):
     return f"- {title}"
@@ -537,7 +532,7 @@ def _handle_generic_tool(func_name: str, arguments: str, tree: TreeWrapper):
         loaded = json.loads(arguments)
         child.add(_json(loaded))
     except json.JSONDecodeError as e:
-        child.add(arguments)  # show raw value when json.loads fails
+        child.add_error("generic tool parse args failed", e, arguments)
 
 def _handle_unknown_tool(arguments: str):
     return arguments
