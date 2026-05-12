@@ -366,6 +366,7 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
                 header += f":{start_line_base0+1}-{end_line_base0+1}"
 
         root.add_markup(header)
+        # root.add_pretty(match) # useful for troubleshooting... dump it all, beautifully!
 
         text = match.get("text", "")
         if isinstance(text, str):
