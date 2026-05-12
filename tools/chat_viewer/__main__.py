@@ -358,19 +358,24 @@ def print_rag_matches(content):
     # pprint_asis(content) # for dumping full content
     return True
 
-def print_result_unrecognized(root: TreeWrapper, content: Any) -> None:
+def _add_unrecognized(root: TreeWrapper, content: Any) -> None:
     # FYI this is just a warning to consider adding handlers for it
     root.add("[yellow bold]UNRECOGNIZED RESULT TYPE:[/]")
     root.add(pprint_no_truncate(content))
 
-def print_tool_result_message(msg: dict[str, Any]):
-    content = msg.get("content", "")
-    content = decode_if_json(content)
+def print_tool_result_message(msg: Dict[str, Any]) -> None:
+    content = decode_if_json(msg.get("content", ""))
+    root = TreeWrapper()
+
     if not isinstance(content, dict):
-        pprint_no_truncate(content)
+        root.add(pprint_no_truncate(content))
+        _console.print(root)
         return
 
-    return print_rag_matches(content) or print_mcp_result(content) or print_result_unrecognized(content)
+    handled = (_add_rag_matches(root, content) or _add_mcp_result(root, content))
+    if not handled:
+        _add_unrecognized(root, content)
+    _console.print(root)
 
 def print_mcp_result(content):
     has_mcp_content_list = "content" in content and isinstance(content["content"], list)
