@@ -35,7 +35,7 @@ class Test_TreeWrapper_add_list_of_key_value_pairs:
         assert "key: 1" in self.get_recorded({"key": 1})
         assert "key: True" in self.get_recorded({"key": True})
         assert "key: 1.1" in self.get_recorded({"key": 1.1})
-        # assert "key: None" in self.get_recorded({"key": None})
+        assert "key: None" in self.get_recorded({"key": None})
 
     def test_python_list(self):
         # TODO is this really how I want this to look? each item on its own line if primitive?
