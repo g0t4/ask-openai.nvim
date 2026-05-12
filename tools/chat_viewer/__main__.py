@@ -12,6 +12,7 @@ from rich.syntax import Syntax
 from rich.panel import Panel
 from rich.pretty import Pretty, pprint
 from rich.text import Text
+from rich.tree import Tree
 from typing import Any, Iterable, Iterator
 import hashlib
 
@@ -482,7 +483,14 @@ def _json(data: dict) -> Syntax:
 def show_remaining_keys(loaded, renderables):
     if not any(loaded):
         return
-    renderables.extend(["remaining keys:", _json(loaded)])
+    # FYI basically I want a JSON like dump with leading and trailing { and } which waste space...
+    tree = Tree("remaining keys")
+    renderables.append(tree)
+    for key in loaded.keys():
+        value = loaded.get(key)
+        display = f"{key}: {value}"
+        # TODO anything fancy for value rendering? i.e. value is list/dict?
+        tree.add(display)
 
 def _handle_run_command_and_run_process(arguments: str):
     title_renderables = []
