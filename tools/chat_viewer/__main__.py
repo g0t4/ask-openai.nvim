@@ -404,7 +404,7 @@ def _add_error(tree, message, err, context):
     child.add(str(err))
     return child.add(context)
 
-def _handle_apply_patch(arguments: str, tree: Tree):
+def _handle_apply_patch(arguments: str, tree: TreeWrapper):
     child = tree.add(format_call_title("apply_patch"))
 
     try:
@@ -488,7 +488,7 @@ def _json(data: dict) -> Syntax:
         # line_numbers=True,
     )
 
-def show_remaining_keys(loaded, tree: Tree):
+def show_remaining_keys(loaded, tree: TreeWrapper):
     if not any(loaded):
         return
     # FYI basically I want a JSON like dump with leading and trailing { and } which waste space...
@@ -498,7 +498,7 @@ def show_remaining_keys(loaded, tree: Tree):
         # print as if values are all str/bool/number ... handle list/dict if that arises later
         tree.add(display)
 
-def _handle_run_command_and_run_process(arguments: str, call_tree: Tree):
+def _handle_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
     try:
         loaded = json.loads(arguments)
         # child.add(_json(loaded)) # debugging
@@ -531,19 +531,18 @@ def _handle_run_command_and_run_process(arguments: str, call_tree: Tree):
 def format_call_title(title):
     return f"- {title}"
 
-def _handle_generic_tool(func_name: str, arguments: str, tree: Tree):
+def _handle_generic_tool(func_name: str, arguments: str, tree: TreeWrapper):
     child = tree.add(format_call_title(func_name))
     try:
         loaded = json.loads(arguments)
         child.add(_json(loaded))
-        # TODO copy over TreeWrapper from langchain repo... has add_json() IIRC - plus override add to return TreeWrapper always
     except json.JSONDecodeError as e:
         child.add(arguments)  # show raw value when json.loads fails
 
 def _handle_unknown_tool(arguments: str):
     return arguments
 
-def add_tool_call_request(func_name: str, arguments: str, tree: Tree) -> tuple[list, list]:
+def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper) -> tuple[list, list]:
     if func_name == "apply_patch":
         return _handle_apply_patch(arguments, tree)
 
@@ -554,7 +553,7 @@ def add_tool_call_request(func_name: str, arguments: str, tree: Tree) -> tuple[l
     # FYI semantic_grep works good with generic right now:
     return _handle_generic_tool(func_name, arguments, tree)
 
-def print_if_missing_keys(obj, name, tree: Tree):
+def print_if_missing_keys(obj, name, tree: TreeWrapper):
     if not any(obj.keys()):
         return
 
