@@ -107,20 +107,6 @@ def load_preapproved_files() -> None:
 def is_preapproved(file_path: str) -> bool:
     return any(pat.search(file_path) for pat in preapproved_file_patterns)
 
-def _is_entire_content_excluded(msg: dict[str, Any]) -> bool:
-    """Return True if the message's content hash is listed in EXCLUDED_CONTENT_HASHES.
-
-    The global SHOW_ALL_FILES flag disables exclusion.
-    """
-    if SHOW_ALL_FILES:
-        return False
-    content = msg.get("content", "")
-    if not isinstance(content, str):
-        return False
-    content_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
-    # print("NON-SYSTEM HASH", content_hash) # useful to log to quickly ignore sections you've changed
-    return content_hash in EXCLUDED_CONTENT_HASHES
-
 @dataclass
 class SectionDTO:
     # message.content or subset of message.content to show/hide
@@ -646,9 +632,6 @@ def print_message(msg: dict, idx: int):
         print_markdown_content(msg, role)
         return
 
-    if _is_entire_content_excluded(msg):
-        # TODO fold this exclude logic into new exclusion pipeline once refactored
-        return
     match role:
         case "tool":
             print_tool_call_result(msg)
