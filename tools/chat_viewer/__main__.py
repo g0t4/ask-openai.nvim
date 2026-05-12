@@ -354,7 +354,7 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
         header = f"## MATCH {counter}"
         if file:
             header += f": [bold]{file}[/]"
-        root.add(header)
+        root.add_markup(header)
 
         text = match.get("text", "")
         if isinstance(text, str):
