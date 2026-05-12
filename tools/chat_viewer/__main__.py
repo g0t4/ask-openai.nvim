@@ -488,7 +488,7 @@ def show_remaining_keys(loaded, renderables):
     renderables.append(tree)
     for key in loaded.keys():
         value = loaded.get(key)
-        display = f"{key}: {value}"
+        display = Text.from_markup(f"[blue]{key}:[/] ") + Text(value)
         # print as if values are all str/bool/number ... handle list/dict if that arises later
         tree.add(display)
 
