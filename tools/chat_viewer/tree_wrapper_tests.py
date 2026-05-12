@@ -36,7 +36,7 @@ class TestTreeWrapper_SectionsFromJsonKeys:
     def record_plaintext(self, tree: TreeWrapper) -> str:
         console = Console(record=True, width=120, force_terminal=False)
         console.print(tree)
-        # ``export_text`` returns a ``str`` with all markup stripped.
+        # `export_text` returns a `str` with markup stripped.
         return console.export_text()
 
     def test_primitive_values_do_not_fail(self) -> None:
