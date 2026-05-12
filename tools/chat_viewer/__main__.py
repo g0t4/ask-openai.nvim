@@ -363,7 +363,7 @@ def print_result_unrecognized(content):
     _console.print(f"[yellow bold]UNRECOGNIZED RESULT TYPE:[/]")
     pprint_no_truncate(content)
 
-def print_tool_call_result(msg: dict[str, Any]):
+def print_tool_result_message(msg: dict[str, Any]):
     content = msg.get("content", "")
     content = decode_if_json(content)
     if not isinstance(content, dict):
@@ -542,7 +542,7 @@ def print_if_missing_keys(obj, name, tree: TreeWrapper):
     child = tree.add(f"[red bold]MISSED KEYS on {name}:[/]") \
             .add(_json(obj))
 
-def print_assistant(msg: dict):
+def print_assistant_message(msg: dict):
     root = TreeWrapper(hide_root=True)
 
     reasoning = msg.get("reasoning_content")
@@ -619,9 +619,9 @@ def print_message(msg: dict, idx: int):
 
     match role:
         case "tool":
-            print_tool_call_result(msg)
+            print_tool_result_message(msg)
         case "assistant":
-            print_assistant(msg)
+            print_assistant_message(msg)
         case "system" | "developer" | "user" | _:
             print_markdown_message(msg, role)
 
