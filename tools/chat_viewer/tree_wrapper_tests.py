@@ -56,9 +56,7 @@ class Test_TreeWrapper_add_list_of_key_value_pairs:
         assert """key:\n        [{'foo': 'bar'}]""" in get_recorded({"key": [{"foo": "bar"}]})
 
     def test_json_dict_value(self):
-        json_str = '{"key": {"inner": "value"}}'
-
-        recorded = get_recorded_from_json(json_str)
+        recorded = get_recorded_from_json('{"key": {"inner": "value"}}')
 
         assert """key:\n        {'inner': 'value'}""" in recorded
 
