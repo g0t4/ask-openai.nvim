@@ -540,7 +540,7 @@ def _add_generic_tool(func_name: str, args_json_str: str, tree: TreeWrapper):
 def _handle_unknown_tool(arguments: str):
     return arguments
 
-def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper) -> tuple[list, list]:
+def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper):
     if func_name == "apply_patch":
         return _add_apply_patch(arguments, tree)
 
