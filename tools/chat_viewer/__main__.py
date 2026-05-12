@@ -657,32 +657,21 @@ def main() -> None:
 
     if len(sys.argv) < 2:
         messages = load_trace_messages_from_stream(sys.stdin)
-        if export_html and html_path is None:
+        if export_html:
             html_path = "stdout.html"
     else:
         trace_file = Path(sys.argv[1])
         messages = load_trace_messages_from_path(trace_file)
-        if export_html and html_path is None:
-            # Derive an HTML file name from the input trace file.
-            input_path = Path(trace_path_arg)
-            candidate = input_path.with_suffix(".html")
-            # Safety guard: never overwrite the original JSON file.
-            if candidate != input_path:
-                html_path = str(candidate)
-            else:
-                # Fallback to a distinct name if the suffix replacement somehow matches the original.
-                html_path = str(input_path) + ".html"
+        if export_html:
+            html_path = str(trace_file) + ".html"
 
     for idx, message in enumerate(messages, start=1):
         print_message(message, idx)
 
     if export_html and html_path:
         try:
-            # Re‑use the same console instance that rendered to the terminal.
-            # ``Console.save_html`` writes a full HTML document. No title argument is needed for the current Rich version.
             _console.save_html(html_path)
         except Exception as e:
-            # Fallback to a simple error message on the console.
             _console.print(f"[red]Failed to write HTML output to {html_path}: {e}[/]")
 
 if __name__ == "__main__":
