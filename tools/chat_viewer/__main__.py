@@ -354,7 +354,7 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
         if skip:
             continue
 
-        header = f"## MATCH {idx}"
+        header = f"## MATCH {counter}"
         if file:
             header += f": [bold]{file}[/]"
         match_node: Tree = root.add(header)
