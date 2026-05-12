@@ -136,7 +136,7 @@ class TreeWrapper(Tree):
             else:
                 # list
                 for item in value:
-                    if isinstance(item, (str, int, float, bool)):
+                    if item is None or isinstance(item, (str, int, float, bool)):
                         child.add_no_markup(str(item))
                     else:
                         child.add_pretty(item)
