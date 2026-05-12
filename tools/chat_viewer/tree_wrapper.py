@@ -22,6 +22,10 @@ class TreeWrapper(Tree):
 
     parent: "TreeWrapper | None" = None
 
+    @staticmethod
+    def hidden_root():
+        return TreeWrapper("", hide_root=True)
+
     def __init__(
         self,
         label: RenderableType | None = None,

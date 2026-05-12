@@ -380,7 +380,7 @@ def _add_unrecognized(root: TreeWrapper, content: Any) -> None:
 
 def print_tool_result_message(msg: Dict[str, Any]) -> None:
     content = decode_if_json(msg.get("content", ""))
-    root = TreeWrapper("", hide_root=True)  # TODO make a helper for this scenario? or default to hide_root=True on TreeWrapper?
+    root = TreeWrapper.hidden_root()
 
     handled = _add_rag_matches(root, content) or _add_mcp_result(root, content)
     if not handled:
