@@ -479,16 +479,6 @@ def _json(data: dict) -> Syntax:
         # line_numbers=True,
     )
 
-def show_remaining_keys(loaded, tree: TreeWrapper):
-    if not any(loaded):
-        return
-    # FYI basically I want a JSON like dump with leading and trailing { and } which waste space...
-    for key in loaded.keys():
-        value = loaded.get(key)
-        display = Text.from_markup(f"[blue]{key}:[/] ") + Text(value)
-        # print as if values are all str/bool/number ... handle list/dict if that arises later
-        tree.add(display)
-
 def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
     try:
         loaded = json.loads(arguments)
@@ -514,7 +504,7 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
             raise ValueError("No command found")
 
         call_tree.add(_bash(get_display_command()))
-        show_remaining_keys(loaded, call_tree)
+        call_tree.add_list_of_key_value_pairs(loaded)
 
     except Exception as err:
         call_tree.add_error("Failed parsing command", err, arguments)
