@@ -30,8 +30,7 @@ class Test_TreeWrapper_add_list_of_key_value_pairs:
         return self.record_plaintext(tree)
 
     def test_py_dict(self):
-        recorded = self.get_recorded({"key": "value"})
-        assert "key: value" in recorded
+        assert "key: value" in self.get_recorded({"key": "value"})
 
     def test_json_dict_value(self):
         tree = TreeWrapper()
