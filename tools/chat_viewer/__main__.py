@@ -537,7 +537,7 @@ def _add_generic_tool(func_name: str, arguments: str, tree: TreeWrapper):
     child = tree.add(format_call_title(func_name))
     try:
         loaded = json.loads(arguments)
-        child.add(_json(loaded))  # TODO later switch to TreeWraper.json and other similar/new helpers (I migrated to TreeWrapper without fully embracing its helpers yet)
+        child.list_key_value_pairs(loaded)
     except json.JSONDecodeError as e:
         child.add_error("generic tool parse args failed", e, arguments)
 
@@ -597,7 +597,6 @@ def print_assistant_message(msg: dict):
             print_if_missing_keys(call, "call", root)
 
             add_tool_call_request(func_name, arguments, root)
-
 
     _console.print(root)
     _console.print()  # blank line
