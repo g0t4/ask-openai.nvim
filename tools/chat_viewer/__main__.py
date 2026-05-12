@@ -379,7 +379,7 @@ def _add_unrecognized(root: TreeWrapper, content: Any) -> None:
 
 def print_tool_result_message(msg: Dict[str, Any]) -> None:
     content = decode_if_json(msg.get("content", ""))
-    root = TreeWrapper()
+    root = TreeWrapper("", hide_root=True)  # TODO make a helper for this scenario? or default to hide_root=True on TreeWrapper?
 
     if not isinstance(content, dict):
         root.add(_pretty_no_truncate(content))
