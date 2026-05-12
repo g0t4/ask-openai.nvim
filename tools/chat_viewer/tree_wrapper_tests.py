@@ -33,27 +33,27 @@ def record_plaintext(tree: TreeWrapper) -> str:
     # `export_text` returns a `str` with markup stripped.
     return console.export_text()
 
-class Test_TreeWrapper_add_list_of_key_value_pairs:
+def get_recorded(what):
+    tree = TreeWrapper()
+    tree.add_list_of_key_value_pairs(what)
+    return record_plaintext(tree)
 
-    def get_recorded(self, what):
-        tree = TreeWrapper()
-        tree.add_list_of_key_value_pairs(what)
-        return record_plaintext(tree)
+class Test_TreeWrapper_add_list_of_key_value_pairs:
 
     def test_python_dict(self):
         # * scalar types for values in items (key/value pairs)
-        assert "key: string_value" in self.get_recorded({"key": "string_value"})
-        assert "key: 1" in self.get_recorded({"key": 1})
-        assert "key: True" in self.get_recorded({"key": True})
-        assert "key: 1.1" in self.get_recorded({"key": 1.1})
-        assert "key: None" in self.get_recorded({"key": None})
+        assert "key: string_value" in get_recorded({"key": "string_value"})
+        assert "key: 1" in get_recorded({"key": 1})
+        assert "key: True" in get_recorded({"key": True})
+        assert "key: 1.1" in get_recorded({"key": 1.1})
+        assert "key: None" in get_recorded({"key": None})
 
     def test_python_list(self):
         # TODO is this really how I want this to look? each item on its own line if primitive?
-        assert """key:\n        ['item1', 'item2']""" in self.get_recorded({"key": ["item1", "item2"]})
-        assert """key:\n        [1, 1.1]""" in self.get_recorded({"key": [1, 1.1]})
-        assert """key:\n        [None]""" in self.get_recorded({"key": [None]})
-        assert """key:\n        [{'foo': 'bar'}]""" in self.get_recorded({"key": [{"foo": "bar"}]})
+        assert """key:\n        ['item1', 'item2']""" in get_recorded({"key": ["item1", "item2"]})
+        assert """key:\n        [1, 1.1]""" in get_recorded({"key": [1, 1.1]})
+        assert """key:\n        [None]""" in get_recorded({"key": [None]})
+        assert """key:\n        [{'foo': 'bar'}]""" in get_recorded({"key": [{"foo": "bar"}]})
 
     def test_json_dict_value(self):
         json_str = '{"key": {"inner": "value"}}'
