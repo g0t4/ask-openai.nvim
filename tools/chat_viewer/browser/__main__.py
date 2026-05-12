@@ -85,6 +85,22 @@ class TraceBrowser:
         else:
             print("No more traces in that direction.")
 
+    def on_csi(self, sequence):
+        UP_ARROW = b'\x1b[A'
+        DOWN_ARROW = b'\x1b[B'
+        RIGHT_ARROW = b'\x1b[C'
+        LEFT_ARROW = b'\x1b[D'
+
+        if sequence == UP_ARROW:
+            browser._move(-1)  # treat as back
+        elif sequence == DOWN_ARROW:
+            pass  # no action defined
+        elif sequence == RIGHT_ARROW:
+            browser._move(1)
+        elif sequence == LEFT_ARROW:
+            browser._move(-1)  # treat as forward
+        # Add more CSI handling here if needed.
+
 async def main2(browser: TraceBrowser):
     fd = sys.stdin.fileno()
     old = termios.tcgetattr(fd)
@@ -100,15 +116,19 @@ async def main2(browser: TraceBrowser):
 
             # If we receive an ESC character, read the rest of the escape sequence.
             if char == b'\x1b':
+                # https://en.wikipedia.org/wiki/ANSI_escape_code#Control_Sequence_Introducer_commands
+                # - followed by any number (including none) of "parameter bytes" in the range 0x30–0x3F (ASCII 0–9:;<=>?)
+                # - then by any number of "intermediate bytes" in the range 0x20–0x2F (ASCII space and !"#$%&'()*+,-./)
+                # - then finally by a single "final byte" in the range 0x40–0x7E (ASCII @A–Z[\]^_`a–z{|}~)
+                #
                 # Most arrow key sequences are 2 more bytes (e.g. ESC [ A).
                 # Read until we have a non‑numeric byte or we reach a reasonable limit.
-                sequence = b'\x1b'
+                sequence = char
                 # Read the next byte; if it's '[' we expect a final character like 'A', 'B', etc.
                 try:
                     next_byte = await reader.readexactly(1)
                     sequence += next_byte
                     if next_byte == b'[':
-                        # TODO buffer this across reads...
                         # Read the final character of the CSI sequence.
                         final = await reader.readexactly(1)
                         sequence += final
@@ -116,19 +136,9 @@ async def main2(browser: TraceBrowser):
                     # If we fail to read the full sequence just ignore it.
                     continue
 
-                # Arrow keys:
-                if sequence == b'\x1b[A':  # Up arrow
-                    browser._move(-1)  # treat as back
-                elif sequence == b'\x1b[B':  # Down arrow (optional)
-                    pass  # no action defined
-                elif sequence == b'\x1b[C':  # Right arrow (optional)
-                    browser._move(1)
-                elif sequence == b'\x1b[D':  # Left arrow
-                    browser._move(-1)  # treat as forward
-                # Add more CSI handling here if needed.
-                continue  # Skip the rest of the loop for escape sequences.
+                browser.on_csi(sequence)
+                continue
 
-            # Normal single‑character commands
             print(repr(char))
             if char == b'b':
                 browser._move(-1)
