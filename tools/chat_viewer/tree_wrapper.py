@@ -106,7 +106,7 @@ class TreeWrapper(Tree):
     def add_syntax(self, code: str, lexer: str, *, theme: str = "monokai", **kwargs) -> "TreeWrapper":
         return self.add(Syntax(code, lexer, theme=theme), **kwargs)
 
-    def add_sections_from_json_keys(self, json_str: str, **kwargs) -> "TreeWrapper":
+    def list_json_key_value_pairs(self, json_str: str, **kwargs) -> "TreeWrapper":
         try:
             obj = json.loads(json_str)
         except json.JSONDecodeError as error:

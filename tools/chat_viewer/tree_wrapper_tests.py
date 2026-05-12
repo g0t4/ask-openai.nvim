@@ -13,7 +13,7 @@ def test_create_tree_without_label_nor_parent():
 
 def test_sections_from_json_keys():
     tree = TreeWrapper()
-    tree.add_sections_from_json_keys('{"section1": 1, "section2": 2}')
+    tree.list_json_key_value_pairs('{"section1": 1, "section2": 2}')
     assert len(tree.children) == 2
     child1 = tree.children[0]
     assert child1
@@ -24,7 +24,7 @@ def test_sections_from_json_keys():
 
 def get_recorded_from_json(json_str):
     tree = TreeWrapper()
-    tree.add_sections_from_json_keys(json_str)
+    tree.list_json_key_value_pairs(json_str)
     return record_plaintext(tree)
 
 def record_plaintext(tree: TreeWrapper) -> str:
@@ -59,7 +59,7 @@ class Test_TreeWrapper__list_key_value_pairs:
 
     def test_primitive_values_do_not_fail(self) -> None:
         tree = TreeWrapper()
-        tree.add_sections_from_json_keys('{"a": 1, "b": "text", "c": true}')
+        tree.list_json_key_value_pairs('{"a": 1, "b": "text", "c": true}')
 
         recorded = record_plaintext(tree)
 
