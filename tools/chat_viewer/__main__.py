@@ -364,7 +364,6 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
             header += f": [bold]{file}[/]"
             if isinstance(start_line_base0, int) and isinstance(end_line_base0, int):
                 header += f":{start_line_base0+1}-{end_line_base0+1}"
-
         root.add_markup(header)
         # root.add_pretty(match) # useful for troubleshooting... dump it all, beautifully!
 
