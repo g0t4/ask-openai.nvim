@@ -314,7 +314,7 @@ def print_markdown_message(msg: dict):
     if not sections:
         return
 
-    tree = TreeWrapper()
+    tree = TreeWrapper.hidden_root()
     for sec in sections:
         if sec.is_excluded:
             continue
