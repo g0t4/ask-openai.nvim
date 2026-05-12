@@ -617,28 +617,13 @@ def print_message(msg: dict, idx: int):
         title = f"{title} (output.json)"
     print_section_header(title, get_color(role))
 
-    if role in ("system", "user", "developer"):
-        print_markdown_message(msg, role)
-        return
-
     match role:
         case "tool":
             print_tool_call_result(msg)
         case "assistant":
             print_assistant(msg)
-        case _:
-            print_fallback(msg)
-
-def print_fallback(msg: dict[str, Any]):
-    role = msg.get("role", "")
-    content = msg.get("content", "")
-
-    def _format_content(content: Any) -> str:
-        if isinstance(content, str):
-            return insert_newlines(content)
-        return _format_json(content)
-
-    formatted = _format_content(content)
+        case "system" | "developer" | "user" | _:
+            print_markdown_message(msg, role)
 
 def main() -> None:
     global SHOW_ALL
