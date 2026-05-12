@@ -344,10 +344,8 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
     matches = content["matches"]
     counter = 1  # show counter for easily tracking where I am at in the list
     for match in matches:
-
         # FYI only file/text are relevant for review (skip rest)
         file = match.get("file")
-        text = match.get("text", "")
 
         skip = not SHOW_ALL and is_preapproved(str(file))
         if skip:
@@ -358,6 +356,7 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
             header += f": [bold]{file}[/]"
         root.add(header)
 
+        text = match.get("text", "")
         if isinstance(text, str):
             ext = os.path.splitext(file)[1].lstrip('.').lower() if file else ""
             # YES! this is why this review tool rocks... language specific syntax highlighting!
