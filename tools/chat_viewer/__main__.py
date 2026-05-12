@@ -5,7 +5,7 @@ import subprocess
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from rich.console import Console
+from rich.console import Console, Group
 from rich.markdown import Markdown
 from rich.padding import Padding
 from rich.syntax import Syntax
@@ -132,6 +132,27 @@ class SectionDTO:
         # Compute hash and exclusion flag based on the content.
         self.content_hash = hashlib.sha256(self.content.encode("utf-8")).hexdigest()
         self.is_excluded = self.content_hash in EXCLUDED_CONTENT_HASHES
+
+    def get_renderable(self):
+        # return RenderGroup(Text(self.content))
+        lines = self.content.splitlines()
+        header_line = lines[0]  # should be ## line always
+        content = "\n".join(lines[1:])
+        header_render = Text(header_line, style="bold")
+
+        # * special emphasis on key sections
+        emphasize_headings: dict[str, str] = {
+            "## Recent yanks (copy to clipboard):": "gray0 bold on deep_pink1",
+            # add other mappings here as needed
+        }
+
+        for heading, apply_style in emphasize_headings.items():
+            if heading in header_line:
+                header_render = Text(header_line, style=apply_style)
+                break
+
+        body_render = _syntax(content, "markdown")
+        return Group(header_render, body_render)
 
 def _split_content_into_sections(content: str) -> list[SectionDTO]:
     """Split a message's content into markdown sections.
@@ -315,8 +336,7 @@ def print_markdown_content(msg: dict, role: str):
         if sec.is_excluded:
             continue
         _console.print(f"[dim]HASH: {sec.content_hash}[/]")
-        highlighted = _syntax(sec.content, "markdown")
-        _console.print(highlighted)
+        _console.print(sec.get_renderable())
 
 def decode_if_json(content):
     if isinstance(content, str):
