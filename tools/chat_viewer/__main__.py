@@ -497,24 +497,17 @@ def _handle_run_command_and_run_process(arguments: str):
         def get_display_command():
 
             # load all available values so I can look for invalid combinations
-            command_line = loaded.get("command_line", None)
-            argv = loaded.get("argv", [])
-            command = loaded.get("command", None)
-            # command_line = yank(loaded, "command_line", None)
-            # argv = yank(loaded, "argv", [])
-            # command = yank(loaded, "command", None)
+            command_line = yank(loaded, "command_line", None)
+            argv = yank(loaded, "argv", [])
+            command = yank(loaded, "command", None)
 
             if command_line and argv:
                 raise ValueError("Ambiguous run_process - both command_line and argv are set")
             if command_line:
-                # del loaded["command_line"]
                 return command_line
             if argv:
-                # del loaded["argv"]
                 return " ".join(map(str, argv))
             if command:
-                # del loaded["command"]
-                # legacy run_command tool (pre run_process)
                 return command
             raise ValueError("No command found")
 
