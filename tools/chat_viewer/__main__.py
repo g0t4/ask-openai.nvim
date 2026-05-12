@@ -555,7 +555,7 @@ def print_if_missing_keys(obj, name, tree: TreeWrapper):
             .add(_json(obj))
 
 def print_assistant_message(msg: dict):
-    root = TreeWrapper(hide_root=True)
+    root = TreeWrapper.hidden_root()
 
     reasoning = msg.get("reasoning_content")
     if reasoning:
