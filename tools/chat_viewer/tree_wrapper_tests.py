@@ -28,12 +28,12 @@ class TestTreeWrapper_SectionsFromJsonKeys:
         wrapper = TreeWrapper()
         wrapper.add_sections_from_json_keys('{"key": {"inner": "value"}}')
 
-        recorded = self.record_tree_to_string(wrapper)
+        recorded = self.record_plaintext(wrapper)
 
         assert """key:
         inner: value""" in recorded
 
-    def record_tree_to_string(self, tree: TreeWrapper) -> str:
+    def record_plaintext(self, tree: TreeWrapper) -> str:
         console = Console(record=True, width=120, force_terminal=False)
         console.print(tree)
         # ``export_text`` returns a ``str`` with all markup stripped.
@@ -43,9 +43,8 @@ class TestTreeWrapper_SectionsFromJsonKeys:
         wrapper = TreeWrapper()
         wrapper.add_sections_from_json_keys('{"a": 1, "b": "text", "c": true}')
 
-        recorded = self.record_tree_to_string(wrapper)
+        recorded = self.record_plaintext(wrapper)
 
-        # FYI export_text() does not include markup nor ansi escape codes AFAICT (not OOB anyways)
         expected_fragments = [
             # at least make sure no errors writing the values
             "a: 1",
