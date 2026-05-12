@@ -7,3 +7,9 @@ def test_create_tree_without_label_nor_parent():
     wrapper = TreeWrapper()
     assert wrapper.label == ""
     assert wrapper.parent == None
+
+def test_sections_from_json_keys():
+    wrapper = TreeWrapper()
+    wrapper.add_sections_from_json_keys('{"section1": {}, "section2": {}}')
+    assert "section1" in wrapper.children[0].label
+    assert "section2" in wrapper.children[1].label
