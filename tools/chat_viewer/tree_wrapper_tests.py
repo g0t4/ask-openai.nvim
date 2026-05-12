@@ -29,10 +29,10 @@ class Test_TreeWrapper_add_list_of_key_value_pairs:
         tree.add_list_of_key_value_pairs(what)
         return self.record_plaintext(tree)
 
-    def test_py_dict(self):
+    def test_value_is_python_dict(self):
         assert "key: string_value" in self.get_recorded({"key": "string_value"})
 
-    def test_py_list(self):
+    def test_value_is_python_list(self):
         recorded = self.get_recorded({"key": ["item1", "item2"]})
         # TODO is this really how I want this to look? each item on its own line if primitive?
         assert """key:
