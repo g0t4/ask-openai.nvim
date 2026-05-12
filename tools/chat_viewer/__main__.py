@@ -123,7 +123,7 @@ class SectionDTO:
         # return RenderGroup(Text(self.content))
         lines = self.content.splitlines()
         header_line = lines[0]  # should be ## line always
-        content = "\n".join(lines[1:])
+        body = "\n".join(lines[1:])
 
         # * special emphasis on key sections
         emphasize_headings: dict[str, str] = {
@@ -136,7 +136,7 @@ class SectionDTO:
             None,
         )
         if override_header_style:
-            return Group(Text(header_line, style=override_header_style), _syntax(content, "markdown"))
+            return Group(Text(header_line, style=override_header_style), _syntax(body, "markdown"))
 
         # else treat header as markdown too:
         return _syntax(self.content, "markdown")
