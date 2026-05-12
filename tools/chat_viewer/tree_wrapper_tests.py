@@ -32,6 +32,13 @@ class Test_TreeWrapper_add_list_of_key_value_pairs:
     def test_py_dict(self):
         assert "key: string_value" in self.get_recorded({"key": "string_value"})
 
+    def test_py_list(self):
+        recorded = self.get_recorded({"key": ["item1", "item2"]})
+        # TODO is this really how I want this to look? each item on its own line if primitive?
+        assert """key:
+        item1
+        item2""" in recorded
+
     def test_json_dict_value(self):
         tree = TreeWrapper()
         tree.add_sections_from_json_keys('{"key": {"inner": "value"}}')
