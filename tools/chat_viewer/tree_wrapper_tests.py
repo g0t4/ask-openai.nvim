@@ -24,10 +24,13 @@ def test_sections_from_json_keys():
 
 class Test_TreeWrapper_add_list_of_key_value_pairs:
 
-    def test_py_dict(self):
+    def get_recorded(self, what):
         tree = TreeWrapper()
-        tree.add_list_of_key_value_pairs({"key": "value"})
-        recorded = self.record_plaintext(tree)
+        tree.add_list_of_key_value_pairs(what)
+        return self.record_plaintext(tree)
+
+    def test_py_dict(self):
+        recorded = self.get_recorded({"key": "value"})
         assert "key: value" in recorded
 
     def test_json_dict_value(self):
