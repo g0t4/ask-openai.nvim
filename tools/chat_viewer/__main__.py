@@ -338,7 +338,8 @@ def print_rag_matches(content):
         # FYI no need to show other fields, just file/text are relevant for review, nor warn...
         # unless some other tool at some point has similar matches list and I'd be hiding something
 
-        if not SHOW_ALL and is_preapproved(str(file)):
+        skip = not SHOW_ALL and is_preapproved(str(file))
+        if skip:
             continue
 
         if file:
