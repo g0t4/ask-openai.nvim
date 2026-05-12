@@ -533,13 +533,9 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
 def format_call_title(title):
     return f"- {title}"
 
-def _add_generic_tool(func_name: str, arguments: str, tree: TreeWrapper):
+def _add_generic_tool(func_name: str, args_json_str: str, tree: TreeWrapper):
     child = tree.add(format_call_title(func_name))
-    try:
-        loaded = json.loads(arguments)
-        child.list_key_value_pairs(loaded)
-    except json.JSONDecodeError as e:
-        child.add_error("generic tool parse args failed", e, arguments)
+    child.list_json_key_value_pairs(args_json_str)
 
 def _handle_unknown_tool(arguments: str):
     return arguments
