@@ -13,7 +13,7 @@ from rich.panel import Panel
 from rich.pretty import Pretty, pprint
 from rich.text import Text
 from rich.tree import Tree
-from typing import Any, Iterable, Iterator
+from typing import Any, Iterable, Iterator, Dict
 import hashlib
 
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
@@ -377,7 +377,7 @@ def print_tool_result_message(msg: Dict[str, Any]) -> None:
         _add_unrecognized(root, content)
     _console.print(root)
 
-def print_mcp_result(content):
+def _add_mcp_result(root: TreeWrapper, content: Dict[str, Any]) -> bool:
     has_mcp_content_list = "content" in content and isinstance(content["content"], list)
     if not has_mcp_content_list:
         return False
@@ -388,17 +388,12 @@ def print_mcp_result(content):
         name = yank(item, "name")
         padding = None
         if name:
-            _console.print(f"[white]{name}:[/]")
+            root.add(f"[white]{name}:[/]")
         if item_type == "text":
             item_text = yank(item, "text")
             item_text = insert_newlines(item_text)
-            if padding:
-                print_no_markup(Padding(item_text, (0, 0, 0, 4)))
-            else:
-                print_no_markup(item_text)
+            root.add(item_text)
 
-    # verbose dump?
-    # print_asis(content)
     return True
 
 def _add_apply_patch(arguments: str, tree: TreeWrapper):
