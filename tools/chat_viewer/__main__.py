@@ -490,7 +490,9 @@ def _handle_run_command_and_run_process(arguments: str):
         if mode:
             # for now, it's fine to show the old mode... as a reminder that the trace is from legacy run_process tool args
             #   PRN over time I can drop this
-            title_renderables.append(Text.from_markup(f"[bold]legacy {mode}[/]"))
+            title_renderables.append(Text.from_markup(f"[bold]legacy {mode=}[/]"))
+        if "command" in loaded:
+            title_renderables.append(Text.from_markup(f"[bold]legacy run_command[/]"))
 
         def get_display_command():
             display_command = None
