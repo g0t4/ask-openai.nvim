@@ -315,14 +315,14 @@ def print_markdown_message(msg: dict):
     if not sections:
         return
 
-    tree = TreeWrapper.hidden_root()
+    root = TreeWrapper.hidden_root()
     for sec in sections:
         if sec.is_excluded:
             continue
-        tree.add(f"[dim]HASH: {sec.content_hash}[/]")
-        tree.add(sec.get_renderable())
+        root.add(f"[dim]HASH: {sec.content_hash}[/]")
+        root.add(sec.get_renderable())
 
-    _console.print(tree)
+    _console.print(root)
 
 def decode_if_json(content):
     if isinstance(content, str):
