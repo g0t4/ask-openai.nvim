@@ -178,10 +178,11 @@ def show_unapproved_auto_rag_matches(content: str) -> bool:
         end_line = match.group(3)
 
         match_tree = TreeWrapper.hidden_root()
-        match_tree.add_markup(f"## MATCH {file_path}:{start_line}-{end_line}")
+        match_tree.add_markup(f"## MATCH [bold]{file_path}[/]:{start_line}-{end_line}")
 
         ext = os.path.splitext(file_path)[1].lstrip('.').lower()
         match_tree.add(_syntax(snippet, ext or "text"))
+
         match_tree.blank_line()
 
         _console.print(match_tree)
