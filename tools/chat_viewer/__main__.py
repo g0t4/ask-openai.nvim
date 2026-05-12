@@ -132,7 +132,7 @@ class SectionDTO:
         }
 
         override_header_style = next(
-            (style for heading, style in emphasize_headings.items() if heading in header_line), # note "in" not "==" for matching
+            (style for heading, style in emphasize_headings.items() if heading in header_line),  # note "in" not "==" for matching
             None,
         )
         if override_header_style:
@@ -610,7 +610,6 @@ def print_section_header(title, color):
 
 def print_message(msg: dict, idx: int):
     role = msg.get("role", "").lower()
-
     display_role = role.upper()
     if display_role == "TOOL":
         display_role = "TOOL RESULT"

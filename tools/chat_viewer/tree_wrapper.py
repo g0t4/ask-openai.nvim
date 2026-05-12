@@ -15,7 +15,7 @@ from rich.markdown import Markdown
 import json
 import sys
 import asyncio
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 class TreeWrapper(Tree):
     """ Thin wrapper around :class:`rich.tree.Tree` with additional helpers. """
