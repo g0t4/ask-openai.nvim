@@ -16,6 +16,9 @@ from rich.tree import Tree
 from typing import Any, Iterable, Iterator
 import hashlib
 
+from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
+from tools.chat_viewer.tree_wrapper import TreeWrapper
+
 _console = Console(color_system="truecolor")
 
 preapproved_file_patterns: list[re.Pattern] = []
@@ -147,9 +150,6 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
         return []
 
     return [SectionDTO(content=sec) for sec in split_h2_markdown_sections(content)]
-
-# Import split_h2_markdown_sections from a dedicated module for easier testing and reuse.
-from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 
 def show_unapproved_rag_matches(content: str) -> bool:
     if not content.strip().startswith('# Semantic Grep matches:'):
@@ -582,7 +582,7 @@ def print_assistant(msg: dict):
 
     requests = yank(msg, "tool_calls", [])
     if requests:
-        tree = Tree("calls", hide_root=True)
+        tree = TreeWrapper("calls", hide_root=True)
         tree.TREE_GUIDES = [("    ", "    ", "    ", "    ")]
         for call in requests:
             id = yank(call, "id")
