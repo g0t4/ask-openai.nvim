@@ -131,7 +131,7 @@ class SectionDTO:
     def __post_init__(self) -> None:
         # Compute hash and exclusion flag based on the content.
         self.content_hash = hashlib.sha256(self.content.encode("utf-8")).hexdigest()
-        self.is_excluded = self.content_hash in EXCLUDED_CONTENT_HASHES
+        self.is_excluded = not SHOW_ALL_FILES and self.content_hash in EXCLUDED_CONTENT_HASHES
 
     def get_renderable(self):
         # return RenderGroup(Text(self.content))
@@ -155,19 +155,8 @@ class SectionDTO:
         return Group(header_render, body_render)
 
 def _split_content_into_sections(content: str) -> list[SectionDTO]:
-    """Split a message's content into markdown sections.
-
-    If the whole content is excluded, an empty list is returned.
-    """
-
-    if SHOW_ALL_FILES:
-        # Return a single section for the whole content, never excluded.
-        section = SectionDTO(content=content)
-        section.is_excluded = False
-        return [section]
-
     whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
-    if whole_hash in EXCLUDED_CONTENT_HASHES:
+    if not SHOW_ALL_FILES and whole_hash in EXCLUDED_CONTENT_HASHES:
         # TODO why not just return it with is_excluded = True???
         return []
 
