@@ -22,7 +22,7 @@ from tools.chat_viewer.tree_wrapper import TreeWrapper
 _console = Console(color_system="truecolor")
 
 preapproved_file_patterns: list[re.Pattern] = []
-SHOW_ALL_FILES = False
+SHOW_ALL = False
 
 EXCLUDED_CONTENT_HASHES: list[str] = [
     # FYI careful w/ trailing \n when computing by hand
@@ -117,7 +117,7 @@ class SectionDTO:
     def __post_init__(self) -> None:
         # Compute hash and exclusion flag based on the content.
         self.content_hash = hashlib.sha256(self.content.encode("utf-8")).hexdigest()
-        self.is_excluded = not SHOW_ALL_FILES and self.content_hash in EXCLUDED_CONTENT_HASHES
+        self.is_excluded = not SHOW_ALL and self.content_hash in EXCLUDED_CONTENT_HASHES
 
     def get_renderable(self):
         # return RenderGroup(Text(self.content))
@@ -142,7 +142,7 @@ class SectionDTO:
 
 def _split_content_into_sections(content: str) -> list[SectionDTO]:
     whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
-    if not SHOW_ALL_FILES and whole_hash in EXCLUDED_CONTENT_HASHES:
+    if not SHOW_ALL and whole_hash in EXCLUDED_CONTENT_HASHES:
         # TODO why not just return it with is_excluded = True???
         return []
 
@@ -167,7 +167,7 @@ def show_unapproved_rag_matches(content: str) -> bool:
         # Remaining lines after the header constitute the snippet.
         snippet = "\n".join(lines[1:]).strip("\n")
 
-        if not SHOW_ALL_FILES and is_preapproved(str(file_path)):
+        if not SHOW_ALL and is_preapproved(str(file_path)):
             continue
 
         start_line = match.group(2)
@@ -252,7 +252,7 @@ def load_messages(data) -> list[dict[str, Any]]:
         if "messages" in data:
             messages = data["messages"]
             del data["messages"]
-            if SHOW_ALL_FILES:
+            if SHOW_ALL:
                 show_rest_of_request_body_properties(data)
             return messages
     return []
@@ -337,7 +337,7 @@ def print_rag_matches(content):
         # FYI no need to show other fields, just file/text are relevant for review, nor warn...
         # unless some other tool at some point has similar matches list and I'd be hiding something
 
-        if not SHOW_ALL_FILES and is_preapproved(str(file)):
+        if not SHOW_ALL and is_preapproved(str(file)):
             continue
 
         if file:
@@ -646,10 +646,10 @@ def print_fallback(msg: dict[str, Any]):
     formatted = _format_content(content)
 
 def main() -> None:
-    global SHOW_ALL_FILES
+    global SHOW_ALL
 
     if "--all" in sys.argv:
-        SHOW_ALL_FILES = True
+        SHOW_ALL = True
         sys.argv.remove("--all")
 
     load_preapproved_files()
