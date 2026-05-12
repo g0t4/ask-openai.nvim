@@ -19,7 +19,8 @@ import hashlib
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.tree_wrapper import TreeWrapper
 
-_console = Console(color_system="truecolor")
+# Enable recording so that ``save_html`` can export the rendered output.
+_console = Console(color_system="truecolor", record=True)
 
 preapproved_file_patterns: list[re.Pattern] = []
 SHOW_ALL = False
@@ -640,21 +641,75 @@ def print_message(msg: dict, idx: int):
             print_markdown_message(msg)
 
 def main() -> None:
+    """
+    Entry point for the chat viewer CLI.
+    Supports the existing ``--all`` flag and a new ``--html`` flag.
+    When ``--html`` is present, the rendered output is also saved to a
+    ``.html`` file alongside the input trace (or to ``stdout.html`` when
+    reading from stdin).
+    """
     global SHOW_ALL
 
+    # ------------------------------------------------------------------
+    # Argument handling
+    # ------------------------------------------------------------------
+    export_html = False
+    html_path: str | None = None
+
+    # Process custom flags before delegating to existing logic.
     if "--all" in sys.argv:
         SHOW_ALL = True
         sys.argv.remove("--all")
 
+    if "--html" in sys.argv:
+        export_html = True
+        sys.argv.remove("--html")
+        # The HTML output name is always derived from the trace file name
+        # (trace_path + ".html"). No user‑supplied path is accepted.
+        html_path = None
+
+    # ------------------------------------------------------------------
+    # Load messages
+    # ------------------------------------------------------------------
     load_preapproved_files()
 
     if len(sys.argv) < 2:
+        # Reading from stdin – no trace file name.
         messages = load_trace_messages_from_stream(sys.stdin)
+        # Default HTML output when reading from stdin.
+        if export_html and html_path is None:
+            html_path = "stdout.html"
     else:
-        messages = load_trace_messages_from_path(sys.argv[1])
+        trace_path_arg = sys.argv[1]
+        messages = load_trace_messages_from_path(trace_path_arg)
+        if export_html and html_path is None:
+            # Derive an HTML file name from the input trace file.
+            input_path = Path(trace_path_arg)
+            candidate = input_path.with_suffix(".html")
+            # Safety guard: never overwrite the original JSON file.
+            if candidate != input_path:
+                html_path = str(candidate)
+            else:
+                # Fallback to a distinct name if the suffix replacement somehow matches the original.
+                html_path = str(input_path) + ".html"
 
+    # ------------------------------------------------------------------
+    # Render messages
+    # ------------------------------------------------------------------
     for idx, message in enumerate(messages, start=1):
         print_message(message, idx)
+
+    # ------------------------------------------------------------------
+    # Export HTML if requested
+    # ------------------------------------------------------------------
+    if export_html and html_path:
+        try:
+            # Re‑use the same console instance that rendered to the terminal.
+            # ``Console.save_html`` writes a full HTML document. No title argument is needed for the current Rich version.
+            _console.save_html(html_path)
+        except Exception as e:
+            # Fallback to a simple error message on the console.
+            _console.print(f"[red]Failed to write HTML output to {html_path}: {e}[/]")
 
 if __name__ == "__main__":
     main()
