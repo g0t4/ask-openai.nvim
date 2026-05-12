@@ -8,6 +8,7 @@ import sys
 import termios
 import time
 import tty
+import rich
 from datetime import datetime
 from typing import List, Optional
 
@@ -114,8 +115,8 @@ async def main2(browser: TraceBrowser):
         while True:
             char = await reader.readexactly(1)
 
-            # If we receive an ESC character, read the rest of the escape sequence.
-            if char == b'\x1b':
+            ESCAPE = b'\x1b'
+            if char == ESCAPE:
 
                 def wait_for_escape_sequence():
                     # https://en.wikipedia.org/wiki/ANSI_escape_code#Control_Sequence_Introducer_commands
@@ -125,7 +126,7 @@ async def main2(browser: TraceBrowser):
                     #
                     # Most arrow key sequences are 2 more bytes (e.g. ESC [ A).
                     # Read until we have a non‑numeric byte or we reach a reasonable limit.
-                    sequence = char
+                    sequence = ESCAPE
                     # Read the next byte; if it's '[' we expect a final character like 'A', 'B', etc.
                     try:
                         next_byte = await reader.readexactly(1)
@@ -134,13 +135,13 @@ async def main2(browser: TraceBrowser):
                             # Read the final character of the CSI sequence.
                             final = await reader.readexactly(1)
                             sequence += final
-                    except Exception:
-                        # If we fail to read the full sequence just ignore it.
-                        continue
+                    except Exception as e:
+                        rich.print(f"[red]Failed waiting for CSI sequence, skipping sequence: {e}")
+                        return
+
+                    browser.on_csi(sequence)
 
                 wait_for_escape_sequence()
-
-                browser.on_csi(sequence)
                 continue
 
             print(repr(char))
