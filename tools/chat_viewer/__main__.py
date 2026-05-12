@@ -559,12 +559,12 @@ def _format_tool_arguments(func_name: str, arguments: str) -> tuple[list, list]:
     # semantic_grep has a few json args, that's fine to show
     return handle_json_args(arguments)
 
-def print_if_missing_keys(obj, name):
+def print_if_missing_keys(obj, name, tree: Tree):
     if not any(obj.keys()):
         return
 
-    _console.print(f"[red bold]MISSED KEYS on {name}:[/]")
-    pprint_no_truncate(obj)
+    child = tree.add(f"[red bold]MISSED KEYS on {name}:[/]") \
+            .add(_json(obj))
 
 def print_assistant(msg: dict):
     reasoning = msg.get("reasoning_content")
@@ -586,7 +586,7 @@ def print_assistant(msg: dict):
 
     requests = yank(msg, "tool_calls", [])
     if requests:
-        tree = Tree("calls", hide_root=True)
+        tree = Tree("calls", hide_root=True)  # TODO strip away showing connectors between levels
         for call in requests:
             id = yank(call, "id")
             call_type = yank(call, "type")
@@ -596,14 +596,14 @@ def print_assistant(msg: dict):
                 continue
 
             function = yank(call, "function")
+            # function = call.get("function", {}) # FYI use this to test missing keys (doesn't yank)
             func_name = yank(function, "name")
             arguments = yank(function, "arguments")
-            # arguments = function["arguments"]
+
+            print_if_missing_keys(function, "function", tree)
+            print_if_missing_keys(call, "call", tree)
 
             (renderable_parts, renderable_titles) = _format_tool_arguments(func_name, arguments)
-
-            print_if_missing_keys(function, "function")
-            print_if_missing_keys(call, "call")
 
             # PRN add () title args vs remainder of args
             if renderable_titles:
