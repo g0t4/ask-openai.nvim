@@ -641,22 +641,11 @@ def print_message(msg: dict, idx: int):
             print_markdown_message(msg)
 
 def main() -> None:
-    """
-    Entry point for the chat viewer CLI.
-    Supports the existing ``--all`` flag and a new ``--html`` flag.
-    When ``--html`` is present, the rendered output is also saved to a
-    ``.html`` file alongside the input trace (or to ``stdout.html`` when
-    reading from stdin).
-    """
     global SHOW_ALL
 
-    # ------------------------------------------------------------------
-    # Argument handling
-    # ------------------------------------------------------------------
     export_html = False
     html_path: str | None = None
 
-    # Process custom flags before delegating to existing logic.
     if "--all" in sys.argv:
         SHOW_ALL = True
         sys.argv.remove("--all")
@@ -664,13 +653,7 @@ def main() -> None:
     if "--html" in sys.argv:
         export_html = True
         sys.argv.remove("--html")
-        # The HTML output name is always derived from the trace file name
-        # (trace_path + ".html"). No user‑supplied path is accepted.
-        html_path = None
 
-    # ------------------------------------------------------------------
-    # Load messages
-    # ------------------------------------------------------------------
     load_preapproved_files()
 
     if len(sys.argv) < 2:
@@ -693,15 +676,9 @@ def main() -> None:
                 # Fallback to a distinct name if the suffix replacement somehow matches the original.
                 html_path = str(input_path) + ".html"
 
-    # ------------------------------------------------------------------
-    # Render messages
-    # ------------------------------------------------------------------
     for idx, message in enumerate(messages, start=1):
         print_message(message, idx)
 
-    # ------------------------------------------------------------------
-    # Export HTML if requested
-    # ------------------------------------------------------------------
     if export_html and html_path:
         try:
             # Re‑use the same console instance that rendered to the terminal.
