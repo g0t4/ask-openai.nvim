@@ -360,7 +360,7 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
         if isinstance(text, str):
             ext = os.path.splitext(file)[1].lstrip('.').lower() if file else ""
             # YES! this is why this review tool rocks... language specific syntax highlighting!
-            syntax = _syntax(text, ext or "text")
+            syntax = _syntax(text, ext or "text")  # CAREFUL this uses pygment to syntax highlight (color)... and I am opting into defaults whereas my tree.add_syntax() sets a diff theme
             root.add(syntax)
         else:
             root.add_markup(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]") \
