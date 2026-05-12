@@ -188,9 +188,6 @@ def show_unapproved_auto_rag_matches(content: str) -> bool:
     _console.print(root)
     return True
 
-def print_no_markup(what, **kwargs):
-    _console.print(what, markup=False, **kwargs)
-
 def pprint_no_truncate(what):
     # TODO use new _pretty_no_truncate(what) and then get rid of this old pprint_no_truncate()
     # btw expand_all=False is the default and will truncate some sections (shown w/ yellow bg on black text with "...")
