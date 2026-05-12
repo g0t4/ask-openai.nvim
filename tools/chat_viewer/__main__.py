@@ -79,6 +79,7 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "8f9ce1c508b6ed7f217818da62222e65643092d1e679f31cb738153edec72cb0",  # General Code Preferences (FIM one + trailing \n\n) # TODO strip trail new lines before compute hash?
     "f2fea7d3d5637345a1862e068f59c3ac597bb70dbf95d30c32830b082f921cfc",  # General Code Preferences (latest in FIM so no \n\n)
     "06cac07ff8d9db3035a3d154c21a3088e5ef31342d120e64f0eecc2ee2f71c63",  ## General Code Preferences
+    "a67e2c61120110849d3b81f51a76c3ecdcf7b39045da84b92e3055d2016c49ba",  ## General Code Preferences
 ]
 
 def _content_hash(msg: dict[str, Any]) -> str:
