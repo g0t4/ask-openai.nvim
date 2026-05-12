@@ -2,7 +2,7 @@ import traceback
 import os
 import rich
 from rich.console import RenderableType, Console
-from rich.style import Style
+from rich.style import Style, StyleType
 from rich.syntax import Syntax
 from rich.padding import Padding
 from rich.live import Live
@@ -15,7 +15,7 @@ from rich.markdown import Markdown
 import json
 import sys
 import asyncio
-from typing import Any
+from typing import Any, Optional
 
 class TreeWrapper(Tree):
     """ Thin wrapper around :class:`rich.tree.Tree` with additional helpers. """
@@ -38,12 +38,35 @@ class TreeWrapper(Tree):
         if not ends_newline:
             self.add(BLANK_LINE)
 
-    def add(self, *renderables, **kwargs) -> "TreeWrapper":
-        """ make sure child trees are all TreeWrapper type too """
-        node = super().add(*renderables, **kwargs)
-        if not isinstance(node, TreeWrapper):
-            node.__class__ = TreeWrapper
-        node.parent = self
+    def add(
+        self,
+        label: RenderableType,
+        *,
+        style: Optional[StyleType] = None,
+        guide_style: Optional[StyleType] = None,
+        expanded: bool = True,
+        highlight: Optional[bool] = False,
+    ) -> "TreeWrapper":
+        """Add a child tree.
+
+        Args:
+            label (RenderableType): The renderable or str for the tree label.
+            style (StyleType, optional): Style of this tree. Defaults to "tree".
+            guide_style (StyleType, optional): Style of the guide lines. Defaults to "tree.line".
+            expanded (bool, optional): Also display children. Defaults to True.
+            highlight (Optional[bool], optional): Highlight renderable (if str). Defaults to False.
+
+        Returns:
+            Tree: A new child Tree, which may be further modified.
+        """
+        node = TreeWrapper(
+            label,
+            style=self.style if style is None else style,
+            guide_style=self.guide_style if guide_style is None else guide_style,
+            expanded=expanded,
+            highlight=self.highlight if highlight is None else highlight,
+        )
+        self.children.append(node)
         return node
 
     def add_no_markup(self, text: str, **kwargs) -> "TreeWrapper":
