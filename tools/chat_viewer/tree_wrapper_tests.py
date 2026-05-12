@@ -40,18 +40,9 @@ class TestTreeWrapper_SectionsFromJsonKeys:
         return console.export_text()
 
     def test_primitive_values_do_not_fail(self) -> None:
-        # Build the tree
         wrapper = TreeWrapper()
         wrapper.add_sections_from_json_keys('{"a": 1, "b": "text", "c": true}')
 
-        # TODO get rid of internal checks OR get rid of export_text checks below?
-        assert len(wrapper.children) == 3
-        labels = [child.label for child in wrapper.children]
-        assert any("a:" in lbl and "1" in lbl for lbl in labels)
-        assert any("b:" in lbl and "text" in lbl for lbl in labels)
-        assert any("c:" in lbl and "True" in lbl for lbl in labels)
-
-        # Render the tree and assert on the final output string
         recorded = self.record_tree_to_string(wrapper)
 
         # FYI export_text() does not include markup nor ansi escape codes AFAICT (not OOB anyways)
