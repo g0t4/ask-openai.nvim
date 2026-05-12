@@ -24,6 +24,12 @@ def test_sections_from_json_keys():
 
 class Test_TreeWrapper_add_list_of_key_value_pairs:
 
+    def test_py_dict(self):
+        tree = TreeWrapper()
+        tree.add_list_of_key_value_pairs({"key": "value"})
+        recorded = self.record_plaintext(tree)
+        assert "key: value" in recorded
+
     def test_json_dict_value(self):
         tree = TreeWrapper()
         tree.add_sections_from_json_keys('{"key": {"inner": "value"}}')
