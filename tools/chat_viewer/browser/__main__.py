@@ -96,10 +96,10 @@ async def main2(browser: TraceBrowser):
         await loop.connect_read_pipe(lambda: protocol, sys.stdin)
 
         while True:
-            ch = await reader.readexactly(1)
+            char = await reader.readexactly(1)
 
             # If we receive an ESC character, read the rest of the escape sequence.
-            if ch == b'\x1b':
+            if char == b'\x1b':
                 # Most arrow key sequences are 2 more bytes (e.g. ESC [ A).
                 # Read until we have a non‑numeric byte or we reach a reasonable limit.
                 seq = b'\x1b'
@@ -129,18 +129,18 @@ async def main2(browser: TraceBrowser):
                 continue  # Skip the rest of the loop for escape sequences.
 
             # Normal single‑character commands
-            print(repr(ch))
-            if ch == b'b':
+            print(repr(char))
+            if char == b'b':
                 browser._move(-1)
-            elif ch == b'f':
+            elif char == b'f':
                 browser._move(1)
-            elif ch == b'\n':
+            elif char == b'\n':
                 trace = browser._current_trace()
                 if trace:
                     launch_chat_viewer(trace)
                 else:
                     print("No trace to display.")
-            elif ch == b'q':
+            elif char == b'q':
                 print("Exiting.")
                 break
 
