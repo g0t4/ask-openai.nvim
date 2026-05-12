@@ -134,7 +134,7 @@ class TreeWrapper(Tree):
             self.add_no_markup(text)
 
     def add_section(self, title: str, value: Any):
-        section = self.add_markup(f"[bold]{title}[/]:")
+        section = self.add_markup(f"[blue]{title}[/]:")
         if isinstance(value, str):
             section.show_truncated_string(value)
         else:
