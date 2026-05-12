@@ -504,6 +504,8 @@ def _handle_run_command_and_run_process(arguments: str):
             # argv = yank(loaded, "argv", [])
             # command = yank(loaded, "command", None)
 
+            if command_line and argv:
+                raise ValueError("Ambiguous run_process - both command_line and argv are set")
             if command_line:
                 # del loaded["command_line"]
                 return command_line
