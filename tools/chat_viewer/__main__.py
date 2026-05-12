@@ -374,8 +374,8 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
 
 def _add_unrecognized(root: TreeWrapper, content: Any) -> None:
     # FYI this is just a warning to consider adding handlers for it
-    root.add("[yellow bold]UNRECOGNIZED RESULT TYPE:[/]")
-    root.add(_pretty_no_truncate(content))
+    root.add("[yellow bold]UNRECOGNIZED RESULT TYPE:[/]") \
+        .add(_pretty_no_truncate(content))
 
 def print_tool_result_message(msg: Dict[str, Any]) -> None:
     content = decode_if_json(msg.get("content", ""))
