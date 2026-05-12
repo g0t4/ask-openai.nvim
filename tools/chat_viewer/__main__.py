@@ -409,7 +409,6 @@ def _handle_apply_patch(arguments: str, tree: Tree):
 
     try:
         parsed = json.loads(arguments)
-        raise RuntimeError("FOOO")
     except Exception as err:
         return _add_error(child, "Failed parsing arguments", err, arguments)
 
