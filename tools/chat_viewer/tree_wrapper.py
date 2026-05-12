@@ -62,7 +62,7 @@ class TreeWrapper(Tree):
 
     def add(
         self,
-        label: RenderableType,
+        label: RenderableType | None = None,
         *,
         style: Optional[StyleType] = None,
         guide_style: Optional[StyleType] = None,

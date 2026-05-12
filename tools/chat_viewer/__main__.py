@@ -563,7 +563,7 @@ def print_assistant(msg: dict):
 
     requests = yank(msg, "tool_calls", [])
     if requests:
-        calls_tree = TreeWrapper("calls", hide_root=True)
+        calls_tree = root.add("")
         for call in requests:
             call_id = yank(call, "id")
             call_type = yank(call, "type")

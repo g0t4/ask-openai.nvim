@@ -13,3 +13,8 @@ def test_sections_from_json_keys():
     wrapper.add_sections_from_json_keys('{"section1": {}, "section2": {}}')
     assert "section1" in wrapper.children[0].label
     assert "section2" in wrapper.children[1].label
+
+def test_add_without_label_should_use_empty_string():
+    wrapper = TreeWrapper()
+    node = wrapper.add()
+    assert node.label == ""
