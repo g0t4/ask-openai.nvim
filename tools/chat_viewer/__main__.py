@@ -20,7 +20,7 @@ from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.tree_wrapper import TreeWrapper
 
 # Enable recording so that ``save_html`` can export the rendered output.
-_console = Console(color_system="truecolor", record=True)
+_console = Console(color_system="truecolor")
 
 preapproved_file_patterns: list[re.Pattern] = []
 SHOW_ALL = False
@@ -652,6 +652,7 @@ def main() -> None:
     if "--html" in sys.argv:
         export_html = True
         sys.argv.remove("--html")
+        _console.record = True
 
     load_preapproved_files()
 
