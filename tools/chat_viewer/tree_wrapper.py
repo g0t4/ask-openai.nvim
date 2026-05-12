@@ -42,6 +42,7 @@ class TreeWrapper(Tree):
         self.hide_root = hide_root
         #
         self.parent = parent
+        self.TREE_GUIDES = [("    ", "    ", "    ", "    ")]
 
     def blank_line(self) -> None:
         BLANK_LINE = ""
