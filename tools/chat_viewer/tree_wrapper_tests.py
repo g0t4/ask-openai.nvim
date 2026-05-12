@@ -1,6 +1,9 @@
 # test case for TreeWrapper.add
-
+import json
 import pytest
+from io import StringIO
+from rich.console import Console
+
 from tools.chat_viewer.tree_wrapper import TreeWrapper
 
 def test_create_tree_without_label_nor_parent():
@@ -31,15 +34,37 @@ class TestTreeWrapper_SectionsFromJsonKeys:
         # right now dict is serialized to JSON...
         assert '{"inner": "value"}' in child.label
 
-    def test_primitive_values(self):
-        wrapper = TreeWrapper()
+    def record_tree_to_string(self, tree: TreeWrapper) -> str:
+        console = Console(record=True, width=120, force_terminal=False)
+        console.print(tree)
+        # ``export_text`` returns a ``str`` with all markup stripped.
+        return console.export_text()
+
+    def test_primitive_values_do_not_fail(self) -> None:
+        # Build the tree
         wrapper = TreeWrapper()
         wrapper.add_sections_from_json_keys('{"a": 1, "b": "text", "c": true}')
+
+        # TODO get rid of internal checks OR get rid of export_text checks below?
         assert len(wrapper.children) == 3
         labels = [child.label for child in wrapper.children]
-        assert any("a: " in lbl and " 1" in lbl for lbl in labels)
-        assert any("b: " in lbl and " text" in lbl for lbl in labels)
-        assert any("c: " in lbl and " True" in lbl for lbl in labels)
+        assert any("a:" in lbl and "1" in lbl for lbl in labels)
+        assert any("b:" in lbl and "text" in lbl for lbl in labels)
+        assert any("c:" in lbl and "True" in lbl for lbl in labels)
+
+        # Render the tree and assert on the final output string
+        recorded = self.record_tree_to_string(wrapper)
+
+        # FYI export_text() does not include markup nor ansi escape codes AFAICT (not OOB anyways)
+        expected_fragments = [
+            # at least make sure no errors writing the values
+            "a: 1",
+            "b: text",
+            "c: True",
+        ]
+
+        for fragment in expected_fragments:
+            assert fragment in recorded, f"Missing fragment in recorded output: {fragment}"
 
 def test_add_without_label_should_use_empty_string():
     wrapper = TreeWrapper()
