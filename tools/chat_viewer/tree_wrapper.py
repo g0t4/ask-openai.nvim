@@ -22,6 +22,27 @@ class TreeWrapper(Tree):
 
     parent: "TreeWrapper | None" = None
 
+    def __init__(
+        self,
+        label: RenderableType | None = None,
+        parent: "TreeWrapper | None" = None,
+        style: StyleType = "tree",
+        guide_style: StyleType = "tree.line",
+        expanded: bool = True,
+        highlight: bool = False,
+        hide_root: bool = False,
+    ) -> None:
+        # parent specific config:
+        self.label = label or ""
+        self.style = style
+        self.guide_style = guide_style
+        self.children: List[Tree] = []
+        self.expanded = expanded
+        self.highlight = highlight
+        self.hide_root = hide_root
+        #
+        self.parent = parent
+
     def blank_line(self) -> None:
         BLANK_LINE = ""
 
