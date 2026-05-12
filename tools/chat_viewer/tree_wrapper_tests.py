@@ -41,19 +41,22 @@ def get_recorded(what):
 class Test_TreeWrapper_add_list_of_key_value_pairs:
 
     def test_python_dict(self):
+        # print(get_recorded({"key": 1}))
         # * scalar types for values in items (key/value pairs)
-        assert "key: string_value" in get_recorded({"key": "string_value"})
-        assert "key: 1" in get_recorded({"key": 1})
-        assert "key: True" in get_recorded({"key": True})
-        assert "key: 1.1" in get_recorded({"key": 1.1})
-        assert "key: None" in get_recorded({"key": None})
+        assert get_recorded({"key": "string_value"}) == "\n    key: string_value\n"
+        assert get_recorded({"key": 1}) == "\n    key: 1\n"
+        # assert get_recorded({"key": 1}) == "key: 1" # TODO switch to equality checks (at least in some cases)
+        assert get_recorded({"key": True}) == "\n    key: True\n"
+        assert get_recorded({"key": 1.1}) == "\n    key: 1.1\n"
+        assert get_recorded({"key": None}) == "\n    key: None\n"
 
     def test_python_list(self):
         # TODO is this really how I want this to look? each item on its own line if primitive?
-        assert """key:\n        ['item1', 'item2']""" in get_recorded({"key": ["item1", "item2"]})
-        assert """key:\n        [1, 1.1]""" in get_recorded({"key": [1, 1.1]})
-        assert """key:\n        [None]""" in get_recorded({"key": [None]})
-        assert """key:\n        [{'foo': 'bar'}]""" in get_recorded({"key": [{"foo": "bar"}]})
+        assert get_recorded({"key": ["item1", "item2"]}) == "\n    key:\n        ['item1', 'item2']\n"
+        assert get_recorded({"key": [1, 1.1]}) == "\n    key:\n        [1, 1.1]\n"
+        assert get_recorded({"key": [None]}) == "\n    key:\n        [None]\n"
+        assert get_recorded({"key": [{"foo": "bar"}]}) == "\n    key:\n        [{'foo': 'bar'}]\n"
+
 
     def test_json_dict_value(self):
         assert """key:\n        {'inner': 'value'}""" in get_recorded_from_json('{"key": {"inner": "value"}}')
