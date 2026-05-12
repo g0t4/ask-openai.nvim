@@ -219,15 +219,14 @@ def load_messages_jsonl(path: Path) -> Iterable[dict[str, Any]]:
         message = json.loads(line)
         yield message
 
-def load_trace_messages_from_path(argv1: str) -> list[dict[str, Any]]:
-    request_file = Path(argv1)
-    if not request_file.is_file():
-        print(f"File not found: {request_file}")
+def load_trace_messages_from_path(trace_file: Path) -> list[dict[str, Any]]:
+    if not trace_file.is_file():
+        print(f"File not found: {trace_file}")
         sys.exit(1)
-    if argv1.endswith("-messages.jsonl"):
-        return list(load_messages_jsonl(request_file))
+    if str(trace_file).endswith("-messages.jsonl"):
+        return list(load_messages_jsonl(trace_file))
 
-    with request_file.open("r", encoding="utf-8") as f:
+    with trace_file.open("r", encoding="utf-8") as f:
         data = json.load(f)
     messages = load_messages(data)
 
@@ -240,7 +239,7 @@ def load_trace_messages_from_path(argv1: str) -> list[dict[str, Any]]:
             messages.append(response)
     else:
         # * legacy output.json
-        output_path = request_file.parent / "output.json"
+        output_path = trace_file.parent / "output.json"
         if output_path.is_file():
             with output_path.open("r", encoding="utf-8") as f:
                 response = json.load(f)
@@ -657,14 +656,12 @@ def main() -> None:
     load_preapproved_files()
 
     if len(sys.argv) < 2:
-        # Reading from stdin – no trace file name.
         messages = load_trace_messages_from_stream(sys.stdin)
-        # Default HTML output when reading from stdin.
         if export_html and html_path is None:
             html_path = "stdout.html"
     else:
-        trace_path_arg = sys.argv[1]
-        messages = load_trace_messages_from_path(trace_path_arg)
+        trace_file = Path(sys.argv[1])
+        messages = load_trace_messages_from_path(trace_file)
         if export_html and html_path is None:
             # Derive an HTML file name from the input trace file.
             input_path = Path(trace_path_arg)
