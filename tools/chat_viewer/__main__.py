@@ -580,12 +580,11 @@ def print_assistant_message(msg: dict):
 
     requests = yank(msg, "tool_calls", [])
     if requests:
-        calls_tree = root.add("")
         for call in requests:
             call_id = yank(call, "id")
             call_type = yank(call, "type")
             if call_type != "function":
-                calls_tree.add(f"- UNHANDLED TYPE '{call_type}' on tool call id: '{call_id}'") \
+                root.add(f"- UNHANDLED TYPE '{call_type}' on tool call id: '{call_id}'") \
                     .add(_json(call))
                 continue
 
@@ -594,12 +593,11 @@ def print_assistant_message(msg: dict):
             func_name = yank(function, "name")
             arguments = yank(function, "arguments")
 
-            print_if_missing_keys(function, "function", calls_tree)
-            print_if_missing_keys(call, "call", calls_tree)
+            print_if_missing_keys(function, "function", root)
+            print_if_missing_keys(call, "call", root)
 
-            add_tool_call_request(func_name, arguments, calls_tree)
+            add_tool_call_request(func_name, arguments, root)
 
-        root.add(calls_tree)
 
     _console.print(root)
     _console.print()  # blank line
