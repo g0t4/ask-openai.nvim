@@ -26,13 +26,12 @@ class TestTreeWrapper_SectionsFromJsonKeys:
 
     def test_dict_value(self):
         wrapper = TreeWrapper()
-        # TODO do something better than json for complex values... later
         wrapper.add_sections_from_json_keys('{"key": {"inner": "value"}}')
 
         recorded = self.record_tree_to_string(wrapper)
 
-        # TODO change how this displays (not JSON) and add assertions
-        assert '{"inner": "value"}' in recorded
+        assert """key:
+        inner: value""" in recorded
 
     def record_tree_to_string(self, tree: TreeWrapper) -> str:
         console = Console(record=True, width=120, force_terminal=False)

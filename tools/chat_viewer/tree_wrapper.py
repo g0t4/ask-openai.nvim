@@ -123,15 +123,24 @@ class TreeWrapper(Tree):
             return
         # FYI basically I want a JSON like dump with leading and trailing { and } which waste space...
         for key, value in obj.items():
-            # for scalars I do not want to nest the value, I want it to be part of label (after key):
             display = None
             if isinstance(value, (str, int, float, bool)):
+                # single line => key: value
                 display = Text.from_markup(f"[blue]{key}:[/] ") + Text(str(value))
+                self.add(display)
+                continue
+            display = Text.from_markup(f"[blue]{key}:[/]")
+            child = self.add(display)
+            if isinstance(value, dict):
+                child.add_list_of_key_value_pairs(value)
             else:
-                display = Text.from_markup(f"[blue]{key}:[/] ") + Text(json.dumps(value, ensure_ascii=False))
-            # print as if values are all str/bool/number ...
-            # PRN handle list/dict if that arises later, in this case nesting value MAY make sense, but maybe not too (i.e. list of numbers would look fine "inline")
-            self.add(display)
+                # list
+                for item in value:
+                    if isinstance(item, (str, int, float, bool)):
+                        child.add_no_markup(str(item))
+                    else:
+                        child.add_pretty(item)
+
         return self
 
     def show_truncated_string(self, text: str):
