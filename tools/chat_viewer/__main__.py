@@ -192,6 +192,7 @@ def pprint_no_truncate(what):
     pprint(what, expand_all=True, indent_guides=False)
 
 def _pretty_no_truncate(text: Any):
+    # ?? was I relying on soft_wrap=True from pprint (this replaced pprint)? if yes, what makes sense in a Tree instead?
     return Pretty(
         text,
         indent_guides=False,
@@ -366,7 +367,6 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
         else:
             match_node.add_markup(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]") \
                 .add(_pretty_no_truncate(text))
-            # TODO was I relying on soft_wrap=True which is also done by pprint? if yes, what makes sense in a Tree instead?
 
         counter += 1
 
