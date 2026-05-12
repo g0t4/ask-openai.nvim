@@ -379,12 +379,13 @@ def _add_unrecognized(root: TreeWrapper, content: Any) -> None:
         .add(_pretty_no_truncate(content))
 
 def print_tool_result_message(msg: Dict[str, Any]) -> None:
-    content = decode_if_json(msg.get("content", ""))
     root = TreeWrapper.hidden_root()
 
+    content = decode_if_json(msg.get("content", ""))
     handled = _add_rag_matches(root, content) or _add_mcp_result(root, content)
     if not handled:
         _add_unrecognized(root, content)
+
     _console.print(root)
 
 def _add_mcp_result(root: TreeWrapper, content: Dict[str, Any]) -> bool:
