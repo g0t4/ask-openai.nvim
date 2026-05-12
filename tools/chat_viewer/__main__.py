@@ -399,23 +399,27 @@ def print_mcp_result(content):
     # print_asis(content)
     return True
 
+def _add_error(tree, message, err, context):
+    child = tree.add(Text.from_markup(f"[white bold on red]{message}"))
+    child.add(str(err))
+    return child.add(context)
+
 def _handle_apply_patch(arguments: str, tree: Tree):
     child = tree.add(format_call_title("apply_patch"))
 
     try:
         parsed = json.loads(arguments)
-    except Exception as e:
-        node = child.add(Text.from_markup("[white bold on red]Failed parsing arguments"))
-        node.add(str(e))
-        return node.add(f"arguments: {arguments}")
+        raise RuntimeError("FOOO")
+    except Exception as err:
+        return _add_error(child, "Failed parsing arguments", err, arguments)
 
     if isinstance(parsed, dict) and "patch" in parsed:
         patch_content = str(parsed["patch"])
         try:
             syntax = _syntax(patch_content, "diff")
             return child.add(syntax)
-        except Exception:
-            return child.add(patch_content)
+        except Exception as err:
+            return _add_error(child, "Failed parsing arguments", err, patch_content)
 
     if isinstance(parsed, dict):
         return child.add(json.dumps(parsed, ensure_ascii=False))
@@ -496,17 +500,14 @@ def show_remaining_keys(loaded, tree: Tree):
         tree.add(display)
 
 def _handle_run_command_and_run_process(arguments: str, call_tree: Tree):
-    renderables = []
     try:
         loaded = json.loads(arguments)
-        # child.add(loaded) # debugging
         # child.add(_json(loaded)) # debugging
         mode = yank(loaded, "mode")
         if mode:
             call_tree.add(Text.from_markup(f"[bold]legacy {mode=}[/]"))  # Ok to drop this too
 
         def get_display_command():
-
             # load all available values so I can look for invalid combinations
             command_line = yank(loaded, "command_line", None)
             argv = yank(loaded, "argv", [])
@@ -526,9 +527,7 @@ def _handle_run_command_and_run_process(arguments: str, call_tree: Tree):
         show_remaining_keys(loaded, call_tree)
 
     except Exception as err:
-        call_tree.add(Text.from_markup("[white bold on red]Failed parsing command"))
-        call_tree.add(Text(f"ERROR: {err}"))
-        call_tree.add(Text(f"original arguments: {arguments}"))
+        _add_error(call_tree, "Failed parsing command", err, arguments)
 
 def format_call_title(title):
     return f"- {title}"
