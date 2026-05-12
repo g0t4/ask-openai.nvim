@@ -116,25 +116,29 @@ async def main2(browser: TraceBrowser):
 
             # If we receive an ESC character, read the rest of the escape sequence.
             if char == b'\x1b':
-                # https://en.wikipedia.org/wiki/ANSI_escape_code#Control_Sequence_Introducer_commands
-                # - followed by any number (including none) of "parameter bytes" in the range 0x30–0x3F (ASCII 0–9:;<=>?)
-                # - then by any number of "intermediate bytes" in the range 0x20–0x2F (ASCII space and !"#$%&'()*+,-./)
-                # - then finally by a single "final byte" in the range 0x40–0x7E (ASCII @A–Z[\]^_`a–z{|}~)
-                #
-                # Most arrow key sequences are 2 more bytes (e.g. ESC [ A).
-                # Read until we have a non‑numeric byte or we reach a reasonable limit.
-                sequence = char
-                # Read the next byte; if it's '[' we expect a final character like 'A', 'B', etc.
-                try:
-                    next_byte = await reader.readexactly(1)
-                    sequence += next_byte
-                    if next_byte == b'[':
-                        # Read the final character of the CSI sequence.
-                        final = await reader.readexactly(1)
-                        sequence += final
-                except Exception:
-                    # If we fail to read the full sequence just ignore it.
-                    continue
+
+                def wait_for_escape_sequence():
+                    # https://en.wikipedia.org/wiki/ANSI_escape_code#Control_Sequence_Introducer_commands
+                    # - followed by any number (including none) of "parameter bytes" in the range 0x30–0x3F (ASCII 0–9:;<=>?)
+                    # - then by any number of "intermediate bytes" in the range 0x20–0x2F (ASCII space and !"#$%&'()*+,-./)
+                    # - then finally by a single "final byte" in the range 0x40–0x7E (ASCII @A–Z[\]^_`a–z{|}~)
+                    #
+                    # Most arrow key sequences are 2 more bytes (e.g. ESC [ A).
+                    # Read until we have a non‑numeric byte or we reach a reasonable limit.
+                    sequence = char
+                    # Read the next byte; if it's '[' we expect a final character like 'A', 'B', etc.
+                    try:
+                        next_byte = await reader.readexactly(1)
+                        sequence += next_byte
+                        if next_byte == b'[':
+                            # Read the final character of the CSI sequence.
+                            final = await reader.readexactly(1)
+                            sequence += final
+                    except Exception:
+                        # If we fail to read the full sequence just ignore it.
+                        continue
+
+                wait_for_escape_sequence()
 
                 browser.on_csi(sequence)
                 continue
