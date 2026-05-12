@@ -518,14 +518,13 @@ def _handle_run_command_and_run_process(arguments: str):
                 return command
             raise ValueError("No command found")
 
-        command = _bash(get_display_command())
-        renderables.append(command)
+        renderables.append(_bash(get_display_command()))
 
-        if not any(loaded):
-            return renderables, title_renderables
+        if any(loaded):
+            renderables.extend(["remaining keys:", _json(loaded)])
 
-        remaining_keys = _json(loaded)
-        renderables.extend(["remaining keys:", remaining_keys])
+        return renderables, title_renderables
+
     except Exception as err:
         renderables.extend([
             Text.from_markup("[white bold on red]Failed parsing command"),
