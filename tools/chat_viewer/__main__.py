@@ -484,12 +484,12 @@ def show_remaining_keys(loaded, renderables):
     if not any(loaded):
         return
     # FYI basically I want a JSON like dump with leading and trailing { and } which waste space...
-    tree = Tree("remaining keys")
+    tree = Tree("", hide_root=True)  # FYI don't need the nesting anymore
     renderables.append(tree)
     for key in loaded.keys():
         value = loaded.get(key)
         display = f"{key}: {value}"
-        # TODO anything fancy for value rendering? i.e. value is list/dict?
+        # print as if values are all str/bool/number ... handle list/dict if that arises later
         tree.add(display)
 
 def _handle_run_command_and_run_process(arguments: str):
