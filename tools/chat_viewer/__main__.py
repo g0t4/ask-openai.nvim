@@ -293,7 +293,7 @@ def _extract_content(msg: dict) -> str:
         return content["text"]
     return content  # type: ignore
 
-def print_markdown_message(msg: dict, role: str):
+def print_markdown_message(msg: dict):
     raw_content = _extract_content(msg)
     if not raw_content:
         return
@@ -623,7 +623,7 @@ def print_message(msg: dict, idx: int):
         case "assistant":
             print_assistant_message(msg)
         case "system" | "developer" | "user" | _:
-            print_markdown_message(msg, role)
+            print_markdown_message(msg)
 
 def main() -> None:
     global SHOW_ALL
