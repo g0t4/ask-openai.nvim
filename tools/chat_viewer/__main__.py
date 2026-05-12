@@ -479,6 +479,10 @@ def _json(data: dict) -> Syntax:
         # line_numbers=True,
     )
 
+def show_remaining_keys(loaded, renderables):
+    if any(loaded):
+        renderables.extend(["remaining keys:", _json(loaded)])
+
 def _handle_run_command_and_run_process(arguments: str):
     title_renderables = []
     renderables = []
@@ -512,9 +516,7 @@ def _handle_run_command_and_run_process(arguments: str):
             raise ValueError("No command found")
 
         renderables.append(_bash(get_display_command()))
-
-        if any(loaded):
-            renderables.extend(["remaining keys:", _json(loaded)])
+        show_remaining_keys(loaded, renderables)
 
         return renderables, title_renderables
 
