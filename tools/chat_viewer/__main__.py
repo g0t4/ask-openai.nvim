@@ -500,13 +500,15 @@ def _handle_run_command_and_run_process(arguments: str):
 
             if command_line:
                 del loaded["command_line"]
-                display_command = command_line
+                return command_line
             if argv:
-                argv = loaded.get("argv", [])
-                display_command = " ".join(map(str, argv))
+                del loaded["argv"]
+                return " ".join(map(str, argv))
             if command:
+                del loaded["command"]
                 # legacy run_command tool (pre run_process)
-                display_command = yank(loaded, "command")
+                return command
+            raise ValueError("MISSING COMMAND")
 
         display_command = get_display_command()
         if display_command:
