@@ -399,7 +399,7 @@ def print_mcp_result(content):
     # print_asis(content)
     return True
 
-def _handle_apply_patch(arguments: str, tree: TreeWrapper):
+def _add_apply_patch(arguments: str, tree: TreeWrapper):
     child = tree.add(format_call_title("apply_patch"))
 
     try:
@@ -493,7 +493,7 @@ def show_remaining_keys(loaded, tree: TreeWrapper):
         # print as if values are all str/bool/number ... handle list/dict if that arises later
         tree.add(display)
 
-def _handle_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
+def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
     try:
         loaded = json.loads(arguments)
         # child.add(_json(loaded)) # debugging
@@ -526,7 +526,7 @@ def _handle_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
 def format_call_title(title):
     return f"- {title}"
 
-def _handle_generic_tool(func_name: str, arguments: str, tree: TreeWrapper):
+def _add_generic_tool(func_name: str, arguments: str, tree: TreeWrapper):
     child = tree.add(format_call_title(func_name))
     try:
         loaded = json.loads(arguments)
@@ -539,14 +539,14 @@ def _handle_unknown_tool(arguments: str):
 
 def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper) -> tuple[list, list]:
     if func_name == "apply_patch":
-        return _handle_apply_patch(arguments, tree)
+        return _add_apply_patch(arguments, tree)
 
     if func_name in ("run_command", "run_process"):
         child = tree.add(format_call_title(func_name))
-        return _handle_run_command_and_run_process(arguments, child)
+        return _add_run_command_and_run_process(arguments, child)
 
     # FYI semantic_grep works good with generic right now:
-    return _handle_generic_tool(func_name, arguments, tree)
+    return _add_generic_tool(func_name, arguments, tree)
 
 def print_if_missing_keys(obj, name, tree: TreeWrapper):
     if not any(obj.keys()):
