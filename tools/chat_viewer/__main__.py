@@ -548,7 +548,7 @@ def handle_json_args(arguments: str):
 def _handle_unknown_tool(arguments: str):
     return arguments
 
-def _format_tool_arguments(func_name: str, arguments: str) -> tuple[list, list]:
+def add_tool_call_request(func_name: str, arguments: str) -> tuple[list, list]:
     if func_name == "apply_patch":
         return _handle_apply_patch(arguments)
 
@@ -603,20 +603,7 @@ def print_assistant(msg: dict):
             print_if_missing_keys(function, "function", tree)
             print_if_missing_keys(call, "call", tree)
 
-            (renderable_parts, renderable_titles) = _format_tool_arguments(func_name, arguments)
-
-            # PRN add () title args vs remainder of args
-            if renderable_titles:
-                titles = ", ".join(map(str, renderable_titles))
-                _console.print(f"- {func_name}({titles}):")
-            else:
-                _console.print(f"- {func_name}:")
-
-            if isinstance(renderable_parts, list):
-                for part in renderable_parts:
-                    print_no_markup(Padding(part, (0, 0, 0, 4)))
-            else:
-                print_no_markup(Padding(renderable_parts, (0, 0, 0, 4)))
+            add_tool_call_request(func_name, arguments, tree)
 
         _console.print(tree)
         _console.print()  # blank line
