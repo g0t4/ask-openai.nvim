@@ -325,10 +325,11 @@ def decode_if_json(content):
     # keep w/e type (dict, list, etc... don't care)
     return content
 
-def print_rag_matches(content):
+def _add_rag_matches(root: TreeWrapper, content: Any):
     has_rag_matches = "matches" in content and isinstance(content["matches"], list)
     if not has_rag_matches:
         return False
+
     matches = content["matches"]
     counter = 1  # show counter for easily tracking where I am at in the list
     for match in matches:
@@ -342,16 +343,28 @@ def print_rag_matches(content):
         if skip:
             continue
 
+        header = f"## MATCH {idx}"
         if file:
-            _console.print(f"\n## MATCH {counter}: [bold]{file}[/]")
+            header += f": [bold]{file}[/]"
+        match_node: Tree = root.add(header)
+
         if isinstance(text, str):
             ext = os.path.splitext(file)[1].lstrip('.').lower() if file else ""
             # YES! this is why this review tool rocks... language specific syntax highlighting!
             syntax = _syntax(text, ext or "text")
-            _console.print(syntax)
+            match_node.add(syntax)
         else:
-            _console.print(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]")
-            pprint_no_truncate(text)
+            match_node.add_markup(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]") \
+                .add(Pretty(
+                    text,
+                    indent_guides=False,
+                    expand_all=True,
+                ))
+            # soft_wrap=True, # this is part of pprint().. does it map to Tree at all?
+
+            # TODO add_pretty_expanded_all or smth
+            # pprint_no_truncate(text)
+            # pprint(what, expand_all=True, indent_guides=False)
 
         counter += 1
 
