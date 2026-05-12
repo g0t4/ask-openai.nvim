@@ -151,7 +151,8 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
 
     return [SectionDTO(content=sec) for sec in split_h2_markdown_sections(content)]
 
-def show_unapproved_rag_matches(content: str) -> bool:
+def show_unapproved_auto_rag_matches(content: str) -> bool:
+    # TODO print with tree
     if not content.strip().startswith('# Semantic Grep matches:'):
         return False
 
@@ -307,7 +308,7 @@ def print_markdown_message(msg: dict):
     if not raw_content:
         return
 
-    if show_unapproved_rag_matches(raw_content):
+    if show_unapproved_auto_rag_matches(raw_content):
         return
 
     sections = _split_content_into_sections(raw_content)
