@@ -358,10 +358,10 @@ def print_rag_matches(content):
     # pprint_asis(content) # for dumping full content
     return True
 
-def print_result_unrecognized(content):
+def print_result_unrecognized(root: TreeWrapper, content: Any) -> None:
     # FYI this is just a warning to consider adding handlers for it
-    _console.print(f"[yellow bold]UNRECOGNIZED RESULT TYPE:[/]")
-    pprint_no_truncate(content)
+    root.add("[yellow bold]UNRECOGNIZED RESULT TYPE:[/]")
+    root.add(pprint_no_truncate(content))
 
 def print_tool_result_message(msg: dict[str, Any]):
     content = msg.get("content", "")
