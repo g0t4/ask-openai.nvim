@@ -186,9 +186,17 @@ def print_no_markup(what, **kwargs):
     _console.print(what, markup=False, **kwargs)
 
 def pprint_no_truncate(what):
+    # TODO use new _pretty_no_truncate(what) and then get rid of this old pprint_no_truncate()
     # btw expand_all=False is the default and will truncate some sections (shown w/ yellow bg on black text with "...")
     #   for now just always show everything given the review is supposed to be exhaustive and so far I haven't noticed much that is a huge burden
     pprint(what, expand_all=True, indent_guides=False)
+
+def _pretty_no_truncate(text: Any):
+    return Pretty(
+        text,
+        indent_guides=False,
+        expand_all=True,
+    )
 
 def yank(mapping, key: str, default=None):
     value = mapping.get(key, default)
@@ -355,16 +363,8 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
             match_node.add(syntax)
         else:
             match_node.add_markup(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]") \
-                .add(Pretty(
-                    text,
-                    indent_guides=False,
-                    expand_all=True,
-                ))
-            # soft_wrap=True, # this is part of pprint().. does it map to Tree at all?
-
-            # TODO add_pretty_expanded_all or smth
-            # pprint_no_truncate(text)
-            # pprint(what, expand_all=True, indent_guides=False)
+                .add(_pretty_no_truncate(text))
+            # TODO was I relying on soft_wrap=True which is also done by pprint? if yes, what makes sense in a Tree instead?
 
         counter += 1
 
@@ -375,14 +375,14 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
 def _add_unrecognized(root: TreeWrapper, content: Any) -> None:
     # FYI this is just a warning to consider adding handlers for it
     root.add("[yellow bold]UNRECOGNIZED RESULT TYPE:[/]")
-    root.add(pprint_no_truncate(content))
+    root.add(_pretty_no_truncate(content))
 
 def print_tool_result_message(msg: Dict[str, Any]) -> None:
     content = decode_if_json(msg.get("content", ""))
     root = TreeWrapper()
 
     if not isinstance(content, dict):
-        root.add(pprint_no_truncate(content))
+        root.add(_pretty_no_truncate(content))
         _console.print(root)
         return
 
