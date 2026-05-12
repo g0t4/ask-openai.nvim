@@ -144,7 +144,6 @@ async def main2(browser: TraceBrowser):
                 wait_for_escape_sequence()
                 continue
 
-            print(repr(char))
             if char == b'b':
                 browser._move(-1)
             elif char == b'f':
@@ -158,6 +157,8 @@ async def main2(browser: TraceBrowser):
             elif char == b'q':
                 print("Exiting.")
                 break
+            else:
+                rich.print(f"[dim]no handler for {char=}[/]")
 
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
