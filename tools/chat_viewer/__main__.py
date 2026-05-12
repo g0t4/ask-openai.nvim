@@ -124,7 +124,6 @@ class SectionDTO:
         lines = self.content.splitlines()
         header_line = lines[0]  # should be ## line always
         content = "\n".join(lines[1:])
-        header_render = Text(header_line, style="bold")
 
         # * special emphasis on key sections
         emphasize_headings: dict[str, str] = {
@@ -132,13 +131,17 @@ class SectionDTO:
             # add other mappings here as needed
         }
 
+        header_render = None
         for heading, apply_style in emphasize_headings.items():
             if heading in header_line:
                 header_render = Text(header_line, style=apply_style)
                 break
 
-        body_render = _syntax(content, "markdown")
-        return Group(header_render, body_render)
+        if header_render:
+            return Group(header_render, _syntax(content, "markdown"))
+
+        # if no header style override then render header as markdown along with content:
+        return _syntax(self.content, "markdown")
 
 def _split_content_into_sections(content: str) -> list[SectionDTO]:
     whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
