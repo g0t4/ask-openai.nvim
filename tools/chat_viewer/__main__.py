@@ -399,23 +399,28 @@ def print_mcp_result(content):
     # print_asis(content)
     return True
 
-def _handle_apply_patch(arguments: str):
+def _handle_apply_patch(arguments: str, tree: Tree):
+    child = tree.add(format_call_title("apply_patch"))
 
     try:
         parsed = json.loads(arguments)
-    except Exception:
-        return arguments, None
+    except Exception as e:
+        node = child.add(Text.from_markup("[white bold on red]Failed parsing arguments"))
+        node.add(str(e))
+        return node.add(f"arguments: {arguments}")
 
     if isinstance(parsed, dict) and "patch" in parsed:
         patch_content = str(parsed["patch"])
         try:
             syntax = _syntax(patch_content, "diff")
-            return syntax, None
+            return child.add(syntax)
         except Exception:
-            return patch_content, None
+            return child.add(patch_content)
+
     if isinstance(parsed, dict):
-        return json.dumps(parsed, ensure_ascii=False), None
-    return str(parsed), None
+        return child.add(json.dumps(parsed, ensure_ascii=False))
+
+    return child.add(str(parsed))
 
 def _syntax(source: str, lexer: str) -> Syntax:
     # is_multi_line = "\n" in source
@@ -480,32 +485,25 @@ def _json(data: dict) -> Syntax:
         # line_numbers=True,
     )
 
-def show_remaining_keys(loaded, renderables):
+def show_remaining_keys(loaded, tree: Tree):
     if not any(loaded):
         return
     # FYI basically I want a JSON like dump with leading and trailing { and } which waste space...
-    tree = Tree("", hide_root=True)  # FYI don't need the nesting anymore
-    renderables.append(tree)
     for key in loaded.keys():
         value = loaded.get(key)
         display = Text.from_markup(f"[blue]{key}:[/] ") + Text(value)
         # print as if values are all str/bool/number ... handle list/dict if that arises later
         tree.add(display)
 
-def _handle_run_command_and_run_process(arguments: str):
-    title_renderables = []
+def _handle_run_command_and_run_process(arguments: str, call_tree: Tree):
     renderables = []
     try:
         loaded = json.loads(arguments)
-        # import rich
-        # rich.inspect(loaded)
+        # child.add(loaded) # debugging
+        # child.add(_json(loaded)) # debugging
         mode = yank(loaded, "mode")
         if mode:
-            # for now, it's fine to show the old mode... as a reminder that the trace is from legacy run_process tool args
-            #   PRN over time I can drop this
-            title_renderables.append(Text.from_markup(f"[bold]legacy {mode=}[/]"))
-        if "command" in loaded:
-            title_renderables.append(Text.from_markup(f"[bold]legacy run_command[/]"))
+            call_tree.add(Text.from_markup(f"[bold]legacy {mode=}[/]"))  # Ok to drop this too
 
         def get_display_command():
 
@@ -524,40 +522,39 @@ def _handle_run_command_and_run_process(arguments: str):
                 return command
             raise ValueError("No command found")
 
-        renderables.append(_bash(get_display_command()))
-        show_remaining_keys(loaded, renderables)
-
-        return renderables, title_renderables
+        call_tree.add(_bash(get_display_command()))
+        show_remaining_keys(loaded, call_tree)
 
     except Exception as err:
-        renderables.extend([
-            Text.from_markup("[white bold on red]Failed parsing command"),
-            Text(f"ERROR: {err}"),
-            Text(f"original arguments: {arguments}"),
-        ])
+        call_tree.add(Text.from_markup("[white bold on red]Failed parsing command"))
+        call_tree.add(Text(f"ERROR: {err}"))
+        call_tree.add(Text(f"original arguments: {arguments}"))
 
-    return renderables, title_renderables
+def format_call_title(title):
+    return f"- {title}"
 
-def handle_json_args(arguments: str):
+def _handle_generic_tool(func_name: str, arguments: str, tree: Tree):
+    child = tree.add(format_call_title(func_name))
     try:
         loaded = json.loads(arguments)
-        return _json(loaded), None
+        child.add(_json(loaded))
+        # TODO copy over TreeWrapper from langchain repo... has add_json() IIRC - plus override add to return TreeWrapper always
     except json.JSONDecodeError as e:
-        return arguments, None
+        child.add(arguments)  # show raw value when json.loads fails
 
 def _handle_unknown_tool(arguments: str):
     return arguments
 
-def add_tool_call_request(func_name: str, arguments: str) -> tuple[list, list]:
+def add_tool_call_request(func_name: str, arguments: str, tree: Tree) -> tuple[list, list]:
     if func_name == "apply_patch":
-        return _handle_apply_patch(arguments)
+        return _handle_apply_patch(arguments, tree)
 
     if func_name in ("run_command", "run_process"):
-        # PRN honestly JSON presentation looks good here most of the time too
-        return _handle_run_command_and_run_process(arguments)
+        child = tree.add(format_call_title(func_name))
+        return _handle_run_command_and_run_process(arguments, child)
 
-    # semantic_grep has a few json args, that's fine to show
-    return handle_json_args(arguments)
+    # FYI semantic_grep works good with generic right now:
+    return _handle_generic_tool(func_name, arguments, tree)
 
 def print_if_missing_keys(obj, name, tree: Tree):
     if not any(obj.keys()):
