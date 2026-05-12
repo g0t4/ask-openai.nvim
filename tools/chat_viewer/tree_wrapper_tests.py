@@ -22,9 +22,9 @@ def test_sections_from_json_keys():
     assert child2
     assert "section2" in child2.label
 
-class TestTreeWrapper_SectionsFromJsonKeys:
+class Test_TreeWrapper_add_list_of_key_value_pairs:
 
-    def test_dict_value(self):
+    def test_json_dict_value(self):
         wrapper = TreeWrapper()
         wrapper.add_sections_from_json_keys('{"key": {"inner": "value"}}')
 
