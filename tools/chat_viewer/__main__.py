@@ -67,6 +67,7 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "7f579161c8af585c55ea5dcc35b79bbee399a3b2f4d0461f4df50e17f34a0866",  # python code prefs updated
     "bd6abb18b2eb841a0fe1e6a89e93227744a24dec391c11034966bd5032716147",  # Python Code Preferences (FIM)
     "c43c46905fcf70315ff3929e76ba70d5190002abc20a24cfb8d2f6d44e11d60f",  ## Python Code Preferences
+    "fc581a8b5aa1c4d88597127dd96b7efbdf42251fa914981850a763fc1331d875",  ## Python Code Preferences
     #
     "232276fe3bb7baf13ede0343f5c076774b2dbd64be3b010a314b85816f718f31",  # rewrite - fish user prefs
     "4f20f6289174db47cefe46f27829c02078f22ce8717594b10c2551c18a57fca6",  # manually added exclusion
@@ -77,6 +78,7 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "511f32b9bf45f71b8a1a807d3636e9694c2c6ad13cc68166ca6741455eb72df7",  # General project code rules
     "8f9ce1c508b6ed7f217818da62222e65643092d1e679f31cb738153edec72cb0",  # General Code Preferences (FIM one + trailing \n\n) # TODO strip trail new lines before compute hash?
     "f2fea7d3d5637345a1862e068f59c3ac597bb70dbf95d30c32830b082f921cfc",  # General Code Preferences (latest in FIM so no \n\n)
+    "06cac07ff8d9db3035a3d154c21a3088e5ef31342d120e64f0eecc2ee2f71c63",  ## General Code Preferences
 ]
 
 def _content_hash(msg: dict[str, Any]) -> str:
