@@ -102,28 +102,28 @@ async def main2(browser: TraceBrowser):
             if char == b'\x1b':
                 # Most arrow key sequences are 2 more bytes (e.g. ESC [ A).
                 # Read until we have a non‑numeric byte or we reach a reasonable limit.
-                seq = b'\x1b'
+                sequence = b'\x1b'
                 # Read the next byte; if it's '[' we expect a final character like 'A', 'B', etc.
                 try:
                     next_byte = await reader.readexactly(1)
-                    seq += next_byte
+                    sequence += next_byte
                     if next_byte == b'[':
                         # TODO buffer this across reads...
                         # Read the final character of the CSI sequence.
                         final = await reader.readexactly(1)
-                        seq += final
+                        sequence += final
                 except Exception:
                     # If we fail to read the full sequence just ignore it.
                     continue
 
                 # Arrow keys:
-                if seq == b'\x1b[A':  # Up arrow
+                if sequence == b'\x1b[A':  # Up arrow
                     browser._move(-1)  # treat as back
-                elif seq == b'\x1b[B':  # Down arrow (optional)
+                elif sequence == b'\x1b[B':  # Down arrow (optional)
                     pass  # no action defined
-                elif seq == b'\x1b[C':  # Right arrow (optional)
+                elif sequence == b'\x1b[C':  # Right arrow (optional)
                     browser._move(1)
-                elif seq == b'\x1b[D':  # Left arrow
+                elif sequence == b'\x1b[D':  # Left arrow
                     browser._move(-1)  # treat as forward
                 # Add more CSI handling here if needed.
                 continue  # Skip the rest of the loop for escape sequences.
