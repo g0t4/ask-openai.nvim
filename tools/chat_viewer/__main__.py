@@ -352,6 +352,8 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
     for match in matches:
         # FYI only file/text are relevant for review (skip rest)
         file = match.get("file")
+        end_line_base0 = match.get('end_line_base0')
+        start_line_base0 = match.get('start_line_base0')
 
         skip = not SHOW_ALL and is_preapproved(str(file))
         if skip:
@@ -360,6 +362,9 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
         header = f"## MATCH {counter}"
         if file:
             header += f": [bold]{file}[/]"
+            if isinstance(start_line_base0, int) and isinstance(end_line_base0, int):
+                header += f":{start_line_base0+1}-{end_line_base0+1}"
+
         root.add_markup(header)
 
         text = match.get("text", "")
