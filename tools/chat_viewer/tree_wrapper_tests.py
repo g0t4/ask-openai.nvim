@@ -35,10 +35,10 @@ def record_plaintext(tree: TreeWrapper) -> str:
 
 def get_recorded(what):
     tree = TreeWrapper()
-    tree.add_list_of_key_value_pairs(what)
+    tree.list_key_value_pairs(what)
     return record_plaintext(tree)
 
-class Test_TreeWrapper_add_list_of_key_value_pairs:
+class Test_TreeWrapper__list_key_value_pairs:
 
     def test_python_dict(self):
         # * scalar types for values in items (key/value pairs)

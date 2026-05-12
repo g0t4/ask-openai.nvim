@@ -115,10 +115,10 @@ class TreeWrapper(Tree):
                 .add_no_markup(json_str)
             return self
 
-        self.add_list_of_key_value_pairs(obj)
+        self.list_key_value_pairs(obj)
         return self
 
-    def add_list_of_key_value_pairs(self, obj):
+    def list_key_value_pairs(self, obj):
         if not any(obj.keys()):
             return
         # FYI basically I want a JSON like dump with leading and trailing { and } which waste space...

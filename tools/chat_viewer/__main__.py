@@ -510,7 +510,7 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
             raise ValueError("No command found")
 
         call_tree.add(_bash(get_display_command()))
-        call_tree.add_list_of_key_value_pairs(loaded)
+        call_tree.list_key_value_pairs(loaded)
 
     except Exception as err:
         call_tree.add_error("Failed parsing command", err, arguments)
