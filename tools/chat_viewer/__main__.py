@@ -152,11 +152,12 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
     return [SectionDTO(content=sec) for sec in split_h2_markdown_sections(content)]
 
 def show_unapproved_auto_rag_matches(content: str) -> bool:
-    # TODO print with tree
     if not content.strip().startswith('# Semantic Grep matches:'):
         return False
 
-    _console.print("[italic]Detected Semantic Grep matches... excluding based on file path[/]")
+    # FYI no indentation with RAG matches so just use a root tree and everything is top level (headers differentiate sections)
+    root = TreeWrapper.hidden_root()
+    root.add_markup("[italic]Detected Semantic Grep matches... excluding based on file path[/]")
 
     for section in split_h2_markdown_sections(content):
         lines = section.splitlines()
@@ -177,15 +178,14 @@ def show_unapproved_auto_rag_matches(content: str) -> bool:
         start_line = match.group(2)
         end_line = match.group(3)
 
-        match_tree = TreeWrapper.hidden_root()
-        match_tree.add_markup(f"## MATCH [bold]{file_path}[/]:{start_line}-{end_line}")
+        root.add_markup(f"## MATCH [bold]{file_path}[/]:{start_line}-{end_line}")
 
         ext = os.path.splitext(file_path)[1].lstrip('.').lower()
-        match_tree.add(_syntax(snippet, ext or "text"))
+        root.add(_syntax(snippet, ext or "text"))
 
-        match_tree.blank_line()
+        root.blank_line()
 
-        _console.print(match_tree)
+    _console.print(root)
     return True
 
 def print_no_markup(what, **kwargs):
