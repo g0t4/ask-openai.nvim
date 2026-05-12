@@ -586,12 +586,13 @@ def print_assistant(msg: dict):
 
     requests = yank(msg, "tool_calls", [])
     if requests:
+        tree = Tree("calls", hide_root=True)
         for call in requests:
             id = yank(call, "id")
             call_type = yank(call, "type")
             if call_type != "function":
-                _console.print(f"- UNHANDLED TYPE '{call_type}' on tool call id: '{id}'")
-                pprint_no_truncate(call)
+                tree.add(f"- UNHANDLED TYPE '{call_type}' on tool call id: '{id}'") \
+                    .add(_json(call))
                 continue
 
             function = yank(call, "function")
@@ -616,7 +617,9 @@ def print_assistant(msg: dict):
                     print_no_markup(Padding(part, (0, 0, 0, 4)))
             else:
                 print_no_markup(Padding(renderable_parts, (0, 0, 0, 4)))
-            _console.print()  # blank line
+
+        _console.print(tree)
+        _console.print()  # blank line
 
 def get_color(role: str) -> str:
     role_lower = role.lower()
