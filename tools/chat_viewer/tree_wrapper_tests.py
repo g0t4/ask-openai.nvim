@@ -22,12 +22,23 @@ def test_sections_from_json_keys():
     assert child2
     assert "section2" in child2.label
 
+def get_recorded_from_json(json_str):
+    tree = TreeWrapper()
+    tree.add_sections_from_json_keys(json_str)
+    return record_plaintext(tree)
+
+def record_plaintext(tree: TreeWrapper) -> str:
+    console = Console(record=True, width=120, force_terminal=False)
+    console.print(tree)
+    # `export_text` returns a `str` with markup stripped.
+    return console.export_text()
+
 class Test_TreeWrapper_add_list_of_key_value_pairs:
 
     def get_recorded(self, what):
         tree = TreeWrapper()
         tree.add_list_of_key_value_pairs(what)
-        return self.record_plaintext(tree)
+        return record_plaintext(tree)
 
     def test_python_dict(self):
         # * scalar types for values in items (key/value pairs)
@@ -47,26 +58,15 @@ class Test_TreeWrapper_add_list_of_key_value_pairs:
     def test_json_dict_value(self):
         json_str = '{"key": {"inner": "value"}}'
 
-        def get_recorded_from_json(json_str):
-            tree = TreeWrapper()
-            tree.add_sections_from_json_keys(json_str)
-            return self.record_plaintext(tree)
-
         recorded = get_recorded_from_json(json_str)
 
         assert """key:\n        {'inner': 'value'}""" in recorded
-
-    def record_plaintext(self, tree: TreeWrapper) -> str:
-        console = Console(record=True, width=120, force_terminal=False)
-        console.print(tree)
-        # `export_text` returns a `str` with markup stripped.
-        return console.export_text()
 
     def test_primitive_values_do_not_fail(self) -> None:
         tree = TreeWrapper()
         tree.add_sections_from_json_keys('{"a": 1, "b": "text", "c": true}')
 
-        recorded = self.record_plaintext(tree)
+        recorded = record_plaintext(tree)
 
         expected_fragments = [
             # at least make sure no errors writing the values
