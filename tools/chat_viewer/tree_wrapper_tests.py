@@ -7,28 +7,28 @@ from rich.console import Console
 from tools.chat_viewer.tree_wrapper import TreeWrapper
 
 def test_create_tree_without_label_nor_parent():
-    wrapper = TreeWrapper()
-    assert wrapper.label == ""
-    assert wrapper.parent == None
+    tree = TreeWrapper()
+    assert tree.label == ""
+    assert tree.parent == None
 
 def test_sections_from_json_keys():
-    wrapper = TreeWrapper()
-    wrapper.add_sections_from_json_keys('{"section1": 1, "section2": 2}')
-    assert len(wrapper.children) == 2
-    child1 = wrapper.children[0]
+    tree = TreeWrapper()
+    tree.add_sections_from_json_keys('{"section1": 1, "section2": 2}')
+    assert len(tree.children) == 2
+    child1 = tree.children[0]
     assert child1
     assert "section1" in child1.label
-    child2 = wrapper.children[1]
+    child2 = tree.children[1]
     assert child2
     assert "section2" in child2.label
 
 class Test_TreeWrapper_add_list_of_key_value_pairs:
 
     def test_json_dict_value(self):
-        wrapper = TreeWrapper()
-        wrapper.add_sections_from_json_keys('{"key": {"inner": "value"}}')
+        tree = TreeWrapper()
+        tree.add_sections_from_json_keys('{"key": {"inner": "value"}}')
 
-        recorded = self.record_plaintext(wrapper)
+        recorded = self.record_plaintext(tree)
 
         assert """key:
         inner: value""" in recorded
@@ -40,10 +40,10 @@ class Test_TreeWrapper_add_list_of_key_value_pairs:
         return console.export_text()
 
     def test_primitive_values_do_not_fail(self) -> None:
-        wrapper = TreeWrapper()
-        wrapper.add_sections_from_json_keys('{"a": 1, "b": "text", "c": true}')
+        tree = TreeWrapper()
+        tree.add_sections_from_json_keys('{"a": 1, "b": "text", "c": true}')
 
-        recorded = self.record_plaintext(wrapper)
+        recorded = self.record_plaintext(tree)
 
         expected_fragments = [
             # at least make sure no errors writing the values
@@ -56,6 +56,6 @@ class Test_TreeWrapper_add_list_of_key_value_pairs:
             assert fragment in recorded, f"Missing fragment in recorded output: {fragment}"
 
 def test_add_without_label_should_use_empty_string():
-    wrapper = TreeWrapper()
-    node = wrapper.add()
+    tree = TreeWrapper()
+    node = tree.add()
     assert node.label == ""
