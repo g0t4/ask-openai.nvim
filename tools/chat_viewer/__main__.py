@@ -334,7 +334,9 @@ def decode_if_json(content):
     return content
 
 def _add_rag_matches(root: TreeWrapper, content: Any):
-    has_rag_matches = "matches" in content and isinstance(content["matches"], list)
+    has_rag_matches = isinstance(content, dict) \
+        and "matches" in content \
+        and isinstance(content["matches"], list)
     if not has_rag_matches:
         return False
 
@@ -381,18 +383,15 @@ def print_tool_result_message(msg: Dict[str, Any]) -> None:
     content = decode_if_json(msg.get("content", ""))
     root = TreeWrapper("", hide_root=True)  # TODO make a helper for this scenario? or default to hide_root=True on TreeWrapper?
 
-    if not isinstance(content, dict):
-        root.add(_pretty_no_truncate(content))
-        _console.print(root)
-        return
-
     handled = _add_rag_matches(root, content) or _add_mcp_result(root, content)
     if not handled:
         _add_unrecognized(root, content)
     _console.print(root)
 
 def _add_mcp_result(root: TreeWrapper, content: Dict[str, Any]) -> bool:
-    has_mcp_content_list = "content" in content and isinstance(content["content"], list)
+    has_mcp_content_list = isinstance(content, dict) \
+        and ("content" in content) \
+        and isinstance(content["content"], list)
     if not has_mcp_content_list:
         return False
 
