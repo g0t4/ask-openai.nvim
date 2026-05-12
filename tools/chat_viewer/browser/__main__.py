@@ -60,16 +60,14 @@ class TraceBrowser:
         return None
 
     def _show_current(self) -> None:
-        # tools/chat_viewer/browser/__main__.py
         trace = self._current_trace()
         if trace:
             dataset_root = self.base_dir.parent
             trace_path_str = str(trace.resolve())
             prefix_path_str = str(Path(dataset_root).resolve())
-            if trace_path_str.startswith(prefix_path_str):
-                display_path = trace_path_str[len(prefix_path_str):].lstrip(os.sep)
-            else:
-                display_path = trace_path_str
+            display_path = trace_path_str \
+                .removeprefix(prefix_path_str) \
+                .removeprefix(os.sep)
 
             meta = load_trace_metadata(trace)
             ts = datetime.fromtimestamp(int(trace.stem.split("-")[0]))
