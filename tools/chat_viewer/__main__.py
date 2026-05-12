@@ -495,22 +495,26 @@ def _handle_run_command_and_run_process(arguments: str):
             title_renderables.append(Text.from_markup(f"[bold]legacy run_command[/]"))
 
         def get_display_command():
-            display_command = None
+
+            # load all available values so I can look for invalid combinations
             command_line = loaded.get("command_line", None)
             argv = loaded.get("argv", [])
             command = loaded.get("command", None)
+            # command_line = yank(loaded, "command_line", None)
+            # argv = yank(loaded, "argv", [])
+            # command = yank(loaded, "command", None)
 
             if command_line:
-                del loaded["command_line"]
+                # del loaded["command_line"]
                 return command_line
             if argv:
-                del loaded["argv"]
+                # del loaded["argv"]
                 return " ".join(map(str, argv))
             if command:
-                del loaded["command"]
+                # del loaded["command"]
                 # legacy run_command tool (pre run_process)
                 return command
-            raise ValueError("MISSING COMMAND")
+            raise ValueError("No command found")
 
         display_command = get_display_command()
         if display_command:
