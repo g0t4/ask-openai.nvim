@@ -492,20 +492,23 @@ def _handle_run_command_and_run_process(arguments: str):
             #   PRN over time I can drop this
             title_renderables.append(Text.from_markup(f"[bold]legacy {mode}[/]"))
 
-        display_command = None
-        command_line = loaded.get("command_line", None)
-        if command_line:
-            del loaded["command_line"]
-            display_command = command_line
-        argv = loaded.get("argv", [])
-        if argv:
+        def get_display_command():
+            display_command = None
+            command_line = loaded.get("command_line", None)
             argv = loaded.get("argv", [])
-            display_command = " ".join(map(str, argv))
-        command = loaded.get("command", None)
-        if command:
-            # legacy run_command tool (pre run_process)
-            display_command = yank(loaded, "command")
+            command = loaded.get("command", None)
 
+            if command_line:
+                del loaded["command_line"]
+                display_command = command_line
+            if argv:
+                argv = loaded.get("argv", [])
+                display_command = " ".join(map(str, argv))
+            if command:
+                # legacy run_command tool (pre run_process)
+                display_command = yank(loaded, "command")
+
+        display_command = get_display_command()
         if display_command:
             command = _bash(display_command)
         else:
