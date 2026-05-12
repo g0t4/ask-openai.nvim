@@ -176,11 +176,15 @@ def show_unapproved_auto_rag_matches(content: str) -> bool:
 
         start_line = match.group(2)
         end_line = match.group(3)
-        _console.print(f"\n## MATCH {file_path}:{start_line}-{end_line}")
-        ext = os.path.splitext(file_path)[1].lstrip('.').lower()
-        syntax = _syntax(snippet, ext or "text")
-        _console.print(syntax)
 
+        match_tree = TreeWrapper.hidden_root()
+        match_tree.add_markup(f"## MATCH {file_path}:{start_line}-{end_line}")
+
+        ext = os.path.splitext(file_path)[1].lstrip('.').lower()
+        match_tree.add(_syntax(snippet, ext or "text"))
+        match_tree.blank_line()
+
+        _console.print(match_tree)
     return True
 
 def print_no_markup(what, **kwargs):
