@@ -388,7 +388,7 @@ def print_tool_result_message(msg: Dict[str, Any]) -> None:
 
     _console.print(root)
 
-def _add_mcp_result(root: TreeWrapper, content: Dict[str, Any]) -> bool:
+def _add_mcp_result(root: TreeWrapper, content: Any) -> bool:
     has_mcp_content_list = isinstance(content, dict) \
         and ("content" in content) \
         and isinstance(content["content"], list)
