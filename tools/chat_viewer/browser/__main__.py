@@ -142,34 +142,15 @@ class TraceBrowser:
 
         import re
 
-        # Patterns for common ANSI escape sequences
-        CSI_PATTERN = re.compile(r'\x1b\[[0-9;]*[A-Za-z]')
-        OSC_PATTERN = re.compile(r'\x1b\]([^\x07]*?)\x07|\x1b\]([^\x1b]*?)\x1b\\')
-        ESC_PATTERN = re.compile(r'\x1b.')
-
-        def strip_all_escape_sequences(text: str) -> str:
-            """Remove all ANSI escape sequences (CSI, OSC, and single‑byte ESC codes) from *text*."""
-            # Remove CSI (Control Sequence Introducer) sequences like "\x1b[31m"
-            text = CSI_PATTERN.sub("", text)
-            # Remove OSC (Operating System Command) sequences like "\x1b]1337;ClearScrollback\x07"
-            text = OSC_PATTERN.sub("", text)
-            # Remove any remaining single‑byte ESC codes (e.g., "\x1bM")
-            text = ESC_PATTERN.sub("", text)
-            # TODO more
-            return text
-
         result = subprocess.run(
-            ["fish", "-i", "-c", f"_rag_next_share_directory {self.to_dir}"],
+            ["fish", "-c", f"_rag_next_share_directory {self.to_dir}"],
             check=False,
             capture_output=True,
             text=True,
         )
 
-        clean_output = strip_all_escape_sequences(result.stdout)
-        rich.inspect(clean_output)
-        next_share_dir = clean_output
+        next_share_dir = result.stdout.strip()  # strip trailing \n from echo
         command = f"take {next_share_dir} {trace.resolve()}"
-        rich.inspect(f"{command=}")
         self.copy(command)
 
     def copy(self, what):
