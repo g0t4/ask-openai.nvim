@@ -90,7 +90,7 @@ class TraceBrowser:
             self.index = new_index
             self._show_current()
         else:
-            print("No more traces in that direction.")
+            rich.print("[dim]No more traces in that direction.[/]")
 
     def on_csi(self, sequence):
         UP_ARROW = b'\x1b[A'
