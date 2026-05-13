@@ -92,15 +92,14 @@ class TraceBrowser:
         RIGHT_ARROW = b'\x1b[C'
         LEFT_ARROW = b'\x1b[D'
 
-        browser = self
         if sequence == UP_ARROW:
-            browser._move(-1)  # treat as back
+            self._move(-1)  # treat as back
         elif sequence == DOWN_ARROW:
             pass  # no action defined
         elif sequence == RIGHT_ARROW:
-            browser._move(1)
+            self._move(1)
         elif sequence == LEFT_ARROW:
-            browser._move(-1)  # treat as forward
+            self._move(-1)  # treat as forward
         # Add more CSI handling here if needed.
 
 async def input_loop(browser: TraceBrowser):
