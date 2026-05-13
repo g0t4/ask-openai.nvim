@@ -55,14 +55,14 @@ def launch_chat_viewer(trace_path: Path) -> None:
 
 class TraceBrowser:
 
-    def __init__(self, type: str) -> None:
-        base_dir = Path(os.getenv("HOME") + "/.local/state/nvim/ask-openai/" + type)
+    def __init__(self, from_dir: str) -> None:
+        base_dir = Path(os.getenv("HOME") + "/.local/state/nvim/ask-openai/" + from_dir)
         if not base_dir.is_dir():
             print(f"Error: {base_dir} is not a directory.", file=sys.stderr)
             sys.exit(1)
         self.base_dir = base_dir.resolve()
 
-        self.type = type
+        self.type = from_dir
         self.traces = find_trace_files(self.base_dir)
         self.index = len(self.traces) - 1  # start at most recent
         self.show_current()
