@@ -118,7 +118,7 @@ async def main2(browser: TraceBrowser):
             ESCAPE = b'\x1b'
             if char == ESCAPE:
 
-                def wait_for_escape_sequence():
+                async def read_escape_sequence():
                     # https://en.wikipedia.org/wiki/ANSI_escape_code#Control_Sequence_Introducer_commands
                     # - followed by any number (including none) of "parameter bytes" in the range 0x30–0x3F (ASCII 0–9:;<=>?)
                     # - then by any number of "intermediate bytes" in the range 0x20–0x2F (ASCII space and !"#$%&'()*+,-./)
@@ -141,7 +141,7 @@ async def main2(browser: TraceBrowser):
 
                     browser.on_csi(sequence)
 
-                wait_for_escape_sequence()
+                await read_escape_sequence()
                 continue
 
             if char == b'b':
