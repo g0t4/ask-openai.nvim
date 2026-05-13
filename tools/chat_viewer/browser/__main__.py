@@ -154,7 +154,7 @@ async def input_loop(browser: TraceBrowser):
                         next_byte = await reader.readexactly(1)
                         sequence += next_byte
                         if next_byte == b'[':
-                            # Read the final character of the CSI sequence.
+                            # Read final character of the CSI xterm sequence
                             final = await reader.readexactly(1)
                             sequence += final
                     except Exception as e:
