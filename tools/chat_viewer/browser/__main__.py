@@ -67,7 +67,7 @@ class TraceBrowser:
 
         table.add_row("q", "quit")
         table.add_row("c", "copy current trace path")
-        table.add_row("t", "TODO - copy take command to add to datasets repo")
+        table.add_row("t", "WIP - copy take command to add to datasets repo")
         table.add_row("Enter", "open current trace in chat_viewer")
         table.add_row("←/→", "older / newer")
         table.add_row("h", "help")
@@ -113,21 +113,35 @@ class TraceBrowser:
         else:
             rich.print("[dim]No more traces in that direction.[/]")
 
-    def copy_trace_file_path(self, trace):
-        if trace:
-            try:
-                import subprocess, sys
-                cmd = "pbcopy" if sys.platform == "darwin" else "xclip -selection clipboard"
-                subprocess.run(
-                    cmd,
-                    input=str(trace.resolve()),
-                    text=True,
-                    shell=True,
-                    check=False,
-                )
-                print(f"Copied {trace}")
-            except Exception:
-                print(f"Path: {trace}")
+    def copy_trace_file_path(self):
+        trace = self.current_trace()
+        if not trace:
+            rich.print("[dim]No trace to copy.[/]")
+            return
+        self.copy(trace.resolve())
+
+    def copy_take_command(self):
+        trace = self.current_trace()
+        if not trace:
+            rich.print("[dim]No trace to copy.[/]")
+            return
+        command = f"take TODO {trace.resolve()}"
+        self.copy(command)
+
+    def copy(self, what):
+        try:
+            import subprocess, sys
+            cmd = "pbcopy" if sys.platform == "darwin" else "xclip -selection clipboard"
+            subprocess.run(
+                cmd,
+                input=str(what),
+                text=True,
+                shell=True,
+                check=False,
+            )
+            print(f"Copied {what}")
+        except Exception:
+            print(f"Path: {what}")
 
     def show_chat(self):
         trace = self.current_trace()
@@ -140,7 +154,9 @@ class TraceBrowser:
         if char == b'h':
             self.print_help()
         elif char == b'c':
-            self.copy_trace_file_path(self.current_trace())
+            self.copy_trace_file_path()
+        elif char == b't':
+            self.copy_take_command()
         elif char == b'\n':
             self.show_chat()
         elif char == b'q':
