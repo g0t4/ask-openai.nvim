@@ -131,7 +131,15 @@ class TraceBrowser:
         if not trace:
             rich.print("[dim]No trace to copy.[/]")
             return
-        command = f"take TODO {trace.resolve()}"
+
+        result = subprocess.run(
+            ["fish", "-i", "-c", f"_rag_next_share_directory {self.type}"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        next_share_dir = result.stdout.strip()
+        command = f"take {next_share_dir} {trace.resolve()}"
         self.copy(command)
 
     def copy(self, what):
