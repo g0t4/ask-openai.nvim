@@ -2,19 +2,19 @@ import argparse
 import asyncio
 import json
 import os
-from pathlib import Path
+import rich
 import subprocess
 import sys
 import termios
 import time
 import tty
-import rich
 from datetime import datetime
+from pathlib import Path
+from rich.table import Table
 from typing import List, Optional
 
-# ----------------------------------------------------------------------
-# Helpers
-# ----------------------------------------------------------------------
+from tools.chat_viewer.tree_wrapper import TreeWrapper
+
 def find_trace_files(base_dir: Path) -> List[Path]:
     """
     Walk ``base_dir`` looking for <unix_timestamp>-trace.json files
@@ -28,8 +28,7 @@ def most_recent_trace(files: List[Path]) -> Optional[Path]:
     """Return the newest trace file or ``None`` if the list is empty."""
     return files[-1] if files else None
 
-def load_trace_metadata(trace_path: Path) -> dict:
-    """Read the JSON file and return its content (or an empty dict on error)."""
+def load_trace_json(trace_path: Path) -> dict:
     try:
         with trace_path.open("r", encoding="utf-8") as f:
             return json.load(f)
@@ -45,15 +44,19 @@ class TraceBrowser:
         self.base_dir = base_dir.resolve()
         self.traces = find_trace_files(self.base_dir)
         self.index = len(self.traces) - 1  # start at most recent
-        self._print_header()
+        self.print_help()
 
-    def _print_header(self) -> None:
-        print("=== Trace Browser REPL ===")
-        print("Commands:")
-        print("  <Enter>   – open current trace in chat_viewer")
-        print("  left/right arrows – move backward/forward in time")
-        print("  q         – quit")
-        print("--------------------------")
+    def print_help(self) -> None:
+        table = Table(expand=False, title="Help")
+        table.add_column(header="Key", justify="right", style="cyan", no_wrap=True)
+        table.add_column(header="Description", style="white")
+
+        table.add_row("q", "quit")
+        table.add_row("Enter", "open current trace in chat_viewer")
+        table.add_row("←/→", "older / newer")
+        table.add_row("h", "help")
+
+        rich.print(table)
 
     def current_trace(self) -> Optional[Path]:
         if 0 <= self.index < len(self.traces):
@@ -70,10 +73,10 @@ class TraceBrowser:
                 .removeprefix(prefix_path_str) \
                 .removeprefix(os.sep)
 
-            meta = load_trace_metadata(trace)
             ts = datetime.fromtimestamp(int(trace.stem.split("-")[0]))
             print(f"[{self.index + 1}/{len(self.traces)}] {display_path}  ({ts.isoformat()})")
-            print(f"  summary: {meta.get('summary', 'n/a')}")
+            # meta = load_trace_json(trace)
+            # print(f"  summary: {meta.get('summary', 'n/a')}")
 
         else:
             print("No trace files found.")
@@ -93,10 +96,8 @@ class TraceBrowser:
             rich.print("[dim]No more traces in that direction.[/]")
 
     def on_char(self, char):
-        if char == b'b':
-            self.move(-1)
-        elif char == b'f':
-            self.move(1)
+        if char == b'h':
+            self.print_help()
         elif char == b'\n':
             trace = self.current_trace()
             if trace:
