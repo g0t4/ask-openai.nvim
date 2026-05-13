@@ -66,6 +66,7 @@ class TraceBrowser:
         table.add_column(header="Description", style="white")
 
         table.add_row("q", "quit")
+        table.add_row("c", "copy current trace path")
         table.add_row("Enter", "open current trace in chat_viewer")
         table.add_row("←/→", "older / newer")
         table.add_row("h", "help")
@@ -111,9 +112,27 @@ class TraceBrowser:
         else:
             rich.print("[dim]No more traces in that direction.[/]")
 
+    def copy_trace_file_path(self, trace):
+        if trace:
+            try:
+                import subprocess, sys
+                cmd = "pbcopy" if sys.platform == "darwin" else "xclip -selection clipboard"
+                subprocess.run(
+                    cmd,
+                    input=str(trace.resolve()),
+                    text=True,
+                    shell=True,
+                    check=False,
+                )
+                print(f"Copied {trace}")
+            except Exception:
+                print(f"Path: {trace}")
+
     def on_char(self, char):
         if char == b'h':
             self.print_help()
+        elif char == b'c':
+            self.copy_trace_file_path(self.current_trace())
         elif char == b'\n':
             trace = self.current_trace()
             if trace:
