@@ -140,8 +140,6 @@ class TraceBrowser:
             rich.print("[dim]No trace to copy.[/]")
             return
 
-        import re
-
         result = subprocess.run(
             ["fish", "-c", f"_rag_next_share_directory {self.to_dir}"],
             check=False,
@@ -150,8 +148,7 @@ class TraceBrowser:
         )
 
         next_share_dir = result.stdout.strip()  # strip trailing \n from echo
-        command = f"take {next_share_dir} {trace.resolve()}"
-        self.copy(command)
+        self.copy(f"take {next_share_dir} {trace.resolve()}")
 
     def copy(self, what):
         try:
