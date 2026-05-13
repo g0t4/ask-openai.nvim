@@ -78,6 +78,12 @@ class TraceBrowser:
         else:
             print("No trace files found.")
 
+    def forward(self):
+        self.move(1)
+
+    def backward(self):
+        self.move(-1)
+
     def move(self, step: int) -> None:
         new_index = self.index + step
         if 0 <= new_index < len(self.traces):
@@ -92,14 +98,14 @@ class TraceBrowser:
         RIGHT_ARROW = b'\x1b[C'
         LEFT_ARROW = b'\x1b[D'
 
-        if sequence == UP_ARROW:
+        if sequence == DOWN_ARROW:
             pass
-        elif sequence == DOWN_ARROW:
+        elif sequence == UP_ARROW:
             pass
-        elif sequence == RIGHT_ARROW:
-            self.move(1)
         elif sequence == LEFT_ARROW:
-            self.move(-1)
+            self.backward()
+        elif sequence == RIGHT_ARROW:
+            self.forward()
 
 async def input_loop(browser: TraceBrowser):
     fd = sys.stdin.fileno()
