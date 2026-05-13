@@ -129,17 +129,20 @@ class TraceBrowser:
             except Exception:
                 print(f"Path: {trace}")
 
+    def show_chat(self):
+        trace = self.current_trace()
+        if trace:
+            launch_chat_viewer(trace)
+        else:
+            print("No trace to display.")
+
     def on_char(self, char):
         if char == b'h':
             self.print_help()
         elif char == b'c':
             self.copy_trace_file_path(self.current_trace())
         elif char == b'\n':
-            trace = self.current_trace()
-            if trace:
-                launch_chat_viewer(trace)
-            else:
-                print("No trace to display.")
+            self.show_chat()
         elif char == b'q':
             print("Exiting.")
             sys.exit()
