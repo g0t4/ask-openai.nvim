@@ -81,7 +81,7 @@ class TraceBrowser:
             return self.traces[self.index]
         return None
 
-    def _show_current(self) -> None:
+    def show_current(self) -> None:
         trace = self.current_trace()
         if not trace:
             print("No trace files found.")
@@ -111,7 +111,7 @@ class TraceBrowser:
         new_index = self.index + step
         if 0 <= new_index < len(self.traces):
             self.index = new_index
-            self._show_current()
+            self.show_current()
         else:
             rich.print("[dim]No more traces in that direction.[/]")
 
