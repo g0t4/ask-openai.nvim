@@ -55,13 +55,13 @@ class TraceBrowser:
         print("  q         – quit")
         print("--------------------------")
 
-    def _current_trace(self) -> Optional[Path]:
+    def current_trace(self) -> Optional[Path]:
         if 0 <= self.index < len(self.traces):
             return self.traces[self.index]
         return None
 
     def _show_current(self) -> None:
-        trace = self._current_trace()
+        trace = self.current_trace()
         if trace:
             dataset_root = self.base_dir.parent
             trace_path_str = str(trace.resolve())
@@ -149,7 +149,7 @@ async def input_loop(browser: TraceBrowser):
             elif char == b'f':
                 browser.move(1)
             elif char == b'\n':
-                trace = browser._current_trace()
+                trace = browser.current_trace()
                 if trace:
                     launch_chat_viewer(trace)
                 else:
