@@ -62,7 +62,7 @@ class TraceBrowser:
         self.base_dir = base_dir.resolve()
         self.traces = find_trace_files(self.base_dir)
         self.index = len(self.traces) - 1  # start at most recent
-        self.print_help()
+        self.show_current()
 
     def print_help(self) -> None:
         table = Table(expand=False, title="Help")
