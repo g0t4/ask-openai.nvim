@@ -78,7 +78,7 @@ class TraceBrowser:
         else:
             print("No trace files found.")
 
-    def _move(self, step: int) -> None:
+    def move(self, step: int) -> None:
         new_index = self.index + step
         if 0 <= new_index < len(self.traces):
             self.index = new_index
@@ -145,9 +145,9 @@ async def input_loop(browser: TraceBrowser):
                 continue
 
             if char == b'b':
-                browser._move(-1)
+                browser.move(-1)
             elif char == b'f':
-                browser._move(1)
+                browser.move(1)
             elif char == b'\n':
                 trace = browser._current_trace()
                 if trace:
