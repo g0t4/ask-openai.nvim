@@ -8,6 +8,7 @@ import sys
 import termios
 import time
 import tty
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from rich.table import Table
@@ -132,14 +133,26 @@ class TraceBrowser:
             rich.print("[dim]No trace to copy.[/]")
             return
 
+        # Regex to match OSC (Operating System Command) escape sequences:
+        #   ESC ] ... BEL    or    ESC ] ... ST (ESC \)
+        OSC_PATTERN = re.compile(r'\x1b\]([^\x07]*?)\x07|\x1b\]([^\x1b]*?)\x1b\\')
+
+        def _strip_osc_codes(text: str) -> str:
+            """Remove OSC escape sequences from a string."""
+            return OSC_PATTERN.sub("", text)
+
         result = subprocess.run(
             ["fish", "-i", "-c", f"_rag_next_share_directory {self.type}"],
             check=False,
             capture_output=True,
             text=True,
         )
-        next_share_dir = result.stdout.strip()
+
+        clean_output = _strip_osc_codes(result.stdout)
+        rich.inspect(clean_output)
+        next_share_dir = clean_output
         command = f"take {next_share_dir} {trace.resolve()}"
+        rich.inspect(f"{command=}")
         self.copy(command)
 
     def copy(self, what):
