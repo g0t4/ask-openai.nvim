@@ -54,8 +54,13 @@ def launch_chat_viewer(trace_path: Path) -> None:
 
 class TraceBrowser:
 
-    def __init__(self, base_dir: Path, type: str) -> None:
-        self.base_dir = base_dir.resolve()
+    def __init__(self, type: str) -> None:
+        chat_type_base_dir = Path(os.getenv("HOME") + "/repos/github/g0t4/datasets/ask_traces/" + type)
+        if not chat_type_base_dir.is_dir():
+            print(f"Error: {chat_type_base_dir} is not a directory.", file=sys.stderr)
+            sys.exit(1)
+        self.base_dir = chat_type_base_dir.resolve()
+
         self.type = type
         self.traces = find_trace_files(self.base_dir)
         self.index = len(self.traces) - 1  # start at most recent
@@ -237,13 +242,7 @@ def main() -> None:
         help="trace type: fims, rewrite, agents",
     )
     args = parser.parse_args()
-    chat_type_base_dir = Path(os.getenv("HOME") + "/repos/github/g0t4/datasets/ask_traces/" + args.type)
-
-    if not chat_type_base_dir.is_dir():
-        print(f"Error: {chat_type_base_dir} is not a directory.", file=sys.stderr)
-        sys.exit(1)
-
-    browser = TraceBrowser(chat_type_base_dir, args.type)
+    browser = TraceBrowser(args.type)
     asyncio.run(input_loop(browser))
 
 if __name__ == "__main__":
