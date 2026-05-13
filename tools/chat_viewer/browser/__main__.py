@@ -58,10 +58,11 @@ class TraceBrowser:
     def __init__(self, from_dir: str) -> None:
         base_dir = Path(os.getenv("HOME") + "/.local/state/nvim/ask-openai/" + from_dir)
 
-        self.to_dir = from_dir
+        to_dir = from_dir
         if from_dir == "fim":
             # only fim is renamed from_dir vs to_dir
             to_dir = "fims"
+        self.to_dir = to_dir
 
         if not base_dir.is_dir():
             print(f"Error: {base_dir} is not a directory.", file=sys.stderr)
@@ -158,7 +159,7 @@ class TraceBrowser:
             return text
 
         result = subprocess.run(
-            ["fish", "-i", "-c", f"_rag_next_share_directory {self.from_dir}"],
+            ["fish", "-i", "-c", f"_rag_next_share_directory {self.to_dir}"],
             check=False,
             capture_output=True,
             text=True,
