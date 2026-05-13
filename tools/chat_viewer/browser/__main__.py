@@ -180,13 +180,13 @@ def main() -> None:
         help="trace type: fims, rewrite, agents",
     )
     args = parser.parse_args()
-    base_path = Path(os.getenv("HOME") + "/repos/github/g0t4/datasets/ask_traces/" + args.type)
+    chat_type_base_dir = Path(os.getenv("HOME") + "/repos/github/g0t4/datasets/ask_traces/" + args.type)
 
-    if not base_path.is_dir():
-        print(f"Error: {base_path} is not a directory.", file=sys.stderr)
+    if not chat_type_base_dir.is_dir():
+        print(f"Error: {chat_type_base_dir} is not a directory.", file=sys.stderr)
         sys.exit(1)
 
-    browser = TraceBrowser(base_path)
+    browser = TraceBrowser(chat_type_base_dir)
     asyncio.run(input_loop(browser))
 
 if __name__ == "__main__":
