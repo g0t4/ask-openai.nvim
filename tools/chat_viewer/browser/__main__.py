@@ -102,7 +102,7 @@ class TraceBrowser:
             browser._move(-1)  # treat as forward
         # Add more CSI handling here if needed.
 
-async def main2(browser: TraceBrowser):
+async def input_loop(browser: TraceBrowser):
     fd = sys.stdin.fileno()
     old = termios.tcgetattr(fd)
     tty.setcbreak(fd)
@@ -179,7 +179,7 @@ def main() -> None:
         sys.exit(1)
 
     browser = TraceBrowser(base_path)
-    asyncio.run(main2(browser))
+    asyncio.run(input_loop(browser))
 
 if __name__ == "__main__":
     main()
