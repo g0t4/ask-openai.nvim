@@ -67,6 +67,7 @@ class TraceBrowser:
 
         table.add_row("q", "quit")
         table.add_row("c", "copy current trace path")
+        table.add_row("t", "TODO - copy take command to add to datasets repo")
         table.add_row("Enter", "open current trace in chat_viewer")
         table.add_row("←/→", "older / newer")
         table.add_row("h", "help")
