@@ -55,11 +55,11 @@ def launch_chat_viewer(trace_path: Path) -> None:
 class TraceBrowser:
 
     def __init__(self, type: str) -> None:
-        chat_type_base_dir = Path(os.getenv("HOME") + "/repos/github/g0t4/datasets/ask_traces/" + type)
-        if not chat_type_base_dir.is_dir():
-            print(f"Error: {chat_type_base_dir} is not a directory.", file=sys.stderr)
+        base_dir = Path(os.getenv("HOME") + "/repos/github/g0t4/datasets/ask_traces/" + type)
+        if not base_dir.is_dir():
+            print(f"Error: {base_dir} is not a directory.", file=sys.stderr)
             sys.exit(1)
-        self.base_dir = chat_type_base_dir.resolve()
+        self.base_dir = base_dir.resolve()
 
         self.type = type
         self.traces = find_trace_files(self.base_dir)
