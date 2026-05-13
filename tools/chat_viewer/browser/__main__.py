@@ -78,10 +78,10 @@ class TraceBrowser:
         else:
             print("No trace files found.")
 
-    def forward(self):
+    def newer(self):
         self.move(1)
 
-    def backward(self):
+    def older(self):
         self.move(-1)
 
     def move(self, step: int) -> None:
@@ -103,9 +103,9 @@ class TraceBrowser:
         elif sequence == UP_ARROW:
             pass
         elif sequence == LEFT_ARROW:
-            self.backward()
+            self.older()
         elif sequence == RIGHT_ARROW:
-            self.forward()
+            self.newer()
 
 async def input_loop(browser: TraceBrowser):
     fd = sys.stdin.fileno()
