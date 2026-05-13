@@ -92,6 +92,23 @@ class TraceBrowser:
         else:
             rich.print("[dim]No more traces in that direction.[/]")
 
+    def on_char(self, char):
+        if char == b'b':
+            self.move(-1)
+        elif char == b'f':
+            self.move(1)
+        elif char == b'\n':
+            trace = self.current_trace()
+            if trace:
+                launch_chat_viewer(trace)
+            else:
+                print("No trace to display.")
+        elif char == b'q':
+            print("Exiting.")
+            sys.exit()
+        else:
+            rich.print(f"[dim]no handler for {char=}[/]")
+
     def on_csi(self, sequence):
         UP_ARROW = b'\x1b[A'
         DOWN_ARROW = b'\x1b[B'
@@ -149,21 +166,7 @@ async def input_loop(browser: TraceBrowser):
                 await read_escape_sequence()
                 continue
 
-            if char == b'b':
-                browser.move(-1)
-            elif char == b'f':
-                browser.move(1)
-            elif char == b'\n':
-                trace = browser.current_trace()
-                if trace:
-                    launch_chat_viewer(trace)
-                else:
-                    print("No trace to display.")
-            elif char == b'q':
-                print("Exiting.")
-                break
-            else:
-                rich.print(f"[dim]no handler for {char=}[/]")
+            browser.on_char(char)
 
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
