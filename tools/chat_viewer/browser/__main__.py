@@ -93,14 +93,13 @@ class TraceBrowser:
         LEFT_ARROW = b'\x1b[D'
 
         if sequence == UP_ARROW:
-            self._move(-1)  # treat as back
+            pass
         elif sequence == DOWN_ARROW:
-            pass  # no action defined
+            pass
         elif sequence == RIGHT_ARROW:
-            self._move(1)
+            self.move(1)
         elif sequence == LEFT_ARROW:
-            self._move(-1)  # treat as forward
-        # Add more CSI handling here if needed.
+            self.move(-1)
 
 async def input_loop(browser: TraceBrowser):
     fd = sys.stdin.fileno()
