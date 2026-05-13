@@ -57,12 +57,18 @@ class TraceBrowser:
 
     def __init__(self, from_dir: str) -> None:
         base_dir = Path(os.getenv("HOME") + "/.local/state/nvim/ask-openai/" + from_dir)
+
+        self.to_dir = from_dir
+        if from_dir == "fim":
+            # only fim is renamed from_dir vs to_dir
+            to_dir = "fims"
+
         if not base_dir.is_dir():
             print(f"Error: {base_dir} is not a directory.", file=sys.stderr)
             sys.exit(1)
         self.base_dir = base_dir.resolve()
 
-        self.type = from_dir
+        self.from_dir = from_dir
         self.traces = find_trace_files(self.base_dir)
         self.index = len(self.traces) - 1  # start at most recent
         self.show_current()
@@ -152,7 +158,7 @@ class TraceBrowser:
             return text
 
         result = subprocess.run(
-            ["fish", "-i", "-c", f"_rag_next_share_directory {self.type}"],
+            ["fish", "-i", "-c", f"_rag_next_share_directory {self.from_dir}"],
             check=False,
             capture_output=True,
             text=True,
@@ -267,13 +273,13 @@ async def input_loop(browser: TraceBrowser):
 def main() -> None:
     parser = argparse.ArgumentParser(description="Trace browser REPL")
     parser.add_argument(
-        "type",
+        "from_dir",
         nargs="?",
-        default="fims",
-        help="trace type: fims, rewrite, agents",
+        default="fim",
+        help="trace from_dir: fim, rewrite, agents",
     )
     args = parser.parse_args()
-    browser = TraceBrowser(args.type)
+    browser = TraceBrowser(args.from_dir)
     asyncio.run(input_loop(browser))
 
 if __name__ == "__main__":
