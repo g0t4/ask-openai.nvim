@@ -148,6 +148,7 @@ class TraceBrowser:
             text = OSC_PATTERN.sub("", text)
             # Remove any remaining single‑byte ESC codes (e.g., "\x1bM")
             text = ESC_PATTERN.sub("", text)
+            # TODO more
             return text
 
         result = subprocess.run(
