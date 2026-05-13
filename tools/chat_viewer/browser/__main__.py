@@ -8,12 +8,30 @@ import sys
 import termios
 import time
 import tty
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from rich.table import Table
 from typing import List, Optional
 
 from tools.chat_viewer.tree_wrapper import TreeWrapper
+
+def relative_age(past: datetime) -> str:
+    """Return a human‑readable relative age like “2 days ago”. """
+    now = datetime.now(timezone.utc)
+    delta = now - past.astimezone(timezone.utc)
+
+    seconds = int(delta.total_seconds())
+    minutes = seconds // 60
+    hours = minutes // 60
+    days = hours // 24
+
+    if days > 0:
+        return f"{days} day{'s' if days != 1 else ''} ago"
+    if hours > 0:
+        return f"{hours} hour{'s' if hours != 1 else ''} ago"
+    if minutes > 0:
+        return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
+    return f"{seconds} second{'s' if seconds != 1 else ''} ago"
 
 def find_trace_files(base_dir: Path) -> List[Path]:
     """
@@ -65,21 +83,23 @@ class TraceBrowser:
 
     def _show_current(self) -> None:
         trace = self.current_trace()
-        if trace:
-            dataset_root = self.base_dir.parent
-            trace_path_str = str(trace.resolve())
-            prefix_path_str = str(Path(dataset_root).resolve())
-            display_path = trace_path_str \
-                .removeprefix(prefix_path_str) \
-                .removeprefix(os.sep)
-
-            ts = datetime.fromtimestamp(int(trace.stem.split("-")[0]))
-            print(f"[{self.index + 1}/{len(self.traces)}] {display_path}  ({ts.isoformat()})")
-            # meta = load_trace_json(trace)
-            # print(f"  summary: {meta.get('summary', 'n/a')}")
-
-        else:
+        if not trace:
             print("No trace files found.")
+            return
+
+        dataset_root = self.base_dir.parent
+        trace_path_str = str(trace.resolve())
+        prefix_path_str = str(Path(dataset_root).resolve())
+        display_path = trace_path_str \
+            .removeprefix(prefix_path_str) \
+            .removeprefix(os.sep)
+
+        ts = datetime.fromtimestamp(int(trace.stem.split("-")[0]))
+        relative = relative_age(ts)
+        print(f"[{self.index + 1}/{len(self.traces)}] {display_path}  "
+              f"({ts.isoformat()}, {relative})")
+        # meta = load_trace_json(trace)
+        # print(f"  summary: {meta.get('summary', 'n/a')}")
 
     def newer(self):
         self.move(1)
