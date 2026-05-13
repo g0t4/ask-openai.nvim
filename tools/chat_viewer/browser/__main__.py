@@ -92,6 +92,7 @@ class TraceBrowser:
         RIGHT_ARROW = b'\x1b[C'
         LEFT_ARROW = b'\x1b[D'
 
+        browser = self
         if sequence == UP_ARROW:
             browser._move(-1)  # treat as back
         elif sequence == DOWN_ARROW:
