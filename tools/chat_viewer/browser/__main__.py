@@ -54,8 +54,9 @@ def launch_chat_viewer(trace_path: Path) -> None:
 
 class TraceBrowser:
 
-    def __init__(self, base_dir: Path) -> None:
+    def __init__(self, base_dir: Path, type: str) -> None:
         self.base_dir = base_dir.resolve()
+        self.type = type
         self.traces = find_trace_files(self.base_dir)
         self.index = len(self.traces) - 1  # start at most recent
         self.show_current()
@@ -242,7 +243,7 @@ def main() -> None:
         print(f"Error: {chat_type_base_dir} is not a directory.", file=sys.stderr)
         sys.exit(1)
 
-    browser = TraceBrowser(chat_type_base_dir)
+    browser = TraceBrowser(chat_type_base_dir, args.type)
     asyncio.run(input_loop(browser))
 
 if __name__ == "__main__":
