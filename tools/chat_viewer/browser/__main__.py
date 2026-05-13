@@ -42,10 +42,6 @@ def find_trace_files(base_dir: Path) -> List[Path]:
     files = sorted(base_dir.glob(pattern), key=lambda p: int(p.stem.split("-")[0]))
     return files
 
-def most_recent_trace(files: List[Path]) -> Optional[Path]:
-    """Return the newest trace file or ``None`` if the list is empty."""
-    return files[-1] if files else None
-
 def load_trace_json(trace_path: Path) -> dict:
     try:
         with trace_path.open("r", encoding="utf-8") as f:
