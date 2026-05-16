@@ -101,7 +101,6 @@ local function ask_agent_command(opts)
         local cwd = vim.fn.getcwd()
         local cwd_text = "Current directory: " .. cwd
         local repo_root = files.get_repo_root()
-        if repo_root then
             if repo_root ~= cwd then
                 vim.notify("FYI you are in a nested directory of the repo and that tends to cause issues with gptoss making requests to change things", vim.log.levels.WARN)
                 -- PRN path compare instead of text comparison? add this if you run into a problem
@@ -122,7 +121,6 @@ local function ask_agent_command(opts)
                     vim.notify("You aren't in repo root and yet the calculation for number of levels deep returned 0???, check logic for levels deep warning", vim.log.levels.WARN)
                 end
             end
-        end
         tool_instructs = tool_instructs:gsub("INSERT_CWD", cwd_text)
         system = system .. "\n\n" .. tool_instructs
 
