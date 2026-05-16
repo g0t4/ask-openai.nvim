@@ -111,7 +111,10 @@ function M.get_instruct_slash_commands()
         return names
     end
     local repo_instructs_path = repo_root .. '/.agents/instructs'
-    if vim.fn.isdirectory(repo_instructs_path) == 1 then
+    if not vim.fn.isdirectory(repo_instructs_path) == 1 then
+        M.cached_instruct_slash_commands = names
+        return names
+    end
         local dir_names = files.list_directories(repo_instructs_path)
         for _, name in ipairs(dir_names) do
             if not M._instruct_paths_by_name[name] then
@@ -136,7 +139,6 @@ function M.get_instruct_slash_commands()
                 end
             end
         end
-    end
     M.cached_instruct_slash_commands = names
     return names
 end
