@@ -66,13 +66,10 @@ function M.load_instruct(name)
 end
 
 M.cached_instruct_slash_commands = nil
---- List of slash commands for instructs (cached after first load)
----@return string[] List of slash commands (e.g., "/my_instruct")
-function M.get_instruct_slash_commands()
-    if M.cached_instruct_slash_commands then
-        return M.cached_instruct_slash_commands
-    end
 
+--- Internal loader that populates `M._instruct_paths_by_name` and returns the command list.
+---@return string[] List of slash commands (e.g., "/my_instruct")
+local function _load_instruct_slash_commands()
     local home_dir_instructs_path = vim.fn.expand("~/.agents/instructs")
     local names = {}
     if vim.fn.isdirectory(home_dir_instructs_path) == 1 then
@@ -107,12 +104,10 @@ function M.get_instruct_slash_commands()
     -- * repo‑specific instructs: <repo_root>/.agents/instructs
     local repo_root = files.get_repo_root()
     if not repo_root then
-        M.cached_instruct_slash_commands = names
         return names
     end
     local repo_instructs_path = repo_root .. '/.agents/instructs'
     if not vim.fn.isdirectory(repo_instructs_path) == 1 then
-        M.cached_instruct_slash_commands = names
         return names
     end
     local dir_names = files.list_directories(repo_instructs_path)
@@ -139,6 +134,16 @@ function M.get_instruct_slash_commands()
             end
         end
     end
+    return names
+end
+
+--- List of slash commands for instructs (cached after first load)
+---@return string[] List of slash commands (e.g., "/my_instruct")
+function M.get_instruct_slash_commands()
+    if M.cached_instruct_slash_commands then
+        return M.cached_instruct_slash_commands
+    end
+    local names = _load_instruct_slash_commands()
     M.cached_instruct_slash_commands = names
     return names
 end
