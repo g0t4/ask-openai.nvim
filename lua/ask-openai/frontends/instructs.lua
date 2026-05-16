@@ -105,10 +105,9 @@ function M.get_instruct_slash_commands()
     end
 
     -- * repo‑specific instructs: <repo_root>/.agents/instructs
-    local repo_root = nil
-    local git_root = vim.fn.systemlist('git rev-parse --show-toplevel')[1]
-    if vim.v.shell_error == 0 and git_root ~= '' then
-        repo_root = vim.fn.trim(git_root)
+    local repo_root = files.get_repo_root()
+    if not repo_root then
+        return names
     end
     if repo_root then
         local repo_instructs_path = repo_root .. '/.agents/instructs'

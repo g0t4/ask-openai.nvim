@@ -100,9 +100,8 @@ local function ask_agent_command(opts)
         -- * repo root vs cwd prompt instructions
         local cwd = vim.fn.getcwd()
         local cwd_text = "Current directory: " .. cwd
-        local git_root_output = vim.fn.systemlist('git rev-parse --show-toplevel')
-        if vim.v.shell_error == 0 and #git_root_output > 0 then
-            local repo_root = vim.fn.trim(git_root_output[1])
+        local repo_root = files.get_repo_root()
+        if repo_root then
             if repo_root ~= cwd then
                 vim.notify("FYI you are in a nested directory of the repo and that tends to cause issues with gptoss making requests to change things", vim.log.levels.WARN)
                 -- PRN path compare instead of text comparison? add this if you run into a problem

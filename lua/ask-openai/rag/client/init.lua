@@ -53,17 +53,21 @@ local function determine_rag_config()
     local root_dir = vim.fn.getcwd()
     local dot_rag_dir = root_dir .. "/.rag"
     if not files.exists(dot_rag_dir) then
-        -- fallback check git repo root
+        -- * fallback repo_root/.rag
         --   i.e. the rag dir in this ask-openai repo, or my hammerspoon config in my dotfiles repo
         --   I often work inside these directories, maybe I should just have a .rag dir in them too.. and scope to just it but maybe not?
-        local git_root = vim.fn.systemlist("git rev-parse --show-toplevel")[1]
-        dot_rag_dir = git_root .. "/.rag"
-        if not files.exists(dot_rag_dir) then
-            log:info("RAG is disabled b/c there is NO .rag dir: " .. dot_rag_dir)
+        local repo_root = files.get_repo_root()
+        if not repo_root then
+            log:info("RAG is disabled because no fallback repo_root could be determined")
             return
         end
-        root_dir = git_root
-        log:info("fallback, found .rag in repo root: " .. dot_rag_dir)
+        dot_rag_dir = repo_root .. "/.rag"
+        if not files.exists(dot_rag_dir) then
+            log:info("RAG is disabled b/c there is NO .rag dir in the fallback repo_root: " .. dot_rag_dir)
+            return
+        end
+        root_dir = repo_root
+        log:info("fallback repo_root found .rag dir: " .. dot_rag_dir)
     end
 
     -- * load .rag.yaml
