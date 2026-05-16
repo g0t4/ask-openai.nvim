@@ -115,30 +115,30 @@ function M.get_instruct_slash_commands()
         M.cached_instruct_slash_commands = names
         return names
     end
-        local dir_names = files.list_directories(repo_instructs_path)
-        for _, name in ipairs(dir_names) do
-            if not M._instruct_paths_by_name[name] then
-                M._instruct_paths_by_name[name] = repo_instructs_path .. '/' .. name .. '/INSTRUCT.md'
-                table.insert(names, name)
-            end
+    local dir_names = files.list_directories(repo_instructs_path)
+    for _, name in ipairs(dir_names) do
+        if not M._instruct_paths_by_name[name] then
+            M._instruct_paths_by_name[name] = repo_instructs_path .. '/' .. name .. '/INSTRUCT.md'
+            table.insert(names, name)
         end
+    end
 
-        local entries = files.list_entries(repo_instructs_path)
-        for _, entry in ipairs(entries) do
-            if entry.type == 'file' and entry.name:match('%.md$') then
-                local instruct_name = entry.name:gsub('%.md$', '')
-                if not M._instruct_paths_by_name[instruct_name] then
-                    M._instruct_paths_by_name[instruct_name] = repo_instructs_path .. '/' .. entry.name
-                    table.insert(names, instruct_name)
-                else
-                    vim.notify(string.format(
-                        "Instruct name collision: '%s' already registered from higher precedence; ignoring repo file %s",
-                        instruct_name,
-                        repo_instructs_path .. '/' .. entry.name
-                    ), vim.log.levels.WARN)
-                end
+    local entries = files.list_entries(repo_instructs_path)
+    for _, entry in ipairs(entries) do
+        if entry.type == 'file' and entry.name:match('%.md$') then
+            local instruct_name = entry.name:gsub('%.md$', '')
+            if not M._instruct_paths_by_name[instruct_name] then
+                M._instruct_paths_by_name[instruct_name] = repo_instructs_path .. '/' .. entry.name
+                table.insert(names, instruct_name)
+            else
+                vim.notify(string.format(
+                    "Instruct name collision: '%s' already registered from higher precedence; ignoring repo file %s",
+                    instruct_name,
+                    repo_instructs_path .. '/' .. entry.name
+                ), vim.log.levels.WARN)
             end
         end
+    end
     M.cached_instruct_slash_commands = names
     return names
 end
