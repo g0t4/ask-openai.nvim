@@ -107,6 +107,7 @@ function M.get_instruct_slash_commands()
     -- * repo‑specific instructs: <repo_root>/.agents/instructs
     local repo_root = files.get_repo_root()
     if not repo_root then
+        M.cached_instruct_slash_commands = names
         return names
     end
     local repo_instructs_path = repo_root .. '/.agents/instructs'
