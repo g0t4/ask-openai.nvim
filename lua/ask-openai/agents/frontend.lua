@@ -101,26 +101,26 @@ local function ask_agent_command(opts)
         local cwd = vim.fn.getcwd()
         local cwd_text = "Current directory: " .. cwd
         local repo_root = files.get_repo_root()
-            if repo_root ~= cwd then
-                vim.notify("FYI you are in a nested directory of the repo and that tends to cause issues with gptoss making requests to change things", vim.log.levels.WARN)
-                -- PRN path compare instead of text comparison? add this if you run into a problem
-                cwd_text = cwd_text .. "\nRepository root: " .. repo_root
-                -- Determine nesting depth relative to repo root
-                local relative_path = cwd:sub(#repo_root + 2) -- strip trailing slash
-                local depth = 0
-                for _ in string.gmatch(relative_path, "[^/]+") do
-                    depth = depth + 1
-                end
-                -- TODO I need to make sure paths are always relative to current dir, that is the real solution me thinks
-                -- TODO and warn the user (me) when I am in a nested dir! for now
-                if depth > 0 then
-                    -- FYI it is very rare that I run nvim from a nested dir, so the conditional, added overhead in system message is fine here
-                    local rel = ("../"):rep(depth)
-                    cwd_text = cwd_text .. "\nYou are " .. depth .. " levels deep, so you need " .. rel .. " to build relative paths from repo root."
-                else
-                    vim.notify("You aren't in repo root and yet the calculation for number of levels deep returned 0???, check logic for levels deep warning", vim.log.levels.WARN)
-                end
+        if repo_root ~= cwd then
+            vim.notify("FYI you are in a nested directory of the repo and that tends to cause issues with gptoss making requests to change things", vim.log.levels.WARN)
+            -- PRN path compare instead of text comparison? add this if you run into a problem
+            cwd_text = cwd_text .. "\nRepository root: " .. repo_root
+            -- Determine nesting depth relative to repo root
+            local relative_path = cwd:sub(#repo_root + 2) -- strip trailing slash
+            local depth = 0
+            for _ in string.gmatch(relative_path, "[^/]+") do
+                depth = depth + 1
             end
+            -- TODO I need to make sure paths are always relative to current dir, that is the real solution me thinks
+            -- TODO and warn the user (me) when I am in a nested dir! for now
+            if depth > 0 then
+                -- FYI it is very rare that I run nvim from a nested dir, so the conditional, added overhead in system message is fine here
+                local rel = ("../"):rep(depth)
+                cwd_text = cwd_text .. "\nYou are " .. depth .. " levels deep, so you need " .. rel .. " to build relative paths from repo root."
+            else
+                vim.notify("You aren't in repo root and yet the calculation for number of levels deep returned 0???, check logic for levels deep warning", vim.log.levels.WARN)
+            end
+        end
         tool_instructs = tool_instructs:gsub("INSERT_CWD", cwd_text)
         system = system .. "\n\n" .. tool_instructs
 
