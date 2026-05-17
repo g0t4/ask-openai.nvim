@@ -72,13 +72,11 @@ M.cached_instruct_slash_commands = nil
 local function _load_instruct_slash_commands()
     local home_dir_instructs_path = vim.fn.expand("~/.agents/instructs")
     local paths = {}
-    local added = {}
     if vim.fn.isdirectory(home_dir_instructs_path) == 1 then
         -- * global instruct directories
         local dir_names = files.list_directories(home_dir_instructs_path)
         for _, name in ipairs(dir_names) do
             paths[name] = home_dir_instructs_path .. "/" .. name .. "/INSTRUCT.md"
-            added[name] = true
         end
 
         -- * global standalone markdown files
@@ -94,7 +92,6 @@ local function _load_instruct_slash_commands()
                     ), vim.log.levels.WARN)
                 end
                 paths[instruct_name] = home_dir_instructs_path .. "/" .. entry.name
-                added[instruct_name] = true
             end
         end
     end
@@ -102,25 +99,24 @@ local function _load_instruct_slash_commands()
     -- * repo‑specific instructs: <repo_root>/.agents/instructs
     local repo_root = files.get_repo_root()
     if not repo_root then
-        return names, paths
+        return vim.tbl_keys(paths), paths
     end
     local repo_instructs_path = repo_root .. '/.agents/instructs'
     if vim.fn.isdirectory(repo_instructs_path) ~= 1 then
-        return names, paths
+        return vim.tbl_keys(paths), paths
     end
     -- * repo-specific instruct directories
     local dir_names = files.list_directories(repo_instructs_path)
-    for _, name in ipairs(dir_names) do
-        if paths[name] then
-            vim.notify(string.format(
-                "Instruct name collision: '%s' already registered; overriding with repo directory %s",
-                name,
-                repo_instructs_path .. '/' .. name
-            ), vim.log.levels.WARN)
+        for _, name in ipairs(dir_names) do
+            if paths[name] then
+                vim.notify(string.format(
+                    "Instruct name collision: '%s' already registered; overriding with repo directory %s",
+                    name,
+                    repo_instructs_path .. '/' .. name
+                ), vim.log.levels.WARN)
+            end
+            paths[name] = repo_instructs_path .. '/' .. name .. '/INSTRUCT.md'
         end
-        paths[name] = repo_instructs_path .. '/' .. name .. '/INSTRUCT.md'
-        added[name] = true
-    end
 
     -- * repo-specific standalone markdown files
     local entries = files.list_entries(repo_instructs_path)
@@ -135,10 +131,9 @@ local function _load_instruct_slash_commands()
                     ), vim.log.levels.WARN)
                 end
                 paths[instruct_name] = repo_instructs_path .. '/' .. entry.name
-                added[instruct_name] = true
             end
         end
-    return vim.tbl_keys(added), paths
+    return vim.tbl_keys(paths), paths
 end
 
 --- List of slash commands for instructs (cached after first load)
