@@ -71,14 +71,14 @@ M.cached_instruct_slash_commands = nil
 ---@return string[] List of slash commands (e.g., "/my_instruct")
 local function _load_instruct_slash_commands()
     local home_dir_instructs_path = vim.fn.expand("~/.agents/instructs")
-    local names = {}
     local paths = {}
+    local added = {}
     if vim.fn.isdirectory(home_dir_instructs_path) == 1 then
         -- * global instruct directories
         local dir_names = files.list_directories(home_dir_instructs_path)
         for _, name in ipairs(dir_names) do
             paths[name] = home_dir_instructs_path .. "/" .. name .. "/INSTRUCT.md"
-            table.insert(names, name)
+            added[name] = true
         end
 
         -- * global standalone markdown files
@@ -94,17 +94,7 @@ local function _load_instruct_slash_commands()
                     ), vim.log.levels.WARN)
                 end
                 paths[instruct_name] = home_dir_instructs_path .. "/" .. entry.name
-                -- ensure name is in list without duplication
-                local exists = false
-                for _, n in ipairs(names) do
-                    if n == instruct_name then
-                        exists = true
-                        break
-                    end
-                end
-                if not exists then
-                    table.insert(names, instruct_name)
-                end
+                added[instruct_name] = true
             end
         end
     end
@@ -129,46 +119,26 @@ local function _load_instruct_slash_commands()
             ), vim.log.levels.WARN)
         end
         paths[name] = repo_instructs_path .. '/' .. name .. '/INSTRUCT.md'
-        -- ensure name is in list without duplication
-        local exists = false
-        for _, n in ipairs(names) do
-            if n == name then
-                exists = true
-                break
-            end
-        end
-        if not exists then
-            table.insert(names, name)
-        end
+        added[name] = true
     end
 
     -- * repo-specific standalone markdown files
     local entries = files.list_entries(repo_instructs_path)
-    for _, entry in ipairs(entries) do
-        if entry.type == 'file' and entry.name:match('%.md$') then
-            local instruct_name = entry.name:gsub('%.md$', '')
-            if paths[instruct_name] then
-                vim.notify(string.format(
-                    "Instruct name collision: '%s' already registered; overriding with repo file %s",
-                    instruct_name,
-                    repo_instructs_path .. '/' .. entry.name
-                ), vim.log.levels.WARN)
-            end
-            paths[instruct_name] = repo_instructs_path .. '/' .. entry.name
-            -- ensure name is in list without duplication
-            local exists = false
-            for _, n in ipairs(names) do
-                if n == instruct_name then
-                    exists = true
-                    break
+        for _, entry in ipairs(entries) do
+            if entry.type == 'file' and entry.name:match('%.md$') then
+                local instruct_name = entry.name:gsub('%.md$', '')
+                if paths[instruct_name] then
+                    vim.notify(string.format(
+                        "Instruct name collision: '%s' already registered; overriding with repo file %s",
+                        instruct_name,
+                        repo_instructs_path .. '/' .. entry.name
+                    ), vim.log.levels.WARN)
                 end
-            end
-            if not exists then
-                table.insert(names, instruct_name)
+                paths[instruct_name] = repo_instructs_path .. '/' .. entry.name
+                added[instruct_name] = true
             end
         end
-    end
-    return names, paths
+    return vim.tbl_keys(added), paths
 end
 
 --- List of slash commands for instructs (cached after first load)
