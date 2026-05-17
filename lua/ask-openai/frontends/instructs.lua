@@ -72,11 +72,12 @@ M.cached_instruct_slash_commands = nil
 local function _load_instruct_slash_commands()
     local home_dir_instructs_path = vim.fn.expand("~/.agents/instructs")
     local names = {}
+    local paths = {}
     if vim.fn.isdirectory(home_dir_instructs_path) == 1 then
         -- * global instruct directories
         local dir_names = files.list_directories(home_dir_instructs_path)
         for _, name in ipairs(dir_names) do
-            M._instruct_paths_by_name[name] = home_dir_instructs_path .. "/" .. name .. "/INSTRUCT.md"
+            paths[name] = home_dir_instructs_path .. "/" .. name .. "/INSTRUCT.md"
             table.insert(names, name)
         end
 
@@ -85,16 +86,15 @@ local function _load_instruct_slash_commands()
         for _, entry in ipairs(entries) do
             if entry.type == "file" and entry.name:match("%.md$") then
                 local instruct_name = entry.name:gsub("%.md$", "")
-                -- FYI this means directory wins over standalone markdown file
-                if M._instruct_paths_by_name[instruct_name] then
+                if paths[instruct_name] then
                     vim.notify(string.format(
                         "Instruct name collision: '%s' instruct already registered from global directory %s; ignoring global file %s",
                         instruct_name,
-                        M._instruct_paths_by_name[instruct_name],
+                        paths[instruct_name],
                         home_dir_instructs_path .. "/" .. entry.name
                     ), vim.log.levels.WARN)
                 else
-                    M._instruct_paths_by_name[instruct_name] = home_dir_instructs_path .. "/" .. entry.name
+                    paths[instruct_name] = home_dir_instructs_path .. "/" .. entry.name
                     table.insert(names, instruct_name)
                 end
             end
@@ -104,17 +104,17 @@ local function _load_instruct_slash_commands()
     -- * repo‑specific instructs: <repo_root>/.agents/instructs
     local repo_root = files.get_repo_root()
     if not repo_root then
-        return names
+        return names, paths
     end
     local repo_instructs_path = repo_root .. '/.agents/instructs'
-    if not vim.fn.isdirectory(repo_instructs_path) == 1 then
-        return names
+    if vim.fn.isdirectory(repo_instructs_path) ~= 1 then
+        return names, paths
     end
     -- * repo-specific instruct directories
     local dir_names = files.list_directories(repo_instructs_path)
     for _, name in ipairs(dir_names) do
-        if not M._instruct_paths_by_name[name] then
-            M._instruct_paths_by_name[name] = repo_instructs_path .. '/' .. name .. '/INSTRUCT.md'
+        if not paths[name] then
+            paths[name] = repo_instructs_path .. '/' .. name .. '/INSTRUCT.md'
             table.insert(names, name)
         else
             -- TODO perhaps let repo level override global?
@@ -131,8 +131,8 @@ local function _load_instruct_slash_commands()
     for _, entry in ipairs(entries) do
         if entry.type == 'file' and entry.name:match('%.md$') then
             local instruct_name = entry.name:gsub('%.md$', '')
-            if not M._instruct_paths_by_name[instruct_name] then
-                M._instruct_paths_by_name[instruct_name] = repo_instructs_path .. '/' .. entry.name
+            if not paths[instruct_name] then
+                paths[instruct_name] = repo_instructs_path .. '/' .. entry.name
                 table.insert(names, instruct_name)
             else
                 vim.notify(string.format(
@@ -143,7 +143,7 @@ local function _load_instruct_slash_commands()
             end
         end
     end
-    return names
+    return names, paths
 end
 
 --- List of slash commands for instructs (cached after first load)
@@ -152,7 +152,8 @@ function M.get_instruct_slash_commands()
     if M.cached_instruct_slash_commands then
         return M.cached_instruct_slash_commands
     end
-    local names = _load_instruct_slash_commands()
+    local names, paths = _load_instruct_slash_commands()
+    M._instruct_paths_by_name = paths
     M.cached_instruct_slash_commands = names
     return names
 end
