@@ -166,9 +166,9 @@ local function strip_slash_command_from_prompt(prompt, command)
     end
     local any_removed = final_prompt ~= prompt
     if any_removed then
-        log:info("original prompt: `" .. prompt .. "`")
-        log:info("         detect: `" .. command .. "`")
-        log:info("     new prompt: `" .. final_prompt .. "`")
+        log:trace("original prompt: `" .. prompt .. "`")
+        log:trace("         detect: `" .. command .. "`")
+        log:trace("     new prompt: `" .. final_prompt .. "`")
     end
     return any_removed, final_prompt
 end
