@@ -113,16 +113,24 @@ local function _load_instruct_slash_commands()
     -- * repo-specific instruct directories
     local dir_names = files.list_directories(repo_instructs_path)
     for _, name in ipairs(dir_names) do
-        if not paths[name] then
-            paths[name] = repo_instructs_path .. '/' .. name .. '/INSTRUCT.md'
-            table.insert(names, name)
-        else
-            -- TODO perhaps let repo level override global?
+        if paths[name] then
             vim.notify(string.format(
-                "Instruct name collision: '%s' instruct already registered; ignoring repo directory %s",
+                "Instruct name collision: '%s' already registered; overriding with repo directory %s",
                 name,
                 repo_instructs_path .. '/' .. name
             ), vim.log.levels.WARN)
+        end
+        paths[name] = repo_instructs_path .. '/' .. name .. '/INSTRUCT.md'
+        -- ensure name is in list without duplication
+        local exists = false
+        for _, n in ipairs(names) do
+            if n == name then
+                exists = true
+                break
+            end
+        end
+        if not exists then
+            table.insert(names, name)
         end
     end
 
@@ -131,15 +139,24 @@ local function _load_instruct_slash_commands()
     for _, entry in ipairs(entries) do
         if entry.type == 'file' and entry.name:match('%.md$') then
             local instruct_name = entry.name:gsub('%.md$', '')
-            if not paths[instruct_name] then
-                paths[instruct_name] = repo_instructs_path .. '/' .. entry.name
-                table.insert(names, instruct_name)
-            else
+            if paths[instruct_name] then
                 vim.notify(string.format(
-                    "Instruct name collision: '%s' instruct already registered; ignoring repo file %s",
+                    "Instruct name collision: '%s' already registered; overriding with repo file %s",
                     instruct_name,
                     repo_instructs_path .. '/' .. entry.name
                 ), vim.log.levels.WARN)
+            end
+            paths[instruct_name] = repo_instructs_path .. '/' .. entry.name
+            -- ensure name is in list without duplication
+            local exists = false
+            for _, n in ipairs(names) do
+                if n == instruct_name then
+                    exists = true
+                    break
+                end
+            end
+            if not exists then
+                table.insert(names, instruct_name)
             end
         end
     end
