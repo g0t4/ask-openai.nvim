@@ -103,6 +103,7 @@ end
 --- - consumers only need to check for repo_root == nil
 ---@return string|nil repo_root -- nil = cannot find repo_root, or this is not a git repo
 function M.get_repo_root()
+    -- PRN also check?? git rev-parse --is-inside-work-tree 2>/dev/null  1>/dev/null
     local rev_parse = vim.fn.systemlist('git rev-parse --show-toplevel')
     if vim.v.shell_error ~= 0 then
         log:info("git rev-parse --show-toplevel failed with error", vim.inspect(vim.v.shell_error))
