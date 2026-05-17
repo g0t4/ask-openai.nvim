@@ -99,11 +99,11 @@ local function _load_instruct_slash_commands()
     -- * repo‑specific instructs: <repo_root>/.agents/instructs
     local repo_root = files.get_repo_root()
     if not repo_root then
-        return vim.tbl_keys(paths), paths
+        return paths
     end
     local repo_instructs_path = repo_root .. '/.agents/instructs'
     if vim.fn.isdirectory(repo_instructs_path) ~= 1 then
-        return vim.tbl_keys(paths), paths
+        return paths
     end
     -- * repo-specific instruct directories
     local dir_names = files.list_directories(repo_instructs_path)
@@ -133,7 +133,7 @@ local function _load_instruct_slash_commands()
                 paths[instruct_name] = repo_instructs_path .. '/' .. entry.name
             end
         end
-    return vim.tbl_keys(paths), paths
+    return paths
 end
 
 --- List of slash commands for instructs (cached after first load)
@@ -142,8 +142,9 @@ function M.get_instruct_slash_commands()
     if M.cached_instruct_slash_commands then
         return M.cached_instruct_slash_commands
     end
-    local names, paths = _load_instruct_slash_commands()
+    local paths = _load_instruct_slash_commands()
     M._instruct_paths_by_name = paths
+    local names = vim.tbl_keys(paths)
     M.cached_instruct_slash_commands = names
     return names
 end
