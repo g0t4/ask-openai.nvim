@@ -104,19 +104,6 @@ function M.get_lualine_components()
     return lualine.lualine_components()
 end
 
-function M.get_lualine_status()
-    return {
-        function() return "PLEASE SWITCH TO api.lualine_components()" end,
-        color = function()
-            return {
-                bg = '#FF0000',
-                fg = '#FFFFFF',
-                gui = 'bold'
-            }
-        end
-    }
-end
-
 --- Query the llama-server for the model name running at the given base URL.
 --- Uses the `/v1/models` endpoint and caches the result per URL.
 --- @param base_url string The base URL of the llama-server (e.g. "http://paxy.lan:8012")
