@@ -80,7 +80,7 @@ local function _load_instruct_slash_commands()
             table.insert(names, name)
         end
 
-        -- global standalone markdown files
+        -- * global standalone markdown files
         local entries = files.list_entries(home_dir_instructs_path)
         for _, entry in ipairs(entries) do
             if entry.type == "file" and entry.name:match("%.md$") then
@@ -88,7 +88,7 @@ local function _load_instruct_slash_commands()
                 -- FYI this means directory wins over standalone markdown file
                 if M._instruct_paths_by_name[instruct_name] then
                     vim.notify(string.format(
-                        "Instruct name collision: '%s' already registered from directory %s; ignoring global file %s",
+                        "Instruct name collision: '%s' instruct already registered from global directory %s; ignoring global file %s",
                         instruct_name,
                         M._instruct_paths_by_name[instruct_name],
                         home_dir_instructs_path .. "/" .. entry.name
@@ -110,14 +110,23 @@ local function _load_instruct_slash_commands()
     if not vim.fn.isdirectory(repo_instructs_path) == 1 then
         return names
     end
+    -- * repo-specific instruct directories
     local dir_names = files.list_directories(repo_instructs_path)
     for _, name in ipairs(dir_names) do
         if not M._instruct_paths_by_name[name] then
             M._instruct_paths_by_name[name] = repo_instructs_path .. '/' .. name .. '/INSTRUCT.md'
             table.insert(names, name)
+        else
+            -- TODO perhaps let repo level override global?
+            vim.notify(string.format(
+                "Instruct name collision: '%s' instruct already registered; ignoring repo directory %s",
+                name,
+                repo_instructs_path .. '/' .. name
+            ), vim.log.levels.WARN)
         end
     end
 
+    -- * repo-specific standalone markdown files
     local entries = files.list_entries(repo_instructs_path)
     for _, entry in ipairs(entries) do
         if entry.type == 'file' and entry.name:match('%.md$') then
@@ -127,7 +136,7 @@ local function _load_instruct_slash_commands()
                 table.insert(names, instruct_name)
             else
                 vim.notify(string.format(
-                    "Instruct name collision: '%s' already registered from higher precedence; ignoring repo file %s",
+                    "Instruct name collision: '%s' instruct already registered; ignoring repo file %s",
                     instruct_name,
                     repo_instructs_path .. '/' .. entry.name
                 ), vim.log.levels.WARN)
