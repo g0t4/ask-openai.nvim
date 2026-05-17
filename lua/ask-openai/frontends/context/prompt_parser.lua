@@ -245,7 +245,7 @@ function M.render(prompt)
     end
 
     includes.rendered_prompt = rendered_prompt
-    log:info("includes", vim.inspect(includes))
+    -- log:trace("includes", vim.inspect(includes))
     return includes
 end
 
