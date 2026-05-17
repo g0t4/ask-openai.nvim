@@ -88,13 +88,21 @@ local function _load_instruct_slash_commands()
                 local instruct_name = entry.name:gsub("%.md$", "")
                 if paths[instruct_name] then
                     vim.notify(string.format(
-                        "Instruct name collision: '%s' instruct already registered from global directory %s; ignoring global file %s",
+                        "Instruct name collision: '%s' already registered; overriding with global file %s",
                         instruct_name,
-                        paths[instruct_name],
                         home_dir_instructs_path .. "/" .. entry.name
                     ), vim.log.levels.WARN)
-                else
-                    paths[instruct_name] = home_dir_instructs_path .. "/" .. entry.name
+                end
+                paths[instruct_name] = home_dir_instructs_path .. "/" .. entry.name
+                -- ensure name is in list without duplication
+                local exists = false
+                for _, n in ipairs(names) do
+                    if n == instruct_name then
+                        exists = true
+                        break
+                    end
+                end
+                if not exists then
                     table.insert(names, instruct_name)
                 end
             end
