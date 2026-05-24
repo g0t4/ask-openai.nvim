@@ -5,6 +5,8 @@ local lualine = require('ask-openai.status.lualine')
 local LlamaServerClient = require('ask-openai.backends.llama_cpp.llama_server_client')
 
 -- cache for model names per base url (host:port)
+-- cache for model names per base url (host:port)
+-- stores { value = string|nil, ts = integer }
 local _model_cache = {}
 
 -- * predictions *
@@ -116,8 +118,14 @@ function M.get_llama_server_model(base_url)
     -- TODO test and verify this does what I want, then use it to show the model in status bar (cache first load)
     --    TODO test below from gptoss
     --    btw the below works for wes user only
-    if _model_cache[base_url] ~= nil then
-        return _model_cache[base_url]
+
+    -- TODO cache response for a time period even if nil... would allow checking again without overwhelming server... i.e. if in lualine components
+    local cached = _model_cache[base_url]
+    if cached then
+        local timeout = cached.value == nil and 1 or 10
+        if os.time() - cached.ts < timeout then
+            return cached.value
+        end
     end
 
     local response = LlamaServerClient.get_models(base_url)
@@ -138,7 +146,7 @@ function M.get_llama_server_model(base_url)
         end
     end
 
-    _model_cache[base_url] = model_name
+    _model_cache[base_url] = { value = model_name, ts = os.time() }
     return model_name
 end
 
