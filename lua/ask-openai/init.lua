@@ -132,7 +132,7 @@ function M.ask_openai()
     local stdin_text = ' env: nvim (neovim) command mode (return a valid command w/o the leading : ) \n question: ' ..
         cmdline
 
-    local suggest = require("ask-openai.suggest")
+    local suggest = require("ask-openai.cmdline.suggest")
     local result = suggest.get_vim_command_suggestion(stdin_text)
     return trim_null_characters(result)
 end
