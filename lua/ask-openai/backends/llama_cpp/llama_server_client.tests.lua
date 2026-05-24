@@ -11,6 +11,11 @@ local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 _describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
     local base_url = "http://ask.lan:8013"
 
+    it("check model on non-existent server returns nil", function()
+        local response = LlamaServerClient.get_models("http://invalid:1234")
+        assert.is_nil(response.body)
+    end)
+
     it("check model is gpt-oss", function()
         -- * action
         local response = LlamaServerClient.get_models(base_url)
