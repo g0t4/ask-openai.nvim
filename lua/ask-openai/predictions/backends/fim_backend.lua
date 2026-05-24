@@ -8,6 +8,7 @@ local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.predictions.ansi")
 local api = require("ask-openai.api")
 local gptoss_tokenizer = require("ask-openai.backends.models.gptoss.tokenizer")
+local config = require("ask-openai.config")
 
 require("ask-openai.backends.sse.parsers")
 
@@ -30,7 +31,8 @@ function FimBackend.set_fim_model(model)
     --   so, toggling the port/endpoint :)
     if model == "gptoss" then
         use_model = "gpt-oss:120b"
-        FimBackend.base_url = "http://ask.lan:8013"
+        -- Base URL now derived from configuration (agents subsystem)
+        FimBackend.base_url = config.get_base_urls().gptoss
         if use_gptoss_raw then
             -- manually formatted prompt to disable thinking
             FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions
@@ -39,7 +41,8 @@ function FimBackend.set_fim_model(model)
         end
     else
         use_model = "qwen25coder"
-        FimBackend.base_url = "http://ask.lan:8012"
+        -- Use agents base URL from config for the alternative model as well
+        FimBackend.base_url = config.get_base_urls().qwen3
         FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * preferred for qwen2.5-coder
         -- /completions - raw prompt # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
     end

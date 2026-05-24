@@ -50,11 +50,6 @@ local default_options = {
             -- TODO migrate here from top level (also consider other scenarios where I might want to configure different backend/mode/etc)
         },
         predictions = {
-            -- TODO parse predicitons config (turn current config module into a function => do this later though when I get better idea of how to structure different scenarios)
-            -- TODO likely are good reasons to consider multiple prediction scenarios too (not just one backend/model/etc)
-            -- when it makes sense, configure diff model for predictions
-            -- tmp == not a stable config architecture
-
             keymaps = {
                 accept_all = "<Tab>",
                 accept_line = "<C-right>",
@@ -63,16 +58,6 @@ local default_options = {
                 pause_stream = "<M-down>",
                 new_prediction = "<M-Tab>",
             },
-
-            provider = "keyless", -- TODO set to ? by default
-
-            api_url = nil,
-            use_api_ollama = false,
-            use_api_groq = false,
-            use_api_openai = false,
-
-            model = "qwen2.5-coder:3b-base-q8_0",
-            max_tokens = 40,
         }
     }
 
@@ -94,6 +79,21 @@ function M.print_verbose(msg, ...)
     if local_share.is_trace_logging_enabled() then
         print(msg, ...)
     end
+end
+
+---@return { agents: string, rewrite: string, cmdline: string, gptoss: string, qwen3: string }
+function M.get_base_urls()
+    local gptoss = "http://ask.lan:8013"
+    local qwen3 = "http://ask.lan:8012"
+    -- local qwen25coder = "" -- run qwen2.5coder too?
+
+    return {
+        agents  = gptoss,
+        rewrite = gptoss,
+        cmdline = M.get_cmdline_base_url(),
+        gptoss  = gptoss,
+        qwen3   = qwen3,
+    }
 end
 
 local function _get_provider()

@@ -1,4 +1,5 @@
 local buffers = require("ask-openai.helpers.buffers")
+local config = require("ask-openai.config")
 local curl = require("ask-openai.backends.curl")
 local log = require("ask-openai.logs.logger").predictions()
 local agentica = require("ask-openai.backends.models.agentica")
@@ -429,7 +430,7 @@ local function ask_rewrite_command(opts)
 
         RewriteFrontend.last_request = CurlRequest:new({
             body = body,
-            base_url = "http://ask.lan:8013",
+            base_url = config.get_base_urls().rewrite,
             endpoint = CompletionsEndpoints.oai_v1_chat_completions,
             type = "rewrite",
         })

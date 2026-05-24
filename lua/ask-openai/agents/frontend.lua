@@ -30,7 +30,8 @@ require("ask-openai.helpers.buffers")
 ---@class AgentsFrontend : StreamingFrontend
 local AgentsFrontend = {}
 
-AgentsFrontend.base_url = "http://ask.lan:8013"
+local config = require("ask-openai.config")
+AgentsFrontend.base_url = config.get_base_urls().agents
 
 local first_turn_ns_id
 
