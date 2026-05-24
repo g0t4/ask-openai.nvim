@@ -67,14 +67,14 @@ function M.lualine_components()
             end
             table.insert(icons, fim_model)
 
-            -- show last FIM model used ... do not query /v1/models in advance
-            --  TODO how do I want to show this? should I only show full name if mismatch vs expected?
-            if M.last_fim_sse then
-                if M.last_fim_sse.model then
-                    local model = M.last_fim_sse.model
-                    table.insert(icons, "FIM_ACTUAL=" .. model)
-                end
-            end
+            -- -- show last FIM model used ... do not query /v1/models in advance
+            -- --  TODO how do I want to show this? should I only show full name if mismatch vs expected?
+            -- if M.last_fim_sse then
+            --     if M.last_fim_sse.model then
+            --         local model = M.last_fim_sse.model
+            --         table.insert(icons, "FIM_ACTUAL=" .. model)
+            --     end
+            -- end
 
             -- * rewrite reasoning level
             -- btw gray out on rewrite level does not mean it is disabled, it will still work fine even when FIM is disabled
