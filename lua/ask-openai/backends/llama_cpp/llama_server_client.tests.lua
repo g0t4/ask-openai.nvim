@@ -104,6 +104,7 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         do return end -- comment out to run
 
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/builtin/ask_run_python.json")
+        assert(body ~= nil)
         body.chat_template_kwargs = {
             reasoning_effort = "low",
             builtin_tools = { "python" },
@@ -138,6 +139,7 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         do return end -- comment out to run
 
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition.json")
+        assert(body ~= nil)
         body.chat_template_kwargs = {
             reasoning_effort = "low"
         }
@@ -156,9 +158,9 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
 
 
     it("apply_patch - with single, dict w/ patch property - v1_chat_completions", function()
-        do return end -- comment out to run
-
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition-dict.json")
+        assert(body ~= nil)
+        body.verbose = true -- this is the patch I added for my own build of llama.cpp llama-server to include __verbose even when not started with --verbose
         body.chat_template_kwargs = {
             reasoning_effort = "low"
         }
