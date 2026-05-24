@@ -3,7 +3,7 @@ local local_share = require("ask-openai.config.local_share")
 ---@class Provider
 ---@field get_bearer_token fun(): string
 ---@field check fun() # optional
----@field get_chat_completions_url fun(): string # optional
+---@field get_cmdline_base_url fun(): string # optional
 local M = {}
 
 --- ask-openai options
@@ -123,10 +123,10 @@ function M.get_provider()
     return cached_provider
 end
 
-function M.get_chat_completions_url()
+function M.get_cmdline_base_url()
     local _provider = M.get_provider()
-    if _provider.get_chat_completions_url then
-        return _provider.get_chat_completions_url()
+    if _provider.get_cmdline_base_url then
+        return _provider.get_cmdline_base_url()
     end
 
     if cached_options.api_url then
@@ -202,7 +202,7 @@ function M.check()
     end
 
     local options = {
-        chat_url = M.get_chat_completions_url(),
+        chat_url = M.get_cmdline_base_url(),
         provider_type = M.get_options().provider,
         model = M.get_options().model,
     }

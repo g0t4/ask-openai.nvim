@@ -20,7 +20,7 @@ local function get_vim_command_suggestion(passed_context)
 
     local config = require("ask-openai.config")
     local bearer_token = config.get_validated_bearer_token()
-    local chat_url = config.get_chat_completions_url()
+    local chat_url = config.get_cmdline_base_url()
     print("chat_url", chat_url) -- FYI this shows over commandline so it is helpful to print so I can verify if smth fails where it was sent at least
     local model = config.get_options().model
     log:trace("model", model)
