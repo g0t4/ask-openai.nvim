@@ -2,7 +2,7 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
 local assert = require 'luassert'
 local should = require('devtools.tests.should')
-local _describe = require('devtools.tests._describe')
+local _describe = require('devtools.tests.define.describe')
 local buffers = require('devtools.tests.buffers')
 -- system under test:
 local Selection = require('ask-openai.helpers.selection')

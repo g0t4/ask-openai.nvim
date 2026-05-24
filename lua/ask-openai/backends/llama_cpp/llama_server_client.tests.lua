@@ -1,7 +1,7 @@
 require('ask-openai.helpers.test_setup').modify_package_path()
 local TxChatMessage = require("ask-openai.agents.messages.tx")
 local should = require("devtools.tests.should")
-local _describe = require("devtools.tests._describe")
+local _describe = require("devtools.tests.define.describe")
 local str = require("devtools.tests.str")
 local json_client = require("ask-openai.backends.json_client")
 local LlamaServerClient = require("ask-openai.backends.llama_cpp.llama_server_client")

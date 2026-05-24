@@ -1,7 +1,7 @@
 local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local instructs = require("ask-openai.frontends.instructs")
 require('ask-openai.helpers.testing')
-local describe = require("devtools.tests._describe")
+local describe = require("devtools.tests.define.describe")
 
 describe("class ParseIncludes", function()
     it("new returns object with get_reasoning_level() function", function()

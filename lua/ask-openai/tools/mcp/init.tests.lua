@@ -1,6 +1,6 @@
 require("ask-openai.helpers.testing")
 local mcp = require("ask-openai.tools.mcp")
-local describe = require("devtools.tests._describe")
+local describe = require("devtools.tests.define.describe")
 
 describe("mcp_http_transport", function()
     it("populates tools list within timeout", function()

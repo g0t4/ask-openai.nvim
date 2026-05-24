@@ -1,6 +1,6 @@
 local instructs = require("ask-openai.frontends.instructs")
 require('ask-openai.helpers.testing')
-local describe = require("devtools.tests._describe")
+local describe = require("devtools.tests.define.describe")
 
 describe("clean_content", function()
     it("trims leading and trailing whitespace", function()
