@@ -136,14 +136,18 @@ function M.get_llama_server_model(base_url)
     local body = response.body
     local model_name = nil
     if type(body) == "table" then
-        if body.data and #body.data > 0 then
-            local first = body.data[1]
-            if type(first) == "table" and first.id then
-                model_name = first.id
+        if body.models and #body.models > 0 then
+            local first_model = body.models[1]
+            if type(first_model) == "table" and first_model.name then
+                model_name = first_model.name
             end
-        elseif body.id then
-            model_name = body.id
+        else
+            model_name = "no model.id"
         end
+    end
+
+    if model_name == "ggml-org/gpt-oss-120b-GGUF" then
+        model_name = "gptoss120b"
     end
 
     _model_cache[base_url] = { value = model_name, ts = os.time() }

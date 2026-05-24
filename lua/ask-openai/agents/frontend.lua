@@ -30,6 +30,8 @@ require("ask-openai.helpers.buffers")
 ---@class AgentsFrontend : StreamingFrontend
 local AgentsFrontend = {}
 
+AgentsFrontend.base_url = "http://ask.lan:8013"
+
 local first_turn_ns_id
 
 local cached_files = {}
@@ -233,7 +235,6 @@ local function ask_agent_command(opts)
         -- FYI I had this before RAG matches and it was working fine too
         table.insert(messages, TxChatMessage:user(user_message))
 
-        local base_url = "http://ask.lan:8013"
         local body_overrides = model_params.new_gptoss_chat_body_llama_server({
             -- local body_overrides = model_params.new_qwen3coder_llama_server_chat_body({
             messages = messages,
@@ -241,7 +242,7 @@ local function ask_agent_command(opts)
             tools = tool_definitions,
         }, context)
 
-        AgentsFrontend.trace = AgentTrace:new(body_overrides, base_url)
+        AgentsFrontend.trace = AgentTrace:new(body_overrides, AgentsFrontend.base_url)
         -- log:info("sending", vim.inspect(AgentsFrontend.trace))
         AgentsFrontend.then_send_messages()
     end
