@@ -1,6 +1,7 @@
 local http = require("socket.http") -- luarocks install --local --lua-version=5.1 luasocket
 -- BTW arch: sudo pacman --noconfirm -S lua51   -- to install lua 5.1
 local ltn12 = require("ltn12") -- also from luasocket
+local safely = require("ask-openai.helpers.safely")
 
 local JsonClient = {
     ---@enum Methods
@@ -52,8 +53,15 @@ function JsonClient.get_response_body(url, method, request_body)
     ---@field body any|nil
     local response = {
         code = http_code,
-        body = vim.json.decode(body_str),
+        body = (function()
+            local ok, body = safely.decode_json(body_str)
+            if ok then
+                return body
+            end
+            return nil
+        end)(),
     }
+
     -- vim.print(response)
     return response
 end
