@@ -2,18 +2,12 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
 local assert = require 'luassert'
 local should = require('devtools.tests.should')
-local _describe = require('devtools.tests._describe')
+local describe = require('devtools.tests.define.describe')
 local buffers = require('devtools.tests.buffers')
 -- system under test:
 local log = require("ask-openai.logs.logger").predictions()
 local Selection = require('ask-openai.helpers.selection')
 local GetPos = require('ask-openai.helpers.wrap_getpos')
-
-function ignore(a, b)
-end
-
-only = it
--- it = ignore -- uncomment to run "only" tests, otherwise, comment out to run all again (regardless if marked only/it)
 
 _describe("GetPos wrappers", function()
     -- PRN incorporate settings for obscure details (when the need arises):
