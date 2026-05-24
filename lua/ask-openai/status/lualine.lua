@@ -59,13 +59,14 @@ function M.lualine_components()
                 table.insert(icons, '󰵉')
             end
 
-            -- -- show last FIM model used ... do not query /v1/models in advance
-            -- --  TODO how do I want to show this? should I only show full name if mismatch vs expected?
-            -- if M.last_fim_sse then
-            --     if M.last_fim_sse.model then
-            --         local model = M.last_fim_sse.model
-            --         table.insert(icons, "FIM_ACTUAL=" .. model)
-            --     end
+            -- -- -- show last FIM model used ... do not query /v1/models in advance
+            -- -- --  TODO how do I want to show this? should I only show full name if mismatch vs expected?
+            -- local last_fim_model = nil
+            -- if M.last_fim_sse and M.last_fim_sse.model then
+            --     last_fim_model = M.last_fim_sse.model
+            -- end
+            -- if last_fim_model == "ggml-org/gpt-oss-120b-GGUF" then
+            --     -- last_fim_model = "gptoss"
             -- end
 
             -- * FIM reasoning level
@@ -75,6 +76,11 @@ function M.lualine_components()
                 fim_model = "fim/" .. fim_model .. "." .. level
             end
             table.insert(icons, fim_model)
+            -- if fim_model ~= last_fim_model then
+            --     -- TODO show if mismatched only?
+            --     table.insert(icons, "≠")
+            --     table.insert(icons, last_fim_model)
+            -- end
 
             -- * rewrite reasoning level
             -- btw gray out on rewrite level does not mean it is disabled, it will still work fine even when FIM is disabled
