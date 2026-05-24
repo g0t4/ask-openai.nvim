@@ -66,17 +66,7 @@ function M.lualine_components()
             end
             table.insert(icons, fim_model)
 
-            -- TODO remove this code entirely or what do I want to see? what is my primary purpose?
-            -- -- * Llama server model (shown in status)
-            -- local api = require('ask-openai.api')
-            -- local AgentsFrontend = require('ask-openai.agents.frontend')
-            -- local agents_model = api.get_llama_server_model(AgentsFrontend.base_url) or "❌"
-            -- table.insert(icons, agents_model)
-            -- -- TODO for predictions, this won't work before first request.. TODO lets actually capture model name AFTER first request!
-            -- -- local FimBackend = require('ask-openai.predictions.backends.fim_backend')
-            -- -- local fim_model = api.get_llama_server_model(FimBackend.base_url) or ""
-            -- -- -- table.insert(icons, fim_model)
-            -- -- table.insert(icons, FimBackend.base_url)
+            -- TODO get actual model off of last SSE (not query to /v1/models)...
 
             -- * rewrite reasoning level
             -- btw gray out on rewrite level does not mean it is disabled, it will still work fine even when FIM is disabled
