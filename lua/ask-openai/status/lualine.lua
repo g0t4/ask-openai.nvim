@@ -3,15 +3,16 @@ local human = require('devtools.humanize')
 local llama_stats = require('ask-openai.backends.llama_cpp.stats')
 
 ---@class lualine
----@field last_stats SSEStats|nil
+---@field last_fim_stats SSEStats|nil
 local M = {}
 
 -- TODO when switch model, I should reset the values
-M.last_stats = nil
+M.last_fim_stats = nil
 
 ---@param stats SSEStats?
-function M.set_last_fim_stats(stats)
-    M.last_stats = stats
+function M.set_fim_last_sse(stats, sse)
+    M.last_fim_stats = stats
+    M.last_fim_sse = sse
 end
 
 local LEVEL_ICONS = {
@@ -66,19 +67,26 @@ function M.lualine_components()
             end
             table.insert(icons, fim_model)
 
-            -- TODO get actual model off of last SSE (not query to /v1/models)...
+            -- show last FIM model used ... do not query /v1/models in advance
+            --  TODO how do I want to show this? should I only show full name if mismatch vs expected?
+            if M.last_fim_sse then
+                if M.last_fim_sse.model then
+                    local model = M.last_fim_sse.model
+                    table.insert(icons, "FIM_ACTUAL=" .. model)
+                end
+            end
 
             -- * rewrite reasoning level
             -- btw gray out on rewrite level does not mean it is disabled, it will still work fine even when FIM is disabled
             table.insert(icons, "rewrite/gptoss." .. local_share.get_rewrite_reasoning_level())
 
-            if M.last_stats then
-                if M.last_stats.prompt_tokens_per_second then
-                    local text = "in@" .. human.format_num(M.last_stats.prompt_tokens_per_second, 0) .. "tps"
+            if M.last_fim_stats then
+                if M.last_fim_stats.prompt_tokens_per_second then
+                    local text = "in@" .. human.format_num(M.last_fim_stats.prompt_tokens_per_second, 0) .. "tps"
                     table.insert(icons, text)
                 end
-                if M.last_stats.predicted_tokens_per_second then
-                    local text = "out@" .. human.format_num(M.last_stats.predicted_tokens_per_second, 0) .. "tps"
+                if M.last_fim_stats.predicted_tokens_per_second then
+                    local text = "out@" .. human.format_num(M.last_fim_stats.predicted_tokens_per_second, 0) .. "tps"
                     table.insert(icons, text)
                 end
             end
