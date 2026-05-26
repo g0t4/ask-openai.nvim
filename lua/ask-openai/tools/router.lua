@@ -18,15 +18,14 @@ function M.openai_tools(coordinator_only)
         -- * coordinator only gets the "agents" tool (for spawning subagents)
         for name, mcp_tool in pairs(mcp.tools_available) do
             if name == "delegate" then
-                log:info("MCP tool: ", name)
                 table.insert(tools, mcp.openai_tool(mcp_tool))
             end
         end
+        log:info("tools:", vim.inspect(tools))
         return tools, system_instructs
     end
 
     for name, mcp_tool in pairs(mcp.tools_available) do
-        log:info("MCP tool: ", name)
         table.insert(tools, mcp.openai_tool(mcp_tool))
         local tool_instructs = mcp.get_system_message_instructions(name)
         if tool_instructs then
@@ -35,7 +34,6 @@ function M.openai_tools(coordinator_only)
     end
     for _, inprocess_tool in pairs(inprocess.tools_available) do
         -- PRN push this into inprocess module like mcp/init.lua above?
-        log:info("Inprocess tool: ", inprocess_tool["function"].name)
 
         if inprocess_tool["function"].name == "semantic_grep" then
             -- somewhat strange but neovim invocations are rooted in the current buffer, so I have to use that to dictate some tool availability even though agent like requests are buffer independent... since my LS client is tied to a buffer in neovim, gotta roll with it! NBD TBH
@@ -49,6 +47,7 @@ function M.openai_tools(coordinator_only)
             end
         end
     end
+    log:info("tools:", vim.inspect(tools))
     return tools, system_instructs
 end
 
