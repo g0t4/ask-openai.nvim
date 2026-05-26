@@ -9,11 +9,21 @@
 ---@field properties table<string, MCPToolInputSchemaProperty>
 ---@field required? string[]
 
+--- FYI: https://modelcontextprotocol.io/specification/2024-11-05/server/tools#listing-tools
 ---@class MCPTool
 ---@field name string
 ---@field description? string
 ---@field inputSchema MCPToolInputSchema
----@field call fun(id: integer, tool_name: string, args: table, callback: fun(result: table))
+---@field call fun(id: integer, tool_name: string, args: table, callback: fun(result: table)) -- my function to invoke the tool, not part of MCP specification
+
+---@class MCPToolsListResult
+---@field result MCPToolsList
+
+---@class MCPToolsList
+---@field tools table<string, MCPTool>
+
+---@class JsonRPCError
+---@field error {code: integer, message: string, data?: any}
 
 local log = require("ask-openai.logs.logger").predictions()
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
@@ -230,6 +240,7 @@ function start_mcp_server_stdio(name)
         write_stdio(request)
     end
 
+    ---@param callback fun(response: MCPToolsListResult|JsonRPCError)
     local function tools_list(callback)
         send_request_stdio({ method = "tools/list" }, callback)
     end
@@ -296,7 +307,8 @@ function start_mcp_server_stdio(name)
                 return
             end
             for _, tool in ipairs(response.result.tools) do
-                log:info("MCP raw tool", vim.inspect(tool))
+                ---@cast tool MCPTool
+                log:info("tools/list:", vim.inspect(tool))
                 tool.call = tools_call
                 M.tools_available[tool.name] = tool
             end
@@ -456,6 +468,7 @@ local function start_mcp_server_http(name)
     send_http({ method = "tools/list" }, function(response)
         local tools = response.result.tools
         for _, tool in pairs(tools) do
+            ---@cast tool MCPTool
             tool.call = tools_call
             M.tools_available[tool.name] = tool
         end
