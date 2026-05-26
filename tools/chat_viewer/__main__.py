@@ -222,7 +222,6 @@ def load_messages_jsonl(path: Path) -> Iterable[dict[str, Any]]:
         yield message
 
 def print_model_info(model: str | None) -> None:
-    """Print model name at the top of the trace output, before any messages."""
     if model:
         _console.print(f"[dim]Model:[/] [bold]{model}[/]")
         _console.print()
