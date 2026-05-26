@@ -657,10 +657,10 @@ function AgentsFrontend.send_tool_messages_if_all_tools_done()
     AgentsFrontend.then_send_completion_request(trace)
 end
 
----@param current_request CurlRequestForTrace
+---@param request CurlRequestForTrace
 ---@return boolean
-function AgentsFrontend.any_outstanding_tool_calls(current_request)
-    for _, rx_message in ipairs(current_request.accumulated_model_response_messages or {}) do
+function AgentsFrontend.any_outstanding_tool_calls(request)
+    for _, rx_message in ipairs(request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
             local is_outstanding = tool_call.response_message == nil
             if is_outstanding then
