@@ -533,6 +533,28 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
     except Exception as err:
         call_tree.add_error("Failed parsing command", err, arguments)
 
+def _add_run_lua(arguments: str, tree: TreeWrapper):
+    """Handle ``run_lua`` tool calls.
+
+    The tool expects a JSON string with a ``code`` field containing the Lua
+    source to be executed. The code is displayed using syntax highlighting.
+    """
+    try:
+        parsed = json.loads(arguments)
+    except Exception as err:
+        return tree.add_error("Failed parsing arguments", err, arguments)
+
+    code = parsed.get("code")
+    if not isinstance(code, str):
+        return tree.add_error("Missing or invalid 'code' argument", Exception("code must be a string"), arguments)
+
+    try:
+        # Use the existing _syntax helper with the Lua lexer.
+        syntax = _syntax(code, "lua")
+        return tree.add(syntax)
+    except Exception as err:
+        return tree.add_error("Failed adding Lua code", err, code)
+
 def format_call_title(title):
     return f"- {title}"
 
@@ -550,6 +572,11 @@ def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper):
     if func_name in ("run_command", "run_process"):
         child = tree.add(format_call_title(func_name))
         return _add_run_command_and_run_process(arguments, child)
+
+    if func_name == "run_lua":
+        # Display Lua code using syntax highlighting.
+        child = tree.add(format_call_title(func_name))
+        return _add_run_lua(arguments, child)
 
     # FYI semantic_grep works good with generic right now:
     return _add_generic_tool(func_name, arguments, tree)
