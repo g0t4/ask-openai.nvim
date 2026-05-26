@@ -13,6 +13,18 @@ function M.openai_tools(coordinator_only)
 
     -- * inject system message instructions based on available tools
     local system_instructs = {}
+    if coordinator_only then
+        log:info("COORDINATOR_ONLY")
+        -- * coordinator only gets the "agents" tool (for spawning subagents)
+        for name, mcp_tool in pairs(mcp.tools_available) do
+            if name == "delegate" then
+                log:info("MCP tool: ", name)
+                table.insert(tools, mcp.openai_tool(mcp_tool))
+            end
+        end
+        return tools, system_instructs
+    end
+
     for name, mcp_tool in pairs(mcp.tools_available) do
         log:info("MCP tool: ", name)
         table.insert(tools, mcp.openai_tool(mcp_tool))
