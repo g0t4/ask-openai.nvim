@@ -106,6 +106,9 @@ M.slash_commands = {
     NORAG            = "/norag",
     READONLY         = "/readonly",
 
+    -- coordinator mode (primary agent only, no tool calls beyond subagent)
+    COORDINATOR      = "/coordinator",
+
     -- reasoning levels
     REASONING_LOW    = "/low",
     REASONING_MEDIUM = "/medium",
@@ -216,6 +219,7 @@ function M.render(prompt)
         [M.slash_commands.REASONING_MEDIUM] = "reasoning_medium",
         [M.slash_commands.REASONING_HIGH] = "reasoning_high",
         [M.slash_commands.REASONING_OFF] = "reasoning_off",
+        [M.slash_commands.COORDINATOR] = "coordinator",
     }
 
     local includes = Includes.new({
