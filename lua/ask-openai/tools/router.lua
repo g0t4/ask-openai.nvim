@@ -25,10 +25,9 @@ function M.openai_tools(coordinator_only)
     if coordinator_only then
         log:info("COORDINATOR_ONLY")
         -- * coordinator only gets the "agents" tool (for spawning subagents)
-        for name, mcp_tool in pairs(mcp.tools_available) do
-            if name == "delegate" then
-                table.insert(tools, mcp.openai_tool(mcp_tool))
-            end
+        local delegate_tool = mcp.tools_available["delegate"]
+        if delegate_tool then
+            table.insert(tools, mcp.openai_tool(delegate_tool))
         end
         log_tool_names(tools)
         return tools, system_instructs
