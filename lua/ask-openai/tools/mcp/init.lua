@@ -245,6 +245,18 @@ function start_mcp_server_stdio(name)
         send_request_stdio({ method = "tools/list" }, callback)
     end
 
+    local function cancel_tool_call(tool_call_id, reason)
+        -- TODO plug this into agent abort, when tool call(s) are outstanding
+        notify_stdio({
+            method = "notifications/initialized",
+            params = {
+                -- TODO confirm tool_call's ID is the original tool call's request.id
+                requestId = tool_call_id,
+                reason = reason,
+            },
+        })
+    end
+
     local function tools_call(id, tool_name, args, callback)
         -- PRN/TODO btw your downstream code uses result object for almost everything, even tool call failures... that is probably fine but I should find out if a failed tool call is suppose to be presented as an error object on the response or as-is with result.isError etc?
         send_request_stdio({
