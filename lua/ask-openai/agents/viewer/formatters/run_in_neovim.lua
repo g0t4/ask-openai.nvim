@@ -8,7 +8,7 @@ local M = {}
 function M.format(lines, tool_call, message)
     -- Header (similar to generic formatter)
     local func = tool_call["function"]
-    local name = func.name or "run_lua"
+    local name = func.name or "run_in_neovim"
     local hl_group = HLGroups.TOOL_SUCCESS
     if tool_call.call_output then
         if tool_call.call_output.result.isError then
@@ -24,9 +24,9 @@ function M.format(lines, tool_call, message)
     local args = func.arguments
     if args then
         local ok, decoded = safely.decode_json(args)
-        if ok and type(decoded) == "table" and decoded.code then
+        if ok and type(decoded) == "table" and decoded.lua then
             -- Show the code, folding long blocks
-            lines:append_text_fold_if_long("CODE", decoded.code)
+            lines:append_text_fold_if_long("CODE", decoded.lua)
         else
             -- Fallback to raw argument string
             lines:append_text(args)

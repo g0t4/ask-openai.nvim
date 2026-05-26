@@ -1,7 +1,7 @@
 local apply_patch_tool = require("ask-openai.tools.inproc.apply_patch")
 local plumbing = require("ask-openai.tools.plumbing")
 local semantic_grep_tool = require("ask-openai.tools.inproc.semantic_grep")
-local run_lua_tool = require("ask-openai.tools.inproc.run_lua")
+local run_in_neovim_tool = require("ask-openai.tools.inproc.run_in_neovim")
 
 local M = {}
 
@@ -9,7 +9,7 @@ local M = {}
 M.tools_available = {
     semantic_grep = semantic_grep_tool.ToolDefinition,
     apply_patch = apply_patch_tool.ToolDefinition,
-    run_lua = run_lua_tool.ToolDefinition,
+    run_in_neovim = run_in_neovim_tool.ToolDefinition,
 }
 
 
@@ -31,8 +31,8 @@ function M.send_tool_call(tool_call, callback)
         semantic_grep_tool.call(parsed_args, callback)
     elseif name == "apply_patch" then
         apply_patch_tool.call(parsed_args, callback)
-    elseif name == "run_lua" then
-        run_lua_tool.call(parsed_args, callback)
+    elseif name == "run_in_neovim" then
+        run_in_neovim_tool.call(parsed_args, callback)
     else
         callback(plumbing.create_tool_call_output_for_error_message("Invalid in-process tool name: " .. name))
     end

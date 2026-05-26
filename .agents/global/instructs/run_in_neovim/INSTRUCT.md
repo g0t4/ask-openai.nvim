@@ -1,9 +1,8 @@
 ---
-name: run-lua
-description: Using `run_lua` tool in the active Neovim process that hosts the agent harness.
+description: Using `run_in_neovim` tool in the active Neovim process that hosts the agent harness.
 ---
 
-# run_lua tool
+# run_in_neovim tool
 
 Examples:
 

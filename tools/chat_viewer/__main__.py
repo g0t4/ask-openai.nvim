@@ -533,15 +533,15 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
     except Exception as err:
         call_tree.add_error("Failed parsing command", err, arguments)
 
-def _add_run_lua(arguments: str, tree: TreeWrapper):
+def _add_run_in_neovim(arguments: str, tree: TreeWrapper):
     try:
         obj = json.loads(arguments)
     except Exception as err:
         return tree.add_error("Failed parsing arguments", err, arguments)
 
-    code = obj.get("code")
+    code = obj.get("lua")
     if not isinstance(code, str):
-        return tree.add_error("Missing or invalid 'code' argument", Exception("code must be a string"), arguments)
+        return tree.add_error("Missing or invalid lua argument", Exception("lua must be a string"), arguments)
 
     try:
         syntax = _syntax(code, "lua")
@@ -567,9 +567,9 @@ def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper):
         child = tree.add(format_call_title(func_name))
         return _add_run_command_and_run_process(arguments, child)
 
-    if func_name == "run_lua":
+    if func_name == "run_in_neovim":
         child = tree.add(format_call_title(func_name))
-        return _add_run_lua(arguments, child)
+        return _add_run_in_neovim(arguments, child)
 
     # FYI semantic_grep works good with generic right now:
     return _add_generic_tool(func_name, arguments, tree)

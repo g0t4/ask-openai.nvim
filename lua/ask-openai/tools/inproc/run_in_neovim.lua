@@ -8,16 +8,16 @@ local M = {}
 M.ToolDefinition = {
     ["function"] = {
         description = "Execute Lua code in the current Neovim process (that hosts your agent). For example, call vim.cmd()",
-        name = "run_lua",
+        name = "run_in_neovim",
         parameters = {
             type = "object",
             properties = {
-                code = {
+                lua = {
                     type = "string",
                     description = "Lua code to execute. Should be a valid Lua chunk."
                 },
             },
-            required = { "code" },
+            required = { "lua" },
         },
     },
     type = "function",
@@ -27,9 +27,9 @@ M.ToolDefinition = {
 ---@param parsed_args table Parsed arguments from the tool call.
 ---@param callback ToolCallDoneCallback Callback to return the tool result.
 function M.call(parsed_args, callback)
-    local lua_code = parsed_args.code
+    local lua_code = parsed_args.lua
     if type(lua_code) ~= "string" or lua_code:match("^%s*$") then
-        callback(plumbing.create_tool_call_output_for_error_message("'code' argument must be a non‑empty string"))
+        callback(plumbing.create_tool_call_output_for_error_message("'lua' argument must be a non‑empty string"))
         return
     end
 
