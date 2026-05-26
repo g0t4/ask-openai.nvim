@@ -391,12 +391,13 @@ end
 
 local function handle_rx_messages_updated()
     local current_trace = AgentsFrontend.trace
-    if not current_trace.last_request.accumulated_model_response_messages then
+    local current_request = current_trace.last_request
+    if not current_request.accumulated_model_response_messages then
         return
     end
 
     local lines = LinesBuilder:new()
-    for _, rx_message in ipairs(current_trace.last_request.accumulated_model_response_messages) do
+    for _, rx_message in ipairs(current_request.accumulated_model_response_messages) do
         -- FYI !! now it is obvious that this is only operating on accumulated message type!
 
         -- * message contents
@@ -431,7 +432,7 @@ local function handle_rx_messages_updated()
     end
 
     vim.schedule(function()
-        lines.marks_ns_id = current_trace.last_request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
+        lines.marks_ns_id = current_request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
         AgentsFrontend.chat_window.buffer:replace_with_styled_lines_after(AgentsFrontend.this_turn_chat_start_line_base0, lines)
     end)
 end
