@@ -572,6 +572,7 @@ end
 
 ---@type OnCurlExitedSuccessfully
 function AgentsFrontend.on_curl_exited_successfully()
+    -- TODO! consider going back to a closure to capture the current_trace+current_request... is that useful instead of lookup? to cut back on lookups?
     vim.schedule(function()
         -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for assistant messages)
         local current_trace = AgentsFrontend.trace
