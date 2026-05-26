@@ -603,7 +603,8 @@ function AgentsFrontend.on_curl_exited_successfully()
 end
 
 function AgentsFrontend.run_tools_and_send_results_back_to_the_model()
-    for _, rx_message in ipairs(AgentsFrontend.trace.last_request.accumulated_model_response_messages or {}) do
+    local current_trace = AgentsFrontend.trace
+    for _, rx_message in ipairs(current_trace.last_request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
             -- log:trace("tool:", vim.inspect(tool))
 
@@ -622,7 +623,7 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model()
                 local tool_response_message = TxChatMessage:tool_result(tool_call)
                 -- log:jsonify_compact_trace("tool_message:", tool_response_message)
                 tool_call.response_message = tool_response_message
-                AgentsFrontend.trace:add_message(tool_response_message)
+                current_trace:add_message(tool_response_message)
 
                 -- * when last tool completes, send tool results (TxChatMessage package)
                 vim.schedule(function()
