@@ -294,15 +294,16 @@ function AgentsFrontend.then_send_messages()
     AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
+    local current_trace = AgentsFrontend.trace
     local request = CurlRequestForTrace:new({
-        body = AgentsFrontend.trace:next_curl_request_body(),
-        base_url = AgentsFrontend.trace.base_url,
+        body = current_trace:next_curl_request_body(),
+        base_url = current_trace.base_url,
         endpoint = CompletionsEndpoints.oai_v1_chat_completions,
         type = "agents",
     })
     log:luaify_trace("body:", request.body)
     curl.spawn(request, AgentsFrontend)
-    AgentsFrontend.trace:set_last_request(request)
+    current_trace:set_last_request(request)
 end
 
 function AgentsFrontend.abort_and_close()
