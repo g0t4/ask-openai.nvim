@@ -543,11 +543,11 @@ end
 function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     -- FYI right now this is desingned for /v1/chat/completions only
     --   I added this guard based on review of on-on_streaming_delta_update_message_history that appears (IIRC) to be using /v1/chat/completions ONLY compatible fields
-    local request = AgentsFrontend.trace.last_request
-    if request.endpoint ~= CompletionsEndpoints.oai_v1_chat_completions then
+    local current_request = AgentsFrontend.trace.last_request
+    if current_request.endpoint ~= CompletionsEndpoints.oai_v1_chat_completions then
         -- fail fast in this case
         -- TODO (when I need it)... you very likely can support other endpoints (see what you've done in both PredictionsFrontend and RewriteFrontend (both have some multi endpoint support)
-        local message = "AgentsFrontend SSEs not supported for endpoint: " .. tostring(request.endpoint)
+        local message = "AgentsFrontend SSEs not supported for endpoint: " .. tostring(current_request.endpoint)
         log:error(message)
         vim.notify(message, vim.log.levels.ERROR)
         return
@@ -557,7 +557,7 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
         return
     end
     local first_choice = sse_parsed.choices[1]
-    AgentsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_parsed)
+    AgentsFrontend.on_streaming_delta_update_message_history(first_choice, current_request, sse_parsed)
     handle_rx_messages_updated()
 end
 
