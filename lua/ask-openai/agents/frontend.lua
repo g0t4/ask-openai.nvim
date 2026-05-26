@@ -246,7 +246,8 @@ local function ask_agent_command(opts)
             tools = tool_definitions,
         }, context)
 
-        AgentsFrontend.trace = AgentTrace:new(body_overrides, AgentsFrontend.base_url)
+        local current_trace = AgentTrace:new(body_overrides, AgentsFrontend.base_url)
+        AgentsFrontend.trace = current_trace
         -- log:info("sending", vim.inspect(AgentsFrontend.trace))
         AgentsFrontend.then_send_messages()
     end
