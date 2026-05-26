@@ -470,6 +470,7 @@ function M.setup()
     end, { nargs = 0 })
 end
 
+---@return OpenAITool
 function M.openai_tool(mcp_tool)
     -- OpenAI docs for tools: https://platform.openai.com/docs/api-reference/chat/create#chat-create-tools
 
