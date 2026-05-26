@@ -39,43 +39,9 @@ function M.format(lines, tool_call, message)
         return
     end
 
-    -- Tool result handling (mirrors generic.format without adding another header)
-    local is_mcp = tool_call.call_output and tool_call.call_output.result.content
-    if is_mcp then
-        ---@type MCPToolResultContent[]
-        local content = tool_call.call_output.result.content
-        for _, output in ipairs(content) do
-            local name = output.name
-            local text = tostring(output.text or "")
-            if name == "STDOUT" then
-                if text ~= "" then
-                    lines:append_text_fold_if_long("STDOUT", text)
-                else
-                    lines:append_unexpected_line("UNEXPECTED empty STDOUT?")
-                end
-            else
-                if name == nil or name == "" then
-                    name = "[NO NAME]"
-                end
-                if output.type == "text" then
-                    if text:match("\n") then
-                        lines:append_text(name)
-                        lines:append_text(text)
-                    else
-                        lines:append_text(name .. ": " .. text)
-                    end
-                else
-                    lines:append_unexpected_text("  UNEXPECTED type: \n" .. vim.inspect(output))
-                end
-            end
-        end
-    else
-        -- Non‑MCP tool results – currently not specially formatted
-        -- fallback: show raw result if available
-        if tool_call.call_output then
-            lines:append_text(vim.inspect(tool_call.call_output))
-        end
-    end
+    -- currently expression result is the only item in the content list, using an MCP like output though with type/name... ignore that and just get the value to display
+    local first_content = tool_call.call_output.result.content[1]
+    lines:append_text(first_content.text)
 end
 
 return M

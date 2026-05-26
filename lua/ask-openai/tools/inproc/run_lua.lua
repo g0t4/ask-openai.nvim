@@ -47,14 +47,10 @@ function M.call(parsed_args, callback)
         return
     end
 
-    -- Convert the result to a string for returning to the model.
-    local output = result
-    if output == nil then
-        output = "nil"
-    else
-        output = tostring(output)
-    end
-    callback(plumbing.create_tool_call_output_for_success({ plumbing.text_content(output) }))
+    -- vim.inspect else it will be tostring'd and tables will show as 0x14a2870 and that's not so helpful to the model!
+    --  also the output viewer should be able to rely on text and not a lua object
+    local output = vim.inspect(result)
+    callback(plumbing.create_tool_call_output_for_success({ plumbing.text_content(output, "RESULT") }))
 end
 
 return M
