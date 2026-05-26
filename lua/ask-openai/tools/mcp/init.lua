@@ -18,7 +18,7 @@ local servers = {
 
     -- PRN implement https://agentskills.io/mcp https based MCP tools... is it a websocket?
 
-    fetch = {
+    fetch    = {
         -- PRN only include this tool if initial request includes /web?
 
         -- -- * via docker
@@ -463,7 +463,7 @@ end
 
 
 function M.setup()
-    vim.api.nvim_create_user_command("McpLogToolsList", function()
+    vim.api.nvim_create_user_command("AskDumpMcpTools", function()
         local message = vim.inspect(M.tools_available)
         log:info(message)
         print(message)
