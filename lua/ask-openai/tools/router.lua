@@ -12,7 +12,7 @@ function M.openai_tools()
     -- * inject system message instructions based on available tools
     local system_instructs = {}
     for name, mcp_tool in pairs(mcp.tools_available) do
-        table.insert(tools, openai_tool(mcp_tool))
+        table.insert(tools, mcp.openai_tool(mcp_tool))
         local tool_instructs = mcp.get_system_message_instructions(name)
         if tool_instructs then
             table.insert(system_instructs, tool_instructs)
