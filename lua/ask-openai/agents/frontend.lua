@@ -695,8 +695,8 @@ function AgentsFrontend.follow_up_command()
     vim.cmd("normal! o") -- move to end of buffer, add new line below to separate subsequent follow up response message
     -- log:trace("follow up content:", user_message)
 
-    local current_trace = AgentsFrontend.trace
-    if not current_trace then
+    local trace = AgentsFrontend.trace
+    if not trace then
         opts = {
             args = user_message
         }
@@ -711,8 +711,8 @@ function AgentsFrontend.follow_up_command()
     end
 
     local message = TxChatMessage:user(user_message)
-    current_trace:add_message(message)
-    AgentsFrontend.then_send_completion_request(current_trace)
+    trace:add_message(message)
+    AgentsFrontend.then_send_completion_request(trace)
 end
 
 function ask_dump_agent_trace_command()
