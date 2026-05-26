@@ -543,7 +543,8 @@ end
 function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     -- FYI right now this is desingned for /v1/chat/completions only
     --   I added this guard based on review of on-on_streaming_delta_update_message_history that appears (IIRC) to be using /v1/chat/completions ONLY compatible fields
-    local current_request = AgentsFrontend.trace.last_request
+    local current_trace = AgentsFrontend.trace
+    local current_request = current_trace.last_request
     if current_request.endpoint ~= CompletionsEndpoints.oai_v1_chat_completions then
         -- fail fast in this case
         -- TODO (when I need it)... you very likely can support other endpoints (see what you've done in both PredictionsFrontend and RewriteFrontend (both have some multi endpoint support)
