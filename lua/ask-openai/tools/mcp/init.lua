@@ -1,3 +1,20 @@
+---@class MCPToolInputSchemaProperty
+---@field type string
+---@field description? string
+---@field properties? table<string, MCPToolInputSchemaProperty>
+---@field required? string[]
+
+---@class MCPToolInputSchema
+---@field type string
+---@field properties table<string, MCPToolInputSchemaProperty>
+---@field required? string[]
+
+---@class MCPTool
+---@field name string
+---@field description? string
+---@field inputSchema MCPToolInputSchema
+---@field call fun(id: integer, tool_name: string, args: table, callback: fun(result: table))
+
 local log = require("ask-openai.logs.logger").predictions()
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 local ansi = require("ask-openai.predictions.ansi")
@@ -279,6 +296,7 @@ function start_mcp_server_stdio(name)
                 return
             end
             for _, tool in ipairs(response.result.tools) do
+                log:info("MCP raw tool", vim.inspect(tool))
                 tool.call = tools_call
                 M.tools_available[tool.name] = tool
             end
@@ -445,6 +463,7 @@ local function start_mcp_server_http(name)
 end
 
 -- M.running_servers = {}
+---@type table<string, MCPTool>
 M.tools_available = {}
 
 for name, server in pairs(servers) do
@@ -471,6 +490,7 @@ function M.setup()
 end
 
 ---@return OpenAITool
+---@param mcp_tool MCPTool
 function M.openai_tool(mcp_tool)
     -- OpenAI docs for tools: https://platform.openai.com/docs/api-reference/chat/create#chat-create-tools
 
@@ -520,6 +540,7 @@ function M.send_tool_call(tool_call, callback)
     -- }
 
     local name = tool_call["function"].name
+    ---@type MCPTool | nil
     local tool = M.tools_available[name]
     if tool == nil then
         callback(plumbing.create_tool_call_output_for_error_message("Invalid MCP tool name: " .. name))
