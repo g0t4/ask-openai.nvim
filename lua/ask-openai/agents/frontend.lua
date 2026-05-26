@@ -651,23 +651,10 @@ end
 function AgentsFrontend.send_tool_messages_if_all_tools_done()
     local trace = AgentsFrontend.trace
     local request = trace.last_request
-    if AgentsFrontend.request_has_any_outstanding_tool_calls(request) then
+    if request:any_outstanding_tool_calls() then
         return
     end
     AgentsFrontend.then_send_completion_request(trace)
-end
-
----@param request CurlRequestForTrace
----@return boolean
-function AgentsFrontend.request_has_any_outstanding_tool_calls(request)
-    for _, rx_message in ipairs(request.accumulated_model_response_messages or {}) do
-        for _, tool_call in ipairs(rx_message.tool_calls) do
-            if tool_call:is_outstanding() then
-                return true
-            end
-        end
-    end
-    return false
 end
 
 function AgentsFrontend.abort_last_request()

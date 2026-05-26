@@ -26,4 +26,15 @@ function CurlRequestForTrace:test()
     --  this is a placeholder for my inheritance test case
 end
 
+function CurlRequestForTrace:any_outstanding_tool_calls()
+    for _, rx_message in ipairs(self.accumulated_model_response_messages or {}) do
+        for _, tool_call in ipairs(rx_message.tool_calls) do
+            if tool_call:is_outstanding() then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 return CurlRequestForTrace
