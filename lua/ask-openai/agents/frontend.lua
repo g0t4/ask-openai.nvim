@@ -649,16 +649,16 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
 end
 
 function AgentsFrontend.send_tool_messages_if_all_tools_done()
-    if AgentsFrontend.any_outstanding_tool_calls() then
+    local trace = AgentsFrontend.trace
+    if AgentsFrontend.any_outstanding_tool_calls(trace) then
         return
     end
-    local trace = AgentsFrontend.trace
     AgentsFrontend.then_send_completion_request(trace)
 end
 
+---@param current_trace AgentTrace
 ---@return boolean
-function AgentsFrontend.any_outstanding_tool_calls()
-    local current_trace = AgentsFrontend.trace
+function AgentsFrontend.any_outstanding_tool_calls(current_trace)
     local current_request = current_trace.last_request
     for _, rx_message in ipairs(current_request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
