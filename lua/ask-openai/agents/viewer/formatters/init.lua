@@ -1,4 +1,5 @@
 local run_process = require("ask-openai.agents.viewer.formatters.run_process")
+local run_lua = require("ask-openai.agents.viewer.formatters.run_lua")
 local generic = require("ask-openai.agents.viewer.formatters.generic")
 
 local M = {}
@@ -8,6 +9,7 @@ local M = {}
 ---@type table<string, ToolCallFormatter>
 local formatters_by_function_name = {
     ["run_process"] = run_process.format,
+    ["run_lua"] = run_lua.format,
 }
 -- ? any issues with tool name overlap b/w different servers? does MCP even propose a way to handle the overlap?
 
