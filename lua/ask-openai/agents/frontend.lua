@@ -650,8 +650,8 @@ end
 
 function AgentsFrontend.send_tool_messages_if_all_tools_done()
     local trace = AgentsFrontend.trace
-    local current_request = trace.last_request
-    if AgentsFrontend.any_outstanding_tool_calls(current_request) then
+    local request = trace.last_request
+    if AgentsFrontend.any_outstanding_tool_calls(request) then
         return
     end
     AgentsFrontend.then_send_completion_request(trace)
