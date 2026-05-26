@@ -74,8 +74,8 @@ function Curl.spawn(request, frontend)
     ---@param code integer
     ---@param signal integer
     local function on_exit(code, signal)
-        -- log:trace_on_exit_always(code, signal)
-        log:trace_on_exit_errors(code, signal) -- less verbose
+        log:trace_on_exit_always(code, signal)
+        -- log:trace_on_exit_errors(code, signal) -- less verbose
 
         -- close before check dregs (b/c might still be data unflushed in STDOUT/ERR)
         stdout:close()
@@ -115,8 +115,8 @@ function Curl.spawn(request, frontend)
     ---@param read_error any
     ---@param data? string
     local function on_stdout(read_error, data)
-        log:log_if_stdio_read_error("on_stdout", read_error, data)
-        -- log:trace_stdio_read_always("on_stdout", read_error, data)
+        -- log:log_if_stdio_read_error("on_stdout", read_error, data)
+        log:trace_stdio_read_always("on_stdout", read_error, data)
 
         local no_data = data == nil or data == ""
         if read_error or no_data then
@@ -131,8 +131,8 @@ function Curl.spawn(request, frontend)
     ---@param read_error? string
     ---@param data? string
     local function on_stderr(read_error, data)
-        log:log_if_stdio_read_error("on_stderr", read_error, data)
-        -- log:trace_stdio_read_always("on_stderr", read_error, data)
+        -- log:log_if_stdio_read_error("on_stderr", read_error, data)
+        log:trace_stdio_read_always("on_stderr", read_error, data)
 
         local no_data = data == nil or data == ""
         if read_error or no_data then
