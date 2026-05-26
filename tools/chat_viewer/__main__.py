@@ -236,7 +236,7 @@ def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]
 
     with trace_file.open("r", encoding="utf-8") as f:
         data = json.load(f)
-    trace_model = data.get("last_sse", {}).get("model")
+    model_name = data.get("last_sse", {}).get("model")
     messages = load_messages(data)
 
     # * include response message at end of trace
@@ -256,7 +256,7 @@ def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]
                     response["output.json"] = True
                     messages.append(response)
 
-    return messages, trace_model
+    return messages, model_name
 
 def show_rest_of_request_body_properties(data):
     # typical request body, has messages, tools, temp, etc
@@ -288,7 +288,7 @@ def load_trace_messages_from_stream(stream) -> tuple[list[dict[str, Any]], str |
     #   cat *-trace.json | this
     #   cat input-messages.json | this
     data = json.load(stream)
-    trace_model = data.get("last_sse", {}).get("model")
+    model_name = data.get("last_sse", {}).get("model")
     messages = load_messages(data)
 
     if "response_message" in data:
@@ -299,7 +299,7 @@ def load_trace_messages_from_stream(stream) -> tuple[list[dict[str, Any]], str |
             messages.append(response)
     # FYI cannot assume output.json is related (or any othe file) given this data is from STDIN
 
-    return messages, trace_model
+    return messages, model_name
 
 def insert_newlines(content: str) -> str:
     return content.replace("\\n", "\n")
@@ -687,16 +687,16 @@ def main() -> None:
     load_preapproved_files()
 
     if len(sys.argv) < 2:
-        messages, trace_model = load_trace_messages_from_stream(sys.stdin)
+        messages, model_name = load_trace_messages_from_stream(sys.stdin)
         if export_html:
             html_path = "stdout.html"
     else:
         trace_file = Path(sys.argv[1])
-        messages, trace_model = load_trace_messages_from_path(trace_file)
+        messages, model_name = load_trace_messages_from_path(trace_file)
         if export_html:
             html_path = str(trace_file) + ".html"
 
-    print_model_info(trace_model)
+    print_model_info(model_name)
     for idx, message in enumerate(messages, start=1):
         print_message(message, idx)
 
