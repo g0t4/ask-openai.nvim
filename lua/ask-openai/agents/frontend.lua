@@ -628,6 +628,15 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
                 tool_call.response_message = tool_response_message
                 current_trace:add_message(tool_response_message)
 
+                local function send_tool_messages_if_all_tools_done()
+                    local trace = AgentsFrontend.trace
+                    local request = trace.last_request
+                    if request:any_outstanding_tool_calls() then
+                        return
+                    end
+                    AgentsFrontend.then_send_completion_request(trace)
+                end
+
                 -- * when last tool completes, send tool results (TxChatMessage package)
                 vim.schedule(function()
                     -- TODO! fix race condition when 2+ tool calls finish about the same time and then both are scheduled and result in two new completion requests!
@@ -638,7 +647,7 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
                     -- FYI I am scheduling this so it happens after redraws
                     --  IIUC I need to queue this after the other changes from above?
                     --  else IIUC, the line count won't be right for where in the chat window to insert next message
-                    AgentsFrontend.send_tool_messages_if_all_tools_done()
+                    send_tool_messages_if_all_tools_done()
                 end)
             end
 
@@ -646,15 +655,6 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
             tool_router.send_tool_call_router(tool_call, when_tool_is_done)
         end
     end
-end
-
-function AgentsFrontend.send_tool_messages_if_all_tools_done()
-    local trace = AgentsFrontend.trace
-    local request = trace.last_request
-    if request:any_outstanding_tool_calls() then
-        return
-    end
-    AgentsFrontend.then_send_completion_request(trace)
 end
 
 function AgentsFrontend.abort_last_request()
