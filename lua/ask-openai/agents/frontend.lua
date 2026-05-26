@@ -600,12 +600,12 @@ function AgentsFrontend.on_curl_exited_successfully()
         end
         AgentsFrontend.clear_undos()
 
-        AgentsFrontend.run_tools_and_send_results_back_to_the_model()
+        AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_trace)
     end)
 end
 
-function AgentsFrontend.run_tools_and_send_results_back_to_the_model()
-    local current_trace = AgentsFrontend.trace
+---@param current_trace AgentTrace
+function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_trace)
     local current_request = current_trace.last_request
     for _, rx_message in ipairs(current_request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
