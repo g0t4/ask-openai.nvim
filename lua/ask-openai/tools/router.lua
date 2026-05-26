@@ -7,7 +7,8 @@ local log = require("ask-openai.logs.logger").predictions()
 
 local M = {}
 
-function M.openai_tools()
+---@param coordinator_only boolean # primary agent will not have any tool calls beyond spinning up a subagent!
+function M.openai_tools(coordinator_only)
     local tools = {}
 
     -- * inject system message instructions based on available tools

@@ -128,7 +128,7 @@ local function ask_agent_command(opts)
         system = system .. "\n\n" .. tool_instructs
 
         local tool_provided_instructs
-        tool_definitions, tool_provided_instructs = tool_router.openai_tools()
+        tool_definitions, tool_provided_instructs = tool_router.openai_tools(true) -- TODO make /coordinator slash command
         if tool_provided_instructs then
             system = system .. "\n\n" .. table.concat(tool_provided_instructs, "\n")
         end
