@@ -736,7 +736,8 @@ function AgentsFrontend.setup()
     vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskAgent /tools can you review my outstanding git changes', { noremap = true })
 
     vim.keymap.set('n', '<leader>aa', AgentsFrontend.abort_last_request, { noremap = true })
-    vim.keymap.set('n', '<leader>ac', AgentsFrontend.clear_chat_command, { noremap = true })
+    vim.keymap.set('n', '<leader>ac', ':<C-u>:AskAgent /tools /norag /coordinator ', { noremap = true })
+    vim.keymap.set('n', '<leader>al', AgentsFrontend.clear_chat_command, { noremap = true })
     vim.keymap.set('n', '<leader>af', AgentsFrontend.follow_up_command, { noremap = true })
     vim.keymap.set('n', '<leader>ao', AgentsFrontend.ensure_chat_window_is_open, { noremap = true })
 
