@@ -9,14 +9,6 @@ local M = {}
 
 ---@param coordinator_only boolean # primary agent will not have any tool calls beyond spinning up a subagent!
 function M.openai_tools(coordinator_only)
-    ---@param tools OpenAITool[] @list of tool objects
-    local function log_tool_names(tools)
-        local names = vim.iter(tools)
-            :map(function(tool) return tool["function"].name end)
-            :totable()
-        log:info("tools:", vim.inspect(names))
-    end
-
     -- * inject system message instructions based on available tools
     local function _openai_tools(coordinator_only)
         ---@type OpenAITool[]
@@ -63,7 +55,10 @@ function M.openai_tools(coordinator_only)
         return tools, system_instructs
     end
     local tools, system_instructs = _openai_tools(coordinator_only)
-    log_tool_names(tools)
+    local names = vim.iter(tools)
+        :map(function(tool) return tool["function"].name end)
+        :totable()
+    log:info("tools:", vim.inspect(names))
     return tools, system_instructs
 end
 
