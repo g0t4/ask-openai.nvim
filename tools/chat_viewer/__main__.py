@@ -221,15 +221,23 @@ def load_messages_jsonl(path: Path) -> Iterable[dict[str, Any]]:
         message = json.loads(line)
         yield message
 
-def load_trace_messages_from_path(trace_file: Path) -> list[dict[str, Any]]:
+def print_model_info(model: str | None) -> None:
+    """Print model name at the top of the trace output, before any messages."""
+    if model:
+        _console.print(f"[dim]Model:[/] [bold]{model}[/]")
+        _console.print()
+
+
+def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]], str | None]:
     if not trace_file.is_file():
         print(f"File not found: {trace_file}")
         sys.exit(1)
     if str(trace_file).endswith("-messages.jsonl"):
-        return list(load_messages_jsonl(trace_file))
+        return list(load_messages_jsonl(trace_file)), None
 
     with trace_file.open("r", encoding="utf-8") as f:
         data = json.load(f)
+    trace_model = data.get("last_sse", {}).get("model")
     messages = load_messages(data)
 
     # * include response message at end of trace
@@ -249,7 +257,7 @@ def load_trace_messages_from_path(trace_file: Path) -> list[dict[str, Any]]:
                     response["output.json"] = True
                     messages.append(response)
 
-    return messages
+    return messages, trace_model
 
 def show_rest_of_request_body_properties(data):
     # typical request body, has messages, tools, temp, etc
@@ -275,12 +283,13 @@ def load_messages(data) -> list[dict[str, Any]]:
             return messages
     return []
 
-def load_trace_messages_from_stream(stream) -> list[dict[str, Any]]:
+def load_trace_messages_from_stream(stream) -> tuple[list[dict[str, Any]], str | None]:
     # assume stream can be:
     #   jq .messages | this
     #   cat *-trace.json | this
     #   cat input-messages.json | this
     data = json.load(stream)
+    trace_model = data.get("last_sse", {}).get("model")
     messages = load_messages(data)
 
     if "response_message" in data:
@@ -291,7 +300,7 @@ def load_trace_messages_from_stream(stream) -> list[dict[str, Any]]:
             messages.append(response)
     # FYI cannot assume output.json is related (or any othe file) given this data is from STDIN
 
-    return messages
+    return messages, trace_model
 
 def insert_newlines(content: str) -> str:
     return content.replace("\\n", "\n")
@@ -679,12 +688,14 @@ def main() -> None:
     load_preapproved_files()
 
     if len(sys.argv) < 2:
-        messages = load_trace_messages_from_stream(sys.stdin)
+        messages, trace_model = load_trace_messages_from_stream(sys.stdin)
+        print_model_info(trace_model)
         if export_html:
             html_path = "stdout.html"
     else:
         trace_file = Path(sys.argv[1])
-        messages = load_trace_messages_from_path(trace_file)
+        messages, trace_model = load_trace_messages_from_path(trace_file)
+        print_model_info(trace_model)
         if export_html:
             html_path = str(trace_file) + ".html"
 
