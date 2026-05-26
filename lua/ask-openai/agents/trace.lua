@@ -33,7 +33,9 @@ end
 ---@param message TxChatMessage
 function AgentTrace:add_message(message)
     if not message.role then
-        error("message.role is required")
+        -- TODO do I really want to blow up here?
+        error("message.role is missing")
+        log:error("message.role is missing", vim.inspect(message))
     end
     table.insert(self.messages, message)
 end
