@@ -25,6 +25,10 @@ local answer = vim.fn.input("Enter value: ")
 -- help the user with diagnostic errors:
 local diags = vim.lsp.diagnostic.get_all()
 
+-- open a file you edited and run the code formatter on it
+-- make sure to target the buffer by number (do not use current buffer because that's often chat buffer with your messages viewer)
+-- assume CoC for Language Servers
+
 -- execute vim(script) commands
 vim.cmd(":echom 'hello'")
 
