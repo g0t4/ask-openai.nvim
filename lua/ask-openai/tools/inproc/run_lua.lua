@@ -50,7 +50,7 @@ function M.call(parsed_args, callback)
     -- Convert the result to a string for returning to the model.
     local output = result
     if output == nil then
-        output = ""
+        output = "nil"
     else
         output = tostring(output)
     end
