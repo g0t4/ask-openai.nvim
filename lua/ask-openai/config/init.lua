@@ -88,7 +88,7 @@ function M.get_base_urls()
     -- local qwen25coder = "" -- run qwen2.5coder too?
 
     return {
-        agents  = gptoss,
+        agents  = qwen3,
         rewrite = gptoss,
         cmdline = M.get_cmdline_base_url(),
         gptoss  = gptoss,
