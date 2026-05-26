@@ -304,6 +304,7 @@ function AgentsFrontend.then_send_messages()
     })
     log:luaify_trace("body:", next_request.body)
     curl.spawn(next_request, AgentsFrontend)
+    -- TODO I don't like "last_request" ... not sure I ever have been too hot about it... but now in the context of `current_request` or just `current_trace.request` using the word `last` seems wrong
     current_trace:set_last_request(next_request)
 end
 
