@@ -246,10 +246,10 @@ local function ask_agent_command(opts)
             tools = tool_definitions,
         }, context)
 
-        local current_trace = AgentTrace:new(body_overrides, AgentsFrontend.base_url)
-        AgentsFrontend.trace = current_trace
+        local new_trace = AgentTrace:new(body_overrides, AgentsFrontend.base_url)
+        AgentsFrontend.trace = new_trace
         -- log:info("sending", vim.inspect(AgentsFrontend.trace))
-        AgentsFrontend.then_send_completion_request(current_trace)
+        AgentsFrontend.then_send_completion_request(new_trace)
     end
 
     -- log:error("context.includes", vim.inspect(context.includes))
