@@ -534,11 +534,6 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
         call_tree.add_error("Failed parsing command", err, arguments)
 
 def _add_run_lua(arguments: str, tree: TreeWrapper):
-    """Handle ``run_lua`` tool calls.
-
-    The tool expects a JSON string with a ``code`` field containing the Lua
-    source to be executed. The code is displayed using syntax highlighting.
-    """
     try:
         obj = json.loads(arguments)
     except Exception as err:
