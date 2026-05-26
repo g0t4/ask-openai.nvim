@@ -57,8 +57,8 @@ function M.openai_tools(coordinator_only)
     local tools, system_instructs = _openai_tools(coordinator_only)
     local names = vim.iter(tools)
         :map(function(tool) return tool["function"].name end)
-        :totable()
-    log:info("tools:", vim.inspect(names))
+        :join(', ')
+    log:info("tools:", names)
     return tools, system_instructs
 end
 
