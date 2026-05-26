@@ -247,7 +247,7 @@ local function ask_agent_command(opts)
         }, context)
 
         local new_trace = AgentTrace:new(body_overrides, AgentsFrontend.base_url)
-        AgentsFrontend.trace = new_trace
+        AgentsFrontend.trace = new_trace -- FYI `.trace` is intended for rare circumstances only, i.e. cancel action which has no context to pass a trace
         -- log:info("sending", vim.inspect(AgentsFrontend.trace))
         AgentsFrontend.then_send_completion_request(new_trace)
     end
