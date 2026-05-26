@@ -7,7 +7,7 @@ local M = {}
 ---@type OpenAITool
 M.ToolDefinition = {
     ["function"] = {
-        description = "Execute arbitrary Lua code in the Neovim process. Useful for calling vim API functions like vim.notify or vim.cmd.",
+        description = "Execute Lua code in the current Neovim process (that hosts your agent). For example, call vim.cmd()",
         name = "run_lua",
         parameters = {
             type = "object",
