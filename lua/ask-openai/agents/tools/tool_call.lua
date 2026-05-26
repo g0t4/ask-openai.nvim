@@ -22,6 +22,10 @@ function ToolCall:is_done()
     return self.call_output ~= nil
 end
 
+function ToolCall:is_outstanding()
+    return self.response_message == nil
+end
+
 -- FYI marker interface for now
 
 return ToolCall

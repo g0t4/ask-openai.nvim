@@ -662,7 +662,7 @@ end
 function AgentsFrontend.request_has_any_outstanding_tool_calls(request)
     for _, rx_message in ipairs(request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
-            local is_outstanding = tool_call.response_message == nil
+            local is_outstanding = tool_call:is_outstanding()
             if is_outstanding then
                 return true
             end
