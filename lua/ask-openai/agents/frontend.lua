@@ -577,7 +577,8 @@ function AgentsFrontend.on_curl_exited_successfully()
     vim.schedule(function()
         -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for assistant messages)
         local current_trace = AgentsFrontend.trace
-        for _, rx_message in ipairs(current_trace.last_request.accumulated_model_response_messages or {}) do
+        local current_request = current_trace.last_request
+        for _, rx_message in ipairs(current_request.accumulated_model_response_messages or {}) do
             -- *** trace.last_request.accumulated_model_response_messages IS NOT trace.messages
             --    trace.messages => sent with future requests, hence TxChatMessage
             --    request.response_messages is simply to denormalize responses from SSEs, hence RxAccumulatedMessage
@@ -588,7 +589,7 @@ function AgentsFrontend.on_curl_exited_successfully()
             --   theoretically there can be multiple messages, with any role (not just assitant)
             local trace_message = TxChatMessage:from_assistant_rx_message(rx_message)
             current_trace:add_message(trace_message)
-            completion_logger.append_to_messages_jsonl(trace_message, current_trace.last_request, AgentsFrontend)
+            completion_logger.append_to_messages_jsonl(trace_message, current_request, AgentsFrontend)
             -- TODO capture *-trace.json here too? and then get rid of response_message hack cuz all messages will now be in trace
             --    TODO and careful to mirror changes (i.e. if move here, then need trace to save still for other frontends)
 
