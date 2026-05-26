@@ -671,10 +671,11 @@ function AgentsFrontend.any_outstanding_tool_calls()
 end
 
 function AgentsFrontend.abort_last_request()
-    if not AgentsFrontend.trace then
+    local current_trace = AgentsFrontend.trace
+    if not current_trace then
         return
     end
-    CurlRequestForTrace.terminate(AgentsFrontend.trace.last_request)
+    CurlRequestForTrace.terminate(current_trace.last_request)
     if AgentsFrontend.rag_cancel then
         AgentsFrontend.rag_cancel()
     end
