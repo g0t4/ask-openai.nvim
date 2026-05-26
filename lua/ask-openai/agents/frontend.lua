@@ -229,7 +229,7 @@ local function ask_agent_command(opts)
             end)
     end
 
-    local function then_generate_completion(rag_matches)
+    local function then_build_completion_request(rag_matches)
         local rag_message = rag_instructions.semantic_grep_user_message(rag_matches)
         if rag_message then
             table.insert(messages, rag_message)
@@ -272,7 +272,7 @@ local function ask_agent_command(opts)
                 return
             end
 
-            then_generate_completion(rag_matches)
+            then_build_completion_request(rag_matches)
         end
 
         this_request_ids, cancel = rag_client.context_query_for_agents(code_bufnr, cleaned_prompt, code_context, context.includes.top_k, on_rag_response)
@@ -286,7 +286,7 @@ local function ask_agent_command(opts)
     else
         AgentsFrontend.rag_cancel = nil
         AgentsFrontend.rag_request_ids = nil
-        then_generate_completion({})
+        then_build_completion_request({})
     end
 end
 
