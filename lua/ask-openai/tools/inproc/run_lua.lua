@@ -27,13 +27,13 @@ M.ToolDefinition = {
 ---@param parsed_args table Parsed arguments from the tool call.
 ---@param callback ToolCallDoneCallback Callback to return the tool result.
 function M.call(parsed_args, callback)
-    local code = parsed_args.code
-    if type(code) ~= "string" or code:match("^%s*$") then
+    local lua_code = parsed_args.code
+    if type(lua_code) ~= "string" or lua_code:match("^%s*$") then
         callback(plumbing.create_tool_call_output_for_error_message("'code' argument must be a non‑empty string"))
         return
     end
 
-    local fn, load_err = loadstring(code)
+    local fn, load_err = loadstring(lua_code)
     if not fn then
         callback(plumbing.create_tool_call_output_for_error_message("Failed to load Lua code: " .. tostring(load_err)))
         return
