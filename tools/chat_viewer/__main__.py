@@ -688,16 +688,15 @@ def main() -> None:
 
     if len(sys.argv) < 2:
         messages, trace_model = load_trace_messages_from_stream(sys.stdin)
-        print_model_info(trace_model)
         if export_html:
             html_path = "stdout.html"
     else:
         trace_file = Path(sys.argv[1])
         messages, trace_model = load_trace_messages_from_path(trace_file)
-        print_model_info(trace_model)
         if export_html:
             html_path = str(trace_file) + ".html"
 
+    print_model_info(trace_model)
     for idx, message in enumerate(messages, start=1):
         print_message(message, idx)
 
