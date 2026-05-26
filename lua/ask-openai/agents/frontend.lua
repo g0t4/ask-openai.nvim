@@ -249,7 +249,7 @@ local function ask_agent_command(opts)
         local current_trace = AgentTrace:new(body_overrides, AgentsFrontend.base_url)
         AgentsFrontend.trace = current_trace
         -- log:info("sending", vim.inspect(AgentsFrontend.trace))
-        AgentsFrontend.then_send_messages()
+        AgentsFrontend.then_send_completion_request()
     end
 
     -- log:error("context.includes", vim.inspect(context.includes))
@@ -291,7 +291,7 @@ local function ask_agent_command(opts)
     end
 end
 
-function AgentsFrontend.then_send_messages()
+function AgentsFrontend.then_send_completion_request()
     -- * conversation turns (track start line for streaming chunks)
     AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
@@ -653,7 +653,7 @@ function AgentsFrontend.send_tool_messages_if_all_tools_done()
     if AgentsFrontend.any_outstanding_tool_calls() then
         return
     end
-    AgentsFrontend.then_send_messages()
+    AgentsFrontend.then_send_completion_request()
 end
 
 ---@return boolean
@@ -712,7 +712,7 @@ function AgentsFrontend.follow_up_command()
 
     local message = TxChatMessage:user(user_message)
     current_trace:add_message(message)
-    AgentsFrontend.then_send_messages()
+    AgentsFrontend.then_send_completion_request()
 end
 
 function ask_dump_agent_trace_command()
