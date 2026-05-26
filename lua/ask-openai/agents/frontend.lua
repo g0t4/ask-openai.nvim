@@ -657,7 +657,9 @@ end
 
 ---@return boolean
 function AgentsFrontend.any_outstanding_tool_calls()
-    for _, rx_message in ipairs(AgentsFrontend.trace.last_request.accumulated_model_response_messages or {}) do
+    local current_trace = AgentsFrontend.trace
+    local current_request = current_trace.last_request
+    for _, rx_message in ipairs(current_request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
             local is_outstanding = tool_call.response_message == nil
             if is_outstanding then
