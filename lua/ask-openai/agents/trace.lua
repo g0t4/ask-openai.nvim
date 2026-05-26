@@ -1,4 +1,5 @@
 local log = require('ask-openai.logs.logger').predictions()
+local messages = require("devtools.messages")
 
 --- see https://platform.openai.com/docs/api-reference/chat/create
 ---@class AgentTrace
@@ -73,6 +74,8 @@ function AgentTrace:dump()
     -- log:luaify_trace("last_request's RxAccumulatedMessages", self.last_request.accumulated_model_response_messages)
     -- log:luaify_trace("trace's TxChatMessages (history, sent on followup/toolresults)", self.messages)
     log:luaify_trace("AgentTrace:dump", self)
+    messages:ensure_open()
+    messages:append(vim.inspect(self))
 end
 
 return AgentTrace
