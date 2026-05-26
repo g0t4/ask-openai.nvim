@@ -153,7 +153,8 @@ local function ask_agent_command(opts)
         first_turn_ns_id = vim.api.nvim_create_namespace("ask.marks.chat.window.first.turn")
     end
     local lines = LinesBuilder:new(first_turn_ns_id)
-    if AgentsFrontend.trace then
+    local is_new_trace = AgentsFrontend.trace ~= nil
+    if is_new_trace then
         -- FYI some previous extmarks are "dropped", fine by me to "turn off the colors"... but, probably want it for all previous chat extmarks
         lines:append_styled_lines({ "--- New Trace Started ---" }, HLGroups.SYSTEM_PROMPT)
         -- or:   AgentsFrontend.clear_chat_command()
