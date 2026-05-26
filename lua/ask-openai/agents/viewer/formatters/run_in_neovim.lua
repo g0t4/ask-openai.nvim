@@ -6,7 +6,7 @@ local M = {}
 
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
-    -- Header (similar to generic formatter)
+
     local func = tool_call["function"]
     local name = func.name or "run_in_neovim"
     local hl_group = HLGroups.TOOL_SUCCESS
@@ -20,20 +20,16 @@ function M.format(lines, tool_call, message)
     end
     lines:append_styled_text(name, hl_group)
 
-    -- Arguments: attempt to decode JSON and pretty‑print the Lua code
     local args = func.arguments
     if args then
         local ok, decoded = safely.decode_json(args)
         if ok and type(decoded) == "table" and decoded.lua then
-            -- Show the code, folding long blocks
-            lines:append_text_fold_if_long("CODE", decoded.lua)
+            lines:append_text_fold_if_long("LUA", decoded.lua)
         else
-            -- Fallback to raw argument string
             lines:append_text(args)
         end
     end
 
-    -- If the tool hasn't finished yet, indicate pending state
     if not tool_call:is_done() then
         lines:append_unexpected_line("Tool call in progress...")
         return
