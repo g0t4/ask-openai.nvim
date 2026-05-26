@@ -11,6 +11,14 @@ local M = {}
 function M.openai_tools(coordinator_only)
     local tools = {}
 
+    ---@param tools table[] @list of tool objects, each must contain a `name` field
+    local function log_tool_names(tools)
+        local names = vim.iter(tools)
+            :map(function(tool) return tool["function"].name end)
+            :totable()
+        log:info("tools:", vim.inspect(names))
+    end
+
     -- * inject system message instructions based on available tools
     local system_instructs = {}
     if coordinator_only then
@@ -21,7 +29,7 @@ function M.openai_tools(coordinator_only)
                 table.insert(tools, mcp.openai_tool(mcp_tool))
             end
         end
-        log:info("tools:", vim.inspect(tools))
+        log_tool_names(tools)
         return tools, system_instructs
     end
 
@@ -47,7 +55,7 @@ function M.openai_tools(coordinator_only)
             end
         end
     end
-    log:info("tools:", vim.inspect(tools))
+    log_tool_names(tools)
     return tools, system_instructs
 end
 
