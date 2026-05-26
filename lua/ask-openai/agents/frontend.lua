@@ -291,21 +291,21 @@ local function ask_agent_command(opts)
     end
 end
 
-function AgentsFrontend.then_send_completion_request(current_trace)
+function AgentsFrontend.then_send_completion_request(trace)
     -- * conversation turns (track start line for streaming chunks)
     AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
 
     local next_request = CurlRequestForTrace:new({
-        body = current_trace:next_curl_request_body(),
-        base_url = current_trace.base_url,
+        body = trace:next_curl_request_body(),
+        base_url = trace.base_url,
         endpoint = CompletionsEndpoints.oai_v1_chat_completions,
         type = "agents",
     })
     log:luaify_trace("body:", next_request.body)
     curl.spawn(next_request, AgentsFrontend)
     -- TODO I don't like "last_request" ... not sure I ever have been too hot about it... but now in the context of `current_request` or just `current_trace.request` using the word `last` seems wrong
-    current_trace:set_last_request(next_request)
+    trace:set_last_request(next_request)
 end
 
 function AgentsFrontend.abort_and_close()
@@ -652,8 +652,8 @@ function AgentsFrontend.send_tool_messages_if_all_tools_done()
     if AgentsFrontend.any_outstanding_tool_calls() then
         return
     end
-    local current_trace = AgentsFrontend.trace
-    AgentsFrontend.then_send_completion_request(current_trace)
+    local trace = AgentsFrontend.trace
+    AgentsFrontend.then_send_completion_request(trace)
 end
 
 ---@return boolean
