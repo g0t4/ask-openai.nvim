@@ -505,17 +505,17 @@ def _json(data: dict) -> Syntax:
 
 def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
     try:
-        loaded = json.loads(arguments)
+        obj = json.loads(arguments)
         # child.add(_json(loaded)) # debugging
-        mode = yank(loaded, "mode")
+        mode = yank(obj, "mode")
         if mode:
             call_tree.add(Text.from_markup(f"[bold]legacy {mode=}[/]"))  # Ok to drop this too
 
         def get_display_command():
             # load all available values so I can look for invalid combinations
-            command_line = yank(loaded, "command_line", None)
-            argv = yank(loaded, "argv", [])
-            command = yank(loaded, "command", None)
+            command_line = yank(obj, "command_line", None)
+            argv = yank(obj, "argv", [])
+            command = yank(obj, "command", None)
 
             if command_line and argv:
                 raise ValueError("Ambiguous run_process - both command_line and argv are set")
@@ -528,7 +528,7 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
             raise ValueError("No command found")
 
         call_tree.add(_bash(get_display_command()))
-        call_tree.list_key_value_pairs(loaded)
+        call_tree.list_key_value_pairs(obj)
 
     except Exception as err:
         call_tree.add_error("Failed parsing command", err, arguments)
@@ -540,16 +540,15 @@ def _add_run_lua(arguments: str, tree: TreeWrapper):
     source to be executed. The code is displayed using syntax highlighting.
     """
     try:
-        parsed = json.loads(arguments)
+        obj = json.loads(arguments)
     except Exception as err:
         return tree.add_error("Failed parsing arguments", err, arguments)
 
-    code = parsed.get("code")
+    code = obj.get("code")
     if not isinstance(code, str):
         return tree.add_error("Missing or invalid 'code' argument", Exception("code must be a string"), arguments)
 
     try:
-        # Use the existing _syntax helper with the Lua lexer.
         syntax = _syntax(code, "lua")
         return tree.add(syntax)
     except Exception as err:
@@ -574,7 +573,6 @@ def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper):
         return _add_run_command_and_run_process(arguments, child)
 
     if func_name == "run_lua":
-        # Display Lua code using syntax highlighting.
         child = tree.add(format_call_title(func_name))
         return _add_run_lua(arguments, child)
 
