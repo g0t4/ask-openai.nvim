@@ -715,11 +715,12 @@ function AgentsFrontend.follow_up_command()
 end
 
 function ask_dump_agent_trace_command()
-    if not AgentsFrontend.trace then
+    local current_trace = AgentsFrontend.trace
+    if not current_trace then
         print("no trace to dump")
         return
     end
-    AgentsFrontend.trace:dump()
+    current_trace:dump()
 end
 
 function AgentsFrontend.clear_chat_command()
