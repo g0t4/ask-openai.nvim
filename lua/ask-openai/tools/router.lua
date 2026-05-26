@@ -3,6 +3,7 @@ local inprocess = require("ask-openai.tools.inprocess")
 local plumbing = require("ask-openai.tools.plumbing")
 local apply_patch_tool = require("ask-openai.tools.inproc.apply_patch")
 local client = require("ask-openai.rag.client.client")
+local log = require("ask-openai.logs.logger").predictions()
 
 local M = {}
 
@@ -12,6 +13,7 @@ function M.openai_tools()
     -- * inject system message instructions based on available tools
     local system_instructs = {}
     for name, mcp_tool in pairs(mcp.tools_available) do
+        log:info("MCP tool: ", name)
         table.insert(tools, mcp.openai_tool(mcp_tool))
         local tool_instructs = mcp.get_system_message_instructions(name)
         if tool_instructs then
@@ -20,6 +22,7 @@ function M.openai_tools()
     end
     for _, inprocess_tool in pairs(inprocess.tools_available) do
         -- PRN push this into inprocess module like mcp/init.lua above?
+        log:info("Inprocess tool: ", inprocess_tool["function"].name)
 
         if inprocess_tool["function"].name == "semantic_grep" then
             -- somewhat strange but neovim invocations are rooted in the current buffer, so I have to use that to dictate some tool availability even though agent like requests are buffer independent... since my LS client is tied to a buffer in neovim, gotta roll with it! NBD TBH
