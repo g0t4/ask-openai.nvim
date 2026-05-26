@@ -221,9 +221,9 @@ def load_messages_jsonl(path: Path) -> Iterable[dict[str, Any]]:
         message = json.loads(line)
         yield message
 
-def print_model_info(model: str | None) -> None:
-    if model:
-        _console.print(f"[dim]Model:[/] [bold]{model}[/]")
+def print_model_info(name: str | None) -> None:
+    if name:
+        _console.print(f"[dim]Model:[/] [bold]{name}[/]")
         _console.print()
 
 
