@@ -265,6 +265,7 @@ function start_mcp_server_stdio(name)
             params = {
                 name = tool_name,
                 arguments = args,
+                -- TODO! receive and pass back notifications/progress to tool call clients
                 _meta = { progressToken = "progress_" .. id },
             },
         }, callback)
