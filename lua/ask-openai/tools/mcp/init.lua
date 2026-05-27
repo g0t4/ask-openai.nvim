@@ -265,6 +265,7 @@ function start_mcp_server_stdio(name)
             params = {
                 name = tool_name,
                 arguments = args,
+                _meta = { progressToken = "progress_" .. id },
             },
         }, callback)
     end
@@ -473,6 +474,7 @@ local function start_mcp_server_http(name)
             params = {
                 name = tool_name,
                 arguments = args,
+                _meta = { progressToken = "progress_" .. id },
             },
         }, callback)
     end
