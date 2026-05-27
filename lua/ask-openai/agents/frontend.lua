@@ -390,8 +390,8 @@ function AgentsFrontend.ensure_chat_window_is_open()
     AgentsFrontend.chat_window:open()
 end
 
-local function update_chat_viewer_buffer()
-    local current_trace = AgentsFrontend.trace
+---@param current_trace AgentTrace
+local function update_chat_viewer_buffer(current_trace)
     local request = current_trace.last_request
 
     local lines = LinesBuilder:new()
@@ -556,7 +556,7 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     end
     local first_choice = sse_parsed.choices[1]
     AgentsFrontend.on_streaming_delta_update_message_history(first_choice, current_request, sse_parsed)
-    update_chat_viewer_buffer()
+    update_chat_viewer_buffer(current_trace)
 end
 
 function AgentsFrontend.show_user_role()
@@ -616,7 +616,7 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
                 log:trace("tool_call_output", vim.inspect(tool_call_output))
 
                 -- * triggers UI updates to show tool results
-                update_chat_viewer_buffer()
+                update_chat_viewer_buffer(current_trace)
 
                 -- * map tool result to a new TxChatMessage (to send back to model)
                 local tool_response_message = TxChatMessage:tool_result(tool_call)
