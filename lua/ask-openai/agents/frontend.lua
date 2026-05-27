@@ -390,9 +390,9 @@ function AgentsFrontend.ensure_chat_window_is_open()
     AgentsFrontend.chat_window:open()
 end
 
----@param current_trace AgentTrace
-local function update_chat_viewer_buffer(current_trace)
-    local request = current_trace.last_request
+---@param trace AgentTrace
+local function update_chat_viewer_buffer(trace)
+    local request = trace.last_request
 
     local lines = LinesBuilder:new()
     for _, rx_message in ipairs(request.accumulated_model_response_messages or {}) do
