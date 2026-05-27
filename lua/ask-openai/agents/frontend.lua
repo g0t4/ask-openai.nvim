@@ -637,7 +637,6 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
                     AgentsFrontend.then_send_completion_request(trace)
                 end
 
-                -- * when last tool completes, send tool results (TxChatMessage package)
                 vim.schedule(function()
                     -- TODO! fix race condition when 2+ tool calls finish about the same time and then both are scheduled and result in two new completion requests!
                     --   TODO! that then muck with each other as they are interleaved token by token into a mess during parallel tool calls (when timing works out to trigger race condition)
