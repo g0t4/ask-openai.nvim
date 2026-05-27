@@ -291,6 +291,7 @@ local function ask_agent_command(opts)
     end
 end
 
+---@param trace AgentTrace
 function AgentsFrontend.then_send_completion_request(trace)
     -- * conversation turns (track start line for streaming chunks)
     AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
@@ -604,8 +605,6 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
     local request = trace.last_request
     for _, rx_message in ipairs(request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
-            -- log:trace("tool:", vim.inspect(tool))
-
             -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for tool result messages)
 
             ---@type ToolCallDoneCallback
