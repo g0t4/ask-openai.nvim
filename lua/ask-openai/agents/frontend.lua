@@ -249,7 +249,7 @@ local function ask_agent_command(opts)
         local new_trace = AgentTrace:new(body_overrides, AgentsFrontend.base_url)
         AgentsFrontend.trace = new_trace -- FYI `.trace` is intended for rare circumstances only, i.e. cancel action which has no context to pass a trace
         -- log:info("sending", vim.inspect(AgentsFrontend.trace))
-        AgentsFrontend.then_send_completion_request(new_trace)
+        AgentsFrontend.then_get_assistant_response(new_trace)
     end
 
     -- log:error("context.includes", vim.inspect(context.includes))
@@ -292,7 +292,7 @@ local function ask_agent_command(opts)
 end
 
 ---@param trace AgentTrace
-function AgentsFrontend.then_send_completion_request(trace)
+function AgentsFrontend.then_get_assistant_response(trace)
     -- * conversation turns (track start line for streaming chunks)
     AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
@@ -629,7 +629,7 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
 
                 -- IIUC I need to queue this after the changes from update_chat_viewer_buffer?
                 -- else IIRC, the line count will be broken for the next message
-                vim.schedule(function() AgentsFrontend.then_send_completion_request(trace) end)
+                vim.schedule(function() AgentsFrontend.then_get_assistant_response(trace) end)
             end
 
             -- * run the tool!
@@ -679,7 +679,7 @@ function AgentsFrontend.follow_up_command()
 
     local message = TxChatMessage:user(user_message)
     trace:add_message(message)
-    AgentsFrontend.then_send_completion_request(trace)
+    AgentsFrontend.then_get_assistant_response(trace)
 end
 
 function ask_dump_agent_trace_command()
