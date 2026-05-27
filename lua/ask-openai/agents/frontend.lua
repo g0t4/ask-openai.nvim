@@ -393,12 +393,9 @@ end
 local function update_chat_viewer_buffer()
     local current_trace = AgentsFrontend.trace
     local request = current_trace.last_request
-    if not request.accumulated_model_response_messages then
-        return
-    end
 
     local lines = LinesBuilder:new()
-    for _, rx_message in ipairs(request.accumulated_model_response_messages) do
+    for _, rx_message in ipairs(request.accumulated_model_response_messages or {}) do
         -- FYI !! now it is obvious that this is only operating on accumulated message type!
 
         -- * message contents
