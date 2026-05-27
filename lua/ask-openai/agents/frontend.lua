@@ -634,15 +634,14 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
                     if request:any_outstanding_tool_calls() then
                         return
                     end
+                    if request.already_sent then
+                        return
+                    end
+                    request.already_sent = true
                     AgentsFrontend.then_send_completion_request(trace)
                 end
 
                 vim.schedule(function()
-                    -- TODO! fix race condition when 2+ tool calls finish about the same time and then both are scheduled and result in two new completion requests!
-                    --   TODO! that then muck with each other as they are interleaved token by token into a mess during parallel tool calls (when timing works out to trigger race condition)
-                    --   FYI also the fix is NOT to just remove vim.schedule, instead fix the semantics (of current_trace/current_request) and the rest will follow
-                    --
-
                     -- FYI I am scheduling this so it happens after redraws
                     --  IIUC I need to queue this after the other changes from above?
                     --  else IIUC, the line count won't be right for where in the chat window to insert next message

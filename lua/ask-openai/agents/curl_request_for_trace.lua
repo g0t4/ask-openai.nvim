@@ -2,6 +2,7 @@ local CurlRequest = require("ask-openai.backends.curl_request")
 
 ---@class CurlRequestForTrace : CurlRequest
 ---@field trace AgentTrace
+---@field already_sent boolean
 ---@field accumulated_model_response_messages RxAccumulatedMessage[] -- model "assistant" responses, built from SSEs
 local CurlRequestForTrace = {}
 local class_mt = { __index = CurlRequest } -- inherit from CurlRequest (for reals, not just the type annotations :] )
@@ -14,6 +15,7 @@ function CurlRequestForTrace:new(params)
     self = CurlRequest.new(me, params) --[[@as CurlRequestForTrace]]
 
     self.trace = nil
+    self.already_sent = false
     self.accumulated_model_response_messages = {}
     -- TODO do trace/accumulated_model_response_messages even belong on the CurlRequestForTrace?
     --   IOTW should I just use CurlRequest and put them elsewhere?
