@@ -391,7 +391,7 @@ function AgentsFrontend.ensure_chat_window_is_open()
     AgentsFrontend.chat_window:open()
 end
 
-local function handle_rx_messages_updated()
+local function update_chat_viewer_buffer()
     local current_trace = AgentsFrontend.trace
     local current_request = current_trace.last_request
     if not current_request.accumulated_model_response_messages then
@@ -560,7 +560,7 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     end
     local first_choice = sse_parsed.choices[1]
     AgentsFrontend.on_streaming_delta_update_message_history(first_choice, current_request, sse_parsed)
-    handle_rx_messages_updated()
+    update_chat_viewer_buffer()
 end
 
 function AgentsFrontend.show_user_role()
@@ -620,7 +620,7 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
                 log:trace("tool_call_output", vim.inspect(tool_call_output))
 
                 -- * triggers UI updates to show tool results
-                handle_rx_messages_updated()
+                update_chat_viewer_buffer()
 
                 -- * map tool result to a new TxChatMessage (to send back to model)
                 local tool_response_message = TxChatMessage:tool_result(tool_call)
@@ -633,9 +633,8 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
                 end
                 current_request.already_sent = true
 
-                -- FYI I am scheduling this so it happens after redraws
-                --  IIUC I need to queue this after the other changes from above?
-                --  else IIUC, the line count won't be right for where in the chat window to insert next message
+                -- IIUC I need to queue this after the changes from update_chat_viewer_buffer?
+                -- else IIRC, the line count will be broken for the next message
                 vim.schedule(function() AgentsFrontend.then_send_completion_request(current_trace) end)
             end
 
