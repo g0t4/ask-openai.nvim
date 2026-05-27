@@ -135,6 +135,7 @@ function start_mcp_server_stdio(name)
 
     local counter = 1
     local callbacks = {}
+    local progress_callbacks_by_request_id = {} -- TODO use these for dispatching progress notifications back to tool caller
 
     local function on_server_response_stdio(server_response)
         -- Response object (success or failure)
@@ -172,6 +173,7 @@ function start_mcp_server_stdio(name)
             progressToken = server_response.params.progressToken
             progress = server_response.params.progress -- ? message IIUC is this the right field to use? or just use anything?
             -- total = server_response.params.total -- ? is this a standard field? likely I don't even need it b/c I won't have estimates for how long work is going to take
+            -- TODO setup progress_callbacks too (let callers of a tool pass a progress callback and if they do then you pass a progressToken too (else no token))
             -- [INFO ] MCP response: {
             --   jsonrpc = "2.0",
             --   method = "notifications/progress",
