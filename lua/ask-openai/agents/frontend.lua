@@ -541,11 +541,11 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     -- FYI right now this is desingned for /v1/chat/completions only
     --   I added this guard based on review of on-on_streaming_delta_update_message_history that appears (IIRC) to be using /v1/chat/completions ONLY compatible fields
     local trace = AgentsFrontend.trace
-    local current_request = trace.last_request
-    if current_request.endpoint ~= CompletionsEndpoints.oai_v1_chat_completions then
+    local request = trace.last_request
+    if request.endpoint ~= CompletionsEndpoints.oai_v1_chat_completions then
         -- fail fast in this case
         -- TODO (when I need it)... you very likely can support other endpoints (see what you've done in both PredictionsFrontend and RewriteFrontend (both have some multi endpoint support)
-        local message = "AgentsFrontend SSEs not supported for endpoint: " .. tostring(current_request.endpoint)
+        local message = "AgentsFrontend SSEs not supported for endpoint: " .. tostring(request.endpoint)
         log:error(message)
         vim.notify(message, vim.log.levels.ERROR)
         return
@@ -555,7 +555,7 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
         return
     end
     local first_choice = sse_parsed.choices[1]
-    AgentsFrontend.on_streaming_delta_update_message_history(first_choice, current_request, sse_parsed)
+    AgentsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_parsed)
     update_chat_viewer_buffer(trace)
 end
 
@@ -569,12 +569,11 @@ end
 
 ---@type OnCurlExitedSuccessfully
 function AgentsFrontend.on_curl_exited_successfully()
-    -- TODO! consider going back to a closure to capture the current_trace+current_request... is that useful instead of lookup? to cut back on lookups?
     vim.schedule(function()
         -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for assistant messages)
-        local trace = AgentsFrontend.trace
-        local current_request = trace.last_request
-        for _, rx_message in ipairs(current_request.accumulated_model_response_messages or {}) do
+        local trace = AgentsFrontend.trace -- FYI could pass trace from backend that calls on_curl_exited_successfully()
+        local request = trace.last_request
+        for _, rx_message in ipairs(request.accumulated_model_response_messages or {}) do
             -- *** trace.last_request.accumulated_model_response_messages IS NOT trace.messages
             --    trace.messages => sent with future requests, hence TxChatMessage
             --    request.response_messages is simply to denormalize responses from SSEs, hence RxAccumulatedMessage
@@ -585,7 +584,7 @@ function AgentsFrontend.on_curl_exited_successfully()
             --   theoretically there can be multiple messages, with any role (not just assitant)
             local trace_message = TxChatMessage:from_assistant_rx_message(rx_message)
             trace:add_message(trace_message)
-            completion_logger.append_to_messages_jsonl(trace_message, current_request, AgentsFrontend)
+            completion_logger.append_to_messages_jsonl(trace_message, request, AgentsFrontend)
             -- TODO capture *-trace.json here too? and then get rid of response_message hack cuz all messages will now be in trace
             --    TODO and careful to mirror changes (i.e. if move here, then need trace to save still for other frontends)
 
@@ -602,8 +601,8 @@ end
 
 ---@param trace AgentTrace
 function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
-    local current_request = trace.last_request
-    for _, rx_message in ipairs(current_request.accumulated_model_response_messages or {}) do
+    local request = trace.last_request
+    for _, rx_message in ipairs(request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
             -- log:trace("tool:", vim.inspect(tool))
 
@@ -624,10 +623,10 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 tool_call.response_message = tool_response_message
                 trace:add_message(tool_response_message)
 
-                if current_request:any_outstanding_tool_calls() or current_request.already_sent then
+                if request:any_outstanding_tool_calls() or request.already_sent then
                     return
                 end
-                current_request.already_sent = true
+                request.already_sent = true
 
                 -- IIUC I need to queue this after the changes from update_chat_viewer_buffer?
                 -- else IIRC, the line count will be broken for the next message
