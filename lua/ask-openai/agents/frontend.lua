@@ -664,6 +664,7 @@ function AgentsFrontend.follow_up_command()
     local trace = AgentsFrontend.trace
     if not trace then
         opts = {
+            -- simulate calling the same as the nvim AskAgent user command:
             args = user_message
         }
         -- TODO if /selection that won't work, I can fix that later
