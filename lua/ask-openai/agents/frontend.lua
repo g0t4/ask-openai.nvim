@@ -631,10 +631,7 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
                 local function send_tool_messages_if_all_tools_done()
                     local trace = AgentsFrontend.trace
                     local request = trace.last_request
-                    if request:any_outstanding_tool_calls() then
-                        return
-                    end
-                    if request.already_sent then
+                    if request:any_outstanding_tool_calls() or request.already_sent then
                         return
                     end
                     request.already_sent = true
