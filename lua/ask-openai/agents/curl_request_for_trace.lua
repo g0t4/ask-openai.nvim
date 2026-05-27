@@ -17,15 +17,7 @@ function CurlRequestForTrace:new(params)
     self.trace = nil
     self.already_sent = false
     self.accumulated_model_response_messages = {}
-    -- TODO do trace/accumulated_model_response_messages even belong on the CurlRequestForTrace?
-    --   IOTW should I just use CurlRequest and put them elsewhere?
-
     return self
-end
-
-function CurlRequestForTrace:test()
-    -- TODO use this when you add your first method to CurlRequestForTrace
-    --  this is a placeholder for my inheritance test case
 end
 
 function CurlRequestForTrace:any_outstanding_tool_calls()

@@ -19,7 +19,6 @@ describe("CurlRequestForTrace", function()
         assert.same(request.accumulated_model_response_messages, {}, "should have fields from CurlRequestForTrace too")
 
         assert.equal(request.terminate, CurlRequest.terminate, "should have methods from CurlRequest")
-        assert.equal(request.test, CurlRequestForTrace.test, "should have methods from CurlRequestForTrace too")
     end)
 
     it("has terminate on class", function()
