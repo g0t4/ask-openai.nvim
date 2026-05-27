@@ -628,18 +628,15 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
                 tool_call.response_message = tool_response_message
                 current_trace:add_message(tool_response_message)
 
-                local function send_tool_messages_if_all_tools_done()
-                    if current_request:any_outstanding_tool_calls() or current_request.already_sent then
-                        return
-                    end
-                    current_request.already_sent = true
-                    AgentsFrontend.then_send_completion_request(current_trace)
+                if current_request:any_outstanding_tool_calls() or current_request.already_sent then
+                    return
                 end
+                current_request.already_sent = true
 
                 -- FYI I am scheduling this so it happens after redraws
                 --  IIUC I need to queue this after the other changes from above?
                 --  else IIUC, the line count won't be right for where in the chat window to insert next message
-                vim.schedule(send_tool_messages_if_all_tools_done)
+                vim.schedule(function() AgentsFrontend.then_send_completion_request(current_trace) end)
             end
 
             -- * run the tool!
