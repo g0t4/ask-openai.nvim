@@ -641,12 +641,10 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
                     AgentsFrontend.then_send_completion_request(trace)
                 end
 
-                vim.schedule(function()
-                    -- FYI I am scheduling this so it happens after redraws
-                    --  IIUC I need to queue this after the other changes from above?
-                    --  else IIUC, the line count won't be right for where in the chat window to insert next message
-                    send_tool_messages_if_all_tools_done()
-                end)
+                -- FYI I am scheduling this so it happens after redraws
+                --  IIUC I need to queue this after the other changes from above?
+                --  else IIUC, the line count won't be right for where in the chat window to insert next message
+                vim.schedule(send_tool_messages_if_all_tools_done)
             end
 
             -- * run the tool!
