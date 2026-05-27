@@ -18,32 +18,34 @@
 
 ---@class MCPToolsListResult
 ---@field result? MCPToolsList
----@field error? JsonRPC2Error
+---@field error? JSONRPCError
 
 ---@class MCPToolsList
 ---@field tools table<string, MCPTool>
 
----@class JsonRPC2Error
+-- MCP schemas: https://modelcontextprotocol.io/specification/2025-11-25/schema
+--
+---@class JSONRPCError
 ---@field code: integer
 ---@field message string
 ---@field data? any
 
 --- see spec for more: https://www.jsonrpc.org/specification
----@class JsonRPC2Request
+---@class JSONRPCRequest
 ---@field method string
 ---@field params? table  - optional - either an ordered list of values, OR dict with key/value pairs
 ---@field id integer|string|nil
 --- FYI not adding `jsonrpc` field, I want type hints for variable fields only (jsonrpc=2 always)
 
---- notification == JsonRPC2Request w/o id
----@class JsonRPC2Notification
+--- notification == request w/o id
+---@class JSONRPCNotification
 ---@field method string
 ---@field params? table
 --- FYI not adding `jsonrpc` field, I want type hints for variable fields only (jsonrpc=2 always)
 
----@class JsonRPC2Response
+---@class JSONRPCResponse
 ---@field result any
----@field error? JsonRPC2Error
+---@field error? JSONRPCError
 ---@field id integer|string|nil -- must be corresponding Request ID
 --- FYI not adding `jsonrpc` field, I want type hints for variable fields only (jsonrpc=2 always)
 ---TODO use this as base type for MCPToolsListResult etc? or just create each as its own standalone response type like with MCPToolsListResult above?
@@ -55,7 +57,7 @@
 ---@field total number
 
 --- spec: https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/progress
----@class MCPProgress : JsonRPC2Notification
+---@class MCPProgress : JSONRPCNotification
 ---@field params MCPProgressParams
 
 local log = require("ask-openai.logs.logger").predictions()
@@ -170,7 +172,7 @@ function start_mcp_server_stdio(name)
     local callbacks_by_request_id = {}
     local progress_callbacks_by_token = {} -- TODO use these for dispatching progress notifications back to tool caller
 
-    ---@param response JsonRPC2Response|JsonRPC2Notification
+    ---@param response JSONRPCResponse|JSONRPCNotification
     local function on_server_response_stdio(response)
         -- Response object (success or failure)
         -- - Server does NOT send response to notifications
@@ -269,7 +271,7 @@ function start_mcp_server_stdio(name)
 
     uv.read_start(stderr, on_stderr)
 
-    ---@param request JsonRPC2Request|JsonRPC2Notification
+    ---@param request JSONRPCRequest|JSONRPCNotification
     local function write_to_stdio(request)
         local json = vim.json.encode(request)
         -- log:info(string.format("MCP write %s:", server_log_name), json)
@@ -417,7 +419,7 @@ local function start_mcp_server_http(name)
 
     local function on_data_sse(data_value)
         -- log:trace(string.format("MCP %s JSONRPC on_data_sse data_value:", server_log_name), vim.inspect(data_value))
-        ---@type JsonRPC2Response|JsonRPC2Notification
+        ---@type JSONRPCResponse|JSONRPCNotification
         local response = vim.json.decode(data_value)
         -- log:trace(string.format("MCP %s JSONRPC response:", server_log_name), vim.inspect(rpc_response))
         if response.error then
@@ -426,8 +428,8 @@ local function start_mcp_server_http(name)
 
         local request_id = response.id
         if request_id then
-            -- request.id implies this is a JsonRPC2Response
-            ---@cast response JsonRPC2Response
+            -- request.id implies this is a response
+            ---@cast response JSONRPCResponse
             local callback = callbacks_by_request_id[request_id]
             if callback then
                 callback(response)
