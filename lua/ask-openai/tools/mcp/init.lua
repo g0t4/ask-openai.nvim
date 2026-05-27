@@ -160,7 +160,27 @@ function start_mcp_server_stdio(name)
                 --   IOTW only pass result? => callback(server_response.result)
                 callback(server_response)
                 callbacks[id] = nil
+            else
+                log:error(string.format("MCP %s STDIO received unexpected response with no matching callback (id=%s)", server_log_name, id))
             end
+            return
+        end
+
+        local method = server_response.method
+        if method == "notifications/progress" then
+            log:info(string.format("MCP %s STDIO progress notification: %s", server_log_name, vim.inspect(server_response.params)))
+            progressToken = server_response.params.progressToken
+            progress = server_response.params.progress -- ? message IIUC is this the right field to use? or just use anything?
+            -- total = server_response.params.total -- ? is this a standard field? likely I don't even need it b/c I won't have estimates for how long work is going to take
+            -- [INFO ] MCP response: {
+            --   jsonrpc = "2.0",
+            --   method = "notifications/progress",
+            --   params = {
+            --     progress = 16,
+            --     progressToken = "progress_wONXcTyWCrfdSFxA7CXd099DWvDQSxn2",
+            --     total = 100 -- this is from simple example of count to 100
+            --   }
+            -- }
         end
     end
 
