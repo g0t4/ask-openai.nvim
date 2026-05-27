@@ -560,7 +560,7 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     update_chat_viewer_buffer(trace)
 end
 
-function AgentsFrontend.show_user_role()
+function AgentsFrontend.show_user_role_as_follow_up_hint()
     local lines_builder = LinesBuilder:new()
     lines_builder:create_marks_namespace()
     lines_builder:append_role_header("user")
@@ -589,8 +589,7 @@ function AgentsFrontend.on_curl_exited_successfully()
             -- TODO capture *-trace.json here too? and then get rid of response_message hack cuz all messages will now be in trace
             --    TODO and careful to mirror changes (i.e. if move here, then need trace to save still for other frontends)
 
-            -- * show user role (in chat window) as hint to follow up (now that model+tool_calls are all done):
-            AgentsFrontend.show_user_role()
+            AgentsFrontend.show_user_role_as_follow_up_hint()
 
             AgentsFrontend.chat_window.followup_starts_at_line_0indexed = AgentsFrontend.chat_window.buffer:get_line_count() - 1
         end
