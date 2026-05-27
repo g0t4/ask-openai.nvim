@@ -644,6 +644,18 @@ end
 ---@param callback ToolCallDoneCallback
 ---@param on_progress? ToolCallOnProgress
 function M.send_tool_call(tool_call, callback, on_progress)
+    local function decode_tool_args(args)
+        if type(args) == "string" then
+            return vim.json.decode(args)
+        end
+        if type(args) == "table" then
+            return args
+        end
+        log:error(string.format("Tool [%s] arguments has unexpected type: %s", tool_call["function"].name, type(args)))
+        return {}
+    end
+
+    -- LEFT OFF HERE TRACING passing of progress
     -- tool call: {
     --   ["function"] = {
     --     arguments = '{"command":"ls -la","cwd":""}',
@@ -663,10 +675,7 @@ function M.send_tool_call(tool_call, callback, on_progress)
     end
 
     local args = tool_call["function"].arguments
-    -- if it is a string => decode
-    -- else if table => do not decode
-    -- else => fail? (or at least log it)
-    local args_decoded = vim.json.decode(args)
+    local args_decoded = decode_tool_args(args)
 
     -- PRN timeout mechanism? might be a good spot to wrap an async timer to check back (wait for the need to arise)
 
