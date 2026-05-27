@@ -540,8 +540,8 @@ end
 function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     -- FYI right now this is desingned for /v1/chat/completions only
     --   I added this guard based on review of on-on_streaming_delta_update_message_history that appears (IIRC) to be using /v1/chat/completions ONLY compatible fields
-    local current_trace = AgentsFrontend.trace
-    local current_request = current_trace.last_request
+    local trace = AgentsFrontend.trace
+    local current_request = trace.last_request
     if current_request.endpoint ~= CompletionsEndpoints.oai_v1_chat_completions then
         -- fail fast in this case
         -- TODO (when I need it)... you very likely can support other endpoints (see what you've done in both PredictionsFrontend and RewriteFrontend (both have some multi endpoint support)
@@ -556,7 +556,7 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     end
     local first_choice = sse_parsed.choices[1]
     AgentsFrontend.on_streaming_delta_update_message_history(first_choice, current_request, sse_parsed)
-    update_chat_viewer_buffer(current_trace)
+    update_chat_viewer_buffer(trace)
 end
 
 function AgentsFrontend.show_user_role()
@@ -572,8 +572,8 @@ function AgentsFrontend.on_curl_exited_successfully()
     -- TODO! consider going back to a closure to capture the current_trace+current_request... is that useful instead of lookup? to cut back on lookups?
     vim.schedule(function()
         -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for assistant messages)
-        local current_trace = AgentsFrontend.trace
-        local current_request = current_trace.last_request
+        local trace = AgentsFrontend.trace
+        local current_request = trace.last_request
         for _, rx_message in ipairs(current_request.accumulated_model_response_messages or {}) do
             -- *** trace.last_request.accumulated_model_response_messages IS NOT trace.messages
             --    trace.messages => sent with future requests, hence TxChatMessage
@@ -584,7 +584,7 @@ function AgentsFrontend.on_curl_exited_successfully()
             --   (must come before tool result messages)
             --   theoretically there can be multiple messages, with any role (not just assitant)
             local trace_message = TxChatMessage:from_assistant_rx_message(rx_message)
-            current_trace:add_message(trace_message)
+            trace:add_message(trace_message)
             completion_logger.append_to_messages_jsonl(trace_message, current_request, AgentsFrontend)
             -- TODO capture *-trace.json here too? and then get rid of response_message hack cuz all messages will now be in trace
             --    TODO and careful to mirror changes (i.e. if move here, then need trace to save still for other frontends)
@@ -596,13 +596,13 @@ function AgentsFrontend.on_curl_exited_successfully()
         end
         AgentsFrontend.clear_undos()
 
-        AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_trace)
+        AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
     end)
 end
 
----@param current_trace AgentTrace
-function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_trace)
-    local current_request = current_trace.last_request
+---@param trace AgentTrace
+function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
+    local current_request = trace.last_request
     for _, rx_message in ipairs(current_request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
             -- log:trace("tool:", vim.inspect(tool))
@@ -616,13 +616,13 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
                 log:trace("tool_call_output", vim.inspect(tool_call_output))
 
                 -- * triggers UI updates to show tool results
-                update_chat_viewer_buffer(current_trace)
+                update_chat_viewer_buffer(trace)
 
                 -- * map tool result to a new TxChatMessage (to send back to model)
                 local tool_response_message = TxChatMessage:tool_result(tool_call)
                 -- log:jsonify_compact_trace("tool_message:", tool_response_message)
                 tool_call.response_message = tool_response_message
-                current_trace:add_message(tool_response_message)
+                trace:add_message(tool_response_message)
 
                 if current_request:any_outstanding_tool_calls() or current_request.already_sent then
                     return
@@ -631,7 +631,7 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
 
                 -- IIUC I need to queue this after the changes from update_chat_viewer_buffer?
                 -- else IIRC, the line count will be broken for the next message
-                vim.schedule(function() AgentsFrontend.then_send_completion_request(current_trace) end)
+                vim.schedule(function() AgentsFrontend.then_send_completion_request(trace) end)
             end
 
             -- * run the tool!
@@ -641,11 +641,11 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
 end
 
 function AgentsFrontend.abort_last_request()
-    local current_trace = AgentsFrontend.trace
-    if not current_trace then
+    local trace = AgentsFrontend.trace
+    if not trace then
         return
     end
-    CurlRequestForTrace.terminate(current_trace.last_request)
+    CurlRequestForTrace.terminate(trace.last_request)
     if AgentsFrontend.rag_cancel then
         AgentsFrontend.rag_cancel()
     end
@@ -685,12 +685,12 @@ function AgentsFrontend.follow_up_command()
 end
 
 function ask_dump_agent_trace_command()
-    local current_trace = AgentsFrontend.trace
-    if not current_trace then
+    local trace = AgentsFrontend.trace
+    if not trace then
         print("no trace to dump")
         return
     end
-    current_trace:dump()
+    trace:dump()
 end
 
 function AgentsFrontend.clear_chat_command()
