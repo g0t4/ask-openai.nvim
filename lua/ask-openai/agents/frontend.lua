@@ -629,13 +629,12 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
                 current_trace:add_message(tool_response_message)
 
                 local function send_tool_messages_if_all_tools_done()
-                    local trace = AgentsFrontend.trace
-                    local request = trace.last_request
+                    local request = current_trace.last_request
                     if request:any_outstanding_tool_calls() or request.already_sent then
                         return
                     end
                     request.already_sent = true
-                    AgentsFrontend.then_send_completion_request(trace)
+                    AgentsFrontend.then_send_completion_request(current_trace)
                 end
 
                 -- FYI I am scheduling this so it happens after redraws
