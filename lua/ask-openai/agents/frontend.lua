@@ -614,7 +614,7 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
             -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for tool result messages)
 
             ---@type ToolCallDoneCallback
-            local function when_tool_is_done(tool_call_output)
+            local function when_this_tool_is_done(tool_call_output)
                 -- * store output on rx_message
                 tool_call.call_output = ToolCallOutput:new(tool_call_output)
                 log:trace("tool_call_output", vim.inspect(tool_call_output))
@@ -648,7 +648,7 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(current_tra
             end
 
             -- * run the tool!
-            tool_router.send_tool_call_router(tool_call, when_tool_is_done)
+            tool_router.send_tool_call_router(tool_call, when_this_tool_is_done)
         end
     end
 end
