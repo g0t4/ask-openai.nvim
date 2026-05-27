@@ -631,8 +631,13 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 vim.schedule(function() AgentsFrontend.then_get_assistant_response(trace) end)
             end
 
+            local function on_tool_progress(progress)
+                -- TODO show progress in chat viewer?
+                log:info(string.format("MCP tool progress [%s]: %s", tool_call["function"].name, vim.inspect(progress)))
+            end
+
             -- * run the tool!
-            tool_router.send_tool_call_router(tool_call, when_this_tool_is_done)
+            tool_router.send_tool_call_router(tool_call, when_this_tool_is_done, on_tool_progress)
         end
     end
 end

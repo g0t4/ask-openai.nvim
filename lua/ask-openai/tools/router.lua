@@ -63,12 +63,13 @@ function M.openai_tools(coordinator_only)
 end
 
 ---@alias ToolCallDoneCallback fun(call_output: table|MCPToolCallOutputResult|MCPToolCallOutputError)
+---@alias ToolCallOnProgress fun(progress: table)
 
 ---@param tool_call table
 ---@param callback ToolCallDoneCallback
-function M.send_tool_call_router(tool_call, callback)
+---@param on_progress? ToolCallOnProgress
+function M.send_tool_call_router(tool_call, callback, on_progress)
     local tool_name = tool_call["function"].name
-    -- local tool_name = "no_way" -- FYI test tool call failure plumbing (callbacks)
 
     local function safe_call(fn)
         -- treat as tool call failure, that way model can choose how to recover... vs just killing your tool runner :)
@@ -78,8 +79,24 @@ function M.send_tool_call_router(tool_call, callback)
         end
     end
 
+    local function safe_on_progress(...)
+        -- right now, all mcp tool calls flow through here
+        -- so this feels like a good spot to wrap `on_progress`
+        -- plus I am doing that with `callback` here too
+        --
+        -- also by setting this up here, in MCP land I can require on_progress for all tool calls and this will just silently ignore progress if a tool doesn't want to use it
+        if not on_progress then
+            log:warn(string.format("Tool [%s] progress received but there's no on_progress registered: %s", tool_name, vim.inspect({ ... })))
+            return
+        end
+        local ok, err = pcall(on_progress, ...)
+        if not ok then
+            log:error(string.format("Tool [%s] on_progress callback error: %s", tool_name, err))
+        end
+    end
+
     if mcp.handles_tool(tool_name) then
-        safe_call(function() mcp.send_tool_call(tool_call, callback) end)
+        safe_call(function() mcp.send_tool_call(tool_call, callback, safe_on_progress) end)
         return
     end
 
