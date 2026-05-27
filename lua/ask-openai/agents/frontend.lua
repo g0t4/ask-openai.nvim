@@ -90,7 +90,7 @@ local function ask_agent_command(opts)
     -- log:error("code_win_id", code_win_id)
     -- log:error("code_bufnr", code_bufnr)
 
-    AgentsFrontend.abort_last_request()
+    AgentsFrontend.abort_request()
     use_tools = context.includes.use_tools or false
 
     local system = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/system_message.md")
@@ -309,7 +309,7 @@ function AgentsFrontend.then_send_completion_request(trace)
 end
 
 function AgentsFrontend.abort_and_close()
-    AgentsFrontend.abort_last_request()
+    AgentsFrontend.abort_request()
     if AgentsFrontend.chat_window ~= nil then
         AgentsFrontend.chat_window:close()
     end
@@ -380,7 +380,7 @@ function AgentsFrontend.ensure_chat_window_is_open()
         AgentsFrontend.chat_window = AgentWindow:new()
 
         -- stop generation, if still wanna look at it w/o closing the window
-        vim.keymap.set("n", "<Esc>", AgentsFrontend.abort_last_request, { buffer = AgentsFrontend.chat_window.buffer_number })
+        vim.keymap.set("n", "<Esc>", AgentsFrontend.abort_request, { buffer = AgentsFrontend.chat_window.buffer_number })
 
         -- I already use this globally to close a window (:q) ... so just add stop to it:
         vim.keymap.set("n", "<F8>", AgentsFrontend.abort_and_close, { buffer = AgentsFrontend.chat_window.buffer_number })
@@ -638,7 +638,7 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
     end
 end
 
-function AgentsFrontend.abort_last_request()
+function AgentsFrontend.abort_request()
     local trace = AgentsFrontend.trace
     if not trace then
         return
@@ -723,7 +723,7 @@ function AgentsFrontend.setup()
     --  FYI this smacks of inserting pre-canned prompts with a /prompt slash command?
     vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskAgent /tools can you review my outstanding git changes', { noremap = true })
 
-    vim.keymap.set('n', '<leader>aa', AgentsFrontend.abort_last_request, { noremap = true })
+    vim.keymap.set('n', '<leader>aa', AgentsFrontend.abort_request, { noremap = true })
     vim.keymap.set('n', '<leader>ac', ':<C-u>:AskAgent /tools /norag /coordinator ', { noremap = true })
     vim.keymap.set('n', '<leader>al', AgentsFrontend.clear_chat_command, { noremap = true })
     vim.keymap.set('n', '<leader>af', AgentsFrontend.follow_up_command, { noremap = true })
