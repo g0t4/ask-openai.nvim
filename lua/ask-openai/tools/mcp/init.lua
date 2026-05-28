@@ -306,7 +306,6 @@ function start_mcp_server_stdio(name)
         --  - docs: https://modelcontextprotocol.io/specification/2024-11-05/basic/lifecycle#initialization
         send_notification({ method = "notifications/initialized" })
 
-        -- PRN do I need to wait before tools/list ? IIUC notifications/initialized doesn't get a server response... so in this case, I am not waiting to send tools/list:
         tools_list(function(response)
             if response.error then
                 log:error(string.format("tools/list@%s error:", server_log_name), vim.inspect(response))
