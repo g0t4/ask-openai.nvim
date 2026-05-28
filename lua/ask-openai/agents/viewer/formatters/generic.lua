@@ -61,6 +61,48 @@ local function handle_apply_patch_args(args, message)
     end
 end
 
+---@param lines LinesBuilder
+---@param tool_call ToolCall
+---@param progress_messages string[]
+---@param is_done boolean
+local function render_progress(lines, tool_call, progress_messages, is_done)
+    if is_done then
+        return
+    end
+
+    -- Show current progress message (most recent) with spinner
+    local spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
+    local current_time = vim.loop.hrtime()
+    local spinner_index = math.floor((current_time / 100000000) % #spinner_chars) + 1
+    local spinner_char = spinner_chars[spinner_index]
+
+    -- Show header with tool name and spinner
+    local func_name = tool_call["function"].name or "unknown_tool"
+    lines:append_line(string.format("%s ⏳ Running: %s", spinner_char, func_name))
+
+    -- Show recent progress messages (up to 3 most recent)
+    local num_progress = #progress_messages
+    if num_progress > 0 then
+        local max_show = math.min(3, num_progress)
+        local start_idx = num_progress - max_show + 1
+
+        if max_show < num_progress then
+            lines:append_line(string.format("  ... (%d more messages)", num_progress - max_show))
+        end
+
+        for i = start_idx, num_progress do
+            local msg = progress_messages[i]
+            -- Truncate very long messages to avoid overwhelming the view
+            if #msg > 200 then
+                msg = msg:sub(1, 197) .. "..."
+            end
+            lines:append_line(string.format("    ↳ %s", msg))
+        end
+    else
+        lines:append_line("    ↳ Waiting for response...")
+    end
+end
+
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
     -- if message:is_still_streaming() then
@@ -94,10 +136,11 @@ function M.format(lines, tool_call, message)
     end
     -- PRN mark outputs somehow? or just dump them? (I hate to waste space)
 
-    -- * tool result
-    if not tool_call:is_done() then
-        -- PRN for slow tools, use thinking dots ... as calling dots!
-        lines:append_unexpected_line("Tool call in progress...")
+    -- * progress messages (shown when tool is still running)
+    local is_tool_done = tool_call:is_done()
+    render_progress(lines, tool_call, tool_call.progress_messages or {}, is_tool_done)
+
+    if not is_tool_done then
         return
     end
 

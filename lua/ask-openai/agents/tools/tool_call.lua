@@ -5,15 +5,22 @@
 ---  my additions:
 ---@field response_message table|nil -- TODO type this? response message to send call results back to the model that will, also attached to agent_trace (history)
 ---@field call_output? ToolCallOutput -- tool call outputs (specific to a given tool type, some have standard structure, i.e. MCP)
+---@field progress_messages string[] -- progress messages received during tool execution
 local ToolCall = {}
 
 ---@return ToolCall
 function ToolCall:new(o)
     o = o or {}
     o.id = o.id or ""
+    o.progress_messages = o.progress_messages or {}
     setmetatable(o, self)
     self.__index = self
     return o
+end
+
+---@param message string
+function ToolCall:add_progress_message(message)
+    table.insert(self.progress_messages, message)
 end
 
 ---@return boolean

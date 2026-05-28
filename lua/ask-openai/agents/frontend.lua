@@ -632,8 +632,17 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
             end
 
             local function on_tool_progress(progress)
-                -- TODO show progress in chat viewer?
-                log:info(string.format("MCP tool progress [%s]: %s", tool_call["function"].name, vim.inspect(progress)))
+                -- * extract message from MCP progress notification
+                local progress_message = progress.message
+                if not progress_message or progress_message:match("^%s*$") then
+                    return
+                end
+
+                -- * append to tool_call's progress log
+                tool_call:add_progress_message(progress_message)
+
+                -- * trigger UI update to show progress
+                update_chat_viewer_buffer(trace)
             end
 
             -- * run the tool!
