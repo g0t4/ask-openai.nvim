@@ -561,6 +561,16 @@ end
 ---@param callback ToolCallDoneCallback
 ---@param on_progress? ToolCallOnProgress
 function M.send_tool_call(tool_call, callback, on_progress)
+    -- LEFT OFF HERE TRACING passing of progress
+    -- tool call: {
+    --   ["function"] = {
+    --     arguments = '{"command":"ls -la","cwd":""}',
+    --     name = "run_command"
+    --   },
+    --   id = "call_8yoj8qqo",
+    --   index = 0,
+    --   type = "function"
+    -- }
     local name = tool_call["function"].name
     ---@type MCP_Tool | nil
     local tool = M.tools_available[name]
