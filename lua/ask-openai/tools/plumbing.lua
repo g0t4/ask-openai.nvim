@@ -3,7 +3,7 @@ local log = require("ask-openai.logs.logger").predictions()
 local M = {}
 
 ---@param description string
----@return MCPToolCallOutputResult
+---@return MCP_CallToolSuccessResponse
 function M.create_tool_call_output_for_error_message(description)
     local caller = debug.getinfo(2)
     log:error("tool_call plumbing failure: " .. description, "caller: ", vim.inspect(caller))
@@ -24,30 +24,30 @@ function M.create_tool_call_output_for_error_message(description)
     --   as long as the model gets the message, it doesn't really matter the format
 end
 
----@param outputs MCPToolResultContent[]
----@return MCPToolCallOutputResult
-function M.create_tool_call_output_for_error(outputs)
+---@param content MCP_ContentBlock[]
+---@return MCP_CallToolSuccessResponse
+function M.create_tool_call_output_for_error(content)
     return {
         isError = true,
         result = {
-            content = outputs
+            content = content
         },
     }
 end
 
----@param outputs MCPToolResultContent[]
----@return MCPToolCallOutputResult
-function M.create_tool_call_output_for_success(outputs)
+---@param content MCP_ContentBlock[]
+---@return MCP_CallToolSuccessResponse
+function M.create_tool_call_output_for_success(content)
     return {
         result = {
-            content = outputs
+            content = content
         },
     }
 end
 
 ---@param value string
 ---@param name? string -- optional
----@return MCPToolResultContent
+---@return MCP_TextContent
 function M.text_content(value, name)
     if name then
         return { type = "text", text = value, name = name }

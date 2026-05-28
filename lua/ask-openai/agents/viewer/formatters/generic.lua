@@ -106,7 +106,7 @@ function M.format(lines, tool_call, message)
 
     local is_mcp_like_output = tool_call.call_output and tool_call.call_output:is_mcp()
     if is_mcp_like_output then
-        ---@type MCPToolResultContent[]
+        ---@type MCP_ContentBlock[]
         local content = tool_call.call_output.result.content
 
         local multiple_outputs = #content > 1

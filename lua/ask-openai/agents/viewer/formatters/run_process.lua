@@ -85,27 +85,11 @@ function M.format(lines, tool_call, message)
     if is_mcp then
         --- https://modelcontextprotocol.io/specification/2025-06-18/server/tools#tool-result
 
-        ---@class MCPToolCallOutputResult
-        ---@field result MCPToolResult
-
-        ---@class MCPToolCallOutputError
-        ---@field error { code, messeage }  -- { "code": 100, "message": "Unknown tool: invalid_tool_name" }
-
-        ---@class MCPToolResult
-        ---@field content? MCPToolResultContent[]  # unstructured output items
-        ---@field isError? boolean                # see content for exit code, STDERR, etc
-        ---@field structuredContent?              # structured output, has inputSchema/outputSchema
-
-        ---@class MCPToolResultContent
-        ---@field type string      # "text", "image", "audio", "resource_link", "resource" …
-        ---@field text? string     # for type=text
-        ---@field name? string     # i.e.: "STDOUT", "STDERR", "EXIT_CODE" … describe the text value
-
         -- * TESTING:
         -- - date command is one liner
         -- - `ls -R` for lots of output
 
-        ---@type MCPToolResultContent[]
+        ---@type MCP_ContentBlock[]
         local content = tool_call.call_output.result.content
 
         for _, output in ipairs(content) do

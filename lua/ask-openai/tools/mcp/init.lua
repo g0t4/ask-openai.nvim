@@ -1,65 +1,3 @@
----@class MCPToolInputSchemaProperty
----@field type string
----@field description? string
----@field properties? table<string, MCPToolInputSchemaProperty>
----@field required? string[]
-
----@class MCPToolInputSchema
----@field type string
----@field properties table<string, MCPToolInputSchemaProperty>
----@field required? string[]
-
---- FYI: https://modelcontextprotocol.io/specification/2024-11-05/server/tools#listing-tools
----@class MCPTool
----@field name string
----@field description? string
----@field inputSchema MCPToolInputSchema
----@field call fun(id: integer, tool_name: string, args: table, callback: ToolCallDoneCallback, on_progress: ToolCallOnProgress) -- my function to invoke the tool, not part of MCP specification
-
----@class MCPToolsListResult
----@field result? MCPToolsList
----@field error? JSONRPCError
-
----@class MCPToolsList
----@field tools table<string, MCPTool>
-
--- MCP schemas: https://modelcontextprotocol.io/specification/2025-11-25/schema
---
----@class JSONRPCError
----@field code: integer
----@field message string
----@field data? any
-
---- see spec for more: https://www.jsonrpc.org/specification
----@class JSONRPCRequest
----@field method string
----@field params? table  - optional - either an ordered list of values, OR dict with key/value pairs
----@field id integer|string|nil
---- FYI not adding `jsonrpc` field, I want type hints for variable fields only (jsonrpc=2 always)
-
---- notification == request w/o id
----@class JSONRPCNotification
----@field method string
----@field params? table
---- FYI not adding `jsonrpc` field, I want type hints for variable fields only (jsonrpc=2 always)
-
----@class JSONRPCResponse
----@field result any
----@field error? JSONRPCError
----@field id integer|string|nil -- must be corresponding Request ID
---- FYI not adding `jsonrpc` field, I want type hints for variable fields only (jsonrpc=2 always)
----TODO use this as base type for MCPToolsListResult etc? or just create each as its own standalone response type like with MCPToolsListResult above?
-
----@class MCPProgressParams
----@field message string
----@field progressToken string|integer
----@field progress number
----@field total number
-
---- spec: https://modelcontextprotocol.io/specification/2025-11-25/basic/utilities/progress
----@class MCPProgress : JSONRPCNotification
----@field params MCPProgressParams
-
 local log = require("ask-openai.logs.logger").predictions()
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 local ansi = require("ask-openai.predictions.ansi")
@@ -172,8 +110,8 @@ function start_mcp_server_stdio(name)
     local callbacks_by_request_id = {}
     local progress_callbacks_by_token = {} -- TODO use these for dispatching progress notifications back to tool caller
 
-    ---@param response JSONRPCResponse|JSONRPCNotification
-    local function on_server_response_stdio(response)
+    ---@param message MCP_JSONRPCMessage
+    local function on_server_response_stdio(message)
         -- Response object (success or failure)
         -- - Server does NOT send response to notifications
         -- - https://www.jsonrpc.org/specification#response_object
@@ -182,12 +120,12 @@ function start_mcp_server_stdio(name)
         --     - NOT BOTH
         --     - `result` object not constrained by spec
         --     - `error` object has code/message/data properties: https://www.jsonrpc.org/specification#error_object
-        if response.error then
-            log:error(string.format("MCP %s STDIO error response:", server_log_name), vim.inspect(response.error))
+        if message.error then
+            log:error(string.format("MCP %s STDIO error response:", server_log_name), vim.inspect(message.error))
         end
 
         -- log:info("MCP response:", vim.inspect(server_response))
-        local request_id = response.id
+        local request_id = message.id
         if request_id then
             local callback = callbacks_by_request_id[request_id]
             if callback then
@@ -195,7 +133,7 @@ function start_mcp_server_stdio(name)
                 --   not sure I really ever use error right now!
                 --   PRN find out if/how I should be using JSONRPC error objects? (look at other MCP servers, try with fetch an invalid URL?)
                 --   IOTW only pass result? => callback(server_response.result)
-                callback(response)
+                callback(message)
                 callbacks_by_request_id[request_id] = nil
                 progress_callbacks_by_token[request_id] = nil
             else
@@ -204,14 +142,14 @@ function start_mcp_server_stdio(name)
             return
         end
 
-        if response.method == "notifications/progress" then
-            ---@cast response MCPProgress
-            local progress_token = response.params.progressToken
+        if message.method == "notifications/progress" then
+            ---@cast message MCP_ProgressNotification
+            local progress_token = message.params.progressToken
             local on_progress = progress_callbacks_by_token[progress_token]
             if on_progress then
-                on_progress(response.params)
+                on_progress(message.params)
             else
-                log:info(string.format("MCP %s progress (no caller): %s", server_log_name, vim.inspect(response.params)))
+                log:info(string.format("MCP %s progress (no caller): %s", server_log_name, vim.inspect(message.params)))
             end
             -- [INFO ] MCP response: {
             --   jsonrpc = "2.0",
@@ -271,9 +209,9 @@ function start_mcp_server_stdio(name)
 
     uv.read_start(stderr, on_stderr)
 
-    ---@param request JSONRPCRequest|JSONRPCNotification
-    local function write_to_stdio(request)
-        local json = vim.json.encode(request)
+    ---@param message MCP_JSONRPCMessage
+    local function write_to_stdio(message)
+        local json = vim.json.encode(message)
         -- log:info(string.format("MCP write %s:", server_log_name), json)
         stdin:write(json .. "\n")
     end
@@ -295,17 +233,17 @@ function start_mcp_server_stdio(name)
     end
 
     --- Send a JSON-RPC notification
-    ---@param request { method: string, params?: any, [any]: any }
-    local function send_notification(request)
+    ---@param notification { method: string, params?: any, [any]: any }
+    local function send_notification(notification)
         -- * notifications CANNOT have ID: https://www.jsonrpc.org/specification#notification
         -- BTW notification is a type of request (w/o id)
         -- notifications do not have callbacks nor progress
         -- modelcontextprotocol uses "notifications/" method prefix, i.e.: notifications/initialized and notifications/tools/list_changed
-        request.jsonrpc = "2.0"
-        write_to_stdio(request)
+        notification.jsonrpc = "2.0"
+        write_to_stdio(notification)
     end
 
-    ---@param callback fun(response: MCPToolsListResult)
+    ---@param callback fun(response: MCP_ListToolsResult)
     local function tools_list(callback)
         send_request({ method = "tools/list" }, callback)
     end
@@ -324,8 +262,6 @@ function start_mcp_server_stdio(name)
 
     local function tools_call(id, tool_name, args, callback, on_progress)
         -- PRN/TODO btw your downstream code uses result object for almost everything, even tool call failures... that is probably fine but I should find out if a failed tool call is suppose to be presented as an error object on the response or as-is with result.isError etc?
-        ---@type fun(progress: table) | nil
-
         send_request({
             id = id,
             method = "tools/call",
@@ -388,7 +324,7 @@ function start_mcp_server_stdio(name)
                 return
             end
             for _, tool in ipairs(response.result.tools) do
-                ---@cast tool MCPTool
+                ---@cast tool MCP_Tool
                 log:info("tools/list:", vim.inspect(tool))
                 tool.call = tools_call
                 M.tools_available[tool.name] = tool
@@ -419,20 +355,20 @@ local function start_mcp_server_http(name)
 
     local function on_data_sse(data_value)
         -- log:trace(string.format("MCP %s JSONRPC on_data_sse data_value:", server_log_name), vim.inspect(data_value))
-        ---@type JSONRPCResponse|JSONRPCNotification
-        local response = vim.json.decode(data_value)
+        ---@type MCP_JSONRPCMessage
+        local message = vim.json.decode(data_value)
         -- log:trace(string.format("MCP %s JSONRPC response:", server_log_name), vim.inspect(rpc_response))
-        if response.error then
-            log:error(string.format("MCP %s JSONRPC response error:", server_log_name), vim.inspect(response.error))
+        if message.error then
+            log:error(string.format("MCP %s JSONRPC response error:", server_log_name), vim.inspect(message.error))
         end
 
-        local request_id = response.id
+        local request_id = message.id
         if request_id then
             -- request.id implies this is a response
-            ---@cast response JSONRPCResponse
+            ---@cast message MCP_JSONRPCResponse
             local callback = callbacks_by_request_id[request_id]
             if callback then
-                callback(response)
+                callback(message)
                 -- avoid leaking memory:
                 callbacks_by_request_id[request_id] = nil
                 progress_callbacks_by_token[request_id] = nil
@@ -443,20 +379,20 @@ local function start_mcp_server_http(name)
             return
         end
 
-        if response.method == "notifications/progress" then
-            ---@cast response MCPProgress
-            local progress_token = response.params.progressToken
+        if message.method == "notifications/progress" then
+            ---@cast message MCP_ProgressNotification
+            local progress_token = message.params.progressToken
             local on_progress = progress_callbacks_by_token[progress_token]
             if on_progress then
-                on_progress(response.params)
+                on_progress(message.params)
             else
-                log:info(string.format("MCP %s Progress (no caller): %s", server_log_name, vim.inspect(response.params)))
+                log:info(string.format("MCP %s Progress (no caller): %s", server_log_name, vim.inspect(message.params)))
             end
         end
     end
 
 
-    ---@param request table
+    ---@param request MCP_JSONRPCRequest
     ---@param callback ToolCallDoneCallback
     ---@param on_progress ToolCallOnProgress
     local function send_request(request, callback, on_progress)
@@ -571,7 +507,7 @@ local function start_mcp_server_http(name)
     send_request({ method = "tools/list" }, function(response)
         local tools = response.result.tools
         for _, tool in pairs(tools) do
-            ---@cast tool MCPTool
+            ---@cast tool MCP_Tool
             tool.call = tools_call
             M.tools_available[tool.name] = tool
         end
@@ -579,7 +515,7 @@ local function start_mcp_server_http(name)
 end
 
 -- M.running_servers = {}
----@type table<string, MCPTool>
+---@type table<string, MCP_Tool>
 M.tools_available = {}
 
 for name, server in pairs(servers) do
@@ -606,7 +542,7 @@ function M.setup()
 end
 
 ---@return OpenAITool
----@param mcp_tool MCPTool
+---@param mcp_tool MCP_Tool
 function M.openai_tool(mcp_tool)
     -- OpenAI docs for tools: https://platform.openai.com/docs/api-reference/chat/create#chat-create-tools
 
@@ -658,7 +594,7 @@ function M.send_tool_call(tool_call, callback, on_progress)
     -- }
 
     local name = tool_call["function"].name
-    ---@type MCPTool | nil
+    ---@type MCP_Tool | nil
     local tool = M.tools_available[name]
     if tool == nil then
         callback(plumbing.create_tool_call_output_for_error_message("Invalid MCP tool name: " .. name))
