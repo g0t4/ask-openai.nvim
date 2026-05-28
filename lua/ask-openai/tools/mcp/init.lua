@@ -378,20 +378,6 @@ local function start_mcp_server_http(name)
         end
     end
 
-    ---@param request MCP_JSONRPCRequest
-    ---@param callback ToolCallDoneCallback
-    ---@param on_progress ToolCallOnProgress
-    local function send_request(request, callback, on_progress)
-        if not request.id then
-            request.id = counter
-            counter = counter + 1
-        end
-        request.jsonrpc = "2.0"
-        callbacks_by_request_id[request.id] = callback
-        progress_callbacks_by_token[request.id] = on_progress -- progress_token == request.id in my setup
-        write_to_http(request)
-    end
-
     ---@param request MCP_JSONRPCMessage
     local function write_to_http(request)
         local json = vim.json.encode(request)
@@ -480,6 +466,20 @@ local function start_mcp_server_http(name)
                 log:error(string.format("%s send_request_http on_stderr has data", server_log_name), ansi.red(data))
             end
         end)
+    end
+
+    ---@param request MCP_JSONRPCRequest
+    ---@param callback ToolCallDoneCallback
+    ---@param on_progress ToolCallOnProgress
+    local function send_request(request, callback, on_progress)
+        if not request.id then
+            request.id = counter
+            counter = counter + 1
+        end
+        request.jsonrpc = "2.0"
+        callbacks_by_request_id[request.id] = callback
+        progress_callbacks_by_token[request.id] = on_progress -- progress_token == request.id in my setup
+        write_to_http(request)
     end
 
     local function tools_call(id, tool_name, args, callback, on_progress)
