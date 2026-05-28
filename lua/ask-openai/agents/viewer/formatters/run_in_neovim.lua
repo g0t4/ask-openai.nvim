@@ -1,6 +1,6 @@
 local HLGroups = require("ask-openai.hlgroups")
 local safely = require("ask-openai.helpers.safely")
-local generic = require("ask-openai.agents.viewer.formatters.generic")
+local base = require("ask-openai.agents.viewer.formatters.base")
 
 local M = {}
 
@@ -30,8 +30,11 @@ function M.format(lines, tool_call, message)
         end
     end
 
-    if not tool_call:is_done() then
-        lines:append_unexpected_line("Tool call in progress...")
+    -- * progress messages (shown when tool is still running)
+    local is_tool_done = tool_call:is_done()
+    base.render_progress(lines, tool_call, is_tool_done)
+
+    if not is_tool_done then
         return
     end
 

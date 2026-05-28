@@ -1,6 +1,7 @@
 local log = require("ask-openai.logs.logger").predictions()
 local HLGroups = require("ask-openai.hlgroups")
 local safely = require("ask-openai.helpers.safely")
+local base = require("ask-openai.agents.viewer.formatters.base")
 
 local M = {}
 
@@ -45,7 +46,7 @@ local function handle_apply_patch_args(args, message)
     end
 
     -- * try to complete the JSON string and decode it
-    -- assumption is, if final '"}' is present then it would be done streaming (sans maybe one delta?)
+    -- assumption is, if final '"' + '}' is present then it would be done streaming (sans maybe one delta?)
     local try_finish_args = args .. '"}'
     local ok, decoded = safely.decode_json_ignore_failure(try_finish_args)
     if ok and type(decoded) == "table" and decoded.patch then
@@ -61,56 +62,8 @@ local function handle_apply_patch_args(args, message)
     end
 end
 
----@param lines LinesBuilder
----@param tool_call ToolCall
----@param progress_messages string[]
----@param is_done boolean
-local function render_progress(lines, tool_call, progress_messages, is_done)
-    if is_done then
-        return
-    end
-
-    -- Show current progress message (most recent) with spinner
-    local spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
-    local current_time = vim.loop.hrtime()
-    local spinner_index = math.floor((current_time / 100000000) % #spinner_chars) + 1
-    local spinner_char = spinner_chars[spinner_index]
-
-    -- Show header with tool name and spinner
-    local func_name = tool_call["function"].name or "unknown_tool"
-    lines:append_line(string.format("%s ⏳ Running: %s", spinner_char, func_name))
-
-    -- Show recent progress messages (up to 3 most recent)
-    local num_progress = #progress_messages
-    if num_progress > 0 then
-        local max_show = math.min(3, num_progress)
-        local start_idx = num_progress - max_show + 1
-
-        if max_show < num_progress then
-            lines:append_line(string.format("  ... (%d more messages)", num_progress - max_show))
-        end
-
-        for i = start_idx, num_progress do
-            local msg = progress_messages[i]
-            -- Truncate very long messages to avoid overwhelming the view
-            if #msg > 200 then
-                msg = msg:sub(1, 197) .. "..."
-            end
-            lines:append_line(string.format("    ↳ %s", msg))
-        end
-    else
-        lines:append_line("    ↳ Waiting for response...")
-    end
-end
-
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
-    -- if message:is_still_streaming() then
-    --     -- TODO?
-    --     -- TODO OR message:get_lifecycle_step() == RxAccumulatedMessage.RX_LIFECYCLE.FINISHED
-    --     return
-    -- end
-
     local func_name = tool_call["function"].name
     local tool_header = func_name or ""
 
@@ -138,7 +91,7 @@ function M.format(lines, tool_call, message)
 
     -- * progress messages (shown when tool is still running)
     local is_tool_done = tool_call:is_done()
-    render_progress(lines, tool_call, tool_call.progress_messages or {}, is_tool_done)
+    base.render_progress(lines, tool_call, is_tool_done)
 
     if not is_tool_done then
         return
