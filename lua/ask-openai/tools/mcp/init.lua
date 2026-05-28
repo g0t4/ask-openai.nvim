@@ -378,9 +378,9 @@ local function start_mcp_server_http(name)
         end
     end
 
-    ---@param request MCP_JSONRPCMessage
-    local function write_to_http(request)
-        local json = vim.json.encode(request)
+    ---@param message MCP_JSONRPCMessage
+    local function write_to_http(message)
+        local json = vim.json.encode(message)
 
         local stdout = uv.new_pipe(false)
         local stderr = uv.new_pipe(false)
