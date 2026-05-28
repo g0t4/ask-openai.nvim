@@ -620,6 +620,11 @@ function M.get_system_message_instructions(tool_name)
         local fetch_path = "~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/mcp/fetch/fetch.md"
         M._cached_fetch_instructions = files.read_text(fetch_path)
         return M._cached_fetch_instructions
+
+        -- TODO fetch tool/instruction improvement ideas
+        -- ** setup a subagent for each request w/ a question/statement about what is of interest, let it gather multiple links and report back with links and what matters about each one
+        --    subagent can have detailed instructions (/INSTRUCT like) for GitHub links and many other common sites to make a more productive experience fetching from common sites
+        --    also means instructions don't have to polluate normal system prompt for top level agent trace
     end
 
     return nil
