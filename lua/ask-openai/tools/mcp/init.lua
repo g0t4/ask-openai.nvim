@@ -72,32 +72,167 @@ local servers = {
     -- }
 }
 
-function start_mcp_server_stdio(name)
-    local options = servers[name]
-    local server_log_name = "[" .. name:upper() .. "]"
+-- ============================================================================
+-- MCPClient base class
+-- ============================================================================
 
-    local handle, pid
+---@class MCPClient
+---@field server_log_name string
+---@field counter integer
+---@field callbacks_by_request_id table<any, ToolCallDoneCallback>
+---@field progress_callbacks_by_token table<any, ToolCallOnProgress>
+local MCPClient = {}
+MCPClient.__index = MCPClient
 
-    local function on_exit(code, signal)
-        log:trace_on_exit_errors(code, signal) -- FYI switch _errors/_always
-
-        handle:close()
-
-        if vim.v.exiting ~= nil then
-            local msg = string.format("MCP server %s EXITED\n\n  *NOTE: vim is not shutting down*\n\nRESTART NEOVIM if you need the server running", server_log_name)
-            log:error(ansi.white_bold(ansi.red_bg(msg)))
-            vim.notify(msg, vim.log.levels.WARN)
-        else
-            -- I never see this log entry on shutdown...
-            -- reminds me => perhaps I need to actually trigger exit of server too?
-            --   but, I've never seen leaked MCP server process... doesn't mean it never happens!
-            log:error(string.format("MCP server %s exited (during neovim shutdown)", server_log_name))
-        end
+--- Dispatch a parsed JSON-RPC message (response or notification).
+--- Both transports share this logic after parsing.
+---@param self MCPClient
+---@param message MCP_JSONRPCMessage
+function MCPClient:dispatch_message(message)
+    -- Response object (success or failure)
+    -- - Server does NOT send response to notifications
+    -- - https://www.jsonrpc.org/specification#response_object
+    --   - ID of request is required
+    --   - Either `error` or `result` is required
+    --     - NOT BOTH
+    --     - `result` object not constrained by spec
+    --     - `error` object has code/message/data properties: https://www.jsonrpc.org/specification#error_object
+    if message.error then
+        log:error(string.format("MCP %s error response:", self.server_log_name), vim.inspect(message.error))
     end
 
+    local request_id = message.id
+    if request_id then
+        local callback = self.callbacks_by_request_id[request_id]
+        if callback then
+            callback(message)
+            self.callbacks_by_request_id[request_id] = nil
+            self.progress_callbacks_by_token[request_id] = nil
+            return
+        end
+
+        log:warn(string.format("MCP %s received unexpected response with no matching callback (request.id=%s)", self.server_log_name, request_id))
+        return
+    end
+
+    -- Notifications (no ID). Currently only "notifications/progress" is handled.
+    if message.method == "notifications/progress" then
+        ---@cast message MCP_ProgressNotification
+        local progress_token = message.params.progressToken
+        local on_progress = self.progress_callbacks_by_token[progress_token] or function(params)
+            log:info(string.format("MCP %s progress (NO CALLBACK): %s", self.server_log_name, vim.inspect(params)))
+        end
+        on_progress(message.params)
+    end
+end
+
+--- Send a JSON-RPC request (with optional callback and progress).
+--- Common to both transports; delegates transport-specific writing to write_to().
+---@param self MCPClient
+---@param request table
+---@param callback ToolCallDoneCallback
+---@param on_progress? ToolCallOnProgress
+function MCPClient:send_request(request, callback, on_progress)
+    if not request.id then
+        request.id = self.counter
+        self.counter = self.counter + 1
+    end
+    request.jsonrpc = "2.0"
+
+    self.callbacks_by_request_id[request.id] = callback
+    self.progress_callbacks_by_token[request.id] = on_progress
+    self:write_to(request)
+end
+
+--- Send a JSON-RPC notification (no ID, no callback).
+---@param self MCPClient
+---@param notification { method: string, params?: any, [any]: any }
+function MCPClient:send_notification(notification)
+    notification.jsonrpc = "2.0"
+    self:write_to(notification)
+end
+
+--- Build and send a tool/call request. Common to both transports.
+---@param self MCPClient
+---@param id string
+---@param tool_name string
+---@param args table
+---@param callback ToolCallDoneCallback
+---@param on_progress? ToolCallOnProgress
+function MCPClient:tools_call(id, tool_name, args, callback, on_progress)
+    self:send_request({
+        id = id,
+        method = "tools/call",
+        params = {
+            name = tool_name,
+            arguments = args,
+            _meta = { progressToken = id },
+        },
+    }, callback, on_progress)
+end
+
+--- Transport-specific method: write an encoded message to the server.
+---@param self MCPClient
+---@param message MCP_JSONRPCMessage
+function MCPClient:write_to(message)
+    error("MCPClient:write_to() must be implemented by subclass")
+end
+
+--- Transport-specific method: initialize the server connection.
+--- STDIO performs the full init handshake; HTTP does tools/list directly.
+---@param self MCPClient
+function MCPClient:initialize()
+    error("MCPClient:initialize() must be implemented by subclass")
+end
+
+-- ============================================================================
+-- MCPStdioClient - handles communication via stdio (uv.spawn pipes)
+-- ============================================================================
+
+---@class MCPStdioClient : MCPClient
+---@field stdin uv_pipe_t
+---@field stdout uv_pipe_t
+---@field stderr uv_pipe_t
+---@field handle uv_handle_t
+---@field pid integer
+---@field pending_json string
+local MCPStdioClient = setmetatable({}, { __index = MCPClient })
+MCPStdioClient.__index = MCPStdioClient
+
+---@param name string
+---@param options table
+---@return MCPStdioClient
+function MCPStdioClient.new(name, options)
+    local self = setmetatable({}, MCPStdioClient)
+
+    self.server_log_name = "[" .. name:upper() .. "]"
+    self.counter = 1
+    self.callbacks_by_request_id = {}
+    self.progress_callbacks_by_token = {}
+    self.pending_json = ""
+
+    -- Spawn the subprocess with pipes for stdin, stdout, stderr
+    local handle, pid
     local stdin = uv.new_pipe(false)
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
+
+    local function on_exit(code, signal)
+        log:trace_on_exit_errors(code, signal)
+        handle:close()
+
+        if vim.v.exiting ~= nil then
+            local msg = string.format(
+                "MCP server %s EXITED\n\n  *NOTE: vim is not shutting down*\n\nRESTART NEOVIM if you need the server running",
+                self.server_log_name
+            )
+            log:error(ansi.white_bold(ansi.red_bg(msg)))
+            vim.notify(msg, vim.log.levels.WARN)
+        else
+            log:error(string.format("MCP server %s exited (during neovim shutdown)", self.server_log_name))
+        end
+    end
+
     handle, pid = uv.spawn(options.command,
         ---@diagnostic disable-next-line: missing-fields
         {
@@ -106,411 +241,270 @@ function start_mcp_server_stdio(name)
         },
         on_exit)
 
-    local counter = 1
-    local callbacks_by_request_id = {}
-    local progress_callbacks_by_token = {} -- TODO use these for dispatching progress notifications back to tool caller
+    self.stdin = stdin
+    self.stdout = stdout
+    self.stderr = stderr
+    self.handle = handle
+    self.pid = pid
 
-    ---@param message MCP_JSONRPCMessage
-    local function on_server_response_stdio(message)
-        -- Response object (success or failure)
-        -- - Server does NOT send response to notifications
-        -- - https://www.jsonrpc.org/specification#response_object
-        --   - ID of request is required
-        --   - Either `error` or `result` is required
-        --     - NOT BOTH
-        --     - `result` object not constrained by spec
-        --     - `error` object has code/message/data properties: https://www.jsonrpc.org/specification#error_object
-        if message.error then
-            log:error(string.format("MCP %s STDIO error response:", server_log_name), vim.inspect(message.error))
-        end
-
-        -- log:info("MCP response:", vim.inspect(server_response))
-        local request_id = message.id
-        if request_id then
-            local callback = callbacks_by_request_id[request_id]
-            if callback then
-                -- PRN strip out errors?
-                --   not sure I really ever use error right now!
-                --   PRN find out if/how I should be using JSONRPC error objects? (look at other MCP servers, try with fetch an invalid URL?)
-                --   IOTW only pass result? => callback(server_response.result)
-                callback(message)
-                callbacks_by_request_id[request_id] = nil
-                progress_callbacks_by_token[request_id] = nil
-            else
-                log:error(string.format("MCP %s received unexpected response with no matching callback (request.id=%s)", server_log_name, request_id))
-            end
-            return
-        end
-
-        if message.method == "notifications/progress" then
-            ---@cast message MCP_ProgressNotification
-            local progress_token = message.params.progressToken
-            local on_progress = progress_callbacks_by_token[progress_token] or function(params)
-                log:info(string.format("MCP %s progress (NO CALLBACK): %s", server_log_name, vim.inspect(params)))
-            end
-            on_progress(message.params)
-        end
-    end
-
-    local pending_json = ""
+    -- Set up stdout reader with JSON-line buffering
     local function on_stdout(read_error, data)
-        log:log_if_stdio_read_error(string.format("MCP on_stdout %s", server_log_name), read_error, data) -- FYI switch _errors/_always with:    log:trace_stdio_read_always("MCP ...
-        if data == nil then return end -- EOF
+        log:log_if_stdio_read_error(string.format("MCP on_stdout %s", self.server_log_name), read_error, data)
+        if data == nil then
+            return -- EOF
+        end
 
-        pending_json = pending_json .. data
+        self.pending_json = self.pending_json .. data
 
-        -- PRN/TODO support content-length "header" before message? right now my MCP server mcp-server-commands (typescript MCP SDK) doesn't include content-length style (NOT AFAICT, maybe a setting to enable?)
-        --   instead, right now responses are delimited by a trailing \n
-        -- TODO add integration tests to make sure this is solid
-        -- TODO you do not want tool calling to randomly fail for plumbing reasons!!!
-        -- TODO look at what you did with SSEs in streaming callbacks via uv.spawn and curl... can be similar integration test style here
-        --  NOTE not using curl implementation of loop/SSE/etc b/c SSE convention is \n\n unlike here where message is one trailing \n
         while true do
-            -- FYI could be multiple responses/notifications (aka messages) in one callback, hence loop
-            local line, rest = pending_json:match("^(.-)\r?\n(.*)$")
-            if not line then break end
-            pending_json = rest
+            local line, rest = self.pending_json:match("^(.-)\r?\n(.*)$")
+            if not line then
+                break
+            end
+            self.pending_json = rest
 
             local ok, response = safely.decode_json(line)
             if ok then
-                on_server_response_stdio(response)
+                self:dispatch_message(response)
             else
-                log:error(string.format("MCP STDOUT decode error %s OK:", server_log_name), ok)
-                log:error(string.format("MCP STDOUT decode error %s LINE:", server_log_name), line)
-                log:error(string.format("MCP STDOUT decode error %s MSG:", server_log_name), vim.inspect(response))
+                log:error(string.format("MCP STDOUT decode error %s OK:", self.server_log_name), ok)
+                log:error(string.format("MCP STDOUT decode error %s LINE:", self.server_log_name), line)
+                log:error(string.format("MCP STDOUT decode error %s MSG:", self.server_log_name), vim.inspect(response))
             end
         end
-
-        -- *** DO NOT attempt to decode/dispatch before \n arrives
     end
-
 
     uv.read_start(stdout, on_stdout)
 
+    -- Set up stderr reader
     local function on_stderr(read_error, data)
-        log:log_if_stdio_read_error(string.format("MCP on_stderr %s", server_log_name), read_error, data) -- FYI switch _errors/_always with:    log:trace_stdio_read_always("MCP ...
-        if data == nil then return end -- EOF -- * add this line if add logic below
-
-        -- IIRC this rarely ever happens and would be transport specific.
-        --   keep in mind if a tool call fails, the result comes through on_stdout and simply has isError=true
-        log:error(string.format("MCP %s STDERR:", server_log_name), ansi.red(data))
+        log:log_if_stdio_read_error(string.format("MCP on_stderr %s", self.server_log_name), read_error, data)
+        if data == nil then
+            return -- EOF
+        end
+        log:error(string.format("MCP %s STDERR:", self.server_log_name), ansi.red(data))
     end
 
     uv.read_start(stderr, on_stderr)
 
-    ---@param message MCP_JSONRPCMessage
-    local function write_to_stdio(message)
-        local json = vim.json.encode(message)
-        -- log:info(string.format("MCP write %s:", server_log_name), json)
-        stdin:write(json .. "\n")
-    end
+    return self
+end
 
-    ---@param request table
-    ---@param callback ToolCallDoneCallback
-    ---param on_progress ToolCallOnProgress
-    local function send_request(request, callback, on_progress)
-        -- Regular request (with optional callback). ID is always set unless caller explicitly provides one.
-        if not request.id then
-            request.id = counter
-            counter = counter + 1
-        end
-        request.jsonrpc = "2.0"
+--- Write a message to the subprocess stdin (JSON + newline delimiter).
+---@param self MCPStdioClient
+---@param message MCP_JSONRPCMessage
+function MCPStdioClient:write_to(message)
+    local json = vim.json.encode(message)
+    self.stdin:write(json .. "\n")
+end
 
-        callbacks_by_request_id[request.id] = callback
-        progress_callbacks_by_token[request.id] = on_progress -- progressToken == request.id in my setup
-        write_to_stdio(request)
-    end
-
-    --- Send a JSON-RPC notification
-    ---@param notification { method: string, params?: any, [any]: any }
-    local function send_notification(notification)
-        -- * notifications CANNOT have ID: https://www.jsonrpc.org/specification#notification
-        -- BTW notification is a type of request (w/o id)
-        -- notifications do not have callbacks nor progress
-        -- modelcontextprotocol uses "notifications/" method prefix, i.e.: notifications/initialized and notifications/tools/list_changed
-        notification.jsonrpc = "2.0"
-        write_to_stdio(notification)
-    end
-
-    ---@param callback fun(response: MCP_ListToolsResult)
-    local function tools_list(callback)
-        send_request({ method = "tools/list" }, callback)
-    end
-
-    local function cancel_tool_call(tool_call_id, reason)
-        -- TODO plug this into agent abort, when tool call(s) are outstanding
-        send_notification({
-            method = "notifications/initialized",
-            params = {
-                -- TODO confirm tool_call's ID is the original tool call's request.id
-                requestId = tool_call_id,
-                reason = reason,
-            },
-        })
-    end
-
-    local function tools_call(id, tool_name, args, callback, on_progress)
-        -- PRN/TODO btw your downstream code uses result object for almost everything, even tool call failures... that is probably fine but I should find out if a failed tool call is suppose to be presented as an error object on the response or as-is with result.isError etc?
-        send_request({
-            id = id,
-            method = "tools/call",
-            params = {
-                name = tool_name,
-                arguments = args,
-                -- TODO! receive and pass back notifications/progress to tool call clients
-                _meta = { progressToken = id },
-            },
-        }, callback, on_progress)
-    end
-
-    -- Perform initialization before requesting the tool list.
-    -- This logic was previously in the outer for‑loop; moving it here keeps the
-    -- server lifecycle self‑contained.
+--- Perform the STDIO initialization sequence:
+--- 1. send initialize request
+--- 2. on success, send notifications/initialized
+--- 3. fetch tools/list and register tools
+---@param self MCPStdioClient
+function MCPStdioClient:initialize()
     local client_init_params = {
-        -- go with oldest protocolVersion for now, even though I am using @modelcontextprotocol/sdk v1.9.0 which was released in April 2025 which would put it after the protocolVersion==2025-03-26
         protocolVersion = "2024-11-05",
         capabilities = {
             roots = { listChanged = false },
-            -- WARNING: empty table {} => maps to an empty JSON array:
-            -- sampling = {}, -- serializes as empty JSON array (this triggers error response)
-            -- sampling = vim.empty_dict(), -- use this to serialize an empty JSON object (this succeeds)
         },
         clientInfo = {
             name = "ask-openai",
-            version = "", -- version required (error if missing)... COMMENT THIS OUT TO TEST ERROR HANDLING!
+            version = "",
         },
     }
 
-    send_request({ method = "initialize", params = client_init_params }, function(server_init)
-        -- log:trace(string.format("MCP initialize response %s:", server_log_name), vim.inspect(server_init))
-
-        -- * abort on init failure
+    self:send_request({ method = "initialize", params = client_init_params }, function(server_init)
         if server_init.error then
             local err = server_init.error
             local msg = ""
             if type(err) == "table" and err.message ~= nil then
-                -- log them embedded error.message if available
-                msg = string.format("MCP initialize error (SEE PATH below) %s: %s", server_log_name, err.message)
-                -- FYI message is a JSON string, so I would have to deserialize it to read .path... that's not necessary! I can just read the JSON when I have a failure!
+                msg = string.format("MCP initialize error (SEE PATH below) %s: %s", self.server_log_name, err.message)
             else
-                msg = string.format("MCP initialize error %s (no message)", server_log_name)
+                msg = string.format("MCP initialize error %s (no message)", self.server_log_name)
             end
             log:error(msg)
             vim.notify(msg, vim.log.levels.ERROR)
             return
         end
 
-        -- fetch MCP server rejects this (and on_exit's from neovim uv runner... but when I run uvx directly and paste in messages it keeps working after failure for notifications/initialized... interesting), works fine w/o this:
-        --  - COMMANDS MCP it doesn't matter if I send this or don't send this
-        --  - ok the issue might be that notifications don't include an ID? => YUP fetch works without the ID on the notification!
-        --  - docs: https://modelcontextprotocol.io/specification/2024-11-05/basic/lifecycle#initialization
-        send_notification({ method = "notifications/initialized" })
+        -- Send initialized notification
+        self:send_notification({ method = "notifications/initialized" })
 
-        tools_list(function(response)
+        -- Fetch and register tools
+        self:send_request({ method = "tools/list" }, function(response)
             if response.error then
-                log:error(string.format("tools/list@%s error:", server_log_name), vim.inspect(response))
+                log:error(string.format("tools/list@%s error:", self.server_log_name), vim.inspect(response))
                 return
             end
             for _, tool in ipairs(response.result.tools) do
                 ---@cast tool MCP_Tool
                 log:info("tools/list:", vim.inspect(tool))
-                tool.call = tools_call
+                tool.call = function(id, tool_name, args, callback, on_progress)
+                    self:tools_call(id, tool_name, args, callback, on_progress)
+                end
                 M.tools_available[tool.name] = tool
             end
         end)
     end)
-
-    local function stop()
-        -- handle:kill("sigterm")
-        uv.shutdown(stdin, function()
-            uv.close(handle, function()
-                -- free memory by closing handle
-            end)
-        end)
-    end
-
-    -- currently I don't do anything with running_servers, so I don't really need to return an object, short of GC perhaps
-    --  TODO any GC issues after a while? if so, should I return references to stdin/out/err pipes or smth else?
-    -- return {}
 end
 
-local function start_mcp_server_http(name)
-    local server_log_name = "[" .. name:upper() .. "]"
-    local options = servers[name]
-    local counter = 1
-    local callbacks_by_request_id = {}
-    local progress_callbacks_by_token = {} -- TODO use these for dispatching progress notifications back to tool caller
+-- ============================================================================
+-- MCPHttpServer - handles communication via HTTP POST + SSE responses
+-- ============================================================================
 
-    local function on_data_sse(data_value)
-        -- log:trace(string.format("MCP %s JSONRPC on_data_sse data_value:", server_log_name), vim.inspect(data_value))
+---@class MCPHttpServer : MCPClient
+---@field url string
+local MCPHttpServer = setmetatable({}, { __index = MCPClient })
+MCPHttpServer.__index = MCPHttpServer
+
+---@param name string
+---@param options table
+---@return MCPHttpServer
+function MCPHttpServer.new(name, options)
+    local self = setmetatable({}, MCPHttpServer)
+
+    self.server_log_name = "[" .. name:upper() .. "]"
+    self.counter = 1
+    self.callbacks_by_request_id = {}
+    self.progress_callbacks_by_token = {}
+    self.url = options.url
+
+    return self
+end
+
+--- Write a message by spawning a curl process per request (POST + SSE).
+---@param self MCPHttpServer
+---@param message MCP_JSONRPCMessage
+function MCPHttpServer:write_to(message)
+    local json = vim.json.encode(message)
+
+    local stdout = uv.new_pipe(false)
+    local stderr = uv.new_pipe(false)
+    local handle
+
+    local args = {
+        "-i", "-s", "-X", "POST",
+        "-H", "Content-Type: application/json",
+        "-H", "Accept: application/json, text/event-stream",
+        "-d", json,
+        self.url,
+    }
+
+    local function on_exit(code, signal)
+        stdout:close()
+        stderr:close()
+        handle:close()
+    end
+
+    handle = uv.spawn("curl", {
+        args = args,
+        stdio = { nil, stdout, stderr },
+    }, on_exit)
+
+    -- Parse SSE response body
+    local parser = SSEDataOnlyParser.new(function(data_value)
         ---@type MCP_JSONRPCMessage
-        local message = vim.json.decode(data_value)
-        -- log:trace(string.format("MCP %s JSONRPC response:", server_log_name), vim.inspect(rpc_response))
-        if message.error then
-            log:error(string.format("MCP %s JSONRPC response error:", server_log_name), vim.inspect(message.error))
-        end
+        local rpc_message = vim.json.decode(data_value)
+        self:dispatch_message(rpc_message)
+    end)
 
-        local request_id = message.id
-        if request_id then
-            -- request.id implies this is a response
-            ---@cast message MCP_JSONRPCResponse
-            local callback = callbacks_by_request_id[request_id]
-            if callback then
-                callback(message)
-                -- avoid leaking memory:
-                callbacks_by_request_id[request_id] = nil
-                progress_callbacks_by_token[request_id] = nil
-                return
+    local headers_parsed = false
+    local header_buffer = ""
+
+    local function get_content_type(header_str)
+        local content_type
+        for line in header_str:gmatch("([^\r\n]+)") do
+            local key, value = line:match("^(%S+):%s*(.+)$")
+            if key and value and key:lower() == "content-type" then
+                content_type = value
             end
+        end
+        return content_type
+    end
 
-            log:warn(string.format("MCP %s JSONRPC response.id has no corresponding callback:", server_log_name))
+    uv.read_start(stdout, function(read_err, data)
+        if read_err then
+            log:error(string.format("%s write_to_http on_stdout has read_err", self.server_log_name), vim.inspect(read_err))
             return
         end
-
-        if message.method == "notifications/progress" then
-            ---@cast message MCP_ProgressNotification
-            local progress_token = message.params.progressToken
-            local on_progress = progress_callbacks_by_token[progress_token] or function(params)
-                log:info(string.format("MCP %s progress (NO CALLBACK): %s", server_log_name, vim.inspect(params)))
-            end
-            on_progress(message.params)
-        end
-    end
-
-    ---@param message MCP_JSONRPCMessage
-    local function write_to_http(message)
-        local json = vim.json.encode(message)
-
-        local stdout = uv.new_pipe(false)
-        local stderr = uv.new_pipe(false)
-        local handle
-        local args = {
-            "-i", "-s", "-X", "POST",
-            "-H", "Content-Type: application/json",
-            "-H", "Accept: application/json, text/event-stream",
-            "-d", json,
-            options.url,
-        }
-
-        local function on_exit(code, signal)
-            -- log:info(string.format("%s write_to_http on_exit", server_log_name), code, signal)
-            -- Close pipes after process exits.
-            stdout:close()
-            stderr:close()
-            handle:close()
-        end
-
-        handle = uv.spawn("curl", {
-            args = args,
-            stdio = { nil, stdout, stderr },
-        }, on_exit)
-
-        -- Include response headers with `-i`. We'll parse them before feeding body to the SSE parser.
-        local parser = SSEDataOnlyParser.new(on_data_sse)
-        local headers_parsed = false
-        local header_buffer = ""
-
-        local function get_content_type(header_str)
-            local content_type
-            for line in header_str:gmatch("([^\r\n]+)") do
-                local key, value = line:match("^(%S+):%s*(.+)$")
-                if key and value and key:lower() == "content-type" then
-                    content_type = value
-                end
-            end
-            return content_type
-        end
-
-        uv.read_start(stdout, function(read_err, data)
-            -- log:info(string.format("%s write_to_http on_stdout", server_log_name), vim.inspect(data))
-            if read_err then
-                log:error(string.format("%s write_to_http on_stdout has read_err", server_log_name), vim.inspect(read_err))
-                return
-            end
-            if data then
-                if not headers_parsed then
-                    header_buffer = header_buffer .. data
-                    local header_end = header_buffer:find("\r?\n\r?\n")
-                    if header_end then
-                        local raw_headers = header_buffer:sub(1, header_end)
-                        local remaining = header_buffer:sub(header_end + 1)
-                        local content_type = get_content_type(raw_headers)
-                        -- log:info(string.format("%s content-type header: %s", server_log_name, content_type))
-                        if content_type ~= "text/event-stream" then
-                            log:error(string.format("%s unexpected response type (Content-Type: %s)", server_log_name, content_type or "nil"))
-                            -- Abort further processing; downstream callbacks will not be invoked.
-                            -- PRN implement application/json support? I don't think I will need this with HTTP POST based reequests
-                            return
-                        end
-
-                        headers_parsed = true
-                        if #remaining > 0 then
-                            parser:write(remaining)
-                        end
+        if data then
+            if not headers_parsed then
+                header_buffer = header_buffer .. data
+                local header_end = header_buffer:find("\r?\n\r?\n")
+                if header_end then
+                    local raw_headers = header_buffer:sub(1, header_end)
+                    local remaining = header_buffer:sub(header_end + 1)
+                    local content_type = get_content_type(raw_headers)
+                    if content_type ~= "text/event-stream" then
+                        log:error(string.format("%s unexpected response type (Content-Type: %s)", self.server_log_name, content_type or "nil"))
+                        return
                     end
-                else
-                    parser:write(data)
+
+                    headers_parsed = true
+                    if #remaining > 0 then
+                        parser:write(remaining)
+                    end
                 end
             else
-                parser:flush_dregs()
+                parser:write(data)
             end
-        end)
-
-        uv.read_start(stderr, function(read_err, data)
-            if read_err then
-                log:error(string.format("%s write_to_http on_stderr has read_err", server_log_name), vim.inspect(read_err))
-                return
-            end
-            if data then
-                log:error(string.format("%s write_to_http on_stderr has data", server_log_name), ansi.red(data))
-            end
-        end)
-    end
-
-    ---@param request MCP_JSONRPCRequest
-    ---@param callback ToolCallDoneCallback
-    ---@param on_progress ToolCallOnProgress
-    local function send_request(request, callback, on_progress)
-        if not request.id then
-            request.id = counter
-            counter = counter + 1
+        else
+            parser:flush_dregs()
         end
-        request.jsonrpc = "2.0"
-        callbacks_by_request_id[request.id] = callback
-        progress_callbacks_by_token[request.id] = on_progress -- progress_token == request.id in my setup
-        write_to_http(request)
-    end
+    end)
 
-    local function tools_call(id, tool_name, args, callback, on_progress)
-        send_request({
-            id = id,
-            method = "tools/call",
-            params = {
-                name = tool_name,
-                arguments = args,
-                _meta = { progressToken = id },
-            },
-        }, callback, on_progress)
-    end
+    uv.read_start(stderr, function(read_err, data)
+        if read_err then
+            log:error(string.format("%s write_to_http on_stderr has read_err", self.server_log_name), vim.inspect(read_err))
+            return
+        end
+        if data then
+            log:error(string.format("%s write_to_http on_stderr has data", self.server_log_name), ansi.red(data))
+        end
+    end)
+end
 
-    send_request({ method = "tools/list" }, function(response)
+--- HTTP servers skip the init handshake — just fetch tools directly.
+---@param self MCPHttpServer
+function MCPHttpServer:initialize()
+    self:send_request({ method = "tools/list" }, function(response)
         local tools = response.result.tools
         for _, tool in pairs(tools) do
             ---@cast tool MCP_Tool
-            tool.call = tools_call
+            tool.call = function(id, tool_name, args, callback, on_progress)
+                self:tools_call(id, tool_name, args, callback, on_progress)
+            end
             M.tools_available[tool.name] = tool
         end
     end)
 end
 
--- M.running_servers = {}
+-- ============================================================================
+-- Server startup helpers (public API)
+-- ============================================================================
+
+--- Create and initialize a STDIO-based MCP client.
+---@param name string
+function start_mcp_server_stdio(name)
+    local options = servers[name]
+    local client = MCPStdioClient.new(name, options)
+    client:initialize()
+end
+
+--- Create and initialize an HTTP-based MCP client.
+---@param name string
+function start_mcp_server_http(name)
+    local options = servers[name]
+    local client = MCPHttpServer.new(name, options)
+    client:initialize()
+end
+
 ---@type table<string, MCP_Tool>
 M.tools_available = {}
 
 for name, server in pairs(servers) do
-    local server_log_name = "[" .. name:upper() .. "]"
-    -- log:trace("starting mcp server " .. server_log_name .. " with transport: " .. server.transport)
-
     if server.transport == "stdio" then
         start_mcp_server_stdio(name)
     elseif server.transport == "http" then
@@ -518,9 +512,7 @@ for name, server in pairs(servers) do
     else
         error(string.format("unsupported transport %s for server %s", server.transport, name))
     end
-    -- M.running_servers[name] = mcp
 end
-
 
 function M.setup()
     vim.api.nvim_create_user_command("AskDumpMcpTools", function()
@@ -552,10 +544,8 @@ function M.openai_tool(mcp_tool)
         type = "function",
         ["function"] = {
             name = mcp_tool.name,
-            -- FYI mcp-server-commands doesn't currently set a desc (won't see that in testing)
             description = mcp_tool.description,
             parameters = params,
-            -- strict = false -- default is false... should I set true?
         }
     }
 end
@@ -571,17 +561,6 @@ end
 ---@param callback ToolCallDoneCallback
 ---@param on_progress? ToolCallOnProgress
 function M.send_tool_call(tool_call, callback, on_progress)
-    -- LEFT OFF HERE TRACING passing of progress
-    -- tool call: {
-    --   ["function"] = {
-    --     arguments = '{"command":"ls -la","cwd":""}',
-    --     name = "run_command"
-    --   },
-    --   id = "call_8yoj8qqo",
-    --   index = 0,
-    --   type = "function"
-    -- }
-
     local name = tool_call["function"].name
     ---@type MCP_Tool | nil
     local tool = M.tools_available[name]
@@ -602,9 +581,6 @@ function M.send_tool_call(tool_call, callback, on_progress)
     end
 
     local args_decoded = decode_tool_args(tool_call["function"].arguments)
-
-    -- PRN timeout mechanism? might be a good spot to wrap an async timer to check back (wait for the need to arise)
-
     tool.call(tool_call.id, name, args_decoded, vim.schedule_wrap(callback), on_progress)
 end
 
@@ -634,11 +610,6 @@ function M.get_system_message_instructions(tool_name)
         local fetch_path = "~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/mcp/fetch/fetch.md"
         M._cached_fetch_instructions = files.read_text(fetch_path)
         return M._cached_fetch_instructions
-
-        -- TODO fetch tool/instruction improvement ideas
-        -- ** setup a subagent for each request w/ a question/statement about what is of interest, let it gather multiple links and report back with links and what matters about each one
-        --    subagent can have detailed instructions (/INSTRUCT like) for GitHub links and many other common sites to make a more productive experience fetching from common sites
-        --    also means instructions don't have to polluate normal system prompt for top level agent trace
     end
 
     return nil
