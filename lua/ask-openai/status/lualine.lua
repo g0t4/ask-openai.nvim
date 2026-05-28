@@ -1,6 +1,7 @@
 local local_share = require('ask-openai.config.local_share')
 local human = require('devtools.humanize')
 local llama_stats = require('ask-openai.backends.llama_cpp.stats')
+local mcp_tools = require('ask-openai.tools.mcp')
 
 ---@class lualine
 ---@field last_fim_stats SSEStats|nil
@@ -97,6 +98,13 @@ function M.lualine_components()
                 end
             end
             table.insert(icons, ']')
+
+            -- * MCP tools ready indicator
+            if mcp_tools.ready then
+                table.insert(icons, '🟢')
+            else
+                table.insert(icons, '🔴')
+            end
 
             -- * aggregate stats (across requests)
             local totals = llama_stats.totals

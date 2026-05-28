@@ -303,7 +303,8 @@ end
 --- 2. on success, send notifications/initialized
 --- 3. fetch tools/list and register tools
 ---@param self MCPStdioClient
-function MCPStdioClient:initialize()
+---@param on_done? fun() callback when this server is done
+function MCPStdioClient:initialize(on_done)
     local client_init_params = {
         protocolVersion = "2024-11-05",
         capabilities = {
@@ -336,15 +337,18 @@ function MCPStdioClient:initialize()
         self:send_request({ method = "tools/list" }, function(response)
             if response.error then
                 log:error(string.format("tools/list@%s error:", self.server_log_name), vim.inspect(response))
-                return
-            end
-            for _, tool in ipairs(response.result.tools) do
-                ---@cast tool MCP_Tool
-                log:info("tools/list:", vim.inspect(tool))
-                tool.call = function(id, tool_name, args, callback, on_progress)
-                    self:tools_call(id, tool_name, args, callback, on_progress)
+            else
+                for _, tool in ipairs(response.result.tools) do
+                    ---@cast tool MCP_Tool
+                    log:info("tools/list:", vim.inspect(tool))
+                    tool.call = function(id, tool_name, args, callback, on_progress)
+                        self:tools_call(id, tool_name, args, callback, on_progress)
+                    end
+                    M.tools_available[tool.name] = tool
                 end
-                M.tools_available[tool.name] = tool
+            end
+            if on_done then
+                vim.schedule(on_done)
             end
         end)
     end)
@@ -468,15 +472,22 @@ end
 
 --- HTTP servers skip the init handshake — just fetch tools directly.
 ---@param self MCPHttpServer
-function MCPHttpServer:initialize()
+---@param on_done? fun()
+function MCPHttpServer:initialize(on_done)
     self:send_request({ method = "tools/list" }, function(response)
-        local tools = response.result.tools
-        for _, tool in pairs(tools) do
-            ---@cast tool MCP_Tool
-            tool.call = function(id, tool_name, args, callback, on_progress)
-                self:tools_call(id, tool_name, args, callback, on_progress)
+        if response.result and response.result.tools then
+            for _, tool in pairs(response.result.tools) do
+                ---@cast tool MCP_Tool
+                tool.call = function(id, tool_name, args, callback, on_progress)
+                    self:tools_call(id, tool_name, args, callback, on_progress)
+                end
+                M.tools_available[tool.name] = tool
             end
-            M.tools_available[tool.name] = tool
+        elseif response.error then
+            log:error(string.format("tools/list@%s error:", self.server_log_name), vim.inspect(response.error))
+        end
+        if on_done then
+            vim.schedule(on_done)
         end
     end)
 end
@@ -487,28 +498,46 @@ end
 
 --- Create and initialize a STDIO-based MCP client.
 ---@param name string
-function start_mcp_server_stdio(name)
+---@param on_done? fun()
+function start_mcp_server_stdio(name, on_done)
     local options = servers[name]
     local client = MCPStdioClient.new(name, options)
-    client:initialize()
+    client:initialize(on_done)
 end
 
 --- Create and initialize an HTTP-based MCP client.
 ---@param name string
-function start_mcp_server_http(name)
+---@param on_done? fun()
+function start_mcp_server_http(name, on_done)
     local options = servers[name]
     local client = MCPHttpServer.new(name, options)
-    client:initialize()
+    client:initialize(on_done)
 end
 
 ---@type table<string, MCP_Tool>
 M.tools_available = {}
 
+---@type boolean
+M.ready = false
+
+-- Track server initialization progress
+local server_count = 0
+local initialized_count = 0
+
+local function mark_server_initialized()
+    initialized_count = initialized_count + 1
+    if initialized_count >= server_count then
+        M.ready = true
+        log:info('All MCP servers initialized (' .. initialized_count .. '/' .. server_count .. ')')
+    end
+end
+
 for name, server in pairs(servers) do
+    server_count = server_count + 1
     if server.transport == "stdio" then
-        start_mcp_server_stdio(name)
+        start_mcp_server_stdio(name, mark_server_initialized)
     elseif server.transport == "http" then
-        start_mcp_server_http(name)
+        start_mcp_server_http(name, mark_server_initialized)
     else
         error(string.format("unsupported transport %s for server %s", server.transport, name))
     end
