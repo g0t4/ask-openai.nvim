@@ -81,7 +81,7 @@ class TraceBrowser:
 
         table.add_row("q", "quit")
         table.add_row("c", "copy current trace path")
-        table.add_row("t", "WIP - copy take command to add to datasets repo")
+        table.add_row("t", "copy take command to add to datasets repo")
         table.add_row("Enter", "open current trace in chat_viewer")
         table.add_row("←/→", "older / newer")
         table.add_row("h", "help")
@@ -148,7 +148,7 @@ class TraceBrowser:
         )
 
         next_share_dir = result.stdout.strip()  # strip trailing \n from echo
-        self.copy(f"take {next_share_dir} {trace.resolve()}")
+        self.copy(f"take {next_share_dir} {trace.resolve()}; rag_add")
 
     def copy(self, what):
         try:
