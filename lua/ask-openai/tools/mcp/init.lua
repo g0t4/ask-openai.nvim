@@ -145,21 +145,10 @@ function start_mcp_server_stdio(name)
         if message.method == "notifications/progress" then
             ---@cast message MCP_ProgressNotification
             local progress_token = message.params.progressToken
-            local on_progress = progress_callbacks_by_token[progress_token]
-            if on_progress then
-                on_progress(message.params)
-            else
-                log:info(string.format("MCP %s progress (no caller): %s", server_log_name, vim.inspect(message.params)))
+            local on_progress = progress_callbacks_by_token[progress_token] or function(params)
+                log:info(string.format("MCP %s progress (NO CALLBACK): %s", server_log_name, vim.inspect(params)))
             end
-            -- [INFO ] MCP response: {
-            --   jsonrpc = "2.0",
-            --   method = "notifications/progress",
-            --   params = {
-            --     progress = 16,
-            --     progressToken = "progress_wONXcTyWCrfdSFxA7CXd099DWvDQSxn2",
-            --     total = 100 -- this is from simple example of count to 100
-            --   }
-            -- }
+            on_progress(message.params)
         end
     end
 
@@ -382,15 +371,12 @@ local function start_mcp_server_http(name)
         if message.method == "notifications/progress" then
             ---@cast message MCP_ProgressNotification
             local progress_token = message.params.progressToken
-            local on_progress = progress_callbacks_by_token[progress_token]
-            if on_progress then
-                on_progress(message.params)
-            else
-                log:info(string.format("MCP %s Progress (no caller): %s", server_log_name, vim.inspect(message.params)))
+            local on_progress = progress_callbacks_by_token[progress_token] or function(params)
+                log:info(string.format("MCP %s progress (NO CALLBACK): %s", server_log_name, vim.inspect(params)))
             end
+            on_progress(message.params)
         end
     end
-
 
     ---@param request MCP_JSONRPCRequest
     ---@param callback ToolCallDoneCallback
