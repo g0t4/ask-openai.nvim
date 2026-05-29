@@ -13,9 +13,10 @@
   import 'highlight.js/styles/github-dark.css'
 
   let messages: Message[] = $state([])
-  let modelInfo: { model?: string; isAvailable: boolean } = $state({
+  let modelInfo: { model?: string; isAvailable: boolean; timings?: import('./lib/types').Timings | null } = $state({
     model: undefined,
-    isAvailable: false
+    isAvailable: false,
+    timings: null
   })
   let loading = $state(true)
   let error = $state<string | null>(null)
@@ -157,11 +158,15 @@
         // Extract messages from request_body
         messages = data.request_body?.messages ?? []
 
-        // Check for model info in trace metadata
-        if (data.last_sse?.model) {
-          modelInfo = {
-            model: data.last_sse.model,
-            isAvailable: true
+        // Check for model info and timings in trace metadata
+        if (data.last_sse) {
+          const lastSse = data.last_sse
+          if (lastSse.model) {
+            modelInfo = {
+              model: lastSse.model,
+              isAvailable: true,
+              timings: lastSse.timings || null
+            }
           }
         }
 
@@ -319,7 +324,7 @@
     <FileBrowser url={traceUrl} />
   {:else}
     {#if modelInfo.isAvailable}
-      <ModelInfo model={modelInfo.model} />
+      <ModelInfo model={modelInfo.model} timings={modelInfo.timings} />
     {/if}
 
     {#if fimData}

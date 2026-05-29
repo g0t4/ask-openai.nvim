@@ -1,6 +1,25 @@
-export interface ThreadJson {
+export interface TraceJson {
   request_body: RequestBody
   response_message?: Message
+  last_sse?: LastSSE
+}
+
+export interface LastSSE {
+  model?: string
+  timings?: Timings
+  [key: string]: unknown
+}
+
+export interface Timings {
+  prompt_n?: number
+  predicted_n?: number
+  cache_n?: number
+  draft_n?: number
+  draft_n_accepted?: number
+  prompt_ms?: number
+  predicted_ms?: number
+  prompt_per_second?: number
+  predicted_per_second?: number
 }
 
 export interface RequestBody {
