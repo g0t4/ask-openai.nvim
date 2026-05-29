@@ -25,6 +25,7 @@ function JsonClient.get_response_body(url, method, request_body)
     local curl_args = {
         "curl",
         "-sS",                      -- silent but show errors
+        "--max-time", "3",          -- fail fast if server is unreachable (prevents startup hang)
         "-X", method,
         "-H", "Content-Type: application/json",
     }
