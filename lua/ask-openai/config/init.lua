@@ -85,15 +85,16 @@ end
 function M.get_base_urls()
     local gptoss = "http://ask.lan:8013"
     local qwen3 = "http://ask.lan:8012"
-    -- local qwen25coder = "" -- run qwen2.5coder too?
 
-    return {
+    local endpoints = {
         agents  = qwen3,
         rewrite = gptoss,
         cmdline = M.get_cmdline_base_url(),
         gptoss  = gptoss,
         qwen3   = qwen3,
     }
+    -- TODO launch background task to get model name for each endpoint
+    return endpoints
 end
 
 local function _get_provider()
