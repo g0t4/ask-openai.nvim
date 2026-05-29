@@ -4,11 +4,6 @@ local config = require("ask-openai.config")
 local lualine = require('ask-openai.status.lualine')
 local LlamaServerClient = require('ask-openai.backends.llama_cpp.llama_server_client')
 
--- cache for model names per base url (host:port)
--- cache for model names per base url (host:port)
--- stores { value = string|nil, ts = integer }
-local _model_cache = {}
-
 -- * predictions *
 function M.enable_predictions()
     config.local_share.set_predictions_enabled()
@@ -104,60 +99,6 @@ end
 ---@return table components
 function M.get_lualine_components()
     return lualine.lualine_components()
-end
-
---- Query the llama-server for the model name running at the given base URL.
---- Uses the `/v1/models` endpoint and caches the result per URL.
---- @param base_url string The base URL of the llama-server (e.g. "http://paxy.lan:8012")
---- @return string|nil The model abbreviation, or nil if server request failed. Returns "OFFLINE" for unknown models.
-function M.get_llama_server_model(base_url)
-    -- TODO figure out why ltn12 and socket.http packages together are not working on wesdemos, but working fine on wes user... WTF
-    --   my innermost JSON lua module is just returning NOTHING on all requests as wesdemos... FUUUUU
-    --   might have smth to do with neovim v0.12 install (then remove) and lua5.1 missing now (kinda)... though luarocks on both users has the packages I need... I have no damn idea anymore
-
-    -- TODO test and verify this does what I want, then use it to show the model in status bar (cache first load)
-    --    TODO test below from gptoss
-    --    btw the below works for wes user only
-
-    -- TODO cache response for a time period even if nil... would allow checking again without overwhelming server... i.e. if in lualine components
-    local cached = _model_cache[base_url]
-    if cached then
-        local timeout = cached.value == nil and 1 or 10
-        if os.time() - cached.ts < timeout then
-            return cached.value
-        end
-    end
-
-    local response = LlamaServerClient.get_models(base_url)
-    if not response or response.code ~= 200 then
-        return nil
-    end
-
-    local body = response.body
-    local model_name = nil
-    if type(body) == "table" then
-        if body.models and #body.models > 0 then
-            local first_model = body.models[1]
-            if type(first_model) == "table" and first_model.name then
-                model_name = first_model.name
-            end
-        else
-            model_name = "no model.id"
-        end
-    end
-
-    -- Model name abbreviation lookup table
-    local model_name_map = {
-        ["ggml-org/Qwen3.6-35B-A3B-MTP-GGUF:Q8_0"] = "qwen3.6mtp",
-        ["ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0"] = "qwen3",
-        ["ggml-org/gpt-oss-120b-GGUF"] = "gptoss",
-    }
-
-    -- Apply abbreviation from lookup table, or fall back to "OFFLINE" sentinel
-    model_name = model_name_map[model_name] or "OFFLINE"
-
-    _model_cache[base_url] = { value = model_name, ts = os.time() }
-    return model_name
 end
 
 return M
