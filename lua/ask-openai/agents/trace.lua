@@ -79,9 +79,8 @@ end
 --- Calls the LLM to generate a summary of this trace.
 --- Zeros out `summary` before making the request, then sets the response on completion.
 function AgentTrace:create_summary()
-    self.summary = ""
 
-    local trace_json = vim.json.encode(self)
+    local trace_json = vim.json.encode(self.messages)
 
     local body = {
         messages = {
