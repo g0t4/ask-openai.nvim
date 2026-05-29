@@ -31,7 +31,7 @@ require("ask-openai.helpers.buffers")
 local AgentsFrontend = {}
 
 local config = require("ask-openai.config")
-AgentsFrontend.base_url = config.get_base_urls().agents
+AgentsFrontend.base_url = config.get_endpoints().agents.base_url
 
 local first_turn_ns_id
 

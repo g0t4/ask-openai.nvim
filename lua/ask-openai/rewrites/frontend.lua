@@ -430,7 +430,7 @@ local function ask_rewrite_command(opts)
 
         RewriteFrontend.last_request = CurlRequest:new({
             body = body,
-            base_url = config.get_base_urls().rewrite,
+            base_url = config.get_endpoints().rewrite.base_url,
             endpoint = CompletionsEndpoints.oai_v1_chat_completions,
             type = "rewrite",
         })

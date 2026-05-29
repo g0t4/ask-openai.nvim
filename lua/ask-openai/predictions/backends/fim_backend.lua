@@ -32,7 +32,7 @@ function FimBackend.set_fim_model(model)
     if model == "gptoss" then
         use_model = "gpt-oss:120b"
         -- Base URL now derived from configuration (agents subsystem)
-        FimBackend.base_url = config.get_base_urls().gptoss
+        FimBackend.base_url = config.get_endpoints().gptoss.base_url
         if use_gptoss_raw then
             -- manually formatted prompt to disable thinking
             FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions
@@ -42,7 +42,7 @@ function FimBackend.set_fim_model(model)
     else
         use_model = "qwen25coder"
         -- Use agents base URL from config for the alternative model as well
-        FimBackend.base_url = config.get_base_urls().qwen3
+        FimBackend.base_url = config.get_endpoints().qwen3.base_url
         FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * preferred for qwen2.5-coder
         -- /completions - raw prompt # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
     end

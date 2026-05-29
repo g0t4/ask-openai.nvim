@@ -81,19 +81,43 @@ function M.print_verbose(msg, ...)
     end
 end
 
----@return { agents: string, rewrite: string, cmdline: string, gptoss: string, qwen3: string }
-function M.get_base_urls()
-    local gptoss = "http://ask.lan:8013"
-    local qwen3 = "http://ask.lan:8012"
+--- @class Endpoint
+--- @field name string
+--- @field base_url string
+
+--- @return table<string, Endpoint>
+function M.get_endpoints()
+    -- Lazy require to avoid circular dependency (api requires config)
+    local api = require("ask-openai.api")
+
+    local gptoss_url = "http://ask.lan:8013"
+    local qwen3_url = "http://ask.lan:8012"
+
+    local gptoss_model = api.get_llama_server_model(gptoss_url)
+    local qwen3_model = api.get_llama_server_model(qwen3_url)
 
     local endpoints = {
-        agents  = qwen3,
-        rewrite = gptoss,
-        cmdline = M.get_cmdline_base_url(),
-        gptoss  = gptoss,
-        qwen3   = qwen3,
+        agents = {
+            name = qwen3_model or "qwen3",
+            base_url = qwen3_url,
+        },
+        rewrite = {
+            name = gptoss_model or "gptoss120b",
+            base_url = gptoss_url,
+        },
+        cmdline = {
+            name = nil,
+            base_url = M.get_cmdline_base_url(),
+        },
+        gptoss = {
+            name = gptoss_model or "gptoss120b",
+            base_url = gptoss_url,
+        },
+        qwen3 = {
+            name = qwen3_model or "qwen3",
+            base_url = qwen3_url,
+        },
     }
-    -- TODO launch background task to get model name for each endpoint
     return endpoints
 end
 
