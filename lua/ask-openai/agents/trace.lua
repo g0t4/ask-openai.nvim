@@ -1,4 +1,5 @@
 local log = require('ask-openai.logs.logger').predictions()
+local files = require('ask-openai.helpers.files')
 local messages = require("devtools.messages")
 
 --- see https://platform.openai.com/docs/api-reference/chat/create
@@ -78,6 +79,30 @@ function AgentTrace:dump()
     log:luaify_trace("AgentTrace:dump", self)
     messages:ensure_open()
     messages:append(vim.inspect(self))
+end
+
+--- Saves the trace data to a JSON file named `test.json` in the current directory.
+function AgentTrace:save()
+    local json_content = vim.json.encode(self)
+
+    local file_path = "test.json"
+    local file_handle = io.open(file_path, "w")
+    if not file_handle then
+        error("Failed to open file for writing: " .. file_path)
+    end
+
+    file_handle:write(json_content)
+    file_handle:close()
+end
+
+function AgentTrace:load(file)
+    local file = "test.json"
+    local json = files.read_text(file)
+    log:info("json", json)
+    if not json then
+        return nil
+    end
+    return vim.json.decode(json)
 end
 
 return AgentTrace
