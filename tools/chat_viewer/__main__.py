@@ -18,6 +18,7 @@ import hashlib
 
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.tree_wrapper import TreeWrapper
+from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line
 
 # Enable recording so that ``save_html`` can export the rendered output.
 _console = Console(color_system="truecolor")
@@ -225,22 +226,33 @@ def load_messages_jsonl(path: Path) -> Iterable[dict[str, Any]]:
         message = json.loads(line)
         yield message
 
-def print_model_info(name: str | None) -> None:
+def print_model_info(name: str | None, timings: ModelTimings | None = None) -> None:
+    """Print model name and optional timing stats.
+    
+    Args:
+        name: The model name to display.
+        timings: Optional ModelTimings object for displaying token counts and timing info.
+    """
     if name:
         _console.print(f"[dim]Model:[/] [bold]{name}[/]")
+        if timings:
+            stats_line = format_stats_line(timings)
+            if stats_line:
+                _console.print(f"[dim]{stats_line}[/]")
         _console.print()
 
 
-def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]], str | None]:
+def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]], str | None, ModelTimings | None]:
     if not trace_file.is_file():
         print(f"File not found: {trace_file}")
         sys.exit(1)
     if str(trace_file).endswith("-messages.jsonl"):
-        return list(load_messages_jsonl(trace_file)), None
+        return list(load_messages_jsonl(trace_file)), None, None
 
     with trace_file.open("r", encoding="utf-8") as f:
         data = json.load(f)
     model_name = data.get("last_sse", {}).get("model")
+    timings = parse_timings(data.get("last_sse"))
     messages = load_messages(data)
 
     # * include response message at end of trace
@@ -260,7 +272,7 @@ def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]
                     response["output.json"] = True
                     messages.append(response)
 
-    return messages, model_name
+    return messages, model_name, timings
 
 def show_rest_of_request_body_properties(data):
     # typical request body, has messages, tools, temp, etc
@@ -286,13 +298,14 @@ def load_messages(data) -> list[dict[str, Any]]:
             return messages
     return []
 
-def load_trace_messages_from_stream(stream) -> tuple[list[dict[str, Any]], str | None]:
+def load_trace_messages_from_stream(stream) -> tuple[list[dict[str, Any]], str | None, ModelTimings | None]:
     # assume stream can be:
     #   jq .messages | this
     #   cat *-trace.json | this
     #   cat input-messages.json | this
     data = json.load(stream)
     model_name = data.get("last_sse", {}).get("model")
+    timings = parse_timings(data.get("last_sse"))
     messages = load_messages(data)
 
     if "response_message" in data:
@@ -303,7 +316,7 @@ def load_trace_messages_from_stream(stream) -> tuple[list[dict[str, Any]], str |
             messages.append(response)
     # FYI cannot assume output.json is related (or any othe file) given this data is from STDIN
 
-    return messages, model_name
+    return messages, model_name, timings
 
 def insert_newlines(content: str) -> str:
     return content.replace("\\n", "\n")
@@ -691,16 +704,16 @@ def main() -> None:
     load_preapproved_files()
 
     if len(sys.argv) < 2:
-        messages, model_name = load_trace_messages_from_stream(sys.stdin)
+        messages, model_name, timings = load_trace_messages_from_stream(sys.stdin)
         if export_html:
             html_path = "stdout.html"
     else:
         trace_file = Path(sys.argv[1])
-        messages, model_name = load_trace_messages_from_path(trace_file)
+        messages, model_name, timings = load_trace_messages_from_path(trace_file)
         if export_html:
             html_path = str(trace_file) + ".html"
 
-    print_model_info(model_name)
+    print_model_info(model_name, timings)
     for idx, message in enumerate(messages, start=1):
         print_message(message, idx)
 
