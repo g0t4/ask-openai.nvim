@@ -2,6 +2,7 @@ local log = require('ask-openai.logs.logger').predictions()
 local files = require('ask-openai.helpers.files')
 local llama_server_client = require('ask-openai.backends.llama_cpp.llama_server_client')
 local messages = require("devtools.messages")
+local config = require("ask-openai.config")
 
 --- see https://platform.openai.com/docs/api-reference/chat/create
 ---@class AgentTrace
@@ -96,7 +97,8 @@ function AgentTrace:create_summary()
         },
     }
 
-    local response = llama_server_client.v1_chat_completions(self.base_url, body)
+    local summarizer_url = config.get_endpoints().summarizer.base_url
+    local response = llama_server_client.v1_chat_completions(summarizer_url, body)
     if response and response.body and response.body.choices and response.body.choices[1] then
         self.summary = response.body.choices[1].message.content or ""
     end

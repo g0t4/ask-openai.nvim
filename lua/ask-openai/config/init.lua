@@ -172,6 +172,10 @@ function M.get_endpoints()
             name = gptoss_model or "OFFLINE",
             base_url = gptoss_url,
         },
+        summarizer = {
+            name = gptoss_model or "OFFLINE",
+            base_url = gptoss_url,
+        },
         qwen3 = {
             name = qwen3_model or "OFFLINE",
             base_url = qwen3_url,
