@@ -98,11 +98,11 @@ function M.get_endpoints()
 
     local endpoints = {
         agents = {
-            name = qwen3_model or "qwen3",
+            name = qwen3_model or "OFFLINE",
             base_url = qwen3_url,
         },
         rewrite = {
-            name = gptoss_model or "gptoss120b",
+            name = gptoss_model or "OFFLINE",
             base_url = gptoss_url,
         },
         cmdline = {
@@ -110,11 +110,11 @@ function M.get_endpoints()
             base_url = M.get_cmdline_base_url(),
         },
         gptoss = {
-            name = gptoss_model or "gptoss120b",
+            name = gptoss_model or "OFFLINE",
             base_url = gptoss_url,
         },
         qwen3 = {
-            name = qwen3_model or "qwen3",
+            name = qwen3_model or "OFFLINE",
             base_url = qwen3_url,
         },
     }

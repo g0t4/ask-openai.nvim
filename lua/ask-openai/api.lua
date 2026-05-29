@@ -109,7 +109,7 @@ end
 --- Query the llama-server for the model name running at the given base URL.
 --- Uses the `/v1/models` endpoint and caches the result per URL.
 --- @param base_url string The base URL of the llama-server (e.g. "http://paxy.lan:8012")
---- @return string|nil The model name if discovered, otherwise nil.
+--- @return string|nil The model abbreviation, or nil if server request failed. Returns "OFFLINE" for unknown models.
 function M.get_llama_server_model(base_url)
     -- TODO figure out why ltn12 and socket.http packages together are not working on wesdemos, but working fine on wes user... WTF
     --   my innermost JSON lua module is just returning NOTHING on all requests as wesdemos... FUUUUU
@@ -146,9 +146,15 @@ function M.get_llama_server_model(base_url)
         end
     end
 
-    if model_name == "ggml-org/gpt-oss-120b-GGUF" then
-        model_name = "gptoss120b"
-    end
+    -- Model name abbreviation lookup table
+    local model_name_map = {
+        ["ggml-org/Qwen3.6-35B-A3B-MTP-GGUF:Q8_0"] = "qwen3.6mtp",
+        ["ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0"] = "qwen3",
+        ["ggml-org/gpt-oss-120b-GGUF"] = "gptoss",
+    }
+
+    -- Apply abbreviation from lookup table, or fall back to "OFFLINE" sentinel
+    model_name = model_name_map[model_name] or "OFFLINE"
 
     _model_cache[base_url] = { value = model_name, ts = os.time() }
     return model_name

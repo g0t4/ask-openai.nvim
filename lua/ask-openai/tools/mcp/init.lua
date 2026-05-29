@@ -635,7 +635,7 @@ function M.get_system_message_instructions(tool_name)
 
         local files = require("ask-openai.helpers.files")
         local run_process_dir = "~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/mcp/run_process"
-        local commits = files.read_text(run_process_dir .. "/commits.md"):gsub("<<COAUTHOR_NAME>>", "gptoss120b")
+        local commits = files.read_text(run_process_dir .. "/commits.md"):gsub("<<COAUTHOR_NAME>>", "gptoss120b") -- TODO: revisit model slug mapping
         local commands = files.read_text(run_process_dir .. "/commands.md")
         M._cached_run_process_instructions = commits .. "\n\n" .. commands
         return M._cached_run_process_instructions
