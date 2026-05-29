@@ -42,7 +42,8 @@
     // Draft tokens (speculative decoding / MTP)
     if (timings.draft_n != null && timings.draft_n > 0) {
       const draftAccepted = timings.draft_n_accepted ?? 0
-      lines.push(`  draft: ${humanizeInt(draftAccepted)} accepted / ${humanizeInt(timings.draft_n)} tokens`)
+      const acceptanceRate = (draftAccepted / timings.draft_n) * 100
+      lines.push(`  draft: ${humanizeFloat(acceptanceRate)}% accepted / ${humanizeInt(draftAccepted)} / ${humanizeInt(timings.draft_n)} tokens`)
     }
 
     return lines

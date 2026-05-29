@@ -41,6 +41,30 @@ class ModelTimings:
             return None
         return f"{ratio * 100:.1f}%"
 
+    @property
+    def draft_acceptance_rate(self) -> float | None:
+        """Calculate draft token acceptance rate.
+        
+        Returns:
+            Acceptance rate as a percentage (0-100), or None if draft data
+            is unavailable or draft_tokens is zero.
+        """
+        if self.draft_tokens is None or self.draft_tokens == 0:
+            return None
+        accepted = self.draft_tokens_accepted or 0
+        return (accepted / self.draft_tokens) * 100
+
+    @property
+    def formatted_acceptance_rate(self) -> str | None:
+        """Human-readable draft acceptance rate, e.g. '80.8%'.
+        
+        Returns None if draft data is unavailable or rate cannot be computed.
+        """
+        rate = self.draft_acceptance_rate
+        if rate is None:
+            return None
+        return f"{rate:.1f}%"
+
 
 def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
     """Extract timing information from the last SSE response.
@@ -152,6 +176,10 @@ def format_stats_line(timings: ModelTimings | None) -> str:
     # Draft tokens (speculative decoding / MTP)
     if timings.draft_tokens is not None and timings.draft_tokens > 0:
         draft_accepted = timings.draft_tokens_accepted or 0
-        lines.append(f"[dim]  draft: {_humanize_int(draft_accepted)} accepted / {_humanize_int(timings.draft_tokens)} tokens[/]")
+        acceptance_rate = timings.formatted_acceptance_rate
+        if acceptance_rate:
+            lines.append(f"[dim]  draft: {acceptance_rate} accepted / {_humanize_int(draft_accepted)} / {_humanize_int(timings.draft_tokens)} tokens[/]")
+        else:
+            lines.append(f"[dim]  draft: {_humanize_int(draft_accepted)} accepted / {_humanize_int(timings.draft_tokens)} tokens[/]")
 
     return "\n".join(lines)

@@ -304,7 +304,9 @@ def test_format_stats_line_with_draft() -> None:
     assert "cached: 349 tokens" in lines[0]
     assert "in: 129 tokens @ 2,010.9 tok/sec" in lines[1]
     assert "out: 296 tokens @ 260.2 tok/sec" in lines[2]
-    assert "  draft: 101 accepted / 125 tokens" in lines[3]
+    assert "  draft:" in lines[3]
+    assert "80.8% accepted" in lines[3]  # 101/125 = 80.8%
+    assert "101 / 125 tokens" in lines[3]
 
 
 def test_format_stats_line_no_cache() -> None:
@@ -357,4 +359,72 @@ def test_format_stats_line_zero_draft_accepted() -> None:
     
     # Should have 3 lines: in, out, draft (no cached)
     assert len(lines) == 3
-    assert "  draft: 0 accepted / 125 tokens" in lines[2]
+    assert "  draft:" in lines[2]
+    assert "0.0% accepted" in lines[2]  # 0/125 = 0.0%
+    assert "0 / 125 tokens" in lines[2]
+
+
+def test_draft_acceptance_rate() -> None:
+    """Test draft acceptance rate calculation."""
+    timings = ModelTimings(
+        draft_tokens=125,
+        draft_tokens_accepted=101,
+    )
+    
+    assert timings.draft_acceptance_rate is not None
+    expected_rate = (101 / 125) * 100
+    assert abs(timings.draft_acceptance_rate - expected_rate) < 0.01
+
+
+def test_draft_acceptance_rate_no_draft() -> None:
+    """Test draft acceptance rate when no draft data."""
+    timings = ModelTimings()
+    assert timings.draft_acceptance_rate is None
+
+
+def test_draft_acceptance_rate_zero_draft() -> None:
+    """Test draft acceptance rate when draft_tokens is zero."""
+    timings = ModelTimings(
+        draft_tokens=0,
+        draft_tokens_accepted=0,
+    )
+    assert timings.draft_acceptance_rate is None
+
+
+def test_formatted_acceptance_rate() -> None:
+    """Test formatted acceptance rate string."""
+    timings = ModelTimings(
+        draft_tokens=125,
+        draft_tokens_accepted=101,
+    )
+    
+    formatted = timings.formatted_acceptance_rate
+    assert formatted is not None
+    assert formatted == "80.8%"
+
+
+def test_formatted_acceptance_rate_no_draft() -> None:
+    """Test formatted acceptance rate when no draft data."""
+    timings = ModelTimings()
+    assert timings.formatted_acceptance_rate is None
+
+
+def test_formatted_acceptance_rate_zero_draft() -> None:
+    """Test formatted acceptance rate when draft_tokens is zero."""
+    timings = ModelTimings(
+        draft_tokens=0,
+        draft_tokens_accepted=0,
+    )
+    assert timings.formatted_acceptance_rate is None
+
+
+def test_formatted_acceptance_rate_perfect_rate() -> None:
+    """Test formatted acceptance rate with 100%."""
+    timings = ModelTimings(
+        draft_tokens=100,
+        draft_tokens_accepted=100,
+    )
+    
+    formatted = timings.formatted_acceptance_rate
+    assert formatted is not None
+    assert formatted == "100.0%"
