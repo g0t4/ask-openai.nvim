@@ -2,4 +2,4 @@
 
 - `git diff` is a sanity check!
 - COMMIT when you're done.
-- Use `--author="gptoss120b<wes.mcclure+gptoss120b@gmail.com>"`
+- Use `--author="qwen3.6-35b-a3b<wes.mcclure+qwen3.6-35b-a3b@gmail.com>"`
