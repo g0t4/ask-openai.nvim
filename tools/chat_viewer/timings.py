@@ -67,6 +67,26 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
     )
 
 
+def _humanize_int(value: int) -> str:
+    """Format an integer with comma separators for readability.
+    
+    Examples:
+        1000 => "1,000"
+        1000000 => "1,000,000"
+    """
+    return f"{value:,}"
+
+
+def _humanize_float(value: float, decimals: int = 1) -> str:
+    """Format a float with comma separators and specified decimal places.
+    
+    Examples:
+        1234.5 => "1,234.5"
+        1234.567 => "1,234.57"
+    """
+    return f"{value:,.{decimals}f}"
+
+
 def format_timings_display(timings: ModelTimings | None) -> str:
     """Format timings for display under the model name.
     
@@ -82,19 +102,19 @@ def format_timings_display(timings: ModelTimings | None) -> str:
     parts: list[str] = []
     
     # Token counts: total + cached + prompt vs predicted breakdown
-    token_parts = [f"{timings.total_tokens} tokens"]
+    token_parts = [f"{_humanize_int(timings.total_tokens)} tokens"]
     
     if timings.cached_tokens is not None and timings.cached_tokens > 0:
-        token_parts.insert(0, f"{timings.cached_tokens} cached")
+        token_parts.insert(0, f"{_humanize_int(timings.cached_tokens)} cached")
     
     parts.append(" ".join(token_parts))
     
     # Add timing info
     if timings.prompt_ms > 0:
-        parts.append(f"{timings.prompt_ms:.0f}ms prompt")
+        parts.append(f"{_humanize_float(timings.prompt_ms, 0)}ms prompt")
     
     if timings.predicted_ms > 0:
-        parts.append(f"{timings.predicted_ms:.0f}ms predicted")
+        parts.append(f"{_humanize_float(timings.predicted_ms, 0)}ms predicted")
     
     return " | ".join(parts)
 
@@ -112,16 +132,20 @@ def format_stats_line(timings: ModelTimings | None) -> str:
         return ""
 
     # Token breakdown: cached, prompt, predicted
-    stats_parts = [f"[cyan]{timings.total_tokens} tokens[/]"]
+    stats_parts = [f"[cyan]{_humanize_int(timings.total_tokens)} tokens[/]"]
     
     if timings.cached_tokens is not None and timings.cached_tokens > 0:
-        stats_parts.append(f"[dim]({timings.cached_tokens} cached)[/]")
+        stats_parts.append(f"[dim]({_humanize_int(timings.cached_tokens)} cached)[/]")
     
-    stats_parts.append(f"[dim]in: {timings.prompt_tokens}[/]")
-    stats_parts.append(f"[dim]out: {timings.predicted_tokens}[/]")
+    stats_parts.append(f"[dim]in: {_humanize_int(timings.prompt_tokens)}[/]")
+    stats_parts.append(f"[dim]out: {_humanize_int(timings.predicted_tokens)}[/]")
     
-    # Add speed info
+    # Add inbound speed (prompt tokens per second)
+    if timings.prompt_tokens_per_second > 0:
+        stats_parts.append(f"[dim]{_humanize_float(timings.prompt_tokens_per_second)} tok/s in[/]")
+    
+    # Add outbound speed (predicted tokens per second)
     if timings.predicted_tokens_per_second > 0:
-        stats_parts.append(f"[dim]{timings.predicted_tokens_per_second:.1f} tok/s[/]")
+        stats_parts.append(f"[dim]{_humanize_float(timings.predicted_tokens_per_second)} tok/s out[/]")
     
     return " ".join(stats_parts)

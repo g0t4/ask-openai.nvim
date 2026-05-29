@@ -6,7 +6,39 @@ import os
 # Ensure we can import from the chat_viewer package
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from tools.chat_viewer.timings import ModelTimings, parse_timings, format_timings_display, format_stats_line
+from tools.chat_viewer.timings import (
+    ModelTimings,
+    parse_timings,
+    format_timings_display,
+    format_stats_line,
+    _humanize_int,
+    _humanize_float,
+)
+
+
+def test_humanize_int_small() -> None:
+    """Test humanizing small integers."""
+    assert _humanize_int(100) == "100"
+    assert _humanize_int(1000) == "1,000"
+    assert _humanize_int(10000) == "10,000"
+    assert _humanize_int(1000000) == "1,000,000"
+    assert _humanize_int(10000000) == "10,000,000"
+    assert _humanize_int(0) == "0"
+
+
+def test_humanize_float_small() -> None:
+    """Test humanizing small floats."""
+    assert _humanize_float(1234.5) == "1,234.5"
+    # Default decimals is 1, so 1234.567 rounds to 1234.6
+    assert _humanize_float(1234.567) == "1,234.6"
+    assert _humanize_float(100.0) == "100.0"
+    assert _humanize_float(0.0) == "0.0"
+
+
+def test_humanize_float_custom_decimals() -> None:
+    """Test humanizing floats with custom decimal places."""
+    assert _humanize_float(1234.567, 2) == "1,234.57"
+    assert _humanize_float(1234.567, 0) == "1,235"
 
 
 def test_parse_timings_basic() -> None:
@@ -165,7 +197,25 @@ def test_format_timings_display_basic() -> None:
     assert "425 tokens" in display  # 129 + 296 = 425
     assert "349 cached" in display
     assert "64ms prompt" in display
-    assert "1137ms predicted" in display
+    assert "1,137ms predicted" in display
+
+
+def test_format_timings_display_large_numbers() -> None:
+    """Test formatting with large numbers that get comma-separated."""
+    timings = ModelTimings(
+        prompt_tokens=10000,
+        predicted_tokens=50000,
+        cached_tokens=25000,
+        prompt_ms=1234.5,
+        predicted_ms=5678.9,
+    )
+    
+    display = format_timings_display(timings)
+    assert "60,000 tokens" in display
+    assert "25,000 cached" in display
+    # format_timings_display uses 0 decimals for ms
+    assert "1,234ms prompt" in display
+    assert "5,679ms predicted" in display
 
 
 def test_format_stats_line_empty() -> None:
@@ -179,6 +229,7 @@ def test_format_stats_line_basic() -> None:
         prompt_tokens=129,
         predicted_tokens=296,
         cached_tokens=349,
+        prompt_tokens_per_second=2010.91,
         predicted_tokens_per_second=260.22,
     )
     
@@ -187,7 +238,27 @@ def test_format_stats_line_basic() -> None:
     assert "349 cached" in stats
     assert "in: 129" in stats
     assert "out: 296" in stats
-    assert "260.2 tok/s" in stats
+    assert "2,010.9 tok/s in" in stats
+    assert "260.2 tok/s out" in stats
+
+
+def test_format_stats_line_large_numbers() -> None:
+    """Test stats line formatting with large numbers."""
+    timings = ModelTimings(
+        prompt_tokens=10000,
+        predicted_tokens=50000,
+        cached_tokens=25000,
+        prompt_tokens_per_second=100000.5,
+        predicted_tokens_per_second=5000.1,
+    )
+    
+    stats = format_stats_line(timings)
+    assert "60,000 tokens" in stats
+    assert "25,000 cached" in stats
+    assert "in: 10,000" in stats
+    assert "out: 50,000" in stats
+    assert "100,000.5 tok/s in" in stats
+    assert "5,000.1 tok/s out" in stats
 
 
 def test_format_stats_line_no_cache() -> None:
@@ -195,7 +266,8 @@ def test_format_stats_line_no_cache() -> None:
     timings = ModelTimings(
         prompt_tokens=100,
         predicted_tokens=50,
-        predicted_tokens_per_second=100.0,
+        prompt_tokens_per_second=100.0,
+        predicted_tokens_per_second=50.0,
     )
     
     stats = format_stats_line(timings)
