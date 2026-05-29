@@ -82,6 +82,7 @@ class TraceBrowser:
         table.add_row("q", "quit")
         table.add_row("c", "copy current trace path")
         table.add_row("t", "copy take command to add to datasets repo")
+        table.add_row("d", "delete current trace (trash)")
         table.add_row("Enter", "open current trace in chat_viewer")
         table.add_row("←/→", "older / newer")
         table.add_row("h", "help")
@@ -172,6 +173,32 @@ class TraceBrowser:
         else:
             print("No trace to display.")
 
+    def delete_current_trace(self) -> None:
+        trace = self.current_trace()
+        if not trace:
+            rich.print("[dim]No trace to delete.[/]")
+            return
+
+        trace_path = trace.resolve()
+        try:
+            result = subprocess.run(
+                ["trash", str(trace_path)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if result.returncode == 0:
+                print(f"Moved to trash: {trace_path.name}")
+                self.traces.remove(trace)
+                # move back to prior chat (older)
+                self.older()
+            else:
+                print(f"Trash failed: {result.stderr}")
+        except FileNotFoundError:
+            print("trash command not found in PATH")
+        except Exception as e:
+            print(f"Error deleting trace: {e}")
+
     def on_char(self, char):
         if char == b'h':
             self.print_help()
@@ -179,6 +206,8 @@ class TraceBrowser:
             self.copy_trace_file_path()
         elif char == b't':
             self.copy_take_command()
+        elif char == b'd':
+            self.delete_current_trace()
         elif char == b'\n':
             self.show_chat()
         elif char == b'q':
