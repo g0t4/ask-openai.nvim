@@ -11,6 +11,8 @@ class ModelTimings:
     prompt_tokens: int = 0
     predicted_tokens: int = 0
     cached_tokens: int | None = None
+    draft_tokens: int | None = None
+    draft_tokens_accepted: int | None = None
     prompt_ms: float = 0.0
     predicted_ms: float = 0.0
     prompt_tokens_per_second: float = 0.0
@@ -60,6 +62,8 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
         prompt_tokens=timings.get("prompt_n", 0),
         predicted_tokens=timings.get("predicted_n", 0),
         cached_tokens=timings.get("cache_n"),
+        draft_tokens=timings.get("draft_n"),
+        draft_tokens_accepted=timings.get("draft_n_accepted"),
         prompt_ms=timings.get("prompt_ms", 0.0),
         predicted_ms=timings.get("predicted_ms", 0.0),
         prompt_tokens_per_second=timings.get("prompt_per_second", 0.0),
@@ -82,7 +86,7 @@ def _humanize_float(value: float, decimals: int = 1) -> str:
     
     Examples:
         1234.5 => "1,234.5"
-        1234.567 => "1,234.57"
+        1234.567 => "1,234.6"
     """
     return f"{value:,.{decimals}f}"
 
@@ -120,32 +124,34 @@ def format_timings_display(timings: ModelTimings | None) -> str:
 
 
 def format_stats_line(timings: ModelTimings | None) -> str:
-    """Format a compact stats line for display (similar to AskRewrite format).
+    """Format multi-line stats for display (similar to AskRewrite format).
     
     Args:
         timings: The parsed ModelTimings object.
         
     Returns:
-        Compact stats string, or empty string if no timings.
+        Multi-line stats string, or empty string if no timings.
     """
     if not timings:
         return ""
 
-    # Token breakdown: cached, prompt, predicted
-    stats_parts = [f"[cyan]{_humanize_int(timings.total_tokens)} tokens[/]"]
-    
+    lines: list[str] = []
+
+    # Cache tokens (if present and > 0)
     if timings.cached_tokens is not None and timings.cached_tokens > 0:
-        stats_parts.append(f"[dim]({_humanize_int(timings.cached_tokens)} cached)[/]")
-    
-    stats_parts.append(f"[dim]in: {_humanize_int(timings.prompt_tokens)}[/]")
-    stats_parts.append(f"[dim]out: {_humanize_int(timings.predicted_tokens)}[/]")
-    
-    # Add inbound speed (prompt tokens per second)
+        lines.append(f"[dim]cached: {_humanize_int(timings.cached_tokens)} tokens[/]")
+
+    # Inbound speed
     if timings.prompt_tokens_per_second > 0:
-        stats_parts.append(f"[dim]{_humanize_float(timings.prompt_tokens_per_second)} tok/s in[/]")
-    
-    # Add outbound speed (predicted tokens per second)
+        lines.append(f"[dim]in: {_humanize_int(timings.prompt_tokens)} tokens @ {_humanize_float(timings.prompt_tokens_per_second)} tok/sec[/]")
+
+    # Outbound speed
     if timings.predicted_tokens_per_second > 0:
-        stats_parts.append(f"[dim]{_humanize_float(timings.predicted_tokens_per_second)} tok/s out[/]")
-    
-    return " ".join(stats_parts)
+        lines.append(f"[dim]out: {_humanize_int(timings.predicted_tokens)} tokens @ {_humanize_float(timings.predicted_tokens_per_second)} tok/sec[/]")
+
+    # Draft tokens (speculative decoding / MTP)
+    if timings.draft_tokens is not None and timings.draft_tokens > 0:
+        draft_accepted = timings.draft_tokens_accepted or 0
+        lines.append(f"[dim]  draft: {_humanize_int(draft_accepted)} accepted / {_humanize_int(timings.draft_tokens)} tokens[/]")
+
+    return "\n".join(lines)

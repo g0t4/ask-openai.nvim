@@ -67,6 +67,27 @@ def test_parse_timings_basic() -> None:
     assert timings.predicted_tokens_per_second == 260.22
 
 
+def test_parse_timings_with_draft() -> None:
+    """Test parsing speculative decoding (draft) timing information."""
+    last_sse = {
+        "timings": {
+            "prompt_n": 129,
+            "predicted_n": 296,
+            "cache_n": 349,
+            "draft_n": 125,
+            "draft_n_accepted": 101,
+            "prompt_per_second": 2010.91,
+            "predicted_per_second": 260.22,
+        }
+    }
+    
+    timings = parse_timings(last_sse)
+    
+    assert timings is not None
+    assert timings.draft_tokens == 125
+    assert timings.draft_tokens_accepted == 101
+
+
 def test_parse_timings_no_timings() -> None:
     """Test that None is returned when timings data is missing."""
     assert parse_timings(None) is None
@@ -234,12 +255,15 @@ def test_format_stats_line_basic() -> None:
     )
     
     stats = format_stats_line(timings)
-    assert "425 tokens" in stats  # total tokens = 129 + 296 = 425
-    assert "349 cached" in stats
-    assert "in: 129" in stats
-    assert "out: 296" in stats
-    assert "2,010.9 tok/s in" in stats
-    assert "260.2 tok/s out" in stats
+    
+    # Should be multi-line
+    lines = stats.split("\n")
+    assert len(lines) >= 3
+    
+    # Check each line
+    assert "cached: 349 tokens" in lines[0]
+    assert "in: 129 tokens @ 2,010.9 tok/sec" in lines[1]
+    assert "out: 296 tokens @ 260.2 tok/sec" in lines[2]
 
 
 def test_format_stats_line_large_numbers() -> None:
@@ -253,12 +277,34 @@ def test_format_stats_line_large_numbers() -> None:
     )
     
     stats = format_stats_line(timings)
-    assert "60,000 tokens" in stats
-    assert "25,000 cached" in stats
-    assert "in: 10,000" in stats
-    assert "out: 50,000" in stats
-    assert "100,000.5 tok/s in" in stats
-    assert "5,000.1 tok/s out" in stats
+    lines = stats.split("\n")
+    
+    assert "cached: 25,000 tokens" in lines[0]
+    assert "in: 10,000 tokens @ 100,000.5 tok/sec" in lines[1]
+    assert "out: 50,000 tokens @ 5,000.1 tok/sec" in lines[2]
+
+
+def test_format_stats_line_with_draft() -> None:
+    """Test stats line formatting with speculative decoding (draft) info."""
+    timings = ModelTimings(
+        prompt_tokens=129,
+        predicted_tokens=296,
+        cached_tokens=349,
+        draft_tokens=125,
+        draft_tokens_accepted=101,
+        prompt_tokens_per_second=2010.91,
+        predicted_tokens_per_second=260.22,
+    )
+    
+    stats = format_stats_line(timings)
+    lines = stats.split("\n")
+    
+    # Should have 4 lines: cached, in, out, draft
+    assert len(lines) == 4
+    assert "cached: 349 tokens" in lines[0]
+    assert "in: 129 tokens @ 2,010.9 tok/sec" in lines[1]
+    assert "out: 296 tokens @ 260.2 tok/sec" in lines[2]
+    assert "  draft: 101 accepted / 125 tokens" in lines[3]
 
 
 def test_format_stats_line_no_cache() -> None:
@@ -271,9 +317,12 @@ def test_format_stats_line_no_cache() -> None:
     )
     
     stats = format_stats_line(timings)
-    assert "150 tokens" in stats
-    assert "in: 100" in stats
-    assert "out: 50" in stats
+    lines = stats.split("\n")
+    
+    # Should only have 2 lines: in, out (no cached line)
+    assert len(lines) == 2
+    assert "in: 100 tokens @ 100.0 tok/sec" in lines[0]
+    assert "out: 50 tokens @ 50.0 tok/sec" in lines[1]
 
 
 def test_format_stats_line_no_speed() -> None:
@@ -281,8 +330,31 @@ def test_format_stats_line_no_speed() -> None:
     timings = ModelTimings(
         prompt_tokens=100,
         predicted_tokens=50,
+        cached_tokens=300,
     )
     
     stats = format_stats_line(timings)
-    assert "150 tokens" in stats
-    assert "tok/s" not in stats
+    lines = stats.split("\n")
+    
+    # Should only have cached line (no speed data)
+    assert len(lines) == 1
+    assert "cached: 300 tokens" in lines[0]
+
+
+def test_format_stats_line_zero_draft_accepted() -> None:
+    """Test stats line formatting when draft_tokens but zero accepted."""
+    timings = ModelTimings(
+        prompt_tokens=129,
+        predicted_tokens=296,
+        prompt_tokens_per_second=2010.91,
+        predicted_tokens_per_second=260.22,
+        draft_tokens=125,
+        draft_tokens_accepted=0,
+    )
+    
+    stats = format_stats_line(timings)
+    lines = stats.split("\n")
+    
+    # Should have 3 lines: in, out, draft (no cached)
+    assert len(lines) == 3
+    assert "  draft: 0 accepted / 125 tokens" in lines[2]
