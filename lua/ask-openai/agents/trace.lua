@@ -83,15 +83,15 @@ function AgentTrace:create_summary()
     local trace_json = vim.json.encode(self)
 
     local body = {
-        model = "qwen2.5-coder:32b",
         messages = {
             {
                 role = "system",
-                content = "You are a trace analyzer. Given a serialized AgentTrace (containing messages, params, and request metadata), provide a concise one-paragraph summary of the conversation's purpose, key decisions, tools used, and outcome. Include relevant technical details.",
+                content =
+                [[Given a serialized AgentTrace (containing messages, params, and request metadata), provide a concise one‑sentence summary of the conversation’s purpose. This summary will be shown to users to pick from a list of threads to resume.]],
             },
             {
                 role = "user",
-                content = "Trace data:\n" .. trace_json,
+                content = "Summarize this trace:\n" .. trace_json,
             },
         },
     }
