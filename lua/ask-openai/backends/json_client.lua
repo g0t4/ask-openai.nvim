@@ -11,12 +11,13 @@ local JsonClient = {
     }
 }
 
---- PRN rename to HttpClient? right now it's only for JSON so let's leave it to convey that purpose
+--- Send an HTTP request via curl and return the JSON response body.
 ---@param url string
 ---@param method Methods
 ---@param request_body? table
+---@param timeout_s? integer @curl --max-time in seconds (nil = no timeout)
 ---@return JsonClientResponse?
-function JsonClient.get_response_body(url, method, request_body)
+function JsonClient.get_response_body(url, method, request_body, timeout_s)
     local request_json = nil
     if request_body then
         request_json = vim.json.encode(request_body)
@@ -25,10 +26,14 @@ function JsonClient.get_response_body(url, method, request_body)
     local curl_args = {
         "curl",
         "-sS",                      -- silent but show errors
-        "--max-time", "3",          -- fail fast if server is unreachable (prevents startup hang)
         "-X", method,
         "-H", "Content-Type: application/json",
     }
+
+    if timeout_s then
+        table.insert(curl_args, "--max-time")
+        table.insert(curl_args, tostring(timeout_s))
+    end
 
     if request_json then
         table.insert(curl_args, "-d")
