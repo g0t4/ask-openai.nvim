@@ -1,5 +1,6 @@
 local log = require('ask-openai.logs.logger').predictions()
 local files = require('ask-openai.helpers.files')
+local llama_server_client = require('ask-openai.backends.llama_cpp.llama_server_client')
 local messages = require("devtools.messages")
 
 --- see https://platform.openai.com/docs/api-reference/chat/create
@@ -8,6 +9,7 @@ local messages = require("devtools.messages")
 ---@field params ChatParams
 ---@field last_request CurlRequestForTrace
 ---@field base_url string
+---@field summary string
 local AgentTrace = {}
 
 ---@param params ChatParams
@@ -21,8 +23,8 @@ function AgentTrace:new(params, base_url)
     -- if I want a history of requests I can build that separately
     self.last_request = nil
     self.start_time = os.time() -- use as identifier for grouping and writing to disk
-
     self.base_url = base_url
+    self.summary = ""
     return self
 end
 
@@ -71,6 +73,35 @@ function AgentTrace:next_curl_request_body()
         body[k] = v
     end
     return body
+end
+
+--- Calls the LLM to generate a summary of this trace.
+--- Zeros out `summary` before making the request, then sets the response on completion.
+function AgentTrace:create_summary()
+    self.summary = ""
+
+    local trace_json = vim.json.encode(self)
+
+    local body = {
+        model = "qwen2.5-coder:32b",
+        messages = {
+            {
+                role = "system",
+                content = "You are a trace analyzer. Given a serialized AgentTrace (containing messages, params, and request metadata), provide a concise one-paragraph summary of the conversation's purpose, key decisions, tools used, and outcome. Include relevant technical details.",
+            },
+            {
+                role = "user",
+                content = "Trace data:\n" .. trace_json,
+            },
+        },
+    }
+
+    local response = llama_server_client.v1_chat_completions(self.base_url, body)
+    if response and response.body and response.body.choices and response.body.choices[1] then
+        self.summary = response.body.choices[1].message.content or ""
+    end
+
+    return self
 end
 
 function AgentTrace:dump()
