@@ -56,8 +56,6 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     #
     # FYI Tool use will remain b/c it shows directories (well worth seeing each time too)
     "248d4a2751e309453b476914b6ecf1ddb2750a9033e3ecb7eb12f04c14fbd917",  # semantic_grep
-    "5b4513e0987158cfbc9225e1535f437eb054f5ca5455759984dcbf7631f56197",  # Fetch tool
-    "b870ef7225f0a2b973f266c40ceba102867224ce64709d96ad01c9e532f15ba4",  # Committing
     "f81ca64540efef46c8f15087775bcd0497cfc9705fc25b77fbfda98c526fa696",  # top shelf nerd commands
     "8723daf9f8aefcf1372fa7b721bacee4b75e1024fc4badcfeed8e3d4317b1b8b",  # bad commands
     #
@@ -83,6 +81,12 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "f2fea7d3d5637345a1862e068f59c3ac597bb70dbf95d30c32830b082f921cfc",  # General Code Preferences (latest in FIM so no \n\n)
     "06cac07ff8d9db3035a3d154c21a3088e5ef31342d120e64f0eecc2ee2f71c63",  ## General Code Preferences
     "a67e2c61120110849d3b81f51a76c3ecdcf7b39045da84b92e3055d2016c49ba",  ## General Code Preferences
+    #
+    "b870ef7225f0a2b973f266c40ceba102867224ce64709d96ad01c9e532f15ba4",  ## Committing (gptoss author)
+    "2ddf6ba106f6c037ee986e69a1f0df37b64b8e2501388fff1933a8ffd49333ba",  ## Committing (qwen author)
+    #
+    "5b4513e0987158cfbc9225e1535f437eb054f5ca5455759984dcbf7631f56197",  ## Fetch tool
+    "a9e229dae529161fe195077c1d6c79cc66ab3c37e287a20d9203616f13596d0a",  ## Fetch Tool
 ]
 
 def _content_hash(msg: dict[str, Any]) -> str:
