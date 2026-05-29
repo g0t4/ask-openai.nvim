@@ -178,8 +178,8 @@ def format_stats_line(timings: ModelTimings | None) -> str:
         draft_accepted = timings.draft_tokens_accepted or 0
         acceptance_rate = timings.formatted_acceptance_rate
         if acceptance_rate:
-            lines.append(f"[dim]  draft: {acceptance_rate} accepted / {_humanize_int(draft_accepted)} / {_humanize_int(timings.draft_tokens)} tokens[/]")
+            lines.append(f"[dim]  draft: {acceptance_rate} accepted ({_humanize_int(draft_accepted)} / {_humanize_int(timings.draft_tokens)} tokens)[/]")
         else:
-            lines.append(f"[dim]  draft: {_humanize_int(draft_accepted)} accepted / {_humanize_int(timings.draft_tokens)} tokens[/]")
+            lines.append(f"[dim]  draft: {_humanize_int(draft_accepted)} accepted ({_humanize_int(draft_accepted)} / {_humanize_int(timings.draft_tokens)} tokens)[/]")
 
     return "\n".join(lines)

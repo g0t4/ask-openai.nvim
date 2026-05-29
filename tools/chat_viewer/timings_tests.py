@@ -306,7 +306,7 @@ def test_format_stats_line_with_draft() -> None:
     assert "out: 296 tokens @ 260.2 tok/sec" in lines[2]
     assert "  draft:" in lines[3]
     assert "80.8% accepted" in lines[3]  # 101/125 = 80.8%
-    assert "101 / 125 tokens" in lines[3]
+    assert "(101 / 125 tokens)" in lines[3]
 
 
 def test_format_stats_line_no_cache() -> None:
@@ -361,7 +361,7 @@ def test_format_stats_line_zero_draft_accepted() -> None:
     assert len(lines) == 3
     assert "  draft:" in lines[2]
     assert "0.0% accepted" in lines[2]  # 0/125 = 0.0%
-    assert "0 / 125 tokens" in lines[2]
+    assert "(0 / 125 tokens)" in lines[2]
 
 
 def test_draft_acceptance_rate() -> None:
