@@ -69,7 +69,10 @@ function M.format(lines, tool_call, message)
 
     local hl_group = HLGroups.TOOL_SUCCESS
     if tool_call.call_output then
-        if tool_call.call_output.result.isError then
+        local has_error = tool_call.call_output.error ~= nil
+        local result_is_error = tool_call.call_output.result and tool_call.call_output.result.isError
+
+        if has_error or result_is_error then
             tool_header = "❌ " .. tool_header
             hl_group = HLGroups.TOOL_FAILED
         else
@@ -99,6 +102,20 @@ function M.format(lines, tool_call, message)
 
     -- TODO add failure recovery to building messages for logs... do not kill things b/c a formatter failed!
     --  allow agent to continue even if formatters are FUUUUU
+
+    -- * show error if the tool call failed
+    if tool_call.call_output and tool_call.call_output.error then
+        local error_message = tool_call.call_output.error.message
+        if error_message then
+            local is_mcp_like_output = tool_call.call_output:is_mcp()
+            if is_mcp_like_output then
+                lines:append_unexpected_text("ERROR: " .. error_message)
+            else
+                lines:append_text("ERROR: " .. error_message)
+            end
+        end
+        return
+    end
 
     local is_mcp_like_output = tool_call.call_output and tool_call.call_output:is_mcp()
     if is_mcp_like_output then
