@@ -3,57 +3,102 @@ local LlamaServerClient = require("ask-openai.backends.llama_cpp.llama_server_cl
 
 local M = {}
 
--- cache for model names per base url (host:port)
--- stores { value = string|nil, ts = integer }
+--- @class ModelCacheEntry
+--- @field value string|nil
+--- @field ts integer
+
+--- Track in-flight fetches to avoid duplicate background tasks.
+--- key: base_url, value: true
+local _fetch_in_progress = {}
+
+-- cache: base_url -> ModelCacheEntry
 local _model_cache = {}
 
---- Query the llama-server for the model name running at the given base URL.
---- Uses the `/v1/models` endpoint and caches the result per URL.
---- @param base_url string The base URL of the llama-server (e.g. "http://paxy.lan:8012")
---- @return string|nil The model abbreviation, or nil if server request failed. Returns "OFFLINE" for unknown models.
-function M.get_llama_server_model(base_url)
-    -- TODO figure out why ltn12 and socket.http packages together are not working on wesdemos, but working fine on wes user... WTF
-    --   my innermost JSON lua module is just returning NOTHING on all requests as wesdemos... FUUUUU
-    --   might have smth to do with neovim v0.12 install (then remove) and lua5.1 missing now (kinda)... though luarocks on both users has the packages I need... I have no damn idea anymore
+local MODEL_NAME_MAP = {
+    ["ggml-org/Qwen3.6-35B-A3B-MTP-GGUF:Q8_0"] = "qwen3.6mtp",
+    ["ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0"] = "qwen3",
+    ["ggml-org/gpt-oss-120b-GGUF"] = "gptoss",
+}
 
+--- Parse the /v1/models response body to extract the model name.
+--- @param body table
+--- @return string|nil
+local function extract_model_name(body)
+    if type(body) ~= "table" then
+        return nil
+    end
+
+    if type(body.data) == "table" and #body.data > 0 then
+        local first_model = body.data[1]
+        if type(first_model) == "table" and first_model.id then
+            return first_model.id
+        end
+        if type(first_model) == "table" and first_model.name then
+            return first_model.name
+        end
+    end
+
+    if type(body.models) == "table" and #body.models > 0 then
+        local first_model = body.models[1]
+        if type(first_model) == "table" and first_model.name then
+            return first_model.name
+        end
+    end
+
+    return nil
+end
+
+--- Abbreviate a raw model name using the lookup table, or return "OFFLINE" sentinel.
+--- @param raw_model string|nil
+--- @return string
+local function abbreviate_model(raw_model)
+    return MODEL_NAME_MAP[raw_model] or "OFFLINE"
+end
+
+--- Perform the actual fetch in the background.
+--- @param base_url string
+local function do_fetch(base_url)
+    local response = LlamaServerClient.get_models(base_url, { connect_timeout = 1, max_time = 3 })
+    if not response or response.code ~= 200 then
+        _fetch_in_progress[base_url] = nil
+        return
+    end
+
+    local raw_model = extract_model_name(response.body)
+    local model_name = abbreviate_model(raw_model)
+
+    _model_cache[base_url] = { value = model_name, ts = os.time() }
+    _fetch_in_progress[base_url] = nil
+end
+
+--- Query the llama-server for the model name running at the given base URL.
+--- Non-blocking: returns cached value if available, otherwise kicks off a
+--- background fetch and returns nil. Future calls will return the cached
+--- value once the background fetch completes.
+--- @param base_url string The base URL of the llama-server (e.g. "http://paxy.lan:8012")
+--- @return string|nil The cached model name, or nil if not yet cached.
+function M.get_llama_server_model(base_url)
+    -- 1. Check cache first
     local cached = _model_cache[base_url]
     if cached then
-        local timeout = cached.value == nil and 1 or 10
-        if os.time() - cached.ts < timeout then
+        local cache_timeout = cached.value == nil and 1 or 10
+        if os.time() - cached.ts < cache_timeout then
             return cached.value
         end
     end
 
-    local response = LlamaServerClient.get_models(base_url, { connect_timeout = 1, max_time = 3 })  -- 1s connect + 3s max-time to fail fast on offline server
-    if not response or response.code ~= 200 then
+    -- 2. Fetch already in progress — caller will retry later
+    if _fetch_in_progress[base_url] then
         return nil
     end
 
-    local body = response.body
-    local model_name = nil
-    if type(body) == "table" then
-        if body.models and #body.models > 0 then
-            local first_model = body.models[1]
-            if type(first_model) == "table" and first_model.name then
-                model_name = first_model.name
-            end
-        else
-            model_name = "no model.id"
-        end
-    end
+    -- 3. Start a new background fetch
+    _fetch_in_progress[base_url] = true
+    vim.schedule(function()
+        do_fetch(base_url)
+    end)
 
-    -- Model name abbreviation lookup table
-    local model_name_map = {
-        ["ggml-org/Qwen3.6-35B-A3B-MTP-GGUF:Q8_0"] = "qwen3.6mtp",
-        ["ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0"] = "qwen3",
-        ["ggml-org/gpt-oss-120b-GGUF"] = "gptoss",
-    }
-
-    -- Apply abbreviation from lookup table, or fall back to "OFFLINE" sentinel
-    model_name = model_name_map[model_name] or "OFFLINE"
-
-    _model_cache[base_url] = { value = model_name, ts = os.time() }
-    return model_name
+    return nil
 end
 
 
