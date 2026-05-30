@@ -3,6 +3,11 @@ local http = require("socket.http") -- luarocks install --local --lua-version=5.
 local ltn12 = require("ltn12") -- also from luasocket
 local safely = require("ask-openai.helpers.safely")
 
+--- HTTP client options for curl timeouts.
+---@class HttpTimeoutOptions
+---@field connect_timeout? number @curl --connect-timeout in seconds (nil = no timeout)
+---@field max_time? number @curl --max-time in seconds (nil = no timeout)
+
 local JsonClient = {
     ---@enum Methods
     Methods = {
@@ -15,10 +20,9 @@ local JsonClient = {
 ---@param url string
 ---@param method Methods
 ---@param request_body? table
----@param connect_timeout_s? integer @curl --connect-timeout in seconds (nil = no timeout)
----@param max_timeout_s? integer @curl --max-time in seconds (nil = no timeout)
+---@param opts? HttpTimeoutOptions @optional timeout configuration (nil = no timeout)
 ---@return JsonClientResponse?
-function JsonClient.get_response_body(url, method, request_body, connect_timeout_s, max_timeout_s)
+function JsonClient.get_response_body(url, method, request_body, opts)
     local request_json = nil
     if request_body then
         request_json = vim.json.encode(request_body)
@@ -31,14 +35,15 @@ function JsonClient.get_response_body(url, method, request_body, connect_timeout
         "-H", "Content-Type: application/json",
     }
 
-    if connect_timeout_s then
-        table.insert(curl_args, "--connect-timeout")
-        table.insert(curl_args, tostring(connect_timeout_s))
-    end
-
-    if max_timeout_s then
-        table.insert(curl_args, "--max-time")
-        table.insert(curl_args, tostring(max_timeout_s))
+    if opts then
+        if opts.connect_timeout then
+            table.insert(curl_args, "--connect-timeout")
+            table.insert(curl_args, tostring(opts.connect_timeout))
+        end
+        if opts.max_time then
+            table.insert(curl_args, "--max-time")
+            table.insert(curl_args, tostring(opts.max_time))
+        end
     end
 
     if request_json then
