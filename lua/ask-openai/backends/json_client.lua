@@ -15,9 +15,10 @@ local JsonClient = {
 ---@param url string
 ---@param method Methods
 ---@param request_body? table
----@param timeout_s? integer @curl --max-time in seconds (nil = no timeout)
+---@param connect_timeout_s? integer @curl --connect-timeout in seconds (nil = no timeout)
+---@param max_timeout_s? integer @curl --max-time in seconds (nil = no timeout)
 ---@return JsonClientResponse?
-function JsonClient.get_response_body(url, method, request_body, timeout_s)
+function JsonClient.get_response_body(url, method, request_body, connect_timeout_s, max_timeout_s)
     local request_json = nil
     if request_body then
         request_json = vim.json.encode(request_body)
@@ -30,9 +31,14 @@ function JsonClient.get_response_body(url, method, request_body, timeout_s)
         "-H", "Content-Type: application/json",
     }
 
-    if timeout_s then
+    if connect_timeout_s then
+        table.insert(curl_args, "--connect-timeout")
+        table.insert(curl_args, tostring(connect_timeout_s))
+    end
+
+    if max_timeout_s then
         table.insert(curl_args, "--max-time")
-        table.insert(curl_args, tostring(timeout_s))
+        table.insert(curl_args, tostring(max_timeout_s))
     end
 
     if request_json then

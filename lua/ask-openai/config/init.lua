@@ -29,7 +29,7 @@ function M.get_llama_server_model(base_url)
         end
     end
 
-    local response = LlamaServerClient.get_models(base_url, 3)  -- 3s timeout to prevent startup hang
+    local response = LlamaServerClient.get_models(base_url, 3, 3)  -- 3s connect + 3s max-time to fail fast on offline server
     if not response or response.code ~= 200 then
         return nil
     end
