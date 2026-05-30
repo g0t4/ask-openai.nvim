@@ -70,6 +70,7 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "bd6abb18b2eb841a0fe1e6a89e93227744a24dec391c11034966bd5032716147",  # Python Code Preferences (FIM)
     "c43c46905fcf70315ff3929e76ba70d5190002abc20a24cfb8d2f6d44e11d60f",  ## Python Code Preferences
     "fc581a8b5aa1c4d88597127dd96b7efbdf42251fa914981850a763fc1331d875",  ## Python Code Preferences
+    "a844f2839047f9959d06f26720378f57124635fc89d691d376147926c5ff7c6b",  ## Python Code Preferences
     #
     "232276fe3bb7baf13ede0343f5c076774b2dbd64be3b010a314b85816f718f31",  # rewrite - fish user prefs
     "4f20f6289174db47cefe46f27829c02078f22ce8717594b10c2551c18a57fca6",  # manually added exclusion
@@ -228,7 +229,7 @@ def load_messages_jsonl(path: Path) -> Iterable[dict[str, Any]]:
 
 def print_model_info(name: str | None, timings: ModelTimings | None = None) -> None:
     """Print model name and optional timing stats.
-    
+
     Args:
         name: The model name to display.
         timings: Optional ModelTimings object for displaying token counts and timing info.
@@ -240,7 +241,6 @@ def print_model_info(name: str | None, timings: ModelTimings | None = None) -> N
             if stats_line:
                 _console.print(f"[dim]{stats_line}[/]")
         _console.print()
-
 
 def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]], str | None, ModelTimings | None]:
     if not trace_file.is_file():
