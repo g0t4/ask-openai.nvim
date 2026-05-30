@@ -372,3 +372,6 @@ obj/
 
 # End of https://www.toptal.com/developers/gitignore/api/dotnetcore
 
+
+# PII Scanner tool venv (independent from parent .venv)
+tools/pii_scanner/.venv/

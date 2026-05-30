@@ -71,7 +71,7 @@ PII_PATTERNS: list[tuple[str, re.Pattern, float]] = [
     # URLs
     (
         "private_url",
-        re.compile(r'https?://[^\s<>"\'}\)]+'),
+        re.compile(r'https?://[^\s<>"\'\}\)]+'),
         0.85,
     ),
     # Secret keys / API tokens (common patterns)
@@ -273,8 +273,12 @@ def scan_for_pii_transformers(
 
     findings: list[PiIFinding] = []
     for entity in raw_results:
-        score = entity.get("score", 0.0)
-        if score < scoring_threshold:
+        # Convert numpy float32 to Python float for JSON compatibility
+        raw_score = entity.get("score", 0.0)
+        score = float(raw_score) if raw_score is not None else 0.0
+
+        is_below_threshold = score < scoring_threshold
+        if is_below_threshold:
             continue
 
         entity_group = entity.get("entity_group", "unknown")
