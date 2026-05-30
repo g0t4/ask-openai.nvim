@@ -314,8 +314,14 @@ def group_findings_by_category(findings: list[PiIFinding]) -> dict[str, list[PiI
     return groups
 
 
-def print_file_results(result: FileScanResult, mode: str) -> None:
-    """Print scan results for a single file using rich formatting."""
+def print_file_results(result: FileScanResult, mode: str, show_matches: bool = False) -> None:
+    """Print scan results for a single file using rich formatting.
+
+    Args:
+        result: Scan results for a single file.
+        mode: Detection mode used ("regex" or "transformers").
+        show_matches: If True, display actual PII text instead of masked dots.
+    """
     if result.error:
         _console.print(
             Panel(
@@ -345,9 +351,12 @@ def print_file_results(result: FileScanResult, mode: str) -> None:
     for category, items in sorted(categories.items()):
         _console.print(f"  [bold yellow]{category}:[/]")
         for item in items:
-            masked_text = f"[{'.' * len(item.text)}]"
+            if show_matches:
+                display_text = f"[red]{item.text}[/]"
+            else:
+                display_text = f"[{'.' * len(item.text)}]"
             _console.print(
-                f"    - [red]{masked_text}[/] [dim](score: {item.score:.4f}, pos: {item.start_char}-{item.end_char})[/]"
+                f"    - {display_text} [dim](score: {item.score:.4f}, pos: {item.start_char}-{item.end_char})[/]"
             )
     _console.print()  # blank line separator
 

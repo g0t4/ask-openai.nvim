@@ -9,6 +9,7 @@ Examples:
     python -m tools.pii_scanner --threshold 0.8              # higher confidence
     python -m tools.pii_scanner --model openai/privacy-filter  # transformers mode
     python -m tools.pii_scanner --json                       # JSON output
+    python -m tools.pii_scanner --show-matches               # display actual PII text
 """
 
 import argparse
@@ -59,6 +60,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Output results as JSON to stdout",
     )
+    parser.add_argument(
+        "--show-matches",
+        action="store_true",
+        help="Display actual PII text instead of masked dots (use with caution)",
+    )
     return parser.parse_args(argv)
 
 
@@ -101,7 +107,7 @@ def main(argv: list[str] | None = None) -> None:
         output_json(results, mode)
     else:
         for result in results:
-            print_file_results(result, mode)
+            print_file_results(result, mode, show_matches=args.show_matches)
         print_summary(results, mode)
 
 
