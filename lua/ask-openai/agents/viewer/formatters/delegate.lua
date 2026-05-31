@@ -50,6 +50,12 @@ function M.format(lines, tool_call, message)
     local func_name = tool_call["function"].name or "delegate"
     local hl_group = HLGroups.TOOL_SUCCESS
 
+    -- * decode args to get agent_type for title
+    local decoded_args = decode_delegate_args(tool_call["function"].arguments, message)
+    if decoded_args and decoded_args.agent_type then
+        func_name = string.format("%s (%s)", func_name, decoded_args.agent_type)
+    end
+
     -- * status indicator
     if tool_call.call_output then
         if tool_call.call_output.result and tool_call.call_output.result.isError then
@@ -63,7 +69,7 @@ function M.format(lines, tool_call, message)
     lines:append_styled_text(func_name, hl_group)
 
     -- * decode and display arguments
-    local decoded_args = decode_delegate_args(tool_call["function"].arguments, message)
+    decoded_args = decoded_args or decode_delegate_args(tool_call["function"].arguments, message)
     if decoded_args then
         -- Description (most important field - show as blockquote)
         local description = decoded_args.description
@@ -77,9 +83,9 @@ function M.format(lines, tool_call, message)
             lines:append_text(string.format("recursion_limit: %d", recursion_limit))
         end
 
-        -- Show any other keys that aren't description or recursion_limit
+        -- Show any other keys that aren't description, recursion_limit, or agent_type
         for key, value in pairs(decoded_args) do
-            if key ~= "description" and key ~= "recursion_limit" then
+            if key ~= "description" and key ~= "recursion_limit" and key ~= "agent_type" then
                 local value_str = type(value) == "string" and value or vim.inspect(value)
                 lines:append_text(key .. ": " .. value_str)
             end
