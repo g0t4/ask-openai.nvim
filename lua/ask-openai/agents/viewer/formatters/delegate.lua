@@ -22,12 +22,12 @@ local function decode_delegate_args(args_json, message)
     return decoded
 end
 
---- Render the task_description as a markdown blockquote-style line.
+--- Render the description as a markdown blockquote-style line.
 ---
----@param task_description string
-local function render_task_description(task_description)
+---@param description string
+local function render_description(description)
     -- Wrap in a > ... blockquote-style format
-    local lines = vim.split(task_description, "\n")
+    local lines = vim.split(description, "\n")
     for i, line in ipairs(lines) do
         lines[i] = "> " .. line
     end
@@ -65,10 +65,10 @@ function M.format(lines, tool_call, message)
     -- * decode and display arguments
     local decoded_args = decode_delegate_args(tool_call["function"].arguments, message)
     if decoded_args then
-        -- Task description (most important field - show as blockquote)
-        local task_description = decoded_args.task_description
-        if task_description and #task_description > 0 then
-            lines:append_text(render_task_description(task_description))
+        -- Description (most important field - show as blockquote)
+        local description = decoded_args.description
+        if description and #description > 0 then
+            lines:append_text(render_description(description))
         end
 
         -- Recursion limit (only show if set)
@@ -77,9 +77,9 @@ function M.format(lines, tool_call, message)
             lines:append_text(string.format("recursion_limit: %d", recursion_limit))
         end
 
-        -- Show any other keys that aren't task_description or recursion_limit
+        -- Show any other keys that aren't description or recursion_limit
         for key, value in pairs(decoded_args) do
-            if key ~= "task_description" and key ~= "recursion_limit" then
+            if key ~= "description" and key ~= "recursion_limit" then
                 local value_str = type(value) == "string" and value or vim.inspect(value)
                 lines:append_text(key .. ": " .. value_str)
             end
