@@ -608,8 +608,14 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
 
             ---@type ToolCallDoneCallback
             local function when_this_tool_is_done(tool_call_output)
-                -- * store output on rx_message
+                -- * compute tool call duration
+                local end_time_ms = os.time() * 1000 + math.floor(vim.uv.hrtime() / 1e6 % 1000)
+                local tool_call_duration_ms = end_time_ms - tool_call.start_time_ms
+
+                -- * store output on rx_message with timing
                 tool_call.call_output = ToolCallOutput:new(tool_call_output)
+                tool_call.call_output.start_time_ms = tool_call.start_time_ms
+                tool_call.call_output.duration_ms = tool_call_duration_ms
                 log:trace("tool_call_output", vim.inspect(tool_call_output))
 
                 -- * triggers UI updates to show tool results
@@ -642,6 +648,9 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
 
                 update_ui_chat_viewer(trace)
             end
+
+            -- * capture start time before running the tool
+            tool_call.start_time_ms = os.time() * 1000 + math.floor(vim.uv.hrtime() / 1e6 % 1000)
 
             -- * run the tool!
             tool_router.send_tool_call_router(tool_call, when_this_tool_is_done, on_tool_progress)

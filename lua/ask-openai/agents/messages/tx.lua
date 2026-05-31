@@ -45,6 +45,15 @@ function TxChatMessage:tool_result(tool_call)
     -- DO NOT remove this, other models have parallel tool calling
 
     -- heads up you might see examples that include function.name, that's not needed with newer tool calling API (b/c tool_call_id does linking now)
+
+    -- * attach timing metadata (ignored by backend, logged with trace)
+    if tool_call.call_output and tool_call.call_output.duration_ms then
+        self.duration_ms = tool_call.call_output.duration_ms
+    end
+    if tool_call.call_output and tool_call.call_output.start_time_ms then
+        self.start_time_ms = tool_call.call_output.start_time_ms
+    end
+
     return self
 end
 

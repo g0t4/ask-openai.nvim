@@ -6,6 +6,7 @@
 ---@field response_message table|nil -- TODO type this? response message to send call results back to the model that will, also attached to agent_trace (history)
 ---@field call_output? ToolCallOutput -- tool call outputs (specific to a given tool type, some have standard structure, i.e. MCP)
 ---@field progress_messages string[] -- progress messages received during tool execution
+---@field start_time_ms integer -- timestamp (ms) when tool execution began (set by frontend before calling tool)
 local ToolCall = {}
 
 ---@return ToolCall
