@@ -1,4 +1,4 @@
-require('ask-openai.helpers.test_setup').modify_package_path()
+require("ask-openai.helpers.test_setup").modify_package_path()
 local TxChatMessage = require("ask-openai.agents.messages.tx")
 local should = require("devtools.tests.should")
 local _describe = require("devtools.tests.define.describe")
@@ -34,180 +34,178 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         assert.same("llamacpp", model.owned_by, "MUST TEST WITH llama-server")
     end)
 
+    _describe("testing model info extraction", function()
+        it("extract_model_info returns nil for non-table body", function()
+            local model_info = LlamaServerClient.extract_model_info(nil)
+            assert.is_nil(model_info)
 
-_describe("testing model info extraction", function()
+            model_info = LlamaServerClient.extract_model_info("not a table")
+            assert.is_nil(model_info)
+        end)
 
-    it("extract_model_info returns nil for non-table body", function()
-        local model_info = LlamaServerClient.extract_model_info(nil)
-        assert.is_nil(model_info)
+        it("extract_model_info returns nil for empty data array", function()
+            local model_info = LlamaServerClient.extract_model_info({ data = {} })
+            assert.is_nil(model_info)
+        end)
 
-        model_info = LlamaServerClient.extract_model_info("not a table")
-        assert.is_nil(model_info)
-    end)
+        it("extract_model_info returns nil for data with no id", function()
+            local model_info = LlamaServerClient.extract_model_info({
+                data = {
+                    { aliases = { "alias1" }, created = 12345, owned_by = "llamacpp", meta = { n_vocab = 100 } },
+                },
+            })
+            assert.is_nil(model_info)
+        end)
 
-    it("extract_model_info returns nil for empty data array", function()
-        local model_info = LlamaServerClient.extract_model_info({ data = {} })
-        assert.is_nil(model_info)
-    end)
-
-    it("extract_model_info returns nil for data with no id", function()
-        local model_info = LlamaServerClient.extract_model_info({
-            data = {
-                { aliases = {"alias1"}, created = 12345, owned_by = "llamacpp", meta = { n_vocab = 100 } }
-            }
-        })
-        assert.is_nil(model_info)
-    end)
-
-    it("extract_model_info maps OpenAI-compatible data array", function()
-        local sample_body = {
-            models = {},
-            object = "list",
-            data = {
-                {
-                    id = "ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0",
-                    aliases = { "ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0", "qwen3" },
-                    tags = {},
-                    object = "model",
-                    created = 1780282597,
-                    owned_by = "llamacpp",
-                    meta = {
-                        vocab_type = 2,
-                        n_vocab = 248320,
-                        n_ctx = 262144,
-                        n_ctx_train = 262144,
-                        n_embd = 2048,
-                        n_params = 34660610688,
-                        size = 36892150272,
+        it("extract_model_info maps OpenAI-compatible data array", function()
+            local sample_body = {
+                models = {},
+                object = "list",
+                data = {
+                    {
+                        id = "ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0",
+                        aliases = { "ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0", "qwen3" },
+                        tags = {},
+                        object = "model",
+                        created = 1780282597,
+                        owned_by = "llamacpp",
+                        meta = {
+                            vocab_type = 2,
+                            n_vocab = 248320,
+                            n_ctx = 262144,
+                            n_ctx_train = 262144,
+                            n_embd = 2048,
+                            n_params = 34660610688,
+                            size = 36892150272,
+                        },
                     },
                 },
-            },
-        }
+            }
 
-        local model_info = LlamaServerClient.extract_model_info(sample_body)
-        assert.is_not_nil(model_info)
+            local model_info = LlamaServerClient.extract_model_info(sample_body)
+            assert.is_not_nil(model_info)
 
-        -- Verify basic fields
-        assert.same("ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0", model_info.name)
-        assert.same("ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0", model_info.alias)
-        assert.same(1780282597, model_info.created)
-        assert.same("llamacpp", model_info.owned_by)
+            -- Verify basic fields
+            assert.same("ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0", model_info.name)
+            assert.same("ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0", model_info.alias)
+            assert.same(1780282597, model_info.created)
+            assert.same("llamacpp", model_info.owned_by)
 
-        -- Verify meta fields with unabbreviated names
-        assert.same(248320, model_info.vocabulary_size)
-        assert.same(262144, model_info.context_length)
-        assert.same(262144, model_info.context_length_train)
-        assert.same(2048, model_info.embedding_dimension)
-        assert.same(34660610688, model_info.parameter_count)
-        assert.same(36892150272, model_info.model_size_bytes)
-    end)
+            -- Verify meta fields with unabbreviated names
+            assert.same(248320, model_info.vocabulary_size)
+            assert.same(262144, model_info.context_length)
+            assert.same(262144, model_info.context_length_train)
+            assert.same(2048, model_info.embedding_dimension)
+            assert.same(34660610688, model_info.parameter_count)
+            assert.same(36892150272, model_info.model_size_bytes)
+        end)
 
-    it("extract_model_info handles empty aliases array", function()
-        local sample_body = {
-            data = {
-                {
-                    id = "test-model",
-                    aliases = {},
-                    created = 100,
-                    owned_by = "test",
-                    meta = {},
+        it("extract_model_info handles empty aliases array", function()
+            local sample_body = {
+                data = {
+                    {
+                        id = "test-model",
+                        aliases = {},
+                        created = 100,
+                        owned_by = "test",
+                        meta = {},
+                    },
                 },
-            },
-        }
+            }
 
-        local model_info = LlamaServerClient.extract_model_info(sample_body)
-        assert.is_not_nil(model_info)
-        assert.same("", model_info.alias)
-        assert.same("test-model", model_info.name)
-    end)
+            local model_info = LlamaServerClient.extract_model_info(sample_body)
+            assert.is_not_nil(model_info)
+            assert.same("", model_info.alias)
+            assert.same("test-model", model_info.name)
+        end)
 
-    it("extract_model_info handles missing meta table", function()
-        local sample_body = {
-            data = {
-                {
-                    id = "test-model",
-                    aliases = {},
-                    created = 100,
-                    owned_by = "test",
-                    -- no meta field at all
+        it("extract_model_info handles missing meta table", function()
+            local sample_body = {
+                data = {
+                    {
+                        id = "test-model",
+                        aliases = {},
+                        created = 100,
+                        owned_by = "test",
+                        -- no meta field at all
+                    },
                 },
-            },
-        }
+            }
 
-        local model_info = LlamaServerClient.extract_model_info(sample_body)
-        assert.is_not_nil(model_info)
-        assert.same(0, model_info.vocabulary_size)
-        assert.same(0, model_info.context_length)
-        assert.same(0, model_info.model_size_bytes)
-    end)
+            local model_info = LlamaServerClient.extract_model_info(sample_body)
+            assert.is_not_nil(model_info)
+            assert.same(0, model_info.vocabulary_size)
+            assert.same(0, model_info.context_length)
+            assert.same(0, model_info.model_size_bytes)
+        end)
 
-    it("extract_model_info falls back to older models array", function()
-        local sample_body = {
-            models = {
-                {
-                    name = "ollama-model:latest",
-                    model = "ollama-model:latest",
+        it("extract_model_info falls back to older models array", function()
+            local sample_body = {
+                models = {
+                    {
+                        name = "ollama-model:latest",
+                        model = "ollama-model:latest",
+                    },
                 },
-            },
-            object = "list",
-        }
+                object = "list",
+            }
 
-        local model_info = LlamaServerClient.extract_model_info(sample_body)
-        assert.is_not_nil(model_info)
-        assert.same("ollama-model:latest", model_info.name)
-        assert.same("", model_info.alias)
-        assert.same(0, model_info.created)
-        assert.same("", model_info.owned_by)
-    end)
+            local model_info = LlamaServerClient.extract_model_info(sample_body)
+            assert.is_not_nil(model_info)
+            assert.same("ollama-model:latest", model_info.name)
+            assert.same("", model_info.alias)
+            assert.same(0, model_info.created)
+            assert.same("", model_info.owned_by)
+        end)
 
-    it("extract_model_info prefers data array over models array", function()
-        local sample_body = {
-            models = {
-                {
-                    name = "old-model",
-                    model = "old-model",
+        it("extract_model_info prefers data array over models array", function()
+            local sample_body = {
+                models = {
+                    {
+                        name = "old-model",
+                        model = "old-model",
+                    },
                 },
-            },
-            data = {
-                {
-                    id = "new-model",
-                    aliases = { "new-model" },
-                    created = 999,
-                    owned_by = "new-owner",
-                    meta = { n_vocab = 1000 },
+                data = {
+                    {
+                        id = "new-model",
+                        aliases = { "new-model" },
+                        created = 999,
+                        owned_by = "new-owner",
+                        meta = { n_vocab = 1000 },
+                    },
                 },
-            },
-        }
+            }
 
-        local model_info = LlamaServerClient.extract_model_info(sample_body)
-        assert.is_not_nil(model_info)
-        assert.same("new-model", model_info.name)
-        assert.same(999, model_info.created)
-        assert.same("new-owner", model_info.owned_by)
+            local model_info = LlamaServerClient.extract_model_info(sample_body)
+            assert.is_not_nil(model_info)
+            assert.same("new-model", model_info.name)
+            assert.same(999, model_info.created)
+            assert.same("new-owner", model_info.owned_by)
+        end)
+
+        it("get_model_info returns nil on server failure", function()
+            local model_info = LlamaServerClient.get_model_info("http://invalid:1234")
+            assert.is_nil(model_info)
+        end)
+
+        it("get_model_info returns ModelInfo from live server", function()
+            local config = require("ask-openai.config")
+            local base_url = config.get_endpoints().gptoss.base_url
+
+            local model_info = LlamaServerClient.get_model_info(base_url)
+
+            -- Verify we got a valid model info object
+            assert.is_not_nil(model_info, "Should return model info from live server")
+            assert.is_string(model_info.name, "name should be a string")
+            assert.is_true(#model_info.name > 0, "name should not be empty")
+            assert.is_string(model_info.owned_by, "owned_by should be a string")
+            assert.is_true(model_info.vocabulary_size > 0, "vocabulary_size should be positive")
+            assert.is_true(model_info.context_length > 0, "context_length should be positive")
+            assert.is_true(model_info.parameter_count > 0, "parameter_count should be positive")
+            assert.is_true(model_info.model_size_bytes > 0, "model_size_bytes should be positive")
+        end)
     end)
-
-    it("get_model_info returns nil on server failure", function()
-        local model_info = LlamaServerClient.get_model_info("http://invalid:1234")
-        assert.is_nil(model_info)
-    end)
-
-    it("get_model_info returns ModelInfo from live server", function()
-        local config = require("ask-openai.config")
-        local base_url = config.get_endpoints().gptoss.base_url
-
-        local model_info = LlamaServerClient.get_model_info(base_url)
-
-        -- Verify we got a valid model info object
-        assert.is_not_nil(model_info, "Should return model info from live server")
-        assert.is_string(model_info.name, "name should be a string")
-        assert.is_true(#model_info.name > 0, "name should not be empty")
-        assert.is_string(model_info.owned_by, "owned_by should be a string")
-        assert.is_true(model_info.vocabulary_size > 0, "vocabulary_size should be positive")
-        assert.is_true(model_info.context_length > 0, "context_length should be positive")
-        assert.is_true(model_info.parameter_count > 0, "parameter_count should be positive")
-        assert.is_true(model_info.model_size_bytes > 0, "model_size_bytes should be positive")
-    end)
-end)
     local function print_prompt(prompt)
         assert.is_string(prompt, "prompt should be a string")
         print("\n" .. string.rep("-", 80))
@@ -218,15 +216,19 @@ end)
     local function split_messages(prompt)
         local messages = vim.split(prompt, harmony.START)
         -- PRN get rid of first empty? maybe after asserting it exists?
-        return vim.iter(messages):map(function(m) return str(m) end):totable()
+        return vim.iter(messages)
+            :map(function(m)
+                return str(m)
+            end)
+            :totable()
     end
 
     it("sends a single user message to the llama-server backend", function()
         -- * action
         local response = LlamaServerClient.apply_template(base_url, {
             messages = {
-                TxChatMessage:user("Hello, can you rewrite this code?")
-            }
+                TxChatMessage:user("Hello, can you rewrite this code?"),
+            },
         })
 
         -- * assertions:
@@ -271,11 +273,17 @@ end)
             -- this happens when the first message appropirately starts at the start of the prompt
             table.remove(messages, 1)
         end
-        return vim.iter(messages):map(function(m) return harmony.START .. m end):totable()
+        return vim.iter(messages)
+            :map(function(m)
+                return harmony.START .. m
+            end)
+            :totable()
     end
 
     it("builtin_tools => python v1_chat_completions", function()
-        do return end -- comment out to run
+        do
+            return
+        end -- comment out to run
 
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/builtin/ask_run_python.json")
         assert(body ~= nil)
@@ -299,7 +307,6 @@ end)
         --
         -- When you send a message containing Python code to python, it will be executed in a stateful Jupyter notebook environment. python will respond with the output of the execution or time out after 120.0 seconds. The drive at '/mnt/data' can be used to save and persist user files. Internet access for this session is UNKNOWN. Depends on the cluster.
 
-
         -- * response - note no (harmony.CONSTRAIN) but "code" format is set:
         --  FYI new convention uses (harmony.SPECIAL) in comments! I like it better than {START} - ? convert {UPPERCASE} to this?
         -- (harmony.CHANNEL)analysis(harmony.MESSAGE) We need to test python tool. We'll run a simple command.(harmony.END)(harmony.START)assistant(harmony.CHANNEL)commentary to=python code(harmony.MESSAGE)print("Hello from python")
@@ -310,12 +317,14 @@ end)
     --   :vert diffsplit lua/ask-openai/backends/llama_cpp/jinja/ask-fixes.jinja
 
     it("apply_patch - with single, string argument only (not dict) - v1_chat_completions", function()
-        do return end -- comment out to run
+        do
+            return
+        end -- comment out to run
 
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition.json")
         assert(body ~= nil)
         body.chat_template_kwargs = {
-            reasoning_effort = "low"
+            reasoning_effort = "low",
         }
 
         -- * action
@@ -330,13 +339,12 @@ end)
         --    (harmony.CHANNEL)analysis(harmony.MESSAGE)We need to edit hello.lua. Use apply_patch.(harmony.END)(harmony.START)assistant(harmony.CHANNEL)commentary to=functions.apply_patch (harmony.CONSTRAIN)json(harmony.MESSAGE)"*** Begin Patch\n*** Update File: hello.lua\n@@\n-print(\"Hello\")\n+print(\"Hello Wor
     end)
 
-
     it("apply_patch - with single, dict w/ patch property - v1_chat_completions", function()
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition-dict.json")
         assert(body ~= nil)
         body.verbose = true -- this is the patch I added for my own build of llama.cpp llama-server to include __verbose even when not started with --verbose
         body.chat_template_kwargs = {
-            reasoning_effort = "low"
+            reasoning_effort = "low",
         }
 
         -- * action
@@ -358,7 +366,7 @@ end)
     end)
 
     it("apply_patch - with single, string argument only (not dict)", function()
-        local expected_dev_apply_patch_with_string_arg = harmony.msg_developer [[# Instructions
+        local expected_dev_apply_patch_with_string_arg = harmony.msg_developer([[# Instructions
 
 Your name is Qwenny
 You can respond with markdown
@@ -372,7 +380,7 @@ namespace functions {
 // Patch a file
 type apply_patch = (_: string) => any;
 
-} // namespace functions]]
+} // namespace functions]])
 
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition.json")
 
@@ -398,7 +406,7 @@ type apply_patch = (_: string) => any;
         --    - this is the return trip for (harmony.CONSTRAIN)string (or w/e the model uses)
     end)
     it("apply_patch - with single patch property in a dictionary", function()
-        local expected_dev_apply_patch_with_dict_arg = harmony.msg_developer [[# Instructions
+        local expected_dev_apply_patch_with_dict_arg = harmony.msg_developer([[# Instructions
 
 Your name is Qwenny
 You can respond with markdown
@@ -415,7 +423,7 @@ type apply_patch = (_: {
 patch: string,
 }) => any;
 
-} // namespace functions]]
+} // namespace functions]])
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/apply_patch/definition-dict.json")
 
         -- * action
@@ -450,7 +458,7 @@ patch: string,
         -- should.be_same_colorful_diff(actual_prompt, prompt) -- FYI don't directly compare
 
         str(prompt):should_start_with(harmony.START)
-        local expected_thinking = harmony.msg_assistant_analysis "We need to run date command."
+        local expected_thinking = harmony.msg_assistant_analysis("We need to run date command.")
         local expected_tool_call = harmony.msg_assistant_json_tool_call("functions.run_command", '{"command": "date"}')
         -- CONFIRMED per spec, assistant tool call _REQUESTS_, recipient `to=` comes _AFTER_ (harmony.CHANNEL)commentary
         --    but, it can also come before (in role) ...
@@ -461,8 +469,11 @@ patch: string,
         --      I setup the ask-fixes.jinja to generate AFTER (so it matches model's gen)
         --      and my tree-sitter grammar handles both
 
-        local expected_tool_result = harmony.START .. 'functions.run_command to=assistant' .. harmony.CHANNEL .. 'commentary'
-            .. harmony.message_end '{"content":[{"text":"Sun Nov 30 19:35:10 CST 2025\\n","type":"text","name":"STDOUT"}]}'
+        local expected_tool_result = harmony.START
+            .. "functions.run_command to=assistant"
+            .. harmony.CHANNEL
+            .. "commentary"
+            .. harmony.message_end('{"content":[{"text":"Sun Nov 30 19:35:10 CST 2025\\n","type":"text","name":"STDOUT"}]}')
         -- CONFIRMED per spec, for tool results, recipient `to=` comes _BEFORE_ (harmony.CHANNEL)commentary
         --   IIRC spec doesn't mention recipient in the channel (after channel/commentary) for tool result messages
 
