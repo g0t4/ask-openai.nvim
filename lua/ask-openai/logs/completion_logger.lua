@@ -83,7 +83,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             frontend = frontend,
         }
 
-        local messages_snapshot = tables.shallow_copy_table(request.body.messages or {})
+        local messages_snapshot = tables.shallow_copy(request.body.messages or {})
         table.insert(messages_snapshot, accum)
         vim.schedule(function()
             M.save_trace(request, frontend, messages_snapshot, sse_parsed)
@@ -104,7 +104,7 @@ function M.save_trace(request, frontend, messages_snapshot, sse_parsed)
     -- log:info("trace path", path)
     local file = io.open(path, "w")
     if file then
-        local request_body_copy = tables.shallow_copy_table(request.body)
+        local request_body_copy = tables.shallow_copy(request.body)
         -- this way I can avoid issues with timing and AgentsFrontend modifying request.body.messages to add its distilled version of the assistant message
         request_body_copy.messages = messages_snapshot
         local trace_data = {
