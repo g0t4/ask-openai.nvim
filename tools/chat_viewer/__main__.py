@@ -59,6 +59,7 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "248d4a2751e309453b476914b6ecf1ddb2750a9033e3ecb7eb12f04c14fbd917",  # semantic_grep
     "f81ca64540efef46c8f15087775bcd0497cfc9705fc25b77fbfda98c526fa696",  # top shelf nerd commands
     "8723daf9f8aefcf1372fa7b721bacee4b75e1024fc4badcfeed8e3d4317b1b8b",  # bad commands
+    "96523710d3fe5348152bffddb4c28b3a668bdfd4ef1d5530d826949e83f88afb",  ## BAD COMMANDS
     #
     "27d69e723de7d4ed60e5d8c0b0ef5f9fcae2d4de5d0c152a6c50feb1a021630d",  # apply_patch instructs (huge - worth updating)
     "febf26dcfb6df81560cdb9efe38c9c3691064cb3e2d0b6fc3fe89d0091a508d3",  # 2026-04-16 apply_patch changes (current version)
