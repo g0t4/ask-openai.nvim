@@ -57,7 +57,7 @@ end
 
 --- Perform the actual fetch in the background.
 --- @param base_url string
-local function do_fetch(base_url)
+local function do_fetch_model_name(base_url)
     local response = LlamaServerClient.get_models(base_url, { connect_timeout = 1, max_time = 3 })
     if not response or response.code ~= 200 then
         _fetch_in_progress[base_url] = nil
@@ -95,7 +95,7 @@ function M.get_llama_server_model(base_url)
     -- 3. Start a new background fetch
     _fetch_in_progress[base_url] = true
     vim.schedule(function()
-        do_fetch(base_url)
+        do_fetch_model_name(base_url)
     end)
 
     return nil
