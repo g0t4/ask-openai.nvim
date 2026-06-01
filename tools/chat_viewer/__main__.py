@@ -18,6 +18,7 @@ import hashlib
 
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.tree_wrapper import TreeWrapper
+from tools.chat_viewer.run_process_formatter import format_argv
 from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line
 
 # Enable recording so that ``save_html`` can export the rendered output.
@@ -530,29 +531,8 @@ def _json(data: dict) -> Syntax:
     )
 
 
-def _format_argv_element(element: str) -> str:
-    """Format a single argv element for display.
-
-    Only adds quotes when the element contains whitespace.
-    Uses double quotes by default, falling back to single quotes
-    or escaped double quotes if both quote types are present.
-    """
-    has_whitespace = any(char.isspace() for char in element)
-    if not has_whitespace:
-        return element
-
-    if '"' not in element:
-        return f'"{element}"'
-    if "'" not in element:
-        return f"'{element}'"
-
-    escaped = element.replace('"', '\\"')
-    return f'"{escaped}"'
 
 
-def _format_argv_display(argv: list[str]) -> str:
-    """Join argv array into a displayable string with proper quoting."""
-    return " ".join(_format_argv_element(str(arg)) for arg in argv)
 
 
 def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
@@ -574,7 +554,7 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
             if command_line:
                 return command_line
             if argv:
-                return _format_argv_display(argv)
+                return format_argv(argv)
             if command:
                 return command
             raise ValueError("No command found")
