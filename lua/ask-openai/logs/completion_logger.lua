@@ -1,12 +1,12 @@
-local log = require('ask-openai.logs.logger').predictions()
-local json = require('dkjson')
+local log = require("ask-openai.logs.logger").predictions()
+local json = require("dkjson")
 
 local M = {
     last_done = {},
     LOG_ALL_SSEs = true,
     -- LOG_ALL_SSEs = false,
 }
----@param request CurlRequest
+---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 ---@return string save_dir
 ---@return string trace_id
@@ -25,7 +25,7 @@ function M.log_request_with(request, frontend)
 end
 
 ---@param sse_parsed table
----@param request CurlRequest
+---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 function M.log_sse_to_request(sse_parsed, request, frontend)
     -- FYI delta is the part that changes per SSE, except for last SSE which sets other fields like finish_reason
@@ -123,6 +123,10 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     end
 end
 
+---@param request CurlRequest|CurlRequestForTrace
+---@param frontend StreamingFrontend
+---@param response_message table
+---@param sse_parsed table
 function M.save_trace(request, frontend, response_message, sse_parsed)
     local save_dir, trace_id = M.log_request_with(request, frontend)
     local path = save_dir .. "/" .. trace_id .. "-trace.json"
@@ -152,7 +156,7 @@ function M.save_trace(request, frontend, response_message, sse_parsed)
     end
 end
 
----@param request CurlRequest
+---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 function M.write_new_messages_jsonl(request, frontend)
     -- Save the initial request payload (messages) before sending, for any frontend that uses Curl.
@@ -200,6 +204,7 @@ function M.write_new_messages_jsonl(request, frontend)
     end
 end
 
+---@param message table
 ---@param request CurlRequest
 ---@param frontend StreamingFrontend
 function M.append_to_messages_jsonl(message, request, frontend)

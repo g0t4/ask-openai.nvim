@@ -1,6 +1,6 @@
-local log = require('ask-openai.logs.logger').predictions()
-local files = require('ask-openai.helpers.files')
-local llama_server_client = require('ask-openai.backends.llama_cpp.llama_server_client')
+local log = require("ask-openai.logs.logger").predictions()
+local files = require("ask-openai.helpers.files")
+local llama_server_client = require("ask-openai.backends.llama_cpp.llama_server_client")
 local messages = require("devtools.messages")
 local config = require("ask-openai.config")
 
@@ -66,7 +66,7 @@ function AgentTrace:next_curl_request_body()
         --        thse are the two likely paths right now
         --        you can prefill that analysis
         --        you can actually prefill bogus messages too!
-        messages = clone_array_container_not_items(self.messages)
+        messages = clone_array_container_not_items(self.messages),
     }
     -- PRN keep/drop thinking myself? btw clone messages before changing them
     -- merge params onto root of body:
@@ -79,15 +79,13 @@ end
 --- Calls the LLM to generate a summary of this trace.
 --- Zeros out `summary` before making the request, then sets the response on completion.
 function AgentTrace:create_summary()
-
     local trace_json = vim.json.encode(self.messages)
 
     local body = {
         messages = {
             {
                 role = "system",
-                content =
-                [[Given a serialized AgentTrace (containing messages, params, and request metadata), provide a concise one‑sentence summary of the conversation’s purpose. This summary will be shown to users to pick from a list of threads to resume.]],
+                content = [[Given a serialized AgentTrace (containing messages, params, and request metadata), provide a concise one‑sentence summary of the conversation's purpose. This summary will be shown to users to pick from a list of threads to resume.]],
             },
             {
                 role = "user",

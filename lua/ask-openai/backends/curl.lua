@@ -148,6 +148,7 @@ end
 
 ---@param data_value string
 ---@param frontend StreamingFrontend
+---@param request CurlRequest|CurlRequestForTrace
 function Curl.on_one_data_value(data_value, frontend, request)
     -- log:trace("data_value", data_value)
 
