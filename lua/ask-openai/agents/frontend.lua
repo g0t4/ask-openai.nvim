@@ -441,7 +441,7 @@ local function update_ui_chat_viewer(trace)
             local prompt_token_count = timings.prompt_n or 0
             local predicted_token_count = timings.predicted_n or 0
             local total_token_count = prompt_token_count + predicted_token_count
-            local window_title = string.format("tokens: %s", string.format("%'d", total_token_count))
+            local window_title = string.format("tokens: %d", total_token_count)
             AgentsFrontend.chat_window:set_title(window_title)
         end
     end)
