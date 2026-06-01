@@ -85,16 +85,14 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         local save_dir, trace_id = M.log_request_with(request, frontend)
 
         vim.schedule(function()
-            -- technically I have timing issues here, this could run after below (IIUC)
-            --  if so, then IIAC I can schedule the file writing for all of the below too and they'd be behind this then, right?
+            -- FYI if this doesn't exist before the save_trace io write happens, the io write will fail silently
             vim.fn.mkdir(save_dir, "p")
-        end)
 
-        -- TODO merge into logic in AgentsFrontend so I can just capture response_message as part of request_body.messages and not log that separately anymore
-        -- TODO what (if anything) is missing for the trace_message that AgentsFrontend inserts into trace history vs the accum here
-        --  OR, was it just that I was duplicating the assistant message (randomly b/c that logic to insert the new message would execute before/after this saved b/c this used to be async via vim.vim.defer_fn(function() ... end,0)
-        --    btw if it was just duplicates, then now that I do not vim.defer_fn anymore for this part then timing wise the trace_message can't be added
-        M.save_trace(request, frontend, accum, sse_parsed)
+            if request.type ~= "agents" then
+                -- TODO add in accum message too for other frontends... no more response_message!
+                M.save_trace(request, frontend, accum, sse_parsed)
+            end
+        end)
     end
 end
 
