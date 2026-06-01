@@ -10,6 +10,7 @@ Examples:
     python -m tools.pii_scanner --model openai/privacy-filter  # transformers mode
     python -m tools.pii_scanner --json                       # JSON output
     python -m tools.pii_scanner --show-matches               # display actual PII text
+    python -m tools.pii_scanner --extract-paths              # extract file paths from trace files
 """
 
 import argparse
@@ -24,6 +25,8 @@ from tools.pii_scanner.scanner import (
     run_scan,
     print_summary,
     print_file_results,
+    run_extract_paths,
+    print_extract_paths_results,
 )
 
 _console = Console(color_system="truecolor")
@@ -65,6 +68,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Display actual PII text instead of masked dots (use with caution)",
     )
+    parser.add_argument(
+        "--extract-paths",
+        action="store_true",
+        help="Extract file paths from *-trace.json files (skips PII scanning)",
+    )
     return parser.parse_args(argv)
 
 
@@ -97,6 +105,13 @@ def main(argv: list[str] | None = None) -> None:
         _console.print(f"[red]Error: {target_path} is not a directory.[/]")
         sys.exit(1)
 
+    # ── Path extraction mode ──
+    if args.extract_paths:
+        results, total_unique = run_extract_paths(target_path)
+        print_extract_paths_results(results, total_unique)
+        return
+
+    # ── PII scanning mode ──
     results, mode = run_scan(
         target_dir=target_path,
         model_name=args.model,

@@ -492,3 +492,205 @@ def print_summary(
         f"[bold]Errors:[/] {len(files_with_errors)}  |  "
         f"[bold]Total findings:[/] {total_findings}"
     )
+
+
+# ─────────────────────────────────────────────
+# Path extraction from trace files
+# ─────────────────────────────────────────────
+
+# Pattern that matches POSIX-style file paths
+_FILE_PATH_RE = re.compile(
+    r'(?<![\w.])'
+    r'(?:'
+    r'(?:~/[\w.\-~!$&()*+,;=:@%]+(?:/[\w.\-~!$&()*+,;=:@%]+)*)'
+    r'|(?:[a-zA-Z]:/[\w.\-~!$&()*+,;=:@%]+(?:/[\w.\-~!$&()*+,;=:@%]+)*)'
+    r'|(/' + r'[\w.\-~!$&()*+,;=:@%]+' + r'(?:/[\w.\-~!$&()*+,;=:@%]+)*)'
+    r'|(?:\./[\w.\-~!$&()*+,;=:@%]+(?:/[\w.\-~!$&()*+,;=:@%]+)*)'
+    r'|(?:\.\./[\w.\-~!$&()*+,;=:@%]+(?:/[\w.\-~!$&()*+,;=:@%]+)*)'
+    r'|([\w.\-][\w.\-~!$&()*+,;=:@%]*(?:/[\w.\-~!$&()*+,;=:@%]+)+)'
+    r')'
+)
+
+
+def _try_json_decode(value: str) -> Any | None:
+    """Attempt to deserialize a string as JSON.
+
+    Returns the parsed object on success, or None if the string is not valid JSON.
+    """
+    try:
+        parsed = json.loads(value)
+        return parsed
+    except (json.JSONDecodeError, TypeError):
+        return None
+
+
+def _extract_paths_from_value(value: Any) -> list[str]:
+    """Recursively extract file paths from a hydrated value.
+
+    For strings: attempt JSON deserialization first. If it succeeds, recurse
+    into the result. If it fails, search the string for path patterns.
+
+    For dicts: recurse into all values.
+    For lists: recurse into all items.
+    """
+    found_paths: list[str] = []
+
+    if isinstance(value, str):
+        # First, try to decode as JSON to handle nested serialized objects
+        decoded = _try_json_decode(value)
+        if decoded is not None:
+            # Recurse into the decoded structure
+            found_paths.extend(_extract_paths_from_value(decoded))
+        else:
+            # Not JSON — treat as a raw string and search for paths
+            matches = [m.group() for m in _FILE_PATH_RE.finditer(value)]
+            found_paths.extend(matches)
+
+    elif isinstance(value, dict):
+        for val in value.values():
+            found_paths.extend(_extract_paths_from_value(val))
+
+    elif isinstance(value, list):
+        for item in value:
+            found_paths.extend(_extract_paths_from_value(item))
+
+    return found_paths
+
+
+def _extract_paths_from_message(message: dict[str, Any]) -> list[str]:
+    """Extract file paths from a single message object.
+
+    Checks:
+      - message.content (try JSON decode first)
+      - message.reasoning_content (raw string search)
+      - message.tool_calls[].function.arguments (try JSON decode, then recurse)
+    """
+    paths: list[str] = []
+
+    # ── message.content ──
+    content = message.get("content")
+    if content is not None:
+        paths.extend(_extract_paths_from_value(content))
+
+    # ── message.reasoning_content (note: not "reasoning") ──
+    reasoning = message.get("reasoning_content")
+    if reasoning is not None:
+        paths.extend(_extract_paths_from_value(reasoning))
+
+    # ── message.tool_calls[].function.arguments ──
+    tool_calls = message.get("tool_calls", [])
+    if isinstance(tool_calls, list):
+        for tool_call in tool_calls:
+            if isinstance(tool_call, dict):
+                function = tool_call.get("function")
+                if isinstance(function, dict):
+                    arguments = function.get("arguments")
+                    if arguments is not None:
+                        paths.extend(_extract_paths_from_value(arguments))
+
+    return paths
+
+
+def extract_paths_from_trace(trace_path: Path) -> list[str]:
+    """Extract all file paths from a single trace JSON file.
+
+    Hydrates the trace object, walks request_body.messages and response_message,
+    and collects every file path found.
+
+    Args:
+        trace_path: Path to the trace JSON file.
+
+    Returns:
+        A list of all file paths found in the trace.
+    """
+    content, error = load_json_content(trace_path)
+    if error:
+        _console.print(f"[red]Failed to load {trace_path}: {error}[/]")
+        return []
+
+    if not isinstance(content, dict):
+        _console.print(f"[yellow]Unexpected top-level structure in {trace_path}[/]")
+        return []
+
+    all_paths: list[str] = []
+
+    # ── Walk request_body.messages ──
+    request_body = content.get("request_body")
+    if isinstance(request_body, dict):
+        messages = request_body.get("messages")
+        if isinstance(messages, list):
+            for message in messages:
+                if isinstance(message, dict):
+                    all_paths.extend(_extract_paths_from_message(message))
+
+    # ── Walk response_message ──
+    response_message = content.get("response_message")
+    if isinstance(response_message, dict):
+        all_paths.extend(_extract_paths_from_message(response_message))
+
+    # Deduplicate while preserving order
+    seen: set[str] = set()
+    unique_paths: list[str] = []
+    for path in all_paths:
+        if path not in seen:
+            seen.add(path)
+            unique_paths.append(path)
+
+    return unique_paths
+
+
+def find_trace_files(root_dir: Path) -> list[Path]:
+    """Find all *-trace.json files under the given directory (recursive)."""
+    return sorted(root_dir.glob("**/*-trace.json"), key=lambda p: p.name)
+
+
+def run_extract_paths(
+    target_dir: Path,
+) -> tuple[list[tuple[Path, list[str]]], int]:
+    """Extract file paths from all trace files in target_dir.
+
+    Args:
+        target_dir: Directory to scan for *-trace.json files.
+
+    Returns:
+        A tuple of (file_path_results, total_unique_paths).
+        file_path_results is a list of (file_path, sorted_unique_paths) tuples.
+        total_unique_paths is the count of globally unique paths across all files.
+    """
+    trace_files = find_trace_files(target_dir)
+    if not trace_files:
+        _console.print("[yellow]No *-trace.json files found in target directory.[/]")
+        return [], 0
+
+    _console.print(f"[dim]Found {len(trace_files)} trace file(s) to scan.[/]")
+
+    all_global_paths: set[str] = set()
+    results: list[tuple[Path, list[str]]] = []
+
+    for trace_file in trace_files:
+        paths = extract_paths_from_trace(trace_file)
+        sorted_paths = sorted(paths)
+        results.append((trace_file, sorted_paths))
+        all_global_paths.update(paths)
+
+    return results, len(all_global_paths)
+
+
+def print_extract_paths_results(
+    results: list[tuple[Path, list[str]]],
+    total_unique_paths: int,
+) -> None:
+    """Print the extracted paths results in a readable format.
+
+    Args:
+        results: List of (file_path, sorted_paths) tuples.
+        total_unique_paths: Total number of globally unique paths.
+    """
+    for trace_file, sorted_paths in results:
+        _console.print(f"[bold]{trace_file.name}[/]")
+        _console.print(f"  [dim]{len(sorted_paths)} path(s) found[/]")
+        for path in sorted_paths:
+            _console.print(f"  [cyan]{path}[/]")
+        _console.print()  # blank line separator
+
+    _console.print(f"[bold]Total unique paths across all files:[/] {total_unique_paths}")
