@@ -73,7 +73,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     --   FYI request.body, on next turn, already has the tool call
     --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
 
-    if sse_parsed.timings then
+    local is_last_sse = sse_parsed.timings
+    if is_last_sse then
         -- store for convenient access in-memory, that way if smth fails on save I can still see it here
         M.last_done = {
             sse_parsed = sse_parsed,
