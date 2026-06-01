@@ -90,12 +90,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             vim.fn.mkdir(save_dir, "p")
         end)
 
-        if request.type ~= "agents" then
-            -- PredictionsFrontend and RewriteFrontend are both single turn, and can log assistant response message(s) here
-            M.append_to_messages_jsonl(accum, request, frontend)
-        end
-        -- TODO check timing of AgentsFrontend now and ALSO check what (if anything) is missing here for the trace_message that AgentsFrontend inserts into trace history vs the accum here
-        --  does accum have all of what's needed or is it missing anything (IIRC I vaguely recall there's something I distilled special in AgentsFrontend that wouldn't be on the pure accum message here)
+        -- TODO merge into logic in AgentsFrontend so I can just capture response_message as part of request_body.messages and not log that separately anymore
+        -- TODO what (if anything) is missing for the trace_message that AgentsFrontend inserts into trace history vs the accum here
         --  OR, was it just that I was duplicating the assistant message (randomly b/c that logic to insert the new message would execute before/after this saved b/c this used to be async via vim.vim.defer_fn(function() ... end,0)
         --    btw if it was just duplicates, then now that I do not vim.defer_fn anymore for this part then timing wise the trace_message can't be added
         M.save_trace(request, frontend, accum, sse_parsed)
@@ -131,80 +127,6 @@ function M.save_trace(request, frontend, response_message, sse_parsed)
             last_sse = sse_parsed,
         }
         file:write(json.encode(trace_data, { indent = true }))
-        file:close()
-    end
-end
-
----@param request CurlRequest|CurlRequestForTrace
----@param frontend StreamingFrontend
-function M.write_new_messages_jsonl(request, frontend)
-    -- Save the initial request payload (messages) before sending, for any frontend that uses Curl.
-    local body = request.body
-    local messages = body and body.messages -- messages is nil if body is nil, else has body.messages
-    if not messages then
-        log:info("no messages found (request.body.messages)... happens for qwen FIM b/c it uses raw prompt (TODO capture the raw prompt instead)?")
-        return
-    end
-    local ok, payload = pcall(function()
-        -- * each message on its own (initial request has multiple messages)
-        --  PRN do I really like this style? how about just pretty print with back to back messages :) and not deal with "jsonl"
-        --  TODO only append new message - long assistant traces will increase each turn, the time it takes and since I recreate each time... it's going to be painful (possibly... as in 10ms? each turn... which is FINE for now :) )
-        --   TODO how about flag each message as logged? (after logged so not logging that)
-        --    currently re-saving entire trace every time
-        local message_lines = {}
-        for _, msg in ipairs(messages) do
-            if not msg._logged then
-                local json_string = json.encode(msg,
-                    { indent = false } -- compact/oneline
-                )
-                table.insert(message_lines, json_string)
-                -- log:info("logging message", json_string)
-                msg._logged = true
-            end
-        end
-        return table.concat(message_lines, "\n")
-    end)
-    if ok then
-        local save_dir, trace_id = M.log_request_with(request, frontend)
-
-        vim.fn.mkdir(save_dir, "p")
-        local path = save_dir .. "/" .. trace_id .. "-messages.jsonl"
-        local file = io.open(path, "a")
-        if file then
-            file:write("\n") -- instead of trailing \n, prepend a \n to ensure never colliding with current message on last line
-            file:write(payload)
-            file:close()
-            log:info("Saved initial curl request to", path)
-        else
-            log:error("Unable to write initial curl request to", path)
-        end
-    else
-        log:error("Failed to encode initial curl request", payload)
-    end
-end
-
----@param message table
----@param request CurlRequest
----@param frontend StreamingFrontend
-function M.append_to_messages_jsonl(message, request, frontend)
-    -- FYI 0.1 ms for this func to run (a few tests) - NBD to be saving redundant info that's also in *-trace.json
-
-    -- FYI I am keeping *-trace.json for now until I have time to update my chat viewer for -messages.jsonl
-    --   I don't think I need anything beyond messages from -trace.json... if not then I'll ditch -trace.json most likely
-    --   if I do need more, it will be a while (if ever) before I fully stop using -trace.json
-
-    local oneline = { indent = false }
-    local json_line = vim.json.encode(message, oneline)
-
-    local save_dir, trace_id = M.log_request_with(request, frontend)
-    local path = save_dir .. "/" .. trace_id .. "-messages.jsonl"
-    local file, err = io.open(path, "a")
-    if not file then
-        log:error("Failed to open messages log for appending: %s", err)
-    else
-        message._logged = true
-        file:write("\n") -- instead of trailing \n, prepend a \n to ensure never colliding with current message on last line
-        file:write(json_line)
         file:close()
     end
 end
