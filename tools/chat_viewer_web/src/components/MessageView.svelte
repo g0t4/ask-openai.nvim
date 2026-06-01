@@ -60,7 +60,7 @@
   <!-- Content -->
   <div class="p-4 bg-gray-800/50">
     {#if role === 'tool'}
-      <ToolResult {content} msgIndex={index} />
+      <ToolResult {content} msgIndex={index} durationMs={message.duration_ms} />
     {:else}
       <!-- Reasoning (for assistant messages with extended thinking) -->
       {#if reasoning}

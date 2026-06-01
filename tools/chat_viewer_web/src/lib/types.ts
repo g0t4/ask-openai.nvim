@@ -34,6 +34,8 @@ export interface Message {
   tool_calls?: ToolCall[]
   tool_call_id?: string
   reasoning_content?: string
+  duration_ms?: number
+  start_time_ms?: number
 }
 
 export interface ContentObject {
@@ -88,4 +90,23 @@ export function extractContent(msg: Message): string {
     return content.text ?? ''
   }
   return JSON.stringify(content, null, 2)
+}
+
+export function formatDurationMs(durationMs: number): string {
+  if (durationMs < 1000) {
+    return `${durationMs}ms`
+  }
+
+  const seconds = durationMs / 1000.0
+  if (seconds < 60) {
+    const roundedSeconds = Math.round(seconds * 10) / 10
+    if (roundedSeconds === Math.floor(roundedSeconds)) {
+      return `${Math.floor(roundedSeconds)}s`
+    }
+    return `${roundedSeconds}s`
+  }
+
+  const minutes = Math.floor(seconds / 60)
+  const wholeSeconds = Math.floor(seconds % 60)
+  return `${minutes}m${wholeSeconds}s`
 }

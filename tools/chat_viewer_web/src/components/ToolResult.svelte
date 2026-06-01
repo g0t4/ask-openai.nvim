@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { RagResult, RagMatch } from '../lib/types'
-  import { getMatchId } from '../lib/hash-nav'
+  import { getMatchId, formatDurationMs } from '../lib/types'
   import CodeBlock from './CodeBlock.svelte'
   import LinkButton, { copy } from './LinkButton.svelte'
   import { getLanguageFromPath } from '../lib/highlight'
@@ -8,9 +8,10 @@
   interface Props {
     content: string
     msgIndex: number
+    durationMs?: number
   }
 
-  let { content, msgIndex }: Props = $props()
+  let { content, msgIndex, durationMs }: Props = $props()
 
   let showRawJson = $state(false)
 
@@ -46,7 +47,18 @@
         name: item.name,
       }))
   })
+
+  const formattedDuration = $derived(
+    durationMs !== undefined && durationMs > 0 ? formatDurationMs(durationMs) : null
+  )
 </script>
+
+{#if formattedDuration}
+  <div class="mb-2 text-sm text-gray-400 flex items-center gap-1">
+    <span>⏱️</span>
+    <span>{formattedDuration}</span>
+  </div>
+{/if}
 
 {#if isRagResult && ragMatches.length > 0}
   <div class="space-y-4">

@@ -20,6 +20,7 @@ from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.tree_wrapper import TreeWrapper
 from tools.chat_viewer.run_process_formatter import format_argv
 from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line
+from tools.chat_viewer.timing_utils import parse_tool_call_timings
 
 # Enable recording so that ``save_html`` can export the rendered output.
 _console = Console(color_system="truecolor")
@@ -417,6 +418,11 @@ def _add_unrecognized(root: TreeWrapper, content: Any) -> None:
 
 def print_tool_result_message(msg: Dict[str, Any]) -> None:
     root = TreeWrapper.hidden_root()
+
+    # * show duration if available (for after-the-fact review)
+    timings = parse_tool_call_timings(msg)
+    if timings:
+        root.add(f"[dim]⏱️  {timings.formatted_duration}[/]")
 
     content = decode_if_json(msg.get("content", ""))
     handled = _add_rag_matches(root, content) or _add_mcp_result(root, content)

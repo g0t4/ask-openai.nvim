@@ -1,16 +1,64 @@
-local ToolCall = require("ask-openai.agents.tools.tool_call")
+local HLGroups = require("ask-openai.hlgroups")
+local base = {}
 
-local M = {}
+--- Format a duration in milliseconds into a human-readable string.
+---
+--- Rules:
+---   - < 1000ms: "{N}ms"
+---   - < 60000ms (60s): "{X.X}s" (1 decimal, trims trailing .0 if whole number)
+---   - >= 60000ms: "{M}m{S}s" (whole minutes + whole seconds)
+---
+---@param duration_ms integer
+---@return string
+function base.format_duration_ms(duration_ms)
+    if duration_ms < 1000 then
+        return duration_ms .. "ms"
+    end
+
+    local seconds = duration_ms / 1000.0
+    if seconds < 60 then
+        -- Round to 1 decimal place
+        local rounded_seconds = math.floor(seconds * 10 + 0.5) / 10
+        -- Check if it's a whole number after rounding
+        if rounded_seconds == math.floor(rounded_seconds) then
+            return string.format("%ds", math.floor(rounded_seconds))
+        end
+        return string.format("%.1fs", rounded_seconds)
+    end
+
+    local minutes = math.floor(seconds / 60)
+    local whole_seconds = math.floor(seconds % 60)
+    return string.format("%dm%ds", minutes, whole_seconds)
+end
+
+--- Format the current elapsed time since start_time_ms.
+--- Used for in-progress tools to show how long they've been running.
+---
+---@param start_time_ms integer
+---@return string
+function base.format_elapsed_time(start_time_ms)
+    local now_ms = os.time() * 1000 + math.floor(vim.uv.hrtime() / 1e6 % 1000)
+    local elapsed_ms = now_ms - start_time_ms
+    if elapsed_ms < 0 then
+        return "?ms"
+    end
+    return base.format_duration_ms(elapsed_ms)
+end
 
 --- Render progress messages for an in-progress tool call.
 --- Shows animated spinner, tool name, and up to 3 most recent progress updates.
---- When the tool is done, this is a no-op.
+--- When the tool is done, shows the final duration.
 ---
 ---@param lines LinesBuilder
 ---@param tool_call ToolCall
 ---@param is_done boolean
-function M.render_progress(lines, tool_call, is_done)
+function base.render_progress(lines, tool_call, is_done)
     if is_done then
+        -- * tool is done - show duration
+        if tool_call.call_output and tool_call.call_output.duration_ms then
+            local duration_str = base.format_duration_ms(tool_call.call_output.duration_ms)
+            lines:append_line(string.format("⏱️  Total time: %s", duration_str))
+        end
         return
     end
 
@@ -20,9 +68,11 @@ function M.render_progress(lines, tool_call, is_done)
     local spinner_index = math.floor((current_time / 100000000) % #spinner_chars) + 1
     local spinner_char = spinner_chars[spinner_index]
 
-    -- Show header with tool name and spinner
+    -- Show header with tool name, spinner, and elapsed time
     local func_name = tool_call["function"].name or "unknown_tool"
-    lines:append_line(string.format("%s ⏳ Running: %s", spinner_char, func_name))
+    local start_time_ms = tool_call.start_time_ms or 0
+    local elapsed_str = base.format_elapsed_time(start_time_ms)
+    lines:append_line(string.format("%s ⏳ Running: %s (%s)", spinner_char, func_name, elapsed_str))
 
     -- Show recent progress messages (up to 3 most recent)
     local num_progress = #tool_call.progress_messages
@@ -47,4 +97,4 @@ function M.render_progress(lines, tool_call, is_done)
     end
 end
 
-return M
+return base
