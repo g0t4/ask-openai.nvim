@@ -2,6 +2,7 @@ local log = require("ask-openai.logs.logger").predictions()
 local files = require("ask-openai.helpers.files")
 local llama_server_client = require("ask-openai.backends.llama_cpp.llama_server_client")
 local messages = require("devtools.messages")
+local tables = require("ask-openai.helpers.tables")
 local config = require("ask-openai.config")
 
 --- see https://platform.openai.com/docs/api-reference/chat/create
@@ -46,16 +47,6 @@ end
 
 ---@return table body
 function AgentTrace:next_curl_request_body()
-    ---@param array any[]
-    ---@return any[]
-    function clone_array_container_not_items(array)
-        local copy = {}
-        for i = 1, #array do
-            copy[i] = array[i]
-        end
-        return copy
-    end
-
     local body = {
         -- FYI keep in mind the messages you send DO not mirror the ones you've received...
         --  each turn adds one assistant response message and then you feed in a user message (follow up)...
@@ -66,7 +57,7 @@ function AgentTrace:next_curl_request_body()
         --        thse are the two likely paths right now
         --        you can prefill that analysis
         --        you can actually prefill bogus messages too!
-        messages = clone_array_container_not_items(self.messages),
+        messages = tables.shallow_copy(self.messages),
     }
     -- PRN keep/drop thinking myself? btw clone messages before changing them
     -- merge params onto root of body:
