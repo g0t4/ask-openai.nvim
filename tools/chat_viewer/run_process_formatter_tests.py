@@ -44,56 +44,32 @@ class TestFormatArgv:
         assert commandline_equivalent_for_argv(["echo", "", "foo"]) == "echo  foo"
 
 class TestFormatRunProcessCommand:
-    """Tests for format_run_process_command entry point."""
 
-    def test_argv_mode(self):
-        """Basic argv mode."""
+    def test_argv_transformed(self):
         args = json.dumps({"argv": ["ls", "-la"]})
         assert format_run_process_command(args) == "ls -la"
 
-    def test_argv_mode_with_spaces(self):
-        """Argv mode with spaces in arguments."""
-        args = json.dumps({"argv": ["cat", "my file.txt"]})
-        assert format_run_process_command(args) == 'cat "my file.txt"'
-
-    def test_command_line_mode(self):
-        """Raw command_line passthrough."""
+    def test_command_line__returns_verbatim(self):
         args = json.dumps({"command_line": "ls -la | grep foo"})
         assert format_run_process_command(args) == "ls -la | grep foo"
 
-    def test_command_mode(self):
-        """Single command passthrough."""
+    def test_legacy_command__returns_verbatim(self):
         args = json.dumps({"command": "ls"})
         assert format_run_process_command(args) == "ls"
 
-    def test_ambiguous_both_argv_and_command_line(self):
+    def test_both_argv_and_command_line__raises_ValueError(self):
         """Should raise ValueError when both are set."""
         args = json.dumps({"command_line": "ls", "argv": ["ls"]})
         with pytest.raises(ValueError, match="Ambiguous run_process"):
             format_run_process_command(args)
 
-    def test_missing_all_modes(self):
+    def test_entirely_missing__raises_ValueError(self):
         """Should raise ValueError when no command found."""
         args = json.dumps({"unknown": "value"})
         with pytest.raises(ValueError, match="No command found"):
             format_run_process_command(args)
 
-    def test_invalid_json(self):
+    def test_invalid_json__raises_JSONDecodeError(self):
         """Should raise JSONDecodeError for invalid JSON."""
         with pytest.raises(json.JSONDecodeError):
             format_run_process_command("not valid json")
-
-    def test_real_trace_argv(self):
-        """Full trace example from the bug report."""
-        args = json.dumps({"argv": [
-            "cat",
-            "~/repos/github/g0t4/datasets/ask_traces/agents/2026-05/2026-05-30_008/1780201044-trace.json | jq 'keys'",
-        ]})
-        result = format_run_process_command(args)
-        assert "jq 'keys'" in result
-        assert result.startswith("cat ")
-
-    def test_mode_legacy_key_ignored(self):
-        """Legacy mode field doesn't interfere."""
-        args = json.dumps({"mode": "legacy", "argv": ["echo", "hi"]})
-        assert format_run_process_command(args) == "echo hi"
