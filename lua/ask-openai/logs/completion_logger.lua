@@ -3,8 +3,6 @@ local json = require("dkjson")
 
 local M = {
     last_done = {},
-    LOG_ALL_SSEs = true,
-    -- LOG_ALL_SSEs = false,
 }
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
@@ -45,13 +43,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
 
     local accum = request.accum or {}
     request.accum = accum
-
-    if M.LOG_ALL_SSEs then
-        local all_sses = request.all_sses or {}
-        request.all_sses = all_sses
-
-        all_sses[#all_sses + 1] = sse_parsed
-    end
 
     local choices = sse_parsed.choices
     if not choices then
@@ -107,20 +98,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         --  OR, was it just that I was duplicating the assistant message (randomly b/c that logic to insert the new message would execute before/after this saved b/c this used to be async via vim.vim.defer_fn(function() ... end,0)
         --    btw if it was just duplicates, then now that I do not vim.defer_fn anymore for this part then timing wise the trace_message can't be added
         M.save_trace(request, frontend, accum, sse_parsed)
-        -- TODO consider if you want part of what trace has (i.e. other request body inputs)... perhaps just log that separately? in another file? and then not log *-trace.json anymore and just rely on messages.jsonl?
-        --  that said I was unhappy with messages alone today too so gahhh (I also ripped out messages.jsonl)
-
-        if M.LOG_ALL_SSEs then
-            -- PRN save to 123-sses.jsonl?
-            --   SSEs are fairly standardized => thus jsonl would likely read table-like
-            --   for all but first(s)/last(s)
-            local all_path = save_dir .. "/" .. trace_id .. "/all_sses.json"
-            local all_file = io.open(all_path, "w")
-            if all_file then
-                all_file:write(json.encode(all_sses, { indent = true }))
-                all_file:close()
-            end
-        end
     end
 end
 
