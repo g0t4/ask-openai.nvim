@@ -591,6 +591,304 @@ def _extract_paths_from_message(message: dict[str, Any]) -> list[str]:
     return paths
 
 
+
+# ─────────────────────────────────────────────
+# Path denoising
+# ─────────────────────────────────────────────
+
+# JSON-RPC method name prefixes that are not file paths
+_JSONRPC_METHOD_PREFIXES = frozenset([
+    "notifications/",
+    "tasks/",
+    "tool/call",
+    "tool/instruction",
+    "tools/call",
+    "request/response",
+    "reasoning/content",
+    "mcp/fetch",
+    "mcp/init",
+])
+
+# Known abbreviations/phrases that contain slashes but aren't paths
+_ABBREVIATIONS = frozenset([
+    "add/remove/replace",
+    "and/or",
+    "b/w",
+    "b/c",
+    "s/b",
+    "w/o",
+    "dict/list",
+    "code/message/data",
+    "central/cached",
+    "format/style",
+    "ideas/steps",
+    "logging/setLevel",
+    "question/statement",
+    "title/header",
+    "scenarios/tools",
+    "task/request",
+    "notifications/cancelled",
+    "notifications/initialized",
+    "notifications/message",
+    "notifications/progress",
+    "notifications/tasks/status",
+    "tool/call",
+    "tool/instruction",
+    "tools/call",
+    "tasks/cancel",
+    "tasks/get",
+    "tasks/list",
+    "tasks/result",
+    "request/response",
+    "reasoning/content",
+    "mcp/fetch",
+    "mcp/init.lua",
+    "mcp/init",
+    "messages/shared.lua",
+    "notifications",
+])
+
+# Extensions that indicate a real file (not just a directory or method name)
+_FILE_EXTENSIONS = frozenset([
+    ".lua", ".py", ".js", ".ts", ".rs", ".go", ".c", ".h", ".java",
+    ".kt", ".rb", ".swift", ".php", ".cpp", ".cs", ".dart", ".scala",
+    ".toml", ".yaml", ".yml", ".json", ".xml", ".md", ".txt", ".sh",
+    ".fish", ".zsh", ".bash", ".env", ".jinja", ".css", ".html",
+    ".vue", ".svelte", ".graphql", ".proto", ".nix", ".vim",
+    ".lua", ".gitignore", ".dockerignore", ".editorconfig",
+    ".tf", ".hcl", ".terraform", ".lock",
+])
+
+# Common HTML tag names that show up as URL fragments
+_HTML_TAGS = frozenset([
+    "button", "div", "if", "pre", "span", "script", "web", "selection",
+    "readonly", "tool_delegate",
+])
+
+
+def _is_abbreviation(path: str) -> bool:
+    """Check if the path is a known English abbreviation/phrase."""
+    # Strip leading/trailing punctuation
+    stripped = path.strip().rstrip(",.!")
+    return stripped in _ABBREVIATIONS
+
+
+def _is_jsonrpc_method(path: str) -> bool:
+    """Check if the path looks like a JSON-RPC method name."""
+    for prefix in _JSONRPC_METHOD_PREFIXES:
+        if path.startswith(prefix):
+            return True
+    return False
+
+
+
+
+def _has_line_number_suffix(path: str) -> bool:
+    """Check if the path ends with a line number pattern (e.g., file.lua:1:)."""
+    # Match patterns like: file.lua:1: or file.lua:616:46:
+    if re.search(r'\.[a-zA-Z]+:\d+:', path):
+        return True
+    return False
+
+
+def _is_diff_hunk(path: str) -> bool:
+    """Check if the path looks like a diff hunk marker (e.g., file.lua-611-)."""
+    # Match patterns like: file.lua-611- or file.lua-614-end
+    if re.search(r'\.[a-zA-Z]+-\d+-', path):
+        return True
+    # Match patterns like: file.lua-129----
+    if re.search(r'\.[a-zA-Z]+-\d+---', path):
+        return True
+    return False
+
+
+def _is_json_value_noise(path: str) -> bool:
+    """Check if the path looks like a JSON value converted to string."""
+    # Patterns like nil/0/false), true/1/true, etc.
+    if re.match(r'(?:nil|true|false|0|1|2|3|4|5|6|7|8|9)/', path):
+        return True
+    if path.endswith(')'):
+        return True
+    return False
+
+
+
+def _is_diff_marker_prefix(path: str) -> bool:
+    """Check if the path has a diff marker prefix (a/ or b/)."""
+    # In diffs, a/ and b/ prefixes indicate added/removed files
+    if re.match(r'^[ab]/', path):
+        return True
+    return False
+
+
+def _is_mime_type(path: str) -> bool:
+    """Check if the path looks like a MIME type."""
+    # MIME types have format type/subtype with optional parameters
+    # Common ones: application/json, text/event-stream, application/json;text/event-stream
+    if re.match(r'^application/|^text/', path) and ';' in path:
+        return True
+    return False
+
+
+def _has_line_range_suffix(path: str) -> bool:
+    """Check if the path ends with a line range pattern (file:0-19, file:15-34)."""
+    # Match patterns like: file:0-19 or file:606-625
+    if re.search(r':\d+-\d+$', path):
+        return True
+    return False
+
+
+
+
+def _has_trailing_colon(path: str) -> bool:
+    """Check if the path ends with a colon (likely not a real path)."""
+    return path.endswith(':')
+
+def _is_html_fragment(path: str) -> bool:
+    """Check if the path is likely an HTML tag or URL fragment."""
+    # If it has a file extension, it's probably a real file
+    has_extension = any(path.endswith(ext) for ext in _FILE_EXTENSIONS)
+    if has_extension:
+        return False
+    # Extract the basename (after last /)
+    if "/" in path:
+        basename = path.rsplit("/", 1)[-1]
+    else:
+        basename = path
+    # Strip trailing colons (like tools/list:)
+    name_no_colon = basename.rstrip(":")
+    return name_no_colon in _HTML_TAGS
+
+
+def _is_glob_pattern(path: str) -> bool:
+    """Check if the path contains glob wildcards."""
+    return "*" in path
+
+
+def _is_short_url_fragment(path: str) -> bool:
+    """Check if the path is a short slash-prefixed fragment (likely a URL, not a file)."""
+    # Paths starting with / but with only one segment (no extension)
+    if not path.startswith("/"):
+        return False
+    # Must NOT have a file extension
+    has_extension = any(path.endswith(ext) for ext in _FILE_EXTENSIONS)
+    if has_extension:
+        return False
+    # Split by / and check segments
+    segments = [s for s in path.split("/") if s]
+    # Single-segment paths like /button, /div, /mcp are suspicious
+    if len(segments) == 1:
+        return True
+    # Two-segment paths where second is a common English word
+    if len(segments) == 2:
+        second_word = segments[1].lower().rstrip(":")
+        # Filter out obvious non-path patterns
+        suspicious_words = frozenset([
+            "button", "div", "if", "pre", "span", "script", "web",
+            "selection", "readonly",
+            "mcp", "tools", "low", "medium",
+            "norag", "commands", "commits",
+        ])
+        if second_word in suspicious_words:
+            return True
+    return False
+
+
+def _is_dot_dir_only(path: str) -> bool:
+    """Check if path is only a dot-directory (e.g., .agents/instructs)."""
+    # This is actually useful info, so we don't filter it
+    return False
+
+
+def _is_valid_path(path: str) -> bool:
+    """Determine if a path is likely a real file path and not noise."""
+    # Filter out abbreviations first
+    if _is_abbreviation(path):
+        return False
+    
+    # Filter out JSON-RPC methods
+    if _is_jsonrpc_method(path):
+        return False
+    
+    # Filter out glob patterns
+    if _is_glob_pattern(path):
+        return False
+    
+    # Filter out short URL fragments
+    if _is_short_url_fragment(path):
+        return False
+    
+    # Filter out HTML tag fragments
+    if _is_html_fragment(path):
+        return False
+    
+    # Filter out paths with line number suffixes (file.lua:1:)
+    if _has_line_number_suffix(path):
+        return False
+    
+    # Filter out diff hunk markers (file.lua-611-)
+    if _is_diff_hunk(path):
+        return False
+    
+    # Filter out JSON value noise (nil/0/false), etc.)
+    if _is_json_value_noise(path):
+        return False
+    
+    # Filter out diff marker prefixes (a/ or b/)
+    if _is_diff_marker_prefix(path):
+        return False
+    
+    # Filter out MIME types
+    if _is_mime_type(path):
+        return False
+    
+    # Filter out paths with line range suffixes (file:0-19)
+    if _has_line_range_suffix(path):
+        return False
+    
+    # Filter out paths ending with colons
+    if _has_trailing_colon(path):
+        return False
+    
+    # Paths with extensions are likely valid
+    has_extension = any(path.endswith(ext) for ext in _FILE_EXTENSIONS)
+    if has_extension:
+        return True
+    
+    # Tilde paths are almost always valid
+    if path.startswith("~"):
+        return True
+    
+    # Absolute paths with multiple segments might be valid
+    if path.startswith("/") and path.count("/") >= 2:
+        return True
+    
+    # Relative paths with multiple segments
+    if "/" in path:
+        segments = path.split("/")
+        if len(segments) >= 3:
+            return True
+    
+    return False
+
+
+def _denoise_paths(paths: list[str]) -> list[str]:
+    """Remove noise from extracted paths, keeping only likely real paths."""
+    seen: set[str] = set()
+    unique_paths: list[str] = []
+    
+    for path in paths:
+        if path in seen:
+            continue
+        seen.add(path)
+        
+        if _is_valid_path(path):
+            unique_paths.append(path)
+    
+    return unique_paths
+
+
+
 def extract_paths_from_trace(trace_path: Path) -> list[str]:
     """Extract all file paths from a single trace JSON file.
 
@@ -636,7 +934,8 @@ def extract_paths_from_trace(trace_path: Path) -> list[str]:
             seen.add(path)
             unique_paths.append(path)
 
-    return unique_paths
+    # Denoise: filter out obvious non-paths (abbreviations, JSON-RPC methods, etc.)
+    return _denoise_paths(unique_paths)
 
 
 def find_trace_files(root_dir: Path) -> list[Path]:
