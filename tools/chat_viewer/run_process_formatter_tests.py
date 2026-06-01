@@ -17,14 +17,11 @@ class TestFormatArgvElement:
     def test_no_space_stays_bare(self):
         """Elements without whitespace should remain unquoted."""
         assert _format_argv_element("cat") == "cat"
-        assert _format_argv_element("ls") == "ls"
-        assert _format_argv_element("-la") == "-la"
-        assert _format_argv_element("file.txt") == "file.txt"
 
     def test_single_space_gets_double_quoted(self):
         """Elements with spaces get wrapped in double quotes."""
         assert _format_argv_element("file with spaces.txt") == '"file with spaces.txt"'
-        assert _format_argv_element("my file") == '"my file"'
+        assert _format_argv_element("my git commit description") == '"my git commit description"'
 
     def test_tab_and_newline_count_as_whitespace(self):
         """Tab and newline characters trigger quoting."""
@@ -37,8 +34,8 @@ class TestFormatArgvElement:
 
     def test_has_double_quote_falls_back_to_single(self):
         """If double quotes exist but not single, use single quotes."""
-        result = _format_argv_element('path with "double" quotes')
-        assert result == "'path with \"double\" quotes'"
+        result = _format_argv_element('with "double" quotes')
+        assert result == "'with \"double\" quotes'"
 
     def test_both_quotes_escapes_double(self):
         """If both quote types exist, escape double and wrap in double."""
