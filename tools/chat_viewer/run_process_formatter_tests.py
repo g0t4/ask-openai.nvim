@@ -17,8 +17,8 @@ class TestFormatArgv:
         assert result == 'cat "my file.txt"'
 
     def test_tab_and_newline_count_as_whitespace_and_get_quoted(self):
-        assert format_argv(["file\twith\ttab"]) == '"file\twith\ttab"'
-        assert format_argv(["line1\nline2"]) == '"line1\nline2"'
+        assert format_argv(["echo", "I\thave\ttabs"]) == 'echo "I\thave\ttabs"'
+        assert format_argv(["echo", "line1\nline2"]) == 'echo "line1\nline2"'
 
     def test_no_double_quote_uses_double_quotes(self):
         """If no double quotes in value, use double quotes."""
@@ -30,18 +30,19 @@ class TestFormatArgv:
         ]) == "cat \"1780201044-trace.json | jq 'keys'\""
 
     def test_has_double_quote_falls_back_to_single(self):
-        """If double quotes exist but not single, use single quotes."""
+        """If value has double quotes but not single quotes, use single quotes."""
         result = format_argv(['git', 'commit', '-m', 'with "double" quotes'])
         assert result == "git commit -m 'with \"double\" quotes'"
 
     def test_both_quotes_escapes_double(self):
         """If both quote types exist, escape double and wrap in double."""
-        result = format_argv(['she said "hello" and \'hi\''])
-        assert result == '"she said \\"hello\\" and \'hi\'"'
+        result = format_argv(['echo', 'she said "hello" and \'hi\''])
+        assert result == 'echo "she said \\"hello\\" and \'hi\'"'
 
     def test_empty_string(self):
         """Empty string should remain empty."""
-        assert format_argv([""]) == ""
+        # TODO how do I want to handle this case? leave in double space?
+        assert format_argv(["echo", "", "foo"]) == "echo  foo"
 
 class TestFormatRunProcessCommand:
     """Tests for format_run_process_command entry point."""
