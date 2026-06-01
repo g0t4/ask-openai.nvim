@@ -95,7 +95,7 @@ function FloatWindow:set_title(title)
     if not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then
         return
     end
-    vim.api.nvim_win_set_config(self.win_id, { title = title, title_pos = "center" })
+    vim.api.nvim_win_set_config(self.win_id, { title = " " .. title .. " ", title_pos = "center" })
 end
 
 return FloatWindow
