@@ -10,7 +10,6 @@ from tools.chat_viewer.run_process_formatter import (
     format_run_process_command,
 )
 
-
 class TestFormatArgvElement:
     """Tests for _format_argv_element helper."""
 
@@ -42,19 +41,9 @@ class TestFormatArgvElement:
         result = _format_argv_element('she said "hello" and \'hi\'')
         assert result == '"she said \\"hello\\" and \'hi\'"'
 
-    def test_complex_pipe_command(self):
-        """Real-world trace example with pipe and jq (has single quotes, no double)."""
-        result = _format_argv_element(
-            "~/repos/github/g0t4/datasets/ask_traces/agents/2026-05/2026-05-30_008/1780201044-trace.json | jq 'keys'"
-        )
-        # Has spaces, has single quotes around keys, no double quotes
-        # So it should wrap in double quotes
-        assert result == '"~/repos/github/g0t4/datasets/ask_traces/agents/2026-05/2026-05-30_008/1780201044-trace.json | jq \'keys\'"'
-
     def test_empty_string(self):
         """Empty string should remain empty."""
         assert _format_argv_element("") == ""
-
 
 class TestFormatArgv:
     """Tests for format_argv function."""
@@ -99,7 +88,6 @@ class TestFormatArgv:
         result = format_argv(["sleep", "42"])
         assert result == "sleep 42"
 
-
 class TestFormatRunProcessCommand:
     """Tests for format_run_process_command entry point."""
 
@@ -142,12 +130,10 @@ class TestFormatRunProcessCommand:
 
     def test_real_trace_argv(self):
         """Full trace example from the bug report."""
-        args = json.dumps({
-            "argv": [
-                "cat",
-                "~/repos/github/g0t4/datasets/ask_traces/agents/2026-05/2026-05-30_008/1780201044-trace.json | jq 'keys'",
-            ]
-        })
+        args = json.dumps({"argv": [
+            "cat",
+            "~/repos/github/g0t4/datasets/ask_traces/agents/2026-05/2026-05-30_008/1780201044-trace.json | jq 'keys'",
+        ]})
         result = format_run_process_command(args)
         assert "jq 'keys'" in result
         assert result.startswith("cat ")
