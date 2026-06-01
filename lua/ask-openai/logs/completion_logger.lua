@@ -43,25 +43,25 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     -- last SSE choices:
     -- choices = { { delta = vim.empty_dict(), finish_reason = "stop", index = 0 } },
 
-    accum = request.accum or {}
+    local accum = request.accum or {}
     request.accum = accum
 
     if M.LOG_ALL_SSEs then
-        all_sses = request.all_sses or {}
+        local all_sses = request.all_sses or {}
         request.all_sses = all_sses
 
         all_sses[#all_sses + 1] = sse_parsed
     end
 
-    choices = sse_parsed.choices
+    local choices = sse_parsed.choices
     if not choices then
         return
     end
-    first = choices[1]
+    local first = choices[1]
     if not first then
         return
     end
-    delta = first.delta
+    local delta = first.delta
     if not delta then
         return
     end
@@ -114,7 +114,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             -- PRN save to 123-sses.jsonl?
             --   SSEs are fairly standardized => thus jsonl would likely read table-like
             --   for all but first(s)/last(s)
-            local all_file = io.open(save_dir .. "/" .. trace_id .. "/all_sses.json", "w")
+            local all_path = save_dir .. "/" .. trace_id .. "/all_sses.json"
+            local all_file = io.open(all_path, "w")
             if all_file then
                 all_file:write(json.encode(all_sses, { indent = true }))
                 all_file:close()
