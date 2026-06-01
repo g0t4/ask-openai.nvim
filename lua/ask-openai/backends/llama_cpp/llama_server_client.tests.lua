@@ -169,9 +169,9 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         local response = LlamaServerClient.v1_chat_completions(base_url, body)
 
         -- * assertions:
-        vim.print(response)
+        -- vim.print(response)
 
-        vim.print(response.body.__verbose.content)
+        -- vim.print(response.body.__verbose.content)
         -- FYI here is sample model output (it isn't double encoded) and it is a JSON object now:
         --  and duh wes, it doesn't really matter either way b/c if its a JSON object it needs the exact same escaping of "... will look the same
         --   my thinking I need string was like... raw string (not JSON at all)... but the model doesn't seem to want to do that
@@ -277,7 +277,7 @@ patch: string,
 
         str(prompt):should_start_with(harmony.START)
         local expected_thinking = harmony.msg_assistant_analysis "We need to run date command."
-        local expected_tool_call = harmony.msg_assistant_json_tool_call("functions.run_command", '{"command":"date"}')
+        local expected_tool_call = harmony.msg_assistant_json_tool_call("functions.run_command", '{"command": "date"}')
         -- CONFIRMED per spec, assistant tool call _REQUESTS_, recipient `to=` comes _AFTER_ (harmony.CHANNEL)commentary
         --    but, it can also come before (in role) ...
         --    in testing:
@@ -322,6 +322,7 @@ patch: string,
 
     it("model formats tool call request with recipient AFTER " .. harmony.CHANNEL .. "commentary to=functions.xyz (not before/in the role)", function()
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/request_tool_call.json")
+        body.verbose = true -- my build of llama-server supports returning __verbose on individual requests with body.verbose set to True
 
         local response = LlamaServerClient.v1_chat_completions(base_url, body)
         -- vim.print(response)
@@ -334,7 +335,6 @@ patch: string,
         -- FYI PER SPEC, recipient can be in role or in channel
         --   => it is possible the model could generate it before, so far I have not seen it with this particular request
         --   and I do see different thinking (analysis) so it's not a seeding issue
-        --   o
         --   if need be (operative words) => use different user message requests and/or different tool definitions and see if it changes placement
 
         local raw = response.body.__verbose.content
