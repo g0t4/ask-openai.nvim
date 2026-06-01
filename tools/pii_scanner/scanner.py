@@ -512,6 +512,19 @@ _FILE_PATH_RE = re.compile(
 )
 
 
+# URL pattern to strip before path extraction
+_URL_RE = re.compile(r'https?://[^\s<>\"\}\)\],;]+')
+
+
+def _strip_urls_from_text(text: str) -> str:
+    """Remove HTTP/HTTPS URLs from a text string.
+
+    This prevents URLs from being misidentified as file paths.
+    """
+    return _URL_RE.sub('', text)
+
+
+
 def _try_json_decode(value: str) -> Any | None:
     """Attempt to deserialize a string as JSON.
 
@@ -536,14 +549,16 @@ def _extract_paths_from_value(value: Any) -> list[str]:
     found_paths: list[str] = []
 
     if isinstance(value, str):
+        # Strip URLs first to prevent them from being misidentified as paths
+        cleaned_value = _strip_urls_from_text(value)
         # First, try to decode as JSON to handle nested serialized objects
-        decoded = _try_json_decode(value)
+        decoded = _try_json_decode(cleaned_value)
         if decoded is not None:
             # Recurse into the decoded structure
             found_paths.extend(_extract_paths_from_value(decoded))
         else:
             # Not JSON — treat as a raw string and search for paths
-            matches = [m.group() for m in _FILE_PATH_RE.finditer(value)]
+            matches = [m.group() for m in _FILE_PATH_RE.finditer(cleaned_value)]
             found_paths.extend(matches)
 
     elif isinstance(value, dict):
@@ -744,6 +759,39 @@ def _has_trailing_colon(path: str) -> bool:
     """Check if the path ends with a colon (likely not a real path)."""
     return path.endswith(':')
 
+
+
+def _strip_line_number_suffix(path: str) -> str:
+    """Strip line number ranges from a path, preserving the file path.
+
+    Examples:
+        file.lua:1:       -> file.lua
+        file.lua:616:46:  -> file.lua
+        file.lua-611-     -> file.lua-611
+        file.lua-129----  -> file.lua-129
+        file:0-19         -> file
+    """
+    # Pattern: file.ext-N--- or file.ext-N----- (diff hunk with multiple dashes)
+    cleaned = re.sub(r'(\.[a-zA-Z]+-\d+)---.*', r'\1', path)
+    
+    # Pattern: file.ext-N- (diff hunk with single dash)
+    cleaned = re.sub(r'(\.[a-zA-Z]+-\d+)-.*$', r'\1', cleaned)
+    
+    # Pattern: file.ext:N:M: (line:column with trailing colon or more)
+    cleaned = re.sub(r'(\.[a-zA-Z]+:\d+):.*', r'\1', cleaned)
+    
+    # Pattern: file.ext:N: (line number with trailing colon)
+    cleaned = re.sub(r'(\.[a-zA-Z]+):\d+:.*$', r'\1', cleaned)
+    
+    # Pattern: file.ext:N (single line number at end)
+    cleaned = re.sub(r'(\.[a-zA-Z]+):\d+$', r'\1', cleaned)
+    
+    # Pattern: file:N-M (line range on non-file paths like file:0-19)
+    cleaned = re.sub(r':(\d+-\d+)$', '', cleaned)
+    
+    return cleaned
+
+
 def _is_html_fragment(path: str) -> bool:
     """Check if the path is likely an HTML tag or URL fragment."""
     # If it has a file extension, it's probably a real file
@@ -758,12 +806,6 @@ def _is_html_fragment(path: str) -> bool:
     # Strip trailing colons (like tools/list:)
     name_no_colon = basename.rstrip(":")
     return name_no_colon in _HTML_TAGS
-
-
-def _is_glob_pattern(path: str) -> bool:
-    """Check if the path contains glob wildcards."""
-    return "*" in path
-
 
 def _is_short_url_fragment(path: str) -> bool:
     """Check if the path is a short slash-prefixed fragment (likely a URL, not a file)."""
@@ -810,10 +852,6 @@ def _is_valid_path(path: str) -> bool:
     if _is_jsonrpc_method(path):
         return False
     
-    # Filter out glob patterns
-    if _is_glob_pattern(path):
-        return False
-    
     # Filter out short URL fragments
     if _is_short_url_fragment(path):
         return False
@@ -822,13 +860,8 @@ def _is_valid_path(path: str) -> bool:
     if _is_html_fragment(path):
         return False
     
-    # Filter out paths with line number suffixes (file.lua:1:)
-    if _has_line_number_suffix(path):
-        return False
-    
-    # Filter out diff hunk markers (file.lua-611-)
-    if _is_diff_hunk(path):
-        return False
+    # Strip line number suffixes (we keep the file, just remove the line info)
+    path = _strip_line_number_suffix(path)
     
     # Filter out JSON value noise (nil/0/false), etc.)
     if _is_json_value_noise(path):
@@ -878,12 +911,20 @@ def _denoise_paths(paths: list[str]) -> list[str]:
     unique_paths: list[str] = []
     
     for path in paths:
-        if path in seen:
-            continue
-        seen.add(path)
+        # Normalize: strip leading ./ to deduplicate (./file.lua == file.lua)
+        normalized_path = path
+        if path.startswith('./'):
+            normalized_path = path[2:]
         
-        if _is_valid_path(path):
-            unique_paths.append(path)
+        # Strip line number suffixes (e.g., file.lua:1:, file.lua-611-)
+        stripped_path = _strip_line_number_suffix(normalized_path)
+        
+        if stripped_path in seen:
+            continue
+        seen.add(stripped_path)
+        
+        if _is_valid_path(stripped_path):
+            unique_paths.append(stripped_path)
     
     return unique_paths
 
