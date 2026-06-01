@@ -6,7 +6,6 @@ for argv elements containing whitespace.
 
 import json
 
-
 def _format_argv_element(element: str) -> str:
     """Format a single argv element for display.
 
@@ -32,7 +31,6 @@ def _format_argv_element(element: str) -> str:
     escaped = element.replace('"', '\\"')
     return f'"{escaped}"'
 
-
 def format_argv(argv: list[str]) -> str:
     """Join argv array into a displayable string with proper quoting.
 
@@ -46,7 +44,6 @@ def format_argv(argv: list[str]) -> str:
         A human-readable command string.
     """
     return " ".join(_format_argv_element(str(arg)) for arg in argv)
-
 
 def format_run_process_command(arguments: str) -> str:
     """Parse run_process arguments and return a displayable command string.
@@ -70,7 +67,7 @@ def format_run_process_command(arguments: str) -> str:
 
     command_line = obj.get("command_line")
     argv = obj.get("argv", [])
-    command = obj.get("command") # legacy name
+    command = obj.get("command")  # legacy name
 
     if command_line and argv:
         raise ValueError("Ambiguous run_process - both command_line and argv are set")
