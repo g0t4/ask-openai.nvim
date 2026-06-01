@@ -42,6 +42,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     -- last SSE choices:
     -- choices = { { delta = vim.empty_dict(), finish_reason = "stop", index = 0 } },
 
+    -- accum the full message (from streaming SSEs) so I can log for all frontends here
     local accum = request.accum or {}
     request.accum = accum
 
@@ -84,6 +85,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         }
 
         local messages_snapshot = tables.shallow_copy(request.body.messages or {})
+        -- FYI it is possible the distill in AgentsFrontend has a difference that you need to keep, if so then call save_trace from that spot and not here just for AgentsFrontend (find a way to pass last_sse, that's the only complexity)
         table.insert(messages_snapshot, accum)
         vim.schedule(function()
             M.save_trace(request, frontend, messages_snapshot, sse_parsed)
