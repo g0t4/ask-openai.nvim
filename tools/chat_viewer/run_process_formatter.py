@@ -7,8 +7,7 @@ for argv elements containing whitespace.
 import json
 
 def _quote_argv_element(element: str) -> str:
-    """Format a single argv element for display.
-
+    """
     Only adds quotes when the element contains whitespace.
     Uses double quotes by default, falling back to single quotes
     or escaped double quotes if both quote types are present.
@@ -32,16 +31,8 @@ def _quote_argv_element(element: str) -> str:
     return f'"{escaped}"'
 
 def format_argv(argv: list[str]) -> str:
-    """Join argv array into a displayable string with proper quoting.
-
-    Only quotes elements that contain whitespace, using a fallback
-    strategy: double quotes > single quotes > escaped double quotes.
-
-    Args:
-        argv: The argv array from a run_process tool call.
-
-    Returns:
-        A human-readable command string.
+    """
+    Join argv array into a human-readable string with proper quoting.
     """
     return " ".join(_quote_argv_element(str(arg)) for arg in argv)
 
