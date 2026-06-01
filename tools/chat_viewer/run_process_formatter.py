@@ -6,7 +6,7 @@ for argv elements containing whitespace.
 
 import json
 
-def _format_argv_element(element: str) -> str:
+def _quote_argv_element(element: str) -> str:
     """Format a single argv element for display.
 
     Only adds quotes when the element contains whitespace.
@@ -43,7 +43,7 @@ def format_argv(argv: list[str]) -> str:
     Returns:
         A human-readable command string.
     """
-    return " ".join(_format_argv_element(str(arg)) for arg in argv)
+    return " ".join(_quote_argv_element(str(arg)) for arg in argv)
 
 def format_run_process_command(arguments: str) -> str:
     """Parse run_process arguments and return a displayable command string.
