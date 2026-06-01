@@ -842,6 +842,15 @@ def _is_dot_dir_only(path: str) -> bool:
     return False
 
 
+
+
+def _is_dev_device(path: str) -> bool:
+    """Check if the path is a /dev/ special device file."""
+    # Match paths like /dev/null, /dev/stdin, /dev/stdout, /dev/stderr
+    if re.match(r'^/dev/(null|stdin|stdout|stderr|zero|random|urandom|full|tty|ptmx|console|fd[0-9]+)$', path):
+        return True
+    return False
+
 def _is_valid_path(path: str) -> bool:
     """Determine if a path is likely a real file path and not noise."""
     # Filter out abbreviations first
@@ -858,6 +867,10 @@ def _is_valid_path(path: str) -> bool:
     
     # Filter out HTML tag fragments
     if _is_html_fragment(path):
+        return False
+    
+    # Filter out /dev/ special device files
+    if _is_dev_device(path):
         return False
     
     # Strip line number suffixes (we keep the file, just remove the line info)

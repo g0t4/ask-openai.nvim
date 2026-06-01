@@ -528,3 +528,87 @@ class TestLineNumberInPipeline:
         result = _denoise_paths(paths)
         assert len(result) == 1
         assert result[0] == "~/repos/file.py"
+
+
+# ─────────────────────────────────────────────
+# /dev/ device filtering tests
+# ─────────────────────────────────────────────
+
+class TestDevDeviceFilter:
+    """Test _is_dev_device and _is_valid_path for /dev/ devices."""
+
+    def test_dev_null_filtered(self):
+        from tools.pii_scanner.scanner import _is_dev_device
+        assert _is_dev_device("/dev/null")
+
+    def test_dev_stdin_filtered(self):
+        from tools.pii_scanner.scanner import _is_dev_device
+        assert _is_dev_device("/dev/stdin")
+
+    def test_dev_stdout_filtered(self):
+        from tools.pii_scanner.scanner import _is_dev_device
+        assert _is_dev_device("/dev/stdout")
+
+    def test_dev_stderr_filtered(self):
+        from tools.pii_scanner.scanner import _is_dev_device
+        assert _is_dev_device("/dev/stderr")
+
+    def test_dev_zero_filtered(self):
+        from tools.pii_scanner.scanner import _is_dev_device
+        assert _is_dev_device("/dev/zero")
+
+    def test_dev_random_filtered(self):
+        from tools.pii_scanner.scanner import _is_dev_device
+        assert _is_dev_device("/dev/random")
+
+    def test_dev_urandom_filtered(self):
+        from tools.pii_scanner.scanner import _is_dev_device
+        assert _is_dev_device("/dev/urandom")
+
+    def test_dev_full_filtered(self):
+        from tools.pii_scanner.scanner import _is_dev_device
+        assert _is_dev_device("/dev/full")
+
+    def test_dev_tty_filtered(self):
+        from tools.pii_scanner.scanner import _is_dev_device
+        assert _is_dev_device("/dev/tty")
+
+    def test_dev_fd_numbers_filtered(self):
+        from tools.pii_scanner.scanner import _is_dev_device
+        assert _is_dev_device("/dev/fd0")
+        assert _is_dev_device("/dev/fd1")
+        assert _is_dev_device("/dev/fd99")
+
+    def test_dev_pts_not_filtered(self):
+        from tools.pii_scanner.scanner import _is_dev_device
+        assert not _is_dev_device("/dev/pts/0")
+
+    def test_dev_shm_not_filtered(self):
+        from tools.pii_scanner.scanner import _is_dev_device
+        assert not _is_dev_device("/dev/shm")
+
+    def test_dev_sda_not_filtered(self):
+        from tools.pii_scanner.scanner import _is_dev_device
+        assert not _is_dev_device("/dev/sda")
+
+    def test_dev_paths_not_valid(self):
+        """_is_valid_path should return False for filtered /dev/ paths."""
+        from tools.pii_scanner.scanner import _is_valid_path
+        assert not _is_valid_path("/dev/null")
+        assert not _is_valid_path("/dev/stdin")
+        assert not _is_valid_path("/dev/stdout")
+        assert not _is_valid_path("/dev/stderr")
+
+    def test_dev_paths_removed_from_denoise(self):
+        """_denoise_paths should filter out /dev/ special devices."""
+        from tools.pii_scanner.scanner import _denoise_paths
+        paths = [
+            "lua/ask-openai/tools/file.lua",
+            "/dev/null",
+            "/dev/stdin",
+            "/dev/stdout",
+            "/dev/stderr",
+        ]
+        result = _denoise_paths(paths)
+        assert len(result) == 1
+        assert result[0] == "lua/ask-openai/tools/file.lua"
