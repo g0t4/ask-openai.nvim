@@ -70,7 +70,7 @@ def format_run_process_command(arguments: str) -> str:
 
     command_line = obj.get("command_line")
     argv = obj.get("argv", [])
-    command = obj.get("command")
+    command = obj.get("command") # legacy name
 
     if command_line and argv:
         raise ValueError("Ambiguous run_process - both command_line and argv are set")
