@@ -57,7 +57,7 @@ function base.render_progress(lines, tool_call, is_done)
         -- * tool is done - show duration
         if tool_call.call_output and tool_call.call_output.duration_ms then
             local duration_str = base.format_duration_ms(tool_call.call_output.duration_ms)
-            lines:append_line(string.format("⏱️  Total time: %s", duration_str))
+            lines:append_line(duration_str)
         end
         return
     end
