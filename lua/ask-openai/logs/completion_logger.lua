@@ -1,5 +1,6 @@
 local log = require("ask-openai.logs.logger").predictions()
 local json = require("dkjson")
+local tables = require("ask-openai.helpers.tables")
 
 local M = {
     last_done = {},
@@ -20,21 +21,6 @@ function M.log_request_with(request, frontend)
         trace_id = tostring(frontend.trace.start_time)
     end
     return save_dir, trace_id
-end
-
---- shallow copy only copies the top-level table "container"
---- keys are copied w/ respective values, but values are not copied (use vim.deep_copy for that)
---- works with both list tables and maps
-local function shallow_copy_table(tbl)
-    if not tbl then
-        return {}
-    end
-    local copy = {}
-    for k, v in pairs(tbl) do
-        copy[k] = v
-    end
-    setmetatable(copy, getmetatable(tbl))
-    return copy
 end
 
 ---@param sse_parsed table
@@ -97,7 +83,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             frontend = frontend,
         }
 
-        local messages_snapshot = shallow_copy_table(request.body.messages or {})
+        local messages_snapshot = tables.shallow_copy_table(request.body.messages or {})
         table.insert(messages_snapshot, accum)
         vim.schedule(function()
             M.save_trace(request, frontend, messages_snapshot, sse_parsed)
@@ -118,7 +104,7 @@ function M.save_trace(request, frontend, messages_snapshot, sse_parsed)
     -- log:info("trace path", path)
     local file = io.open(path, "w")
     if file then
-        local request_body_copy = shallow_copy_table(request.body)
+        local request_body_copy = tables.shallow_copy_table(request.body)
         -- this way I can avoid issues with timing and AgentsFrontend modifying request.body.messages to add its distilled version of the assistant message
         request_body_copy.messages = messages_snapshot
         local trace_data = {

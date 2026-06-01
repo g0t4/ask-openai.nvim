@@ -1,0 +1,5 @@
+--- add tests for shallow_copy_table
+---
+--- copy list table
+--- copy map table
+--- copy nil => empty
