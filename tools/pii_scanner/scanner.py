@@ -369,23 +369,30 @@ def run_scan(
     target_dir: Path,
     model_name: str | None = None,
     scoring_threshold: float = 0.5,
+    single_file: Path | None = None,
 ) -> tuple[list[FileScanResult], str]:
-    """Run PII scan on all JSON files in target_dir.
+    """Run PII scan on all JSON files in target_dir, or a single file.
 
     Args:
         target_dir: Directory to scan for JSON files.
         model_name: If provided, use transformers pipeline with this model.
                     If None, use regex-based detection.
         scoring_threshold: Minimum confidence score to report a finding.
+        single_file: Optional single JSON file to scan instead of directory.
 
     Returns:
         A tuple of (results_list, mode_string).
         mode_string is "regex" or "transformers" indicating which method was used.
     """
-    json_files = find_json_files(target_dir)
-    if not json_files:
-        _console.print("[yellow]No JSON files found in target directory.[/]")
-        return [], "regex"
+    # Single file mode
+    if single_file is not None:
+        json_files = [single_file]
+        _console.print(f"[dim]Scanning single file: {single_file.name}[/]\n")
+    else:
+        json_files = find_json_files(target_dir)
+        if not json_files:
+            _console.print("[yellow]No JSON files found in target directory.[/]")
+            return [], "regex"
 
     # Determine detection mode
     use_transformers = model_name is not None

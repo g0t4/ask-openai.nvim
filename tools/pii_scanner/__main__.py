@@ -1,16 +1,18 @@
 """CLI entry point for the PII scanner.
 
 Usage:
-    python -m tools.pii_scanner [OPTIONS] [TARGET_DIR]
+    python -m tools.pii_scanner [OPTIONS] [TARGET]
 
 Examples:
     python -m tools.pii_scanner                              # regex mode (default)
     python -m tools.pii_scanner ./data                       # scan specific directory
+    python -m tools.pii_scanner file.json                    # scan single file
     python -m tools.pii_scanner --threshold 0.8              # higher confidence
     python -m tools.pii_scanner --model openai/privacy-filter  # transformers mode
     python -m tools.pii_scanner --json                       # JSON output
     python -m tools.pii_scanner --show-matches               # display actual PII text
     python -m tools.pii_scanner --extract-paths              # extract file paths from trace files
+    python -m tools.pii_scanner --extract-paths trace.json   # extract from single file
 """
 
 import argparse
@@ -27,6 +29,7 @@ from tools.pii_scanner.scanner import (
     print_file_results,
     run_extract_paths,
     print_extract_paths_results,
+    extract_paths_from_trace,
 )
 
 _console = Console(color_system="truecolor")
@@ -35,14 +38,14 @@ _console = Console(color_system="truecolor")
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
-        description="Scan JSON files in a directory for PII.",
+        description="Scan JSON files for PII, or extract file paths from trace files.",
         epilog=f"PII categories: {', '.join(PII_CATEGORIES)}",
     )
     parser.add_argument(
-        "target_dir",
+        "target",
         nargs="?",
         default=".",
-        help="Directory to scan for JSON files (default: current directory)",
+        help="Directory or single JSON file to scan (default: current directory)",
     )
     parser.add_argument(
         "--model",
@@ -100,9 +103,41 @@ def main(argv: list[str] | None = None) -> None:
     """Main entry point."""
     args = parse_args(argv)
 
-    target_path = Path(args.target_dir).resolve()
+    target_path = Path(args.target).resolve()
+
+    # ── Single file mode ──
+    if target_path.is_file():
+        if not target_path.suffix == ".json":
+            _console.print(f"[red]Error: {target_path} is not a JSON file.[/]")
+            sys.exit(1)
+
+        if args.extract_paths:
+            paths = extract_paths_from_trace(target_path)
+            _console.print(f"[bold]{target_path.name}[/]")
+            _console.print(f"  [dim]{len(paths)} path(s) found[/]")
+            for path in sorted(paths):
+                _console.print(f"  [cyan]{path}[/]")
+            return
+
+        # Single file PII scan
+        results, mode = run_scan(
+            target_dir=target_path.parent,
+            model_name=args.model,
+            scoring_threshold=args.threshold,
+            single_file=target_path,
+        )
+
+        if args.json:
+            output_json(results, mode)
+        else:
+            for result in results:
+                print_file_results(result, mode, show_matches=args.show_matches)
+            print_summary(results, mode)
+        return
+
+    # ── Directory mode ──
     if not target_path.is_dir():
-        _console.print(f"[red]Error: {target_path} is not a directory.[/]")
+        _console.print(f"[red]Error: {target_path} is not a directory or file.[/]")
         sys.exit(1)
 
     # ── Path extraction mode ──
