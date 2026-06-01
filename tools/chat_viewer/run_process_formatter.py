@@ -30,7 +30,7 @@ def _quote_argv_element(element: str) -> str:
     escaped = element.replace('"', '\\"')
     return f'"{escaped}"'
 
-def format_argv(argv: list[str]) -> str:
+def commandline_equivalent_for_argv(argv: list[str]) -> str:
     """
     Join argv array into a human-readable string with proper quoting.
     """
@@ -66,7 +66,7 @@ def format_run_process_command(arguments: str) -> str:
     if command_line:
         return command_line
     if argv:
-        return format_argv(argv)
+        return commandline_equivalent_for_argv(argv)
     if command:
         return command
     raise ValueError("No command found")

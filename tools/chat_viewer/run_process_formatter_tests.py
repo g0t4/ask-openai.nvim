@@ -2,28 +2,28 @@ import json
 import pytest
 
 from tools.chat_viewer.run_process_formatter import (
-    format_argv,
+    commandline_equivalent_for_argv,
     format_run_process_command,
 )
 
 class TestFormatArgv:
 
     def test_no_spaces_remains_unquoted(self):
-        formatted = format_argv(["ls", "-la", "/tmp"])
+        formatted = commandline_equivalent_for_argv(["ls", "-la", "/tmp"])
         assert formatted == "ls -la /tmp"
 
     def test_with_spaces_in_path_is_double_quoted(self):
-        formatted = format_argv(["cat", "my file.txt"])
+        formatted = commandline_equivalent_for_argv(["cat", "my file.txt"])
         assert formatted == 'cat "my file.txt"'
 
     def test_tab_and_newline_count_as_whitespace_and_get_quoted(self):
-        assert format_argv(["echo", "I\thave\ttabs"]) == 'echo "I\thave\ttabs"'
-        assert format_argv(["echo", "line1\nline2"]) == 'echo "line1\nline2"'
+        assert commandline_equivalent_for_argv(["echo", "I\thave\ttabs"]) == 'echo "I\thave\ttabs"'
+        assert commandline_equivalent_for_argv(["echo", "line1\nline2"]) == 'echo "line1\nline2"'
 
     def test_has_single_quotes_without_double_quotes__quotes_with_double(self):
         """If no double quotes in value, use double quotes."""
         # FYI real failures example from Qwen3.6, that made me realize I was missing quoting the argv when showing it as a commandline!
-        assert format_argv([
+        assert commandline_equivalent_for_argv([
             "cat",
             # Qwen accidentally included the rest of the commandline as the second argv entry and thus it failed because that's not a cat-able file!
             "1780201044-trace.json | jq 'keys'",
@@ -31,17 +31,17 @@ class TestFormatArgv:
 
     def test_has_double_quotes__quotes_with_single(self):
         """If value has double quotes but not single quotes, use single quotes."""
-        formatted = format_argv(['git', 'commit', '-m', 'with "double" quotes'])
+        formatted = commandline_equivalent_for_argv(['git', 'commit', '-m', 'with "double" quotes'])
         assert formatted == "git commit -m 'with \"double\" quotes'"
 
     def test_has_both_quote_types__quotes_with_double(self):
         """If both quote types exist, escape double and wrap in double."""
-        formatted = format_argv(['echo', 'she said "hello" and \'hi\''])
+        formatted = commandline_equivalent_for_argv(['echo', 'she said "hello" and \'hi\''])
         assert formatted == 'echo "she said \\"hello\\" and \'hi\'"'
 
     def test_has_empty_argument__results_in_extra_space(self):
         # ? do I want to change this to skip it?
-        assert format_argv(["echo", "", "foo"]) == "echo  foo"
+        assert commandline_equivalent_for_argv(["echo", "", "foo"]) == "echo  foo"
 
 class TestFormatRunProcessCommand:
     """Tests for format_run_process_command entry point."""

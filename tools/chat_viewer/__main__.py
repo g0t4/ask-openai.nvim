@@ -18,7 +18,7 @@ import hashlib
 
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.tree_wrapper import TreeWrapper
-from tools.chat_viewer.run_process_formatter import format_argv
+from tools.chat_viewer.run_process_formatter import commandline_equivalent_for_argv
 from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line
 from tools.chat_viewer.timing_utils import parse_tool_call_timings
 
@@ -561,7 +561,7 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
             if command_line:
                 return command_line
             if argv:
-                return format_argv(argv)
+                return commandline_equivalent_for_argv(argv)
             if command:
                 return command
             raise ValueError("No command found")
