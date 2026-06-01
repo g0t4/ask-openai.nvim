@@ -88,10 +88,13 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             -- FYI if this doesn't exist before the save_trace io write happens, the io write will fail silently
             vim.fn.mkdir(save_dir, "p")
 
-            if request.type ~= "agents" then
-                -- TODO add in accum message too for other frontends... no more response_message!
-                M.save_trace(request, frontend, accum, sse_parsed)
+            if request.type == "agents" then
+                -- will log in AgentsFrontend after it adds the response message to list using its own distillation logic
+                return
             end
+
+            -- TODO add in accum message too for other frontends... no more response_message!
+            M.save_trace(request, frontend, accum, sse_parsed)
         end)
     end
 end
