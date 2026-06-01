@@ -610,11 +610,7 @@ function AgentsFrontend.on_curl_exited_successfully()
             --   theoretically there can be multiple messages, with any role (not just assitant)
             local trace_message = TxChatMessage:from_assistant_rx_message(rx_message)
             trace:add_message(trace_message)
-            --
-            -- TODO capture here after trace_message added for just AgentsFrontend
-            --    TODO make sure other frontends still capture correctly
-            --    FYI old *-messages.jsonl logger call: completion_logger.append_to_messages_jsonl(trace_message, request, AgentsFrontend)
-            --      FYI nuke this is fine, this is just for reference to get completion logger call deferred until here for AgentsFrontend, for what to then pass to log the file after tx message added
+            -- PRN in future if I need this distilled trace_message to be saved and not the accum in completion_logger... then I'd need to trigger logging here for AgentsFrontend
 
             AgentsFrontend.show_user_role_as_follow_up_hint()
 

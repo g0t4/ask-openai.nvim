@@ -22,6 +22,21 @@ function M.log_request_with(request, frontend)
     return save_dir, trace_id
 end
 
+--- shallow copy only copies the top-level table "container"
+--- keys are copied w/ respective values, but values are not copied (use vim.deep_copy for that)
+--- works with both list tables and maps
+local function shallow_copy_table(tbl)
+    if not tbl then
+        return {}
+    end
+    local copy = {}
+    for k, v in pairs(tbl) do
+        copy[k] = v
+    end
+    setmetatable(copy, getmetatable(tbl))
+    return copy
+end
+
 ---@param sse_parsed table
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
@@ -82,45 +97,32 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             frontend = frontend,
         }
 
-        local save_dir, trace_id = M.log_request_with(request, frontend)
-
+        local messages_snapshot = shallow_copy_table(request.body.messages or {})
+        table.insert(messages_snapshot, accum)
         vim.schedule(function()
-            -- FYI if this doesn't exist before the save_trace io write happens, the io write will fail silently
-            vim.fn.mkdir(save_dir, "p")
-
-            if request.type == "agents" then
-                -- will log in AgentsFrontend after it adds the response message to list using its own distillation logic
-                return
-            end
-
-            -- TODO add in accum message too for other frontends... no more response_message!
-            M.save_trace(request, frontend, accum, sse_parsed)
+            M.save_trace(request, frontend, messages_snapshot, sse_parsed)
         end)
     end
 end
 
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
----@param response_message table
+---@param messages_snapshot table[]
 ---@param sse_parsed table
-function M.save_trace(request, frontend, response_message, sse_parsed)
+function M.save_trace(request, frontend, messages_snapshot, sse_parsed)
     local save_dir, trace_id = M.log_request_with(request, frontend)
+    -- FYI if this doesn't exist before the save_trace io write happens, the io write will fail silently
+    vim.fn.mkdir(save_dir, "p")
+
     local path = save_dir .. "/" .. trace_id .. "-trace.json"
     -- log:info("trace path", path)
     local file = io.open(path, "w")
     if file then
-        -- TODO move this logic for AgentsFrontend too? if I keep trace (I plan to ditch it)
+        local request_body_copy = shallow_copy_table(request.body)
+        -- this way I can avoid issues with timing and AgentsFrontend modifying request.body.messages to add its distilled version of the assistant message
+        request_body_copy.messages = messages_snapshot
         local trace_data = {
-            -- 99.99% of the time this is all I need (input messages trace + output message):
-            request_body = request.body,
-            response_message = response_message,
-            --
-            -- FYI must use llama-server's --verbose flag .__verbose.* on last_sse
-            --   __verbose.prompt basically repeats request.body, thus not needed
-            --   rendered prompt can be nice for reproducibility
-            --     but, you can also use /apply-template endpoint to generate it too
-            --     obviously won't capture template changes when rendering
-            --
+            request_body = request_body_copy,
             -- last_sse has:
             --   .timings (top-level and under .__verbose.timings)
             --   .__verbose.(prompt, generation_settings)

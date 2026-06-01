@@ -61,7 +61,7 @@ function Curl.spawn(request, frontend)
 
         -- request stops ASAP, but not immediately
         CurlRequest.terminate(request)
-        frontend.explain_error("Abort... unhandled exception in curl: " .. tostring(error_message))
+        frontend.explain_error("Abort... unhandled exception in curl: " .. vim.inspect(error_message))
     end
 
     local stdout = vim.uv.new_pipe(false)
