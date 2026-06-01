@@ -34,6 +34,180 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         assert.same("llamacpp", model.owned_by, "MUST TEST WITH llama-server")
     end)
 
+
+_describe("testing model info extraction", function()
+
+    it("extract_model_info returns nil for non-table body", function()
+        local model_info = LlamaServerClient.extract_model_info(nil)
+        assert.is_nil(model_info)
+
+        model_info = LlamaServerClient.extract_model_info("not a table")
+        assert.is_nil(model_info)
+    end)
+
+    it("extract_model_info returns nil for empty data array", function()
+        local model_info = LlamaServerClient.extract_model_info({ data = {} })
+        assert.is_nil(model_info)
+    end)
+
+    it("extract_model_info returns nil for data with no id", function()
+        local model_info = LlamaServerClient.extract_model_info({
+            data = {
+                { aliases = {"alias1"}, created = 12345, owned_by = "llamacpp", meta = { n_vocab = 100 } }
+            }
+        })
+        assert.is_nil(model_info)
+    end)
+
+    it("extract_model_info maps OpenAI-compatible data array", function()
+        local sample_body = {
+            models = {},
+            object = "list",
+            data = {
+                {
+                    id = "ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0",
+                    aliases = { "ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0", "qwen3" },
+                    tags = {},
+                    object = "model",
+                    created = 1780282597,
+                    owned_by = "llamacpp",
+                    meta = {
+                        vocab_type = 2,
+                        n_vocab = 248320,
+                        n_ctx = 262144,
+                        n_ctx_train = 262144,
+                        n_embd = 2048,
+                        n_params = 34660610688,
+                        size = 36892150272,
+                    },
+                },
+            },
+        }
+
+        local model_info = LlamaServerClient.extract_model_info(sample_body)
+        assert.is_not_nil(model_info)
+
+        -- Verify basic fields
+        assert.same("ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0", model_info.name)
+        assert.same("ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0", model_info.alias)
+        assert.same(1780282597, model_info.created)
+        assert.same("llamacpp", model_info.owned_by)
+
+        -- Verify meta fields with unabbreviated names
+        assert.same(248320, model_info.vocabulary_size)
+        assert.same(262144, model_info.context_length)
+        assert.same(262144, model_info.context_length_train)
+        assert.same(2048, model_info.embedding_dimension)
+        assert.same(34660610688, model_info.parameter_count)
+        assert.same(36892150272, model_info.model_size_bytes)
+    end)
+
+    it("extract_model_info handles empty aliases array", function()
+        local sample_body = {
+            data = {
+                {
+                    id = "test-model",
+                    aliases = {},
+                    created = 100,
+                    owned_by = "test",
+                    meta = {},
+                },
+            },
+        }
+
+        local model_info = LlamaServerClient.extract_model_info(sample_body)
+        assert.is_not_nil(model_info)
+        assert.same("", model_info.alias)
+        assert.same("test-model", model_info.name)
+    end)
+
+    it("extract_model_info handles missing meta table", function()
+        local sample_body = {
+            data = {
+                {
+                    id = "test-model",
+                    aliases = {},
+                    created = 100,
+                    owned_by = "test",
+                    -- no meta field at all
+                },
+            },
+        }
+
+        local model_info = LlamaServerClient.extract_model_info(sample_body)
+        assert.is_not_nil(model_info)
+        assert.same(0, model_info.vocabulary_size)
+        assert.same(0, model_info.context_length)
+        assert.same(0, model_info.model_size_bytes)
+    end)
+
+    it("extract_model_info falls back to older models array", function()
+        local sample_body = {
+            models = {
+                {
+                    name = "ollama-model:latest",
+                    model = "ollama-model:latest",
+                },
+            },
+            object = "list",
+        }
+
+        local model_info = LlamaServerClient.extract_model_info(sample_body)
+        assert.is_not_nil(model_info)
+        assert.same("ollama-model:latest", model_info.name)
+        assert.same("", model_info.alias)
+        assert.same(0, model_info.created)
+        assert.same("", model_info.owned_by)
+    end)
+
+    it("extract_model_info prefers data array over models array", function()
+        local sample_body = {
+            models = {
+                {
+                    name = "old-model",
+                    model = "old-model",
+                },
+            },
+            data = {
+                {
+                    id = "new-model",
+                    aliases = { "new-model" },
+                    created = 999,
+                    owned_by = "new-owner",
+                    meta = { n_vocab = 1000 },
+                },
+            },
+        }
+
+        local model_info = LlamaServerClient.extract_model_info(sample_body)
+        assert.is_not_nil(model_info)
+        assert.same("new-model", model_info.name)
+        assert.same(999, model_info.created)
+        assert.same("new-owner", model_info.owned_by)
+    end)
+
+    it("get_model_info returns nil on server failure", function()
+        local model_info = LlamaServerClient.get_model_info("http://invalid:1234")
+        assert.is_nil(model_info)
+    end)
+
+    it("get_model_info returns ModelInfo from live server", function()
+        local config = require("ask-openai.config")
+        local base_url = config.get_endpoints().gptoss.base_url
+
+        local model_info = LlamaServerClient.get_model_info(base_url)
+
+        -- Verify we got a valid model info object
+        assert.is_not_nil(model_info, "Should return model info from live server")
+        assert.is_string(model_info.name, "name should be a string")
+        assert.is_true(#model_info.name > 0, "name should not be empty")
+        assert.is_string(model_info.owned_by, "owned_by should be a string")
+        assert.is_true(model_info.vocabulary_size > 0, "vocabulary_size should be positive")
+        assert.is_true(model_info.context_length > 0, "context_length should be positive")
+        assert.is_true(model_info.parameter_count > 0, "parameter_count should be positive")
+        assert.is_true(model_info.model_size_bytes > 0, "model_size_bytes should be positive")
+    end)
+end)
     local function print_prompt(prompt)
         assert.is_string(prompt, "prompt should be a string")
         print("\n" .. string.rep("-", 80))

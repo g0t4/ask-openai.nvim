@@ -4,7 +4,8 @@ local LlamaServerClient = require("ask-openai.backends.llama_cpp.llama_server_cl
 local M = {}
 
 --- @class ModelCacheEntry
---- @field value string|nil
+--- @field name string|nil @Abbreviated model name (e.g. "qwen3")
+--- @field model_info ModelInfo|nil @Full model info, or nil
 --- @field ts integer
 
 --- Track in-flight fetches to avoid duplicate background tasks.
@@ -20,34 +21,6 @@ local MODEL_NAME_MAP = {
     ["ggml-org/gpt-oss-120b-GGUF"] = "gptoss",
 }
 
---- Parse the /v1/models response body to extract the model name.
---- @param body table
---- @return string|nil
-local function extract_model_name(body)
-    if type(body) ~= "table" then
-        return nil
-    end
-
-    if type(body.data) == "table" and #body.data > 0 then
-        local first_model = body.data[1]
-        if type(first_model) == "table" and first_model.id then
-            return first_model.id
-        end
-        if type(first_model) == "table" and first_model.name then
-            return first_model.name
-        end
-    end
-
-    if type(body.models) == "table" and #body.models > 0 then
-        local first_model = body.models[1]
-        if type(first_model) == "table" and first_model.name then
-            return first_model.name
-        end
-    end
-
-    return nil
-end
-
 --- Abbreviate a raw model name using the lookup table, or return "OFFLINE" sentinel.
 --- @param raw_model string|nil
 --- @return string
@@ -58,32 +31,31 @@ end
 --- Perform the actual fetch in the background.
 --- @param base_url string
 local function do_fetch_model_name(base_url)
-    local response = LlamaServerClient.get_models(base_url, { connect_timeout = 1, max_time = 3 })
-    if not response or response.code ~= 200 then
+    local model_info = LlamaServerClient.get_model_info(base_url, { connect_timeout = 1, max_time = 3 })
+    if not model_info then
         _fetch_in_progress[base_url] = nil
         return
     end
 
-    local raw_model = extract_model_name(response.body)
-    local model_name = abbreviate_model(raw_model)
+    local model_name = abbreviate_model(model_info.name)
 
-    _model_cache[base_url] = { value = model_name, ts = os.time() }
+    _model_cache[base_url] = { name = model_name, model_info = model_info, ts = os.time() }
     _fetch_in_progress[base_url] = nil
 end
 
---- Query the llama-server for the model name running at the given base URL.
+--- Query the llama-server for the first model's full information at the given base URL.
 --- Non-blocking: returns cached value if available, otherwise kicks off a
 --- background fetch and returns nil. Future calls will return the cached
 --- value once the background fetch completes.
 --- @param base_url string The base URL of the llama-server (e.g. "http://paxy.lan:8012")
---- @return string|nil The cached model name, or nil if not yet cached.
-function M.get_llama_server_model(base_url)
+--- @return ModelInfo? The cached model info, or nil if not yet cached.
+function M.get_llama_server_model_info(base_url)
     -- 1. Check cache first
     local cached = _model_cache[base_url]
     if cached then
-        local cache_timeout = cached.value == nil and 1 or 10
+        local cache_timeout = cached.name == nil and 1 or 10
         if os.time() - cached.ts < cache_timeout then
-            return cached.value
+            return cached.model_info
         end
     end
 
@@ -101,6 +73,42 @@ function M.get_llama_server_model(base_url)
     return nil
 end
 
+--- Query the llama-server for the first model's abbreviated name at the given base URL.
+--- Non-blocking: returns cached value if available, otherwise kicks off a
+--- background fetch and returns nil. Future calls will return the cached
+--- value once the background fetch completes.
+--- @param base_url string The base URL of the llama-server (e.g. "http://paxy.lan:8012")
+--- @return string|nil The cached abbreviated model name, or nil if not yet cached.
+function M.get_llama_server_model_name(base_url)
+    -- 1. Check cache first
+    local cached = _model_cache[base_url]
+    if cached then
+        local cache_timeout = cached.name == nil and 1 or 10
+        if os.time() - cached.ts < cache_timeout then
+            return cached.name
+        end
+    end
+
+    -- 2. Fetch already in progress — caller will retry later
+    if _fetch_in_progress[base_url] then
+        return nil
+    end
+
+    -- 3. Start a new background fetch
+    _fetch_in_progress[base_url] = true
+    vim.schedule(function()
+        do_fetch_model_name(base_url)
+    end)
+
+    return nil
+end
+
+--- Deprecated alias for backwards compatibility. Use get_llama_server_model_name() instead.
+--- @param base_url string
+--- @return string|nil
+function M.get_llama_server_model(base_url)
+    return M.get_llama_server_model_name(base_url)
+end
 
 
 ---@class Provider
