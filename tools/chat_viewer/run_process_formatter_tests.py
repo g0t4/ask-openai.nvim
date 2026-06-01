@@ -1,92 +1,47 @@
-"""Tests for run_process_formatter module."""
-
 import json
-
 import pytest
 
 from tools.chat_viewer.run_process_formatter import (
-    _format_argv_element,
     format_argv,
     format_run_process_command,
 )
 
-class TestFormatArgvElement:
-    """Tests for _format_argv_element helper."""
+class TestFormatArgv:
 
-    def test_no_space_stays_bare(self):
-        """Elements without whitespace should remain unquoted."""
-        assert _format_argv_element("cat") == "cat"
+    def test_no_spaces_remains_unquoted(self):
+        result = format_argv(["ls", "-la", "/tmp"])
+        assert result == "ls -la /tmp"
 
-    def test_single_space_gets_double_quoted(self):
-        """Elements with spaces get wrapped in double quotes."""
-        assert _format_argv_element("file with spaces.txt") == '"file with spaces.txt"'
-        assert _format_argv_element("my git commit description") == '"my git commit description"'
+    def test_with_spaces_in_path_is_double_quoted(self):
+        result = format_argv(["cat", "my file.txt"])
+        assert result == 'cat "my file.txt"'
 
-    def test_tab_and_newline_count_as_whitespace(self):
-        """Tab and newline characters trigger quoting."""
-        assert _format_argv_element("file\twith\ttab") == '"file\twith\ttab"'
-        assert _format_argv_element("line1\nline2") == '"line1\nline2"'
+    def test_tab_and_newline_count_as_whitespace_and_get_quoted(self):
+        assert format_argv(["file\twith\ttab"]) == '"file\twith\ttab"'
+        assert format_argv(["line1\nline2"]) == '"line1\nline2"'
 
     def test_no_double_quote_uses_double_quotes(self):
         """If no double quotes in value, use double quotes."""
-        assert _format_argv_element("path with 'single' quotes") == '"path with \'single\' quotes"'
+        # FYI real failures example from Qwen3.6, that made me realize I was missing quoting the argv when showing it as a commandline!
+        assert format_argv([
+            "cat",
+            # Qwen accidentally included the rest of the commandline as the second argv entry and thus it failed because that's not a cat-able file!
+            "1780201044-trace.json | jq 'keys'",
+        ]) == "cat \"1780201044-trace.json | jq 'keys'\""
 
     def test_has_double_quote_falls_back_to_single(self):
         """If double quotes exist but not single, use single quotes."""
-        result = _format_argv_element('with "double" quotes')
-        assert result == "'with \"double\" quotes'"
+        result = format_argv(['git', 'commit', '-m', 'with "double" quotes'])
+        assert result == "git commit -m 'with \"double\" quotes'"
 
     def test_both_quotes_escapes_double(self):
         """If both quote types exist, escape double and wrap in double."""
-        result = _format_argv_element('she said "hello" and \'hi\'')
+        result = format_argv(['she said "hello" and \'hi\''])
         assert result == '"she said \\"hello\\" and \'hi\'"'
 
     def test_empty_string(self):
         """Empty string should remain empty."""
-        assert _format_argv_element("") == ""
-
-class TestFormatArgv:
-    """Tests for format_argv function."""
-
-    def test_simple_command(self):
-        """Basic command without spaces."""
-        result = format_argv(["ls", "-la", "/tmp"])
-        assert result == "ls -la /tmp"
-
-    def test_with_spaces_in_path(self):
-        """Command with spaces in arguments."""
-        result = format_argv(["cat", "my file.txt"])
-        assert result == 'cat "my file.txt"'
-
-    def test_trace_example(self):
-        """Real trace example with pipe and jq."""
-        argv = [
-            "cat",
-            "~/repos/github/g0t4/datasets/ask_traces/agents/2026-05/2026-05-30_008/1780201044-trace.json | jq 'keys'",
-        ]
-        result = format_argv(argv)
-        assert "jq 'keys'" in result
-        assert result.startswith("cat ")
-
-    def test_all_no_spaces(self):
-        """No element has whitespace, so nothing is quoted."""
-        result = format_argv(["git", "commit", "-m", "fix"])
-        assert result == "git commit -m fix"
-
-    def test_mixed_spaces_and_no_spaces(self):
-        """Mixed elements, only quoted where needed."""
-        result = format_argv(["echo", "hello world", "foo"])
-        assert result == 'echo "hello world" foo'
-
-    def test_single_element(self):
-        """Single element with spaces."""
-        result = format_argv(["/path/to/my script.sh"])
-        assert result == '"/path/to/my script.sh"'
-
-    def test_numeric_arguments(self):
-        """Numeric values stay as-is."""
-        result = format_argv(["sleep", "42"])
-        assert result == "sleep 42"
+        assert format_argv([""]) == ""
 
 class TestFormatRunProcessCommand:
     """Tests for format_run_process_command entry point."""
