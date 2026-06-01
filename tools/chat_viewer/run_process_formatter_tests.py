@@ -9,18 +9,18 @@ from tools.chat_viewer.run_process_formatter import (
 class TestFormatArgv:
 
     def test_no_spaces_remains_unquoted(self):
-        result = format_argv(["ls", "-la", "/tmp"])
-        assert result == "ls -la /tmp"
+        formatted = format_argv(["ls", "-la", "/tmp"])
+        assert formatted == "ls -la /tmp"
 
     def test_with_spaces_in_path_is_double_quoted(self):
-        result = format_argv(["cat", "my file.txt"])
-        assert result == 'cat "my file.txt"'
+        formatted = format_argv(["cat", "my file.txt"])
+        assert formatted == 'cat "my file.txt"'
 
     def test_tab_and_newline_count_as_whitespace_and_get_quoted(self):
         assert format_argv(["echo", "I\thave\ttabs"]) == 'echo "I\thave\ttabs"'
         assert format_argv(["echo", "line1\nline2"]) == 'echo "line1\nline2"'
 
-    def test_no_double_quote_uses_double_quotes(self):
+    def test_has_single_quotes_without_double_quotes__quotes_with_double(self):
         """If no double quotes in value, use double quotes."""
         # FYI real failures example from Qwen3.6, that made me realize I was missing quoting the argv when showing it as a commandline!
         assert format_argv([
@@ -29,19 +29,18 @@ class TestFormatArgv:
             "1780201044-trace.json | jq 'keys'",
         ]) == "cat \"1780201044-trace.json | jq 'keys'\""
 
-    def test_has_double_quote_falls_back_to_single(self):
+    def test_has_double_quotes__quotes_with_single(self):
         """If value has double quotes but not single quotes, use single quotes."""
-        result = format_argv(['git', 'commit', '-m', 'with "double" quotes'])
-        assert result == "git commit -m 'with \"double\" quotes'"
+        formatted = format_argv(['git', 'commit', '-m', 'with "double" quotes'])
+        assert formatted == "git commit -m 'with \"double\" quotes'"
 
-    def test_both_quotes_escapes_double(self):
+    def test_has_both_quote_types__quotes_with_double(self):
         """If both quote types exist, escape double and wrap in double."""
-        result = format_argv(['echo', 'she said "hello" and \'hi\''])
-        assert result == 'echo "she said \\"hello\\" and \'hi\'"'
+        formatted = format_argv(['echo', 'she said "hello" and \'hi\''])
+        assert formatted == 'echo "she said \\"hello\\" and \'hi\'"'
 
-    def test_empty_string(self):
-        """Empty string should remain empty."""
-        # TODO how do I want to handle this case? leave in double space?
+    def test_has_empty_argument__results_in_extra_space(self):
+        # ? do I want to change this to skip it?
         assert format_argv(["echo", "", "foo"]) == "echo  foo"
 
 class TestFormatRunProcessCommand:
