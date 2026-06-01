@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { RagResult, RagMatch } from '../lib/types'
-  import { getMatchId, formatDurationMs } from '../lib/types'
+  import { getMatchId } from '../lib/hash-nav'
+  import { formatDurationMs } from '../lib/types'
   import CodeBlock from './CodeBlock.svelte'
   import LinkButton, { copy } from './LinkButton.svelte'
   import { getLanguageFromPath } from '../lib/highlight'
