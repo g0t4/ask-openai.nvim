@@ -103,14 +103,6 @@ function M.get_llama_server_model_name(base_url)
     return nil
 end
 
---- Deprecated alias for backwards compatibility. Use get_llama_server_model_name() instead.
---- @param base_url string
---- @return string|nil
-function M.get_llama_server_model(base_url)
-    return M.get_llama_server_model_name(base_url)
-end
-
-
 ---@class Provider
 ---@field get_bearer_token fun(): string
 ---@field check fun() # optional
@@ -200,8 +192,8 @@ function M.get_endpoints()
     local gptoss_url = "http://ask.lan:8013"
     local qwen3_url = "http://ask.lan:8012"
 
-    local gptoss_model = M.get_llama_server_model(gptoss_url)
-    local qwen3_model = M.get_llama_server_model(qwen3_url)
+    local gptoss_model = M.get_llama_server_model_name(gptoss_url)
+    local qwen3_model = M.get_llama_server_model_name(qwen3_url)
 
     local endpoints = {
         agents = {
