@@ -2,10 +2,10 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
 local assert = require 'luassert'
 local should = require('devtools.tests.should')
-local _describe = require('devtools.tests.define.describe')
+local describe = require('devtools.tests.define.describe')
 local buffers = require('devtools.tests.buffers')
 
-_describe("benchmarks", function()
+describe("benchmarks", function()
     it("benchmark setpos vs nvim_win_set_cursor", function()
         -- ***! TLDR difference is negligible at 490ns vs 150ns... only matters if calling alot in a tight loop
         -- setting marks slows down setpos.. vs nvim_win_set_cursor (IIUC that is one difference)

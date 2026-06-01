@@ -1,14 +1,14 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
 local TxChatMessage = require("ask-openai.agents.messages.tx")
 local should = require("devtools.tests.should")
-local _describe = require("devtools.tests.define.describe")
+local describe = require("devtools.tests.define.describe")
 local str = require("devtools.tests.str")
 local json_client = require("ask-openai.backends.json_client")
 local LlamaServerClient = require("ask-openai.backends.llama_cpp.llama_server_client")
 local files = require("ask-openai.helpers.files")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 
-_describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
+describe("testing prompt rendering in llama-server with gpt-oss jinja template", function()
     local config = require("ask-openai.config")
     local base_url = config.get_endpoints().gptoss.base_url
 
@@ -34,7 +34,7 @@ _describe("testing prompt rendering in llama-server with gpt-oss jinja template"
         assert.same("llamacpp", model.owned_by, "MUST TEST WITH llama-server")
     end)
 
-    _describe("testing model info extraction", function()
+    describe("testing model info extraction", function()
         it("extract_model_info returns nil for non-table body", function()
             local model_info = LlamaServerClient.extract_model_info(nil)
             assert.is_nil(model_info)

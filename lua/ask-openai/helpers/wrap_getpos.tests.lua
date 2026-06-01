@@ -9,12 +9,12 @@ local log = require("ask-openai.logs.logger").predictions()
 local Selection = require('ask-openai.helpers.selection')
 local GetPos = require('ask-openai.helpers.wrap_getpos')
 
-_describe("GetPos wrappers", function()
+describe("GetPos wrappers", function()
     -- PRN incorporate settings for obscure details (when the need arises):
     --   :h * selection
     --   :h * virtualedit=all - position cursor past actual characters (i.e. g$ - end of screen line)
 
-    _describe("edge case - no selection yet", function()
+    describe("edge case - no selection yet", function()
         buffers.new_buffer_with_lines({ "one", "two", "three", "four", "five" })
         vim.cmd(':1')
         vim.cmd('normal! 0l') -- move one char from start of line
@@ -47,9 +47,9 @@ _describe("GetPos wrappers", function()
         end)
     end)
 
-    _describe("last_selection", function()
-        _describe("selection was closed", function()
-            _describe("linewise", function()
+    describe("last_selection", function()
+        describe("selection was closed", function()
+            describe("linewise", function()
                 it("cursor was at END of linewise selection", function()
                     buffers.new_buffer_with_lines({ "one", "two", "three", "four", "five" })
                     vim.cmd(':2')
@@ -88,7 +88,7 @@ _describe("GetPos wrappers", function()
                 end)
             end)
 
-            _describe("charwise", function()
+            describe("charwise", function()
                 it("cursor was at START of charwise selection - on same line", function()
                     buffers.new_buffer_with_lines({ "one", "two", "three", "four", "five" })
                     vim.cmd(':2')
@@ -161,7 +161,7 @@ _describe("GetPos wrappers", function()
         end)
     end)
 
-    _describe("GetPosPosition", function()
+    describe("GetPosPosition", function()
         it("GetPosPosition:new(point) returns GetPosPosition w/ line/column", function()
             local original_position = { line_base1 = 1, col_base1 = 2 }
 
@@ -279,8 +279,8 @@ _describe("GetPos wrappers", function()
         end)
     end)
 
-    _describe("current_selection", function()
-        _describe("still selected", function()
+    describe("current_selection", function()
+        describe("still selected", function()
             -- FYI this is probably rare to happen... I really should just close the mode and thus capture into '< and '>
             it("cursor at end of linewise selection - same as reverse", function()
                 buffers.new_buffer_with_lines({ "one", "two", "three", "four", "five" })
@@ -379,7 +379,7 @@ _describe("GetPos wrappers", function()
             end)
         end)
 
-        _describe("still selected after previous selection too", function()
+        describe("still selected after previous selection too", function()
             it("first is linewise V one line, then charwise two l (2 chars right)", function()
                 buffers.new_buffer_with_lines({ "one", "two", "three", "four", "five" })
                 vim.cmd(':2')
@@ -406,7 +406,7 @@ _describe("GetPos wrappers", function()
 end)
 
 
-_describe("GetPosSelectionRange", function()
+describe("GetPosSelectionRange", function()
     it(":new(range) uses range object fields", function()
         local range = {
             start_line_base1 = 1,
@@ -435,8 +435,8 @@ _describe("GetPosSelectionRange", function()
         --   BTW I am using this in my code notes plugin idea and other parts of dotfiles repo
     end)
 
-    _describe("check return types", function()
-        _describe("start of selection is before end", function()
+    describe("check return types", function()
+        describe("start of selection is before end", function()
             it("GetPos.current_selection() returns GetPosSelectionRange", function()
                 buffers.new_buffer_with_lines({ "one", "two", "three", "four", "five" })
                 vim.cmd("normal Vj") -- make a selection (one line)
@@ -449,7 +449,7 @@ _describe("GetPosSelectionRange", function()
             end)
         end)
 
-        _describe("end of selection is before start (aka reversed)", function()
+        describe("end of selection is before start (aka reversed)", function()
             it("GetPos.current_selection() returns GetPosSelectionRange", function()
                 buffers.new_buffer_with_lines({ "one", "two", "three", "four", "five" })
                 vim.cmd(":3") -- make a selection (one line)

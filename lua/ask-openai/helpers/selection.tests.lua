@@ -2,7 +2,7 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
 local assert = require 'luassert'
 local should = require('devtools.tests.should')
-local _describe = require('devtools.tests.define.describe')
+local describe = require('devtools.tests.define.describe')
 local buffers = require('devtools.tests.buffers')
 -- system under test:
 local Selection = require('ask-openai.helpers.selection')
@@ -16,8 +16,8 @@ end
 --foo the bar
 -- baz boo doo
 
-_describe("get_visual_selection()", function()
-    _describe("not in visual mode", function()
+describe("get_visual_selection()", function()
+    describe("not in visual mode", function()
         ---@diagnostic disable-next-line: unused-function
         local function print_all_lines_troubleshoot()
             -- for testing only
@@ -128,7 +128,7 @@ _describe("get_visual_selection()", function()
         -- * getcharpos also resolves the issue with v:maxcol as the returned col number (i.e. in visual line mode selection)
         -- I should do some high level tests so I could swap out getcharpos if needed?
     end)
-    _describe("still in visual mode", function()
+    describe("still in visual mode", function()
         -- PRN if I want current mode checks, add these tests, though right now I don't think I have a direct need for these other than completeness of selection utility
         -- it("still in linewise 'V' visual mode - cursor position is AFTER other position", function()
         --     new_buffer_with_lines({ "one", "two", "three", "four", "five" })
@@ -172,7 +172,7 @@ _describe("get_visual_selection()", function()
         vim.api.nvim_win_set_cursor(0, { 1, 0 })
     end
 
-    _describe("multi line", function()
+    describe("multi line", function()
         before_each(function()
             local lines = {
                 "line 1 cow",
@@ -193,7 +193,7 @@ _describe("get_visual_selection()", function()
             buffers.new_buffer_with_lines(lines)
         end)
 
-        _describe("linewise selections", function()
+        describe("linewise selections", function()
             it("single line selection, first line", function()
                 move_cursor_to_start_of_doc()
                 vim.cmd('normal! VV') -- second V exits
@@ -226,7 +226,7 @@ _describe("get_visual_selection()", function()
             end)
         end)
 
-        _describe("charwise", function()
+        describe("charwise", function()
             it("select 0$ with following line =>?? ", function()
                 move_cursor_to_start_of_doc()
                 vim.cmd('normal! v0$v') -- second v completes selection
@@ -254,7 +254,7 @@ _describe("get_visual_selection()", function()
             end)
         end)
 
-        _describe("set_selection_from_range", function()
+        describe("set_selection_from_range", function()
             it("test it out", function()
                 -- FTR... I am trying naming r\dc\d here instead of some sort of string parsing convenience method for setting position... which I could add but this is faster, use variable name
                 -- FYI r\d+c\d+ is shown in 1-indexed numbers... hence I use the c6 here and 5 in the data... b/c the data needs to match for the nvim_win_set_cursor call
@@ -270,7 +270,7 @@ _describe("get_visual_selection()", function()
         end)
 
         -- FYI it is not mission critical to even have failure tests of Ctrl-V, just a keep in mind if it helps later
-        -- _describe("Ctrl-V visual blockwise not supported", function()
+        -- describe("Ctrl-V visual blockwise not supported", function()
         --     it("visual blockwise (Ctrl-V) not supported", function()
         --         vim.cmd('normal! <C-v>jj<C-v>') -- second v exits
         --         -- -- by the way, just enabling visual mode selects the current character (under cursor)
