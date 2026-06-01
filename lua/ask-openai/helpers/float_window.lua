@@ -90,4 +90,12 @@ function FloatWindow:open()
     })
 end
 
+---@param title string
+function FloatWindow:set_title(title)
+    if not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then
+        return
+    end
+    vim.api.nvim_win_set_option(self.win_id, 'title', title)
+end
+
 return FloatWindow
