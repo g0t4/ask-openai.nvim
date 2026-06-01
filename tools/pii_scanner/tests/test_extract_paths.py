@@ -15,6 +15,9 @@ from tools.pii_scanner.scanner import (
     extract_paths_from_trace,
     find_trace_files,
     _try_json_decode,
+    _strip_urls_from_text,
+    _strip_line_number_suffix,
+    _denoise_paths,
 )
 
 # Path to the example trace file
@@ -303,3 +306,225 @@ class TestFindTraceFiles:
         trace_files = find_trace_files(EXAMPLE_TRACE_DIR)
         names = [f.name for f in trace_files]
         assert names == sorted(names)
+
+
+# ─────────────────────────────────────────────
+# URL stripping tests
+# ─────────────────────────────────────────────
+
+class TestStripUrls:
+    """Test _strip_urls_from_text helper."""
+
+    def test_strips_http_url(self):
+        text = "See https://github.com/g0t4/project/blob/main/README.md for details"
+        result = _strip_urls_from_text(text)
+        assert "github.com" not in result
+        assert "https://" not in result
+        assert "README.md" not in result  # entire URL stripped, including path
+        assert "for details" in result
+
+    def test_strips_https_url(self):
+        text = "Go to http://example.com/path/to/file.lua to view"
+        result = _strip_urls_from_text(text)
+        assert "example.com" not in result
+        assert "http://" not in result
+        assert "file.lua" not in result  # entire URL stripped, including path
+        assert "to view" in result
+
+    def test_strips_url_with_trailing_punctuation(self):
+        text = "Visit https://docs.langchain.com/mcp today."
+        result = _strip_urls_from_text(text)
+        assert "docs.langchain.com" not in result
+        assert "today." in result
+
+    def test_strips_multiple_urls(self):
+        text = "Check https://a.com/x and http://b.com/y"
+        result = _strip_urls_from_text(text)
+        assert "a.com" not in result
+        assert "b.com" not in result
+
+    def test_leaves_non_http_paths(self):
+        text = "~/repos/file.lua and /usr/bin/env"
+        result = _strip_urls_from_text(text)
+        assert "~/repos/file.lua" in result
+        assert "/usr/bin/env" in result
+
+    def test_empty_string(self):
+        result = _strip_urls_from_text("")
+        assert result == ""
+
+
+# ─────────────────────────────────────────────
+# Line number suffix stripping tests
+# ─────────────────────────────────────────────
+
+class TestStripLineNumberSuffix:
+    """Test _strip_line_number_suffix function."""
+
+    def test_single_line_with_colon(self):
+        result = _strip_line_number_suffix("file.lua:1:")
+        assert result == "file.lua"
+
+    def test_line_column_with_trailing_colon(self):
+        result = _strip_line_number_suffix("file.lua:616:46:--")
+        assert result == "file.lua"
+
+    def test_diff_hunk_single_dash(self):
+        result = _strip_line_number_suffix("file.lua-611-")
+        assert result == "file.lua-611"
+
+    def test_diff_hunk_multiple_dashes(self):
+        result = _strip_line_number_suffix("file.lua-129----")
+        assert result == "file.lua-129"
+
+    def test_line_range_suffix(self):
+        result = _strip_line_number_suffix("file:0-19")
+        assert result == "file"
+
+    def test_line_range_suffix_with_colon(self):
+        result = _strip_line_number_suffix("__main__.py:606-625")
+        assert result == "__main__.py"
+
+    def test_no_suffix_unchanged(self):
+        result = _strip_line_number_suffix("lua/ask-openai/tools/mcp/init.lua")
+        assert result == "lua/ask-openai/tools/mcp/init.lua"
+
+    def test_tilde_path_with_line_range(self):
+        result = _strip_line_number_suffix("~/repos/file.py:10-20")
+        assert result == "~/repos/file.py"
+
+
+# ─────────────────────────────────────────────
+# Glob pattern preservation tests
+# ─────────────────────────────────────────────
+
+class TestGlobPreservation:
+    """Verify glob patterns are preserved (not filtered out)."""
+
+    def test_glob_pattern_is_valid_path(self):
+        """Glob patterns should pass _is_valid_path."""
+        from tools.pii_scanner.scanner import _is_valid_path
+        assert _is_valid_path("/lua/*")
+        assert _is_valid_path("/node_modules/*")
+        assert _is_valid_path("/tests/*")
+
+    def test_extract_keeps_glob_patterns(self):
+        """Extracted paths should include glob patterns."""
+        paths = _extract_paths_from_value("/lua/* and /node_modules/*")
+        paths_str = " ".join(paths)
+        assert "/lua/*" in paths_str
+        assert "/node_modules/*" in paths_str
+
+
+# ─────────────────────────────────────────────
+# URL false positive prevention tests
+# ─────────────────────────────────────────────
+
+class TestUrlFalsePositivePrevention:
+    """Verify URLs don't become false positive file paths."""
+
+    def test_github_url_does_not_become_path(self):
+        """A GitHub URL should not appear as a file path."""
+        text = "https://github.com/g0t4/dotfiles/blob/main/file.lua"
+        paths = _extract_paths_from_value(text)
+        paths_str = " ".join(paths)
+        assert "github.com" not in paths_str
+        assert "blob/main" not in paths_str
+
+    def test_raw_github_url_does_not_become_path(self):
+        """Raw GitHub URLs should be stripped before extraction."""
+        text = "https://raw.githubusercontent.com/owner/repo/main/README.md"
+        paths = _extract_paths_from_value(text)
+        paths_str = " ".join(paths)
+        assert "raw.githubusercontent.com" not in paths_str
+
+    def test_nested_json_with_url(self):
+        """JSON containing URLs should have URLs stripped before recursion."""
+        text = json.dumps({
+            "response": "Check https://example.com/path.lua"
+        })
+        paths = _extract_paths_from_value(text)
+        paths_str = " ".join(paths)
+        assert "example.com" not in paths_str
+
+
+# ─────────────────────────────────────────────
+# Dot-slash normalization tests
+# ─────────────────────────────────────────────
+
+class TestDotSlashNormalization:
+    """Test that ./ prefix is normalized for deduplication."""
+
+    def test_dot_slash_normalized(self):
+        """./file.lua and file.lua should be deduplicated."""
+        from tools.pii_scanner.scanner import _denoise_paths
+        paths = [
+            "./lua/ask-openai/tools/mcp/init.lua",
+            "lua/ask-openai/tools/mcp/init.lua",
+        ]
+        result = _denoise_paths(paths)
+        # Should be deduplicated to a single entry
+        assert len(result) == 1
+        assert "lua/ask-openai/tools/mcp/init.lua" in result
+
+    def test_multiple_dot_slash_paths_deduplicated(self):
+        paths = [
+            "./file1.lua",
+            "./file2.lua",
+            "file1.lua",
+            "file2.lua",
+            "./file3.lua",
+        ]
+        result = _denoise_paths(paths)
+        assert len(result) == 3
+        assert "./" not in result[0]
+
+    def test_no_dot_slash_paths_unchanged(self):
+        paths = ["file.lua", "/absolute/path.lua"]
+        result = _denoise_paths(paths)
+        assert len(result) == 2
+        assert result[0] == "file.lua"
+        assert result[1] == "/absolute/path.lua"
+
+
+# ─────────────────────────────────────────────
+# Line number suffix stripping in full pipeline
+# ─────────────────────────────────────────────
+
+class TestLineNumberInPipeline:
+    """Test line number stripping works in the full extraction pipeline."""
+
+    def test_denoise_strips_line_numbers(self):
+        """_denoise_paths should strip line numbers before checking validity."""
+        from tools.pii_scanner.scanner import _denoise_paths
+        paths = [
+            "lua/ask-openai/agents/viewer/formatters/init.lua:1:",
+            "lua/ask-openai/agents/viewer/formatters/init.lua",
+        ]
+        result = _denoise_paths(paths)
+        # Should be deduplicated after stripping
+        assert len(result) == 1
+        assert "init.lua:1:" not in result[0]
+        assert "init.lua-611-" not in result[0]
+
+    def test_diff_hunk_marker_stripped(self):
+        from tools.pii_scanner.scanner import _denoise_paths
+        paths = [
+            "lua/ask-openai/rewrites/frontend.lua-611-",
+            "lua/ask-openai/rewrites/frontend.lua",
+        ]
+        result = _denoise_paths(paths)
+        # Both versions should appear (one with line number, one without)
+        assert len(result) == 2
+        assert "lua/ask-openai/rewrites/frontend.lua-611" in result
+        assert "lua/ask-openai/rewrites/frontend.lua" in result
+
+    def test_trailing_line_range_stripped(self):
+        from tools.pii_scanner.scanner import _denoise_paths
+        paths = [
+            "~/repos/file.py:0-19",
+            "~/repos/file.py",
+        ]
+        result = _denoise_paths(paths)
+        assert len(result) == 1
+        assert result[0] == "~/repos/file.py"
