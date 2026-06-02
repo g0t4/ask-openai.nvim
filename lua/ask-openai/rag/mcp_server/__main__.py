@@ -6,6 +6,7 @@ called from any MCP client (not just inside neovim).
 
 from __future__ import annotations
 
+import argparse
 import asyncio
 import logging
 import sys
@@ -315,14 +316,19 @@ async def serve(root_dir: str | Path | None = None) -> None:
 
 def main() -> None:
     """Entry point — parse root_dir from argv or use CWD."""
-    root_dir: str | None = None
-    for i, arg in enumerate(sys.argv[1:], start=1):
-        if arg == "--root-dir" and i < len(sys.argv):
-            root_dir = sys.argv[i]
-            break
+    parser = argparse.ArgumentParser(
+        description="MCP server for semantic_grep queries"
+    )
+    parser.add_argument(
+        "--root-dir",
+        type=str,
+        default=None,
+        help="Root directory of the workspace containing a .rag directory",
+    )
+    args = parser.parse_args()
 
     try:
-        asyncio.run(serve(root_dir=root_dir))
+        asyncio.run(serve(root_dir=args.root_dir))
     except Exception as error:
         _console.print(f"[bold red]Server error:[/bold red] {error}")
         raise
