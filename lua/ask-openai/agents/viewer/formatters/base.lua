@@ -45,10 +45,11 @@ function base.format_elapsed_time(start_time_ms)
     return base.format_duration_ms(elapsed_ms)
 end
 
---- Render progress messages for an in-progress tool call.
+--- Render progress notifications for an in-progress tool call.
 --- Shows animated spinner, tool name, and up to 3 most recent progress updates.
 --- When the tool is done, shows the final duration.
---- Progress messages that look like run_process arguments are formatted as command lines.
+--- Progress notifications are formatted using both argv_formatter (for JSON-style)
+--- and notification_formatter (for "Running tool:" style).
 ---
 ---@param lines LinesBuilder
 ---@param tool_call ToolCall
@@ -63,7 +64,7 @@ function base.render_progress(lines, tool_call, is_done)
         return
     end
 
-    -- Show current progress message (most recent) with spinner
+    -- Show current progress notification (most recent) with spinner
     local spinner_chars = { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" }
     local current_time = vim.loop.hrtime()
     local spinner_index = math.floor((current_time / 100000000) % #spinner_chars) + 1
@@ -75,7 +76,7 @@ function base.render_progress(lines, tool_call, is_done)
     local elapsed_str = base.format_elapsed_time(start_time_ms)
     lines:append_line(string.format("%s ⏳ Running: %s (%s)", spinner_char, func_name, elapsed_str))
 
-    -- Show recent progress messages (up to 3 most recent)
+    -- Show recent progress notifications (up to 3 most recent)
     local num_progress = #tool_call.progress_notifications
     if num_progress > 0 then
         local max_show = math.min(3, num_progress)
@@ -87,8 +88,12 @@ function base.render_progress(lines, tool_call, is_done)
 
         for i = start_idx, num_progress do
             local msg = tool_call.progress_notifications[i]
-            -- Format progress messages for run_process commands
+            -- Try argv_formatter first (for JSON-style run_process args)
             local formatted_msg = require("ask-openai.agents.viewer.formatters.argv_formatter").format_progress_message(msg)
+            -- Try notification_formatter if argv_formatter didn't change the message
+            if formatted_msg == msg then
+                formatted_msg = require("ask-openai.agents.viewer.formatters.notification_formatter").format_notification_message(msg)
+            end
             -- Truncate very long messages to avoid overwhelming the view
             if #formatted_msg > 200 then
                 formatted_msg = formatted_msg:sub(1, 197) .. "..."
