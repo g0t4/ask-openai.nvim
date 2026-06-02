@@ -46,8 +46,8 @@ class TestFormatArgv:
 class TestFormatRunProcessCommand:
 
     def test_argv_transformed(self):
-        args = json.dumps({"argv": ["ls", "-la"]})
-        assert format_run_process_command(args) == "ls -la"
+        args = json.dumps({"argv": ["git", "commit", "-m", "here is my message"]})
+        assert format_run_process_command(args) == 'git commit -m "here is my message"'
 
     def test_command_line__returns_verbatim(self):
         args = json.dumps({"command_line": "ls -la | grep foo"})
