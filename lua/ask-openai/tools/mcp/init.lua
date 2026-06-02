@@ -62,10 +62,11 @@ local servers = {
             -- PRN add verbosity flag across all my tools "--verbose",
         },
     },
-    mcp_docs = {
-        transport = "http",
-        url = "https://modelcontextprotocol.io/mcp",
-    }
+    -- TODO add these to specific repos using repo_root/.mcp.json file like langchain-ai/langchain repo has
+    -- mcp_docs = {
+    --     transport = "http",
+    --     url = "https://modelcontextprotocol.io/mcp",
+    -- }
     -- langchain_docs = {
     --     transport = "http",
     --     url = "https://docs.langchain.com/mcp",
