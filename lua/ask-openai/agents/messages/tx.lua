@@ -56,7 +56,7 @@ function TxChatMessage:tool_result(tool_call)
 
     -- copy over tool call progress notifications for capturing to trace file? or go with sub traces in a given MCP server?
     -- PRN add a way to strip these when sending to server? does it matter?
-    self.prgoress_messages = tool_call.progress_messages
+    self.progress_notifications = tool_call.progress_notifications
 
     return self
 end

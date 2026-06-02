@@ -76,7 +76,7 @@ function base.render_progress(lines, tool_call, is_done)
     lines:append_line(string.format("%s ⏳ Running: %s (%s)", spinner_char, func_name, elapsed_str))
 
     -- Show recent progress messages (up to 3 most recent)
-    local num_progress = #tool_call.progress_messages
+    local num_progress = #tool_call.progress_notifications
     if num_progress > 0 then
         local max_show = math.min(3, num_progress)
         local start_idx = num_progress - max_show + 1
@@ -86,7 +86,7 @@ function base.render_progress(lines, tool_call, is_done)
         end
 
         for i = start_idx, num_progress do
-            local msg = tool_call.progress_messages[i]
+            local msg = tool_call.progress_notifications[i]
             -- Format progress messages for run_process commands
             local formatted_msg = require("ask-openai.agents.viewer.formatters.argv_formatter").format_progress_message(msg)
             -- Truncate very long messages to avoid overwhelming the view
