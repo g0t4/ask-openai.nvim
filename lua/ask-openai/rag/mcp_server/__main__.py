@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import logging
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -17,20 +18,35 @@ from mcp.server import Server
 from mcp.server.stdio import stdio_server
 from mcp.types import TextContent, Tool
 from rich.console import Console
+from rich.logging import RichHandler
 
 # ---------------------------------------------------------------------------
-# Logging setup (same pattern as the rest of the rag codebase)
+# XDG-compliant logging setup (same pattern as delegate.py)
 # ---------------------------------------------------------------------------
 
-_console = Console()
+_xdg_state = Path(
+    os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local" / "state"))
+)
+_log_dir = _xdg_state / "mcp-servers"
+_log_dir.mkdir(parents=True, exist_ok=True)
+
+_log_file = open(_log_dir / "semantic-grep.log", "a")
+_console = Console(file=_log_file, force_terminal=True, width=150, tab_size=4)
+
+_rich_handler = RichHandler(
+    markup=True,
+    rich_tracebacks=True,
+    console=_console,
+    show_path=False,
+    show_time=False,
+)
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(name)s: %(message)s",
     datefmt="[%X]",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-    ],
+    handlers=[_rich_handler],
+    force=True,
 )
 
 _logger: logging.Logger = logging.getLogger(__name__)
