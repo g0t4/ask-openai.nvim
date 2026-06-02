@@ -1,10 +1,13 @@
 local log = require("ask-openai.logs.logger").predictions()
 local HLGroups = require("ask-openai.hlgroups")
 local safely = require("ask-openai.helpers.safely")
+local argv_formatter = require("ask-openai.agents.viewer.formatters.argv_formatter")
 local base = require("ask-openai.agents.viewer.formatters.base")
 
 local M = {}
 
+--- Format the command header text for a run_process tool call.
+---
 ---@param args_json string
 ---@param message RxAccumulatedMessage
 ---@return string: header
@@ -28,12 +31,20 @@ local function get_tool_header_text(args_json, message)
     local argv = object_or_error.argv
     if argv then
         object_or_error.argv = nil
-        local cmd = table.concat(argv, " ")
+        local cmd = argv_formatter.commandline_equivalent_for_argv(argv)
         return cmd, object_or_error
     end
 
-    log:error("missing both argv and command_line", args_json)
-    return "missing both argv and command_line: " .. args_json, object_or_error
+    -- Fallback: try the full formatter (includes ambiguity check, legacy command)
+    local format_ok, formatted_cmd = pcall(function()
+        return argv_formatter.format_run_process_command(args_json)
+    end)
+    if format_ok then
+        return formatted_cmd, object_or_error
+    end
+
+    log:error("failed to format run_process command", args_json)
+    return "command format error: " .. args_json, object_or_error
 end
 
 ---@type ToolCallFormatter
