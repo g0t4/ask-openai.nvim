@@ -37,7 +37,7 @@ end
 ---@param start_time_ms integer
 ---@return string
 function base.format_elapsed_time(start_time_ms)
-    local now_ms = os.time() * 1000 + math.floor(vim.uv.hrtime() / 1e6 % 1000)
+    local now_ms = math.floor(vim.uv.hrtime() / 1e6)
     local elapsed_ms = now_ms - start_time_ms
     if elapsed_ms < 0 then
         return "?ms"
