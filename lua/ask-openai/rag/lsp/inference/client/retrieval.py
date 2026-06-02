@@ -93,7 +93,7 @@ async def semantic_grep(
         if num_languages == 0:
             logger.error(f"no languages for multi-language Semantic Grep using: {args.languages=}")
             raise Exception(f"No languages for multi-language Semantic Grep using: {args.languages=}")
-        top_k_per_lang = round(1.5 * query_embed_top_k / num_languages)  # over sample each language by 50%
+        top_k_per_lang = max(1, round(1.5 * query_embed_top_k / num_languages))  # over sample each language by 50%
         # logger.info(f"{top_k_per_lang=}")
 
         for lang, ds in datasets.all_datasets.items():
