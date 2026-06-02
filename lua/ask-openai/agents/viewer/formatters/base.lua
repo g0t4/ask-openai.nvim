@@ -48,6 +48,7 @@ end
 --- Render progress messages for an in-progress tool call.
 --- Shows animated spinner, tool name, and up to 3 most recent progress updates.
 --- When the tool is done, shows the final duration.
+--- Progress messages that look like run_process arguments are formatted as command lines.
 ---
 ---@param lines LinesBuilder
 ---@param tool_call ToolCall
@@ -86,11 +87,13 @@ function base.render_progress(lines, tool_call, is_done)
 
         for i = start_idx, num_progress do
             local msg = tool_call.progress_messages[i]
+            -- Format progress messages for run_process commands
+            local formatted_msg = require("ask-openai.agents.viewer.formatters.argv_formatter").format_progress_message(msg)
             -- Truncate very long messages to avoid overwhelming the view
-            if #msg > 200 then
-                msg = msg:sub(1, 197) .. "..."
+            if #formatted_msg > 200 then
+                formatted_msg = formatted_msg:sub(1, 197) .. "..."
             end
-            lines:append_line(string.format("    ↳ %s", msg))
+            lines:append_line(string.format("    ↳ %s", formatted_msg))
         end
     else
         lines:append_line("    ↳ Waiting for response...")
