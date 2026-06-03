@@ -228,7 +228,9 @@ function MCPStdioClient.new(name, options)
                 self.server_log_name
             )
             log:error(ansi.white_bold(ansi.red_bg(msg)))
-            vim.notify(msg, vim.log.levels.WARN)
+            vim.schedule(function()
+                vim.notify(msg, vim.log.levels.WARN)
+            end)
         else
             log:error(string.format("MCP server %s exited (during neovim shutdown)", self.server_log_name))
         end
