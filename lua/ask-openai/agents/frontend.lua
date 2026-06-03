@@ -452,9 +452,10 @@ local function update_ui_chat_viewer(trace)
         local last_message = request.accumulated_model_response_messages[#request.accumulated_model_response_messages]
         if last_message and last_message.timings then
             local timings = last_message.timings
+            local cache_token_count = timings.cache_n or 0
             local prompt_token_count = timings.prompt_n or 0
             local predicted_token_count = timings.predicted_n or 0
-            local total_token_count = prompt_token_count + predicted_token_count
+            local total_token_count = cache_token_count + prompt_token_count + predicted_token_count
             local window_title = string.format("tokens: %s", _comma_separate(total_token_count))
             AgentsFrontend.chat_window:set_title(window_title)
         end
