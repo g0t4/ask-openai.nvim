@@ -49,8 +49,6 @@ logging.basicConfig(
     force=True,
 )
 
-_logger: logging.Logger = logging.getLogger(__name__)
-
 # ---------------------------------------------------------------------------
 # Path setup — add the rag root to sys.path so lsp.* imports resolve
 # ---------------------------------------------------------------------------
@@ -71,6 +69,7 @@ from lsp.fs import relative_to_workspace, set_root_dir
 from lsp.logs import get_logger
 
 logger: logging.Logger = get_logger(__name__)
+# logging.getLogger("mcp").setLevel(logging.DEBUG)  # MCP SDK logs
 
 # ---------------------------------------------------------------------------
 # Globals — datasets are loaded once on startup
@@ -278,9 +277,9 @@ async def serve(root_dir: str | Path | None = None) -> None:
     await set_root_dir(root_dir_path)
     _dot_rag_dir = root_dir_path / ".rag"
 
-    _logger.info(f"Loading datasets from {_dot_rag_dir}")
+    logger.info(f"Loading datasets from {_dot_rag_dir}")
     _datasets = load_all_datasets(_dot_rag_dir)
-    _logger.info(f"Loaded {_datasets.all_datasets.keys()} datasets")
+    logger.info(f"Loaded {_datasets.all_datasets.keys()} datasets")
 
     @server.list_tools()
     async def list_tools() -> list[Tool]:
@@ -315,13 +314,13 @@ async def serve(root_dir: str | Path | None = None) -> None:
             )
 
         except asyncio.CancelledError:
-            _logger.info("semantic_grep request was cancelled")
+            logger.info("semantic_grep request was cancelled")
             raise
         except ValueError as error:
-            _logger.warning(f"Invalid semantic_grep arguments: {error}")
+            logger.warning(f"Invalid semantic_grep arguments: {error}")
             raise RuntimeError(str(error)) from error
         except Exception as error:
-            _logger.exception(f"Unexpected error in semantic_grep tool")
+            logger.exception(f"Unexpected error in semantic_grep tool")
             raise RuntimeError(str(error)) from error
 
     # * Start the server
@@ -346,7 +345,7 @@ def main() -> None:
     try:
         asyncio.run(serve(root_dir=args.root_dir))
     except Exception as error:
-        _logger.exception(f"[bold red]Server error:[/bold red] {error}")
+        logger.exception(f"[bold red]Server error:[/bold red] {error}")
         raise
 
 
