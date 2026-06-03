@@ -2,3 +2,6 @@ abbr ptw_apply_patch_wrapper 'ptw --clear lua/ask-openai/tools/inproc/apply_patc
 abbr ptw_chunking 'ptw --clear *_tests.py -- lsp/chunks/*.py --capture=no --log-cli-level=INFO'
 
 abbr run_vite 'cd tools/chat_viewer_web; npm run dev'
+
+# install python packages as commands with:
+abbr install 'uv pip install --editable .'

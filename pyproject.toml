@@ -43,3 +43,13 @@ dependencies = [
 # THERE must be a bug in pyright b/c it flags variables that are unused as unused even when I tell it NOT to and by default it shouldn't...
 #  and on the warning it doesn't list a rule so I can't figure out WTF is going on
 #  just look at any unused variable or parameter, with leading underscore, and it bitches
+
+[project.scripts]
+# scripts make it possible to install as commands:
+#   uv pip install --editable .
+# since I do not use `rag` (or another name) as a root most package... each of my packages appear top-level:
+mcp_rag = "mcp_server.__main__:main"
+
+[tool.setuptools.packages.find]
+# where to find packages (when using setuptools)
+where = ["lua/ask-openai/rag"]

@@ -350,4 +350,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    # for python3 -m mcp_server
+    # entrypoint doesn't use this, b/c it uses importlib (hence why you setup mcp_server.__main__:main to invoke main() there too)
     main()
