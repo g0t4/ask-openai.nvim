@@ -346,7 +346,7 @@ def main() -> None:
     try:
         asyncio.run(serve(root_dir=args.root_dir))
     except Exception as error:
-        _console.print(f"[bold red]Server error:[/bold red] {error}")
+        _logger.exception(f"[bold red]Server error:[/bold red] {error}")
         raise
 
 
