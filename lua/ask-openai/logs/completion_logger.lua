@@ -80,68 +80,72 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         return
     end
 
-    -- * /v1/chat/completions endpoint llama-server
-    -- FYI delta is the part that changes per SSE, except for last SSE which sets other fields like finish_reason
-    -- * key parts (in order):
-    --
-    -- first delta has role (not split apart on multiple SSEs)
-    -- delta = { content = vim.NIL, role = "assistant" },
-    --
-    -- reasoning_content SSEs
-    -- delta = { reasoning_content = "User" },
-    --
-    -- content SSEs
-    -- delta = { content = "---@" },
-    --
-    -- last SSE choices:
-    -- choices = { { delta = vim.empty_dict(), finish_reason = "stop", index = 0 } },
-    -- accum the full message (from streaming SSEs) so I can log for all frontends here
-    local accum = request.accum or {}
-    request.accum = accum
+    function M.log_chat_completion_sse()
+        -- * /v1/chat/completions endpoint llama-server
+        -- FYI delta is the part that changes per SSE, except for last SSE which sets other fields like finish_reason
+        -- * key parts (in order):
+        --
+        -- first delta has role (not split apart on multiple SSEs)
+        -- delta = { content = vim.NIL, role = "assistant" },
+        --
+        -- reasoning_content SSEs
+        -- delta = { reasoning_content = "User" },
+        --
+        -- content SSEs
+        -- delta = { content = "---@" },
+        --
+        -- last SSE choices:
+        -- choices = { { delta = vim.empty_dict(), finish_reason = "stop", index = 0 } },
+        -- accum the full message (from streaming SSEs) so I can log for all frontends here
+        local accum = request.accum or {}
+        request.accum = accum
 
-    local choices = sse_parsed.choices
-    if not choices then
-        return
-    end
-    local first = choices[1]
-    if not first then
-        return
-    end
-    local delta = first.delta
-    if not delta then
-        return
+        local choices = sse_parsed.choices
+        if not choices then
+            return
+        end
+        local first = choices[1]
+        if not first then
+            return
+        end
+        local delta = first.delta
+        if not delta then
+            return
+        end
+
+        if delta.role then
+            accum.role = delta.role
+        end
+        if delta.reasoning_content and delta.reasoning_content ~= vim.NIL then
+            accum.reasoning_content = (accum.reasoning_content or "") .. delta.reasoning_content
+        end
+        if delta.content and delta.content ~= vim.NIL then
+            accum.content = (accum.content or "") .. delta.content
+        end
+        if first.finish_reason and first.finish_reason ~= vim.NIL then
+            accum.finish_reason = first.finish_reason
+        end
+        -- PRN track tool call deltas too? on the response (for output.json)?
+        --   FYI request.body, on next turn, already has the tool call
+        --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
+        if is_last_sse then
+            -- store for convenient access in-memory, that way if smth fails on save I can still see it here
+            M.last_done = {
+                sse_parsed = sse_parsed,
+                request = request,
+                frontend = frontend,
+            }
+
+            local messages_snapshot = tables.shallow_copy(request.body.messages or {})
+            -- FYI it is possible the distill in AgentsFrontend has a difference that you need to keep, if so then call save_trace from that spot and not here just for AgentsFrontend (find a way to pass last_sse, that's the only complexity)
+            table.insert(messages_snapshot, accum)
+            vim.schedule(function()
+                M.save_trace(request, frontend, messages_snapshot, sse_parsed, {})
+            end)
+        end
     end
 
-    if delta.role then
-        accum.role = delta.role
-    end
-    if delta.reasoning_content and delta.reasoning_content ~= vim.NIL then
-        accum.reasoning_content = (accum.reasoning_content or "") .. delta.reasoning_content
-    end
-    if delta.content and delta.content ~= vim.NIL then
-        accum.content = (accum.content or "") .. delta.content
-    end
-    if first.finish_reason and first.finish_reason ~= vim.NIL then
-        accum.finish_reason = first.finish_reason
-    end
-    -- PRN track tool call deltas too? on the response (for output.json)?
-    --   FYI request.body, on next turn, already has the tool call
-    --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
-    if is_last_sse then
-        -- store for convenient access in-memory, that way if smth fails on save I can still see it here
-        M.last_done = {
-            sse_parsed = sse_parsed,
-            request = request,
-            frontend = frontend,
-        }
-
-        local messages_snapshot = tables.shallow_copy(request.body.messages or {})
-        -- FYI it is possible the distill in AgentsFrontend has a difference that you need to keep, if so then call save_trace from that spot and not here just for AgentsFrontend (find a way to pass last_sse, that's the only complexity)
-        table.insert(messages_snapshot, accum)
-        vim.schedule(function()
-            M.save_trace(request, frontend, messages_snapshot, sse_parsed, {})
-        end)
-    end
+    M.log_chat_completion_sse()
 end
 
 ---@param request CurlRequest|CurlRequestForTrace
