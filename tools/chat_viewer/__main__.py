@@ -42,7 +42,8 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "0ebaabd61583d43b3f53e5452e2e14be2ecf8cd75d252c4b1eaa91d6e8b9933c",  ## Lua Code Preferences
     "6390f850273cc37a33b54af2656867da990953aa8a77a93b2a5c1331d1acb71e",  ## Lua Code Preferences FIM
     "276286fd2b2f82efa9c50bfe0ca84c66e7eef8d04553570d583ee9c003408690",  ## Lua Code Preferences FIM
-    "078f633b1025188833185d8775ad8645be15ff9761cc513a9ca59860ed75ea2d",  ## Lua Code Preferences FIM
+    "078f633b1025188833185d8775ad8645be15ff9761cc513a9ca59860ed75ea2d",  ## Lua Code Preferences
+    "8311b6b8cce26e1b8f303715cdce15971d11acf00c4489b26649b9ba5674c66a",  ## Lua Code Preferences FIM
     #
     # * FIMs
     "7da90487ce9c82207d7f5a884bc68ae2dae75ce0b72b9636b2296760b8633d7d",  # FIM System Message - appears not to have unique values
