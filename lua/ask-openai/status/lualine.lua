@@ -54,29 +54,11 @@ function M.lualine_components()
         return { fg = is_ready and '#50fa7b' or '#ff5555' } -- green or red
     end
 
-    -- * Reasoning level visualization helper (3 slots)
-    local function get_reasoning_bar(level_str)
-        if level_str == "off" or level_str == nil then
-            return ""
-        elseif level_str == "low" then
-            return "█░░"
-        elseif level_str == "medium" then
-            return "██░"
-        elseif level_str == "high" then
-            return "███"
-        end
-        return ""
-    end
-
     local primary = {
         function()
             local icons = { '[' }
 
             get_threshold_summary(icons)
-
-            -- * Reasoning Bar
-            local reasoning_level = local_share.get_fim_reasoning_level()
-            table.insert(icons, get_reasoning_bar(reasoning_level))
 
             if local_share.are_notify_stats_enabled() then
                 table.insert(icons, '󰍨')
