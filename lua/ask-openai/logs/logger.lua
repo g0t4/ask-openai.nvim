@@ -77,7 +77,8 @@ local function build_entry(level_number, ...)
     --   also, can use:    for k,v in pairs(arg)
     -- FYI using `arg` resulted in parameters from previous calls (w/ more params) to be logged in subsequent logs...
     local stringified = {} -- new set of args to write into, don't try to use special `arg` variable
-    for i, value in ipairs({ ... }) do
+    for i = 1, select("#", ...) do
+        local value = select(i, ...)
         -- make sure everything is a string so it can be concatenated
         if type(value) == "table" then
             -- auto inspect table values
