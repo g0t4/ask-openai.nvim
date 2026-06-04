@@ -31,6 +31,12 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     local is_last_sse = sse_parsed.timings -- timings only on last sse
 
     function M.log_raw_completion_sse()
+        -- /v1/completions endpoint
+        local is_raw_completion_sse = sse_parsed.content ~= nil
+        if not is_raw_completion_sse then
+            return
+        end
+
         -- * /v1/completions endpoint
         -- raw as in there is no chat template that is used to transform messages => raw prompt
         -- instead you provide the raw prompt in the request
@@ -72,13 +78,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     end
 
     log:info("sse_parsed", vim.inspect(sse_parsed))
-
-    -- Replace the original block with a call to the new helper:
-    local is_raw_completion = sse_parsed.content ~= nil -- instead of sse_parsed.choices
-    if is_raw_completion then
-        M.log_raw_completion_sse()
-        return
-    end
 
     function M.log_chat_completion_sse()
         -- * /v1/chat/completions endpoint llama-server
@@ -145,6 +144,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         end
     end
 
+    M.log_raw_completion_sse()
     M.log_chat_completion_sse()
 end
 
