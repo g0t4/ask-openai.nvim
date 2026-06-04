@@ -28,6 +28,43 @@ end
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 function M.log_sse_to_request(sse_parsed, request, frontend)
+    -- * /v1/completions endpoint
+    local is_raw_completion = sse_parsed.content ~= nil -- instead of sse_parsed.choices
+    local is_last_sse = sse_parsed.timings
+    if is_raw_completion then
+        log:info("sse_parsed", vim.inspect(sse_parsed))
+        -- raw as in there is no chat template that is used to transform messages => raw prompt
+        --  instead you provide the raw prompt in the request
+        --
+        -- NOTE: llama.cpp /completions endpoint works with raw prompt and response (content)
+        -- llama.cpp /completions SSEs are split: early SSEs have { content: "...", stop: false }
+        -- and the final SSE has { stop: true, timing: true, timings: {...} } WITHOUT content.
+        -- So we accumulate content across events, just like the chat endpoint does for delta.content.
+        local accum = request.accum or {}
+        request.accum = accum
+        if sse_parsed.content ~= nil and sse_parsed.content ~= vim.NIL then
+            accum.content = (accum.content or "") .. sse_parsed.content
+        end
+
+        if is_last_sse then
+            M.last_done = {
+                sse_parsed = sse_parsed,
+                request = request,
+                frontend = frontend,
+            }
+            local trace_data = {
+                -- put content on trace_data top-level
+                content = accum.content
+            }
+            vim.schedule(function()
+                local no_messages = nil -- b/c not chat endpoint
+                M.save_trace(request, frontend, no_messages, sse_parsed, trace_data)
+            end)
+        end
+        return
+    end
+
+    -- * /v1/chat/completions endpoint llama-server
     -- FYI delta is the part that changes per SSE, except for last SSE which sets other fields like finish_reason
     -- * key parts (in order):
     --
@@ -42,45 +79,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     --
     -- last SSE choices:
     -- choices = { { delta = vim.empty_dict(), finish_reason = "stop", index = 0 } },
-
-    -- NOTE: llama.cpp /completions endpoint returns timings without choices:
-    --   { "stop": true, "timing": true, "timings": { "prompt_n": ..., "predicted_n": ... } }
-    --   so we must check for timings separately from choices
-    local is_llamacpp_completions = sse_parsed.timings and not sse_parsed.choices
-    if is_llamacpp_completions then
-        -- llama.cpp /completions SSEs are split: early SSEs have { content: "...", stop: false }
-        -- and the final SSE has { stop: true, timing: true, timings: {...} } WITHOUT content.
-        -- So we accumulate content across events, just like the chat endpoint does for delta.content.
-        local accum = request.accum or {}
-        request.accum = accum
-        if sse_parsed.content and sse_parsed.content ~= vim.NIL then
-            accum.content = (accum.content or "") .. sse_parsed.content
-        end
-        if sse_parsed.stop then
-            accum.finish_reason = "stop"
-        end
-
-        if sse_parsed.timings then
-            -- Final SSE: save the accumulated content
-            -- store for convenient access in-memory, that way if smth fails on save I can still see it here
-            M.last_done = {
-                sse_parsed = sse_parsed,
-                request = request,
-                frontend = frontend,
-            }
-            local messages_snapshot = tables.shallow_copy(request.body.messages or {})
-            table.insert(messages_snapshot, {
-                role = "assistant",
-                content = accum.content or "",
-                finish_reason = accum.finish_reason or "stop",
-            })
-            vim.schedule(function()
-                M.save_trace(request, frontend, messages_snapshot, sse_parsed)
-            end)
-        end
-        return
-    end
-
     -- accum the full message (from streaming SSEs) so I can log for all frontends here
     local accum = request.accum or {}
     request.accum = accum
@@ -114,7 +112,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     --   FYI request.body, on next turn, already has the tool call
     --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
 
-    local is_last_sse = sse_parsed.timings
     if is_last_sse then
         -- store for convenient access in-memory, that way if smth fails on save I can still see it here
         M.last_done = {
@@ -127,16 +124,16 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- FYI it is possible the distill in AgentsFrontend has a difference that you need to keep, if so then call save_trace from that spot and not here just for AgentsFrontend (find a way to pass last_sse, that's the only complexity)
         table.insert(messages_snapshot, accum)
         vim.schedule(function()
-            M.save_trace(request, frontend, messages_snapshot, sse_parsed)
+            M.save_trace(request, frontend, messages_snapshot, sse_parsed, {})
         end)
     end
 end
 
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
----@param messages_snapshot table[]
+---@param messages_snapshot? table[]
 ---@param sse_parsed table
-function M.save_trace(request, frontend, messages_snapshot, sse_parsed)
+function M.save_trace(request, frontend, messages_snapshot, sse_parsed, trace_data)
     local save_dir, trace_id = M.log_request_with(request, frontend)
     -- FYI if this doesn't exist before the save_trace io write happens, the io write will fail silently
     vim.fn.mkdir(save_dir, "p")
@@ -147,15 +144,19 @@ function M.save_trace(request, frontend, messages_snapshot, sse_parsed)
     if file then
         local request_body_copy = tables.shallow_copy(request.body)
         -- this way I can avoid issues with timing and AgentsFrontend modifying request.body.messages to add its distilled version of the assistant message
-        request_body_copy.messages = messages_snapshot
-        local trace_data = {
-            request_body = request_body_copy,
-            -- last_sse has:
-            --   .timings (top-level and under .__verbose.timings)
-            --   .__verbose.(prompt, generation_settings)
-            --   .__verbose.content (generated raw outputs, but ONLY for stream=false)
-            last_sse = sse_parsed,
-        }
+        -- TODO FYI it is confusing that you add the new message to the messages collection that is marked as request_body.messages... maybe you should just store them separately? and nuke request_body.messages to avoid duplication? like top-level messages?
+        if messages_snapshot ~= nil then
+            -- PRN move this out to caller of save_trace? use trace_data object?
+            request_body_copy.messages = messages_snapshot
+        end
+        trace_data = trace_data or {}
+        trace_data.request_body = request_body_copy
+        -- last_sse has:
+        --   .timings (top-level and under .__verbose.timings)
+        --   .__verbose.(prompt, generation_settings)
+        --   .__verbose.content (generated raw outputs, but ONLY for stream=false)
+        trace_data.last_sse = sse_parsed
+
         file:write(json.encode(trace_data, { indent = true }))
         file:close()
     end
