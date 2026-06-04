@@ -1,4 +1,5 @@
 import json
+import difflib
 import os
 import sys
 import subprocess
@@ -96,6 +97,127 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "5b4513e0987158cfbc9225e1535f437eb054f5ca5455759984dcbf7631f56197",  ## Fetch tool
     "a9e229dae529161fe195077c1d6c79cc66ab3c37e287a20d9203616f13596d0a",  ## Fetch Tool
 ]
+
+FIM_MARKER = "<|fim_middle|>"
+
+
+def is_raw_completion_fim(data: dict) -> bool:
+    """Check if this is a raw completion trace with FIM marker."""
+    if not is_raw_completion_trace(data):
+        return False
+
+    request_body = data.get("request_body", {})
+    prompt = request_body.get("prompt", "")
+    return FIM_MARKER in prompt
+
+
+def parse_raw_completion_fim(raw_prompt: str, completion: str) -> dict:
+    """Parse raw completion with FIM marker into diff components."""
+    marker_idx = raw_prompt.find(FIM_MARKER)
+    if marker_idx < 0:
+        return {}
+
+    before = raw_prompt[:marker_idx]
+    after = raw_prompt[marker_idx + len(FIM_MARKER):]
+
+    return {
+        "before": before,
+        "after": after,
+        "completion": completion,
+        "diff_type": "fim",
+    }
+
+
+def print_raw_fim_diff(raw_prompt: str, completion: str) -> None:
+    """Print a FIM completion diff for raw completions."""
+    parsed = parse_raw_completion_fim(raw_prompt, completion)
+    if not parsed:
+        return
+
+    # Limit context to last 10 lines before and first 10 lines after
+    CONTEXT_LINES = 10
+
+    before_lines = parsed["before"].split("\n")
+    before_omitted = len(before_lines) - CONTEXT_LINES if len(before_lines) > CONTEXT_LINES else 0
+    before = "\n".join(before_lines[-CONTEXT_LINES:]) if before_omitted > 0 else parsed["before"]
+
+    after_lines = parsed["after"].split("\n")
+    after_omitted = len(after_lines) - CONTEXT_LINES if len(after_lines) > CONTEXT_LINES else 0
+    after = "\n".join(after_lines[:CONTEXT_LINES]) if after_omitted > 0 else parsed["after"]
+
+    # Old text (without completion)
+    old_text = before + after
+    # New text (with completion inserted)
+    new_text = before + completion + after
+
+    # Generate word diff
+    diff = difflib.ndiff(old_text.split(), new_text.split())
+
+    root = TreeWrapper.hidden_root()
+    root.add("[bold cyan]FIM Completion Diff[/]")
+    root.add(f"[dim]Completion inserted at {FIM_MARKER!r}")
+    if before_omitted or after_omitted:
+        root.add("[dim] • Showing 10 lines of context before/after[/]")
+
+    # Build display string with diff highlighting
+    display_parts = []
+    for token in diff:
+        if token[0] == "-":
+            display_parts.append(f"[red]{token[2:]}[/]")
+        elif token[0] == "+":
+            display_parts.append(f"[green]{token[2:]}[/]")
+        elif token[0] == " ":
+            display_parts.append(token[2:])
+
+    display_str = " ".join(display_parts)
+    root.add(display_str)
+
+    _console.rule(style='cyan')
+    _console.print(root)
+    _console.rule(style='cyan')
+    _console.print()  # blank line after diff
+
+
+
+
+def is_raw_completion_trace(data: dict) -> bool:
+    """Check if this is a raw completion trace (llamacpp /completions endpoint).
+
+    Raw traces have no messages array but have request_body.prompt and top-level content.
+    """
+    request_body = data.get("request_body", {})
+    if not isinstance(request_body, dict):
+        return False
+
+    has_prompt = "prompt" in request_body and request_body["prompt"] is not None and request_body["prompt"] != ""
+    has_messages = "messages" in request_body
+    has_content = "content" in data and data["content"] is not None and data["content"] != ""
+
+    # Raw = has prompt + top-level content, but NO messages
+    return has_prompt and has_content and not has_messages
+
+
+def create_raw_completion_messages(data: dict) -> list[dict]:
+    """Create synthetic messages for raw completions (llamacpp /completions endpoint)."""
+    messages = []
+    request_body = data.get("request_body", {})
+    prompt = request_body.get("prompt", "")
+    completion = data.get("content", "")
+
+    if prompt:
+        messages.append({
+            "role": "user_raw",
+            "content": prompt,
+        })
+
+    if completion:
+        messages.append({
+            "role": "assistant_raw",
+            "content": completion,
+        })
+
+    return messages
+
 
 def _content_hash(msg: dict[str, Any]) -> str:
     """Return SHA‑256 hash (hex) of the message's raw ``content``."""
@@ -293,6 +415,10 @@ def load_messages(data) -> list[dict[str, Any]]:
         # * only has list of messages
         return data
     if isinstance(data, dict):
+        # Check for raw completions first (llamacpp /completions endpoint)
+        if is_raw_completion_trace(data):
+            return create_raw_completion_messages(data)
+
         if "request_body" in data:
             # * -trace.json has request_body.messages
             data = data["request_body"]
@@ -622,6 +748,17 @@ def print_if_missing_keys(obj, name, tree: TreeWrapper):
     child = tree.add(f"[red bold]MISSED KEYS on {name}:[/]") \
             .add(_json(obj))
 
+def print_raw_completion_message(msg: dict):
+    """Print raw completion message (prompt or completion) verbatim."""
+    raw_content = _extract_content(msg)
+    if not raw_content:
+        return
+
+    root = TreeWrapper.hidden_root()
+    root.add_no_markup(raw_content)
+    _console.print(root)
+
+
 def print_assistant_message(msg: dict):
     root = TreeWrapper.hidden_root()
 
@@ -661,15 +798,26 @@ def print_assistant_message(msg: dict):
     _console.print(root)
     _console.print()  # blank line
 
+def get_display_role(role: str) -> str:
+    """Get the display role label for the message title."""
+    role_lower = role.lower()
+    if role_lower == "user_raw":
+        return "PROMPT"
+    if role_lower == "assistant_raw":
+        return "COMPLETION"
+    if role_lower == "tool":
+        return "TOOL RESULT"
+    return role.upper()
+
 def get_color(role: str) -> str:
     role_lower = role.lower()
     if role_lower == "system":
         return "magenta"
     if role_lower == "developer":
         return "cyan"
-    if role_lower == "user":
+    if role_lower == "user" or role_lower == "user_raw":
         return "green"
-    if role_lower == "assistant":
+    if role_lower == "assistant" or role_lower == "assistant_raw":
         return "yellow"
     if role_lower == "tool":
         return "red"
@@ -686,9 +834,7 @@ def print_section_header(title, color):
 
 def print_message(msg: dict, idx: int):
     role = msg.get("role", "").lower()
-    display_role = role.upper()
-    if display_role == "TOOL":
-        display_role = "TOOL RESULT"
+    display_role = get_display_role(role)
     title = f"{idx}: {display_role}"
     if "output.json" in msg:
         title = f"{title} (output.json)"
@@ -697,6 +843,8 @@ def print_message(msg: dict, idx: int):
     match role:
         case "tool":
             print_tool_result_message(msg)
+        case "assistant_raw" | "user_raw":
+            print_raw_completion_message(msg)
         case "assistant":
             print_assistant_message(msg)
         case "system" | "developer" | "user" | _:
@@ -730,6 +878,17 @@ def main() -> None:
             html_path = str(trace_file) + ".html"
 
     print_model_info(model_name, timings)
+    # Check for raw completion FIM and print diff at the top
+    if len(messages) >= 2:
+        first_msg = messages[0]
+        if first_msg.get("role") == "user_raw" and FIM_MARKER in _extract_content(first_msg):
+            # Find assistant_raw message
+            second_msg = messages[1] if len(messages) > 1 else None
+            if second_msg and second_msg.get("role") == "assistant_raw":
+                raw_prompt = _extract_content(first_msg)
+                raw_completion = _extract_content(second_msg)
+                print_raw_fim_diff(raw_prompt, raw_completion)
+
     for idx, message in enumerate(messages, start=1):
         print_message(message, idx)
 
