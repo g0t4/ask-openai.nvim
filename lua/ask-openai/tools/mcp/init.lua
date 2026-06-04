@@ -343,7 +343,7 @@ function MCPStdioClient:initialize(on_done)
             else
                 for _, tool in ipairs(response.result.tools) do
                     ---@cast tool MCP_Tool
-                    log:info("tools/list:", tool)
+                    -- log:info("tools/list:", tool)
                     tool.call = function(id, tool_name, args, callback, on_progress)
                         self:tools_call(id, tool_name, args, callback, on_progress)
                     end

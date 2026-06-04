@@ -151,7 +151,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         end)
     end
 
-    log:info("sse_parsed", vim.inspect(sse_parsed))
+    -- log:info("sse_parsed", vim.inspect(sse_parsed))
     M.log_raw_completion_sse()
     M.log_chat_completion_sse()
 end
