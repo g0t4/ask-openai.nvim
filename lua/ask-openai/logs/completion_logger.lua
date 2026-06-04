@@ -5,6 +5,7 @@ local tables = require("ask-openai.helpers.tables")
 local M = {
     last_done = {},
 }
+
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 ---@return string save_dir
@@ -47,22 +48,36 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     --   so we must check for timings separately from choices
     local is_llamacpp_completions = sse_parsed.timings and not sse_parsed.choices
     if is_llamacpp_completions then
-        -- store for convenient access in-memory, that way if smth fails on save I can still see it here
-        M.last_done = {
-            sse_parsed = sse_parsed,
-            request = request,
-            frontend = frontend,
-        }
-        local accum = {
-            role = "assistant",
-            content = sse_parsed.content or "",
-            finish_reason = sse_parsed.stop and "stop" or nil,
-        }
-        local messages_snapshot = tables.shallow_copy(request.body.messages or {})
-        table.insert(messages_snapshot, accum)
-        vim.schedule(function()
-            M.save_trace(request, frontend, messages_snapshot, sse_parsed)
-        end)
+        -- llama.cpp /completions SSEs are split: early SSEs have { content: "...", stop: false }
+        -- and the final SSE has { stop: true, timing: true, timings: {...} } WITHOUT content.
+        -- So we accumulate content across events, just like the chat endpoint does for delta.content.
+        local accum = request.accum or {}
+        request.accum = accum
+        if sse_parsed.content and sse_parsed.content ~= vim.NIL then
+            accum.content = (accum.content or "") .. sse_parsed.content
+        end
+        if sse_parsed.stop then
+            accum.finish_reason = "stop"
+        end
+
+        if sse_parsed.timings then
+            -- Final SSE: save the accumulated content
+            -- store for convenient access in-memory, that way if smth fails on save I can still see it here
+            M.last_done = {
+                sse_parsed = sse_parsed,
+                request = request,
+                frontend = frontend,
+            }
+            local messages_snapshot = tables.shallow_copy(request.body.messages or {})
+            table.insert(messages_snapshot, {
+                role = "assistant",
+                content = accum.content or "",
+                finish_reason = accum.finish_reason or "stop",
+            })
+            vim.schedule(function()
+                M.save_trace(request, frontend, messages_snapshot, sse_parsed)
+            end)
+        end
         return
     end
 
