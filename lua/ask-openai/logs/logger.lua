@@ -73,51 +73,43 @@ end
 local function build_entry(level_number, ...)
     -- CAREFUL with how you use arg table, it's fine to do but it messes up sequential tables (arg is a table)...
     --   #arg => stops at first nil
-    --   use select("#", ...) as it doesn't suffer from this issue'
-    --   also, can do:    for k,v in ipairs(arg)
-    -- FYI using `arg` resulted in parameters from previous calls (w/ more params) to be logged in subsequent logs... IIAC b/c arg was a global somehow?
-    local args_strings = {} -- new set of args to write into, don't try to use special `arg` variable
+    --   use select("#", ...) as it doesn't suffer from this issue
+    --   also, can use:    for k,v in pairs(arg)
+    -- FYI using `arg` resulted in parameters from previous calls (w/ more params) to be logged in subsequent logs...
+    local stringified = {} -- new set of args to write into, don't try to use special `arg` variable
     for i = 1, select("#", ...) do
         local value = select(i, ...)
         -- make sure everything is a string so it can be concatenated
-        args_strings[i] = tostring(value)
+        if type(value) == "table" then
+            -- auto inspect table values
+            stringified[i] = vim.inspect(value)
+        else
+            stringified[i] = tostring(value)
+        end
     end
 
     return string.format(
         "[%s] %s\n",
         log_level_tag_for_number(level_number),
-        table.concat(args_strings, " ")
+        -- TODO do I really want " " to join when multiple args, how often do I even pass more than one? how about just log each on its own line?
+        table.concat(stringified, " ")
     )
 end
 
----@param level integer
----@vararg any
-function Logger:log_auto_inspect(level, ...)
-    local processed_args = {}
-    for i, arg in ipairs({ ... }) do
-        if type(arg) == "table" then
-            processed_args[i] = vim.inspect(arg)
-        else
-            processed_args[i] = arg
-        end
-    end
-    self:log(level, unpack(processed_args))
-end
-
 function Logger:error(...)
-    self:log_auto_inspect(local_share.LOG_LEVEL_NUMBERS.ERROR, ...)
+    self:log(local_share.LOG_LEVEL_NUMBERS.ERROR, ...)
 end
 
 function Logger:warn(...)
-    self:log_auto_inspect(local_share.LOG_LEVEL_NUMBERS.WARN, ...)
+    self:log(local_share.LOG_LEVEL_NUMBERS.WARN, ...)
 end
 
 function Logger:trace(...)
-    self:log_auto_inspect(local_share.LOG_LEVEL_NUMBERS.TRACE, ...)
+    self:log(local_share.LOG_LEVEL_NUMBERS.TRACE, ...)
 end
 
 function Logger:info(...)
-    self:log_auto_inspect(local_share.LOG_LEVEL_NUMBERS.INFO, ...)
+    self:log(local_share.LOG_LEVEL_NUMBERS.INFO, ...)
 end
 
 -- TODO add unit test of info log method so I don't waste another hour on its quirks:
@@ -175,6 +167,10 @@ function Logger:log(level_number, ...)
 
     local entry = build_entry(level_number, ...)
 
+    self:_log(entry)
+end
+
+function Logger:_log(entry)
     -- PRN can use vim.defer_fn if overhead is interferring with predictions... don't  care to do that now though...
     self:ensure_file_is_open() -- ~11ms first time only (when ask dir already exists, so worse case is higher if it has to make the dir), 0 thereafter
     self.file:write(entry) -- 0.01ms => 0.00ms
