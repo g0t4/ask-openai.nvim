@@ -7,7 +7,7 @@ describe("test log_auto_inspect", function()
     local log = require("ask-openai.logs.logger"):predictions() -- for now use my single logger is fine
     local captures = {}
     log._log = function(self, entry)
-        table.insert(captures,  entry )
+        table.insert(captures, entry)
     end
 
     before_each(function()
@@ -31,6 +31,7 @@ describe("test log_auto_inspect", function()
         assert.matches("message first nil last\n", captures[1])
     end)
 
-
+    -- TODO do I really want " " to join when multiple ... args logged in one call?
+    --   ? how often do I even pass more than one? how about just log each on its own line?
     -- TODO add other tests of logging as needed for quirks that are otherwise hard to debug
 end)

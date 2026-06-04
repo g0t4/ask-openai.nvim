@@ -151,7 +151,6 @@ local function build_entry(level_number, ...)
     return string.format(
         "[%s] %s\n",
         log_level_tag_for_number(level_number),
-        -- TODO do I really want " " to join when multiple args, how often do I even pass more than one? how about just log each on its own line?
         table.concat(stringified, " ")
     )
 end
