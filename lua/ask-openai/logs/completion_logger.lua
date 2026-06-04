@@ -78,6 +78,11 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     end
 
     function M.log_chat_completion_sse()
+        local is_chat_completion_sse = sse_parsed.choices ~= nil
+        if not is_chat_completion_sse then
+            return
+        end
+
         -- * /v1/chat/completions endpoint llama-server
         -- FYI delta is the part that changes per SSE, except for last SSE which sets other fields like finish_reason
         -- * key parts (in order):
