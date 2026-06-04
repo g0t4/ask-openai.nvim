@@ -8,7 +8,7 @@
   }
 
   interface Props {
-    githubPath: string // e.g., "g0t4/dataset-gfy/master/semantic_grep_auto_context/fims"
+    githubPath: string // e.g., "g0t4/datasets/master/semantic_grep_auto_context/fims"
   }
 
   let { githubPath }: Props = $props()

@@ -22,7 +22,7 @@
   let error = $state<string | null>(null)
   let traceUrl = $state<string | null>(null)
   let isDirectory = $state(false)
-  let githubPath = $state<string | null>(null) // e.g., "g0t4/dataset-gfy/master/path/to/file"
+  let githubPath = $state<string | null>(null) // e.g., "g0t4/datasets/master/path/to/file"
   let localPath = $state<string | null>(null) // e.g., "semantic_grep_auto_context/fims"
 
   // Decoded URL for display
@@ -209,7 +209,7 @@
   $effect(() => {
     const params = new URLSearchParams(window.location.search)
 
-    // New github= parameter (e.g., ?github=g0t4/dataset-gfy/master/path/to/file)
+    // New github= parameter (e.g., ?github=g0t4/datasets/master/path/to/file)
     const githubParam = params.get('github')
 
     // Dev-only local= parameter (e.g., ?local=semantic_grep_auto_context/fims)

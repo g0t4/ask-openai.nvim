@@ -22,7 +22,7 @@
 
   // Convert raw.githubusercontent.com URL to GitHub API URL
   function convertToApiUrl(rawUrl: string): string | null {
-    // Example: https://raw.githubusercontent.com/g0t4/dataset-gfy/master/semantic_grep_auto_context/fims/
+    // Example: https://raw.githubusercontent.com/g0t4/datasets/master/semantic_grep_auto_context/fims/
     const match = rawUrl.match(
       /raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/([^/]+)\/?(.*)/
     )
@@ -33,7 +33,7 @@
     currentPath = path || ''
 
     // GitHub API endpoint for contents
-    // https://api.github.com/repos/g0t4/dataset-gfy/contents/semantic_grep_auto_context/fims?ref=master
+    // https://api.github.com/repos/g0t4/datasets/contents/semantic_grep_auto_context/fims?ref=master
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`
     return apiUrl
   }
