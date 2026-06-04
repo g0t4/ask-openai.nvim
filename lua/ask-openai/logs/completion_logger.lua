@@ -28,20 +28,28 @@ end
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 function M.log_sse_to_request(sse_parsed, request, frontend)
-    -- * /v1/completions endpoint
-    local is_raw_completion = sse_parsed.content ~= nil -- instead of sse_parsed.choices
-    local is_last_sse = sse_parsed.timings
-    if is_raw_completion then
-        log:info("sse_parsed", vim.inspect(sse_parsed))
+    local is_last_sse = sse_parsed.timings -- timings only on last sse
+
+    function M.log_raw_completion_sse()
+        -- * /v1/completions endpoint
         -- raw as in there is no chat template that is used to transform messages => raw prompt
-        --  instead you provide the raw prompt in the request
+        -- instead you provide the raw prompt in the request
         --
         -- NOTE: llama.cpp /completions endpoint works with raw prompt and response (content)
         -- llama.cpp /completions SSEs are split: early SSEs have { content: "...", stop: false }
         -- and the final SSE has { stop: true, timing: true, timings: {...} } WITHOUT content.
         -- So we accumulate content across events, just like the chat endpoint does for delta.content.
+        --
+        -- TODO modify chat viewers to support this format (.content .request_body.prompt) => can even support raw prompt on regular chat completions too if .__verbose.prompt is present
+        --  if no messages => if prompt => show raw prompt, if content => show raw content
+        --    add model specific syntax prompt highligthing ... at least color key tags like <im_start> in basic chat formats
+        --    could lookup on model id/name
+        --
+        --  TODO look into llama-server option to return .__verbose.content with raw completion even on chat completions and even on streaming responses!
+        --     OR tag it onto my verbose flag that I already read off of request body!
         local accum = request.accum or {}
         request.accum = accum
+
         if sse_parsed.content ~= nil and sse_parsed.content ~= vim.NIL then
             accum.content = (accum.content or "") .. sse_parsed.content
         end
@@ -49,18 +57,26 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         if is_last_sse then
             M.last_done = {
                 sse_parsed = sse_parsed,
-                request = request,
-                frontend = frontend,
+                request    = request,
+                frontend   = frontend,
             }
             local trace_data = {
                 -- put content on trace_data top-level
-                content = accum.content
+                content = accum.content,
             }
             vim.schedule(function()
                 local no_messages = nil -- b/c not chat endpoint
                 M.save_trace(request, frontend, no_messages, sse_parsed, trace_data)
             end)
         end
+    end
+
+    log:info("sse_parsed", vim.inspect(sse_parsed))
+
+    -- Replace the original block with a call to the new helper:
+    local is_raw_completion = sse_parsed.content ~= nil -- instead of sse_parsed.choices
+    if is_raw_completion then
+        M.log_raw_completion_sse()
         return
     end
 
@@ -111,7 +127,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     -- PRN track tool call deltas too? on the response (for output.json)?
     --   FYI request.body, on next turn, already has the tool call
     --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
-
     if is_last_sse then
         -- store for convenient access in-memory, that way if smth fails on save I can still see it here
         M.last_done = {
