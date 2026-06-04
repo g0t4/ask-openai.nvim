@@ -47,6 +47,13 @@ function M.lualine_components()
         end
         return { fg = fg_color }
     end
+
+    -- * MCP dot indicator (separate component for per-segment coloring)
+    local mcp_dot_color = function()
+        local is_ready = mcp_tools.ready
+        return { fg = is_ready and '#50fa7b' or '#ff5555' } -- green or red
+    end
+
     local primary = {
         function()
             local icons = { '[' }
@@ -99,13 +106,6 @@ function M.lualine_components()
             end
             table.insert(icons, ']')
 
-            -- * MCP tools ready indicator
-            if mcp_tools.ready then
-                table.insert(icons, '🟢')
-            else
-                table.insert(icons, '🔴')
-            end
-
             -- * aggregate stats (across requests)
             local totals = llama_stats.totals
 
@@ -124,10 +124,20 @@ function M.lualine_components()
         separator = nil,
         padding = 1 -- left/right padding (# chars)
     }
+
+    local mcp_component = {
+        function()
+            return '●'
+        end,
+        color = mcp_dot_color,
+        separator = { left = ' ', right = '' },
+        padding = 0
+    }
+
     -- TODO revisit multi component styling (i.e. color, padding, etc)
     return {
         primary,
-        -- primary,
+        mcp_component,
     }
 end
 
