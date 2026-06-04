@@ -132,8 +132,8 @@ end
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 ---@param messages_snapshot? table[]
----@param sse_parsed table
-function M.save_trace(request, frontend, messages_snapshot, sse_parsed, trace_data)
+---@param last_sse table
+function M.save_trace(request, frontend, messages_snapshot, last_sse, trace_data)
     local save_dir, trace_id = M.log_request_with(request, frontend)
     -- FYI if this doesn't exist before the save_trace io write happens, the io write will fail silently
     vim.fn.mkdir(save_dir, "p")
@@ -155,7 +155,7 @@ function M.save_trace(request, frontend, messages_snapshot, sse_parsed, trace_da
         --   .timings (top-level and under .__verbose.timings)
         --   .__verbose.(prompt, generation_settings)
         --   .__verbose.content (generated raw outputs, but ONLY for stream=false)
-        trace_data.last_sse = sse_parsed
+        trace_data.last_sse = last_sse
 
         file:write(json.encode(trace_data, { indent = true }))
         file:close()
