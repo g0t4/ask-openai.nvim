@@ -70,32 +70,6 @@ local function log_level_tag_for_number(level_number)
     return level_number_to_tag[level_number]
 end
 
-local function build_entry(level_number, ...)
-    -- CAREFUL with how you use arg table, it's fine to do but it messes up sequential tables (arg is a table)...
-    --   #arg => stops at first nil
-    --   use select("#", ...) as it doesn't suffer from this issue
-    --   also, can use:    for k,v in pairs(arg)
-    -- FYI using `arg` resulted in parameters from previous calls (w/ more params) to be logged in subsequent logs...
-    local stringified = {} -- new set of args to write into, don't try to use special `arg` variable
-    for i = 1, select("#", ...) do
-        local value = select(i, ...)
-        -- make sure everything is a string so it can be concatenated
-        if type(value) == "table" then
-            -- auto inspect table values
-            stringified[i] = vim.inspect(value)
-        else
-            stringified[i] = tostring(value)
-        end
-    end
-
-    return string.format(
-        "[%s] %s\n",
-        log_level_tag_for_number(level_number),
-        -- TODO do I really want " " to join when multiple args, how often do I even pass more than one? how about just log each on its own line?
-        table.concat(stringified, " ")
-    )
-end
-
 function Logger:error(...)
     self:log(local_share.LOG_LEVEL_NUMBERS.ERROR, ...)
 end
@@ -154,6 +128,32 @@ function Logger:_jsonify_trace(message, compact, ...)
     local value = { ... }
     local json = inspect.jq_json(value, compact)
     self:trace(message, json)
+end
+
+local function build_entry(level_number, ...)
+    -- CAREFUL with how you use arg table, it's fine to do but it messes up sequential tables (arg is a table)...
+    --   #arg => stops at first nil
+    --   use select("#", ...) as it doesn't suffer from this issue
+    --   also, can use:    for k,v in pairs(arg)
+    -- FYI using `arg` resulted in parameters from previous calls (w/ more params) to be logged in subsequent logs...
+    local stringified = {} -- new set of args to write into, don't try to use special `arg` variable
+    for i = 1, select("#", ...) do
+        local value = select(i, ...)
+        -- make sure everything is a string so it can be concatenated
+        if type(value) == "table" then
+            -- auto inspect table values
+            stringified[i] = vim.inspect(value)
+        else
+            stringified[i] = tostring(value)
+        end
+    end
+
+    return string.format(
+        "[%s] %s\n",
+        log_level_tag_for_number(level_number),
+        -- TODO do I really want " " to join when multiple args, how often do I even pass more than one? how about just log each on its own line?
+        table.concat(stringified, " ")
+    )
 end
 
 function Logger:log(level_number, ...)
