@@ -42,6 +42,30 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     -- last SSE choices:
     -- choices = { { delta = vim.empty_dict(), finish_reason = "stop", index = 0 } },
 
+    -- NOTE: llama.cpp /completions endpoint returns timings without choices:
+    --   { "stop": true, "timing": true, "timings": { "prompt_n": ..., "predicted_n": ... } }
+    --   so we must check for timings separately from choices
+    local is_llamacpp_completions = sse_parsed.timings and not sse_parsed.choices
+    if is_llamacpp_completions then
+        -- store for convenient access in-memory, that way if smth fails on save I can still see it here
+        M.last_done = {
+            sse_parsed = sse_parsed,
+            request = request,
+            frontend = frontend,
+        }
+        local accum = {
+            role = "assistant",
+            content = sse_parsed.content or "",
+            finish_reason = sse_parsed.stop and "stop" or nil,
+        }
+        local messages_snapshot = tables.shallow_copy(request.body.messages or {})
+        table.insert(messages_snapshot, accum)
+        vim.schedule(function()
+            M.save_trace(request, frontend, messages_snapshot, sse_parsed)
+        end)
+        return
+    end
+
     -- accum the full message (from streaming SSEs) so I can log for all frontends here
     local accum = request.accum or {}
     request.accum = accum
