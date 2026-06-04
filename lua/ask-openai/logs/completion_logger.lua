@@ -60,21 +60,23 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             accum.content = (accum.content or "") .. sse_parsed.content
         end
 
-        if is_last_sse then
-            M.last_done = {
-                sse_parsed = sse_parsed,
-                request    = request,
-                frontend   = frontend,
-            }
-            local trace_data = {
-                -- put content on trace_data top-level
-                content = accum.content,
-            }
-            vim.schedule(function()
-                local no_messages = nil -- b/c not chat endpoint
-                M.save_trace(request, frontend, no_messages, sse_parsed, trace_data)
-            end)
+        if not is_last_sse then
+            return
         end
+
+        M.last_done = {
+            sse_parsed = sse_parsed,
+            request    = request,
+            frontend   = frontend,
+        }
+        local trace_data = {
+            -- put content on trace_data top-level
+            content = accum.content,
+        }
+        vim.schedule(function()
+            local no_messages = nil -- b/c not chat endpoint
+            M.save_trace(request, frontend, no_messages, sse_parsed, trace_data)
+        end)
     end
 
     function M.log_chat_completion_sse()
@@ -130,21 +132,23 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- PRN track tool call deltas too? on the response (for output.json)?
         --   FYI request.body, on next turn, already has the tool call
         --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
-        if is_last_sse then
-            -- store for convenient access in-memory, that way if smth fails on save I can still see it here
-            M.last_done = {
-                sse_parsed = sse_parsed,
-                request = request,
-                frontend = frontend,
-            }
-
-            local messages_snapshot = tables.shallow_copy(request.body.messages or {})
-            -- FYI it is possible the distill in AgentsFrontend has a difference that you need to keep, if so then call save_trace from that spot and not here just for AgentsFrontend (find a way to pass last_sse, that's the only complexity)
-            table.insert(messages_snapshot, accum)
-            vim.schedule(function()
-                M.save_trace(request, frontend, messages_snapshot, sse_parsed, {})
-            end)
+        if not is_last_sse then
+            return
         end
+
+        -- store for convenient access in-memory, that way if smth fails on save I can still see it here
+        M.last_done = {
+            sse_parsed = sse_parsed,
+            request = request,
+            frontend = frontend,
+        }
+
+        local messages_snapshot = tables.shallow_copy(request.body.messages or {})
+        -- FYI it is possible the distill in AgentsFrontend has a difference that you need to keep, if so then call save_trace from that spot and not here just for AgentsFrontend (find a way to pass last_sse, that's the only complexity)
+        table.insert(messages_snapshot, accum)
+        vim.schedule(function()
+            M.save_trace(request, frontend, messages_snapshot, sse_parsed, {})
+        end)
     end
 
     log:info("sse_parsed", vim.inspect(sse_parsed))
