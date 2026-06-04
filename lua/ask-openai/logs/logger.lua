@@ -90,9 +90,9 @@ local function build_entry(level_number, ...)
     )
 end
 
+---@param level integer
+---@vararg any
 function Logger:log_auto_inspect(level, ...)
-    ---@param level integer
-    ---@vararg any
     local processed_args = {}
     for i, arg in ipairs({ ... }) do
         if type(arg) == "table" then
