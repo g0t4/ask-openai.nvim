@@ -90,21 +90,9 @@ local function build_entry(level_number, ...)
     )
 end
 
-function Logger:error(...)
-    self:log(local_share.LOG_LEVEL_NUMBERS.ERROR, ...)
-end
-
-function Logger:warn(...)
-    self:log(local_share.LOG_LEVEL_NUMBERS.WARN, ...)
-end
-
-function Logger:trace(...)
-    self:log(local_share.LOG_LEVEL_NUMBERS.TRACE, ...)
-end
-
---- table arguments will be auto vim.inspect'd
-function Logger:info(...)
-    -- TODO port auto vim.inspect to other log levels
+function Logger:log_auto_inspect(level, ...)
+    ---@param level integer
+    ---@vararg any
     local processed_args = {}
     for i, arg in ipairs({ ... }) do
         if type(arg) == "table" then
@@ -113,7 +101,23 @@ function Logger:info(...)
             processed_args[i] = arg
         end
     end
-    self:log(local_share.LOG_LEVEL_NUMBERS.INFO, unpack(processed_args))
+    self:log(level, unpack(processed_args))
+end
+
+function Logger:error(...)
+    self:log_auto_inspect(local_share.LOG_LEVEL_NUMBERS.ERROR, ...)
+end
+
+function Logger:warn(...)
+    self:log_auto_inspect(local_share.LOG_LEVEL_NUMBERS.WARN, ...)
+end
+
+function Logger:trace(...)
+    self:log_auto_inspect(local_share.LOG_LEVEL_NUMBERS.TRACE, ...)
+end
+
+function Logger:info(...)
+    self:log_auto_inspect(local_share.LOG_LEVEL_NUMBERS.INFO, ...)
 end
 
 -- TODO add unit test of info log method so I don't waste another hour on its quirks:
