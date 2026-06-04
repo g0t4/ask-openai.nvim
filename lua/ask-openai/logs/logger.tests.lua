@@ -30,4 +30,7 @@ describe("test log_auto_inspect", function()
         assert.equals(1, #captures)
         assert.matches("message first nil last\n", captures[1])
     end)
+
+
+    -- TODO add other tests of logging as needed for quirks that are otherwise hard to debug
 end)

@@ -112,9 +112,6 @@ function Logger:info(...)
     self:log(local_share.LOG_LEVEL_NUMBERS.INFO, ...)
 end
 
--- TODO add unit test of info log method so I don't waste another hour on its quirks:
--- log:info("foo", nil, "bar") -- use to validate nil args don't interupt the rest of log args getting included -- nuke this is fine, just leaving as a reminder I had trouble with logging nil values
-
 function Logger:is_enabled(level_number)
     local _, threshold = local_share.get_log_threshold()
     return level_number <= threshold
