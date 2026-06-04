@@ -102,9 +102,6 @@ function Logger:trace(...)
     self:log(local_share.LOG_LEVEL_NUMBERS.TRACE, ...)
 end
 
--- TODO add unit test of info log method so I don't waste another hour on its quirks:
--- log:info("foo", nil, "bar") -- use to validate nil args don't interupt the rest of log args getting included -- nuke this is fine, just leaving as a reminder I had trouble with logging nil values
-
 --- table arguments will be auto vim.inspect'd
 function Logger:info(...)
     -- TODO port auto vim.inspect to other log levels
@@ -118,6 +115,9 @@ function Logger:info(...)
     end
     self:log(local_share.LOG_LEVEL_NUMBERS.INFO, unpack(processed_args))
 end
+
+-- TODO add unit test of info log method so I don't waste another hour on its quirks:
+-- log:info("foo", nil, "bar") -- use to validate nil args don't interupt the rest of log args getting included -- nuke this is fine, just leaving as a reminder I had trouble with logging nil values
 
 function Logger:is_enabled(level_number)
     local _, threshold = local_share.get_log_threshold()
