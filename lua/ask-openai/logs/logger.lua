@@ -105,8 +105,18 @@ end
 -- TODO add unit test of info log method so I don't waste another hour on its quirks:
 -- log:info("foo", nil, "bar") -- use to validate nil args don't interupt the rest of log args getting included -- nuke this is fine, just leaving as a reminder I had trouble with logging nil values
 
+--- table arguments will be auto vim.inspect'd
 function Logger:info(...)
-    self:log(local_share.LOG_LEVEL_NUMBERS.INFO, ...)
+    -- TODO port auto vim.inspect to other log levels
+    local processed_args = {}
+    for i, arg in ipairs({ ... }) do
+        if type(arg) == "table" then
+            processed_args[i] = vim.inspect(arg)
+        else
+            processed_args[i] = arg
+        end
+    end
+    self:log(local_share.LOG_LEVEL_NUMBERS.INFO, unpack(processed_args))
 end
 
 function Logger:is_enabled(level_number)
