@@ -3,10 +3,16 @@ local BufferController = require("ask-openai.agents.viewer.buffers")
 local HLGroups = require("ask-openai.hlgroups")
 local FloatWindow = require("ask-openai.helpers.float_window")
 
+--- Unicode spinner frames for smooth animation.
+local SPINNER_FRAMES = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏' }
+
 ---@class AgentWindow : FloatWindow
 ---@field buffer_number number
 ---@field buffer BufferController
 ---@field win_id number
+---@field _spinner_handle? table -- vim.loop.timer_t handle
+---@field _spinner_idx number
+---@field _base_title string
 local AgentWindow = {}
 local class_mt = { __index = FloatWindow } -- inherit FloatWindow behavior too
 setmetatable(AgentWindow, class_mt)
@@ -51,6 +57,61 @@ function AgentWindow:new()
     vim.opt_local.wrap = true
 
     return instance
+end
+
+--- Update the window title with an animated spinner.
+--- If a base_title is provided, it gets displayed after the spinner frame.
+--- Runs indefinitely via a timer that fires every 100ms for smooth animation.
+---@param base_title? string -- optional static text to display alongside the spinner
+function AgentWindow:update_title(base_title)
+    if not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then
+        return
+    end
+
+    -- Initialize spinner state on first call
+    if not self._spinner_handle then
+        self._spinner_idx = 1
+        self._base_title = base_title or ""
+
+        -- Create a timer that fires every 100ms for smooth animation
+        local handle = vim.loop.new_timer()
+        handle:start(0, 100, function()
+            -- Must schedule into normal event loop since nvim_win_is_valid can't be called in fast events
+            vim.schedule(function()
+                if not vim.api.nvim_win_is_valid(self.win_id) then
+                    handle:stop()
+                    return
+                end
+
+                local current_frame = SPINNER_FRAMES[self._spinner_idx]
+                self._spinner_idx = (self._spinner_idx % #SPINNER_FRAMES) + 1
+
+                local title = string.format("%s %s", current_frame, self._base_title)
+                vim.api.nvim_win_set_config(self.win_id, { title = " " .. title .. " ", title_pos = "center" })
+            end)
+        end)
+
+        self._spinner_handle = handle
+    end
+
+    -- Update the base title if provided
+    if base_title then
+        self._base_title = base_title
+    end
+end
+
+--- Stop the spinner animation and optionally set a final static title.
+---@param final_title? string -- optional title to set after stopping the spinner
+function AgentWindow:stop_spinner(final_title)
+    if self._spinner_handle then
+        self._spinner_handle:stop()
+        self._spinner_handle:close()
+        self._spinner_handle = nil
+    end
+
+    if final_title then
+        self:set_title(final_title)
+    end
 end
 
 ---@param width_ratio number -- new width ratio (0 to 1)
@@ -130,6 +191,8 @@ function AgentWindow:clear()
 end
 
 function AgentWindow:close()
+    -- stop the spinner animation before closing
+    self:stop_spinner()
     vim.api.nvim_win_close(0, true)
 end
 

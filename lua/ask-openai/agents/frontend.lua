@@ -394,7 +394,7 @@ function AgentsFrontend.ensure_chat_window_is_open()
     end
 
     AgentsFrontend.chat_window:open()
-    AgentsFrontend.chat_window:set_title(AgentsFrontend.endpoint.name or "unknown")
+    AgentsFrontend.chat_window:update_title(AgentsFrontend.endpoint.name or "unknown")
 end
 
 ---@param trace AgentTrace
@@ -464,7 +464,7 @@ local function update_ui_chat_viewer(trace)
             local total_token_count = cache_token_count + prompt_token_count + predicted_token_count
             local model_name = AgentsFrontend.endpoint.name or "unknown"
             local window_title = string.format("%s | tokens: %s", model_name, _comma_separate(total_token_count))
-            AgentsFrontend.chat_window:set_title(window_title)
+            -- AgentsFrontend.chat_window:set_title(window_title)
         end
     end)
 end
