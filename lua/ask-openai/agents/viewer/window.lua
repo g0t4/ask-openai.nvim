@@ -63,7 +63,7 @@ end
 --- If a base_title is provided, it gets displayed after the spinner frame.
 --- Runs indefinitely via a timer that fires every 100ms for smooth animation.
 ---@param base_title? string -- optional static text to display alongside the spinner
-function AgentWindow:update_title(base_title)
+function AgentWindow:ensure_spinner_running(base_title)
     if not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then
         return
     end
