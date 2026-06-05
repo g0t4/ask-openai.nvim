@@ -72,8 +72,12 @@ function base.render_progress(lines, tool_call, is_done)
 
     -- Show header with tool name, spinner, and elapsed time
     local func_name = tool_call["function"].name or "unknown_tool"
-    local start_time_ms = tool_call.start_time_ms or 0
-    local elapsed_str = base.format_elapsed_time(start_time_ms)
+    local start_time_ms = tool_call.start_time_ms
+    local elapsed_str = ""
+    if start_time_ms then
+        elapsed_str = base.format_elapsed_time(start_time_ms)
+    end
+
     lines:append_line(string.format("%s ⏳ Running: %s (%s)", spinner_char, func_name, elapsed_str))
 
     -- Show recent progress notifications (up to 3 most recent)
