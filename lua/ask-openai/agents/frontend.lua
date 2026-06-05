@@ -623,6 +623,7 @@ function AgentsFrontend.on_curl_exited_successfully()
             local is_final_assistant_message = #rx_message.tool_calls == 0
             if is_final_assistant_message then
                 AgentsFrontend.show_user_role_as_follow_up_hint()
+                AgentsFrontend.chat_window:stop_spinner("Agent Finished")
             end
             -- set offset after every assistant message, that way if anything goes awry the user can resume by typing below the last assistant message (i.e. "resume") and trigger follow up (even if say tool call was in progress and blew up)
             AgentsFrontend.chat_window.followup_starts_at_line_0indexed = AgentsFrontend.chat_window.buffer:get_line_count() - 1

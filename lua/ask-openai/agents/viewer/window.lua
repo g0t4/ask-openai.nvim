@@ -109,9 +109,8 @@ function AgentWindow:stop_spinner(final_title)
         self._spinner_handle = nil
     end
 
-    if final_title then
-        self:set_title(final_title)
-    end
+    self._base_title = final_title or self._base_title
+    self:set_title(self._base_title)
 end
 
 ---@param width_ratio number -- new width ratio (0 to 1)
