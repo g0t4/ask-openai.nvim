@@ -620,7 +620,10 @@ function AgentsFrontend.on_curl_exited_successfully()
             trace:add_message(trace_message)
             -- PRN in future if I need this distilled trace_message to be saved and not the accum in completion_logger... then I'd need to trigger logging here for AgentsFrontend
 
-            AgentsFrontend.show_user_role_as_follow_up_hint()
+            if #rx_message.tool_calls == 0 then
+                -- only show user role hint after final assistant message (when there are no tool calls)
+                AgentsFrontend.show_user_role_as_follow_up_hint()
+            end
 
             AgentsFrontend.chat_window.followup_starts_at_line_0indexed = AgentsFrontend.chat_window.buffer:get_line_count() - 1
         end
