@@ -507,7 +507,7 @@ patch: string,
 
     it("model formats tool call request with recipient AFTER " .. harmony.CHANNEL .. "commentary to=functions.xyz (not before/in the role)", function()
         local body = read_json_file("lua/ask-openai/backends/llama_cpp/jinja/tests/request_tool_call.json")
-        body.verbose = true -- my build of llama-server supports returning __verbose on individual requests with body.verbose set to True
+        -- body.verbose = true -- my build of llama-server supports returning __verbose on individual requests with body.verbose set to True
 
         local response = LlamaServerClient.v1_chat_completions(base_url, body)
         -- vim.print(response)
