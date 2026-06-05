@@ -96,7 +96,10 @@ function AgentWindow:ensure_spinner_running(base_title)
                 local current_frame = SPINNER_FRAMES[self._spinner_idx]
                 self._spinner_idx = (self._spinner_idx % #SPINNER_FRAMES) + 1
 
-                local title = string.format("%s %s", current_frame, self._base_title)
+                local title = current_frame
+                if self._base_title then
+                    title = title .. " " .. self._base_title
+                end
                 vim.api.nvim_win_set_config(self.win_id, { title = " " .. title .. " ", title_pos = "center" })
             end)
         end)
@@ -114,7 +117,7 @@ function AgentWindow:stop_spinner(final_title)
         self._spinner_handle = nil
     end
 
-    self._base_title = final_title or self._base_title or ""
+    self._base_title = final_title or self._base_title
     self:set_title(self._base_title)
 end
 

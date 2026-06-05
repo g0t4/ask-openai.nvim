@@ -1,3 +1,4 @@
+local log = require("ask-openai.logs.logger"):predictions()
 ---@class FloatWindow
 ---@field buffer_number? integer
 ---@field win_id? integer
@@ -92,6 +93,10 @@ end
 
 ---@param title string
 function FloatWindow:set_title(title)
+    if not title then
+        log:info("set_title is missing the title", title)
+    end
+    title = title or ""
     vim.schedule(function()
         if not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then
             return
