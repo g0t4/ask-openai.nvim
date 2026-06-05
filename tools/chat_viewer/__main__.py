@@ -151,19 +151,19 @@ def print_raw_fim_diff(raw_prompt: str, completion: str) -> None:
     old_text = prefix + suffix
     new_text = prefix + completion + suffix
 
+    _console.rule(style="cyan")
+    _console.print("[bold cyan]FIM DIFF[/]")
+    _console.rule(style="cyan")
+    # FYI not a fan of both tree + console.print/rule uses... usually I like trees when I defer print until full output is built... meh for now
     root = TreeWrapper.hidden_root()
-    root.add("[bold cyan]FIM DIFF[/]")
     if before_omitted or after_omitted:
         root.add("[dim] • Showing 10 lines of context before/after[/]")
 
     # completions are always INSERTIONS only... so just mark it as green! no need to run a diff
     final_text = Text(prefix) + Text(completion, style="bold italic green") + Text(suffix)
     root.add(final_text)
-
-    _console.rule(style='cyan')
+    root.blank_line()
     _console.print(root)
-    _console.rule(style='cyan')
-    _console.print()  # blank line after diff
 
 def is_raw_completion_trace(data: dict) -> bool:
     """Check if this is a raw completion trace (llamacpp /completions endpoint).
