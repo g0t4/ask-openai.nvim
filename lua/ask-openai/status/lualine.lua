@@ -82,7 +82,7 @@ function M.lualine_components()
             if fim_model == "gptoss" then
                 local level = local_share.get_fim_reasoning_level()
                 fim_model = "gptoss" .. level:sub(1,1):upper()
-            elseif fim_model == "qwen25coder" then
+            elseif fim_model == "qwen" then
                 fim_model = "qwen" -- keep it short
             end
             fim_model = "p/" .. fim_model

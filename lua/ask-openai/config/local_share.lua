@@ -172,7 +172,7 @@ function M.get_fim_model()
     if model == "gptoss" then
         return model
     else
-        return "qwen25coder"
+        return "qwen"
     end
 end
 
@@ -185,7 +185,7 @@ end
 
 function M.toggle_fim_model()
     local current = M.get_fim_model()
-    local next_model = (current == "gptoss") and "qwen25coder" or "gptoss"
+    local next_model = (current == "gptoss") and "qwen" or "gptoss"
     M.set_fim_model(next_model)
     return next_model
 end

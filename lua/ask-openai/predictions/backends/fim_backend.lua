@@ -40,7 +40,7 @@ function FimBackend.set_fim_model(model)
             FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
         end
     else
-        use_model = "qwen25coder" -- still using qwen 2.5 coder's FIM format with qwen3+
+        use_model = "qwen" -- still using qwen 2.5 coder's FIM format with qwen3+
         FimBackend.base_url = config.get_endpoints().qwen3base.base_url
         FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * preferred for qwen2.5-coder
         -- /completions - raw prompt # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
@@ -56,7 +56,7 @@ function FimBackend.set_fim_model(model)
     -- FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions -- gpt-oss(ollama works)
 end
 
-FimBackend.set_fim_model("qwen25coder") -- default
+FimBackend.set_fim_model("qwen") -- default
 
 ---@param ps_chunk PrefixSuffixChunk
 ---@param rag_matches LSPRankedMatch[]
@@ -132,7 +132,7 @@ function FimBackend:body_for()
         body.top_p = 0.8
         body.top_k = 20
         -- PRN new_qwen3coder_llama_server_legacy_body (or w/e to call it, the old endpoint to do raw FIM prompts)
-    elseif string.find(body.model, "qwen25coder", nil, true) then
+    elseif string.find(body.model, "qwen", nil, true) then
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
