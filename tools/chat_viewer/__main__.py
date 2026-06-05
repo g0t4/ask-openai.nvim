@@ -855,7 +855,11 @@ def main() -> None:
             html_path = str(trace_file) + ".html"
 
     print_model_info(model_name, timings)
-    # Check for raw completion FIM and print diff at the top
+
+    for idx, message in enumerate(messages, start=1):
+        print_message(message, idx)
+
+    # show summaries at end since command line the last part shows first (unlike web viewer where summary is best at top)
     if len(messages) >= 2:
         first_msg = messages[0]
         if first_msg.get("role") == "user_raw" and FIM_MIDDLE in _extract_content(first_msg):
@@ -865,9 +869,6 @@ def main() -> None:
                 raw_prompt = _extract_content(first_msg)
                 raw_completion = _extract_content(second_msg)
                 print_raw_fim_diff(raw_prompt, raw_completion)
-
-    for idx, message in enumerate(messages, start=1):
-        print_message(message, idx)
 
     if export_html and html_path:
         try:
