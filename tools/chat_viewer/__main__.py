@@ -98,8 +98,9 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "a9e229dae529161fe195077c1d6c79cc66ab3c37e287a20d9203616f13596d0a",  ## Fetch Tool
 ]
 
-FIM_MARKER = "<|fim_middle|>"
-
+FIM_PREFIX = "<|fim_prefix|>"
+FIM_MIDDLE = "<|fim_middle|>"
+FIM_SUFFIX = "<|fim_suffix|>"
 
 def is_raw_completion_fim(data: dict) -> bool:
     """Check if this is a raw completion trace with FIM marker."""
@@ -108,17 +109,17 @@ def is_raw_completion_fim(data: dict) -> bool:
 
     request_body = data.get("request_body", {})
     prompt = request_body.get("prompt", "")
-    return FIM_MARKER in prompt
+    return FIM_MIDDLE in prompt
 
 
 def parse_raw_completion_fim(raw_prompt: str, completion: str) -> dict:
     """Parse raw completion with FIM marker into diff components."""
-    marker_idx = raw_prompt.find(FIM_MARKER)
+    marker_idx = raw_prompt.find(FIM_MIDDLE)
     if marker_idx < 0:
         return {}
 
     before = raw_prompt[:marker_idx]
-    after = raw_prompt[marker_idx + len(FIM_MARKER):]
+    after = raw_prompt[marker_idx + len(FIM_MIDDLE):]
 
     return {
         "before": before,
@@ -155,7 +156,7 @@ def print_raw_fim_diff(raw_prompt: str, completion: str) -> None:
 
     root = TreeWrapper.hidden_root()
     root.add("[bold cyan]FIM Completion Diff[/]")
-    root.add(f"[dim]Completion inserted at {FIM_MARKER!r}")
+    root.add(f"[dim]Completion inserted at {FIM_MIDDLE!r}")
     if before_omitted or after_omitted:
         root.add("[dim] • Showing 10 lines of context before/after[/]")
 
@@ -881,7 +882,7 @@ def main() -> None:
     # Check for raw completion FIM and print diff at the top
     if len(messages) >= 2:
         first_msg = messages[0]
-        if first_msg.get("role") == "user_raw" and FIM_MARKER in _extract_content(first_msg):
+        if first_msg.get("role") == "user_raw" and FIM_MIDDLE in _extract_content(first_msg):
             # Find assistant_raw message
             second_msg = messages[1] if len(messages) > 1 else None
             if second_msg and second_msg.get("role") == "assistant_raw":
