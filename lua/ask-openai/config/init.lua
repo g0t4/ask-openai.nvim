@@ -203,8 +203,8 @@ function M.get_endpoints()
             base_url = qwen3_url,
         },
         rewrite = {
-            name = gptoss_model or "OFFLINE",
-            base_url = gptoss_url,
+            name = qwen3_model or "OFFLINE",
+            base_url = qwen3_url,
         },
         cmdline = {
             name = nil,

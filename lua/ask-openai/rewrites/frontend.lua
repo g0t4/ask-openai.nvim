@@ -29,6 +29,7 @@ local RewriteFrontend = {}
 ---@type Selection|nil
 RewriteFrontend.selection = nil
 RewriteFrontend.accumulated_chunks = ""
+RewriteFrontend.endpoint = config.get_endpoints().rewrite
 
 function RewriteFrontend.strip_md_from_completion(lines)
     local isFirstLineStartOfCodeBlock = lines[1]:match("^```(%S*)$")
@@ -410,23 +411,17 @@ local function ask_rewrite_command(opts)
 
         table.insert(messages, TxChatMessage:user(user_message_with_code))
 
-        local qwen25_chat_body = {
-            messages = messages,
-            -- * current models only
-            -- model = "qwen3:8b", -- btw as of Qwen3, no tag == "-instruct", and for base you'll use "-base" # VERY HAPPY WITH THIS MODEL FOR CODING TOO!
-            -- model = "qwen3-coder:30b-a3b-q8_0", # q4_K_M
-            temperature = 0.2,
-
-            -- avoid num_ctx (s/b set server side), use max_tokens to cap request:
-            max_tokens = 8192, -- PRN set high if using /think only?
-        }
-
-        local body = model_params.new_gptoss_chat_body_llama_server({
-            -- local body = model_params.new_qwen3coder_llama_server_chat_body({
+        local request_body = {
             messages = messages,
             model = "", -- irrelevant for llama-server
-            -- tools = tool_router.openai_tools(),
-        }, context)
+        }
+
+        local body
+        if RewriteFrontend.endpoint.name == "gptoss" then
+            body = model_params.new_gptoss_chat_body_llama_server(request_body, context)
+        else
+            body = model_params.new_qwen3coder_llama_server_chat_body(request_body)
+        end
 
         RewriteFrontend.last_request = CurlRequest:new({
             body = body,
