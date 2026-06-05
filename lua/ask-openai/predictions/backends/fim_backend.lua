@@ -40,9 +40,8 @@ function FimBackend.set_fim_model(model)
             FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
         end
     else
-        use_model = "qwen25coder"
-        -- Use agents base URL from config for the alternative model as well
-        FimBackend.base_url = config.get_endpoints().qwen3.base_url
+        use_model = "qwen25coder" -- still using qwen 2.5 coder's FIM format with qwen3+
+        FimBackend.base_url = config.get_endpoints().qwen3base.base_url
         FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * preferred for qwen2.5-coder
         -- /completions - raw prompt # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
     end

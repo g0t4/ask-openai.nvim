@@ -81,8 +81,11 @@ function M.lualine_components()
             local fim_model = local_share.get_fim_model()
             if fim_model == "gptoss" then
                 local level = local_share.get_fim_reasoning_level()
-                fim_model = "fim/" .. fim_model .. "." .. level
+                fim_model = "gptoss" .. level:sub(1,1):upper()
+            elseif fim_model == "qwen25coder" then
+                fim_model = "qwen" -- keep it short
             end
+            fim_model = "p/" .. fim_model
             table.insert(icons, fim_model)
             -- if fim_model ~= last_fim_model then
             --     -- TODO show if mismatched only?
@@ -92,7 +95,8 @@ function M.lualine_components()
 
             -- * rewrite reasoning level
             -- btw gray out on rewrite level does not mean it is disabled, it will still work fine even when FIM is disabled
-            table.insert(icons, "rewrite/gptoss." .. local_share.get_rewrite_reasoning_level())
+            local level = local_share.get_rewrite_reasoning_level():sub(1,1):upper()
+            table.insert(icons, "r/gptoss" .. level)
 
             if M.last_fim_stats then
                 if M.last_fim_stats.prompt_tokens_per_second then

@@ -191,9 +191,11 @@ end
 function M.get_endpoints()
     local gptoss_url = "http://ask.lan:8013"
     local qwen3_url = "http://ask.lan:8012"
+    local qwen3base_url = "http://ask.lan:8010"
 
     local gptoss_model = M.get_llama_server_model_name(gptoss_url)
     local qwen3_model = M.get_llama_server_model_name(qwen3_url)
+    local qwen3base_model = M.get_llama_server_model_name(qwen3base_url)
 
     local endpoints = {
         agents = {
@@ -219,6 +221,10 @@ function M.get_endpoints()
         qwen3 = {
             name = qwen3_model or "OFFLINE",
             base_url = qwen3_url,
+        },
+        qwen3base = {
+            name = qwen3base_model or "OFFLINE",
+            base_url = qwen3base_url,
         },
     }
     return endpoints
