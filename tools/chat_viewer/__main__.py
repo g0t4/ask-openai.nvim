@@ -152,7 +152,7 @@ def print_raw_fim_diff(raw_prompt: str, completion: str) -> None:
     new_text = prefix + completion + suffix
 
     root = TreeWrapper.hidden_root()
-    root.add("[bold cyan]FIM Diff[/]")
+    root.add("[bold cyan]FIM DIFF[/]")
     if before_omitted or after_omitted:
         root.add("[dim] • Showing 10 lines of context before/after[/]")
 
