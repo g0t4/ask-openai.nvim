@@ -111,23 +111,25 @@ def is_raw_completion_fim(data: dict) -> bool:
     prompt = request_body.get("prompt", "")
     return FIM_MIDDLE in prompt
 
-
-def parse_raw_completion_fim(raw_prompt: str, completion: str) -> dict:
+def parse_raw_completion_fim(raw_prompt: str, completion: str) -> dict | None:
     """Parse raw completion with FIM marker into diff components."""
-    marker_idx = raw_prompt.find(FIM_MIDDLE)
-    if marker_idx < 0:
-        return {}
+    middle_idx = raw_prompt.find(FIM_MIDDLE)
+    prefix_idx = raw_prompt.find(FIM_PREFIX)
+    suffix_idx = raw_prompt.find(FIM_SUFFIX)
+    if middle_idx < 0 or prefix_idx < 0 or suffix_idx < 0:
+        return None
 
-    before = raw_prompt[:marker_idx]
-    after = raw_prompt[marker_idx + len(FIM_MIDDLE):]
-
+    # we skip everything before FIM_PREFIX (it's only used in repo level FIM where you have other files included before the FIM PSM request
+    # prefix is FIM_PREFIX until FIM_SUFFIX
+    prefix = raw_prompt[prefix_idx + len(FIM_PREFIX):suffix_idx]
+    # suffix is FIM_SUFFIX until FIM_MIDDLE
+    suffix = raw_prompt[suffix_idx + len(FIM_SUFFIX):middle_idx]
     return {
-        "before": before,
-        "after": after,
+        "prefix": prefix,
+        "suffix": suffix,
         "completion": completion,
         "diff_type": "fim",
     }
-
 
 def print_raw_fim_diff(raw_prompt: str, completion: str) -> None:
     """Print a FIM completion diff for raw completions."""
@@ -138,48 +140,30 @@ def print_raw_fim_diff(raw_prompt: str, completion: str) -> None:
     # Limit context to last 10 lines before and first 10 lines after
     CONTEXT_LINES = 10
 
-    before_lines = parsed["before"].split("\n")
+    before_lines = parsed["prefix"].split("\n")
     before_omitted = len(before_lines) - CONTEXT_LINES if len(before_lines) > CONTEXT_LINES else 0
-    before = "\n".join(before_lines[-CONTEXT_LINES:]) if before_omitted > 0 else parsed["before"]
+    prefix = "\n".join(before_lines[-CONTEXT_LINES:]) if before_omitted > 0 else parsed["prefix"]
 
-    after_lines = parsed["after"].split("\n")
+    after_lines = parsed["suffix"].split("\n")
     after_omitted = len(after_lines) - CONTEXT_LINES if len(after_lines) > CONTEXT_LINES else 0
-    after = "\n".join(after_lines[:CONTEXT_LINES]) if after_omitted > 0 else parsed["after"]
+    suffix = "\n".join(after_lines[:CONTEXT_LINES]) if after_omitted > 0 else parsed["suffix"]
 
-    # Old text (without completion)
-    old_text = before + after
-    # New text (with completion inserted)
-    new_text = before + completion + after
-
-    # Generate word diff
-    diff = difflib.ndiff(old_text.split(), new_text.split())
+    old_text = prefix + suffix
+    new_text = prefix + completion + suffix
 
     root = TreeWrapper.hidden_root()
-    root.add("[bold cyan]FIM Completion Diff[/]")
-    root.add(f"[dim]Completion inserted at {FIM_MIDDLE!r}")
+    root.add("[bold cyan]FIM Diff[/]")
     if before_omitted or after_omitted:
         root.add("[dim] • Showing 10 lines of context before/after[/]")
 
-    # Build display string with diff highlighting
-    display_parts = []
-    for token in diff:
-        if token[0] == "-":
-            display_parts.append(f"[red]{token[2:]}[/]")
-        elif token[0] == "+":
-            display_parts.append(f"[green]{token[2:]}[/]")
-        elif token[0] == " ":
-            display_parts.append(token[2:])
-
-    display_str = " ".join(display_parts)
-    root.add(display_str)
+    # completions are always INSERTIONS only... so just mark it as green! no need to run a diff
+    final_text = Text(prefix) + Text(completion, style="green") + Text(suffix)
+    root.add(final_text)
 
     _console.rule(style='cyan')
     _console.print(root)
     _console.rule(style='cyan')
     _console.print()  # blank line after diff
-
-
-
 
 def is_raw_completion_trace(data: dict) -> bool:
     """Check if this is a raw completion trace (llamacpp /completions endpoint).
@@ -196,7 +180,6 @@ def is_raw_completion_trace(data: dict) -> bool:
 
     # Raw = has prompt + top-level content, but NO messages
     return has_prompt and has_content and not has_messages
-
 
 def create_raw_completion_messages(data: dict) -> list[dict]:
     """Create synthetic messages for raw completions (llamacpp /completions endpoint)."""
@@ -218,7 +201,6 @@ def create_raw_completion_messages(data: dict) -> list[dict]:
         })
 
     return messages
-
 
 def _content_hash(msg: dict[str, Any]) -> str:
     """Return SHA‑256 hash (hex) of the message's raw ``content``."""
@@ -666,11 +648,6 @@ def _json(data: dict) -> Syntax:
         # line_numbers=True,
     )
 
-
-
-
-
-
 def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
     try:
         obj = json.loads(arguments)
@@ -758,7 +735,6 @@ def print_raw_completion_message(msg: dict):
     root = TreeWrapper.hidden_root()
     root.add_no_markup(raw_content)
     _console.print(root)
-
 
 def print_assistant_message(msg: dict):
     root = TreeWrapper.hidden_root()
