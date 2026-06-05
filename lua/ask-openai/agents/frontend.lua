@@ -394,6 +394,7 @@ function AgentsFrontend.ensure_chat_window_is_open()
     end
 
     AgentsFrontend.chat_window:open()
+    AgentsFrontend.chat_window:set_title(AgentsFrontend.endpoint.name or "unknown")
 end
 
 ---@param trace AgentTrace
