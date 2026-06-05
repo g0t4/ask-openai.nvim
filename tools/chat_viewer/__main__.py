@@ -157,7 +157,7 @@ def print_raw_fim_diff(raw_prompt: str, completion: str) -> None:
         root.add("[dim] • Showing 10 lines of context before/after[/]")
 
     # completions are always INSERTIONS only... so just mark it as green! no need to run a diff
-    final_text = Text(prefix) + Text(completion, style="green") + Text(suffix)
+    final_text = Text(prefix) + Text(completion, style="bold italic green") + Text(suffix)
     root.add(final_text)
 
     _console.rule(style='cyan')
