@@ -41,7 +41,7 @@ function FimBackend.set_fim_model(model)
         end
     else
         use_model = "qwen" -- still using qwen 2.5 coder's FIM format with qwen3+
-        FimBackend.base_url = config.get_endpoints().qwen3base.base_url
+        FimBackend.base_url = config.get_endpoints().qwen3.base_url
         FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * preferred for qwen2.5-coder
         -- /completions - raw prompt # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
     end
