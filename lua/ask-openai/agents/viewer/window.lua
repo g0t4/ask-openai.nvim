@@ -68,14 +68,24 @@ function AgentWindow:ensure_spinner_running(base_title)
         return
     end
 
+    if base_title then
+        self._base_title = base_title
+    end
+
     -- Initialize spinner state on first call
     if not self._spinner_handle then
         self._spinner_idx = 1
-        self._base_title = base_title or ""
+        -- self._base_title = base_title or ""
 
         -- Create a timer that fires every 100ms for smooth animation
         local handle = vim.loop.new_timer()
         handle:start(0, 100, function()
+            if not self._agent_is_running then
+                -- stop if agent is done for any reason... means I can call ensure_spinner_running any time I want and it won't even change if there's no agent running
+                self:stop_spinner()
+                return
+            end
+
             -- Must schedule into normal event loop since nvim_win_is_valid can't be called in fast events
             vim.schedule(function()
                 if not vim.api.nvim_win_is_valid(self.win_id) then
@@ -93,11 +103,6 @@ function AgentWindow:ensure_spinner_running(base_title)
 
         self._spinner_handle = handle
     end
-
-    -- Update the base title if provided
-    if base_title then
-        self._base_title = base_title
-    end
 end
 
 --- Stop the spinner animation and optionally set a final static title.
@@ -109,7 +114,7 @@ function AgentWindow:stop_spinner(final_title)
         self._spinner_handle = nil
     end
 
-    self._base_title = final_title or self._base_title
+    self._base_title = final_title or self._base_title or ""
     self:set_title(self._base_title)
 end
 
@@ -191,8 +196,20 @@ end
 
 function AgentWindow:close()
     -- stop the spinner animation before closing
-    self:stop_spinner()
+    self:stop_spinner("closed")
+    -- TODO still issues around closing window and re-open it... not showing the title + spinner until I close and reopen again
+    --   IOTW open window by running sleep 30s prompt... then F8 close.... esc ... <leader>ao ... (no spinner in title, no title actually)... then F8 close again ... <leader>ao .. this time title shows?!?!
     vim.api.nvim_win_close(0, true)
+end
+
+function AgentWindow:open()
+    FloatWindow.open(self)
+    self:ensure_spinner_running() -- it will stop itself
+    return self
+end
+
+function AgentWindow:mark_agent_running(value)
+    self._agent_is_running = value
 end
 
 return AgentWindow

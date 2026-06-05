@@ -301,6 +301,8 @@ function AgentsFrontend.then_get_assistant_response(trace)
     -- * conversation turns (track start line for streaming chunks)
     AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
+    AgentsFrontend.chat_window:mark_agent_running(true)
+    AgentsFrontend.chat_window:ensure_spinner_running("agenting...")
 
     local next_request = CurlRequestForTrace:new({
         body = trace:next_curl_request_body(),
@@ -394,7 +396,6 @@ function AgentsFrontend.ensure_chat_window_is_open()
     end
 
     AgentsFrontend.chat_window:open()
-    AgentsFrontend.chat_window:ensure_spinner_running(AgentsFrontend.endpoint.name or "unknown")
 end
 
 ---@param trace AgentTrace
@@ -623,6 +624,7 @@ function AgentsFrontend.on_curl_exited_successfully()
             local is_final_assistant_message = #rx_message.tool_calls == 0
             if is_final_assistant_message then
                 AgentsFrontend.show_user_role_as_follow_up_hint()
+                AgentsFrontend.chat_window:mark_agent_running(false)
                 AgentsFrontend.chat_window:stop_spinner("Agent Finished")
             end
             -- set offset after every assistant message, that way if anything goes awry the user can resume by typing below the last assistant message (i.e. "resume") and trigger follow up (even if say tool call was in progress and blew up)
