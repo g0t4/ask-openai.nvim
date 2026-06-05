@@ -31,7 +31,7 @@ require("ask-openai.helpers.buffers")
 local AgentsFrontend = {}
 
 local config = require("ask-openai.config")
-AgentsFrontend.base_url = config.get_endpoints().agents.base_url
+AgentsFrontend.endpoint = config.get_endpoints().agents
 
 local first_turn_ns_id
 
@@ -235,18 +235,23 @@ local function ask_agent_command(opts)
             table.insert(messages, rag_message)
         end
 
-        -- * user request should be last
-        -- FYI I had this before RAG matches and it was working fine too
+        -- FYI user request works well regardless if it is first or last user message
         table.insert(messages, TxChatMessage:user(user_message))
 
-        local body_overrides = model_params.new_gptoss_chat_body_llama_server({
-            -- local body_overrides = model_params.new_qwen3coder_llama_server_chat_body({
+        local _body = {
             messages = messages,
             model = "", -- irrelevant for llama-server
             tools = tool_definitions,
-        }, context)
+        }
 
-        local new_trace = AgentTrace:new(body_overrides, AgentsFrontend.base_url)
+        local body_overrides
+        if AgentsFrontend.endpoint.name == "gptoss" then
+            body_overrides = model_params.new_gptoss_chat_body_llama_server(_body, context)
+        else
+            body_overrides = model_params.new_qwen3coder_llama_server_chat_body(_body, context)
+        end
+
+        local new_trace = AgentTrace:new(body_overrides, AgentsFrontend.endpoint.base_url)
         AgentsFrontend.trace = new_trace -- FYI `.trace` is intended for rare circumstances only, i.e. cancel action which has no context to pass a trace
         -- log:info("sending", vim.inspect(AgentsFrontend.trace))
         AgentsFrontend.then_get_assistant_response(new_trace)
