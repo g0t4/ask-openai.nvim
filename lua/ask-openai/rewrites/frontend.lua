@@ -414,6 +414,7 @@ local function ask_rewrite_command(opts)
         local request_body = {
             messages = messages,
             model = "", -- irrelevant for llama-server
+            verbose = true, -- my llama-server flag to include __verbose one-off (instead of needing --verbose on server start)
         }
 
         local body
