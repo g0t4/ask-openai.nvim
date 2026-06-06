@@ -19,7 +19,7 @@ import hashlib
 
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.tree_wrapper import TreeWrapper
-from tools.chat_viewer.run_process_formatter import commandline_equivalent_for_argv
+from tools.chat_viewer.run_process_formatter import commandline_equivalent_for_argv, format_heredoc_stdin
 from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line
 from tools.chat_viewer.timing_utils import parse_tool_call_timings
 
@@ -685,8 +685,7 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
             # btw test case: ~/repos/github/g0t4/datasets/ask_traces/agents/2026-06/2026-06-05_005/1780704102-trace.json
             # FYI I could inline this into the bash command text... but then I cannot differentiate if the model passed the `stdin_text` arg vs literally including the heredoc in the command_line arg
             # the difference might seem subtle but it is the same as knowing wheter the model uses `cwd: 'path/to/foo'` tool arg vs prepending `cd path/to/foo`
-            # TODO only add \n before final STDIN_TEXT if not one at end?
-            stdin_text = _bash(f"<<'STDIN_TEXT'\n{stdin_text}STDIN_TEXT'")
+            stdin_text = _bash(format_heredoc_stdin(stdin_text))
             # make it look kinda like a HEREDOC but keep it isolated from the command so it is easier to discern
             call_tree.add().add(stdin_text)
 

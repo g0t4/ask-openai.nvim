@@ -2,6 +2,7 @@ import json
 import pytest
 
 from tools.chat_viewer.run_process_formatter import (
+    format_heredoc_stdin,
     commandline_equivalent_for_argv,
     format_run_process_command,
 )
@@ -73,3 +74,16 @@ class TestFormatRunProcessCommand:
         """Should raise JSONDecodeError for invalid JSON."""
         with pytest.raises(json.JSONDecodeError):
             format_run_process_command("not valid json")
+
+
+class TestFormatHeredocStdin:
+
+    def test_no_trailing_newline__adds_one_before_delimiter(self):
+        """When stdin_text doesn't end with \\n, add one before the delimiter."""
+        result = format_heredoc_stdin("hello world")
+        assert result == "<<'STDIN_TEXT'\nhello world\nSTDIN_TEXT'"
+
+    def test_with_trailing_newline__no_extra_newline(self):
+        """When stdin_text already ends with \\n, don't add another."""
+        result = format_heredoc_stdin("hello world\n")
+        assert result == "<<'STDIN_TEXT'\nhello world\nSTDIN_TEXT'"

@@ -70,3 +70,20 @@ def format_run_process_command(arguments: str) -> str:
     if command:
         return command
     raise ValueError("No command found")
+
+
+def format_heredoc_stdin(stdin_text: str) -> str:
+    """Format stdin_text as a heredoc block with proper delimiter placement.
+
+    Ensures the STDIN_TEXT delimiter appears on its own line, without
+    adding an extra newline if one already exists at the end.
+
+    Args:
+        stdin_text: The raw stdin text to format.
+
+    Returns:
+        A formatted heredoc string ready for display (wrapped in _bash).
+    """
+    has_trailing_newline = stdin_text.endswith("\n")
+    separator = "" if has_trailing_newline else "\n"
+    return f"<<'STDIN_TEXT'\n{stdin_text}{separator}STDIN_TEXT'"
