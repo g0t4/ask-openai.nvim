@@ -196,31 +196,24 @@ function M.get_endpoints()
     local qwen3_model = M.get_llama_server_model_name(qwen3_url)
 
     local endpoints = {
-        agents = {
-            name = qwen3_model or "OFFLINE",
-            base_url = qwen3_url,
-        },
-        rewrite = {
-            name = qwen3_model or "OFFLINE",
-            base_url = qwen3_url,
-        },
         cmdline = {
             name = nil,
             base_url = M.get_cmdline_base_url(),
-        },
-        gptoss = {
-            name = gptoss_model or "OFFLINE",
-            base_url = gptoss_url,
-        },
-        summarizer = {
-            name = gptoss_model or "OFFLINE",
-            base_url = gptoss_url,
         },
         qwen3 = {
             name = qwen3_model or "OFFLINE",
             base_url = qwen3_url,
         },
+        gptoss = {
+            name = gptoss_model or "OFFLINE",
+            base_url = gptoss_url,
+        },
     }
+
+    endpoints.agents = endpoints.qwen3
+    endpoints.rewrite = endpoints.qwen3
+    endpoints.summarizer = endpoints.gptoss
+
     return endpoints
 end
 
