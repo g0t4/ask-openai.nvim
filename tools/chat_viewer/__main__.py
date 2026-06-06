@@ -672,26 +672,19 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
                 return command
             raise ValueError("No command found")
 
-        call_tree.add(_bash(get_display_command()))
+        display_command = get_display_command()
 
         # remove fields with special handling
         stdin_text = yank(obj, "stdin_text")
 
+        # merge heredoc syntax directly into the command string for display
+        if stdin_text:
+            display_command = f"{display_command} << 'STDIN_TEXT'\n{stdin_text}STDIN_TEXT"
+
+        call_tree.add(_bash(display_command))
+
         # rest of fields before stdin_text (TODO or show after?)
         call_tree.list_key_value_pairs(obj)
-
-        # stdin_text as a special nested "file" like block (don't want first line to start after label)
-        if stdin_text:
-            stdin_text = Panel(
-                Text.from_ansi(stdin_text),
-                # style="bold on #EAF4FF",  # High contrast light bg + bold foreground
-                border_style="#C8B8A8",
-            )
-            # make it look kinda like a HEREDOC but keep it isolated from the command so it is easier to discern
-            #  PRN I could inline this into the bash command as a literal HEREDOC?
-            #  careful run_process does not treat it as actual HEREDOC, IOTW no shell expansions apply
-            call_tree.add(Text.from_markup("[bold]<< 'STDIN_TEXT'[/]")).add(stdin_text)
-            call_tree.add(Text.from_markup("[bold]'STDIN_TEXT'[/]"))
 
     except Exception as err:
         call_tree.add_error("Failed parsing command", err, arguments)
