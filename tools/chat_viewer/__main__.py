@@ -682,14 +682,15 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
 
         # stdin_text as a special nested "file" like block (don't want first line to start after label)
         if stdin_text:
+            # btw test case: ~/repos/github/g0t4/datasets/ask_traces/agents/2026-06/2026-06-05_005/1780704102-trace.json
+            # FYI I could inline this into the bash command text... but then I cannot differentiate if the model passed the `stdin_text` arg vs literally including the heredoc in the command_line arg
+            # the difference might seem subtle but it is the same as knowing wheter the model uses `cwd: 'path/to/foo'` tool arg vs prepending `cd path/to/foo`
             stdin_text = Panel(
                 Text.from_ansi(stdin_text),
                 # style="bold on #EAF4FF",  # High contrast light bg + bold foreground
                 border_style="#C8B8A8",
             )
             # make it look kinda like a HEREDOC but keep it isolated from the command so it is easier to discern
-            #  PRN I could inline this into the bash command as a literal HEREDOC?
-            #  careful run_process does not treat it as actual HEREDOC, IOTW no shell expansions apply
             call_tree.add(Text.from_markup("[bold]<< 'STDIN_TEXT'[/]")).add(stdin_text)
             call_tree.add(Text.from_markup("[bold]'STDIN_TEXT'[/]"))
 
