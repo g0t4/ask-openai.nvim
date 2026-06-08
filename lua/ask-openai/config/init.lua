@@ -225,6 +225,14 @@ function M.get_endpoints()
     return endpoints
 end
 
+function M.get_base_url(model)
+    local endpoints = M.get_endpoints()
+    if endpoints[model] then
+        return endpoints[model].base_url
+    end
+    return nil
+end
+
 local function _get_provider()
     -- FYI prints below only show on first run b/c provider is cached by get_provider() so NBD to add that extra info which is useful to know config is correct w/o toggling verbose on and getting a wall of logs
     if cached_options.provider == "copilot" then
