@@ -35,10 +35,9 @@ function PredictionsFrontend.ask_for_prediction(params)
 
     ---@param rag_matches LSPRankedMatch[]
     function then_send_fim(rag_matches)
-        local model = api.get_fim_model()
 
         -- TODO rename to FimBodyBuilder? or FimRequestBuilder? or FimPromptBuilder?
-        local backend = FimBackend:new(ps_chunk, rag_matches, model)
+        local backend = FimBackend:new(ps_chunk, rag_matches)
         local body = backend:body_for()
         assert(body ~= nil)
 

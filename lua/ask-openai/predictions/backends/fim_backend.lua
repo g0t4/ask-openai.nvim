@@ -52,13 +52,10 @@ function FimBackend.set_fim_model(model)
     -- FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions -- gpt-oss(ollama works)
 end
 
-FimBackend.set_fim_model("qwen") -- default
-
 ---@param ps_chunk PrefixSuffixChunk
 ---@param rag_matches LSPRankedMatch[]
 ---@return FimBackend
-function FimBackend:new(ps_chunk, rag_matches, model)
-    FimBackend.set_fim_model(model)
+function FimBackend:new(ps_chunk, rag_matches)
     local always_include = {
         yanks = true,
         matching_ctags = true, -- TODO should RAG replace this by default? and just have more RAG matches (FYI RAG can index the ctags file too)
@@ -92,7 +89,9 @@ function FimBackend:body_for()
         options = {} -- empty so I can set stop_tokens below (IIRC for ollama only?)
     }
 
-    if string.find(body.model, "codellama") then
+    local model = api.get_fim_model()
+    FimBackend.set_fim_model(model) -- TODO can we nuke set_fim_model here... and just get the values we need when we need them?
+    if string.find(model, "codellama") then
         builder = function()
             return meta.codellama.get_fim_prompt(self)
             -- have it use meta.codellama.sentinel_tokens
@@ -106,7 +105,7 @@ function FimBackend:body_for()
         error("review FIM requirements for codellama, make sure you are using expected template, it used to work with qwen like FIM but I changed that to repo level now and would need to test it")
         -- also ollama warns about:
         --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
-    elseif string.find(body.model, "Mellum") then
+    elseif string.find(model, "Mellum") then
         -- body.options.stop = {
         --     fim.mellum.sentinel_tokens.EOS_TOKEN,
         --     fim.mellum.sentinel_tokens.FILE_SEP
@@ -114,11 +113,11 @@ function FimBackend:body_for()
         builder = function()
             return fim.mellum.get_fim_prompt(self)
         end
-    elseif string.find(body.model, "starcoder2") then
+    elseif string.find(model, "starcoder2") then
         builder = function()
             return fim.starcoder2.get_fim_prompt(self)
         end
-    elseif string.find(body.model, "qwen3coder", nil, true) then
+    elseif string.find(model, "qwen3coder", nil, true) then
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
@@ -128,11 +127,11 @@ function FimBackend:body_for()
         body.top_p = 0.8
         body.top_k = 20
         -- PRN new_qwen3coder_llama_server_legacy_body (or w/e to call it, the old endpoint to do raw FIM prompts)
-    elseif string.find(body.model, "qwen", nil, true) then
+    elseif string.find(model, "qwen", nil, true) then
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
-    elseif string.find(body.model, "bytedance-seed-coder-8b", nil, true) then
+    elseif string.find(model, "bytedance-seed-coder-8b", nil, true) then
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self) -- WORKS FOR repo level using qwen's format entirely! (plus set qwen's stop_tokens to avoid rambles / trailing stop tokens)
             -- return fim.bytedance_seed_coder.get_fim_prompt_file_level_only(self) -- WORKS well for file level using its own SPM format
@@ -141,7 +140,7 @@ function FimBackend:body_for()
         -- MUST set qwent's tokens as stop tokens too (when using Qwen's repo level fim format)
         body.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder -- llama-server /completions endpoint uses top-level stop
         body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
-    elseif string.find(body.model, "gpt-oss", nil, true) then
+    elseif string.find(model, "gptoss", nil, true) then
         if use_gptoss_raw then
             -- * /completions legacy endpoint:
             builder = function()
@@ -167,7 +166,7 @@ function FimBackend:body_for()
         --   https://github.com/openai/gpt-oss?tab=readme-ov-file#recommended-sampling-parameters
         body.temperature = 1.0
         body.top_p = 1.0
-    elseif string.find(body.model, "codestral", nil, true) then
+    elseif string.find(model, "codestral", nil, true) then
         builder = function()
             return fim.codestral.get_fim_prompt(self)
         end
@@ -176,14 +175,14 @@ function FimBackend:body_for()
         --   make it more repeatable?
         -- body.options.temperature = 0.0
         -- body.options.stop = { fim.codestral.sentinel_tokens.EOS_TOKEN }
-    elseif string.find(body.model, "deepseek-coder-v2", nil, true) then
+    elseif string.find(model, "deepseek-coder-v2", nil, true) then
         builder = function()
             return fim.deepseek_coder_v2.get_fim_prompt(self)
         end
 
         body.options.stop = fim.deepseek_coder_v2.sentinel_tokens.fim_stop_tokens
     else
-        error("MODEL NOT SUPPORTED")
+        error("MODEL NOT SUPPORTED '" .. tostring(model) .. "'")
         return
     end
 
@@ -193,7 +192,7 @@ function FimBackend:body_for()
     elseif body.messages then
         -- log:info('body.messages', vim.inspect(body.messages))
     else
-        error("you must define either the prompt builder OR messages for chat like FIM for: " .. body.model)
+        error("you must define either the prompt builder OR messages for chat like FIM for: " .. model)
     end
 
     return body
