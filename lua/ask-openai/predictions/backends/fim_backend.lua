@@ -27,9 +27,9 @@ local use_gptoss_raw = false
 function FimBackend.set_fim_model(model)
     -- FYI right now, given I am using llama-server exclusively, toggling is just about changing between the two instances I run at the same time
     --   so, toggling the port/endpoint :)
+    FimBackend.base_url = config.get_endpoints()[model].base_url
     if model == "gptoss" then
         -- Base URL now derived from configuration (agents subsystem)
-        FimBackend.base_url = config.get_endpoints().gptoss.base_url
         if use_gptoss_raw then
             -- manually formatted prompt to disable thinking
             -- FYI can also do this with prefill on v1/chat/completions endpoint so this is not necessary to disable thinking
@@ -38,10 +38,8 @@ function FimBackend.set_fim_model(model)
             FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
         end
     elseif model == "gemma4" then
-        FimBackend.base_url = config.get_endpoints().gemma4.base_url
         FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
     else
-        FimBackend.base_url = config.get_endpoints().qwen3.base_url
         FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * preferred for qwen2.5-coder
         -- /completions - raw prompt # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
     end
@@ -143,7 +141,7 @@ function FimBackend:body_for()
         body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
     elseif string.find(model, "gptoss", nil, true)
         or string.find(model, "gemma", nil, true) -- I just wanna try FIM with gemma using gptoss style (chat completions only)
-        -- TODO if gemma is any good at FIM, setup FIM for it
+    -- TODO if gemma is any good at FIM, setup FIM for it
     then
         if use_gptoss_raw then
             -- * /completions legacy endpoint:

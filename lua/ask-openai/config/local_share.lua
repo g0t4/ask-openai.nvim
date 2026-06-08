@@ -164,6 +164,60 @@ function M.toggle_rag()
     return cfg.rag.enabled
 end
 
+-- * agents model
+function M.get_agents_model()
+    local cfg = get()
+    return cfg.agents and cfg.agents.model or "gptoss" -- default to gptoss
+end
+
+function M.set_agents_model(model)
+    local cfg = get()
+    cfg.agents = cfg.agents or {}
+    cfg.agents.model = model
+    save()
+end
+
+function M.toggle_agents_model()
+    local current = M.get_agents_model()
+    local next_model
+    if current == "gptoss" then
+        next_model = "qwen"
+    elseif current == "qwen" then
+        next_model = "gemma4"
+    else
+        next_model = "gptoss"
+    end
+    M.set_agents_model(next_model)
+    return next_model
+end
+
+-- * rewrite model
+function M.get_rewrite_model()
+    local cfg = get()
+    return cfg.rewrite and cfg.rewrite.model or "gptoss" -- default to gptoss
+end
+
+function M.set_rewrite_model(model)
+    local cfg = get()
+    cfg.rewrite = cfg.rewrite or {}
+    cfg.rewrite.model = model
+    save()
+end
+
+function M.toggle_rewrite_model()
+    local current = M.get_rewrite_model()
+    local next_model
+    if current == "gptoss" then
+        next_model = "qwen"
+    elseif current == "qwen" then
+        next_model = "gemma4"
+    else
+        next_model = "gptoss"
+    end
+    M.set_rewrite_model(next_model)
+    return next_model
+end
+
 -- * FIM model
 function M.get_fim_model()
     local cfg = get()
@@ -251,10 +305,39 @@ function M.cycle_fim_reasoning_level()
     return next_level
 end
 
--- * separate reasoning level for RewriteFrontend and AgentsFrontend
+-- * AgentsFrontend reasoning level
+function M.set_agents_reasoning_level(level)
+    -- FYI I routinely use different levels per frontend
+    local cfg = get()
+    cfg.gptoss = cfg.gptoss or {}
+    cfg.gptoss.agents_reasoning_level = level
+    save()
+end
+
+function M.get_agents_reasoning_level()
+    local cfg = get()
+    cfg.gptoss = cfg.gptoss or {}
+    return cfg.gptoss.agents_reasoning_level or M.GptOssReasoningLevel.low
+end
+
+function M.cycle_agents_reasoning_level()
+    local current = M.get_agents_reasoning_level()
+    local next_level = ""
+    if current == M.GptOssReasoningLevel.off then
+        next_level = M.GptOssReasoningLevel.low
+    elseif current == M.GptOssReasoningLevel.low then
+        next_level = M.GptOssReasoningLevel.medium
+    elseif current == M.GptOssReasoningLevel.medium then
+        next_level = M.GptOssReasoningLevel.high
+    else
+        next_level = M.GptOssReasoningLevel.off
+    end
+    M.set_agents_reasoning_level(next_level)
+    return next_level
+end
+
+-- * RewriteFrontend reasoning level
 function M.set_rewrite_reasoning_level(level)
-    -- FYI I wanted a separate setting largely because I intend to leave this normally on a different level vs FIM...
-    --  FIM will normally be low/off, Rewrite/Agents will be medium/high
     local cfg = get()
     cfg.gptoss = cfg.gptoss or {}
     cfg.gptoss.rewrite_reasoning_level = level

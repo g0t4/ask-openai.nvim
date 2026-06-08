@@ -77,26 +77,42 @@ function M.lualine_components()
             --     -- last_fim_model = "gptoss"
             -- end
 
-            -- * FIM reasoning level
-            local fim_model = local_share.get_fim_model()
-            if fim_model == "gptoss" then
+            -- * FIM status
+            local fim_status = local_share.get_fim_model()
+            if fim_status == "gptoss" then
                 local level = local_share.get_fim_reasoning_level()
-                fim_model = "gptoss" .. level:sub(1,1):upper()
-            elseif fim_model == "qwen" then
-                fim_model = "qwen" -- keep it short
+                fim_status = "gptoss" .. level:sub(1, 1):upper()
+            elseif fim_status == "qwen" then
+                fim_status = "qwen" -- keep it short
+            elseif fim_status == "gemma4" then
+                -- TODO reasoning level for gemma4?
             end
-            fim_model = "p/" .. fim_model
-            table.insert(icons, fim_model)
-            -- if fim_model ~= last_fim_model then
-            --     -- TODO show if mismatched only?
-            --     table.insert(icons, "≠")
-            --     table.insert(icons, last_fim_model)
-            -- end
+            fim_status = "fim/" .. fim_status
+            table.insert(icons, fim_status)
 
-            -- * rewrite reasoning level
+            -- * rewrite status
             -- btw gray out on rewrite level does not mean it is disabled, it will still work fine even when FIM is disabled
-            local level = local_share.get_rewrite_reasoning_level():sub(1,1):upper()
-            table.insert(icons, "r/gptoss" .. level)
+            local rewrite_model = local_share.get_rewrite_model()
+            local rewrite_status = "re/" .. rewrite_model
+            if rewrite_model == "gptoss" then
+                -- TODO add level for gemma4 too and
+                -- TODO setup qwen3+ to reason about FIM with chat completions style too? (right now qwen uses FIM only raw prompt from qwen2.5-coder)
+                --   perhaps setup qwen25coder with raw prompt only and then qwen3 could toggle between chat completions and raw? heck I wonder how qwen2.5coder would do with chat completions gptoss like FIM prompt messages
+                local level = local_share.get_rewrite_reasoning_level():sub(1, 1):upper()
+                rewrite_status = rewrite_status .. level
+            end
+            table.insert(icons, rewrite_status)
+
+            -- * agents status
+            local agents_model = local_share.get_agents_model()
+            local agents_status = "a/" .. agents_model
+            if agents_model == "gptoss" then
+                -- TODO gemma4 thinking
+                -- TODO qwen3+ thinking?
+                local level = local_share.get_agents_reasoning_level():sub(1, 1):upper()
+                agents_status = agents_status .. level
+            end
+            table.insert(icons, agents_status)
 
             if M.last_fim_stats then
                 if M.last_fim_stats.prompt_tokens_per_second then

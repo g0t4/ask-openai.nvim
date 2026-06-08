@@ -29,7 +29,6 @@ local RewriteFrontend = {}
 ---@type Selection|nil
 RewriteFrontend.selection = nil
 RewriteFrontend.accumulated_chunks = ""
-RewriteFrontend.endpoint = config.get_endpoints().rewrite
 
 function RewriteFrontend.strip_md_from_completion(lines)
     local isFirstLineStartOfCodeBlock = lines[1]:match("^```(%S*)$")
@@ -411,22 +410,28 @@ local function ask_rewrite_command(opts)
 
         table.insert(messages, TxChatMessage:user(user_message_with_code))
 
-        local request_body = {
+        local _body = {
             messages = messages,
             model = "", -- irrelevant for llama-server
             verbose = true, -- my llama-server flag to include __verbose one-off (instead of needing --verbose on server start)
         }
 
-        local body
-        if RewriteFrontend.endpoint.name == "gptoss" then
-            body = model_params.new_gptoss_chat_body_llama_server(request_body, context)
+        local body_overrides
+        local model = api.get_rewrite_model()
+        if model == "gptoss" then
+            body_overrides = model_params.new_gptoss_chat_body_llama_server(_body, context)
+        elseif model == "gemma4" then
+            body_overrides = model_params.new_gemma4_chat_body_llama_server(_body, context)
+        elseif model == "qwen" then
+            body_overrides = model_params.new_qwen3coder_llama_server_chat_body(_body, context)
         else
-            body = model_params.new_qwen3coder_llama_server_chat_body(request_body)
+            error("model not supported" .. tostring(model))
         end
 
+        local base_url = config.get_base_url(model)
         RewriteFrontend.last_request = CurlRequest:new({
-            body = body,
-            base_url = config.get_endpoints().rewrite.base_url,
+            body = body_overrides,
+            base_url = base_url,
             endpoint = CompletionsEndpoints.oai_v1_chat_completions,
             type = "rewrite",
         })

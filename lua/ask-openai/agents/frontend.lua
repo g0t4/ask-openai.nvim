@@ -30,9 +30,6 @@ require("ask-openai.helpers.buffers")
 ---@class AgentsFrontend : StreamingFrontend
 local AgentsFrontend = {}
 
-local config = require("ask-openai.config")
-AgentsFrontend.endpoint = config.get_endpoints().agents
-
 local first_turn_ns_id
 
 local cached_files = {}
@@ -246,13 +243,20 @@ local function ask_agent_command(opts)
         }
 
         local body_overrides
-        if AgentsFrontend.endpoint.name == "gptoss" then
+        local model = api.get_agents_model()
+        if model == "gptoss" then
             body_overrides = model_params.new_gptoss_chat_body_llama_server(_body, context)
-        else
+        elseif model == "gemma4" then
+            body_overrides = model_params.new_gemma4_chat_body_llama_server(_body, context)
+        elseif model == "qwen" then
             body_overrides = model_params.new_qwen3coder_llama_server_chat_body(_body, context)
+        else
+            error("model not supported" .. tostring(model))
         end
 
-        local new_trace = AgentTrace:new(body_overrides, AgentsFrontend.endpoint.base_url)
+        local config = require("ask-openai.config")
+        local base_url = config.get_base_url(model)
+        local new_trace = AgentTrace:new(body_overrides, base_url)
         AgentsFrontend.trace = new_trace -- FYI `.trace` is intended for rare circumstances only, i.e. cancel action which has no context to pass a trace
         -- log:info("sending", vim.inspect(AgentsFrontend.trace))
         AgentsFrontend.then_get_assistant_response(new_trace)
@@ -464,9 +468,12 @@ local function update_ui_chat_viewer(trace)
             local prompt_token_count = timings.prompt_n or 0
             local predicted_token_count = timings.predicted_n or 0
             local total_token_count = cache_token_count + prompt_token_count + predicted_token_count
-            local model_name = AgentsFrontend.endpoint.name or "unknown"
-            local window_title = string.format("%s | tokens: %s", model_name, _comma_separate(total_token_count))
-            -- AgentsFrontend.chat_window:set_title(window_title)
+            local config = require("ask-openai.config")
+            local confirmed_model_name = config.get_endpoints()[api.get_agents_model()].name -- confirm by checking actual model name.
+            -- TODO merge with Agent Finished message that masks this one
+            local window_title = string.format("%s | tokens: %s", confirmed_model_name, _comma_separate(total_token_count))
+            -- log:info("window_title", window_title)
+            AgentsFrontend.chat_window:set_title(window_title)
         end
     end)
 end

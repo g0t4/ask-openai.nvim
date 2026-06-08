@@ -25,6 +25,9 @@ function AgentTrace:new(params, base_url)
     -- if I want a history of requests I can build that separately
     self.last_request = nil
     self.start_time = os.time() -- use as identifier for grouping and writing to disk
+    if not base_url then
+        error("missing base_url" .. tostring(base_url))
+    end
     self.base_url = base_url
     self.summary = ""
     return self

@@ -47,7 +47,29 @@ function M.new_gptoss_chat_body_llama_server(request_body, context)
     return default_to_recommended(request_body, recommended)
 end
 
-function M.new_qwen3coder_llama_server_chat_body(request_body) -- this is a duplicate
+function M.new_gemma4_chat_body_llama_server(request_body, context)
+    throw_if_no_messages(request_body)
+    --  Thinking config: https://huggingface.co/google/gemma-4-26B-A4B#2-thinking-mode-configuration
+    --    Thinking is enabled by including the <|think|> token at the start of the system prompt. To disable thinking, remove the token.
+    --      TODO does template have an option that llama-server can pass from request body... or that it llama-server hard codes?
+    --        TODO does llama-server fully support gemma4 reasoning (thinking tags/tokens?) that might be why I see <thought> periodically!
+    --    Standard Generation: When thinking is enabled, the model will output its internal reasoning followed by the final answer using this structure:
+    --      <|channel>thought\n[Internal reasoning]<channel|>
+    --    FYI Disabled Thinking Behavior: For all models except for the E2B and E4B variants, if thinking is disabled, the model will still generate the tags but with an empty thought block:
+    --      <|channel>thought\n<channel|>[Final answer]
+    --      TODO should I strip the tags then? or does llama-server handle this? yet?
+
+    local recommended = {
+        -- recommendations:
+        --  sampling params:  https://huggingface.co/google/gemma-4-26B-A4B#1-sampling-parameters
+        temperature = 1.0,
+        top_p = 0.95,
+        top_k = 64,
+    }
+    return default_to_recommended(request_body, recommended)
+end
+
+function M.new_qwen3coder_llama_server_chat_body(request_body, context) -- this is a duplicate
     throw_if_no_messages(request_body)
 
     local recommended = {

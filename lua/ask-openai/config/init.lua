@@ -197,7 +197,7 @@ function M.get_endpoints()
     local qwen3_model = M.get_llama_server_model_name(qwen3_url)
     local gemma4_model = M.get_llama_server_model_name(gemma4_url)
 
-    local endpoints = {
+    return {
         cmdline = {
             name = nil,
             base_url = M.get_cmdline_base_url(),
@@ -215,14 +215,6 @@ function M.get_endpoints()
             base_url = gemma4_url,
         },
     }
-
-    -- TODO turn these into local_share settings so they can be changed at runtime and then remove this here and instead just lookup endpoint url/name based on config slug "qwen3/gemma4/gptoss" etc
-    -- TODO and then lets just use endpoint url lookup and have callers hit get_llama_server_model_name instead of this endpoints for name
-    endpoints.agents = endpoints.qwen3
-    endpoints.rewrite = endpoints.qwen3
-    endpoints.summarizer = endpoints.gptoss
-
-    return endpoints
 end
 
 function M.get_base_url(model)
