@@ -19,8 +19,6 @@ require("ask-openai.backends.sse.parsers")
 local FimBackend = {}
 FimBackend.__index = FimBackend
 
-local use_model = ""
-
 FimBackend.base_url = ""
 ---@type CompletionsEndpoints
 FimBackend.endpoint = nil
@@ -30,7 +28,6 @@ function FimBackend.set_fim_model(model)
     -- FYI right now, given I am using llama-server exclusively, toggling is just about changing between the two instances I run at the same time
     --   so, toggling the port/endpoint :)
     if model == "gptoss" then
-        use_model = "gpt-oss:120b"
         -- Base URL now derived from configuration (agents subsystem)
         FimBackend.base_url = config.get_endpoints().gptoss.base_url
         if use_gptoss_raw then
@@ -40,14 +37,10 @@ function FimBackend.set_fim_model(model)
             FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
         end
     else
-        use_model = "qwen" -- still using qwen 2.5 coder's FIM format with qwen3+
         FimBackend.base_url = config.get_endpoints().qwen3.base_url
         FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * preferred for qwen2.5-coder
         -- /completions - raw prompt # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
     end
-    -- add new options in config so I no longer have to switch in code;
-    -- use_model = "bytedance-seed-coder-8b"
-    -- use_model = "qwen3-coder:30b-a3b-q8_0" -- just call this qwen3coder
 
     -- * ollama
     -- FimBackend.url = "http://ollama:11434"
@@ -82,7 +75,7 @@ function FimBackend:body_for()
     local max_tokens = 200
     local body = {
         -- FYI keep model notes in MODELS.notes.md
-        model = use_model,
+        -- model = "", -- not needed in llama-server
 
         raw = true, -- bypass templates (only /api/generate, not /v1/completions)
 
