@@ -216,6 +216,8 @@ function M.get_endpoints()
         },
     }
 
+    -- TODO turn these into local_share settings so they can be changed at runtime and then remove this here and instead just lookup endpoint url/name based on config slug "qwen3/gemma4/gptoss" etc
+    -- TODO and then lets just use endpoint url lookup and have callers hit get_llama_server_model_name instead of this endpoints for name
     endpoints.agents = endpoints.qwen3
     endpoints.rewrite = endpoints.qwen3
     endpoints.summarizer = endpoints.gptoss

@@ -32,6 +32,7 @@ function FimBackend.set_fim_model(model)
         FimBackend.base_url = config.get_endpoints().gptoss.base_url
         if use_gptoss_raw then
             -- manually formatted prompt to disable thinking
+            -- FYI can also do this with prefill on v1/chat/completions endpoint so this is not necessary to disable thinking
             FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions
         else
             FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
