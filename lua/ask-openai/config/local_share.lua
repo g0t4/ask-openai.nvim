@@ -183,7 +183,7 @@ function M.toggle_fim_model()
     if current == "gptoss" then
         next_model = "qwen"
     elseif current == "qwen" then
-        next_model = "gemma"
+        next_model = "gemma4"
     else
         next_model = "gptoss"
     end
