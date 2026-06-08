@@ -141,7 +141,10 @@ function FimBackend:body_for()
         -- MUST set qwent's tokens as stop tokens too (when using Qwen's repo level fim format)
         body.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder -- llama-server /completions endpoint uses top-level stop
         body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
-    elseif string.find(model, "gptoss", nil, true) then
+    elseif string.find(model, "gptoss", nil, true)
+        or string.find(model, "gemma", nil, true) -- I just wanna try FIM with gemma using gptoss style (chat completions only)
+        -- TODO if gemma is any good at FIM, setup FIM for it
+    then
         if use_gptoss_raw then
             -- * /completions legacy endpoint:
             builder = function()
