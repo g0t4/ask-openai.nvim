@@ -191,7 +191,7 @@ end
 function M.get_endpoints()
     local gptoss_url = "http://ask.lan:8013"
     local qwen3_url = "http://ask.lan:8012"
-    local qwen4_url = "http://ask.lan:8011"
+    local gemma4_url = "http://ask.lan:8011"
 
     local gptoss_model = M.get_llama_server_model_name(gptoss_url)
     local qwen3_model = M.get_llama_server_model_name(qwen3_url)
@@ -209,6 +209,10 @@ function M.get_endpoints()
         gptoss = {
             name = gptoss_model or "OFFLINE",
             base_url = gptoss_url,
+        },
+        gemma4 = {
+            name = gemma4_model or "OFFLINE",
+            base_url = gemma4_url,
         },
     }
 
