@@ -36,6 +36,9 @@ function FimBackend.set_fim_model(model)
         else
             FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
         end
+    elseif model == "gemma4" then
+        FimBackend.base_url = config.get_endpoints().gemma4.base_url
+        FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
     else
         FimBackend.base_url = config.get_endpoints().qwen3.base_url
         FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * preferred for qwen2.5-coder
