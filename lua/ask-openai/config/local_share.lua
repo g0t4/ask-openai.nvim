@@ -167,13 +167,7 @@ end
 -- * FIM model
 function M.get_fim_model()
     local cfg = get()
-    local model = cfg.fim and cfg.fim.model or nil
-    -- enforce choices on read
-    if model == "gptoss" then
-        return model
-    else
-        return "qwen"
-    end
+    return cfg.fim and cfg.fim.model or "gptoss" -- default to gptoss
 end
 
 function M.set_fim_model(model)
@@ -185,7 +179,14 @@ end
 
 function M.toggle_fim_model()
     local current = M.get_fim_model()
-    local next_model = (current == "gptoss") and "qwen" or "gptoss"
+    local next_model
+    if current == "gptoss" then
+        next_model = "qwen"
+    elseif current == "qwen" then
+        next_model = "gemma"
+    else
+        next_model = "gptoss"
+    end
     M.set_fim_model(next_model)
     return next_model
 end
