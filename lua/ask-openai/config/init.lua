@@ -202,7 +202,7 @@ function M.get_endpoints()
             name = nil,
             base_url = M.get_cmdline_base_url(),
         },
-        qwen3 = {
+        qwen = {
             name = qwen3_model or "OFFLINE",
             base_url = qwen3_url,
         },
