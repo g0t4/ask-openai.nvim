@@ -4,6 +4,7 @@ Extracts and displays all run_process / run_command tool calls from a trace,
 showing both command_line and argv styles with bash syntax highlighting.
 """
 
+import argparse
 import json
 import subprocess
 import sys
@@ -12,6 +13,7 @@ from typing import Any
 
 from rich.console import Console
 from rich.panel import Panel
+from rich.syntax import Syntax
 from rich.text import Text
 
 _console = Console(color_system="truecolor")
@@ -192,34 +194,69 @@ def load_trace_messages(trace_file: Path) -> list[dict[str, Any]]:
     return messages
 
 
-def dump_commands(commands: list[dict[str, Any]]) -> None:
+def dump_commands(commands: list[dict[str, Any]], plain_text: bool) -> None:
     """Render a numbered list of run_process commands with syntax highlighting.
 
     Args:
         commands: List of command dicts from _extract_run_process_calls().
+        plain_text: If True, output without colors or panel borders.
     """
+    if plain_text:
+        console = Console(force_terminal=True, color_system=None)
+    else:
+        console = _console
+
     if not commands:
-        _console.print("[dim]No run_process commands found.[/]")
+        console.print("[dim]No run_process commands found.[/]")
         return
 
     for idx, cmd_info in enumerate(commands, start=1):
         func_name = cmd_info["func_name"]
         display_command = cmd_info["display_command"]
 
-        _console.rule(f"[cyan]{idx}. {func_name}[/]")
-        _console.print(_bash_via_bat_high_contrast(display_command, language="bash"))
+        console.rule(f"[cyan]{idx}. {func_name}[/]")
+
+        if plain_text:
+            # Plain text mode: no colors, no panels, just raw command text
+            console.print(display_command)
+        else:
+            # Styled mode: bat + panel with borders
+            console.print(_bash_via_bat_high_contrast(display_command, language="bash"))
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse command-line arguments.
+
+    Args:
+        argv: Argument list (defaults to sys.argv[1:]).
+
+    Returns:
+        Parsed namespace with trace_file and plain_text attributes.
+    """
+    parser = argparse.ArgumentParser(
+        description="Dump run_process commands from a trace file.",
+    )
+    parser.add_argument(
+        "trace_file",
+        help="Path to the -trace.json file to analyze.",
+    )
+    parser.add_argument(
+        "--plain-text",
+        action="store_true",
+        default=False,
+        help="Output plain text without colors or panel borders.",
+    )
+    return parser.parse_args(argv)
 
 
 def main() -> None:
     """Entry point for trace_dump."""
-    if len(sys.argv) < 2:
-        print("Usage: trace_dump <trace-file.json>", file=sys.stderr)
-        sys.exit(1)
+    args = parse_args()
 
-    trace_file = Path(sys.argv[1])
+    trace_file = Path(args.trace_file)
     messages = load_trace_messages(trace_file)
     commands = _extract_run_process_calls(messages)
-    dump_commands(commands)
+    dump_commands(commands, plain_text=args.plain_text)
 
 
 if __name__ == "__main__":
