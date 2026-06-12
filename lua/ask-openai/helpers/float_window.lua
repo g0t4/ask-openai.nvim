@@ -6,7 +6,7 @@ local log = require("ask-openai.logs.logger"):predictions()
 local FloatWindow = {}
 
 ---@param opts FloatWindowOptions
-function FloatWindow.centered_window(opts)
+function FloatWindow.window_config(opts)
     opts.width_ratio = opts.width_ratio or 0.6
     opts.height_ratio = opts.height_ratio or 0.6
 
@@ -69,7 +69,7 @@ function FloatWindow:open()
     if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
         return
     end
-    local initial_config = self.centered_window(self.opts)
+    local initial_config = self.window_config(self.opts)
     self.win_id = vim.api.nvim_open_win(self.buffer_number, true, initial_config)
 
     -- * make window resizable
@@ -78,7 +78,7 @@ function FloatWindow:open()
         group = group_id,
         callback = function()
             if not vim.api.nvim_win_is_valid(self.win_id) then return end
-            local resized_config = self.centered_window(self.opts)
+            local resized_config = self.window_config(self.opts)
             vim.api.nvim_win_set_config(self.win_id, resized_config)
         end,
     })
