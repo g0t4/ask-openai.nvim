@@ -101,7 +101,10 @@ function AgentWindow:ensure_spinner_running(base_title)
                 if self._base_title then
                     title = title .. " " .. self._base_title
                 end
-                vim.api.nvim_win_set_config(self.win_id, { title = " " .. title .. " ", title_pos = "center" })
+
+                ---@type vim.api.keyset.win_config
+                local title_config = { title = " " .. title .. " ", title_pos = "center" }
+                vim.api.nvim_win_set_config(self.win_id, title_config)
             end)
         end)
 
