@@ -81,7 +81,8 @@ function AgentWindow:ensure_spinner_running(base_title)
         local handle = vim.loop.new_timer()
         handle:start(0, 100, function()
             if not self._agent_is_running then
-                -- stop if agent is done for any reason... means I can call ensure_spinner_running any time I want and it won't even change if there's no agent running
+                -- stop when agent is done
+                -- or never start if agent isn't running
                 self:stop_spinner()
                 return
             end
@@ -93,10 +94,10 @@ function AgentWindow:ensure_spinner_running(base_title)
                     return
                 end
 
-                local current_frame = SPINNER_FRAMES[self._spinner_idx]
+                local spinner_frame = SPINNER_FRAMES[self._spinner_idx]
                 self._spinner_idx = (self._spinner_idx % #SPINNER_FRAMES) + 1
 
-                local title = current_frame
+                local title = spinner_frame
                 if self._base_title then
                     title = title .. " " .. self._base_title
                 end
