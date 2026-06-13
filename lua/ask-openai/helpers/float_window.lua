@@ -6,6 +6,7 @@ local log = require("ask-openai.logs.logger"):predictions()
 local FloatWindow = {}
 
 ---@param opts FloatWindowOptions
+---@return vim.api.keyset.win_config
 function FloatWindow.window_config(opts)
     opts.width_ratio = opts.width_ratio or 0.6
     opts.height_ratio = opts.height_ratio or 0.6
