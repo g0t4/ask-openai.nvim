@@ -16,7 +16,9 @@ function FloatWindow.window_config(opts)
     local win_width = math.ceil(opts.width_ratio * vim.o.columns)
     local top_is_at_row = math.floor((vim.o.lines - win_height) / 2)
     local left_is_at_col = math.floor((vim.o.columns - win_width) / 2)
-    return {
+
+    ---@type vim.api.keyset.win_config
+    local config = {
         -- position:
         row = top_is_at_row,
         col = left_is_at_col,
@@ -28,6 +30,7 @@ function FloatWindow.window_config(opts)
         style = "minimal",
         border = "single", -- "rounded"
     }
+    return config
 end
 
 ---@class FloatWindowOptions
