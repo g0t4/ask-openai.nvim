@@ -30,7 +30,7 @@ end
 
 --- Perform the actual fetch in the background.
 --- @param base_url string
-local function do_fetch_model_name(base_url)
+local function refresh_model_info_cache_for(base_url)
     local model_info = LlamaServerClient.get_model_info(base_url, { connect_timeout = 1, max_time = 3 })
     if not model_info then
         _fetch_in_progress[base_url] = nil
@@ -57,7 +57,7 @@ function M.get_llama_server_model_info(base_url)
         if os.time() - cached.ts > cache_timeout_seconds then
             -- trigger background refresh while using last value
             vim.schedule(function()
-                do_fetch_model_name(base_url)
+                refresh_model_info_cache_for(base_url)
             end)
         end
         return cached.model_info
@@ -71,7 +71,7 @@ function M.get_llama_server_model_info(base_url)
     -- 3. Start a new background fetch
     _fetch_in_progress[base_url] = true
     vim.schedule(function()
-        do_fetch_model_name(base_url)
+        refresh_model_info_cache_for(base_url)
     end)
 
     return nil
@@ -91,7 +91,7 @@ function M.get_llama_server_model_name(base_url)
         if os.time() - cached.ts > cache_timeout_seconds then
             -- trigger background refresh while using last value
             vim.schedule(function()
-                do_fetch_model_name(base_url)
+                refresh_model_info_cache_for(base_url)
             end)
         end
         return cached.name
@@ -105,7 +105,7 @@ function M.get_llama_server_model_name(base_url)
     -- 3. Start a new background fetch
     _fetch_in_progress[base_url] = true
     vim.schedule(function()
-        do_fetch_model_name(base_url)
+        refresh_model_info_cache_for(base_url)
     end)
 
     return nil
