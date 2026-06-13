@@ -53,10 +53,14 @@ function M.get_llama_server_model_info(base_url)
     -- 1. Check cache first
     local cached = _model_cache[base_url]
     if cached then
-        local cache_timeout = cached.name == nil and 1 or 10
-        if os.time() - cached.ts < cache_timeout then
-            return cached.model_info
+        local cache_timeout_seconds = cached.name == nil and 1 or 120
+        if os.time() - cached.ts > cache_timeout_seconds then
+            -- trigger background refresh while using last value
+            vim.schedule(function()
+                do_fetch_model_name(base_url)
+            end)
         end
+        return cached.model_info
     end
 
     -- 2. Fetch already in progress — caller will retry later
@@ -83,10 +87,14 @@ function M.get_llama_server_model_name(base_url)
     -- 1. Check cache first
     local cached = _model_cache[base_url]
     if cached then
-        local cache_timeout = cached.name == nil and 1 or 10
-        if os.time() - cached.ts < cache_timeout then
-            return cached.name
+        local cache_timeout_seconds = cached.name == nil and 1 or 120
+        if os.time() - cached.ts > cache_timeout_seconds then
+            -- trigger background refresh while using last value
+            vim.schedule(function()
+                do_fetch_model_name(base_url)
+            end)
         end
+        return cached.name
     end
 
     -- 2. Fetch already in progress — caller will retry later
