@@ -98,16 +98,21 @@ function FloatWindow:open()
 end
 
 ---@param title string
-function FloatWindow:set_title(title)
-    if not title then
-        log:info("set_title is missing the title", title)
-    end
-    title = title or ""
+function FloatWindow:set_title(title, footer)
     vim.schedule(function()
         if not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then
             return
         end
-        vim.api.nvim_win_set_config(self.win_id, { title = " " .. title .. " ", title_pos = "center" })
+        local config = {}
+        if title then
+            config.title = " " .. title .. " "
+            config.title_pos = "center"
+        end
+        if footer then
+            config.footer = " " .. footer .. " "
+            config.footer_pos = "center"
+        end
+        vim.api.nvim_win_set_config(self.win_id, config)
     end)
 end
 

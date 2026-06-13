@@ -471,9 +471,8 @@ local function update_ui_chat_viewer(trace)
             local config = require("ask-openai.config")
             local confirmed_model_name = config.get_endpoints()[api.get_agents_model()].name -- confirm by checking actual model name.
             -- TODO merge with Agent Finished message that masks this one
-            local window_title = string.format("%s | tokens: %s", confirmed_model_name, _comma_separate(total_token_count))
-            -- log:info("window_title", window_title)
-            AgentsFrontend.chat_window:set_title(window_title)
+            local footer = string.format("%s | tokens: %s", confirmed_model_name, _comma_separate(total_token_count))
+            AgentsFrontend.chat_window:set_title(nil, footer)
         end
     end)
 end
