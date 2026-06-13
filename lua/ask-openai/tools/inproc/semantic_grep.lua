@@ -25,7 +25,7 @@ local M = {
                     },
                     top_k = {
                         type = "number",
-                        description = "number of matches to return (post reranking)"
+                        description = "number of matches, defaults to 5 which is usually plenty!"
                     },
                     embed_top_k = {
                         type = "number",
