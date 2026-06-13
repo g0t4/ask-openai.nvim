@@ -19,7 +19,6 @@ local M = {}
 ---@field use_tools? boolean
 ---@field apply_template_only? boolean
 ---@field include_selection? boolean
----@field top_k? integer
 ---@field readonly? boolean
 ---@field reasoning_low? boolean
 ---@field reasoning_medium? boolean
@@ -46,7 +45,6 @@ function Includes.new(initial)
         use_tools = initial.use_tools or false,
         apply_template_only = initial.apply_template_only or false,
         include_selection = initial.include_selection or false,
-        top_k = initial.top_k,
         readonly = initial.readonly or false,
         reasoning_low = initial.reasoning_low or false,
         reasoning_medium = initial.reasoning_medium or false,
@@ -72,25 +70,6 @@ function Includes.get_reasoning_level(self)
     else
         return nil
     end
-end
-
----@param prompt string
----@return integer?, string
-function M.strip_patterns_from_prompt(prompt)
-    -- i.e. /k=10
-    local top_k = nil
-    local function strip(match)
-        top_k = tonumber(match)
-        return "" -- strip
-    end
-    -- FYI CANNOT HAVE /k= butted up against ANYTHING but whitespace
-    prompt = prompt:gsub("^%s*/k=(%d+)%s*", strip) -- start (specific)
-    prompt = prompt:gsub("%s*/k=(%d+)%s*$", strip) -- end (specific)
-    prompt = prompt:gsub("%s*/k=(%d+)%s*", function(match)
-        top_k = tonumber(match)
-        return " " -- replace w/ one space
-    end) -- middle matches (spaces on both sides)
-    return top_k, prompt
 end
 
 -- expose the slash commands list publicly for reuse elsewhere
@@ -264,9 +243,6 @@ function M.render(prompt)
         rendered_prompt = rendered_prompt .. "\n" .. table.concat(instruct_contents, "\n")
     end
 
-    -- * detect pattern based fields
-    local top_k, rendered_prompt = M.strip_patterns_from_prompt(rendered_prompt)
-
     -- * apply replacement slash commands (e.g., /cwd)
     rendered_prompt = apply_replacement_slash_commands(rendered_prompt)
 
@@ -291,10 +267,7 @@ function M.render(prompt)
         [M.slash_commands.COORDINATOR] = "coordinator",
     }
 
-    local includes = Includes.new({
-        -- patterns:
-        top_k = top_k,
-    })
+    local includes = Includes.new({})
     -- * detect static commands
     for _, command in pairs(M.slash_commands) do
         local found

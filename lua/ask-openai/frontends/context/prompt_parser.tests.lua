@@ -137,32 +137,6 @@ describe("render", function()
         ensure_detects("norag")
     end)
 
-    describe("extract /k", function()
-        local function expect(scenario, prompt)
-            it(scenario, function()
-                local includes = prompt_parser.render(prompt)
-                assert.are_equal(3, includes.top_k)
-                assert.are_equal("foo bar", includes.rendered_prompt)
-            end)
-        end
-
-        expect("start of prompt", "/k=3 foo bar")
-        expect("start of prompt + spaces before", "  /k=3 foo bar")
-        expect("middle of prompt", "foo /k=3 bar")
-        expect("end of prompt", "foo bar /k=3")
-        expect("end of prompt + spaces after", "foo bar /k=3  ")
-
-        it("without /k => returns prompt as is", function()
-            local top_k, prompt = prompt_parser.strip_patterns_from_prompt("foo bar")
-            assert.is_nil(top_k)
-            assert.are_equal("foo bar", prompt)
-        end)
-
-        it("without word boundary => does not parse", function()
-            local top_k, prompt = prompt_parser.strip_patterns_from_prompt("foo/k=3 bar")
-        end)
-    end)
-
     describe("/cwd", function()
         it("replaces /cwd with cwd at start of prompt", function()
             local cwd = vim.fn.getcwd()
@@ -246,15 +220,6 @@ describe("render", function()
                 local command, field = case[1], case[2]
                 ensure_static_slash_command_is_identified(command, field)
             end
-        end)
-
-
-        it("should detect top_k embedded in instruct content", function()
-            local top_k_val = 7
-            instructs._instruct_contents_by_name[fake_name] = "INJECTED INSTRUCTY POO /k=" .. top_k_val
-            local includes = prompt_parser.render("foo /" .. fake_name .. " bar")
-            assert.are_equal(top_k_val, includes.top_k, "top_k should be parsed as 7")
-            assert.are_equal("foo bar\nINJECTED INSTRUCTY POO", includes.rendered_prompt)
         end)
     end)
 end)
