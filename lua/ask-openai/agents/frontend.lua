@@ -763,6 +763,29 @@ function AgentsFrontend.clear_chat_command()
     AgentsFrontend.trace = nil
 end
 
+local function remove_last_message(args)
+    if not AgentsFrontend.trace or not AgentsFrontend.trace.messages then
+        error("no messages to remove")
+        return
+    end
+
+    local current_count = #AgentsFrontend.trace.messages
+    local requested_count = tonumber(args.fargs[1]) or 1
+    local actual_count = math.min(requested_count, current_count)
+    if requested_count ~= actual_count then
+        log:info(string.format("Requested to remove %d messages but only %d exist; removing all %d.", requested_count, current_count, actual_count), vim.log.levels.WARN)
+    end
+
+    local removed_messages = {}
+    for _ = 1, actual_count do
+        local removed = table.remove(AgentsFrontend.trace.messages) -- removes last message by default
+        table.insert(removed_messages, removed)
+    end
+    log:info("Removed messages", vim.inspect(removed_messages))
+    -- update_ui_chat_viewer(AgentsFrontend.trace) -- TODO IIRC I cannot easily redraw all messages... I wil have that when I add restore.. I can redraw in this case too... for now just leave UX alone unless I can redraw based on line offsets for original messages? i.e. in this case just remove back X offsets ... don't I have a list of those offsets somewhere?
+    vim.print("Removed", removed_messages)
+end
+
 function AgentsFrontend.setup()
     -- * AskAgent
     vim.api.nvim_create_user_command(
@@ -770,6 +793,12 @@ function AgentsFrontend.setup()
         ask_agent_command,
         { range = true, nargs = 1, complete = prompt_parser.SlashCommandCompletion }
     )
+
+    -- *** AskOpenAI Agent Commands ***
+    vim.api.nvim_create_user_command("AskAgentRemoveLastMessage", remove_last_message, {
+        nargs = "?",
+        desc = "Remove last N messages from AskOpenAI agent trace (default: 1)"
+    })
     -- * prefill argument combos:
     vim.keymap.set('n', '<Leader>a', ':AskAgent ', { noremap = true })
     vim.keymap.set('v', '<Leader>a', ':<C-u>AskAgent /selection ', { noremap = true })
