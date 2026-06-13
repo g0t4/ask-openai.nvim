@@ -113,6 +113,49 @@ describe("render", function()
         end)
     end)
 
+    describe("/cwd", function()
+        it("replaces /cwd with cwd at start of prompt", function()
+            local cwd = vim.fn.getcwd()
+            local includes = prompt_parser.render("/cwd foo bar")
+            assert.are_equal(cwd .. " foo bar", includes.rendered_prompt)
+        end)
+
+        it("replaces /cwd with cwd in middle of prompt", function()
+            local cwd = vim.fn.getcwd()
+            local includes = prompt_parser.render("foo /cwd bar")
+            assert.are_equal("foo " .. cwd .. " bar", includes.rendered_prompt)
+        end)
+
+        it("replaces /cwd with cwd at end of prompt", function()
+            local cwd = vim.fn.getcwd()
+            local includes = prompt_parser.render("foo bar /cwd")
+            assert.are_equal("foo bar " .. cwd, includes.rendered_prompt)
+        end)
+
+        it("replaces multiple /cwd occurrences", function()
+            local cwd = vim.fn.getcwd()
+            local includes = prompt_parser.render("/cwd foo /cwd bar /cwd")
+            assert.are_equal(cwd .. " foo " .. cwd .. " bar " .. cwd, includes.rendered_prompt)
+        end)
+
+        it("does not replace /cwd without word boundary", function()
+            local includes = prompt_parser.render("foo/cwd bar")
+            assert.are_equal("foo/cwd bar", includes.rendered_prompt)
+        end)
+
+        it("handles /cwd with leading whitespace", function()
+            local cwd = vim.fn.getcwd()
+            local includes = prompt_parser.render("  /cwd foo bar")
+            assert.are_equal(cwd .. " foo bar", includes.rendered_prompt)
+        end)
+
+        it("handles /cwd with trailing whitespace", function()
+            local cwd = vim.fn.getcwd()
+            local includes = prompt_parser.render("foo bar /cwd  ")
+            assert.are_equal("foo bar " .. cwd, includes.rendered_prompt)
+        end)
+    end)
+
     describe("instructs", function()
         local fake_name = "fake_poo"
         instructs.cached_instruct_slash_commands = { fake_name }

@@ -114,6 +114,9 @@ M.slash_commands = {
     REASONING_MEDIUM = "/medium",
     REASONING_HIGH   = "/high",
     REASONING_OFF    = "/off",
+
+    -- cwd insertion
+    CWD              = "/cwd",
 }
 
 --- Completion function for slash commands used by user commands.
@@ -176,6 +179,40 @@ local function strip_slash_command_from_prompt(prompt, command)
     return any_removed, final_prompt
 end
 
+---@param prompt string
+---@return string
+local function replace_cwd_in_prompt(prompt)
+    local cwd = vim.fn.getcwd()
+    local cwd_replaced_count = 0
+
+    -- Replace /cwd with cwd path, handling whitespace boundaries similar to strip_slash_command_from_prompt
+    -- but replacing instead of stripping
+
+    -- /cwd at start (followed by whitespace)
+    prompt = prompt:gsub("^%s*/cwd(%s+)", function(match_after)
+        cwd_replaced_count = cwd_replaced_count + 1
+        return cwd .. match_after
+    end)
+    -- /cwd at end (preceded by whitespace)
+    prompt = prompt:gsub("(%s+)/cwd%s*$", function(match_before)
+        cwd_replaced_count = cwd_replaced_count + 1
+        return match_before .. cwd
+    end)
+    -- /cwd in middle (surrounded by whitespace on both sides)
+    prompt = prompt:gsub("(%s+)/cwd(%s+)", function(match_before, match_after)
+        cwd_replaced_count = cwd_replaced_count + 1
+        return match_before .. cwd .. match_after
+    end)
+
+    if cwd_replaced_count > 0 then
+        log:trace("original prompt: `" .. prompt:gsub(cwd, "[CWD]") .. "`")
+        log:trace("         detect: `/cwd`")
+        log:trace("     new prompt: `" .. prompt:gsub(cwd, "[CWD]") .. "`")
+    end
+
+    return prompt
+end
+
 ---@param prompt? string
 ---@return ParsedIncludes
 function M.render(prompt)
@@ -200,6 +237,9 @@ function M.render(prompt)
 
     -- * detect pattern based fields
     local top_k, rendered_prompt = M.strip_patterns_from_prompt(rendered_prompt)
+
+    -- * replace /cwd with current working directory
+    rendered_prompt = replace_cwd_in_prompt(rendered_prompt)
 
     ---@type table<string, string>
     M.slash_command_to_field = {
