@@ -114,10 +114,24 @@ M.slash_commands = {
     REASONING_MEDIUM = "/medium",
     REASONING_HIGH   = "/high",
     REASONING_OFF    = "/off",
-
-    -- cwd insertion
-    CWD              = "/cwd",
 }
+
+--- Registration table for slash commands that perform text replacements.
+--- Maps command string (e.g., "/cwd") to a function returning the replacement text.
+M._replacement_slash_commands = {}
+
+--- Register a slash command that replaces itself with a computed string.
+--- The function is only called if the command is found in the prompt.
+---@param command string The slash command (e.g., "/cwd")
+---@param replacer fun(): string Function returning the replacement text
+function M.register_replacement_command(command, replacer)
+    M._replacement_slash_commands[command] = replacer
+end
+
+-- Register built-in replacement commands
+M.register_replacement_command("/cwd", function()
+    return vim.fn.getcwd()
+end)
 
 --- Completion function for slash commands used by user commands.
 -- Returns a list of completions matching the lead entered.
@@ -131,6 +145,13 @@ function M.SlashCommandCompletion(arglead, cmdline, cursorpos)
 
     -- * static slash commands
     for _, cmd in pairs(M.slash_commands) do
+        if cmd:find('^' .. escaped) then
+            table.insert(result, cmd)
+        end
+    end
+
+    -- * replacement slash commands
+    for cmd in pairs(M._replacement_slash_commands) do
         if cmd:find('^' .. escaped) then
             table.insert(result, cmd)
         end
@@ -179,38 +200,46 @@ local function strip_slash_command_from_prompt(prompt, command)
     return any_removed, final_prompt
 end
 
+--- Applies all registered replacement slash commands to the prompt.
 ---@param prompt string
----@return string
-local function replace_cwd_in_prompt(prompt)
-    local cwd = vim.fn.getcwd()
-    local cwd_replaced_count = 0
-
-    -- Replace /cwd with cwd path, handling whitespace boundaries similar to strip_slash_command_from_prompt
-    -- but replacing instead of stripping
-
-    -- /cwd at start (followed by whitespace)
-    prompt = prompt:gsub("^%s*/cwd(%s+)", function(match_after)
-        cwd_replaced_count = cwd_replaced_count + 1
-        return cwd .. match_after
-    end)
-    -- /cwd at end (preceded by whitespace)
-    prompt = prompt:gsub("(%s+)/cwd%s*$", function(match_before)
-        cwd_replaced_count = cwd_replaced_count + 1
-        return match_before .. cwd
-    end)
-    -- /cwd in middle (surrounded by whitespace on both sides)
-    prompt = prompt:gsub("(%s+)/cwd(%s+)", function(match_before, match_after)
-        cwd_replaced_count = cwd_replaced_count + 1
-        return match_before .. cwd .. match_after
-    end)
-
-    if cwd_replaced_count > 0 then
-        log:trace("original prompt: `" .. prompt:gsub(cwd, "[CWD]") .. "`")
-        log:trace("         detect: `/cwd`")
-        log:trace("     new prompt: `" .. prompt:gsub(cwd, "[CWD]") .. "`")
+---@return string modified_prompt
+local function apply_replacement_slash_commands(prompt)
+    local modified_prompt = prompt
+    
+    for command, replacer in pairs(M._replacement_slash_commands) do
+        -- Only compute replacement if command is actually in the prompt
+        if modified_prompt:find(vim.pesc(command)) then
+            local replacement = replacer()
+            local max_iterations = 10
+            local iteration = 0
+            while iteration < max_iterations do
+                local changed = false
+                
+                -- Start of prompt
+                local new_prompt, count = modified_prompt:gsub("^%s*" .. vim.pesc(command) .. "(%s+)", function(match_after)
+                    return replacement .. match_after
+                end)
+                if count > 0 then modified_prompt = new_prompt; changed = true end
+                
+                -- End of prompt
+                new_prompt, count = modified_prompt:gsub("(%s+)" .. vim.pesc(command) .. "%s*$", function(match_before)
+                    return match_before .. replacement
+                end)
+                if count > 0 then modified_prompt = new_prompt; changed = true end
+                
+                -- Middle of prompt
+                new_prompt, count = modified_prompt:gsub("(%s+)" .. vim.pesc(command) .. "(%s+)", function(match_before, match_after)
+                    return match_before .. replacement .. match_after
+                end)
+                if count > 0 then modified_prompt = new_prompt; changed = true end
+                
+                if not changed then break end
+                iteration = iteration + 1
+            end
+        end
     end
-
-    return prompt
+    
+    return modified_prompt
 end
 
 ---@param prompt? string
@@ -238,8 +267,8 @@ function M.render(prompt)
     -- * detect pattern based fields
     local top_k, rendered_prompt = M.strip_patterns_from_prompt(rendered_prompt)
 
-    -- * replace /cwd with current working directory
-    rendered_prompt = replace_cwd_in_prompt(rendered_prompt)
+    -- * apply replacement slash commands (e.g., /cwd)
+    rendered_prompt = apply_replacement_slash_commands(rendered_prompt)
 
     ---@type table<string, string>
     M.slash_command_to_field = {

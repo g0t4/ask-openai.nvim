@@ -11,6 +11,56 @@ describe("class ParseIncludes", function()
     end)
 end)
 
+describe("register_replacement_command", function()
+    it("registers a command and replaces it during render", function()
+        local test_replacer_called = false
+        prompt_parser.register_replacement_command("/test_replace", function()
+            test_replacer_called = true
+            return "REPLACED_VALUE"
+        end)
+        
+        local includes = prompt_parser.render("/test_replace foo bar")
+        assert.is_true(test_replacer_called, "replacer function should be called when command is present")
+        assert.are_equal("REPLACED_VALUE foo bar", includes.rendered_prompt)
+    end)
+
+    it("does not call replacer if command is absent (lazy evaluation)", function()
+        local test_replacer_called = false
+        prompt_parser.register_replacement_command("/test_lazy", function()
+            test_replacer_called = true
+            return "SHOULD_NOT_APPEAR"
+        end)
+        
+        local includes = prompt_parser.render("foo bar")
+        assert.is_false(test_replacer_called, "replacer function should NOT be called when command is absent")
+        assert.are_equal("foo bar", includes.rendered_prompt)
+    end)
+
+    it("handles multiple occurrences of registered command", function()
+        local count = 0
+        prompt_parser.register_replacement_command("/test_multi", function()
+            count = count + 1
+            return "VAL"
+        end)
+        
+        local includes = prompt_parser.render("/test_multi foo /test_multi bar /test_multi")
+        assert.are_equal(1, count, "replacer should only be called once per render cycle")
+        assert.are_equal("VAL foo VAL bar VAL", includes.rendered_prompt)
+    end)
+
+    it("respects word boundaries for registered command", function()
+        local test_replacer_called = false
+        prompt_parser.register_replacement_command("/test_bound", function()
+            test_replacer_called = true
+            return "BOUND_VAL"
+        end)
+        
+        local includes = prompt_parser.render("foo/test_bound bar")
+        assert.is_false(test_replacer_called, "replacer should not be called without word boundary")
+        assert.are_equal("foo/test_bound bar", includes.rendered_prompt)
+    end)
+end)
+
 describe("render", function()
     describe("static", function()
         function ensure_detects(command, field)
