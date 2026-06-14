@@ -11,6 +11,11 @@ local FloatWindow = require("ask-openai.helpers.float_window")
 
 local M = {}
 
+--- Track the current instance to prevent duplicate windows.
+--- Similar to AgentsFrontend.chat_window pattern.
+---@type SessionRestoreList|nil
+M._instance = nil
+
 --- Format a unix timestamp into a human-readable relative age string.
 ---
 ---@param timestamp integer -- unix timestamp
@@ -122,7 +127,7 @@ end
 ---@return SessionEntry[] entries
 function M.list_sessions()
     local state_dir = vim.fn.stdpath("state") .. "/ask-openai/agents"
-    -- resolve_trace_path returns a single path, we need to list all.
+
     -- Re-implement directory listing here for efficiency (avoid loading each trace twice).
     local dir = vim.uv.fs_opendir(state_dir, nil, 100)
     if not dir then
@@ -179,9 +184,25 @@ local function format_entry_lines(entry, index)
 end
 
 --- Create and open the session restore list float window.
+--- Reuses existing instance if already open.
 ---
 ---@return SessionRestoreList|nil instance
 function M.open()
+    -- * check if instance already exists and is valid
+    if M._instance ~= nil then
+        local instance = M._instance
+        if instance.win_id and vim.api.nvim_win_is_valid(instance.win_id) then
+            -- Window is already open, just bring it to focus
+            vim.api.nvim_set_current_win(instance.win_id)
+            return instance
+        end
+        -- Window was closed but buffer still exists; clean up old instance
+        if instance.buffer_number and vim.api.nvim_buf_is_valid(instance.buffer_number) then
+            vim.api.nvim_buf_delete(instance.buffer_number, { force = true })
+        end
+        M._instance = nil
+    end
+
     local sessions = M.list_sessions()
     if #sessions == 0 then
         log:warn("No sessions found to restore")
@@ -201,6 +222,9 @@ function M.open()
 
     instance.sessions = sessions
     instance.selected_idx = 1
+
+    -- * track instance at module level
+    M._instance = instance
 
     -- * render initial list
     M.render_list(instance)
@@ -280,7 +304,7 @@ function M.restore_selected(instance)
 
     log:info("Restoring session: " .. selected_entry.session_id)
 
-    -- Close the restore list window first
+    -- Close the restore list window first (this also sets M._instance = nil)
     M.close(instance)
 
     -- Restore the session (uses vim.schedule internally)
@@ -291,13 +315,21 @@ function M.restore_selected(instance)
     end
 end
 
---- Close the restore list window.
+--- Close the restore list window and clean up the instance.
 ---
 ---@param instance SessionRestoreList
 function M.close(instance)
     if instance.win_id and vim.api.nvim_win_is_valid(instance.win_id) then
         vim.api.nvim_win_close(instance.win_id, true)
     end
+
+    -- Clean up buffer to avoid name conflicts on next open
+    if instance.buffer_number and vim.api.nvim_buf_is_valid(instance.buffer_number) then
+        vim.api.nvim_buf_delete(instance.buffer_number, { force = true })
+    end
+
+    -- Clear the module-level reference so it can be recreated
+    M._instance = nil
 end
 
 return M
