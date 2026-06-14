@@ -1,5 +1,6 @@
 local log = require("ask-openai.logs.logger").predictions()
 local HLGroups = require("ask-openai.hlgroups")
+local Fold = require("ask-openai.agents.viewer.fold")
 local LinesBuilder = require("ask-openai.agents.viewer.lines_builder")
 local formatters = require("ask-openai.agents.viewer.formatters")
 local ToolCallOutput = require("ask-openai.agents.tools.tool_call_output")
@@ -281,14 +282,14 @@ end
 local function render_message(lines, msg, tool_results_by_id, should_fold_content)
     local role = msg.role or "unknown"
 
-    -- * system messages: show as folded system prompt
+    -- * system messages: always folded (ancillary context)
     if role == "system" then
         lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
         lines:append_folded_styled_text("system\n" .. (msg.content or ""), "")
         return
     end
 
-    -- * developer messages: treat like system messages
+    -- * developer messages: always folded (ancillary context)
     if role == "developer" then
         lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
         lines:append_folded_styled_text("developer\n" .. (msg.content or ""), "")
@@ -355,6 +356,49 @@ local function render_message(lines, msg, tool_results_by_id, should_fold_conten
     lines:append_role_header(role)
     lines:append_text(msg.content or "")
     lines:append_blank_line()
+end
+
+--- Apply marks and folds from a LinesBuilder to the chat buffer.
+--- This is the missing piece that was only done by BufferController during real-time rendering.
+---
+---@param bufnr number
+---@param ns_id number
+---@param lines LinesBuilder
+local function apply_marks_and_folds(bufnr, ns_id, lines)
+    local marks = lines.marks or {}
+    if #marks == 0 then
+        return
+    end
+
+    -- * clear any prior folds on this buffer (from previous restore)
+    local chat_window = require("ask-openai.agents.frontend").chat_window
+    if chat_window and chat_window.buffer then
+        chat_window.buffer.folds = {}
+    end
+
+    -- Apply marks/extmarks and build fold ranges
+    for _, mark in ipairs(marks) do
+        vim.api.nvim_buf_set_extmark(bufnr, ns_id,
+            mark.start_line_base0,
+            mark.start_col_base0,
+            {
+                hl_group = mark.hl_group,
+                end_line = mark.end_line_base0,
+                end_col = mark.end_col_base0,
+            }
+        )
+
+        -- If this mark has fold=true, create a Fold object and add it to the buffer's folds array
+        if mark.fold then
+            local fold_start_line_base1 = mark.start_line_base0 + 1
+            local fold_end_line_base1 = mark.end_line_base0
+            local fold = Fold:new(fold_start_line_base1, fold_end_line_base1)
+
+            if chat_window and chat_window.buffer then
+                table.insert(chat_window.buffer.folds, fold)
+            end
+        end
+    end
 end
 
 --- Render all messages from a trace file into the chat viewer window.
@@ -427,25 +471,12 @@ function M.restore_session(trace_path)
 
         local bufnr = AgentsFrontend.chat_window.buffer_number
         local with_lines = lines.turn_lines
-        local marks = lines.marks
 
         -- Clear buffer and set lines
         vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, with_lines)
 
-        -- Apply marks/extmarks
-        if marks then
-            for _, mark in ipairs(marks) do
-                vim.api.nvim_buf_set_extmark(bufnr, ns_id,
-                    mark.start_line_base0,
-                    mark.start_col_base0,
-                    {
-                        hl_group = mark.hl_group,
-                        end_line = mark.end_line_base0,
-                        end_col = mark.end_col_base0,
-                    }
-                )
-            end
-        end
+        -- Apply marks AND folds (this was the missing piece!)
+        apply_marks_and_folds(bufnr, ns_id, lines)
 
         -- Scroll to top (user can scroll down)
         vim.api.nvim_win_set_cursor(0, { 1, 0 })
