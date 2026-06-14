@@ -786,6 +786,32 @@ local function remove_last_message(args)
     vim.print("Removed", removed_messages)
 end
 
+
+--- Restore a past agent session/trace into the chat viewer window.
+--- Clears the window and draws all messages from the trace file using
+--- the same formatters as real-time display (but with final message state).
+---
+---@param opts table -- options table with args field containing session_id
+local function restore_session_command(opts)
+    local session_id = opts.args and opts.args:match("^%s*(.-)%s*$") or nil
+    local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
+
+    local trace_path = trace_restorer.resolve_trace_path(session_id)
+    if not trace_path then
+        local msg = session_id
+            and ("Trace file not found for: " .. session_id)
+            or "No trace files found to restore"
+        error(msg)
+        return
+    end
+
+    log:info("Restoring session from: " .. trace_path)
+    local success = trace_restorer.restore_session(trace_path)
+    if not success then
+        error("Failed to restore session from: " .. trace_path)
+    end
+end
+
 function AgentsFrontend.setup()
     -- * AskAgent
     vim.api.nvim_create_user_command(
@@ -824,6 +850,12 @@ function AgentsFrontend.setup()
     vim.keymap.set('n', '<leader>ao', AgentsFrontend.ensure_chat_window_is_open, { noremap = true })
 
     vim.api.nvim_create_user_command("AskDumpAgentTrace", ask_dump_agent_trace_command, {})
+
+    -- * AgentSessionRestore
+    vim.api.nvim_create_user_command("AgentSessionRestore", restore_session_command, {
+        nargs = "?",
+        desc = "Restore a past agent session/trace into the chat viewer (session_id is unix timestamp or *-trace.json filename; omit for most recent)"
+    })
 end
 
 return AgentsFrontend
