@@ -234,7 +234,15 @@ function M.open()
         M.move_selection_down(instance)
     end, { buffer = instance.buffer_number, noremap = true, silent = true })
 
+    vim.keymap.set("n", "j", function()
+        M.move_selection_down(instance)
+    end, { buffer = instance.buffer_number, noremap = true, silent = true })
+
     vim.keymap.set("n", "<Up>", function()
+        M.move_selection_up(instance)
+    end, { buffer = instance.buffer_number, noremap = true, silent = true })
+
+    vim.keymap.set("n", "k", function()
         M.move_selection_up(instance)
     end, { buffer = instance.buffer_number, noremap = true, silent = true })
 
