@@ -6,6 +6,7 @@ local curl = require("ask-openai.backends.curl")
 local agentica = require("ask-openai.backends.models.agentica")
 local AgentWindow = require("ask-openai.agents.viewer.window")
 local AgentTrace = require("ask-openai.agents.trace")
+local TracePager = require("ask-openai.agents.viewer.trace_pager")
 local TxChatMessage = require("ask-openai.agents.messages.tx")
 local Selection = require("ask-openai.helpers.selection")
 local CurrentContext = require("ask-openai.frontends.context")
@@ -855,6 +856,13 @@ function AgentsFrontend.setup()
     vim.api.nvim_create_user_command("AgentSessionRestore", restore_session_command, {
         nargs = "?",
         desc = "Restore a past agent session/trace into the chat viewer (session_id is unix timestamp or *-trace.json filename; omit for most recent)"
+    })
+    -- * AskViewTrace
+    vim.api.nvim_create_user_command("AskViewTrace", function(opts)
+        TracePager.open_trace_viewer(opts.args)
+    end, {
+        nargs = 1,
+        desc = "Open a trace JSON file in a terminal pager with navigation keymaps (n/p for next/prev line, nu/pu for USER, na/pa for ASSISTANT)"
     })
 end
 
