@@ -324,17 +324,12 @@ function M.restore_selected(instance)
 end
 
 --- Close the restore list window and clean up the instance.
+--- Uses FloatWindow:close() for proper cleanup.
 ---
 ---@param instance SessionRestoreList
 function M.close(instance)
-    if instance.win_id and vim.api.nvim_win_is_valid(instance.win_id) then
-        vim.api.nvim_win_close(instance.win_id, true)
-    end
-
-    -- Clean up buffer to avoid name conflicts on next open
-    if instance.buffer_number and vim.api.nvim_buf_is_valid(instance.buffer_number) then
-        vim.api.nvim_buf_delete(instance.buffer_number, { force = true })
-    end
+    -- Use FloatWindow:close() which handles both window AND buffer cleanup
+    instance:close()
 
     -- Clear the module-level reference so it can be recreated
     M._instance = nil

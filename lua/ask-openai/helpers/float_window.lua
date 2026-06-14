@@ -5,6 +5,20 @@ local log = require("ask-openai.logs.logger"):predictions()
 ---@field opts FloatWindowOptions
 local FloatWindow = {}
 
+--- Find a buffer by name, or nil if not found.
+---
+---@param buf_name string
+---@return integer|nil bufnr
+local function find_buffer_by_name(buf_name)
+    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+        local name = vim.api.nvim_buf_get_name(bufnr)
+        if name == buf_name then
+            return bufnr
+        end
+    end
+    return nil
+end
+
 ---@param opts FloatWindowOptions
 ---@return vim.api.keyset.win_config
 function FloatWindow.window_config(opts)
@@ -39,6 +53,9 @@ end
 ---@field filetype? string
 ---@field buffer_name? string
 
+--- Create a new FloatWindow instance, reusing an existing buffer if one with the same name exists.
+--- This prevents E95 errors when reopening windows.
+---
 ---@param opts FloatWindowOptions
 ---@param initial_lines? string[]
 ---@return FloatWindow
@@ -46,22 +63,37 @@ function FloatWindow:new(opts, initial_lines)
     local instance_mt = { __index = self }
     local instance = setmetatable({ opts = opts, }, instance_mt)
 
-    -- * create a scratch buffer
-    local NOT_LISTED_BUFFER = false
-    local IS_SCRATCH_BUFFER = true -- must be scratch, otherwise have to save contents or trash it on exit
-    instance.buffer_number = vim.api.nvim_create_buf(NOT_LISTED_BUFFER, IS_SCRATCH_BUFFER)
+    -- * reuse existing buffer if one with the same name exists (prevents E95 on reopen)
+    if opts.buffer_name then
+        local existing_bufnr = find_buffer_by_name(opts.buffer_name)
+        if existing_bufnr and vim.api.nvim_buf_is_valid(existing_bufnr) then
+            instance.buffer_number = existing_bufnr
+        else
+            -- * create a new scratch buffer
+            local NOT_LISTED_BUFFER = false
+            local IS_SCRATCH_BUFFER = true
+            instance.buffer_number = vim.api.nvim_create_buf(NOT_LISTED_BUFFER, IS_SCRATCH_BUFFER)
+
+            if opts.filetype then
+                vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = instance.buffer_number })
+            end
+
+            vim.api.nvim_buf_set_name(instance.buffer_number, opts.buffer_name)
+        end
+    else
+        -- * create a new scratch buffer (no name)
+        local NOT_LISTED_BUFFER = false
+        local IS_SCRATCH_BUFFER = true
+        instance.buffer_number = vim.api.nvim_create_buf(NOT_LISTED_BUFFER, IS_SCRATCH_BUFFER)
+
+        if opts.filetype then
+            vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = instance.buffer_number })
+        end
+    end
 
     -- * lines to buffer
     if initial_lines then
         vim.api.nvim_buf_set_lines(instance.buffer_number, 0, -1, false, initial_lines)
-    end
-
-    if opts.filetype then
-        vim.api.nvim_set_option_value('filetype', opts.filetype, { buf = instance.buffer_number })
-    end
-
-    if opts.buffer_name then
-        vim.api.nvim_buf_set_name(instance.buffer_number, opts.buffer_name)
     end
 
     instance:open()
@@ -69,10 +101,19 @@ function FloatWindow:new(opts, initial_lines)
     return instance
 end
 
+--- Open (or reopen) the float window.
+--- If the window is already open, does nothing.
+--- If the window was closed but buffer exists, reopens it.
 function FloatWindow:open()
     if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
         return
     end
+
+    if not self.buffer_number or not vim.api.nvim_buf_is_valid(self.buffer_number) then
+        log:error("FloatWindow:open called with invalid buffer")
+        return
+    end
+
     local initial_config = self.window_config(self.opts)
     self.win_id = vim.api.nvim_open_win(self.buffer_number, true, initial_config)
 
@@ -95,6 +136,22 @@ function FloatWindow:open()
         end,
         once = true,
     })
+end
+
+--- Close the float window and delete its buffer.
+--- This fully cleans up the instance so it can be recreated fresh on next open().
+function FloatWindow:close()
+    -- * close window if valid
+    if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
+        vim.api.nvim_win_close(self.win_id, true)
+        self.win_id = nil
+    end
+
+    -- * delete buffer if valid (prevents E95 on next open)
+    if self.buffer_number and vim.api.nvim_buf_is_valid(self.buffer_number) then
+        pcall(vim.api.nvim_buf_delete, self.buffer_number, { force = true })
+        self.buffer_number = nil
+    end
 end
 
 ---@param title string
