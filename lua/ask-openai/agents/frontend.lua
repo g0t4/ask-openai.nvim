@@ -849,6 +849,7 @@ function AgentsFrontend.setup()
     vim.keymap.set('n', '<leader>al', AgentsFrontend.clear_chat_command, { noremap = true })
     vim.keymap.set('n', '<leader>af', AgentsFrontend.follow_up_command, { noremap = true })
     vim.keymap.set('n', '<leader>ao', AgentsFrontend.ensure_chat_window_is_open, { noremap = true })
+    vim.keymap.set('n', '<leader>ar', function() require("ask-openai.agents.viewer.session_restore_list"):open() end, { noremap = true })
 
     vim.api.nvim_create_user_command("AskDumpAgentTrace", ask_dump_agent_trace_command, {})
 
