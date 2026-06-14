@@ -87,6 +87,9 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "0136a4aa31976d7f7e35778c4a94356836e189ceb4f37ccf5fe3aed94dda9780",  # Fish syntax examples
     "b1b230c60a363b6e44b6135d15ff1e8d30e83df41d2adfd079d7209ab6e7234e",  # Fish syntax examples (todo is there a difference in how split sections is working that causes the whole match to be different than partial match for same section content?)... NBD just a possible thing to consider
     #
+    #
+    "b6726077e8204487d5b12facab182f5dc48b85def2dcf72987573cfab3599d22",  ## Fish Shell
+    #
     "511f32b9bf45f71b8a1a807d3636e9694c2c6ad13cc68166ca6741455eb72df7",  # General project code rules
     "8f9ce1c508b6ed7f217818da62222e65643092d1e679f31cb738153edec72cb0",  # General Code Preferences (FIM one + trailing \n\n) # TODO strip trail new lines before compute hash?
     "f2fea7d3d5637345a1862e068f59c3ac597bb70dbf95d30c32830b082f921cfc",  # General Code Preferences (latest in FIM so no \n\n)
