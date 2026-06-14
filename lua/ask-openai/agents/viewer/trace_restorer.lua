@@ -231,26 +231,78 @@ local function build_synthetic_message()
     }
 end
 
+--- Find the index (1-based) of the first assistant message in the messages array.
+--- Returns nil if no assistant message exists.
+---
+---@param messages table[]
+---@return integer|nil first_assistant_index
+local function find_first_assistant_message_index(messages)
+    for idx, msg in ipairs(messages) do
+        if msg.role == "assistant" then
+            return idx
+        end
+    end
+    return nil
+end
+
+--- Find the index (1-based) of the last user/developer message before first_assistant_index.
+--- Returns nil if no such message exists.
+---
+---@param messages table[]
+---@param first_assistant_index integer|nil
+---@return integer|nil last_user_before_first_assistant
+local function find_last_user_before_first_assistant(messages, first_assistant_index)
+    if not first_assistant_index then
+        return nil
+    end
+
+    -- Search backwards from just before the first assistant
+    for idx = first_assistant_index - 1, 1, -1 do
+        local role = messages[idx].role
+        if role == "user" or role == "developer" then
+            return idx
+        end
+        -- Stop if we hit another assistant (shouldn't happen before first_assistant_index)
+        if role == "assistant" then
+            break
+        end
+    end
+
+    return nil
+end
+
 --- Render a single message from the trace into the LinesBuilder.
 --- Handles system, user, assistant (with reasoning + tool calls), and tool result messages.
 ---
 ---@param lines LinesBuilder
 ---@param msg table -- message table from trace
 ---@param tool_results_by_id table<string, string>
-local function render_message(lines, msg, tool_results_by_id)
+---@param should_fold_content boolean -- if true, fold the content; if false, show unfolded
+local function render_message(lines, msg, tool_results_by_id, should_fold_content)
     local role = msg.role or "unknown"
 
-    -- * system messages: show as system prompt
+    -- * system messages: show as folded system prompt
     if role == "system" then
         lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
         lines:append_folded_styled_text("system\n" .. (msg.content or ""), "")
         return
     end
 
+    -- * developer messages: treat like system messages
+    if role == "developer" then
+        lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
+        lines:append_folded_styled_text("developer\n" .. (msg.content or ""), "")
+        return
+    end
+
     -- * user messages: show role header + content
     if role == "user" then
         lines:append_role_header("user")
-        lines:append_text(msg.content or "")
+        if should_fold_content then
+            lines:append_folded_styled_text(msg.content or "", "")
+        else
+            lines:append_text(msg.content or "")
+        end
         lines:append_blank_line()
         return
     end
@@ -309,6 +361,11 @@ end
 --- Clears the window first, then draws each message using the same formatters
 --- as real-time display (but with final/full message state).
 ---
+--- Fold strategy for initial messages (before first assistant):
+---   - All system/developer/user messages are folded individually
+---   - Exception: the very last user/developer message before the first assistant
+---     is shown unfolded (this is the actual prompt that triggered the response)
+---
 ---@param trace_path string -- path to the trace JSON file
 ---@return boolean success
 function M.restore_session(trace_path)
@@ -327,6 +384,12 @@ function M.restore_session(trace_path)
     -- * build tool result lookup before rendering
     local tool_results_by_id = build_tool_results_map(messages)
 
+    -- * find the first assistant message index (determines fold strategy)
+    local first_assistant_index = find_first_assistant_message_index(messages)
+
+    -- * find the last user/developer message before first assistant (unfold this one)
+    local unfold_user_index = find_last_user_before_first_assistant(messages, first_assistant_index)
+
     -- * ensure chat window is open
     local AgentsFrontend = require("ask-openai.agents.frontend")
     AgentsFrontend.ensure_chat_window_is_open()
@@ -340,9 +403,19 @@ function M.restore_session(trace_path)
     -- * build lines
     local lines = LinesBuilder:new(ns_id)
 
-    -- Render each message
-    for _, msg in ipairs(messages) do
-        render_message(lines, msg, tool_results_by_id)
+    -- Render each message with appropriate folding
+    for idx, msg in ipairs(messages) do
+        local role = msg.role or "unknown"
+
+        -- Determine if this message should be folded
+        local should_fold_content = true
+
+        -- User/developer messages before the first assistant are folded, except the last one
+        if idx < first_assistant_index and (role == "user" or role == "developer") then
+            should_fold_content = (idx ~= unfold_user_index)
+        end
+
+        render_message(lines, msg, tool_results_by_id, should_fold_content)
     end
 
     -- * apply to buffer
