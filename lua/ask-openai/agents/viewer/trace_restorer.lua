@@ -401,6 +401,143 @@ local function apply_marks_and_folds(bufnr, ns_id, lines)
     end
 end
 
+--- Convert raw trace messages (from JSON) to TxChatMessage objects.
+--- This is needed because the trace file contains raw message tables,
+--- but AgentTrace.messages expects TxChatMessage instances for follow-up.
+---
+---@param messages table[] -- raw message tables from trace
+---@return table tx_messages -- array of TxChatMessage objects
+local function convert_trace_messages_to_tx_messages(messages)
+    local TxChatMessage = require("ask-openai.agents.messages.tx")
+    local tx_messages = {}
+
+    for _, msg in ipairs(messages) do
+        local role = msg.role or "unknown"
+
+        if role == "system" then
+            table.insert(tx_messages, TxChatMessage:system(msg.content or ""))
+
+        elseif role == "user" then
+            table.insert(tx_messages, TxChatMessage:user(msg.content or ""))
+
+        elseif role == "assistant" then
+            -- Construct a TxChatMessage for assistant with reasoning and tool_calls
+            local tx_msg = TxChatMessage:new("assistant", msg.content or "")
+            tx_msg.reasoning_content = msg.reasoning_content or ""
+
+            if msg.tool_calls and #msg.tool_calls > 0 then
+                tx_msg.tool_calls = {}
+                for _, tc in ipairs(msg.tool_calls) do
+                    local func = tc["function"] or {}
+                    table.insert(tx_msg.tool_calls, {
+                        id = tc.id or "",
+                        type = tc.type or "function",
+                        ["function"] = {
+                            name = func.name or "",
+                            arguments = func.arguments or "",
+                        }
+                    })
+                end
+            end
+
+            -- Copy timings if present
+            if msg.timings then
+                tx_msg.timings = msg.timings
+            end
+
+            table.insert(tx_messages, tx_msg)
+
+        elseif role == "tool" then
+            -- Construct a TxChatMessage:tool_result from the tool_call_id and content
+            local tool_call_id = msg.tool_call_id or ""
+            local result_content = msg.content or ""
+
+            -- Parse the result content (typically MCP-style JSON)
+            local ok, decoded = pcall(vim.json.decode, result_content)
+            if not ok or type(decoded) ~= "table" then
+                decoded = { content = {} }
+            end
+
+            -- Create a synthetic ToolCall object that TxChatMessage:tool_result expects
+            local synthetic_tool_call = {
+                id = tool_call_id,
+                call_output = {
+                    result = decoded,
+                    isError = decoded.isError or false,
+                },
+            }
+
+            table.insert(tx_messages, TxChatMessage:tool_result(synthetic_tool_call))
+
+        else
+            -- Unknown role, just add as user message
+            table.insert(tx_messages, TxChatMessage:user(msg.content or ""))
+        end
+    end
+
+    return tx_messages
+end
+
+--- Build current request params for a follow-up after trace restore.
+--- Uses current model/tools settings (not from the original trace).
+---
+---@return table params -- request body params similar to a fresh request
+local function build_followup_params()
+    local api = require("ask-openai.api")
+    local config = require("ask-openai.config")
+    local tool_router = require("ask-openai.tools.router")
+
+    local model_name = api.get_agents_model()
+    local base_url = config.get_base_url(model_name)
+
+    -- Build tool definitions (same as a fresh request)
+    local tool_definitions, _ = tool_router.openai_tools(false)
+
+    -- Build params similar to ask_agent_command but without system message
+    local params = {
+        model = "",  -- irrelevant for llama-server
+        verbose = true,
+    }
+
+    if #tool_definitions > 0 then
+        params.tools = tool_definitions
+    end
+
+    return params, base_url
+end
+
+--- Set up AgentsFrontend for follow-up mode after restoring a trace.
+--- Converts trace messages to TxChatMessage objects and creates an AgentTrace
+--- instance with current model/tools params (not from the original trace).
+---
+---@param tx_messages table[] -- TxChatMessage objects from converted trace messages
+local function setup_trace_for_followup(tx_messages)
+    local AgentTrace = require("ask-openai.agents.trace")
+    local AgentsFrontend = require("ask-openai.agents.frontend")
+
+    -- Build current params (fresh, not from original trace)
+    local params, base_url = build_followup_params()
+
+    -- Create AgentTrace with old messages + current params
+    local new_trace = AgentTrace:new(params, base_url)
+    new_trace.messages = tx_messages
+
+    -- Set up AgentsFrontend for follow-up mode
+    AgentsFrontend.trace = new_trace
+
+    -- Mark the agent as running (for spinner)
+    AgentsFrontend.chat_window:mark_agent_running(true)
+    AgentsFrontend.chat_window:ensure_spinner_running("ready")
+
+    -- Show user role hint for follow-up
+    AgentsFrontend.show_user_role_as_follow_up_hint()
+
+    -- Set the offset for where streaming messages will be drawn
+    AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count() - 1
+
+    log:info("Trace restored and ready for follow-up with " .. #tx_messages .. " messages")
+end
+
 --- Render all messages from a trace file into the chat viewer window.
 --- Clears the window first, then draws each message using the same formatters
 --- as real-time display (but with final/full message state).
@@ -462,6 +599,9 @@ function M.restore_session(trace_path)
         render_message(lines, msg, tool_results_by_id, should_fold_content)
     end
 
+    -- * convert trace messages to TxChatMessage objects for follow-up
+    local tx_messages = convert_trace_messages_to_tx_messages(messages)
+
     -- * apply to buffer
     vim.schedule(function()
         if not AgentsFrontend.chat_window or not AgentsFrontend.chat_window.buffer_number then
@@ -480,6 +620,9 @@ function M.restore_session(trace_path)
 
         -- Scroll to top (user can scroll down)
         vim.api.nvim_win_set_cursor(0, { 1, 0 })
+
+        -- * set up trace for follow-up mode
+        setup_trace_for_followup(tx_messages)
 
         log:info("Restored " .. #messages .. " messages from trace: " .. trace_path)
     end)
