@@ -17,7 +17,7 @@ function Displayer:new(_current_accept, _current_cancel)
     self = setmetatable({}, Displayer)
     self._current_cancel = _current_cancel
     self._current_accept = _current_accept
-    self.window = WindowController:new_from_current_window()
+    self.window = WindowController:new_for_current_window()
     self.marks = ExtmarksSet:new(self.window:buffer().buffer_number, "AskRewriteExtmarks")
     self.error_marks = ExtmarksSet:new(self.window:buffer().buffer_number, "AskRewriteErrorExtmarks")
     self.removed_original_lines = false

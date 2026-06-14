@@ -1,12 +1,9 @@
 local BufferController0Indexed = require('ask-openai.rewrites.BufferController')
 
--- TODO! should AgentWindow be derived from WindowController0Indexed?
---   TODO! especially after buffer controllers are merged into one that is 0 indexed
-
 ---This entire class operates on 0-indexed row and column positions
----   or if that seems wrong I'll go to all 1-indexed
+---   if that seems wrong I'll go to all 1-indexed
 ---Also intended to hide away complexities in nvim_ apis
----  esp the need to track window ids, buffer #s, etc
+---  i.e. tracking window ids, buffer numbers
 ---@class WindowController0Indexed
 ---@field window_id integer
 local WindowController0Indexed = {}
@@ -19,10 +16,9 @@ function WindowController0Indexed:new(window_id)
     return self
 end
 
---- Looks up window id for current window
---- uses that to create a new WindowController
-function WindowController0Indexed:new_from_current_window()
-    return WindowController0Indexed:new(vim.api.nvim_get_current_win())
+function WindowController0Indexed:new_for_current_window()
+    local current_window_id = vim.api.nvim_get_current_win()
+    return WindowController0Indexed:new(current_window_id)
 end
 
 ---@return integer row, integer column # both 0-indexed
