@@ -12,7 +12,7 @@ from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.storage import load_all_datasets, Datasets
 from lsp.chunks.chunker import get_file_stat
 from lsp.fs import load_rag_config, Config
-from lsp.filetypes import EXTENSION_TO_FILETYPE
+from lsp.filetypes import resolve_filetype
 from index.stale import warn_about_stale_files
 
 logger = get_logger("validator")
@@ -81,9 +81,8 @@ class DatasetsValidator:
 
             filetype_counts = Counter()
             for file_path in out.splitlines():
-                ext = Path(file_path).suffix.lower().lstrip(".")
-                if ext:
-                    filetype = EXTENSION_TO_FILETYPE.get(ext, ext)
+                filetype = resolve_filetype(file_path)
+                if filetype:
                     filetype_counts[filetype] += 1
             return filetype_counts
 
