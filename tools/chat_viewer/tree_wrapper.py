@@ -100,7 +100,7 @@ class TreeWrapper(Tree):
         # btw Text == plain unless you pass a style arg
         return self.add(Text(text), **kwargs)
 
-    def add_markup(self, label: str, **kwargs) -> "TreeWrapper":
+    def add_with_markup(self, label: str, **kwargs) -> "TreeWrapper":
         """ this is purely for readability, to make it clear that the content should have markup rendered """
         return self.add(label, **kwargs)
 
@@ -148,12 +148,12 @@ class TreeWrapper(Tree):
             truncated_indicator = f"... ({truncated_lines} lines, {truncated_chars} chars)"
             # PRN truncate on char count too? really long lines of output can be a problem too (measure length of first X lines and if super long then take char_max too... else maybe allow more lines than I do now within reason)
             self.add_no_markup(initial)
-            self.add_markup(f"[bold yellow]{truncated_indicator}[/]")
+            self.add_with_markup(f"[bold yellow]{truncated_indicator}[/]")
         else:
             self.add_no_markup(text)
 
     def add_section(self, title: str, value: Any):
-        section = self.add_markup(f"[blue]{title}[/]:")
+        section = self.add_with_markup(f"[blue]{title}[/]:")
         if isinstance(value, str):
             section.show_truncated_string(value)
         else:
@@ -170,7 +170,7 @@ class TreeWrapper(Tree):
         return self
 
     def add_error(self, message: str, error: Exception, context: Any | None = None) -> "TreeWrapper":
-        node = self.add_markup(f"[red bold]{message}[/]")
+        node = self.add_with_markup(f"[red bold]{message}[/]")
         node.add_pretty(error)
         node.add_no_markup(traceback.format_exc())
         return node

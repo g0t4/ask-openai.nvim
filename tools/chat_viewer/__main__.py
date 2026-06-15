@@ -162,7 +162,7 @@ def print_raw_fim_diff(raw_prompt: str, completion: str) -> None:
     # FYI not a fan of both tree + console.print/rule uses... usually I like trees when I defer print until full output is built... meh for now
     root = TreeWrapper.hidden_root()
     if before_omitted or after_omitted:
-        root.add_markup("[dim] • Showing 10 lines of context before/after[/]")
+        root.add_with_markup("[dim] • Showing 10 lines of context before/after[/]")
 
     # completions are always INSERTIONS only... so just mark it as green! no need to run a diff
     final_text = Text(prefix) + Text(completion, style="bold italic green") + Text(suffix)
@@ -283,7 +283,7 @@ def show_unapproved_auto_rag_matches(content: str) -> bool:
 
     # FYI no indentation with RAG matches so just use a root tree and everything is top level (headers differentiate sections)
     root = TreeWrapper.hidden_root()
-    root.add_markup("[italic]Detected Semantic Grep matches... excluding based on file path[/]")
+    root.add_with_markup("[italic]Detected Semantic Grep matches... excluding based on file path[/]")
 
     for section in split_h2_markdown_sections(content):
         lines = section.splitlines()
@@ -304,7 +304,7 @@ def show_unapproved_auto_rag_matches(content: str) -> bool:
         start_line = match.group(2)
         end_line = match.group(3)
 
-        root.add_markup(f"## MATCH [bold]{file_path}[/]:{start_line}-{end_line}")
+        root.add_with_markup(f"## MATCH [bold]{file_path}[/]:{start_line}-{end_line}")
 
         ext = os.path.splitext(file_path)[1].lstrip('.').lower()
         root.add(_syntax(snippet, ext or "text"))
@@ -509,7 +509,7 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
             header += f": [bold]{file}[/]"
             if isinstance(start_line_base0, int) and isinstance(end_line_base0, int):
                 header += f":{start_line_base0+1}-{end_line_base0+1}"
-        root.add_markup(header)
+        root.add_with_markup(header)
         # root.add_pretty(match) # useful for troubleshooting... dump it all, beautifully!
 
         text = match.get("text", "")
@@ -518,7 +518,7 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
             # CAREFUL this uses pygment to syntax highlight (color)... and I am opting into defaults whereas my tree.add_syntax() sets a diff theme
             root.add(_syntax(text, ext or "text"))
         else:
-            root.add_markup(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]") \
+            root.add_with_markup(f"[red bold]UNEXPECTED 'text' field type (rag matches s/b str only):[/]") \
                 .add(_pretty_no_truncate(text))
         root.blank_line()
 
