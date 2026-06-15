@@ -66,7 +66,7 @@ def load_config(yaml_text: str) -> Config:
     raw = yaml.safe_load(yaml_text)
 
     _enabled = raw.get("enabled") if raw.get("enabled") is not None else DEFAULT_RAG_ENABLED
-    _include = raw.get("include") or DEFAULT_INCLUDED_FILETYPES
+    _include = raw.get("include_filetypes") or raw.get("include") or DEFAULT_INCLUDED_FILETYPES
     _include = _map_included_file_extensions_to_filetypes(_include)
 
     if raw.get("global_languages"):
