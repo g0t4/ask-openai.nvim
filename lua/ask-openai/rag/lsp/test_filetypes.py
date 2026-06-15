@@ -132,12 +132,11 @@ class TestResolveFiletype:
         assert resolve_filetype("Dockerfile.j2") == "docker"
 
     def test_shebang_overrides_extension(self, tmp_path):
-        """If a file has an extension, shebang should be ignored."""
-        # TODO!FILETYPES do I want to allow shebang to win out?
+        """ shebang wins over file extension """
         f = tmp_path / "weird.txt"
         f.write_text("#!/usr/bin/env python3\nprint('hi')\n")
         # .txt is not in our mapping, so it returns "txt"
-        assert resolve_filetype(f) == "txt"
+        assert resolve_filetype(f) == "py"
 
     def test_filename_lookup_for_extensionless(self, tmp_path):
         """Extensionless known filename should resolve via filename mapping."""

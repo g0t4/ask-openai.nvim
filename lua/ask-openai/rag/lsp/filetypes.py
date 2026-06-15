@@ -371,13 +371,18 @@ def resolve_filetype(
 
     file_path = Path(file_path)
 
-    # --- * basename lookup * ---
+    # --- * basename * ---
     basename = file_path.name
     filetype = BASENAME_TO_FILETYPE.get(basename)
     if filetype is not None:
         return filetype
 
-    # --- Layer 1: Extension mapping ---
+    # --- * shebang * ---
+    filetype = _detect_filetype_from_shebang(file_path)
+    if filetype is not None:
+        return filetype
+
+    # --- * file extension * ---
     ext = file_path.suffix.lstrip(".").lower()
     if ext:
         filetype = EXTENSION_TO_FILETYPE.get(ext)
@@ -386,11 +391,6 @@ def resolve_filetype(
         # Extension exists but isn't mapped → use it as-is (may be indexed
         # under its own name if included in config.include)
         return ext
-
-    # --- Layer 3: Shebang fallback ---
-    filetype = _detect_filetype_from_shebang(file_path)
-    if filetype is not None:
-        return filetype
 
     # TODO! strip out vim filetype mapping entirely, I want none of this coupled to VIM
     # --- Fallback: vim_filetype ---
