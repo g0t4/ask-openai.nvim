@@ -25,7 +25,10 @@ class TestExtensionMapping:
 
 
 class TestShebangDetection_InResolveFiletype:
-    """Test shebang-based filetype detection for extensionless files."""
+    """Test shebang-based filetype detection for extensionless files.
+    """
+    # FYI many technically duplicated tests for sheangs,
+    # - leave them so we have confidence in COMMON shebangs
 
     def test_unmapped_exectuable_returns_exectuable_itself(self, tmp_path):
         f = tmp_path / "bar"
