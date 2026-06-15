@@ -383,18 +383,6 @@ def resolve_filetype(file_path: str | Path) -> Optional[str]:
 
     return ext
 
-def get_filetype_for_extension(ext: str) -> Optional[str]:
-    """Get the canonical filetype for a raw extension.
-
-    Args:
-        ext: Raw extension without leading dot (e.g. "yml").
-
-    Returns:
-        Canonical filetype, or the extension itself if no mapping exists.
-    """
-    ext = ext.lstrip(".").lower()
-    return EXTENSION_TO_FILETYPE.get(ext, ext)
-
 
 # Matches both:
 #   #!/usr/bin/env python3

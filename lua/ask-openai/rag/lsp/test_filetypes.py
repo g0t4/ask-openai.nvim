@@ -11,17 +11,8 @@ from lsp.filetypes import (
     SHEBANG_TO_FILETYPE,
     DEFAULT_INCLUDED_FILETYPES,
     resolve_filetype,
-    get_filetype_for_extension,
     get_extensions_for_filetype,
 )
-
-
-class TestExtensionMapping:
-
-    def test_unknown_extension_returns_itself(self):
-        """Unmapped extensions should pass through as-is."""
-        assert get_filetype_for_extension("xyz") == "xyz"
-        assert get_filetype_for_extension("XYZ") == "xyz"  # case insensitive
 
 
 class TestShebangDetection_EdgeCases_InResolveFiletype:

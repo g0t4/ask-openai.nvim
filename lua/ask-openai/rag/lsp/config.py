@@ -8,7 +8,6 @@ from lsp.filetypes import (
     DEFAULT_INCLUDED_FILETYPES,
     EXTENSION_TO_FILETYPE,
     BASENAME_TO_FILETYPE,
-    get_filetype_for_extension,
     resolve_filetype,
 )
 
@@ -25,7 +24,9 @@ def _map_included_file_extensions_to_filetypes(raw_includes: set[str]) -> set[st
     new-style canonical filetypes (javascript, typescript, yaml, shell).
     Unmapped extensions pass through as-is. Deduplicates results.
     """
-    filetypes = [get_filetype_for_extension(item) or item for item in raw_includes]
+    # include is inteded as extensions/filetypes... so map extensions to filetypes too...
+    # PRN rename to include_filetypes or smth else to convey post extensions design?
+    filetypes = [resolve_filetype("." + item) or item for item in raw_includes]
     return set(filetypes)
 
 
