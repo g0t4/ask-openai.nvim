@@ -166,8 +166,8 @@ class TestResolveFiletype:
         f = Path("/home/user/.bashrc")
         # .bashrc is in FILENAME_TO_FILETYPE, not extension-based
         # But as a path with no extension... wait, it has no extension
-        assert resolve_filetype(f) == "shell"
+        assert resolve_filetype(f) == "bash"
 
     def test_path_with_zsh_extension(self):
         f = Path("/home/user/.zshrc")
-        assert resolve_filetype(f) == "shell"
+        assert resolve_filetype(f) == "zsh"
