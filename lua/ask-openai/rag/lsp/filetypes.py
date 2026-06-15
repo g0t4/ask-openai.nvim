@@ -31,6 +31,17 @@ EXTENSION_TO_FILETYPE: dict[str, str] = {
     "bash": "bash",
     "zsh": "zsh",
     "fish": "fish",
+    "bashrc": "bash",
+    "bash_profile": "bash",
+    "bash_aliases": "bash",
+    "zshrc": "zsh",
+    "zprofile": "zsh",
+    "zshenv": "zsh",
+    "zlogin": "zsh",
+    "zlogout": "zsh",
+    "zsh_aliases": "zsh",
+    "profile": "bash",
+    "inputrc": "bash",
 
     # --- C family ---
     "c": "c",
@@ -211,17 +222,6 @@ BASENAME_TO_FILETYPE: dict[str, str] = {
     "Makefile": "make",
     "makefile": "make",
     "GNUmakefile": "make",
-    ".bashrc": "bash",
-    ".bash_profile": "bash",
-    ".bash_aliases": "bash",
-    ".zshrc": "zsh",
-    ".zprofile": "zsh",
-    ".zshenv": "zsh",
-    ".zlogin": "zsh",
-    ".zlogout": "zsh",
-    ".zsh_aliases": "zsh",
-    ".profile": "bash",
-    ".inputrc": "bash",
     #
     # TODO consider another mapping dimension for treesitter parser... only set if overriding default which IIAC now uses family?
     #  TODO i.e. here fish_history is actually a yaml file... so I'd need to use a yaml parser... even though I want the file indexed along with fish files
@@ -238,14 +238,6 @@ BASENAME_TO_FILETYPE: dict[str, str] = {
     "compose.yaml": "docker",
     "compose.yml": "docker",
     "Dockerfile.j2": "docker",
-
-    # --- YAML / JSON ---
-    ".editorconfig": "ini",
-    ".env": "ini",
-    ".prettierrc": "json",
-    ".eslintrc": "json",
-    ".babelrc": "json",
-    ".jshintrc": "json",
 
     # # --- Python --- (none of these are not py?)
     # "setup.py": "py",
@@ -280,9 +272,6 @@ BASENAME_TO_FILETYPE: dict[str, str] = {
     "package.json": "json",
     # "package-lock.json": "json",
     # "yarn.lock": "text",
-    ".npmrc": "ini",
-    # ".nvmrc": "text", # no idea what this format is actually... and text is not a useful grouping IMO
-    # ".node-version": "text",
 
     # --- Terraform ---
     # ".terraform.lock.hcl": "hcl", # ignore lock files
@@ -327,6 +316,17 @@ SHEBANG_TO_FILETYPE: dict[str, str] = {
 
     # --- Node.js ---
     "node": "javascript",
+
+    # --- YAML / JSON ---
+    "editorconfig": "ini",
+    "env": "ini",
+    "prettierrc": "json",
+    "eslintrc": "json",
+    "babelrc": "json",
+    "jshintrc": "json",
+    "npmrc": "ini",
+    # "nvmrc": "text", # no idea what this format is actually... and text is not a useful grouping IMO
+    # "node-version": "text",
 
     # --- Shell family ---
     "sh": "bash",
