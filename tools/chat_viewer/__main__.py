@@ -565,7 +565,9 @@ def _add_mcp_result(root: TreeWrapper, content: Any) -> bool:
         if item_type == "text":
             item_text = yank(item, "text")
             item_text = insert_newlines(item_text)
-            root.add(item_text)
+            # recognizing markup on tool output is a disaster! that output is never intended for rich printing!
+            # you could add tool specific detection or output guessing for syntax highlighting but not worth it for now
+            root.add_no_markup(item_text)
 
     return True
 
