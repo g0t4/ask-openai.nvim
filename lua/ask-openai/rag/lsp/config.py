@@ -26,18 +26,28 @@ def _map_allowed_file_extensions_to_semantic_domains(raw_includes: set[str]) -> 
 
     This is not some legacy hack/conversion... no, it is also useful to specify a file extension and not worry about what the exact domain is...
     - i.e. I know `.rs` is rust... so why bother remembering if I set `rust` or `rs` for the semantic domain's name?
+        also why need to set all the extensions for a domain... domain automatically includes all relevant extensions (and other factors)
       in fact, if I use extensions, I can change the domain names and not need to update any config files
       file extension is definitley a more stable interface!
     """
     domains_from_extensions: set[str] = set()
     verbatim_domains: set[str] = set()
 
-    for item in raw_includes:
-        resolved = resolve_semantic_domain("." + item)
-        if resolved is not None:
-            domains_from_extensions.add(resolved)
+    for include in raw_includes:
+        # bypass resolver b/c we only map extension to domain
+        if include in EXTENSION_TO_SEMANTIC_DOMAIN:
+            # btw this assumes you don't criss-cross extensions and domains...
+            # IOTW if there's a mapping then it's an extension
+            # and you wouldn't have a domain match an extension that maps to a different domain
+            # say...
+            #   extension .foo => foobar
+            #   extension .baz => foo
+            #   here we have an indeterminent case b/c the extension matches a different domain (do not do that!)
+            domain = EXTENSION_TO_SEMANTIC_DOMAIN[include]
+            domains_from_extensions.add(domain)
         else:
-            verbatim_domains.add(item)
+            # assume it is a domain if no extension
+            verbatim_domains.add(include)
 
     unified_domains = domains_from_extensions | verbatim_domains
     logger.info(f"Domains from extensions: {sorted(domains_from_extensions)}")
