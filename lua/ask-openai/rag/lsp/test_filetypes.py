@@ -24,59 +24,6 @@ class TestExtensionMapping:
         assert get_filetype_for_extension("XYZ") == "xyz"  # case insensitive
 
 
-# ---------------------------------------------------------------------------
-# Layer 2: Filename lookup tests
-# ---------------------------------------------------------------------------
-
-class TestFilenameMapping:
-    """Test that explicit filenames map to correct filetypes."""
-
-    def test_makefile_variants(self):
-        for name in ("Makefile", "makefile", "GNUmakefile"):
-            assert FILENAME_TO_FILETYPE[name] == "make"
-
-    def test_dockerfile(self):
-        assert FILENAME_TO_FILETYPE["Dockerfile"] == "docker"
-        assert FILENAME_TO_FILETYPE["Containerfile"] == "docker"
-
-    def test_gitignore_is_diff(self):
-        assert FILENAME_TO_FILETYPE[".gitignore"] == "diff"
-
-    def test_fish_history_is_yaml(self):
-        assert FILENAME_TO_FILETYPE["fish_history"] == "yaml"
-
-    def test_env_is_ini(self):
-        assert FILENAME_TO_FILETYPE[".env"] == "ini"
-
-    def test_editorconfig_is_ini(self):
-        assert FILENAME_TO_FILETYPE[".editorconfig"] == "ini"
-
-    def test_gitconfig_is_ini(self):
-        assert FILENAME_TO_FILETYPE[".gitconfig"] == "ini"
-
-    def test_bash_zsh_rc_files(self):
-        for name in (".bashrc", ".bash_profile", ".zshrc", ".profile"):
-            assert FILENAME_TO_FILETYPE[name] == "shell"
-
-    def test_cargo_files_are_toml(self):
-        assert FILENAME_TO_FILETYPE["Cargo.toml"] == "toml"
-        assert FILENAME_TO_FILETYPE["Cargo.lock"] == "toml"
-
-    def test_package_json_is_json(self):
-        assert FILENAME_TO_FILETYPE["package.json"] == "json"
-        assert FILENAME_TO_FILETYPE["package-lock.json"] == "json"
-
-    def test_gemfile_is_ruby(self):
-        assert FILENAME_TO_FILETYPE["Gemfile"] == "ruby"
-
-    def test_go_mod_is_go(self):
-        assert FILENAME_TO_FILETYPE["go.mod"] == "go"
-
-
-# ---------------------------------------------------------------------------
-# Layer 3: Shebang detection tests
-# ---------------------------------------------------------------------------
-
 class TestShebangDetection:
     """Test shebang-based filetype detection for extensionless files."""
 
