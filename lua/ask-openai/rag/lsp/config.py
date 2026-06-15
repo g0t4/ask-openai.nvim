@@ -29,14 +29,8 @@ def _include_filetypes(raw_includes: list[str]) -> list[str]:
     new-style canonical filetypes (javascript, typescript, yaml, shell).
     Unmapped extensions pass through as-is. Deduplicates results.
     """
-    seen = set()
-    normalized = []
-    for item in raw_includes:
-        filetype = get_filetype_for_extension(item) or item
-        if filetype not in seen:
-            seen.add(filetype)
-            normalized.append(filetype)
-    return normalized
+    normalized = [get_filetype_for_extension(item) or item for item in raw_includes]
+    return list(set(normalized))
 
 
 @dataclass
