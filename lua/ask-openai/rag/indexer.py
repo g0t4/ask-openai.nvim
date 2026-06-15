@@ -23,11 +23,17 @@ from lsp.storage import Chunk, FileStat, load_prior_data
 from lsp.chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
 from lsp.config import Config, load_config
 from lsp.ignores import is_ignored_allchecks
+from lsp.filetypes import (
+    EXTENSION_TO_FILETYPE,
+    get_extensions_for_filetype,
+    resolve_filetype,
+)
 from lsp import fs
 
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False
 STOP_ON_FAILURE = True
+
 
 @dataclass
 class FilesDiff:
@@ -36,6 +42,7 @@ class FilesDiff:
     deleted: Set[str]
     not_changed: Set[str]
 
+
 @dataclass
 class ProgramArgs:
     verbose: bool
@@ -43,13 +50,15 @@ class ProgramArgs:
     in_githook: bool
     rebuild: bool
     level: int
-    only_extension: str | None = None
+    only_filetype: str | None = None
+
 
 def trash_dir(directory):
     directory = Path(directory)
     if not directory.exists():
         return
     subprocess.run(["trash", directory], check=IGNORE_FAILURE)
+
 
 class IncrementalRAGIndexer:
 
@@ -74,34 +83,33 @@ class IncrementalRAGIndexer:
             return
 
         included = self.config.include
-        if self.program_args and self.program_args.only_extension:
-            included = [self.program_args.only_extension]
-            logger.info(f"Indexing only extension: {included[0]}")
+        if self.program_args and self.program_args.only_filetype:
+            included = [self.program_args.only_filetype]
+            logger.info(f"Indexing only filetype: {included[0]}")
 
-        for file_extension in included:
-            await self.build_index(file_extension)
-        self.flag_unindexed_extensions_with_file_counts(included)
-        self.trash_vestigial_extension_indexes(set(included))
+        for filetype in included:
+            await self.build_index(filetype)
+        self.flag_unindexed_filetypes_with_file_counts(included)
+        self.trash_vestigial_filetype_indexes(set(included))
         await signal_hotpath_done_in_background()
 
-    def trash_vestigial_extension_indexes(self, configured_extensions: set[str]):
+    def trash_vestigial_filetype_indexes(self, configured_filetypes: set[str]):
         rag_dir_dirs = [p for p in self.dot_rag_dir.iterdir() if p.is_dir()]
-        indexed_extensions = {d.name for d in rag_dir_dirs}
-        vestigial_extensions = indexed_extensions - configured_extensions
+        indexed_filetypes = {d.name for d in rag_dir_dirs}
+        vestigial_filetypes = indexed_filetypes - configured_filetypes
 
-        if not any(vestigial_extensions):
+        if not any(vestigial_filetypes):
             return
 
-        # logger.info(f'configured:\n  {sorted(configured_extensions)}')
-        # logger.info(f'indexed:\n  {sorted(indexed_extensions)}')
-        logger.warn(f'FYI found {vestigial_extensions=}, removing...')
+        logger.warn(f'FYI found {vestigial_filetypes=}, removing...')
 
-        for name in vestigial_extensions:
-            extension_dir = self.dot_rag_dir / name
-            logger.warn(f"Removing vestigial rag dir: {extension_dir}")
-            trash_dir(extension_dir)
+        for name in vestigial_filetypes:
+            filetype_dir = self.dot_rag_dir / name
+            logger.warn(f"Removing vestigial rag dir: {filetype_dir}")
+            trash_dir(filetype_dir)
 
-    def flag_unindexed_extensions_with_file_counts(self, index_languages: list[str]):
+    def flag_unindexed_filetypes_with_file_counts(self, index_filetypes: list[str]):
+        """Warn about filetypes present in the repo but not being indexed."""
 
         cmd = ["fish", "-c", f"fd . {self.source_code_dir} --exclude='\\.ctags\\.d' --exclude='\\.rag' --exec basename"]
         logger.debug("warn cmd", cmd)
@@ -113,58 +121,87 @@ class IncrementalRAGIndexer:
         )
         basenames = result.stdout.strip().splitlines()
 
-        ignore_files = ["ctags", "ctags.d"]
+        ignore_files = {"ctags", "ctags.d"}
 
-        extensions = [basename.split(".")[-1] \
-            for basename in basenames \
-            if basename and "." in basename \
-            and basename not in ignore_files
-        ]
+        # Resolve each basename to its filetype
+        filetypes: list[str] = []
+        for basename in basenames:
+            if not basename or basename in ignore_files or "." not in basename:
+                continue
+            ext = basename.rsplit(".", 1)[-1]
+            filetype = EXTENSION_TO_FILETYPE.get(ext, ext)
+            filetypes.append(filetype)
 
         import itertools
-        unindexed_extensions = [(ext, len(list(group))) \
-            for ext, group in itertools.groupby(sorted(extensions)) \
-            if ext not in index_languages
+        unindexed_filetypes = [(ft, len(list(group))) \
+            for ft, group in itertools.groupby(sorted(filetypes)) \
+            if ft not in index_filetypes
         ]
 
-        # TODO pair with an ignore style file for what not to index in a given repo
-
-        # require at least 2 of a file before warning
-        #   within one file you don't need RAG for context :)
-        noteworthy_extensions = [ \
-            f"{ext}={count}" \
-            for ext, count in unindexed_extensions \
+        noteworthy_filetypes = [ \
+            f"{ft}={count}" \
+            for ft, count in unindexed_filetypes \
             if count > 1
         ]
 
-        if noteworthy_extensions:
-            logger.debug(f"Found unindexed extensions: {' '.join(noteworthy_extensions)}")
+        if noteworthy_filetypes:
+            logger.debug(f"Found unindexed filetypes: {' '.join(noteworthy_filetypes)}")
 
-    def get_files_diff(self, language_extension: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
-        """Split files into: changed (added/updated), unchagned, deleted"""
+    def _build_fd_glob_for_filetype(self, filetype: str) -> str:
+        """Build an fd glob pattern matching all extensions for a given filetype.
 
-        # PRN add in gitignore detection, right now I am using fd so I s/b mostly fine, still might want explicit checks here too
-        #   use whatever I come up with from LS's text document events to filter... i.e. files in a .venv that I open (F12)
-        #    though that again isn't an issue for this part of indexing
-        # PRN add .ask.config or similar w/ ignore section to block things like manual_prompting folder! in ask-openai repo!
+        e.g. filetype "yaml" → ".*\\.(yaml|yml)$"
+             filetype "py" → ".*\\.py$"
+             filetype "javascript" → ".*\\.(js|jsx)$"
+        """
+        extensions = sorted(get_extensions_for_filetype(filetype))
+        if len(extensions) == 1:
+            return f".*\\\\.{extensions[0]}$"
+        # Multiple extensions → alternation group
+        ext_group = "|".join(extensions)
+        return f".*\\\\.({ext_group})$"
 
-        # * current files
-        cmd = ["fd", f".*\\.{language_extension}$", str(self.source_code_dir), "--absolute-path", "--type", "f"]
-        logger.debug("current files cmd", cmd)
-        result = subprocess.run(
-            cmd,
+    def get_files_diff(self, filetype: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
+        """Split files into: changed (added/updated), unchanged, deleted"""
+
+        # * Find files with matching extensions via fd
+        glob_pattern = self._build_fd_glob_for_filetype(filetype)
+        cmd_ext = ["fd", glob_pattern, str(self.source_code_dir), "--absolute-path", "--type", "f"]
+        logger.debug(f"extension files cmd: {cmd_ext}")
+        result_ext = subprocess.run(
+            cmd_ext,
             stdout=subprocess.PIPE,
             text=True,
             check=True,
         )
-        current_path_strs = set(result.stdout.strip().splitlines())
+        current_path_strs = set(result_ext.stdout.strip().splitlines())
+
+        # * Also find extensionless files that map to this filetype
+        #   (Makefile → make, deploy → shell via shebang, etc.)
+        cmd_all = ["fd", ".", str(self.source_code_dir), "--absolute-path", "--type", "f"]
+        logger.debug(f"all files cmd: {cmd_all}")
+        result_all = subprocess.run(
+            cmd_all,
+            stdout=subprocess.PIPE,
+            text=True,
+            check=True,
+        )
+        all_files = result_all.stdout.strip().splitlines()
+
+        for file_path_str in all_files:
+            if file_path_str in current_path_strs:
+                continue  # already found via extension
+            resolved = resolve_filetype(file_path_str)
+            if resolved == filetype:
+                current_path_strs.add(file_path_str)
+                logger.debug(f"[green]Extensionless file matched filetype {filetype}: {file_path_str}")
 
         # * ignored files
         ignored_path_strs: Set[str] = set()
         for path_str in current_path_strs:
             if is_ignored_allchecks(path_str, self.config, self.source_code_dir):
                 ignored_path_strs.add(path_str)
-        if (len(ignored_path_strs) > 0):
+        if len(ignored_path_strs) > 0:
             logger.info(f"Ignoring files ({len(ignored_path_strs)}):\n    {'\n    '.join(ignored_path_strs)}")
         current_path_strs -= ignored_path_strs
 
@@ -249,12 +286,12 @@ class IncrementalRAGIndexer:
 
         return index
 
-    async def build_index(self, language_extension: str = "lua"):
-        """Build or update the RAG index incrementally"""
+    async def build_index(self, filetype: str = "lua"):
+        """Build or update the RAG index incrementally for a given filetype."""
 
-        prior = load_prior_data(self.dot_rag_dir, language_extension)
+        prior = load_prior_data(self.dot_rag_dir, filetype)
 
-        paths = self.get_files_diff(language_extension, prior.stat_by_path)
+        paths = self.get_files_diff(filetype, prior.stat_by_path)
 
         # TODO add test to assert delete last file is fine and wipes the data set
 
@@ -296,8 +333,8 @@ class IncrementalRAGIndexer:
         if index is None:
             return
 
-        # Save everything
-        index_dir = self.dot_rag_dir / language_extension
+        # Save everything under the filetype key
+        index_dir = self.dot_rag_dir / filetype
         index_dir.mkdir(exist_ok=True, parents=True)
 
         faiss.write_index(index, str(index_dir / "vectors.index"))
@@ -307,8 +344,8 @@ class IncrementalRAGIndexer:
         with logger.timer("Save chunks"):
             all_chunks_by_file = not_changed_chunks_by_file.copy()
             all_chunks_by_file.update(updated_chunks_by_file)
-            logger.pp_debug("all_chunks_by_file", all_chunks_by_file)
-            logger.pp_debug("all_stat_by_path", all_stat_by_path)
+            # logger.pp_debug("all_chunks_by_file", all_chunks_by_file)
+            # logger.pp_debug("all_stat_by_path", all_stat_by_path)
 
         with logger.timer("Save chunks"):
             write_json(all_chunks_by_file, index_dir / "chunks.json")
@@ -322,6 +359,7 @@ class IncrementalRAGIndexer:
         if paths.deleted:
             logger.debug(f"[green]Removed {len(paths.deleted)} deleted files")
 
+
 async def main():
     from lsp.logs import logging_fwk_to_console
 
@@ -331,7 +369,7 @@ async def main():
         parser.add_argument("--info", action="store_true", help="Enable info logging")
         parser.add_argument("--rebuild", action="store_true", help="Rebuild index")
         parser.add_argument("--githook", action="store_true", help="Run in git hook mode")
-        parser.add_argument("--only-extension", type=str, help="Only process files with the specified extension")
+        parser.add_argument("--only-filetype", type=str, help="Only process files with the specified filetype")
 
         args = parser.parse_args()
 
@@ -341,7 +379,7 @@ async def main():
             in_githook=args.githook,
             rebuild=args.rebuild,
             level=logging.WARNING,
-            only_extension=args.only_extension,
+            only_filetype=args.only_filetype,
         )
         if args.githook:
             level = logging.INFO
@@ -385,6 +423,7 @@ async def main():
         fs.dot_rag_dir = dot_rag_dir
 
         await indexer.main()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

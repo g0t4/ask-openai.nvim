@@ -12,9 +12,11 @@ from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.storage import load_all_datasets, Datasets
 from lsp.chunks.chunker import get_file_stat
 from lsp.fs import load_rag_config, Config
+from lsp.filetypes import EXTENSION_TO_FILETYPE
 from index.stale import warn_about_stale_files
 
 logger = get_logger("validator")
+
 
 class DatasetsValidator:
 
@@ -23,11 +25,6 @@ class DatasetsValidator:
         self.any_problems = False
 
     def validate_datasets(self):
-        # PRN rag_stats command?
-        #   how many are ts_chunks, sliding window, uncovered code, etc
-        #   show line count stats (esp ts_chunks and uncovered code derived chunks)
-        #   token count stats (per chunk)
-
         for dataset in self.datasets.all_datasets.values():
             any_problem_with_this_dataset = False
 
@@ -65,8 +62,6 @@ class DatasetsValidator:
 
             if any_problem_with_this_dataset:
                 logger.info(f"{num_vectors_based_on_ntotal=}")
-
-                # look for mismatch in datasets (i.e. missing chunks or vectors for old chunks)
                 logger.info(f'{num_vectors_based_on_ids=} {num_unique_ids_based_on_ids=}')
                 logger.info(f'{num_chunks_based_on_chunks=}')
 
@@ -77,59 +72,57 @@ class DatasetsValidator:
         else:
             logger.debug("[bold green]ALL CHECKS PASS!")
 
-    def warn_about_unindexed_languages(self, datasets: Datasets) -> None:
+    def warn_about_unindexed_filetypes(self, datasets: Datasets) -> None:
+        """Warn about filetypes with many files that aren't indexed."""
 
-        def find_extensions_in_cwd():
-            fd_command = ["fd", "--type", "file"]  # `fd` respects ignores
+        def find_filetypes_in_cwd():
+            fd_command = ["fd", "--type", "file"]
             out = subprocess.check_output(fd_command, text=True)
-            # PRN git ls-files or other fallback
 
-            extension_counts = Counter()
+            filetype_counts = Counter()
             for file_path in out.splitlines():
-                extension = Path(file_path).suffix.lower().lstrip(".")
-                if extension:
-                    extension_counts[extension] += 1
-            return extension_counts
+                ext = Path(file_path).suffix.lower().lstrip(".")
+                if ext:
+                    filetype = EXTENSION_TO_FILETYPE.get(ext, ext)
+                    filetype_counts[filetype] += 1
+            return filetype_counts
 
-        extension_counts = find_extensions_in_cwd()
+        filetype_counts = find_filetypes_in_cwd()
 
         EXTENSION_COUNT_THRESHOLD = 10
-        frequent_extensions = {extension for extension, count in extension_counts.items() if count > EXTENSION_COUNT_THRESHOLD}
-        indexed_extensions = datasets.get_indexed_extensions()
-        missing_extensions = frequent_extensions - indexed_extensions
+        frequent_filetypes = {ft for ft, count in filetype_counts.items() if count > EXTENSION_COUNT_THRESHOLD}
+        indexed_filetypes = datasets.get_indexed_filetypes()
+        missing_filetypes = frequent_filetypes - indexed_filetypes
 
-        if missing_extensions:
-            missing_counts = {extension: extension_counts[extension] for extension in missing_extensions}
-            logger.debug("Found prominent, unindexed extensions: " + ", ".join( \
-                f"{extension}={count}" for extension, count in missing_counts.items()))
+        if missing_filetypes:
+            missing_counts = {ft: filetype_counts[ft] for ft in missing_filetypes}
+            logger.debug("Found prominent, unindexed filetypes: " + ", ".join( \
+                f"{ft}={count}" for ft, count in missing_counts.items()))
         else:
-            logger.debug("All good, no missing extensions, you lucky motherf***er")
+            logger.debug("All good, no missing filetypes, you lucky motherf***er")
 
-    def compare_config_vs_indexed_extensions(self, datasets: Datasets, config: Config) -> None:
-        # FYI IIRC validate was not initially intended to reconcile config vs actual...
-        # so this config compare might not fit as-is... might need more changes to dataset compares...
-        # just heads up, IIRC, I am materially altering the purpose of this tool and might want to review all of its code to ensure smth isn't amiss
+    def compare_config_vs_indexed_filetypes(self, datasets: Datasets, config: Config) -> None:
+        """Compare configured filetypes against what's actually indexed on disk."""
 
-        present_extensions = set(datasets.all_datasets.keys())
-        # print(f'{sorted(present_extensions)=}')
-        configured_extensions = set(config.include)
-        # print(f'{sorted(configured_extensions)=}')
+        present_filetypes = set(datasets.all_datasets.keys())
+        configured_filetypes = set(config.include)
 
-        extra_extensions = present_extensions - configured_extensions
-        if extra_extensions:
+        extra_filetypes = present_filetypes - configured_filetypes
+        if extra_filetypes:
             self.any_problems = True
             logger.error( \
-                "[bold white on red]Vestigial datasets (extensions that aren't indexed): "
-                + ", ".join(sorted(extra_extensions))
+                "[bold white on red]Vestigial datasets (filetypes that aren't indexed): "
+                + ", ".join(sorted(extra_filetypes))
             )
 
-        missing_extensions = configured_extensions - present_extensions
-        if missing_extensions:
+        missing_filetypes = configured_filetypes - present_filetypes
+        if missing_filetypes:
             self.any_problems = True
             logger.error( \
-                "[bold white on red]Missing datasets (configured extensions): "
-                + ", ".join(sorted(missing_extensions))
+                "[bold white on red]Missing datasets (configured filetypes): "
+                + ", ".join(sorted(missing_filetypes))
             )
+
 
 async def main():
     # usage:
@@ -142,16 +135,17 @@ async def main():
 
     validator = DatasetsValidator(ds)
     validator.validate_datasets()
-    validator.warn_about_unindexed_languages(ds)
+    validator.warn_about_unindexed_filetypes(ds)
 
-    root_dir = rag_dir.parent  # for validation purposes, safe assumption
+    root_dir = rag_dir.parent
     warn_about_stale_files(ds, root_dir)
 
     config = await load_rag_config(root_dir)
-    validator.compare_config_vs_indexed_extensions(ds, config)
+    validator.compare_config_vs_indexed_filetypes(ds, config)
 
     if validator.any_problems:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -15,19 +15,23 @@ from pydantic import BaseModel
 
 from lsp.logs import get_logger
 from lsp import fs
+from lsp.filetypes import resolve_filetype
 from lsp.inference.client.embedder import encode_passages
 
 logger = get_logger(__name__)
+
 
 def chunk_id_for(file_path: Path, chunk_type: str, start_line_base0: int, end_line_base0: int, file_hash: str) -> str:
     """Generate unique chunk ID based on file path, chunk index, and file hash"""
     chunk_str = f"{file_path}:{chunk_type}:{start_line_base0}-{end_line_base0}:{file_hash}"
     return hashlib.sha256(chunk_str.encode()).hexdigest()[:16]
 
+
 def chunk_id_with_columns_for(file_path: Path, chunk_type: str, start_line_base0: int, start_column_base0: int, end_line_base0: int, end_column_base0: Optional[int], file_hash: str) -> str:
     """Generate unique chunk ID based on file path, chunk index, and file hash"""
     chunk_str = f"{file_path}:{chunk_type}:{start_line_base0},{start_column_base0}:{end_line_base0},{end_column_base0}:{file_hash}"
     return hashlib.sha256(chunk_str.encode()).hexdigest()[:16]
+
 
 def chunk_id_to_faiss_id(chunk_id: str) -> int:
     """Convert chunk ID to FAISS ID (signed int64)"""
@@ -36,17 +40,20 @@ def chunk_id_to_faiss_id(chunk_id: str) -> int:
     # Mask to fit in signed int64 (0x7FFFFFFFFFFFFFFF = 2^63 - 1)
     return hash_int & 0x7FFFFFFFFFFFFFFF
 
+
 class FileStat(BaseModel):
     mtime: float
     size: int
     hash: str
     path: str
 
+
 # BTW (str, Enum) == (StrEnum) => str is for [de]serilialization
 class ChunkType(StrEnum):
     LINES = "lines"
     UNCOVERED_CODE = "uncovered"
     TREESITTER = "ts"
+
 
 class Chunk(BaseModel):
     id: str
@@ -82,6 +89,7 @@ class Chunk(BaseModel):
     def base1(self) -> "_Pos":
         return _Pos(self, 1)  # 1-based
 
+
 @dataclass(frozen=True, slots=True)
 class _Pos:
     _chunk: Chunk
@@ -107,6 +115,7 @@ class _Pos:
             return None
         return self._chunk.end_column0 + self.base
 
+
 # * FAISS type hint wrappers
 class Int64VectorIndex(Protocol):
     """ Type hint wrapper for FAISS/swigfaiss runtime types so I can get some decent completions in dev """
@@ -114,7 +123,9 @@ class Int64VectorIndex(Protocol):
     def __len__(self) -> int:
         ...
 
+
 Int64Vector = NDArray[np.int64]
+
 
 class FaissIndexView:
     """ Concrete wrapper around faiss index type, provide better typing AND hide inner workings"""
@@ -149,17 +160,18 @@ class FaissIndexView:
             count = int(counts[index])
             yield (id, count)
 
+
 @dataclass
 class RAGDataset:
 
-    def __init__(self, language_extension, chunks_by_file, files_by_path, index):
-        self.language_extension = language_extension
+    def __init__(self, filetype, chunks_by_file, files_by_path, index):
+        self.filetype = filetype
         self.chunks_by_file = chunks_by_file
         self.stat_by_path = files_by_path
         self.index = index
         self.index_view = FaissIndexView(self)
 
-    language_extension: str
+    filetype: str
     chunks_by_file: dict[str, list[Chunk]]
     stat_by_path: dict[str, FileStat]
     index: faiss.Index
@@ -174,6 +186,7 @@ class RAGDataset:
     def num_vectors(self) -> int:
         return self.index.ntotal if self.index is not None else 0
 
+
 @dataclass
 class Datasets:
     all_datasets: dict[str, RAGDataset]
@@ -187,7 +200,7 @@ class Datasets:
                     faiss_id = chunk.faiss_id
                     self._chunks_by_faiss_id[faiss_id] = chunk
 
-    def get_indexed_extensions(self) -> set[str]:
+    def get_indexed_filetypes(self) -> set[str]:
         return set(self.all_datasets.keys())
 
     def get_chunk_by_faiss_id(self, faiss_id) -> Optional[Chunk]:
@@ -198,14 +211,24 @@ class Datasets:
         return self._chunks_by_faiss_id.get(faiss_id)
 
     def for_file(self, file_path: str | Path | None = None, vim_filetype: str | None = None):
-        language_extension = vim_filetype  # use if no file_path passed
+        """Resolve a file path to its dataset using the three-layer filetype mapper.
+
+        Resolution order:
+        1. Extension → canonical filetype
+        2. Filename lookup (for extensionless files like Makefile)
+        3. Shebang detection (for extensionless scripts)
+        4. vim_filetype fallback
+        """
         if file_path is not None:
-            language_extension = Path(file_path).suffix.removeprefix('.') or vim_filetype
-        if language_extension == '' or language_extension is None:
-            logger.error("No file suffix and no vim_filetype, can't find dataset!")
+            filetype = resolve_filetype(file_path, vim_filetype=vim_filetype)
+        else:
+            filetype = vim_filetype
+
+        if filetype is None or filetype == '':
+            logger.error("No filetype resolved for file, can't find dataset!")
             return None
 
-        return self.all_datasets.get(language_extension)
+        return self.all_datasets.get(filetype)
 
     async def update_file(self, file_path_str: str | Path, new_chunks: list[Chunk]):
         file_path_str = str(file_path_str)  # must be str, just let people pass either
@@ -217,9 +240,7 @@ class Datasets:
             return
 
         if dataset.index is None:
-            logger.error(f"Dataset {dataset.language_extension} has no index")
-            # TODO should I be creating it in this case?
-            #    ADD TESTS FOR THIS
+            logger.error(f"Dataset {dataset.filetype} has no index")
             return
 
         # * find prior chunks (if any)
@@ -260,24 +281,28 @@ class Datasets:
         # * update file's list of chunks
         dataset.chunks_by_file[file_path_str] = new_chunks
 
-        # # * updates for cache in  _chunks_by_faiss_id
+        # * updates for cache in _chunks_by_faiss_id
         for prior_id in prior_faiss_ids:
             del self._chunks_by_faiss_id[prior_id]
         for new_chunk in new_chunks:
             self._chunks_by_faiss_id[new_chunk.faiss_id] = new_chunk
+
 
 def load_chunks_by_file(chunks_json_path: Path) -> dict[str, list[Chunk]]:
     with open(chunks_json_path, 'r') as f:
         chunks_by_file = {k: [Chunk(**v) for v in v] for k, v in json.load(f).items()}
     return chunks_by_file
 
+
 def load_file_stats_by_file(files_json_path: Path):
     with open(files_json_path, 'r') as f:
         files_by_path = {k: FileStat(**v) for k, v in json.load(f).items()}
         return files_by_path
 
-def load_prior_data(dot_rag_dir: Path, language_extension: str) -> RAGDataset:
-    language_dir = dot_rag_dir / language_extension
+
+def load_prior_data(dot_rag_dir: Path, filetype: str) -> RAGDataset:
+    """Load prior indexed data for a given filetype."""
+    language_dir = dot_rag_dir / filetype
 
     vectors_index_path = language_dir / "vectors.index"
     index = None
@@ -310,15 +335,16 @@ def load_prior_data(dot_rag_dir: Path, language_extension: str) -> RAGDataset:
     else:
         logger.info(f"No files.json: {files_json_path}")
 
-    dataset = RAGDataset(language_extension, chunks_by_file, files_by_path, index)
+    dataset = RAGDataset(filetype, chunks_by_file, files_by_path, index)
 
     num_chunks = dataset.num_chunks()
     log_num_vectors = dataset.num_vectors()
-    logger.info(f"Loaded {language_extension} - {dataset.num_files()} file stats, {log_num_vectors} FAISS vectors, {num_chunks} chunks")
+    logger.info(f"Loaded {filetype} - {dataset.num_files()} file stats, {log_num_vectors} FAISS vectors, {num_chunks} chunks")
     if num_chunks != (log_num_vectors or 0):
         logger.error(f"Num chunks ({num_chunks}) != Num vectors ({log_num_vectors}) which suggests problems with FAISS index vectors or otherwise, use rag_validate_index to check")
 
     return dataset
+
 
 def find_language_dirs(dot_rag_dir: Path) -> list[Path]:
     dot_rag_dir = Path(dot_rag_dir)
@@ -329,7 +355,13 @@ def find_language_dirs(dot_rag_dir: Path) -> list[Path]:
 
     return [p for p in Path(dot_rag_dir).glob("*") if p.is_dir()]
 
+
 def load_all_datasets(dot_rag_dir: Path) -> Datasets:
+    """Load all indexed datasets from disk.
+
+    Directory names under .rag/ are now filetype keys (not extensions),
+    so "yaml/" contains both .yaml and .yml files.
+    """
     dot_rag_dir = Path(dot_rag_dir)
     language_dirs = find_language_dirs(dot_rag_dir)
     datasets = {}
@@ -337,9 +369,9 @@ def load_all_datasets(dot_rag_dir: Path) -> Datasets:
     total_vectors = 0
     total_files = 0
     for lang_dir in language_dirs:
-        language_extension = lang_dir.name
-        dataset = load_prior_data(dot_rag_dir, language_extension)
-        datasets[language_extension] = dataset
+        filetype = lang_dir.name
+        dataset = load_prior_data(dot_rag_dir, filetype)
+        datasets[filetype] = dataset
         total_chunks += dataset.num_chunks()
         total_vectors += dataset.num_vectors()
         total_files += dataset.num_files()

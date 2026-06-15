@@ -11,8 +11,10 @@ from lsp.config import Config
 from lsp.chunks.chunker import RAGChunkerOptions
 from lsp.logs import get_logger
 from lsp import ignores, rag
+from lsp.filetypes import resolve_filetype
 
 logger = get_logger(__name__)
+
 
 class FileUpdateEmbeddingsQueue:
 
@@ -82,7 +84,7 @@ class FileUpdateEmbeddingsQueue:
 
     async def update_embeddings(self, doc_uri: str):
         doc_path = uris.to_fs_path(doc_uri)
-        if doc_path == None:
+        if doc_path is None:
             logger.warning(f"abort update rag... to_fs_path returned {doc_path}")
             return
 
@@ -90,17 +92,14 @@ class FileUpdateEmbeddingsQueue:
             logger.debug(f"rag ignored doc: {doc_path}")
             return
 
-        if Path(doc_path).suffix == "":
-            #  i.e. githooks
-            # currently I don't index extensionless anwyways, so skip for now in updates
-            # would need to pass vim_filetype from client (like I do for FIM queries within them)
-            #   alternatively I could parse shebang?
-            # but, I want to avoid extensionless so lets not make it possible to use them easily :)
-            logger.info(f"skip extensionless files {doc_path}")
+        # Resolve filetype through the three-layer mapper (extension → filename → shebang)
+        filetype = resolve_filetype(doc_path)
+        if filetype is None:
+            logger.info(f"skip unresolved file (no extension, no known filename, no shebang): {doc_path}")
             return
 
         doc = self.server.workspace.get_text_document(doc_uri)
         if doc is None:
             logger.error(f"abort... doc not found {doc_uri}")
             return
-        await rag.update_file_from_pygls_doc(doc, RAGChunkerOptions.ProductionOptions())  # TODO! ASYNC REVIEW
+        await rag.update_file_from_pygls_doc(doc, RAGChunkerOptions.ProductionOptions())
