@@ -93,6 +93,7 @@ class TestShebangDetection_InResolveFiletype:
         assert resolve_filetype(f) == "perl"
 
     def test_no_shebang_returns_none(self, tmp_path):
+        # gah this should just be part of other resolve filetype cases... but w/e leave it here too
         f = tmp_path / "random_file"
         f.write_text("just some text\nno shebang here\n")
         assert resolve_filetype(f) is None
