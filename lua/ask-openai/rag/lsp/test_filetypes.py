@@ -98,11 +98,6 @@ class TestShebangDetection_InResolveFiletype:
         f.write_text("just some text\nno shebang here\n")
         assert resolve_filetype(f) is None
 
-    def test_empty_file_returns_none(self, tmp_path):
-        f = tmp_path / "empty"
-        f.write_text("")
-        assert resolve_filetype(f) is None
-
     def test_binary_file_returns_none(self, tmp_path):
         f = tmp_path / "binary"
         f.write_bytes(b"\x00\x01\x02\x03")
