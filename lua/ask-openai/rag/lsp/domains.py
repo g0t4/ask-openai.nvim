@@ -11,11 +11,17 @@ from .logs import get_logger
 logger = get_logger(__name__)
 
 EXTENSION_TO_SEMANTIC_DOMAIN: dict[str, str] = {
-    # --- YAML family ---
+    # --- YAML ---
     "yaml": "yaml",
     "yml": "yaml",
 
-    # --- Shell family ---
+    # --- git ---
+    "gitignore": "git",
+    "gitattributes": "git",
+    "gitmodules": "git",
+    "gitconfig": "git",
+
+    # --- Shell ---
     "sh": "bash",
     "bash": "bash",
     "zsh": "zsh",
@@ -32,7 +38,7 @@ EXTENSION_TO_SEMANTIC_DOMAIN: dict[str, str] = {
     "profile": "bash",
     "inputrc": "bash",
 
-    # --- C family ---
+    # --- C ---
     "c": "c",
     "h": "c",
     "cpp": "cpp",
@@ -306,7 +312,7 @@ SHEBANG_EXECUTABLE_TO_SEMANTIC_DOMAIN: dict[str, str] = {
     # "nvmrc": "text", # no idea what this format is actually... and text is not a useful grouping IMO
     # "node-version": "text",
 
-    # --- Shell family ---
+    # --- Shell ---
     "sh": "bash",
     # "bash": "bash",
     # "zsh": "zsh",
