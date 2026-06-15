@@ -20,16 +20,15 @@ from lsp.logs import get_logger
 logger = get_logger(__name__)
 
 def _map_allowed_file_extensions_to_semantic_domains(raw_includes: set[str]) -> set[str]:
-    """Normalize include list: convert raw extensions to semantic domains.
-
-    Handles both old-style raw extensions (js, ts, yml, fish) and
-    new-style semantic domains (javascript, typescript, yaml, shell).
     """
-    # allow selecting domains based on file extension OR domain name
-    # - fine by me to include both...
-    #   one thing that might be confusing is if you think `.yaml` means `.yml` won't be included...
-    #   for now I don't care, I know I want to allow in terms of domains and not file extensions
-    #
+    Each item in raw_includes is either a file extension (legacy config) or a semantic domain...
+    - Map extensions to semantic domains so we can operate purely in terms of semantic domains elsewhere
+
+    This is not some legacy hack/conversion... no, it is also useful to specify a file extension and not worry about what the exact domain is...
+    - i.e. I know `.rs` is rust... so why bother remembering if I set `rust` or `rs` for the semantic domain's name?
+      in fact, if I use extensions, I can change the domain names and not need to update any config files
+      file extension is definitley a more stable interface!
+    """
     domains = [resolve_semantic_domain("." + item) or item for item in raw_includes]
     return set(domains)
 
