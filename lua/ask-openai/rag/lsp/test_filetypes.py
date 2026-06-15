@@ -24,7 +24,7 @@ class TestExtensionMapping:
         assert get_filetype_for_extension("XYZ") == "xyz"  # case insensitive
 
 
-class TestShebangDetection:
+class TestShebangDetection_InResolveFiletype:
     """Test shebang-based filetype detection for extensionless files."""
 
     def test_unmapped_exectuable_returns_exectuable_itself(self, tmp_path):
