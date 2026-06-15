@@ -84,8 +84,8 @@ class IncrementalRAGIndexer:
 
         included = self.config.include
         if self.program_args and self.program_args.only_filetype:
-            included = [self.program_args.only_filetype]
-            logger.info(f"Indexing only filetype: {included[0]}")
+            included = {self.program_args.only_filetype}
+            logger.info(f"Indexing only filetype: {included}")
 
         for filetype in included:
             await self.build_index(filetype)
@@ -108,7 +108,7 @@ class IncrementalRAGIndexer:
             logger.warn(f"Removing vestigial rag dir: {filetype_dir}")
             trash_dir(filetype_dir)
 
-    def flag_unindexed_filetypes_with_file_counts(self, index_filetypes: list[str]):
+    def flag_unindexed_filetypes_with_file_counts(self, index_filetypes: set[str]):
         """Warn about filetypes present in the repo but not being indexed."""
 
         cmd = ["fish", "-c", f"fd . {self.source_code_dir} --exclude='\\.ctags\\.d' --exclude='\\.rag' --exec basename"]
