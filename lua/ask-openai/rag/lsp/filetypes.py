@@ -223,9 +223,9 @@ BASENAME_TO_FILETYPE: dict[str, str] = {
     "makefile": "make",
     "GNUmakefile": "make",
     #
-    # TODO consider another mapping dimension for treesitter parser... only set if overriding default which IIAC now uses family?
+    # TODO!FILETYPES consider another mapping dimension for treesitter parser... only set if overriding default which IIAC now uses family?
     #  TODO i.e. here fish_history is actually a yaml file... so I'd need to use a yaml parser... even though I want the file indexed along with fish files
-    #  TODO rename file_type => file_family? to avoid confusion about vim filetype and also the purpose of grouping these
+    #  TODO!FILETYPES rename file_type => file_family? to avoid confusion about vim filetype and also the purpose of grouping these
     #    FYI the real purpose to group at all is for querying related files when using semantic_grep without querying everything in the codebase
     #    FYI I could just give up and put everything in one index and query all at once...
     #      FYI OR I could use metadata to filter what can match and use metadata beyond filetype or family or extension or w/e
@@ -346,10 +346,7 @@ SHEBANG_TO_FILETYPE: dict[str, str] = {
     # "julia": "julia",
 }
 
-def resolve_filetype(
-    file_path: str | Path,
-    vim_filetype: str | None = None,
-) -> Optional[str]:
+def resolve_filetype(file_path: str | Path) -> Optional[str]:
     """Resolve a file path to its canonical filetype.
 
     Resolution:
@@ -387,11 +384,6 @@ def resolve_filetype(
         # Extension exists but isn't mapped → use it as-is (may be indexed
         # under its own name if included in config.include)
         return ext
-
-    # TODO! strip out vim filetype mapping entirely, I want none of this coupled to VIM
-    # --- Fallback: vim_filetype ---
-    if vim_filetype:
-        return vim_filetype
 
     return None
 
