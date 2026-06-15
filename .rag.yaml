@@ -15,7 +15,7 @@ include:
     - md
 ignores:
     - "notes/"
-global_languages:
+global_filetypes:
     - lua
     - py
     # honestly I'd like a web group and nest these underneath so they're allocated 1 unit of focus in semantic_grep, here they'll be over-represented as 5 separate languages
