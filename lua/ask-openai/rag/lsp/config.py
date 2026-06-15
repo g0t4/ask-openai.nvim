@@ -29,8 +29,20 @@ def _map_allowed_file_extensions_to_semantic_domains(raw_includes: set[str]) -> 
       in fact, if I use extensions, I can change the domain names and not need to update any config files
       file extension is definitley a more stable interface!
     """
-    domains = [resolve_semantic_domain("." + item) or item for item in raw_includes]
-    return set(domains)
+    domains_from_extensions: set[str] = set()
+    verbatim_domains: set[str] = set()
+
+    for item in raw_includes:
+        resolved = resolve_semantic_domain("." + item)
+        if resolved is not None:
+            domains_from_extensions.add(resolved)
+        else:
+            verbatim_domains.add(item)
+
+    unified_domains = domains_from_extensions | verbatim_domains
+    logger.info(f"Domains from extensions: {sorted(domains_from_extensions)}")
+    logger.info(f"Verbatim domains: {sorted(verbatim_domains)}")
+    return unified_domains
 
 @dataclass
 class Config:
