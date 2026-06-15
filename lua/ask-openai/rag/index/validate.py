@@ -61,6 +61,8 @@ class DatasetsValidator:
 
             if any_problem_with_this_dataset:
                 logger.info(f"{num_vectors_based_on_ntotal=}")
+
+                # look for mismatch in datasets (i.e. missing chunks or vectors for old chunks)
                 logger.info(f'{num_vectors_based_on_ids=} {num_unique_ids_based_on_ids=}')
                 logger.info(f'{num_chunks_based_on_chunks=}')
 
