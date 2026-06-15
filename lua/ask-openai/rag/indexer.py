@@ -23,7 +23,7 @@ from pydants import write_json
 from lsp.storage import Chunk, FileStat, load_prior_data
 from lsp.chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
 from lsp.config import Config, load_config
-from lsp.ignores import is_ignored_allchecks
+from lsp.ignores import is_file_ignored_allchecks
 from lsp.domains import (
     EXTENSION_TO_SEMANTIC_DOMAIN,
     find_files_by_semantic_domain,
@@ -130,7 +130,7 @@ class IncrementalRAGIndexer:
         # * ignored files
         ignored_path_strs: Set[str] = set()
         for path_str in current_files_path_strs:
-            if is_ignored_allchecks(path_str, self.config, self.source_code_dir):
+            if is_file_ignored_allchecks(path_str, self.config, self.source_code_dir):
                 ignored_path_strs.add(path_str)
         if len(ignored_path_strs) > 0:
             logger.info(f"Ignoring files ({len(ignored_path_strs)}):\n    {'\n    '.join(ignored_path_strs)}")

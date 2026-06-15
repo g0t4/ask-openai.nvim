@@ -88,7 +88,7 @@ class FileUpdateEmbeddingsQueue:
             logger.warning(f"abort update rag... to_fs_path returned {doc_path}")
             return
 
-        if ignores.is_ignored_allchecks(doc_path, self.config, self.root_path):
+        if ignores.is_file_ignored_allchecks(doc_path, self.config, self.root_path):
             logger.debug(f"rag ignored doc: {doc_path}")
             return
 

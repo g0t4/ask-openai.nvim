@@ -59,7 +59,7 @@ def reset_cache_bewteen_tests():
 
 IGNORED = True
 
-def is_ignored_allchecks(file_path: str | Path, config: Config, fs_root_path: Path):
+def is_file_ignored_allchecks(file_path: str | Path, config: Config, fs_root_path: Path):
     """ unified ignore checks """
     # TODO wire this into rag_validate_index
 
