@@ -88,17 +88,17 @@ class TestShebangDetection:
     def test_bash_shebang(self, tmp_path):
         f = tmp_path / "run"
         f.write_text("#!/bin/bash\necho hi\n")
-        assert resolve_filetype(f) == "shell"
+        assert resolve_filetype(f) == "bash"
 
     def test_zsh_shebang(self, tmp_path):
         f = tmp_path / "zsh_script"
         f.write_text("#!/usr/bin/env zsh\necho hi\n")
-        assert resolve_filetype(f) == "shell"
+        assert resolve_filetype(f) == "zsh"
 
     def test_fish_shebang(self, tmp_path):
         f = tmp_path / "fish_script"
         f.write_text("#!/usr/bin/env fish\necho hi\n")
-        assert resolve_filetype(f) == "shell"
+        assert resolve_filetype(f) == "fish"
 
     def test_ruby_shebang(self, tmp_path):
         f = tmp_path / "rake_task"
