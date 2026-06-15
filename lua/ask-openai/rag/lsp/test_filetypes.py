@@ -27,6 +27,11 @@ class TestExtensionMapping:
 class TestShebangDetection:
     """Test shebang-based filetype detection for extensionless files."""
 
+    def test_unmapped_exectuable_returns_exectuable_itself(self, tmp_path):
+        f = tmp_path / "bar"
+        f.write_text("#!foo\nprint('hi')\n")
+        assert resolve_filetype(f) == "foo"
+
     def test_python_shebang(self, tmp_path):
         f = tmp_path / "script"
         f.write_text("#!/usr/bin/env python3\nprint('hi')\n")
