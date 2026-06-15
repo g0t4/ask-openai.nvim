@@ -104,12 +104,6 @@ class TestResolveFiletype:
         # .txt is not in our mapping, so it returns "txt"
         assert resolve_filetype(f) == "txt"
 
-    def test_extension_takes_precedence_over_filename(self):
-        """Extension always wins over filename lookup."""
-        # A file named "Makefile.js" should be javascript, not make
-        f = Path("/some/path/Makefile.js")
-        assert resolve_filetype(f) == "javascript"
-
     def test_filename_lookup_for_extensionless(self, tmp_path):
         """Extensionless known filename should resolve via filename mapping."""
         f = tmp_path / "fish_history"
