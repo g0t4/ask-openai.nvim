@@ -22,7 +22,7 @@ default_global_languages: list[str] = []  # no defaults b/c if you don't set it,
 default_enabled: bool = True
 
 
-def _normalize_includes(raw_includes: list[str]) -> list[str]:
+def _include_filetypes(raw_includes: list[str]) -> list[str]:
     """Normalize include list: convert raw extensions to canonical filetypes.
 
     Handles both old-style raw extensions (js, ts, yml, fish) and
@@ -32,11 +32,10 @@ def _normalize_includes(raw_includes: list[str]) -> list[str]:
     seen = set()
     normalized = []
     for item in raw_includes:
-        ext = item.lstrip(".").lower()
-        canonical = get_filetype_for_extension(ext)
-        if canonical not in seen:
-            seen.add(canonical)
-            normalized.append(canonical)
+        filetype = get_filetype_for_extension(item) or item
+        if filetype not in seen:
+            seen.add(filetype)
+            normalized.append(filetype)
     return normalized
 
 
@@ -74,7 +73,7 @@ def load_config(yaml_text: str) -> Config:
     _enabled = raw.get("enabled") if raw.get("enabled") is not None else default_enabled
     _include = raw.get("include") or DEFAULT_INCLUDES
     # Normalize: convert raw extensions (js, ts, yml, fish) to canonical filetypes
-    _include = _normalize_includes(_include)
+    _include = _include_filetypes(_include)
 
     return Config(
         ignores=raw.get("ignores") or default_ignores,

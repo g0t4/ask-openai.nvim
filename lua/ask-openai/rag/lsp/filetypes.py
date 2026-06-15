@@ -33,10 +33,10 @@ EXTENSION_TO_FILETYPE: dict[str, str] = {
     "yml": "yaml",
 
     # --- Shell family ---
-    "sh": "shell",
-    "bash": "shell",
-    "zsh": "shell",
-    "fish": "shell",
+    "sh": "bash",
+    "bash": "bash",
+    "zsh": "zsh",
+    "fish": "fish",
 
     # --- C family ---
     "c": "c",
@@ -218,20 +218,26 @@ FILENAME_TO_FILETYPE: dict[str, str] = {
     "Makefile": "make",
     "makefile": "make",
     "GNUmakefile": "make",
-    ".bashrc": "shell",
-    ".bash_profile": "shell",
-    ".zshrc": "shell",
-    ".zprofile": "shell",
-    ".zshenv": "shell",
-    ".zlogin": "shell",
-    ".zlogout": "shell",
-    ".profile": "shell",
-    ".inputrc": "shell",
-    "fish_history": "yaml",
-    ".gitignore": "diff",
-    ".gitattributes": "ini",
-    ".gitconfig": "ini",
-    ".gitmodules": "ini",
+    ".bashrc": "bash",
+    ".bash_profile": "bash",
+    ".bash_aliases": "bash",
+    ".zshrc": "zsh",
+    ".zprofile": "zsh",
+    ".zshenv": "zsh",
+    ".zlogin": "zsh",
+    ".zlogout": "zsh",
+    ".zsh_aliases": "zsh",
+    ".profile": "bash",
+    ".inputrc": "bash",
+    #
+    # TODO consider another mapping dimension for treesitter parser... only set if overriding default which IIAC now uses family?
+    #  TODO i.e. here fish_history is actually a yaml file... so I'd need to use a yaml parser... even though I want the file indexed along with fish files
+    #  TODO rename file_type => file_family? to avoid confusion about vim filetype and also the purpose of grouping these
+    #    FYI the real purpose to group at all is for querying related files when using semantic_grep without querying everything in the codebase
+    #    FYI I could just give up and put everything in one index and query all at once...
+    #      FYI OR I could use metadata to filter what can match and use metadata beyond filetype or family or extension or w/e
+    "fish_history": "fish",  # yaml format but fish is the primary purpose so let's map it to fish index!
+    #
 
     # --- Docker ---
     "Dockerfile": "docker",
@@ -245,16 +251,12 @@ FILENAME_TO_FILETYPE: dict[str, str] = {
     ".babelrc": "json",
     ".jshintrc": "json",
 
-    # --- Python ---
-    "setup.py": "py",
-    "conftest.py": "py",
-    "manage.py": "py",
-    "wsgi.py": "py",
-    "app.py": "py",
-
-    # --- Shell ---
-    ".bash_aliases": "shell",
-    ".zsh_aliases": "shell",
+    # # --- Python --- (none of these are not py?)
+    # "setup.py": "py",
+    # "conftest.py": "py",
+    # "manage.py": "py",
+    # "wsgi.py": "py",
+    # "app.py": "py",
 
     # --- Markdown ---
     "LICENSE": "markdown",
@@ -271,23 +273,23 @@ FILENAME_TO_FILETYPE: dict[str, str] = {
     "go.sum": "go",
 
     # --- Rust ---
-    "Cargo.toml": "toml",
-    "Cargo.lock": "toml",
+    # "Cargo.toml": "toml",
+    # "Cargo.lock": "toml", # I want lock files entirely ignored
 
     # --- PHP ---
     "composer.json": "json",
-    "composer.lock": "json",
+    # "composer.lock": "json", # ignore lock files (s/b ignored b/c of using fd command)
 
     # --- Node.js ---
     "package.json": "json",
-    "package-lock.json": "json",
-    "yarn.lock": "text",
+    # "package-lock.json": "json",
+    # "yarn.lock": "text",
     ".npmrc": "ini",
-    ".nvmrc": "text",
-    ".node-version": "text",
+    # ".nvmrc": "text", # no idea what this format is actually... and text is not a useful grouping IMO
+    # ".node-version": "text",
 
     # --- Terraform ---
-    ".terraform.lock.hcl": "hcl",
+    # ".terraform.lock.hcl": "hcl", # ignore lock files
 
     # --- Text / misc ---
     "CONTRIBUTING": "markdown",
@@ -296,6 +298,23 @@ FILENAME_TO_FILETYPE: dict[str, str] = {
     "COPYING": "text",
 }
 
+# TODO add support for ignoring some files all the time...
+#  TODO or make these default ignored and provide override if ever needed to not ignore them
+# ALWAYS_IGNORED = {
+#
+#     # --- lock files ---
+#     # --- perhaps wildcard matching too or instead of exact: "*.lock" (glob) or /.*\.lock/ (regex)
+#     "uv.lock",
+#     "package-lock.json",
+#     "yarn.lock",
+#     "Cargo.lock",
+#     "go.sum",
+#     "composer.lock",
+#     "pnpm-lock.yaml",
+#     -- TODO other lock files?
+#
+#     -- TODO other always ignored file types/names?
+# }
 
 # ---------------------------------------------------------------------------
 # Layer 3: Shebang → Filetype Mapping
@@ -308,26 +327,27 @@ SHEBANG_TO_FILETYPE: dict[str, str] = {
     "python3": "py",
     "python2": "py",
 
-    # --- Ruby ---
-    "ruby": "ruby",
+    # TODO can I skip if it is 1:1 for now... IOTW allow 1:1 if not explicit mapping... so .bash => bash or .perl => perl
+    # # --- Ruby ---
+    # "ruby": "ruby",
 
-    # --- Perl ---
-    "perl": "perl",
+    # # --- Perl ---
+    # "perl": "perl",
 
     # --- Node.js ---
     "node": "javascript",
 
     # --- Shell family ---
-    "bash": "shell",
-    "sh": "shell",
-    "zsh": "shell",
-    "fish": "shell",
+    "sh": "bash",
+    # "bash": "bash",
+    # "zsh": "zsh",
+    # "fish": "fish",
 
-    # --- Lua ---
-    "lua": "lua",
+    # # --- Lua ---
+    # "lua": "lua",
 
-    # --- PHP ---
-    "php": "php",
+    # # --- PHP ---
+    # "php": "php",
 
     # --- Tcl ---
     "tclsh": "tcl",
@@ -335,10 +355,9 @@ SHEBANG_TO_FILETYPE: dict[str, str] = {
     # --- R ---
     "Rscript": "r",
 
-    # --- Julia ---
-    "julia": "julia",
+    # # --- Julia ---
+    # "julia": "julia",
 }
-
 
 # ---------------------------------------------------------------------------
 # Public API
@@ -363,6 +382,8 @@ def resolve_filetype(
     Returns:
         Canonical filetype string, or None if unresolvable.
     """
+    # TODO! check explicit mapping always ahead of everything else (that way even w/ an extension we can remap the filetype)
+
     file_path = Path(file_path)
 
     # --- Layer 1: Extension mapping ---
@@ -386,6 +407,7 @@ def resolve_filetype(
     if filetype is not None:
         return filetype
 
+    # TODO! strip out vim filetype mapping entirely, I want none of this coupled to VIM
     # --- Fallback: vim_filetype ---
     if vim_filetype:
         return vim_filetype
@@ -541,7 +563,9 @@ DEFAULT_INCLUDES: list[str] = [
     "less",
 
     # --- Shell ---
-    "shell",
+    "bash",
+    "zsh",
+    "fish",
 
     # --- Build / Config ---
     "make",
