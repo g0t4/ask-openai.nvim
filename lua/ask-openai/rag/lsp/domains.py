@@ -336,7 +336,7 @@ SHEBANG_EXECUTABLE_TO_SEMANTIC_DOMAIN: dict[str, str] = {
 
 def resolve_semantic_domain_for_vim_filetype(vim_filetype: str):
     # TODO actually lets prompt the agent to provide a semantic/retrieval domain instead of vim_filetype?
-    #  we would need to give them a list (included_domains) in the tool call definition, or explain that they can provide a vim filetype too
+    #  we would need to give them a list (allowed_domains) in the tool call definition, or explain that they can provide a vim filetype too
     # PRN add tests and special mapping if needed, but not before a real problem arises
     as_file_extension = f".{vim_filetype}"
     return resolve_semantic_domain(as_file_extension)
@@ -411,7 +411,7 @@ def _detect_semantic_domain_from_shebang(file_path: Path) -> Optional[str]:
 
     return binary_name
 
-DEFAULT_INCLUDED_SEMANTIC_DOMAINS: set[str] = {
+DEFAULT_ALLOWED_SEMANTIC_DOMAINS: set[str] = {
     # --- Programming languages ---
     "lua",
     "py",

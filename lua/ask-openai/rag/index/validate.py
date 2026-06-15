@@ -105,7 +105,7 @@ class DatasetsValidator:
         """Compare configured semantic domains against what's actually indexed on disk."""
 
         present_domains = set(datasets.all_datasets.keys())
-        configured_domains = set(config.included_semantic_domains)
+        configured_domains = set(config.allowed_semantic_domains)
 
         extra_domains = present_domains - configured_domains
         if extra_domains:

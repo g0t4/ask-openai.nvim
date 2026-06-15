@@ -79,7 +79,7 @@ class IncrementalRAGIndexer:
             logger.warning(f"RAG indexing disabled in {self.source_code_dir / '.rag.yaml'}, ")
             return
 
-        allowed_domains = self.config.included_semantic_domains
+        allowed_domains = self.config.allowed_semantic_domains
         if self.program_args and self.program_args.domain:
             allowed_domains = {self.program_args.domain}
             logger.info(f"Indexing ONLY THIS semantic domain: {allowed_domains}")
@@ -111,13 +111,13 @@ class IncrementalRAGIndexer:
             logger.warning(f"Removing vestigial rag dir: {domain_dir}")
             trash_dir(domain_dir)
 
-    def flag_unindexed_domains(self, included_domains: set[str], files_by_domain: dict[str, set[str]]):
+    def flag_unindexed_domains(self, allowed_domains: set[str], files_by_domain: dict[str, set[str]]):
         """Warn about semantic domains present in the repo but not being indexed."""
 
         unindexed = [ \
             f"{domain}={len(files)}"
             for domain, files in files_by_domain.items()
-            if domain not in included_domains
+            if domain not in allowed_domains
             # and len(files) > 1
         ]
 
