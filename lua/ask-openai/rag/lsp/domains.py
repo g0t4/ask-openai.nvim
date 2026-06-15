@@ -365,6 +365,7 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
 
     # --- * file extension * ---
     ext = file_path.suffix.lstrip(".").lower()
+    # wowsers Path(".foo").suffix != ".foo"
     if not ext:
         return None
 

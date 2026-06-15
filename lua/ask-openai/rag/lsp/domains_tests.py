@@ -11,7 +11,6 @@ from lsp.domains import (
     resolve_semantic_domain,
 )
 
-
 class TestShebangToSemanticDomainEdgeCases:
     # FYI many technically duplicated tests for sheangs,
     # - leave them so we have confidence in COMMON shebangs
@@ -99,7 +98,6 @@ class TestShebangToSemanticDomainEdgeCases:
         f.write_text("#!/usr/bin/python3\nprint('hi')\n")
         assert resolve_semantic_domain(f) == "py"
 
-
 class TestResolveSemanticDomain:
     """
        Test the full resolution pipeline.
@@ -125,3 +123,10 @@ class TestResolveSemanticDomain:
     def test_aliased_extension_domain_lookup(self):
         f = Path("/some/repo/settings.yml")
         assert resolve_semantic_domain(f) == "yaml"
+
+    def test_dot_files_are_recognized(self):
+        # for the record, foo.ext works:
+        assert resolve_semantic_domain(Path("foo.gitignore")) == "git"
+        # and .ext should also work, but path.suffix doesn't do what you think so leave this test case after fixing (dropping use of suffix)
+        assert resolve_semantic_domain(Path(".gitignore")) == "git"
+        assert resolve_semantic_domain(Path(".rs")) == "rust"
