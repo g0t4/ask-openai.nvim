@@ -7,7 +7,7 @@ import yaml
 from lsp.filetypes import (
     DEFAULT_INCLUDED_FILETYPES,
     EXTENSION_TO_FILETYPE,
-    FILENAME_TO_FILETYPE,
+    BASENAME_TO_FILETYPE,
     get_filetype_for_extension,
     resolve_filetype,
 )

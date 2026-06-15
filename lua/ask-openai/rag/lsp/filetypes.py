@@ -78,6 +78,11 @@ EXTENSION_TO_FILETYPE: dict[str, str] = {
     "html": "html",
     "htm": "html",
 
+    # --- JINJA ---
+    "j2": "jinja",
+    "jinja": "jinja",
+    "jinja2": "jinja",
+
     # --- JSON ---
     "json": "json",
 
@@ -201,7 +206,7 @@ EXTENSION_TO_FILETYPE: dict[str, str] = {
 }
 
 
-FILENAME_TO_FILETYPE: dict[str, str] = {
+BASENAME_TO_FILETYPE: dict[str, str] = {
     # --- Shell ---
     "Makefile": "make",
     "makefile": "make",
@@ -230,6 +235,9 @@ FILENAME_TO_FILETYPE: dict[str, str] = {
     # --- Docker ---
     "Dockerfile": "docker",
     "Containerfile": "docker",
+    "compose.yaml": "docker",
+    "compose.yml": "docker",
+    "Dockerfile.j2": "docker",
 
     # --- YAML / JSON ---
     ".editorconfig": "ini",
@@ -348,15 +356,13 @@ def resolve_filetype(
 ) -> Optional[str]:
     """Resolve a file path to its canonical filetype.
 
-    Three-layer resolution:
-    1. Extension → filetype mapping
-    2. Explicit filename lookup (for extensionless files)
-    3. Shebang parsing (fallback for extensionless files)
-    4. vim_filetype fallback (last resort)
+    Resolution:
+    1. Basename lookup
+    2. Shebang parsing (TODO!FILETYPES for all filetypes)
+    3. Extension → filetype mapping
 
     Args:
         file_path: Path to the file.
-        vim_filetype: Optional fallback filetype if all else fails.
 
     Returns:
         Canonical filetype string, or None if unresolvable.
@@ -364,6 +370,12 @@ def resolve_filetype(
     # TODO! check explicit mapping always ahead of everything else (that way even w/ an extension we can remap the filetype)
 
     file_path = Path(file_path)
+
+    # --- * basename lookup * ---
+    basename = file_path.name
+    filetype = BASENAME_TO_FILETYPE.get(basename)
+    if filetype is not None:
+        return filetype
 
     # --- Layer 1: Extension mapping ---
     ext = file_path.suffix.lstrip(".").lower()
@@ -374,12 +386,6 @@ def resolve_filetype(
         # Extension exists but isn't mapped → use it as-is (may be indexed
         # under its own name if included in config.include)
         return ext
-
-    # --- Layer 2: Explicit filename lookup ---
-    basename = file_path.name
-    filetype = FILENAME_TO_FILETYPE.get(basename)
-    if filetype is not None:
-        return filetype
 
     # --- Layer 3: Shebang fallback ---
     filetype = _detect_filetype_from_shebang(file_path)

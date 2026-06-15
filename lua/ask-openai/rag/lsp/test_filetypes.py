@@ -7,7 +7,7 @@ import pytest
 
 from lsp.filetypes import (
     EXTENSION_TO_FILETYPE,
-    FILENAME_TO_FILETYPE,
+    BASENAME_TO_FILETYPE,
     SHEBANG_TO_FILETYPE,
     DEFAULT_INCLUDED_FILETYPES,
     resolve_filetype,
@@ -124,7 +124,14 @@ class TestShebangDetection_InResolveFiletype:
 class TestResolveFiletype:
     """Test the full resolution pipeline."""
 
-    def test_extension_overrides_shebang(self, tmp_path):
+    def test_basename_map_wins_over_extension(self, tmp_path):
+        # TODO!FILETYPES this is a great example where the actual file type is not the same thing as the query/index group!
+        #  there's no 'docker' treesitter parser, obviously!
+        #  TODO! setup jinja tree sitter parser and make sure it is used for Dockerfile.j2 even if we expect it to be a "docker" filetype
+        assert resolve_filetype("compose.yaml") == "docker"
+        assert resolve_filetype("Dockerfile.j2") == "docker"
+
+    def test_shebang_overrides_extension(self, tmp_path):
         """If a file has an extension, shebang should be ignored."""
         # TODO!FILETYPES do I want to allow shebang to win out?
         f = tmp_path / "weird.txt"
@@ -164,7 +171,7 @@ class TestResolveFiletype:
 
     def test_path_with_sh_extension(self):
         f = Path("/home/user/.bashrc")
-        # .bashrc is in FILENAME_TO_FILETYPE, not extension-based
+        # .bashrc is in BASENAME_TO_FILETYPE, not extension-based
         # But as a path with no extension... wait, it has no extension
         assert resolve_filetype(f) == "bash"
 
