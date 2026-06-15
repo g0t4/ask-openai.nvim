@@ -19,7 +19,7 @@ from lsp.filetypes import (
 
 default_ignores: set[str] = set()
 default_global_languages: set[str] = set()  # no defaults b/c if you don't set it, you get all indexed file types (includes)
-default_enabled: bool = True
+DEFAULT_RAG_ENABLED: bool = True
 
 
 def _map_includes_to_filetypes(raw_includes: set[str]) -> set[str]:
@@ -43,7 +43,7 @@ class Config:
     # TODO rename global_filetypes?  this is for searching only to search across all of these if not searching for a given filetype
     global_languages: set[str] = field(default_factory=set)
     #
-    enabled: bool = field(default=default_enabled)
+    enabled: bool = field(default=DEFAULT_RAG_ENABLED)
 
     @staticmethod
     def default() -> "Config":
@@ -51,7 +51,7 @@ class Config:
             include=DEFAULT_INCLUDES,
             ignores=default_ignores,
             global_languages=default_global_languages,
-            enabled=default_enabled,
+            enabled=DEFAULT_RAG_ENABLED,
         )
 
     def is_file_type_supported(self, file_path: Path) -> bool:
@@ -69,7 +69,7 @@ class Config:
 def load_config(yaml_text: str) -> Config:
     raw = yaml.safe_load(yaml_text)
 
-    _enabled = raw.get("enabled") if raw.get("enabled") is not None else default_enabled
+    _enabled = raw.get("enabled") if raw.get("enabled") is not None else DEFAULT_RAG_ENABLED
     _include = raw.get("include") or DEFAULT_INCLUDES
     _include = _map_includes_to_filetypes(_include)
 
