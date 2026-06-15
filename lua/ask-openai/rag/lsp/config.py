@@ -37,8 +37,7 @@ class Config:
     # included filetypes (ideally, or extension which is mapped to filetype)
     included_filetypes: set[str] = field(default_factory=set)
     #
-    # TODO rename global_filetypes?  this is for searching only to search across all of these if not searching for a given filetype
-    global_languages: set[str] = field(default_factory=set)
+    global_filetypes: set[str] = field(default_factory=set)
     #
     enabled: bool = field(default=DEFAULT_RAG_ENABLED)
 
@@ -47,7 +46,7 @@ class Config:
         return Config(
             included_filetypes=DEFAULT_INCLUDED_FILETYPES,
             ignores=default_ignores,
-            global_languages=default_global_languages,
+            global_filetypes=default_global_languages,
             enabled=DEFAULT_RAG_ENABLED,
         )
 
@@ -70,9 +69,12 @@ def load_config(yaml_text: str) -> Config:
     _include = raw.get("include") or DEFAULT_INCLUDED_FILETYPES
     _include = _map_included_file_extensions_to_filetypes(_include)
 
+    if raw.get("global_languages"):
+        raise ValueError("global_languages is deprecated; use global_filetypes instead")
+
     return Config(
         ignores=raw.get("ignores") or default_ignores,
         included_filetypes=_include,
-        global_languages=raw.get("global_languages") or default_global_languages,
+        global_filetypes=raw.get("global_filetypes") or default_global_languages,
         enabled=_enabled,
     )
