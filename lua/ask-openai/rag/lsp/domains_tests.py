@@ -114,9 +114,6 @@ class TestResolveFiletype:
     """
 
     def test_basename_map_wins_vs_file_extension(self, tmp_path):
-        # Good example where the actual file type is not the same thing as the query/index group!
-        # ALSO, there's no 'docker' treesitter parser, obviously! let alone a docker one for a yaml and/or jinja file format
-        #  TODO!FILETYPES setup jinja tree sitter parser and make sure it is used for Dockerfile.j2 even if we expect it to be a "docker" filetype
         assert resolve_retrieval_domain("compose.yaml") == "docker"
         assert resolve_retrieval_domain("Dockerfile.j2") == "docker"
 

@@ -223,12 +223,7 @@ BASENAME_TO_FILETYPE: dict[str, str] = {
     "makefile": "make",
     "GNUmakefile": "make",
     #
-    # TODO!FILETYPES consider another mapping dimension for treesitter parser... only set if overriding default which IIAC now uses family?
-    #  TODO i.e. here fish_history is actually a yaml file... so I'd need to use a yaml parser... even though I want the file indexed along with fish files
-    #  TODO!FILETYPES rename file_type => file_family? to avoid confusion about vim filetype and also the purpose of grouping these
-    #    FYI the real purpose to group at all is for querying related files when using semantic_grep without querying everything in the codebase
-    #    FYI I could just give up and put everything in one index and query all at once...
-    #      FYI OR I could use metadata to filter what can match and use metadata beyond filetype or family or extension or w/e
+    # TODO!FILETYPES finish RETRIEVAL DOMAIN renaming (or SEMANTIC DOMAIN renaming)
     "fish_history": "fish",  # yaml format but fish is the primary purpose so let's map it to fish index!
     #
 
