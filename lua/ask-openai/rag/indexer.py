@@ -165,6 +165,7 @@ class IncrementalRAGIndexer:
         """Split files into: changed (added/updated), unchanged, deleted"""
 
         # * Find files with matching extensions via fd
+        # TODO!FILETYPES OH HOLY FUCKING SHIT... TODO precompute this using resolve_filetype on each file and then split into filetypes group and pass here ... DO NOT USE fd with extensions
         glob_pattern = self._build_fd_glob_for_filetype(filetype)
         cmd_ext = ["fd", glob_pattern, str(self.source_code_dir), "--absolute-path", "--type", "f"]
         logger.debug(f"extension files cmd: {cmd_ext}")
@@ -177,6 +178,9 @@ class IncrementalRAGIndexer:
         current_path_strs = set(result_ext.stdout.strip().splitlines())
 
         # * Also find extensionless files that map to this filetype
+        # TODO!FILETYPES NO it is not just extensionless, I want all filetypes to have this ability
+        #  TODO but fair enough I guess I didn't fully make it clear that it is not just extensionless that can be mapped to a new group
+        #  TODO that said, the new defaults suggested by Qwen included reampping .bashrc => shell ... which WTF that is NOT EXTENSIONLESS
         #   (Makefile → make, deploy → shell via shebang, etc.)
         cmd_all = ["fd", ".", str(self.source_code_dir), "--absolute-path", "--type", "f"]
         logger.debug(f"all files cmd: {cmd_all}")

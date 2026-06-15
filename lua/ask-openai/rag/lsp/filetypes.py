@@ -484,6 +484,7 @@ def _detect_filetype_from_shebang(file_path: Path) -> Optional[str]:
 
 def get_extensions_for_filetype(filetype: str) -> set[str]:
     """Get all raw extensions that map to a given canonical filetype."""
+    # TODO!FILETYPES GET RID OF THIS... nothing should know this short of resolve_filetype
     return {
         ext for ext, ft in EXTENSION_TO_FILETYPE.items()
         if ft == filetype
