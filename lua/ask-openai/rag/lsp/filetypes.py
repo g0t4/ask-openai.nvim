@@ -21,12 +21,6 @@ from pathlib import Path
 from typing import Optional
 
 
-# ---------------------------------------------------------------------------
-# Layer 1: Extension → Canonical Filetype Mapping
-# ---------------------------------------------------------------------------
-
-# Maps raw file extensions to their canonical filetype name.
-# Grouping related extensions together (e.g. shell family → "shell").
 EXTENSION_TO_FILETYPE: dict[str, str] = {
     # --- YAML family ---
     "yaml": "yaml",
@@ -207,12 +201,6 @@ EXTENSION_TO_FILETYPE: dict[str, str] = {
 }
 
 
-# ---------------------------------------------------------------------------
-# Layer 2: Explicit Filename → Filetype Mapping
-# ---------------------------------------------------------------------------
-
-# Maps specific filenames (case-sensitive) to their canonical filetype.
-# These files have no extension but are well-known types.
 FILENAME_TO_FILETYPE: dict[str, str] = {
     # --- Shell ---
     "Makefile": "make",
@@ -316,11 +304,6 @@ FILENAME_TO_FILETYPE: dict[str, str] = {
 #     -- TODO other always ignored file types/names?
 # }
 
-# ---------------------------------------------------------------------------
-# Layer 3: Shebang → Filetype Mapping
-# ---------------------------------------------------------------------------
-
-# Maps common shebang interpreters to canonical filetypes.
 SHEBANG_TO_FILETYPE: dict[str, str] = {
     # --- Python ---
     "python": "py",
@@ -358,10 +341,6 @@ SHEBANG_TO_FILETYPE: dict[str, str] = {
     # # --- Julia ---
     # "julia": "julia",
 }
-
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
 
 def resolve_filetype(
     file_path: str | Path,
@@ -428,10 +407,6 @@ def get_filetype_for_extension(ext: str) -> Optional[str]:
     return EXTENSION_TO_FILETYPE.get(ext, ext)
 
 
-# ---------------------------------------------------------------------------
-# Private helpers
-# ---------------------------------------------------------------------------
-
 # Matches both:
 #   #!/usr/bin/env python3
 #   #!/bin/bash
@@ -477,10 +452,6 @@ def _detect_filetype_from_shebang(file_path: Path) -> Optional[str]:
 
     return binary_name
 
-
-# ---------------------------------------------------------------------------
-# Convenience: build reverse mapping
-# ---------------------------------------------------------------------------
 
 def get_extensions_for_filetype(filetype: str) -> set[str]:
     """Get all raw extensions that map to a given canonical filetype."""

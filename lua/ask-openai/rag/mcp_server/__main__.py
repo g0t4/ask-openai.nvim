@@ -20,10 +20,6 @@ from mcp.types import TextContent, Tool
 from rich.console import Console
 from rich.logging import RichHandler
 
-# ---------------------------------------------------------------------------
-# XDG-compliant logging setup (same pattern as delegate.py)
-# ---------------------------------------------------------------------------
-
 _xdg_state = Path(
     os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local" / "state"))
 )
@@ -49,16 +45,11 @@ logging.basicConfig(
     force=True,
 )
 
-# ---------------------------------------------------------------------------
-# Path setup — add the rag root to sys.path so lsp.* imports resolve
-# ---------------------------------------------------------------------------
+# path setup — add rag root to sys.path so lsp.* imports resolve
 _RAG_ROOT = Path(__file__).resolve().parent.parent
 if str(_RAG_ROOT) not in sys.path:
     sys.path.insert(0, str(_RAG_ROOT))
 
-# ---------------------------------------------------------------------------
-# Import existing rag / semantic_grep infrastructure
-# ---------------------------------------------------------------------------
 from lsp.storage import Datasets, load_all_datasets
 from lsp.inference.client.retrieval import (
     LSPRankedMatch,
@@ -71,9 +62,6 @@ from lsp.logs import get_logger
 logger: logging.Logger = get_logger(__name__)
 # logging.getLogger("mcp").setLevel(logging.DEBUG)  # MCP SDK logs
 
-# ---------------------------------------------------------------------------
-# Globals — datasets are loaded once on startup
-# ---------------------------------------------------------------------------
 _datasets: Datasets | None = None
 _dot_rag_dir: Path | None = None
 
@@ -85,10 +73,6 @@ def _get_datasets() -> Datasets:
         raise RuntimeError("Datasets not initialized — is the server started with a valid root_dir?")
     return _datasets
 
-
-# ---------------------------------------------------------------------------
-# MCP Tool definition
-# ---------------------------------------------------------------------------
 
 SEMANTIC_GREP_TOOL = Tool(
     name="semantic_grep",
@@ -153,10 +137,6 @@ SEMANTIC_GREP_TOOL = Tool(
 )
 
 
-# ---------------------------------------------------------------------------
-# Helper — serialize LSPRankedMatch to a dict for MCP output
-# ---------------------------------------------------------------------------
-
 def _match_to_text_content(match: LSPRankedMatch) -> dict[str, Any]:
     """Convert a LSPRankedMatch into a serializable dict for MCP TextContent."""
     file_rel = relative_to_workspace(match.file)
@@ -177,10 +157,6 @@ def _match_to_text_content(match: LSPRankedMatch) -> dict[str, Any]:
         "text": match.text,
     }
 
-
-# ---------------------------------------------------------------------------
-# Tool implementation
-# ---------------------------------------------------------------------------
 
 async def handle_semantic_grep(
     query: str,
@@ -252,10 +228,6 @@ async def handle_semantic_grep(
 
     return [TextContent(type="text", text="\n".join(output_lines))]
 
-
-# ---------------------------------------------------------------------------
-# MCP Server
-# ---------------------------------------------------------------------------
 
 async def serve(root_dir: str | Path | None = None) -> None:
     """Start the MCP semantic_grep server."""

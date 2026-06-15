@@ -13,10 +13,6 @@ from lsp.filetypes import (
 )
 
 
-# ---------------------------------------------------------------------------
-# Config
-# ---------------------------------------------------------------------------
-
 default_ignores: set[str] = set()
 default_global_languages: set[str] = set()  # no defaults b/c if you don't set it, you get all indexed file types (includes)
 DEFAULT_RAG_ENABLED: bool = True
