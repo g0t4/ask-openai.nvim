@@ -24,8 +24,9 @@ class TestExtensionMapping:
         assert get_filetype_for_extension("XYZ") == "xyz"  # case insensitive
 
 
-class TestShebangDetection_InResolveFiletype:
-    """Test shebang-based filetype detection for extensionless files.
+class TestShebangDetection_EdgeCases_InResolveFiletype:
+    """exhaustive tests w.r.t. shebang detection
+       put precedence tests with TestResolveFiletype (i.e. basename vs shebang vs file extension lookup order)
     """
     # FYI many technically duplicated tests for sheangs,
     # - leave them so we have confidence in COMMON shebangs
