@@ -79,9 +79,10 @@ def load_config(yaml_text: str) -> Config:
         logger.error("global_languages is deprecated; use global_filetypes instead")
         raise ValueError("global_languages is deprecated; use global_filetypes instead")
 
+    global_filetypes = raw.get("global_filetypes") or raw.get("global_languages") or default_global_languages
     return Config(
         ignores=raw.get("ignores") or default_ignores,
         included_filetypes=_include,
-        global_filetypes=raw.get("global_filetypes") or default_global_languages,
+        global_filetypes=global_filetypes,
         enabled=_enabled,
     )
