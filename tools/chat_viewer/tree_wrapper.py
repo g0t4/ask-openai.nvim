@@ -52,7 +52,7 @@ class TreeWrapper(Tree):
         BLANK_LINE = ""
 
         if not self.children:
-            self.add(BLANK_LINE)
+            self.add_no_markup(BLANK_LINE)
             return
 
         last = self.children[-1]
@@ -62,7 +62,7 @@ class TreeWrapper(Tree):
         else:
             ends_newline = isinstance(label, str) and label.endswith("\n")
         if not ends_newline:
-            self.add(BLANK_LINE)
+            self.add_no_markup(BLANK_LINE)
 
     def add(
         self,
