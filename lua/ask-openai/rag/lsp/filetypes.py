@@ -346,6 +346,10 @@ SHEBANG_TO_FILETYPE: dict[str, str] = {
     # "julia": "julia",
 }
 
+def resolve_vim_filetype(vim_filetype: str):
+    # PRN add tests and special mapping if needed, but not before a real problem arises
+    return resolve_filetype(f".{vim_filetype}")
+
 def resolve_filetype(file_path: str | Path) -> Optional[str]:
     """Resolve the file group for a given file path, this is the group used for querying and indexing related files...
       filetype is not vim's filetype

@@ -211,18 +211,21 @@ class Datasets:
         return self._chunks_by_faiss_id.get(faiss_id)
 
     def for_file(self, file_path: str | Path | None = None, vim_filetype: str | None = None):
-        """Resolve a file path to its dataset using the three-layer filetype mapper.
 
-        Resolution order:
-        1. Extension → canonical filetype
-        2. Filename lookup (for extensionless files like Makefile)
-        3. Shebang detection (for extensionless scripts)
-        4. vim_filetype fallback
-        """
         if file_path is not None:
-            filetype = resolve_filetype(file_path, vim_filetype=vim_filetype)
+            filetype = resolve_filetype(file_path)
+        elif vim_filetype is not None:
+            # TODO!FILETYPES review client side usage of vim_filetype arg...
+            # resolve the vim_filetype to be safe
+            # 1. resolving our filetype as a file extension will resolve itself
+            # 2. this is called vim_filetype client side...
+            #    vim_filetype is probably 100% safe to treat as file extension and resolve to our filetype...
+            #    PRN if this assumption fails, then fix it at that time
+            #    might need to resolve special cases with a mapping client or server side
+            #
+            filetype = resolve_filetype(vim_filetype)
         else:
-            filetype = vim_filetype
+            filetype = None
 
         if filetype is None or filetype == '':
             logger.error("No filetype resolved for file, can't find dataset!")
