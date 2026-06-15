@@ -1,5 +1,5 @@
 enabled: true
-include_filetypes:
+include_domains:
     - lua
     - c
     - cpp
@@ -15,7 +15,7 @@ include_filetypes:
     - md
 ignores:
     - "notes/"
-global_filetypes:
+global_domains:
     - lua
     - py
     # honestly I'd like a web group and nest these underneath so they're allocated 1 unit of focus in semantic_grep, here they'll be over-represented as 5 separate languages
