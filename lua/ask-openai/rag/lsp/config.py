@@ -13,7 +13,7 @@ from lsp.filetypes import (
 
 
 default_ignores: set[str] = set()
-default_global_languages: set[str] = set()  # no defaults b/c if you don't set it, you get all indexed file types (includes)
+default_global_filetypes: set[str] = set()  # no defaults b/c if you don't set it, you get all indexed file types (includes)
 DEFAULT_RAG_ENABLED: bool = True
 
 from lsp.logs import get_logger
@@ -48,7 +48,7 @@ class Config:
         return Config(
             included_filetypes=DEFAULT_INCLUDED_FILETYPES,
             ignores=default_ignores,
-            global_filetypes=default_global_languages,
+            global_filetypes=default_global_filetypes,
             enabled=DEFAULT_RAG_ENABLED,
         )
 
@@ -79,7 +79,7 @@ def load_config(yaml_text: str) -> Config:
         logger.error("global_languages is deprecated; use global_filetypes instead")
         raise ValueError("global_languages is deprecated; use global_filetypes instead")
 
-    global_filetypes = raw.get("global_filetypes") or raw.get("global_languages") or default_global_languages
+    global_filetypes = raw.get("global_filetypes") or raw.get("global_languages") or default_global_filetypes
     return Config(
         ignores=raw.get("ignores") or default_ignores,
         included_filetypes=_include,
