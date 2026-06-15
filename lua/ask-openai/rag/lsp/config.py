@@ -22,7 +22,7 @@ default_global_languages: set[str] = set()  # no defaults b/c if you don't set i
 default_enabled: bool = True
 
 
-def _include_filetypes(raw_includes: set[str]) -> set[str]:
+def _map_includes_to_filetypes(raw_includes: set[str]) -> set[str]:
     """Normalize include list: convert raw extensions to canonical filetypes.
 
     Handles both old-style raw extensions (js, ts, yml, fish) and
@@ -67,7 +67,7 @@ def load_config(yaml_text: str) -> Config:
     _enabled = raw.get("enabled") if raw.get("enabled") is not None else default_enabled
     _include = raw.get("include") or DEFAULT_INCLUDES
     # Normalize: convert raw extensions (js, ts, yml, fish) to canonical filetypes
-    _include = _include_filetypes(_include)
+    _include = _map_includes_to_filetypes(_include)
 
     return Config(
         ignores=raw.get("ignores") or default_ignores,
