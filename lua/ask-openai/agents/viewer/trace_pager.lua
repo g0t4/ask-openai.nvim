@@ -19,7 +19,6 @@ local function close_nvim_tree_if_open()
 end
 
 local function setup_trace_keymaps(bufnr)
-
     -- Use vim.tbl_extend to merge tables (Lua doesn't support + operator on tables)
     local base_opts = { buffer = bufnr, noremap = true, silent = true }
 
@@ -82,20 +81,23 @@ function M.open_trace_viewer(trace_path)
     -- TODO how about find trace path based on part of session_id or datasets dir path i.e. 2026-06-14_001?
     --  like I plan to do with session restore from datasets dir
 
-    close_nvim_tree_if_open()
+    -- close_nvim_tree_if_open()
 
-    vim.cmd("tabnew")
+    vim.schedule(function()
+        -- schedule is a hack so that this runs later (when nvim -c "AskViewTrace ...") otherwise this tab isn't focused b/c other tabs open after if I immediately run this open code
+        vim.cmd("tabnew")
 
-    vim.cmd("terminal view_trace " .. trace_path)
+        vim.cmd("terminal view_trace " .. trace_path)
 
-    local term_bufnr = vim.api.nvim_get_current_buf()
-    vim.bo.scrollback = 100000
-    -- FYI default is 10K and then max is 100K...
-    --   IIUC -1 => maps to 10K default btw... b/c by default `=vim.bo.scrollback` shows 10K for me (hence overriding here)
-    -- BTW I want to stay at top of buffer (not jump to bottom)... so that is desirable and working right now
-    -- if you hit the limit you will scroll down to first line that still shows (after cutoff lines disappaer above)... so it is obvious
+        local term_bufnr = vim.api.nvim_get_current_buf()
+        vim.bo.scrollback = 100000
+        -- FYI default is 10K and then max is 100K...
+        --   IIUC -1 => maps to 10K default btw... b/c by default `=vim.bo.scrollback` shows 10K for me (hence overriding here)
+        -- BTW I want to stay at top of buffer (not jump to bottom)... so that is desirable and working right now
+        -- if you hit the limit you will scroll down to first line that still shows (after cutoff lines disappaer above)... so it is obvious
 
-    setup_trace_keymaps(term_bufnr)
+        setup_trace_keymaps(term_bufnr)
+    end)
 
     -- vim.api.nvim_buf_set_name(term_bufnr, ("TraceViewer:%s"):format(resolved_path))
 end
