@@ -475,7 +475,7 @@ def _detect_filetype_from_shebang(file_path: Path) -> Optional[str]:
         if binary_name.startswith(key):
             return value
 
-    return None
+    return binary_name
 
 
 # ---------------------------------------------------------------------------
