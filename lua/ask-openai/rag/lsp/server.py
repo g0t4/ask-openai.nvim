@@ -185,7 +185,7 @@ async def semantic_grep_command(_: LanguageServer, args: rag.LSPSemanticGrepRequ
         return rag.LSPSemanticGrepResult(error=rag.LSPResponseErrors.CANCELLED)
 
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):
-    logger.warn("SIGKILL myself")
+    logger.warning("SIGKILL myself")
     os.kill(os.getpid(), signal.SIGKILL)
 
 # TODO detect when LSP disconnects and shutdown self?

@@ -79,7 +79,7 @@ class IncrementalRAGIndexer:
 
     async def main(self):
         if not self.config.enabled:
-            logger.warn(f"RAG indexing disabled in {self.source_code_dir / '.rag.yaml'}, ")
+            logger.warning(f"RAG indexing disabled in {self.source_code_dir / '.rag.yaml'}, ")
             return
 
         included = self.config.include
@@ -101,11 +101,11 @@ class IncrementalRAGIndexer:
         if not any(vestigial_filetypes):
             return
 
-        logger.warn(f'FYI found {vestigial_filetypes=}, removing...')
+        logger.warning(f'FYI found {vestigial_filetypes=}, removing...')
 
         for name in vestigial_filetypes:
             filetype_dir = self.dot_rag_dir / name
-            logger.warn(f"Removing vestigial rag dir: {filetype_dir}")
+            logger.warning(f"Removing vestigial rag dir: {filetype_dir}")
             trash_dir(filetype_dir)
 
     def flag_unindexed_filetypes_with_file_counts(self, index_filetypes: set[str]):

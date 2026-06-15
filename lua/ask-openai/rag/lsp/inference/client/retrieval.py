@@ -98,7 +98,7 @@ async def semantic_grep(
 
         for lang, ds in datasets.all_datasets.items():
             if filter_global_languages and lang not in config.global_languages:
-                logger.warn(f"skipping dataset for {lang=}")
+                logger.warning(f"skipping dataset for {lang=}")
                 continue
 
             logger.info(f"searching dataset for {lang=}")
@@ -209,7 +209,7 @@ async def semantic_grep(
         c.rerank_rank = idx
 
     if embed_top_k > rerank_top_k:
-        logger.warn(f"{embed_top_k=} > {rerank_top_k=} truncating")
+        logger.warning(f"{embed_top_k=} > {rerank_top_k=} truncating")
         matches = matches[:rerank_top_k]
 
     await signal_hotpath_done_in_background()

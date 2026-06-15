@@ -48,16 +48,16 @@ async def _recv_exact_async(reader: StreamReader, content_size) -> bytes | None:
 async def recv_len_then_msg_async(reader: StreamReader) -> dict[str, Any] | None:
     msg_len_packed = await _recv_exact_async(reader, 4)
     if msg_len_packed is None:
-        logger.warn("recv_len_then_msg_async: msg_len_packed is None")
+        logger.warning("recv_len_then_msg_async: msg_len_packed is None")
         return None
     msg_len = struct.unpack('!I', msg_len_packed)[0]
     if msg_len is None:
-        logger.warn("recv_len_then_msg_async: msg_len is None")
+        logger.warning("recv_len_then_msg_async: msg_len is None")
         return None
 
     msg_packed = await _recv_exact_async(reader, msg_len)
     if msg_packed is None:
-        logger.warn("recv_len_then_msg_async: msg_packed is None")
+        logger.warning("recv_len_then_msg_async: msg_packed is None")
         return None
     return msgpack.unpackb(msg_packed, raw=False)
 
