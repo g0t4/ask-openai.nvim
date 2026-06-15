@@ -17,7 +17,6 @@ from index.stale import warn_about_stale_files
 
 logger = get_logger("validator")
 
-
 class DatasetsValidator:
 
     def __init__(self, datasets: Datasets):
@@ -72,56 +71,55 @@ class DatasetsValidator:
         else:
             logger.debug("[bold green]ALL CHECKS PASS!")
 
-    def warn_about_unindexed_filetypes(self, datasets: Datasets) -> None:
-        """Warn about filetypes with many files that aren't indexed."""
+    def warn_about_unindexed_domains(self, datasets: Datasets) -> None:
+        """Warn about semantic domains with many files that aren't indexed."""
 
-        def find_filetypes_in_cwd():
+        def find_domains_in_cwd():
             fd_command = ["fd", "--type", "file"]
             out = subprocess.check_output(fd_command, text=True)
 
-            filetype_counts = Counter()
+            domain_counters = Counter()
             for file_path in out.splitlines():
-                filetype = resolve_semantic_domain(file_path)
-                if filetype:
-                    filetype_counts[filetype] += 1
-            return filetype_counts
+                domain = resolve_semantic_domain(file_path)
+                if domain:
+                    domain_counters[domain] += 1
+            return domain_counters
 
-        filetype_counts = find_filetypes_in_cwd()
+        domain_counts = find_domains_in_cwd()
 
         EXTENSION_COUNT_THRESHOLD = 10
-        frequent_filetypes = {ft for ft, count in filetype_counts.items() if count > EXTENSION_COUNT_THRESHOLD}
-        indexed_filetypes = datasets.get_indexed_filetypes()
-        missing_filetypes = frequent_filetypes - indexed_filetypes
+        frequent_domains = {domain for domain, count in domain_counts.items() if count > EXTENSION_COUNT_THRESHOLD}
+        indexed_domains = set(datasets.all_datasets.keys())
+        missing_domains = frequent_domains - indexed_domains
 
-        if missing_filetypes:
-            missing_counts = {ft: filetype_counts[ft] for ft in missing_filetypes}
-            logger.debug("Found prominent, unindexed filetypes: " + ", ".join( \
+        if missing_domains:
+            missing_counts = {domain: domain_counts[domain] for domain in missing_domains}
+            logger.debug("Found prominent, unindexed semantic domains: " + ", ".join( \
                 f"{ft}={count}" for ft, count in missing_counts.items()))
         else:
-            logger.debug("All good, no missing filetypes, you lucky motherf***er")
+            logger.debug("All good, no missing semantic domains, you lucky motherf***er")
 
-    def compare_config_vs_indexed_filetypes(self, datasets: Datasets, config: Config) -> None:
-        """Compare configured filetypes against what's actually indexed on disk."""
+    def compare_config_vs_indexed_domains(self, datasets: Datasets, config: Config) -> None:
+        """Compare configured semantic domains against what's actually indexed on disk."""
 
-        present_filetypes = set(datasets.all_datasets.keys())
-        configured_filetypes = set(config.included_filetypes)
+        present_domains = set(datasets.all_datasets.keys())
+        configured_domains = set(config.included_semantic_domains)
 
-        extra_filetypes = present_filetypes - configured_filetypes
-        if extra_filetypes:
+        extra_domains = present_domains - configured_domains
+        if extra_domains:
             self.any_problems = True
             logger.error( \
-                "[bold white on red]Vestigial datasets (filetypes that aren't indexed): "
-                + ", ".join(sorted(extra_filetypes))
+                "[bold white on red]Vestigial datasets (semantic domains that aren't indexed): "
+                + ", ".join(sorted(extra_domains))
             )
 
-        missing_filetypes = configured_filetypes - present_filetypes
-        if missing_filetypes:
+        missing_domains = configured_domains - present_domains
+        if missing_domains:
             self.any_problems = True
             logger.error( \
-                "[bold white on red]Missing datasets (configured filetypes): "
-                + ", ".join(sorted(missing_filetypes))
+                "[bold white on red]Missing datasets (configured semantic domains): "
+                + ", ".join(sorted(missing_domains))
             )
-
 
 async def main():
     # usage:
@@ -134,17 +132,16 @@ async def main():
 
     validator = DatasetsValidator(ds)
     validator.validate_datasets()
-    validator.warn_about_unindexed_filetypes(ds)
+    validator.warn_about_unindexed_domains(ds)
 
     root_dir = rag_dir.parent
     warn_about_stale_files(ds, root_dir)
 
     config = await load_rag_config(root_dir)
-    validator.compare_config_vs_indexed_filetypes(ds, config)
+    validator.compare_config_vs_indexed_domains(ds, config)
 
     if validator.any_problems:
         sys.exit(1)
-
 
 if __name__ == "__main__":
     asyncio.run(main())

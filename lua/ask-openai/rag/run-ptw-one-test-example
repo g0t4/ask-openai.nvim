@@ -1,3 +1,5 @@
+#!/usr/bin/env fish
+
 # pass pytest args after --
 #   make sure the args work with pytest directly
 #   pytest ____

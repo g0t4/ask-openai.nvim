@@ -92,10 +92,9 @@ class FileUpdateEmbeddingsQueue:
             logger.debug(f"rag ignored doc: {doc_path}")
             return
 
-        # Resolve filetype through the three-layer mapper (extension → filename → shebang)
-        filetype = resolve_semantic_domain(doc_path)
-        if filetype is None:
-            logger.info(f"skip unresolved file (no extension, no known filename, no shebang): {doc_path}")
+        domain = resolve_semantic_domain(doc_path)
+        if domain is None:
+            logger.info(f"skip unresolved semantic domain: {doc_path}")
             return
 
         doc = self.server.workspace.get_text_document(doc_uri)

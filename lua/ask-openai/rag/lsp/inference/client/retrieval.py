@@ -82,10 +82,10 @@ async def semantic_grep(
         # crude calculations for splitting top_k... these can and will be changed long-term
         #   consider just configuring how much per language in the global_languages config list (make each a configurable object)
         config = get_config()
-        filter_global_languages = global_search and config.global_filetypes and len(config.global_filetypes) > 0
+        filter_global_languages = global_search and config.global_query_domains and len(config.global_query_domains) > 0
         if filter_global_languages:
             num_languages = 0
-            for lang in config.global_filetypes:
+            for lang in config.global_query_domains:
                 if lang in datasets.all_datasets:
                     num_languages += 1
         else:
@@ -97,7 +97,7 @@ async def semantic_grep(
         # logger.info(f"{top_k_per_lang=}")
 
         for lang, ds in datasets.all_datasets.items():
-            if filter_global_languages and lang not in config.global_filetypes:
+            if filter_global_languages and lang not in config.global_query_domains:
                 logger.warning(f"skipping dataset for {lang=}")
                 continue
 

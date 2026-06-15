@@ -64,8 +64,8 @@ def is_ignored_allchecks(file_path: str | Path, config: Config, fs_root_path: Pa
     # TODO wire this into rag_validate_index
 
     file_path = Path(file_path)
-    if not config.is_file_type_supported(file_path):
-        logger.debug(f"filetype not supported: {file_path}")
+    if not config.is_semantic_domain_supported(file_path):
+        logger.debug(f"semantic domain not supported for: {file_path}")
         return IGNORED
 
     if _is_gitignored(file_path, fs_root_path, config):

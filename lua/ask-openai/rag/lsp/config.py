@@ -5,84 +5,70 @@ from pathlib import Path
 import yaml
 
 from lsp.domains import (
-    DEFAULT_INCLUDED_FILETYPES,
-    EXTENSION_TO_FILETYPE,
-    BASENAME_TO_FILETYPE,
+    DEFAULT_INCLUDED_SEMANTIC_DOMAINS,
+    EXTENSION_TO_SEMANTIC_DOMAIN,
+    BASENAME_TO_SEMANTIC_DOMAIN,
     resolve_semantic_domain,
 )
 
-
-default_ignores: set[str] = set()
-default_global_filetypes: set[str] = set()  # no defaults b/c if you don't set it, you get all indexed file types (includes)
+DEFAULT_IGNORES: set[str] = set()
+DEFAULT_GLOBAL_DOMAINS: set[str] = set()  # no defaults b/c if you don't set it, you get all indexed file types (includes)
 DEFAULT_RAG_ENABLED: bool = True
 
 from lsp.logs import get_logger
+
 logger = get_logger(__name__)
 
-def _map_included_file_extensions_to_filetypes(raw_includes: set[str]) -> set[str]:
-    """Normalize include list: convert raw extensions to canonical filetypes.
+def _map_included_file_extensions_to_semantic_domains(raw_includes: set[str]) -> set[str]:
+    """Normalize include list: convert raw extensions to semantic domains.
 
     Handles both old-style raw extensions (js, ts, yml, fish) and
-    new-style canonical filetypes (javascript, typescript, yaml, shell).
-    Unmapped extensions pass through as-is. Deduplicates results.
+    new-style semantic domains (javascript, typescript, yaml, shell).
     """
-    # include is inteded as extensions/filetypes... so map extensions to filetypes too...
-    # PRN rename to include_filetypes or smth else to convey post extensions design?
-    filetypes = [resolve_semantic_domain("." + item) or item for item in raw_includes]
-    return set(filetypes)
-
+    domains = [resolve_semantic_domain("." + item) or item for item in raw_includes]
+    return set(domains)
 
 @dataclass
 class Config:
     ignores: set[str] = field(default_factory=set)
-    #
-    # included filetypes (ideally, or extension which is mapped to filetype)
-    included_filetypes: set[str] = field(default_factory=set)
-    #
-    global_filetypes: set[str] = field(default_factory=set)
-    #
+    included_semantic_domains: set[str] = field(default_factory=set)
+    global_query_domains: set[str] = field(default_factory=set)
     enabled: bool = field(default=DEFAULT_RAG_ENABLED)
 
     @staticmethod
     def default() -> "Config":
         return Config(
-            included_filetypes=DEFAULT_INCLUDED_FILETYPES,
-            ignores=default_ignores,
-            global_filetypes=default_global_filetypes,
+            included_semantic_domains=DEFAULT_INCLUDED_SEMANTIC_DOMAINS,
+            ignores=DEFAULT_IGNORES,
+            global_query_domains=DEFAULT_GLOBAL_DOMAINS,
             enabled=DEFAULT_RAG_ENABLED,
         )
 
-    def is_file_type_supported(self, file_path: Path) -> bool:
-        """Check if a file's resolved filetype is in the include list.
-
-        Uses the three-layer filetype mapper (extension → filename → shebang)
-        to resolve the canonical filetype, then checks against config.include.
-        """
-        filetype = resolve_semantic_domain(file_path)
-        if filetype is None:
+    def is_semantic_domain_supported(self, file_path: Path) -> bool:
+        domain = resolve_semantic_domain(file_path)
+        if domain is None:
             return False
-        return filetype in self.included_filetypes
-
+        return domain in self.included_semantic_domains
 
 def load_config(yaml_text: str) -> Config:
     raw = yaml.safe_load(yaml_text)
 
     _enabled = raw.get("enabled") if raw.get("enabled") is not None else DEFAULT_RAG_ENABLED
-    _include = raw.get("include_filetypes") or DEFAULT_INCLUDED_FILETYPES
-    _include = _map_included_file_extensions_to_filetypes(_include)
+    _include = raw.get("include_domains") or DEFAULT_INCLUDED_SEMANTIC_DOMAINS
+    _include = _map_included_file_extensions_to_semantic_domains(_include)
 
-    if raw.get("include"):
-        logger.error("include is deprecated; use include_filetypes instead")
-        raise ValueError("include is deprecated; use include_filetypes instead")
+    if raw.get("include") or raw.get("include_filetypes"):
+        logger.error("include/include_filetypes is deprecated; use include_domains instead")
+        # raise ValueError("include/include_filetypes is deprecated; use include_domains instead")
 
-    if raw.get("global_languages"):
-        logger.error("global_languages is deprecated; use global_filetypes instead")
-        raise ValueError("global_languages is deprecated; use global_filetypes instead")
+    if raw.get("global_languages") or raw.get("global_filetypes"):
+        logger.error("global_languages/global_filetypes is deprecated; use global_domains instead")
+        # raise ValueError("global_languages/global_filetypes is deprecated; use global_domains instead")
 
-    global_filetypes = raw.get("global_filetypes") or default_global_filetypes
+    global_domains = raw.get("global_domains") or DEFAULT_GLOBAL_DOMAINS
     return Config(
-        ignores=raw.get("ignores") or default_ignores,
-        included_filetypes=_include,
-        global_filetypes=global_filetypes,
+        ignores=raw.get("ignores") or DEFAULT_IGNORES,
+        included_semantic_domains=_include,
+        global_query_domains=global_domains,
         enabled=_enabled,
     )

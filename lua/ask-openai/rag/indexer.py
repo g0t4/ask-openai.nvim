@@ -5,6 +5,7 @@ from lsp.inference.client.embedder import get_shape, encode_passages, signal_hot
 
 logger = get_logger(__name__)
 
+import itertools
 import argparse
 import logging
 import subprocess
@@ -24,7 +25,8 @@ from lsp.chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_fi
 from lsp.config import Config, load_config
 from lsp.ignores import is_ignored_allchecks
 from lsp.domains import (
-    EXTENSION_TO_FILETYPE,
+    EXTENSION_TO_SEMANTIC_DOMAIN,
+    find_files_by_semantic_domain,
     resolve_semantic_domain,
 )
 from lsp import fs
@@ -33,14 +35,12 @@ from lsp import fs
 IGNORE_FAILURE = False
 STOP_ON_FAILURE = True
 
-
 @dataclass
 class FilesDiff:
     # FYI type mismatch IS FINE with type hints... LEAVE IT!
     changed: Set[Path]
     deleted: Set[str]
     not_changed: Set[str]
-
 
 @dataclass
 class ProgramArgs:
@@ -49,15 +49,13 @@ class ProgramArgs:
     in_githook: bool
     rebuild: bool
     level: int
-    only_filetype: str | None = None
-
+    domain: str | None = None
 
 def trash_dir(directory):
     directory = Path(directory)
     if not directory.exists():
         return
     subprocess.run(["trash", directory], check=IGNORE_FAILURE)
-
 
 class IncrementalRAGIndexer:
 
@@ -81,95 +79,50 @@ class IncrementalRAGIndexer:
             logger.warning(f"RAG indexing disabled in {self.source_code_dir / '.rag.yaml'}, ")
             return
 
-        included_filetypes = self.config.included_filetypes
-        if self.program_args and self.program_args.only_filetype:
-            included_filetypes = {self.program_args.only_filetype}
-            logger.info(f"Indexing only filetype: {included_filetypes}")
+        allowed_domains = self.config.included_semantic_domains
+        if self.program_args and self.program_args.domain:
+            allowed_domains = {self.program_args.domain}
+            logger.info(f"Indexing ONLY THIS semantic domain: {allowed_domains}")
 
-        def find_all_files():
-            fd_command = [
-                "fd",
-                "--type", "file", \
-                "--absolute-path",
-                ".",
-                str(self.source_code_dir),
-            ]
-            out = subprocess.check_output(fd_command, text=True)
+        files_by_domain = find_files_by_semantic_domain(self.source_code_dir)
 
-            files_by_type = {}
-            for file_path in out.splitlines():
-                filetype = resolve_semantic_domain(file_path)
-                if filetype:
-                    files_by_type.setdefault(filetype, set()).add(file_path)
-                else:
-                    pass
-                    # TODO warn, or?
+        for domain in allowed_domains:
+            files = files_by_domain.get(domain, set())
+            if not any(files):
+                continue
+            await self.build_index(domain, files)
 
-            return files_by_type
-
-        files_by_type = find_all_files()
-
-        for filetype in included_filetypes:
-            files = files_by_type.get(filetype, set())
-            await self.build_index(filetype, files)
-
-        self.flag_unindexed_filetypes_with_file_counts(included_filetypes)
-        self.trash_vestigial_filetype_indexes(included_filetypes)
+        self.flag_unindexed_domains(allowed_domains, files_by_domain)
+        self.trash_vestigial_domains(allowed_domains)
         await signal_hotpath_done_in_background()
 
-    def trash_vestigial_filetype_indexes(self, allowed_filetypes: set[str]):
+    def trash_vestigial_domains(self, allowed_domains: set[str]):
         rag_dir_dirs = [p for p in self.dot_rag_dir.iterdir() if p.is_dir()]
-        indexed_filetypes = {d.name for d in rag_dir_dirs}
-        vestigial_filetypes = indexed_filetypes - allowed_filetypes
+        indexed_domains = {d.name for d in rag_dir_dirs}
+        vestigial_domains = indexed_domains - allowed_domains
 
-        if not any(vestigial_filetypes):
+        if not any(vestigial_domains):
             return
 
-        logger.warning(f'FYI found {vestigial_filetypes=}, removing...')
+        logger.warning(f'FYI found {vestigial_domains=}, removing...')
 
-        for name in vestigial_filetypes:
-            filetype_dir = self.dot_rag_dir / name
-            logger.warning(f"Removing vestigial rag dir: {filetype_dir}")
-            trash_dir(filetype_dir)
+        for name in vestigial_domains:
+            domain_dir = self.dot_rag_dir / name
+            logger.warning(f"Removing vestigial rag dir: {domain_dir}")
+            trash_dir(domain_dir)
 
-    def flag_unindexed_filetypes_with_file_counts(self, expected_filetypes: set[str]):
-        """Warn about filetypes present in the repo but not being indexed."""
+    def flag_unindexed_domains(self, included_domains: set[str], files_by_domain: dict[str, set[str]]):
+        """Warn about semantic domains present in the repo but not being indexed."""
 
-        cmd = ["fish", "-c", f"fd . {self.source_code_dir} --exclude='\\.ctags\\.d' --exclude='\\.rag' --exec basename"]
-        logger.debug("warn cmd", cmd)
-        result = subprocess.run(
-            cmd,
-            stdout=subprocess.PIPE,
-            text=True,
-            check=STOP_ON_FAILURE,
-        )
-        basenames = result.stdout.strip().splitlines()
-
-        ignore_files = {"ctags", "ctags.d"}
-
-        # Resolve each basename to its filetype
-        filetypes: list[str] = []
-        for basename in basenames:
-            if not basename or basename in ignore_files or "." not in basename:
-                continue
-            ext = basename.rsplit(".", 1)[-1]
-            filetype = EXTENSION_TO_FILETYPE.get(ext, ext)
-            filetypes.append(filetype)
-
-        import itertools
-        unindexed_filetypes = [(ft, len(list(group))) \
-            for ft, group in itertools.groupby(sorted(filetypes)) \
-            if ft not in expected_filetypes
+        unindexed = [ \
+            f"{domain}={len(files)}"
+            for domain, files in files_by_domain.items()
+            if domain not in included_domains
+            # and len(files) > 1
         ]
 
-        noteworthy_filetypes = [ \
-            f"{ft}={count}" \
-            for ft, count in unindexed_filetypes \
-            if count > 1
-        ]
-
-        if noteworthy_filetypes:
-            logger.debug(f"Found unindexed filetypes: {' '.join(noteworthy_filetypes)}")
+        if unindexed:
+            logger.debug(f"Found files in unindexed domains: {' '.join(unindexed)}")
 
     def get_files_diff(self, current_files_path_strs: set[str], prior_files_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Split files into: changed (added/updated), unchanged, deleted"""
@@ -264,10 +217,10 @@ class IncrementalRAGIndexer:
 
         return index
 
-    async def build_index(self, filetype: str = "lua", current_files: set[str] = set()):
-        """Build or update the RAG index incrementally for a given filetype."""
+    async def build_index(self, domain: str, current_files: set[str] = set()):
+        """Build or update the RAG index incrementally for a given semantic domain."""
 
-        prior_files = load_prior_data(self.dot_rag_dir, filetype)
+        prior_files = load_prior_data(self.dot_rag_dir, domain)
 
         files_diff = self.get_files_diff(current_files, prior_files.stat_by_path)
 
@@ -311,11 +264,11 @@ class IncrementalRAGIndexer:
         if index is None:
             return
 
-        # Save everything under the filetype key
-        index_dir = self.dot_rag_dir / filetype
-        index_dir.mkdir(exist_ok=True, parents=True)
+        # Save everything under the domain_dir key
+        domain_dir = self.dot_rag_dir / domain
+        domain_dir.mkdir(exist_ok=True, parents=True)
 
-        faiss.write_index(index, str(index_dir / "vectors.index"))
+        faiss.write_index(index, str(domain_dir / "vectors.index"))
 
         logger.pp_debug("ids: ", prior_files.index_view.ids)
 
@@ -326,17 +279,16 @@ class IncrementalRAGIndexer:
             # logger.pp_debug("all_stat_by_path", all_stat_by_path)
 
         with logger.timer("Save chunks"):
-            write_json(all_chunks_by_file, index_dir / "chunks.json")
+            write_json(all_chunks_by_file, domain_dir / "chunks.json")
 
         with logger.timer("Save file stats"):
-            write_json(all_stat_by_path, index_dir / "files.json")
+            write_json(all_stat_by_path, domain_dir / "files.json")
 
         logger.debug(f"[green]Index updated successfully!")
         if files_diff.changed:
             logger.debug(f"[green]Processed {len(files_diff.changed)} changed files")
         if files_diff.deleted:
             logger.debug(f"[green]Removed {len(files_diff.deleted)} deleted files")
-
 
 async def main():
     from lsp.logs import logging_fwk_to_console
@@ -347,7 +299,7 @@ async def main():
         parser.add_argument("--info", action="store_true", help="Enable info logging")
         parser.add_argument("--rebuild", action="store_true", help="Rebuild index")
         parser.add_argument("--githook", action="store_true", help="Run in git hook mode")
-        parser.add_argument("--only-filetype", type=str, help="Only process files with the specified filetype")
+        parser.add_argument("--domain", type=str, help="Only process files with the specified semantic domain")
 
         args = parser.parse_args()
 
@@ -357,7 +309,7 @@ async def main():
             in_githook=args.githook,
             rebuild=args.rebuild,
             level=logging.WARNING,
-            only_filetype=args.only_filetype,
+            domain=args.domain,
         )
         if args.githook:
             level = logging.INFO
@@ -401,7 +353,6 @@ async def main():
         fs.dot_rag_dir = dot_rag_dir
 
         await indexer.main()
-
 
 if __name__ == "__main__":
     asyncio.run(main())

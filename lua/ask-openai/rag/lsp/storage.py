@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 from lsp.logs import get_logger
 from lsp import fs
-from lsp.domains import resolve_semantic_domain
+from lsp.domains import resolve_semantic_domain, resolve_semantic_domain_for_vim_filetype
 from lsp.inference.client.embedder import encode_passages
 
 logger = get_logger(__name__)
@@ -164,14 +164,14 @@ class FaissIndexView:
 @dataclass
 class RAGDataset:
 
-    def __init__(self, filetype, chunks_by_file, files_by_path, index):
-        self.filetype = filetype
+    def __init__(self, domain, chunks_by_file, files_by_path, index):
+        self.domain = domain
         self.chunks_by_file = chunks_by_file
         self.stat_by_path = files_by_path
         self.index = index
         self.index_view = FaissIndexView(self)
 
-    filetype: str
+    domain: str
     chunks_by_file: dict[str, list[Chunk]]
     stat_by_path: dict[str, FileStat]
     index: faiss.Index
@@ -200,9 +200,6 @@ class Datasets:
                     faiss_id = chunk.faiss_id
                     self._chunks_by_faiss_id[faiss_id] = chunk
 
-    def get_indexed_filetypes(self) -> set[str]:
-        return set(self.all_datasets.keys())
-
     def get_chunk_by_faiss_id(self, faiss_id) -> Optional[Chunk]:
         # now consumers have no knowledge of the cache
         #  this will help with updates too, to not let the updater have to think about this
@@ -213,25 +210,17 @@ class Datasets:
     def for_file(self, file_path: str | Path | None = None, vim_filetype: str | None = None):
 
         if file_path is not None:
-            filetype = resolve_semantic_domain(file_path)
+            domain = resolve_semantic_domain(file_path)
         elif vim_filetype is not None:
-            # TODO!FILETYPES review client side usage of vim_filetype arg...
-            # resolve the vim_filetype to be safe
-            # 1. resolving our filetype as a file extension will resolve itself
-            # 2. this is called vim_filetype client side...
-            #    vim_filetype is probably 100% safe to treat as file extension and resolve to our filetype...
-            #    PRN if this assumption fails, then fix it at that time
-            #    might need to resolve special cases with a mapping client or server side
-            #
-            filetype = resolve_semantic_domain(vim_filetype)
+            domain = resolve_semantic_domain_for_vim_filetype(vim_filetype)
         else:
-            filetype = None
+            domain = None
 
-        if filetype is None or filetype == '':
-            logger.error("No filetype resolved for file, can't find dataset!")
+        if domain is None or domain == '':
+            logger.error("No semantic domain resolved for file, can't find dataset!")
             return None
 
-        return self.all_datasets.get(filetype)
+        return self.all_datasets.get(domain)
 
     async def update_file(self, file_path_str: str | Path, new_chunks: list[Chunk]):
         file_path_str = str(file_path_str)  # must be str, just let people pass either
@@ -243,7 +232,7 @@ class Datasets:
             return
 
         if dataset.index is None:
-            logger.error(f"Dataset {dataset.filetype} has no index")
+            logger.error(f"Dataset {dataset.domain} has no index")
             return
 
         # * find prior chunks (if any)
@@ -303,9 +292,9 @@ def load_file_stats_by_file(files_json_path: Path):
         return files_by_path
 
 
-def load_prior_data(dot_rag_dir: Path, filetype: str) -> RAGDataset:
-    """Load prior indexed data for a given filetype."""
-    language_dir = dot_rag_dir / filetype
+def load_prior_data(dot_rag_dir: Path, domain: str) -> RAGDataset:
+    """Load prior indexed data for a given semantic domain."""
+    language_dir = dot_rag_dir / domain
 
     vectors_index_path = language_dir / "vectors.index"
     index = None
@@ -338,11 +327,11 @@ def load_prior_data(dot_rag_dir: Path, filetype: str) -> RAGDataset:
     else:
         logger.info(f"No files.json: {files_json_path}")
 
-    dataset = RAGDataset(filetype, chunks_by_file, files_by_path, index)
+    dataset = RAGDataset(domain, chunks_by_file, files_by_path, index)
 
     num_chunks = dataset.num_chunks()
     log_num_vectors = dataset.num_vectors()
-    logger.info(f"Loaded {filetype} - {dataset.num_files()} file stats, {log_num_vectors} FAISS vectors, {num_chunks} chunks")
+    logger.info(f"Loaded {domain} - {dataset.num_files()} file stats, {log_num_vectors} FAISS vectors, {num_chunks} chunks")
     if num_chunks != (log_num_vectors or 0):
         logger.error(f"Num chunks ({num_chunks}) != Num vectors ({log_num_vectors}) which suggests problems with FAISS index vectors or otherwise, use rag_validate_index to check")
 
@@ -362,7 +351,7 @@ def find_language_dirs(dot_rag_dir: Path) -> list[Path]:
 def load_all_datasets(dot_rag_dir: Path) -> Datasets:
     """Load all indexed datasets from disk.
 
-    Directory names under .rag/ are now filetype keys (not extensions),
+    Directory names under .rag/ are now semantic domains (not file extensions, nor filetypes/vim_filetypes),
     so "yaml/" contains both .yaml and .yml files.
     """
     dot_rag_dir = Path(dot_rag_dir)
@@ -372,9 +361,9 @@ def load_all_datasets(dot_rag_dir: Path) -> Datasets:
     total_vectors = 0
     total_files = 0
     for lang_dir in language_dirs:
-        filetype = lang_dir.name
-        dataset = load_prior_data(dot_rag_dir, filetype)
-        datasets[filetype] = dataset
+        domain = lang_dir.name
+        dataset = load_prior_data(dot_rag_dir, domain)
+        datasets[domain] = dataset
         total_chunks += dataset.num_chunks()
         total_vectors += dataset.num_vectors()
         total_files += dataset.num_files()

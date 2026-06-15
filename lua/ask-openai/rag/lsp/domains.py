@@ -1,27 +1,16 @@
-"""Filetype mapper — canonical file type resolution for RAG indexing.
-
-This module provides a three-layer filetype resolution system:
-
-1. **Extension mapping**: canonical extension → canonical filetype
-   (e.g. yml → yaml, sh/fish/zsh/bash → shell)
-
-2. **Filename lookup**: explicit filename → filetype
-   (e.g. fish_history → yaml, Makefile → make)
-
-3. **Shebang fallback**: parse #! line for extensionless files
-   (e.g. #!/usr/bin/env python3 → py)
-
-The canonical filetype is used as the key for RAG datasets/indexes.
-"""
-
 from __future__ import annotations
 
 import re
+import subprocess
+
 from pathlib import Path
 from typing import Optional
 
+from .logs import get_logger
 
-EXTENSION_TO_FILETYPE: dict[str, str] = {
+logger = get_logger(__name__)
+
+EXTENSION_TO_SEMANTIC_DOMAIN: dict[str, str] = {
     # --- YAML family ---
     "yaml": "yaml",
     "yml": "yaml",
@@ -216,14 +205,12 @@ EXTENSION_TO_FILETYPE: dict[str, str] = {
     "hcl": "hcl",
 }
 
-
-BASENAME_TO_FILETYPE: dict[str, str] = {
+BASENAME_TO_SEMANTIC_DOMAIN: dict[str, str] = {
     # --- Shell ---
     "Makefile": "make",
     "makefile": "make",
     "GNUmakefile": "make",
     #
-    # TODO!FILETYPES finish RETRIEVAL DOMAIN renaming (or SEMANTIC DOMAIN renaming)
     "fish_history": "fish",  # yaml format but fish is the primary purpose so let's map it to fish index!
     #
 
@@ -292,7 +279,7 @@ BASENAME_TO_FILETYPE: dict[str, str] = {
 #     -- TODO other always ignored file types/names?
 # }
 
-SHEBANG_TO_FILETYPE: dict[str, str] = {
+SHEBANG_EXECUTABLE_TO_SEMANTIC_DOMAIN: dict[str, str] = {
     # --- Python ---
     "python": "py",
     "python3": "py",
@@ -341,14 +328,15 @@ SHEBANG_TO_FILETYPE: dict[str, str] = {
     # "julia": "julia",
 }
 
-def resolve_vim_filetype(vim_filetype: str):
+def resolve_semantic_domain_for_vim_filetype(vim_filetype: str):
+    # TODO actually lets prompt the agent to provide a semantic/retrieval domain instead of vim_filetype?
+    #  we would need to give them a list (included_domains) in the tool call definition, or explain that they can provide a vim filetype too
     # PRN add tests and special mapping if needed, but not before a real problem arises
-    return resolve_semantic_domain(f".{vim_filetype}")
+    as_file_extension = f".{vim_filetype}"
+    return resolve_semantic_domain(as_file_extension)
 
 def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
-    """Resolve the file group for a given file path, this is the group used for querying and indexing related files...
-      filetype is not vim's filetype
-      best to think of this as a group/family and less about a "type"
+    """Resolve the semantic/retrieval domain for a file, the group used for narrow querying of related files...
 
     Resolution:
     1. Basename match
@@ -356,50 +344,39 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
     3. Extension mapping
 
     """
-    # TODO! check explicit mapping always ahead of everything else (that way even w/ an extension we can remap the filetype)
-
     file_path = Path(file_path)
 
     # --- * basename * ---
     basename = file_path.name
-    filetype = BASENAME_TO_FILETYPE.get(basename)
-    if filetype is not None:
-        return filetype
+    domain = BASENAME_TO_SEMANTIC_DOMAIN.get(basename)
+    if domain is not None:
+        return domain
 
     # --- * shebang * ---
-    filetype = _detect_filetype_from_shebang(file_path)
-    if filetype is not None:
-        return filetype
+    domain = _detect_semantic_domain_from_shebang(file_path)
+    if domain is not None:
+        return domain
 
     # --- * file extension * ---
     ext = file_path.suffix.lstrip(".").lower()
     if not ext:
         return None
 
-    filetype = EXTENSION_TO_FILETYPE.get(ext)
-    if filetype is not None:
-        return filetype
+    domain = EXTENSION_TO_SEMANTIC_DOMAIN.get(ext)
+    if domain is not None:
+        return domain
 
     return ext
-
 
 # Matches both:
 #   #!/usr/bin/env python3
 #   #!/bin/bash
 _SHEBANG_RE = re.compile(rb"^#!\s*(?:/usr/bin/env\s+)?(\S+)")
 
-
-def _detect_filetype_from_shebang(file_path: Path) -> Optional[str]:
-    """Parse the shebang line of a file to determine its filetype.
-
+def _detect_semantic_domain_from_shebang(file_path: Path) -> Optional[str]:
+    """
     Handles both /usr/bin/env style and direct paths, including versioned
     interpreters like python3.11 or bash5.2.
-
-    Args:
-        file_path: Path to the file (must have no extension).
-
-    Returns:
-        Canonical filetype string, or None if no shebang found.
     """
     try:
         with open(file_path, "rb") as f:
@@ -416,19 +393,19 @@ def _detect_filetype_from_shebang(file_path: Path) -> Optional[str]:
     binary_name = Path(interpreter).name
 
     # Try exact match first
-    filetype = SHEBANG_TO_FILETYPE.get(binary_name)
-    if filetype is not None:
-        return filetype
+    domain = SHEBANG_EXECUTABLE_TO_SEMANTIC_DOMAIN.get(binary_name)
+    if domain is not None:
+        return domain
 
     # Try matching substring for versioned interpreters
     # e.g. "python3.11" starts with "python3" → py
-    for key, value in SHEBANG_TO_FILETYPE.items():
+    for key, value in SHEBANG_EXECUTABLE_TO_SEMANTIC_DOMAIN.items():
         if binary_name.startswith(key):
             return value
 
     return binary_name
 
-DEFAULT_INCLUDED_FILETYPES: set[str] = {
+DEFAULT_INCLUDED_SEMANTIC_DOMAINS: set[str] = {
     # --- Programming languages ---
     "lua",
     "py",
@@ -495,3 +472,24 @@ DEFAULT_INCLUDED_FILETYPES: set[str] = {
     "diff",
     "text",
 }
+
+def find_files_by_semantic_domain(source_code_dir: Path) -> dict[str, set[str]]:
+    # find ALL domains, regardless of configuration
+    fd_command = [
+        "fd",
+        "--type", "file", \
+        "--absolute-path",
+        ".",
+        str(source_code_dir),
+    ]
+    out = subprocess.check_output(fd_command, text=True)
+
+    files_by_domain = {}
+    for file_path in out.splitlines():
+        domain = resolve_semantic_domain(file_path)
+        if domain:
+            files_by_domain.setdefault(domain, set()).add(file_path)
+        else:
+            logger.warning(f"Could not resolve semantic domain for {file_path}")
+
+    return files_by_domain

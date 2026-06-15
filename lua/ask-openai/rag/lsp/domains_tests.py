@@ -1,23 +1,18 @@
-"""Tests for the filetype mapper module."""
-
 import tempfile
 from pathlib import Path
 
 import pytest
 
 from lsp.domains import (
-    EXTENSION_TO_FILETYPE,
-    BASENAME_TO_FILETYPE,
-    SHEBANG_TO_FILETYPE,
-    DEFAULT_INCLUDED_FILETYPES,
+    EXTENSION_TO_SEMANTIC_DOMAIN,
+    BASENAME_TO_SEMANTIC_DOMAIN,
+    SHEBANG_EXECUTABLE_TO_SEMANTIC_DOMAIN,
+    DEFAULT_INCLUDED_SEMANTIC_DOMAINS,
     resolve_semantic_domain,
 )
 
 
-class TestShebangDetection_EdgeCases_InResolveFiletype:
-    """exhaustive tests w.r.t. shebang detection
-       put precedence tests with TestResolveFiletype (i.e. basename vs shebang vs file extension lookup order)
-    """
+class TestShebangToSemanticDomainEdgeCases:
     # FYI many technically duplicated tests for sheangs,
     # - leave them so we have confidence in COMMON shebangs
 
@@ -78,7 +73,6 @@ class TestShebangDetection_EdgeCases_InResolveFiletype:
         assert resolve_semantic_domain(f) == "perl"
 
     def test_no_shebang_returns_none(self, tmp_path):
-        # gah this should just be part of other resolve filetype cases... but w/e leave it here too
         f = tmp_path / "random_file"
         f.write_text("just some text\nno shebang here\n")
         assert resolve_semantic_domain(f) is None
@@ -128,6 +122,6 @@ class TestResolveSemanticDomain:
         f.write_text("FROM ubuntu\n")
         assert resolve_semantic_domain(f) == "docker"
 
-    def test_extension_lookup_to_filetype_with_different_name_than_extension(self):
+    def test_aliased_extension_domain_lookup(self):
         f = Path("/some/repo/settings.yml")
         assert resolve_semantic_domain(f) == "yaml"
