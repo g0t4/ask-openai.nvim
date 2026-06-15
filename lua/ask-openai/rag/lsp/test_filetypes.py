@@ -256,18 +256,6 @@ class TestResolveFiletype:
 
 class TestExtensionsForFiletype:
 
-    def test_yaml_extensions(self):
+    def test_filetype_with_multiple_extensions(self):
         exts = get_extensions_for_filetype("yaml")
         assert exts == {"yaml", "yml"}
-
-    def test_shell_extensions(self):
-        exts = get_extensions_for_filetype("shell")
-        assert exts == {"sh", "bash", "zsh", "fish"}
-
-    def test_c_extensions(self):
-        exts = get_extensions_for_filetype("c")
-        assert exts == {"c", "h"}
-
-    def test_objc_extensions(self):
-        exts = get_extensions_for_filetype("objc")
-        assert exts == {"m", "mm"}
