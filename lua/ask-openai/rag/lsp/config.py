@@ -68,7 +68,7 @@ def load_config(yaml_text: str) -> Config:
     raw = yaml.safe_load(yaml_text)
 
     _enabled = raw.get("enabled") if raw.get("enabled") is not None else DEFAULT_RAG_ENABLED
-    _include = raw.get("include_filetypes") or raw.get("include") or DEFAULT_INCLUDED_FILETYPES
+    _include = raw.get("include_filetypes") or DEFAULT_INCLUDED_FILETYPES
     _include = _map_included_file_extensions_to_filetypes(_include)
 
     if raw.get("include"):
@@ -79,7 +79,7 @@ def load_config(yaml_text: str) -> Config:
         logger.error("global_languages is deprecated; use global_filetypes instead")
         raise ValueError("global_languages is deprecated; use global_filetypes instead")
 
-    global_filetypes = raw.get("global_filetypes") or raw.get("global_languages") or default_global_filetypes
+    global_filetypes = raw.get("global_filetypes") or default_global_filetypes
     return Config(
         ignores=raw.get("ignores") or default_ignores,
         included_filetypes=_include,
