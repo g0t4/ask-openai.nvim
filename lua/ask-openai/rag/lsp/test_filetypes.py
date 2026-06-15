@@ -65,6 +65,7 @@ class TestShebangDetection:
 
     def test_env_fish_shebang(self, tmp_path):
         f = tmp_path / "fish_script"
+        # honestly one test with env + cmd should be fine... but lets keep these just cuz they are prevalent and doesn't hurt to know they work
         f.write_text("#!/usr/bin/env fish\necho hi\n")
         assert resolve_filetype(f) == "fish"
 
