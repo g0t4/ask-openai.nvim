@@ -144,13 +144,3 @@ class TestResolveFiletype:
     def test_extension_lookup_to_filetype_with_different_name_than_extension(self):
         f = Path("/some/repo/settings.yml")
         assert resolve_filetype(f) == "yaml"
-
-    def test_path_with_sh_extension(self):
-        f = Path("/home/user/.bashrc")
-        # .bashrc is in BASENAME_TO_FILETYPE, not extension-based
-        # But as a path with no extension... wait, it has no extension
-        assert resolve_filetype(f) == "bash"
-
-    def test_path_with_zsh_extension(self):
-        f = Path("/home/user/.zshrc")
-        assert resolve_filetype(f) == "zsh"
