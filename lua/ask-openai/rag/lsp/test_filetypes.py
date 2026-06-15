@@ -42,7 +42,18 @@ class TestShebangDetection:
         f.write_text("#!/usr/bin/env zsh\necho hi\n")
         assert resolve_filetype(f) == "zsh"
 
+    # TODO!FILETYPES IMPLEMENT shebang wins (after basename => filetype)
+    # def test_shebang_wins_even_when_file_has_extension(self, tmp_path):
+    #     f = tmp_path / "script.sh"
+    #     f.write_text("#!fish\necho hi\n")
+    #     assert resolve_filetype(f) == "fish"
+
     def test_fish_shebang(self, tmp_path):
+        f = tmp_path / "fish_script"
+        f.write_text("#!fish\necho hi\n")
+        assert resolve_filetype(f) == "fish"
+
+    def test_env_fish_shebang(self, tmp_path):
         f = tmp_path / "fish_script"
         f.write_text("#!/usr/bin/env fish\necho hi\n")
         assert resolve_filetype(f) == "fish"
