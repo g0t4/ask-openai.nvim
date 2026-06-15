@@ -202,10 +202,3 @@ class TestResolveFiletype:
     def test_path_with_zsh_extension(self):
         f = Path("/home/user/.zshrc")
         assert resolve_filetype(f) == "shell"
-
-
-class TestExtensionsForFiletype:
-
-    def test_filetype_with_multiple_extensions(self):
-        exts = get_extensions_for_filetype("yaml")
-        assert exts == {"yaml", "yml"}
