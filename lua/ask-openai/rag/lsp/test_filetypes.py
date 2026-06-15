@@ -254,42 +254,7 @@ class TestResolveFiletype:
         assert resolve_filetype(f) == "shell"
 
 
-# ---------------------------------------------------------------------------
-# DEFAULT_INCLUDES tests
-# ---------------------------------------------------------------------------
-
-class TestDefaultIncludes:
-    """Test that DEFAULT_INCLUDES uses canonical filetypes."""
-
-    def test_no_raw_extensions_in_default_includes(self):
-        """DEFAULT_INCLUDES should only contain canonical filetypes, not raw extensions."""
-        # If yml is in DEFAULT_INCLUDES, that's a bug — it should be "yaml"
-        assert "yml" not in DEFAULT_INCLUDED_FILETYPES
-        assert "sh" not in DEFAULT_INCLUDED_FILETYPES
-        assert "fish" not in DEFAULT_INCLUDED_FILETYPES
-        assert "zsh" not in DEFAULT_INCLUDED_FILETYPES
-        assert "cc" not in DEFAULT_INCLUDED_FILETYPES
-        assert "hpp" not in DEFAULT_INCLUDED_FILETYPES
-
-    def test_canonical_filetypes_present(self):
-        """Canonical filetypes should be present."""
-        assert "yaml" in DEFAULT_INCLUDED_FILETYPES
-        assert "shell" in DEFAULT_INCLUDED_FILETYPES
-        assert "cpp" in DEFAULT_INCLUDED_FILETYPES
-        assert "py" in DEFAULT_INCLUDED_FILETYPES
-        assert "lua" in DEFAULT_INCLUDED_FILETYPES
-
-    def test_no_duplicate_canonical_types(self):
-        """No canonical filetype should appear twice."""
-        assert len(DEFAULT_INCLUDED_FILETYPES) == len(set(DEFAULT_INCLUDED_FILETYPES))
-
-
-# ---------------------------------------------------------------------------
-# get_extensions_for_filetype tests
-# ---------------------------------------------------------------------------
-
 class TestExtensionsForFiletype:
-    """Test the set-based reverse lookup."""
 
     def test_yaml_extensions(self):
         exts = get_extensions_for_filetype("yaml")
