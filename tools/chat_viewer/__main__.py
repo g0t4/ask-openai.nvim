@@ -162,7 +162,7 @@ def print_raw_fim_diff(raw_prompt: str, completion: str) -> None:
     # FYI not a fan of both tree + console.print/rule uses... usually I like trees when I defer print until full output is built... meh for now
     root = TreeWrapper.hidden_root()
     if before_omitted or after_omitted:
-        root.add("[dim] • Showing 10 lines of context before/after[/]")
+        root.add_markup("[dim] • Showing 10 lines of context before/after[/]")
 
     # completions are always INSERTIONS only... so just mark it as green! no need to run a diff
     final_text = Text(prefix) + Text(completion, style="bold italic green") + Text(suffix)
