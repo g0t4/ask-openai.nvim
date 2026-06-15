@@ -37,8 +37,8 @@ def get_cached_parser_for_path(path) -> tuple[Parser | None, str]:
         language = "c"
     elif language == "cpp":
         language = "cpp"
-    elif language == "cs":
-        language = "csharp"
+    # elif language == "cs":
+    #     language = "csharp"
     elif language == "bash":
         language = "bash"
     elif language == "fish":
