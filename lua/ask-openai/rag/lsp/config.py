@@ -36,8 +36,13 @@ def _map_includes_to_filetypes(raw_includes: set[str]) -> set[str]:
 @dataclass
 class Config:
     ignores: set[str] = field(default_factory=set)
+    #
+    # included filetypes (ideally, or extension which is mapped to filetype)
     include: set[str] = field(default_factory=set)
+    #
+    # TODO rename global_filetypes?  this is for searching only to search across all of these if not searching for a given filetype
     global_languages: set[str] = field(default_factory=set)
+    #
     enabled: bool = field(default=default_enabled)
 
     @staticmethod
@@ -66,7 +71,6 @@ def load_config(yaml_text: str) -> Config:
 
     _enabled = raw.get("enabled") if raw.get("enabled") is not None else default_enabled
     _include = raw.get("include") or DEFAULT_INCLUDES
-    # Normalize: convert raw extensions (js, ts, yml, fish) to canonical filetypes
     _include = _map_includes_to_filetypes(_include)
 
     return Config(
