@@ -25,6 +25,11 @@ def _map_allowed_file_extensions_to_semantic_domains(raw_includes: set[str]) -> 
     Handles both old-style raw extensions (js, ts, yml, fish) and
     new-style semantic domains (javascript, typescript, yaml, shell).
     """
+    # allow selecting domains based on file extension OR domain name
+    # - fine by me to include both...
+    #   one thing that might be confusing is if you think `.yaml` means `.yml` won't be included...
+    #   for now I don't care, I know I want to allow in terms of domains and not file extensions
+    #
     domains = [resolve_semantic_domain("." + item) or item for item in raw_includes]
     return set(domains)
 
