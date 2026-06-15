@@ -136,7 +136,7 @@ class TestResolveFiletype:
         """Extensionless known filename should resolve via filename mapping."""
         f = tmp_path / "fish_history"
         f.write_text("---\nkeys: []\n")
-        assert resolve_filetype(f) == "yaml"
+        assert resolve_filetype(f) == "fish"
 
     def test_filename_lookup_for_dockerfile(self, tmp_path):
         f = tmp_path / "Dockerfile"
