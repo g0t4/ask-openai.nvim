@@ -8,7 +8,7 @@ from lsp.domains import (
     DEFAULT_INCLUDED_FILETYPES,
     EXTENSION_TO_FILETYPE,
     BASENAME_TO_FILETYPE,
-    resolve_retrieval_domain,
+    resolve_semantic_domain,
 )
 
 
@@ -28,7 +28,7 @@ def _map_included_file_extensions_to_filetypes(raw_includes: set[str]) -> set[st
     """
     # include is inteded as extensions/filetypes... so map extensions to filetypes too...
     # PRN rename to include_filetypes or smth else to convey post extensions design?
-    filetypes = [resolve_retrieval_domain("." + item) or item for item in raw_includes]
+    filetypes = [resolve_semantic_domain("." + item) or item for item in raw_includes]
     return set(filetypes)
 
 
@@ -58,7 +58,7 @@ class Config:
         Uses the three-layer filetype mapper (extension → filename → shebang)
         to resolve the canonical filetype, then checks against config.include.
         """
-        filetype = resolve_retrieval_domain(file_path)
+        filetype = resolve_semantic_domain(file_path)
         if filetype is None:
             return False
         return filetype in self.included_filetypes

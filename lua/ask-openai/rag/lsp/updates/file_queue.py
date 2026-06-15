@@ -11,7 +11,7 @@ from lsp.config import Config
 from lsp.chunks.chunker import RAGChunkerOptions
 from lsp.logs import get_logger
 from lsp import ignores, rag
-from lsp.domains import resolve_retrieval_domain
+from lsp.domains import resolve_semantic_domain
 
 logger = get_logger(__name__)
 
@@ -93,7 +93,7 @@ class FileUpdateEmbeddingsQueue:
             return
 
         # Resolve filetype through the three-layer mapper (extension → filename → shebang)
-        filetype = resolve_retrieval_domain(doc_path)
+        filetype = resolve_semantic_domain(doc_path)
         if filetype is None:
             logger.info(f"skip unresolved file (no extension, no known filename, no shebang): {doc_path}")
             return

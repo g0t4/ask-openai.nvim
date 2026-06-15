@@ -12,7 +12,7 @@ from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.storage import load_all_datasets, Datasets
 from lsp.chunks.chunker import get_file_stat
 from lsp.fs import load_rag_config, Config
-from lsp.domains import resolve_retrieval_domain
+from lsp.domains import resolve_semantic_domain
 from index.stale import warn_about_stale_files
 
 logger = get_logger("validator")
@@ -81,7 +81,7 @@ class DatasetsValidator:
 
             filetype_counts = Counter()
             for file_path in out.splitlines():
-                filetype = resolve_retrieval_domain(file_path)
+                filetype = resolve_semantic_domain(file_path)
                 if filetype:
                     filetype_counts[filetype] += 1
             return filetype_counts

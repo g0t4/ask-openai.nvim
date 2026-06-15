@@ -343,9 +343,9 @@ SHEBANG_TO_FILETYPE: dict[str, str] = {
 
 def resolve_vim_filetype(vim_filetype: str):
     # PRN add tests and special mapping if needed, but not before a real problem arises
-    return resolve_retrieval_domain(f".{vim_filetype}")
+    return resolve_semantic_domain(f".{vim_filetype}")
 
-def resolve_retrieval_domain(file_path: str | Path) -> Optional[str]:
+def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
     """Resolve the file group for a given file path, this is the group used for querying and indexing related files...
       filetype is not vim's filetype
       best to think of this as a group/family and less about a "type"
