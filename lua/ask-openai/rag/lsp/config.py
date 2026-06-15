@@ -16,6 +16,8 @@ default_ignores: set[str] = set()
 default_global_languages: set[str] = set()  # no defaults b/c if you don't set it, you get all indexed file types (includes)
 DEFAULT_RAG_ENABLED: bool = True
 
+from lsp.logs import get_logger
+logger = get_logger(__name__)
 
 def _map_included_file_extensions_to_filetypes(raw_includes: set[str]) -> set[str]:
     """Normalize include list: convert raw extensions to canonical filetypes.
@@ -70,6 +72,7 @@ def load_config(yaml_text: str) -> Config:
     _include = _map_included_file_extensions_to_filetypes(_include)
 
     if raw.get("global_languages"):
+        logger.error("global_languages is deprecated; use global_filetypes instead")
         raise ValueError("global_languages is deprecated; use global_filetypes instead")
 
     return Config(
