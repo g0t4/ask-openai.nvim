@@ -11,7 +11,7 @@ from lsp.config import Config
 from lsp.chunks.chunker import RAGChunkerOptions
 from lsp.logs import get_logger
 from lsp import ignores, rag
-from lsp.filetypes import resolve_retrieval_domain
+from lsp.domains import resolve_retrieval_domain
 
 logger = get_logger(__name__)
 

@@ -23,7 +23,7 @@ from lsp.storage import Chunk, FileStat, load_prior_data
 from lsp.chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
 from lsp.config import Config, load_config
 from lsp.ignores import is_ignored_allchecks
-from lsp.filetypes import (
+from lsp.domains import (
     EXTENSION_TO_FILETYPE,
     resolve_retrieval_domain,
 )

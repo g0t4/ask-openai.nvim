@@ -12,7 +12,7 @@ from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.storage import load_all_datasets, Datasets
 from lsp.chunks.chunker import get_file_stat
 from lsp.fs import load_rag_config, Config
-from lsp.filetypes import resolve_retrieval_domain
+from lsp.domains import resolve_retrieval_domain
 from index.stale import warn_about_stale_files
 
 logger = get_logger("validator")

@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from lsp.filetypes import (
+from lsp.domains import (
     EXTENSION_TO_FILETYPE,
     BASENAME_TO_FILETYPE,
     SHEBANG_TO_FILETYPE,

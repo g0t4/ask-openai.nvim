@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 from lsp.logs import get_logger
 from lsp import fs
-from lsp.filetypes import resolve_retrieval_domain
+from lsp.domains import resolve_retrieval_domain
 from lsp.inference.client.embedder import encode_passages
 
 logger = get_logger(__name__)

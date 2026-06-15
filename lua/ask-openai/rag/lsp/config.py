@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from lsp.filetypes import (
+from lsp.domains import (
     DEFAULT_INCLUDED_FILETYPES,
     EXTENSION_TO_FILETYPE,
     BASENAME_TO_FILETYPE,
