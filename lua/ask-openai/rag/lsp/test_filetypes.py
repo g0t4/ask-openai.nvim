@@ -116,8 +116,12 @@ class TestShebangDetection_EdgeCases_InResolveFiletype:
         assert resolve_filetype(f) == "py"
 
 
-class TestResolveFiletypePrecedence:
-    """Test the full resolution pipeline."""
+class TestResolveFiletype:
+    """
+       Test the full resolution pipeline.
+       Keep precedence tests here.
+       OK to have others as well for resolvers that don't need a ton of edge cases.
+    """
 
     def test_basename_map_wins_vs_file_extension(self, tmp_path):
         # Good example where the actual file type is not the same thing as the query/index group!
@@ -132,7 +136,7 @@ class TestResolveFiletypePrecedence:
         f.write_text("#!fish\necho hi\n")
         assert resolve_filetype(f) == "fish"
 
-    def test_filename_lookup_for_extensionless(self, tmp_path):
+    def test_basename_lookup_for_extensionless(self, tmp_path):
         """Extensionless known filename should resolve via filename mapping."""
         f = tmp_path / "fish_history"
         f.write_text("---\nkeys: []\n")
