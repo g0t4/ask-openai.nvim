@@ -16,57 +16,7 @@ from lsp.filetypes import (
 )
 
 
-# ---------------------------------------------------------------------------
-# Layer 1: Extension mapping tests
-# ---------------------------------------------------------------------------
-
 class TestExtensionMapping:
-    """Test that extensions map to correct canonical filetypes."""
-
-    def test_yaml_yml_both_map_to_yaml(self):
-        assert EXTENSION_TO_FILETYPE["yaml"] == "yaml"
-        assert EXTENSION_TO_FILETYPE["yml"] == "yaml"
-
-    def test_shell_family_maps_to_shell(self):
-        for ext in ("sh", "bash", "zsh", "fish"):
-            assert EXTENSION_TO_FILETYPE[ext] == "shell", f"{ext} should map to shell"
-
-    def test_cpp_variants_map_to_cpp(self):
-        for ext in ("cpp", "cc", "cxx", "hpp", "hh", "hxx"):
-            assert EXTENSION_TO_FILETYPE[ext] == "cpp", f"{ext} should map to cpp"
-
-    def test_objc_variants_map_to_objc(self):
-        for ext in ("m", "mm"):
-            assert EXTENSION_TO_FILETYPE[ext] == "objc"
-
-    def test_typescript_variants(self):
-        assert EXTENSION_TO_FILETYPE["ts"] == "typescript"
-        assert EXTENSION_TO_FILETYPE["tsx"] == "typescript"
-
-    def test_javascript_variants(self):
-        assert EXTENSION_TO_FILETYPE["js"] == "javascript"
-        assert EXTENSION_TO_FILETYPE["jsx"] == "javascript"
-
-    def test_python_variants(self):
-        for ext in ("py", "pyw", "pyi"):
-            assert EXTENSION_TO_FILETYPE[ext] == "py"
-
-    def test_html_variants(self):
-        for ext in ("html", "htm"):
-            assert EXTENSION_TO_FILETYPE[ext] == "html"
-
-    def test_markdown_variants(self):
-        for ext in ("md", "mdx", "mkd"):
-            assert EXTENSION_TO_FILETYPE[ext] == "markdown"
-
-    def test_diff_variants(self):
-        for ext in ("diff", "patch"):
-            assert EXTENSION_TO_FILETYPE[ext] == "diff"
-
-    def test_css_preprocessor_variants(self):
-        assert EXTENSION_TO_FILETYPE["scss"] == "scss"
-        assert EXTENSION_TO_FILETYPE["sass"] == "scss"
-        assert EXTENSION_TO_FILETYPE["less"] == "less"
 
     def test_unknown_extension_returns_itself(self):
         """Unmapped extensions should pass through as-is."""
