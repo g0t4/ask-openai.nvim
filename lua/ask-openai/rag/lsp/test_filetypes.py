@@ -121,10 +121,6 @@ class TestShebangDetection_InResolveFiletype:
         assert resolve_filetype(f) == "py"
 
 
-# ---------------------------------------------------------------------------
-# Layer 4: resolve_filetype integration tests
-# ---------------------------------------------------------------------------
-
 class TestResolveFiletype:
     """Test the full resolution pipeline."""
 
