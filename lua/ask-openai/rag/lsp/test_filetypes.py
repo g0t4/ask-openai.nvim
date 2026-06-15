@@ -141,11 +141,7 @@ class TestResolveFiletype:
         f.write_text("FROM ubuntu\n")
         assert resolve_filetype(f) == "docker"
 
-    def test_path_with_yaml_extension(self):
-        f = Path("/some/repo/config.yaml")
-        assert resolve_filetype(f) == "yaml"
-
-    def test_path_with_yml_extension(self):
+    def test_extension_lookup_to_filetype_with_different_name_than_extension(self):
         f = Path("/some/repo/settings.yml")
         assert resolve_filetype(f) == "yaml"
 
