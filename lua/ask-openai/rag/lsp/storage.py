@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 from lsp.logs import get_logger
 from lsp import fs
-from lsp.filetypes import resolve_filetype
+from lsp.filetypes import resolve_retrieval_domain
 from lsp.inference.client.embedder import encode_passages
 
 logger = get_logger(__name__)
@@ -213,7 +213,7 @@ class Datasets:
     def for_file(self, file_path: str | Path | None = None, vim_filetype: str | None = None):
 
         if file_path is not None:
-            filetype = resolve_filetype(file_path)
+            filetype = resolve_retrieval_domain(file_path)
         elif vim_filetype is not None:
             # TODO!FILETYPES review client side usage of vim_filetype arg...
             # resolve the vim_filetype to be safe
@@ -223,7 +223,7 @@ class Datasets:
             #    PRN if this assumption fails, then fix it at that time
             #    might need to resolve special cases with a mapping client or server side
             #
-            filetype = resolve_filetype(vim_filetype)
+            filetype = resolve_retrieval_domain(vim_filetype)
         else:
             filetype = None
 

@@ -25,7 +25,7 @@ from lsp.config import Config, load_config
 from lsp.ignores import is_ignored_allchecks
 from lsp.filetypes import (
     EXTENSION_TO_FILETYPE,
-    resolve_filetype,
+    resolve_retrieval_domain,
 )
 from lsp import fs
 
@@ -98,7 +98,7 @@ class IncrementalRAGIndexer:
 
             files_by_type = {}
             for file_path in out.splitlines():
-                filetype = resolve_filetype(file_path)
+                filetype = resolve_retrieval_domain(file_path)
                 if filetype:
                     files_by_type.setdefault(filetype, set()).add(file_path)
                 else:
