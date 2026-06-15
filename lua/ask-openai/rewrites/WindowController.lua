@@ -21,7 +21,8 @@ function WindowController0Indexed:new_for_current_window()
     return WindowController0Indexed:new(current_window_id)
 end
 
----@return integer row, integer column # both 0-indexed
+---@return integer row_base0 # 0-indexed
+---@return integer column_base0 # 0-indexed
 function WindowController0Indexed:get_cursor_position()
     -- keep in mind different windows w/ same buffer have their own cursor positions
     -- that's why this is window specific
