@@ -374,16 +374,14 @@ def resolve_filetype(file_path: str | Path) -> Optional[str]:
 
     # --- * file extension * ---
     ext = file_path.suffix.lstrip(".").lower()
-    if ext:
-        filetype = EXTENSION_TO_FILETYPE.get(ext)
-        if filetype is not None:
-            return filetype
-        # Extension exists but isn't mapped → use it as-is (may be indexed
-        # under its own name if included in config.include)
-        return ext
+    if not ext:
+        return None
 
-    return None
+    filetype = EXTENSION_TO_FILETYPE.get(ext)
+    if filetype is not None:
+        return filetype
 
+    return ext
 
 def get_filetype_for_extension(ext: str) -> Optional[str]:
     """Get the canonical filetype for a raw extension.
