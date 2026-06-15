@@ -117,10 +117,10 @@ class IncrementalRAGIndexer:
         self.trash_vestigial_filetype_indexes(included_filetypes)
         await signal_hotpath_done_in_background()
 
-    def trash_vestigial_filetype_indexes(self, configured_filetypes: set[str]):
+    def trash_vestigial_filetype_indexes(self, allowed_filetypes: set[str]):
         rag_dir_dirs = [p for p in self.dot_rag_dir.iterdir() if p.is_dir()]
         indexed_filetypes = {d.name for d in rag_dir_dirs}
-        vestigial_filetypes = indexed_filetypes - configured_filetypes
+        vestigial_filetypes = indexed_filetypes - allowed_filetypes
 
         if not any(vestigial_filetypes):
             return
