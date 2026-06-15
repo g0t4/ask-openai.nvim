@@ -9,7 +9,7 @@ from lsp.filetypes import (
     EXTENSION_TO_FILETYPE,
     FILENAME_TO_FILETYPE,
     SHEBANG_TO_FILETYPE,
-    DEFAULT_INCLUDES,
+    DEFAULT_INCLUDED_FILETYPES,
     resolve_filetype,
     get_canonical_extensions,
     get_filetype_for_extension,
@@ -295,24 +295,24 @@ class TestDefaultIncludes:
     def test_no_raw_extensions_in_default_includes(self):
         """DEFAULT_INCLUDES should only contain canonical filetypes, not raw extensions."""
         # If yml is in DEFAULT_INCLUDES, that's a bug — it should be "yaml"
-        assert "yml" not in DEFAULT_INCLUDES
-        assert "sh" not in DEFAULT_INCLUDES
-        assert "fish" not in DEFAULT_INCLUDES
-        assert "zsh" not in DEFAULT_INCLUDES
-        assert "cc" not in DEFAULT_INCLUDES
-        assert "hpp" not in DEFAULT_INCLUDES
+        assert "yml" not in DEFAULT_INCLUDED_FILETYPES
+        assert "sh" not in DEFAULT_INCLUDED_FILETYPES
+        assert "fish" not in DEFAULT_INCLUDED_FILETYPES
+        assert "zsh" not in DEFAULT_INCLUDED_FILETYPES
+        assert "cc" not in DEFAULT_INCLUDED_FILETYPES
+        assert "hpp" not in DEFAULT_INCLUDED_FILETYPES
 
     def test_canonical_filetypes_present(self):
         """Canonical filetypes should be present."""
-        assert "yaml" in DEFAULT_INCLUDES
-        assert "shell" in DEFAULT_INCLUDES
-        assert "cpp" in DEFAULT_INCLUDES
-        assert "py" in DEFAULT_INCLUDES
-        assert "lua" in DEFAULT_INCLUDES
+        assert "yaml" in DEFAULT_INCLUDED_FILETYPES
+        assert "shell" in DEFAULT_INCLUDED_FILETYPES
+        assert "cpp" in DEFAULT_INCLUDED_FILETYPES
+        assert "py" in DEFAULT_INCLUDED_FILETYPES
+        assert "lua" in DEFAULT_INCLUDED_FILETYPES
 
     def test_no_duplicate_canonical_types(self):
         """No canonical filetype should appear twice."""
-        assert len(DEFAULT_INCLUDES) == len(set(DEFAULT_INCLUDES))
+        assert len(DEFAULT_INCLUDED_FILETYPES) == len(set(DEFAULT_INCLUDED_FILETYPES))
 
 
 # ---------------------------------------------------------------------------

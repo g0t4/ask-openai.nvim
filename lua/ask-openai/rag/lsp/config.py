@@ -5,7 +5,7 @@ from pathlib import Path
 import yaml
 
 from lsp.filetypes import (
-    DEFAULT_INCLUDES,
+    DEFAULT_INCLUDED_FILETYPES,
     EXTENSION_TO_FILETYPE,
     FILENAME_TO_FILETYPE,
     get_filetype_for_extension,
@@ -48,7 +48,7 @@ class Config:
     @staticmethod
     def default() -> "Config":
         return Config(
-            include=DEFAULT_INCLUDES,
+            include=DEFAULT_INCLUDED_FILETYPES,
             ignores=default_ignores,
             global_languages=default_global_languages,
             enabled=DEFAULT_RAG_ENABLED,
@@ -70,7 +70,7 @@ def load_config(yaml_text: str) -> Config:
     raw = yaml.safe_load(yaml_text)
 
     _enabled = raw.get("enabled") if raw.get("enabled") is not None else DEFAULT_RAG_ENABLED
-    _include = raw.get("include") or DEFAULT_INCLUDES
+    _include = raw.get("include") or DEFAULT_INCLUDED_FILETYPES
     _include = _map_includes_to_filetypes(_include)
 
     return Config(

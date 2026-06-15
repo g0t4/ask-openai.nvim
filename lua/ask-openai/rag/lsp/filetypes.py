@@ -505,11 +505,7 @@ def get_extensions_for_filetype(filetype: str) -> set[str]:
     }
 
 
-# ---------------------------------------------------------------------------
-# Default includes — canonical filetypes only
-# ---------------------------------------------------------------------------
-
-DEFAULT_INCLUDES: set[str] = {
+DEFAULT_INCLUDED_FILETYPES: set[str] = {
     # --- Programming languages ---
     "lua",
     "py",
