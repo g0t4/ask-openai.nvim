@@ -17,27 +17,27 @@ from lsp.filetypes import (
 # Config
 # ---------------------------------------------------------------------------
 
-default_ignores: list[str] = []
-default_global_languages: list[str] = []  # no defaults b/c if you don't set it, you get all indexed file types (includes)
+default_ignores: set[str] = set()
+default_global_languages: set[str] = set()  # no defaults b/c if you don't set it, you get all indexed file types (includes)
 default_enabled: bool = True
 
 
-def _include_filetypes(raw_includes: list[str]) -> list[str]:
+def _include_filetypes(raw_includes: set[str]) -> set[str]:
     """Normalize include list: convert raw extensions to canonical filetypes.
 
     Handles both old-style raw extensions (js, ts, yml, fish) and
     new-style canonical filetypes (javascript, typescript, yaml, shell).
     Unmapped extensions pass through as-is. Deduplicates results.
     """
-    normalized = [get_filetype_for_extension(item) or item for item in raw_includes]
-    return list(set(normalized))
+    filetypes = [get_filetype_for_extension(item) or item for item in raw_includes]
+    return set(filetypes)
 
 
 @dataclass
 class Config:
-    ignores: list[str] = field(default_factory=list)
-    include: list[str] = field(default_factory=list)
-    global_languages: list[str] = field(default_factory=default_global_languages)
+    ignores: set[str] = field(default_factory=set)
+    include: set[str] = field(default_factory=set)
+    global_languages: set[str] = field(default_factory=set)
     enabled: bool = field(default=default_enabled)
 
     @staticmethod
