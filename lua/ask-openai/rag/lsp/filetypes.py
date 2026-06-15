@@ -347,18 +347,15 @@ SHEBANG_TO_FILETYPE: dict[str, str] = {
 }
 
 def resolve_filetype(file_path: str | Path) -> Optional[str]:
-    """Resolve a file path to its canonical filetype.
+    """Resolve the file group for a given file path, this is the group used for querying and indexing related files...
+      filetype is not vim's filetype
+      best to think of this as a group/family and less about a "type"
 
     Resolution:
-    1. Basename lookup
-    2. Shebang parsing (TODO!FILETYPES for all filetypes)
-    3. Extension → filetype mapping
+    1. Basename match
+    2. Shebang detection + parse + mapping
+    3. Extension mapping
 
-    Args:
-        file_path: Path to the file.
-
-    Returns:
-        Canonical filetype string, or None if unresolvable.
     """
     # TODO! check explicit mapping always ahead of everything else (that way even w/ an extension we can remap the filetype)
 
