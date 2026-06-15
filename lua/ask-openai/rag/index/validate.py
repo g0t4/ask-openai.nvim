@@ -104,7 +104,7 @@ class DatasetsValidator:
         """Compare configured filetypes against what's actually indexed on disk."""
 
         present_filetypes = set(datasets.all_datasets.keys())
-        configured_filetypes = set(config.include)
+        configured_filetypes = set(config.included_filetypes)
 
         extra_filetypes = present_filetypes - configured_filetypes
         if extra_filetypes:

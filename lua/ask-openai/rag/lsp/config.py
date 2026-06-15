@@ -35,7 +35,7 @@ class Config:
     ignores: set[str] = field(default_factory=set)
     #
     # included filetypes (ideally, or extension which is mapped to filetype)
-    include: set[str] = field(default_factory=set)
+    included_filetypes: set[str] = field(default_factory=set)
     #
     # TODO rename global_filetypes?  this is for searching only to search across all of these if not searching for a given filetype
     global_languages: set[str] = field(default_factory=set)
@@ -45,7 +45,7 @@ class Config:
     @staticmethod
     def default() -> "Config":
         return Config(
-            include=DEFAULT_INCLUDED_FILETYPES,
+            included_filetypes=DEFAULT_INCLUDED_FILETYPES,
             ignores=default_ignores,
             global_languages=default_global_languages,
             enabled=DEFAULT_RAG_ENABLED,
@@ -60,7 +60,7 @@ class Config:
         filetype = resolve_filetype(file_path)
         if filetype is None:
             return False
-        return filetype in self.include
+        return filetype in self.included_filetypes
 
 
 def load_config(yaml_text: str) -> Config:
@@ -72,7 +72,7 @@ def load_config(yaml_text: str) -> Config:
 
     return Config(
         ignores=raw.get("ignores") or default_ignores,
-        include=_include,
+        included_filetypes=_include,
         global_languages=raw.get("global_languages") or default_global_languages,
         enabled=_enabled,
     )

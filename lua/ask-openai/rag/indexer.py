@@ -81,7 +81,7 @@ class IncrementalRAGIndexer:
             logger.warning(f"RAG indexing disabled in {self.source_code_dir / '.rag.yaml'}, ")
             return
 
-        included_filetypes = self.config.include
+        included_filetypes = self.config.included_filetypes
         if self.program_args and self.program_args.only_filetype:
             included_filetypes = {self.program_args.only_filetype}
             logger.info(f"Indexing only filetype: {included_filetypes}")
