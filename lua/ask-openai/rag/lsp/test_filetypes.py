@@ -34,10 +34,20 @@ class TestShebangDetection:
 
     def test_bash_shebang(self, tmp_path):
         f = tmp_path / "run"
+        f.write_text("#!bash\necho hi\n")
+        assert resolve_filetype(f) == "bash"
+
+    def test_bin_bash_shebang(self, tmp_path):
+        f = tmp_path / "run"
         f.write_text("#!/bin/bash\necho hi\n")
         assert resolve_filetype(f) == "bash"
 
     def test_zsh_shebang(self, tmp_path):
+        f = tmp_path / "zsh_script"
+        f.write_text("#!zsh\necho hi\n")
+        assert resolve_filetype(f) == "zsh"
+
+    def test_env_zsh_shebang(self, tmp_path):
         f = tmp_path / "zsh_script"
         f.write_text("#!/usr/bin/env zsh\necho hi\n")
         assert resolve_filetype(f) == "zsh"
