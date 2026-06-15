@@ -99,6 +99,7 @@ class TestResolveFiletype:
 
     def test_extension_overrides_shebang(self, tmp_path):
         """If a file has an extension, shebang should be ignored."""
+        # TODO!FILETYPES do I want to allow shebang to win out?
         f = tmp_path / "weird.txt"
         f.write_text("#!/usr/bin/env python3\nprint('hi')\n")
         # .txt is not in our mapping, so it returns "txt"
