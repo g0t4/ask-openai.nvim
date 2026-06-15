@@ -25,7 +25,6 @@ from lsp.config import Config, load_config
 from lsp.ignores import is_ignored_allchecks
 from lsp.filetypes import (
     EXTENSION_TO_FILETYPE,
-    get_extensions_for_filetype,
     resolve_filetype,
 )
 from lsp import fs
@@ -82,15 +81,40 @@ class IncrementalRAGIndexer:
             logger.warning(f"RAG indexing disabled in {self.source_code_dir / '.rag.yaml'}, ")
             return
 
-        included = self.config.include
+        included_filetypes = self.config.include
         if self.program_args and self.program_args.only_filetype:
-            included = {self.program_args.only_filetype}
-            logger.info(f"Indexing only filetype: {included}")
+            included_filetypes = {self.program_args.only_filetype}
+            logger.info(f"Indexing only filetype: {included_filetypes}")
 
-        for filetype in included:
-            await self.build_index(filetype)
-        self.flag_unindexed_filetypes_with_file_counts(included)
-        self.trash_vestigial_filetype_indexes(set(included))
+        def find_all_files():
+            fd_command = [
+                "fd",
+                "--type", "file", \
+                "--absolute-path",
+                ".",
+                str(self.source_code_dir),
+            ]
+            out = subprocess.check_output(fd_command, text=True)
+
+            files_by_type = {}
+            for file_path in out.splitlines():
+                filetype = resolve_filetype(file_path)
+                if filetype:
+                    files_by_type.setdefault(filetype, set()).add(file_path)
+                else:
+                    pass
+                    # TODO warn, or?
+
+            return files_by_type
+
+        files_by_type = find_all_files()
+
+        for filetype in included_filetypes:
+            files = files_by_type.get(filetype, set())
+            await self.build_index(filetype, files)
+
+        self.flag_unindexed_filetypes_with_file_counts(included_filetypes)
+        self.trash_vestigial_filetype_indexes(included_filetypes)
         await signal_hotpath_done_in_background()
 
     def trash_vestigial_filetype_indexes(self, configured_filetypes: set[str]):
@@ -147,87 +171,37 @@ class IncrementalRAGIndexer:
         if noteworthy_filetypes:
             logger.debug(f"Found unindexed filetypes: {' '.join(noteworthy_filetypes)}")
 
-    def _build_fd_glob_for_filetype(self, filetype: str) -> str:
-        """Build an fd glob pattern matching all extensions for a given filetype.
-
-        e.g. filetype "yaml" → ".*\\.(yaml|yml)$"
-             filetype "py" → ".*\\.py$"
-             filetype "javascript" → ".*\\.(js|jsx)$"
-        """
-        extensions = sorted(get_extensions_for_filetype(filetype))
-        if len(extensions) == 1:
-            return f".*\\\\.{extensions[0]}$"
-        # Multiple extensions → alternation group
-        ext_group = "|".join(extensions)
-        return f".*\\\\.({ext_group})$"
-
-    def get_files_diff(self, filetype: str, prior_stat_by_path: dict[str, FileStat]) -> FilesDiff:
+    def get_files_diff(self, current_files_path_strs: set[str], prior_files_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Split files into: changed (added/updated), unchanged, deleted"""
-
-        # * Find files with matching extensions via fd
-        # TODO!FILETYPES OH HOLY FUCKING SHIT... TODO precompute this using resolve_filetype on each file and then split into filetypes group and pass here ... DO NOT USE fd with extensions
-        glob_pattern = self._build_fd_glob_for_filetype(filetype)
-        cmd_ext = ["fd", glob_pattern, str(self.source_code_dir), "--absolute-path", "--type", "f"]
-        logger.debug(f"extension files cmd: {cmd_ext}")
-        result_ext = subprocess.run(
-            cmd_ext,
-            stdout=subprocess.PIPE,
-            text=True,
-            check=True,
-        )
-        current_path_strs = set(result_ext.stdout.strip().splitlines())
-
-        # * Also find extensionless files that map to this filetype
-        # TODO!FILETYPES NO it is not just extensionless, I want all filetypes to have this ability
-        #  TODO but fair enough I guess I didn't fully make it clear that it is not just extensionless that can be mapped to a new group
-        #  TODO that said, the new defaults suggested by Qwen included reampping .bashrc => shell ... which WTF that is NOT EXTENSIONLESS
-        #   (Makefile → make, deploy → shell via shebang, etc.)
-        cmd_all = ["fd", ".", str(self.source_code_dir), "--absolute-path", "--type", "f"]
-        logger.debug(f"all files cmd: {cmd_all}")
-        result_all = subprocess.run(
-            cmd_all,
-            stdout=subprocess.PIPE,
-            text=True,
-            check=True,
-        )
-        all_files = result_all.stdout.strip().splitlines()
-
-        for file_path_str in all_files:
-            if file_path_str in current_path_strs:
-                continue  # already found via extension
-            resolved = resolve_filetype(file_path_str)
-            if resolved == filetype:
-                current_path_strs.add(file_path_str)
-                logger.debug(f"[green]Extensionless file matched filetype {filetype}: {file_path_str}")
 
         # * ignored files
         ignored_path_strs: Set[str] = set()
-        for path_str in current_path_strs:
+        for path_str in current_files_path_strs:
             if is_ignored_allchecks(path_str, self.config, self.source_code_dir):
                 ignored_path_strs.add(path_str)
         if len(ignored_path_strs) > 0:
             logger.info(f"Ignoring files ({len(ignored_path_strs)}):\n    {'\n    '.join(ignored_path_strs)}")
-        current_path_strs -= ignored_path_strs
+        current_files_path_strs -= ignored_path_strs
 
         # * added, modified (aka changed)
         changed_paths: Set[Path] = set()
-        for file_path_str in current_path_strs:
+        for file_path_str in current_files_path_strs:
             file_path = Path(file_path_str)
-            is_new_file = file_path_str not in prior_stat_by_path
+            is_new_file = file_path_str not in prior_files_stat_by_path
             if is_new_file:
                 changed_paths.add(file_path)
                 logger.debug(f"[green]New file: {file_path}")
             else:
                 current_mod_time = file_path.stat().st_mtime
-                prior_mod_time = prior_stat_by_path[file_path_str].mtime
+                prior_mod_time = prior_files_stat_by_path[file_path_str].mtime
                 if current_mod_time > prior_mod_time:
                     changed_paths.add(file_path)
                     logger.debug(f"[blue]Modified file: {file_path}")
 
-        prior_path_strs: Set[str] = set(prior_stat_by_path.keys())
+        prior_path_strs: Set[str] = set(prior_files_stat_by_path.keys())
 
         # * deleted
-        deleted_path_strs = prior_path_strs - current_path_strs
+        deleted_path_strs = prior_path_strs - current_files_path_strs
         for deleted_file in deleted_path_strs:
             logger.debug(f"[red]Deleted file: {deleted_file}")
 
@@ -290,27 +264,27 @@ class IncrementalRAGIndexer:
 
         return index
 
-    async def build_index(self, filetype: str = "lua"):
+    async def build_index(self, filetype: str = "lua", current_files: set[str] = set()):
         """Build or update the RAG index incrementally for a given filetype."""
 
-        prior = load_prior_data(self.dot_rag_dir, filetype)
+        prior_files = load_prior_data(self.dot_rag_dir, filetype)
 
-        paths = self.get_files_diff(filetype, prior.stat_by_path)
+        files_diff = self.get_files_diff(current_files, prior_files.stat_by_path)
 
         # TODO add test to assert delete last file is fine and wipes the data set
 
-        logger.pp_debug("paths", paths)
+        logger.pp_debug("files_diff", files_diff)
 
-        if not paths.changed and not paths.deleted:
+        if not files_diff.changed and not files_diff.deleted:
             logger.debug("[green]No changes detected, index is up to date!")
             return
 
-        all_stat_by_path = {path_str: prior.stat_by_path[path_str] for path_str in paths.not_changed}
-        not_changed_chunks_by_file = {path_str: prior.chunks_by_file[path_str] for path_str in paths.not_changed}
-        logger.info(f'{len(paths.changed)} changed, {len(paths.deleted)} deleted')
+        all_stat_by_path = {path_str: prior_files.stat_by_path[path_str] for path_str in files_diff.not_changed}
+        not_changed_chunks_by_file = {path_str: prior_files.chunks_by_file[path_str] for path_str in files_diff.not_changed}
+        logger.info(f'{len(files_diff.changed)} changed, {len(files_diff.deleted)} deleted')
 
         updated_chunks_by_file: dict[str, list[Chunk]] = {}
-        for file_path in paths.changed:
+        for file_path in files_diff.changed:
             file_path_str = str(file_path)
 
             stat = get_file_stat(file_path)
@@ -320,19 +294,19 @@ class IncrementalRAGIndexer:
             chunks = build_chunks_from_file(file_path, stat.hash, self.options)
             updated_chunks_by_file[file_path_str] = chunks
 
-        logger.pp_debug("Deleted chunks", paths.deleted)
+        logger.pp_debug("Deleted chunks", files_diff.deleted)
         logger.pp_debug("Updated chunks", updated_chunks_by_file)
         logger.pp_debug("NOT changed chunks", not_changed_chunks_by_file)
 
         # * Incrementally update the FAISS index
-        if paths.changed or paths.deleted:
+        if files_diff.changed or files_diff.deleted:
             index = await self.update_faiss_index_incrementally(
-                prior.index,
+                prior_files.index,
                 not_changed_chunks_by_file,
                 updated_chunks_by_file,
             )
         else:
-            index = prior.index
+            index = prior_files.index
 
         if index is None:
             return
@@ -343,7 +317,7 @@ class IncrementalRAGIndexer:
 
         faiss.write_index(index, str(index_dir / "vectors.index"))
 
-        logger.pp_debug("ids: ", prior.index_view.ids)
+        logger.pp_debug("ids: ", prior_files.index_view.ids)
 
         with logger.timer("Save chunks"):
             all_chunks_by_file = not_changed_chunks_by_file.copy()
@@ -358,10 +332,10 @@ class IncrementalRAGIndexer:
             write_json(all_stat_by_path, index_dir / "files.json")
 
         logger.debug(f"[green]Index updated successfully!")
-        if paths.changed:
-            logger.debug(f"[green]Processed {len(paths.changed)} changed files")
-        if paths.deleted:
-            logger.debug(f"[green]Removed {len(paths.deleted)} deleted files")
+        if files_diff.changed:
+            logger.debug(f"[green]Processed {len(files_diff.changed)} changed files")
+        if files_diff.deleted:
+            logger.debug(f"[green]Removed {len(files_diff.deleted)} deleted files")
 
 
 async def main():

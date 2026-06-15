@@ -11,7 +11,6 @@ from lsp.filetypes import (
     SHEBANG_TO_FILETYPE,
     DEFAULT_INCLUDED_FILETYPES,
     resolve_filetype,
-    get_extensions_for_filetype,
 )
 
 
