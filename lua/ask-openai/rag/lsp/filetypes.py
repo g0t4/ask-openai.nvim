@@ -415,21 +415,6 @@ def resolve_filetype(
     return None
 
 
-def get_canonical_extensions(filetype: str) -> list[str]:
-    """Get all raw extensions that map to a given canonical filetype.
-
-    Args:
-        filetype: Canonical filetype name (e.g. "yaml", "shell").
-
-    Returns:
-        List of raw extensions (e.g. ["yaml", "yml"]).
-    """
-    return [
-        ext for ext, ft in EXTENSION_TO_FILETYPE.items()
-        if ft == filetype
-    ]
-
-
 def get_filetype_for_extension(ext: str) -> Optional[str]:
     """Get the canonical filetype for a raw extension.
 

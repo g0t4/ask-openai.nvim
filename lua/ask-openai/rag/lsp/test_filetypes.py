@@ -11,7 +11,6 @@ from lsp.filetypes import (
     SHEBANG_TO_FILETYPE,
     DEFAULT_INCLUDED_FILETYPES,
     resolve_filetype,
-    get_canonical_extensions,
     get_filetype_for_extension,
     get_extensions_for_filetype,
 )
@@ -253,36 +252,6 @@ class TestResolveFiletype:
     def test_path_with_zsh_extension(self):
         f = Path("/home/user/.zshrc")
         assert resolve_filetype(f) == "shell"
-
-
-# ---------------------------------------------------------------------------
-# get_canonical_extensions tests
-# ---------------------------------------------------------------------------
-
-class TestCanonicalExtensions:
-    """Test reverse lookup from filetype to extensions."""
-
-    def test_yaml_has_two_extensions(self):
-        exts = get_canonical_extensions("yaml")
-        assert set(exts) == {"yaml", "yml"}
-
-    def test_shell_has_four_extensions(self):
-        exts = get_canonical_extensions("shell")
-        assert set(exts) == {"sh", "bash", "zsh", "fish"}
-
-    def test_cpp_has_multiple_extensions(self):
-        exts = get_canonical_extensions("cpp")
-        assert "cpp" in exts
-        assert "cc" in exts
-        assert "cxx" in exts
-
-    def test_single_extension_filetype(self):
-        exts = get_canonical_extensions("go")
-        assert exts == ["go"]
-
-    def test_unknown_filetype_returns_empty(self):
-        exts = get_canonical_extensions("nonexistent")
-        assert exts == []
 
 
 # ---------------------------------------------------------------------------
