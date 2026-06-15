@@ -132,7 +132,7 @@ class IncrementalRAGIndexer:
             logger.warning(f"Removing vestigial rag dir: {filetype_dir}")
             trash_dir(filetype_dir)
 
-    def flag_unindexed_filetypes_with_file_counts(self, index_filetypes: set[str]):
+    def flag_unindexed_filetypes_with_file_counts(self, expected_filetypes: set[str]):
         """Warn about filetypes present in the repo but not being indexed."""
 
         cmd = ["fish", "-c", f"fd . {self.source_code_dir} --exclude='\\.ctags\\.d' --exclude='\\.rag' --exec basename"]
@@ -159,7 +159,7 @@ class IncrementalRAGIndexer:
         import itertools
         unindexed_filetypes = [(ft, len(list(group))) \
             for ft, group in itertools.groupby(sorted(filetypes)) \
-            if ft not in index_filetypes
+            if ft not in expected_filetypes
         ]
 
         noteworthy_filetypes = [ \
