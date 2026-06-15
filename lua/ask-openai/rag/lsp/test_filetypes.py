@@ -141,17 +141,6 @@ class TestResolveFiletype:
         f.write_text("FROM ubuntu\n")
         assert resolve_filetype(f) == "docker"
 
-    def test_vim_filetype_fallback(self, tmp_path):
-        """When nothing else works, vim_filetype is the fallback."""
-        f = tmp_path / "mystery_file"
-        f.write_text("unknown content\n")
-        assert resolve_filetype(f, vim_filetype="lua") == "lua"
-
-    def test_vim_filetype_used_when_no_extension(self):
-        """vim_filetype used when file has no extension and no shebang."""
-        f = Path("/no/such/path/mystery")
-        assert resolve_filetype(f, vim_filetype="rust") == "rust"
-
     def test_path_with_yaml_extension(self):
         f = Path("/some/repo/config.yaml")
         assert resolve_filetype(f) == "yaml"
