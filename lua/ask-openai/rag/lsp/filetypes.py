@@ -270,11 +270,7 @@ BASENAME_TO_FILETYPE: dict[str, str] = {
 
     # --- Node.js ---
     "package.json": "json",
-    # "package-lock.json": "json",
     # "yarn.lock": "text",
-
-    # --- Terraform ---
-    # ".terraform.lock.hcl": "hcl", # ignore lock files
 
     # --- Text / misc ---
     "CONTRIBUTING": "markdown",
