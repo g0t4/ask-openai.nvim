@@ -61,12 +61,6 @@ class TestShebangDetection_EdgeCases_InResolveFiletype:
         f.write_text("#!/usr/bin/env zsh\necho hi\n")
         assert resolve_filetype(f) == "zsh"
 
-    # TODO!FILETYPES IMPLEMENT shebang wins (after basename => filetype)
-    # def test_shebang_wins_even_when_file_has_extension(self, tmp_path):
-    #     f = tmp_path / "script.sh"
-    #     f.write_text("#!fish\necho hi\n")
-    #     assert resolve_filetype(f) == "fish"
-
     def test_fish_shebang(self, tmp_path):
         f = tmp_path / "fish_script"
         f.write_text("#!fish\necho hi\n")
@@ -122,7 +116,7 @@ class TestShebangDetection_EdgeCases_InResolveFiletype:
         assert resolve_filetype(f) == "py"
 
 
-class TestResolveFiletype:
+class TestResolveFiletypePrecedence:
     """Test the full resolution pipeline."""
 
     def test_basename_map_wins_over_extension(self, tmp_path):
@@ -132,12 +126,11 @@ class TestResolveFiletype:
         assert resolve_filetype("compose.yaml") == "docker"
         assert resolve_filetype("Dockerfile.j2") == "docker"
 
-    def test_shebang_overrides_extension(self, tmp_path):
-        """ shebang wins over file extension """
-        f = tmp_path / "weird.txt"
-        f.write_text("#!/usr/bin/env python3\nprint('hi')\n")
-        # .txt is not in our mapping, so it returns "txt"
-        assert resolve_filetype(f) == "py"
+    def test_shebang_wins_even_when_file_has_extension(self, tmp_path):
+        # sh => bash normally, but here it should be fish b/c of shebang
+        f = tmp_path / "script.sh"
+        f.write_text("#!fish\necho hi\n")
+        assert resolve_filetype(f) == "fish"
 
     def test_filename_lookup_for_extensionless(self, tmp_path):
         """Extensionless known filename should resolve via filename mapping."""
