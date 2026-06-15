@@ -57,13 +57,14 @@ def load_config(yaml_text: str) -> Config:
     _include = raw.get("include_domains") or DEFAULT_INCLUDED_SEMANTIC_DOMAINS
     _include = _map_included_file_extensions_to_semantic_domains(_include)
 
+    # TODO remove warnings and error once you migrate most of your machines/envs/repos
     if raw.get("include") or raw.get("include_filetypes"):
         logger.error("include/include_filetypes is deprecated; use include_domains instead")
-        # raise ValueError("include/include_filetypes is deprecated; use include_domains instead")
+        raise ValueError("include/include_filetypes is deprecated; use include_domains instead")
 
     if raw.get("global_languages") or raw.get("global_filetypes"):
         logger.error("global_languages/global_filetypes is deprecated; use global_domains instead")
-        # raise ValueError("global_languages/global_filetypes is deprecated; use global_domains instead")
+        raise ValueError("global_languages/global_filetypes is deprecated; use global_domains instead")
 
     global_domains = raw.get("global_domains") or DEFAULT_GLOBAL_DOMAINS
     return Config(
