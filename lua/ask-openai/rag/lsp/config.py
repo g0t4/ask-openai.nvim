@@ -71,6 +71,10 @@ def load_config(yaml_text: str) -> Config:
     _include = raw.get("include_filetypes") or raw.get("include") or DEFAULT_INCLUDED_FILETYPES
     _include = _map_included_file_extensions_to_filetypes(_include)
 
+    if raw.get("include"):
+        logger.error("include is deprecated; use include_filetypes instead")
+        raise ValueError("include is deprecated; use include_filetypes instead")
+
     if raw.get("global_languages"):
         logger.error("global_languages is deprecated; use global_filetypes instead")
         raise ValueError("global_languages is deprecated; use global_filetypes instead")
