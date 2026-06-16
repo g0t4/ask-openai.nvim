@@ -79,7 +79,7 @@ def warn_client(server: LanguageServer):
 
 @server.feature(types.INITIALIZE)
 async def on_initialize(_: LanguageServer, params: types.InitializeParams):
-    global dot_rag_dir, config
+    global config
 
     # # PRN use workspace folders if multi-workspace ...
     # # FYI could also get me CWD, round about way, if I wanted to prioritize that for .rag dir over git repo root
