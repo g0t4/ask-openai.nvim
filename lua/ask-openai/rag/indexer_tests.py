@@ -31,7 +31,7 @@ class TestBuildIndex:
         cls.dot_rag_dir.mkdir(exist_ok=True, parents=True)
         cls.indexer_src_dir = Path(__file__).parent / "tests" / "indexer_src"
         cls.tmp_source_code_dir = Path(__file__).parent / "tests" / "tmp_source_code"
-        cls.test_cases = Path(__file__).parent / "tests" / "test_cases"
+        cls.test_cases = Path(__file__).parent / "chunks/test_cases"
 
         # PRN move the reset to one spot between all tests
         #   lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
