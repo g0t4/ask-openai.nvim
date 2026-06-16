@@ -4,7 +4,7 @@ import rich
 
 import lsp.ignores
 from lsp.ignores import _is_gitignored
-from lsp.config import RagConfig
+from config import RagConfig
 
 @pytest.fixture
 def tmp_root(tmp_path):

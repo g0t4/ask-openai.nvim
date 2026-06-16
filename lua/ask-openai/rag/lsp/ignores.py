@@ -4,7 +4,7 @@ from pathspec import PathSpec
 from pathspec.patterns.gitwildmatch import GitWildMatchPattern
 
 from rag.logs import get_logger
-from lsp.config import RagConfig
+from config import RagConfig
 
 logger = get_logger(__name__)
 

@@ -22,7 +22,7 @@ from index.pydants import write_json
 
 from lsp.storage import Chunk, FileStat, load_prior_data
 from lsp.chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
-from lsp.config import RagConfig, load_config
+from config import RagConfig, load_config
 from lsp.ignores import is_file_ignored_allchecks
 from lsp.domains import (
     EXTENSION_TO_SEMANTIC_DOMAIN,

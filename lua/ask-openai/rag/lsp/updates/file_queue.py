@@ -7,7 +7,7 @@ from pygls.lsp.server import LanguageServer
 from rx import operators as ops
 from rx.subject.subject import Subject
 
-from lsp.config import RagConfig
+from config import RagConfig
 from lsp.chunks.chunker import RAGChunkerOptions
 from rag.logs import get_logger
 from lsp import ignores, rag

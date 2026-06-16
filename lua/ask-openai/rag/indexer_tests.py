@@ -17,7 +17,7 @@ from indexer import IncrementalRAGIndexer
 from lsp.chunks.chunker import RAGChunkerOptions
 from lsp.inference.client.embedder import encode_query
 from lsp.storage import ChunkType, load_chunks_by_file, load_file_stats_by_file
-from lsp.config import RagConfig
+from config import RagConfig
 import lsp.ignores
 from index import fs  # stop gap set these until I remove fs's global state
 
