@@ -98,25 +98,25 @@ local function _load_instruct_slash_commands()
     if not repo_root then
         return paths
     end
-    local repo_instructs_path = repo_root .. '/.agents/local/instructs'
-    if vim.fn.isdirectory(repo_instructs_path) ~= 1 then
+    local repo_instructs_dir = repo_root .. '/.agents/local/instructs'
+    if vim.fn.isdirectory(repo_instructs_dir) ~= 1 then
         return paths
     end
     -- * repo-specific instruct directories
-    local dir_names = files.list_directories(repo_instructs_path)
+    local dir_names = files.list_directories(repo_instructs_dir)
         for _, name in ipairs(dir_names) do
             if paths[name] then
                 vim.notify(string.format(
                     "Instruct name collision: '%s' already registered; overriding with repo directory %s",
                     name,
-                    repo_instructs_path .. '/' .. name
+                    repo_instructs_dir .. '/' .. name
                 ), vim.log.levels.WARN)
             end
-            paths[name] = repo_instructs_path .. '/' .. name .. '/INSTRUCT.md'
+            paths[name] = repo_instructs_dir .. '/' .. name .. '/INSTRUCT.md'
         end
 
     -- * repo-specific standalone markdown files
-    local entries = files.list_entries(repo_instructs_path)
+    local entries = files.list_entries(repo_instructs_dir)
         for _, entry in ipairs(entries) do
             if entry.type == 'file' and entry.name:match('%.md$') then
                 local instruct_name = entry.name:gsub('%.md$', '')
@@ -124,10 +124,10 @@ local function _load_instruct_slash_commands()
                     vim.notify(string.format(
                         "Instruct name collision: '%s' already registered; overriding with repo file %s",
                         instruct_name,
-                        repo_instructs_path .. '/' .. entry.name
+                        repo_instructs_dir .. '/' .. entry.name
                     ), vim.log.levels.WARN)
                 end
-                paths[instruct_name] = repo_instructs_path .. '/' .. entry.name
+                paths[instruct_name] = repo_instructs_dir .. '/' .. entry.name
             end
         end
     return paths
