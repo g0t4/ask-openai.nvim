@@ -844,7 +844,7 @@ def _is_short_url_fragment(path: str) -> bool:
 
 
 def _is_dot_dir_only(path: str) -> bool:
-    """Check if path is only a dot-directory (e.g., .agents/instructs)."""
+    """Check if path is only a dot-directory (e.g., .config/foo/bar)."""
     # This is actually useful info, so we don't filter it
     return False
 
