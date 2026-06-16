@@ -11,7 +11,6 @@ from pygls.protocol.json_rpc import MsgId
 from index import fs
 from lsp import ignores, rag
 from chunks.chunker import RAGChunkerOptions
-from lsp.context.imports import imports
 from rag.logs import get_logger, logging_fwk_to_language_server_log_file, disable_printtmp
 from lsp.updates.file_queue import FileUpdateEmbeddingsQueue
 
@@ -135,7 +134,6 @@ async def doc_opened(params: types.DidOpenTextDocumentParams):
     # logger.info(f"doc_opened {params=}")
     # logger.info(f"doc_opened {uri}")
     await schedule_update(uri)
-    # imports.on_open(params)
 
 async def schedule_update(doc_uri: str):
     if doc_uri.endswith("/AskAgent"):
@@ -167,8 +165,7 @@ async def schedule_update(doc_uri: str):
 #         return
 #     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
 #     logger.pp_debug("didChange", params)
-#     # FYI would use this to invalidate internal caches and rebuild for a given file, i.e. imports, RAG vectors, etc
-#     #   rebuild on git commit + incremental updates s/b super fast?
+#     # FYI would use this to rebuild... but right now doc_saved seems to work fine for updating a file's vectors
 
 @server.command("semantic_grep")
 async def semantic_grep_command(_: LanguageServer, args: rag.LSPSemanticGrepRequest) -> rag.LSPSemanticGrepResult:
