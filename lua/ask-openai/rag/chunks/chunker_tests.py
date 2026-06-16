@@ -12,8 +12,8 @@ from lsp.storage import Chunk, ChunkType
 # * set root dir for relative paths
 repo_root = Path(__file__).parent.parent.parent.parent.parent.parent
 my_dir = Path(__file__).parent.parent
-test_cases = my_dir / "../tests/test_cases"
-test_cases_treesitter = my_dir / "../tests/test_cases/treesitter"
+test_cases = my_dir / "tests/test_cases"
+test_cases_treesitter = my_dir / "tests/test_cases/treesitter"
 test_cases_python = test_cases_treesitter / "python"
 test_cases_typescript = test_cases_treesitter / "typescript"
 test_cases_c = test_cases_treesitter / "c"
