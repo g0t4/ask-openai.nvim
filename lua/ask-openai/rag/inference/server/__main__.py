@@ -12,15 +12,15 @@ import socket
 import sys
 from pathlib import Path
 
-from . import qwen3_embeddings
+from inference.server import qwen3_embeddings
 
 qwen3_embeddings.dump_device_memory_stats("before rerank")
-from . import qwen3_rerank
+from inference.server import qwen3_rerank
 
 qwen3_embeddings.dump_device_memory_stats("after rerank")
 
 from rag.logs import Timer, get_logger, logging_fwk_to_console, print_code
-from ..comms import recv_len_then_msg_async, send_len_then_msg_async
+from inference.comms import recv_len_then_msg_async, send_len_then_msg_async
 
 print('imports done')
 
