@@ -1,9 +1,6 @@
 local log = require("devtools.logs.logger").universal()
 local files = require("ask-openai.helpers.files")
 
--- global instructs: `~/.agents/instructs`
--- per repo: `.agents/instructs`
-
 local M = {}
 
 -- Cache of instruct name -> absolute path of the instruct markdown file
@@ -96,12 +93,12 @@ local function _load_instruct_slash_commands()
         end
     end
 
-    -- * repo‑specific instructs: <repo_root>/.agents/instructs
+    -- * repo‑specific instructs: <repo_root>/.agents/local/instructs
     local repo_root = files.get_repo_root()
     if not repo_root then
         return paths
     end
-    local repo_instructs_path = repo_root .. '/.agents/instructs'
+    local repo_instructs_path = repo_root .. '/.agents/local/instructs'
     if vim.fn.isdirectory(repo_instructs_path) ~= 1 then
         return paths
     end
