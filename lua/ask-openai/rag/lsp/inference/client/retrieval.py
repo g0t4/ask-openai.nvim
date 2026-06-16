@@ -6,7 +6,7 @@ from lsp.inference.client.embedder import encode_query, signal_hotpath_done_in_b
 from lsp.stoppers import Stopper
 from lsp.storage import ChunkType, Datasets
 from lsp.inference.client import *
-from lsp.fs import get_config, relative_to_workspace
+from index.fs import get_config, relative_to_workspace
 
 @dataclass
 class LSPRankedMatch:

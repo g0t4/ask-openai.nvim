@@ -56,7 +56,7 @@ from lsp.inference.client.retrieval import (
     LSPSemanticGrepRequest,
     semantic_grep as _semantic_grep,
 )
-from lsp.fs import relative_to_workspace, set_root_dir
+from index.fs import relative_to_workspace, set_root_dir
 from lsp.logs import get_logger
 
 logger: logging.Logger = get_logger(__name__)

@@ -11,7 +11,7 @@ from typing import Set
 from lsp.logs import get_logger, logging_fwk_to_console
 from lsp.storage import load_all_datasets, Datasets
 from lsp.chunks.chunker import get_file_stat
-from lsp.fs import load_rag_config, RagConfig
+from index.fs import load_rag_config, RagConfig
 from lsp.domains import resolve_semantic_domain
 from index.stale import warn_about_stale_files
 

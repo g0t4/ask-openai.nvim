@@ -6,7 +6,7 @@ from pathlib import Path
 from rich.table import Table
 from rich.console import Console
 from lsp.storage import Datasets, FileStat
-from lsp.fs import relative_to_workspace
+from index.fs import relative_to_workspace
 from lsp.chunks.chunker import get_file_stat
 
 logger = logging.getLogger(__name__)

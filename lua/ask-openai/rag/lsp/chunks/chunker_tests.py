@@ -4,7 +4,7 @@ from pathlib import Path
 from rich import print as rich_print
 from tree_sitter import QueryCursor
 
-from lsp.fs import *
+from index.fs import *
 from lsp.chunks.chunker import *
 from lsp.chunks.ts.ts import *
 from lsp.storage import Chunk, ChunkType

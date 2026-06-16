@@ -19,7 +19,7 @@ from lsp.inference.client.embedder import encode_query
 from lsp.storage import ChunkType, load_chunks_by_file, load_file_stats_by_file
 from lsp.config import RagConfig
 import lsp.ignores
-from lsp import fs  # stop gap set these until I remove fs's global state
+from index import fs  # stop gap set these until I remove fs's global state
 
 # logging_fwk_to_console("WARN") # stop INFO logs after timing captured
 

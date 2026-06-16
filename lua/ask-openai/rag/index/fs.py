@@ -2,8 +2,8 @@ from typing import Optional
 import aiofiles
 from pathlib import Path
 
-from .logs import get_logger
-from .config import RagConfig, load_config
+from lsp.logs import get_logger
+from lsp.config import RagConfig, load_config
 
 logger = get_logger(__name__)
 

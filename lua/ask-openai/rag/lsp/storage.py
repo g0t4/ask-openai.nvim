@@ -14,7 +14,7 @@ from numpy.typing import NDArray
 from pydantic import BaseModel
 
 from lsp.logs import get_logger
-from lsp import fs
+from index import fs
 from lsp.domains import resolve_semantic_domain, resolve_semantic_domain_for_vim_filetype
 from lsp.inference.client.embedder import encode_passages
 

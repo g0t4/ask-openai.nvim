@@ -5,7 +5,7 @@ from pathlib import Path
 from lsp.logs import get_logger, logging_fwk_to_console, print_code
 from lsp.storage import load_all_datasets
 from lsp.inference.client.retrieval import *
-from lsp.fs import set_root_dir
+from index.fs import set_root_dir
 
 def format_score_percent(score: float) -> str:
     """score as percentage rounded to nearest 4 decimals"""

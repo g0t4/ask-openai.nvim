@@ -9,7 +9,7 @@ from lsp.stoppers import Stopper, create_stopper, remove_stopper
 from lsp.storage import Datasets, load_all_datasets
 from lsp.inference.client.retrieval import *
 from index.validate import DatasetsValidator
-from lsp import fs
+from index import fs
 
 logger = get_logger(__name__)
 

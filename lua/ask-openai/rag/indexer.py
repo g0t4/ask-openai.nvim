@@ -29,7 +29,7 @@ from lsp.domains import (
     find_files_by_semantic_domain,
     resolve_semantic_domain,
 )
-from lsp import fs
+from index import fs
 
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False

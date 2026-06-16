@@ -8,7 +8,7 @@ import lsprotocol.types as types
 from pygls.lsp.server import LanguageServer
 from pygls.protocol.json_rpc import MsgId
 
-from lsp import fs
+from index import fs
 from lsp import ignores, rag
 from lsp.chunks.chunker import RAGChunkerOptions
 from lsp.context.imports import imports
