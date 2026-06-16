@@ -9,7 +9,7 @@ from rx.subject.subject import Subject
 
 from lsp.config import RagConfig
 from lsp.chunks.chunker import RAGChunkerOptions
-from lsp.logs import get_logger
+from rag.logs import get_logger
 from lsp import ignores, rag
 from lsp.domains import resolve_semantic_domain
 

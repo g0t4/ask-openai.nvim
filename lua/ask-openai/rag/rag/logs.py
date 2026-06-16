@@ -122,7 +122,7 @@ def get_logger(name) -> Logger:
     logger = cast(Logger, logging.getLogger(name))
     return logger
 
-# by the way will have FQN, which how I run this is lsp.logs for this module
+# by the way will have FQN, which how I run this is rag.logs for this module
 generic_logger = get_logger(__name__)
 
 class LogTimer:

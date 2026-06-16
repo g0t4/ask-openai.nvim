@@ -3,7 +3,7 @@ import os
 import indexer
 from indexer import IncrementalRAGIndexer
 import lsp.inference.server.qwen3_embeddings as qwen3_embeddings
-from lsp.logs import *
+from rag.logs import *
 import qwen3_embeddings
 
 # logger = get_logger(__name__)

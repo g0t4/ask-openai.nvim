@@ -4,7 +4,7 @@ import attrs
 from pygls.workspace import TextDocument
 
 from lsp.chunks.chunker import build_chunks_from_lines, get_file_hash_from_lines, RAGChunkerOptions
-from lsp.logs import get_logger
+from rag.logs import get_logger
 from lsp.stoppers import Stopper, create_stopper, remove_stopper
 from lsp.storage import Datasets, load_all_datasets
 from lsp.inference.client.retrieval import *

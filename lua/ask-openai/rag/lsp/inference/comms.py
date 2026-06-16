@@ -4,7 +4,7 @@ from typing import Any
 import msgpack
 import struct
 
-from ..logs import get_logger
+from rag.logs import get_logger
 
 logger = get_logger(__name__)
 

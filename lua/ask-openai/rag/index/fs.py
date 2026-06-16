@@ -2,7 +2,7 @@ from typing import Optional
 import aiofiles
 from pathlib import Path
 
-from lsp.logs import get_logger
+from rag.logs import get_logger
 from lsp.config import RagConfig, load_config
 
 logger = get_logger(__name__)

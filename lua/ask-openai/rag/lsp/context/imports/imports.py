@@ -4,7 +4,7 @@ import logging
 import lsprotocol.types as types
 from tree_sitter_language_pack import get_language, get_parser
 
-from lsp.logs import logging_fwk_to_console, get_logger
+from rag.logs import logging_fwk_to_console, get_logger
 
 parser = get_parser('python')
 logger = get_logger(__name__)
@@ -96,5 +96,5 @@ if __name__ == '__main__':
         'language_id': 'python',
         'uri': 'file:///tmp/test.py',
         'version': 1,
-        'text': 'import lsp.logs\nfrom lsp.chunks.chunker import *',
+        'text': 'import rag.logs\nfrom lsp.chunks.chunker import *',
     })}))

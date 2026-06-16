@@ -7,7 +7,7 @@ from typing import NamedTuple
 import portion as P
 from tree_sitter import Tree
 from lsp.chunks.identified import IdentifiedChunk
-from lsp.logs import get_logger
+from rag.logs import get_logger
 from io import StringIO
 from lsp.chunks.ansi import *
 

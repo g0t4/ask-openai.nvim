@@ -12,7 +12,7 @@ from lsp.chunks.ts.lua import attach_lua_doc_comments
 from lsp.chunks.ts.py import attach_py_decorators
 from lsp.chunks.uncovered import UncoveredCode, build_uncovered_intervals
 from lsp.storage import Chunk, ChunkType, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
-from lsp.logs import get_logger, printtmp
+from rag.logs import get_logger, printtmp
 from lsp.chunks.parsers import get_cached_parser_for_path
 from lsp.chunks.ansi import *
 

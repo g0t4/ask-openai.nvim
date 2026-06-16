@@ -1,6 +1,6 @@
 import os
 from lsp.domains import find_files_by_semantic_domain
-from lsp.logs import get_logger, logging_fwk_to_console, print_code
+from rag.logs import get_logger, logging_fwk_to_console, print_code
 
 logger = get_logger(__name__)
 # logging_fwk_to_console("INFO") # start info level to capture timing logs (add with logger.timer to below)

@@ -2,7 +2,7 @@ import asyncio
 import rich
 from pathlib import Path
 
-from lsp.logs import get_logger, logging_fwk_to_console, print_code
+from rag.logs import get_logger, logging_fwk_to_console, print_code
 from lsp.storage import load_all_datasets
 from lsp.inference.client.retrieval import *
 from index.fs import set_root_dir

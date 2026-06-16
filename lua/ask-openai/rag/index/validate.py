@@ -8,7 +8,7 @@ import humanize
 from collections import Counter
 from pathlib import Path
 from typing import Set
-from lsp.logs import get_logger, logging_fwk_to_console
+from rag.logs import get_logger, logging_fwk_to_console
 from lsp.storage import load_all_datasets, Datasets
 from lsp.chunks.chunker import get_file_stat
 from index.fs import load_rag_config, RagConfig

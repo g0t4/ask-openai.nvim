@@ -1,4 +1,4 @@
-from lsp.logs import get_logger
+from rag.logs import get_logger
 from typing import Optional
 import numpy as np
 from lsp.inference.client import AsyncInferenceClient
