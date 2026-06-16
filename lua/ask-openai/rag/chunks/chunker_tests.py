@@ -10,7 +10,7 @@ from chunks.ts.ts import *
 from lsp.storage import Chunk, ChunkType
 
 # * set root dir for relative paths
-repo_root = Path(__file__).absolute().parent.parent.parent.parent.parent.parent
+repo_root = Path(__file__).absolute().parent.parent.parent.parent.parent
 rag_dir = Path(__file__).absolute().parent.parent
 test_cases = rag_dir / "tests/test_cases"
 test_cases_treesitter = rag_dir / "tests/test_cases/treesitter"
