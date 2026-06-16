@@ -52,6 +52,8 @@ async def set_root_dir(root_dir: str | Path | None):
     await load_rag_config(root_path)
 
 async def load_rag_config(root_path: Path) -> Config:
+    global config
+
     rag_yaml = root_path / ".rag.yaml"
     if not rag_yaml.exists():
         logger.info(f"no rag config found {rag_yaml}, using default config")
