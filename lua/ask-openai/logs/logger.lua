@@ -4,6 +4,8 @@ local inspect = require("devtools.inspect")
 local Logger = {}
 Logger.__index = Logger
 
+-- FYI! leave this here to use log level setting in local_share... NBD for now... and go head and use this in w/e neovim config (not just ask-openai.nvim plugin)
+
 -- purposes:
 -- - only open file once per process
 -- - only check for directory existence once
