@@ -15,7 +15,6 @@ function M.start_predictions()
 
     local predictions = config.get_options().tmp.predictions
     if not predictions.keymaps then
-        config.print_verbose("predictions.keymaps is disabled, skipping")
         return
     end
 
@@ -101,7 +100,6 @@ function M.stop_predictions()
 
     local predictions = config.get_options().tmp.predictions
     if not predictions.keymaps then
-        config.print_verbose("predictions.keymaps is disabled, skipping")
         return
     end
 
@@ -149,8 +147,6 @@ function M.setup(user_options)
         -- DO NOT SET silent=true, messes up putting result into cmdline, also I wanna see print messages, IIUC that would be affected
         -- FYI `<C-\>e` is critical in the following, don't remove the `e` and `\\` is to escape the `\` in lua
         vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai\').ask_openai()")<CR>', { noremap = true, })
-    else
-        config.print_verbose("cmdline_ask keymap is disabled, skipping")
     end
 
     -- PRN feels like this belongs in predictions.setup()
