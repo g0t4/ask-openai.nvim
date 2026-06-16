@@ -1,13 +1,20 @@
 ## RAG entryoints
 
-### indexer
+### python tools to maintain indexes
 
-- builds/rebuilds the index of embeddings for a repo
-- entrypoint: `lua/ask-openai/rag/indexer.py`
+- cd to any dir with a `.rag/` directory
+  - largely in root dir of a git repo
+  - albeit rare, you can have indexes in other spots:
+    - i.e. integration test index in `lua/ask-openai/rag/tests/.rag/`
+- fish wrapper functions to invoke these python tools:
+  - `~/repos/github/g0t4/dotfiles/fish/load_last_interactive_only/always/always.fish` (separate g0t4/dotfiles repo)
+  - build index and update stale files with `rag_indexer` => runs `lua/ask-openai/rag/indexer.py`
+  - fish abbr `rag_rebuilder` expands to `time rag_indexer --rebuild --info` to wipe and recreate entire index
+  - fish function `rag_validate_index` to invoke `lua/ask-openai/rag/index/validate.py`
 - tests:
   - `cd ./lua/ask-openai/rag`
   - `ptw **/*_tests.py` to run all tests
-  - `ptw indexer_tests.py` for key index build/rebuild integration tests, will rebuild an actual index in `.rag` in the `rag` dir
+  - `ptw indexer_tests.py` build/rebuild integration tests
 
 ### ask-language-server (RAG/semantic_grep language server)
 
