@@ -3,7 +3,7 @@ import rich
 from pathlib import Path
 
 from rag.logs import get_logger, logging_fwk_to_console, print_code
-from lsp.storage import load_all_datasets
+from index.storage import load_all_datasets
 from inference.client.retrieval import *
 from index.fs import set_root_dir
 

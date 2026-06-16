@@ -7,7 +7,7 @@ from tree_sitter import QueryCursor
 from index.fs import *
 from chunks.chunker import *
 from chunks.ts.ts import *
-from lsp.storage import Chunk, ChunkType
+from index.storage import Chunk, ChunkType
 
 # * set root dir for relative paths
 my_dir = Path(__file__).absolute().parent

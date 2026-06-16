@@ -16,7 +16,7 @@ import rich
 from indexer import IncrementalRAGIndexer
 from chunks.chunker import RAGChunkerOptions
 from inference.client.embedder import encode_query
-from lsp.storage import ChunkType, load_chunks_by_file, load_file_stats_by_file
+from index.storage import ChunkType, load_chunks_by_file, load_file_stats_by_file
 from config import RagConfig
 from index.ignores import reset_cache_bewteen_tests
 from index import fs  # stop gap set these until I remove fs's global state
