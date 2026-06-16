@@ -39,6 +39,7 @@ local servers = {
             os.getenv("HOME") .. "/repos/github/g0t4/mcp-servers/src/fetch",
             "mcp-server-fetch",
         },
+        env = { VIRTUAL_ENV = "" }, -- clear venv so no warning about --active vs targeted venv
     },
     commands = {
         transport = "stdio",
@@ -61,6 +62,7 @@ local servers = {
             "subagents",
             -- PRN add verbosity flag across all my tools "--verbose",
         },
+        env = { VIRTUAL_ENV = "" }, -- clear venv so no warning about --active vs targeted venv
     },
     -- TODO add these to specific repos using repo_root/.mcp.json file like langchain-ai/langchain repo has
     -- mcp_docs = {
@@ -240,6 +242,7 @@ function MCPStdioClient.new(name, options)
         ---@diagnostic disable-next-line: missing-fields
         {
             args = options.args,
+            env = options.env,
             stdio = { stdin, stdout, stderr },
         },
         on_exit)
