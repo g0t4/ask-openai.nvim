@@ -1,5 +1,5 @@
 from tree_sitter import Parser
-from lsp.chunks.parsers import get_parser
+from chunks.parsers import get_parser
 from rich import print
 
 # %%

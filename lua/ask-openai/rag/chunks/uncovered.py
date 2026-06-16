@@ -6,10 +6,10 @@ from typing import NamedTuple
 
 import portion as P
 from tree_sitter import Tree
-from lsp.chunks.identified import IdentifiedChunk
+from chunks.identified import IdentifiedChunk
 from rag.logs import get_logger
 from io import StringIO
-from lsp.chunks.ansi import *
+from chunks.ansi import *
 
 logger_uncovered = get_logger(__name__)
 # logger_uncovered.setLevel(logging.DEBUG)

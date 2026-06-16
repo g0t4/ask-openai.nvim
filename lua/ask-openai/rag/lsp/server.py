@@ -10,7 +10,7 @@ from pygls.protocol.json_rpc import MsgId
 
 from index import fs
 from lsp import ignores, rag
-from lsp.chunks.chunker import RAGChunkerOptions
+from chunks.chunker import RAGChunkerOptions
 from lsp.context.imports import imports
 from rag.logs import get_logger, logging_fwk_to_language_server_log_file, disable_printtmp
 from lsp.updates.file_queue import FileUpdateEmbeddingsQueue

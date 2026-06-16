@@ -21,7 +21,7 @@ import numpy as np
 from index.pydants import write_json
 
 from lsp.storage import Chunk, FileStat, load_prior_data
-from lsp.chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
+from chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
 from config import RagConfig, load_config
 from lsp.ignores import is_file_ignored_allchecks
 from lsp.domains import (

@@ -5,8 +5,8 @@ from rich import print as rich_print
 from tree_sitter import QueryCursor
 
 from index.fs import *
-from lsp.chunks.chunker import *
-from lsp.chunks.ts.ts import *
+from chunks.chunker import *
+from chunks.ts.ts import *
 from lsp.storage import Chunk, ChunkType
 
 # * set root dir for relative paths

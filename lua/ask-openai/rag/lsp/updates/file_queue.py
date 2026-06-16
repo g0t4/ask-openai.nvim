@@ -8,7 +8,7 @@ from rx import operators as ops
 from rx.subject.subject import Subject
 
 from config import RagConfig
-from lsp.chunks.chunker import RAGChunkerOptions
+from chunks.chunker import RAGChunkerOptions
 from rag.logs import get_logger
 from lsp import ignores, rag
 from lsp.domains import resolve_semantic_domain

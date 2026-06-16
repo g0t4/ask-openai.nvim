@@ -14,7 +14,7 @@ import numpy as np
 import rich
 
 from indexer import IncrementalRAGIndexer
-from lsp.chunks.chunker import RAGChunkerOptions
+from chunks.chunker import RAGChunkerOptions
 from lsp.inference.client.embedder import encode_query
 from lsp.storage import ChunkType, load_chunks_by_file, load_file_stats_by_file
 from config import RagConfig

@@ -2,12 +2,12 @@ from pathlib import Path
 from tree_sitter import Parser, Tree
 from tree_sitter_language_pack import get_parser
 
-from lsp.chunks.identified import IdentifiedChunk
-import lsp.chunks.uncovered
+from chunks.identified import IdentifiedChunk
+import chunks.uncovered
 from rag.logs import logging_fwk_to_console
 
 def _build_uncovered_intervals(*args):
-    return lsp.chunks.uncovered._build_uncovered_intervals(*args, show_intervals=True)
+    return chunks.uncovered._build_uncovered_intervals(*args, show_intervals=True)
 
 logging_fwk_to_console("INFO")
 

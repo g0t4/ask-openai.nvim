@@ -7,7 +7,7 @@ from rich.table import Table
 from rich.console import Console
 from lsp.storage import Datasets, FileStat
 from index.fs import relative_to_workspace
-from lsp.chunks.chunker import get_file_stat
+from chunks.chunker import get_file_stat
 
 logger = logging.getLogger(__name__)
 
