@@ -37,6 +37,8 @@ class TestReadingFilesAndNewLines:
         and that I carefully document newline behaviors (i.e. not stripping them)
     """
 
+    # FYI!!! newer versions of tree_sitter_language_pack will return bytes instead of string so pretty much all tests are borked until fixed
+
     def test_readlines_final_line_not_empty_without_newline(self):
         test_file = test_cases / "readlines" / "final_line_not_empty_without_newline.txt"
         lines = read_text_lines(test_file)
