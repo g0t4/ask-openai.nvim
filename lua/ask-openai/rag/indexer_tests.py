@@ -27,11 +27,12 @@ class TestBuildIndex:
 
     @classmethod
     def setup_class(cls):  # runs once before *all* tests in this class
-        cls.dot_rag_dir = Path(__file__).parent / "tests/.rag"
+        my_dir = Path(__file__).parent
+        cls.dot_rag_dir = my_dir / "tests/.rag"
         cls.dot_rag_dir.mkdir(exist_ok=True, parents=True)
-        cls.indexer_src_dir = Path(__file__).parent / "tests" / "indexer_src"
-        cls.tmp_source_code_dir = Path(__file__).parent / "tests" / "tmp_source_code"
-        cls.test_cases = Path(__file__).parent / "chunks/test_cases"
+        cls.indexer_src_dir = my_dir / "index" / "test_cases"
+        cls.tmp_source_code_dir = cls.indexer_src_dir / "tmp_source_code"
+        cls.test_cases = my_dir / "chunks/test_cases"
 
         # PRN move the reset to one spot between all tests
         #   lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
@@ -97,10 +98,10 @@ class TestBuildIndex:
             raise RuntimeError(f"Shit, your home dir is {home_dir}. This test only runs on /Users/wesdemos.")
 
         # manually computed when running on my machine... so maybe warn if not same path
-        # echo -n "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag/tests/indexer_src/sample.lua:lines:0-19:b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b" | sha256sum | head -c16
-        assert first_chunk.id == "e2d1d29ec4960e8f"
-        # bitmaths "0xe2d1d29ec4960e8f & 0x7FFFFFFFFFFFFFFF"
-        assert first_chunk.id_int == "7120704065194299023"
+        # echo -n "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag/index/test_cases/sample.lua:lines:0-19:b9686ac7736365ba5870d7967678fbd80b9dc527c18d4642b2ef1a4056ec495b" | sha256sum | head -c16
+        assert first_chunk.id == "279dc6999a6fabdf"
+        # bitmaths "0x279dc6999a6fabdf & 0x7FFFFFFFFFFFFFFF"
+        assert first_chunk.id_int == "2854656101846068191"
 
         second_chunk = [c for c in chunks if c.start_line0 == 15][0]
         assert second_chunk.start_line0 == 15
