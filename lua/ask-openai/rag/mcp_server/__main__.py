@@ -63,8 +63,6 @@ logger: logging.Logger = get_logger(__name__)
 # logging.getLogger("mcp").setLevel(logging.DEBUG)  # MCP SDK logs
 
 _datasets: Datasets | None = None
-_dot_rag_dir: Path | None = None
-
 
 def _get_datasets() -> Datasets:
     """Return loaded datasets, raising if they haven't been initialized."""
@@ -234,7 +232,7 @@ async def serve(root_dir: str | Path | None = None) -> None:
     server = Server("semantic-grep")
 
     # * Initialize datasets
-    global _datasets, _dot_rag_dir
+    global _datasets
     if root_dir is None:
         # Try to find a .rag dir from CWD
         cwd = Path.cwd()
