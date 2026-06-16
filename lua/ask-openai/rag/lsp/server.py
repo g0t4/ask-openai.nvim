@@ -79,16 +79,13 @@ def warn_client(server: LanguageServer):
 
 @server.feature(types.INITIALIZE)
 async def on_initialize(_: LanguageServer, params: types.InitializeParams):
-    global config
-
     # # PRN use workspace folders if multi-workspace ...
     # # FYI could also get me CWD, round about way, if I wanted to prioritize that for .rag dir over git repo root
     # logger.info(f"{params.workspace_folders=}")
     # server.workspace.folders
 
     await fs.set_root_dir(params.root_path)
-    config = fs.get_config()
-    if not config.enabled or fs.is_no_rag_dir():
+    if not fs.get_config().enabled or fs.is_no_rag_dir():
         # DO NOT notify yet, that has to come after server responds to initialize request
         return types.InitializeResult(capabilities=types.ServerCapabilities())
 
@@ -107,7 +104,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     #    does not send other requests until initialized is done
     #  https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialized
 
-    if not config.enabled:
+    if not fs.get_config().enabled:
         logger.info("RAG disabled, notifying LSP client to shutdown")
         tell_client_to_shut_that_shit_down_now()
         return
@@ -123,7 +120,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
 
     loop = asyncio.get_running_loop()  # btw RuntimeError if no current loop (a good thing)
     # logger.info(f'{loop=} {id(loop)=}')  # sanity check loop used when scheduling
-    update_queue = FileUpdateEmbeddingsQueue(config, fs.cache.root_path, server, loop)
+    update_queue = FileUpdateEmbeddingsQueue(fs.get_config(), fs.cache.root_path, server, loop)
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 async def doc_saved(params: types.DidSaveTextDocumentParams):
