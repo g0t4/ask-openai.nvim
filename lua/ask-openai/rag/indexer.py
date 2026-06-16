@@ -18,7 +18,7 @@ from typing import Optional, Set
 import faiss
 import numpy as np
 
-from pydants import write_json
+from index.pydants import write_json
 
 from lsp.storage import Chunk, FileStat, load_prior_data
 from lsp.chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
