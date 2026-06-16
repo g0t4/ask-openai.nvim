@@ -3,7 +3,7 @@
 import logging
 import os
 
-from lsp.inference.server.helpers import auto_device
+from inference.server.helpers import auto_device
 from rag.logs import get_logger, logging_fwk_to_console
 
 logger = get_logger("drop_ST")

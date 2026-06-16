@@ -1,7 +1,7 @@
 import aiofiles
 import asyncio
 from rag.logs import disable_printtmp, get_logger, disable_printtmp
-from lsp.inference.client.embedder import get_shape, encode_passages, signal_hotpath_done_in_background
+from inference.client.embedder import get_shape, encode_passages, signal_hotpath_done_in_background
 
 logger = get_logger(__name__)
 

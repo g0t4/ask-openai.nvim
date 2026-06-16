@@ -6,8 +6,8 @@ import numpy as np
 from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
 
-from lsp.inference.qwen3.known import get_known_inputs, verify_qwen3_known_embeddings
-from lsp.inference.server.helpers import auto_device
+from inference.qwen3.known import get_known_inputs, verify_qwen3_known_embeddings
+from inference.server.helpers import auto_device
 from rag.logs import get_logger, logging_fwk_to_console
 
 logger = get_logger(__name__)

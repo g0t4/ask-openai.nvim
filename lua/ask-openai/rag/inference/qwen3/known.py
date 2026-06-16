@@ -1,4 +1,4 @@
-from lsp.inference.client.embedder import qwen3_format_query
+from inference.client.embedder import qwen3_format_query
 
 def get_known_inputs():
 

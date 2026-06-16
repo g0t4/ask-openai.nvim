@@ -14,7 +14,7 @@ from pathlib import Path
 import sys
 from typing import List, Dict
 
-from lsp.inference.client.embedder import encode_passages
+from inference.client.embedder import encode_passages
 import faiss
 import numpy as np
 

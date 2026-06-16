@@ -51,7 +51,7 @@ if str(_RAG_ROOT) not in sys.path:
     sys.path.insert(0, str(_RAG_ROOT))
 
 from lsp.storage import Datasets, load_all_datasets
-from lsp.inference.client.retrieval import (
+from inference.client.retrieval import (
     LSPRankedMatch,
     LSPSemanticGrepRequest,
     semantic_grep as _semantic_grep,

@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import attrs
-from lsp.inference.client.embedder import encode_query, signal_hotpath_done_in_background
+from inference.client.embedder import encode_query, signal_hotpath_done_in_background
 from lsp.stoppers import Stopper
 from lsp.storage import ChunkType, Datasets
-from lsp.inference.client import *
+from inference.client import *
 from index.fs import get_config, relative_to_workspace
 
 @dataclass

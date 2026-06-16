@@ -8,9 +8,9 @@ import torch.nn.functional as F
 from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
 
-from lsp.inference.server.helpers import auto_device
+from inference.server.helpers import auto_device
 from rag.logs import get_logger
-from lsp.inference.qwen3.known import get_known_inputs, verify_qwen3_known_embeddings
+from inference.qwen3.known import get_known_inputs, verify_qwen3_known_embeddings
 
 logger = get_logger(__name__)
 

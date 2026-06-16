@@ -1,7 +1,7 @@
 from rag.logs import get_logger
 from typing import Optional
 import numpy as np
-from lsp.inference.client import AsyncInferenceClient
+from inference.client import AsyncInferenceClient
 import asyncio
 
 logger = get_logger(__name__)
