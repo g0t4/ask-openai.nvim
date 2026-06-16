@@ -25,9 +25,9 @@
 ### MCP server for RAG lua/ask-openai/rag/mcp_server/__main__.py
 
 This can be tested with a few key scripts:
-- `./lua/ask-openai/rag/tests/stdio/semantic_grep_list_tools.fish`
+- `./lua/ask-openai/rag/mcp_server/tests/stdio/semantic_grep_list_tools.fish`
   - a good first test is that the server can enumerate tools
-- `./lua/ask-openai/rag/tests/stdio/semantic_grep_call_tool.fish`
+- `./lua/ask-openai/rag/mcp_server/tests/stdio/semantic_grep_call_tool.fish`
   - this tests that a RAG query works
 
 ### inference server
