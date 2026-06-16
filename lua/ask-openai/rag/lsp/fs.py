@@ -7,7 +7,7 @@ from .config import RagConfig, load_config
 
 logger = get_logger(__name__)
 
-class Cache:
+class RagProject:
     # this exists to avoid the need for `globals` concerns
     root_path: Optional[Path] = None
     dot_rag_dir: Optional[Path] = None
@@ -17,7 +17,7 @@ class Cache:
 #   I need a simple way to get a path relative to the workspace dir
 #   without passing that workspace dir everywhere
 #   but also don't break passing it when it makes sense b/c then it becomes a hidden dependency
-cache = Cache()
+cache = RagProject()
 
 def is_no_rag_dir() -> bool:
     if cache.dot_rag_dir is None:
