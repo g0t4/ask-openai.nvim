@@ -29,6 +29,7 @@ local function get_vim_command_suggestion(passed_context)
     log:info("max_tokens", max_tokens)
     local response = curl.post({
         url = chat_url,
+        timeout = 30000, -- PRN add timeout, long thinking can take > 10s default
         headers = {
             ["Content-Type"] = "application/json",
             ["Authorization"] = "Bearer " .. bearer_token,
