@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").universal()
 local files = require("ask-openai.helpers.files")
 
 -- global instructs: `~/.agents/instructs`

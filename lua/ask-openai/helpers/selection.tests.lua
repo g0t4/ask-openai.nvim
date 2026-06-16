@@ -6,7 +6,7 @@ local describe = require('devtools.tests.define.describe')
 local buffers = require('devtools.tests.buffers')
 -- system under test:
 local Selection = require('ask-openai.helpers.selection')
-local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").universal()
 
 local function get_selection()
     return Selection.get_visual_selection_for_current_window()

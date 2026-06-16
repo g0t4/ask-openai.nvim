@@ -1,4 +1,4 @@
-local log = require('ask-openai.logs.logger').predictions()
+local log = require('ask-openai.logs.logger').universal()
 local harmony = require('ask-openai.backends.models.gptoss.tokenizer').harmony
 
 local M = {

@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").universal()
 local FloatWindow = require("ask-openai.helpers.float_window")
 
 --- Represents a single trace session entry.

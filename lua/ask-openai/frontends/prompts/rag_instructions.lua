@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").universal()
 local M = {}
 
 -- TxChatMessage is used to wrap the generated semantic grep content as a user context message

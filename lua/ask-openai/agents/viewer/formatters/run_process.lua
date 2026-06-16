@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").universal()
 local HLGroups = require("ask-openai.hlgroups")
 local safely = require("ask-openai.helpers.safely")
 local argv_formatter = require("ask-openai.agents.viewer.formatters.argv_formatter")

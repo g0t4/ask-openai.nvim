@@ -9,7 +9,7 @@ local previewers = require('telescope.previewers')
 local state = require('telescope.actions.state')
 -- non-telescope deps:
 local files = require("ask-openai.helpers.files")
-local logs = require('ask-openai.logs.logger').predictions()
+local logs = require('ask-openai.logs.logger').universal()
 local AsyncDynamicFinder = require('telescope._extensions.ask_semantic_grep.async_dynamic_finder')
 local HLGroups = require('ask-openai.hlgroups')
 local client = require('ask-openai.rag.client.client')

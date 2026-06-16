@@ -1,6 +1,6 @@
 local curl = require('plenary.curl')
 local TxChatMessage = require('ask-openai.agents.messages.tx')
-local log = require('ask-openai.logs.logger').predictions()
+local log = require('ask-openai.logs.logger').universal()
 
 ---@return string
 local function get_vim_command_suggestion(passed_context)

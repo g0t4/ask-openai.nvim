@@ -1,4 +1,4 @@
-local log = require('ask-openai.logs.logger').predictions()
+local log = require('ask-openai.logs.logger').universal()
 local ansi = require('ask-openai.predictions.ansi')
 local shared = require('ask-openai.agents.messages.shared')
 

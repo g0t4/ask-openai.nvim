@@ -241,17 +241,17 @@ end
 
 local DISABLED = false
 -- local DISABLED = true
-local predictions_logger = nil
-function Logger.predictions()
+local universal_logger = nil
+function Logger.universal()
     if DISABLED then
         return NOOP_LOGGER
     end
 
-    if predictions_logger then
-        return predictions_logger
+    if universal_logger then
+        return universal_logger
     end
-    predictions_logger = Logger:new("ask-predictions.log")
-    return predictions_logger
+    universal_logger = Logger:new("ask-universal.log")
+    return universal_logger
 end
 
 return Logger

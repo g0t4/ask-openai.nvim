@@ -3,7 +3,7 @@ local inprocess = require("ask-openai.tools.inprocess")
 local plumbing = require("ask-openai.tools.plumbing")
 local apply_patch_tool = require("ask-openai.tools.inproc.apply_patch")
 local client = require("ask-openai.rag.client.client")
-local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").universal()
 
 local M = {}
 

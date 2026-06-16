@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger"):predictions()
+local log = require("ask-openai.logs.logger"):universal()
 
 -- logic for parsing SSEs from all completion backends
 

@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").universal()
 local HLGroups = require("ask-openai.hlgroups")
 local Fold = require("ask-openai.agents.viewer.fold")
 local LinesBuilder = require("ask-openai.agents.viewer.lines_builder")

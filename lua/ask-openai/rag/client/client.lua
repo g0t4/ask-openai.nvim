@@ -1,5 +1,5 @@
 local ansi = require("ask-openai.predictions.ansi")
-local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").universal()
 
 local M = {}
 

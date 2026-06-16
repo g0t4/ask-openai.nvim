@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").universal()
 local json = require("dkjson")
 local tables = require("ask-openai.helpers.tables")
 

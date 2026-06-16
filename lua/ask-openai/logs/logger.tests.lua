@@ -4,7 +4,7 @@ local buffers = require('devtools.tests.buffers')
 local describe = require('devtools.tests.define.describe')
 
 describe("test log_auto_inspect", function()
-    local log = require("ask-openai.logs.logger"):predictions() -- for now use my single logger is fine
+    local log = require("ask-openai.logs.logger"):universal() -- for now use my single logger is fine
     local captures = {}
     log._log = function(self, entry)
         table.insert(captures, entry)

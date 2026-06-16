@@ -1,6 +1,6 @@
 local dots = require("ask-openai.frontends.thinking.dots")
 local HLGroups = require("ask-openai.hlgroups")
-local log = require("ask-openai.logs.logger").predictions()
+local log = require("ask-openai.logs.logger").universal()
 local CursorController = require "ask-openai.predictions.cursor_controller"
 
 ---@class Prediction
@@ -23,7 +23,7 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---
 local Prediction = {}
 local instance_metatable = { __index = Prediction }
-local extmarks_ns_id = vim.api.nvim_create_namespace("ask-predictions")
+local extmarks_ns_id = vim.api.nvim_create_namespace("ask-universal")
 
 ---@alias PredictionParameters { apply_template_only: boolean, }
 

@@ -177,8 +177,8 @@ require("ask-openai.api").cycle_log_verbosity()
 
 ```sh
 # when verbose logs are enabled, lots of predictions logs here:
-cat ~/.local/share/nvim/ask-openai/ask-predictions.log
-tail -F ~/.local/share/nvim/ask-openai/ask-predictions.log
+cat ~/.local/share/nvim/ask-openai/ask-universal.log
+tail -F ~/.local/share/nvim/ask-openai/ask-universal.log
 # this file is wiped each time nvim starts, it uses `w` to open the file thus wiping history
 # so this file won't grow unreasonably large
 # meant for session based troubleshooting, not long-term
