@@ -17,7 +17,7 @@ from indexer import IncrementalRAGIndexer
 from lsp.chunks.chunker import RAGChunkerOptions
 from lsp.inference.client.embedder import encode_query
 from lsp.storage import ChunkType, load_chunks_by_file, load_file_stats_by_file
-from lsp.config import Config
+from lsp.config import RagConfig
 import lsp.ignores
 from lsp import fs  # stop gap set these until I remove fs's global state
 
@@ -58,7 +58,7 @@ class TestBuildIndex:
     async def build_lua_index(self, path: Path):
         files_by_domain = find_files_by_semantic_domain(path)
         files = files_by_domain.get("lua", set())
-        indexer = IncrementalRAGIndexer(self.dot_rag_dir, path, RAGChunkerOptions.OnlyLineRangeChunks(), None, Config.default())
+        indexer = IncrementalRAGIndexer(self.dot_rag_dir, path, RAGChunkerOptions.OnlyLineRangeChunks(), None, RagConfig.default())
         await indexer.build_index(domain="lua", current_files=files)
 
     @pytest.mark.asyncio

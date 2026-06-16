@@ -55,15 +55,15 @@ def _map_allowed_file_extensions_to_semantic_domains(raw_includes: set[str]) -> 
     return unified_domains
 
 @dataclass
-class Config:
+class RagConfig:
     ignores: set[str] = field(default_factory=set)
     allowed_semantic_domains: set[str] = field(default_factory=set)
     global_query_domains: set[str] = field(default_factory=set)
     enabled: bool = field(default=DEFAULT_RAG_ENABLED)
 
     @staticmethod
-    def default() -> "Config":
-        return Config(
+    def default() -> "RagConfig":
+        return RagConfig(
             allowed_semantic_domains=DEFAULT_ALLOWED_SEMANTIC_DOMAINS,
             ignores=DEFAULT_IGNORES,
             global_query_domains=DEFAULT_GLOBAL_DOMAINS,
@@ -76,7 +76,7 @@ class Config:
             return False
         return domain in self.allowed_semantic_domains
 
-def load_config(yaml_text: str) -> Config:
+def load_config(yaml_text: str) -> RagConfig:
     raw = yaml.safe_load(yaml_text)
 
     enabled = raw.get("enabled") if raw.get("enabled") is not None else DEFAULT_RAG_ENABLED
@@ -93,7 +93,7 @@ def load_config(yaml_text: str) -> Config:
         raise ValueError("global_languages/global_filetypes is deprecated; use global_domains instead")
 
     global_domains = raw.get("global_domains") or DEFAULT_GLOBAL_DOMAINS
-    return Config(
+    return RagConfig(
         ignores=raw.get("ignores") or DEFAULT_IGNORES,
         allowed_semantic_domains=allowed,
         global_query_domains=global_domains,

@@ -22,7 +22,7 @@ from pydants import write_json
 
 from lsp.storage import Chunk, FileStat, load_prior_data
 from lsp.chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
-from lsp.config import Config, load_config
+from lsp.config import RagConfig, load_config
 from lsp.ignores import is_file_ignored_allchecks
 from lsp.domains import (
     EXTENSION_TO_SEMANTIC_DOMAIN,
@@ -65,7 +65,7 @@ class IncrementalRAGIndexer:
         source_code_dir: Path,
         options: RAGChunkerOptions,
         program_args: ProgramArgs,
-        config: Config,
+        config: RagConfig,
     ):
         self.options = options
         self.dot_rag_dir = Path(dot_rag_dir)

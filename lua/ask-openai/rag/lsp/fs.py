@@ -3,7 +3,7 @@ import aiofiles
 from pathlib import Path
 
 from .logs import get_logger
-from .config import Config, load_config
+from .config import RagConfig, load_config
 
 logger = get_logger(__name__)
 
@@ -11,7 +11,7 @@ class Cache:
     # this exists to avoid the need for `globals` concerns
     root_path: Optional[Path] = None
     dot_rag_dir: Optional[Path] = None
-    config: Config = Config.default()
+    config: RagConfig = RagConfig.default()
 
 # *** by the way I am not 100% certain I like this module... but lets see how it goes
 #   I need a simple way to get a path relative to the workspace dir
@@ -52,11 +52,11 @@ async def set_root_dir(root_dir: str | Path | None):
 
     await load_rag_config(cache.root_path)
 
-async def load_rag_config(root_path: Path) -> Config:
+async def load_rag_config(root_path: Path) -> RagConfig:
     rag_yaml = root_path / ".rag.yaml"
     if not rag_yaml.exists():
         logger.info(f"no rag config found {rag_yaml}, using default config")
-        return Config.default()
+        return RagConfig.default()
 
     async with aiofiles.open(rag_yaml, mode="r") as f:
         content = await f.read()
@@ -64,7 +64,7 @@ async def load_rag_config(root_path: Path) -> Config:
     logger.pp_debug(f"found rag config", rag_yaml)
     return cache.config
 
-def get_config() -> Config:
+def get_config() -> RagConfig:
     return cache.config
 
 def relative_to_workspace(path: Path | str, override_root_path: Path | None = None) -> Path:

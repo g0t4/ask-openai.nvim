@@ -4,11 +4,11 @@ from pathspec import PathSpec
 from pathspec.patterns.gitwildmatch import GitWildMatchPattern
 
 from lsp.logs import get_logger
-from lsp.config import Config
+from lsp.config import RagConfig
 
 logger = get_logger(__name__)
 
-def setup_ignores(fs_root_path: Path, config: Config) -> PathSpec:
+def setup_ignores(fs_root_path: Path, config: RagConfig) -> PathSpec:
     # TODO why not just create this on first use! have helper to create/get it
     gitignore_path = fs_root_path.joinpath(".gitignore")
 
@@ -59,7 +59,7 @@ def reset_cache_bewteen_tests():
 
 IGNORED = True
 
-def is_file_ignored_allchecks(file_path: str | Path, config: Config, fs_root_path: Path):
+def is_file_ignored_allchecks(file_path: str | Path, config: RagConfig, fs_root_path: Path):
     """ unified ignore checks """
     # TODO wire this into rag_validate_index
 

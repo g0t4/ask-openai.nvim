@@ -7,7 +7,7 @@ from pygls.lsp.server import LanguageServer
 from rx import operators as ops
 from rx.subject.subject import Subject
 
-from lsp.config import Config
+from lsp.config import RagConfig
 from lsp.chunks.chunker import RAGChunkerOptions
 from lsp.logs import get_logger
 from lsp import ignores, rag
@@ -20,7 +20,7 @@ class FileUpdateEmbeddingsQueue:
 
     def __init__(
         self,
-        config: Config,
+        config: RagConfig,
         root_path: Path,
         server: LanguageServer,
         loop: asyncio.AbstractEventLoop,
