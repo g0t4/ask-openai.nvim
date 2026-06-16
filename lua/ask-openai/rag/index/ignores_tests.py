@@ -19,11 +19,7 @@ def tmp_root(tmp_path):
 
     # Create .gitignore file with some patterns
     gitignore = root / ".gitignore"
-    gitignore.write_text("""
-    *.log
-    /venv/
-    *.pyc
-    """)
+    gitignore.write_text("""*.log\n/venv/\n*.pyc""")
 
     reset_cache_bewteen_tests()
 
