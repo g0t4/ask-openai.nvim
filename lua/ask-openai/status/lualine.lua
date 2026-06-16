@@ -31,15 +31,6 @@ function M.lualine_components()
     --  󰵉  󱐎  󰵕  search axis/arrow
     --     󰕡 (search vector)
 
-    local function get_threshold_summary(icons)
-        local level, _ = local_share.get_log_threshold()
-        local icon = LEVEL_ICONS[level:lower()]
-        if not icon then
-            icon = level
-        end
-        table.insert(icons, icon)
-    end
-
     local enabled_color = function()
         local fg_color = ''
         if not local_share.are_predictions_enabled() then
@@ -57,8 +48,6 @@ function M.lualine_components()
     local primary = {
         function()
             local icons = { '[' }
-
-            get_threshold_summary(icons)
 
             if local_share.are_notify_stats_enabled() then
                 table.insert(icons, '󰍨')

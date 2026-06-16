@@ -111,33 +111,6 @@ function M.toggle_predictions()
     return cfg.predictions.enabled
 end
 
--- * log threshold *
-local MAX_LOG_THRESHOLD = 2 -- must always show WARN/ERROR
-
----@return string, number
-function M.cycle_log_verbosity()
-    local current_text, current_number = M.get_log_threshold()
-    local next_number = (current_number + 1) % (MAX_LOG_THRESHOLD + 1)
-    local cfg = get()
-    cfg.log_threshold_text = LEVEL_NUMBER_TO_TEXT[next_number]
-    save()
-    return cfg.log_threshold_text, next_number
-end
-
----@return string level_text, number level_number
-function M.get_log_threshold()
-    local cfg = get()
-    local text = cfg.log_threshold_text or LEVEL_NUMBER_TO_TEXT[DEFAULT_LOG_LEVEL_NUMBER]
-    local number = LEVEL_TEXT_TO_NUMBER[text]
-    return text, number
-end
-
----@return boolean
-function M.is_trace_logging_enabled()
-    local _, number = M.get_log_threshold()
-    return number <= LEVEL_NUMBERS.TRACE
-end
-
 -- * notify stats *
 function M.are_notify_stats_enabled()
     return get().notify_stats

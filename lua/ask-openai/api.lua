@@ -27,11 +27,6 @@ function M.are_predictions_enabled()
     return config.local_share.are_predictions_enabled()
 end
 
--- * verbose logs *
-function M.cycle_log_verbosity()
-    return config.local_share.cycle_log_verbosity()
-end
-
 -- * FIM model *
 ---@param model string
 function M.set_fim_model(model)

@@ -167,31 +167,6 @@ opts = {
 
 ## Troubleshooting
 
-Enable verbose logging:
-
-```lua
--- cycle log level: WARN (default) -> INFO -> TRACE
--- saves in ~/.local/share/nvim/ask-openai/config.json and persists across nvim restarts
-require("ask-openai.api").cycle_log_verbosity()
-```
-
-```sh
-# when verbose logs are enabled, lots of predictions logs here:
-cat ~/.local/share/nvim/ask-openai/ask-universal.log
-tail -F ~/.local/share/nvim/ask-openai/ask-universal.log
-# this file is wiped each time nvim starts, it uses `w` to open the file thus wiping history
-# so this file won't grow unreasonably large
-# meant for session based troubleshooting, not long-term
-```
-
-Then, make a request, then check messages for verbose logs:
-
-```vim
-:messages
-```
-
-Don't forget health checks:
-
 ```vim
 :checkhealth ask-openai
 " FYI verbose mode adds extra health check info
