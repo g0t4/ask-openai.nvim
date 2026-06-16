@@ -2,8 +2,7 @@ from pathlib import Path
 import pytest
 import rich
 
-import lsp.ignores
-from lsp.ignores import _is_gitignored
+from index.ignores import _is_gitignored, reset_cache_bewteen_tests
 from config import RagConfig
 
 @pytest.fixture
@@ -26,9 +25,7 @@ def tmp_root(tmp_path):
     *.pyc
     """)
 
-    # reset cached gitignore spec for the temporary repository
-    lsp.ignores.gitignore_spec = None
-    lsp.ignores._used_fs_root_path = None
+    reset_cache_bewteen_tests()
 
     return root
 
@@ -60,8 +57,9 @@ def test_literal_entry(tmp_root):
 def disabled_manual_test_listing_all_ignored_files_under_dir():
     path = Path("/Users/wesdemos/repos/github/g0t4/ask-openai.nvim")
 
-    assert lsp.ignores.gitignore_spec
-    spec = lsp.ignores.gitignore_spec
+    from index import ignores
+    assert ignores.gitignore_spec
+    spec = ignores.gitignore_spec
     ignored_files = spec.match_tree(path)
 
     print("IGNORED FILES:")

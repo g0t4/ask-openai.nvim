@@ -18,7 +18,7 @@ from chunks.chunker import RAGChunkerOptions
 from inference.client.embedder import encode_query
 from lsp.storage import ChunkType, load_chunks_by_file, load_file_stats_by_file
 from config import RagConfig
-import lsp.ignores
+from index.ignores import reset_cache_bewteen_tests
 from index import fs  # stop gap set these until I remove fs's global state
 
 # logging_fwk_to_console("WARN") # stop INFO logs after timing captured
@@ -35,7 +35,7 @@ class TestBuildIndex:
         cls.test_cases = my_dir / "chunks/test_cases"
 
         # PRN move the reset to one spot between all tests
-        #   lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
+        #   reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
         #
         fs.rag_project.dot_rag_dir = cls.dot_rag_dir
         fs.rag_project.root_path = cls.tmp_source_code_dir  # use this as default, override if different below
@@ -64,7 +64,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_building_rag_index_from_scratch(self):
-        lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
+        reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
         # FYI! this duplicates some low level line range chunking tests but I want to keep it to include the end to end picture
         #   i.e. for computing chunk id which relies on path to file
         #   here I am testing end to end chunking outputs even if most logic is shared with low level tests, still valuable
@@ -140,7 +140,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_search_index_to_trigger_OpenMP_error(self):
-        lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
+        reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
         self.trash_path(self.dot_rag_dir)
         fs.rag_project.root_path = self.indexer_src_dir
 
@@ -198,7 +198,7 @@ class TestBuildIndex:
     @pytest.mark.asyncio
     async def test_update_index_removed_file(self):
         # TODO put this reset on each test
-        lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
+        reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
 
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
@@ -283,7 +283,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index(self):
-        lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
+        reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
 
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
@@ -342,7 +342,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_update_file_from_language_server(self):
-        lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
+        reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
 
         self.trash_path(self.dot_rag_dir)
         # * recreate source directory with initial files
