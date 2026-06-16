@@ -67,17 +67,17 @@ M.cached_instruct_slash_commands = nil
 --- Internal loader that populates `M._instruct_paths_by_name` and returns the command list.
 ---@return string[] List of slash commands (e.g., "/my_instruct")
 local function _load_instruct_slash_commands()
-    local home_dir_instructs_path = vim.fn.expand("~/.agents/instructs")
+    local global_instructs_dir = vim.fn.expand("~/.agents/instructs")
     local paths = {}
-    if vim.fn.isdirectory(home_dir_instructs_path) == 1 then
+    if vim.fn.isdirectory(global_instructs_dir) == 1 then
         -- * global instruct directories
-        local dir_names = files.list_directories(home_dir_instructs_path)
+        local dir_names = files.list_directories(global_instructs_dir)
         for _, name in ipairs(dir_names) do
-            paths[name] = home_dir_instructs_path .. "/" .. name .. "/INSTRUCT.md"
+            paths[name] = global_instructs_dir .. "/" .. name .. "/INSTRUCT.md"
         end
 
         -- * global standalone markdown files
-        local entries = files.list_entries(home_dir_instructs_path)
+        local entries = files.list_entries(global_instructs_dir)
         for _, entry in ipairs(entries) do
             if entry.type == "file" and entry.name:match("%.md$") then
                 local instruct_name = entry.name:gsub("%.md$", "")
@@ -85,10 +85,10 @@ local function _load_instruct_slash_commands()
                     vim.notify(string.format(
                         "Instruct name collision: '%s' already registered; overriding with global file %s",
                         instruct_name,
-                        home_dir_instructs_path .. "/" .. entry.name
+                        global_instructs_dir .. "/" .. entry.name
                     ), vim.log.levels.WARN)
                 end
-                paths[instruct_name] = home_dir_instructs_path .. "/" .. entry.name
+                paths[instruct_name] = global_instructs_dir .. "/" .. entry.name
             end
         end
     end
