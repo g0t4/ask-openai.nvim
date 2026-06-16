@@ -15,7 +15,7 @@ def _get_cached_parser(language):
     parsers_by_language[language] = parser
     return parser
 
-def get_cached_parser_for_path(path) -> tuple[Parser | None, str]:
+def get_cached_parser_for_path(path) -> tuple[Parser | None, str|None]:
     language = path.suffix[1:]
     if language is None:
         # PRN shebang?
@@ -51,6 +51,11 @@ def get_cached_parser_for_path(path) -> tuple[Parser | None, str]:
         language = "rust"
     elif language == "json":
         language = "json"
+    elif language == "yaml":
+        # TODO add more here to this branch
+        # do not warn about these missing parsers
+        # I have determined I don't need/care to know
+        return None, None
     else:
         # *** https://github.com/Goldziher/tree-sitter-language-pack#readme
         # not (yet?): zsh, snippet, applescript?
