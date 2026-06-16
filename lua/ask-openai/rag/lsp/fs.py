@@ -7,19 +7,22 @@ from .config import Config, load_config
 
 logger = get_logger(__name__)
 
-root_path: Path
-dot_rag_dir: Path
-config: Config = Config.default()
+class Cache:
+    # this exists to avoid the need for `globals` concerns
+    root_path: Optional[Path] = None
+    dot_rag_dir: Optional[Path] = None
+    config: Config = Config.default()
 
 # *** by the way I am not 100% certain I like this module... but lets see how it goes
 #   I need a simple way to get a path relative to the workspace dir
 #   without passing that workspace dir everywhere
 #   but also don't break passing it when it makes sense b/c then it becomes a hidden dependency
+cache = Cache()
 
 def is_no_rag_dir() -> bool:
-    if dot_rag_dir is None:
+    if cache.dot_rag_dir is None:
         return False
-    return not dot_rag_dir.exists()
+    return not cache.dot_rag_dir.exists()
 
 def get_cwd_repo_root() -> Path | None:
     """
@@ -34,26 +37,22 @@ def get_cwd_repo_root() -> Path | None:
     return root_directory
 
 async def set_root_dir(root_dir: str | Path | None):
-    global root_path, dot_rag_dir, config
-
     if root_dir is None:
         logger.error(f"aborting on_initialize b/c missing client workspace dir, {root_dir=}")
         raise ValueError("root_uri is None")
 
     logger.info(f"{root_dir=}")
-    root_path = Path(root_dir)
-    dot_rag_dir = root_path / ".rag"
+    cache.root_path = Path(root_dir)
+    cache.dot_rag_dir = cache.root_path / ".rag"
     if is_no_rag_dir():
-        logger.error(f"abort on_initialize b/c no .rag dir, {dot_rag_dir=}")
+        logger.error(f"abort on_initialize b/c no .rag dir, {cache.dot_rag_dir=}")
         # no need to do anything else, the LS server handles setting no capabilities
 
-    logger.debug(f"{dot_rag_dir=}")
+    logger.debug(f"{cache.dot_rag_dir=}")
 
-    await load_rag_config(root_path)
+    await load_rag_config(cache.root_path)
 
 async def load_rag_config(root_path: Path) -> Config:
-    global config
-
     rag_yaml = root_path / ".rag.yaml"
     if not rag_yaml.exists():
         logger.info(f"no rag config found {rag_yaml}, using default config")
@@ -61,16 +60,16 @@ async def load_rag_config(root_path: Path) -> Config:
 
     async with aiofiles.open(rag_yaml, mode="r") as f:
         content = await f.read()
-    config = load_config(content)
+    cache.config = load_config(content)
     logger.pp_debug(f"found rag config", rag_yaml)
-    return config
+    return cache.config
 
-def get_config():
-    return config
+def get_config() -> Config:
+    return cache.config
 
 def relative_to_workspace(path: Path | str, override_root_path: Path | None = None) -> Path:
     path = Path(path)
-    use_root_path = override_root_path or root_path
+    use_root_path = override_root_path or cache.root_path
 
     if use_root_path is None:
         return path
@@ -83,7 +82,7 @@ def relative_to_workspace(path: Path | str, override_root_path: Path | None = No
 def get_loggable_path(path: Path | str) -> str:
     if not isinstance(path, str):
         path = str(path)
-    if root_path is None:
+    if cache.root_path is None:
         return path
     return f"[bold]{relative_to_workspace(path)}[/bold]"
 

@@ -36,8 +36,8 @@ class TestBuildIndex:
         # PRN move the reset to one spot between all tests
         #   lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
         #
-        fs.dot_rag_dir = cls.dot_rag_dir
-        fs.root_path = cls.tmp_source_code_dir  # use this as default, override if different below
+        fs.cache.dot_rag_dir = cls.dot_rag_dir
+        fs.cache.root_path = cls.tmp_source_code_dir  # use this as default, override if different below
         # TODO finish passing these fs path vars so I can stop using the globals on fs
 
     def trash_path(self, dir):
@@ -68,7 +68,7 @@ class TestBuildIndex:
         #   i.e. for computing chunk id which relies on path to file
         #   here I am testing end to end chunking outputs even if most logic is shared with low level tests, still valuable
         self.trash_path(self.dot_rag_dir)
-        fs.root_path = self.indexer_src_dir
+        fs.cache.root_path = self.indexer_src_dir
 
         await self.build_lua_index(self.indexer_src_dir)
         # * chunks
@@ -141,7 +141,7 @@ class TestBuildIndex:
     async def test_search_index_to_trigger_OpenMP_error(self):
         lsp.ignores.reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
         self.trash_path(self.dot_rag_dir)
-        fs.root_path = self.indexer_src_dir
+        fs.cache.root_path = self.indexer_src_dir
 
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
