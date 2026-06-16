@@ -1,6 +1,3 @@
-# asyncio.Event()
-#
-
 import asyncio
 from pygls.protocol.json_rpc import MsgId
 
