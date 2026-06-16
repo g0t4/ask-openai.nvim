@@ -349,8 +349,8 @@ async def main():
         #     modify ignores to take this new state object (like it takes config and doesn't use config from fs.config!)
         #   and push that over into pygls code that originally created the fs module
         #   TODO rip this crap out long term
-        fs.cache.root_path = source_code_dir
-        fs.cache.dot_rag_dir = dot_rag_dir
+        fs.rag_project.root_path = source_code_dir
+        fs.rag_project.dot_rag_dir = dot_rag_dir
 
         await indexer.main()
 

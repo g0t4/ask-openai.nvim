@@ -17,12 +17,12 @@ class RagProject:
 #   I need a simple way to get a path relative to the workspace dir
 #   without passing that workspace dir everywhere
 #   but also don't break passing it when it makes sense b/c then it becomes a hidden dependency
-cache = RagProject()
+rag_project = RagProject()
 
 def is_no_rag_dir() -> bool:
-    if cache.dot_rag_dir is None:
+    if rag_project.dot_rag_dir is None:
         return False
-    return not cache.dot_rag_dir.exists()
+    return not rag_project.dot_rag_dir.exists()
 
 def get_cwd_repo_root() -> Path | None:
     """
@@ -42,15 +42,15 @@ async def set_root_dir(root_dir: str | Path | None):
         raise ValueError("root_uri is None")
 
     logger.info(f"{root_dir=}")
-    cache.root_path = Path(root_dir)
-    cache.dot_rag_dir = cache.root_path / ".rag"
+    rag_project.root_path = Path(root_dir)
+    rag_project.dot_rag_dir = rag_project.root_path / ".rag"
     if is_no_rag_dir():
-        logger.error(f"abort on_initialize b/c no .rag dir, {cache.dot_rag_dir=}")
+        logger.error(f"abort on_initialize b/c no .rag dir, {rag_project.dot_rag_dir=}")
         # no need to do anything else, the LS server handles setting no capabilities
 
-    logger.debug(f"{cache.dot_rag_dir=}")
+    logger.debug(f"{rag_project.dot_rag_dir=}")
 
-    await load_rag_config(cache.root_path)
+    await load_rag_config(rag_project.root_path)
 
 async def load_rag_config(root_path: Path) -> RagConfig:
     rag_yaml = root_path / ".rag.yaml"
@@ -60,16 +60,16 @@ async def load_rag_config(root_path: Path) -> RagConfig:
 
     async with aiofiles.open(rag_yaml, mode="r") as f:
         content = await f.read()
-    cache.config = load_config(content)
+    rag_project.config = load_config(content)
     logger.pp_debug(f"found rag config", rag_yaml)
-    return cache.config
+    return rag_project.config
 
 def get_config() -> RagConfig:
-    return cache.config
+    return rag_project.config
 
 def relative_to_workspace(path: Path | str, override_root_path: Path | None = None) -> Path:
     path = Path(path)
-    use_root_path = override_root_path or cache.root_path
+    use_root_path = override_root_path or rag_project.root_path
 
     if use_root_path is None:
         return path
@@ -82,7 +82,7 @@ def relative_to_workspace(path: Path | str, override_root_path: Path | None = No
 def get_loggable_path(path: Path | str) -> str:
     if not isinstance(path, str):
         path = str(path)
-    if cache.root_path is None:
+    if rag_project.root_path is None:
         return path
     return f"[bold]{relative_to_workspace(path)}[/bold]"
 
