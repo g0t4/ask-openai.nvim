@@ -1,5 +1,5 @@
 local local_share = require("ask-openai.config.local_share")
-local ansi = require("ask-openai.predictions.ansi")
+local ansi = require("devtools.ansi")
 local uv = vim.loop
 local inspect = require("devtools.inspect")
 local Logger = {}
