@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger").universal()
+local log = require("devtools.logs.logger").universal()
 local instructs = require("ask-openai.frontends.instructs")
 local local_share = require("ask-openai.config.local_share")
 

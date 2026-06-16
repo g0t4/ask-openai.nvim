@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger"):universal()
+local log = require("devtools.logs.logger"):universal()
 ---@class FloatWindow
 ---@field buffer_number? integer
 ---@field win_id? integer

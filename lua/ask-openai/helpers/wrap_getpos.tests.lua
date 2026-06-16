@@ -5,7 +5,7 @@ local should = require('devtools.tests.should')
 local describe = require('devtools.tests.define.describe')
 local buffers = require('devtools.tests.buffers')
 -- system under test:
-local log = require("ask-openai.logs.logger").universal()
+local log = require("devtools.logs.logger").universal()
 local Selection = require('ask-openai.helpers.selection')
 local GetPos = require('ask-openai.helpers.wrap_getpos')
 

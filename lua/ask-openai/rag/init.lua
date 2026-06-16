@@ -1,6 +1,6 @@
 local messages = require("devtools.messages")
 local api = require("ask-openai.api")
-local log = require("ask-openai.logs.logger").universal()
+local log = require("devtools.logs.logger").universal()
 
 local M = {}
 

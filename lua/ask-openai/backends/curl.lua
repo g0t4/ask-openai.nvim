@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger").universal()
+local log = require("devtools.logs.logger").universal()
 local completion_logger = require("ask-openai.logs.completion_logger")
 local CurlRequest = require("ask-openai.backends.curl_request")
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")

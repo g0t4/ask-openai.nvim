@@ -1,6 +1,6 @@
 local dots = require("ask-openai.frontends.thinking.dots")
 local HLGroups = require("ask-openai.hlgroups")
-local log = require("ask-openai.logs.logger").universal()
+local log = require("devtools.logs.logger").universal()
 local CursorController = require "ask-openai.predictions.cursor_controller"
 
 ---@class Prediction

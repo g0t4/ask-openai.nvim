@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger").universal()
+local log = require("devtools.logs.logger").universal()
 local files = require("ask-openai.helpers.files")
 local ansi = require("ask-openai.predictions.ansi")
 local TxChatMessage = require("ask-openai.agents.messages.tx")

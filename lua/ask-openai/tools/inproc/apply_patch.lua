@@ -1,5 +1,5 @@
 local plumbing = require("ask-openai.tools.plumbing")
-local log = require("ask-openai.logs.logger").universal()
+local log = require("devtools.logs.logger").universal()
 
 local M = {}
 

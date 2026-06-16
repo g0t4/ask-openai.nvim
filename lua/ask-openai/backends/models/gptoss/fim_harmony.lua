@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger").universal()
+local log = require("devtools.logs.logger").universal()
 local api = require("ask-openai.api")
 local dedupe = require("ask-openai.rag.client.dedupe")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony

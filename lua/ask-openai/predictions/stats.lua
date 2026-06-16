@@ -1,6 +1,6 @@
 local api = require("ask-openai.api")
 local llamacpp_stats = require("ask-openai.backends.llama_cpp.stats")
-local log = require("ask-openai.logs.logger").universal()
+local log = require("devtools.logs.logger").universal()
 local lualine = require("ask-openai.status.lualine")
 
 local M = {}

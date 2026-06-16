@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger").universal()
+local log = require("devtools.logs.logger").universal()
 local CurrentContext = require("ask-openai.frontends.context")
 local fim = require("ask-openai.backends.models.fim")
 local qwen = fim.qwen25coder.sentinel_tokens

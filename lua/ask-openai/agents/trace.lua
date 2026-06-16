@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger").universal()
+local log = require("devtools.logs.logger").universal()
 local files = require("ask-openai.helpers.files")
 local llama_server_client = require("ask-openai.backends.llama_cpp.llama_server_client")
 local messages = require("devtools.messages")

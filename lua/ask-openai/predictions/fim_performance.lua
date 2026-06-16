@@ -1,5 +1,5 @@
 local ansi = require("ask-openai.predictions.ansi")
-local log = require("ask-openai.logs.logger").universal()
+local log = require("devtools.logs.logger").universal()
 
 -- TODO track thinking time? and merge thinking dots logic into here
 -- TODO turn this into FIMState too? and use for UX updates, i.e.

@@ -1,5 +1,5 @@
 local ContextItem = require("ask-openai.frontends.context.item")
-local log = require('ask-openai.logs.logger').universal()
+local log = require('devtools.logs.logger').universal()
 local messages = require("devtools.messages")
 
 -- for now, don't try to track external clipboard copies

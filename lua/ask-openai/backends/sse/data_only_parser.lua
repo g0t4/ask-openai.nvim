@@ -1,4 +1,4 @@
-local log = require("ask-openai.logs.logger").universal()
+local log = require("devtools.logs.logger").universal()
 local safely = require("ask-openai.helpers.safely")
 
 -- stream parser will sit BELOW a chat completions client

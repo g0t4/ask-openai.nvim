@@ -1,6 +1,6 @@
 local local_share = require("ask-openai.config.local_share")
 local LlamaServerClient = require("ask-openai.backends.llama_cpp.llama_server_client")
-local logs = require("ask-openai.logs.logger"):universal()
+local logs = require("devtools.logs.logger"):universal()
 
 local M = {}
 
