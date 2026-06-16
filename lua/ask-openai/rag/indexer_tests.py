@@ -1,5 +1,5 @@
 import os
-from lsp.domains import find_files_by_semantic_domain
+from config.domains import find_files_by_semantic_domain
 from rag.logs import get_logger, logging_fwk_to_console, print_code
 
 logger = get_logger(__name__)

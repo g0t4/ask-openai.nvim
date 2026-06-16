@@ -12,7 +12,7 @@ from rag.logs import get_logger, logging_fwk_to_console
 from lsp.storage import load_all_datasets, Datasets
 from chunks.chunker import get_file_stat
 from index.fs import load_rag_config, RagConfig
-from lsp.domains import resolve_semantic_domain
+from config.domains import resolve_semantic_domain
 from index.stale import warn_about_stale_files
 
 logger = get_logger("validator")

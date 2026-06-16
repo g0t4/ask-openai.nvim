@@ -4,7 +4,7 @@ from pathlib import Path
 
 import yaml
 
-from lsp.domains import (
+from config.domains import (
     DEFAULT_ALLOWED_SEMANTIC_DOMAINS,
     EXTENSION_TO_SEMANTIC_DOMAIN,
     BASENAME_TO_SEMANTIC_DOMAIN,

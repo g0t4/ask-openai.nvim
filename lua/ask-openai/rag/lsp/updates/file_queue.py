@@ -11,7 +11,7 @@ from config import RagConfig
 from chunks.chunker import RAGChunkerOptions
 from rag.logs import get_logger
 from lsp import ignores, rag
-from lsp.domains import resolve_semantic_domain
+from config.domains import resolve_semantic_domain
 
 logger = get_logger(__name__)
 

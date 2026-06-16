@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from lsp.domains import (
+from config.domains import (
     EXTENSION_TO_SEMANTIC_DOMAIN,
     BASENAME_TO_SEMANTIC_DOMAIN,
     SHEBANG_EXECUTABLE_TO_SEMANTIC_DOMAIN,

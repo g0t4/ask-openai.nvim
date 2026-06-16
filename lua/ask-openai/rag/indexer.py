@@ -24,7 +24,7 @@ from lsp.storage import Chunk, FileStat, load_prior_data
 from chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
 from config import RagConfig, load_config
 from lsp.ignores import is_file_ignored_allchecks
-from lsp.domains import (
+from config.domains import (
     EXTENSION_TO_SEMANTIC_DOMAIN,
     find_files_by_semantic_domain,
     resolve_semantic_domain,

@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 from rag.logs import get_logger
 from index import fs
-from lsp.domains import resolve_semantic_domain, resolve_semantic_domain_for_vim_filetype
+from config.domains import resolve_semantic_domain, resolve_semantic_domain_for_vim_filetype
 from inference.client.embedder import encode_passages
 
 logger = get_logger(__name__)
