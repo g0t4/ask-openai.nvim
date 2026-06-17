@@ -8,7 +8,7 @@ from transformers import AutoTokenizer, AutoModel
 
 from inference.qwen3.known import get_known_inputs, verify_qwen3_known_embeddings
 from inference.server.helpers import auto_device
-from rag.logs import get_logger, logging_fwk_to_console
+from logs import get_logger, logging_fwk_to_console
 
 logger = get_logger(__name__)
 enable_memory_logs = '--memory' in sys.argv

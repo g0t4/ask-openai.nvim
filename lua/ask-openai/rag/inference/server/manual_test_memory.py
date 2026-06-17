@@ -3,7 +3,7 @@ import os
 import indexer
 from indexer import IncrementalRAGIndexer
 import inference.server.qwen3_embeddings as qwen3_embeddings
-from rag.logs import *
+from logs import *
 import qwen3_embeddings
 
 # logger = get_logger(__name__)

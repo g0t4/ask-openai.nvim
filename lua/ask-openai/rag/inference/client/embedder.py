@@ -1,4 +1,4 @@
-from rag.logs import get_logger
+from logs import get_logger
 from typing import Optional
 import numpy as np
 from inference.client import AsyncInferenceClient

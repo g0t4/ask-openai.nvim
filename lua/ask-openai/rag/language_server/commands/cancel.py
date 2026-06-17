@@ -1,7 +1,7 @@
 from pygls.lsp.server import LanguageServer
 from pygls.protocol.json_rpc import MsgId
 from language_server.stoppers import request_stop
-from rag.logs import get_logger
+from logs import get_logger
 
 logger = get_logger(__name__)
 

@@ -13,7 +13,7 @@ from config.domains import resolve_semantic_domain
 from index import ignores, fs
 from index.storage import Datasets
 from language_server import rag
-from rag.logs import get_logger
+from logs import get_logger
 
 logger = get_logger(__name__)
 

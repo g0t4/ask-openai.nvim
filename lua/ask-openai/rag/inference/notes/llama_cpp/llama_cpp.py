@@ -1,4 +1,4 @@
-from rag.logs import get_logger, logging_fwk_to_console
+from logs import get_logger, logging_fwk_to_console
 
 logger = get_logger(__name__)
 

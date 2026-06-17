@@ -2,7 +2,7 @@ import lsprotocol.types as types
 
 from pygls import uris
 from pygls.lsp.server import LanguageServer
-from rag.logs import get_logger
+from logs import get_logger
 from index import fs
 from index.validate import DatasetsValidator
 from language_server import rag

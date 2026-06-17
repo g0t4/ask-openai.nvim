@@ -2,7 +2,7 @@
 
 import logging
 import os
-from rag.logs import get_logger, logging_fwk_to_console, LogTimer
+from logs import get_logger, logging_fwk_to_console, LogTimer
 
 logger = get_logger("drop_ST")
 logging_fwk_to_console(logging.DEBUG)

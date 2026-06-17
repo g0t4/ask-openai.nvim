@@ -4,7 +4,7 @@ from tree_sitter_language_pack import get_parser
 
 from chunks.identified import IdentifiedChunk
 import chunks.uncovered
-from rag.logs import logging_fwk_to_console
+from logs import logging_fwk_to_console
 
 def _build_uncovered_intervals(*args):
     return chunks.uncovered._build_uncovered_intervals(*args, show_intervals=True)

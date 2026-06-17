@@ -2,7 +2,7 @@ from asyncio import open_connection
 from dataclasses import asdict, dataclass
 import socket
 
-from rag.logs import get_logger
+from logs import get_logger
 from inference.comms import *
 
 logger = get_logger(__name__)

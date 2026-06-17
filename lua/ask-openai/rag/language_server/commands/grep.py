@@ -2,7 +2,7 @@ import attrs
 import asyncio
 from pygls.lsp.server import LanguageServer
 
-from rag.logs import get_logger
+from logs import get_logger
 from language_server.stoppers import Stopper, create_stopper, remove_stopper
 from inference.client.retrieval import semantic_grep, LSPSemanticGrepRequest
 from index.validate import DatasetsValidator

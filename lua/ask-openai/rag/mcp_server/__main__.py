@@ -57,7 +57,7 @@ from inference.client.retrieval import (
     semantic_grep as _semantic_grep,
 )
 from index.fs import relative_to_workspace, set_root_dir
-from rag.logs import get_logger
+from logs import get_logger
 
 logger: logging.Logger = get_logger(__name__)
 # logging.getLogger("mcp").setLevel(logging.DEBUG)  # MCP SDK logs

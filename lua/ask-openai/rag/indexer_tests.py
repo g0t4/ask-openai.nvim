@@ -1,6 +1,6 @@
 import os
 from config.domains import find_files_by_semantic_domain
-from rag.logs import get_logger, logging_fwk_to_console, print_code
+from logs import get_logger, logging_fwk_to_console, print_code
 
 logger = get_logger(__name__)
 # logging_fwk_to_console("INFO") # start info level to capture timing logs (add with logger.timer to below)

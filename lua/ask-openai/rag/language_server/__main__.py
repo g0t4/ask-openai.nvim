@@ -4,7 +4,7 @@ import signal
 
 from pygls.lsp.server import LanguageServer
 
-from rag.logs import get_logger, logging_fwk_to_language_server_log_file
+from logs import get_logger, logging_fwk_to_language_server_log_file
 from language_server.commands import sleepy, grep, update_file, cancel, initialize
 
 logging_fwk_to_language_server_log_file(logging.INFO)

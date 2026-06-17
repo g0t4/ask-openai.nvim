@@ -15,7 +15,7 @@ DEFAULT_IGNORES: set[str] = set()
 DEFAULT_GLOBAL_DOMAINS: set[str] = set()  # no defaults b/c if you don't set it, you get all indexed file types (includes)
 DEFAULT_RAG_ENABLED: bool = True
 
-from rag.logs import get_logger
+from logs import get_logger
 
 logger = get_logger(__name__)
 

@@ -9,7 +9,7 @@ from torch import Tensor
 from transformers import AutoTokenizer, AutoModel
 
 from inference.server.helpers import auto_device
-from rag.logs import get_logger
+from logs import get_logger
 from inference.qwen3.known import get_known_inputs, verify_qwen3_known_embeddings
 
 logger = get_logger(__name__)

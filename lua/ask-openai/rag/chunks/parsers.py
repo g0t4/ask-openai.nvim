@@ -1,7 +1,7 @@
 from tree_sitter import Parser
 from tree_sitter_language_pack import get_language, get_parser
 
-from rag.logs import get_logger
+from logs import get_logger
 
 logger = get_logger(__name__)
 

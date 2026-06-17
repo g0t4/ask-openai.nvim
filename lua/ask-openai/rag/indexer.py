@@ -1,6 +1,6 @@
 import aiofiles
 import asyncio
-from rag.logs import get_logger
+from logs import get_logger
 from inference.client.embedder import get_shape, encode_passages, signal_hotpath_done_in_background
 
 logger = get_logger(__name__)
@@ -291,7 +291,7 @@ class IncrementalRAGIndexer:
             logger.debug(f"[green]Removed {len(files_diff.deleted)} deleted files")
 
 async def main():
-    from rag.logs import logging_fwk_to_console
+    from logs import logging_fwk_to_console
 
     def parse_program_args() -> ProgramArgs:
         parser = argparse.ArgumentParser()

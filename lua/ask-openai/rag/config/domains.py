@@ -6,7 +6,7 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 
-from rag.logs import get_logger
+from logs import get_logger
 
 logger = get_logger(__name__)
 
