@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import os
 import signal
@@ -10,8 +9,7 @@ from pygls.protocol.json_rpc import MsgId
 from index import fs
 from language_server import rag
 from rag.logs import get_logger, logging_fwk_to_language_server_log_file, disable_printtmp
-from .file_queue import FileUpdateEmbeddingsQueue
-from language_server.commands import sleepy, grep
+from language_server.commands import sleepy, grep, update_file
 from language_server.stoppers import request_stop
 
 disable_printtmp()  # LSP uses STDOUT for comms!
@@ -35,6 +33,7 @@ def _trigger_stopper_on_cancel(msg_id: MsgId):
 server.protocol._handle_cancel_notification = _trigger_stopper_on_cancel
 
 sleepy.register_command(server)
+update_file.register_commands(server)
 
 @server.feature(types.INITIALIZE)
 async def on_initialize(_: LanguageServer, params: types.InitializeParams):
@@ -54,11 +53,8 @@ async def on_initialize(_: LanguageServer, params: types.InitializeParams):
 def tell_client_to_shut_that_shit_down_now():
     server.protocol.notify("fuu/no_dot_rag__do_the_right_thing_wink")
 
-update_queue: FileUpdateEmbeddingsQueue
-
 @server.feature(types.INITIALIZED)
 def on_initialized(_: LanguageServer, _params: types.InitializedParams):
-    global update_queue
     #  FYI server is managed by the client!
     #  client sends initialize request first => waits for server to send InitializeResult
     #    https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#initialize
@@ -79,29 +75,7 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
 
     rag.load_model_and_indexes(fs.rag_project.dot_rag_dir)  # TODO! ASYNC?
     rag.validate_rag_indexes()  # TODO! ASYNC?
-
-    loop = asyncio.get_running_loop()  # btw RuntimeError if no current loop (a good thing)
-    # logger.info(f'{loop=} {id(loop)=}')  # sanity check loop used when scheduling
-    update_queue = FileUpdateEmbeddingsQueue(fs.get_config(), fs.rag_project.root_path, server, loop)
-
-@server.feature(types.TEXT_DOCUMENT_DID_SAVE)
-async def doc_saved(params: types.DidSaveTextDocumentParams):
-    # logger.info(f"doc_saved {params=}")
-    await schedule_update(params.text_document.uri)
-
-@server.feature(types.TEXT_DOCUMENT_DID_OPEN)
-async def doc_opened(params: types.DidOpenTextDocumentParams):
-    # logger.info(f"doc_opened {params=}")
-    await schedule_update(params.text_document.uri)
-
-async def schedule_update(uri: str):
-    if uri.endswith("/AskAgent"):
-        # PRN move client side
-        logger.info("skipping AskAgent")
-        return
-    if fs.is_no_rag_dir():
-        return
-    await update_queue.fire_and_forget(uri)
+    update_file.create_queue(server)
 
 # @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
 # async def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
