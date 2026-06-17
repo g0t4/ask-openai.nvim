@@ -5,7 +5,6 @@ from pygls.lsp.server import LanguageServer
 from logs import get_logger
 from language_server.stoppers import Stopper, create_stopper, remove_stopper
 from inference.client.retrieval import semantic_grep, LSPSemanticGrepRequest
-from index.validate import DatasetsValidator
 from index import workspace
 
 logger = get_logger(__name__)

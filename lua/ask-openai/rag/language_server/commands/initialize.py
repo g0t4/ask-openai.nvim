@@ -4,7 +4,6 @@ from pygls import uris
 from pygls.lsp.server import LanguageServer
 from logs import get_logger
 from index import workspace
-from index.validate import DatasetsValidator
 from language_server.commands import update_file
 
 logger = get_logger(__name__)
@@ -58,7 +57,6 @@ def setup(server: LanguageServer):
             tell_client_to_shut_that_shit_down_now()
             return
 
-        validator = DatasetsValidator(workspace.datasets)
-        validator.validate_datasets()
+        workspace.validate_datasets()
 
         update_file.create_queue(server)
