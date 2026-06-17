@@ -15,7 +15,7 @@ def setup(server: LanguageServer):
     async def on_initialize(_: LanguageServer, params: types.InitializeParams):
         # # PRN use workspace folders if multi-workspace ...
         # # FYI could also get me CWD, round about way, if I wanted to prioritize that for .rag dir over git repo root
-        # logger.info(f"{params.workspace_folders=}")
+        logger.pp_info("params", params)
         # server.workspace.folders
 
         root_dir = params.root_path
