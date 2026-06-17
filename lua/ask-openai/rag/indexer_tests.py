@@ -28,10 +28,9 @@ dot_rag_dir = my_dir / "tests/.rag"
 dot_rag_dir.mkdir(exist_ok=True, parents=True)
 index_test_cases_source_dir = my_dir / "index" / "test_cases"
 tmp_code_dir = index_test_cases_source_dir / "tmp_source_code"
-test_cases = my_dir / "chunks/test_cases"
 
 def copy_file(original_file, destination_file):
-    original_text = (test_cases / original_file).read_text()
+    original_text = (my_dir / "chunks/test_cases" / original_file).read_text()
     (tmp_code_dir / destination_file).write_text(original_text)
 
 def trash_path(dir):
