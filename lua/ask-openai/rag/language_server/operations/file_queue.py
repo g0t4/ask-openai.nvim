@@ -10,7 +10,7 @@ from rx.subject.subject import Subject
 from config import RagConfig
 from chunks.chunker import RAGChunkerOptions
 from rag.logs import get_logger
-from lsp import rag
+from language_server import rag
 from index import ignores
 from config.domains import resolve_semantic_domain
 

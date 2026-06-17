@@ -62,7 +62,7 @@ function M.setup_lsp()
         cmd = {
             os.getenv("HOME") .. "/repos/github/g0t4/ask-openai.nvim/.venv/bin/python",
             "-m",
-            "lsp.server",
+            "language_server",
         },
         cmd_cwd = os.getenv("HOME") .. "/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/rag",
 

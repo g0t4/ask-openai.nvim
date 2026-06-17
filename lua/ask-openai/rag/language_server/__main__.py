@@ -9,14 +9,14 @@ from pygls.lsp.server import LanguageServer
 from pygls.protocol.json_rpc import MsgId
 
 from index import fs
-from lsp import rag
+from language_server import rag
 from chunks.chunker import RAGChunkerOptions
 from rag.logs import get_logger, logging_fwk_to_language_server_log_file, disable_printtmp
-from lsp.operations.file_queue import FileUpdateEmbeddingsQueue
+from language_server.operations.file_queue import FileUpdateEmbeddingsQueue
 
 disable_printtmp()  # LSP uses STDOUT for comms!
 
-from lsp.stoppers import request_stop, create_stopper, remove_stopper
+from language_server.stoppers import request_stop, create_stopper, remove_stopper
 
 logging_fwk_to_language_server_log_file(logging.INFO)
 # logging_fwk_to_language_server_log_file(logging.DEBUG)

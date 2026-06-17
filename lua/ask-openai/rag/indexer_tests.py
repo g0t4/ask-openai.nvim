@@ -358,7 +358,7 @@ class TestBuildIndex:
         # * build initial index
         await self.build_lua_index(self.tmp_source_code_dir)
 
-        from lsp import rag
+        from language_server import rag
         rag.load_model_and_indexes(self.dot_rag_dir)
 
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks

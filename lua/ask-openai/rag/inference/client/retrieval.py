@@ -3,7 +3,7 @@ from pathlib import Path
 
 import attrs
 from inference.client.embedder import encode_query, signal_hotpath_done_in_background
-from lsp.stoppers import Stopper
+from language_server.stoppers import Stopper
 from index.storage import ChunkType, Datasets
 from inference.client import *
 from index.fs import get_config, relative_to_workspace
