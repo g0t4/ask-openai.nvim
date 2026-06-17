@@ -34,9 +34,6 @@ class TestBuildIndex:
         cls.tmp_source_code_dir = cls.indexer_src_dir / "tmp_source_code"
         cls.test_cases = my_dir / "chunks/test_cases"
 
-        # PRN move the reset to one spot between all tests
-        #   reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
-        #
         workspace.rag_project.dot_rag_dir = cls.dot_rag_dir
         workspace.rag_project.root_path = cls.tmp_source_code_dir  # use this as default, override if different below
 
