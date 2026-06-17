@@ -27,12 +27,12 @@ my_dir = Path(__file__).parent
 dot_rag_dir = my_dir / "tests/.rag"
 dot_rag_dir.mkdir(exist_ok=True, parents=True)
 index_test_cases_source_dir = my_dir / "index" / "test_cases"
-tmp_source_code_dir = index_test_cases_source_dir / "tmp_source_code"
+tmp_code_dir = index_test_cases_source_dir / "tmp_source_code"
 test_cases = my_dir / "chunks/test_cases"
 
 def copy_file(original_file, destination_file):
     original_text = (test_cases / original_file).read_text()
-    (tmp_source_code_dir / destination_file).write_text(original_text)
+    (tmp_code_dir / destination_file).write_text(original_text)
 
 def trash_path(dir):
     if dir.exists():
@@ -44,7 +44,7 @@ class TestBuildIndex:
     def setup_class(cls):  # runs once before *all* tests in this class
         # TODO review workspace usage
         workspace.project.dot_rag_dir = dot_rag_dir
-        workspace.project.folder = tmp_source_code_dir  # use this as default, override if different below
+        workspace.project.folder = tmp_code_dir  # use this as default, override if different below
 
     def get_vector_index(self):
         vectors_index_path = dot_rag_dir / "lua" / "vectors.index"
@@ -203,14 +203,14 @@ class TestBuildIndex:
 
         trash_path(dot_rag_dir)
         # * recreate source directory with initial files
-        trash_path(tmp_source_code_dir)
-        tmp_source_code_dir.mkdir(exist_ok=True, parents=True)
+        trash_path(tmp_code_dir)
+        tmp_code_dir.mkdir(exist_ok=True, parents=True)
 
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
-        await self.build_lua_index(tmp_source_code_dir)
+        await self.build_lua_index(tmp_code_dir)
 
         # * check counts
         chunks_by_file = self.get_chunks_by_file()
@@ -220,8 +220,8 @@ class TestBuildIndex:
         assert len(files) == 2
         #
         assert len(chunks_by_file) == 2  # 2 files
-        first_file_chunks = chunks_by_file[str(tmp_source_code_dir / "numbers.lua")]
-        second_file_chunks = chunks_by_file[str(tmp_source_code_dir / "unchanged.lua")]
+        first_file_chunks = chunks_by_file[str(tmp_code_dir / "numbers.lua")]
+        second_file_chunks = chunks_by_file[str(tmp_code_dir / "unchanged.lua")]
         assert len(first_file_chunks) == 2  # 2 chunks
         assert len(second_file_chunks) == 2
         #
@@ -229,7 +229,7 @@ class TestBuildIndex:
 
         # * update a file and rebuild
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks (starts = 1-20, 16-35, 31-50)
-        await self.build_lua_index(tmp_source_code_dir)
+        await self.build_lua_index(tmp_code_dir)
 
         # * check counts
         chunks_by_file = self.get_chunks_by_file()
@@ -238,16 +238,16 @@ class TestBuildIndex:
         #
         assert len(chunks_by_file) == 2
         #
-        first_file_chunks = chunks_by_file[str(tmp_source_code_dir / "numbers.lua")]
-        second_file_chunks = chunks_by_file[str(tmp_source_code_dir / "unchanged.lua")]
+        first_file_chunks = chunks_by_file[str(tmp_code_dir / "numbers.lua")]
+        second_file_chunks = chunks_by_file[str(tmp_code_dir / "unchanged.lua")]
         assert len(first_file_chunks) == 3
         assert len(second_file_chunks) == 2
         assert len(files) == 2
         assert index.ntotal == 5
 
         # * delete a file and rebuild
-        (tmp_source_code_dir / "numbers.lua").unlink()
-        await self.build_lua_index(tmp_source_code_dir)
+        (tmp_code_dir / "numbers.lua").unlink()
+        await self.build_lua_index(tmp_code_dir)
         #
         chunks_by_file = self.get_chunks_by_file()
         files = self.get_files()
@@ -255,7 +255,7 @@ class TestBuildIndex:
         #
         assert len(chunks_by_file) == 1
         #
-        only_file_chunks = chunks_by_file[str(tmp_source_code_dir / "unchanged.lua")]
+        only_file_chunks = chunks_by_file[str(tmp_code_dir / "unchanged.lua")]
         assert len(only_file_chunks) == 2
         assert len(files) == 1
         assert index.ntotal == 2
@@ -263,7 +263,7 @@ class TestBuildIndex:
         # * add a file
         # FYI car.lua.txt was designed to catch issues with overlap (32 lines => 0 to 20, 15 to 35, but NOT 30 to 50 b/c only overlap exists so the next chunk has nothing unique in its non-overlapping segment) so maybe use a diff input file... if this causes issues here (move car.lua to a new test then)
         copy_file("car.lua.txt", "car.lua")
-        await self.build_lua_index(tmp_source_code_dir)
+        await self.build_lua_index(tmp_code_dir)
         #
         chunks_by_file = self.get_chunks_by_file()
         files = self.get_files()
@@ -271,8 +271,8 @@ class TestBuildIndex:
         #
         assert len(chunks_by_file) == 2
         #
-        first_file_chunks = chunks_by_file[str(tmp_source_code_dir / "unchanged.lua")]
-        second_file_chunks = chunks_by_file[str(tmp_source_code_dir / "car.lua")]
+        first_file_chunks = chunks_by_file[str(tmp_code_dir / "unchanged.lua")]
+        second_file_chunks = chunks_by_file[str(tmp_code_dir / "car.lua")]
         assert len(first_file_chunks) == 2
         assert len(second_file_chunks) == 2
         #
@@ -285,14 +285,14 @@ class TestBuildIndex:
 
         trash_path(dot_rag_dir)
         # * recreate source directory with initial files
-        trash_path(tmp_source_code_dir)
-        tmp_source_code_dir.mkdir(exist_ok=True, parents=True)
+        trash_path(tmp_code_dir)
+        tmp_code_dir.mkdir(exist_ok=True, parents=True)
 
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
         # copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
-        await self.build_lua_index(tmp_source_code_dir)
+        await self.build_lua_index(tmp_code_dir)
 
         # * check counts
         chunks_by_file = self.get_chunks_by_file()
@@ -302,7 +302,7 @@ class TestBuildIndex:
         assert len(files) == 1
         #
         assert len(chunks_by_file) == 1  # 2 files
-        first_file_chunks = chunks_by_file[str(tmp_source_code_dir / "numbers.lua")]
+        first_file_chunks = chunks_by_file[str(tmp_code_dir / "numbers.lua")]
         # second_file_chunks = chunks_by_file[str(tmp_source_code_dir / "unchanged.lua")]
         assert len(first_file_chunks) == 2  # 2 chunks
         # assert len(second_file_chunks) == 2
@@ -310,7 +310,7 @@ class TestBuildIndex:
         assert index.ntotal == 2, "index.ntotal (num vectors) should be 1"
 
         copy_file("numbers.30.txt", "numbers.lua")
-        await self.build_lua_index(tmp_source_code_dir)
+        await self.build_lua_index(tmp_code_dir)
 
         # * check counts
         chunks_by_file = self.get_chunks_by_file()
@@ -324,7 +324,7 @@ class TestBuildIndex:
 
         # * 3rd rebuild - useful for compare new index 1 (new index), index 2 and index 3
         #  don't really need this to validate problem but I find it helpful to diff the logs
-        await self.build_lua_index(tmp_source_code_dir)
+        await self.build_lua_index(tmp_code_dir)
 
         assert index.ntotal == 2, "index.ntotal (num vectors) should be 1"
 
@@ -341,19 +341,19 @@ class TestBuildIndex:
 
         trash_path(dot_rag_dir)
         # * recreate source directory with initial files
-        trash_path(tmp_source_code_dir)
-        tmp_source_code_dir.mkdir(exist_ok=True, parents=True)
+        trash_path(tmp_code_dir)
+        tmp_code_dir.mkdir(exist_ok=True, parents=True)
 
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
-        await self.build_lua_index(tmp_source_code_dir)
+        await self.build_lua_index(tmp_code_dir)
 
         datasets = load_all_datasets(dot_rag_dir)
 
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks
-        target_file_path = tmp_source_code_dir / "numbers.lua"
+        target_file_path = tmp_code_dir / "numbers.lua"
 
         from pygls.workspace import TextDocument  # 130ms so leave it here
         fake_lsp_doc = TextDocument(
@@ -372,8 +372,8 @@ class TestBuildIndex:
 
         assert len(ds.chunks_by_file) == 2
         # * assert the list of chunks was updated for the file
-        first_file_chunks = ds.chunks_by_file[str(tmp_source_code_dir / "numbers.lua")]
-        second_file_chunks = ds.chunks_by_file[str(tmp_source_code_dir / "unchanged.lua")]
+        first_file_chunks = ds.chunks_by_file[str(tmp_code_dir / "numbers.lua")]
+        second_file_chunks = ds.chunks_by_file[str(tmp_code_dir / "unchanged.lua")]
         assert len(first_file_chunks) == 3
         assert len(second_file_chunks) == 2
         hash_50nums = "02d36ee22aefffbb3eac4f90f703dd0be636851031144132b43af85384a2afcd"
