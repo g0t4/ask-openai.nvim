@@ -59,7 +59,7 @@ def setup(server: LanguageServer):
             tell_client_to_shut_that_shit_down_now()
             return
 
-        rag.load_model_and_indexes(workspace.rag_project.dot_rag_dir)  # TODO! ASYNC?
+        rag.load_model_and_indexes(workspace.project.dot_rag_dir)  # TODO! ASYNC?
 
         validator = DatasetsValidator(rag.datasets)
         validator.validate_datasets()

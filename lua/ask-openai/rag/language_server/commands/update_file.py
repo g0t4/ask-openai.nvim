@@ -85,7 +85,7 @@ class FileUpdateEmbeddingsQueue:
             logger.warning(f"abort update rag... to_fs_path returned {doc_path}")
             return
 
-        if ignores.is_file_ignored_allchecks(doc_path, workspace.rag_project.config, workspace.rag_project.folder):
+        if ignores.is_file_ignored_allchecks(doc_path, workspace.project.config, workspace.project.folder):
             logger.debug(f"rag ignored doc: {doc_path}")
             return
 

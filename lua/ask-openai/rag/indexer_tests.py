@@ -43,8 +43,8 @@ class TestBuildIndex:
     @classmethod
     def setup_class(cls):  # runs once before *all* tests in this class
         # TODO review workspace usage
-        workspace.rag_project.dot_rag_dir = dot_rag_dir
-        workspace.rag_project.folder = tmp_source_code_dir  # use this as default, override if different below
+        workspace.project.dot_rag_dir = dot_rag_dir
+        workspace.project.folder = tmp_source_code_dir  # use this as default, override if different below
 
     def get_vector_index(self):
         vectors_index_path = dot_rag_dir / "lua" / "vectors.index"
@@ -70,7 +70,7 @@ class TestBuildIndex:
         #   i.e. for computing chunk id which relies on path to file
         #   here I am testing end to end chunking outputs even if most logic is shared with low level tests, still valuable
         trash_path(dot_rag_dir)
-        workspace.rag_project.folder = index_test_cases_source_dir
+        workspace.project.folder = index_test_cases_source_dir
 
         await self.build_lua_index(index_test_cases_source_dir)
         # * chunks
@@ -143,7 +143,7 @@ class TestBuildIndex:
     async def test_search_index_to_trigger_OpenMP_error(self):
         reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
         trash_path(dot_rag_dir)
-        workspace.rag_project.folder = index_test_cases_source_dir
+        workspace.project.folder = index_test_cases_source_dir
 
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test

@@ -329,11 +329,11 @@ async def main():
         await workspace.from_workdir()
 
         if args.rebuild:
-            trash_dir(workspace.rag_project.dot_rag_dir)
+            trash_dir(workspace.project.dot_rag_dir)
 
         options = RAGChunkerOptions.ProductionOptions()
         config = workspace.get_config()
-        indexer = IncrementalRAGIndexer(workspace.rag_project.dot_rag_dir, workspace.rag_project.folder, options, args, config)
+        indexer = IncrementalRAGIndexer(workspace.project.dot_rag_dir, workspace.project.folder, options, args, config)
 
         await indexer.main()
 
