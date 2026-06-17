@@ -21,8 +21,6 @@ class FileUpdateEmbeddingsQueue:
 
     def __init__(
         self,
-        config: RagConfig,
-        root_path: Path,
         server: LanguageServer,
         loop: asyncio.AbstractEventLoop,
         debounce_sec=0.3,
@@ -30,10 +28,8 @@ class FileUpdateEmbeddingsQueue:
         self.debounce_sec = debounce_sec
         self.uri_subjects = {}  # uri -> Subject()
         self.tasks: dict[str, asyncio.Task] = {}  # uri -> current asyncio.Task
-        self.config = config
         self.server = server
         self.loop = loop
-        self.root_path = root_path
 
     async def fire_and_forget(self, uri: str):
         # * BTW best way to test this... open LS logs and then ctrl-s in a doc repeatedly, should only see update after last save (depending on debounce interval)
@@ -89,7 +85,7 @@ class FileUpdateEmbeddingsQueue:
             logger.warning(f"abort update rag... to_fs_path returned {doc_path}")
             return
 
-        if ignores.is_file_ignored_allchecks(doc_path, self.config, self.root_path):
+        if ignores.is_file_ignored_allchecks(doc_path, workspace.rag_project.config, workspace.rag_project.root_path):
             logger.debug(f"rag ignored doc: {doc_path}")
             return
 
@@ -124,7 +120,7 @@ def create_queue(server: LanguageServer):
     loop = asyncio.get_running_loop()  # btw RuntimeError if no current loop (a good thing)
     # logger.info(f'{loop=} {id(loop)=}')  # sanity check loop used when scheduling
 
-    update_queue = FileUpdateEmbeddingsQueue(workspace.get_config(), workspace.rag_project.root_path, server, loop)
+    update_queue = FileUpdateEmbeddingsQueue(server, loop)
 
 async def schedule_update(uri: str):
     if uri.endswith("/AskAgent"):
