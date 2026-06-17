@@ -338,7 +338,7 @@ class TestBuildIndex:
         # * build initial index
         await self.build_lua_index()
 
-        datasets = load_all_datasets(dot_rag_dir)
+        workspace.datasets = load_all_datasets(dot_rag_dir)
 
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks
         target_file_path = temp_workspace_folder / "numbers.lua"
@@ -352,10 +352,10 @@ class TestBuildIndex:
         )
 
         from language_server.commands.update_file import update_file_from_pygls_doc
-        await update_file_from_pygls_doc(fake_lsp_doc, RAGChunkerOptions.OnlyLineRangeChunks(), datasets)
+        await update_file_from_pygls_doc(fake_lsp_doc, RAGChunkerOptions.OnlyLineRangeChunks(), workspace.datasets)
 
         # * check counts
-        ds = datasets.for_file(target_file_path)
+        ds = workspace.datasets.for_file(target_file_path)
         assert ds != None
 
         assert len(ds.chunks_by_file) == 2
@@ -376,11 +376,11 @@ class TestBuildIndex:
         assert ds.index.ntotal == 5
         #
         # * check global dict updated by faissid to new chunks
-        assert len(datasets._chunks_by_faiss_id) == 5
+        assert len(workspace.datasets._chunks_by_faiss_id) == 5
         #
         # I hate the following... only alternative might be to compute and hardcode the ids?
         should_be_chunks = sorted(first_file_chunks.copy() + second_file_chunks.copy(), key=lambda x: x.id_int)
-        actual_chunks_in_faiss_id_dict = sorted(list(datasets._chunks_by_faiss_id.copy().values()), key=lambda x: x.id_int)
+        actual_chunks_in_faiss_id_dict = sorted(list(workspace.datasets._chunks_by_faiss_id.copy().values()), key=lambda x: x.id_int)
         assert len(should_be_chunks) == 5
         assert len(actual_chunks_in_faiss_id_dict) == 5
         assert should_be_chunks == actual_chunks_in_faiss_id_dict
