@@ -63,8 +63,8 @@ class TestBuildIndex:
     def get_files(self):
         return load_file_stats_by_file(dot_rag_dir / "lua" / "files.json")
 
-    async def build_lua_index(self, path: Path):
-        files_by_domain = find_files_by_semantic_domain(path)
+    async def build_lua_index(self):
+        files_by_domain = find_files_by_semantic_domain(workspace.project.folder)
         files = files_by_domain.get("lua", set())
         indexer = IncrementalRAGIndexer(workspace.project.dot_rag_dir, workspace.project.folder, RAGChunkerOptions.OnlyLineRangeChunks(), None, RagConfig.default())
         await indexer.build_index(domain="lua", current_files=files)
@@ -77,7 +77,7 @@ class TestBuildIndex:
         reset_testing()
         workspace.project.folder = index_test_cases_source_dir
 
-        await self.build_lua_index(index_test_cases_source_dir)
+        await self.build_lua_index()
         # * chunks
         chunks_by_file = self.get_chunks_by_file()
         # 41 lines currently, 5 overlap + 20 per chunk
@@ -151,7 +151,7 @@ class TestBuildIndex:
 
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
-        await self.build_lua_index(index_test_cases_source_dir)
+        await self.build_lua_index()
 
         chunks_by_file = load_chunks_by_file(dot_rag_dir / "lua/chunks.json")
         assert len(chunks_by_file) == 1
@@ -208,7 +208,7 @@ class TestBuildIndex:
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
-        await self.build_lua_index(tmp_code_dir)
+        await self.build_lua_index()
 
         # * check counts
         chunks_by_file = self.get_chunks_by_file()
@@ -227,7 +227,7 @@ class TestBuildIndex:
 
         # * update a file and rebuild
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks (starts = 1-20, 16-35, 31-50)
-        await self.build_lua_index(tmp_code_dir)
+        await self.build_lua_index()
 
         # * check counts
         chunks_by_file = self.get_chunks_by_file()
@@ -245,7 +245,7 @@ class TestBuildIndex:
 
         # * delete a file and rebuild
         (tmp_code_dir / "numbers.lua").unlink()
-        await self.build_lua_index(tmp_code_dir)
+        await self.build_lua_index()
         #
         chunks_by_file = self.get_chunks_by_file()
         files = self.get_files()
@@ -261,7 +261,7 @@ class TestBuildIndex:
         # * add a file
         # FYI car.lua.txt was designed to catch issues with overlap (32 lines => 0 to 20, 15 to 35, but NOT 30 to 50 b/c only overlap exists so the next chunk has nothing unique in its non-overlapping segment) so maybe use a diff input file... if this causes issues here (move car.lua to a new test then)
         copy_file("car.lua.txt", "car.lua")
-        await self.build_lua_index(tmp_code_dir)
+        await self.build_lua_index()
         #
         chunks_by_file = self.get_chunks_by_file()
         files = self.get_files()
@@ -285,7 +285,7 @@ class TestBuildIndex:
         # copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
-        await self.build_lua_index(tmp_code_dir)
+        await self.build_lua_index()
 
         # * check counts
         chunks_by_file = self.get_chunks_by_file()
@@ -303,7 +303,7 @@ class TestBuildIndex:
         assert index.ntotal == 2, "index.ntotal (num vectors) should be 1"
 
         copy_file("numbers.30.txt", "numbers.lua")
-        await self.build_lua_index(tmp_code_dir)
+        await self.build_lua_index()
 
         # * check counts
         chunks_by_file = self.get_chunks_by_file()
@@ -317,7 +317,7 @@ class TestBuildIndex:
 
         # * 3rd rebuild - useful for compare new index 1 (new index), index 2 and index 3
         #  don't really need this to validate problem but I find it helpful to diff the logs
-        await self.build_lua_index(tmp_code_dir)
+        await self.build_lua_index()
 
         assert index.ntotal == 2, "index.ntotal (num vectors) should be 1"
 
@@ -336,7 +336,7 @@ class TestBuildIndex:
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
-        await self.build_lua_index(tmp_code_dir)
+        await self.build_lua_index()
 
         datasets = load_all_datasets(dot_rag_dir)
 
