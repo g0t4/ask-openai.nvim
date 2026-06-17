@@ -3,13 +3,15 @@ import lsprotocol.types as types
 from pathlib import Path
 from pygls import uris
 from pygls.lsp.server import LanguageServer
+from pygls.workspace import TextDocument
 from rx import operators as ops
 from rx.subject.subject import Subject
 
-from chunks.chunker import RAGChunkerOptions
+from chunks.chunker import RAGChunkerOptions, build_chunks_from_lines, get_file_hash_from_lines
 from config import RagConfig
 from config.domains import resolve_semantic_domain
 from index import ignores, fs
+from index.storage import Datasets
 from language_server import rag
 from rag.logs import get_logger
 
@@ -101,7 +103,18 @@ class FileUpdateEmbeddingsQueue:
             logger.error(f"abort... doc not found {doc_uri}")
             return
         # TODO eventually don't get datasets from rag module?
-        await rag.update_file_from_pygls_doc(doc, RAGChunkerOptions.ProductionOptions(), rag.datasets)
+        await update_file_from_pygls_doc(doc, RAGChunkerOptions.ProductionOptions(), rag.datasets)
+
+async def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions, _passed_datasets: Datasets):
+    file_path = Path(lsp_doc.path)
+
+    with logger.timer(f"update_file {fs.get_loggable_path(file_path)}"):
+        hash = get_file_hash_from_lines(lsp_doc.lines)
+        # FYI you can check hash for changes, but remember this is off of disk and you only update that on commit
+        #   so really there's no point to ask if changed, b/c only going to be saving materially if altering it
+        #   in which case it's always gonna look altered at least LS side
+        new_chunks = build_chunks_from_lines(file_path, hash, lsp_doc.lines, options)  # PRN await
+        await _passed_datasets.update_file(file_path, new_chunks)
 
 update_queue: FileUpdateEmbeddingsQueue
 
