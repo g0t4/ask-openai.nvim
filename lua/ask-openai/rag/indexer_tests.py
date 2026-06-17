@@ -42,6 +42,7 @@ def reset_testing():
     # TODO review workspace usage
     workspace.project.dot_rag_dir = dot_rag_dir
     workspace.project.folder = tmp_code_dir  # use this as default, override if different below
+    workspace.project.config = RagConfig.default()
 
     reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
     trash_path(dot_rag_dir)
@@ -66,7 +67,7 @@ class TestBuildIndex:
     async def build_lua_index(self):
         files_by_domain = find_files_by_semantic_domain(workspace.project.folder)
         files = files_by_domain.get("lua", set())
-        indexer = IncrementalRAGIndexer(workspace.project.dot_rag_dir, workspace.project.folder, RAGChunkerOptions.OnlyLineRangeChunks(), None, RagConfig.default())
+        indexer = IncrementalRAGIndexer(RAGChunkerOptions.OnlyLineRangeChunks())
         await indexer.build_index(domain="lua", current_files=files)
 
     @pytest.mark.asyncio

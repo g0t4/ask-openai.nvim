@@ -61,18 +61,15 @@ class IncrementalRAGIndexer:
 
     def __init__(
         self,
-        dot_rag_dir: Path,
-        source_code_dir: Path,
         options: RAGChunkerOptions,
-        program_args: ProgramArgs,
-        config: RagConfig,
+        program_args: Optional[ProgramArgs] = None,
     ):
         self.options = options
-        self.dot_rag_dir = Path(dot_rag_dir)  # TODO pass with workspace
-        self.source_code_dir = Path(source_code_dir)  # TODO pass with workspace
+        self.dot_rag_dir = workspace.project.dot_rag_dir
+        self.source_code_dir = workspace.project.folder
         self.program_args = program_args
-        self.config = config  # TODO pass workspace instead of config => workspace.get_config()
-        # TODO and workspace can contain workspace.get_datasets() or similar
+        self.config = workspace.get_config()
+        # TODO! and workspace can contain workspace.get_datasets() or similar
 
     async def main(self):
         if not self.config.enabled:
@@ -319,7 +316,6 @@ async def main():
         return program_args
 
     args = parse_program_args()
-    # print("args", args)
 
     logging_fwk_to_console(args.level)
 
@@ -333,7 +329,7 @@ async def main():
 
         options = RAGChunkerOptions.ProductionOptions()
         config = workspace.get_config()
-        indexer = IncrementalRAGIndexer(workspace.project.dot_rag_dir, workspace.project.folder, options, args, config)
+        indexer = IncrementalRAGIndexer(options, args)
 
         await indexer.main()
 
