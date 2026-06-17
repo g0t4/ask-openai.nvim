@@ -4,13 +4,11 @@ import signal
 
 import lsprotocol.types as types
 from pygls.lsp.server import LanguageServer
-from pygls.protocol.json_rpc import MsgId
 
 from index import fs
 from language_server import rag
 from rag.logs import get_logger, logging_fwk_to_language_server_log_file
-from language_server.commands import sleepy, grep, update_file
-from language_server.stoppers import request_stop
+from language_server.commands import sleepy, grep, update_file, cancel
 
 logging_fwk_to_language_server_log_file(logging.INFO)
 # logging_fwk_to_language_server_log_file(logging.DEBUG)
@@ -18,18 +16,7 @@ logger = get_logger(__name__)
 
 server = LanguageServer("ask_language_server", "v0.1")
 
-original__handle_cancel_notification = server.protocol._handle_cancel_notification
-
-def _trigger_stopper_on_cancel(msg_id: MsgId):
-    if request_stop(msg_id):
-        logger.info(f'triggered stopper {msg_id=}')
-        return
-
-    # logger.info(f"fallback to original__handle_cancel_notification {msg_id}")
-    original__handle_cancel_notification(msg_id)
-
-server.protocol._handle_cancel_notification = _trigger_stopper_on_cancel
-
+cancel.setup(server)
 sleepy.register_command(server)
 update_file.register_commands(server)
 grep.register_command(server)
