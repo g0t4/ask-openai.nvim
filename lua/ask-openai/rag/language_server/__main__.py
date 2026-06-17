@@ -139,14 +139,14 @@ async def doc_opened(params: types.DidOpenTextDocumentParams):
     # logger.info(f"doc_opened {uri}")
     await schedule_update(uri)
 
-async def schedule_update(doc_uri: str):
-    if doc_uri.endswith("/AskAgent"):
+async def schedule_update(uri: str):
+    if uri.endswith("/AskAgent"):
         # PRN move client side
         logger.info("skipping AskAgent")
         return
     if fs.is_no_rag_dir():
         return
-    await update_queue.fire_and_forget(doc_uri)
+    await update_queue.fire_and_forget(uri)
 
 # @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
 # async def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
