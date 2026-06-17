@@ -26,7 +26,7 @@ def is_no_rag_dir() -> bool:
 
 def get_cwd_repo_root() -> Path | None:
     """
-    Get the root directory of the current Git repository
+    Get the root directory of the workdir's Git repository (if in a git repo)
     """
     import subprocess
     try:

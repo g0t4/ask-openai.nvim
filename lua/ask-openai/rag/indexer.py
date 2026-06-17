@@ -333,6 +333,8 @@ async def main():
             sys.exit(1)
         dot_rag_dir = repo_root_dir / ".rag"
         source_code_dir = Path(".").resolve()
+        workspace.rag_project.root_path = source_code_dir
+        workspace.rag_project.dot_rag_dir = dot_rag_dir
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
         # TODO end rollup into workspace.set_from_cwd()
 
@@ -342,9 +344,6 @@ async def main():
         options = RAGChunkerOptions.ProductionOptions()
         config = await workspace.load_rag_config(source_code_dir)
         indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, options, args, config)
-
-        workspace.rag_project.root_path = source_code_dir
-        workspace.rag_project.dot_rag_dir = dot_rag_dir
 
         await indexer.main()
 
