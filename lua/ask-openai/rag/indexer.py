@@ -330,8 +330,7 @@ async def main():
             logger.error("[red]No Git repository found in current working directory, cannot build RAG index.")
             sys.exit(1)
         dot_rag_dir = repo_root_dir / ".rag"
-        source_code_dir = Path(".").resolve()  # TODO make this repo_root_dir always? has been nice to test a subset of files by cd to nested dir
-        # FYI added .resolve() recently, leave a note just in case that causes issues so you remember (2026-01-26... remove this in a few weeks max)
+        source_code_dir = Path(".").resolve()
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
         if args.rebuild:
             trash_dir(dot_rag_dir)
