@@ -38,7 +38,11 @@ def trash_path(dir):
     if dir.exists():
         subprocess.run(["trash", dir])
 
-def clean():
+def reset_testing():
+    # TODO review workspace usage
+    workspace.project.dot_rag_dir = dot_rag_dir
+    workspace.project.folder = tmp_code_dir  # use this as default, override if different below
+
     reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
     trash_path(dot_rag_dir)
 
@@ -47,12 +51,6 @@ def clean():
     tmp_code_dir.mkdir(exist_ok=True, parents=True)
 
 class TestBuildIndex:
-
-    @classmethod
-    def setup_class(cls):  # runs once before *all* tests in this class
-        # TODO review workspace usage
-        workspace.project.dot_rag_dir = dot_rag_dir
-        workspace.project.folder = tmp_code_dir  # use this as default, override if different below
 
     def get_vector_index(self):
         vectors_index_path = dot_rag_dir / "lua" / "vectors.index"
@@ -68,7 +66,7 @@ class TestBuildIndex:
     async def build_lua_index(self, path: Path):
         files_by_domain = find_files_by_semantic_domain(path)
         files = files_by_domain.get("lua", set())
-        indexer = IncrementalRAGIndexer(workspace.project.dot_rag_dir, path, RAGChunkerOptions.OnlyLineRangeChunks(), None, RagConfig.default())
+        indexer = IncrementalRAGIndexer(workspace.project.dot_rag_dir, workspace.project.folder, RAGChunkerOptions.OnlyLineRangeChunks(), None, RagConfig.default())
         await indexer.build_index(domain="lua", current_files=files)
 
     @pytest.mark.asyncio
@@ -76,7 +74,7 @@ class TestBuildIndex:
         # FYI! this duplicates some low level line range chunking tests but I want to keep it to include the end to end picture
         #   i.e. for computing chunk id which relies on path to file
         #   here I am testing end to end chunking outputs even if most logic is shared with low level tests, still valuable
-        clean()
+        reset_testing()
         workspace.project.folder = index_test_cases_source_dir
 
         await self.build_lua_index(index_test_cases_source_dir)
@@ -148,7 +146,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_search_index_to_trigger_OpenMP_error(self):
-        clean()
+        reset_testing()
         workspace.project.folder = index_test_cases_source_dir
 
         # * setup same index as in the first test
@@ -204,7 +202,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_update_index_removed_file(self):
-        clean()
+        reset_testing()
 
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
@@ -281,7 +279,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index(self):
-        clean()
+        reset_testing()
 
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
         # copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
@@ -332,7 +330,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_update_file_from_language_server(self):
-        clean()
+        reset_testing()
 
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
