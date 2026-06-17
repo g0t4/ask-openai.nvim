@@ -36,7 +36,7 @@ def git_repo_root_dir(from_dir: str | Path) -> Path | None:
         root_directory = None
     return root_directory
 
-async def from_workdir():
+async def from_repo_workdir():
     """
     workspace_dir == workdir (aka PWD)
     dot_rag_dir == workdir's git repo root dir
