@@ -80,7 +80,7 @@ async def load_rag_config(root_path: Path) -> RagConfig:
 def get_config() -> RagConfig:
     return project.config
 
-def relative_to_workspace(path: Path | str, override_root_path: Path | None = None) -> Path:
+def get_relative_path_to(path: Path | str, override_root_path: Path | None = None) -> Path:
     path = Path(path)
     use_root_path = override_root_path or project.folder
 
@@ -97,4 +97,4 @@ def get_loggable_path(path: Path | str) -> str:
         path = str(path)
     if project.folder is None:
         return path
-    return f"[bold]{relative_to_workspace(path)}[/bold]"
+    return f"[bold]{get_relative_path_to(path)}[/bold]"

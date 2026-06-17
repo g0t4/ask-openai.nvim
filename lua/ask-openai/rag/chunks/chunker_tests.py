@@ -168,7 +168,7 @@ class TestTsChunker_Python_TopLevelFunctions:
         parser = get_parser("python")
         language = get_language("python")
         file = test_cases_python / "two_functions.py"
-        relpath = workspace.relative_to_workspace(file)
+        relpath = workspace.get_relative_path_to(file)
 
         source_code = read_bytes(file)
 

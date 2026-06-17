@@ -178,7 +178,7 @@ async def semantic_grep(
     matches.sort(key=lambda c: len(c.text))
 
     def rerank_document(chunk: LSPRankedMatch):
-        file = workspace.relative_to_workspace(chunk.file)
+        file = workspace.get_relative_path_to(chunk.file)
         start_line_base1 = chunk.start_line_base0 + 1
         end_line_base1 = chunk.end_line_base0 + 1
         # example:   [file: utils.py | lines 120–145]\n...

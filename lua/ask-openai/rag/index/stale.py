@@ -35,7 +35,7 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
     for dataset in datasets.all_datasets.values():
         for path, stored_stat in dataset.stat_by_path.items():
             file_path = Path(path)
-            display_path = workspace.relative_to_workspace(file_path, override_root_path=root_dir)
+            display_path = workspace.get_relative_path_to(file_path, override_root_path=root_dir)
             if not file_path.is_file():
                 deleted_files[display_path] = stored_stat
                 continue

@@ -137,7 +137,7 @@ SEMANTIC_GREP_TOOL = Tool(
 
 def _match_to_text_content(match: LSPRankedMatch) -> dict[str, Any]:
     """Convert a LSPRankedMatch into a serializable dict for MCP TextContent."""
-    file_rel = workspace.relative_to_workspace(match.file) # TODO rename workspace.relative_path(what)?
+    file_rel = workspace.get_relative_path_to(match.file) # TODO rename workspace.relative_path(what)?
     file_path = match.file  # absolute path
 
     return {
