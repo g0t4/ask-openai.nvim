@@ -16,7 +16,7 @@ def setup(server: LanguageServer):
     async def on_initialize(_: LanguageServer, params: types.InitializeParams):
 
         # logger.pp_info("params", params)
-        logger.pp_info("client_info", params.client_info)
+        logger.inspect_info("client_info", params.client_info)
         # params.trace # TODO use this to enable log level debug/trace?
 
         folders = params.workspace_folders or []

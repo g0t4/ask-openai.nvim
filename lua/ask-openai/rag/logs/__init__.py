@@ -4,6 +4,7 @@ import time
 from typing import cast
 from pathlib import Path
 
+import rich
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.pretty import pretty_repr
@@ -14,7 +15,12 @@ logging.getLogger("pygls.feature_manager").setLevel(logging.WARN)  # what featur
 logging.getLogger("pygls.server").setLevel(logging.WARN)  # mostly Content length messages (headers IIAC)
 logging.getLogger("asyncio").setLevel(logging.WARN)  # mostly Content length messages (headers IIAC)
 
-def setup_logging(console: Console, level=logging.WARN):
+console = None
+
+def setup_logging(_console: Console, level=logging.WARN):
+    global console
+    console = _console
+
     rich_handler = RichHandler(
         markup=True,  # i.e. [bold], [red]
         rich_tracebacks=True,
@@ -106,6 +112,15 @@ class Logger(logging.Logger):
         if not self.isEnabledFor(logging.DEBUG):
             return
         self.debug(f"{message}: %s", self._pp(obj))
+
+    def inspect_info(self, message: str, obj):
+        if not self.isEnabledFor(logging.INFO):
+            return
+        if not console:
+            self.error("inspect_info called without console, falling back to pp_info")
+            self.pp_info(message, obj)
+            return
+        rich.inspect(obj, title=message, console=console)
 
     def timer(self, finished_message=""):
         return LogTimer(finished_message, logger=self)
