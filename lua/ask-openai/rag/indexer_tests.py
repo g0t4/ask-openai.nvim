@@ -38,6 +38,14 @@ def trash_path(dir):
     if dir.exists():
         subprocess.run(["trash", dir])
 
+def clean():
+    reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
+    trash_path(dot_rag_dir)
+
+    # recreate source directory with nothing at start of each test
+    trash_path(tmp_code_dir)
+    tmp_code_dir.mkdir(exist_ok=True, parents=True)
+
 class TestBuildIndex:
 
     @classmethod
@@ -65,11 +73,10 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_building_rag_index_from_scratch(self):
-        reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
         # FYI! this duplicates some low level line range chunking tests but I want to keep it to include the end to end picture
         #   i.e. for computing chunk id which relies on path to file
         #   here I am testing end to end chunking outputs even if most logic is shared with low level tests, still valuable
-        trash_path(dot_rag_dir)
+        clean()
         workspace.project.folder = index_test_cases_source_dir
 
         await self.build_lua_index(index_test_cases_source_dir)
@@ -141,8 +148,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_search_index_to_trigger_OpenMP_error(self):
-        reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
-        trash_path(dot_rag_dir)
+        clean()
         workspace.project.folder = index_test_cases_source_dir
 
         # * setup same index as in the first test
@@ -198,13 +204,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_update_index_removed_file(self):
-        # TODO put this reset on each test
-        reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
-
-        trash_path(dot_rag_dir)
-        # * recreate source directory with initial files
-        trash_path(tmp_code_dir)
-        tmp_code_dir.mkdir(exist_ok=True, parents=True)
+        clean()
 
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
@@ -281,12 +281,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index(self):
-        reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
-
-        trash_path(dot_rag_dir)
-        # * recreate source directory with initial files
-        trash_path(tmp_code_dir)
-        tmp_code_dir.mkdir(exist_ok=True, parents=True)
+        clean()
 
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
         # copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
@@ -337,12 +332,7 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_update_file_from_language_server(self):
-        reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
-
-        trash_path(dot_rag_dir)
-        # * recreate source directory with initial files
-        trash_path(tmp_code_dir)
-        tmp_code_dir.mkdir(exist_ok=True, parents=True)
+        clean()
 
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
