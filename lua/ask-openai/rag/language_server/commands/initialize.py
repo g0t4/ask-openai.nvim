@@ -14,10 +14,10 @@ def setup(server: LanguageServer):
 
     @server.feature(types.INITIALIZE)
     async def on_initialize(_: LanguageServer, params: types.InitializeParams):
-        # # PRN use workspace folders if multi-workspace ...
-        # # FYI could also get me CWD, round about way, if I wanted to prioritize that for .rag dir over git repo root
-        logger.pp_info("params", params)
-        # server.workspace.folders
+
+        # logger.pp_info("params", params)
+        logger.pp_info("client_info", params.client_info)
+        # params.trace # TODO use this to enable log level debug/trace?
 
         folders = params.workspace_folders or []
         if not any(folders):
