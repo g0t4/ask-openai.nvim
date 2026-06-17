@@ -34,6 +34,7 @@ server.protocol._handle_cancel_notification = _trigger_stopper_on_cancel
 
 sleepy.register_command(server)
 update_file.register_commands(server)
+grep.register_command(server)
 
 @server.feature(types.INITIALIZE)
 async def on_initialize(_: LanguageServer, params: types.InitializeParams):
@@ -76,8 +77,6 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     rag.load_model_and_indexes(fs.rag_project.dot_rag_dir)  # TODO! ASYNC?
     rag.validate_rag_indexes()  # TODO! ASYNC?
     update_file.create_queue(server)
-
-grep.register_command(server)
 
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):
     logger.warning("SIGKILL myself")
