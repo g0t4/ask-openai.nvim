@@ -58,6 +58,7 @@ from inference.client.retrieval import (
 )
 from index import workspace
 from logs import get_logger, logging_fwk_to_language_server_log_file
+from index.validate import DatasetsValidator
 
 logger: logging.Logger = get_logger(__name__)
 logging_fwk_to_language_server_log_file(logging.INFO)
@@ -233,6 +234,10 @@ async def serve(root_dir: str | Path | None = None) -> None:
 
     root_dir_path = Path(root_dir)
     await workspace.from_folder(root_dir_path)
+
+    # TODO where do I want to wire this up? should it always run with from_folder?
+    validator = DatasetsValidator(workspace.datasets)
+    validator.validate_datasets()
 
     @server.list_tools()
     async def list_tools() -> list[Tool]:

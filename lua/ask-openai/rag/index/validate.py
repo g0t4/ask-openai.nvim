@@ -72,7 +72,7 @@ class DatasetsValidator:
         if self.any_problems:
             logger.error("[bold red]AT LEAST ONE PROBLEM DISCOVERED")
         else:
-            logger.debug("[bold green]ALL CHECKS PASS!")
+            logger.info("[bold green]ALL CHECKS PASS!")
 
     def warn_about_unindexed_domains(self, datasets: Datasets) -> None:
         """Warn about semantic domains with many files that aren't indexed."""
