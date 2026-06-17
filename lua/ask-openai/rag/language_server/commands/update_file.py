@@ -100,7 +100,8 @@ class FileUpdateEmbeddingsQueue:
         if doc is None:
             logger.error(f"abort... doc not found {doc_uri}")
             return
-        await rag.update_file_from_pygls_doc(doc, RAGChunkerOptions.ProductionOptions())
+        # TODO eventually don't get datasets from rag module?
+        await rag.update_file_from_pygls_doc(doc, RAGChunkerOptions.ProductionOptions(), rag.datasets)
 
 update_queue: FileUpdateEmbeddingsQueue
 

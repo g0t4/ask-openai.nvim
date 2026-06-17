@@ -370,7 +370,8 @@ class TestBuildIndex:
             # version=2,
             source=target_file_path.read_text(encoding="utf-8"),
         )
-        await rag.update_file_from_pygls_doc(fake_lsp_doc, RAGChunkerOptions.OnlyLineRangeChunks())
+        from language_server import rag
+        await rag.update_file_from_pygls_doc(fake_lsp_doc, RAGChunkerOptions.OnlyLineRangeChunks(), datasets)
 
         # * check counts
         ds = datasets.for_file(target_file_path)

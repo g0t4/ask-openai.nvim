@@ -18,7 +18,7 @@ def load_model_and_indexes(dot_rag_dir: Path):
     global datasets
     datasets = load_all_datasets(dot_rag_dir)
 
-async def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions):
+async def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions, _passed_datasets: Datasets):
     file_path = Path(lsp_doc.path)
 
     with logger.timer(f"update_file {fs.get_loggable_path(file_path)}"):
@@ -27,4 +27,4 @@ async def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerO
         #   so really there's no point to ask if changed, b/c only going to be saving materially if altering it
         #   in which case it's always gonna look altered at least LS side
         new_chunks = build_chunks_from_lines(file_path, hash, lsp_doc.lines, options)  # PRN await
-        await datasets.update_file(file_path, new_chunks)
+        await _passed_datasets.update_file(file_path, new_chunks)
