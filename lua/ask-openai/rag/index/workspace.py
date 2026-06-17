@@ -1,3 +1,4 @@
+import sys
 from typing import Optional
 import aiofiles
 from pathlib import Path
@@ -24,19 +25,34 @@ def is_no_rag_dir() -> bool:
         return False
     return not rag_project.dot_rag_dir.exists()
 
-def get_cwd_repo_root() -> Path | None:
+async def from_workdir():
     """
-    Get the root directory of the workdir's Git repository (if in a git repo)
-    """
-    import subprocess
-    try:
-        root_directory = subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
-        root_directory = Path(root_directory)
-    except subprocess.CalledProcessError:
-        root_directory = None
-    return root_directory
+    workspace_dir == workdir (aka PWD)
+    dot_rag_dir == workdir's git repo root dir
 
-async def set_workspace(root_dir: str | Path | None):
+    FYI IF workder != repo_root_dir THEN workspace_dir/.rag != dot_rag_dir
+    """
+
+    def git_repo_root_dir() -> Path | None:
+        import subprocess
+        try:
+            root_directory = subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
+            root_directory = Path(root_directory)
+        except subprocess.CalledProcessError:
+            root_directory = None
+        return root_directory
+
+    repo_root_dir = git_repo_root_dir()
+    if not repo_root_dir:
+        logger.error("[red]No Git repository found in current working directory, cannot build RAG index.")
+        sys.exit(1)
+    rag_project.root_path = Path(".").resolve()
+    rag_project.dot_rag_dir = repo_root_dir / ".rag"
+    logger.info(f"[bold]RAG directory: {rag_project.dot_rag_dir}")
+
+    await load_rag_config(rag_project.root_path)
+
+async def set_workspace(root_dir: str | Path):
     logger.info(f"{root_dir=}")
     rag_project.root_path = Path(root_dir)
     rag_project.dot_rag_dir = rag_project.root_path / ".rag"

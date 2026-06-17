@@ -326,21 +326,13 @@ async def main():
     with logger.timer("Total indexing time"):
         # PRN make this work in CWD first, fallback to repo root? like lua code? only when I only want a subset of a repo or non-repos
 
-        # TODO add a workspace.set_from_cwd() and roll up most of the following into it:
-        repo_root_dir = workspace.get_cwd_repo_root()
-        if not repo_root_dir:
-            logger.error("[red]No Git repository found in current working directory, cannot build RAG index.")
-            sys.exit(1)
-        workspace.rag_project.root_path = Path(".").resolve()
-        workspace.rag_project.dot_rag_dir = repo_root_dir / ".rag"
-        logger.debug(f"[bold]RAG directory: {workspace.rag_project.dot_rag_dir}")
-        # TODO end rollup into workspace.set_from_cwd()
+        await workspace.from_workdir()
 
         if args.rebuild:
             trash_dir(workspace.rag_project.dot_rag_dir)
 
         options = RAGChunkerOptions.ProductionOptions()
-        config = await workspace.load_rag_config(workspace.rag_project.root_path)
+        config = workspace.get_config()
         indexer = IncrementalRAGIndexer(workspace.rag_project.dot_rag_dir, workspace.rag_project.root_path, options, args, config)
 
         await indexer.main()
