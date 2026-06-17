@@ -26,8 +26,8 @@ from index import workspace
 my_dir = Path(__file__).parent
 dot_rag_dir = my_dir / "tests/.rag"
 dot_rag_dir.mkdir(exist_ok=True, parents=True)
-indexer_src_dir = my_dir / "index" / "test_cases"
-tmp_source_code_dir = indexer_src_dir / "tmp_source_code"
+index_test_cases_source_dir = my_dir / "index" / "test_cases"
+tmp_source_code_dir = index_test_cases_source_dir / "tmp_source_code"
 test_cases = my_dir / "chunks/test_cases"
 
 def copy_file(src, dest):
@@ -69,13 +69,13 @@ class TestBuildIndex:
         #   i.e. for computing chunk id which relies on path to file
         #   here I am testing end to end chunking outputs even if most logic is shared with low level tests, still valuable
         trash_path(dot_rag_dir)
-        workspace.rag_project.root_path = indexer_src_dir
+        workspace.rag_project.root_path = index_test_cases_source_dir
 
-        await self.build_lua_index(indexer_src_dir)
+        await self.build_lua_index(index_test_cases_source_dir)
         # * chunks
         chunks_by_file = self.get_chunks_by_file()
         # 41 lines currently, 5 overlap + 20 per chunk
-        sample_lua_path = (indexer_src_dir / "sample.lua").absolute()
+        sample_lua_path = (index_test_cases_source_dir / "sample.lua").absolute()
         assert len(chunks_by_file) == 1  # one file
         chunks = chunks_by_file[str(sample_lua_path)]
         assert len(chunks) == 3
@@ -142,11 +142,11 @@ class TestBuildIndex:
     async def test_search_index_to_trigger_OpenMP_error(self):
         reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
         trash_path(dot_rag_dir)
-        workspace.rag_project.root_path = indexer_src_dir
+        workspace.rag_project.root_path = index_test_cases_source_dir
 
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
-        await self.build_lua_index(indexer_src_dir)
+        await self.build_lua_index(index_test_cases_source_dir)
 
         chunks_by_file = load_chunks_by_file(dot_rag_dir / "lua/chunks.json")
         assert len(chunks_by_file) == 1
