@@ -99,7 +99,7 @@ class FileUpdateEmbeddingsQueue:
             logger.error(f"abort... doc not found {doc_uri}")
             return
         # TODO eventually don't get datasets from rag module?
-        await update_file_from_pygls_doc(doc, RAGChunkerOptions.ProductionOptions(), rag.datasets)
+        await update_file_from_pygls_doc(doc, RAGChunkerOptions.ProductionOptions(), workspace.datasets)
 
 async def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions, _passed_datasets: Datasets):
     file_path = Path(lsp_doc.path)
