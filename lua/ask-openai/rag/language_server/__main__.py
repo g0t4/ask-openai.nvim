@@ -12,8 +12,8 @@ from index import fs
 from language_server import rag
 from chunks.chunker import RAGChunkerOptions
 from rag.logs import get_logger, logging_fwk_to_language_server_log_file, disable_printtmp
-from .operations.file_queue import FileUpdateEmbeddingsQueue
-from .operations.retrieval import grep_command, LSPResponseErrors, LSPSemanticGrepResult, LSPSemanticGrepRequest
+from .file_queue import FileUpdateEmbeddingsQueue
+from .retrieval import grep_command, LSPResponseErrors, LSPSemanticGrepResult, LSPSemanticGrepRequest
 
 disable_printtmp()  # LSP uses STDOUT for comms!
 
