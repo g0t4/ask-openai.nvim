@@ -64,16 +64,6 @@ logging_fwk_to_language_server_log_file(logging.INFO)
 
 # logging.getLogger("mcp").setLevel(logging.DEBUG)  # MCP SDK logs
 
-_datasets: Datasets | None = None
-
-def _get_datasets() -> Datasets:
-    """Return loaded datasets, raising if they haven't been initialized."""
-    global _datasets
-    if _datasets is None:
-        raise RuntimeError("Datasets not initialized — is the server started with a valid root_dir?")
-    return _datasets
-
-
 SEMANTIC_GREP_TOOL = Tool(
     name="semantic_grep",
     description=(
@@ -182,8 +172,6 @@ async def handle_semantic_grep(
     if top_k < 1:
         raise ValueError("top_k must be >= 1")
 
-    datasets = _get_datasets()
-
     # Build the request object using existing types
     request = LSPSemanticGrepRequest(
         query=query,
@@ -199,7 +187,7 @@ async def handle_semantic_grep(
     # Execute the semantic_grep query (reuse existing function)
     matches: list[LSPRankedMatch] = await _semantic_grep(
         args=request,
-        datasets=datasets,
+        datasets=workspace.datasets,
     )
 
     if not matches:
@@ -233,8 +221,6 @@ async def serve(root_dir: str | Path | None = None) -> None:
     """Start the MCP semantic_grep server."""
     server = Server("semantic-grep")
 
-    # * Initialize datasets
-    global _datasets
     if root_dir is None:
         # Try to find a .rag dir from CWD
         cwd = Path.cwd()
@@ -246,12 +232,7 @@ async def serve(root_dir: str | Path | None = None) -> None:
             )
 
     root_dir_path = Path(root_dir)
-    await workspace.from_folder(root_dir_path) # TODO rename set_folder/set_dir()?
-    _dot_rag_dir = root_dir_path / ".rag"
-
-    logger.info(f"Loading datasets from {_dot_rag_dir}")
-    _datasets = load_all_datasets(_dot_rag_dir)
-    logger.info(f"Loaded {_datasets.all_datasets.keys()} datasets")
+    await workspace.from_folder(root_dir_path)
 
     @server.list_tools()
     async def list_tools() -> list[Tool]:
