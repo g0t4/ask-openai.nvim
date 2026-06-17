@@ -13,7 +13,7 @@ from language_server import rag
 from chunks.chunker import RAGChunkerOptions
 from rag.logs import get_logger, logging_fwk_to_language_server_log_file, disable_printtmp
 from language_server.operations.file_queue import FileUpdateEmbeddingsQueue
-from language_server.operations.retrieval import handle_semantic_grep_ls_command, LSPResponseErrors, LSPSemanticGrepResult, LSPSemanticGrepRequest
+from language_server.operations.retrieval import grep_command, LSPResponseErrors, LSPSemanticGrepResult, LSPSemanticGrepRequest
 
 disable_printtmp()  # LSP uses STDOUT for comms!
 
@@ -173,7 +173,7 @@ async def semantic_grep_command(_: LanguageServer, args: LSPSemanticGrepRequest)
     # return LSPSemanticGrepResult(error="FUUUU") # test server errors
     args.msgId = server.protocol.msg_id
     try:
-        return await handle_semantic_grep_ls_command(args, rag.datasets)  # TODO! ASYNC REVIEW
+        return await grep_command(args, rag.datasets)  # TODO! ASYNC REVIEW
     except asyncio.CancelledError as e:
         # avoid leaving on in logs b/c takes up a ton of space for stack trace
         logger.info(f"Client cancelled semantic_grep query {args.msgId=}")  #, exc_info=e)  # uncomment to see where error is raised
