@@ -23,41 +23,6 @@ def validate_rag_indexes():
     validator = DatasetsValidator(datasets)
     validator.validate_datasets()
 
-@attrs.define
-class LSPSemanticGrepResult:
-    """ Either return matches OR an error string, nothing else matters."""
-    matches: list = []
-    error: str | None = None
-
-class LSPResponseErrors:
-    NO_RAG_DIR = "No .rag dir"
-    CANCELLED = "Client cancelled query"
-
-async def handle_semantic_grep_ls_command(args: LSPSemanticGrepRequest) -> LSPSemanticGrepResult:
-    stopper = create_stopper(args.msgId)
-    try:
-        if fs.is_no_rag_dir():
-            return LSPSemanticGrepResult(error=LSPResponseErrors.NO_RAG_DIR)
-
-        # TODO! REVIEW the ASYNC (i.e. for file ops? or other async capable ops)
-
-        query = args.query
-        if query is None or len(query) == 0:
-            logger.info("No query provided")
-            return LSPSemanticGrepResult(error="No query provided")
-
-        stopper.throw_if_stopped()
-
-        matches = await semantic_grep(
-            args=args,
-            datasets=datasets,
-            stopper=stopper,
-        )
-
-        return LSPSemanticGrepResult(matches=matches)
-    finally:
-        remove_stopper(args.msgId)
-
 async def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions):
     file_path = Path(lsp_doc.path)
 
