@@ -97,12 +97,12 @@ class Logger(logging.Logger):
     def _pp(self, obj):
         return pretty_repr(obj, indent_size=2)
 
-    def pp_info(self, message, obj):
+    def pp_info(self, message: str, obj):
         if not self.isEnabledFor(logging.INFO):
             return
         self.info(f"{message}: %s", self._pp(obj))
 
-    def pp_debug(self, message, obj):
+    def pp_debug(self, message: str, obj):
         if not self.isEnabledFor(logging.DEBUG):
             return
         self.debug(f"{message}: %s", self._pp(obj))
