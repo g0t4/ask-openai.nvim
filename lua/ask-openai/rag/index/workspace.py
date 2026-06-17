@@ -1,4 +1,5 @@
 import aiofiles
+import subprocess
 import sys
 from dataclasses import field
 from pathlib import Path
@@ -35,7 +36,6 @@ async def from_workdir():
     """
 
     def git_repo_root_dir() -> Path | None:
-        import subprocess
         try:
             root_directory = subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
             root_directory = Path(root_directory)
