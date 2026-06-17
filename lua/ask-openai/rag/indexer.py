@@ -1,6 +1,6 @@
 import aiofiles
 import asyncio
-from rag.logs import disable_printtmp, get_logger, disable_printtmp
+from rag.logs import get_logger
 from inference.client.embedder import get_shape, encode_passages, signal_hotpath_done_in_background
 
 logger = get_logger(__name__)
@@ -317,8 +317,6 @@ async def main():
             program_args.level = logging.DEBUG if args.verbose else (logging.INFO if args.info else logging.WARNING)
 
         return program_args
-
-    disable_printtmp()  # output intended for testing only
 
     args = parse_program_args()
     # print("args", args)

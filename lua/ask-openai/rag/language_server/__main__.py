@@ -8,11 +8,9 @@ from pygls.protocol.json_rpc import MsgId
 
 from index import fs
 from language_server import rag
-from rag.logs import get_logger, logging_fwk_to_language_server_log_file, disable_printtmp
+from rag.logs import get_logger, logging_fwk_to_language_server_log_file
 from language_server.commands import sleepy, grep, update_file
 from language_server.stoppers import request_stop
-
-disable_printtmp()  # LSP uses STDOUT for comms!
 
 logging_fwk_to_language_server_log_file(logging.INFO)
 # logging_fwk_to_language_server_log_file(logging.DEBUG)

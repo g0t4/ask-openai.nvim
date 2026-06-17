@@ -155,25 +155,3 @@ class Timer:
 
     def elapsed_ms(self):
         return self.elapsed_ns() / 1000000
-
-DISABLE_PRINT_TMP = False
-
-def disable_printtmp():
-    # by the way disabling it means when I am using the printtmp for unit tests,
-    # I can run LS and indexer CLI and not need to have them blow up and/or insane logs there
-    #   then I comment out printtmp calls when done, and they are easier to spot now that they're called printtmp (to uncomment later when testing again and need them)
-    global DISABLE_PRINT_TMP
-    DISABLE_PRINT_TMP = True
-
-# force color, for pytest/ptw runners
-console = Console(force_terminal=True)
-
-# mostly for STDOUT when running pytest
-# sometimes I use this for rag_indexer too
-# intended for temporary use
-# stuff I might comment out when I am done too, not just drop log level
-def printtmp(what):
-    if DISABLE_PRINT_TMP:
-        return
-
-    console.print(what)
