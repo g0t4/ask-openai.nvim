@@ -51,7 +51,7 @@ async def from_repo_root(any_path_in_repo: str | Path):
         sys.exit(1)
     await from_folder(repo_root_dir)
 
-async def from_workdir_in_repo():
+async def for_indexer():
     """
     folder == workdir (aka PWD)
     dot_rag_dir == workdir's git repo root dir
@@ -67,7 +67,8 @@ async def from_workdir_in_repo():
     logger.info(f"[bold]RAG directory: {project.dot_rag_dir}")
 
     await load_rag_config(project.folder)
-    # TODO load datasets here?
+    # FYI do NOT load datasets for indexer, it will load on its own + update them
+    # PRN I could move this code back onto indexer if it feels wrong here...
 
 async def from_folder(folder: str | Path):
     """

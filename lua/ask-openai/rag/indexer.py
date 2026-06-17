@@ -321,7 +321,7 @@ async def main():
     with logger.timer("Total indexing time"):
         # PRN make this work in CWD first, fallback to repo root? like lua code? only when I only want a subset of a repo or non-repos
 
-        await workspace.from_workdir_in_repo()
+        await workspace.for_indexer()
 
         if args.rebuild:
             trash_dir(workspace.project.dot_rag_dir)
