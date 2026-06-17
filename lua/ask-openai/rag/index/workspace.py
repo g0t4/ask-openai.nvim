@@ -93,8 +93,7 @@ def get_relative_path_to(path: Path | str, override_root_path: Path | None = Non
     return path.relative_to(use_root_path)
 
 def get_loggable_path(path: Path | str) -> str:
-    if not isinstance(path, str):
-        path = str(path)
+    path = str(path)
     if project.folder is None:
         return path
     return f"[bold]{get_relative_path_to(path)}[/bold]"
