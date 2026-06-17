@@ -10,7 +10,7 @@ from rx.subject.subject import Subject
 from chunks.chunker import RAGChunkerOptions, build_chunks_from_lines, get_file_hash_from_lines
 from config import RagConfig
 from config.domains import resolve_semantic_domain
-from index import ignores, fs
+from index import ignores, workspace
 from index.storage import Datasets
 from language_server import rag
 from logs import get_logger
@@ -108,7 +108,7 @@ class FileUpdateEmbeddingsQueue:
 async def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions, _passed_datasets: Datasets):
     file_path = Path(lsp_doc.path)
 
-    with logger.timer(f"update_file {fs.get_loggable_path(file_path)}"):
+    with logger.timer(f"update_file {workspace.get_loggable_path(file_path)}"):
         hash = get_file_hash_from_lines(lsp_doc.lines)
         # FYI you can check hash for changes, but remember this is off of disk and you only update that on commit
         #   so really there's no point to ask if changed, b/c only going to be saving materially if altering it
@@ -124,7 +124,7 @@ def create_queue(server: LanguageServer):
     loop = asyncio.get_running_loop()  # btw RuntimeError if no current loop (a good thing)
     # logger.info(f'{loop=} {id(loop)=}')  # sanity check loop used when scheduling
 
-    update_queue = FileUpdateEmbeddingsQueue(fs.get_config(), fs.rag_project.root_path, server, loop)
+    update_queue = FileUpdateEmbeddingsQueue(workspace.get_config(), workspace.rag_project.root_path, server, loop)
 
 async def schedule_update(uri: str):
     if uri.endswith("/AskAgent"):
@@ -132,7 +132,7 @@ async def schedule_update(uri: str):
         logger.info("skipping AskAgent")
         return
 
-    if fs.is_no_rag_dir():
+    if workspace.is_no_rag_dir():
         return
 
     await update_queue.fire_and_forget(uri)
@@ -151,7 +151,7 @@ def setup(server: LanguageServer):
 
     # @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
     # async def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
-    #     if fs.is_no_rag_dir():
+    #     if workspace.is_no_rag_dir():
     #         return
     #     #   workspace/didChangeWatchedFiles # when files changed outside of editor... i.e. nvim will detect someone else edited a file in the workspace (another nvim instance, maybe CLI tool, etc)
     #     logger.debug(f"didChangeWatchedFiles: {params}")
@@ -159,14 +159,14 @@ def setup(server: LanguageServer):
     #
     # @server.feature(types.TEXT_DOCUMENT_DID_CLOSE)
     # async def doc_closed(params: types.DidCloseTextDocumentParams):
-    #     if fs.is_no_rag_dir():
+    #     if workspace.is_no_rag_dir():
     #         return
     #     logger.pp_debug("didClose", params)
     #     # PRN on didOpen track open files, didClose track closed... use for auto-context!
     #
     # @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
     # async def doc_changed(params: types.DidChangeTextDocumentParams):
-    #     if fs.is_no_rag_dir():
+    #     if workspace.is_no_rag_dir():
     #         return
     #     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
     #     logger.pp_debug("didChange", params)

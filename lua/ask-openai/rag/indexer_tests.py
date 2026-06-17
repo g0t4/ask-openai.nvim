@@ -19,7 +19,7 @@ from inference.client.embedder import encode_query
 from index.storage import ChunkType, load_all_datasets, load_chunks_by_file, load_file_stats_by_file
 from config import RagConfig
 from index.ignores import reset_cache_bewteen_tests
-from index import fs  # stop gap set these until I remove fs's global state
+from index import workspace
 
 # logging_fwk_to_console("WARN") # stop INFO logs after timing captured
 
@@ -37,9 +37,8 @@ class TestBuildIndex:
         # PRN move the reset to one spot between all tests
         #   reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
         #
-        fs.rag_project.dot_rag_dir = cls.dot_rag_dir
-        fs.rag_project.root_path = cls.tmp_source_code_dir  # use this as default, override if different below
-        # TODO finish passing these fs path vars so I can stop using the globals on fs
+        workspace.rag_project.dot_rag_dir = cls.dot_rag_dir
+        workspace.rag_project.root_path = cls.tmp_source_code_dir  # use this as default, override if different below
 
     def trash_path(self, dir):
         if dir.exists():
@@ -69,7 +68,7 @@ class TestBuildIndex:
         #   i.e. for computing chunk id which relies on path to file
         #   here I am testing end to end chunking outputs even if most logic is shared with low level tests, still valuable
         self.trash_path(self.dot_rag_dir)
-        fs.rag_project.root_path = self.indexer_src_dir
+        workspace.rag_project.root_path = self.indexer_src_dir
 
         await self.build_lua_index(self.indexer_src_dir)
         # * chunks
@@ -142,7 +141,7 @@ class TestBuildIndex:
     async def test_search_index_to_trigger_OpenMP_error(self):
         reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
         self.trash_path(self.dot_rag_dir)
-        fs.rag_project.root_path = self.indexer_src_dir
+        workspace.rag_project.root_path = self.indexer_src_dir
 
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test

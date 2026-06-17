@@ -14,9 +14,6 @@ logger = get_logger(__name__)
 server = LanguageServer("ask_language_server", "v0.1")
 
 # server setup is split up to organize and simplify this top-level module
-# from index import fs # TODO setup the RagConfig/RagProject here with server setup, keep it as a global and pass to setup/register_command(s) of other modules
-# TODO also setup datasets here and pass to setup via CLI args instead of on_initialize?
-
 cancel.setup(server)
 initialize.setup(server)
 sleepy.setup(server)

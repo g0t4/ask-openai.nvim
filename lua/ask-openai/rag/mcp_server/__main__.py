@@ -56,7 +56,7 @@ from inference.client.retrieval import (
     LSPSemanticGrepRequest,
     semantic_grep as _semantic_grep,
 )
-from index.fs import relative_to_workspace, set_workspace
+from index import workspace
 from logs import get_logger
 
 logger: logging.Logger = get_logger(__name__)
@@ -137,7 +137,7 @@ SEMANTIC_GREP_TOOL = Tool(
 
 def _match_to_text_content(match: LSPRankedMatch) -> dict[str, Any]:
     """Convert a LSPRankedMatch into a serializable dict for MCP TextContent."""
-    file_rel = relative_to_workspace(match.file)
+    file_rel = workspace.relative_to_workspace(match.file) # TODO rename workspace.relative_path(what)?
     file_path = match.file  # absolute path
 
     return {
@@ -244,7 +244,7 @@ async def serve(root_dir: str | Path | None = None) -> None:
             )
 
     root_dir_path = Path(root_dir)
-    await set_workspace(root_dir_path)
+    await workspace.set_workspace(root_dir_path) # TODO rename set_folder/set_dir()?
     _dot_rag_dir = root_dir_path / ".rag"
 
     logger.info(f"Loading datasets from {_dot_rag_dir}")

@@ -11,7 +11,8 @@ from typing import Set
 from logs import get_logger, logging_fwk_to_console
 from index.storage import load_all_datasets, Datasets
 from chunks.chunker import get_file_stat
-from index.fs import load_rag_config, RagConfig
+from index import workspace
+
 from config.domains import resolve_semantic_domain
 from index.stale import warn_about_stale_files
 
@@ -101,7 +102,7 @@ class DatasetsValidator:
         else:
             logger.debug("All good, no missing semantic domains, you lucky motherf***er")
 
-    def compare_config_vs_indexed_domains(self, datasets: Datasets, config: RagConfig) -> None:
+    def compare_config_vs_indexed_domains(self, datasets: Datasets, config: workspace.RagConfig) -> None:
         """Compare configured semantic domains against what's actually indexed on disk."""
 
         present_domains = set(datasets.all_datasets.keys())
@@ -139,7 +140,7 @@ async def main():
     root_dir = rag_dir.parent
     warn_about_stale_files(ds, root_dir)
 
-    config = await load_rag_config(root_dir)
+    config = await workspace.load_rag_config(root_dir)
     validator.compare_config_vs_indexed_domains(ds, config)
 
     if validator.any_problems:

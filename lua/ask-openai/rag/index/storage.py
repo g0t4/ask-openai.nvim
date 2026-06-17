@@ -14,7 +14,7 @@ from numpy.typing import NDArray
 from pydantic import BaseModel
 
 from logs import get_logger
-from index import fs
+from index import workspace
 from config.domains import resolve_semantic_domain, resolve_semantic_domain_for_vim_filetype
 from inference.client.embedder import encode_passages
 
@@ -238,7 +238,7 @@ class Datasets:
         # * find prior chunks (if any)
         prior_chunks: list[Chunk] | None = None
         if file_path_str in dataset.chunks_by_file:
-            logger.debug(f"Prior chunks exist for {fs.get_loggable_path(file_path_str)}")
+            logger.debug(f"Prior chunks exist for {workspace.get_loggable_path(file_path_str)}")
             prior_chunks = dataset.chunks_by_file[file_path_str]
 
         if not prior_chunks:

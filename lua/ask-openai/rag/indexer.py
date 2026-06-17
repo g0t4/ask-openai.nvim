@@ -29,7 +29,7 @@ from config.domains import (
     find_files_by_semantic_domain,
     resolve_semantic_domain,
 )
-from index import fs
+from index import workspace
 
 # constants for subprocess.run for readability
 IGNORE_FAILURE = False
@@ -68,11 +68,11 @@ class IncrementalRAGIndexer:
         config: RagConfig,
     ):
         self.options = options
-        self.dot_rag_dir = Path(dot_rag_dir)
-        self.source_code_dir = Path(source_code_dir)
+        self.dot_rag_dir = Path(dot_rag_dir)  # TODO pass with workspace
+        self.source_code_dir = Path(source_code_dir)  # TODO pass with workspace
         self.program_args = program_args
-        self.config = config
-        # TODO pass root_path instead of using fs (IF I even need it  here anymore... was it just here for ignores?)
+        self.config = config  # TODO pass workspace instead of config => workspace.get_config()
+        # TODO and workspace can contain workspace.get_datasets() or similar
 
     async def main(self):
         if not self.config.enabled:
@@ -325,29 +325,26 @@ async def main():
 
     with logger.timer("Total indexing time"):
         # PRN make this work in CWD first, fallback to repo root? like lua code? only when I only want a subset of a repo or non-repos
-        repo_root_dir = fs.get_cwd_repo_root()
+
+        # TODO add a workspace.set_from_cwd() and roll up most of the following into it:
+        repo_root_dir = workspace.get_cwd_repo_root()
         if not repo_root_dir:
             logger.error("[red]No Git repository found in current working directory, cannot build RAG index.")
             sys.exit(1)
         dot_rag_dir = repo_root_dir / ".rag"
         source_code_dir = Path(".").resolve()
         logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
+        # TODO end rollup into workspace.set_from_cwd()
+
         if args.rebuild:
             trash_dir(dot_rag_dir)
 
         options = RAGChunkerOptions.ProductionOptions()
-        config = await fs.load_rag_config(source_code_dir)
+        config = await workspace.load_rag_config(source_code_dir)
         indexer = IncrementalRAGIndexer(dot_rag_dir, source_code_dir, options, args, config)
 
-        # * STOPGAP: fs integration is just for ignores to work for now
-        #   FYI! minimize using fs module beyond ignores
-        #   I'd prefer to rip out the fs module's global state and instead
-        #   make a state obj like IncrementalRAGIndexer's ctor has!
-        #     modify ignores to take this new state object (like it takes config and doesn't use config from fs.config!)
-        #   and push that over into pygls code that originally created the fs module
-        #   TODO rip this crap out long term
-        fs.rag_project.root_path = source_code_dir
-        fs.rag_project.dot_rag_dir = dot_rag_dir
+        workspace.rag_project.root_path = source_code_dir
+        workspace.rag_project.dot_rag_dir = dot_rag_dir
 
         await indexer.main()
 

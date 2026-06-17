@@ -6,7 +6,7 @@ from logs import get_logger
 from language_server.stoppers import Stopper, create_stopper, remove_stopper
 from inference.client.retrieval import semantic_grep, LSPSemanticGrepRequest
 from index.validate import DatasetsValidator
-from index import fs
+from index import workspace
 from language_server import rag
 
 logger = get_logger(__name__)
@@ -38,7 +38,7 @@ async def grep_command(args: LSPSemanticGrepRequest) -> LSPSemanticGrepResult:
 
     stopper = create_stopper(args.msgId)
     try:
-        if fs.is_no_rag_dir():
+        if workspace.is_no_rag_dir():
             return LSPSemanticGrepResult(error=LSPResponseErrors.NO_RAG_DIR)
 
         if args.query is None or len(args.query) == 0:

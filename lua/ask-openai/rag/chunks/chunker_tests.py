@@ -4,7 +4,7 @@ from pathlib import Path
 from rich import print as rich_print
 from tree_sitter import QueryCursor
 
-from index.fs import *
+from index import workspace
 from chunks.chunker import *
 from chunks.ts.ts import *
 from index.storage import Chunk, ChunkType
@@ -22,7 +22,7 @@ test_cases_csharp = test_cases_treesitter / "csharp"
 test_cases_rust = test_cases_treesitter / "rust"
 test_cases_lua = test_cases_treesitter / "lua"
 
-asyncio.run(set_workspace(repo_root))
+asyncio.run(workspace.set_workspace(repo_root))
 
 # z rag
 # ptw lsp/chunker_tests.py -- --capture=tee-sys
@@ -168,7 +168,7 @@ class TestTsChunker_Python_TopLevelFunctions:
         parser = get_parser("python")
         language = get_language("python")
         file = test_cases_python / "two_functions.py"
-        relpath = relative_to_workspace(file)
+        relpath = workspace.relative_to_workspace(file)
 
         source_code = read_bytes(file)
 

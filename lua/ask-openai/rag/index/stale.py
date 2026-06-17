@@ -6,7 +6,7 @@ from pathlib import Path
 from rich.table import Table
 from rich.console import Console
 from index.storage import Datasets, FileStat
-from index.fs import relative_to_workspace
+from index import workspace
 from chunks.chunker import get_file_stat
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ def warn_about_stale_files(datasets: Datasets, root_dir: Path) -> None:
     for dataset in datasets.all_datasets.values():
         for path, stored_stat in dataset.stat_by_path.items():
             file_path = Path(path)
-            display_path = relative_to_workspace(file_path, override_root_path=root_dir)
+            display_path = workspace.relative_to_workspace(file_path, override_root_path=root_dir)
             if not file_path.is_file():
                 deleted_files[display_path] = stored_stat
                 continue

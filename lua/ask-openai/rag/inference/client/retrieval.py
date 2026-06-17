@@ -6,7 +6,7 @@ from inference.client.embedder import encode_query, signal_hotpath_done_in_backg
 from language_server.stoppers import Stopper
 from index.storage import ChunkType, Datasets
 from inference.client import *
-from index.fs import get_config, relative_to_workspace
+from index import workspace
 
 @dataclass
 class LSPRankedMatch:
@@ -81,7 +81,7 @@ async def semantic_grep(
         # * top_k_per_lang
         # crude calculations for splitting top_k... these can and will be changed long-term
         #   consider just configuring how much per language in the global_languages config list (make each a configurable object)
-        config = get_config()
+        config = workspace.get_config()
         filter_global_languages = global_search and config.global_query_domains and len(config.global_query_domains) > 0
         if filter_global_languages:
             num_languages = 0
@@ -178,7 +178,7 @@ async def semantic_grep(
     matches.sort(key=lambda c: len(c.text))
 
     def rerank_document(chunk: LSPRankedMatch):
-        file = relative_to_workspace(chunk.file)
+        file = workspace.relative_to_workspace(chunk.file)
         start_line_base1 = chunk.start_line_base0 + 1
         end_line_base1 = chunk.end_line_base0 + 1
         # example:   [file: utils.py | lines 120–145]\n...
