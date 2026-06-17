@@ -47,7 +47,7 @@ async def from_repo_root(any_path_in_repo: str | Path):
         sys.exit(1)
     await set_folder(repo_root_dir)
 
-async def from_repo_workdir():
+async def from_workdir_in_repo():
     """
     folder == workdir (aka PWD)
     dot_rag_dir == workdir's git repo root dir
