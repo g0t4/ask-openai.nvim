@@ -31,7 +31,7 @@ def setup(server: LanguageServer):
         first_folder = folders[0]
         folder = uris.to_fs_path(first_folder.uri)
         assert folder is not None
-        await workspace.set_folder(folder)
+        await workspace.from_folder(folder)
         if not workspace.get_config().enabled or workspace.is_no_rag_dir():
             # DO NOT notify yet, that has to come after server responds to initialize request
             return types.InitializeResult(capabilities=types.ServerCapabilities())

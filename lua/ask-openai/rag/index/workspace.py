@@ -45,7 +45,7 @@ async def from_repo_root(any_path_in_repo: str | Path):
     if repo_root_dir is None:
         logger.error(f"[red]{any_path_in_repo} is not in a git repo")
         sys.exit(1)
-    await set_folder(repo_root_dir)
+    await from_folder(repo_root_dir)
 
 async def from_workdir_in_repo():
     """
@@ -64,7 +64,11 @@ async def from_workdir_in_repo():
 
     await load_rag_config(project.folder)
 
-async def set_folder(folder: str | Path):
+async def from_folder(folder: str | Path):
+    """
+    folder = folder
+    dot_rag_dir = folder/.rag/
+    """
     logger.info(f"{folder=}")
     project.folder = Path(folder)
     project.dot_rag_dir = project.folder / ".rag"
