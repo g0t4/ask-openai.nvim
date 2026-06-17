@@ -127,17 +127,13 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
 
 @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
 async def doc_saved(params: types.DidSaveTextDocumentParams):
-    uri = params.text_document.uri
     # logger.info(f"doc_saved {params=}")
-    # logger.info(f"doc_saved {uri}")
-    await schedule_update(uri)
+    await schedule_update(params.text_document.uri)
 
 @server.feature(types.TEXT_DOCUMENT_DID_OPEN)
 async def doc_opened(params: types.DidOpenTextDocumentParams):
-    uri = params.text_document.uri
     # logger.info(f"doc_opened {params=}")
-    # logger.info(f"doc_opened {uri}")
-    await schedule_update(uri)
+    await schedule_update(params.text_document.uri)
 
 async def schedule_update(uri: str):
     if uri.endswith("/AskAgent"):
