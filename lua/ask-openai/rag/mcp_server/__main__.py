@@ -233,8 +233,6 @@ async def serve(root_dir: str | Path | None = None) -> None:
 
     root_dir_path = Path(root_dir)
     await workspace.from_folder(root_dir_path)
-
-    # TODO move into from_folder?
     workspace.validate_datasets()
 
     @server.list_tools()
