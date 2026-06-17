@@ -53,9 +53,9 @@ async def from_workdir():
 
     await load_rag_config(project.folder)
 
-async def set_workspace(root_dir: str | Path):
-    logger.info(f"{root_dir=}")
-    project.folder = Path(root_dir)
+async def set_folder(folder: str | Path):
+    logger.info(f"{folder=}")
+    project.folder = Path(folder)
     project.dot_rag_dir = project.folder / ".rag"
     if is_no_rag_dir():
         logger.error(f"abort on_initialize b/c no .rag dir, {project.dot_rag_dir=}")

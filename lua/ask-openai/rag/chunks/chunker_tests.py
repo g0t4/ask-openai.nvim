@@ -22,7 +22,7 @@ test_cases_csharp = test_cases_treesitter / "csharp"
 test_cases_rust = test_cases_treesitter / "rust"
 test_cases_lua = test_cases_treesitter / "lua"
 
-asyncio.run(workspace.set_workspace(repo_root))
+asyncio.run(workspace.set_folder(repo_root))
 
 # z rag
 # ptw lsp/chunker_tests.py -- --capture=tee-sys

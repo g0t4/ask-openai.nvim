@@ -244,7 +244,7 @@ async def serve(root_dir: str | Path | None = None) -> None:
             )
 
     root_dir_path = Path(root_dir)
-    await workspace.set_workspace(root_dir_path) # TODO rename set_folder/set_dir()?
+    await workspace.set_folder(root_dir_path) # TODO rename set_folder/set_dir()?
     _dot_rag_dir = root_dir_path / ".rag"
 
     logger.info(f"Loading datasets from {_dot_rag_dir}")
