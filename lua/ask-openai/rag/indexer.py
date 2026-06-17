@@ -331,18 +331,17 @@ async def main():
         if not repo_root_dir:
             logger.error("[red]No Git repository found in current working directory, cannot build RAG index.")
             sys.exit(1)
-        dot_rag_dir = repo_root_dir / ".rag"
         workspace.rag_project.root_path = Path(".").resolve()
-        workspace.rag_project.dot_rag_dir = dot_rag_dir
-        logger.debug(f"[bold]RAG directory: {dot_rag_dir}")
+        workspace.rag_project.dot_rag_dir = repo_root_dir / ".rag"
+        logger.debug(f"[bold]RAG directory: {workspace.rag_project.dot_rag_dir}")
         # TODO end rollup into workspace.set_from_cwd()
 
         if args.rebuild:
-            trash_dir(dot_rag_dir)
+            trash_dir(workspace.rag_project.dot_rag_dir)
 
         options = RAGChunkerOptions.ProductionOptions()
         config = await workspace.load_rag_config(workspace.rag_project.root_path)
-        indexer = IncrementalRAGIndexer(dot_rag_dir, workspace.rag_project.root_path, options, args, config)
+        indexer = IncrementalRAGIndexer(workspace.rag_project.dot_rag_dir, workspace.rag_project.root_path, options, args, config)
 
         await indexer.main()
 
