@@ -18,6 +18,17 @@ def create_queue(server: LanguageServer):
 
     update_queue = FileUpdateEmbeddingsQueue(fs.get_config(), fs.rag_project.root_path, server, loop)
 
+async def schedule_update(uri: str):
+    if uri.endswith("/AskAgent"):
+        # PRN move client side
+        logger.info("skipping AskAgent")
+        return
+
+    if fs.is_no_rag_dir():
+        return
+
+    await update_queue.fire_and_forget(uri)
+
 def register_commands(server: LanguageServer):
 
     @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
@@ -29,14 +40,3 @@ def register_commands(server: LanguageServer):
     async def doc_opened(params: types.DidOpenTextDocumentParams):
         # logger.info(f"doc_opened {params=}")
         await schedule_update(params.text_document.uri)
-
-    async def schedule_update(uri: str):
-        if uri.endswith("/AskAgent"):
-            # PRN move client side
-            logger.info("skipping AskAgent")
-            return
-
-        if fs.is_no_rag_dir():
-            return
-
-        await update_queue.fire_and_forget(uri)
