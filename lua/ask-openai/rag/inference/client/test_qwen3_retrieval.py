@@ -5,7 +5,7 @@ from pathlib import Path
 from logs import get_logger, logging_fwk_to_console, print_code
 from index.storage import load_all_datasets
 from inference.client.retrieval import *
-from index.fs import set_root_dir
+from index.fs import set_workspace
 
 def format_score_percent(score: float) -> str:
     """score as percentage rounded to nearest 4 decimals"""
@@ -17,7 +17,7 @@ async def main():
     logger = get_logger(__name__)
 
     dot_rag_dir = Path("~/repos/github/g0t4/ask-openai.nvim/.rag").expanduser().absolute()
-    await set_root_dir(dot_rag_dir.parent)
+    await set_workspace(dot_rag_dir.parent)
     datasets = load_all_datasets(dot_rag_dir)
 
     args = LSPSemanticGrepRequest(

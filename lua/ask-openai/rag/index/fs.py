@@ -36,7 +36,7 @@ def get_cwd_repo_root() -> Path | None:
         root_directory = None
     return root_directory
 
-async def set_root_dir(root_dir: str | Path | None):
+async def set_workspace(root_dir: str | Path | None):
     logger.info(f"{root_dir=}")
     rag_project.root_path = Path(root_dir)
     rag_project.dot_rag_dir = rag_project.root_path / ".rag"

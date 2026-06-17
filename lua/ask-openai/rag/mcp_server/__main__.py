@@ -56,7 +56,7 @@ from inference.client.retrieval import (
     LSPSemanticGrepRequest,
     semantic_grep as _semantic_grep,
 )
-from index.fs import relative_to_workspace, set_root_dir
+from index.fs import relative_to_workspace, set_workspace
 from logs import get_logger
 
 logger: logging.Logger = get_logger(__name__)
@@ -244,7 +244,7 @@ async def serve(root_dir: str | Path | None = None) -> None:
             )
 
     root_dir_path = Path(root_dir)
-    await set_root_dir(root_dir_path)
+    await set_workspace(root_dir_path)
     _dot_rag_dir = root_dir_path / ".rag"
 
     logger.info(f"Loading datasets from {_dot_rag_dir}")

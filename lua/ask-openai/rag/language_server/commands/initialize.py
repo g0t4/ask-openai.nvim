@@ -30,7 +30,7 @@ def setup(server: LanguageServer):
 
         first_folder = folders[0]
         root_dir = uris.to_fs_path(first_folder.uri)
-        await fs.set_root_dir(root_dir)
+        await fs.set_workspace(root_dir)
         if not fs.get_config().enabled or fs.is_no_rag_dir():
             # DO NOT notify yet, that has to come after server responds to initialize request
             return types.InitializeResult(capabilities=types.ServerCapabilities())
