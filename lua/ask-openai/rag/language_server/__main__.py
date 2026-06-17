@@ -14,6 +14,7 @@ from chunks.chunker import RAGChunkerOptions
 from rag.logs import get_logger, logging_fwk_to_language_server_log_file, disable_printtmp
 from .file_queue import FileUpdateEmbeddingsQueue
 from .retrieval import register_command
+from language_server.commands import sleepy
 
 disable_printtmp()  # LSP uses STDOUT for comms!
 
@@ -37,37 +38,7 @@ def _trigger_stopper_on_cancel(msg_id: MsgId):
 
 server.protocol._handle_cancel_notification = _trigger_stopper_on_cancel
 
-@server.command("SLEEPY")
-async def sleepy(_ls: LanguageServer, args: dict):
-    msg_id = _ls.protocol.msg_id  # workaround to load msg_id via contextvars
-    logger.info(f"sleepy started {msg_id=}")
-    stopper = create_stopper(msg_id)
-
-    try:
-        for i in range(10):
-            stopper.throw_if_stopped()
-
-            async with asyncio.TaskGroup() as tg:
-                job = tg.create_task(asyncio.sleep(3))
-                stop_requested = tg.create_task(stopper.wait())
-                done, pending = await asyncio.wait(
-                    [job, stop_requested],
-                    return_when=asyncio.FIRST_COMPLETED,
-                )
-                if stop_requested in done:
-                    # Raising inside the TG cancels/awaits other tasks
-                    stopper.throw_if_stopped()
-
-                stop_requested.cancel()  # cleanup
-
-            logger.info(f"ping {msg_id=} {i}")
-
-        return {"status": "done", "msg_id": msg_id}
-    except asyncio.CancelledError as e:
-        logger.info(f"KILLED {msg_id=}")  #, exc_info=e)
-        return {"status": "canelled", "msg_id": msg_id}
-    finally:
-        remove_stopper(msg_id)
+sleepy.register_command(server)
 
 @server.feature(types.INITIALIZE)
 async def on_initialize(_: LanguageServer, params: types.InitializeParams):
