@@ -13,7 +13,7 @@ from language_server import rag
 from chunks.chunker import RAGChunkerOptions
 from rag.logs import get_logger, logging_fwk_to_language_server_log_file, disable_printtmp
 from .file_queue import FileUpdateEmbeddingsQueue
-from .retrieval import grep_command, LSPResponseErrors, LSPSemanticGrepResult, LSPSemanticGrepRequest
+from .retrieval import register_command
 
 disable_printtmp()  # LSP uses STDOUT for comms!
 
@@ -79,6 +79,9 @@ def warn_client(server: LanguageServer):
 
 @server.feature(types.INITIALIZE)
 async def on_initialize(_: LanguageServer, params: types.InitializeParams):
+    # TODO pass rag dir as command line arg??
+    # - TODO so I don't have to wait for on_initialize to setup Datasets!
+
     # # PRN use workspace folders if multi-workspace ...
     # # FYI could also get me CWD, round about way, if I wanted to prioritize that for .rag dir over git repo root
     # logger.info(f"{params.workspace_folders=}")
@@ -168,16 +171,7 @@ async def schedule_update(doc_uri: str):
 #     logger.pp_debug("didChange", params)
 #     # FYI would use this to rebuild... but right now doc_saved seems to work fine for updating a file's vectors
 
-@server.command("semantic_grep")
-async def semantic_grep_command(_: LanguageServer, args: LSPSemanticGrepRequest) -> LSPSemanticGrepResult:
-    # return LSPSemanticGrepResult(error="FUUUU") # test server errors
-    args.msgId = server.protocol.msg_id
-    try:
-        return await grep_command(args, rag.datasets)  # TODO! ASYNC REVIEW
-    except asyncio.CancelledError as e:
-        # avoid leaving on in logs b/c takes up a ton of space for stack trace
-        logger.debug(f"Client cancelled semantic_grep query {args.msgId=}")  #, exc_info=e)  # uncomment to see where error is raised
-        return LSPSemanticGrepResult(error=LSPResponseErrors.CANCELLED)
+register_command(server)
 
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):
     logger.warning("SIGKILL myself")
