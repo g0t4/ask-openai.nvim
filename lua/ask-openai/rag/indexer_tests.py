@@ -16,7 +16,7 @@ import rich
 from indexer import IncrementalRAGIndexer
 from chunks.chunker import RAGChunkerOptions
 from inference.client.embedder import encode_query
-from index.storage import ChunkType, load_chunks_by_file, load_file_stats_by_file
+from index.storage import ChunkType, load_all_datasets, load_chunks_by_file, load_file_stats_by_file
 from config import RagConfig
 from index.ignores import reset_cache_bewteen_tests
 from index import fs  # stop gap set these until I remove fs's global state
@@ -358,8 +358,7 @@ class TestBuildIndex:
         # * build initial index
         await self.build_lua_index(self.tmp_source_code_dir)
 
-        from language_server import rag
-        rag.load_model_and_indexes(self.dot_rag_dir)
+        datasets = load_all_datasets(self.dot_rag_dir)
 
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks
         target_file_path = self.tmp_source_code_dir / "numbers.lua"
@@ -374,7 +373,6 @@ class TestBuildIndex:
         await rag.update_file_from_pygls_doc(fake_lsp_doc, RAGChunkerOptions.OnlyLineRangeChunks())
 
         # * check counts
-        datasets = rag.datasets
         ds = datasets.for_file(target_file_path)
         assert ds != None
 
