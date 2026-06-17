@@ -333,7 +333,7 @@ async def main():
 
         options = RAGChunkerOptions.ProductionOptions()
         config = workspace.get_config()
-        indexer = IncrementalRAGIndexer(workspace.rag_project.dot_rag_dir, workspace.rag_project.root_path, options, args, config)
+        indexer = IncrementalRAGIndexer(workspace.rag_project.dot_rag_dir, workspace.rag_project.folder, options, args, config)
 
         await indexer.main()
 

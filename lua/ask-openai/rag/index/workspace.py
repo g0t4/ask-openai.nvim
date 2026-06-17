@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 
 class RagProject:
     # this exists to avoid the need for `globals` concerns
-    root_path: Path = field(default_factory=Path)
+    folder: Path = field(default_factory=Path)
     dot_rag_dir: Path = field(default_factory=Path)
     config: RagConfig = RagConfig.default()
 
@@ -47,23 +47,23 @@ async def from_workdir():
     if not repo_root_dir:
         logger.error("[red]No Git repository found in current working directory, cannot build RAG index.")
         sys.exit(1)
-    rag_project.root_path = Path(".").resolve()
+    rag_project.folder = Path(".").resolve()
     rag_project.dot_rag_dir = repo_root_dir / ".rag"
     logger.info(f"[bold]RAG directory: {rag_project.dot_rag_dir}")
 
-    await load_rag_config(rag_project.root_path)
+    await load_rag_config(rag_project.folder)
 
 async def set_workspace(root_dir: str | Path):
     logger.info(f"{root_dir=}")
-    rag_project.root_path = Path(root_dir)
-    rag_project.dot_rag_dir = rag_project.root_path / ".rag"
+    rag_project.folder = Path(root_dir)
+    rag_project.dot_rag_dir = rag_project.folder / ".rag"
     if is_no_rag_dir():
         logger.error(f"abort on_initialize b/c no .rag dir, {rag_project.dot_rag_dir=}")
         # no need to do anything else, the LS server handles setting no capabilities
 
     logger.debug(f"{rag_project.dot_rag_dir=}")
 
-    await load_rag_config(rag_project.root_path)
+    await load_rag_config(rag_project.folder)
 
 async def load_rag_config(root_path: Path) -> RagConfig:
     rag_yaml = root_path / ".rag.yaml"
@@ -82,7 +82,7 @@ def get_config() -> RagConfig:
 
 def relative_to_workspace(path: Path | str, override_root_path: Path | None = None) -> Path:
     path = Path(path)
-    use_root_path = override_root_path or rag_project.root_path
+    use_root_path = override_root_path or rag_project.folder
 
     if use_root_path is None:
         return path
@@ -95,6 +95,6 @@ def relative_to_workspace(path: Path | str, override_root_path: Path | None = No
 def get_loggable_path(path: Path | str) -> str:
     if not isinstance(path, str):
         path = str(path)
-    if rag_project.root_path is None:
+    if rag_project.folder is None:
         return path
     return f"[bold]{relative_to_workspace(path)}[/bold]"
