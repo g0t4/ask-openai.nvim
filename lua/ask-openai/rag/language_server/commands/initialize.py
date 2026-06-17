@@ -1,5 +1,6 @@
 import lsprotocol.types as types
 
+from pygls import uris
 from pygls.lsp.server import LanguageServer
 from rag.logs import get_logger
 from index import fs
@@ -18,11 +19,19 @@ def setup(server: LanguageServer):
         logger.pp_info("params", params)
         # server.workspace.folders
 
-        root_dir = params.root_path
-        if root_dir is None:
-            logger.error(f"aborting on_initialize b/c missing client workspace dir, {root_dir=}")
-            raise ValueError("root_uri is None")
+        folders = params.workspace_folders or []
+        if not any(folders):
+            message = "no workspace folders provided, cannot start ask_language_server"
+            logger.error(message)
+            raise ValueError(message)
 
+        if len(folders) > 1:
+            message = "only one workspace folder is currently supported"
+            logger.error(message)
+            raise ValueError(message)
+
+        first_folder = folders[0]
+        root_dir = uris.to_fs_path(first_folder.uri)
         await fs.set_root_dir(root_dir)
         if not fs.get_config().enabled or fs.is_no_rag_dir():
             # DO NOT notify yet, that has to come after server responds to initialize request
