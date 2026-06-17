@@ -211,6 +211,17 @@ EXTENSION_TO_SEMANTIC_DOMAIN: dict[str, str] = {
     "hcl": "hcl",
 }
 
+# TODO need FILEPATH MATCH to SEMANTIC_DOMAIN (not just basename)
+#  i.e.
+#    .config/bat/config
+#    .config/fd/ignore
+#    .config/ghosty/config
+#    .config/git/ignore
+#  TODO look at what bat command does in its mapping table for this particular problem as it also deals with syntax highlighting files that aren't always clearly mapped to a format
+#    TODO at least copy over my bat config at a minimum that will cover some cases of mappings
+#  FYI have this be last resort as it will be more expensive than other approaches
+#    likely need to do path based regex
+
 BASENAME_TO_SEMANTIC_DOMAIN: dict[str, str] = {
     # --- Shell ---
     "Makefile": "make",
@@ -359,6 +370,7 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
         return domain
 
     # --- * shebang * ---
+    # FYI look into performance of this... if material hit then I could apply this only to extensionless files
     domain = _detect_semantic_domain_from_shebang(file_path)
     if domain is not None:
         return domain
@@ -371,6 +383,7 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
     else:
         ext = suffix.lstrip(".").lower()
     if not ext:
+        # TODO full path matching regexes fallback (for extensionless only until need arises for files w/ an extension)
         return None
 
     domain = EXTENSION_TO_SEMANTIC_DOMAIN.get(ext)
