@@ -7,6 +7,7 @@ from index import workspace
 from index.validate import DatasetsValidator
 from language_server import rag
 from language_server.commands import update_file
+from index.storage import Datasets, load_all_datasets
 
 logger = get_logger(__name__)
 
@@ -36,7 +37,7 @@ def setup(server: LanguageServer):
             # DO NOT notify yet, that has to come after server responds to initialize request
             return types.InitializeResult(capabilities=types.ServerCapabilities())
 
-        rag.load_model_and_indexes(workspace.project.dot_rag_dir)  # TODO! ASYNC?
+        rag.datasets = load_all_datasets(workspace.project.dot_rag_dir)
 
     def tell_client_to_shut_that_shit_down_now():
         server.protocol.notify("fuu/no_dot_rag__do_the_right_thing_wink")
