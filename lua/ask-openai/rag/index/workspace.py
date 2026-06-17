@@ -67,6 +67,7 @@ async def from_workdir_in_repo():
     logger.info(f"[bold]RAG directory: {project.dot_rag_dir}")
 
     await load_rag_config(project.folder)
+    # TODO load datasets here?
 
 async def from_folder(folder: str | Path):
     """

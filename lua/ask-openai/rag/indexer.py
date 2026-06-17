@@ -69,7 +69,6 @@ class IncrementalRAGIndexer:
         self.source_code_dir = workspace.project.folder
         self.program_args = program_args
         self.config = workspace.get_config()
-        # TODO! and workspace can contain workspace.get_datasets() or similar
 
     async def main(self):
         if not self.config.enabled:
