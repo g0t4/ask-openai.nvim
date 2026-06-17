@@ -7,7 +7,6 @@ from language_server.stoppers import Stopper, create_stopper, remove_stopper
 from inference.client.retrieval import semantic_grep, LSPSemanticGrepRequest
 from index.validate import DatasetsValidator
 from index import workspace
-from language_server import rag
 
 logger = get_logger(__name__)
 
@@ -50,7 +49,7 @@ async def grep_command(args: LSPSemanticGrepRequest) -> LSPSemanticGrepResult:
         # TODO REVIEW ASYNC (i.e. for file ops? or other async capable ops)
         matches = await semantic_grep(
             args=args,
-            datasets=rag.datasets,
+            datasets=workspace.datasets,
             stopper=stopper,
         )
 

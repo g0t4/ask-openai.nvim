@@ -12,7 +12,6 @@ from config import RagConfig
 from config.domains import resolve_semantic_domain
 from index import ignores, workspace
 from index.storage import Datasets
-from language_server import rag
 from logs import get_logger
 
 logger = get_logger(__name__)
