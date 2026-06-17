@@ -77,29 +77,6 @@ def on_initialized(_: LanguageServer, _params: types.InitializedParams):
     rag.validate_rag_indexes()  # TODO! ASYNC?
     update_file.create_queue(server)
 
-# @server.feature(types.WORKSPACE_DID_CHANGE_WATCHED_FILES)
-# async def on_watched_files_changed(params: types.DidChangeWatchedFilesParams):
-#     if fs.is_no_rag_dir():
-#         return
-#     #   workspace/didChangeWatchedFiles # when files changed outside of editor... i.e. nvim will detect someone else edited a file in the workspace (another nvim instance, maybe CLI tool, etc)
-#     logger.debug(f"didChangeWatchedFiles: {params}")
-#     # update_rag_file_chunks(params.changes[0].uri)
-#
-# @server.feature(types.TEXT_DOCUMENT_DID_CLOSE)
-# async def doc_closed(params: types.DidCloseTextDocumentParams):
-#     if fs.is_no_rag_dir():
-#         return
-#     logger.pp_debug("didClose", params)
-#     # PRN on didOpen track open files, didClose track closed... use for auto-context!
-#
-# @server.feature(types.TEXT_DOCUMENT_DID_CHANGE)
-# async def doc_changed(params: types.DidChangeTextDocumentParams):
-#     if fs.is_no_rag_dir():
-#         return
-#     # https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/#textDocument_didChange
-#     logger.pp_debug("didChange", params)
-#     # FYI would use this to rebuild... but right now doc_saved seems to work fine for updating a file's vectors
-
 grep.register_command(server)
 
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):
