@@ -402,10 +402,3 @@ class TestBuildIndex:
     async def PRN_test_timing_of_batch_vs_individual_chunk_encoding():
         # I suspect batching is a big boost in perf, but I need to understand more before I commit to designs one way or another
         pass
-
-if __name__ == "__main__":
-    # run with:
-    #   python3 -m indexer_tests
-    # TODO put back all tests when done with the one below
-    test = TestBuildIndex()
-    # test.test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index()
