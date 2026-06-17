@@ -8,7 +8,6 @@ from rag.logs import get_logger
 from language_server.stoppers import Stopper, create_stopper, remove_stopper
 from index.storage import Datasets, load_all_datasets
 from inference.client.retrieval import *
-from index.validate import DatasetsValidator
 from index import fs
 
 logger = get_logger(__name__)
@@ -18,10 +17,6 @@ datasets: Datasets
 def load_model_and_indexes(dot_rag_dir: Path):
     global datasets
     datasets = load_all_datasets(dot_rag_dir)
-
-def validate_rag_indexes():
-    validator = DatasetsValidator(datasets)
-    validator.validate_datasets()
 
 async def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions):
     file_path = Path(lsp_doc.path)

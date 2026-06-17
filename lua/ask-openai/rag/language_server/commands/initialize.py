@@ -3,6 +3,7 @@ import lsprotocol.types as types
 from pygls.lsp.server import LanguageServer
 from rag.logs import get_logger
 from index import fs
+from index.validate import DatasetsValidator
 from language_server import rag
 from language_server.commands import update_file
 
@@ -49,5 +50,8 @@ def setup(server: LanguageServer):
             return
 
         rag.load_model_and_indexes(fs.rag_project.dot_rag_dir)  # TODO! ASYNC?
-        rag.validate_rag_indexes()  # TODO! ASYNC?
+
+        validator = DatasetsValidator(rag.datasets)
+        validator.validate_datasets()
+
         update_file.create_queue(server)
