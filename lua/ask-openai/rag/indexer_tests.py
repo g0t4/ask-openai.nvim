@@ -68,7 +68,7 @@ class TestBuildIndex:
     async def build_lua_index(self, path: Path):
         files_by_domain = find_files_by_semantic_domain(path)
         files = files_by_domain.get("lua", set())
-        indexer = IncrementalRAGIndexer(dot_rag_dir, path, RAGChunkerOptions.OnlyLineRangeChunks(), None, RagConfig.default())
+        indexer = IncrementalRAGIndexer(workspace.project.dot_rag_dir, path, RAGChunkerOptions.OnlyLineRangeChunks(), None, RagConfig.default())
         await indexer.build_index(domain="lua", current_files=files)
 
     @pytest.mark.asyncio
