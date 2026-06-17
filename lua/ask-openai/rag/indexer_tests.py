@@ -23,6 +23,9 @@ from index import workspace
 
 # logging_fwk_to_console("WARN") # stop INFO logs after timing captured
 
+def copy_file(src, dest):
+    (self.tmp_source_code_dir / dest).write_text((self.test_cases / src).read_text())
+
 class TestBuildIndex:
 
     @classmethod
@@ -201,9 +204,6 @@ class TestBuildIndex:
         self.trash_path(self.tmp_source_code_dir)
         self.tmp_source_code_dir.mkdir(exist_ok=True, parents=True)
 
-        def copy_file(src, dest):
-            (self.tmp_source_code_dir / dest).write_text((self.test_cases / src).read_text())
-
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
@@ -286,9 +286,6 @@ class TestBuildIndex:
         self.trash_path(self.tmp_source_code_dir)
         self.tmp_source_code_dir.mkdir(exist_ok=True, parents=True)
 
-        def copy_file(src, dest):
-            (self.tmp_source_code_dir / dest).write_text((self.test_cases / src).read_text())
-
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
         # copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
@@ -344,9 +341,6 @@ class TestBuildIndex:
         # * recreate source directory with initial files
         self.trash_path(self.tmp_source_code_dir)
         self.tmp_source_code_dir.mkdir(exist_ok=True, parents=True)
-
-        def copy_file(src, dest):
-            (self.tmp_source_code_dir / dest).write_text((self.test_cases / src).read_text())
 
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
         copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
