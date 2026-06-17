@@ -13,8 +13,7 @@ from language_server import rag
 from chunks.chunker import RAGChunkerOptions
 from rag.logs import get_logger, logging_fwk_to_language_server_log_file, disable_printtmp
 from .file_queue import FileUpdateEmbeddingsQueue
-from .retrieval import register_command
-from language_server.commands import sleepy
+from language_server.commands import sleepy, grep
 
 disable_printtmp()  # LSP uses STDOUT for comms!
 
@@ -130,7 +129,7 @@ async def schedule_update(uri: str):
 #     logger.pp_debug("didChange", params)
 #     # FYI would use this to rebuild... but right now doc_saved seems to work fine for updating a file's vectors
 
-register_command(server)
+grep.register_command(server)
 
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):
     logger.warning("SIGKILL myself")
