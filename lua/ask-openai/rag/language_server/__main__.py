@@ -5,7 +5,6 @@ import signal
 import lsprotocol.types as types
 from pygls.lsp.server import LanguageServer
 
-# from index import fs # TODO setup the RagConfig/RagProject here with server setup, keep it as a global and pass to setup/register_command(s) of other modules
 from rag.logs import get_logger, logging_fwk_to_language_server_log_file
 from language_server.commands import sleepy, grep, update_file, cancel, initialize
 
@@ -15,6 +14,8 @@ logger = get_logger(__name__)
 
 server = LanguageServer("ask_language_server", "v0.1")
 
+# server setup is split up to organize and simplify this top-level module
+# from index import fs # TODO setup the RagConfig/RagProject here with server setup, keep it as a global and pass to setup/register_command(s) of other modules
 cancel.setup(server)
 initialize.setup(server)
 sleepy.setup(server)
