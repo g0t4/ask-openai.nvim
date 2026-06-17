@@ -1,8 +1,8 @@
-from dataclasses import field
-import sys
-from typing import Optional
 import aiofiles
+import sys
+from dataclasses import field
 from pathlib import Path
+from typing import Optional
 
 from logs import get_logger
 from config import RagConfig, load_config
