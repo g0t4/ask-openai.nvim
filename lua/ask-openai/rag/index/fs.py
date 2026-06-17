@@ -85,23 +85,3 @@ def get_loggable_path(path: Path | str) -> str:
     if rag_project.root_path is None:
         return path
     return f"[bold]{relative_to_workspace(path)}[/bold]"
-
-def read_text_lines(path: Path, encoding="utf-8") -> list[str]:
-    with open(path, "r", encoding=encoding) as f:
-        return f.readlines()
-
-def read_bytes_lines(path: Path) -> list[bytes]:
-    with open(path, "rb") as f:
-        return f.readlines()
-
-# TODO unused for sync below b/c I found path.read_text() exists
-#    but now that I want some async file ops... might be useful to revisit this helper as async.
-#    read_text(path) is a nice wrapper
-
-async def read_text(path: Path, encoding="utf-8") -> str:
-    async with aiofiles.open(path, "r", encoding=encoding) as f:
-        return await f.read()
-
-def read_bytes(path: Path) -> bytes:
-    with open(path, "rb") as f:
-        return f.read()

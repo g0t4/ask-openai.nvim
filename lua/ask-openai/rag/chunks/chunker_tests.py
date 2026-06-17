@@ -32,6 +32,14 @@ def build_test_chunks(path: Path, options: RAGChunkerOptions) -> list[Chunk]:
     # PRN use uncovered_code (second return?)
     return ts_chunks
 
+def read_text_lines(path: Path, encoding="utf-8") -> list[str]:
+    with open(path, "r", encoding=encoding) as f:
+        return f.readlines()
+
+def read_bytes(path: Path) -> bytes:
+    with open(path, "rb") as f:
+        return f.read()
+
 class TestReadingFilesAndNewLines:
     """ purpose is to test that readlines is behaving the way I expect
         and that I carefully document newline behaviors (i.e. not stripping them)
