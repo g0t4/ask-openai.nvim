@@ -22,6 +22,7 @@ class RagProject:
 #   without passing that workspace dir everywhere
 #   but also don't break passing it when it makes sense b/c then it becomes a hidden dependency
 project = RagProject()
+# TODO expand project again to be globals here? or more datasets onto project?
 datasets: Datasets = None
 
 def is_no_rag_dir() -> bool:

@@ -57,9 +57,11 @@ from inference.client.retrieval import (
     semantic_grep as _semantic_grep,
 )
 from index import workspace
-from logs import get_logger
+from logs import get_logger, logging_fwk_to_language_server_log_file
 
 logger: logging.Logger = get_logger(__name__)
+logging_fwk_to_language_server_log_file(logging.INFO)
+
 # logging.getLogger("mcp").setLevel(logging.DEBUG)  # MCP SDK logs
 
 _datasets: Datasets | None = None
