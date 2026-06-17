@@ -17,9 +17,9 @@ server = LanguageServer("ask_language_server", "v0.1")
 
 cancel.setup(server)
 initialize.setup(server)
-sleepy.register_command(server)
-update_file.register_commands(server)
-grep.register_command(server)
+sleepy.setup(server)
+update_file.setup(server)
+grep.setup(server)
 
 def sigkill_self_else_pygls_hangs_when_test_standalone_startup_of_LS(*_):
     logger.warning("SIGKILL myself")

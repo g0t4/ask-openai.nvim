@@ -5,7 +5,7 @@ from language_server.stoppers import create_stopper, remove_stopper
 from rag.logs import get_logger
 
 
-def register_command(server: LanguageServer):
+def setup(server: LanguageServer):
 
     @server.command("SLEEPY")
     async def sleepy(_ls: LanguageServer, args: dict):

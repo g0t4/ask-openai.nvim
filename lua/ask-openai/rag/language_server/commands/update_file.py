@@ -123,7 +123,7 @@ async def schedule_update(uri: str):
 
     await update_queue.fire_and_forget(uri)
 
-def register_commands(server: LanguageServer):
+def setup(server: LanguageServer):
 
     @server.feature(types.TEXT_DOCUMENT_DID_SAVE)
     async def doc_saved(params: types.DidSaveTextDocumentParams):

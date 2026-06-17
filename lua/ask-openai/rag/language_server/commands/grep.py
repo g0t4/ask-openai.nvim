@@ -21,7 +21,7 @@ class LSPResponseErrors:
     NO_RAG_DIR = "No .rag dir"
     CANCELLED = "Client cancelled query"
 
-def register_command(server: LanguageServer):
+def setup(server: LanguageServer):
 
     @server.command("semantic_grep")
     async def semantic_grep_command(_: LanguageServer, args: LSPSemanticGrepRequest) -> LSPSemanticGrepResult:
