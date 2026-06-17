@@ -11,8 +11,6 @@ from index.storage import Chunk, ChunkType
 
 # * set root dir for relative paths
 my_dir = Path(__file__).absolute().parent
-repo_root = workspace.git_repo_root_dir(my_dir)
-assert repo_root is not None
 test_cases = my_dir / "test_cases"
 test_cases_treesitter = test_cases / "treesitter"
 test_cases_python = test_cases_treesitter / "python"
@@ -23,7 +21,7 @@ test_cases_csharp = test_cases_treesitter / "csharp"
 test_cases_rust = test_cases_treesitter / "rust"
 test_cases_lua = test_cases_treesitter / "lua"
 
-asyncio.run(workspace.set_folder(repo_root))
+asyncio.run(workspace.from_repo_root(my_dir))
 
 # z rag
 # ptw lsp/chunker_tests.py -- --capture=tee-sys

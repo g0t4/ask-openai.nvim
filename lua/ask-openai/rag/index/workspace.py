@@ -27,7 +27,7 @@ def is_no_rag_dir() -> bool:
         return False
     return not project.dot_rag_dir.exists()
 
-def git_repo_root_dir(from_dir: str | Path) -> Path | None:
+def _git_repo_root_dir(from_dir: str | Path) -> Path | None:
     try:
         argv = ["git", "-C", from_dir, "rev-parse", "--show-toplevel"]
         root_directory = subprocess.check_output(argv, text=True).strip()
@@ -36,14 +36,25 @@ def git_repo_root_dir(from_dir: str | Path) -> Path | None:
         root_directory = None
     return root_directory
 
+async def from_repo_root(any_path_in_repo: str | Path):
+    """ common strategy:
+    folder = repo_root
+    dot_rag_dir = repo_root/.rag/
+    """
+    repo_root_dir = _git_repo_root_dir(any_path_in_repo)
+    if repo_root_dir is None:
+        logger.error(f"[red]{any_path_in_repo} is not in a git repo")
+        sys.exit(1)
+    await set_folder(repo_root_dir)
+
 async def from_repo_workdir():
     """
-    workspace_dir == workdir (aka PWD)
+    folder == workdir (aka PWD)
     dot_rag_dir == workdir's git repo root dir
 
     FYI IF workder != repo_root_dir THEN workspace_dir/.rag != dot_rag_dir
     """
-    repo_root_dir = git_repo_root_dir(Path.cwd())
+    repo_root_dir = _git_repo_root_dir(Path.cwd())
     if repo_root_dir is None:
         logger.error("[red]No Git repository found in current working directory, cannot build RAG index.")
         sys.exit(1)
