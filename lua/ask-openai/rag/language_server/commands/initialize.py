@@ -13,15 +13,17 @@ def setup(server: LanguageServer):
 
     @server.feature(types.INITIALIZE)
     async def on_initialize(_: LanguageServer, params: types.InitializeParams):
-        # TODO pass rag dir as command line arg??
-        # - TODO so I don't have to wait for on_initialize to setup Datasets!
-
         # # PRN use workspace folders if multi-workspace ...
         # # FYI could also get me CWD, round about way, if I wanted to prioritize that for .rag dir over git repo root
         # logger.info(f"{params.workspace_folders=}")
         # server.workspace.folders
 
-        await fs.set_root_dir(params.root_path)
+        root_dir = params.root_path
+        if root_dir is None:
+            logger.error(f"aborting on_initialize b/c missing client workspace dir, {root_dir=}")
+            raise ValueError("root_uri is None")
+
+        await fs.set_root_dir(root_dir)
         if not fs.get_config().enabled or fs.is_no_rag_dir():
             # DO NOT notify yet, that has to come after server responds to initialize request
             return types.InitializeResult(capabilities=types.ServerCapabilities())

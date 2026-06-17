@@ -37,10 +37,6 @@ def get_cwd_repo_root() -> Path | None:
     return root_directory
 
 async def set_root_dir(root_dir: str | Path | None):
-    if root_dir is None:
-        logger.error(f"aborting on_initialize b/c missing client workspace dir, {root_dir=}")
-        raise ValueError("root_uri is None")
-
     logger.info(f"{root_dir=}")
     rag_project.root_path = Path(root_dir)
     rag_project.dot_rag_dir = rag_project.root_path / ".rag"
