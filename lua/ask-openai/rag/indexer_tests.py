@@ -30,8 +30,9 @@ index_test_cases_source_dir = my_dir / "index" / "test_cases"
 tmp_source_code_dir = index_test_cases_source_dir / "tmp_source_code"
 test_cases = my_dir / "chunks/test_cases"
 
-def copy_file(src, dest):
-    (tmp_source_code_dir / dest).write_text((test_cases / src).read_text())
+def copy_file(original_file, destination_file):
+    original_text = (test_cases / original_file).read_text()
+    (tmp_source_code_dir / destination_file).write_text(original_text)
 
 def trash_path(dir):
     if dir.exists():
