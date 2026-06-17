@@ -30,9 +30,12 @@ def setup(server: LanguageServer):
         folder = uris.to_fs_path(first_folder.uri)
         assert folder is not None
         await workspace.from_folder(folder)
+
         if not workspace.get_config().enabled or workspace.is_no_rag_dir():
             # DO NOT notify yet, that has to come after server responds to initialize request
             return types.InitializeResult(capabilities=types.ServerCapabilities())
+
+        workspace.validate_datasets()
 
     def tell_client_to_shut_that_shit_down_now():
         server.protocol.notify("fuu/no_dot_rag__do_the_right_thing_wink")
@@ -56,7 +59,5 @@ def setup(server: LanguageServer):
             logger.error(f"STOP on_initialize[d] b/c no .rag dir")
             tell_client_to_shut_that_shit_down_now()
             return
-
-        workspace.validate_datasets()
 
         update_file.create_queue(server)
