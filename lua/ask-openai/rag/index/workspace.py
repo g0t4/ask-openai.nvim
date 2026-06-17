@@ -44,7 +44,7 @@ async def from_repo_workdir():
     FYI IF workder != repo_root_dir THEN workspace_dir/.rag != dot_rag_dir
     """
     repo_root_dir = git_repo_root_dir(Path.cwd())
-    if not repo_root_dir:
+    if repo_root_dir is None:
         logger.error("[red]No Git repository found in current working directory, cannot build RAG index.")
         sys.exit(1)
     project.folder = Path(".").resolve()
