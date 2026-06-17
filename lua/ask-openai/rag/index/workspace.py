@@ -7,6 +7,7 @@ from typing import Optional
 
 from logs import get_logger
 from config import RagConfig, load_config
+from index.storage import Datasets
 
 logger = get_logger(__name__)
 
@@ -21,6 +22,7 @@ class RagProject:
 #   without passing that workspace dir everywhere
 #   but also don't break passing it when it makes sense b/c then it becomes a hidden dependency
 project = RagProject()
+datasets: Datasets = None
 
 def is_no_rag_dir() -> bool:
     if project.dot_rag_dir is None:

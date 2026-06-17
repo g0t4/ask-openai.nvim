@@ -5,7 +5,6 @@ from pygls.lsp.server import LanguageServer
 from logs import get_logger
 from index import workspace
 from index.validate import DatasetsValidator
-from language_server import rag
 from language_server.commands import update_file
 from index.storage import Datasets, load_all_datasets
 
@@ -37,7 +36,7 @@ def setup(server: LanguageServer):
             # DO NOT notify yet, that has to come after server responds to initialize request
             return types.InitializeResult(capabilities=types.ServerCapabilities())
 
-        rag.datasets = load_all_datasets(workspace.project.dot_rag_dir)
+        workspace.datasets = load_all_datasets(workspace.project.dot_rag_dir)
 
     def tell_client_to_shut_that_shit_down_now():
         server.protocol.notify("fuu/no_dot_rag__do_the_right_thing_wink")
@@ -62,7 +61,7 @@ def setup(server: LanguageServer):
             tell_client_to_shut_that_shit_down_now()
             return
 
-        validator = DatasetsValidator(rag.datasets)
+        validator = DatasetsValidator(workspace.datasets)
         validator.validate_datasets()
 
         update_file.create_queue(server)
